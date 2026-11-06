@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSourceMainBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,19 +38,18 @@ theorem sourceExponentialSum_reflection_estimate
             C*((N/Real.sqrt T)*T^(β+ε)+N/Real.sqrt T+T^ε) := by
   obtain ⟨δ,hd,hsmall,hpos,P,hP,C,hC,hmain⟩ :=
     sourceStationaryMain_physical_bound hβ hσ hε
-  obtain ⟨D,hD,herror⟩ := modelPhase_source_sharp_comparison hσ hε
+  pm_69 D hD herror modelPhase_source_sharp_comparison hσ hε
   let Q := max P bufferedLocalStationaryOrder
   let K := max C D
-  have hK : 1 ≤ K := hC.trans (le_max_left _ _)
+  pm_5105 hK K hC.trans
   refine ⟨δ,hd,hsmall,hpos,Q,hP.trans (le_max_left _ _),K,hK,?_⟩
   intro T N F a b hTK hN ha hb hlow hhigh hF
   have hT₁ : 1 ≤ T := hK.trans hTK
-  have hT : 0 < T := zero_lt_one.trans_le hT₁
-  have hNp : 0 < N := zero_lt_one.trans_le hN
+  pm_1610 hT T hT₁ hNp N hN
   let main := ∑ q ∈ modelPhaseSharpStationarySet F T N a b,
     modelPhaseStationaryMainTerm F T N q
   have hmainbound : ‖main‖ ≤ C*(N/Real.sqrt T)*T^(β+ε) := by
-    by_cases hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N
+    pm_1651
     · exact hmain T N F a b ((le_max_left _ _).trans hTK) hNp ha hb hlow hhigh hlong
         (approximateModelPhase_mono hF (le_max_left _ _) le_rfl)
     · have hempty := modelPhaseSharpStationarySet_of_short (F := F) (le_of_not_gt hlong)

@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.GeneratorTransport
 public import OAI.NumberTheory.DirichletL.Descent.InitializationEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open MixedCrossSeparation (columnCoefficient)
@@ -31,8 +32,8 @@ theorem initialColumn_eq_secondPre (Ψ : O →* ℂ) (j C d h : O)
     (H : Finset ι→ℂ) (S : Finset ι) :
     initialColumn p hp hcop hg Ψ j C d h H S =
       secondPreColumn p hp hcop hg Ψ (j*C) 1 1 d h H S := by
-  have hone := ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S
-  simp only [initialColumn,secondPreColumn,hone,one_pow,mul_one]
+  pm_6711
+  pm_94 initialColumn secondPreColumn hone one_pow mul_one
 
 theorem initial_common_extraction (hpr : ∀ i,λ₀^2∣p i-1)
     (Ψ : O →* ℂ) (j t d h : O) (H : Finset ι→ℂ)
@@ -45,7 +46,7 @@ theorem initial_common_extraction (hpr : ∀ i,λ₀^2∣p i-1)
   simpa only [one_mul] using secondPreColumn_union p hp hcop hg hpr Ψ j t 1 1 d h H V N hVN
 
 theorem initial_marked_child (F V A : Finset ι) (Ψ : O →* ℂ) (j t d h : O)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (X : ℝ) :
     (∑ N∈(F\V).powerset,
       secondChildColumn p hp hcop hg Ψ (j*t) (d*∏ i∈V,p i) (d*h)
@@ -65,7 +66,7 @@ theorem initial_input_row (F : Finset ι) (Ψ : O →* ℂ) (j : O)
   unfold inputConjugateRow
   congr 1
   funext S
-  have hone := ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S
+  pm_6711
   simp only [secondInputCoefficient,hone,one_pow,mul_one]
 
 def sourceIdeal (S : Finset ι) : Ideal O := Ideal.span {∏ i∈S,p i}
@@ -96,8 +97,7 @@ theorem sourceIdeal_gen (hpr : ∀ i,λ₀^2∣p i-1) (S : Finset ι) :
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem sourceIdeal_dvd (E G : Finset ι) (hEG : E⊆G) : sourceIdeal p E∣sourceIdeal p G := by
   refine ⟨sourceIdeal p (G\E),?_⟩
-  rw [←sourceIdeal_union p E (G\E) (by exact Finset.disjoint_left.mpr (fun i hi hj=>(Finset.mem_sdiff.mp hj).2 hi)),
-    Finset.union_sdiff_of_subset hEG]
+  pm_3208
 
 def sourcePrime (i : ι) : SmoothMobiusCorrection.PrimeIdeal :=
   ⟨Ideal.span {p i},Ideal.prime_of_isPrime (NeZero.ne _) inferInstance⟩
@@ -121,24 +121,22 @@ theorem sourceTuple_valid (hpr : ∀ i,λ₀^2∣p i-1) {J : ℕ}
   refine ⟨sourceIdeal_ne_zero p hp G,sourceIdeal_ne_zero p hp V,?_,
     sourceIdeal_dvd p E G hEG,?_⟩
   · change primaryGenerator (sourceIdeal p E)≠0
-    rw [sourceIdeal_gen p hp hpr E]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
+    pm_980 E
   · intro i
     change (sourcePrime p (assigned i)).val∣sourceIdeal p G*sourceIdeal p V
     rcases Finset.mem_union.mp (ha i) with hi|hi
     · exact dvd_mul_of_dvd_left (source_prime_dvd p G (assigned i) hi) _
     · exact dvd_mul_of_dvd_right (source_prime_dvd p V (assigned i) hi) _
 
-include hp in
 
+include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem source_quotient (G E : Finset ι) (hEG : E⊆G) :
     CanonicalQuadraticSieve.idealQuotient (sourceIdeal p E) (sourceIdeal p G)=
       sourceIdeal p (G\E) := by
   apply mul_left_cancel₀ (sourceIdeal_ne_zero p hp E)
   rw [CanonicalQuadraticSieve.idealQuotient_mul (sourceIdeal_dvd p E G hEG)]
-  rw [←sourceIdeal_union p E (G\E) (by exact Finset.disjoint_left.mpr (fun i hi hj=>(Finset.mem_sdiff.mp hj).2 hi)),
-    Finset.union_sdiff_of_subset hEG]
+  pm_3208
 
 theorem sourceIdeal_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) :
     Function.Injective (sourceIdeal p) := by
@@ -159,10 +157,8 @@ def toTuple {J : ℕ} (x : Source (ι:=ι) J) : InitialTuple J :=
 theorem toTuple_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) {J : ℕ} :
     Function.Injective (toTuple p (J:=J)) := by
   intro x y he
-  have hC := congrArg InitialTuple.common he
-  have hD := congrArg InitialTuple.divisor he
-  have hV := congrArg InitialTuple.residual he
-  have hf := congrArg InitialTuple.frequency he
+  pm_194 hC congrArg InitialTuple.common he hD InitialTuple.divisor
+  pm_194 hV congrArg InitialTuple.residual he hf InitialTuple.frequency
   have ha := congrArg InitialTuple.assigned he
   apply Source.ext
   · exact sourceIdeal_injective p hinj hC
@@ -181,12 +177,12 @@ theorem sectorSource_injective {J : ℕ} (u : Oˣ) :
     Function.Injective (sectorSource (J:=J) (ι:=ι) u) := by
   intro x y he
   apply Source.ext
-  · simpa only [sectorSource] using congrArg (fun z : Source (ι:=ι) J=>z.common) he
-  · simpa only [sectorSource] using congrArg (fun z : Source (ι:=ι) J=>z.divisor) he
-  · simpa only [sectorSource] using congrArg (fun z : Source (ι:=ι) J=>z.overlap) he
+  pm_3209 z.common
+  pm_3209 z.divisor
+  pm_3209 z.overlap
   · have hh := congrArg Source.frequency he
     exact mul_left_cancel₀ (pow_ne_zero 5 (Units.ne_zero u)) hh
-  · simpa only [sectorSource] using congrArg (fun z : Source (ι:=ι) J=>z.assigned) he
+  pm_3209 z.assigned
 
 theorem initial_poisson_child_normalized
     (hpr : ∀ i,λ₀^2∣p i-1) (G E V : Finset ι) (Ψ : O →* ℂ)
@@ -200,10 +196,8 @@ theorem initial_poisson_child_normalized
             (primaryGenerator (sourceIdeal p E*sourceIdeal p V))
             (primaryGenerator (sourceIdeal p E)*((u:O)^5*h)) H N := by
   have hgE : primaryGenerator (sourceIdeal p E)≠0 := by
-    rw [sourceIdeal_gen p hp hpr E]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
-  obtain ⟨u,hu⟩ := generator_eq_unit_primary (sourceIdeal p E) e he hgE
-  refine ⟨u,hu,?_⟩
+    pm_980 E
+  pm_7607 e he hgE
   intro H N
   have hts : Ideal.span {t}=Ideal.span {primaryGenerator (sourceIdeal p (G\E))} := by
     rw [ht,sourceIdeal_gen p hp hpr (G\E)]

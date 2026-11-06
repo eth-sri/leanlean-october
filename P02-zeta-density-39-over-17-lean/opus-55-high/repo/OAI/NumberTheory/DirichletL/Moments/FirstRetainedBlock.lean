@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstRetainedPhysical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,11 +24,9 @@ lemma retained_tsum (R:ℝ)(f:O→ℂ):
   apply tsum_eq_sum
   intro h hh
   have hz:retainedWeight R (normValue h)=0:=by
-    by_contra hn
-    apply hh
-    apply CenteredMomentSecondRetainedRows.retained_mem_rows R 1 h one_ne_zero
-    simpa only [one_mul] using hn
-  simp only [hz,Complex.ofReal_zero,zero_mul]
+    pm_8342
+    grind
+  simp_all
 
 lemma retainedFourierTerm_finite (a b r:O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
     (χa:MulChar (Residue a) ℂ)(χb:MulChar (Residue b) ℂ)(G:Residue r→ℂ)
@@ -53,8 +52,8 @@ lemma retainedFourierTerm_finite (a b r:O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
   ring
 
 lemma finite_pair_row_sum {α β:Type*}[Fintype α][Fintype β]
-    (rows:Finset O)(p:α→β→Prop)[DecidableRel p]
-    (c:α→β→ℂ)(μ:ℂ)(f:α→β→O→ℂ):
+    (rows:Finset O)(p:α→β→ Prop)[DecidableRel p]
+    (c:α→β→ℂ)(μ:ℂ)(f:α→β→ O→ℂ):
     (∑a:α,∑b:β,if p a b then c a b*(μ*∑h∈rows,f a b h) else 0)=
       μ*∑h∈rows,∑a:α,∑b:β,if p a b then c a b*f a b h else 0:=by
   have hp (a:α)(b:β):
@@ -65,7 +64,7 @@ lemma finite_pair_row_sum {α β:Type*}[Fintype α][Fintype β]
       apply Finset.sum_congr rfl
       intro h hh
       ring
-    · simp [hab]
+    simp_all
   simp_rw [hp,Finset.mul_sum]
   calc
     _=∑a:α,∑h∈rows,∑b:β,μ*(if p a b then c a b*f a b h else 0):=by
@@ -74,9 +73,10 @@ lemma finite_pair_row_sum {α β:Type*}[Fintype α][Fintype β]
       exact Finset.sum_comm
     _=_:=Finset.sum_comm
 
-theorem fixed_sector_term_block
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+section
+variable (η:Character) (m A:O) (t:ℝ) (S:Finset (Ideal O)) (c:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+include η m A t S c C D hC hD
+theorem fixed_sector_term_block(E:Finset (CommonIndex C D))
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     (∑a:columns C C hC.1 S,∑b:columns C D hD.1 S,
       if IsCoprime (a:Ideal O) (b:Ideal O) then
@@ -97,15 +97,10 @@ theorem fixed_sector_term_block
   congr 1
   apply Finset.sum_congr rfl
   intro h hh
-  apply Finset.sum_congr rfl
-  intro a ha
-  apply Finset.sum_congr rfl
-  intro b hb
+  pm_3445
   split_ifs <;> ring
 
-theorem fixed_sector_blocks
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
+theorem fixed_sector_blocks(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     fixedRetainedSector η m A t S c C D hC hD W K X Z ξ=
       ∑E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets C D,
         retainedInfiniteBlock η m A t S c C D hC hD E W K
@@ -114,6 +109,7 @@ theorem fixed_sector_blocks
   apply Finset.sum_congr rfl
   intro E hE
   exact fixed_sector_term_block η m A t S c C D hC hD E W K X Z ξ
+end
 
 end SevenEighths.CenteredMomentFirstRetainedBlock
 

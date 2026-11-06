@@ -9,20 +9,18 @@ Mathlib and narrow DigammaSeries dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Fourth.SquareTruncation
 public import Mathlib.Analysis.SumIntegralComparisons
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
-open MathCollab.Density.Stronger
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
 
 theorem tsum_nat_rpow_tail_le {p : ℝ} (hp : p < -1) {N : ℕ} (hN : 0 < N) :
     (∑' j : ℕ, ((j+N+1:ℕ):ℝ)^p) ≤ (N:ℝ)^(p+1)/(-p-1) := by
-  have hN0 : (0:ℝ) < N := by exact_mod_cast hN
+  pm_4473 hN0 N hN
   have hi := integrableOn_Ioi_rpow_of_lt hp hN0
   apply Real.tsum_le_of_sum_range_le (fun _ => by positivity)
   intro k
@@ -46,11 +44,7 @@ theorem tsum_nat_rpow_tail_le {p : ℝ} (hp : p < -1) {N : ℕ} (hN : 0 < N) :
 
 theorem fourth_divisorWeight_le_rpow (b : ℝ) (n : ℕ) :
     (n.divisors.card:ℝ)*(n:ℝ)^(-(1/2+b)) ≤ (n:ℝ)^(1/2-b) := by
-  by_cases hn : n = 0
-  · subst n
-    simp only [Nat.divisors_zero,Finset.card_empty,Nat.cast_zero,zero_mul]
-    positivity
-  have hn0 : (0:ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+  pm_4476
   calc
     _ ≤ (n:ℝ)*(n:ℝ)^(-(1/2+b)) :=
       mul_le_mul_of_nonneg_right (by exact_mod_cast Nat.card_divisors_le_self n)
@@ -58,7 +52,10 @@ theorem fourth_divisorWeight_le_rpow (b : ℝ) (n : ℕ) :
     _ = (n:ℝ)^(1+(-(1/2+b))) := by rw [Real.rpow_add hn0,Real.rpow_one]
     _ = _ := by congr 1; ring
 
-theorem tsum_fourth_divisorWeight_tail_le {b : ℝ} (hb : 3/2 < b)
+section
+variable {b : ℝ} (hb : 3/2 < b)
+include b hb
+theorem tsum_fourth_divisorWeight_tail_le
     {N : ℕ} (hN : 0 < N) :
     (∑' n : {n : ℕ // n ∉ Finset.range (N+1)},
       ((n:ℕ).divisors.card:ℝ)*((n:ℕ):ℝ)^(-(1/2+b))) ≤
@@ -81,7 +78,7 @@ theorem tsum_fourth_divisorWeight_tail_le {b : ℝ} (hb : 3/2 < b)
       have hden : -(1/2-b)-1 = b-3/2 := by ring
       simpa only [hnum,hden] using h
 
-theorem exists_norm_zetaFourthTail_cutoff_le {b : ℝ} (hb : 3/2 < b) :
+theorem exists_norm_zetaFourthTail_cutoff_le :
     ∃ K : ℝ, 0 < K ∧ ∀ t : ℝ, 4 ≤ t → 4*b ≤ t →
       ∀ N : ℕ, 0 < N →
       ‖zetaFourthTail t b (Finset.range (N+1))‖ ≤
@@ -97,6 +94,7 @@ theorem exists_norm_zetaFourthTail_cutoff_le {b : ℝ} (hb : 3/2 < b) :
       mul_le_mul_of_nonneg_left (tsum_fourth_divisorWeight_tail_le hb hN)
         (by positivity)
     _ = _ := by ring
+end
 
 
 
@@ -144,7 +142,7 @@ theorem exists_norm_fourthRightPiece_sub_cutoff_le {δ : ℝ} (hδ : 0 < δ) :
   refine ⟨A*2^b,by positivity,max 4 (4*b),le_max_left _ _,?_⟩
   intro H hH t ht htH N hN a ha
   have hH4 : 4 ≤ H := (le_max_left _ _).trans hH
-  have hHt : 4*b ≤ H := (le_max_right _ _).trans hH
+  pm_8711 hHt b
   have ht0 : 0 ≤ t := by linarith
   have hNpos : 0 < N := by
     have hNreal : (0:ℝ) < N :=

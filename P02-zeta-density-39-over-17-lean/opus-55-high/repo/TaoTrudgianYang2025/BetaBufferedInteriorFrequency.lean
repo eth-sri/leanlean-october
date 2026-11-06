@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedInteriorStationary
 public import TaoTrudgianYang2025.BetaClosedSlopeInverseAdapter
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,17 +32,11 @@ theorem modelPhaseInverseSlope_interior_of_gap
     a+w/(σ+1) ≤ modelPhaseInverseSlope F v ∧
       modelPhaseInverseSlope F v+w/(σ+1) ≤ b := by
   have hu := modelPhaseInverseSlope_mem hv
-  have hm := (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn
+  pm_5045 hm approximateModelPhase_deriv_strictAntiOn
   have hau : a < modelPhaseInverseSlope F v := by
-    by_contra h
-    have he := hm hu ha (le_of_not_gt h)
-    rw [deriv_modelPhaseInverseSlope_apply hv] at he
-    linarith
+    pm_7628 hu ha
   have hub : modelPhaseInverseSlope F v < b := by
-    by_contra h
-    have he := hm hb hu (le_of_not_gt h)
-    rw [deriv_modelPhaseInverseSlope_apply hv] at he
-    linarith
+    pm_7628 hb hu
   have hL := approximateModelPhase_slope_gap_upper_abs hσ hδ hF ha hu
   have hR := approximateModelPhase_slope_gap_upper_abs hσ hδ hF hu hb
   rw [deriv_modelPhaseInverseSlope_apply hv,
@@ -55,7 +50,7 @@ theorem modelPhaseInverseSlope_interior_of_gap
     (div_le_iff₀ hs).mpr (by nlinarith)
   have hR' : w/(σ+1) ≤ b-modelPhaseInverseSlope F v :=
     (div_le_iff₀ hs).mpr (by nlinarith)
-  constructor <;> linarith
+  grind
 
 theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
     {σ : ℝ} (hσ : 0 < σ) :
@@ -73,9 +68,8 @@ theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
   refine ⟨C*(σ+1),by nlinarith,?_⟩
   intro l r η hl hr hη hflat F δ T N q lam hδ hF hT hN hlam hright hleft
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
-  have hscale : 0 < N/T := div_pos hN hT
-  have hL := mul_le_mul_of_nonneg_right hleft hscale.le
-  have hR := mul_le_mul_of_nonneg_right hright hscale.le
+  pm_6528 hscale N T hN hT
+  pm_194 hL mul_le_mul_of_nonneg_right hleft hscale.le hR hright
   have he (u : ℝ) : ((T/N)*u)*(N/T) = u := by field_simp
   rw [add_mul,he] at hL hR
   have hL' : q*N/T+N*lam/T ≤ deriv F (l+2*η) := by
@@ -83,14 +77,10 @@ theorem modelPhaseBufferedFourierMode_interior_frequency_uniform
     ring
   have hR' : deriv F (r-2*η)+N*lam/T ≤ q*N/T := by
     convert hR using 1 <;> ring
-  have ha : l+2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
-  have hb : r-2*η ∈ Ioo (1 : ℝ) 2 := by constructor <;> linarith
+  pm_1637
   have hw : 0 < N*lam/T := div_pos (mul_pos hN hlam) hT
   have hv : q*N/T ∈ modelPhaseSlopeRange F := by
-    rw [modelPhaseSlopeRange_eq_endpoint_Ioo hσ hδ hF₁]
-    have hba := modelPhaseClosedSlope_deriv_bounds hσ hδ hF₁ ha
-    have hbb := modelPhaseClosedSlope_deriv_bounds hσ hδ hF₁ hb
-    constructor <;> linarith [hba.2,hbb.1]
+    pm_5275 hF₁
   have hi := modelPhaseInverseSlope_interior_of_gap hσ hδ hF₁ hv
     ha hb hw hL' hR'
   have hd : 0 < (N*lam/T)/(σ+1) := div_pos (div_pos (mul_pos hN hlam) hT) hσ₁

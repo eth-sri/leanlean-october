@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownCoefficientVariation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ variation coefficient `2π k²/H`.
 -/
 
 open Complex Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -28,16 +28,15 @@ theorem heathBrownWeylSum_eq_natural_sum
     (k Q : ℕ) (α : HeathBrownCoefficientTorus k) :
     heathBrownWeylSum k Q α =
       ∑ h ∈ Finset.Icc 1 Q, heathBrownNaturalMonomial k h α := by
-  unfold heathBrownWeylSum fordVinogradovWeylSum
-  rw [ford_sum_Icc_one_eq_fin]
-  apply Finset.sum_congr rfl
-  intro h hh
+  pm_315 heathBrownWeylSum fordVinogradovWeylSum ford_sum_Icc_one_eq_fin Finset.sum_congr h hh
   unfold heathBrownNaturalMonomial fordVinogradovMonomial
     fordVinogradovExponent
   congr 2
 
-theorem heathBrownNaturalMonomial_eq_center_mul_displacementPhase
-    {k h : ℕ} (c α : HeathBrownCoefficientTorus k) :
+section
+variable {k h : ℕ} (c α : HeathBrownCoefficientTorus k)
+include k h c α
+theorem heathBrownNaturalMonomial_eq_center_mul_displacementPhase :
     heathBrownNaturalMonomial k h α =
       heathBrownNaturalMonomial k h c *
         heathBrownPhase (heathBrownDisplacementPolynomial c α h) := by
@@ -62,14 +61,9 @@ theorem heathBrownNaturalMonomial_eq_center_mul_displacementPhase
   rw [fordAdditiveCharacter_sum Finset.univ]
   apply Finset.prod_congr rfl
   intro j hj
-  rw [fourier_coe_apply]
-  unfold fordAdditiveCharacter
-  congr 1
-  push_cast
-  ring
+  pm_8330
 
-theorem heathBrownCoefficientWeight_mul_naturalMonomial
-    {k h : ℕ} (c α : HeathBrownCoefficientTorus k) :
+theorem heathBrownCoefficientWeight_mul_naturalMonomial :
     heathBrownCoefficientWeight c α h *
         heathBrownNaturalMonomial k h α =
       heathBrownNaturalMonomial k h c := by
@@ -81,14 +75,8 @@ theorem heathBrownCoefficientWeight_mul_naturalMonomial
     rw [← heathBrownPhase_add, neg_add_cancel,
       heathBrownPhase_eq_fordAdditiveCharacter]
     simp [fordAdditiveCharacter]
-  calc
-    heathBrownPhase (-heathBrownDisplacementPolynomial c α h) *
-        (heathBrownNaturalMonomial k h c *
-          heathBrownPhase (heathBrownDisplacementPolynomial c α h)) =
-      heathBrownNaturalMonomial k h c *
-        (heathBrownPhase (-heathBrownDisplacementPolynomial c α h) *
-          heathBrownPhase (heathBrownDisplacementPolynomial c α h)) := by ring
-    _ = heathBrownNaturalMonomial k h c := by rw [hcancel, mul_one]
+  grind
+end
 
 theorem heathBrown_centerWeyl_eq_weighted_cellWeyl
     (k Q : ℕ) (c α : HeathBrownCoefficientTorus k) :

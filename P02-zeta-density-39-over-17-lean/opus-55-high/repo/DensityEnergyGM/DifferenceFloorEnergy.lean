@@ -1,6 +1,7 @@
 module
 public import DiscreteEnergyReproduction
 public import DensityEnergyGM.LargeValuesS3
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -42,27 +43,13 @@ theorem sum_differenceFloorCount_sq (W : Finset ℝ) :
   simp_rw [pow_two, ← Finset.card_product]
   rw [← Finset.card_biUnion]
   · congr 1
-    ext q
-    simp only [Finset.mem_biUnion, Finset.mem_image, Finset.mem_product,
-      Finset.mem_filter]
-    constructor
-    · rintro ⟨j, ⟨p, hp, rfl⟩, hq⟩
-      exact ⟨⟨hq.1.1, hq.2.1⟩, hq.1.2.trans hq.2.2.symm⟩
-    · intro hq
-      refine ⟨differenceFloor q.1, ⟨q.1, hq.1.1, rfl⟩, ?_⟩
-      exact ⟨⟨hq.1.1, rfl⟩, ⟨hq.1.2, hq.2.symm⟩⟩
+    pm_7262
+    grind
+    grind
   · intro i hi j hj hij
-    change Disjoint
-      (((differenceOrdinatePairs W).filter fun p => differenceFloor p = i) ×ˢ
-        ((differenceOrdinatePairs W).filter fun p => differenceFloor p = i))
-      (((differenceOrdinatePairs W).filter fun p => differenceFloor p = j) ×ˢ
-        ((differenceOrdinatePairs W).filter fun p => differenceFloor p = j))
-    rw [Finset.disjoint_left]
-    intro q hqi hqj
-    have hiq := Finset.mem_filter.mp (Finset.mem_product.mp hqi).1 |>.2
-    have hjq := Finset.mem_filter.mp (Finset.mem_product.mp hqj).1 |>.2
-    exact hij (hiq.symm.trans hjq)
-
+    pm_4043 differenceOrdinatePairs differenceFloor
+    pm_4042
+    grind
 
 /-- Equal difference floors force the corresponding additive defect below
 one, with the two second coordinates exchanged. -/
@@ -76,11 +63,14 @@ theorem abs_difference_defect_lt_one_of_floor_eq {p q : ℝ × ℝ}
   have hqUpper := Int.lt_floor_add_one (q.1 - q.2)
   rw [h] at hpLower hpUpper
   rw [abs_lt]
-  constructor <;> linarith
+  grind
 
+section
+variable (W : Finset ℝ)
+include W
 /-- The literal unit-difference occupancies have square sum bounded by the
 same tolerance-one ordered additive energy used in the zero-density proof. -/
-theorem differenceFloor_energy_le (W : Finset ℝ) :
+theorem differenceFloor_energy_le :
     ∑ j ∈ differenceFloorSupport W, differenceFloorCount W j ^ 2 ≤
       discreteAdditiveEnergy W := by
   rw [sum_differenceFloorCount_sq]
@@ -107,7 +97,7 @@ theorem differenceFloor_energy_le (W : Finset ℝ) :
 
 /-- Mass of any finite family of occupied difference cells. The count of
 cells and the original energy enter through ordinary finite Cauchy--Schwarz. -/
-theorem differenceFloor_subset_mass_sq (W : Finset ℝ) (J : Finset ℤ)
+theorem differenceFloor_subset_mass_sq (J : Finset ℤ)
     (hJ : J ⊆ differenceFloorSupport W) :
     (∑ j ∈ J, (differenceFloorCount W j : ℝ)) ^ 2 ≤
       (J.card : ℝ) * (discreteAdditiveEnergy W : ℝ) := by
@@ -120,21 +110,21 @@ theorem differenceFloor_subset_mass_sq (W : Finset ℝ) (J : Finset ℤ)
       (fun j hj hnot => Nat.zero_le (differenceFloorCount W j ^ 2))
     have hNat := hsub.trans (differenceFloor_energy_le W)
     exact_mod_cast hNat
-  have hcard : 0 ≤ (J.card : ℝ) := Nat.cast_nonneg _
+  pm_6814 hcard J.card
   have h := mul_le_mul_of_nonneg_left hEnergy hcard
   exact hCS.trans (by nlinarith)
 
 /-- Unit difference cells retain exactly all ordered pairs. -/
-theorem sum_differenceFloorCount (W : Finset ℝ) :
+theorem sum_differenceFloorCount :
     ∑ j ∈ differenceFloorSupport W, differenceFloorCount W j = W.card ^ 2 := by
   have hmaps : ∀ p ∈ differenceOrdinatePairs W,
       differenceFloor p ∈ differenceFloorSupport W := by
-    intro p hp
-    exact Finset.mem_image.mpr ⟨p, hp, rfl⟩
+    pm_4831 p hp
   have h := Finset.card_eq_sum_card_fiberwise hmaps
   change (differenceOrdinatePairs W).card =
     ∑ j ∈ differenceFloorSupport W, differenceFloorCount W j at h
   rw [← h]
   simp only [differenceOrdinatePairs, Finset.card_product, pow_two]
+end
 
 end Montgomery.RationalMoment

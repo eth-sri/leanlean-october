@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialFibers
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,7 +12,7 @@ open ActualEisensteinCubic
 open CompletedGauss (primaryGenerator primaryGenerator_mul)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 open InverseInitialFibers (divisor_card_mul_le divisor_card_pos)
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 @[ext] structure OuterTriple where
@@ -46,50 +47,47 @@ structure Valid {Jo Jn : ℕ} (x : SecondTuple Jo Jn)
   old_dvd : ∀ i, (x.oldAssigned i).val ∣ γ.q0 * f * γ.quotient
   new_dvd : ∀ i, (x.newAssigned i).val ∣ f * γ.residual
 
-lemma core_dvd_label {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
-    {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) (i : Fin 4) :
+section
+variable {Jo Jn : ℕ} {x : SecondTuple Jo Jn} {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k)
+include Jo Jn x γ f k hx
+lemma core_dvd_label (i : Fin 4) :
     x.core ⟨i.val, by omega⟩ ∣ f := by
   have hJ : x.core 0 ∣ f := by
     rw [← hx.label]
-    exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (dvd_mul_right _ _) _) _
+    pm_8751 dvd_mul_right
   fin_cases i
-  · exact hJ
+  grind
   · rw [← hx.label]
-    exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (dvd_mul_left _ _) _) _
+    pm_8751 dvd_mul_left
   · rw [← hx.label]
     exact dvd_mul_of_dvd_left (dvd_mul_left _ _) _
   · exact (show x.core 3 ∣ x.core 0 from ⟨x.cubeResidual, hx.j_split.symm⟩).trans hJ
 
-lemma common_label_dvd {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
-    {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) :
+lemma common_label_dvd :
     x.core 1 * x.core 0 ∣ f := by
   refine ⟨x.core 2 * x.commonResidual, ?_⟩
   rw [← hx.label]
   ring
 
-lemma cube_product_dvd_square {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
-    {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) :
+lemma cube_product_dvd_square :
     x.core 4 * x.secondCube ∣ (γ.q0 * x.core 0)^2 := by
   refine ⟨x.core 3, ?_⟩
   rw [hx.b_split, ← hx.j_split]
   ring
 
-lemma cube_radical_dvd {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
-    {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) :
+lemma cube_radical_dvd :
     (x.core 4 * x.secondCube).radical ∣ γ.q0 * x.core 0 := by
   apply Ideal.dvd_iff_le.mpr
   have hle := Ideal.radical_mono (Ideal.dvd_iff_le.mp (cube_product_dvd_square hx))
   rw [Ideal.radical_pow (γ.q0 * x.core 0) (by decide : (2 : ℕ) ≠ 0)] at hle
   exact Ideal.le_radical.trans hle
 
-lemma cube_factor_dvd_target {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
-    {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) :
+lemma cube_factor_dvd_target :
     x.core 4 ∣ (γ.q0 * f)^2 :=
   (dvd_mul_right _ _).trans ((cube_product_dvd_square hx).trans
     (pow_dvd_pow_of_dvd (mul_dvd_mul_left _ (core_dvd_label hx 0)) 2))
 
-lemma core_dvd_outer_label {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
-    {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k) (i : Fin 3) :
+lemma core_dvd_outer_label (i : Fin 3) :
     x.core ⟨i.val+5, by omega⟩ ∣ γ.q0 * f := by
   have hrad : (x.core 4 * x.secondCube).radical ∣ γ.q0 * f :=
     (cube_radical_dvd hx).trans (mul_dvd_mul_left _ (core_dvd_label hx 0))
@@ -101,8 +99,7 @@ lemma core_dvd_outer_label {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
     convert mul_dvd_mul_left γ.q0 (common_label_dvd hx) using 1
     ring
 
-lemma core_ne_zero {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
-    {γ : OuterTriple} {f : Ideal O} {k : O} (hx : Valid x γ f k)
+lemma core_ne_zero
     (hf : f ≠ 0) (hq : γ.q0 ≠ 0) (i : Fin 8) : x.core i ≠ 0 := by
   have hd : x.core i ∣ (γ.q0*f)^2 := by
     by_cases hi : i.val < 4
@@ -120,6 +117,7 @@ lemma core_ne_zero {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
   intro hz
   rw [hz, zero_dvd_iff] at hd
   exact (pow_ne_zero 2 (mul_ne_zero hq hf)) hd
+end
 
 theorem valid_key_injective {Jo Jn : ℕ} (γ : OuterTriple) (f : Ideal O) (k : O)
     (hf : f ≠ 0) (hq : γ.q0 ≠ 0) {x y : SecondTuple Jo Jn}
@@ -131,10 +129,10 @@ theorem valid_key_injective {Jo Jn : ℕ} (γ : OuterTriple) (f : Ideal O) (k : 
     apply mul_left_cancel₀ (mul_ne_zero
       (mul_ne_zero (core_ne_zero hx hf hq 0) (core_ne_zero hx hf hq 1))
       (core_ne_zero hx hf hq 2))
-    exact hx.label.trans (by simpa only [hcore] using hy.label.symm)
+    pm_3535 hx.label.trans hcore hy.label.symm
   have hj : x.cubeResidual = y.cubeResidual := by
     apply mul_left_cancel₀ (core_ne_zero hx hf hq 3)
-    exact hx.j_split.trans (by simpa only [hcore] using hy.j_split.symm)
+    pm_3535 hx.j_split.trans hcore hy.j_split.symm
   have hb : x.secondCube = y.secondCube := by
     apply mul_left_cancel₀ (core_ne_zero hx hf hq 4)
     exact hx.b_split.trans (by simpa only [hcore, hj] using hy.b_split.symm)
@@ -142,7 +140,7 @@ theorem valid_key_injective {Jo Jn : ℕ} (γ : OuterTriple) (f : Ideal O) (k : 
     rw [← hx.extracted_eq, ← hy.extracted_eq, hcore]
   have hr : x.frequency = y.frequency := by
     apply mul_left_cancel₀ (mul_ne_zero hx.generator_d hx.generator_d2)
-    exact hx.row_eq.trans (by simpa only [hcore] using hy.row_eq.symm)
+    pm_3535 hx.row_eq.trans hcore hy.row_eq.symm
   exact SecondTuple.ext (hx.outer_eq.trans hy.outer_eq.symm) hc hv hj hb hg hr ho hn
 
 theorem valid_tuple_card_le {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
@@ -195,13 +193,13 @@ theorem valid_tuple_card_le {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
     Fintype.card_fun, Fintype.card_fin, Nat.mul_assoc] using Fintype.card_le_of_injective encode hi
 
 lemma divisor_card_sq_le (I : Ideal O) (hI : I ≠ 0) :
-    (idealDivisors (I^2)).card ≤ (idealDivisors I).card^2 := by
+    (idealDivisors (I ^2)).card ≤ (idealDivisors I).card^2 := by
   simpa only [pow_two] using divisor_card_mul_le I I hI hI
 
-theorem valid_tuple_card_le_separated {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
-    (γ : OuterTriple) (f : Ideal O) (k : O)
-    (hf : f ≠ 0) (hq : γ.q0 ≠ 0) (ht : γ.quotient ≠ 0) (hr : γ.residual ≠ 0)
-    (hT : ∀ x ∈ T, Valid x γ f k) :
+section
+variable {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn)) (γ : OuterTriple) (f : Ideal O) (k : O) (hf : f ≠ 0) (hq : γ.q0 ≠ 0) (ht : γ.quotient ≠ 0) (hr : γ.residual ≠ 0) (hT : ∀ x ∈ T, Valid x γ f k)
+include Jo Jn T γ f k hf hq ht hr hT
+theorem valid_tuple_card_le_separated :
     T.card ≤ (idealDivisors f).card^(9+Jo+Jn) * (idealDivisors γ.q0).card^(5+Jo) *
       (idealDivisors γ.quotient).card^Jo * (idealDivisors γ.residual).card^Jn := by
   let df := (idealDivisors f).card
@@ -223,10 +221,7 @@ theorem valid_tuple_card_le_separated {Jo Jn : ℕ} (T : Finset (SecondTuple Jo 
       simp only [mul_pow, pow_add]
       ring
 
-theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
-    (γ : OuterTriple) (f : Ideal O) (k : O)
-    (hf : f ≠ 0) (hq : γ.q0 ≠ 0) (ht : γ.quotient ≠ 0) (hr : γ.residual ≠ 0)
-    (hT : ∀ x ∈ T, Valid x γ f k) (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K) :
+theorem valid_tuple_card_le_slot_cap (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K) :
     T.card ≤ (idealDivisors f).card^(9+4*K) * (idealDivisors γ.q0).card^(5+2*K) *
       (idealDivisors γ.quotient).card^(2*K) * (idealDivisors γ.residual).card^(2*K) := by
   apply (valid_tuple_card_le_separated T γ f k hf hq ht hr hT).trans
@@ -235,6 +230,7 @@ theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo J
     (pow_le_pow_right₀ (divisor_card_pos γ.q0 hq) (by omega)))
     (pow_le_pow_right₀ (divisor_card_pos γ.quotient ht) ho))
     (pow_le_pow_right₀ (divisor_card_pos γ.residual hr) hn)
+end
 
 def originalSource {Jo Jn : ℕ} (source : Finset (SecondTuple Jo Jn))
     (oldLists : Fin Jo → Finset SmoothMobiusCorrection.PrimeIdeal)

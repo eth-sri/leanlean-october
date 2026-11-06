@@ -3,20 +3,19 @@ public import OAI.NumberTheory.DirichletL.Hecke.IdealBridge
 public import OAI.NumberTheory.DirichletL.Hecke.MellinIdentity
 public import OAI.NumberTheory.DirichletL.GaussianTheta
 public import OAI.NumberTheory.DirichletL.PeriodicThetaRegularity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.HeckePrimitive
 open HeckeFamily
 
 variable (c : O) [NeZero c]
 
-theorem span_ne_bot : Ideal.span ({c} : Set O) ≠ ⊥ := by
-  simpa only [ne_eq, Ideal.span_singleton_eq_bot] using NeZero.ne c
+theorem span_ne_bot : Ideal.span ({c} : Set O) ≠ ⊥ := by aesop
 
 instance : Fintype (O ⧸ Ideal.span {c}) := by
   letI : Finite (O ⧸ Ideal.span {c}) := Ring.HasFiniteQuotients.finiteQuotient (span_ne_bot c)
@@ -47,10 +46,7 @@ theorem gaussianTheta_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     GaussianTheta.theta c χ t = HeckeTheta.theta (coefficients (character c χ hu))
       (scale c * t) := by
   unfold GaussianTheta.theta HeckeTheta.theta
-  rw [← coordinateEquiv.tsum_eq]
-  apply tsum_congr
-  intro n
-  rw [periodicCoeff_eq_elementCoeff]
+  pm_1065 coordinateEquiv.tsum_eq n periodicCoeff_eq_elementCoeff
   change χ (Ideal.Quotient.mk (Ideal.span {c}) (coordinateElement n.1 n.2)) *
       GaussianTheta.gaussian (GaussianTheta.parameter c t)
         (ConcreteTraceCRT.eisEmbedding (coordinateElement n.1 n.2)) = _
@@ -75,28 +71,29 @@ def pair (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       have h := GaussianTheta.theta_inversion c χ hp t ht
       rw [gaussianTheta_eq c χ hu,
         gaussianTheta_eq c χ⁻¹ (inverse_unit_trivial c χ hu)] at h
-      simpa only [mul_one_div] using h)
+      grind)
 
-@[simp] theorem pair_f (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) :
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1) (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ)
+include χ hu hp t
+@[simp] theorem pair_f :
     (pair c χ hu hp).f t = GaussianTheta.theta c χ t :=
   (gaussianTheta_eq c χ hu t).symm
 
-@[simp] theorem pair_g (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) :
+@[simp] theorem pair_g :
     (pair c χ hu hp).g t = GaussianTheta.theta c χ⁻¹ t :=
   (gaussianTheta_eq c χ⁻¹ (inverse_unit_trivial c χ hu) t).symm
+end
 
 def completedL (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
     (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (s : ℂ) : ℂ :=
   (pair c χ hu hp).Λ s / 6
 
-theorem pair_completed_eq_right (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (hs : 1 < s.re) :
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1) (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ}
+include χ hu hp s
+theorem pair_completed_eq_right (hs : 1 < s.re) :
     (pair c χ hu hp).Λ s = (scale c : ℂ) ^ (-s) *
       HeckeTheta.completed (coefficients (character c χ hu)) s := by
   let w := coefficients (character c χ hu)
@@ -116,29 +113,23 @@ theorem pair_completed_eq_right (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       dsimp only
       rw [HeckeTheta.theta_eq_pair w ht, HeckeTheta.pair_f₀]
 
-theorem pair_completed_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+theorem pair_completed_eq (h0 : s ≠ 0) (h1 : s ≠ 1) :
     (pair c χ hu hp).Λ s = (scale c : ℂ) ^ (-s) *
       HeckeTheta.completed (coefficients (character c χ hu)) s :=
   HeckeMellinIdentity.scaled_eq (pair c χ hu hp)
     (HeckeTheta.pair (coefficients (character c χ hu))) rfl (HeckeTheta.pair_k _)
     (scale c) (scale_pos c) (fun _ hs => pair_completed_eq_right c χ hu hp hs) h0 h1
 
-theorem symm_completed_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+theorem symm_completed_eq (h0 : s ≠ 0) (h1 : s ≠ 1) :
     (pair c χ hu hp).symm.Λ s =
       (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv).Λ s := by
   apply HeckeMellinIdentity.eq_of_f (pair c χ hu hp).symm
     (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv) rfl rfl _ rfl h0 h1
   intro t _
   change (pair c χ hu hp).g t = _
-  rw [pair_g, pair_f]
+  simp_all
 
-theorem completedL_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
+theorem completedL_functional_equation (h0 : s ≠ 0) (h1 : s ≠ 1) :
     completedL c χ hu hp (1-s) = TraceCharacter.normalizedGauss c χ *
       completedL c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv s := by
   have h := (pair c χ hu hp).functional_equation s
@@ -149,9 +140,7 @@ theorem completedL_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   rw [h]
   ring
 
-theorem completedL_eq_gamma_mul_LFunction (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ}
+theorem completedL_eq_gamma_mul_LFunction
     (h0 : s ≠ 0) (h1 : s ≠ 1) (hΓ : Complex.Gamma s ≠ 0) :
     completedL c χ hu hp s = (scale c : ℂ)^(-s) * (Real.pi : ℂ)^(-s) *
       Complex.Gamma s * LFunction (character c χ hu) s := by
@@ -162,6 +151,7 @@ theorem completedL_eq_gamma_mul_LFunction (χ : MulChar (O ⧸ Ideal.span {c}) �
   have hπ : (Real.pi : ℂ)^s ≠ 0 := by
     exact (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [Real.pi_ne_zero])
   field_simp
+end
 
 end SevenEighths.HeckePrimitive
 

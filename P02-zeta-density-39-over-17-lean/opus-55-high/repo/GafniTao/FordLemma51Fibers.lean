@@ -1,10 +1,10 @@
 module
 public import Mathlib
 public import GafniTao.FordVinogradovIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 open MeasureTheory Finset
-open scoped BigOperators
 namespace GafniTao
 noncomputable section
 def fordAdditiveCharacter (x : ℝ) : ℂ :=
@@ -26,11 +26,7 @@ theorem ford_sum_Icc_one_eq_fin
 theorem fordAdditiveCharacter_add (x y : ℝ) :
     fordAdditiveCharacter (x + y) =
       fordAdditiveCharacter x * fordAdditiveCharacter y := by
-  unfold fordAdditiveCharacter
-  rw [← Complex.exp_add]
-  congr 1
-  push_cast
-  ring
+  pm_5155 fordAdditiveCharacter Complex.exp_add
 
 theorem fordAdditiveCharacter_sum
     {ι : Type*} (S : Finset ι) (f : ι → ℝ) :

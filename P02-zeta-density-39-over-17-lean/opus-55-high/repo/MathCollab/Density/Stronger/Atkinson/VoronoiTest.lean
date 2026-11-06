@@ -26,12 +26,14 @@ structure DFIVoronoiTestFunction (g : ℝ → ℂ) where
   smooth : ContDiff ℝ ∞ g
   support_subset : Function.support g ⊆ Set.Icc lower upper
 
-theorem DFIVoronoiTestFunction.continuous
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) : Continuous g :=
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+theorem DFIVoronoiTestFunction.continuous : Continuous g :=
   hg.smooth.continuous
 
-theorem DFIVoronoiTestFunction.hasCompactSupport
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) : HasCompactSupport g := by
+theorem DFIVoronoiTestFunction.hasCompactSupport : HasCompactSupport g := by
   exact HasCompactSupport.of_support_subset_isCompact isCompact_Icc hg.support_subset
+end
 
 end MathCollab.Density.Stronger.Atkinson

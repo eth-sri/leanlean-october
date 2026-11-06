@@ -77,7 +77,7 @@ def smoothOn (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactS
   continuous_toFun := by
     have : Continuous (smoothFun (E := E) (K := K) ψ u) :=
       continuous_smoothFun (E := E) (K := K) (ψ := ψ) (hKm := hKm) hψc hψcs u
-    exact this.comp continuous_subtype_val
+    fun_prop
 
 /-- `smoothFun` packaged as a `BoundedContinuousFunction` on the compact set `K + tsupport ψ`. -/
 def smoothBCF (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
@@ -111,18 +111,18 @@ lemma uniformContinuous_ψ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
   -- If `ψ x` is `ε`-far from `0`, then `ψ x ≠ 0`, hence `x` belongs to the support and therefore
   -- to the topological support.
   have hx' : ¬ dist (ψ x) 0 < ε := by
-    simpa [Set.mem_compl_iff, Set.mem_ofPred_eq] using hx
-  have hxε : ε ≤ dist (ψ x) 0 := le_of_not_gt (by simpa [gt_iff_lt] using hx')
+    grind
+  have hxε : ε ≤ dist (ψ x) 0 := le_of_not_gt (by grind)
   have hx0 : ψ x ≠ 0 := by
     intro hψ0
-    have : dist (ψ x) 0 = 0 := by simp [hψ0]
-    have : ε ≤ 0 := by simpa [this] using hxε
-    exact not_lt_of_ge this hε
+    have : dist (ψ x) 0 = 0 := by simp_all
+    have : ε ≤ 0 := by grind
+    grind
   have hx_supp : x ∈ Function.support ψ := by
-    simpa [Function.support] using hx0
+    simp_all
   have hx_tsupp : x ∈ tsupport ψ := by
     have : x ∈ closure (Function.support ψ) := subset_closure hx_supp
-    simpa [tsupport] using this
+    aesop
   exact hx_tsupp
 
 /-!

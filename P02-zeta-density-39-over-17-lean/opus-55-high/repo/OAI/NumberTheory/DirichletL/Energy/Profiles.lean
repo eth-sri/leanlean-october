@@ -1,6 +1,8 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalStability
 public import OAI.NumberTheory.DirichletL.Moments.ScaleSupremum
+public import OAI.NumberTheory.DirichletL.Moments.OneReflectionScaleEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,11 +49,7 @@ lemma lower_antitone (a b:ℝ)(ha:0<a):Antitone (lower a b):=by
   exact div_le_self (lower_pos a b ha n).le (le_max_left _ _)
 
 open CenteredMomentSectorLocalization in
-lemma annulus_support : Function.support (fun x:ℝ=>(annulus x:ℂ))⊆Set.Icc (1/4:ℝ) 1:=by
-  intro x hx
-  have hn:annulus x≠0:=by simpa using hx
-  exact ⟨(lt_of_not_ge (fun h=>hn (annulus_zero_low x h))).le,
-    (lt_of_not_ge (fun h=>hn (annulus_zero_high x h))).le⟩
+lemma annulus_support : Function.support (fun x:ℝ=>(annulus x:ℂ))⊆Set.Icc (1/4:ℝ) 1:= by pm_2952
 
 def annulusTemplate:Test (1/4) 1 where
   profile:=(HasCompactSupport.of_support_subset_isCompact isCompact_Icc annulus_support).toSchwartzMap

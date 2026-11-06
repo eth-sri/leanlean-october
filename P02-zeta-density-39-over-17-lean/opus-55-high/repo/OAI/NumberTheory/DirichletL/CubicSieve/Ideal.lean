@@ -3,13 +3,14 @@ public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.CubicSieve.Algebra
 public import OAI.NumberTheory.DirichletL.CubicSieve.Factorization
 public import OAI.NumberTheory.DirichletL.CubicSieve.Blocks
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -29,7 +30,10 @@ theorem idealKernel_norm_le_one (I J : Ideal Eis) : ‖idealKernel I J‖ ≤ 1 
   exact (pow_le_pow_left₀ (norm_nonneg _)
     (CanonicalRowCompletion.idealRowHom_norm (primaryGenerator J) I) 2).trans_eq (by norm_num)
 
-theorem idealSymbol_fourth (I : Ideal Eis) (x : Eis) :
+section
+variable (I : Ideal Eis) (x : Eis)
+include I x
+theorem idealSymbol_fourth :
     (eisEmbedding (CubicJacobiGlobal.idealSymbol I x)) ^ 4 =
       eisEmbedding (CubicJacobiGlobal.idealSymbol I x) := by
   have hlocal (P : Ideal Eis) :
@@ -57,7 +61,7 @@ theorem idealSymbol_fourth (I : Ideal Eis) (x : Eis) :
   · simpa only [CubicJacobiGlobal.idealSymbol, ite_eq_right hI] using
       hprod (UniqueFactorizationMonoid.normalizedFactors I)
 
-theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
+theorem idealSymbol_cube_mask
     (hI : primaryGenerator I ≠ 0) :
     (eisEmbedding (CubicJacobiGlobal.idealSymbol I x)) ^ 3 =
       if IsCoprime I (Ideal.span {x}) then 1 else 0 := by
@@ -108,6 +112,7 @@ theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
   have h := hprod (UniqueFactorizationMonoid.normalizedFactors I) hf
   rw [Ideal.prod_normalizedFactors_eq_self hI0] at h
   simpa only [CubicJacobiGlobal.idealSymbol, ite_eq_right hI0] using h
+end
 
 theorem idealKernel_square_eq_star (I J : Ideal Eis) :
     idealKernel I J ^ 2 = star (idealKernel I J) :=
@@ -127,15 +132,7 @@ def idealRange (X : ℝ) : Finset (Ideal Eis) :=
 
 theorem mem_idealRange {X : ℝ} {I : Ideal Eis} :
     I ∈ idealRange X ↔ Admissible I ∧ (Ideal.absNorm I : ℝ) ≤ X := by
-  rw [idealRange, Finset.mem_filter, mem_idealsUpTo]
-  constructor
-  · rintro ⟨⟨hp, hN⟩, ha⟩
-    refine ⟨ha, ?_⟩
-    have hX : 0 ≤ X := by
-      by_contra hn
-      have hz : ⌊X⌋₊ = 0 := Nat.floor_eq_zero.mpr (by linarith)
-      omega
-    exact (Nat.cast_le.mpr hN).trans (Nat.floor_le hX)
+  pm_3004
   · rintro ⟨ha, hN⟩
     refine ⟨⟨Nat.one_le_iff_ne_zero.mpr ?_, Nat.le_floor hN⟩, ha⟩
     intro hz
@@ -160,9 +157,7 @@ theorem family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
     squaredNorm (fun i j => idealKernel (cols j) (rows i)) ≤ sieveNorm M N := by
   let r : m → idealRange M := fun i => ⟨rows i, mem_idealRange.mpr (hrows i)⟩
-  let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
-  have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
-  have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
+  pm_3443
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (idealMatrix M N)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
 

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SourceTriple
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,14 +35,13 @@ lemma sourceRows_initial_integrable (η : HeckeFamily.Character)
   rw [integral_count_eq_tsum _ hp]
   have he := rawArithmeticSeries_eq_sixth_high S hS hpS hbad D η
     ((3:ℂ)+p.1.1*Complex.I) ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
+    (by simp_all)
     (by norm_num [Complex.add_re,Complex.mul_re])
-    (by norm_num [Complex.add_re,Complex.mul_re])
-    (by norm_num [Complex.add_re,Complex.mul_re])
+    (by simp_all)
   change rawArithmeticSeries S D η (calibrationForSet S hS) _ _ _=
     sourceRowSeries η S (calibrationForSet S hS) D _ _ _ at he
   rw [←he,rawArithmeticSeries_eq_sourceRaw]
-  simp only [rawSourceOnLines,initialHighOnLines,Complex.ofReal_ofNat,tsum_mul_right]
-  ring
+  pm_3543 rawSourceOnLines initialHighOnLines Complex.ofReal_ofNat tsum_mul_right
 
 end SevenEighths.ProbePhysical
 end

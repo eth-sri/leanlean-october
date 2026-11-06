@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfiles
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
   let S : ℝ := ∑ j ∈ Finset.range (K+1), (j.factorial : ℝ)*CF*(H^2)^j
   have hm : 0 < m := Real.exp_pos _
   have hH : 1 ≤ H := Real.one_le_exp_iff.mpr hL
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  pm_3168
   refine ⟨S/m^K,by positivity,?_⟩
   intro R hR j hj y hy
   have hh := FourierBridge.coupled_factor_uniform_derivative F R 1 y m H CF 0 K j hF
@@ -28,7 +29,7 @@ theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
     (Real.exp_le_exp.mpr (by simpa using (abs_le.mp hy).1))
     (Real.exp_le_exp.mpr (by simpa using (abs_le.mp hy).2))
     hj hCF (by simpa using hdecay)
-  simp only [zero_add, pow_zero, mul_one, one_mul] at hh
+  pm_298 zero_add pow_zero mul_one one_mul hh
   have hs : (j.factorial : ℝ)*CF*(H^2)^j ≤ S := by
     dsimp only [S]
     apply Finset.single_le_sum (s := Finset.range (K+1))

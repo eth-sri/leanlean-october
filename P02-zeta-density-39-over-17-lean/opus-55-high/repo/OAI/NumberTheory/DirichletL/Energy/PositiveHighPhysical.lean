@@ -3,21 +3,20 @@ public import OAI.NumberTheory.DirichletL.Energy.CanonicalHighPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveBalancedAdmission
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighSourceBound
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighPhysical
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open CenteredMomentEnergyBands
+open CenteredMomentNaturalFixedRaySource
 open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyPositiveHighSourceBound
 open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
@@ -40,14 +39,14 @@ theorem actual_positive_high_physical
     (hMA:Mparent≤A)(hready:readyBudget A Bmask≤B)
     (hκ:(3/4:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
     (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(hε:0<ε)
-    (hslot:Lslot≤mesh Mglobal B κ ε)
+    (hslot:Lslot≤ mesh Mglobal B κ ε)
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(degree:ℕ)(S:Finset (ℕ×ℕ)):
     ∃U:Finset (ℕ×ℕ),∃J:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
+    ∀η₀:Character,∀Q:Ideal O,Q≤M→ internalQ Q η₀≠0→ internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀εchild C₀ C₁:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
+    ∀εchild C₀ C₁:ℝ,εchild≤ stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 (max Lgoal Mparent)
         Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 (max Lgoal Mparent)
@@ -55,19 +54,13 @@ theorem actual_positive_high_physical
       PhysicalHighAt (α:=α) M H hH W hW.continuous aslot bslot lo hi haslot hWs
         a b bΦ Bmask Lgoal Lslot rho Mparent κ (reserve Mglobal B ε/4)
         (physicalLoss Mglobal B ε k) Z ha Ψ η₀ Q U J (C*(C₀+C₁+1)) := by
-  let r:=reserve Mglobal B ε
-  let N:=Fintype.card α
-  let Mslot:=profileBound W hW.continuous aslot bslot lo hi haslot hWs
-  let a0:=CenteredMomentSecondInputCapacitySource.lowerFactor N aslot a
-  let lp:=(min 1 aslot)^N*a*a
-  have hMslot:1≤Mslot:=profileBound_ge_one W hW.continuous aslot bslot lo hi haslot hWs
-  have ha0:0<a0:=CenteredMomentSecondInputCapacitySource.lowerFactor_pos N aslot a haslot ha
-  have hlp:0<lp:=by dsimp [lp];positivity
+  pm_218
+  pm_3592 hlp lp
   obtain ⟨hsigma,hsigma1,hr,hxi,hxi1,hes,hes1,hem,hmesh,hmesheta,heta,hetastrict,_,_⟩:=
     parameter_gates Mglobal A B κ ε hMg hA hB hκ hε
-  have hrpos:0<r/4:=hr
+  have hrpos:0< r/4:=hr
   have hκsmall:(1/6:ℝ)≤κ:=by linarith
-  have hLphys:0≤max Lgoal Mparent:=hL.trans (le_max_left _ _)
+  have hLphys :0≤ max Lgoal Mparent:=hL.trans (le_max_left _ _)
   obtain ⟨U,J,hphysical⟩:=CenteredMomentEnergyCanonicalHighPhysical.actual_high_physical (α:=α)
     M H hH W aslot bslot Mchild Lslot (r/4) lo hi κ a b Mslot (maskEpsilon Mglobal B ε)
     (zero_le_one.trans hMslot) hem ha hb (max Lgoal Mparent) hLphys degree S haslot hWs hW hMc hLs hr
@@ -76,17 +69,15 @@ theorem actual_positive_high_physical
     (sourceEpsilon Mglobal A B ε) (r/4) (r/4) (A+1) (r/4) (2*amplification ε+1)
     hes hr hr hr (amplification ε) hsigma hxi A Bmask (amplification ε/12) (r/4) (r/4)
     hA hBm hetastrict hr hsigma1 hxi1 hr hes1 le_rfl Ψ (r/4) lp hr hlp
-  refine ⟨U,J,?_⟩
-  intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨C,hC,Z₀,hZ₀,hbound⟩:=hphysical η₀ Q hQM hQ0 hQt hQ72
-  refine ⟨C,hC,?_⟩
+  pm_3332
+  pm_807
   filter_upwards [eventually_ge_atTop Z₀,
     eventually_actual_four_fit Mglobal A Bmask B κ ε hMg hA hBm hB hready hκ hε,
     (Filter.tendsto_atTop.1 (tendsto_rpow_atTop (by linarith : 0<2*(r/4)))) (max 1 b*max 1 b)]
     with Z hZZ hfit hclipPow
   have hZ:1<Z:=hZ₀.trans_le hZZ
   have hclip:Real.logb Z (max 1 b*max 1 b)≤2*(r/4):=by
-    have hh:=Real.logb_le_logb_of_le hZ (by positivity:0<max 1 b*max 1 b) hclipPow
+    have hh:=Real.logb_le_logb_of_le hZ (by positivity:0< max 1 b*max 1 b) hclipPow
     simpa only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using hh
   refine ⟨hZ,?_⟩
   intro εchild C₀ C₁ hell hC₀ hC₁ hzero hpos
@@ -102,10 +93,8 @@ theorem actual_positive_high_physical
   have hu:=four_upper_scales M H hH η₀ θ W hW.continuous aslot bslot lo hi haslot hWs
     w σ freq (fun i=>⟨hσlo i,hσhi i⟩) state p ha t X₁ X₂ hX₁ hX₂ κ (max Lgoal Mparent)
     hZ hw hκ hcapacity (hstate.trans (le_max_right _ _))
-  have hp:=fixed_lower_product M H hH η₀ θ W hW.continuous aslot bslot lo hi haslot hWs
-    w σ freq (fun i=>⟨hσlo i,hσhi i⟩) state p ha t X₁ X₂ hX₁ hX₂ N hN
-  have hr:=CenteredMomentEnergyNaturalSourceAdmission.radial_admission state
-  have hwidth:=actual_width_le state hZ
+  pm_537 fixed_lower_product
+  pm_8086
   have hh:=hbound T θ Z hZZ εchild C₀ C₁ hC₀ hC₁ hzero hpos w σ freq height (mesh Mglobal B κ ε)
     hmesh.le hw (fun i=>(hwL i).trans hslot)
     (fun i=>((hwL i).trans hslot).trans hmesheta) hwL hσlo hσhi hheight hfreq

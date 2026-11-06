@@ -8,6 +8,7 @@ Authors: Adam Benenson
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Approximation
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Transfer
 public import Mathlib.Topology.UniformSpace.Cauchy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,7 +48,7 @@ namespace Euclidean
 namespace L2Compactness
 
 open scoped ENNReal MeasureTheory Topology Convolution Pointwise
-open MeasureTheory Set
+open MeasureTheory
 
 noncomputable section
 
@@ -67,8 +68,10 @@ local instance instMeasurableNegEL2CompactnessFrechetKolmogorov : MeasurableNeg 
 
 variable {K : Set E} {ψ : E → ℝ}
 
+section
+variable (hK : IsCompact K) (hKm : MeasurableSet K)
+include hK hKm
 lemma norm_smoothL2_sub_extendByZeroL2_le_of_integral_translateL2_sub_extendByZeroL2_le
-    (hK : IsCompact K) (hKm : MeasurableSet K)
     (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
     (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1) {η : ℝ} (hη : 0 ≤ η)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))
@@ -89,8 +92,7 @@ lemma norm_smoothL2_sub_extendByZeroL2_le_of_integral_translateL2_sub_extendByZe
         (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs hψ0 hψint u
   exact (sq_le_sq₀ (norm_nonneg _) hη).1 hsq
 
-theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-    (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R)
+theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small {R : ℝ} (hR : 0 ≤ R)
     {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))}
     (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
     (hApprox :
@@ -108,12 +110,11 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
   -- Use the finite `ε`-net characterization of total boundedness.
   refine (Metric.totallyBounded_iff).2 ?_
   intro ε hε
-  have hε2 : 0 < ε / 2 := by linarith
+  pm_5913 hε2 ε
   rcases hApprox ε hε with ⟨ψ, hψc, hψcs, hψ0, hψint, htrans⟩
   let B : Set (E →₂[(volume : Measure E)] ℝ) :=
     smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs '' Metric.closedBall (0 : _) R
-  have hB_compact : IsCompact (closure B) :=
-    smoothL2_image_closedBall_isCompact (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (R := R) hR
+  pm_5389 hB_compact B smoothL2_image_closedBall_isCompact
   have hB_tot : TotallyBounded B :=
     (totallyBounded_closure).1 hB_compact.totallyBounded
   rcases Metric.finite_approx_of_totallyBounded hB_tot (ε / 2) hε2 with ⟨t, htB, htfin, hBcover⟩
@@ -133,7 +134,7 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
   have hdist_smooth_ext :
       dist (extendByZeroL2 (E := E) (K := K) hKm u)
           (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u) ≤ ε / 2 := by
-    have hη : 0 ≤ ε / 2 := le_of_lt hε2
+    pm_8915 hε2
     have hnorm :
         ‖smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u
             - extendByZeroL2 (E := E) (K := K) hKm u‖ ≤ ε / 2 :=
@@ -163,8 +164,7 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
     simpa [Metric.ball, Set.mem_ofPred_eq] using hxDist
   exact Set.mem_iUnion.2 ⟨y, Set.mem_iUnion.2 ⟨hyT, hxBall⟩⟩
 
-theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-    (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R)
+theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationIntegral_small {R : ℝ} (hR : 0 ≤ R)
     {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))}
     (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
     (hApprox :
@@ -183,6 +183,7 @@ theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationInteg
     totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
       (E := E) (K := K) hK hKm hR hA hApprox
   exact (ht.closure).isCompact_of_isClosed isClosed_closure
+end
 
 end Volume
 

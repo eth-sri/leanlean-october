@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.OriginalChildEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,14 +29,11 @@ theorem column_mask (S : Finset (Tuple ι)) (R : Ideal O) (ν : ι → Ideal O �
     (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) (W₁ W₂ : ℝ → ℂ)
     (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ s I : Ideal O) :
     finiteColumnCoefficient S
-      (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) I=
+      (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) I =
       finiteColumnCoefficient S
-        (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ 1) I*
+        (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ 1) I *
           (if s∣I then 1 else 0) := by
-  unfold finiteColumnCoefficient
-  rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro v hv
+  pm_3809 finiteColumnCoefficient Finset.sum_mul v hv
   rw [profile_mask,(Finset.mem_filter.mp hv).2]
 
  def maskedLiveProfile (B : Tuple ι) (C R s : Ideal O)

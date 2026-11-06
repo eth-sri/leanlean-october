@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.CorrespondenceEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,84 +8,39 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 namespace CubicEisenstein
 
 section
 
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma positive_cube_cpow_third (r:ℝ) (hr:0<r) :
+lemma positive_cube_cpow_third (r:ℝ) (hr:0< r) :
     ((r^3:ℝ):ℂ)^(1/3:ℂ)=(r:ℂ) := by
   calc
     _=(((r^3)^(1/3:ℝ):ℝ):ℂ):=by
@@ -97,9 +53,8 @@ lemma positive_cube_cpow_third (r:ℝ) (hr:0<r) :
 
 lemma cubicBesselNormalizer_mul_cube (h p:Eis) (hp:p≠0) :
     cubicBesselNormalizer (h*p^3)=(‖eisEmbedding p‖:ℂ)*cubicBesselNormalizer h := by
-  have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
-  have hf:‖cuspFrequency (h*p^3)‖=‖cuspFrequency h‖*‖eisEmbedding p‖^3:=by
-    rw [cuspFrequency_mul_right,norm_mul,map_pow,norm_pow]
+  pm_3607
+  pm_3593
   have ha:0≤2*Real.pi*‖cuspFrequency h‖:=by positivity
   have he:(2*Real.pi*‖cuspFrequency (h*p^3)‖:ℂ)=
       ((‖eisEmbedding p‖^3:ℝ):ℂ)*((2*Real.pi*‖cuspFrequency h‖:ℝ):ℂ):=by
@@ -119,14 +74,14 @@ theorem sourceArithmeticResidue_cube_of_eigenrelation (p:Eis) (hp:p≠0)
   have ht:=sourceResidualFourierCoefficient_cube_of_eigenrelation p hp hU h hh
   unfold sourceResidualFourierCoefficient at ht
   rw [cubicBesselNormalizer_mul_cube h p hp] at ht
-  have hr:(‖eisEmbedding p‖:ℂ)≠0:=Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hp))
+  pm_1570
   apply mul_left_cancel₀ (mul_ne_zero hr (cubicBesselNormalizer_ne_zero h hh))
-  simpa only [mul_assoc] using ht
+  grind
 
 end
 
 open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -150,8 +105,6 @@ lemma cubeSourceDifference_decay (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
 
 end CubicEisenstein
 
-open scoped Classical
-
 namespace FiniteAutomorphismCover
 
 variable {G : Type*} [Group G] {ι : Type*}
@@ -159,12 +112,16 @@ variable {G : Type*} [Group G] {ι : Type*}
 def common (K R : Subgroup G) (a : ι → G ≃* G) : Subgroup G :=
   K ⊓ ⨅i, R.comap (a i).toMonoidHom
 
-lemma common_le (K R : Subgroup G) (a : ι → G ≃* G) : common K R a ≤ K :=
+section
+variable (K R : Subgroup G) (a : ι → G ≃* G)
+include K R a
+lemma common_le : common K R a ≤ K :=
   inf_le_left
 
-lemma common_le_preimage (K R : Subgroup G) (a : ι → G ≃* G) (i : ι) :
+lemma common_le_preimage (i : ι) :
     common K R a ≤ R.comap (a i).toMonoidHom :=
   inf_le_right.trans (iInf_le _ i)
+end
 
 instance common_finiteIndex [Finite ι] (K R : Subgroup G) (a : ι → G ≃* G)
     [K.FiniteIndex] [R.FiniteIndex] : (common K R a).FiniteIndex := by
@@ -178,16 +135,16 @@ def toSource (K R : Subgroup G) (a : ι → G ≃* G) (i : ι) : common K R a �
   map_one' := Subtype.ext (map_one (a i))
   map_mul' x y := Subtype.ext (map_mul (a i) (x : G) (y : G))
 
-@[simp] lemma toSource_coe (K R : Subgroup G) (a : ι → G ≃* G) (i : ι)
-    (h : common K R a) : (toSource K R a i h : G) = a i (h : G) := rfl
-
-lemma toSource_injective (K R : Subgroup G) (a : ι → G ≃* G) (i : ι) :
+section
+variable (K R : Subgroup G) (a : ι → G ≃* G) (i : ι)
+include K R a i
+lemma toSource_injective :
     Function.Injective (toSource K R a i) := by
   intro x y hxy
   apply Subtype.ext
   exact (a i).injective (congrArg (fun r : R => (r : G)) hxy)
 
-lemma toSource_range (K R : Subgroup G) (a : ι → G ≃* G) (i : ι) :
+lemma toSource_range :
     (toSource K R a i).range =
       (common K R a).comap ((a i).symm.toMonoidHom.comp R.subtype) := by
   ext r
@@ -199,6 +156,7 @@ lemma toSource_range (K R : Subgroup G) (a : ι → G ≃* G) (i : ι) :
     refine ⟨⟨(a i).symm (r : G),hr⟩,?_⟩
     apply Subtype.ext
     exact (a i).apply_symm_apply (r : G)
+end
 
 instance toSource_range_finiteIndex [Finite ι] (K R : Subgroup G) (a : ι → G ≃* G)
     [K.FiniteIndex] [R.FiniteIndex] (i : ι) : (toSource K R a i).range.FiniteIndex := by
@@ -209,10 +167,6 @@ def hom (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthS
     common K R a →* G :=
   lengthScale.subtype.comp (e.toMonoidHom.comp (toSource K R a i))
 
-@[simp] lemma hom_apply (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale)
-    (i : ι) (h : common K R a) :
-    hom K R lengthScale a e i h = (e (toSource K R a i h) : G) := rfl
-
 lemma hom_injective (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale) (i : ι) :
     Function.Injective (hom K R lengthScale a e i) :=
   lengthScale.subtype_injective.comp (e.injective.comp (toSource_injective K R a i))
@@ -220,18 +174,21 @@ lemma hom_injective (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R 
 def target (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale) (i : ι) : Subgroup G :=
   (hom K R lengthScale a e i).range
 
-lemma target_le (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale) (i : ι) :
+section
+variable (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale)
+include K R lengthScale a e
+lemma target_le (i : ι) :
     target K R lengthScale a e i ≤ lengthScale := by
   rintro x ⟨h,rfl⟩
   exact (e (toSource K R a i h)).property
 
-lemma target_le_common_ambient (K R lengthScale : Subgroup G) (a : ι → G ≃* G)
-    (e : R ≃* lengthScale) (hLK : lengthScale ≤ K) (i : ι) : target K R lengthScale a e i ≤ K :=
+lemma target_le_common_ambient (hLK : lengthScale ≤ K) (i : ι) : target K R lengthScale a e i ≤ K :=
   (target_le K R lengthScale a e i).trans hLK
 
-lemma target_eq_map (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale) (i : ι) :
+lemma target_eq_map (i : ι) :
     target K R lengthScale a e i = ((toSource K R a i).range.map e.toMonoidHom).map lengthScale.subtype := by
   rw [target,hom,MonoidHom.range_comp,MonoidHom.range_comp]
+end
 
 instance target_finiteIndex [Finite ι] (K R lengthScale : Subgroup G) (a : ι → G ≃* G)
     (e : R ≃* lengthScale) [K.FiniteIndex] [R.FiniteIndex] [lengthScale.FiniteIndex] (i : ι) :
@@ -246,19 +203,18 @@ def equiv (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengt
     common K R a ≃* target K R lengthScale a e i :=
   MonoidHom.ofInjective (hom_injective K R lengthScale a e i)
 
-@[simp] lemma equiv_coe (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale)
-    (i : ι) (h : common K R a) :
-    (equiv K R lengthScale a e i h : G) = (e (toSource K R a i h) : G) := rfl
-
 end FiniteAutomorphismCover
 
 namespace CubicKubota
-open scoped BigOperators Classical MatrixGroups
+open scoped Classical MatrixGroups
 
 open CubicEisenstein ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
-lemma literalCube_zero_pair (p : ActualEisensteinCubic.O) (hp : p≠0) (x : cubeKernelCorrespondence p) :
+section
+variable (p : ActualEisensteinCubic.O) (hp : p≠0)
+include p hp
+lemma literalCube_zero_pair (x : cubeKernelCorrespondence p) :
     cubeAverageMatrix p hp 0*integralComplexMatrix (cubeKernelRightGlobal p hp x)=
       integralComplexMatrix (cubeKernelLeftGlobal p x)*cubeAverageMatrix p hp 0 := by
   let M := cubeKernelLeftGlobal p x
@@ -299,7 +255,7 @@ lemma literalCube_zero_pair (p : ActualEisensteinCubic.O) (hp : p≠0) (x : cube
     rw [h11,map_zero]
     ring
 
-theorem literalCube_zero_intertwines (p : ActualEisensteinCubic.O) (hp : p≠0) :
+theorem literalCube_zero_intertwines :
     IntegralCoverIntertwines (cubeKernelRangeEquiv p hp).symm (cubeAverageMatrix p hp 0) := by
   intro r
   let x := (MonoidHom.ofInjective (cubeKernelRightGlobal_injective p hp)).symm r
@@ -309,6 +265,7 @@ theorem literalCube_zero_intertwines (p : ActualEisensteinCubic.O) (hp : p≠0) 
     integralComplexMatrix (cubeKernelLeftGlobal p x)*cubeAverageMatrix p hp 0
   rw [←hr]
   exact literalCube_zero_pair p hp x
+end
 
 lemma cubeTranslation_complex (q : ActualEisensteinCubic.O) :
     integralComplexMatrix (upperTranslation q:SL(2,ActualEisensteinCubic.O))=complexTranslation (3*eisEmbedding q) := by
@@ -317,17 +274,18 @@ lemma cubeTranslation_complex (q : ActualEisensteinCubic.O) :
   rw [integralComplexMatrix_apply]
   fin_cases i <;> fin_cases j <;> simp [upperTranslation, complexTranslation, map_ofNat]
 
-lemma cubeAverageMatrix_factor_zero (p : ActualEisensteinCubic.O) (hp : p≠0) (q : ActualEisensteinCubic.O) :
+section
+variable (p : ActualEisensteinCubic.O) (hp : p≠0) (q : ActualEisensteinCubic.O)
+include p hp q
+lemma cubeAverageMatrix_factor_zero :
     cubeAverageMatrix p hp q=cubeAverageMatrix p hp 0*
       integralComplexMatrix (upperTranslation q:SL(2,ActualEisensteinCubic.O)) := by
   rw [cubeTranslation_complex]
   have h0 : complexTranslation 0=1 := by
-    apply Matrix.SpecialLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [complexTranslation]
-  simp only [cubeAverageMatrix,map_zero,mul_zero,h0,mul_one]
+    pm_3608
+  pm_94 cubeAverageMatrix map_zero mul_zero h0 mul_one
 
-theorem literalCube_summand_intertwines (p : ActualEisensteinCubic.O) (hp : p≠0) (q : ActualEisensteinCubic.O)
+theorem literalCube_summand_intertwines
     (A : SL(2,ActualEisensteinCubic.O)) (r : (cubeKernelRightGlobal p hp).range)
     (hA : (upperTranslation q:SL(2,ActualEisensteinCubic.O))*A=(r:SL(2,ActualEisensteinCubic.O))*(upperTranslation q:SL(2,ActualEisensteinCubic.O))) :
     cubeAverageMatrix p hp q*integralComplexMatrix A=
@@ -336,28 +294,28 @@ theorem literalCube_summand_intertwines (p : ActualEisensteinCubic.O) (hp : p≠
   simp only [map_mul] at hAc
   rw [cubeAverageMatrix_factor_zero,mul_assoc,hAc,←mul_assoc,
     literalCube_zero_intertwines p hp r,mul_assoc]
+end
 
 end CubicKubota
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
+open scoped Classical Topology MatrixGroups InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
 
-lemma integralCoverIntertwines_trans {H J K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (f : J≃*K) (g h : SL(2,ℂ))
-    (he : IntegralCoverIntertwines e g) (hf : IntegralCoverIntertwines f h) :
+section
+variable {H J K : Subgroup (SL(2,ActualEisensteinCubic.O))} (e : H≃*J) (f : J≃*K) (g h : SL(2,ℂ)) (he : IntegralCoverIntertwines e g) (hf : IntegralCoverIntertwines f h)
+include H J K e f g h he hf
+lemma integralCoverIntertwines_trans :
     IntegralCoverIntertwines (e.trans f) (h*g) := by
   intro x
   change (h*g)*integralComplexMatrix (x:SL(2,ActualEisensteinCubic.O))=
     integralComplexMatrix (f (e x):SL(2,ActualEisensteinCubic.O))*(h*g)
   rw [mul_assoc,he x,←mul_assoc,hf (e x),mul_assoc]
 
-lemma integralConjugateMap_trans {H J K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (f : J≃*K) (g h : SL(2,ℂ))
-    (he : IntegralCoverIntertwines e g) (hf : IntegralCoverIntertwines f h)
+lemma integralConjugateMap_trans
     (q : IntegralOrbitQuotient H) :
     integralConjugateMap f h hf (integralConjugateMap e g he q)=
       integralConjugateMap (e.trans f) (h*g) (integralCoverIntertwines_trans e f g h he hf) q := by
@@ -366,9 +324,7 @@ lemma integralConjugateMap_trans {H J K : Subgroup (SL(2,ActualEisensteinCubic.O
     change integralOrbitProjection K (h•(g•w))=integralOrbitProjection K ((h*g)•w)
     rw [mul_smul]
 
-lemma integralConjugatePullback_trans {H J K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (f : J≃*K) (g h : SL(2,ℂ))
-    (he : IntegralCoverIntertwines e g) (hf : IntegralCoverIntertwines f h)
+lemma integralConjugatePullback_trans
     (hH : H≤CubicKubota.levelThree) (hJ : J≤CubicKubota.levelThree)
     (hK : K≤CubicKubota.levelThree) (F : IntegralQuotientL2 K) :
     integralConjugatePullback e g he hH hJ (integralConjugatePullback f h hf hJ hK F)=
@@ -381,6 +337,7 @@ lemma integralConjugatePullback_trans {H J K : Subgroup (SL(2,ActualEisensteinCu
       (integralCoverIntertwines_trans e f g h he hf) hH hK F] with q ho hi ht
   dsimp only [Function.comp_def] at hi
   rw [ho,hi,ht,integralConjugateMap_trans]
+end
 
 def kernelCoverLeg {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel)
@@ -391,10 +348,10 @@ def kernelCoverLeg {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hJK.trans globalKubotaKernel_le_levelThree)).toContinuousLinearMap.comp
       (integralCoverPullback hJK globalKubotaKernel_le_levelThree)
 
-lemma kernelCoverLeg_representative {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel)
-    [J.IsFiniteRelIndex globalKubotaKernel]
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
+section
+variable {H J : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel) [J.IsFiniteRelIndex globalKubotaKernel] (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
+include H J hHK hJK e g he
+lemma kernelCoverLeg_representative
     (F : KernelQuotientL2) (f : KernelQuotient→ℂ)
     (hrep : F=ᵐ[integralQuotientVolume globalKubotaKernel]f) :
     kernelCoverLeg hHK hJK e g he F=ᵐ[integralQuotientVolume H]
@@ -407,10 +364,7 @@ lemma kernelCoverLeg_representative {H J : Subgroup (SL(2,ActualEisensteinCubic.
       (hHK.trans globalKubotaKernel_le_levelThree)
       (hJK.trans globalKubotaKernel_le_levelThree)).quasiMeasurePreserving.ae_eq_comp hc)
 
-lemma kernelCoverLeg_adjoint_apply {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel)
-    [J.IsFiniteRelIndex globalKubotaKernel]
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
+lemma kernelCoverLeg_adjoint_apply
     (F : IntegralQuotientL2 H) :
     ContinuousLinearMap.adjoint (kernelCoverLeg hHK hJK e g he) F=
       integralCoverTrace hJK globalKubotaKernel_le_levelThree
@@ -424,6 +378,7 @@ lemma kernelCoverLeg_adjoint_apply {H J : Subgroup (SL(2,ActualEisensteinCubic.O
     (integralCoverPullback hJK globalKubotaKernel_le_levelThree G))=_
   rw [integralConjugatePullback_pairing]
   exact (ContinuousLinearMap.adjoint_inner_left (integralCoverPullback hJK globalKubotaKernel_le_levelThree) G _).symm
+end
 
 theorem kernelCoverLeg_adjoint_comp {H Ji Jj : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤globalKubotaKernel) (hiK : Ji≤globalKubotaKernel) (hjK : Jj≤globalKubotaKernel)
@@ -451,7 +406,7 @@ theorem kernelCoverLeg_adjoint_comp {H Ji Jj : Subgroup (SL(2,ActualEisensteinCu
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 
 namespace CubicKubota
 open CubicEisenstein ConcreteTraceCRT
@@ -471,7 +426,7 @@ lemma cubeCommonCover_le (p : ActualEisensteinCubic.O) (hp : p≠0) : cubeCommon
 
 lemma cubeCommonCover_finiteIndex (p : ActualEisensteinCubic.O) (hp : p≠0) : (cubeCommonCover p hp).FiniteIndex := by
   let : globalKubotaKernel.FiniteIndex := globalKubotaKernel_finiteIndex
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp)
+  pm_3676
   let := (cubeKernelGlobal_finite_covers p hp).2
   exact FiniteAutomorphismCover.common_finiteIndex _ _ _
 
@@ -480,17 +435,21 @@ def cubeCommonTarget (p : ActualEisensteinCubic.O) (hp : p≠0) (r : CubeResidue
     (cubeKernelRightGlobal p hp).range (cubeKernelLeftGlobal p).range
     (cubeCommonAutomorphism p) (cubeKernelRangeEquiv p hp).symm r
 
-lemma cubeCommonTarget_le (p : ActualEisensteinCubic.O) (hp : p≠0) (r : CubeResidues p) :
+section
+variable (p : ActualEisensteinCubic.O) (hp : p≠0) (r : CubeResidues p)
+include p hp r
+lemma cubeCommonTarget_le :
     cubeCommonTarget p hp r≤globalKubotaKernel :=
   FiniteAutomorphismCover.target_le_common_ambient _ _ _ _ _ (cubeKernelLeftGlobal_le p) r
 
-lemma cubeCommonTarget_finiteIndex (p : ActualEisensteinCubic.O) (hp : p≠0) (r : CubeResidues p) :
+lemma cubeCommonTarget_finiteIndex :
     (cubeCommonTarget p hp r).FiniteIndex := by
   let : globalKubotaKernel.FiniteIndex := globalKubotaKernel_finiteIndex
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp)
+  pm_3676
   let := (cubeKernelGlobal_finite_covers p hp).1
   let := (cubeKernelGlobal_finite_covers p hp).2
   exact FiniteAutomorphismCover.target_finiteIndex _ _ _ _ _ r
+end
 
 def cubeCommonEquiv (p : ActualEisensteinCubic.O) (hp : p≠0) (r : CubeResidues p) :
     cubeCommonCover p hp≃*cubeCommonTarget p hp r :=

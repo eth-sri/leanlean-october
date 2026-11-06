@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.RetainedEnergy
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRowEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,14 +39,10 @@ theorem allocated_to_retained_energy (η : Character) (m A z : O) (t : ℝ)
       (2*(max 1 b₁*max 1 b₂))*(∏ i∈frozenIndices D a,M i)^2/formalReductionFactor D a P *
         (‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ X₁ X₂‖^2+
          ‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ Y₁ Y₂‖^2) := by
-  have hT : 0 < T := hX ▸ mul_pos hX₁ hX₂
-  have hN (j : Fin 2) : (0:ℝ) < Ideal.absNorm (selectedPlain D a j) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
-  have hx : (X₁/Ideal.absNorm (selectedPlain D a 0))*(X₂/Ideal.absNorm (selectedPlain D a 1))=
-      T/selectedNorm D a := by rw [div_mul_div_comm,hX]; rfl
-  have hy : (Y₁/Ideal.absNorm (selectedPlain D a 0))*(Y₂/Ideal.absNorm (selectedPlain D a 1))=
-      T/selectedNorm D a := by rw [div_mul_div_comm,hY]; rfl
+  pm_7791
+  pm_2954
+  pm_5195 hx X₁ X₂ hX
+  pm_5195 hy Y₁ Y₂ hY
   have hr := allocated_raw_energy η m A z t S hS β M P hM hP hβ D a W₁ W₂
     b₁ b₂ X₁ X₂ Y₁ Y₂ T hW₁ hW₂ hX₁ hX₂ hY₁ hY₂ hT
   have hc := centered_to_retained_uniform_energy η m A z W₁ W₂
@@ -53,8 +50,7 @@ theorem allocated_to_retained_energy (η : Character) (m A z : O) (t : ℝ)
     (fun i : liveIndices D a => P i) (fun i => hP i) b₁ b₂ t _ _ _ _ _
     (div_pos hX₁ (hN 0)) (div_pos hX₂ (hN 1)) (div_pos hY₁ (hN 0)) (div_pos hY₂ (hN 1))
     hx hy hW₁ hW₂
-  have hF : 0 < formalReductionFactor D a P := mul_pos (selectedNorm_pos D a)
-    (Finset.prod_pos (fun i _ => hP i))
+  pm_5423 hF
   have hh := mul_le_mul_of_nonneg_left hc (div_nonneg (sq_nonneg (∏ i∈frozenIndices D a,M i)) hF.le)
   apply hr.trans
   convert hh using 1 <;> simp only [residualCenteredRow,allocatedPositiveRow] ; ring

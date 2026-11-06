@@ -29,9 +29,7 @@ local notation "E" => D.primeFiberEquiv R I F Q₀ hR hI hF hm hf hz hbad hcop h
 local notation "K" => rowResidualPart I (Ideal.span (Set.singleton m)*F)
 local notation "hK" => rowResidualPart_admissible I (Ideal.span (Set.singleton m)*F) hbad
 
-lemma original_active_family_ideal (S : PrimeFamily σ)
-    (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ)
-    (x : B⊕(PrimeIndex K⊕T)) :
+lemma original_active_family_ideal (S : PrimeFamily σ) (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ) (x : B⊕(PrimeIndex K⊕T)) :
     (((freePrimeFamily D.movingIdeal Q₀ D.movingSupported).sum S).restrict
       (markedActiveSet E B T)).ideal (markedActiveEquiv E B T x)=
     (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).ideal x := by
@@ -45,30 +43,29 @@ lemma original_active_family_ideal (S : PrimeFamily σ)
       exact D.primeFiberEquiv_val R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inl a)
     | inr t => rfl
 
-lemma original_active_family_generator (S : PrimeFamily σ)
-    (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ)
-    (x : B⊕(PrimeIndex K⊕T)) :
+lemma original_active_family_generator (S : PrimeFamily σ) (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ) (x : B⊕(PrimeIndex K⊕T)) :
     (((freePrimeFamily D.movingIdeal Q₀ D.movingSupported).sum S).restrict
       (markedActiveSet E B T)).generator (markedActiveEquiv E B T x)=
     (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).generator x :=
   congrArg primaryPrime (original_active_family_ideal D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T x)
 
+section
+variable (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ)
+include B T
 lemma original_active_exponent
-    (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ)
     (x : B⊕(PrimeIndex K⊕T)) :
     Sum.elim (fun P : FreePrimeIndex D.movingIdeal Q₀ =>
       (UniqueFactorizationMonoid.normalizedFactors D.movingIdeal).count P.val.val%6) (fun _ : σ => 0)
       (markedActiveEquiv E B T x).val =
     Sum.elim (fun b : B => completedLocalExponent R F b.val.val)
-      (Sum.elim (fun _ : PrimeIndex K => 1) (fun _ : T => 0)) x := by
+      (Sum.elim (fun _ : PrimeIndex K=> 1) (fun _ : T => 0)) x := by
   cases x with
   | inl b => exact D.primeFiberEquiv_exponent R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b.val)
   | inr x => cases x with
     | inl a => exact D.primeFiberEquiv_exponent R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inl a)
     | inr t => rfl
 
-lemma original_active_marks
-    (B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀)) (T : Finset σ) :
+lemma original_active_marks :
     reindexMarks (markedActiveEquiv E B T) (activeMarks (markedActiveSet E B T) markedSumSlots)=
     Finset.univ.filter (fun x : B⊕(PrimeIndex K⊕T) => match x with
       | Sum.inr (Sum.inr _) => True | _ => False) := by
@@ -79,6 +76,7 @@ lemma original_active_marks
   | inr x => cases x with
     | inl a => simp [markedActiveEquiv_residual,markedSumSlots]
     | inr t => simp [markedActiveEquiv_slot,markedSumSlots]
+end
 end
 end SevenEighths.InverseReflectedPhase
 

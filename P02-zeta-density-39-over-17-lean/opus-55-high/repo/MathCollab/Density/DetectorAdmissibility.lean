@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.PoweredDetectorFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,14 +15,11 @@ theorem densityAmbient_eventually_cubeRoot_le :
     ∀ᶠ T : ℝ in atTop, (densityAmbient T)^(1/3 : ℝ) ≤ Real.sqrt T := by
   have hl := (isLittleO_log_rpow_rpow_atTop (2 : ℝ) (show (0 : ℝ) < 1/2 by norm_num)).tendsto_div_nhds_zero
   norm_num at hl
-  filter_upwards [eventually_ge_atTop (1 : ℝ),
-    hl.eventually (gt_mem_nhds (show (0 : ℝ) < 1/32 by norm_num))] with T hT hh
+  pm_1244 hh
   have hTpos : 0 < T := by linarith
   have hb := (div_lt_iff₀ (Real.rpow_pos_of_pos hTpos (1/2))).mp hh
   have he : T*T^(1/2 : ℝ) = T^(3/2 : ℝ) := by
-    conv_lhs => lhs; rw [← Real.rpow_one T]
-    rw [← Real.rpow_add hTpos]
-    norm_num
+    pm_5399 T hTpos
   have hH : densityAmbient T ≤ T^(3/2 : ℝ) := by
     unfold densityAmbient
     rw [← he]
@@ -63,8 +61,7 @@ theorem poweredDetectorFamily_admissible {η κ σ : ℝ}
   filter_upwards [detector_family_scales_eventually,
     densityAmbient_eventually_cubeRoot_le, poweredDetectorFamily_coefficients hη]
     with T hsc hroot hcoeff
-  obtain ⟨hT, hlog, _, hD, hJ, _⟩ := hsc
-  have hTpos : 0 < T := by linarith
+  pm_1176
   have hH : T ≤ densityAmbient T := by
     unfold densityAmbient
     nlinarith [sq_nonneg (Real.log T-1)]

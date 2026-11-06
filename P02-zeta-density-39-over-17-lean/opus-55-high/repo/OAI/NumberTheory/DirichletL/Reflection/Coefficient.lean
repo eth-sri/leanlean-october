@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Reflection.IdealBridge
 public import OAI.NumberTheory.DirichletL.Reflection.Norms
 public import OAI.NumberTheory.DirichletL.Reflection.FrozenSplit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -72,7 +73,7 @@ theorem mixed_coefficient_hybrid [∀ i, (Ideal.span {p i}).IsMaximal]
       (if IsCoprime (∏ i ∈ R, Ideal.span {p i}) (∏ i ∈ S, Ideal.span {p i}) then 1 else 0) := by
   have hrj : ∀ i ∈ R, markedActiveExponent S j i = 1 := by
     intro i hi
-    have hn : i ∉ S := fun hs => Finset.disjoint_left.mp hRS hi hs
+    pm_843 S hs hRS
     simp only [markedActiveExponent,hn,ite_false,hRj i hi]
   have hsj : ∀ i ∈ S, markedActiveExponent S j i = 0 := by
     intro i hi

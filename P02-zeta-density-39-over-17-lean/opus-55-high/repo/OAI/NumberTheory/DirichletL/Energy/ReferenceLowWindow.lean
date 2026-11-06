@@ -20,7 +20,7 @@ lemma reflection_window_length (Z R x:ℝ)(hZ:1<Z)(hR:0≤R)
   have hexp:Real.exp x≤Z^R:=by
     rw [Real.rpow_def_of_pos (zero_lt_one.trans hZ)]
     apply Real.exp_le_exp.mpr
-    simpa [mul_comm] using hx.2
+    grind
   refine ⟨?_,hexp⟩
   have hmax:max 1 (Real.exp x)≤Z^R:=
     max_le (Real.one_le_rpow hZ.le hR) hexp

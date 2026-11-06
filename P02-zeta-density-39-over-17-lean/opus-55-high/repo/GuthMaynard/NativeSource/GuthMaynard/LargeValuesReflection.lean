@@ -2,6 +2,8 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesPoisson
+public import MathCollab.Density.Oscillatory
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,18 +31,21 @@ noncomputable def gmCpowDerivativeCoeff (z : ℂ) : ℕ → ℂ
   | 0 => 1
   | n + 1 => z * gmCpowDerivativeCoeff (z - 1) n
 
+section
+variable (z : ℂ)
+include z
 @[simp]
-theorem gmCpowDerivativeCoeff_zero (z : ℂ) :
+theorem gmCpowDerivativeCoeff_zero :
     gmCpowDerivativeCoeff z 0 = 1 := by
   rfl
 
-theorem gmCpowDerivativeCoeff_succ (z : ℂ) (n : ℕ) :
+theorem gmCpowDerivativeCoeff_succ (n : ℕ) :
     gmCpowDerivativeCoeff z (n + 1) =
       z * gmCpowDerivativeCoeff (z - 1) n := by
   rfl
 
 /-- Repeated real derivative of a complex power on the positive axis. -/
-theorem iteratedDeriv_ofReal_cpow (z : ℂ) (n : ℕ) {x : ℝ} (hx : 0 < x) :
+theorem iteratedDeriv_ofReal_cpow (n : ℕ) {x : ℝ} (hx : 0 < x) :
     iteratedDeriv n (fun y : ℝ => (y : ℂ) ^ z) x =
       gmCpowDerivativeCoeff z n * (x : ℂ) ^ (z - n) := by
   induction n generalizing z with
@@ -51,9 +56,7 @@ theorem iteratedDeriv_ofReal_cpow (z : ℂ) (n : ℕ) {x : ℝ} (hx : 0 < x) :
           deriv (fun y : ℝ => (y : ℂ) ^ z) =ᶠ[nhds x]
             fun y : ℝ => z * (y : ℂ) ^ (z - 1) := by
         filter_upwards [Ioi_mem_nhds hx] with y hy
-        by_cases hz : z = 0
-        · subst z
-          simp
+        pm_5458 hz z
         · exact Complex.deriv_ofReal_cpow_const hy.ne' hz
       rw [hderiv.iteratedDeriv_eq]
       rw [iteratedDeriv_const_mul_field, ih (z := z - 1)]
@@ -65,7 +68,7 @@ theorem iteratedDeriv_ofReal_cpow (z : ℂ) (n : ℕ) {x : ℝ} (hx : 0 < x) :
       ring
 
 /-- Polynomial growth of the falling coefficient, uniform in the exponent. -/
-theorem norm_gmCpowDerivativeCoeff_le (z : ℂ) (n : ℕ) :
+theorem norm_gmCpowDerivativeCoeff_le (n : ℕ) :
     ‖gmCpowDerivativeCoeff z n‖ ≤ (‖z‖ + n) ^ n := by
   induction n generalizing z with
   | zero => simp
@@ -88,6 +91,7 @@ theorem norm_gmCpowDerivativeCoeff_le (z : ℂ) (n : ℕ) :
           rw [pow_succ']
         _ = (‖z‖ + ((n + 1 : ℕ) : ℝ)) ^ (n + 1) := by
           norm_num
+end
 
 private noncomputable def gmCutoffSqComplex
     (cutoff : GMSmoothCutoff) (x : ℝ) : ℂ :=
@@ -123,8 +127,7 @@ private theorem gmTraceKernel_eq_cutoffSq_mul_cpow
     gmTraceKernel cutoff t x =
       gmCutoffSqComplex cutoff x * (x : ℂ) ^ ((t : ℂ) * I) := by
   unfold gmTraceKernel gmCutoffSqComplex
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hx.ne')]
-  rw [← Complex.ofReal_log hx.le]
+  pm_4851 hx.ne' hx.le
   congr 2
   push_cast
   ring
@@ -136,12 +139,10 @@ theorem norm_iteratedDeriv_ofReal_cpow_mul_I_le
     ‖iteratedDeriv n (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x‖ ≤
       (|t| + n) ^ n := by
   have hxPos : 0 < x := zero_lt_one.trans_le hx
-  rw [iteratedDeriv_ofReal_cpow ((t : ℂ) * I) n hxPos, norm_mul]
-  have hcoeff := norm_gmCpowDerivativeCoeff_le ((t : ℂ) * I) n
+  pm_5480 t hxPos
   have hpow : ‖(x : ℂ) ^ ((t : ℂ) * I - n)‖ ≤ 1 := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hxPos]
-    have hre : (((t : ℂ) * I - n).re) = -(n : ℝ) := by simp
-    rw [hre]
+    pm_1352 t
     exact Real.rpow_le_one_of_one_le_of_nonpos hx
       (neg_nonpos.mpr (Nat.cast_nonneg n))
   calc
@@ -154,23 +155,7 @@ theorem norm_iteratedDeriv_ofReal_cpow_mul_I_le
 
 private theorem mellinDerivativePower_le (t : ℝ) {k n : ℕ} (hkn : k ≤ n) :
     (|t| + k) ^ k ≤
-      (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
-  let B : ℝ := (n + 1) * (1 + |t|)
-  have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hBOne : 1 ≤ B := by
-    dsimp only [B]
-    nlinarith [abs_nonneg t]
-  have hbase : |t| + k ≤ B := by
-    dsimp only [B]
-    have hkReal : (k : ℝ) ≤ n := by exact_mod_cast hkn
-    nlinarith [abs_nonneg t]
-  calc
-    (|t| + k) ^ k ≤ B ^ k :=
-      pow_le_pow_left₀ (by positivity) hbase k
-    _ ≤ B ^ n := pow_le_pow_right₀ hBOne hkn
-    _ = (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
-      dsimp only [B]
-      rw [mul_pow]
+      (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by pm_4852 hn0
 
 private theorem contDiffAt_ofReal_cpow_mul_I
     (t : ℝ) (n : ℕ) {x : ℝ} (hx : 0 < x) :
@@ -179,20 +164,8 @@ private theorem contDiffAt_ofReal_cpow_mul_I
       (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) =ᶠ[nhds x]
         fun y : ℝ => Complex.exp ((((t * Real.log y : ℝ) : ℂ) * I)) := by
     filter_upwards [Ioi_mem_nhds hx] with y hy
-    rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hy.ne')]
-    rw [← Complex.ofReal_log hy.le]
-    congr 1
-    push_cast
-    ring
-  have hExp : ContDiffAt ℝ n
-      (fun y : ℝ => Complex.exp ((((t * Real.log y : ℝ) : ℂ) * I))) x := by
-    have hReal : ContDiffAt ℝ n (fun y : ℝ => t * Real.log y) x :=
-      contDiffAt_const.mul (Real.contDiffAt_log.mpr hx.ne')
-    have hComplex : ContDiffAt ℝ n
-        (fun y : ℝ => ((t * Real.log y : ℝ) : ℂ)) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x hReal
-    exact (hComplex.mul contDiffAt_const).cexp
-  exact hExp.congr_of_eventuallyEq hEq
+    pm_4853
+  pm_4854 t x hx.ne'
 
 /-- Guth--Maynard Lemma 4.3 in the exact two-parameter form needed to make
 the smooth-reflection frequency truncation uniform. -/
@@ -205,9 +178,7 @@ theorem gmTraceKernel_uniform_iteratedFDeriv (cutoff : GMSmoothCutoff)
     (n.choose i : ℝ) *
       SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) *
         (n + 1 : ℝ) ^ n
-  have hC : 0 ≤ C := by
-    dsimp only [C]
-    positivity
+  pm_4855
   refine ⟨C, hC, ?_⟩
   intro t x
   rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv]
@@ -253,17 +224,8 @@ theorem gmTraceKernel_uniform_iteratedFDeriv (cutoff : GMSmoothCutoff)
         ((n.choose i : ℝ) *
           SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) *
             (n + 1 : ℝ) ^ n) * (1 + |t|) ^ n := by
-      apply Finset.sum_le_sum
-      intro i hi
-      have hin : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
-      have hcut := SchwartzMap.le_seminorm' (𝕜 := ℝ) 0 i
-        (gmCutoffSqSchwartz cutoff) x
-      simp only [pow_zero, one_mul] at hcut
-      change ‖iteratedDeriv i (gmCutoffSqComplex cutoff) x‖ ≤
-        SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) at hcut
-      have hphase := norm_iteratedDeriv_ofReal_cpow_mul_I_le
-        t (n - i) hxIcc.1
-      have hpower := mellinDerivativePower_le t (Nat.sub_le n i)
+      pm_4856
+      pm_4947 hcut gmCutoffSqSchwartz cutoff gmCutoffSqComplex norm_iteratedDeriv_ofReal_cpow_mul_I_le mellinDerivativePower_le
       rw [norm_mul, norm_mul, Complex.norm_natCast]
       calc
         (n.choose i : ℝ) * ‖iteratedDeriv i (gmCutoffSqComplex cutoff) x‖ *
@@ -291,54 +253,52 @@ private theorem integral_norm_iteratedFDeriv_gmTraceKernel_le
         D * (1 + |t|) ^ p) (t : ℝ) :
     (∫ x : ℝ, ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖) ≤
       D * (1 + |t|) ^ p := by
-  let f : ℝ → ℝ := fun x =>
-    ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖
-  have hfInt : Integrable f := by
-    simpa only [f, pow_zero, one_mul, traceSchwartz_coe] using
-      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
-        (gmTraceKernelSchwartz cutoff t) 0 p)
+  pm_4991 gmTraceKernel cutoff traceSchwartz_coe gmTraceKernelSchwartz
   have hsupport : Function.support f ⊆ Set.Icc (1 : ℝ) 2 := by
     intro x hx
-    by_contra hnot
-    have hxOutside : x < 1 ∨ 2 < x := by
-      by_cases hxLow : x < 1
-      · exact Or.inl hxLow
-      · exact Or.inr (lt_of_not_ge fun hxUpper => hnot ⟨le_of_not_gt hxLow, hxUpper⟩)
+    pm_5901 hxOutside x hxLow hxUpper
     have hzero : gmTraceKernel cutoff t =ᶠ[nhds x] 0 := by
-      rcases hxOutside with hxLow | hxHigh
-      · filter_upwards [Iio_mem_nhds hxLow] with y hy
-        simp [gmTraceKernel, gmSmoothCutoff_eq_zero_of_lt_one cutoff hy]
-      · filter_upwards [Ioi_mem_nhds hxHigh] with y hy
-        simp [gmTraceKernel,
-          gmSmoothCutoff_eq_zero_of_two_le cutoff (le_of_lt hy)]
+      pm_5320 hxOutside hxLow hxHigh gmTraceKernel
     apply hx
-    dsimp only [f]
-    rw [(hzero.iteratedFDeriv ℝ p).eq_of_nhds]
-    simp
-  have hEq : f = Set.indicator (Set.Icc (1 : ℝ) 2) f := by
-    funext x
-    by_cases hx : x ∈ Set.Icc (1 : ℝ) 2
-    · simp [hx]
-    · have : f x = 0 := not_ne_iff.mp fun hne => hx (hsupport hne)
-      simp [Set.indicator, hx, this]
-  rw [show (∫ x : ℝ, ‖iteratedFDeriv ℝ p
-      (gmTraceKernel cutoff t) x‖) = ∫ x : ℝ, f x by rfl]
-  rw [hEq, MeasureTheory.integral_indicator measurableSet_Icc]
+    pm_4857
+  pm_582 x hx
+  pm_1341 gmTraceKernel cutoff
   calc
     (∫ x : ℝ in Set.Icc 1 2, f x) ≤
         ∫ _x : ℝ in Set.Icc 1 2, D * (1 + |t|) ^ p := by
-      apply MeasureTheory.setIntegral_mono_on
-      · exact hfInt.integrableOn
-      · exact MeasureTheory.integrableOn_const
-          (hs := ne_of_lt
-            (measure_Icc_lt_top : volume (Set.Icc (1 : ℝ) 2) < (⊤ : ENNReal)))
-      · exact measurableSet_Icc
+      pm_4858
       · intro x hx
         exact hbound t x
     _ = D * (1 + |t|) ^ p := by
       simp
       ring
 
+set_option hygiene false in
+macro "pc_94" x1:ident x2:ident x3:ident x4:ident x5:ident x6:ident : tactic => `(tactic| (
+  refine ⟨C, hC, ?_⟩
+  intro t ξ
+  have hIntegrable : ∀ (k p : ℕ), k ≤ (0 : ℕ∞) → p ≤ (⊤ : ℕ∞) →
+      Integrable (fun x : ℝ =>
+        ‖x‖ ^ k * ‖iteratedFDeriv ℝ p ($x1:ident $x2:ident t) x‖) := by
+    intro k p _hk _hp
+    simpa only [$x3:ident] using
+      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
+        ($x4:ident $x2:ident t) k p)
+  have hFourier := pow_mul_norm_iteratedFDeriv_fourier_le
+    (f := $x1:ident $x2:ident t)
+    (K := (0 : ℕ∞)) (N := (⊤ : ℕ∞))
+    ($x5:ident $x2:ident t) hIntegrable
+    (k := 0) (n := n) (by norm_num) (by simp) ξ
+  simp only [pow_zero, one_mul, zero_add, Finset.range_one,
+    norm_iteratedFDeriv_zero, Finset.singleton_product, Finset.sum_map,
+    Function.Embedding.sectR_apply] at hFourier
+  have hFourier' : |ξ| ^ n * ‖$x6:ident $x2:ident t ξ‖ ≤
+      2 ^ n * ∑ p ∈ Finset.range (n + 1),
+        ∫ x : ℝ, ‖iteratedFDeriv ℝ p ($x1:ident $x2:ident t) x‖ := by
+    convert hFourier using 1
+    · simp [$x6:ident, Real.norm_eq_abs, SchwartzMap.fourier_coe, $x3:ident]
+    · congr 1
+      norm_num))
 /-- Uniform two-parameter Fourier decay.  The constant depends only on the
 fixed cutoff and derivative order, while the complete `t` dependence is the
 source polynomial `(1+|t|)^n`. -/
@@ -353,30 +313,7 @@ theorem gmTraceFourier_uniform_decay (cutoff : GMSmoothCutoff) (n : ℕ) :
     dsimp only [C]
     exact mul_nonneg (by positivity)
       (Finset.sum_nonneg fun p _ => hD p)
-  refine ⟨C, hC, ?_⟩
-  intro t ξ
-  have hIntegrable : ∀ (k p : ℕ), k ≤ (0 : ℕ∞) → p ≤ (⊤ : ℕ∞) →
-      Integrable (fun x : ℝ =>
-        ‖x‖ ^ k * ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖) := by
-    intro k p _hk _hp
-    simpa only [traceSchwartz_coe] using
-      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
-        (gmTraceKernelSchwartz cutoff t) k p)
-  have hFourier := pow_mul_norm_iteratedFDeriv_fourier_le
-    (f := gmTraceKernel cutoff t)
-    (K := (0 : ℕ∞)) (N := (⊤ : ℕ∞))
-    (contDiff_gmTraceKernel cutoff t) hIntegrable
-    (k := 0) (n := n) (by norm_num) (by simp) ξ
-  simp only [pow_zero, one_mul, zero_add, Finset.range_one,
-    norm_iteratedFDeriv_zero, Finset.singleton_product, Finset.sum_map,
-    Function.Embedding.sectR_apply] at hFourier
-  have hFourier' : |ξ| ^ n * ‖gmTraceFourier cutoff t ξ‖ ≤
-      2 ^ n * ∑ p ∈ Finset.range (n + 1),
-        ∫ x : ℝ, ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖ := by
-    convert hFourier using 1
-    · simp [gmTraceFourier, Real.norm_eq_abs, SchwartzMap.fourier_coe, traceSchwartz_coe]
-    · congr 1
-      norm_num
+  pc_94 gmTraceKernel cutoff traceSchwartz_coe gmTraceKernelSchwartz contDiff_gmTraceKernel gmTraceFourier
 
   calc
     |ξ| ^ n * ‖gmTraceFourier cutoff t ξ‖ ≤
@@ -384,8 +321,7 @@ theorem gmTraceFourier_uniform_decay (cutoff : GMSmoothCutoff) (n : ℕ) :
           ∫ x : ℝ, ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖ := hFourier'
     _ ≤ 2 ^ n * ∑ p ∈ Finset.range (n + 1),
         D p * (1 + |t|) ^ n := by
-      gcongr with p hp
-      have hpn : p ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hp)
+      pm_4859
       have hint := integral_norm_iteratedFDeriv_gmTraceKernel_le
         cutoff p (hDbound p) t
       calc
@@ -405,11 +341,7 @@ of the smooth-reflection expansion from the positive-frequency formula. -/
 theorem gmTraceFourier_neg_eq_conj (cutoff : GMSmoothCutoff) (t ξ : ℝ) :
     gmTraceFourier cutoff t (-ξ) =
       star (gmTraceFourier cutoff (-t) ξ) := by
-  rw [gmTraceFourier, SchwartzMap.fourier_coe, Real.fourier_eq',
-    gmTraceFourier, SchwartzMap.fourier_coe, Real.fourier_eq']
-  let f : ℝ → ℂ := fun x =>
-    Complex.exp (((-2 * Real.pi * inner ℝ x ξ : ℝ) : ℂ) * I) •
-      gmTraceKernelSchwartz cutoff (-t) x
+  pm_4958 gmTraceFourier I gmTraceKernelSchwartz cutoff
   have hConj : (∫ x : ℝ, star (f x)) = star (∫ x : ℝ, f x) := by
     convert (integral_conj (f := f) (μ := volume)) using 1 <;> rfl
   rw [← hConj]
@@ -423,7 +355,7 @@ theorem gmTraceFourier_neg_eq_conj (cutoff : GMSmoothCutoff) (t ξ : ℝ) :
     ← Complex.exp_conj]
   push_cast
   ring_nf
-  simp only [map_neg, map_mul, map_ofNat, conj_ofReal, conj_I]
+  pm_93 map_neg map_mul map_ofNat conj_ofReal conj_I
   ring_nf
 
 /-- The `gmCutoffMellin` definition used by the source-facing construction in `LargeValuesReflection`. -/
@@ -432,15 +364,18 @@ noncomputable def gmCutoffMellin
   mellin (fun y : ℝ => ((cutoff y : ℂ) ^ 2))
     ((1 : ℂ) + (r : ℂ) * I)
 
+set_option hygiene false in
+macro "pb_2675" : tactic => `(tactic| (
+  rw [mellin_eq_fourier, SchwartzMap.fourier_coe]
+  simp
+  apply congrArg (fun f : ℝ → ℂ => 𝓕 f (r / (2 * Real.pi)))
+  funext u))
 theorem gmCutoffMellin_eq_fourier
     (cutoff : GMSmoothCutoff) (r : ℝ) :
     gmCutoffMellin cutoff r =
       𝓕 (gmMellinKernelSchwartz cutoff) (r / (2 * Real.pi)) := by
   unfold gmCutoffMellin
-  rw [mellin_eq_fourier, SchwartzMap.fourier_coe]
-  simp
-  apply congrArg (fun f : ℝ → ℂ => 𝓕 f (r / (2 * Real.pi)))
-  funext u
+  pb_2675
   rw [gmMellinKernelSchwartz_apply]
   simp [gmMellinKernel, Complex.ofReal_exp]
 
@@ -462,33 +397,14 @@ theorem gmCutoffMellin_polynomial_decay
     ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ,
       |r| ^ n * ‖gmCutoffMellin cutoff r‖ ≤ C := by
   let F : 𝓢(ℝ, ℂ) := 𝓕 (gmMellinKernelSchwartz cutoff)
-  let C : ℝ := (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    positivity
-  refine ⟨C, hC, ?_⟩
-  intro r
-  have hSem := SchwartzMap.le_seminorm' (𝕜 := ℝ) n 0 F
-    (r / (2 * Real.pi))
-  rw [iteratedDeriv_zero] at hSem
+  pm_524
+  pm_165 hC C
+  pm_4862
   have hSem' : ‖r / (2 * Real.pi)‖ ^ n *
       ‖F (r / (2 * Real.pi))‖ ≤ SchwartzMap.seminorm ℝ n 0 F := by
     exact hSem
   rw [gmCutoffMellin_eq_fourier]
-  change |r| ^ n * ‖F (r / (2 * Real.pi))‖ ≤ C
-  have hpi : 0 < 2 * Real.pi := by positivity
-  have hAbs : |r| = (2 * Real.pi) * ‖r / (2 * Real.pi)‖ := by
-    rw [Real.norm_eq_abs, abs_div, abs_of_pos hpi]
-    field_simp [hpi.ne']
-  rw [hAbs, mul_pow]
-  dsimp only [C]
-  calc
-    (2 * Real.pi) ^ n * ‖r / (2 * Real.pi)‖ ^ n *
-          ‖F (r / (2 * Real.pi))‖ =
-        (2 * Real.pi) ^ n *
-          (‖r / (2 * Real.pi)‖ ^ n * ‖F (r / (2 * Real.pi))‖) := by ring
-    _ ≤ (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F :=
-      mul_le_mul_of_nonneg_left hSem' (pow_nonneg hpi.le n)
+  pm_4861
 
 private noncomputable def gmMellinReflectionIntegrand
     (cutoff : GMSmoothCutoff) (t q : ℝ) (v r : ℝ) : ℂ :=
@@ -504,13 +420,10 @@ private theorem integrable_gmMellinReflectionIntegrand
       (gmMellinReflectionIntegrand cutoff t (N * m)))
       ((volume.restrict (Set.uIoc (N : ℝ) (2 * N * M))).prod volume) := by
   have hAB : (N : ℝ) ≤ 2 * N * M := by
-    have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hm.trans hmM
+    pm_4863
+    pm_4864
     nlinarith
-  have hH : Integrable (gmCutoffMellin cutoff) := by
-    unfold gmCutoffMellin
-    simpa only [VerticalIntegrable, Complex.ofReal_one] using
-      verticalIntegrable_mellin_gmCutoffSq_one cutoff
+  pm_6201 hH
   have hConst : Integrable
       (fun _v : ℝ => (m : ℝ))
       (volume.restrict (Set.uIoc (N : ℝ) (2 * N * M))) := by
@@ -528,10 +441,7 @@ private theorem integrable_gmMellinReflectionIntegrand
           Complex.exp (-(((z.2 * Real.log (z.1 / (N * m)) : ℝ) : ℂ) * I)) *
             Complex.exp ((((t * Real.log z.1 - 2 * Real.pi * z.1 : ℝ) : ℂ) * I)))
         |>.aestronglyMeasurable
-    exact (hElementary.mul (hH.aestronglyMeasurable.comp_snd)).congr
-      (Filter.Eventually.of_forall fun z => by
-        simp [gmMellinReflectionIntegrand, Function.uncurry_def]
-        ring)
+    pm_6206 gmMellinReflectionIntegrand
   · rw [Measure.ae_prod_iff_ae_ae (by
       apply measurableSet_le
       · have hHM : Measurable fun z : ℝ × ℝ => gmCutoffMellin cutoff z.2 :=
@@ -540,8 +450,7 @@ private theorem integrable_gmMellinReflectionIntegrand
         measurability
       · exact ((continuous_gmCutoffMellin cutoff).norm.comp continuous_snd
           |>.const_mul (m : ℝ)).measurable)]
-    filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_uIoc] with v hv
-    filter_upwards with r
+    pm_8131
     let z : ℝ × ℝ := (v, r)
     have hvIoc : v ∈ Set.Ioc (N : ℝ) (2 * N * M) := by
       simpa only [Set.uIoc_of_le hAB] using hv
@@ -557,7 +466,7 @@ private theorem integrable_gmMellinReflectionIntegrand
         abs_of_pos hvPos, inv_div]]
     have hratio : (N * m : ℝ) / z.1 ≤ m := by
       rw [div_le_iff₀ hvPos]
-      have hmReal : (0 : ℝ) ≤ m := by positivity
+      pm_96 hmReal m
       nlinarith
     exact mul_le_mul_of_nonneg_right hratio (norm_nonneg _)
 
@@ -576,12 +485,7 @@ theorem gmCutoffSq_eq_verticalMellinIntegral (cutoff : GMSmoothCutoff)
   simp only [smul_eq_mul]
   norm_num
 
-/-- The common logarithmic oscillatory integral after the source change of
-variables `v = m N u`. -/
-noncomputable def gmReflectionIntegral (tau A B : ℝ) : ℂ :=
-  ∫ v in A..B,
-    (v : ℂ)⁻¹ * Complex.exp
-      ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))
+export MathCollab.Density (norm_gmReflectionIntegral_le_endpoint_variation gmReflectionIntegral_eq_parts norm_gmReflectionIntegral_le_right norm_gmReflectionIntegral_le_left norm_gmReflectionIntegral_le_length_div gmReflectionRatio_mul_primitiveDeriv intervalIntegrable_gmReflectionIntegrand norm_gmReflectionIntegrand gmReflectionIntegral gmReflectionPrimitive norm_gmReflectionRatio gmReflectionRatio norm_gmReflectionPrimitive gmReflectionRatioReal)
 
 private theorem gmCutoffPhase_eq_mellinIntegral
     (cutoff : GMSmoothCutoff) (t q : ℝ) {v : ℝ}
@@ -590,16 +494,11 @@ private theorem gmCutoffPhase_eq_mellinIntegral
         Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
       (1 / (2 * Real.pi) : ℝ) •
         ∫ r : ℝ, gmMellinReflectionIntegrand cutoff t q v r := by
-  have hratio : 0 < v / q := div_pos hv hq
+  pm_5440 hratio v q hv hq
   rw [gmCutoffSq_eq_verticalMellinIntegral cutoff hratio]
-  rw [smul_mul_assoc]
-  congr 1
-  rw [← MeasureTheory.integral_mul_const]
-  congr 1
-  funext r
+  pm_7017
   unfold gmMellinReflectionIntegrand gmCutoffMellin
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hratio.ne')]
-  rw [← Complex.ofReal_log hratio.le]
+  pm_4851 hratio.ne' hratio.le
   have hExpLog : Complex.exp ((Real.log (v / q) : ℝ) : ℂ) = (v / q : ℝ) := by
     rw [← Complex.ofReal_exp, Real.exp_log hratio]
   have hRatioInv : (((v / q : ℝ) : ℂ))⁻¹ = (q : ℂ) * (v : ℂ)⁻¹ := by
@@ -609,13 +508,7 @@ private theorem gmCutoffPhase_eq_mellinIntegral
   have hRatioInvC : ((v : ℂ) / (q : ℂ))⁻¹ = (q : ℂ) * (v : ℂ)⁻¹ := by
     field_simp [Complex.ofReal_ne_zero.mpr hq.ne',
       Complex.ofReal_ne_zero.mpr hv.ne']
-  have hsplit :
-      (Real.log (v / q) : ℂ) * -((1 : ℂ) + (r : ℂ) * I) =
-        -(Real.log (v / q) : ℂ) +
-          -(((r * Real.log (v / q) : ℝ) : ℂ) * I) := by
-    push_cast
-    ring
-  rw [hsplit, Complex.exp_add, Complex.exp_neg, hExpLog]
+  pm_4865
   rw [hRatioInv]
   rw [hRatioInvC]
 
@@ -634,12 +527,11 @@ theorem gmRescaledCutoffIntegral_eq_mellinReflection
               gmCutoffMellin cutoff r *
                 gmReflectionIntegral (t - r) N (2 * N * M) := by
   have hAB : (N : ℝ) ≤ 2 * N * M := by
-    have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hm.trans hmM
+    pm_4863
+    pm_4864
     nlinarith
-  have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-  have hqNat : 0 < N * m := Nat.mul_pos hN (lt_of_lt_of_le Nat.zero_lt_one hm)
-  have hqReal : (0 : ℝ) < N * m := by exact_mod_cast hqNat
+  pm_4863
+  pm_4867
   calc
     (∫ v in (N : ℝ)..(2 * N * M : ℝ),
         (cutoff (v / (N * m)) : ℂ) ^ 2 *
@@ -670,78 +562,7 @@ theorem gmRescaledCutoffIntegral_eq_mellinReflection
         congr 1
         apply MeasureTheory.integral_congr_ae
         filter_upwards with r
-        unfold gmReflectionIntegral
-        rw [← intervalIntegral.integral_const_mul]
-        apply intervalIntegral.integral_congr
-        intro v hv
-        have hvPos : 0 < v := hNReal.trans_le
-          ((Set.uIcc_of_le hAB ▸ hv).1)
-        unfold gmMellinReflectionIntegrand
-        change
-          ((v : ℂ) / (((N : ℝ) * m : ℝ) : ℂ))⁻¹ *
-                Complex.exp (-(((r * Real.log (v / ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-              gmCutoffMellin cutoff r *
-                Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
-            ((N * m : ℕ) : ℂ) * ((N * m : ℕ) : ℂ) ^ ((r : ℂ) * I) *
-              gmCutoffMellin cutoff r *
-                ((v : ℂ)⁻¹ * Complex.exp
-                  (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))
-        have hlog : Real.log (v / ((N : ℝ) * m)) =
-            Real.log v - Real.log ((N : ℝ) * m) :=
-          Real.log_div hvPos.ne' hqReal.ne'
-        rw [hlog]
-        have hqComplex : (((N : ℝ) * m : ℝ) : ℂ) = ((N * m : ℕ) : ℂ) := by
-          norm_num
-        rw [← hqComplex]
-        rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hqReal.ne')]
-        rw [← Complex.ofReal_log hqReal.le]
-        have hRatioInv :
-            ((v : ℂ) / (((N : ℝ) * m : ℝ) : ℂ))⁻¹ =
-              (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ := by
-          field_simp [Complex.ofReal_ne_zero.mpr hqReal.ne',
-            Complex.ofReal_ne_zero.mpr hvPos.ne']
-        have hExpEq :
-            Complex.exp (-(((r * (Real.log v - Real.log ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-                Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
-              Complex.exp ((Real.log ((N : ℝ) * m) : ℂ) * ((r : ℂ) * I)) *
-                Complex.exp (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) := by
-          rw [← Complex.exp_add, ← Complex.exp_add]
-          congr 1
-          push_cast
-          ring
-        rw [hRatioInv]
-        calc
-          (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ *
-                Complex.exp (-(((r * (Real.log v - Real.log ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-              gmCutoffMellin cutoff r *
-                Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
-            (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ * gmCutoffMellin cutoff r *
-              (Complex.exp (-(((r * (Real.log v - Real.log ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-                Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) := by ring
-          _ = (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ * gmCutoffMellin cutoff r *
-              (Complex.exp ((Real.log ((N : ℝ) * m) : ℂ) * ((r : ℂ) * I)) *
-                Complex.exp (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) := by
-            rw [hExpEq]
-          _ = (((N : ℝ) * m : ℝ) : ℂ) *
-                Complex.exp ((Real.log ((N : ℝ) * m) : ℂ) * ((r : ℂ) * I)) *
-              gmCutoffMellin cutoff r *
-                ((v : ℂ)⁻¹ * Complex.exp
-                  (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) := by ring
-
-/-- The unit-modulus primitive used for integration by parts away from the
-stationary point. -/
-noncomputable def gmReflectionPrimitive (tau v : ℝ) : ℂ :=
-  I⁻¹ * Complex.exp
-    ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))
-
-/-- The quotient of the reflection amplitude by the derivative of its phase.
-The only pole is the stationary point `tau/(2π)`. -/
-noncomputable def gmReflectionRatio (tau v : ℝ) : ℂ :=
-  ((tau - 2 * Real.pi * v : ℝ) : ℂ)⁻¹
-
-/-- Real form of the integration-by-parts quotient. -/
-noncomputable def gmReflectionRatioReal (tau v : ℝ) : ℝ :=
-  (tau - 2 * Real.pi * v)⁻¹
+        pm_4866
 
 theorem hasDerivAt_gmReflectionPrimitive {tau v : ℝ} (hv : v ≠ 0) :
     HasDerivAt (gmReflectionPrimitive tau)
@@ -754,321 +575,28 @@ theorem hasDerivAt_gmReflectionPrimitive {tau v : ℝ} (hv : v ≠ 0) :
     convert (Real.hasDerivAt_log hv).const_mul tau |>.fun_sub
       ((hasDerivAt_id v).const_mul (2 * Real.pi)) using 1
     all_goals simp only [div_eq_mul_inv, mul_one, id_eq]
-  have hExp := (hReal.ofReal_comp.mul_const I).cexp.const_mul I⁻¹
-  change HasDerivAt (gmReflectionPrimitive tau) _ v
-  convert hExp using 1
+  pm_1432
   · funext y
     rfl
   · field_simp [Complex.I_ne_zero]
 
-theorem hasDerivAt_gmReflectionRatio {tau v : ℝ}
-    (hv : tau - 2 * Real.pi * v ≠ 0) :
+section
+variable {tau v : ℝ} (hv : tau - 2 * Real.pi * v ≠ 0)
+include tau v hv
+theorem hasDerivAt_gmReflectionRatio :
     HasDerivAt (gmReflectionRatio tau)
       (((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) v := by
-  have hLinear : HasDerivAt
-      (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
-    convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
-    all_goals simp only [id_eq, mul_one, neg_mul]
-  have hInv := (hLinear.inv hv).ofReal_comp
-  change HasDerivAt (gmReflectionRatio tau) _ v
-  convert hInv using 1
-  · funext x
-    simp [gmReflectionRatio]
+  pm_4868
+  pm_950
   · push_cast
     field_simp
 
-theorem hasDerivAt_gmReflectionRatioReal {tau v : ℝ}
-    (hv : tau - 2 * Real.pi * v ≠ 0) :
+theorem hasDerivAt_gmReflectionRatioReal :
     HasDerivAt (gmReflectionRatioReal tau)
       (2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2) v := by
-  have hLinear : HasDerivAt
-      (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
-    convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
-    all_goals simp only [id_eq, mul_one, neg_mul]
-  change HasDerivAt (fun x : ℝ => (tau - 2 * Real.pi * x)⁻¹) _ v
-  convert hLinear.inv hv using 1
-  field_simp
-
-/-- Pointwise factorization of the reflection integrand as a smooth quotient
-times the derivative of a unit-modulus primitive. -/
-theorem gmReflectionRatio_mul_primitiveDeriv {tau v : ℝ}
-    (hv : v ≠ 0) (hstat : tau - 2 * Real.pi * v ≠ 0) :
-    gmReflectionRatio tau v *
-        (((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-          Complex.exp
-            ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) =
-      (v : ℂ)⁻¹ * Complex.exp
-        ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) := by
-  unfold gmReflectionRatio
-  have hvC : (v : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hv
-  have hstatC : ((tau - 2 * Real.pi * v : ℝ) : ℂ) ≠ 0 :=
-    Complex.ofReal_ne_zero.mpr hstat
-  have hDerivative : ((tau / v - 2 * Real.pi : ℝ) : ℂ) =
-      ((tau - 2 * Real.pi * v : ℝ) : ℂ) * (v : ℂ)⁻¹ := by
-    push_cast
-    field_simp [hvC]
-  rw [hDerivative]
-  field_simp [hstatC]
-
-/-- Exact integration-by-parts identity on an interval which does not meet
-the stationary point. -/
-theorem gmReflectionIntegral_eq_parts {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a)
-    (hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0) :
-    gmReflectionIntegral tau a b =
-      gmReflectionRatio tau b * gmReflectionPrimitive tau b -
-        gmReflectionRatio tau a * gmReflectionPrimitive tau a -
-          ∫ v in a..b,
-            ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v := by
-  have hpos : ∀ v ∈ Set.Icc a b, 0 < v := fun v hv => ha.trans_le hv.1
-  have hRatioDeriv : ∀ v ∈ Set.Icc a b,
-      HasDerivAt (gmReflectionRatio tau)
-        (((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) v :=
-    fun v hv => hasDerivAt_gmReflectionRatio (hstat v hv)
-  have hPrimitiveDeriv : ∀ v ∈ Set.Icc a b,
-      HasDerivAt (gmReflectionPrimitive tau)
-        (((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-          Complex.exp
-            ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) v :=
-    fun v hv => hasDerivAt_gmReflectionPrimitive (hpos v hv).ne'
-  have hRatioDerivU : ∀ v ∈ Set.uIcc a b,
-      HasDerivAt (gmReflectionRatio tau)
-        (((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) v := by
-    simpa only [uIcc_of_le hab] using hRatioDeriv
-  have hPrimitiveDerivU : ∀ v ∈ Set.uIcc a b,
-      HasDerivAt (gmReflectionPrimitive tau)
-        (((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-          Complex.exp
-            ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) v := by
-    simpa only [uIcc_of_le hab] using hPrimitiveDeriv
-  have hRatioInt : IntervalIntegrable
-      (fun v : ℝ => ((2 * Real.pi /
-        (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) volume a b :=
-    (continuousOn_of_forall_continuousAt fun v hv => by
-      have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-      have hden : tau - 2 * Real.pi * v ≠ 0 := hstat v hvIcc
-      exact Complex.continuous_ofReal.continuousAt.comp
-        (continuousAt_const.div
-          ((continuousAt_const.sub (continuousAt_const.mul continuousAt_id)).pow 2)
-          (pow_ne_zero 2 hden))).intervalIntegrable
-  have hPrimitiveInt : IntervalIntegrable
-      (fun v : ℝ => ((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-        Complex.exp
-          ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) volume a b :=
-    (continuousOn_of_forall_continuousAt fun v hv => by
-      have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-      have hvNe : v ≠ 0 := (hpos v hvIcc).ne'
-      have hFirst : ContinuousAt (fun x : ℝ => tau / x - 2 * Real.pi) v :=
-        continuousAt_const.div continuousAt_id hvNe |>.sub continuousAt_const
-      have hPhase : ContinuousAt
-          (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x) v :=
-        (continuousAt_const.mul (Real.continuousAt_log hvNe)).sub
-          (continuousAt_const.mul continuousAt_id)
-      exact (Complex.continuous_ofReal.continuousAt.comp hFirst).mul
-        ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul
-          continuousAt_const).cexp).intervalIntegrable
-  have hParts := intervalIntegral.integral_mul_deriv_eq_deriv_mul
-    hRatioDerivU hPrimitiveDerivU hRatioInt hPrimitiveInt
-  unfold gmReflectionIntegral
-  rw [← hParts]
-  apply intervalIntegral.integral_congr
-  intro v hv
-  have hvIcc : v ∈ Set.Icc a b := by simpa [uIcc_of_le hab] using hv
-  exact (gmReflectionRatio_mul_primitiveDeriv (hpos v hvIcc).ne'
-    (hstat v hvIcc)).symm
-
-theorem norm_gmReflectionPrimitive (tau v : ℝ) :
-    ‖gmReflectionPrimitive tau v‖ = 1 := by
-  simp [gmReflectionPrimitive, Complex.norm_exp]
-
-theorem norm_gmReflectionRatio (tau v : ℝ) :
-    ‖gmReflectionRatio tau v‖ = |tau - 2 * Real.pi * v|⁻¹ := by
-  rw [gmReflectionRatio, norm_inv, Complex.norm_real]
-  rw [Real.norm_eq_abs]
-
-/-- On the positive axis, the rescaled reflection integrand has norm `1/v`.
-This is the amplitude estimate used both near and away from its stationary
-point. -/
-theorem norm_gmReflectionIntegrand {tau v : ℝ} (hv : 0 < v) :
-    ‖(v : ℂ)⁻¹ * Complex.exp
-        ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))‖ = v⁻¹ := by
-  rw [norm_mul, norm_inv]
-  simp [Real.norm_eq_abs, abs_of_pos hv, Complex.norm_exp]
-
-/-- Quantitative integration-by-parts bound on an interval avoiding the
-stationary point.  The last term is the exact total variation of the phase
-quotient. -/
-theorem norm_gmReflectionIntegral_le_endpoint_variation {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a)
-    (hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0) :
-    ‖gmReflectionIntegral tau a b‖ ≤
-      |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-        |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-  rw [gmReflectionIntegral_eq_parts hab ha hstat]
-  have hDerivU : ∀ v ∈ Set.uIcc a b,
-      HasDerivAt (gmReflectionRatioReal tau)
-        (2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2) v := by
-    intro v hv
-    apply hasDerivAt_gmReflectionRatioReal
-    apply hstat v
-    simpa only [uIcc_of_le hab] using hv
-  have hDerivContinuous : ContinuousOn
-      (fun v : ℝ => 2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2)
-      (Set.uIcc a b) := by
-    apply continuousOn_of_forall_continuousAt
-    intro v hv
-    have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-    exact continuousAt_const.div
-      ((continuousAt_const.sub (continuousAt_const.mul continuousAt_id)).pow 2)
-      (pow_ne_zero 2 (hstat v hvIcc))
-  have hDerivativeIntegral :
-      (∫ v in a..b, 2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2) =
-        gmReflectionRatioReal tau b - gmReflectionRatioReal tau a :=
-    intervalIntegral.integral_eq_sub_of_hasDerivAt hDerivU
-      hDerivContinuous.intervalIntegrable
-  have hVariation :
-      ‖∫ v in a..b,
-          ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-            gmReflectionPrimitive tau v‖ ≤
-        |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-    have hNormIntegralEq :
-        (∫ v in a..b,
-            ‖((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v‖) =
-          ∫ v in a..b, 2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 := by
-      apply intervalIntegral.integral_congr
-      intro v hv
-      change ‖((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-          gmReflectionPrimitive tau v‖ =
-        2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2
-      rw [norm_mul, norm_gmReflectionPrimitive, mul_one, Complex.norm_real]
-      rw [Real.norm_eq_abs, abs_of_nonneg]
-      exact div_nonneg (by positivity) (sq_nonneg _)
-    calc
-      ‖∫ v in a..b,
-          ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-            gmReflectionPrimitive tau v‖ ≤
-          |∫ v in a..b,
-            ‖((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v‖| :=
-        intervalIntegral.norm_integral_le_abs_integral_norm
-      _ = |∫ v in a..b,
-          2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2| := by
-        rw [hNormIntegralEq]
-      _ = |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-        rw [hDerivativeIntegral]
-  calc
-    ‖gmReflectionRatio tau b * gmReflectionPrimitive tau b -
-        gmReflectionRatio tau a * gmReflectionPrimitive tau a -
-          ∫ v in a..b,
-            ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v‖ ≤
-        ‖gmReflectionRatio tau b * gmReflectionPrimitive tau b -
-          gmReflectionRatio tau a * gmReflectionPrimitive tau a‖ +
-            ‖∫ v in a..b,
-              ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-                gmReflectionPrimitive tau v‖ := norm_sub_le _ _
-    _ ≤ (‖gmReflectionRatio tau b * gmReflectionPrimitive tau b‖ +
-          ‖gmReflectionRatio tau a * gmReflectionPrimitive tau a‖) +
-            |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| :=
-      add_le_add (norm_sub_le _ _) hVariation
-    _ = |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-          |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-      rw [norm_mul, norm_mul, norm_gmReflectionRatio, norm_gmReflectionRatio,
-        norm_gmReflectionPrimitive, norm_gmReflectionPrimitive, mul_one, mul_one]
-
-/-- First-derivative bound on an interval strictly to the left of the
-stationary point. -/
-theorem norm_gmReflectionIntegral_le_left {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) (hleft : 2 * Real.pi * b < tau) :
-    ‖gmReflectionIntegral tau a b‖ ≤ 2 / (tau - 2 * Real.pi * b) := by
-  have hdb : 0 < tau - 2 * Real.pi * b := by linarith
-  have hda : 0 < tau - 2 * Real.pi * a := by
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0 := by
-    intro v hv
-    have := mul_le_mul_of_nonneg_left hv.2 (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hBase := norm_gmReflectionIntegral_le_endpoint_variation hab ha hstat
-  have hInvOrder : (tau - 2 * Real.pi * a)⁻¹ ≤
-      (tau - 2 * Real.pi * b)⁻¹ := by
-    apply (inv_le_inv₀ hda hdb).2
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hDiff : 0 ≤ gmReflectionRatioReal tau b - gmReflectionRatioReal tau a := by
-    simpa only [gmReflectionRatioReal] using sub_nonneg.mpr hInvOrder
-  calc
-    ‖gmReflectionIntegral tau a b‖ ≤
-        |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-          |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := hBase
-    _ = 2 / (tau - 2 * Real.pi * b) := by
-      rw [abs_of_pos hdb, abs_of_pos hda, abs_of_nonneg hDiff]
-      unfold gmReflectionRatioReal
-      ring
-
-/-- First-derivative bound on an interval strictly to the right of the
-stationary point. -/
-theorem norm_gmReflectionIntegral_le_right {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) (hright : tau < 2 * Real.pi * a) :
-    ‖gmReflectionIntegral tau a b‖ ≤ 2 / (2 * Real.pi * a - tau) := by
-  have hda : tau - 2 * Real.pi * a < 0 := by linarith
-  have hdb : tau - 2 * Real.pi * b < 0 := by
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0 := by
-    intro v hv
-    have := mul_le_mul_of_nonneg_left hv.1 (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hBase := norm_gmReflectionIntegral_le_endpoint_variation hab ha hstat
-  have hInvOrder : (tau - 2 * Real.pi * a)⁻¹ ≤
-      (tau - 2 * Real.pi * b)⁻¹ := by
-    apply (inv_le_inv_of_neg hda hdb).2
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hDiff : 0 ≤ gmReflectionRatioReal tau b - gmReflectionRatioReal tau a := by
-    simpa only [gmReflectionRatioReal] using sub_nonneg.mpr hInvOrder
-  calc
-    ‖gmReflectionIntegral tau a b‖ ≤
-        |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-          |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := hBase
-    _ = 2 / (2 * Real.pi * a - tau) := by
-      rw [abs_of_neg hdb, abs_of_neg hda, abs_of_nonneg hDiff]
-      unfold gmReflectionRatioReal
-      have hNegInv : (tau - 2 * Real.pi * a)⁻¹ =
-          -(2 * Real.pi * a - tau)⁻¹ := by
-        rw [show tau - 2 * Real.pi * a = -(2 * Real.pi * a - tau) by ring,
-          inv_neg]
-      have hNegInvB : (tau - 2 * Real.pi * b)⁻¹ =
-          -(2 * Real.pi * b - tau)⁻¹ := by
-        rw [show tau - 2 * Real.pi * b = -(2 * Real.pi * b - tau) by ring,
-          inv_neg]
-      rw [hNegInv, hNegInvB]
-      ring
-
-/-- Trivial amplitude bound on a positive interval. -/
-theorem norm_gmReflectionIntegral_le_length_div {tau a b L : ℝ}
-    (hab : a ≤ b) (hL : 0 < L) (hLa : L ≤ a) :
-    ‖gmReflectionIntegral tau a b‖ ≤ (b - a) / L := by
-  unfold gmReflectionIntegral
-  have hBound := intervalIntegral.norm_integral_le_of_norm_le_const
-    (a := a) (b := b) (C := L⁻¹)
-    (f := fun v : ℝ => (v : ℂ)⁻¹ * Complex.exp
-      ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))
-    (fun v hv => by
-      rw [uIoc_of_le hab] at hv
-      have hLv : L ≤ v := hLa.trans (le_of_lt hv.1)
-      have hvPos : 0 < v := hL.trans_le hLv
-      rw [norm_gmReflectionIntegrand hvPos]
-      exact (inv_le_inv₀ hvPos hL).2 hLv)
-  rw [abs_of_nonneg (sub_nonneg.mpr hab)] at hBound
-  calc
-    ‖∫ v in a..b,
-        (v : ℂ)⁻¹ * Complex.exp
-          ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))‖ ≤
-        L⁻¹ * (b - a) := hBound
-    _ = (b - a) / L := by ring
+  pm_4868
+  pm_828
+end
 
 /-- Global logarithmic majorant for the reflection integral.  This is the
 nonoscillatory estimate used only on the omitted Mellin range in Lemma 6.2. -/
@@ -1079,9 +607,7 @@ theorem norm_gmReflectionIntegral_le_log {tau a b : ℝ}
   have hb : 0 < b := ha.trans_le hab
   have hInv : IntervalIntegrable (fun v : ℝ => v⁻¹) volume a b := by
     apply ContinuousOn.intervalIntegrable
-    apply continuousOn_inv₀.mono
-    intro v hv
-    rw [Set.uIcc_of_le hab] at hv
+    pm_445 continuousOn_inv₀.mono v hv Set.uIcc_of_le hab
     exact ne_of_gt (ha.trans_le hv.1)
   calc
     ‖∫ v in a..b,
@@ -1093,25 +619,6 @@ theorem norm_gmReflectionIntegral_le_log {tau a b : ℝ}
       have hvPos : 0 < v := ha.trans (Set.mem_Ioc.mp hv).1
       rw [norm_gmReflectionIntegrand hvPos]
     _ = Real.log (b / a) := integral_inv_of_pos ha hb
-
-theorem intervalIntegrable_gmReflectionIntegrand {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) :
-    IntervalIntegrable
-      (fun v : ℝ => (v : ℂ)⁻¹ * Complex.exp
-        ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))
-      volume a b := by
-  apply ContinuousOn.intervalIntegrable
-  apply continuousOn_of_forall_continuousAt
-  intro v hv
-  have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-  have hvPos : 0 < v := ha.trans_le hvIcc.1
-  have hPhase : ContinuousAt
-      (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x) v :=
-    (continuousAt_const.mul (Real.continuousAt_log hvPos.ne')).sub
-      (continuousAt_const.mul continuousAt_id)
-  exact (Complex.continuous_ofReal.continuousAt.comp continuousAt_id).inv₀
-      (Complex.ofReal_ne_zero.mpr hvPos.ne') |>.mul
-    ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul continuousAt_const).cexp
 
 /-- Pointwise identification of the inner Fubini integral used in the Mellin
 reflection formula.  Naming this equality is essential for retaining the
@@ -1125,82 +632,25 @@ private theorem intervalIntegral_gmMellinReflectionIntegrand_eq
         gmCutoffMellin cutoff r *
           gmReflectionIntegral (t - r) N (2 * N * M) := by
   have hAB : (N : ℝ) ≤ 2 * N * M := by
-    have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hm.trans hmM
+    pm_4863
+    pm_4864
     nlinarith
-  have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-  have hqNat : 0 < N * m := Nat.mul_pos hN (lt_of_lt_of_le Nat.zero_lt_one hm)
-  have hqReal : (0 : ℝ) < N * m := by exact_mod_cast hqNat
-  unfold gmReflectionIntegral
-  rw [← intervalIntegral.integral_const_mul]
-  apply intervalIntegral.integral_congr
-  intro v hv
-  have hvPos : 0 < v := hNReal.trans_le
-    ((Set.uIcc_of_le hAB ▸ hv).1)
-  unfold gmMellinReflectionIntegrand
-  change
-    ((v : ℂ) / (((N : ℝ) * m : ℝ) : ℂ))⁻¹ *
-          Complex.exp (-(((r * Real.log (v / ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-        gmCutoffMellin cutoff r *
-          Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
-      ((N * m : ℕ) : ℂ) * ((N * m : ℕ) : ℂ) ^ ((r : ℂ) * I) *
-        gmCutoffMellin cutoff r *
-          ((v : ℂ)⁻¹ * Complex.exp
-            (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))
-  have hlog : Real.log (v / ((N : ℝ) * m)) =
-      Real.log v - Real.log ((N : ℝ) * m) :=
-    Real.log_div hvPos.ne' hqReal.ne'
-  rw [hlog]
-  have hqComplex : (((N : ℝ) * m : ℝ) : ℂ) = ((N * m : ℕ) : ℂ) := by
-    norm_num
-  rw [← hqComplex]
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hqReal.ne')]
-  rw [← Complex.ofReal_log hqReal.le]
-  have hRatioInv :
-      ((v : ℂ) / (((N : ℝ) * m : ℝ) : ℂ))⁻¹ =
-        (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ := by
-    field_simp [Complex.ofReal_ne_zero.mpr hqReal.ne',
-      Complex.ofReal_ne_zero.mpr hvPos.ne']
-  have hExpEq :
-      Complex.exp (-(((r * (Real.log v - Real.log ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-          Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
-        Complex.exp ((Real.log ((N : ℝ) * m) : ℂ) * ((r : ℂ) * I)) *
-          Complex.exp (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) := by
-    rw [← Complex.exp_add, ← Complex.exp_add]
-    congr 1
-    push_cast
-    ring
-  rw [hRatioInv]
-  calc
-    (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ *
-          Complex.exp (-(((r * (Real.log v - Real.log ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-        gmCutoffMellin cutoff r *
-          Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) =
-      (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ * gmCutoffMellin cutoff r *
-        (Complex.exp (-(((r * (Real.log v - Real.log ((N : ℝ) * m)) : ℝ) : ℂ) * I)) *
-          Complex.exp ((((t * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) := by ring
-    _ = (((N : ℝ) * m : ℝ) : ℂ) * (v : ℂ)⁻¹ * gmCutoffMellin cutoff r *
-        (Complex.exp ((Real.log ((N : ℝ) * m) : ℂ) * ((r : ℂ) * I)) *
-          Complex.exp (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) := by
-      rw [hExpEq]
-    _ = (((N : ℝ) * m : ℝ) : ℂ) *
-          Complex.exp ((Real.log ((N : ℝ) * m) : ℂ) * ((r : ℂ) * I)) *
-        gmCutoffMellin cutoff r *
-          ((v : ℂ)⁻¹ * Complex.exp
-            (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) := by ring
+  pm_4863
+  pm_4867
+  pm_4866
 
 /-- Uniform first/second-derivative estimate for the common reflection
 integral.  This is the `T₀⁻¹/²` analytic core of Guth--Maynard Lemma 6.2. -/
 theorem norm_gmReflectionIntegral_le_ten_div_sqrt {tau A B : ℝ}
     (htau : 1 ≤ tau) (hA : 0 < A) (hAB : A ≤ B) :
     ‖gmReflectionIntegral tau A B‖ ≤ 10 / Real.sqrt tau := by
-  let x0 : ℝ := tau / (2 * Real.pi)
+  pm_5316 x0 tau Real.pi
   let delta : ℝ := Real.sqrt tau / (4 * Real.pi)
   let L : ℝ := x0 - delta
   let R : ℝ := x0 + delta
   have htauPos : 0 < tau := lt_of_lt_of_le zero_lt_one htau
-  have hsqrtPos : 0 < Real.sqrt tau := Real.sqrt_pos.2 htauPos
-  have hsqrtSq : (Real.sqrt tau) ^ 2 = tau := Real.sq_sqrt htauPos.le
+  pm_4891 hsqrtPos tau htauPos
+  pm_7878 hsqrtSq tau htauPos.le
   have hsqrtLe : Real.sqrt tau ≤ tau := by
     nlinarith [Real.sqrt_nonneg tau]
   have hdeltaPos : 0 < delta := by
@@ -1208,115 +658,69 @@ theorem norm_gmReflectionIntegral_le_ten_div_sqrt {tau A B : ℝ}
     positivity
   have hLR : L < R := by dsimp only [L, R]; linarith
   have hLFormula : L = (2 * tau - Real.sqrt tau) / (4 * Real.pi) := by
-    dsimp only [L, x0, delta]
-    field_simp [Real.pi_ne_zero]
-    ring
+    pm_5507 L
   have hLLower : tau / (4 * Real.pi) ≤ L := by
     rw [hLFormula]
     apply (div_le_div_iff_of_pos_right (by positivity : 0 < 4 * Real.pi)).2
     linarith
   have hLPos : 0 < L := (div_pos htauPos (by positivity)).trans_le hLLower
   have hLeftDen : tau - 2 * Real.pi * L = Real.sqrt tau / 2 := by
-    dsimp only [L, x0, delta]
-    field_simp [Real.pi_ne_zero]
-    ring
+    pm_5507 L
   have hRightDen : 2 * Real.pi * R - tau = Real.sqrt tau / 2 := by
-    dsimp only [R, x0, delta]
-    field_simp [Real.pi_ne_zero]
-    ring
+    pm_5507 R
   by_cases hEntireLeft : B ≤ L
   · have hDenPos : 0 < tau - 2 * Real.pi * B := by
-      have hScaled := mul_le_mul_of_nonneg_left hEntireLeft
-        (by positivity : 0 ≤ 2 * Real.pi)
+      pm_4870 hScaled hEntireLeft
       nlinarith [hLeftDen, hsqrtPos]
-    have hLeft := norm_gmReflectionIntegral_le_left (tau := tau)
-      (a := A) (b := B) hAB hA (by linarith)
+    pm_6375 hLeft norm_gmReflectionIntegral_le_left
     calc
       ‖gmReflectionIntegral tau A B‖ ≤ 2 / (tau - 2 * Real.pi * B) := hLeft
       _ ≤ 4 / Real.sqrt tau := by
         have hDen : Real.sqrt tau / 2 ≤ tau - 2 * Real.pi * B := by
-          rw [← hLeftDen]
-          nlinarith [mul_le_mul_of_nonneg_left hEntireLeft
-            (by positivity : 0 ≤ 2 * Real.pi)]
+          pm_7662 hLeftDen hEntireLeft
         apply (div_le_div_iff₀ hDenPos hsqrtPos).2
         nlinarith
       _ ≤ 10 / Real.sqrt tau := by
         exact div_le_div_of_nonneg_right (by norm_num) hsqrtPos.le
   by_cases hEntireRight : R ≤ A
   · have hDenPos : 0 < 2 * Real.pi * A - tau := by
-      have hScaled := mul_le_mul_of_nonneg_left hEntireRight
-        (by positivity : 0 ≤ 2 * Real.pi)
+      pm_4870 hScaled hEntireRight
       nlinarith [hRightDen, hsqrtPos]
-    have hRight := norm_gmReflectionIntegral_le_right (tau := tau)
-      (a := A) (b := B) hAB hA (by linarith)
+    pm_6375 hRight norm_gmReflectionIntegral_le_right
     calc
       ‖gmReflectionIntegral tau A B‖ ≤ 2 / (2 * Real.pi * A - tau) := hRight
       _ ≤ 4 / Real.sqrt tau := by
         have hDen : Real.sqrt tau / 2 ≤ 2 * Real.pi * A - tau := by
-          rw [← hRightDen]
-          nlinarith [mul_le_mul_of_nonneg_left hEntireRight
-            (by positivity : 0 ≤ 2 * Real.pi)]
+          pm_7662 hRightDen hEntireRight
         apply (div_le_div_iff₀ hDenPos hsqrtPos).2
         nlinarith
       _ ≤ 10 / Real.sqrt tau := by
         exact div_le_div_of_nonneg_right (by norm_num) hsqrtPos.le
   · have hLB : L < B := lt_of_not_ge hEntireLeft
-    have hAR : A < R := lt_of_not_ge hEntireRight
-    let l : ℝ := max A L
-    let r : ℝ := min B R
-    have hAl : A ≤ l := le_max_left _ _
-    have hlB : l ≤ B := max_le hAB hLB.le
-    have hAr : A ≤ r := le_min hAB hAR.le
-    have hrB : r ≤ B := min_le_left _ _
-    have hlr : l ≤ r := by
-      apply max_le
-      · exact hAr
-      · exact le_min hLB.le hLR.le
-    have hlPos : 0 < l := hA.trans_le hAl
-    have hrPos : 0 < r := hlPos.trans_le hlr
+    pm_4869
     have hLeftPiece : ‖gmReflectionIntegral tau A l‖ ≤
         4 / Real.sqrt tau := by
-      by_cases hEq : l = A
-      · rw [hEq]
-        simp [gmReflectionIntegral]
-        positivity
+      pm_5116 l A gmReflectionIntegral
       · have hAL : A < L := by
-          have hnot : ¬ L ≤ A := by
-            intro hLA
-            apply hEq
-            exact max_eq_left hLA
-          exact lt_of_not_ge hnot
+          pm_5041 L A hLA max_eq_left
         have hlEq : l = L := max_eq_right hAL.le
         rw [hlEq]
         have hBound := norm_gmReflectionIntegral_le_left hAL.le hA (by
           rw [← sub_pos, hLeftDen]
           positivity)
-        rw [hLeftDen] at hBound
-        calc
-          ‖gmReflectionIntegral tau A L‖ ≤ 2 / (Real.sqrt tau / 2) := hBound
-          _ = 4 / Real.sqrt tau := by field_simp; norm_num
+        pm_5392 hLeftDen A L
     have hRightPiece : ‖gmReflectionIntegral tau r B‖ ≤
         4 / Real.sqrt tau := by
-      by_cases hEq : r = B
-      · rw [hEq]
-        simp [gmReflectionIntegral]
-        positivity
+      pm_5116 r B gmReflectionIntegral
       · have hRB : R < B := by
-          have hnot : ¬ B ≤ R := by
-            intro hBR
-            apply hEq
-            exact min_eq_left hBR
-          exact lt_of_not_ge hnot
+          pm_5041 B R hBR min_eq_left
         have hrEq : r = R := min_eq_right hRB.le
         rw [hrEq]
         have hBound := norm_gmReflectionIntegral_le_right hRB.le
           (hLPos.trans hLR) (by
           rw [← sub_pos, hRightDen]
           positivity)
-        rw [hRightDen] at hBound
-        calc
-          ‖gmReflectionIntegral tau R B‖ ≤ 2 / (Real.sqrt tau / 2) := hBound
-          _ = 4 / Real.sqrt tau := by field_simp; norm_num
+        pm_5392 hRightDen R B
     have hMiddlePiece : ‖gmReflectionIntegral tau l r‖ ≤
         2 / Real.sqrt tau := by
       have hTauLowerL : tau / (4 * Real.pi) ≤ l :=
@@ -1346,17 +750,14 @@ theorem norm_gmReflectionIntegral_le_ten_div_sqrt {tau A B : ℝ}
         gmReflectionIntegral tau A l + gmReflectionIntegral tau l r +
           gmReflectionIntegral tau r B := by
       unfold gmReflectionIntegral
-      rw [← intervalIntegral.integral_add_adjacent_intervals hIntAl
-        (hIntlR.trans hIntrB)]
-      rw [← intervalIntegral.integral_add_adjacent_intervals hIntlR hIntrB]
-      ring
+      pm_6313
     rw [hSplit]
     calc
       ‖gmReflectionIntegral tau A l + gmReflectionIntegral tau l r +
           gmReflectionIntegral tau r B‖ ≤
           ‖gmReflectionIntegral tau A l‖ + ‖gmReflectionIntegral tau l r‖ +
             ‖gmReflectionIntegral tau r B‖ := by
-        exact (norm_add_le _ _).trans (add_le_add (norm_add_le _ _) le_rfl)
+        pm_395 norm_add_le
       _ ≤ 4 / Real.sqrt tau + 2 / Real.sqrt tau + 4 / Real.sqrt tau := by
         gcongr
       _ = 10 / Real.sqrt tau := by ring
@@ -1380,50 +781,17 @@ theorem norm_weighted_gmReflectionIntegral_le
           ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))‖ ≤
       (10 / Real.sqrt tau) *
         (‖w B‖ + ∫ v in A..B, ‖w' v‖) := by
-  let k : ℝ → ℂ := fun v =>
-    (v : ℂ)⁻¹ * Complex.exp
-      ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))
-  let F : ℝ → ℂ := fun x => ∫ v in A..x, k v
+  pm_4873 I
   have hkInt : IntervalIntegrable k volume A B := by
     simpa only [k] using intervalIntegrable_gmReflectionIntegrand hAB hA
-  have hkContinuousPos : ContinuousOn k (Set.Ioi 0) := by
-    apply continuousOn_of_forall_continuousAt
-    intro x hx
-    have hxPos : 0 < x := hx
-    have hPhase : ContinuousAt
-        (fun y : ℝ => tau * Real.log y - 2 * Real.pi * y) x :=
-      (continuousAt_const.mul (Real.continuousAt_log hxPos.ne')).sub
-        (continuousAt_const.mul continuousAt_id)
-    exact (Complex.continuous_ofReal.continuousAt.comp continuousAt_id).inv₀
-        (Complex.ofReal_ne_zero.mpr hxPos.ne') |>.mul
-      ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul
-        continuousAt_const).cexp
-  have hkContinuousAt : ∀ x ∈ Set.Icc A B, ContinuousAt k x := by
-    intro x hx
-    have hxPos : 0 < x := hA.trans_le hx.1
-    exact (hkContinuousPos x hxPos).continuousAt (Ioi_mem_nhds hxPos)
-  have hkContinuous : ContinuousOn k (Set.Icc A B) :=
-    fun x hx => (hkContinuousAt x hx).continuousWithinAt
+  pm_4871
   have hFDeriv : ∀ x ∈ Set.Icc A B, HasDerivAt F (k x) x := by
     intro x hx
     have hkAx : IntervalIntegrable k volume A x := by
       simpa only [k] using
         intervalIntegrable_gmReflectionIntegrand hx.1 hA
-    exact intervalIntegral.integral_hasDerivAt_right hkAx
-      (hkContinuousPos.stronglyMeasurableAtFilter isOpen_Ioi x
-        (hA.trans_le hx.1))
-      (hkContinuousAt x hx)
-  have hFContinuous : ContinuousOn F (Set.Icc A B) :=
-    fun x hx => (hFDeriv x hx).continuousAt.continuousWithinAt
-  have hFContinuousU : ContinuousOn F (Set.uIcc A B) := by
-    simpa only [Set.uIcc_of_le hAB] using hFContinuous
-  have hwU : ∀ x ∈ Set.uIcc A B, HasDerivAt w (w' x) x := by
-    simpa only [Set.uIcc_of_le hAB] using hw
-  have hFDerivU : ∀ x ∈ Set.uIcc A B, HasDerivAt F (k x) x := by
-    simpa only [Set.uIcc_of_le hAB] using hFDeriv
-  have hparts := intervalIntegral.integral_mul_deriv_eq_deriv_mul
-    hwU hFDerivU hw' hkInt
-  have hFA : F A = 0 := by simp [F]
+    pm_6524
+  pm_4872
   have hFB : F B = gmReflectionIntegral tau A B := by
     rfl
   have hFBound : ∀ x ∈ Set.Icc A B, ‖F x‖ ≤ 10 / Real.sqrt tau := by
@@ -1440,16 +808,11 @@ theorem norm_weighted_gmReflectionIntegral_le
           |∫ v in A..B, ‖w' v * F v‖| :=
         intervalIntegral.norm_integral_le_abs_integral_norm
       _ = ∫ v in A..B, ‖w' v * F v‖ := by
-        rw [abs_of_nonneg]
-        exact intervalIntegral.integral_nonneg hAB fun _ _ => norm_nonneg _
+        pm_7562
       _ ≤ ∫ v in A..B, ‖w' v‖ * (10 / Real.sqrt tau) := by
-        apply intervalIntegral.integral_mono_on hAB
-        · simpa only [norm_mul] using
-            (hw'.norm.mul_continuousOn hFContinuousU.norm)
+        pm_7288
         · exact hw'.norm.mul_const (10 / Real.sqrt tau)
-        · intro v hv
-          rw [norm_mul]
-          exact mul_le_mul_of_nonneg_left (hFBound v hv) (norm_nonneg _)
+        pm_5719 v hv hFBound
       _ = (10 / Real.sqrt tau) * ∫ v in A..B, ‖w' v‖ := by
         rw [intervalIntegral.integral_mul_const]
         ring
@@ -1474,8 +837,10 @@ literal, including at nonintegral `sigma`. -/
 noncomputable def gmReflectionPowerWeight (sigma v : ℝ) : ℂ :=
   Complex.exp (((-sigma * Real.log v : ℝ) : ℂ))
 
-theorem hasDerivAt_gmReflectionPowerWeight
-    {sigma v : ℝ} (hv : 0 < v) :
+section
+variable {sigma v : ℝ} (hv : 0 < v)
+include sigma v hv
+theorem hasDerivAt_gmReflectionPowerWeight :
     HasDerivAt (gmReflectionPowerWeight sigma)
       (((-sigma / v : ℝ) : ℂ) * gmReflectionPowerWeight sigma v) v := by
   unfold gmReflectionPowerWeight
@@ -1485,7 +850,7 @@ theorem hasDerivAt_gmReflectionPowerWeight
   convert hReal.ofReal_comp.cexp using 1
   all_goals ring
 
-theorem norm_gmReflectionPowerWeight {sigma v : ℝ} (hv : 0 < v) :
+theorem norm_gmReflectionPowerWeight :
     ‖gmReflectionPowerWeight sigma v‖ = v ^ (-sigma) := by
   unfold gmReflectionPowerWeight
   rw [Complex.norm_exp]
@@ -1493,6 +858,7 @@ theorem norm_gmReflectionPowerWeight {sigma v : ℝ} (hv : 0 < v) :
   rw [Real.rpow_def_of_pos hv]
   congr 1
   ring
+end
 
 /-- Weighted logarithmic B-process estimate for the exact power amplitude.
 The variation integral is left visible: downstream scale arithmetic may use
@@ -1516,10 +882,7 @@ theorem norm_powerWeighted_gmReflectionIntegral_le
   have hw' : IntervalIntegrable w' volume A B := by
     apply ContinuousOn.intervalIntegrable
     apply continuousOn_of_forall_continuousAt
-    intro x hx
-    have hxIcc : x ∈ Set.Icc A B := by
-      simpa only [Set.uIcc_of_le hAB] using hx
-    have hxPos : 0 < x := hA.trans_le hxIcc.1
+    pm_4874
     exact (Complex.continuous_ofReal.continuousAt.comp
         (continuousAt_const.div continuousAt_id hxPos.ne')).mul
       (hasDerivAt_gmReflectionPowerWeight hxPos).continuousAt
@@ -1551,16 +914,7 @@ theorem norm_conj_powerWeighted_gmReflectionIntegral_le
       ((v : ℂ)⁻¹ * Complex.exp
         ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))
   have hfInt : IntervalIntegrable f volume A B := by
-    apply ContinuousOn.intervalIntegrable
-    apply continuousOn_of_forall_continuousAt
-    intro v hv
-    have hvIcc : v ∈ Set.Icc A B := by
-      simpa only [Set.uIcc_of_le hAB] using hv
-    have hvPos : 0 < v := hA.trans_le hvIcc.1
-    have hPhase : ContinuousAt
-        (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x) v :=
-      (continuousAt_const.mul (Real.continuousAt_log hvPos.ne')).sub
-        (continuousAt_const.mul continuousAt_id)
+    pm_4875
     exact (hasDerivAt_gmReflectionPowerWeight hvPos).continuousAt.mul
       ((Complex.continuous_ofReal.continuousAt.comp continuousAt_id).inv₀
           (Complex.ofReal_ne_zero.mpr hvPos.ne') |>.mul
@@ -1574,8 +928,7 @@ theorem norm_conj_powerWeighted_gmReflectionIntegral_le
     funext v
     dsimp only [f]
     rw [Complex.star_def, map_mul]
-    have hs := star_gmReflectionPowerWeight sigma v
-    rw [Complex.star_def] at hs
+    pm_126 hs star_gmReflectionPowerWeight sigma v Complex.star_def
     rw [hs]
   have hConj' : (∫ v in A..B, star (f v)) =
       star (∫ v in A..B, f v) := by
@@ -1584,10 +937,13 @@ theorem norm_conj_powerWeighted_gmReflectionIntegral_le
   rw [Complex.star_def, Complex.norm_conj]
   exact norm_powerWeighted_gmReflectionIntegral_le htau hA hAB
 
+section
+variable (cutoff : GMSmoothCutoff)
+include cutoff
 /-- Positive Fourier modes may be integrated over the common source interval
 `[1/m, 2M/m]`.  Its endpoints were chosen so that the support `[1,2]` is
 contained in the interval for every `1 ≤ m ≤ M`. -/
-theorem gmTraceFourier_pos_eq_interval (cutoff : GMSmoothCutoff)
+theorem gmTraceFourier_pos_eq_interval
     (t N : ℝ) {m M : ℕ} (hm : 1 ≤ m) (hmM : m ≤ M) :
     gmTraceFourier cutoff t (N * m) =
       ∫ u in (1 : ℝ) / m..(2 : ℝ) * M / m,
@@ -1606,7 +962,7 @@ theorem gmTraceFourier_pos_eq_interval (cutoff : GMSmoothCutoff)
   rw [Set.mem_Ioc]
   constructor
   · have hmPos : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
-    have hmOne : (1 : ℝ) ≤ m := by exact_mod_cast hm
+    pm_77 hmOne m hm
     have hInv : (1 : ℝ) / m ≤ 1 := by
       rw [div_le_one hmPos]
       exact hmOne
@@ -1620,7 +976,7 @@ theorem gmTraceFourier_pos_eq_interval (cutoff : GMSmoothCutoff)
         hcut (huEq ▸ gmSmoothCutoff_eq_zero_at_one cutoff)
     · exact hLt.trans_le huRange.1
   · have hmPos : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm)
-    have hmMReal : (m : ℝ) ≤ M := by exact_mod_cast hmM
+    pm_106 hmMReal m M hmM
     apply huRange.2.trans
     rw [le_div_iff₀ hmPos]
     nlinarith
@@ -1629,7 +985,7 @@ theorem gmTraceFourier_pos_eq_interval (cutoff : GMSmoothCutoff)
 factor `(mN)^(-it)` contains the logarithmic dependence on the mode outside
 the common integral `[N,2NM]`; the remaining occurrence of the mode is only
 in the smooth cutoff. -/
-theorem gmTraceFourier_pos_rescale (cutoff : GMSmoothCutoff)
+theorem gmTraceFourier_pos_rescale
     (t : ℝ) {N m M : ℕ} (hN : 0 < N) (hm : 1 ≤ m) (hmM : m ≤ M) :
     gmTraceFourier cutoff t ((N : ℝ) * m) =
       ((N * m : ℕ) : ℂ)⁻¹ *
@@ -1678,15 +1034,15 @@ theorem gmTraceFourier_pos_rescale (cutoff : GMSmoothCutoff)
     apply intervalIntegral.integral_congr
     intro v hv
     have hvPos : 0 < v := by
-      have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
+      pm_4863
       have hNUpper : (N : ℝ) ≤ 2 * N * M := by
-        have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hm.trans hmM
+        pm_4864
         nlinarith [mul_nonneg hNReal.le (sub_nonneg.mpr hMReal)]
       exact hNReal.trans_le
         (Set.uIcc_of_le hNUpper ▸ hv).1
     have hNmComplex : ((((N : ℝ) * m : ℝ) : ℂ)) = ((N * m : ℕ) : ℂ) := by
       norm_num
-    have hNmComplexNe : ((N * m : ℕ) : ℂ) ≠ 0 := by exact_mod_cast hNmNat.ne'
+    pm_7663 hNmComplexNe hNmNat.ne'
     unfold gmTraceKernel
     have hLogDiv : Real.log (v / ((N : ℝ) * m)) =
         Real.log v - Real.log ((N : ℝ) * m) := Real.log_div hvPos.ne' hNm.ne'
@@ -1737,7 +1093,7 @@ theorem gmTraceFourier_pos_rescale (cutoff : GMSmoothCutoff)
 
 /-- Exact positive-mode form of Guth--Maynard smooth reflection.  All
 dependence on the Fourier mode is outside the common oscillatory integral. -/
-theorem gmTraceFourier_pos_eq_mellinReflection (cutoff : GMSmoothCutoff)
+theorem gmTraceFourier_pos_eq_mellinReflection
     (t : ℝ) {N m M : ℕ} (hN : 0 < N) (hm : 1 ≤ m) (hmM : m ≤ M) :
     gmTraceFourier cutoff t ((N : ℝ) * m) =
       ((N * m : ℕ) : ℂ)⁻¹ * ((N * m : ℕ) : ℂ) ^ (-((t : ℂ) * I)) *
@@ -1749,6 +1105,7 @@ theorem gmTraceFourier_pos_eq_mellinReflection (cutoff : GMSmoothCutoff)
                   gmReflectionIntegral (t - r) N (2 * N * M)) := by
   rw [gmTraceFourier_pos_rescale cutoff t hN hm hmM]
   rw [gmRescaledCutoffIntegral_eq_mellinReflection cutoff t hN hm hmM]
+end
 
 /-- One positive reflected mode before summing over the Fourier frequency.
 The normalization is arranged so that the natural-number scale cancels
@@ -1775,10 +1132,12 @@ noncomputable def gmReflectionDirichletPoly
   ∑ m ∈ Finset.Icc 1 M,
     (m : ℂ) ^ (-((((t + u : ℝ) : ℂ) * I)))
 
+section
+variable (t r : ℝ) {N M : ℕ} (hN : 0 < N)
+include t r N M hN
 /-- Factoring the common physical scale out of the reflected polynomial.
 The equality is exact; no coefficient or cardinality estimate is used. -/
-theorem gmPositiveDualDirichletPoly_eq_scale_mul
-    (t r : ℝ) {N M : ℕ} (hN : 0 < N) :
+theorem gmPositiveDualDirichletPoly_eq_scale_mul :
     gmPositiveDualDirichletPoly t N M r =
       (N : ℂ) ^ ((((r - t : ℝ) : ℂ) * I)) *
         gmReflectionDirichletPoly t M (-r) := by
@@ -1800,8 +1159,7 @@ theorem gmPositiveDualDirichletPoly_eq_scale_mul
 
 /-- The common scale has unit modulus, so the exact source polynomial and
 the reflected physical polynomial have equal norms. -/
-theorem norm_gmPositiveDualDirichletPoly_eq
-    (t r : ℝ) {N M : ℕ} (hN : 0 < N) :
+theorem norm_gmPositiveDualDirichletPoly_eq :
     ‖gmPositiveDualDirichletPoly t N M r‖ =
       ‖gmReflectionDirichletPoly t M (-r)‖ := by
   rw [gmPositiveDualDirichletPoly_eq_scale_mul t r hN, norm_mul]
@@ -1809,6 +1167,7 @@ theorem norm_gmPositiveDualDirichletPoly_eq
     rw [Complex.norm_natCast_cpow_of_pos hN]
     simp
   rw [hScale, one_mul]
+end
 
 /-- Conjugating the coefficient-one polynomial changes both signs and
 therefore preserves its norm. -/
@@ -1827,8 +1186,7 @@ theorem norm_gmReflectionDirichletPoly_neg_time
       exact Real.pi_ne_zero.symm
     have hExp : -((((-t + u : ℝ) : ℂ) * I)) = star z := by
       dsimp only [z]
-      simp only [Complex.star_def, map_neg, map_mul, Complex.conj_ofReal,
-        Complex.conj_I]
+      pm_188 Complex.star_def map_neg map_mul Complex.conj_ofReal Complex.conj_I
       push_cast
       ring
     rw [hExp]
@@ -1857,11 +1215,12 @@ theorem norm_gmPositiveDualDirichletPoly_le
       simp
     _ = M := by simp
 
+section
+variable {t r T₀ A B : ℝ} (hT₀ : 4 ≤ T₀) (ht : T₀ ≤ t) (hr : |r| ≤ T₀ / 2) (hA : 0 < A) (hAB : A ≤ B)
+include t r T₀ A B hT₀ ht hr hA hAB
 /-- Uniform `T₀⁻¹ᐟ²` stationary bound on the core Mellin window for the
 positive reflected phase. -/
-theorem norm_gmReflectionIntegral_pos_core_le
-    {t r T₀ A B : ℝ} (hT₀ : 4 ≤ T₀) (ht : T₀ ≤ t)
-    (hr : |r| ≤ T₀ / 2) (hA : 0 < A) (hAB : A ≤ B) :
+theorem norm_gmReflectionIntegral_pos_core_le :
     ‖gmReflectionIntegral (t - r) A B‖ ≤
       10 / Real.sqrt (T₀ / 2) := by
   have hrUpper : r ≤ T₀ / 2 := le_trans (le_abs_self r) hr
@@ -1875,9 +1234,7 @@ theorem norm_gmReflectionIntegral_pos_core_le
 
 /-- The opposite signed phase is nonstationary on the same core window and
 obeys the same (deliberately loose) `T₀⁻¹ᐟ²` majorant. -/
-theorem norm_gmReflectionIntegral_neg_core_le
-    {t r T₀ A B : ℝ} (hT₀ : 4 ≤ T₀) (ht : T₀ ≤ t)
-    (hr : |r| ≤ T₀ / 2) (hA : 0 < A) (hAB : A ≤ B) :
+theorem norm_gmReflectionIntegral_neg_core_le :
     ‖gmReflectionIntegral (-t - r) A B‖ ≤
       10 / Real.sqrt (T₀ / 2) := by
   have hrLower : -(T₀ / 2) ≤ r := by
@@ -1904,14 +1261,16 @@ theorem norm_gmReflectionIntegral_neg_core_le
     rw [div_le_div_iff₀ hT₀Pos hSqrtPos]
     nlinarith [hSquare, Real.sqrt_nonneg (T₀ / 2)]
   exact hBase.trans (hFirst.trans hSecond)
+end
 
-theorem integrable_gmPositiveDualModeIntegrand
-    (cutoff : GMSmoothCutoff) (t : ℝ) {N m M : ℕ}
-    (hN : 0 < N) (hm : 1 ≤ m) (hmM : m ≤ M) :
+section
+variable (cutoff : GMSmoothCutoff) (t : ℝ) {N m M : ℕ} (hN : 0 < N) (hm : 1 ≤ m) (hmM : m ≤ M)
+include cutoff t N m M hN hm hmM
+theorem integrable_gmPositiveDualModeIntegrand :
     Integrable (gmPositiveDualModeIntegrand cutoff t N M m) := by
   have hAB : (N : ℝ) ≤ 2 * N * M := by
-    have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hm.trans hmM
+    pm_4863
+    pm_4864
     nlinarith
   have hProd := integrable_gmMellinReflectionIntegrand cutoff t hN hm hmM
   have hInner : Integrable (fun r : ℝ =>
@@ -1938,14 +1297,14 @@ theorem integrable_gmPositiveDualModeIntegrand
 
 /-- Each positive Fourier coefficient is the integral of its normalized
 dual-mode integrand. -/
-theorem gmTraceFourier_pos_eq_integral_dualMode (cutoff : GMSmoothCutoff)
-    (t : ℝ) {N m M : ℕ} (hN : 0 < N) (hm : 1 ≤ m) (hmM : m ≤ M) :
+theorem gmTraceFourier_pos_eq_integral_dualMode :
     gmTraceFourier cutoff t ((N : ℝ) * m) =
       ∫ r : ℝ, gmPositiveDualModeIntegrand cutoff t N M m r := by
   rw [gmTraceFourier_pos_eq_mellinReflection cutoff t hN hm hmM]
   unfold gmPositiveDualModeIntegrand
   rw [MeasureTheory.integral_const_mul]
   rw [MeasureTheory.integral_smul]
+end
 
 /-- Exact aggregate positive-mode identity with the finite Dirichlet
 polynomial kept inside the single Mellin integral. -/
@@ -1959,18 +1318,12 @@ theorem gmTraceFourier_pos_sum_eq_integral_dualPoly
         ∑ m ∈ Finset.Icc 1 M,
           ∫ r : ℝ, gmPositiveDualModeIntegrand cutoff t N M m r := by
       apply Finset.sum_congr rfl
-      intro m hm
-      have hmRange := Finset.mem_Icc.mp hm
-      exact gmTraceFourier_pos_eq_integral_dualMode cutoff t hN
-        hmRange.1 hmRange.2
+      pm_5355 gmTraceFourier_pos_eq_integral_dualMode
     _ = ∫ r : ℝ, ∑ m ∈ Finset.Icc 1 M,
         gmPositiveDualModeIntegrand cutoff t N M m r := by
       symm
       apply MeasureTheory.integral_finsetSum
-      intro m hm
-      have hmRange := Finset.mem_Icc.mp hm
-      exact integrable_gmPositiveDualModeIntegrand cutoff t hN
-        hmRange.1 hmRange.2
+      pm_5355 integrable_gmPositiveDualModeIntegrand
 
 /-- Algebraic cancellation of the scale factors in the aggregate integrand.
 The remaining finite sum is precisely one Dirichlet polynomial. -/
@@ -1984,12 +1337,10 @@ theorem sum_gmPositiveDualModeIntegrand_eq
             gmPositiveDualDirichletPoly t N M r) := by
   rw [gmPositiveDualDirichletPoly]
   rw [Complex.real_smul]
-  rw [Finset.mul_sum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro m hm
+  pm_1063 Finset.mul_sum m hm
   have hmPos : 0 < N * m := by
     exact Nat.mul_pos hN (lt_of_lt_of_le Nat.zero_lt_one (Finset.mem_Icc.mp hm).1)
-  have hq : ((N * m : ℕ) : ℂ) ≠ 0 := by exact_mod_cast hmPos.ne'
+  pm_7663 hq hmPos.ne'
   rw [gmPositiveDualModeIntegrand]
   have hpow :
       ((N * m : ℕ) : ℂ) ^ (-((t : ℂ) * I)) *
@@ -2021,11 +1372,13 @@ theorem sum_gmPositiveDualModeIntegrand_eq
       rw [hqCancel, hpow]
       ring
 
+section
+variable (cutoff : GMSmoothCutoff) (t : ℝ) {N M : ℕ} (hN : 0 < N)
+include cutoff t N M hN
 /-- Integrability of the exact cancellation-preserving aggregate integrand.
 This is the measurable input needed to split its Mellin integral into a core
 and a complementary tail. -/
-theorem integrable_norm_gmPositiveDualAggregate
-    (cutoff : GMSmoothCutoff) (t : ℝ) {N M : ℕ} (hN : 0 < N) :
+theorem integrable_norm_gmPositiveDualAggregate :
     Integrable (fun r : ℝ =>
       (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
         ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
@@ -2034,22 +1387,14 @@ theorem integrable_norm_gmPositiveDualAggregate
       ∑ m ∈ Finset.Icc 1 M,
         gmPositiveDualModeIntegrand cutoff t N M m r) := by
     apply integrable_finsetSum
-    intro m hm
-    have hmRange := Finset.mem_Icc.mp hm
-    exact integrable_gmPositiveDualModeIntegrand cutoff t hN
-      hmRange.1 hmRange.2
+    pm_5355 integrable_gmPositiveDualModeIntegrand
   have hnorm := hsum.norm
   apply hnorm.congr
-  filter_upwards with r
-  rw [sum_gmPositiveDualModeIntegrand_eq cutoff t r hN]
-  rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity :
-    0 < (1 / (2 * Real.pi) : ℝ)), norm_mul, norm_mul]
-  ring
+  pm_4876
 
 /-- Cancellation-preserving norm form of the positive half of Guth--Maynard
 Lemma 6.2.  No factor equal to the number of Fourier modes is introduced. -/
-theorem norm_gmTraceFourier_pos_sum_le_dualPoly
-    (cutoff : GMSmoothCutoff) (t : ℝ) {N M : ℕ} (hN : 0 < N) :
+theorem norm_gmTraceFourier_pos_sum_le_dualPoly :
     ‖∑ m ∈ Finset.Icc 1 M, gmTraceFourier cutoff t ((N : ℝ) * m)‖ ≤
       ∫ r : ℝ, (1 / (2 * Real.pi) : ℝ) *
         ‖gmCutoffMellin cutoff r‖ *
@@ -2067,17 +1412,12 @@ theorem norm_gmTraceFourier_pos_sum_le_dualPoly
         ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
         ‖gmPositiveDualDirichletPoly t N M r‖ := by
       apply MeasureTheory.integral_congr_ae
-      filter_upwards with r
-      rw [sum_gmPositiveDualModeIntegrand_eq cutoff t r hN]
-      rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity :
-        0 < (1 / (2 * Real.pi) : ℝ)), norm_mul, norm_mul]
-      ring
+      pm_4876
 
 /-- The negative Fourier modes satisfy the conjugate cancellation-preserving
 bound.  In particular, no factor equal to the number of modes is introduced
 on the negative half either. -/
-theorem norm_gmTraceFourier_neg_sum_le_dualPoly
-    (cutoff : GMSmoothCutoff) (t : ℝ) {N M : ℕ} (hN : 0 < N) :
+theorem norm_gmTraceFourier_neg_sum_le_dualPoly :
     ‖∑ m ∈ Finset.Icc 1 M,
         gmTraceFourier cutoff t (-((N : ℝ) * m))‖ ≤
       ∫ r : ℝ, (1 / (2 * Real.pi) : ℝ) *
@@ -2107,8 +1447,7 @@ This removes the spurious mode-cardinality loss from
 `norm_gmSmoothReflection_native_le`.  The uniform `T₀⁻¹ᐟ²` extraction and the
 summed omitted-frequency remainder required by the published Lemma 6.2 remain
 separate obligations. -/
-theorem norm_gmTraceFourier_signed_sum_le_dualPoly
-    (cutoff : GMSmoothCutoff) (t : ℝ) {N M : ℕ} (hN : 0 < N) :
+theorem norm_gmTraceFourier_signed_sum_le_dualPoly :
     ‖∑ m ∈ Finset.Icc 1 M,
         (gmTraceFourier cutoff t ((N : ℝ) * m) +
           gmTraceFourier cutoff t (-((N : ℝ) * m)))‖ ≤
@@ -2124,5 +1463,6 @@ theorem norm_gmTraceFourier_signed_sum_le_dualPoly
   exact (norm_add_le _ _).trans (add_le_add
     (norm_gmTraceFourier_pos_sum_le_dualPoly cutoff t hN)
     (norm_gmTraceFourier_neg_sum_le_dualPoly cutoff t hN))
+end
 
 end GuthMaynard.NativeMoment

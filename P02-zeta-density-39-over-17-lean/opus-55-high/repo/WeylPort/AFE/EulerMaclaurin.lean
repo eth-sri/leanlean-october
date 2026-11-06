@@ -3,6 +3,7 @@ module
 public import WeylPort.AFE.PoissonFourier
 public import WeylPort.Analytic.EulerMaclaurin
 public import Mathlib.Analysis.Calculus.Deriv.Shift
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,32 +37,16 @@ theorem sum_shift_nat_floor (F : ℝ → ℂ) {a b : ℝ} (hab : a ≤ b)
   have hfa := hfloor a hk
   have hfb := hfloor b (hk.trans hab)
   apply Finset.sum_bij (fun (n : ℕ) _ => (n : ℤ) + k)
-  · intro n hn
-    simp only [Finset.mem_Ioc] at hn ⊢
-    have hna : (⌊a - k⌋₊ : ℤ) < n := by exact_mod_cast hn.1
-    have hnb : (n : ℤ) ≤ ⌊b - k⌋₊ := by exact_mod_cast hn.2
-    omega
-  · intro n _ m _ hnm
-    exact_mod_cast (add_right_cancel hnm : (n : ℤ) = m)
+  grind
+  grind
   · intro m hm
     simp only [Finset.mem_Ioc] at hm
     have hka : k ≤ ⌊a⌋ := Int.le_floor.mpr hk
     have hmk : 0 ≤ m - k := by omega
     refine ⟨(m - k).toNat, ?_, ?_⟩
-    · simp only [Finset.mem_Ioc]
-      constructor
-      · have ht : (⌊a - k⌋₊ : ℤ) < ((m - k).toNat : ℤ) := by
-          rw [Int.toNat_of_nonneg hmk]
-          omega
-        exact_mod_cast ht
-      · have ht : ((m - k).toNat : ℤ) ≤ ⌊b - k⌋₊ := by
-          rw [Int.toNat_of_nonneg hmk]
-          omega
-        exact_mod_cast ht
-    · rw [Int.toNat_of_nonneg hmk]
-      omega
-  · intro n _
-    simp only [Int.cast_add, Int.cast_natCast]
+    grind
+    grind
+  simp_all
 
 /-- Exact first-order Euler–Maclaurin with arbitrary real endpoints and the source's (a,b] sum. -/
 theorem euler_maclaurin_int {a b : ℝ} (hab : a ≤ b) (F : ℝ → ℂ)
@@ -72,11 +57,10 @@ theorem euler_maclaurin_int {a b : ℝ} (hab : a ≤ b) (F : ℝ → ℂ)
         (∫ x in a..b, F x) + ∫ x in a..b, deriv F x * ((Int.fract x - 1 / 2 : ℝ) : ℂ) := by
   let k : ℤ := ⌊a⌋
   have hk : (k : ℝ) ≤ a := Int.floor_le a
-  have ha0 : 0 ≤ a - k := sub_nonneg.mpr hk
+  pm_7297 ha0 a k hk
   have hab' : a - k ≤ b - k := sub_le_sub_right hab _
   have hm : Set.MapsTo (fun x : ℝ => x + k) (Set.Icc (a - k) (b - k)) (Set.Icc a b) := by
-    intro x hx
-    constructor <;> linarith [hx.1, hx.2]
+    pm_8035
   have hd' (x : ℝ) (hx : x ∈ Set.Icc (a - k) (b - k)) :
       DifferentiableAt ℝ (fun u => F (u + k)) x :=
     (hd _ (hm hx)).comp x (differentiableAt_id.add_const _)
@@ -98,9 +82,7 @@ theorem euler_maclaurin_int {a b : ℝ} (hab : a ≤ b) (F : ℝ → ℂ)
     calc
       _ = ∫ x in (a - k)..(b - k),
           deriv F (x + k) * ((Int.fract (x + k) - 1 / 2 : ℝ) : ℂ) := by
-        apply intervalIntegral.integral_congr
-        intro x hx
-        rw [Set.uIcc_of_le hab'] at hx
+        pm_445 intervalIntegral.integral_congr x hx Set.uIcc_of_le hab'
         dsimp only
         rw [deriv_comp_add_const, B1_eq_fract (ha0.trans hx.1), Int.fract_add_intCast]
       _ = _ := by
@@ -133,9 +115,7 @@ theorem weighted_sum_eq_fourier {f g : ℝ → ℝ} {a b : ℝ}
   have he := euler_maclaurin_int h.lt.le (weightedWave f g) hd hc
   have hi : (∫ x in a..b, deriv (weightedWave f g) x * ((Int.fract x - 1 / 2 : ℝ) : ℂ)) =
       ∫ x in a..b, waveDerivative f g x * ((Int.fract x - 1 / 2 : ℝ) : ℂ) := by
-    apply intervalIntegral.integral_congr
-    intro x hx
-    rw [Set.uIcc_of_le h.lt.le] at hx
+    pm_445 intervalIntegral.integral_congr x hx Set.uIcc_of_le h.lt.le
     dsimp only
     rw [heq x hx]
   rw [hi, integral_waveDerivative_sawtooth h] at he

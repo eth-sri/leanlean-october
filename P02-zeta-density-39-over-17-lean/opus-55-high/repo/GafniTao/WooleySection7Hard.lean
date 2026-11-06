@@ -2,7 +2,7 @@ module
 public import GafniTao.WooleyEquation724
 public import GafniTao.WooleySection7HardPower
 
-@[expose] public section
+public section
 
 /-!
 # The hard branch of Wooley Lemma 7.1
@@ -14,11 +14,9 @@ explicit, as required by its uniform big-O meaning.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleySourcePolynomial_section7_hard_of_lower_bound
     {k r p B s a b nu c : ℕ}
@@ -163,6 +161,5 @@ theorem wooleySourcePolynomial_section7_hard_of_lower_bound
     _ ≤ (C * (p : ℝ) ^ (k ^ 2 * nu)) * fiberSum := by
       simpa only [mul_assoc] using hscaled
 
-end
 
 end GafniTao

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LiftedFourier
 public import OAI.NumberTheory.DirichletL.Detector.Physical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -60,9 +61,7 @@ theorem fullFourier_eq_congruence (a s : O) (ha : a≠0) (hs : s≠0)
   simp_rw [tsum_fintype, Finset.mul_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
   unfold congruenceCoefficient
-  rw [tsum_fintype, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro d hd
+  pm_3419 tsum_fintype Finset.mul_sum d hd
   calc
     _ = χ d * conductorFourier a s ha hs F (H-a*representative s d) := by
       rw [conductorFourier, tsum_fintype, Finset.mul_sum]

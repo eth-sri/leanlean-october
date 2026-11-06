@@ -10,6 +10,7 @@ No unconditional high-value, twelfth-moment or stronger-density bound is asserte
 -/
 public import MathCollab.Density.Stronger.Peaks.Clusters
 public import MathCollab.Density.Stronger.FiniteOccupancy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,6 @@ open MathCollab.Density MathCollab.Density.Stronger
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow
   eventually_const_height_log_pow_mul_rpow_le_rpow
   eventually_pointValue_sixth_power_source_range)
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Peaks
 theorem atkinsonLocalMeanExcess_threshold_iff {G t error Y : ℝ} (hY : 0 < Y) :
@@ -28,12 +28,8 @@ theorem atkinsonLocalMeanExcess_threshold_iff {G t error Y : ℝ} (hY : 0 < Y) :
   unfold atkinsonLocalMeanExcess
   rw [le_max_iff]
   constructor
-  · rintro (h | h)
-    · linarith
-    · linarith
-  · intro h
-    right
-    linarith
+  grind
+  grind
 theorem exists_atkinsonLocalMeanExcess_card_le_above_fourthRoot
     (hPacket : LocalMeanPacketInput)
     {δ κ ν : ℝ} (hδ : 0 < δ) (hκ : 0 < κ) (hν : 0 < ν) :
@@ -46,7 +42,7 @@ theorem exists_atkinsonLocalMeanExcess_card_le_above_fourthRoot
     hPacket δ κ (ν/3) hδ hκ (show 0 < ν/3 by linarith)
   refine ⟨C,hC,2*D+32*D^3,by positivity,B,hB,?_⟩
   intro H G Y W hH hG hY hSep hrange hlarge
-  have hH1 : 1 ≤ H := by linarith [hB.trans hH]
+  pm_4484
   have hH0 : 0 < H := by linarith
   have hA : 0 < D*H^(ν/3) := by positivity
   have hpacket : ∀ U : Finset ℝ, U ⊆ W →
@@ -56,8 +52,7 @@ theorem exists_atkinsonLocalMeanExcess_card_le_above_fourthRoot
           Real.sqrt (G*atkinsonAbsorptionLength (D*H^(ν/3)) G Y)) := by
     intro U hsub A hlocal
     have hsepU : separatedAt G U := by
-      intro x hx y hy hxy
-      exact hSep x (hsub hx) y (hsub hy) hxy
+      pm_203 hSep hsub
     exact hsource H G A (atkinsonAbsorptionLength (D*H^(ν/3)) G Y)
       U hH hG hsepU (fun t ht => hrange t (hsub ht)) hlocal
   have hc := atkinson_card_le_of_local_packets hA hH0.le hG hY
@@ -78,14 +73,12 @@ theorem exists_pointCluster_localMean_bound
         P*Real.log (3*H)*(((pointCluster H G W n).card:ℝ) +
           4*(∫ u in pointClusterCenter H G n-G..pointClusterCenter H G n+G,
             zetaMomentCriticalNorm u^2)) := by
-  obtain ⟨P,hP,hsource⟩ := hPointMean
-  refine ⟨P,hP,?_⟩
+  pm_155 P hP hsource hPointMean
   intro H G V W n hH hG hGH hV hfit hsep hrange hlarge hn
   have hc := pointClusterCenter_range hG hrange hn
   have hsub := pointCluster_subset H G W n
   have hsep' : oneSeparated (pointCluster H G W n) := by
-    intro x hx y hy hxy
-    exact hsep x (hsub hx) y (hsub hy) hxy
+    pm_203 hsep hsub
   apply hsource (3*H) V (pointClusterCenter H G n) G
     ((Real.log (3*H))^2) (pointCluster H G W n)
     (by linarith) hV hG.le (sq_nonneg _) hsep'
@@ -93,7 +86,7 @@ theorem exists_pointCluster_localMean_bound
     (by linarith [hc.1]) (by linarith [hc.2])
   · intro t ht
     have htR := hrange t (hsub ht)
-    have hlt : 0 ≤ Real.log t := Real.log_nonneg (by linarith)
+    pm_301 hlt t
     have hmono : Real.log t ≤ Real.log (3*H) :=
       Real.log_le_log (by linarith) (by linarith)
     exact pow_le_pow_left₀ hlt hmono 2
@@ -138,8 +131,7 @@ theorem exists_pointCluster_superlevel_entry
   have hm1 : (1:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm
   have hmr : (m:ℝ) ≤ ((pointCluster H G W n).card:ℝ) := by exact_mod_cast hocc
   have hA : 0 ≤ V^2/(16*P*Real.log (3*H)) := by positivity
-  have hma := mul_le_mul_of_nonneg_right hmr hA
-  have hmin := mul_le_mul_of_nonneg_right hm1 hA
+  pm_194 hma mul_le_mul_of_nonneg_right hmr hA hmin hm1
   nlinarith
 
 
@@ -168,57 +160,14 @@ theorem exists_pointCluster_superlevel_count
   obtain ⟨P,hP,hentry⟩ := (exists_pointCluster_superlevel_entry hPointMean)
   obtain ⟨C,hC,D,hD,H₀,hH₀,hcount⟩ :=
     (exists_atkinsonLocalMeanExcess_card_le_above_fourthRoot hPacket) hδ hκ hν
-  refine ⟨P,C,D,H₀,hP,hC,hD,hH₀,?_⟩
-  intro H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm
-  let A : ℝ := V^2/(16*P*Real.log (3*H))
-  let Y : ℝ := (m:ℝ)*A
-  let S : Finset ℕ := pointClusterSuperlevel H G W m
-  have hHlarge : 20 ≤ H := by linarith [hH₀.trans hH]
-  have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith)
-  have hA : 0 < A := by dsimp only [A]; positivity
-  have hY : 0 < Y := by dsimp only [Y]; positivity
+  pm_4486
   have hcolor : ∀ e : ℕ,
       ((S.filter (fun n => n%2 = e)).card:ℝ) ≤
         D*H^ν*(H/(G*Y^2)+H^2/Y^6) := by
-    intro e
-    let U := S.filter (fun n => n%2 = e)
-    have hbase : ∀ n ∈ U, n ∈ pointClusterBins H G W := by
-      intro n hn
-      exact (Finset.mem_filter.mp (Finset.mem_filter.mp hn).1).1
-    have hcentersSep := pointClusterCenters_separated (H := H) hG U e
-      (fun n hn => (Finset.mem_filter.mp hn).2)
-    have hcentersRange : ∀ t ∈ pointClusterCenters H G U,
-        H ≤ t ∧ t ≤ 2*H ∧ t^δ ≤ G ∧ G ≤ t^(1/2-δ) ∧ t^(1/4+κ) ≤ G := by
-      intro t ht
-      obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp ht
-      have hc := pointClusterCenter_range hG hrange (hbase n hn)
-      exact ⟨hc.1,hc.2,hwidth _ hc.1 hc.2⟩
-    have hcentersLarge : ∀ t ∈ pointClusterCenters H G U,
-        Y ≤ atkinsonLocalMeanExcess G t (C*G*Real.log t) := by
-      intro t ht
-      obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp ht
-      have hc := pointClusterCenter_range hG hrange (hbase n hn)
-      have hnS : n ∈ S := (Finset.mem_filter.mp hn).1
-      have hocc : m ≤ (pointCluster H G W n).card := (Finset.mem_filter.mp hnS).2
-      have hlog : Real.log (pointClusterCenter H G n) ≤ Real.log (3*H) :=
-        Real.log_le_log (by linarith [hc.1]) (by linarith [hc.2])
-      have herror : C*G*Real.log (pointClusterCenter H G n) ≤ A :=
-        (mul_le_mul_of_nonneg_left hlog (by positivity)).trans herr
-      apply (atkinsonLocalMeanExcess_threshold_iff hY).mpr
-      exact hentry H G V (C*G*Real.log (pointClusterCenter H G n))
-        W n m hHlarge hG hGH hV hfit hsep hrange hlarge
-        (hbase n hn) hm hocc hVsize herror
-    have hb := hcount H G Y (pointClusterCenters H G U)
-      hH hG hY hcentersSep hcentersRange hcentersLarge
-    simpa only [pointClusterCenters_card hG, U] using hb
-  have hcards : (S.card:ℝ) = ((S.filter (fun n => n%2 = 0)).card:ℝ) +
-      ((S.filter (fun n => n%2 = 1)).card:ℝ) := by
-    exact_mod_cast card_eq_sum_parity_cards S
+    pm_4485
+  pm_4487
   change (S.card:ℝ) ≤ 2*D*H^ν*(H/(G*Y^2)+H^2/Y^6)
-  rw [hcards]
-  have h0 := hcolor 0
-  have h1 := hcolor 1
-  linarith
+  pm_6938
 
 theorem occupancy_inverse_power_budget {H G A m : ℝ}
     (hG : 0 < G) (hA : 0 < A) (hm : 1 ≤ m) :
@@ -252,34 +201,21 @@ theorem exists_pointValue_card_le_with_width
         (W.card:ℝ) ≤ D*H^ν*
           (H/(G*(V^2/(16*P*Real.log (3*H)))^2) +
             H^2/(V^2/(16*P*Real.log (3*H)))^6) := by
-  obtain ⟨P,C,D,H₀,hP,hC,hD,hH₀,hcount⟩ :=
-    (exists_pointCluster_superlevel_count hPointMean hPacket) hδ hκ hν
-  refine ⟨P,C,4*D,H₀,hP,hC,by positivity,hH₀,?_⟩
-  intro H G V W hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge
-  let A : ℝ := V^2/(16*P*Real.log (3*H))
+  pm_5010 H₀ hH₀ exists_pointCluster_superlevel_count hPointMean hPacket
+  pm_4490
   let B : ℝ := 2*D*H^ν*(H/(G*A^2)+H^2/A^6)
-  have hHpos : 0 < H := by linarith [hH₀.trans hH]
-  have hL : 0 < Real.log (3*H) := Real.log_pos (by linarith [hH₀.trans hH])
-  have hA : 0 < A := by dsimp only [A]; positivity
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
+  pm_4489
   have hsuper : ∀ m : ℕ, 0 < m →
       (((pointClusterBins H G W).filter
         (fun n => m ≤ (pointCluster H G W n).card)).card:ℝ) ≤ B/(m:ℝ)^2 := by
-    intro m hm
-    have hc := hcount H G V W m hH hG hGH hV hfit hwidth hVsize herr hsep hrange hlarge hm
-    have hm1 : (1:ℝ) ≤ (m:ℝ) := by exact_mod_cast hm
+    pm_4491
     have hp := occupancy_inverse_power_budget (H := H) hG hA hm1
     calc
       _ ≤ 2*D*H^ν*(H/(G*((m:ℝ)*A)^2)+H^2/((m:ℝ)*A)^6) := hc
       _ ≤ 2*D*H^ν*((H/(G*A^2)+H^2/A^6)/(m:ℝ)^2) :=
         mul_le_mul_of_nonneg_left hp (by positivity)
       _ = B/(m:ℝ)^2 := by dsimp only [B]; ring
-  have hsum := sum_nat_occupancy_le_of_superlevels
-    (pointClusterBins H G W) (fun n => (pointCluster H G W n).card) hB hsuper
-  have hpartition : (W.card:ℝ) = ∑ n ∈ pointClusterBins H G W,
-      ((pointCluster H G W n).card:ℝ) := by
-    exact_mod_cast pointCluster_card_partition H G W
-  rw [← hpartition] at hsum
+  pm_4488
   calc
     (W.card:ℝ) ≤ 2*B := hsum
     _ = (4*D)*H^ν*(H/(G*A^2)+H^2/A^6) := by dsimp only [B]; ring

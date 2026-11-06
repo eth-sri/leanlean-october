@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQPolynomialBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,18 +24,11 @@ theorem robertSargos_zero_q_floor_budgets (M H : ℕ) {lam : ℝ}
       (H:ℝ)^2*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ (M:ℝ)*(⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)/2 ∧
       (H:ℝ)^2*(2*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ)*lam)^((1:ℝ)/12) ≤
         (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ) := by
-  let T := lam^(-(1:ℝ)/13)
-  obtain ⟨hT,hscale⟩ := thirteenth_root_physical_scale hlam hsmall
-  have hT1 : 1 ≤ T := by dsimp [T]; linarith
-  have h8 : T^8 = lam^(-(8:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 8
-  have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
-  have h3 : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
-  have hQ1 : 1 ≤ lam^(-(3:ℝ)/13) := by
-    rw [← h3]
-    exact one_le_pow₀ hT1
+  pm_366
+  pm_1611 hT1 T
+  pm_1669
+  pm_1668
+  pm_899
   obtain ⟨hQ,hQlo,_⟩ := positive_floor_half_bounds hQ1
   obtain ⟨hR,_,hRhi⟩ := positive_floor_half_bounds hT1
   have hb := zero_q_physical_polynomial_budgets
@@ -42,6 +36,6 @@ theorem robertSargos_zero_q_floor_budgets (M H : ℕ) {lam : ℝ}
     (Q := (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)) (R := (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ))
     hT (by rwa [h8]) (Nat.cast_nonneg H) (by rwa [h2]) (by rwa [h3])
     (Nat.cast_nonneg _) hRhi hlam hscale
-  exact ⟨hQ,hR,hRhi,hb⟩
+  grind
 
 end TaoTrudgianYang2025

@@ -6,6 +6,7 @@ no oscillatory asymptotic as a premise. Selected source definitions and
 ray lemmas retain the McColm MIT-0 attribution; see third_party/twelfth/NEUMANN_NATIVE_MANIFEST.json.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannLaplaceMoments
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,10 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem norm_neumannLaplaceIntegral_le {x : ℝ} (hx : 0 < x) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+theorem norm_neumannLaplaceIntegral_le :
     ‖neumannLaplaceIntegral x‖ ≤ Real.sqrt Real.pi * x ^ (-(1 / 2 : ℝ)) := by
   have h := norm_integral_le_of_norm_le
     (integrableOn_neumannLaplaceMomentIntegrand hx 0)
@@ -26,13 +30,9 @@ theorem norm_neumannLaplaceIntegral_le {x : ℝ} (hx : 0 < x) :
   change ‖neumannLaplaceIntegral x‖ ≤ neumannLaplaceMoment x 0 at h
   rwa [neumannLaplaceMoment_zero hx] at h
 
-theorem abs_dfiBesselY0_le_seven_div_sqrt {x : ℝ} (hx : 0 < x) :
+theorem abs_dfiBesselY0_le_seven_div_sqrt :
     |dfiBesselY0 x| ≤ 7 / Real.sqrt x := by
-  have hcoef : ‖Complex.exp (I * (x : ℂ)) * neumannRayCoefficient‖ ≤ 1 := by
-    rw [norm_mul]
-    have he : ‖Complex.exp (I * (x : ℂ))‖ = 1 := by simp [Complex.norm_exp, mul_re]
-    rw [he, one_mul]
-    exact norm_neumannRayCoefficient_le_one
+  pm_334
   have hc : (2 / Real.pi) * Real.sqrt Real.pi ≤ 7 := by
     have hs : Real.sqrt Real.pi ≤ Real.pi := by
       nlinarith [Real.sq_sqrt Real.pi_pos.le, Real.sqrt_nonneg Real.pi, Real.pi_gt_three]
@@ -55,5 +55,6 @@ theorem abs_dfiBesselY0_le_seven_div_sqrt {x : ℝ} (hx : 0 < x) :
       rw [← mul_assoc]
       exact mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hx.le _)
     _ = _ := by rw [Real.rpow_neg hx.le, ← Real.sqrt_eq_rpow, div_eq_mul_inv]
+end
 
 end MathCollab.Density.Stronger.Atkinson

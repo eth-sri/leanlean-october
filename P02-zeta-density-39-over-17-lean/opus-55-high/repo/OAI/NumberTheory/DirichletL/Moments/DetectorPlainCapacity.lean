@@ -26,7 +26,7 @@ theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character
     have hw:S.W 0=0:=by
       by_contra hh
       have hs:=S.complex_support hh
-      norm_num at hs
+      grind
     simp [physicalSlotCoefficient,annularWeight,hw]
   · exact physicalSlotCoefficient_annular η₀ S.W P ζ I hI hP
 

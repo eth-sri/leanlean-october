@@ -7,6 +7,7 @@ See third_party/twelfth/ATKINSON_LEADING_CONVERGENCE_MANIFEST.json.
 Mathlib dependencies retain their Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCorrectionSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,11 +33,10 @@ theorem exists_norm_tsum_zetaAtkinsonTwoTerm_sub_leading_le_of_summable :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 1 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
       0 < L → 8 * L ≤ G → Summable (atkinsonLeadingTerm T G L) →
         ‖(∑' n : ℕ, zetaAtkinsonTwoTerm T G L n) - atkinsonLeadingSum T G L‖ ≤ C * G := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonCorrectionSum_le
-  refine ⟨C, hC, ?_⟩
+  pm_157 C hC hbound exists_norm_atkinsonCorrectionSum_le
   intro T G L hT hG hGT hL hwidth hs
   rw [tsum_zetaAtkinsonTwoTerm_eq_leading_sub_correction_of_summable
     hT hG hGT hL hwidth hs, sub_sub_cancel_left, norm_neg]
-  exact hbound T G L hT hG hGT hL hwidth
+  grind
 
 end MathCollab.Density.Stronger.Atkinson

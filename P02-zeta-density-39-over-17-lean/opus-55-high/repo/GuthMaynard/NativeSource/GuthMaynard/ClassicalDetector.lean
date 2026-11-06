@@ -2,11 +2,12 @@ module
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDensity
 public import GuthMaynard.NativeSource.GuthMaynard.ZetaTruncation
 public import GuthMaynard.NativeSource.GuthMaynard.ArithmeticCoefficients
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset
-open scoped ArithmeticFunction.Moebius BigOperators
+open scoped ArithmeticFunction.Moebius
 
 namespace GuthMaynard.NativeMoment
 
@@ -18,16 +19,14 @@ noncomputable def truncatedZeta (A : ℕ) : ArithmeticFunction ℂ where
 @[simp] theorem truncatedZeta_apply (A n : ℕ) :
     truncatedZeta A n = if n ∈ Icc 1 A then 1 else 0 := rfl
 
-theorem truncatedZeta_hasFiniteSupport (A : ℕ) :
+section
+variable (A : ℕ)
+include A
+theorem truncatedZeta_hasFiniteSupport :
     Function.HasFiniteSupport (truncatedZeta A) := by
-  apply Set.Finite.subset (Icc 1 A).finite_toSet
-  intro n hn
-  simp only [Function.mem_support, ne_eq] at hn
-  by_contra hnMem
-  have hnMem' : n ∉ Icc 1 A := by simpa using hnMem
-  exact hn (by rw [truncatedZeta_apply, ite_eq_right hnMem'])
+  pm_1344 A
 
-theorem truncatedZeta_LSeriesSummable (A : ℕ) (s : ℂ) :
+theorem truncatedZeta_LSeriesSummable (s : ℂ) :
     LSeriesSummable (truncatedZeta A) s := by
   unfold LSeriesSummable
   exact summable_of_hasFiniteSupport <|
@@ -36,19 +35,20 @@ theorem truncatedZeta_LSeriesSummable (A : ℕ) (s : ℂ) :
       simp only [Function.mem_support, ne_eq] at hn ⊢
       contrapose! hn
       rw [LSeries.term_def₀ (truncatedZeta A).map_zero]
-      simp [hn])
+      grind)
 
 /-- The finite zeta sum is the L-series of `truncatedZeta`. -/
-theorem zetaPartialSum_eq_LSeries (A : ℕ) (s : ℂ) :
+theorem zetaPartialSum_eq_LSeries (s : ℂ) :
     (∑ n ∈ Icc 1 A, (n : ℂ) ^ (-s)) = LSeries (truncatedZeta A) s := by
   rw [LSeries, tsum_eq_sum (s := Icc 1 A)]
   · apply Finset.sum_congr rfl
     intro n hn
     rw [LSeries.term_def₀ (truncatedZeta A).map_zero]
-    simp only [truncatedZeta_apply, ite_eq_left hn, one_mul]
+    simp_all
   · intro n hn
     rw [LSeries.term_def₀ (truncatedZeta A).map_zero]
     simp [hn]
+end
 
 /-- Coefficients of the rectangular product of a finite zeta sum and a
 finite Möbius mollifier. -/
@@ -65,8 +65,7 @@ theorem sharpMollifiedCoeff_eq_ite (A X n : ℕ) (hn : 0 < n)
     rw [sharpMollifiedCoeff, ArithmeticFunction.mul_apply,
       ArithmeticFunction.mul_apply]
     apply Finset.sum_congr rfl
-    intro p hp
-    obtain ⟨hpMul, _hnNe⟩ := Nat.mem_divisorsAntidiagonal.mp hp
+    pm_381 p hp hpMul _hnNe Nat.mem_divisorsAntidiagonal.mp
     have hnNe : n ≠ 0 := Nat.ne_of_gt hn
     have hpLeftNe : p.1 ≠ 0 := by
       intro hpZero
@@ -119,8 +118,7 @@ theorem sharpMollifiedCoeff_eq_zero_of_mul_lt (A X n : ℕ) (hn : A * X < n) :
     sharpMollifiedCoeff A X n = 0 := by
   rw [sharpMollifiedCoeff, ArithmeticFunction.mul_apply]
   apply Finset.sum_eq_zero
-  intro p hp
-  obtain ⟨hpMul, _hnNe⟩ := Nat.mem_divisorsAntidiagonal.mp hp
+  pm_381 p hp hpMul _hnNe Nat.mem_divisorsAntidiagonal.mp
   simp only [truncatedZeta_apply, truncatedMoebius_apply]
   by_cases hpA : p.1 ∈ Icc 1 A
   · have hpX : p.2 ∉ Icc 1 X := by
@@ -168,20 +166,23 @@ theorem sharpMollifiedCoeff_bound :
       ∀ (A X n : ℕ), 0 < n →
         ‖sharpMollifiedCoeff A X n‖ ≤ C * (n : ℝ) ^ ε := by
   intro ε hε
-  obtain ⟨C, hC, hDiv⟩ := divisorCountBound_native ε hε
+  pm_98 C hC hDiv divisorCountBound_native ε hε
   exact ⟨C, hC, fun A X n hn =>
     (norm_sharpMollifiedCoeff_le_divisors_card A X n).trans (hDiv n hn)⟩
 
+section
+variable (A X : ℕ) (s : ℂ)
+include A X s
 /-- The finite product L-series is exactly supported on `[1,A*X]`. -/
-theorem sharpMollifiedCoeff_LSeries_eq_sum (A X : ℕ) (s : ℂ) :
+theorem sharpMollifiedCoeff_LSeries_eq_sum :
     LSeries (sharpMollifiedCoeff A X) s =
       ∑ n ∈ Icc 1 (A * X), sharpMollifiedCoeff A X n * (n : ℂ) ^ (-s) := by
   rw [LSeries, tsum_eq_sum (s := Icc 1 (A * X))]
   · apply Finset.sum_congr rfl
     intro n hn
-    rw [LSeries.term_def₀ (sharpMollifiedCoeff A X).map_zero]
+    pm_8301
   · intro n hn
-    rw [LSeries.term_def₀ (sharpMollifiedCoeff A X).map_zero]
+    pm_8301
     by_cases hnZero : n = 0
     · simp [hnZero]
     · have hnLt : A * X < n := by
@@ -192,8 +193,7 @@ theorem sharpMollifiedCoeff_LSeries_eq_sum (A X : ℕ) (s : ℂ) :
 
 /-- Exact cancellation removes every nonconstant coefficient up through the
 mollifier length, leaving one finite tail. -/
-theorem zetaPartialSum_mul_zetaMollifier_eq_one_add_tail
-    (A X : ℕ) (s : ℂ) (hA : 1 ≤ A) (hX : 1 ≤ X) (hXA : X ≤ A) :
+theorem zetaPartialSum_mul_zetaMollifier_eq_one_add_tail (hA : 1 ≤ A) (hX : 1 ≤ X) (hXA : X ≤ A) :
     (∑ n ∈ Icc 1 A, (n : ℂ) ^ (-s)) * zetaMollifier X s =
       1 + ∑ n ∈ Ioc X (A * X),
         sharpMollifiedCoeff A X n * (n : ℂ) ^ (-s) := by
@@ -223,6 +223,7 @@ theorem zetaPartialSum_mul_zetaMollifier_eq_one_add_tail
     · intro h
       exact False.elim (h (Finset.mem_Icc.mpr ⟨by omega, hX⟩))
   rw [hLow]
+end
 
 /-- A direct majorant for the finite Möbius mollifier on the closed right
 half-plane. -/

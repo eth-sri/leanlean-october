@@ -4,12 +4,12 @@ public import MathCollab.Density.Stronger.InitialDetector
 public import MathCollab.Density.Stronger.DampedCutoff
 public import MathCollab.Density.Stronger.SmoothMellinIdentity
 public import Mathlib.Analysis.Complex.ExponentialBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Real Complex Set Filter
-open scoped BigOperators Topology
-set_option autoImplicit false
+open scoped Topology
 set_option maxHeartbeats 1000000
 noncomputable section
 
@@ -18,46 +18,49 @@ namespace MathCollab.Density.Stronger
 def smoothDetectorBlock (ρ : ℂ) (X Y : ℝ) (j : ℤ) : ℂ :=
   smoothDyadicBlock (detectorTerm ρ X Y) j
 
-theorem summable_norm_detectorTerm {ρ : ℂ} (X : ℝ) {Y : ℝ}
-    (hY : 0 < Y) (hρ : 0 ≤ ρ.re) :
+section
+variable {ρ : ℂ} (X : ℝ) {Y : ℝ} (hY : 0 < Y) (hρ : 0 ≤ ρ.re)
+include ρ X Y hY hρ
+theorem summable_norm_detectorTerm :
     Summable (fun n : ℕ => ‖detectorTerm ρ X Y n‖) :=
   (summable_zeta_detector_series X hY hρ).norm
 
-theorem summable_norm_detectorTerm_tail {ρ : ℂ} (X : ℝ) {Y : ℝ}
-    (hY : 0 < Y) (hρ : 0 ≤ ρ.re) :
+theorem summable_norm_detectorTerm_tail :
     Summable (fun n : ℕ => ‖detectorTerm ρ X Y (n+2)‖) :=
   (summable_nat_add_iff 2).mpr (summable_norm_detectorTerm X hY hρ)
 
-theorem summable_norm_smoothDetectorBlock {ρ : ℂ} (X : ℝ) {Y : ℝ}
-    (hY : 0 < Y) (hρ : 0 ≤ ρ.re) :
+theorem summable_norm_smoothDetectorBlock :
     Summable (fun j : ℤ => ‖smoothDetectorBlock ρ X Y j‖) :=
   summable_norm_smoothDyadicBlock (summable_norm_detectorTerm_tail X hY hρ)
 
 /-- The actual exponential detector after removing n=1 equals the full smooth
 dyadic series, with absolute summability proved first. -/
-theorem tsum_smoothDetectorBlock {ρ : ℂ} (X : ℝ) {Y : ℝ}
-    (hY : 0 < Y) (hρ : 0 ≤ ρ.re) :
+theorem tsum_smoothDetectorBlock :
     (∑' j : ℤ, smoothDetectorBlock ρ X Y j) = detectorTail ρ X Y :=
   tsum_smoothDyadicBlock (summable_norm_detectorTerm_tail X hY hρ)
+end
 
-theorem smoothDetectorBlock_zero_of_nonpos (ρ : ℂ) (X Y : ℝ) {j : ℤ} (hj : j ≤ 0) :
+section
+variable (ρ : ℂ) (X Y : ℝ) {j : ℤ}
+include ρ X Y j
+theorem smoothDetectorBlock_zero_of_nonpos (hj : j ≤ 0) :
     smoothDetectorBlock ρ X Y j = 0 := smoothDyadicBlock_zero_of_nonpos _ hj
 
 /-- Vanishing of small smooth blocks uses the exact Mobius cancellation.
 The removed n=1 term cannot enter this statement. -/
-theorem smoothDetectorBlock_zero_of_small (ρ : ℂ) (X Y : ℝ) {j : ℤ}
+theorem smoothDetectorBlock_zero_of_small
     (hj : (2 : ℝ)^j ≤ X/2) : smoothDetectorBlock ρ X Y j = 0 := by
   suffices hz : ∀ n : ℕ, smoothDyadicTerm (detectorTerm ρ X Y) n j = 0 by
     simp only [smoothDetectorBlock, smoothDyadicBlock, hz, tsum_zero]
   intro n
   by_cases hn : ((n+2 : ℕ) : ℝ) ≤ X
   · have hc := mollifierCoefficient_vanishes (by omega : 2 ≤ n+2) hn
-    simp only [smoothDyadicTerm, detectorTerm, hc, Int.cast_zero, zero_mul]
+    pm_93 smoothDyadicTerm detectorTerm hc Int.cast_zero zero_mul
   · have hp : 0 < (2 : ℝ)^j := zpow_pos (by norm_num) _
-    have hr : (3/2 : ℝ) ≤ ((n+2 : ℕ) : ℝ)/(2 : ℝ)^j :=
-      (le_div_iff₀ hp).mpr (by nlinarith)
+    pm_4492 hr
     simp only [smoothDyadicTerm, smoothDyadicWeight_zero_of_ge hr,
       Complex.ofReal_zero, mul_zero]
+end
 
 /-- The bound is on the sum of norms, as required for truncating dyadic
 scales; a bound merely on the norm of the original tail would not suffice. -/
@@ -65,11 +68,7 @@ theorem tsum_norm_detector_tail_le {ρ : ℂ} (X : ℝ) {Y : ℝ} (K : ℕ)
     (hY : 0 < Y) (hρ : 0 ≤ ρ.re) :
     (∑' n : ℕ, ‖detectorTerm ρ X Y (n+K)‖) ≤
       (⌊X⌋₊ : ℝ)*Real.exp (-(K : ℝ)/Y)*(1-Real.exp (-1/Y))⁻¹ := by
-  let r := Real.exp (-1/Y)
-  have hr : 0 ≤ r := (Real.exp_pos _).le
-  have hr' : r < 1 := Real.exp_lt_one_iff.mpr (div_neg_of_neg_of_pos (by norm_num) hY)
-  have hg := (hasSum_geometric_of_lt_one hr hr').mul_left
-    ((⌊X⌋₊ : ℝ)*Real.exp (-(K : ℝ)/Y))
+  pm_4324 Y hY
   have hb (n : ℕ) : ‖detectorTerm ρ X Y (n+K)‖ ≤
       (⌊X⌋₊ : ℝ)*Real.exp (-(K : ℝ)/Y)*r^n := by
     have he : Real.exp (-((n+K : ℕ) : ℝ)/Y) = Real.exp (-(K : ℝ)/Y)*r^n := by
@@ -78,7 +77,7 @@ theorem tsum_norm_detector_tail_le {ρ : ℂ} (X : ℝ) {Y : ℝ} (K : ℕ)
       push_cast
       ring
     exact (norm_detectorTerm_le X (n+K) hρ).trans_eq (by rw [he]; ring)
-  have hn := hg.summable.of_nonneg_of_le (fun n => norm_nonneg _) hb
+  pm_6168 n
   exact (hn.tsum_le_tsum hb hg.summable).trans_eq hg.tsum_eq
 
 /-- A real threshold tail is bounded by any earlier integer tail. -/
@@ -123,8 +122,7 @@ theorem smoothDetectorBlock_scale_tail_le_two_rpow {ρ : ℂ} {X Y T : ℝ}
       then ‖smoothDetectorBlock ρ X Y j‖ else 0) ≤ 2*T^(-2 : ℝ) := by
   let R := Y*(Real.log T)^2
   let K := ⌊R/2⌋₊
-  have hTpos : 0 < T := by linarith
-  have hYpos : 0 < Y := by linarith
+  pm_72 hTpos T hYpos Y
   have hR : 4 ≤ R := by dsimp [R]; nlinarith
   have hK : (K : ℝ) ≤ R/2 := Nat.floor_le (by linarith)
   have hKlo : R/4 ≤ (K : ℝ) := by
@@ -162,28 +160,30 @@ theorem smoothDetectorBlock_scale_tail_le_two_rpow {ρ : ℂ} {X Y T : ℝ}
 def smoothScaleIndices (R : ℝ) : Finset ℤ :=
   (Finset.Icc 0 ⌈Real.log R/Real.log 2⌉).filter (fun j => (2 : ℝ)^j ≤ R)
 
-theorem mem_smoothScaleIndices {R : ℝ} {j : ℤ} :
+section
+variable {R : ℝ}
+include R
+theorem mem_smoothScaleIndices {j : ℤ} :
     j ∈ smoothScaleIndices R ↔ 0 ≤ j ∧ (2 : ℝ)^j ≤ R := by
   constructor
   · intro hj
     obtain ⟨hmem, hscale⟩ := Finset.mem_filter.mp hj
     exact ⟨(Finset.mem_Icc.mp hmem).1, hscale⟩
   · rintro ⟨hj, hscale⟩
-    have hp : 0 < (2 : ℝ)^j := zpow_pos (by norm_num) _
-    have hl := Real.log_le_log hp hscale
-    rw [Real.log_zpow] at hl
+    pm_6088
+    pm_126 hl Real.log_le_log hp hscale Real.log_zpow
     have hjR : (j : ℝ) ≤ Real.log R/Real.log 2 :=
       (le_div_iff₀ (Real.log_pos (by norm_num : (1 : ℝ) < 2))).mpr hl
     have hjceil : j ≤ ⌈Real.log R/Real.log 2⌉ := by
       exact_mod_cast hjR.trans (Int.le_ceil (Real.log R/Real.log 2))
     exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨hj, hjceil⟩, hscale⟩
 
-theorem smoothScaleIndices_nonempty {R : ℝ} (hR : 1 ≤ R) :
+theorem smoothScaleIndices_nonempty (hR : 1 ≤ R) :
     (smoothScaleIndices R).Nonempty := by
   refine ⟨0, mem_smoothScaleIndices.mpr ?_⟩
   simpa only [zpow_zero] using And.intro (le_refl (0 : ℤ)) hR
 
-theorem smoothScaleIndices_card_le {R : ℝ} (hR : 1 ≤ R) :
+theorem smoothScaleIndices_card_le (hR : 1 ≤ R) :
     ((smoothScaleIndices R).card : ℝ) ≤ Real.log R/Real.log 2+2 := by
   have hlog : 0 ≤ Real.log R/Real.log 2 :=
     div_nonneg (Real.log_nonneg hR) (Real.log_pos (by norm_num : (1 : ℝ) < 2)).le
@@ -203,6 +203,7 @@ theorem smoothScaleIndices_card_le {R : ℝ} (hR : 1 ≤ R) :
   rw [he] at hcardR
   have hceil := Int.ceil_lt_add_one (Real.log R/Real.log 2)
   linarith
+end
 
 theorem smoothDetectorBlock_norm_partition {ρ : ℂ} (X : ℝ) {Y : ℝ}
     (hY : 0 < Y) (hρ : 0 ≤ ρ.re) (R : ℝ) :
@@ -276,8 +277,7 @@ theorem smoothScaleIndices_card_le_log {T R : ℝ}
     ((smoothScaleIndices R).card : ℝ) ≤ 6*Real.log T := by
   have hTpos : 0 < T := by linarith
   have hl := Real.log_le_log (show 0 < R by linarith) hRT
-  rw [Real.log_pow] at hl
-  norm_num only [Nat.cast_ofNat] at hl
+  pm_1451 Real.log_pow hl Nat.cast_ofNat
   have htwo : (1/2 : ℝ) ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]
   have hratio : Real.log R/Real.log 2 ≤ 4*Real.log T := by
     apply (div_le_iff₀ (Real.log_pos (by norm_num : (1 : ℝ) < 2))).mpr
@@ -287,8 +287,7 @@ theorem smoothScaleIndices_card_le_log {T R : ℝ}
 
 theorem log_sq_eventually_le_height :
     ∀ᶠ T : ℝ in atTop, (Real.log T)^2 ≤ T := by
-  have hl := (isLittleO_log_rpow_rpow_atTop (2 : ℝ) (show (0 : ℝ) < 1 by norm_num)).tendsto_div_nhds_zero
-  norm_num at hl
+  pm_331
   filter_upwards [eventually_gt_atTop (0 : ℝ),
     hl.eventually (gt_mem_nhds (show (0 : ℝ) < 1 by norm_num))] with T hT hlog
   have hh := (div_lt_iff₀ hT).mp hlog
@@ -305,49 +304,8 @@ theorem smoothDetector_eventually_large {σ δ : ℝ}
         detectorX δ T/2 < (2 : ℝ)^j ∧
         (1/(24*Real.log T) : ℝ) ≤
           ‖smoothDetectorBlock ρ (detectorX δ T) (detectorY σ T) j‖ := by
-  filter_upwards [eventually_ge_atTop (4 : ℝ),
-    Real.tendsto_log_atTop.eventually_ge_atTop 16,
-    log_sq_eventually_le_height, detectorTail_eventually_large hσ hδ hδ']
-    with T hT hlog hlogSq hdetect
-  intro ρ hβ hβ' hγ hγ' hzero
-  have hTpos : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
-  have hX : 0 ≤ detectorX δ T := Real.rpow_nonneg hTpos.le _
-  have hXT : detectorX δ T ≤ T := by
-    simpa only [detectorX, Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT1 (show δ ≤ 1 by linarith)
-  have hY : 1 ≤ detectorY σ T := Real.one_le_rpow hT1 (smoothingExponent_pos hσ).le
-  have hYT : detectorY σ T ≤ T := by
-    simpa only [detectorY, Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT1 (smoothingExponent_lt_one hσ).le
-  have hR : 1 ≤ detectorY σ T*(Real.log T)^2 := by nlinarith
-  have hRT : detectorY σ T*(Real.log T)^2 ≤ T^2 := by
-    calc
-      _ ≤ T*T := mul_le_mul hYT hlogSq (sq_nonneg _) hTpos.le
-      _ = _ := by ring
-  have htail := smoothDetectorBlock_scale_tail_le_two_rpow hT1 hlog hX hXT hY hYT
-    (show 0 ≤ ρ.re by linarith)
-  have hsmall : 2*T^(-2 : ℝ) ≤ (1/4 : ℝ) := by
-    have he : 2*T^(-2 : ℝ) = 2/T^2 := by
-      rw [Real.rpow_neg hTpos.le, Real.rpow_two]
-      ring
-    rw [he]
-    apply (div_le_iff₀ (sq_pos_of_pos hTpos)).mpr
-    nlinarith
-  obtain ⟨j, hj, hscale, hheight⟩ := exists_smoothDetectorBlock
-    (show 0 < detectorY σ T by linarith) (show 0 ≤ ρ.re by linarith) hR
-    (by norm_num : (0 : ℝ) < 1/2) (hdetect ρ hβ hβ' hγ hγ' hzero)
-    (by simpa only [show (1/2 : ℝ)/2 = 1/4 by norm_num] using htail.trans hsmall)
-  refine ⟨j, hj, hscale, ?_⟩
-  have hcard := smoothScaleIndices_card_le_log hT1 (by linarith) hR hRT
-  have hcpos : (0 : ℝ) < (smoothScaleIndices (detectorY σ T*(Real.log T)^2)).card := by
-    exact_mod_cast Finset.card_pos.mpr (smoothScaleIndices_nonempty hR)
-  calc
-    (1/(24*Real.log T) : ℝ) ≤
-        (1/2)/(2*(smoothScaleIndices (detectorY σ T*(Real.log T)^2)).card) := by
-      apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
-      linarith
-    _ ≤ _ := hheight
+  pm_6358 detectorTail_eventually_large hσ
+  pm_4424 σ hσ
 
 /-- On scales at least two, the removed n=1 term already vanishes in the
 cutoff. Thus the detecting block is exactly the full block used in Mellin
@@ -356,7 +314,7 @@ theorem smoothDetectorBlock_eq_smoothMollifierBlock {ρ : ℂ} (X : ℝ) {Y : �
     (hY : 0 < Y) (hρ : 0 ≤ ρ.re) (hN : 2 ≤ (2 : ℝ)^j) :
     smoothDetectorBlock ρ X Y j =
       smoothMollifierBlock smoothDyadicWeight ρ X ((2 : ℝ)^j) ((2 : ℝ)^j/Y) := by
-  let N : ℝ := (2 : ℝ)^j
+  pm_5030 N j
   let f : ℕ → ℂ := fun n =>
     detectorTerm ρ X Y n * (smoothDyadicWeight ((n : ℝ)/N) : ℂ)
   have hNpos : 0 < N := zpow_pos (by norm_num) _
@@ -372,7 +330,7 @@ theorem smoothDetectorBlock_eq_smoothMollifierBlock {ρ : ℂ} (X : ℝ) {Y : �
     have hr : (1 : ℝ)/N ≤ 5/8 := (div_le_iff₀ hNpos).mpr (by dsimp [N]; nlinarith)
     simp only [f, Nat.cast_one, smoothDyadicWeight_zero_of_le hr, Complex.ofReal_zero, mul_zero]
   have hprefix : (∑ n ∈ Finset.range 2, f n) = 0 := by
-    simp only [Finset.sum_range_succ, Finset.sum_range_zero, hf0, hf1, add_zero]
+    pm_93 Finset.sum_range_succ Finset.sum_range_zero hf0 hf1 add_zero
   have hseq : smoothDetectorBlock ρ X Y j = ∑' n : ℕ, f n := by
     have he := hf.sum_add_tsum_nat_add 2
     simpa only [hprefix, zero_add, smoothDetectorBlock, smoothDyadicBlock,

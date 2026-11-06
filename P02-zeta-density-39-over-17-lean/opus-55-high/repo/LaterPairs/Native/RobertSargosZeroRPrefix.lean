@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ContinuousSecondDerivativeRange
 public import LaterPairs.Native.RobertSargosZeroRCurvature
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -31,11 +32,7 @@ theorem robertSargos_zero_r_second_derivative_prefix
   have hin (x : ℝ) (hx : x ∈ Icc A (A+N)) :
       x-h ∈ Icc a b ∧ x+h ∈ Icc a b ∧
         x+q-h ∈ Icc a b ∧ x+q+h ∈ Icc a b := by
-    constructor
-    · constructor <;> linarith [hx.1,hx.2]
-    constructor
-    · constructor <;> linarith [hx.1,hx.2]
-    constructor <;> constructor <;> linarith [hx.1,hx.2]
+    pm_641
   have hj (j : ℕ) (hj : j < 4) (x : ℝ) (hx : x ∈ Icc A (A+N)) :=
     hasDerivAt_robertSargos_zero_r_jet (f := f) (x := x) (h := h) (q := q) hj
       (hf _ (hin x hx).2.1) (hf _ (hin x hx).1)

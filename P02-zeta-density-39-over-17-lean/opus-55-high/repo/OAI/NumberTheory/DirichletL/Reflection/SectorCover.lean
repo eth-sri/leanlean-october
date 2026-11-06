@@ -1,22 +1,23 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.SectorData
 public import OAI.NumberTheory.DirichletL.Reflection.SectorAggregation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-lemma sector_arithmetic_prescribed (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+section
+variable (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis→ PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+include F rows Pset S hrows s hc
+lemma sector_arithmetic_prescribed
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
     (hcommon : ∀ (x y : SourcePair rows Pset),
@@ -47,9 +48,7 @@ lemma sector_arithmetic_prescribed (F : PrimeFamily φ) (rows Pset : Finset (Ide
       cuspColumn_eq := fun K P hp => (hn ⟨⟨(K,P),hp⟩⟩).elim
     },rfl⟩
 
-theorem exists_global_sector_completion (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+theorem exists_global_sector_completion
     (hN : (9:Eis)*c∣N)
     (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
     (hac : IsCoprime a c) (hF : Pairwise (Function.onFun IsCoprime F.ideal))
@@ -92,7 +91,7 @@ theorem exists_global_sector_completion (F : PrimeFamily φ) (rows Pset : Finset
       exact (hA (lift x) u m n b).trans
         ((congrArg (fun q => A q u m n b) ((hsector x).trans (hsector y).symm)).trans
           (hA (lift y) u m n b).symm)
-  obtain ⟨D0⟩ := F.exists_controlled N a c mode hc hN hbase hac hF hNF
+  pm_7702 D0
   obtain ⟨E,hE⟩ := sector_arithmetic_prescribed F (fullRaySector N rows r) (fullRaySector N Pset p) S
     (fun K hK => hrows K (Finset.mem_filter.mp hK).1) s hc Ds hh D0
   refine ⟨E,?_⟩

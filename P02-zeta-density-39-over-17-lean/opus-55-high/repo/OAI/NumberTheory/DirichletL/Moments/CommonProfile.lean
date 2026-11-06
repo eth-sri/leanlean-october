@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonPrimeSlots
 public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,27 +21,27 @@ def liveIndices (B : Tuple ι) : Finset ι := Finset.univ.filter (fun i => B (Su
 def remainingTuple (B u : Tuple ι) : Tuple (liveIndices B) :=
   Sum.elim (fun i => u (Sum.inl i.val)) (fun j => u (Sum.inr j))
 
-@[simp] theorem remainingTuple_slot (B u : Tuple ι) (i : liveIndices B) :
+section
+variable (B u : Tuple ι)
+include B u
+@[simp] theorem remainingTuple_slot (i : liveIndices B) :
     remainingTuple B u (Sum.inl i)=u (Sum.inl i.val) := rfl
 
-@[simp] theorem remainingTuple_plain (B u : Tuple ι) (j : Fin 2) :
+@[simp] theorem remainingTuple_plain (j : Fin 2) :
     remainingTuple B u (Sum.inr j)=u (Sum.inr j) := rfl
 
-theorem remaining_product (B u : Tuple ι)
+theorem remaining_product
     (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1) :
     finiteTupleProduct u=finiteTupleProduct (remainingTuple B u) := by
-  simp only [finiteTupleProduct,Fintype.prod_sum_type,Fin.prod_univ_two,remainingTuple,
-    Sum.elim_inl,Sum.elim_inr]
+  pm_162 finiteTupleProduct Fintype.prod_sum_type Fin.prod_univ_two remainingTuple Sum.elim_inl Sum.elim_inr
   rw [Finset.prod_coe_sort (liveIndices B) (fun i => u (Sum.inl i))]
   congr 1
-  symm
-  apply Finset.prod_subset (Finset.filter_subset _ _)
-  intro i hi hnot
+  pm_3521 Finset.prod_subset i hi hnot
   apply hf i
   intro hBi
-  exact hnot (Finset.mem_filter.mpr ⟨Finset.mem_univ _,hBi⟩)
+  grind
 
-theorem slot_profiles_split (B u : Tuple ι)
+theorem slot_profiles_split
     (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
     (β : ι → Ideal O → ℂ) :
     (∏ i,β i (B (Sum.inl i)*u (Sum.inl i)))=
@@ -57,7 +58,7 @@ theorem slot_profiles_split (B u : Tuple ι)
     intro i hi
     rw [(Finset.mem_filter.mp hi).2,one_mul]
 
-theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
+theorem profile_common_allocation (C R s : Ideal O)
     (hB : finiteTupleProduct B=C) (hsC : s∣C)
     (hf : ∀ i,B (Sum.inl i)≠1 → u (Sum.inl i)=1)
     (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
@@ -74,7 +75,7 @@ theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
     rw [hB,remaining_product B u hf]
   have hdiv : s∣C*finiteTupleProduct (remainingTuple B u) := dvd_mul_of_dvd_left hsC _
   unfold profileCoefficient
-  rw [slot_profiles_split B u hf (fun i I => ν i I*Wslot i ((Ideal.absNorm I:ℝ)/P i)),hprod]
+  rw [slot_profiles_split B u hf (fun i I=> ν i I*Wslot i ((Ideal.absNorm I:ℝ)/P i)),hprod]
   simp only [hdiv,ite_true,one_dvd,mul_one,remainingTuple_slot,remainingTuple_plain,
     IsCoprime.mul_left_iff]
   rw [mul_assoc B₁,mul_assoc B₂]
@@ -82,6 +83,7 @@ theorem profile_common_allocation (B u : Tuple ι) (C R s : Ideal O)
     by_cases hu : IsCoprime (finiteTupleProduct (remainingTuple B u)) R <;>
     simp_all only [true_and,false_and,ite_true,ite_false,mul_zero,zero_mul,mul_one]
   ring
+end
 
 end SevenEighths.CenteredMomentCommonProfile
 

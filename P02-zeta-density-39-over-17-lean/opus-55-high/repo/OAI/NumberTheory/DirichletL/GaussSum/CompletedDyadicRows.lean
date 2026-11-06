@@ -84,15 +84,12 @@ open ActualEisensteinCubic
 
 theorem two_pow_clog_le_double (n : ℕ) (hn : 1≤n) : 2^Nat.clog 2 n≤2*n := by
   by_cases h : n=1
-  · simp [h]
+  simp_all
   have hn1 : 1<n := lt_of_le_of_ne hn (Ne.symm h)
   have hl : 0<Nat.clog 2 n := Nat.clog_pos (by norm_num) hn1
   have hp := Nat.pow_pred_clog_lt_self (by norm_num : 1<2) hn1
   have he : (Nat.clog 2 n).pred+1=Nat.clog 2 n := Nat.succ_pred_eq_of_pos hl
-  calc
-    _ = 2^(Nat.clog 2 n).pred*2 := by rw [←he,pow_succ]; rfl
-    _ ≤ n*2 := Nat.mul_le_mul_right 2 hp.le
-    _ = _ := Nat.mul_comm _ _
+  grind
 
 def completedRowDyad (rows : Finset (Ideal O)) (j : ℕ) : Finset (Ideal O) :=
   rows.filter (fun I => Nat.clog 2 (Ideal.absNorm I)=j)

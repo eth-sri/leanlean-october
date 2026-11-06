@@ -9,6 +9,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryBlockBound
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonDampedDyadic
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,19 +19,23 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinsonStationaryLeadingFiniteSum_eq_dyadic (T G L : ℝ) (N : ℕ) :
+section
+variable (T G L : ℝ) (N : ℕ)
+include T G L N
+theorem atkinsonStationaryLeadingFiniteSum_eq_dyadic :
     atkinsonStationaryLeadingFiniteSum T G L N =
       ∑ j ∈ Finset.range (Nat.clog 2 N),
         atkinsonStationaryBlock T G L (2^j) (truncatedDyadicLength N j) :=
   sum_range_eq_truncatedDyadic (atkinsonStationaryLeadingTerm T G L)
     (atkinsonStationaryLeadingTerm_zero T G L) N
 
-theorem norm_atkinsonStationaryLeadingFiniteSum_le_blocks (T G L : ℝ) (N : ℕ) :
+theorem norm_atkinsonStationaryLeadingFiniteSum_le_blocks :
     ‖atkinsonStationaryLeadingFiniteSum T G L N‖ ≤
       ∑ j ∈ Finset.range (Nat.clog 2 N),
         ‖atkinsonStationaryBlock T G L (2^j) (truncatedDyadicLength N j)‖ := by
   rw [atkinsonStationaryLeadingFiniteSum_eq_dyadic]
   exact norm_sum_le _ _
+end
 
 theorem exists_norm_atkinsonStationarySum_le_dyadic {δ : ℝ} (hδ : 0 < δ) :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
@@ -38,13 +43,13 @@ theorem exists_norm_atkinsonStationarySum_le_dyadic {δ : ℝ} (hδ : 0 < δ) :
       ‖atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
         C*G*T^(-(1/4:ℝ))*
           atkinsonDyadicPhaseBound T G (atkinsonSourceCutoff T G (Real.log T)) := by
-  obtain ⟨C,hC,A,hA,hblock⟩ := exists_atkinsonSourceCutoff_block_bound hδ
+  pm_231 C hC A hA hblock exists_atkinsonSourceCutoff_block_bound hδ
   obtain ⟨B,hB⟩ := eventually_atTop.mp (eventually_zetaSmoothDivisorTest_support_physical hδ)
-  refine ⟨C,hC,max A B,hA.trans (le_max_left _ _),?_⟩
+  pm_1071 A B hA.trans
   intro T G hT hlower hupper
-  have hAT : A ≤ T := (le_max_left _ _).trans hT
-  have hBT : B ≤ T := (le_max_right _ _).trans hT
-  have hT0 : 0 < T := by linarith [hA.trans hAT]
+  pm_207 hAT A T le_max_left hT
+  pm_207 hBT B T le_max_right hT
+  have hT0 : 0 < T := by grind
   obtain ⟨hG,hL,hwidth,_⟩ := (hB T hBT).2 G hlower
   rw [atkinsonStationaryLeadingSum_eq_finite hT0 hG hL hwidth]
   apply (norm_atkinsonStationaryLeadingFiniteSum_le_blocks T G (Real.log T) _).trans
@@ -56,33 +61,23 @@ theorem exists_norm_atkinsonStationarySum_le_dyadic {δ : ℝ} (hδ : 0 < δ) :
     (pow_pos (by norm_num) _) (truncatedDyadic_endpoint_le (Finset.mem_range.mp hj))).trans_eq
   ring
 
-theorem exists_norm_atkinsonStationarySum_le_fullDyadic {δ : ℝ} (hδ : 0 < δ) :
+section
+variable {δ : ℝ} (hδ : 0 < δ)
+include δ hδ
+theorem exists_norm_atkinsonStationarySum_le_fullDyadic :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) →
       ‖atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
         C*G*T^(-(1/4:ℝ))*
-          atkinsonFullDyadicPhaseBound T G (atkinsonSourceCutoff T G (Real.log T)) := by
-  obtain ⟨C,hC,A,hA,hbound⟩ := exists_norm_atkinsonStationarySum_le_dyadic hδ
-  refine ⟨C,hC,A,hA,?_⟩
-  intro T G hT hlower hupper
-  have hT0 : 0 < T := by linarith [hA.trans hT]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
-  exact (hbound T G hT hlower hupper).trans (mul_le_mul_of_nonneg_left
-    (atkinsonDyadicPhaseBound_le_full T G _) (by positivity))
+          atkinsonFullDyadicPhaseBound T G (atkinsonSourceCutoff T G (Real.log T)) := by pm_4397 A hA exists_norm_atkinsonStationarySum_le_dyadic hA.trans atkinsonDyadicPhaseBound_le_full T
 
 /-- The complete literal stationary source is controlled by native undamped phase prefixes. -/
-theorem exists_norm_atkinsonStationarySum_le_undamped {δ : ℝ} (hδ : 0 < δ) :
+theorem exists_norm_atkinsonStationarySum_le_undamped :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) →
       ‖atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
         C*G*T^(-(1/4:ℝ))*
-          atkinsonUndampedDyadicPhaseBound T (atkinsonSourceCutoff T G (Real.log T)) := by
-  obtain ⟨C,hC,T₀,hT₀,hbound⟩ := exists_norm_atkinsonStationarySum_le_fullDyadic hδ
-  refine ⟨C,hC,T₀,hT₀,?_⟩
-  intro T G hT hlower hupper
-  have hT0 : 0 < T := by linarith [hT₀.trans hT]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
-  exact (hbound T G hT hlower hupper).trans (mul_le_mul_of_nonneg_left
-    (atkinsonFullDyadicPhaseBound_le_undamped hT0 G _) (by positivity))
+          atkinsonUndampedDyadicPhaseBound T (atkinsonSourceCutoff T G (Real.log T)) := by pm_4397 T₀ hT₀ exists_norm_atkinsonStationarySum_le_fullDyadic hT₀.trans atkinsonFullDyadicPhaseBound_le_undamped hT0
+end
 
 end MathCollab.Density.Stronger.Atkinson

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Fourier.FrequencyTwists
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,75 +10,32 @@ noncomputable section
 
 namespace SecondPassArithmetic
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 
 section
 open ActualEisensteinCubic
@@ -119,8 +77,7 @@ theorem supportMobius_disjoint_mul
     (G U : Finset ι) (hd : Disjoint G U) :
     supportMobius (fun i => Ideal.span {p i}) (G ∪ U) =
       supportMobius (fun i => Ideal.span {p i}) G * supportMobius (fun i => Ideal.span {p i}) U := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
+  pm_3509
   simp only [supportMobius, prime_product_moebius _ hprime hinj,
     Finset.card_union_of_disjoint hd, pow_add]
 
@@ -138,28 +95,20 @@ theorem inputConjugateRow_sq_overlap
               secondInputCoefficient p hg Ψ m c d (fun S => H (G ∪ S)) V) *
             (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U z *
               star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V z))) else 0 := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
+  pm_3509
   have hnorm (a : ℂ) : (↑(‖a‖ ^ 2) : ℂ) = star a * a := by
     rw [Complex.sq_norm, Complex.normSq_eq_conj_mul_self]
     rfl
   rw [hnorm]
   unfold inputConjugateRow supportConjugateSum
   rw [star_sum, Finset.sum_mul]
-  simp only [Finset.mul_sum]
-  rw [FiniteOverlapDecomposition.sum_pair_eq_overlap]
-  apply Finset.sum_congr rfl
+  pm_566 Finset.mul_sum FiniteOverlapDecomposition.sum_pair_eq_overlap
   intro G hG
-  apply Finset.sum_congr rfl
-  intro U hU
-  apply Finset.sum_congr rfl
-  intro V hV
+  pm_3811
   by_cases hd : Disjoint U V
   · rw [ite_eq_left hd, ite_eq_left hd]
-    have hGU : Disjoint G U := Finset.disjoint_left.mpr (fun i hi hu =>
-      (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hU) hu)).2 hi)
-    have hGV : Disjoint G V := Finset.disjoint_left.mpr (fun i hi hv =>
-      (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hV) hv)).2 hi)
+    pm_5151 hGU G U hu hU
+    pm_5151 hGV G V hv hV
     rw [supportMobius_disjoint_mul p hinj G U hGU, supportMobius_disjoint_mul p hinj G V hGV,
       secondInputCoefficient_union p hg Ψ m c d H G U hGU,
       secondInputCoefficient_union p hg Ψ m c d H G V hGV,
@@ -167,7 +116,7 @@ theorem inputConjugateRow_sq_overlap
       FirstPassCubeLabels.row_union _ hg G V hGV]
     simp only [star_mul, star_star, FirstCauchyArithmetic.star_supportMobius]
     have hmu := FirstCauchyArithmetic.supportMobius_sq _ hprime hinj G
-    have hrow := finiteSquarefreeRow_self_pair (fun i => Ideal.span {p i}) hg G z
+    pm_5889 hrow finiteSquarefreeRow_self_pair hg G z
     rw [hnorm]
     calc
       _ = (supportMobius (fun i => Ideal.span {p i}) G * supportMobius (fun i => Ideal.span {p i}) G) *
@@ -184,10 +133,9 @@ theorem inputConjugateRow_sq_overlap
           simp only [star_mul, FirstCauchyArithmetic.star_supportMobius]
           ring
       _ = _ := by
-        rw [hmu, hrow]
-        simp only [star_mul, FirstCauchyArithmetic.star_supportMobius]
+        pm_327 hmu hrow star_mul FirstCauchyArithmetic.star_supportMobius
         ring
-  · simp [hd]
+  grind
 
 end
 
@@ -199,8 +147,10 @@ variable {ι : Type*} [DecidableEq ι]
   (hg : ∀ i, lambda ∉ Ideal.span {p i})
 include hg
 
-theorem commonProduct_mask
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) (U G : Finset ι) :
+section
+variable (hinj : Function.Injective (fun i => Ideal.span {p i}))
+include hinj
+theorem commonProduct_mask (U G : Finset ι) :
     rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) =
       if Disjoint U G then 1 else 0 := by
   by_cases hd : Disjoint U G
@@ -220,7 +170,6 @@ theorem commonProduct_mask
     simp [rowCoprimeMask, hh]
 
 theorem sum_remove_common_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (F G : Finset ι) (A : Finset ι → ℂ) :
     (∑ U ∈ (F \ G).powerset, A U) =
       ∑ U ∈ F.powerset, rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) * A U := by
@@ -244,6 +193,7 @@ theorem sum_remove_common_pool
         exact Finset.mem_sdiff.mpr ⟨(Finset.mem_powerset.mp hUF) hi,
           fun hG => Finset.disjoint_left.mp hd hi hG⟩
       rw [commonProduct_mask p hg hinj U G, ite_eq_right hd, zero_mul]
+end
 
 omit [DecidableEq ι] in
 theorem secondInputCoefficient_fixed_mask (Ψ : O →* ℂ) (m g c d : O)
@@ -315,10 +265,7 @@ theorem input_pair_fixed_pool
           secondInputCoefficient p hg Ψ₂ (m * ∏ i ∈ G, p i) c d H₂ V) * K U V
       else 0 := by
   rw [sum_pair_remove_common_pool p hg hinj F G]
-  apply Finset.sum_congr rfl
-  intro U hU
-  apply Finset.sum_congr rfl
-  intro V hV
+  pm_3811
   by_cases hd : Disjoint U V
   · rw [ite_eq_left hd, ite_eq_left hd, secondInputCoefficient_fixed_mask,
       secondInputCoefficient_fixed_mask]
@@ -326,8 +273,8 @@ theorem input_pair_fixed_pool
     ring
   · simp [hd]
 
-omit hg in
 
+omit hg in
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
 theorem poisson_mask_generator_dvd (E G : Finset ι) (hEG : E ⊆ G) :
     primeSubsetGenerator (fun i => Ideal.span {p i}) E ∣ ∏ i ∈ G, p i := by
@@ -375,7 +322,7 @@ end
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstCauchyArithmetic (supportMobius)
@@ -403,12 +350,8 @@ theorem maskedSecondSource_summable (G U V : Finset ι) (W : 𝓢(ℝ, ℂ)) (Y 
       (star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V z) *
         finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U z) * W (‖eisEmbedding z‖ ^ 2 / Y)) := by
   have h := finiteSquarefreeRow_pair_radial_summable (fun i => Ideal.span {p i}) hg V U W Y hY
-  apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun z => norm_nonneg _) _ h.norm
-  intro z
-  have hm : ‖rowCoprimeMask (fun i => Ideal.span {p i}) G z‖ ≤ 1 := by
-    unfold rowCoprimeMask
-    split_ifs <;> norm_num
+  pm_5055 z h.norm
+  pm_3444 G z
   simpa only [norm_mul, one_mul, mul_assoc] using
     mul_le_mul_of_nonneg_right hm
       (norm_nonneg ((star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V z) *
@@ -442,10 +385,7 @@ theorem inputConjugateRow_smoothed_overlap
     simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro G hG
-    apply Finset.sum_congr rfl
-    intro U hU
-    apply Finset.sum_congr rfl
-    intro V hV
+    pm_3811
     by_cases hd : Disjoint U V
     · simp only [f, ite_eq_left hd, overlapPairWeight]
       ring
@@ -458,9 +398,7 @@ theorem inputConjugateRow_smoothed_overlap
   apply Finset.sum_congr rfl
   intro U hU
   rw [Summable.tsum_finsetSum (fun V _ => hf G U V)]
-  apply Finset.sum_congr rfl
-  intro V hV
-  by_cases hd : Disjoint U V
+  pm_6532 V hV hd U
   · simp only [f, ite_eq_left hd, maskedSecondSource]
     exact tsum_mul_left
   · simp [f, hd]
@@ -491,10 +429,7 @@ theorem inputConjugateRow_smoothed_second_poisson (hp : ∀ i, p i ≠ 0)
   rw [inputConjugateRow_smoothed_overlap p hg hinj F Ψ m c d H W Y hY]
   apply Finset.sum_congr rfl
   intro G hG
-  apply Finset.sum_congr rfl
-  intro U hU
-  apply Finset.sum_congr rfl
-  intro V hV
+  pm_3811
   by_cases hd : Disjoint U V
   · rw [ite_eq_left hd, ite_eq_left hd]
     congr 1
@@ -503,8 +438,6 @@ theorem inputConjugateRow_smoothed_second_poisson (hp : ∀ i, p i ≠ 0)
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open FirstPassCubeLabels (cubeCoreCoefficient cubeOddSupport coreRayCoefficient coreRayTwist
   coreRayCharacter dilatedCoreRow dilatedRayColumn afterDilationLabel b0Label jLabel)
 open FirstCauchyArithmetic (supportMobius supportRay supportConjugateSum)
@@ -541,9 +474,10 @@ def firstCoreTwist (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ)
     (r : FirstCoreIndex) : O →* ℂ :=
   sideRayMonoid negative χ * (Ψ * coreRayTwist negative r.1 r.2.2)
 
+section
+variable (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+include hc hpr
 theorem cubeCoreCoefficient_ray_family
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (negative : Bool)
     (C : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (S : Finset ι) :
     cubeCoreCoefficient p hp hcop hg B v ε₁ ε₂ negative C V y t S =
@@ -561,12 +495,9 @@ theorem cubeCoreCoefficient_ray_family
           (if negative then star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (-1)) else 1) *
           (if negative then star (V (y S) * logPhase t (-(y S))) else V (y S) * logPhase t (-(y S))) := by
     cases negative <;> simp only [cubeCoreCoefficient, Bool.false_eq_true, ite_false, ite_true] <;> ring
-  rw [he, hphase]
-  simp only [Fintype.sum_prod_type, Finset.sum_mul]
+  pm_327 he hphase Fintype.sum_prod_type Finset.sum_mul
 
 theorem dilatedCoreRow_eq_input_family
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O) (t : ℝ) (z : O) :
@@ -578,19 +509,12 @@ theorem dilatedCoreRow_eq_input_family
         (firstCoreTest H V y negative t D) (if negative then -z else z) := by
   unfold dilatedCoreRow dilatedRayColumn supportConjugateSum
   simp_rw [cubeCoreCoefficient_ray_family p hp hcop hg hc hpr]
-  simp only [Finset.mul_sum, Finset.sum_mul]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pc_200 Finset.mul_sum Finset.sum_mul
   intro r hr
-  simp only [inputConjugateRow, supportConjugateSum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
+  pm_424 inputConjugateRow supportConjugateSum Finset.mul_sum Finset.sum_congr
   intro U hU
-  have hDU : Disjoint D U := Finset.disjoint_left.mpr (fun i hi hu =>
-    (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hU) hu)).2 hi)
-  have hz : finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U (-z) =
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U (-1) *
-        finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U z := by
-    simpa only [neg_one_mul] using finiteSquarefreeRow_mul (fun i => Ideal.span {p i}) hg U (-1) z
+  pm_5151 hDU D U hu hU
+  pm_3794 hz U z
   cases negative <;>
     simp only [multiplicativeCoreColumn, firstCoreOuter, firstCoreTwist, sideRayMonoid,
       firstCoreTest, secondInputCoefficient, afterDilationLabel, Bool.false_eq_true, ite_false, ite_true,
@@ -598,6 +522,7 @@ theorem dilatedCoreRow_eq_input_family
       FirstPassCubeLabels.row_union _ hg D U hDU, FirstPassCubeLabels.mask_mul _ hg U,
       FirstPassCubeLabels.coreRayTwist_prod, MonoidHom.mul_apply, conjugateRayMonoid_apply, rayMonoid_apply,
       supportRay, coreRayCharacter, RayFourExpansion.rayCharacter_mul, hz, star_mul, mul_one] <;> ring
+end
 
 end SecondPassArithmetic
 

@@ -8,14 +8,14 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.GaussianAveraging
 public import MathCollab.Density.AbelZetaGrowth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger
 open MathCollab.Density.ZetaGrowth
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -27,15 +27,14 @@ theorem exists_zetaMomentCriticalNorm_linear_bound :
   have hC5 : 5 ≤ C := le_max_left _ _
   have hCD : D ≤ C := (le_max_left _ _).trans (le_max_right _ _)
   refine ⟨C, by linarith, ?_⟩
-  intro t
-  by_cases ht : |t| ≤ 1
+  pm_8632 t ht
   · have hz0 : 0 ≤ zetaMomentCriticalNorm t := norm_nonneg _
     have h := hD t (abs_le.mp ht)
     rw [Real.norm_of_nonneg hz0] at h
     nlinarith [abs_nonneg t]
   · have hfar : 1 ≤ |t| := (lt_of_not_ge ht).le
     have hζ := norm_riemannZeta_le_five_mul_norm
-      (s := ((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I) (by norm_num) (by simpa using hfar)
+      (s := ((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I) (by norm_num) (by simp_all)
     have hs : ‖((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I‖ ≤ 1 / 2 + |t| := by
       simpa [Real.norm_eq_abs] using norm_add_le ((1 / 2 : ℝ) : ℂ) ((t : ℂ) * I)
     change zetaMomentCriticalNorm t ≤ _ at hζ
@@ -107,7 +106,7 @@ theorem zetaSquareCenteredGaussian_tail_majorant {C : ℝ}
     zetaSquareCenteredGaussian T G x ≤
       C ^ 2 * (1 + |T| + |G|) ^ 2 * Real.exp (-L ^ 2 / 2) *
         (Real.exp (-x ^ 2 / 2) * (1 + |x|) ^ 2) := by
-  have hsquare : L ^ 2 ≤ x ^ 2 := by nlinarith [sq_abs x]
+  pm_8516 hsquare L
   have hGauss : Real.exp (-x ^ 2) ≤ Real.exp (-L ^ 2 / 2) * Real.exp (-x ^ 2 / 2) := by
     rw [← Real.exp_add]
     exact Real.exp_le_exp.mpr (by linarith)
@@ -151,12 +150,7 @@ theorem exists_zetaSquareGaussian_tail_bound :
           (C₀ ^ 2 * (1 + |T| + G) ^ 2 * Real.exp (-L ^ 2 / 2)) * K x := by
         apply integral_mono_ae (integrable_zetaSquareCenteredGaussian T G).integrableOn
           (hK.const_mul _).integrableOn
-        filter_upwards [ae_restrict_mem measurableSet_Ioc.compl] with x hx
-        have hx' : L ≤ |x| := by
-          simp only [mem_compl_iff, mem_Ioc, not_and_or, not_lt, not_le] at hx
-          rcases hx with hx | hx
-          · exact (show L ≤ -x by linarith).trans (neg_le_abs x)
-          · exact hx.le.trans (le_abs_self x)
+        pm_426 hx' L
         simpa only [abs_of_pos hG, K] using
           zetaSquareCenteredGaussian_tail_majorant hbound (by linarith) T G hL hx'
       _ = (C₀ ^ 2 * (1 + |T| + G) ^ 2 * Real.exp (-L ^ 2 / 2)) *
@@ -176,20 +170,17 @@ theorem exists_zetaSquareGaussian_log_tail_bound (A : ℝ) :
       zetaSquareGaussianMean T G - zetaSquareGaussianWindow T G (Real.log T) ≤ G * T ^ (-A) := by
   obtain ⟨C, hC0, htail⟩ := exists_zetaSquareGaussian_tail_bound
   let T₀ := max 1 (max (9 * C) (Real.exp (2 * (A + 3))))
-  refine ⟨T₀, le_max_left _ _, ?_⟩
+  pm_4889
   intro T G hT₀ hG hGT
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT₀
-  have hT : 0 < T := by linarith
+  pm_306 hT1 hT₀ hT
   have hTC : 9 * C ≤ T := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
   have hTexp : Real.exp (2 * (A + 3)) ≤ T :=
     (le_max_right _ _).trans ((le_max_right _ _).trans hT₀)
   have hlog0 := Real.log_nonneg hT1
   have hlog : 2 * (A + 3) ≤ Real.log T := by
-    simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos _) hTexp
+    pm_7851
   have hexp : Real.exp (-(Real.log T) ^ 2 / 2) ≤ T ^ (-(A + 3)) := by
-    rw [Real.rpow_def_of_pos hT]
-    apply Real.exp_le_exp.mpr
-    nlinarith [mul_nonneg hlog0 (sub_nonneg.mpr hlog)]
+    pm_7720 hlog
   obtain ⟨hlower, hupper⟩ := htail T G (Real.log T) hG hlog0
   refine ⟨hlower, hupper.trans ?_⟩
   rw [abs_of_pos hT]

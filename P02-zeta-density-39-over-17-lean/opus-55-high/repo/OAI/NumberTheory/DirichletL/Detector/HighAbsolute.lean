@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighDeletion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -45,13 +46,9 @@ lemma highAbsoluteMajorant_summable (x w z : ℂ)
   have h2 := fullIdealWeight_summable_norm (3*x-2) (by norm_num [Complex.sub_re,Complex.mul_re]; linarith)
   have h3 := fullIdealWeight_summable_norm (w-1) (by simp only [Complex.sub_re,Complex.one_re]; linarith)
   have h4 := fullIdealWeight_summable_norm (6*z) (by norm_num [Complex.mul_re]; linarith)
-  have h12 := h1.mul_of_nonneg h2 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have h34 := h3.mul_of_nonneg h4 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have hall := h12.mul_of_nonneg h34
-    (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
-    (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
+  pm_3842
   unfold highAbsoluteMajorant
-  simpa only [mul_assoc] using hall
+  grind
 
 theorem fullHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1<z.re)
@@ -62,8 +59,7 @@ theorem fullHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Char
   have hm := (frequencyWeight_summable_norm z hz).mul_of_nonneg
     (highAbsoluteMajorant_summable x w z hx hw (by linarith))
     (fun _=>norm_nonneg _) (highAbsoluteMajorant_nonneg x w z)
-  apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ hm
+  pm_5767 hm
   intro p
   rw [norm_mul,norm_mul]
   have hcoeff := (markedIdealHighSummand_norm_le S D η p.1.val x w z

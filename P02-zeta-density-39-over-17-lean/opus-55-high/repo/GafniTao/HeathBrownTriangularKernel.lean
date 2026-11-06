@@ -31,8 +31,10 @@ theorem heathBrownHat_nonneg (B x : ℝ) :
     0 ≤ heathBrownHat B x := by
   exact le_max_right _ _
 
-theorem heathBrownHat_le_one
-    {B x : ℝ} (hB : 0 ≤ B) :
+section
+variable {B x : ℝ}
+include B x
+theorem heathBrownHat_le_one (hB : 0 ≤ B) :
     heathBrownHat B x ≤ 1 := by
   unfold heathBrownHat
   apply max_le
@@ -41,8 +43,7 @@ theorem heathBrownHat_le_one
     nlinarith [mul_nonneg hinv hdist]
   · norm_num
 
-theorem heathBrownHat_eq_zero_of_le_distance
-    {B x : ℝ} (hB : 0 < B)
+theorem heathBrownHat_eq_zero_of_le_distance (hB : 0 < B)
     (hx : B ≤ heathBrownDistanceToInteger x) :
     heathBrownHat B x = 0 := by
   unfold heathBrownHat
@@ -55,8 +56,7 @@ theorem heathBrownHat_eq_zero_of_le_distance
 
 /-- A sharp condition at half the kernel width receives weight at least
 `1/2`; this is the exact one-dimensional loss in the source majorant. -/
-theorem one_half_le_heathBrownHat
-    {B x : ℝ} (hB : 0 < B)
+theorem one_half_le_heathBrownHat (hB : 0 < B)
     (hx : heathBrownDistanceToInteger x ≤ B / 2) :
     (1 : ℝ) / 2 ≤ heathBrownHat B x := by
   unfold heathBrownHat
@@ -67,7 +67,8 @@ theorem one_half_le_heathBrownHat
           mul_le_mul_of_nonneg_left hx (inv_nonneg.mpr hB.le)
         _ = 1 / 2 := by field_simp
     linarith).trans
-  exact le_max_left _ _
+  grind
+end
 
 theorem one_quarter_le_heathBrownTriangularKernel
     {B C x y : ℝ} (hB : 0 < B) (hC : 0 < C)

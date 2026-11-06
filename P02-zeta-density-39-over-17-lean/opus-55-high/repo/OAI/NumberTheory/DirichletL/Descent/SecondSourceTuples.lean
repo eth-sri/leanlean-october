@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 public import OAI.NumberTheory.DirichletL.Descent.SecondGenerator
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -73,8 +74,7 @@ theorem originalSecondTuple_valid (hp : ∀ i, p i ≠ 0)
   refine ⟨rfl,rfl,hx.j_split,hx.b_split,hx.a1,hx.a2,hx.first_divisor,?_,hx.first_generator,?_,rfl,?_,?_⟩
   · exact hproduct
   · change primaryGenerator (sourceIdeal p x.divisor) ≠ 0
-    rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+    pm_3750
   · intro i
     apply (hx.old_support i).trans
     change x.q0*x.J*x.C*x.quotient ∣
@@ -102,14 +102,11 @@ theorem originalSecondTuple_injective
   have hi := sourceIdeal_injective p hinj
   have hcore (i : Fin 8) := congrArg (fun z : SecondTuple Jo Jn => z.core i) hxy
   apply SecondOriginalSource.ext
-  · exact congrArg (fun z : SecondTuple Jo Jn => z.outer.q0) hxy
-  · exact congrArg (fun z : SecondTuple Jo Jn => z.outer.quotient) hxy
+  pm_8277 z.outer.q0
+  pm_8277 z.outer.quotient
   · exact hcore 0
   · exact hcore 1
-  · exact hcore 3
-  · exact hcore 4
-  · exact hcore 5
-  · exact hcore 6
+  pm_5405 hcore
   · exact hcore 7
   · exact congrArg SecondTuple.cubeResidual hxy
   · exact congrArg SecondTuple.secondCube hxy

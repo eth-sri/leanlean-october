@@ -12,7 +12,6 @@ the correspondence `ζ = q₁*η+ξ` used between equations (4.13) and (4.14).
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -26,9 +25,10 @@ def wooleyMixedRadixEquiv (q₁ q₂ : ℕ) [NeZero q₁] [NeZero q₂] :
       ((ZMod.finEquiv q₁).symm.toEquiv)).trans
         (finProdFinEquiv.trans (ZMod.finEquiv (q₂ * q₁)).toEquiv))
 
-@[simp] theorem wooleyMixedRadixEquiv_val
-    (q₁ q₂ : ℕ) [NeZero q₁] [NeZero q₂]
-    (ξ : ZMod q₁) (η : ZMod q₂) :
+section
+variable (q₁ q₂ : ℕ) [NeZero q₁] [NeZero q₂] (ξ : ZMod q₁) (η : ZMod q₂)
+include q₁ q₂ ξ η
+@[simp] theorem wooleyMixedRadixEquiv_val :
     (wooleyMixedRadixEquiv q₁ q₂ (ξ, η)).val = ξ.val + q₁ * η.val := by
   cases q₁ with
   | zero => exact (NeZero.ne 0 rfl).elim
@@ -37,9 +37,7 @@ def wooleyMixedRadixEquiv (q₁ q₂ : ℕ) [NeZero q₁] [NeZero q₂] :
       | zero => exact (NeZero.ne 0 rfl).elim
       | succ q₂ => rfl
 
-@[simp] theorem wooleyMixedRadixEquiv_apply
-    (q₁ q₂ : ℕ) [NeZero q₁] [NeZero q₂]
-    (ξ : ZMod q₁) (η : ZMod q₂) :
+@[simp] theorem wooleyMixedRadixEquiv_apply :
     wooleyMixedRadixEquiv q₁ q₂ (ξ, η) =
       ((ξ.val + q₁ * η.val : ℕ) : ZMod (q₂ * q₁)) := by
   apply ZMod.val_injective (q₂ * q₁)
@@ -51,6 +49,7 @@ def wooleyMixedRadixEquiv (q₁ q₂ : ℕ) [NeZero q₁] [NeZero q₂] :
       rw [Nat.mul_add, Nat.mul_one, Nat.add_comm]
     _ ≤ q₁ * q₂ := Nat.mul_le_mul_left q₁ (Nat.succ_le_iff.mpr η.val_lt)
     _ = q₂ * q₁ := Nat.mul_comm _ _
+end
 
 /-- Reindex a double residue sum by the source correspondence
 `ζ = q₁*η+ξ`. -/

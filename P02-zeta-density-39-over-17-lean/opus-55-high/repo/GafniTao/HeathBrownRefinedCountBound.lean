@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownHarmonicBound
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Assembly of Heath-Brown's refined finite count
@@ -15,7 +16,6 @@ the next layer.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownPairCount_card_cast_le_refined_raw
     {N k H : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -54,12 +54,7 @@ theorem heathBrownPairCount_card_cast_le_refined_raw
         (N + 2 * (((D : ℝ) + c) * (b + a * D) *
           (1 + Real.log N))) := by
   dsimp only
-  let K := heathBrownBlockParameter A lambda N
-  let D := heathBrownShiftBound N k H lambda
-  let c : ℝ := 8 * ((k - 2).factorial : ℝ) *
-    (((H : ℝ) ^ (k - 2))⁻¹) / lambda
-  let b : ℝ := 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3
-  let a : ℝ := A * lambda * N / ((k - 2).factorial : ℝ)
+  pm_2844
   have hpair : ((heathBrownPairCount N k H f).card : ℝ) ≤
       (heathBrownPairCountOne N k H f).card := by
     exact_mod_cast heathBrownPairCount_card_le_pairCountOne_card
@@ -98,6 +93,5 @@ theorem heathBrownPairCount_card_cast_le_refined_raw
     (mul_le_mul_of_nonneg_left htwo' (by positivity)))
 
 
-end
 
 end GafniTao

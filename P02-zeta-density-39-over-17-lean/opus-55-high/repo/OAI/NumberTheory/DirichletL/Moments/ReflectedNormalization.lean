@@ -68,7 +68,7 @@ theorem actual_annular_normalization (χ : Character) (W : ℝ→ℂ) (B n : ℕ
   have hc : (((1+‖t‖)^n:ℝ):ℂ)*(CenteredMomentReflectedAnnuli.annularMass B k:ℂ)*
       (heightScale B n (dyadicScale k) t:ℂ)=(Real.sqrt (dyadicScale k):ℂ) := by
     rw [←Complex.ofReal_mul,←Complex.ofReal_mul,hh]
-  rw [←mul_assoc _ (heightScale B n (dyadicScale k) t:ℂ),hc]
+  grind
 
 end SevenEighths.CenteredMomentReflectedNormalization
 

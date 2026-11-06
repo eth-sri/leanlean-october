@@ -27,20 +27,22 @@ def markedIdealHighSummand (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
     (u : O) (x w z : ℂ) (I J K L : Id) : ℂ :=
   highIdealMask S D I J K L * bareIdealHighSummand η u x w z I J K L
 
-lemma markedIdealHighSummand_norm_le (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K L : Id) :
+section
+variable (S : Finset Id) (D : Id) (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+include S D η u x w z
+lemma markedIdealHighSummand_norm_le (I J K L : Id) :
     ‖markedIdealHighSummand S D η u x w z I J K L‖≤‖bareIdealHighSummand η u x w z I J K L‖ := by
   rw [markedIdealHighSummand,norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (highIdealMask_norm_le_one S D I J K L)
 
-theorem markedIdealHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+theorem markedIdealHighSummand_summable (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun p : (Id×Id)×(Id×Id) =>
       markedIdealHighSummand S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2) := by
   apply Summable.of_norm
   exact Summable.of_nonneg_of_le (fun _=>norm_nonneg _)
     (fun p=>markedIdealHighSummand_norm_le S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2)
     (bareIdealHighSummand_summable η u x w z hx hw hz).norm
+end
 
 def markedIdealHighSeries (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
     (u : O) (x w z : ℂ) : ℂ :=

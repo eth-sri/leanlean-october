@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RowAnalytic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem spectralSummand_norm_eq_of_re (S : Finset (Ideal O)) (D : Ideal O)
     (Ψ : O →* ℂ) (s t : ℂ) (h : s.re = t.re) (I J : Ideal O) :
     ‖spectralSummand S D Ψ s I J‖ = ‖spectralSummand S D Ψ t I J‖ := by
-  have h3 : (3 * s).re = (3 * t).re := by simp [Complex.mul_re, h]
+  have h3 : (3 * s).re = (3 * t).re := by simp_all
   simp only [spectralSummand, norm_mul, fullIdealWeight_norm_eq_of_re _ _ h,
     fullIdealWeight_norm_eq_of_re _ _ h3]
 
@@ -24,8 +25,10 @@ def mellinSummand (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
   (Z : ℂ) ^ ((σ : ℂ) + y * Complex.I) * Complex.exp (((σ : ℂ) + y * Complex.I) ^ 2) *
     spectralSummand S D Ψ ((σ : ℂ) + y * Complex.I) p.1 p.2
 
-theorem mellinSummand_norm (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal O × Ideal O) (y : ℝ) :
+section
+variable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ) (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal O × Ideal O)
+include S D Ψ σ Z hZ p
+theorem mellinSummand_norm (y : ℝ) :
     ‖mellinSummand S D Ψ σ Z p y‖ =
       (Z ^ σ * Real.exp (σ ^ 2) * ‖spectralSummand S D Ψ (σ : ℂ) p.1 p.2‖) *
         Real.exp (-1 * y ^ 2) := by
@@ -34,10 +37,9 @@ theorem mellinSummand_norm (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ
     spectralSummand_norm_eq_of_re S D Ψ _ (σ : ℂ) (by simp)]
   ring
 
-theorem mellinSummand_integrable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal O × Ideal O) :
+theorem mellinSummand_integrable :
     Integrable (mellinSummand S D Ψ σ Z p) := by
-  have hc : Continuous (fun y : ℝ => (σ : ℂ) + y * Complex.I) := by fun_prop
+  pm_3897
   have ht : Continuous (fun y : ℝ => spectralSummand S D Ψ
       ((σ : ℂ) + y * Complex.I) p.1 p.2) :=
     continuous_const.mul ((fullIdealWeight_continuous p.1).comp hc |>.mul
@@ -48,13 +50,13 @@ theorem mellinSummand_integrable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O �
     (hk.mul ht).aestronglyMeasurable
   exact Filter.Eventually.of_forall (fun y => (mellinSummand_norm S D Ψ σ Z hZ p y).le)
 
-theorem mellinSummand_integral_norm (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ)
-    (σ Z : ℝ) (hZ : 0 < Z) (p : Ideal O × Ideal O) :
+theorem mellinSummand_integral_norm :
     (∫ y : ℝ, ‖mellinSummand S D Ψ σ Z p y‖) =
       ‖spectralSummand S D Ψ (σ : ℂ) p.1 p.2‖ *
         (Z ^ σ * Real.exp (σ ^ 2) * ∫ y : ℝ, Real.exp (-1 * y ^ 2)) := by
   simp only [mellinSummand_norm S D Ψ σ Z hZ, integral_const_mul]
   ring
+end
 
 theorem spectralRow_integral_eq_tsum (S : Finset (Ideal O)) (D : Ideal O)
     (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (σ : ℝ) (hσ : 1 < σ)

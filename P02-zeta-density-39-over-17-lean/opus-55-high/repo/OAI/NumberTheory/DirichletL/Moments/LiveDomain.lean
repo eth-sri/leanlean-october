@@ -2,17 +2,18 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.LiveSupport
 public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentLiveDomain
 open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
+open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
 open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
 open CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
@@ -31,16 +32,16 @@ local notation "O" => ActualEisensteinCubic.O
     intro I hI hn
     have hc : c I=0 := by
       by_contra h
-      exact hn (Finset.mem_inter.mpr ⟨hI,hST I hI h⟩)
-    rw [hc,zero_mul]
+      grind
+    grind
   have ht : (∑ I∈S∩T,c I*f I)=∑ I∈T,c I*f I := by
     apply Finset.sum_subset Finset.inter_subset_right
     intro I hI hn
     have hc : c I=0 := by
       by_contra h
-      exact hn (Finset.mem_inter.mpr ⟨hTS I hI h,hI⟩)
-    rw [hc,zero_mul]
-  exact hs.symm.trans ht
+      grind
+    grind
+  grind
 
  theorem supported_residualPool (C : Ideal O) (hC : Supported C) (S : Finset (Ideal O)) :
     supportedColumns (residualPool C hC.1 S)=residualPool C hC.1 (supportedColumns S) := by
@@ -59,7 +60,7 @@ theorem source_gaussPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z :
       (fun I : supportedColumns S => c I) z=
       ∑ I∈supportedColumns S,c I*primaryGaussRow I z := by
   unfold gaussPolynomial
-  rw [← Finset.sum_coe_sort (supportedColumns S) (fun I => c I*primaryGaussRow I z)]
+  rw [← Finset.sum_coe_sort (supportedColumns S) (fun I=> c I*primaryGaussRow I z)]
   apply Finset.sum_congr rfl
   intro I hI
   rw [primaryGaussRow,dite_eq_left (Finset.mem_filter.mp I.property).2]
@@ -87,12 +88,10 @@ theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ hn
     exact Finset.mem_filter.mpr ⟨(mem_residualPool C hC.1 _ I).mpr hh.1,(Finset.mem_filter.mp hI).2⟩
 
-theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
-    (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (z : O) :
+section
+variable (S : (ι ⊕ Fin 2) → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I) (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C) (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ)
+include S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ f
+theorem live_gaussPolynomial (z : O) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
@@ -101,29 +100,20 @@ theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       (fun I : supportedColumns Q => c I*f I) z=
       gaussPolynomial Finset.univ (sourceGenerator T) (sourceGenerator_supported T)
         (fun I : supportedColumns T => c I*f I) z := by
-  let c := finiteColumnCoefficient (liveBox S B hB)
-    (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
-  let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
-  let T := finiteColumns (liveBox S B hB)
+  pm_2974
   change gaussPolynomial Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q)
     (fun I : supportedColumns Q => c I*f I) z=_
-  refine (source_gaussPolynomial Q (fun I => c I*f I) z).trans ?_
-  refine Eq.trans ?_ (source_gaussPolynomial T (fun I => c I*f I) z).symm
+  pm_974 source_gaussPolynomial
   simpa only [mul_assoc] using live_column_sum S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
-    X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I => f I*primaryGaussRow I z)
+    X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I=> f I*primaryGaussRow I z)
 
-theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
-    (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+theorem live_gaussEnergy (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
     let T := finiteColumns (liveBox S B hB)
     gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q)
-      (fun I : supportedColumns Q => c I*f I) W K=
+      (fun I : supportedColumns Q => c I*f I) W K =
       gaussEnergy Finset.univ (sourceGenerator T) (sourceGenerator_supported T)
         (fun I : supportedColumns T => c I*f I) W K := by
   dsimp only
@@ -133,6 +123,7 @@ theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   exact congrArg (fun x : ℂ => ((‖x‖^2:ℝ):ℂ)*W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K))
     (live_gaussPolynomial S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
       X₁ X₂ Y₁ Y₂ B₁ B₂ f z)
+end
 
 end SevenEighths.CenteredMomentLiveDomain
 

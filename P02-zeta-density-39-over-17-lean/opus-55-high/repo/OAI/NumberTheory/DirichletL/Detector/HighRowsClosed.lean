@@ -1,15 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsTail
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsZero
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
@@ -43,18 +44,12 @@ include hc in
 lemma rowInner_zero_squarefree_summable (eta a X W V rho : ℂ) (hρ : rho^6=1)
     (hV : ‖V‖<1) (hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1)
     (j : ℕ) (hj : j<6) : Summable (fun l=>rowInner p hp hg eta a X W V rho j 0 l) := by
-  have h02 := rowInner_family_hasSum p hp hg hc eta a X W V rho hρ hV hR j 0 2 hj (by omega)
-  have h01 := rowInner_family_hasSum p hp hg hc eta a X W V rho hρ hV hR j 0 1 hj (by omega)
-  have hs : HasSum (fun r=>rowInner p hp hg eta a X W V rho j 0 (2*(r+1)))
-      (rowInner p hp hg eta a X W V rho j 0 2/(1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
-    convert h02 using 1
-    funext r
-    congr 1
-    omega
-  have he := hs.sum_range_add (f:=fun r=>rowInner p hp hg eta a X W V rho j 0 (2*r)) (k:=1)
+  pm_1166
+  pm_1167
+  pm_3867 hs he hs.sum_range_add
   have ho : HasSum (fun r=>rowInner p hp hg eta a X W V rho j 0 (2*r+1))
       (rowInner p hp hg eta a X W V rho j 0 1/(1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
-    simpa only [Nat.add_comm 1] using h01
+    grind
   exact (he.even_add_odd ho).summable
 
 def sourceRowSeries (eta a rho x w z : ℂ) (j : ℕ) : ℂ :=
@@ -73,9 +68,7 @@ theorem sourceRowSeries_eq_closed (eta a rho x w z : ℂ) (hρ : rho^6=1)
         (1-rho*((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w))) else 0)+
       rowClosedMarked p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
         ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z) rho j := by
-  let X : ℂ := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)
-  let W : ℂ := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)
-  let V : ℂ := coordV (Ideal.absNorm (Ideal.span {p})) z
+  pm_3848
   let Z0 := 1/(1-V)+(if j=0 then rho*W/(1-rho*W) else 0)
   have he0 (l : ℕ) : (∑' k,∑' m,sourceRowTerm p hp hg eta a rho x w z j 0 l k m)=
       rowInner p hp hg eta a X W V rho j 0 l+(if l=0 then Z0 else 0) := by
@@ -101,7 +94,7 @@ theorem sourceRowSeries_eq_closed (eta a rho x w z : ℂ) (hρ : rho^6=1)
   unfold rowMarkedSeries at hc'
   simp only [Fin.sum_univ_two,Fin.val_zero,Fin.val_one] at hc'
   unfold sourceRowSeries
-  simp only [Fin.sum_univ_two,Fin.val_zero,Fin.val_one,he0,he1]
+  pm_94 Fin.sum_univ_two Fin.val_zero Fin.val_one he0 he1
   rw [hs.tsum_add (hasSum_ite_eq 0 Z0).summable,tsum_ite_eq]
   change _=Z0+rowClosedMarked p hp hg eta a X W V rho j
   rw [←hc']

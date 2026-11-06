@@ -1,21 +1,22 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Fourier
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentPoisson
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CubicEisenstein
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
 open CenteredMomentFourier
 
-theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
-    (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
+section
+variable (u v : O) (hu : u ≠ 0) (hv : v ≠ 0) (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ) (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K)
+include u v hu hv χu χv W K hK
+theorem full_gauss_pair_poisson :
     letI := finite_quotient_span hu
     letI := finite_quotient_span hv
     letI : Fintype (Residue u) := Fintype.ofFinite _
@@ -24,12 +25,9 @@ theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
       star (residueGauss v hv χv (Ideal.Quotient.mk _ z)) * W (‖eisEmbedding z‖ ^ 2 / K)) =
       (K : ℂ) * ∑' j : O, fullModulusCorrelation u v χu χv (-j) *
         paperRadialFourier W (K * ‖eisEmbedding j‖ ^ 2 / ‖eisEmbedding (u * v)‖ ^ 2) := by
-  let := finite_quotient_span hu
-  let := finite_quotient_span hv
-  let := finite_quotient_span (mul_ne_zero hu hv)
-  let : Fintype (Residue u) := Fintype.ofFinite _
-  let : Fintype (Residue v) := Fintype.ofFinite _
-  let : Fintype (Residue (u * v)) := Fintype.ofFinite _
+  pm_5920 hu hv
+  pm_2900
+  pm_6348 u v
   let P := fun h : Residue (u * v) =>
     residueGauss u hu χu (frequencyReduction u (u * v) (dvd_mul_right u v) h) *
       star (residueGauss v hv χv (frequencyReduction v (u * v) (dvd_mul_left v u) h))
@@ -41,7 +39,7 @@ theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
     have heq (r : Residue (u * v)) : -(r * Ideal.Quotient.mk _ (-j)) =
         Ideal.Quotient.mk _ j * r := by
       simp only [map_neg, mul_neg, neg_neg]
-      exact mul_comm _ _
+      grind
     simp_rw [heq] at ht
     exact ht
   have hcard : (Fintype.card (Residue (u * v)) : ℂ) = (‖eisEmbedding (u * v)‖ ^ 2 : ℝ) := by
@@ -65,11 +63,9 @@ theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
   have hn : (‖eisEmbedding (u * v)‖ ^ 2 : ℂ) ≠ 0 := by
     exact pow_ne_zero 2 (Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr
       (eisEmbedding_ne_zero (mul_ne_zero hu hv))))
-  rw [Complex.ofReal_pow, div_mul_cancel₀ _ hn]
+  simp_all
 
-theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
-    (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
+theorem normalized_gauss_pair_poisson :
     letI := finite_quotient_span hu
     letI := finite_quotient_span hv
     letI : Fintype (Residue u) := Fintype.ofFinite _
@@ -82,10 +78,9 @@ theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
         paperRadialFourier W (K * ‖eisEmbedding j‖ ^ 2 / ‖eisEmbedding (u * v)‖ ^ 2) := by
   let := finite_quotient_span hu
   let := finite_quotient_span hv
-  let : Fintype (Residue u) := Fintype.ofFinite _
-  let : Fintype (Residue v) := Fintype.ofFinite _
-  let ru : ℂ := Real.sqrt (Ideal.absNorm (Ideal.span {u}) : ℝ)
-  let rv : ℂ := Real.sqrt (Ideal.absNorm (Ideal.span {v}) : ℝ)
+  pm_2900
+  pm_8484 ru u
+  pm_8484 rv v
   have hterm (z : O) :
       normalizedResidueGauss u hu χu (Ideal.Quotient.mk _ z) *
         star (normalizedResidueGauss v hv χv (Ideal.Quotient.mk _ z)) * W (‖eisEmbedding z‖ ^ 2 / K) =
@@ -98,6 +93,7 @@ theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
   rw [tsum_mul_left, full_gauss_pair_poisson u v hu hv χu χv W K hK]
   dsimp only [ru, rv]
   ring
+end
 
 theorem sextic_gauss_pair_poisson (u v : O)
     (hu : CanonicalQuadraticSieve.Supported (Ideal.span {u}))
@@ -119,6 +115,5 @@ theorem sextic_gauss_pair_poisson (u v : O)
     supportedCorrelation] using h
 
 end SevenEighths.CenteredMomentPoisson
-end
 
 end OAI

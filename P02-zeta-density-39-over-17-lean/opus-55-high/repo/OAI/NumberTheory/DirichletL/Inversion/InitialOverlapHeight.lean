@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapInputFourier
 public import OAI.NumberTheory.DirichletL.Descent.CommonMeasure
 public import OAI.NumberTheory.DirichletL.Descent.DescentHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,8 +20,8 @@ theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
       0≤E→(∀k,Integrable (fun t=>density (frequencyTwist g θ) xj t*φ k t))→
       (∀t,(∑k,‖φ k t‖^2)≤E*((1+‖t‖)^J)^2)→
       (∑k,‖∫t:ℝ,density (frequencyTwist g θ) xj t*φ k t‖^2)≤C*E*(1+‖θ‖)^(2*(J+(volume:Measure ℝ).integrablePower)) := by
-  obtain ⟨C,hC,hboundMoment⟩ := frequencyTwist_fourier_moment J g
-  refine ⟨C^2,sq_nonneg _,?_⟩
+  pm_69 C hC hboundMoment frequencyTwist_fourier_moment J g
+  pm_8080
   intro θ κ inst xj φ E hE hφ hbound
   have hint:=AnalyticBridge.schwartz_fourier_one_plus_integrable (frequencyTwist g θ) J
   let h : ℝ→ℝ := fun t=>(1+‖t‖)^J
@@ -47,7 +48,7 @@ theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
     simpa only [hbnorm,h,density_norm]
       using hboundMoment θ
   have hb0 : 0≤∫t:ℝ,‖b t‖ := integral_nonneg fun _=>norm_nonneg _
-  have hh := common_measure_energy volume b f E hE hb hf henergy
+  pm_528 hh common_measure_energy volume b f E hE hb hf henergy
   simp only [he] at hh
   exact hh.trans (by
     simpa only [mul_pow,←pow_mul,Nat.mul_comm,mul_assoc,mul_left_comm,mul_comm] using

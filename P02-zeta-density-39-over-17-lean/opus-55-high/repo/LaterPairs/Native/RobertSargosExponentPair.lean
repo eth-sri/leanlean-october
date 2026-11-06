@@ -11,9 +11,9 @@ public import LaterPairs.Native.RobertSargosPhysicalSieve
 public import LaterPairs.Native.SargosQuarticPoisson
 public import LaterPairs.Native.ZetaMomentKernel
 public import LaterPairs.Native.ZetaSourceLogScales
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
+public section
 set_option maxHeartbeats 0
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
@@ -27,9 +27,8 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
                                                                        
 
 
-noncomputable section
 open Expdb Set GafniTao Filter
-open scoped FourierTransform BigOperators ContDiff NNReal
+open scoped FourierTransform ContDiff NNReal
 namespace TaoTrudgianYang2025
 
 theorem norm_sum_Ico_le_of_long_intervals (g : ℕ → ℂ) {A B a b : ℕ} {K : ℝ}
@@ -49,25 +48,23 @@ theorem norm_sum_Ico_le_of_long_intervals (g : ℕ → ℂ) {A B a b : ℕ} {K :
       have he' : ∑ n ∈ Finset.Ico A t, g n =
           (∑ n ∈ Finset.Ico A B, g n)-(∑ n ∈ Finset.Ico t B, g n) := by
         linear_combination he
-      rw [he']
-      exact (norm_sub_le _ _).trans (by linarith)
+      pm_515 he' norm_sub_le
   have ha := hprefix a hAa (hab.trans hbB)
   have hb := hprefix b (hAa.trans hab) hbB
   have he := Finset.sum_Ico_consecutive g hAa hab
   have he' : ∑ n ∈ Finset.Ico a b, g n =
       (∑ n ∈ Finset.Ico A b, g n)-(∑ n ∈ Finset.Ico A a, g n) := by
     linear_combination he
-  rw [he']
-  exact (norm_sub_le _ _).trans (by linarith)
+  pm_515 he' norm_sub_le
 
 theorem heathBrownCharacterSum_eq_integer_sum (L : ℕ) (f : ℝ → ℝ) :
     heathBrownCharacterSum L f =
       ∑ n ∈ Finset.Icc (1:ℤ) L, fordAdditiveCharacter (f n) := by
   unfold heathBrownCharacterSum
-  apply Finset.sum_bij (fun (n:ℕ) _ => (n:ℤ))
+  pm_6429
   · intro n hn
     simp only [Finset.mem_Icc] at hn ⊢
-    exact ⟨by exact_mod_cast hn.1,by exact_mod_cast hn.2⟩
+    pm_8313
   · intro n hn m hm h
     exact_mod_cast h
   · intro n hn
@@ -87,16 +84,15 @@ theorem exists_robertSargos_model_tail_bound {σ η : ℝ} (hσ : 0 < σ) (hη :
       (modelPhaseJetLower σ 3*T/N^4)^(-(8:ℝ)/13) ≤ L →
       ‖heathBrownSourceTail F T N a L‖ ≤
         K*N^(1+η)*(modelPhaseJetLower σ 3*T/N^4)^((1:ℝ)/13) := by
-  let c := modelPhaseJetLower σ 3
-  have hc : 0 < c := modelPhaseJetLower_pos hσ 3
+  pm_6661
   let C := max 1 ((modelPhaseJetCoefficient σ 3+1)/c)
-  have hC : 1 ≤ C := le_max_left _ _
-  obtain ⟨K,hK,hsource⟩ := exists_robertSargos_fourth_derivative_long_range η hη C hC
+  pm_4884 hC C
+  pm_97 K hK hsource exists_robertSargos_fourth_derivative_long_range η hη C hC
   refine ⟨min c 1,lt_min hc (by norm_num),K,hK,?_⟩
   intro F T N a L hT hN ha hb hF hlen
   let f := heathBrownPhysicalPhase F T N a (modelPhaseJetSign σ 3)
   let lam := c*T/N^4
-  have hlam : 0 < lam := by dsimp only [lam]; positivity
+  pm_1675
   have hLp : (0:ℝ) < L := (Real.rpow_pos_of_pos hlam _).trans_le hlen
   have hLN : (L:ℝ) ≤ N := by linarith
   have hupper : (a:ℝ)+(2*N-(a:ℝ)) ≤ 2*N := by linarith
@@ -131,8 +127,7 @@ theorem heathBrownSourceTail_eq_Ico (F : ℝ → ℝ) (T N : ℝ) {u v : ℕ}
   unfold heathBrownSourceTail
   apply Finset.sum_bij (fun n _ => u-1+n)
   · intro n hn
-    simp only [Finset.mem_Icc] at hn
-    simp only [Finset.mem_Ico]
+    pm_415 Finset.mem_Icc hn Finset.mem_Ico
     omega
   · intro n hn m hm he
     omega
@@ -152,13 +147,13 @@ theorem exists_robertSargos_model_sum_bound {σ η : ℝ} (hσ : 0 < σ) (hη : 
       (modelPhaseJetLower σ 3*T/N^4)^(-(8:ℝ)/13) ≤ N/8 →
       ‖exponentialSumAt F T N a b‖ ≤
         2+4*K*N^(1+η)*(modelPhaseJetLower σ 3*T/N^4)^((1:ℝ)/13) := by
-  obtain ⟨δ,hδ,K,hK,hsource⟩ := exists_robertSargos_model_tail_bound hσ hη
+  pm_107 δ hδ K hK hsource exists_robertSargos_model_tail_bound hσ hη
   refine ⟨δ,hδ,K,hK,?_⟩
   intro F T N a b hT hN ha hb hF hlen
   have hNp : 0 < N := by linarith
   let A := ⌈N⌉₊+1
   let B := ⌊2*N⌋₊
-  have hceil : N ≤ (⌈N⌉₊:ℝ) := Nat.le_ceil N
+  pm_5017 hceil N
   have hceilUpper : (⌈N⌉₊:ℝ) < N+1 := Nat.ceil_lt_add_one hNp.le
   have hfloor : (B:ℝ) ≤ 2*N := Nat.floor_le (by positivity)
   have hfloorLower : 2*N < (B:ℝ)+1 := Nat.lt_floor_add_one (2*N)
@@ -171,18 +166,18 @@ theorem exists_robertSargos_model_sum_bound {σ η : ℝ} (hσ : 0 < σ) (hη : 
     linarith
   let U := K*N^(1+η)*(modelPhaseJetLower σ 3*T/N^4)^((1:ℝ)/13)
   have hc := modelPhaseJetLower_pos hσ 3
-  have hU : 0 ≤ U := by dsimp only [U]; positivity
+  pm_82 hU U
   have hlong (u v : ℕ) (hu : A ≤ u) (huv : u ≤ v) (hv : v ≤ B)
       (hl : B-A ≤ 2*(v-u)) :
       ‖∑ n ∈ Finset.Ico u v, oscillatory F T N n‖ ≤ U := by
     have hu1 : 1 ≤ u := by dsimp only [A] at hu; omega
     have hua : N ≤ ((u-1:ℕ):ℝ) := by
-      have hcast : (A:ℝ) ≤ u := by exact_mod_cast hu
+      pm_404 hcast A u hu
       rw [Nat.cast_sub hu1]
       push_cast
       linarith
     have huvReal : ((u-1:ℕ):ℝ)+((v-u:ℕ):ℝ) < 2*N := by
-      have hvReal : (v:ℝ) ≤ B := by exact_mod_cast hv
+      pm_404 hvReal v B hv
       rw [Nat.cast_sub hu1,Nat.cast_sub huv]
       push_cast
       linarith
@@ -222,9 +217,9 @@ theorem exists_robertSargos_model_sum_bound {σ η : ℝ} (hσ : 0 < σ) (hη : 
     simp only [norm_oscillatory,Finset.sum_const,nsmul_eq_mul,mul_one]
     exact_mod_cast hcard
   have he := Finset.sum_inter_add_sum_sdiff S I (fun n => oscillatory F T N n)
-  change ‖∑ n ∈ S, oscillatory F T N n‖ ≤ _
+  pm_7310 n S oscillatory
   rw [← he]
-  have hn := (norm_add_le _ _).trans (add_le_add hcore hboundary)
+  pm_5222 hn norm_add_le hcore hboundary
   dsimp only [U] at hn
   nlinarith only [hn]
 
@@ -232,10 +227,7 @@ theorem robertSargos_model_main_power {c T N η : ℝ}
     (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) :
     N^(1+η)*(c*T/N^4)^((1:ℝ)/13) =
       c^((1:ℝ)/13)*T^((1:ℝ)/13)*N^(9/13+η) := by
-  rw [Real.div_rpow (mul_nonneg hc.le hT.le) (pow_nonneg hN.le _),
-    Real.mul_rpow hc.le hT.le,← Real.rpow_natCast N 4,
-    ← Real.rpow_mul hN.le]
-  norm_num only [Nat.cast_ofNat]
+  pm_1676
   rw [div_eq_mul_inv,← Real.rpow_neg hN.le]
   calc
     _ = c^((1:ℝ)/13)*T^((1:ℝ)/13)*(N^(1+η)*N^(-((4:ℝ)*(1/13)))) := by ring_nf
@@ -245,10 +237,7 @@ theorem robertSargos_model_length_power {c T N : ℝ}
     (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) :
     (c*T/N^4)^(-(8:ℝ)/13)/N =
       c^(-(8:ℝ)/13)*T^(-(8:ℝ)/13)*N^((19:ℝ)/13) := by
-  rw [Real.div_rpow (mul_nonneg hc.le hT.le) (pow_nonneg hN.le _),
-    Real.mul_rpow hc.le hT.le,← Real.rpow_natCast N 4,
-    ← Real.rpow_mul hN.le]
-  norm_num only [Nat.cast_ofNat]
+  pm_1676
   rw [div_eq_mul_inv,div_eq_mul_inv,← Real.rpow_neg hN.le,
     ← Real.rpow_neg_one]
   calc
@@ -283,10 +272,10 @@ theorem isExponentSumBoundNonAsymptotic_robertSargos
     IsExponentSumBoundNonAsymptotic α ((1:ℝ)/13+(9/13)*(α:ℝ)) := by
   intro ε hε σ hσ
   let η := min 1 (ε/4)
-  have hη : 0 < η := lt_min (by norm_num) (by positivity)
+  pm_1654 hη η
   have hη1 : η ≤ 1 := min_le_left _ _
-  have hηε : η ≤ ε/4 := min_le_right _ _
-  obtain ⟨δ₀,hδ₀,K,hK,hsource⟩ := exists_robertSargos_model_sum_bound hσ hη
+  pm_8135 hηε η ε min_le_right
+  pm_107 δ₀ hδ₀ K hK hsource exists_robertSargos_model_sum_bound hσ hη
   let δ := min δ₀ (min ((α:ℝ)/2) (min ((8/19-(α:ℝ))/2) (ε/8)))
   have hδ : 0 < δ := lt_min hδ₀ (lt_min (by positivity)
     (lt_min (by positivity) (by positivity)))
@@ -296,21 +285,19 @@ theorem isExponentSumBoundNonAsymptotic_robertSargos
     ((min_le_right _ _).trans (min_le_right _ _)).trans (min_le_left _ _)
   have hδε : δ ≤ ε/8 :=
     ((min_le_right _ _).trans (min_le_right _ _)).trans (min_le_right _ _)
-  let c := modelPhaseJetLower σ 3
-  have hc : 0 < c := modelPhaseJetLower_pos hσ 3
+  pm_6661
   obtain ⟨M,hM⟩ := eventually_atTop.mp
     ((eventually_robertSargos_model_length hc (show (α:ℝ)+δ < 8/19 by linarith)).and
       ((tendsto_rpow_atTop (show 0 < (α:ℝ)/2 by positivity)).eventually
         (eventually_ge_atTop (8:ℝ))))
   let C := max 1 (max M (2+4*K*c^((1:ℝ)/13)))
-  have hC : 1 ≤ C := le_max_left _ _
-  have hMC : M ≤ C := (le_max_left _ _).trans (le_max_right _ _)
+  pm_4884 hC C
+  pm_1612 hMC M C le_max_left le_max_right
   have hKC : 2+4*K*c^((1:ℝ)/13) ≤ C :=
     (le_max_right _ _).trans (le_max_right _ _)
   refine ⟨δ,hδ,3,by norm_num,C,hC,?_⟩
   intro T N F a b hs
-  have hT : 1 ≤ T := hC.trans hs.threshold_le_param
-  have hTp : 0 < T := zero_lt_one.trans_le hT
+  pm_512 hT hC.trans hs.threshold_le_param hTp
   obtain ⟨hphysical,hlarge⟩ := hM T (hMC.trans hs.threshold_le_param)
   have hN8 : 8 ≤ N := hlarge.trans
     ((Real.rpow_le_rpow_of_exponent_le hT (show (α:ℝ)/2 ≤ (α:ℝ)-δ by linarith)).trans
@@ -338,7 +325,7 @@ theorem isExponentSumBoundNonAsymptotic_robertSargos
         (Real.rpow_le_rpow_of_exponent_le hT hexp) (by positivity)
   have hone : 1 ≤ T^((1:ℝ)/13+(9/13)*(α:ℝ)+ε) :=
     Real.one_le_rpow hT (by positivity)
-  have hscaled := mul_le_mul_of_nonneg_left hpower (show 0 ≤ 4*K by positivity)
+  pm_1652 hscaled hpower K
   have hconstant := mul_le_mul_of_nonneg_right hKC
     (Real.rpow_nonneg hTp.le ((1:ℝ)/13+(9/13)*(α:ℝ)+ε))
   dsimp only [c] at hscaled hconstant
@@ -348,7 +335,7 @@ theorem exponentPair_robertSargos : ExponentPair (1/13) (10/13) := by
   apply exponentPair_of_beta_bound_half (by norm_num [InExponentPairTriangle])
     (by norm_num)
   intro α hαhalf
-  by_cases hα : 0 < (α:ℝ)
+  pm_8307
   · by_cases hshort : (α:ℝ) < 8/19
     · have h := exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
         (isExponentSumBoundNonAsymptotic_robertSargos hα hshort)

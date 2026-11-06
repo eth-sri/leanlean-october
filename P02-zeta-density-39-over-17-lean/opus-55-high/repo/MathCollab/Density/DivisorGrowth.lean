@@ -3,28 +3,26 @@ public import MathCollab.Density.ProductGrouping
 public import Mathlib.NumberTheory.ArithmeticFunction.Misc
 public import Mathlib.Analysis.SpecificLimits.Normed
 public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Real Set
-open scoped BigOperators
 
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density
 
 /-- A geometric majorant bounds every prime-power exponent uniformly. -/
 theorem exponent_linear_le_geometric {η : ℝ} (hη : 0 < η) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ e : ℕ, (e : ℝ)+1 ≤ C*((2 : ℝ)^η)^e := by
   let r := ((2 : ℝ)^η)⁻¹
-  have hp : 1 < (2 : ℝ)^η := Real.one_lt_rpow (by norm_num) hη
-  have hr : 0 < r := by dsimp [r]; positivity
+  pm_5467 hp η hη
+  pm_64 hr r
   have hr1 : r < 1 := inv_lt_one_of_one_lt₀ hp
   have hrn : ‖r‖ < 1 := by rwa [Real.norm_eq_abs, abs_of_pos hr]
   have hs : Summable (fun e : ℕ => ((e : ℝ)+1)*r^e) := by
     have hh := (summable_pow_mul_geometric_of_norm_lt_one 1 hrn).add
       (summable_geometric_of_norm_lt_one hrn)
-    simpa only [pow_one, add_mul, one_mul] using hh
+    grind
   let C := ∑' e : ℕ, ((e : ℝ)+1)*r^e
   have hle (e : ℕ) : ((e : ℝ)+1)*r^e ≤ C := hs.le_tsum e (fun _ _ => by positivity)
   refine ⟨C, ?_, ?_⟩
@@ -44,15 +42,18 @@ theorem exponent_linear_le_two_pow (e : ℕ) : (e : ℝ)+1 ≤ (2 : ℝ)^e := by
     rw [pow_succ]
     linarith
 
+section
+variable {η : ℝ} (hη : 0 < η)
+include η hη
 /-- The divisor-growth constant depends on eta alone, before every integer n. -/
-theorem divisor_card_subpower {η : ℝ} (hη : 0 < η) :
+theorem divisor_card_subpower :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ n : ℕ, 0 < n → (n.divisors.card : ℝ) ≤ C*(n : ℝ)^η := by
   obtain ⟨C, hC, h_exp⟩ := exponent_linear_le_geometric hη
   let K := ⌈(2 : ℝ)^(1/η)⌉₊
   have hCp : 0 < C := by linarith
   have hprime (p e : ℕ) (hp : p.Prime) :
       (e : ℝ)+1 ≤ (if p ≤ K then C else 1)*((p : ℝ)^η)^e := by
-    have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast hp.two_le
+    pm_279 hp2 p hp.two_le
     have hpη : (2 : ℝ)^η ≤ (p : ℝ)^η := Real.rpow_le_rpow (by norm_num) hp2 hη.le
     by_cases hpk : p ≤ K
     · rw [ite_eq_left hpk]
@@ -62,7 +63,7 @@ theorem divisor_card_subpower {η : ℝ} (hη : 0 < η) :
       have hlarge : (2 : ℝ)^(1/η) ≤ p := (Nat.le_ceil _).trans (by exact_mod_cast (Nat.le_of_lt (Nat.lt_of_not_ge hpk)))
       have hh := Real.rpow_le_rpow (by positivity : 0 ≤ (2 : ℝ)^(1/η)) hlarge hη.le
       have he : ((2 : ℝ)^(1/η))^η = 2 := by
-        rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
+        pm_4302
         rw [div_mul_cancel₀ 1 hη.ne', Real.rpow_one]
       rw [he] at hh
       exact (exponent_linear_le_two_pow e).trans (pow_le_pow_left₀ (by norm_num) hh e)
@@ -80,8 +81,7 @@ theorem divisor_card_subpower {η : ℝ} (hη : 0 < η) :
       positivity
   have hcount : (n.primeFactors.filter (fun p => p ≤ K)).card ≤ K := by
     have hs : n.primeFactors.filter (fun p => p ≤ K) ⊆ Finset.Icc 1 K := by
-      intro p hp
-      obtain ⟨hpn, hpK⟩ := Finset.mem_filter.mp hp
+      pm_381 p hp hpn hpK Finset.mem_filter.mp
       exact Finset.mem_Icc.mpr ⟨(Nat.prime_of_mem_primeFactors hpn).pos, hpK⟩
     exact (Finset.card_le_card hs).trans_eq (by simp)
   calc
@@ -100,7 +100,7 @@ theorem divisor_card_subpower {η : ℝ} (hη : 0 < η) :
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hC hcount) (Real.rpow_nonneg (Nat.cast_nonneg _) _)
 
 /-- The ceiling cutoff is controlled uniformly for T at least two. -/
-theorem divisorMaximum_subpower {η : ℝ} (hη : 0 < η) :
+theorem divisorMaximum_subpower :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ T : ℝ, 2 ≤ T → (divisorMaximum T : ℝ) ≤ C*T^η := by
   obtain ⟨C, hC, hd⟩ := divisor_card_subpower hη
   have h49 : (1 : ℝ) ≤ 49^η := Real.one_le_rpow (by norm_num) hη.le
@@ -124,5 +124,6 @@ theorem divisorMaximum_subpower {η : ℝ} (hη : 0 < η) :
     exact Nat.le_floor (hbound m hm)
   exact (by exact_mod_cast hle : (divisorMaximum T : ℝ) ≤ (⌊C*49^η*T^η⌋₊ : ℝ)).trans
     (Nat.floor_le (by positivity))
+end
 
 end MathCollab.Density

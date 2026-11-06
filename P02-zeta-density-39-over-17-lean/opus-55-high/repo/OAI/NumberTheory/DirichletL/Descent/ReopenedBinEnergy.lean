@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedIntegralEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,8 +27,8 @@ theorem markedReopenedCubeBin_energy
     (hn : ∀ v ∈ Q, B ≤ (Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) : ℝ))
     (hn' : ∀ v ∈ Q, (Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v) : ℝ) ≤ Real.exp 1*B)
     (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (weights : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
+    (lists : σ→ Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
+    (weights : σ→ primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
@@ -46,10 +47,8 @@ theorem markedReopenedCubeBin_energy
       (B^2*ell)⁻¹ * E *
         (∫ ξ : ℝ, ‖reopeningCoefficient W a b ha hs hW ξ‖*(1+|ξ|)^d)^2 := by
   dsimp only
-  let F := InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
+  pm_3764
+  pm_3044
   let β := fun I v => reopenedCubeCoefficient H₀
     (rowTwist Ψ (m*excludedGenerator S) (idealGenerator I) 1) (cubeIdeal F v)
   let n := fun v => (Ideal.absNorm (cubeIdeal F v) : ℝ)

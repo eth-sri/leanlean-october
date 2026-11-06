@@ -13,7 +13,10 @@ open CompletedGauss CanonicalQuadraticSieve HeckeInverseAmplification
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-theorem compensatedPhysicalProbe_canonical_slots {K : ℕ} (η : HeckeFamily.Character)
+section
+variable {K : ℕ} (η : HeckeFamily.Character)
+include K η
+theorem compensatedPhysicalProbe_canonical_slots
     (C : CalibrationData) (W0 W1 : ℝ→ℂ) (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→Supported P.val) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (X Y Z : ℝ) :
@@ -22,7 +25,7 @@ theorem compensatedPhysicalProbe_canonical_slots {K : ℕ} (η : HeckeFamily.Cha
         compensatedTuple η C W0 W1 (fun i=>primaryGenerator (P i).val.val) X Y Z :=
   sum_canonical_weighted_tuples T hT W Yp (fun p=>compensatedTuple η C W0 W1 p X Y Z)
 
-theorem compensatedPhysicalProbe_eq_canonical_rows {K : ℕ} (η : HeckeFamily.Character)
+theorem compensatedPhysicalProbe_eq_canonical_rows
     (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
@@ -51,6 +54,7 @@ theorem compensatedPhysicalProbe_eq_canonical_rows {K : ℕ} (η : HeckeFamily.C
           compensatedRowTripleIntegral_eq_tsum η S _ _ (hn P) W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ]
         exact tsum_mul_left.symm
     _ = _ := (Summable.tsum_finsetSum (fun P _=>hs P)).symm
+end
 
 end SevenEighths.ProbePhysical
 end

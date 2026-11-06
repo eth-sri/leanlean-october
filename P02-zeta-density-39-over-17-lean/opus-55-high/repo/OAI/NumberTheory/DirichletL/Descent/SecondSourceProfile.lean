@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -76,8 +77,7 @@ theorem secondExpansionSource_marked_profile
   dsimp only at hc
   rw [← secondExpansionQuotient_of_subset p x he] at hc
   rw [hc]
-  simp only [expansionProfileWeight,actualSecondProfileRow,expansionProfileData,
-    secondSourceCommonCoefficient,Complex.ofReal_pow]
+  pm_352 expansionProfileWeight actualSecondProfileRow expansionProfileData secondSourceCommonCoefficient Complex.ofReal_pow
   ring
 
 end

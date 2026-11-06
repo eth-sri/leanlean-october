@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SourceBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ local notation "Id" => Ideal O
 def bareIdealHighCoefficient (η : HeckeFamily.Character) (u : O) (I J K L : Id) : ℂ :=
   if h : Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported L then
     bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I h.2.1)
-      (primaryGenerator I * primaryGenerator J^3) (primaryGenerator K)
+      (primaryGenerator I * primaryGenerator J ^3) (primaryGenerator K)
       (mul_ne_zero (supported_primaryGenerator_ne_zero I h.2.1)
         (pow_ne_zero _ (supported_primaryGenerator_ne_zero J h.2.2.1)))
       (u*primaryGenerator L^6)
@@ -30,7 +31,7 @@ theorem bareIdealHighCoefficient_norm_le (η : HeckeFamily.Character) (u : O) (I
     have hj := (supported_span_primaryGenerator_iff J).mpr h.2.2.1
     have hk := (supported_span_primaryGenerator_iff K).mpr h.2.2.2.1
     have hb := bareSourceCoefficient_norm_le η I ⟨h.1,supported_primaryGenerator_ne_zero I h.2.1⟩
-      (primaryGenerator I*primaryGenerator J^3) (primaryGenerator K)
+      (primaryGenerator I*primaryGenerator J ^3) (primaryGenerator K)
       (supported_completed _ _ hi hj) hk (u*primaryGenerator L^6)
     rw [← Ideal.span_singleton_mul_span_singleton,← Ideal.span_singleton_pow,
       (primaryGenerator_spec I (supported_primaryGenerator_ne_zero I h.2.1)).1,
@@ -99,13 +100,8 @@ theorem bareIdealHighSummand_summable (η : HeckeFamily.Character) (u : O) (x w 
   have h4 := fullIdealWeight_summable_norm (6*z) (by
     norm_num [Complex.mul_re]
     linarith)
-  have h12 := h1.mul_of_nonneg h2 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have h34 := h3.mul_of_nonneg h4 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
-  have hall := h12.mul_of_nonneg h34
-    (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
-    (fun _=>mul_nonneg (norm_nonneg _) (norm_nonneg _))
-  apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ hall
+  pm_3842
+  pm_5767 hall
   intro p
   simpa only [mul_assoc] using bareIdealHighSummand_norm_le η u x w z p.1.1 p.1.2 p.2.1 p.2.2
 

@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleyFiniteMean
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ class contains one integer and the conditioned mean is exactly one.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -52,8 +52,10 @@ def wooleyConditionedGridMean (s k Q qB qH : ℕ) [NeZero qB]
         (wooleyResidueRawMoment s k Q qB qH xi /
           ((qB ^ k : ℕ) : ℝ))
 
-theorem wooley_sourceValue_cast_injective
-    {Q q : ℕ} [NeZero q] (hQq : Q < q) :
+section
+variable {Q q : ℕ} [NeZero q] (hQq : Q < q)
+include Q q hQq
+theorem wooley_sourceValue_cast_injective :
     Function.Injective
       (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod q))) := by
   intro m n hmn
@@ -63,15 +65,15 @@ theorem wooley_sourceValue_cast_injective
   have hn : (n : ℕ) + 1 < q := lt_of_le_of_lt hnQ hQq
   have hval := congrArg ZMod.val hmn
   rw [ZMod.val_natCast_of_lt hm, ZMod.val_natCast_of_lt hn] at hval
-  exact Fin.ext (by omega)
+  grind
 
-theorem wooleyResidueClass_card_le_one
-    {Q q : ℕ} [NeZero q] (hQq : Q < q) (xi : ZMod q) :
+theorem wooleyResidueClass_card_le_one (xi : ZMod q) :
     (wooleyResidueClass Q q xi).card ≤ 1 := by
   rw [Finset.card_le_one]
   intro m hm n hn
   apply wooley_sourceValue_cast_injective hQq
   exact (mem_filter.mp hm).2.trans (mem_filter.mp hn).2.symm
+end
 
 theorem wooley_sum_residueMassSq (Q q : ℕ) [NeZero q] :
     ∑ xi : ZMod q, wooleyResidueMassSq Q q xi = Q := by
@@ -92,9 +94,10 @@ theorem wooleyNormalizedResidueGridSum_of_singleton
   simp [wooleyNormalizedResidueGridSum, hmass,
     wooleyResidueGridSum, hclass]
 
-theorem wooleyResidueRawMoment_eq_modulusPow_mul_mass
-    {s k Q qB qH : ℕ} [NeZero qB] [NeZero qH]
-    (hs : 1 ≤ s) (hQqH : Q < qH) (xi : ZMod qH) :
+section
+variable {s k Q qB qH : ℕ} [NeZero qB] [NeZero qH] (hs : 1 ≤ s)
+include s k Q qB qH hs
+theorem wooleyResidueRawMoment_eq_modulusPow_mul_mass (hQqH : Q < qH) (xi : ZMod qH) :
     wooleyResidueRawMoment s k Q qB qH xi =
       ((qB ^ k : ℕ) : ℝ) * (wooleyResidueMassSq Q qH xi : ℝ) := by
   have hcard := wooleyResidueClass_card_le_one hQqH xi
@@ -108,14 +111,12 @@ theorem wooleyResidueRawMoment_eq_modulusPow_mul_mass
       wooleyNormalizedResidueGridSum_of_singleton hclass]
     simp [wooleyResidueMassSq, hclass, wooleyMonomialGridPhase]
 
-theorem wooley_conditioned_grid_mean_eq_one
-    {s k Q qB qH : ℕ} [NeZero qB] [NeZero qH]
-    (hs : 1 ≤ s) (hQ : 1 ≤ Q) (hQqH : Q < qH) :
+theorem wooley_conditioned_grid_mean_eq_one (hQ : 1 ≤ Q) (hQqH : Q < qH) :
     wooleyConditionedGridMean s k Q qB qH = 1 := by
   rw [wooleyConditionedGridMean]
   simp_rw [wooleyResidueRawMoment_eq_modulusPow_mul_mass hs hQqH]
   have hqB : 0 < qB := NeZero.pos qB
-  have hqpow : (((qB ^ k : ℕ) : ℝ)) ≠ 0 := by positivity
+  pm_5193 hqpow qB k
   have hmassSquare (xi : ZMod qH) :
       (wooleyResidueMassSq Q qH xi : ℝ) ^ 2 =
         (wooleyResidueMassSq Q qH xi : ℝ) := by
@@ -133,8 +134,9 @@ theorem wooley_conditioned_grid_mean_eq_one
     simpa [pow_two] using hmassSquare xi
   simp_rw [hterm]
   rw [← Nat.cast_sum, wooley_sum_residueMassSq]
-  have hQR : (Q : ℝ) ≠ 0 := by positivity
+  pm_392 hQR Q
   field_simp
+end
 
 
 end

@@ -1,5 +1,6 @@
 module
 public import RationalGcdDecomposition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,8 +16,8 @@ theorem ordered_ratio_gap {a b c d : ℕ} (hb : 0 < b) (hd : 0 < d)
     {H : ℝ} (hbH : (b : ℝ) ≤ H) (hdH : (d : ℝ) ≤ H)
     (hlt : (a : ℝ) / b < (c : ℝ) / d) :
     1 / H ^ 2 ≤ (c : ℝ) / d - (a : ℝ) / b := by
-  have hbR : (0 : ℝ) < b := by exact_mod_cast hb
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  pm_74 hbR b hb
+  pm_74 hdR d hd
   have hH : 0 < H := hbR.trans_le hbH
   have hcross : a * d < c * b := by
     exact_mod_cast (div_lt_div_iff₀ hbR hdR).mp hlt
@@ -30,7 +31,7 @@ theorem ordered_ratio_gap {a b c d : ℕ} (hb : 0 < b) (hd : 0 < d)
     nlinarith [mul_le_mul hbH hdH hdR.le hH.le]
   apply (div_le_iff₀ (sq_pos_of_pos hH)).mpr
   calc
-    1 ≤ ((c : ℝ) / d - (a : ℝ) / b) * (b * d) := by rw [he]; exact hgap
+    1 ≤ ((c : ℝ) / d - (a : ℝ) / b) * (b * d) := by grind
     _ ≤ _ := mul_le_mul_of_nonneg_left hprod (sub_nonneg.mpr hlt.le)
 
 /-- A logarithmic gap controls the original gap with the upper endpoint U. -/
@@ -76,14 +77,10 @@ theorem rational_log_separation {p q : ℕ × ℕ}
     have hl := ordered_log_gap hp0 hlt hqU
     rw [abs_sub_comm, abs_of_nonneg
       (sub_nonneg.mpr (Real.log_le_log hp0 hlt.le))]
-    calc
-      _ = (1 / H ^ 2) / U := by ring
-      _ ≤ _ := (div_le_div_of_nonneg_right hg hU.le).trans hl
+    pm_1021
   · have hg := ordered_ratio_gap hq.2.1 hp.2.1 hqH hpH hgt
     have hl := ordered_log_gap hq0 hgt hpU
     rw [abs_of_nonneg (sub_nonneg.mpr (Real.log_le_log hq0 hgt.le))]
-    calc
-      _ = (1 / H ^ 2) / U := by ring
-      _ ≤ _ := (div_le_div_of_nonneg_right hg hU.le).trans hl
+    pm_1021
 
 end Montgomery.RationalMoment

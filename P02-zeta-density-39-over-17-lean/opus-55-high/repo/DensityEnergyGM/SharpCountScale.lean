@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.SharpCountTraceExpansion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,9 +11,7 @@ namespace Montgomery.RationalMoment
 
 theorem gm_amplitude_log_identity {T : ℝ} (hT : 0 < T) (σ x δ : ℝ) :
     (T^x)^σ*T^(-2*δ)=T^(σ*x-2*δ) := by
-  rw [← Real.rpow_mul hT.le,← Real.rpow_add hT]
-  congr 1
-  ring
+  pm_8153 Real.rpow_mul hT.le hT
 
 /-- An admissible actual amplifier length for the entire perturbed
 physical detector range; the baseline costs exactly at most10delta. -/
@@ -24,22 +23,11 @@ theorem gm_detecting_scale {σ a δ T N : ℝ}
       Real.sqrt T ≤ T^ell ∧ 3*a*(1-σ)+(2*σ-1)*x ≤ ell ∧
       (N*T^ell)^2 ≤ T^(10*δ)*(T^(3*a*(1-σ)))^2*(N^σ*T^(-2*δ))^4 := by
   have hTp : 0 < T := by linarith
-  have hNp : 0 < N := (Real.rpow_pos_of_pos hTp a).trans_le hlo
+  pm_650 hNp N Real.rpow_pos_of_pos hTp a hlo
   have ht : 0 < Real.log T := Real.log_pos hT
   let x := Real.logb T N
-  have hNx : T^x=N := Real.rpow_logb hTp (by linarith) hNp
-  have hxa : a ≤ x := by
-    have hh := Real.log_le_log (Real.rpow_pos_of_pos hTp a) hlo
-    rw [Real.log_rpow hTp] at hh
-    exact (le_div_iff₀ ht).mpr hh
-  have hxhi : x ≤ 3*a/2+δ := by
-    have hh := Real.log_le_log hNp hhi
-    rw [Real.log_rpow hTp] at hh
-    exact (div_le_iff₀ ht).mpr hh
-  let p := 3*a*(1-σ)
-  let ell := max x (p+(2*σ-1)*x)
-  have hlx : x ≤ ell := le_max_left _ _
-  have hlower : p+(2*σ-1)*x ≤ ell := le_max_right _ _
+  pm_169 hNp ell
+  pm_5279 ell
   have hupper : ell ≤ p+(2*σ-1)*x+δ := by
     apply max_le ?_ (by linarith only [hδ])
     have hm := mul_le_mul_of_nonneg_left hxhi (show 0 ≤ 2*(1-σ) by linarith)

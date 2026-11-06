@@ -22,19 +22,21 @@ omit [Fintype ι] in
     (η : Character) (u : FreeRow) (ψ : ι→Character) :
     sourceDetectorFamily S hS η u ψ (Sum.inl false)=(targetRow η u).excludePrimes S hS := rfl
 
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) (u : FreeRow) (ψ : ι→Character)
+include S hS η u ψ
 omit [Fintype ι] in
-@[simp] lemma sourceDetectorFamily_numerator (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (η : Character) (u : FreeRow) (ψ : ι→Character) :
+@[simp] lemma sourceDetectorFamily_numerator :
     sourceDetectorFamily S hS η u ψ (Sum.inl true)=rowCharacter S hS u := rfl
 
-lemma source_bin_denominator_nonzero (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (η : Character) (u : FreeRow) (ψ : ι→Character) (T a e : ℝ) (i : ℕ) (he : 0<e)
+lemma source_bin_denominator_nonzero (T a e : ℝ) (i : ℕ) (he : 0<e)
     (hmax : detectorMaximum (sourceDetectorFamily S hS η u ψ) (3*(i+1:ℕ)*T)<a+2*e)
     (x : ℂ) (hx : a+16*e≤x.re) (ht : |x.im|≤3*(i+1:ℕ)*T)
     (hpole : ¬(((targetRow η u).excludePrimes S hS).residue=1 ∧ x=1)) :
     LFunction ((targetRow η u).excludePrimes S hS) x≠0 :=
   detector_nonzero_above_maximum (sourceDetectorFamily S hS η u ψ) _ (Sum.inl false)
     (by linarith) ht hpole
+end
 
 theorem source_buffered_x_rectangle {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmaxS : ∀P∈S,P.IsMaximal)

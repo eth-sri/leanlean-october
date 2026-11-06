@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondLedger
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,7 +30,7 @@ theorem common_log_ge_unit (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p 
       apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ U)
       intro i hi hni
       apply Real.logb_nonneg hZ
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+      pm_5047 Nat.one_le_iff_ne_zero.mpr hp
     _ ≤ _ := by
       apply Finset.sum_le_sum
       intro i hi

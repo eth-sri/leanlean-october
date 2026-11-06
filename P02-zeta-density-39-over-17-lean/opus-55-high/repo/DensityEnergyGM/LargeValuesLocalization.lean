@@ -1,10 +1,10 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesMatrix
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset Set
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -35,7 +35,7 @@ theorem gmSmoothDirichletPoly_restricted_eq_sum
   let f : ℕ → ℂ := fun n =>
     cutoff ((n : ℝ) / Q) * gmRestrictedCoeffs S b n *
       (n : ℂ) ^ ((t : ℂ) * I)
-  change (∑ n ∈ dyadicInterval Q, f n) = _
+  pm_8160 dyadicInterval Q f
   calc
     (∑ n ∈ dyadicInterval Q, f n) = ∑ n ∈ S, f n := by
       symm
@@ -76,7 +76,7 @@ theorem gmSourcePieces_partition (N : ℕ) (b : ℕ → ℂ) (t : ℝ) :
   classical
   rw [sourceDirichletPoly]
   let f : ℕ → ℂ := fun n => b n * (n : ℂ) ^ ((t : ℂ) * I)
-  change (∑ n ∈ dyadicInterval N, f n) = _
+  pm_8160 dyadicInterval N f
   rw [← Finset.sum_filter_add_sum_filter_not (s := dyadicInterval N)
     (p := fun n => 5 * n ≤ 6 * N) (f := f)]
   rw [add_assoc]
@@ -98,58 +98,39 @@ theorem gmSourcePieces_partition (N : ℕ) (b : ℕ → ℂ) (t : ℝ) :
     · intro n hn
       rfl
 
-theorem gmSourceLeftPiece_mem_dyadic {N n : ℕ} (hN : 30 ≤ N)
+section
+variable {N n : ℕ}
+include N n
+theorem gmSourceLeftPiece_mem_dyadic (hN : 30 ≤ N)
     (hn : n ∈ gmSourceLeftPiece N) :
     n ∈ dyadicInterval (gmSourceLeftScale N) := by
-  simp only [gmSourceLeftPiece, Finset.mem_filter, dyadicInterval,
-    Finset.mem_Ioc] at hn ⊢
-  dsimp only [gmSourceLeftScale]
-  omega
+  pm_7659 gmSourceLeftPiece gmSourceLeftScale
 
-theorem gmSourceMiddlePiece_mem_dyadic {N n : ℕ}
+theorem gmSourceMiddlePiece_mem_dyadic
     (hn : n ∈ gmSourceMiddlePiece N) : n ∈ dyadicInterval N := by
   exact (Finset.mem_filter.mp hn).1
 
-theorem gmSourceRightPiece_mem_dyadic {N n : ℕ} (hN : 30 ≤ N)
+theorem gmSourceRightPiece_mem_dyadic (hN : 30 ≤ N)
     (hn : n ∈ gmSourceRightPiece N) :
     n ∈ dyadicInterval (gmSourceRightScale N) := by
-  simp only [gmSourceRightPiece, Finset.mem_filter, dyadicInterval,
-    Finset.mem_Ioc] at hn ⊢
-  dsimp only [gmSourceRightScale]
-  omega
+  pm_7659 gmSourceRightPiece gmSourceRightScale
+end
 
-theorem gmSourceLeftPiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
+section
+variable {N n : ℕ} (hN : 30 ≤ N)
+include N n hN
+theorem gmSourceLeftPiece_mem_core
     (hn : n ∈ gmSourceLeftPiece N) :
     ((n : ℝ) / gmSourceLeftScale N) ∈
       Set.Icc (6 / 5 : ℝ) (9 / 5 : ℝ) := by
-  have hn' := hn
-  simp only [gmSourceLeftPiece, Finset.mem_filter, dyadicInterval,
-    Finset.mem_Ioc] at hn'
-  have hQpos : 0 < gmSourceLeftScale N := by
-    dsimp only [gmSourceLeftScale]
-    omega
-  have hLowerNat : 6 * gmSourceLeftScale N ≤ 5 * n := by
-    dsimp only [gmSourceLeftScale]
-    omega
-  have hUpperNat : 5 * n ≤ 9 * gmSourceLeftScale N := by
-    dsimp only [gmSourceLeftScale]
-    omega
-  constructor
-  · rw [le_div_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceLeftScale N)]
-    have hLowerReal : (6 : ℝ) * gmSourceLeftScale N ≤ 5 * n := by
-      exact_mod_cast hLowerNat
-    nlinarith
-  · rw [div_le_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceLeftScale N)]
-    have hUpperReal : (5 : ℝ) * n ≤ 9 * gmSourceLeftScale N := by
-      exact_mod_cast hUpperNat
-    nlinarith
+  pm_4118 gmSourceLeftPiece gmSourceLeftScale
 
-theorem gmSourceMiddlePiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
+theorem gmSourceMiddlePiece_mem_core
     (hn : n ∈ gmSourceMiddlePiece N) :
     ((n : ℝ) / N) ∈ Set.Icc (6 / 5 : ℝ) (9 / 5 : ℝ) := by
   have hn' := hn
   simp only [gmSourceMiddlePiece, Finset.mem_filter] at hn'
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+  pm_91 hNpos N
   constructor
   · rw [le_div_iff₀ hNpos]
     have hLowerReal : (6 : ℝ) * N ≤ 5 * n := by
@@ -160,36 +141,18 @@ theorem gmSourceMiddlePiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
       exact_mod_cast hn'.2.2
     nlinarith
 
-theorem gmSourceRightPiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
+theorem gmSourceRightPiece_mem_core
     (hn : n ∈ gmSourceRightPiece N) :
     ((n : ℝ) / gmSourceRightScale N) ∈
       Set.Icc (6 / 5 : ℝ) (9 / 5 : ℝ) := by
-  have hn' := hn
-  simp only [gmSourceRightPiece, Finset.mem_filter, dyadicInterval,
-    Finset.mem_Ioc] at hn'
-  have hQpos : 0 < gmSourceRightScale N := by
-    dsimp only [gmSourceRightScale]
-    omega
-  have hLowerNat : 6 * gmSourceRightScale N ≤ 5 * n := by
-    dsimp only [gmSourceRightScale]
-    omega
-  have hUpperNat : 5 * n ≤ 9 * gmSourceRightScale N := by
-    dsimp only [gmSourceRightScale]
-    omega
-  constructor
-  · rw [le_div_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceRightScale N)]
-    have hLowerReal : (6 : ℝ) * gmSourceRightScale N ≤ 5 * n := by
-      exact_mod_cast hLowerNat
-    nlinarith
-  · rw [div_le_iff₀ (by exact_mod_cast hQpos : (0 : ℝ) < gmSourceRightScale N)]
-    have hUpperReal : (5 : ℝ) * n ≤ 9 * gmSourceRightScale N := by
-      exact_mod_cast hUpperNat
-    nlinarith
+  pm_4118 gmSourceRightPiece gmSourceRightScale
+end
 
+section
+variable (cutoff : GMSmoothCutoff) {N : ℕ} (hN : 30 ≤ N) (b : ℕ → ℂ)
+include cutoff N hN b
 /-- Exact source-to-smooth three-piece identity from Section 3. -/
-theorem sourceDirichletPoly_eq_three_gmSmooth
-    (cutoff : GMSmoothCutoff) {N : ℕ} (hN : 30 ≤ N)
-    (b : ℕ → ℂ) (t : ℝ) :
+theorem sourceDirichletPoly_eq_three_gmSmooth (t : ℝ) :
     sourceDirichletPoly N b t =
       gmSmoothDirichletPoly cutoff (gmSourceLeftScale N)
         (gmRestrictedCoeffs (gmSourceLeftPiece N) b) t +
@@ -213,9 +176,7 @@ theorem sourceDirichletPoly_eq_three_gmSmooth
 
 /-- A sharp large value selects one of the three smoothed Section 3 pieces,
 with exactly the triangle-inequality loss `V/3`. -/
-theorem exists_large_gmSmooth_of_source_large
-    (cutoff : GMSmoothCutoff) {N : ℕ} (hN : 30 ≤ N)
-    (b : ℕ → ℂ) (t V : ℝ) (hLarge : V ≤ ‖sourceDirichletPoly N b t‖) :
+theorem exists_large_gmSmooth_of_source_large (t V : ℝ) (hLarge : V ≤ ‖sourceDirichletPoly N b t‖) :
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff (gmSourceLeftScale N)
         (gmRestrictedCoeffs (gmSourceLeftPiece N) b) t‖ ∨
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff N
@@ -239,6 +200,7 @@ theorem exists_large_gmSmooth_of_source_large
     (gmSmoothDirichletPoly cutoff N
       (gmRestrictedCoeffs (gmSourceMiddlePiece N) b) t))
   nlinarith
+end
 
 /-- The matrix-facing conclusion of the Section 3 localization.  A common
 subfamily containing at least one third of the original ordinates uses one
@@ -261,15 +223,11 @@ theorem source_large_values_localize_to_matrix
       (W'.card : ℝ) ≤
         (Q : ℝ) * gmMatrixOperatorNorm cutoff Q W' ^ 2 / (V / 3) ^ 2 := by
   classical
-  let L : Finset ℝ := W.filter fun t =>
-    V / 3 ≤ ‖gmSmoothDirichletPoly cutoff (gmSourceLeftScale N)
-      (gmRestrictedCoeffs (gmSourceLeftPiece N) b) t‖
+  pm_5925 L gmSourceLeftScale gmSourceLeftPiece
   let M : Finset ℝ := W.filter fun t =>
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff N
       (gmRestrictedCoeffs (gmSourceMiddlePiece N) b) t‖
-  let R : Finset ℝ := W.filter fun t =>
-    V / 3 ≤ ‖gmSmoothDirichletPoly cutoff (gmSourceRightScale N)
-      (gmRestrictedCoeffs (gmSourceRightPiece N) b) t‖
+  pm_5925 R gmSourceRightScale gmSourceRightPiece
   have hcover : W ⊆ L ∪ M ∪ R := by
     intro t ht
     have htCases := exists_large_gmSmooth_of_source_large cutoff hN b t V
@@ -295,8 +253,7 @@ theorem source_large_values_localize_to_matrix
     · exact Or.inl ⟨rfl, rfl⟩
     · intro n hn
       by_cases hnS : n ∈ gmSourceLeftPiece N
-      · simpa [gmRestrictedCoeffs, hnS] using
-          hb n (Finset.mem_filter.mp hnS).1
+      pm_4119
       · simp [gmRestrictedCoeffs, hnS]
     · intro t ht
       exact (Finset.mem_filter.mp ht).2
@@ -304,10 +261,8 @@ theorem source_large_values_localize_to_matrix
         (gmRestrictedCoeffs (gmSourceLeftPiece N) b) (V / 3)
         (div_pos hV (by norm_num))
         (by
-          intro n hn
-          by_cases hnS : n ∈ gmSourceLeftPiece N
-          · simpa [gmRestrictedCoeffs, hnS] using
-              hb n (Finset.mem_filter.mp hnS).1
+          pm_7093 gmSourceLeftPiece
+          pm_4119
           · simp [gmRestrictedCoeffs, hnS])
         (by intro t ht; exact (Finset.mem_filter.mp ht).2)
   · refine ⟨M, N, gmRestrictedCoeffs (gmSourceMiddlePiece N) b,
@@ -316,8 +271,7 @@ theorem source_large_values_localize_to_matrix
     · exact Or.inr (Or.inl ⟨rfl, rfl⟩)
     · intro n hn
       by_cases hnS : n ∈ gmSourceMiddlePiece N
-      · simpa [gmRestrictedCoeffs, hnS] using
-          hb n (Finset.mem_filter.mp hnS).1
+      pm_4119
       · simp [gmRestrictedCoeffs, hnS]
     · intro t ht
       exact (Finset.mem_filter.mp ht).2
@@ -325,10 +279,8 @@ theorem source_large_values_localize_to_matrix
         (gmRestrictedCoeffs (gmSourceMiddlePiece N) b) (V / 3)
         (div_pos hV (by norm_num))
         (by
-          intro n hn
-          by_cases hnS : n ∈ gmSourceMiddlePiece N
-          · simpa [gmRestrictedCoeffs, hnS] using
-              hb n (Finset.mem_filter.mp hnS).1
+          pm_7093 gmSourceMiddlePiece
+          pm_4119
           · simp [gmRestrictedCoeffs, hnS])
         (by intro t ht; exact (Finset.mem_filter.mp ht).2)
   · refine ⟨R, gmSourceRightScale N,
@@ -337,8 +289,7 @@ theorem source_large_values_localize_to_matrix
     · exact Or.inr (Or.inr ⟨rfl, rfl⟩)
     · intro n hn
       by_cases hnS : n ∈ gmSourceRightPiece N
-      · simpa [gmRestrictedCoeffs, hnS] using
-          hb n (Finset.mem_filter.mp hnS).1
+      pm_4119
       · simp [gmRestrictedCoeffs, hnS]
     · intro t ht
       exact (Finset.mem_filter.mp ht).2
@@ -346,10 +297,8 @@ theorem source_large_values_localize_to_matrix
         (gmRestrictedCoeffs (gmSourceRightPiece N) b) (V / 3)
         (div_pos hV (by norm_num))
         (by
-          intro n hn
-          by_cases hnS : n ∈ gmSourceRightPiece N
-          · simpa [gmRestrictedCoeffs, hnS] using
-              hb n (Finset.mem_filter.mp hnS).1
+          pm_7093 gmSourceRightPiece
+          pm_4119
           · simp [gmRestrictedCoeffs, hnS])
         (by intro t ht; exact (Finset.mem_filter.mp ht).2)
 

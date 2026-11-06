@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.Continuation
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstAnalytic
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRamified
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,60 +15,56 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
-theorem ramifiedCorrection_first_analytic_x (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (w z : ℂ) (hz : (1/3 : ℝ)≤z.re) :
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm)
+include η u P hs hQ
+theorem ramifiedCorrection_first_analytic_x (w z : ℂ) (hz : (1/3 : ℝ)≤z.re) :
     AnalyticOnNhd ℂ (fun x =>ramifiedCorrection η u P hs x w z) {x : ℂ | 1/2<x.re} := by
   let : (Ideal.span {primaryGenerator P.val}:Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible (supported_primeGenerator_prime P hs).irreducible
   unfold ramifiedCorrection
   apply ramifiedClosed_first_analytic_x
-  · simpa only [span_primaryGenerator_of_supported P.val hs] using hQ
-  · exact actualACube_norm_le η _
-  · exact hz
+  pm_691
+  grind
 
-theorem ramifiedCorrection_first_analytic_w (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (x z : ℂ)
+theorem ramifiedCorrection_first_analytic_w (x z : ℂ)
     (hx : (1/2 : ℝ)≤x.re) (hz : (1/3 : ℝ)≤z.re) :
     Differentiable ℂ (fun w =>ramifiedCorrection η u P hs x w z) := by
   let : (Ideal.span {primaryGenerator P.val}:Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible (supported_primeGenerator_prime P hs).irreducible
   unfold ramifiedCorrection
   apply ramifiedClosed_first_analytic_w
-  · simpa only [span_primaryGenerator_of_supported P.val hs] using hQ
-  · exact actualACube_norm_le η _
+  pm_691
   · exact hx
-  · exact hz
+  grind
 
-theorem ramifiedCorrection_first_analytic_z (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (x w : ℂ) (hx : (1/2 : ℝ)≤x.re) :
+theorem ramifiedCorrection_first_analytic_z (x w : ℂ) (hx : (1/2 : ℝ)≤x.re) :
     AnalyticOnNhd ℂ (fun z =>ramifiedCorrection η u P hs x w z) {z : ℂ | 1/3<z.re} := by
   let : (Ideal.span {primaryGenerator P.val}:Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible (supported_primeGenerator_prime P hs).irreducible
   unfold ramifiedCorrection
   apply ramifiedClosed_first_analytic_z
-  · simpa only [span_primaryGenerator_of_supported P.val hs] using hQ
-  · exact actualACube_norm_le η _
+  pm_691
   · exact hx
 
-theorem ramifiedCorrection_first_bound (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4 : ℝ)≤P.val.absNorm) (x w z : ℂ)
+theorem ramifiedCorrection_first_bound (x w z : ℂ)
     (hx : (51/100 : ℝ)≤x.re) (hw : -(1/100 : ℝ)≤w.re) (hz : (17/50 : ℝ)≤z.re) (hxw : 1≤x.re+w.re) :
     ‖ramifiedCorrection η u P hs x w z‖≤193 := by
-  let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
+  pm_3885
   let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+  pm_3886
   have ha : ‖actualACube η p‖≤1 := by
-    have h := actualAPhase_norm_le_one η p
-    rw [←actualACube_sq,norm_pow] at h
+    pm_3467
     nlinarith [norm_nonneg (actualACube η p)]
   exact ramifiedClosed_first_region_bound p hp hg.1 hg.2 _ _ _ x w z
     (hspan.symm ▸ hQ) (targetMonoid_norm_le_one η p) ha
     (actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)) hx hw hz hxw _ (multiplicity_lt_six u p hp)
+end
 
-theorem ramified_product_first_subpower (ε : ℝ) (hε : 0<ε) :
+section
+variable (ε : ℝ) (hε : 0<ε)
+include ε hε
+theorem ramified_product_first_subpower :
     ∃ C : ℝ,0<C ∧ ∀ (S : Finset (Ideal O)) (hS : SourceExclusions S)
       (η : Character) (u : FreeRow) (x w z : ℂ),
       (51/100 : ℝ)≤x.re → -(1/100 : ℝ)≤w.re → (17/50 : ℝ)≤z.re → 1≤x.re+w.re →
@@ -81,8 +78,7 @@ theorem ramified_product_first_subpower (ε : ℝ) (hε : 0<ε) :
   rw [norm_prod]
   calc
     _ ≤ ∏ P∈(ramifiedPrimes S u).attach,(193 : ℝ) := by
-      apply Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
-      intro P hP
+      pm_5246 P hP
       exact ramifiedCorrection_first_bound η u P.val _
         (by exact_mod_cast hS.tail.norm_four P.val (Finset.mem_filter.mp P.property).2) x w z hx hw hz hxw
     _ = (193 : ℝ)^(ramifiedPrimes S u).card := by simp
@@ -92,13 +88,13 @@ theorem ramified_product_first_subpower (ε : ℝ) (hε : 0<ε) :
       exact Finset.card_filter_le _ _
     _ ≤ _ := hbound _ (Ideal.span_singleton_eq_bot.not.mpr u.property.1)
 
-theorem continuedCorrection_first_subpower (ε : ℝ) (hε : 0<ε) :
+theorem continuedCorrection_first_subpower :
     ∃ C : ℝ,0<C ∧ ∀ (eps : ℝ) (S : Finset (Ideal O)) (hS : SourceExclusions S)
       (_hfirst : FirstTail eps S) (η : Character) (u : FreeRow) (x w z : ℂ),
       (51/100:ℝ)≤x.re → -(1/100:ℝ)≤w.re → (17/50:ℝ)≤z.re →
       1+eps≤x.re+w.re →
       ‖continuedCorrection S hS η u x w z‖≤C*((Ideal.span {u.val}:Ideal O).absNorm : ℝ)^ε := by
-  obtain ⟨C,hC,hbound⟩ := ramified_product_first_subpower ε hε
+  pm_69 C hC hbound ramified_product_first_subpower ε hε
   refine ⟨C*(3/2),by positivity,?_⟩
   intro eps S hS hfirst η u x w z hx hw hz hxw
   have hR := hbound S hS η u x w z hx hw hz (by linarith [hfirst.positive])
@@ -110,6 +106,7 @@ theorem continuedCorrection_first_subpower (ε : ℝ) (hε : 0<ε) :
   rw [continuedCorrection,norm_mul]
   apply (mul_le_mul hR hnorm (norm_nonneg _) (by positivity)).trans
   exact le_of_eq (by ring)
+end
 
 end SevenEighths.ProbeHighRowFamily
 

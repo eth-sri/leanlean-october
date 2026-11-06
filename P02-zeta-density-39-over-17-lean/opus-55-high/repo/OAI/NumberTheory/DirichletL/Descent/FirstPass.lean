@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondPass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,12 +30,9 @@ theorem firstCoreInputRow_marked_priority
         (fun U => primeMark (slots \ J) (fun i => lists i \ (A ∪ D)) a U * H U)
         V y c d r t z := by
   unfold firstCoreInputRow inputConjugateRow supportConjugateSum
-  simp only [Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pm_3006
   intro U hU
-  have he := primeMark_priority slots lists a (A ∪ D) U
-  simp only [primeMark_residual_lists] at he
+  pm_8829 he D U
   have hset : (D ∪ U) \ (A ∪ D) = U \ (A ∪ D) := by
     ext i
     simp only [Finset.mem_sdiff, Finset.mem_union]

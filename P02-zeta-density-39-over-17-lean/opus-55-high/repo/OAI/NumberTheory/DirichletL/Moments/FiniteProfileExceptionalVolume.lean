@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalControl
 public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,19 +23,19 @@ theorem volumeControl_source_control (a b ε B : ℝ)
       ∀ Q : Ideal O, ∃ C : ℝ, 0 < C ∧
       ∀ W : 𝓢(ℝ,ℂ), ∀ hs : Function.support (W:ℝ→ℂ) ⊆ Set.Icc a b,
       ∀ Z : ℝ, 1 ≤ Z → ∀ χ : Character,
-      (Ideal.absNorm χ.modulus : ℝ) ≤ Z^B → ∀ t : ℝ,
+      (Ideal.absNorm χ.modulus : ℝ) ≤ Z ^B → ∀ t : ℝ,
       volumeControl Q χ (normPowerProfile W a b ha hs (W.smooth ⊤) t) ≤
-        C * S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W * Z^ε * (1+‖t‖)^n := by
+        C * S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W * Z ^ε * (1+‖t‖)^n := by
   obtain ⟨n,T,C,hC,hprofile⟩ := normPowerProfile_source_control a b ha pvSeminorms
-  obtain ⟨D,hD,hdiv⟩ := polynomial_mask_divisor_bound ε B hε hB
+  pm_97 D hD hdiv polynomial_mask_divisor_bound ε B hε hB
   let S := insert (0,0) T
   refine ⟨n,S,by simp [S],?_⟩
   intro Q
   let mass : ℝ := Nat.card (O ⧸ Ideal.span {fixedPeriod Q})
-  let A := D*mass*pvConstant*C
+  let A := D *mass*pvConstant*C
   have hmass : 0 ≤ mass := Nat.cast_nonneg _
   have hpv := pvConstant_pos
-  have hA : 0 ≤ A := by dsimp [A]; positivity
+  pm_61 hA A
   refine ⟨1+A,by positivity,?_⟩
   intro W hs Z hZ χ hnorm t
   have hTS : T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W ≤
@@ -45,7 +46,7 @@ theorem volumeControl_source_control (a b ε B : ℝ)
   have hp := (hprofile W hs t).trans
     (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hTS hC.le) (by positivity))
   have herr : volumeControl Q χ (normPowerProfile W a b ha hs (W.smooth ⊤) t) ≤
-      (D*Z^ε)*(mass*(pvConstant*(C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*(1+‖t‖)^n))) := by
+      (D *Z ^ε)*(mass*(pvConstant*(C*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*(1+‖t‖)^n))) := by
     unfold volumeControl pvControl
     rw [mul_assoc]
     apply mul_le_mul (hdiv Z hZ χ.modulus χ.modulus_ne_bot hnorm)
@@ -54,8 +55,8 @@ theorem volumeControl_source_control (a b ε B : ℝ)
     · exact mul_nonneg hD.le (Real.rpow_nonneg (zero_le_one.trans hZ) _)
   calc
     _ ≤ _ := herr
-    _ = A*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*Z^ε*(1+‖t‖)^n := by dsimp [A]; ring
-    _ ≤ (1+A)*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*Z^ε*(1+‖t‖)^n := by
+    _ = A*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*Z ^ε*(1+‖t‖)^n := by dsimp [A]; ring
+    _ ≤ (1+A)*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) W*Z ^ε*(1+‖t‖)^n := by
       gcongr
       linarith
 

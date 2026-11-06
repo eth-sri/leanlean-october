@@ -29,11 +29,7 @@ theorem twelfth_tangent_bound {a x : ℝ} (ha : 0 ≤ a) (hx : 0 ≤ x) :
     norm_num
   rw [hp] at h
   norm_num at h
-  calc
-    12 * a ^ 11 * x = 12 * (x * a ^ 11) := by ring
-    _ ≤ 12 * (x ^ 12 / 12 + a ^ 12 / (12 / 11)) :=
-      mul_le_mul_of_nonneg_left h (by norm_num)
-    _ = x ^ 12 + 11 * a ^ 12 := by ring
+  grind
 
 
 /-- Weighted twelfth-power Hölder with the exact eleventh power of the
@@ -62,7 +58,7 @@ theorem integral_weighted_twelfth
     rw [← hmean] at hInt
     nlinarith
   calc
-    _ = (∫ x, w x ∂μ) ^ 11 * (A ^ 12 * (∫ x, w x ∂μ)) := by rw [← hmean]; ring
+    _ = (∫ x, w x ∂μ) ^ 11 * (A ^ 12 * (∫ x, w x ∂μ)) := by grind
     _ ≤ _ := mul_le_mul_of_nonneg_left hsmall (pow_nonneg hMass.le 11)
 
 

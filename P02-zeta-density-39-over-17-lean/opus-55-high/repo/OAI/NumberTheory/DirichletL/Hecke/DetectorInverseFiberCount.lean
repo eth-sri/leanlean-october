@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFiberEnergy
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,15 +20,15 @@ def inverseTest (U tstar r : ℝ) : ℝ→ℂ :=
 variable (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ)
 
 theorem inverse_fiber_count {Row Label Slot : Type*}
-    (rows : Finset Row) (hne : rows.Nonempty) (χ : Row→Label→Character)
+    (rows : Finset Row) (hne : rows.Nonempty) (χ : Row→ Label→ Character)
     (U a ε tstar T allowance : ℝ) (i : ℕ) (hU : 1<U) (ha : 1/2≤a)
     (witness : ∀ u,Witness (χ u) U a ε tstar T allowance i)
     (label : Label) (J K : Fin (dyadicLength U))
     (hlabel : ∀ u∈rows,(witness u).label=label)
     (hJ : ∀ u∈rows,(witness u).left=J) (hK : ∀ u∈rows,(witness u).right=K)
-    (slots : Finset Slot) (row : Row→O) (W : Slot→ℝ→ℂ) (b widths g : Slot→ℝ) (zs : Slot→ℂ)
-    (mesh binWidth z εm C height : ℝ) (hmesh : 0≤mesh) (hbin : 0<binWidth)
-    (hw : ∀ s∈slots,0<widths s) (hwm : ∀ s∈slots,widths s≤mesh)
+    (slots : Finset Slot) (row : Row→ O) (W : Slot→ℝ→ℂ) (b widths g : Slot→ℝ) (zs : Slot→ℂ)
+    (mesh binWidth z εm C height : ℝ) (hmesh : 0≤ mesh) (hbin : 0<binWidth)
+    (hw : ∀ s∈slots,0<widths s) (hwm : ∀ s∈slots,widths s ≤ mesh)
     (hL : 0<∑ s∈slots,widths s) (hz : 0≤z) (hzL : z≤∑ s∈slots,widths s)
     (hbins : ∀ u∈rows,∀ s∈slots,
       HeckePrimeAmplitudeBins.amplitude (U^(widths s)) ((2*a-1)/2) binWidth
@@ -47,17 +48,13 @@ theorem inverse_fiber_count {Row Label Slot : Type*}
     (rows.card : ℝ)≤(12*(1+height)*C)*
       U^(1-(2*a-1)*Real.logb U ((2 : ℝ)^J.val)-2*weightedMean slots widths g*z+
         2*ε+(2*a-1)*mesh+εm) := by
-  let r := Real.logb U ((2 : ℝ)^J.val)
-  have hδ : 0≤2*a-1 := by linarith
-  obtain ⟨selected,hsub,hpositive,hlen,hspike⟩ := select_physical_product M H rows hne slots
-    row W b widths g zs U (2*a-1) mesh binWidth z hU hδ hmesh hbin hw hwm hL hz hzL hbins
-  have hsp := HeckeDetectorFiberSpikes.fiber_spikes rows χ U a ε tstar T allowance i hU
-    (by linarith) witness label J K hlabel hJ hK
+  pm_439 r J.val
+  pm_3145
   have hcap1' : r+2*(∑ s∈selected,widths s)<1 := by dsimp [r]; linarith
   have hcap2' : 2*r+8*(∑ s∈selected,widths s)<3 := by dsimp [r]; linarith
   have hUp : 0<U := zero_lt_one.trans hU
-  have hDp : 0<U^r := Real.rpow_pos_of_pos hUp _
-  have hE : 0≤C*U^(1+εm) := mul_nonneg hC (Real.rpow_nonneg hUp.le _)
+  pm_3773 hDp U r hUp
+  pm_1551
   have he := HeckeDetectorFiberEnergy.inverse_energy rows χ U a ε tstar T allowance i
     (by linarith) witness label (inverseTest U tstar r) (U^r) (1/4) (9/4) (C*U^(1+εm))
     (fun u => ∏ s∈selected,physical M H row W b widths zs U u s) hDp (by norm_num)

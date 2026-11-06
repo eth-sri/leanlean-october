@@ -1,10 +1,9 @@
 module
 public import MathCollab.Density.ZeroSeparation
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ENNReal
 namespace GuthMaynard.Improvement
@@ -22,32 +21,11 @@ theorem level_volume_of_separated_bound {S : Set ℝ} {a b B : ℝ}
     refine Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨?_,?_⟩,x,hx,rfl⟩
     · exact Int.floor_mono (hS hx).1
     · exact Int.floor_mono (hS hx).2
-  have hex : ∀ k : ℤ, ∃ x : ℝ, k ∈ K → x ∈ S ∧ ⌊x⌋ = k := by
-    intro k
-    by_cases hk : k ∈ K
-    · obtain ⟨x,hx,he⟩ := (Finset.mem_filter.mp hk).2
-      exact ⟨x,fun _ => ⟨hx,he⟩⟩
-    · exact ⟨0,fun h => (hk h).elim⟩
-  choose f hf using hex
-  obtain ⟨J,hJK,hcount,hpar⟩ := MathCollab.Density.occupied_bins_parity K
-  have hfJ : ∀ k ∈ J, f k ∈ S ∧ ⌊f k⌋ = k := fun k hk => hf k (hJK hk)
+  pm_4600
   have hinj : Set.InjOn f (J : Set ℤ) := by
     intro k hk l hl he
     rw [← (hfJ k hk).2, ← (hfJ l hl).2,he]
-  have hb := hcard (J.image f) (by
-    intro x hx
-    obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-    exact (hfJ k hk).1) (by
-    intro x hx y hy hxy
-    obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-    obtain ⟨l,hl,rfl⟩ := Finset.mem_image.mp hy
-    apply MathCollab.Density.same_parity_bins_separated
-    · rw [(hfJ k hk).2,(hfJ l hl).2]
-      intro he
-      exact hxy (congrArg f he)
-    · rw [(hfJ k hk).2,(hfJ l hl).2]
-      exact hpar k hk l hl)
-  rw [Finset.card_image_of_injOn hinj] at hb
+  pm_4601
   have hcover : S ⊆ ⋃ k ∈ K, Ico (k:ℝ) ((k:ℝ)+1) := by
     intro x hx
     exact mem_iUnion.mpr ⟨⌊x⌋,mem_iUnion.mpr ⟨hK x hx,
@@ -59,7 +37,7 @@ theorem level_volume_of_separated_bound {S : Set ℝ} {a b B : ℝ}
       _ = _ := by simp
   have hmreal : volume.real S ≤ (K.card:ℝ) := by
     simpa [Measure.real] using ENNReal.toReal_mono (by simp : (K.card:ℝ≥0∞) ≠ ⊤) hm
-  have hcounts : (K.card:ℝ) ≤ 2*(J.card:ℝ) := by exact_mod_cast hcount
+  pm_373 hcounts K.card J.card hcount
   linarith
 
 end GuthMaynard.Improvement

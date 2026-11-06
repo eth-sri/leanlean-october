@@ -2,6 +2,7 @@ module
 public import GafniTao.HeathBrownBlocks
 public import GafniTao.FordEquation54Expansion
 public import GafniTao.FordFiniteAMGM
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ block Cauchy inequality in Heath-Brown Section 3.
 -/
 
 open Finset
-open scoped BigOperators ComplexConjugate
+open scoped ComplexConjugate
 
 namespace GafniTao
 
@@ -52,17 +53,15 @@ theorem heathBrownFourierAtom_mul_conj
         congr 2
     _ = fordAdditiveCharacter
           ((rs.1 : ℝ) * (g₁ m - g₁ n) +
-            (rs.2 : ℝ) * (g₂ m - g₂ n)) := by
-        congr 2
-        ring_nf
+            (rs.2 : ℝ) * (g₂ m - g₂ n)) := by grind
     _ = fordAdditiveCharacter ((rs.1 : ℝ) * (g₁ m - g₁ n)) *
           fordAdditiveCharacter ((rs.2 : ℝ) * (g₂ m - g₂ n)) := by
         rw [fordAdditiveCharacter_add]
 
-theorem hasSum_heathBrownPairKernelFourier
-    {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
-    (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
-    (g₁ g₂ : ℕ → ℝ) (m n : ℕ) :
+section
+variable {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2) (hC : 0 < C) (hCHalf : C ≤ 1 / 2) (g₁ g₂ : ℕ → ℝ)
+include B C hB hBHalf hC hCHalf g₁ g₂
+theorem hasSum_heathBrownPairKernelFourier (m n : ℕ) :
     HasSum
       (fun rs : ℤ × ℤ =>
         (heathBrownTriangularFourierCoefficient B C rs.1 rs.2 : ℂ) *
@@ -84,10 +83,7 @@ theorem hasSum_heathBrownPairKernelFourier
   rw [heathBrownFourierAtom_mul_conj]
   ring_nf
 
-theorem hasSum_heathBrownFinitePairKernelFourier
-    {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
-    (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
-    (g₁ g₂ : ℕ → ℝ) (S : Finset ℕ) :
+theorem hasSum_heathBrownFinitePairKernelFourier (S : Finset ℕ) :
     HasSum
       (fun rs : ℤ × ℤ =>
         ∑ m ∈ S, ∑ n ∈ S,
@@ -110,6 +106,7 @@ theorem hasSum_heathBrownFinitePairKernelFourier
       (fun n _hn => hasSum_heathBrownPairKernelFourier
         hB hBHalf hC hCHalf g₁ g₂ m n)
   simpa using hasSum_sum (s := S) (fun m _hm => hn m)
+end
 
 theorem heathBrownFinitePairLatticeTerm_eq_energy
     (B C : ℝ) (g₁ g₂ : ℕ → ℝ) (S : Finset ℕ) (rs : ℤ × ℤ) :
@@ -137,9 +134,7 @@ theorem heathBrownFinitePairLatticeTerm_eq_energy
               (∑ n ∈ S, conj (heathBrownFourierAtom g₁ g₂ rs n)) =
           c * ((∑ m ∈ S, heathBrownFourierAtom g₁ g₂ rs m) *
               (∑ n ∈ S, conj (heathBrownFourierAtom g₁ g₂ rs n))) by ring_nf]
-      rw [Finset.sum_mul_sum, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro m _hm
+      pm_266 Finset.sum_mul_sum Finset.mul_sum Finset.sum_congr m _hm
       rw [Finset.mul_sum]
       ring_nf
     _ = (heathBrownFrequencyEnergy B C g₁ g₂ S rs : ℂ) := by

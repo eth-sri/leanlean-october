@@ -9,22 +9,24 @@ Mathlib and narrow DigammaSeries dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Fourth.SquareKernel
 public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
 public import MathCollab.Density.Stronger.Fourth.Coefficients
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
-open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 def zetaFourthTerm (t : ℝ) (n : ℕ) (w : ℂ) : ℂ :=
   divisorDirichletTerm (afeCriticalPoint (-t)+w) n * zetaFourthKernel t w
 
-theorem zetaFourthTerm_zero (t : ℝ) (w : ℂ) : zetaFourthTerm t 0 w = 0 := by
+section
+variable (t : ℝ)
+include t
+theorem zetaFourthTerm_zero (w : ℂ) : zetaFourthTerm t 0 w = 0 := by
   simp [zetaFourthTerm,divisorDirichletTerm]
 
-theorem differentiableAt_zetaFourthKernel (t : ℝ) {w : ℂ} (hw : 0 < w.re) :
+theorem differentiableAt_zetaFourthKernel {w : ℂ} (hw : 0 < w.re) :
     DifferentiableAt ℂ (zetaFourthKernel t) w := by
   have hs : DifferentiableAt ℂ (fun z : ℂ => afeCriticalPoint (-t)+z) w := by fun_prop
   have hpos : 0 < (afeCriticalPoint (-t)+w).re := by
@@ -35,11 +37,11 @@ theorem differentiableAt_zetaFourthKernel (t : ℝ) {w : ℂ} (hw : 0 < w.re) :
   have hw0 : w ≠ 0 := by
     intro he
     subst w
-    norm_num at hw
+    simp_all
   unfold zetaFourthKernel zetaSquarePoleShift
-  fun_prop (disch := assumption)
+  fun_prop
 
-theorem differentiableAt_zetaFourthTerm (t : ℝ) (n : ℕ)
+theorem differentiableAt_zetaFourthTerm (n : ℕ)
     {w : ℂ} (hw : 0 < w.re) :
     DifferentiableAt ℂ (zetaFourthTerm t n) w := by
   by_cases hn : n = 0
@@ -47,12 +49,13 @@ theorem differentiableAt_zetaFourthTerm (t : ℝ) (n : ℕ)
     simpa only [show zetaFourthTerm t 0 = fun _ => (0:ℂ) by
       funext z; exact zetaFourthTerm_zero t z] using
         (differentiableAt_const (0:ℂ) : DifferentiableAt ℂ (fun _ : ℂ => (0:ℂ)) w)
-  have hnC : (n:ℂ) ≠ 0 := by exact_mod_cast hn
+  pm_356 hnC n hn
   have hd : DifferentiableAt ℂ
       (fun z : ℂ => divisorDirichletTerm (afeCriticalPoint (-t)+z) n) w := by
     simp only [divisorDirichletTerm_eq_divisorWeight_mul_cpow]
-    fun_prop (disch := first | assumption | exact Or.inl hnC)
+    fun_prop (disch := grind)
   exact hd.mul (differentiableAt_zetaFourthKernel t hw)
+end
 
 theorem norm_zetaFourthTerm_vertical (t c u : ℝ) (n : ℕ) :
     ‖zetaFourthTerm t n ((c:ℂ)+(u:ℂ)*I)‖ =
@@ -63,9 +66,7 @@ theorem norm_zetaFourthTerm_vertical (t c u : ℝ) (n : ℕ) :
 theorem norm_fourth_divisorTerm_le_card {c : ℝ} (hc : 0 ≤ c) (t u : ℝ) (n : ℕ) :
     ‖divisorDirichletTerm (afeCriticalPoint (-t)+((c:ℂ)+(u:ℂ)*I)) n‖ ≤
       (n.divisors.card:ℝ) := by
-  by_cases hn : n = 0
-  · subst n
-    simp [divisorDirichletTerm]
+  pm_6106 hn n divisorDirichletTerm
   have hn1 : (1:ℝ) ≤ n := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn
   rw [norm_fourth_divisorTerm_vertical]
   exact mul_le_of_le_one_right (by positivity)
@@ -106,23 +107,22 @@ theorem exists_norm_zetaFourthKernel_strip_le
     (inv_ne_zero (zetaSquareGammaNormalization_ne_zero t))
   let A : ℝ := 10000*G^2*D/a
   let Q : ℝ := 12*(3+b+t)+36
-  let K : ℝ := A*Real.exp (100*b^2)*Real.exp Q
-  have hA : 0 < A := by dsimp [A]; positivity
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  pm_7143 b
+  pm_4462
+  pm_345 K
   intro c hc u
   have hc0 : 0 < c := ha.trans_le hc.1
   have hb : 0 < b := ha.trans_le hab
-  let w : ℂ := (c:ℂ)+(u:ℂ)*I
-  let R : ℝ := 3+c+t+|u|
-  let B : ℝ := 3+b+t+|u|
-  have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
+  pm_4461
+  pm_5125 R c
+  pm_5125 B b
+  pm_4464
   have hw := norm_vertical_shift_le hc0.le u
   have hwlower : a ≤ ‖w‖ := hc.1.trans (vertical_shift_re_le_norm hc0.le u)
   have haux : ‖hughesYoungAuxiliaryZero w‖ ≤ 625*R^8 :=
     norm_hughesYoungAuxiliaryZero_le_polynomial hR
       (hw.trans (by dsimp [R]; linarith))
-  have hpole : ‖zetaSquarePoleShift t w‖ ≤ 16*R^4 :=
-    norm_zetaSquarePoleShift_le_polynomial ht hc0.le u
+  pm_6898 hc0.le
   have hg : ‖Complex.Gammaℝ (afeCriticalPoint (-t)+w)‖ ≤ G := by
     have heq : afeCriticalPoint (-t)+w =
         ((1/2+c:ℝ):ℂ)+((-t+u:ℝ):ℂ)*I := by
@@ -137,8 +137,7 @@ theorem exists_norm_zetaFourthKernel_strip_le
   have hgamma :
       ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
         Complex.Gammaℝ (afeCriticalPoint (-t)))^2‖ ≤ G^2*D := by
-    rw [← norm_gammaSquare_div_zetaSquareGammaNormalization,
-      div_eq_mul_inv, norm_mul, norm_pow]
+    pm_8119
     exact mul_le_mul_of_nonneg_right
       (pow_le_pow_left₀ (norm_nonneg _) hg 2) (norm_nonneg _)
   have hRB : R ≤ B := by dsimp [R,B]; linarith [hc.2]
@@ -156,15 +155,8 @@ theorem exists_norm_zetaFourthKernel_strip_le
     rw [← Real.exp_add]
     congr 1
     ring
-  have hgauss : Real.exp (u^2)*Real.exp (-100*u^2) = Real.exp (-99*u^2) := by
-    rw [← Real.exp_add]
-    congr 1
-    ring
-  rw [norm_zetaFourthKernel_vertical]
-  change Real.exp (100*c^2-100*u^2)*‖hughesYoungAuxiliaryZero w‖*
-    ‖zetaSquarePoleShift t w‖*
-    ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
-      Complex.Gammaℝ (afeCriticalPoint (-t)))^2‖/‖w‖ ≤ _
+  pm_4465
+  pm_4463
   calc
     _ ≤ Real.exp (100*c^2-100*u^2)*(625*R^8)*(16*R^4)*(G^2*D)/a := by
       gcongr
@@ -195,7 +187,7 @@ theorem exists_norm_zetaFourthTerm_strip_le
     {a b t : ℝ} (ha : 0 < a) (hab : a ≤ b) (ht : 0 ≤ t) (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ c ∈ Icc a b, ∀ u : ℝ,
       ‖zetaFourthTerm t n ((c:ℂ)+(u:ℂ)*I)‖ ≤ C*Real.exp (-99*u^2) := by
-  obtain ⟨K,hK,hbound⟩ := exists_norm_zetaFourthKernel_strip_le ha hab ht
+  pm_114 K hK hbound exists_norm_zetaFourthKernel_strip_le ha hab ht
   refine ⟨K*((n.divisors.card:ℝ)+1),by positivity,?_⟩
   intro c hc u
   have hD := norm_fourth_divisorTerm_le_card (ha.le.trans hc.1) t u n
@@ -225,11 +217,7 @@ theorem tendsto_zetaFourthTerm_horizontal_of_sq_eq
       ‖∫ x : ℝ in a..b, zetaFourthTerm t n ((x:ℂ)+(v H:ℂ)*I)‖ ≤
         (K*Real.exp (-99*H^2))*|b-a| := by
     intro H
-    apply intervalIntegral.norm_integral_le_of_norm_le_const
-    intro x hx
-    have hx' : x ∈ Icc a b := by
-      rw [← uIcc_of_le hab]
-      exact uIoc_subset_uIcc hx
+    pm_7615 Icc uIcc_of_le uIoc_subset_uIcc
     simpa only [hv H] using hK x hx' (v H)
   have hp : Tendsto (fun H : ℝ => H^2) atTop atTop :=
     tendsto_pow_atTop (by decide : 2 ≠ 0)

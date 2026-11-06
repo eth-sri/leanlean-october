@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection7HardArithmetic
 public import GafniTao.WooleyTwoFactorHolder
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Exponent identities for Wooley Section 8
@@ -14,15 +15,11 @@ subtraction cast or endpoint case is implicit in the analytic proof.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleyTriangular_cast (r : ℕ) :
     (wooleyTriangular r : ℝ) = (r : ℝ) * ((r : ℝ) + 1) / 2 := by
   unfold wooleyTriangular
-  rw [Nat.cast_div
-    (even_iff_two_dvd.mp (Nat.even_mul_succ_self r))
-    (by norm_num : (2 : ℝ) ≠ 0)]
-  push_cast
+  pm_2813 Nat.even_mul_succ_self r
   rfl
 
 theorem wooleyTriangular_mono {a b : ℕ} (hab : a ≤ b) :
@@ -39,63 +36,42 @@ theorem wooleyTriangular_pred_le {k r : ℕ} (hrk : r ≤ k) :
     wooleyTriangular (r - 1) ≤ wooleyTriangular k :=
   wooleyTriangular_mono ((Nat.sub_le r 1).trans hrk)
 
+section
+variable {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k)
+include k r hr hrk
 /-- The exponent of the `b'`-residue factor in the Section 8 interpolation. -/
-theorem wooley_section8_left_exponent
-    {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
+theorem wooley_section8_left_exponent :
     (1 / ((k - r + 1 : ℕ) : ℝ)) *
           (2 * ((wooleyTriangular k - wooleyTriangular (k - r) : ℕ) : ℝ)) +
         ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ) *
           (2 * (wooleyTriangular (r - 1) : ℝ)) =
       2 * (wooleyTriangular r : ℝ) := by
-  have hsub := wooleyTriangular_sub_le k r
-  have hpred := wooleyTriangular_pred_le (show r ≤ k by omega)
+  pm_6249
   rw [Nat.cast_sub hsub, wooleyTriangular_cast,
     wooleyTriangular_cast, wooleyTriangular_cast,
     wooleyTriangular_cast]
-  push_cast
-  rw [Nat.cast_sub hrk.le, Nat.cast_sub hr]
-  have hkr : (r : ℝ) < k := by exact_mod_cast hrk
-  have hd' : (1 + (k : ℝ) - r) ≠ 0 := by linarith
-  calc
-    _ = (((r : ℝ) + (r : ℝ) ^ 2) * (1 + (k : ℝ) - r)) *
-          (1 + (k : ℝ) - r)⁻¹ := by ring
-    _ = _ := by rw [mul_assoc, mul_inv_cancel₀ hd', mul_one]; ring
+  pm_2834
 
 /-- The exponent of the `b`-residue factor in the Section 8 interpolation. -/
-theorem wooley_section8_right_exponent
-    {k r : ℕ} (hr : 1 ≤ r) (hrk : r < k) :
+theorem wooley_section8_right_exponent :
     (1 / ((k - r + 1 : ℕ) : ℝ)) *
           (2 * (wooleyTriangular (k - r) : ℝ)) +
         ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ) *
           (2 * ((wooleyTriangular k - wooleyTriangular (r - 1) : ℕ) : ℝ)) =
       2 * ((wooleyTriangular k - wooleyTriangular r : ℕ) : ℝ) := by
-  have hsub := wooleyTriangular_sub_le k r
-  have hpred := wooleyTriangular_pred_le (show r ≤ k by omega)
-  have hrTri : wooleyTriangular r ≤ wooleyTriangular k :=
-    wooleyTriangular_mono (show r ≤ k by omega)
+  pm_6249
+  pm_7114 hrTri
   rw [Nat.cast_sub hpred, Nat.cast_sub hrTri,
     wooleyTriangular_cast, wooleyTriangular_cast,
     wooleyTriangular_cast, wooleyTriangular_cast]
-  push_cast
-  rw [Nat.cast_sub hrk.le, Nat.cast_sub hr]
-  have hkr : (r : ℝ) < k := by exact_mod_cast hrk
-  have hd' : (1 + (k : ℝ) - r) ≠ 0 := by linarith
-  calc
-    _ = (((k : ℝ) + (k : ℝ) ^ 2 - r - (r : ℝ) ^ 2) *
-          (1 + (k : ℝ) - r)) * (1 + (k : ℝ) - r)⁻¹ := by ring
-    _ = _ := by rw [mul_assoc, mul_inv_cancel₀ hd', mul_one]; ring
+  pm_2834
+end
 
 theorem wooley_section8_weight_complement
     {k r : ℕ} (hrk : r < k) :
     1 - 1 / ((k - r + 1 : ℕ) : ℝ) =
-      ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ) := by
-  have hd : (0 : ℝ) < (k - r + 1 : ℕ) := by positivity
-  field_simp [ne_of_gt hd]
-  push_cast
-  rw [Nat.cast_sub hrk.le]
-  ring
+      ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ) := by grind
 
 
-end
 
 end GafniTao

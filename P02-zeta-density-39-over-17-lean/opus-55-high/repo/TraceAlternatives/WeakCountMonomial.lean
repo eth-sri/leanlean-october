@@ -1,5 +1,6 @@
 module
 public import TraceAlternatives.WeakPowerInterpolation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,7 +19,7 @@ theorem weak_count_monomial_bound {R E K M T U mass a b w : ℝ}
     U^2*mass ≤ K^(2/w)*E^(2/w)*M^(2*a/w)*T^(2*b/w)*R^(2-8/w) := by
   have hwp : 0 < w := by linarith
   let Z := K*E*M^a*T^b
-  have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
+  pm_82 hZ Z
   let D := Z^(1/2:ℝ)
   have hD : 0 ≤ D := Real.rpow_nonneg hZ _
   have hRoot : mass ≤ D*U^(-(w/2)) := by
@@ -49,9 +50,9 @@ theorem weak_count_monomial_bound {R E K M T U mass a b w : ℝ}
       rw [Real.mul_rpow (by positivity) (by positivity),
         Real.mul_rpow (by positivity) (by positivity),Real.mul_rpow hK hE,
         ← Real.rpow_mul hM,← Real.rpow_mul hT]
-      rw [show a*(2/w)=2*a/w by ring,show b*(2/w)=2*b/w by ring]
+      grind
     rw [hRId,hDId]
     ring
-  exact hh.trans_eq hId
+  grind
 
 end Montgomery.RationalMoment

@@ -1,21 +1,24 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.UniformSieve
 public import OAI.NumberTheory.DirichletL.Reflection.FilteredMeasure
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
 
-theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem filtered_actual_weighted_reflected_energy_type_uniform :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -27,7 +30,7 @@ theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε :
     ∀ {ι : Type*} [Fintype ι] (G0 : PrimeFamily ι)
       (D0 : ControlledStratumArithmetic G0.generator N a c mode)
       (u : Eisˣ) (m : ℕ) (rows nset bset Pset : Finset (Ideal Eis))
-      (S : Ideal Eis → PrimeFamily σ) (E : Finset (φ→Fin 3))
+      (S : Ideal Eis → PrimeFamily σ) (E : Finset (φ→ Fin 3))
       (r aw : Ideal Eis → ℂ) (w : Ideal Eis → Ideal Eis → ℂ),
       (∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ) ≤ X) →
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
@@ -46,9 +49,7 @@ theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε :
         let Bq := extractedDualScale (frozenExtracted F jF e 2) B
         (frozenBranchScale F jF e)^2*
           (C*(X*Yq*Bq*L)^ε*(X+Yq*Bq)*Bq*(Yq+L+(Yq*L)^(2/3:ℝ))) := by
-  obtain ⟨C,hC,he⟩ := actual_weighted_reflected_branch_energy_type_uniform
-    (N := N) (a := a) (c := c) (mode := mode) ε hε
-  refine ⟨C,hC,?_⟩
+  pm_3279 actual_weighted_reflected_branch_energy_type_uniform
   intro φ σ _ _ X Y B L hX hY hB hL F jF s hc hN hbase hac hF hNF hcharF hj
     ι _ G0 D0 u m rows nset bset Pset S E r aw w hrows hrowcop hproducts hScop hSN hSchar hn hb hP hr haw hw
   calc
@@ -58,7 +59,7 @@ theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε :
       apply Finset.sum_le_sum
       intro K hK
       exact CubicEisenstein.norm_sum_sq_le_card E
-        (fun e : φ→Fin 3 => weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
+        (fun e : φ→ Fin 3 => weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
           (actualCuspColumn D0 s hc u m) r aw w u m Pset nset bset K)
     _ = (E.card:ℝ)*∑ e∈E, ∑ K ∈ rows,
         ‖weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
@@ -71,7 +72,7 @@ theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε :
       exact he X Y B L hX hY hB hL F jF e s hc hN hbase hac hF hNF hcharF hj
         G0 D0 u m rows nset bset Pset S r aw w hrows hrowcop hproducts hScop hSN hSchar hn hb hP hr haw hw
 
-theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε : 0 < ε) :
+theorem integrated_filtered_actual_reflected_energy_type_uniform :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -83,7 +84,7 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
     ∀ {ι : Type*} [Fintype ι] (G0 : PrimeFamily ι)
       (D0 : ControlledStratumArithmetic G0.generator N a c mode)
       (u : Eisˣ) (m : ℕ) (rows nset bset Pset : Finset (Ideal Eis))
-      (S : Ideal Eis → PrimeFamily σ) (branches : Finset (φ→Fin 3))
+      (S : Ideal Eis → PrimeFamily σ) (branches : Finset (φ→ Fin 3))
       (μ : Measure Ω) (density : Ω → ℂ) (scalar : ℂ)
       (r aw : Ω → Ideal Eis → ℂ) (w : Ω → Ideal Eis → Ideal Eis → ℂ),
       (∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ) ≤ X) →
@@ -108,9 +109,7 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
           let Bq := extractedDualScale (frozenExtracted F jF e 2) B
           (frozenBranchScale F jF e)^2*
             (C*(X*Yq*Bq*L)^ε*(X+Yq*Bq)*Bq*(Yq+L+(Yq*L)^(2/3:ℝ))))*(∫ t, ‖density t‖ ∂μ)^2 := by
-  obtain ⟨C,hC,he⟩ := filtered_actual_weighted_reflected_energy_type_uniform
-    (N := N) (a := a) (c := c) (mode := mode) ε hε
-  refine ⟨C,hC,?_⟩
+  pm_3279 filtered_actual_weighted_reflected_energy_type_uniform
   intro φ σ _ _ X Y B L hX hY hB hL F jF s hc hN hbase hac hF hNF hcharF hj
     ι _ G0 D0 u m rows nset bset Pset S branches μ density scalar r aw w
     hrows hrowcop hproducts hScop hSN hSchar hn hb hP hdensity hrM hawM hwM hr haw hw
@@ -159,8 +158,8 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
   rw [hsum] at hh
   simp only [norm_mul,mul_pow,← Finset.mul_sum]
   simpa only [E,mul_assoc] using hh
-
 end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

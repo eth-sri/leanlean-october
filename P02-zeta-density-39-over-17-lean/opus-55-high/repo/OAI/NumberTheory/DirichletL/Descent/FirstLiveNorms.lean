@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCaps
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,16 +15,16 @@ open InverseMoment InverseMomentFirstOriginalProfile ActualEisensteinCubic First
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem original_live_norm_caps
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))(Y:ℝ)
-    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L B:ℝ)
+    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
+    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→ Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L B:ℝ)
     (hB:0≤B)(hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤B)
-    (hlabels:∀I∈labels,I≠0)(hW:∀y,W y≠0→y≤L)(x:OriginalIndex ι)
+    (hlabels:∀I∈labels,I≠0)(hW:∀y,W y≠0→ y≤L)(x:OriginalIndex ι)
     (hx:x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun o=>o.1) Y)
     (j:FirstCommonIndex ι)
     (hn:sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K x j≠0):
@@ -48,8 +49,7 @@ theorem original_live_norm_caps
         ((primeProductNorm_pos p hp _).le.trans hcommon)
   have hactive:activeNorm p x≤B^2:=
     (primeProductNorm_mono p hp (Finset.filter_subset _ _)).trans hsup
-  have hE:=firstPhysicalMultiplier_ne_zero p hp x.1.1.support x.1.1.leftExponent x.1.1.rightExponent
-    x.1.1.leftBit x.1.1.rightBit x.2.1 (hlabels _ hf)
+  pm_7425 hf
   have hh0:x.2.2≠0:=(Finset.mem_erase.mp hrow).1
   have hh:=((mem_nonzeroChildFrequencyBall _ hE Y x.2.2).mp hrow).2
   have hfreqnorm:‖eisEmbedding x.2.2‖^2≤Y:=

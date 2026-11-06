@@ -8,6 +8,7 @@ import Mathlib.Analysis.Fourier.FourierTransformDeriv
 import Mathlib.Analysis.Real.Pi.Bounds
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import WeylPort.Analytic.RealLaplace
 
 /-!
 # The logarithmic phase
@@ -38,7 +39,7 @@ theorem iteratedDerivWithin_log_eq_rpow_neg_one
   have hu_pos : 0 < (u : ℝ) := lt_of_lt_of_le zero_lt_one u.property.1
   rw [show modelPhase 1 = fun v : ℝ ↦ v ^ (-(1 : ℝ)) from rfl]
   have hunique : UniqueDiffOn ℝ phaseInterval :=
-    uniqueDiffOn_Icc (by norm_num [phaseInterval])
+    uniqueDiffOn_Icc (by grind)
   rw [iteratedDerivWithin_eq_iteratedDeriv hunique
       (Real.contDiffAt_log.2 hu_pos.ne') u.property,
     iteratedDerivWithin_eq_iteratedDeriv hunique
@@ -59,8 +60,7 @@ theorem isModelPhaseFunction_log : IsModelPhaseFunction logPhase := by
       exact ne_of_gt (lt_of_lt_of_le zero_lt_one hu.1)
   · intro p u
     rw [VariableObject.IsInfinitesimal]
-    simp only [modelPhaseError_apply, modelPhaseErrorAt, logPhase,
-      iteratedDerivWithin_log_eq_rpow_neg_one, sub_self, norm_zero]
+    pm_232 modelPhaseError_apply modelPhaseErrorAt logPhase iteratedDerivWithin_log_eq_rpow_neg_one sub_self norm_zero
     exact tendsto_const_nhds
 
 end Expdb

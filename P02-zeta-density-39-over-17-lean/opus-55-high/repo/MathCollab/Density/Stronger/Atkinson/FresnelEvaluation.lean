@@ -6,6 +6,7 @@ Narrow extraction only; see third_party/twelfth/ATKINSON_STATIONARY_MANIFEST.jso
 The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.FresnelAbelLimit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,27 +27,29 @@ open scoped Topology
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem fresnelGaussianValue_eq_cartesian {c : ℝ} (hc : 0 < c) :
+section
+variable {c : ℝ} (hc : 0 < c)
+include c hc
+theorem fresnelGaussianValue_eq_cartesian :
     fresnelGaussianValue c = (1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ) := by
-  have hs : 0 < Real.sqrt c := Real.sqrt_pos.2 hc
-  have hsC : (Real.sqrt c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hs.ne'
-  have hcC : (c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
+  pm_4891 hs c hc
+  pm_8799 hsC Real.sqrt c hs.ne'
+  pm_115 hcC c Complex.ofReal_ne_zero.mpr hc.ne'
   have hsq : ((1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ)) ^ 2 =
       -I / ((2 * c : ℝ) : ℂ) := by
     push_cast
     field_simp
     rw [← Complex.ofReal_pow, Real.sq_sqrt hc.le]
     ring_nf
-    norm_num [Complex.I_sq]
+    simp_all
   have hre : 0 < ((1 - I) / ((2 * Real.sqrt c : ℝ) : ℂ)).re := by
-    rw [Complex.div_ofReal_re]
-    simp only [Complex.sub_re, Complex.one_re, Complex.I_re, sub_zero]
+    pm_214 Complex.div_ofReal_re Complex.sub_re Complex.one_re Complex.I_re sub_zero
     positivity
   rw [fresnelGaussianValue, fresnelGaussianBase hc, ← hsq,
     show (1 / 2 : ℂ) = (2 : ℂ)⁻¹ by ring]
   exact Complex.sq_cpow_two_inv hre
 
-theorem fresnelGaussianValue_eq_phase {c : ℝ} (hc : 0 < c) :
+theorem fresnelGaussianValue_eq_phase :
     fresnelGaussianValue c =
       Complex.exp (((-Real.pi / 4 : ℝ) : ℂ) * I) / (Real.sqrt (2 * c) : ℂ) := by
   rw [fresnelGaussianValue_eq_cartesian hc, Complex.exp_ofReal_mul_I,
@@ -58,6 +61,7 @@ theorem fresnelGaussianValue_eq_phase {c : ℝ} (hc : 0 < c) :
   push_cast
   field_simp
   ring
+end
 
 theorem norm_atkinsonQuadraticWindow_sub_fresnel_le {c H : ℝ}
     (hc : 0 < c) (hH : 0 < H) :

@@ -3,6 +3,7 @@ public import GuthMaynard.Improvement.SourceDirichletTail
 public import GuthMaynard.Improvement.FixedCutoffs
 public import GuthMaynard.Improvement.ReflectionNearRow
 public import GuthMaynard.Improvement.SeparatedSecondMoment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -14,7 +15,7 @@ namespace GuthMaynard.Improvement
 theorem source_truncated_domination {β : ℝ → ℝ} {D : ℝ → ℂ}
     (hβ1 : ∀ t, β t ≤ 1) (U t : ℝ) :
     sourceTruncatedDensity β D U t ≤ min (‖D t‖^2) (U^2) := by
-  by_cases ht : t ∈ {t | ‖D t‖ ≤ U}
+  pm_7011
   · have hU : 0 ≤ U := (norm_nonneg _).trans ht
     simp only [sourceTruncatedDensity, indicator_of_mem ht]
     apply le_min
@@ -22,7 +23,7 @@ theorem source_truncated_domination {β : ℝ → ℝ} {D : ℝ → ℂ}
     · have hh : ‖D t‖^2 ≤ U^2 := pow_le_pow_left₀ (norm_nonneg _) ht 2
       nlinarith [sq_nonneg ‖D t‖,hβ1 t]
   · simp only [sourceTruncatedDensity, indicator_of_notMem ht]
-    exact le_min (sq_nonneg _) (sq_nonneg _)
+    positivity
 
 /-- The actual smooth cutoff has support in an interval of length exactly 5T. -/
 theorem source_truncated_support {χ : ℝ → ℝ}
@@ -38,7 +39,7 @@ theorem source_truncated_support {χ : ℝ → ℝ}
   have hh : t/T ∈ Icc (-2:ℝ) 3 := by
     by_contra hn
     exact hc (hs _ hn)
-  exact ⟨(le_div_iff₀ hT).mp hh.1,(div_le_iff₀ hT).mp hh.2⟩
+  pm_6782 le_div_iff₀ hT div_le_iff₀
 
 /-- All ordinary density hypotheses are discharged for the actual fixed cutoff. -/
 theorem fixed_truncated_source_regular {N T : ℝ} (hN : 2 ≤ N) (hT : 0 < T)
@@ -58,11 +59,9 @@ theorem fixed_truncated_source_regular {N T : ℝ} (hN : 2 ≤ N) (hT : 0 < T)
     (fun t => (fixedTimeCutoff_bounds (t/T)).2)
     (boundedPolynomial_regular N a).1.measurable
     (boundedPolynomial_norm_le_two_mul hN a ha) U
-  refine ⟨hμm,hμi,hμ2,hμ0,?_,?_⟩
+  pm_841 hμm hμi hμ2 hμ0
   · apply source_truncated_support (χ := fixedTimeCutoff) ?_ hT
-    intro t ht
-    by_contra hn
-    exact ht (fixedTimeCutoff_support (subset_closure hn))
+    pm_7277
   · exact source_truncated_domination
       (fun t => (fixedTimeCutoff_bounds (t/T)).2) U
 

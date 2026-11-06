@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosShiftedCorrelation
 public import LaterPairs.Native.RobertSargosWeightedBoundary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -25,10 +26,7 @@ theorem sum_signed_triangular_double_constant (Q R : ℕ) (hQ : 0 < Q) (hR : 0 <
         (∑ r ∈ Finset.Ioo (-(R:ℤ)) R, (1-|(r:ℝ)|/R)) := by
       simp only [Finset.sum_mul,Finset.mul_sum]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro r _
-      apply Finset.sum_congr rfl
-      intro q _
+      pm_156 Finset.sum_congr r q
       ring
     _ = _ := by rw [sum_signed_triangular_weights Q hQ,sum_signed_triangular_weights R hR]
 

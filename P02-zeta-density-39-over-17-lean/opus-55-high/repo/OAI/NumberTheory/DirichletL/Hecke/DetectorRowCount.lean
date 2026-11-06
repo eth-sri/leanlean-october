@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorSimultaneous
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,7 +11,10 @@ open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorRowCount
 open HeckeFamily HeckeDyadic
 
-lemma card_of_energy {α : Type*} (rows : Finset α) (F : α→ℂ)
+section
+variable {α : Type*} (rows : Finset α)
+include α rows
+lemma card_of_energy (F : α→ℂ)
     (U p b C : ℝ) (hU : 0<U)
     (hspike : ∀ u∈rows, U^p≤‖F u‖^2)
     (henergy : ∑ u∈rows, ‖F u‖^2≤C*U^b) :
@@ -25,7 +29,7 @@ lemma card_of_energy {α : Type*} (rows : Finset α) (F : α→ℂ)
     _ ≤ C*U^b := hs
     _ = (C*U^(b-p))*U^p := by rw [mul_assoc,←Real.rpow_add hU]; congr 2; ring
 
-theorem inverse_count {α : Type*} (rows : Finset α) (χ : α→Character)
+theorem inverse_count (χ : α→ Character)
     (W : ℝ→ℂ) (D : ℝ) (σ freq : α→ℝ) (P : α→ℂ)
     (U δ r q z εw εp εm C : ℝ) (hU : 0<U)
     (hM : ∀ u∈rows, U^(δ*r-εw)≤‖polynomial (χ u) true W D (σ u) (freq u)‖^2)
@@ -37,10 +41,9 @@ theorem inverse_count {α : Type*} (rows : Finset α) (χ : α→Character)
       U^((δ*r-εw)+(2*q*z-εp))≤‖polynomial (χ u) true W D (σ u) (freq u)*P u‖^2 := by
     rw [Real.rpow_add hU,norm_mul,mul_pow]
     exact mul_le_mul (hM u hu) (hP u hu) (Real.rpow_nonneg hU.le _) (sq_nonneg _)
-  have hh := card_of_energy rows _ U _ (1+εm) C hU hs henergy
-  convert hh using 1; congr 2; ring
+  pm_1032
 
-theorem plain_count {α : Type*} (rows : Finset α) (χ : α→Character)
+theorem plain_count (χ : α→ Character)
     (W : ℝ→ℂ) (N : ℝ) (σ freq : α→ℝ) (P : α→ℂ)
     (U δ m q z εw εp εm C : ℝ) (hU : 0<U)
     (hS : ∀ u∈rows, U^(δ*m-εw)≤‖polynomial (χ u) false W N (σ u) (freq u)‖^2)
@@ -56,8 +59,8 @@ theorem plain_count {α : Type*} (rows : Finset α) (χ : α→Character)
     rw [Real.rpow_add hU,Real.rpow_add hU,norm_mul,norm_mul,mul_pow,mul_pow]
     exact mul_le_mul (mul_le_mul (hS u hu) (hS u hu) (Real.rpow_nonneg hU.le _) (sq_nonneg _))
       (hP u hu) (Real.rpow_nonneg hU.le _) (mul_nonneg (sq_nonneg _) (sq_nonneg _))
-  have hh := card_of_energy rows _ U _ (1+εm) C hU hs henergy
-  convert hh using 1; congr 2; ring
+  pm_1032
+end
 
 end SevenEighths.HeckeDetectorRowCount
 

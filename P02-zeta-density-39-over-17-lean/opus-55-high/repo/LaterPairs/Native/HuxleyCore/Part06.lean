@@ -1,37 +1,34 @@
 module
 public import LaterPairs.Native.HuxleyCore.Part05
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
-set_option maxErrors 1000
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open Polynomial
 open Set
 open scoped Classical
 open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
+open scoped FourierTransform
 open scoped Topology
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
-open scoped BigOperators FourierTransform Classical ContDiff NNReal
+open scoped FourierTransform Classical ContDiff NNReal
 open Filter
 open Set Expdb TaoTrudgianYang2025
-open scoped BigOperators FourierTransform ContDiff Classical NNReal
+open scoped FourierTransform ContDiff Classical NNReal
 
 
+set_option hygiene false in
+macro "pc_593" x1:ident : tactic => `(tactic| (
+  have hMl : X^ℓ≤M :=
+    (Real.rpow_le_rpow_of_exponent_le hX
+      (sub_le_sub_left (min_le_right δsrc $x1:ident) _)).trans setup.rpow_sub_le_scale
+  have hMu : M≤X^v := setup.scale_le_rpow_add.trans
+    (Real.rpow_le_rpow_of_exponent_le hX (add_le_add le_rfl (min_le_right δsrc $x1:ident)))))
 public  theorem capped_short_nonAsymptotic_of_window_margins
     {α : ℝ≥0} {β h g₀ ν₀ ν₁ δw μ : ℝ}
     (hδw : 0<δw) (hμ : 0<μ)
@@ -71,13 +68,12 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     Expdb.IsExponentSumBoundNonAsymptotic α β := by
   let g := fun u : ℝ => (1-u)*g₀+u*(3*h)
   let ν := fun u : ℝ => (1-u)*ν₀+u*ν₁
-  let ℓ := (α:ℝ)-δw
-  let v := (α:ℝ)+δw
+  pm_6849 δw
   let εs := μ/1000
   let ζ := μ/2
   let ξ := 288*β-μ
-  have hεs : 0<εs := by dsimp only [εs]; positivity
-  have hζ : 0<ζ := by dsimp only [ζ]; positivity
+  pm_307 hεs εs
+  pm_307 hζ ζ
   have hMargins (u : ℝ) (hu : u∈Icc (0:ℝ) 1) :
       μ≤ℓ ∧
         v+μ≤1 ∧
@@ -109,11 +105,11 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
         504*v-72-216*h+72*(ν u)+μ≤288*β := by
     exact hWindows u hu
   have hzero := hMargins 0 (by norm_num)
-  simp only [g,ν,sub_zero,zero_mul,one_mul,add_zero] at hzero
+  pm_1189 g ν sub_zero zero_mul one_mul add_zero hzero
   obtain ⟨hμℓ,hv,hμh,hμν₀,hμg₀,hWidth,hg₀h,hν₀M,hRN₀,hNR₀,hCubic₀,hCap₀,
     hHeight₀,hMT₀,hRT₀,hTen₀,hShort,hSmall,hDiag,hSqrt₀,hSecond₀,hFourth₀,
     hSecondMain₀,hFourthMain₀,hFirstMain₀,hThirdMain₀,hFifthMain₀,hThird₀⟩ := hzero
-  have hℓv : ℓ≤v := by dsimp only [ℓ,v]; linarith only [hδw]
+  pm_6385 hδw
   have hhp := hμ.trans_le hμh
   have hℓp := hμ.trans_le hμℓ
   have hg₀p := hμ.trans_le hμg₀
@@ -121,8 +117,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   have hξ : 0≤ξ := by dsimp only [ξ]; linarith only [hShort,hhp,hμ]
   have hh3 : 3*h≤1 := by linarith only [hWidth,hℓv,hv,hhp,hμ]
   intro ε hε σ hσ
-  obtain ⟨δsrc,w₀,B,Csrc,hδsrc,hw₀,hw₀cap,hB,hCsrc,hSource⟩ :=
-    approximateModelPhase_enlarged_double_product_correlation_moment hσ hεs
+  pm_2391 w₀ hw₀ hw₀cap approximateModelPhase_enlarged_double_product_correlation_moment
   obtain ⟨A,hA,hWeylSource⟩ := source_product_twice_weyl_normalized_block hεs
   let Clarge := (2:ℝ)^364*A^72*Csrc^6*(11*2^432)
   let Csmall := (20*A)^72
@@ -152,18 +147,13 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   obtain ⟨X₀,hX₀⟩ := Filter.eventually_atTop.mp (hPhys.and hLog)
   let δ := min δsrc δw
   let C := max 1 X₀
-  have hC : 1≤C := le_max_left _ _
+  pm_4909 hC C
   refine ⟨δ,lt_min hδsrc hδw,7,by norm_num,C,hC,?_⟩
   intro X M F a b setup
   have hTogether := hX₀ X ((le_max_right 1 X₀).trans setup.threshold_le_param)
   have hX2 := hTogether.1.1
-  have hX : 1≤X := (by norm_num : (1:ℝ)≤2).trans hX2
-  have hXp := zero_lt_one.trans_le hX
-  have hMl : X^ℓ≤M :=
-    (Real.rpow_le_rpow_of_exponent_le hX
-      (sub_le_sub_left (min_le_right δsrc δw) _)).trans setup.rpow_sub_le_scale
-  have hMu : M≤X^v := setup.scale_le_rpow_add.trans
-    (Real.rpow_le_rpow_of_exponent_le hX (add_le_add le_rfl (min_le_right δsrc δw)))
+  pb_1549
+  pc_593 δw
   have hF := approximateModelPhase_mono setup.isApproximateModelPhase le_rfl (min_le_left δsrc δw)
   have hBasePhys := hTogether.1.2 M (X^g₀) g₀ ν₀ hMl hMu rfl hg₀p.le
     (by linarith only [hg₀h,hμ]) hμν₀ hν₀M hRN₀ hNR₀ hCubic₀ hCap₀ hHeight₀ hMT₀ hRT₀ hTen₀
@@ -172,27 +162,21 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     hJ₀M,hWJ₀,hR₀B,hR₀N,hN₀R,hN₀M,hCubicBudget₀,hCapBudget₀,hHeightBudget₀,
     hMTBudget₀,hRTBudget₀,hTenBudget₀⟩ := hBasePhys
   have hMp := zero_lt_one.trans_le hM
-  have hHp : (0:ℝ)<H := by exact_mod_cast (show 0<H by omega)
-  have hH1 : (1:ℝ)≤H := by exact_mod_cast (show 1≤H by omega)
+  pm_2384
+  pm_2416
   have hHcube : (H:ℝ)^3≤X := by
     calc
       _ ≤ (X^h)^3 := pow_le_pow_left₀ hHp.le hHu 3
       _ = X^(3*h) := by
-        simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le h 3).symm
+        pm_6929
       _ ≤ X := by simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hX hh3
   suffices hResult : ‖Expdb.exponentialSumAt F X M a b‖≤X^β by
     calc
       _ ≤ X^β := hResult
       _ ≤ X^(β+ε) := Real.rpow_le_rpow_of_exponent_le hX (le_add_of_nonneg_right hε.le)
       _ ≤ C*X^(β+ε) := le_mul_of_one_le_left (Real.rpow_nonneg hXp.le _) hC
-  by_cases hba : b<a
-  · rw [Expdb.exponentialSumAt_of_lt hba,norm_zero]
-    exact Real.rpow_nonneg hXp.le _
-  have hab : a≤b := Nat.le_of_not_gt hba
-  let L := b-a
-  have hEnd : a+L=b := Nat.add_sub_of_le hab
-  have ha := setup.scale_le_start
-  have hb : ((a+L:ℕ):ℝ)≤2*M := by rw [hEnd]; exact setup.end_le_two_mul_scale
+  pm_7103 Expdb.exponentialSumAt_of_lt
+  pm_2291
   by_cases hShortL : L+1<H^2
   · calc
       _ ≤ ((Finset.Icc a b).card:ℝ) := Expdb.norm_exponentialSumAt_le_card F X M a b
@@ -205,7 +189,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
         simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le h 2).symm
       _ ≤ X^β := Real.rpow_le_rpow_of_exponent_le hX (by linarith only [hShort,hμ])
   have hLong : H^2≤L+1 := Nat.le_of_not_gt hShortL
-  obtain ⟨Fext,hSharp,hFamily⟩ := hSource M F hM hF
+  pm_97 Fext hSharp hFamily hSource M F hM hF
   obtain ⟨pick,k,hk,hkH,hpick,hZcap,hWeyl⟩ :=
     hWeylSource Fext σ X M a L H hσ hX hM hH2 hLong hHcube (hW.trans hw₀cap) ha hb
   let J := (k:ℝ)
@@ -214,9 +198,9 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   let W := fun p : ℕ × ℕ => ∑ j∈Finset.range (L+1-p.1-p.2),
     (𝐞 (X*(Fext (((a:ℝ)+j)/M)-Fext (((a:ℝ)+j+p.1)/M)-
       Fext (((a:ℝ)+j+p.2)/M)+Fext (((a:ℝ)+j+p.1+p.2)/M))):ℂ)
-  let Z := ∑ l∈(Finset.Ico k (2*k)).filter (fun l => l∈Products),‖W (pick l)‖
-  let Log := 1+(Nat.clog 2 (H^3):ℝ)
-  have hZ0 : 0≤Z := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  pm_2417
+  pm_6673
+  pm_2383
   have hLog1 : 1≤Log := le_add_of_nonneg_right (Nat.cast_nonneg _)
   have hLog0 := zero_le_one.trans hLog1
   have hLog72 : 1≤Log^72 := one_le_pow₀ hLog1
@@ -226,7 +210,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     exact_mod_cast (show k≤H^3 by omega)
   have hQ : 0≤A*X^εs*Log :=
     mul_nonneg (mul_nonneg hA0 (Real.rpow_nonneg hXp.le _)) hLog0
-  have hξPower : 1≤X^ξ := Real.one_le_rpow hX hξ
+  pm_242 hξPower X ξ hX hξ
   have hLossPower : 1≤X^(78*εs) := Real.one_le_rpow hX (by positivity)
   have hCommon :
       ‖Expdb.exponentialSumAt Fext X M a (a+L)‖^288 ≤ D*Log^72*X^(78*εs)*X^ξ := by
@@ -234,10 +218,9 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     · have hdPower : M^4/(H:ℝ)^2≤4*X^(ξ/72) := by
         have hh := double_difference_monomial_power_window hX hMl hMu hN₀l hN₀u hHl
           (rfl : X^g₀=X^g₀) 0 0 4 0 0 2 0 0 0
-        norm_num only [Nat.cast_zero,Nat.cast_ofNat,pow_zero,pow_one,zero_mul,one_mul,
-          mul_one,zero_add,add_zero,sub_zero] at hh
+        pm_1137
         have hexp : 4*v-2*h≤ξ/72 := by
-          apply (le_div_iff₀ (by norm_num : (0:ℝ)<72)).mpr
+          pm_6442
           calc
             (4*v-2*h)*72 = 288*v-144*h := by ring
             _ ≤ 288*β-μ := (le_sub_iff_add_le).mpr hDiag
@@ -247,15 +230,14 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
       have hSmallPower : M^4*J/(H:ℝ)^3≤8*X^(ξ/72) := by
         have hh := double_difference_monomial_power_window hX hMl hMu hN₀l hN₀u hHl
           (rfl : X^g₀=X^g₀) 0 1 4 0 0 3 0 0 0
-        norm_num only [Nat.cast_zero,Nat.cast_ofNat,pow_zero,pow_one,zero_mul,one_mul,
-          mul_one,zero_add,add_zero,sub_zero] at hh
+        pm_1137
         calc
           _ ≤ M^4*(X^g₀)/(H:ℝ)^3 := by gcongr
           _ = (X^g₀)*M^4/(H:ℝ)^3 := by rw [mul_comm (M^4)]
           _ ≤ 8*X^(g₀+4*v-3*h) := hh
           _ ≤ 8*X^(ξ/72) := mul_le_mul_of_nonneg_left
             (Real.rpow_le_rpow_of_exponent_le hX (by
-              apply (le_div_iff₀ (by norm_num : (0:ℝ)<72)).mpr
+              pm_6442
               calc
                 (g₀+4*v-3*h)*72 = (4*v+g₀-3*h)*72 := by ring
                 _ ≤ (4*β-μ)*72 := mul_le_mul_of_nonneg_right
@@ -275,8 +257,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           _ ≤ A*X^εs*Log*(4*X^(ξ/72)+16*X^(ξ/72)) :=
             mul_le_mul_of_nonneg_left (add_le_add hdPower hCorr) hQ
           _ = _ := by ring
-      have hpε : (X^εs)^72=X^(72*εs) := by
-        simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le εs 72).symm
+      pm_868 hpε
       have hpξ : (X^(ξ/72))^72=X^ξ := by
         have hh := (Real.rpow_mul_natCast hXp.le (ξ/72) 72).symm
         norm_num only [Nat.cast_ofNat,div_mul_cancel₀ _ (by norm_num : (72:ℝ)≠0)] at hh
@@ -301,7 +282,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           J ≤ (H:ℝ)^3 := hJH
           _ ≤ (X^h)^3 := pow_le_pow_left₀ hHp.le hHu 3
           _ = X^(3*h) := by
-            simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le h 3).symm
+            pm_6929
       have hDen : 0<3*h-g₀ := by linarith only [hg₀h,hμ]
       let u := (γ-g₀)/(3*h-g₀)
       have hu : u∈Icc (0:ℝ) 1 := by
@@ -311,8 +292,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
         dsimp only [g,u]
         field_simp
         ring
-      have hm := hMargins u hu
-      rw [hgu] at hm
+      pm_126 hm hMargins u hu hgu
       obtain ⟨_,_,_,hμν,_,_,_,hνM,hRN,hNR,hCubic,hCap,hHeight,hMT,hRT,hTen,
         _,_,hDiag',hSqrt,hSecond,hFourth,hSecondMain,hFourthMain,hFirstMain,hThirdMain,hFifthMain,hThird⟩ := hm
       let n := ⌊X^(ν u)/8⌋₊
@@ -324,8 +304,8 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
       obtain ⟨_,hN2,_,hNl,hNu,_,_,hJ1,hRp,hscale,hThreshold,hWidthJ,hJM,hWJ,
         hBR,hRNbudget,hNRbudget,hNMbudget,hCubicBudget,hCapBudget,hHeightBudget,
         hMTbudget,hRTbudget,hTenBudget⟩ := hPhysical
-      have hNp : (0:ℝ)<N := by exact_mod_cast (show 0<N by omega)
-      have hTp : 0<T := by dsimp only [T]; positivity
+      pm_2362
+      pm_307 hTp T
       have hTX : T≤X := by
         apply (div_le_iff₀ (sq_pos_of_pos hMp)).mpr
         have hJM2 : J≤M^2 := hJM.trans (by nlinarith only [hM])
@@ -342,9 +322,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
           X^6*J^78*M^246*(N:ℝ)^6/(H:ℝ)^216+X^15*J^87*M^207*(N:ℝ)^15/(H:ℝ)^216+
           J^72*M^284/((H:ℝ)^216*(N:ℝ)^24))
       have hE0 : 0≤E := by
-        dsimp only [E]
-        clear * - hJp hMp hNp hRp
-        positivity
+        pm_5108 E hJp hRp
       have hMain0 : 0≤Main := by
         dsimp only [Main]
         clear * - hJp hMp hNp hRp hXp
@@ -384,8 +362,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
               ((M^4/(H:ℝ)^2)^72+V)=
             ((2:ℝ)^364*A^72*Csrc^6)*Log^72*X^(78*εs)*(M^288/(H:ℝ)^144+V) := by
         simp only [mul_pow,div_pow,←pow_mul]
-        have hεpower : (X^εs)^72=X^(72*εs) := by
-          simpa only [Nat.cast_ofNat,mul_comm] using (Real.rpow_mul_natCast hXp.le εs 72).symm
+        pm_868 hεpower
         rw [hεpower]
         have hcombine : X^(72*εs)*X^(6*εs)=X^(78*εs) := by
           rw [←Real.rpow_add hXp]
@@ -447,17 +424,15 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
     (Real.rpow_nonneg hXp.le _) (hFinalPower.trans_eq hRootPower.symm)
 
 
-private theorem fourth_pair_capped_short_nonAsymptotic
-    {α : ℝ≥0} {t : ℝ} (ht : t∈Icc (0:ℝ) 1)
-    (hα : (α:ℝ)=(1-t)*(890/3277)+t*(17604372/60424193)) :
-    Expdb.IsExponentSumBoundNonAsymptotic α (89/3478+(7441/8695)*(α:ℝ)) := by
-  let h := ((1-t)*2749411+t*3296917)/100000000
-  let g₀ := ((1-t)*16756+t*1976824)/100000000
-  let ν₀ := ((1-t)*11931645+t*14567321)/100000000
-  let ν₁ := ((1-t)*11969967+t*14925729)/100000000
+set_option hygiene false in
+macro "pf_25" x1:term:max x2:term:max x3:term:max x4:term:max x5:term:max x6:term:max x7:term:max x8:term:max x9:term:max x10:term:max x11:term:max x12:ident x13:ident : tactic => `(tactic| (
+  let h := ((1-t)*$x1:term+t*$x2:term)/100000000
+  let g₀ := ((1-t)*$x3:term+t*$x4:term)/100000000
+  let ν₀ := ((1-t)*11931645+t*$x5:term)/100000000
+  let ν₁ := ((1-t)*$x6:term+t*$x7:term)/100000000
   let g := fun u : ℝ => (1-u)*g₀+u*(3*h)
   let ν := fun u : ℝ => (1-u)*ν₀+u*ν₁
-  let β := 89/3478+(7441/8695)*(α:ℝ)
+  let β := $x8:term/$x9:term+($x10:term/$x11:term)*(α:ℝ)
   let δw := (1:ℝ)/10000000000
   let ℓ := (α:ℝ)-δw
   let v := (α:ℝ)+δw
@@ -493,29 +468,35 @@ private theorem fourth_pair_capped_short_nonAsymptotic
         6+78*(g u)-216*h+246*v+6*(ν u)+μ≤288*β ∧
         72*(g u)-216*h+284*v-24*(ν u)+μ≤288*β ∧
         504*v-72-216*h+72*(ν u)+μ≤288*β := by
-    have hh := fourth_pair_capped_full_window_margins ht hu
+    have hh := $x12:ident ht hu
     dsimp only at hh
     rw [←hα] at hh
     exact hh
-  exact capped_short_nonAsymptotic_of_window_margins hδw hμ hMargins
+  exact $x13:ident hδw hμ hMargins))
+private theorem fourth_pair_capped_short_nonAsymptotic
+    {α : ℝ≥0} {t : ℝ} (ht : t∈Icc (0:ℝ) 1)
+    (hα : (α:ℝ)=(1-t)*(890/3277)+t*(17604372/60424193)) :
+    Expdb.IsExponentSumBoundNonAsymptotic α (89/3478+(7441/8695)*(α:ℝ)) := by pf_25 2749411 3296917 16756 1976824 14567321 11969967 14925729 89 3478 7441 8695 fourth_pair_capped_full_window_margins capped_short_nonAsymptotic_of_window_margins
 
                                                                   
                                                                       
                                                               
-theorem exponentSumGrowthExponent_le_huxley_fourthPair_shortRange
-    {α : ℝ≥0} (hα : (890:ℝ)/3277≤(α:ℝ))
-    (hα₁ : (α:ℝ)≤(17604372:ℝ)/60424193) :
-    Expdb.exponentSumGrowthExponent α≤89/3478+(7441/8695)*(α:ℝ) := by
-  let t := ((α:ℝ)-(890:ℝ)/3277)/((17604372:ℝ)/60424193-(890:ℝ)/3277)
-  have hden : 0<(17604372:ℝ)/60424193-(890:ℝ)/3277 := by norm_num
+set_option hygiene false in
+macro "pf_134" x1:term:max x2:term:max x3:ident : tactic => `(tactic| (
+  let t := ((α:ℝ)-(890:ℝ)/3277)/(($x1:term :ℝ)/$x2:term-(890:ℝ)/3277)
+  have hden : 0<($x1:term :ℝ)/$x2:term-(890:ℝ)/3277 := by norm_num
   have ht : t∈Icc (0:ℝ) 1 := by
     refine ⟨div_nonneg (sub_nonneg.mpr hα) hden.le,?_⟩
     exact (div_le_one hden).mpr (by linarith only [hα₁])
-  have hαeq : (α:ℝ)=(1-t)*(890/3277)+t*(17604372/60424193) := by
+  have hαeq : (α:ℝ)=(1-t)*(890/3277)+t*($x1:term/$x2:term) := by
     dsimp only [t]
     ring
   exact Expdb.exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
-    (fourth_pair_capped_short_nonAsymptotic ht hαeq)
+    ($x3:ident ht hαeq)))
+theorem exponentSumGrowthExponent_le_huxley_fourthPair_shortRange
+    {α : ℝ≥0} (hα : (890:ℝ)/3277≤(α:ℝ))
+    (hα₁ : (α:ℝ)≤(17604372:ℝ)/60424193) :
+    Expdb.exponentSumGrowthExponent α≤89/3478+(7441/8695)*(α:ℝ) := by pf_134 17604372 60424193 fourth_pair_capped_short_nonAsymptotic
 
 
                                                                                  

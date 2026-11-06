@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical Topology
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -19,10 +19,10 @@ def rowKernelScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
     (∏i,(elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)^(z-1))*
     frequencyWeight z ⟨u.val,u.property.1⟩
 
-lemma continuedPhysicalRowKernel_w_factor {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) :
+section
+variable {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ)
+include K S hS hmax P hPS η u W0 W1
+lemma continuedPhysicalRowKernel_w_factor (X Y Z : ℝ) (x w z : ℂ) :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z=
       rowKernelScalar P u W0 X Z x z*(Y:ℂ)^(w-1)*mellin W1 w*
         (star ((calibrationForSet S hmax).residueMonoid u.val)*
@@ -30,10 +30,7 @@ lemma continuedPhysicalRowKernel_w_factor {K : ℕ}
   unfold continuedPhysicalRowKernel rowKernelScalar sourceMellinWeight
   ring
 
-theorem continuedPhysicalRowKernel_cauchy {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a) (hW : Function.support W1⊆Icc a b)
+theorem continuedPhysicalRowKernel_cauchy (a b : ℝ) (ha : 0<a) (hW : Function.support W1⊆Icc a b)
     (X Y Z : ℝ) (hY : 0<Y) (x z : ℂ) (l r C : ℝ) (N : ℕ) (hC : 0≤C)
     (hpoly : ∀v∈Icc l r,∀t : ℝ,
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
@@ -63,6 +60,7 @@ theorem continuedPhysicalRowKernel_cauchy {K : ℕ}
     _ = A*(height t^N*‖mellin W1 ((v:ℂ)+t*I)‖) := by dsimp [A]; ring
     _ ≤ A*(D*cauchy t) := mul_le_mul_of_nonneg_left hmc (by dsimp [A]; positivity)
     _ = _ := by ring
+end
 
 theorem nonprincipal_w_integral_eq_of_polynomial {K : ℕ}
     (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)

@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.AnnularImprovement
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalQuadraticSieve (columnDyadicLength)
-noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 lemma improved_shape_shell (M N Y ξ : ℝ) (hM : 0 < M) (hN : 0 < N) (hY : 0 ≤ Y)
@@ -54,24 +54,23 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     ∃ C : ℝ, 0 < C ∧ ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       elementSieveNorm M N ≤ C*N^(7*θ)*
         (M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)) := by
-  obtain ⟨K,hK,hb⟩ := h.annular_improved hξ hξ2 θ hθ hθsmall
-  let D : ℝ := 2+1/(θ*Real.log 2)
+  pm_3547 K hK hb h.annular_improved hξ hξ2 θ hθ hθsmall
+  pm_8871 D θ
   have hD : 0 < D := by
     dsimp [D]
     have := Real.log_pos (by norm_num : (1:ℝ)<2)
     positivity
   refine ⟨64*K*D, by positivity, ?_⟩
   intro M N hM hN
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
+  pm_3779
   let cols : idealRange N → Ideal O := fun j => j.val
   have hc (j : idealRange N) : Admissible (cols j) := (mem_idealRange.mp j.property).1
   have hn (j : idealRange N) : (Ideal.absNorm (cols j) : ℝ) ≤ N := (mem_idealRange.mp j.property).2
   let R := elementRange M
   have hR (z : O) (hz : z ∈ R) : (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
     ((mem_elementRange M z).mp hz).2
-  let S := M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  pm_3800
+  pm_3168
   apply FiniteSieveOperator.squared_norm_le_of_energy (elementMatrix M N)
   · positivity
   intro a
@@ -81,7 +80,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     by_cases hne : Nonempty (CubicColumnShell cols N l)
     · obtain ⟨j₀⟩ := hne
       have hYN := cubicColumnShell_scale_le cols N hc hn l j₀
-      have hY1 : 1 ≤ (2:ℝ)^l.val := one_le_pow₀ (by norm_num)
+      pm_394 hY1 l.val
       have hs := hb M ((2:ℝ)^l.val) hM hY1
         (fun j : CubicColumnShell cols N l => cols j.val)
         (fun j k he => Subtype.ext (Subtype.ext he)) (fun j => hc j.val)
@@ -99,7 +98,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   have hsum := cubic_energy_column_shells cols N a R
   have hle := Finset.sum_le_sum (s := Finset.univ) (fun l hl => hsector l)
   rw [← Finset.mul_sum, cubicColumnShell_energy cols N a] at hle
-  have he := hsum.trans (mul_le_mul_of_nonneg_left hle (by positivity))
+  pm_738 he hsum.trans hle
   have hlog := CanonicalQuadraticSieve.columnDyadicLength_small_power θ hθ N hN
   have he' := he.trans (mul_le_mul_of_nonneg_right hlog
     (show 0 ≤ (64*K*N^(6*θ)*S)*∑ j, ‖a j‖^2 by positivity))
@@ -114,7 +113,6 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = (64*K*D)*(N^θ*N^(6*θ))*S*∑ j, ‖a j‖^2 := by dsimp [D]; ring
     _ = _ := by rw [hp]
 
-end
 end SevenEighths.CubicSieve
 
 end OAI

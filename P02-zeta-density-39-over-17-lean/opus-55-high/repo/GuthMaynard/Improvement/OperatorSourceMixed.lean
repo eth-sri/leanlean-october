@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.OperatorMixedBound
 public import GuthMaynard.Improvement.ReflectionSourceRow
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -25,10 +24,10 @@ theorem operator_source_mixed (w : MathCollab.Density.ReflectionCutoff)
         (operatorDiscrete (timeMeasure μ) w L (1/2) 5-operatorContinuous (timeMeasure μ) w L)^2)‖ ≤
         C*N^ε*L^2*N*T*(∫ t, μ t^2) := by
   obtain ⟨D,hD,hmix⟩ := operator_mixed_bound w
-  obtain ⟨R,hR,hrow⟩ := centered_source_row w hε hA hp
+  pm_97 R hR hrow centered_source_row w hε hA hp
   refine ⟨D*R,mul_pos hD hR,?_⟩
   intro N L T t₀ hN hNL hT hupper a μ ha hm hi h2 h0 hs hμ
-  let _ : IsFiniteMeasure (timeMeasure μ) := timeMeasure_finite hi
+  pm_6603 hi
   dsimp only
   intro ι _ b
   have hL : 1 ≤ L := by linarith

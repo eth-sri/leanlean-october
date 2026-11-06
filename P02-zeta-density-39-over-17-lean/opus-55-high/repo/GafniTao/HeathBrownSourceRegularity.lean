@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownMajorantInsertion
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source regularity for Heath-Brown's derivative estimate
@@ -12,33 +13,27 @@ iterated derivatives on compact subintervals.  This file supplies that
 entry bridge explicitly; endpoint differentiability is never assumed.
 -/
 
-open Set
 
 namespace GafniTao
 
-noncomputable section
 
-theorem continuousOn_iteratedDeriv_of_contDiffOn_isOpen
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k j : ℕ}
+section
+variable {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ}
+include U hU f
+theorem continuousOn_iteratedDeriv_of_contDiffOn_isOpen {k j : ℕ}
     (hf : ContDiffOn ℝ k f U) (hj : j ≤ k) :
     ContinuousOn (iteratedDeriv j f) U := by
-  have h := hf.continuousOn_iteratedDerivWithin
-    (by exact_mod_cast hj) hU.uniqueDiffOn
-  exact h.congr (iteratedDerivWithin_of_isOpen hU).symm
+  pm_7404 hf.continuousOn_iteratedDerivWithin
 
-theorem differentiableOn_iteratedDeriv_of_contDiffOn_isOpen
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k j : ℕ}
+theorem differentiableOn_iteratedDeriv_of_contDiffOn_isOpen {k j : ℕ}
     (hf : ContDiffOn ℝ k f U) (hj : j < k) :
     DifferentiableOn ℝ (iteratedDeriv j f) U := by
-  have h := hf.differentiableOn_iteratedDerivWithin
-    (by exact_mod_cast hj) hU.uniqueDiffOn
-  exact h.congr (iteratedDerivWithin_of_isOpen hU).symm
+  pm_7404 hf.differentiableOn_iteratedDerivWithin
 
 /-- The two derivative-coordinate regularity packages needed by the literal
 pair-count argument, restricted to any compact interval lying inside the
 published open differentiability interval. -/
-theorem heathBrown_coordinate_data_of_source
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k N : ℕ}
+theorem heathBrown_coordinate_data_of_source {k N : ℕ}
     (hk : 3 ≤ k) (hf : ContDiffOn ℝ k f U)
     (hsub : Set.Icc (0 : ℝ) (N : ℝ) ⊆ U) :
     ContinuousOn (heathBrownDerivativeCoordinate f (k - 2))
@@ -72,12 +67,15 @@ theorem heathBrown_coordinate_data_of_source
   · exact hdLow.div_const _
   · exact hcLast.div_const _
   · exact hdLast.div_const _
+end
 
+section
+variable {U : Set ℝ} (hU : IsOpen U)
+include U hU
 /-- The detailed Taylor hypotheses in the finite Lemma 1 follow from the
 single source assumption of `C^k` regularity on an open interval containing
 the compact working range. -/
-theorem heathBrown_local_data_of_source
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k N H : ℕ}
+theorem heathBrown_local_data_of_source {f : ℝ → ℝ} {k N H : ℕ}
     (hk : 2 ≤ k) (hf : ContDiffOn ℝ k f U)
     (hsub : Set.Icc (0 : ℝ) (N : ℝ) ⊆ U)
     {A lambda : ℝ}
@@ -104,15 +102,7 @@ theorem heathBrown_local_data_of_source
   refine ⟨(hderivSource.contDiffAt (hU.mem_nhds hnU)).of_le ?_, ?_, ?_, ?_⟩
   · exact_mod_cast (by omega : k - 2 ≤ k - 1)
   · intro x hx
-    have hHN : H ≤ N := by omega
-    have hnxN : (n : ℝ) + x ≤ N := by
-      have hnupper : n ≤ N - H := hnmem.2
-      have hcast : (n : ℝ) ≤ ((N - H : ℕ) : ℝ) := by
-        exact_mod_cast hnupper
-      rw [Nat.cast_sub hHN] at hcast
-      calc
-        (n : ℝ) + x ≤ (N - H : ℝ) + H := add_le_add hcast hx.2
-        _ = N := by ring
+    pm_2794
     have hnpos : (0 : ℝ) < n := by exact_mod_cast hnmem.1
     have hnxU : (n : ℝ) + x ∈ U := hsub ⟨by linarith [hx.1], hnxN⟩
     exact (hf.differentiableOn (by exact_mod_cast (by omega : k ≠ 0))
@@ -121,27 +111,11 @@ theorem heathBrown_local_data_of_source
   · intro x hx
     apply hderivSource.mono
     intro y hy
-    have hHN : H ≤ N := by omega
-    have hnxN : (n : ℝ) + x ≤ N := by
-      have hnupper : n ≤ N - H := hnmem.2
-      have hcast : (n : ℝ) ≤ ((N - H : ℕ) : ℝ) := by
-        exact_mod_cast hnupper
-      rw [Nat.cast_sub hHN] at hcast
-      calc
-        (n : ℝ) + x ≤ (N - H : ℝ) + H := add_le_add hcast hx.2
-        _ = N := by ring
+    pm_2794
     exact hsub ⟨(by positivity : (0 : ℝ) ≤ n).trans hy.1,
       hy.2.trans hnxN⟩
   · intro x hx ξ hξ
-    have hHN : H ≤ N := by omega
-    have hnxN : (n : ℝ) + x ≤ N := by
-      have hnupper : n ≤ N - H := hnmem.2
-      have hcast : (n : ℝ) ≤ ((N - H : ℕ) : ℝ) := by
-        exact_mod_cast hnupper
-      rw [Nat.cast_sub hHN] at hcast
-      calc
-        (n : ℝ) + x ≤ (N - H : ℝ) + H := add_le_add hcast hx.2
-        _ = N := by ring
+    pm_2794
     have hξU : ξ ∈ U := hsub ⟨(by positivity : (0 : ℝ) ≤ n).trans hξ.1.le,
       hξ.2.le.trans hnxN⟩
     rw [Real.norm_eq_abs, abs_of_nonneg (hkBounds ξ hξU).1]
@@ -151,7 +125,6 @@ theorem heathBrown_local_data_of_source
 All auxiliary differentiability hypotheses are discharged here from a
 single `C^k` hypothesis on the surrounding open set. -/
 theorem heathBrown_lemma_one_assembled_of_source
-    {U : Set ℝ} (hU : IsOpen U)
     {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
     (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
     (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
@@ -196,8 +169,8 @@ theorem heathBrown_lemma_one_assembled_of_source
     hcoord.1 hcoord.2.1 hcoord.2.2.1 hcoord.2.2.2.1 hcoord.2.2.2.2.1
     hcoord.2.2.2.2.2
     (fun x hx => hkBounds x (hsub ⟨hx.1.le, hx.2.le⟩))
-
-
 end
+
+
 
 end GafniTao

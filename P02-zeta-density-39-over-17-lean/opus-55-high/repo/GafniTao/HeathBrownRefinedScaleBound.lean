@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownShiftScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -44,7 +45,7 @@ theorem heathBrown_shift_factor_le
     (N := N) (k := k) (H := H) hk hlambda (by omega)
   have hright := heathBrown_b_plus_aD_le
     (N := N) (k := k) (H := H) hk hA hlambda hH
-  exact mul_le_mul hleft hright (by positivity) (by positivity)
+  pm_149 hleft hright
 
 theorem heathBrown_shift_factor_le_chosen
     {N k : ℕ} {A lambda : ℝ}
@@ -130,33 +131,21 @@ theorem heathBrownPairCount_card_cast_le_chosen_factor
           (1 + Real.log N)) := by
   dsimp only
   let H := heathBrownHChoice k A lambda
-  let K := heathBrownBlockParameter A lambda N
-  let D := heathBrownShiftBound N k H lambda
-  let c : ℝ := 8 * ((k - 2).factorial : ℝ) *
-    (((H : ℝ) ^ (k - 2))⁻¹) / lambda
-  let b : ℝ := 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3
-  let a : ℝ := A * lambda * N / ((k - 2).factorial : ℝ)
-  have hcount := heathBrownPairCount_card_cast_le_at_chosen_scale
-    (N := N) (k := k) (f := f) (A := A) (lambda := lambda)
-    hk hN hA hlambda hsmall hlargeH hcoordLow hcoordLowD hcoordLast
-    hcoordLastD hraw hrawd hkBounds
-  dsimp only at hcount
+  pm_2844
+  pm_2810 heathBrownPairCount_card_cast_le_at_chosen_scale
   have hfactor := heathBrown_shift_factor_le_chosen
     (N := N) (k := k) (A := A) (lambda := lambda)
     hk hA hlambda hsmall hlargeH
   dsimp only at hfactor
-  have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hlog : 0 ≤ 1 + Real.log (N : ℝ) := by
-    have := Real.log_nonneg hNreal
-    linarith
+  pm_2809
+  pm_7636 hlog hNreal
   have hinside :
       (N : ℝ) + 2 * (((D : ℝ) + c) * (b + a * D) *
           (1 + Real.log N)) ≤
         N + 2 * heathBrownChosenShiftFactor N k A lambda *
           (1 + Real.log N) := by
     have hmul := mul_le_mul_of_nonneg_right hfactor hlog
-    have hmul' := mul_le_mul_of_nonneg_left hmul
-      (by norm_num : (0 : ℝ) ≤ 2)
+    pm_6451
     simpa only [D, c, b, a, H, mul_assoc] using
       (add_le_add_right hmul' (N : ℝ))
   exact hcount.trans

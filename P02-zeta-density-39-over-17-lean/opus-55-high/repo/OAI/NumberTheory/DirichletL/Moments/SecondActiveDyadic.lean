@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicPartition
 public import OAI.NumberTheory.DirichletL.Moments.SecondRetainedRows
 public import OAI.NumberTheory.DirichletL.Moments.ActiveSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,10 +42,10 @@ theorem active_sector_norm (S : Finset (Ideal O)) (β : Ideal O→ℂ)
     (C : Ideal O) (hC : C≠0) (I : sectorPool C hC (activeSource S β)) :
     (Ideal.absNorm (I:Ideal O):ℝ)∈Set.Icc 1 (max 1 (H/(Ideal.absNorm C:ℝ))) := by
   have hh := residualPool_data S β H hH C hC I (Finset.mem_filter.mp I.property).1
-  exact ⟨hh.2.2.2.2.1,hh.2.2.2.2.2.trans (le_max_right _ _)⟩
+  grind
 
-theorem sourceLower_pos (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (A : O) (hA : A≠0) (K : ℝ) (hK : 0<K) : ∀i,0<sourceLower C D A K i := by
+theorem sourceLower_pos (C D : Ideal O) (hC : C≠0) (hD : D ≠0)
+    (A : O) (hA : A≠0) (K : ℝ) (hK : 0<K) : ∀i,0< sourceLower C D A K i := by
   intro i
   fin_cases i
   · exact secondEffectiveScale_pos C D hC hD A hA K hK
@@ -56,7 +57,7 @@ theorem active_physical_kernel_partition (_η : Character)
     (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (I : sectorPool C hC.1 (activeSource S β)) (J : sectorPool D hD.1 (activeSource S β))
     (A h : O) (hA : A≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
-    physicalKernel C D W K R (A*h) I J=
+    physicalKernel C D W K R (A*h) I J =
       ∑ n : Blocks (sourceLower C D A K) (sourceUpper C D A K R H),
         dyadicKernel C D A W K R (fun i=>n i) h I J := by
   by_cases hw : retainedWeight R (normValue (A*h))=0
@@ -67,8 +68,7 @@ theorem active_physical_kernel_partition (_η : Character)
     subst h
     simp [normValue] at he
   have hrow : normValue h≤4*R/normValue A := by
-    apply (le_div_iff₀ (normValue_pos A hA)).mpr
-    simpa only [normValue_mul,mul_comm] using he.2
+    pm_6045
   have hb : ∀i, (![secondEffectiveScale C D A K,normValue h,
       (Ideal.absNorm (I:Ideal O):ℝ),(Ideal.absNorm (J:Ideal O):ℝ)] : Fin 4→ℝ) i∈
         Set.Icc (sourceLower C D A K i) (sourceUpper C D A K R H i) := by

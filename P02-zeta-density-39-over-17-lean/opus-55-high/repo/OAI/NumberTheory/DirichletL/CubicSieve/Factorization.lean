@@ -28,10 +28,7 @@ def cubePart (x : M) : M :=
 
 theorem count_mod_three (k : ℕ) :
     k = (if k % 3 = 1 then 1 else 0) +
-      2 * (if k % 3 = 2 then 1 else 0) + 3 * (k / 3) := by
-  have h := Nat.mod_add_div k 3
-  have hlt := Nat.mod_lt k (by decide : 0 < 3)
-  split_ifs <;> omega
+      2 * (if k % 3 = 2 then 1 else 0) + 3 * (k / 3) := by grind
 
 omit [Subsingleton Mˣ] in
 private theorem residual_squarefree (x : M) (r : ℕ) :

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstFamily
 public import OAI.NumberTheory.DirichletL.Moments.AddedZero
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem elementCoeff_power_pos (χ : Character) (e : ℕ) (he : 0<e) (n : O) :
     rw [hp,hz,zero_pow (Nat.ne_zero_of_lt he)]
 
 theorem exists_product_presentation {ι : Type*} (S : Finset ι) (base : Character)
-    (χ : ι→Character) (e : ι→ℕ) (he : ∀i∈S,0<e i)
+    (χ : ι→ Character) (e : ι→ℕ) (he : ∀i∈S,0<e i)
     (M : Ideal O) (hb : M≤base.modulus) (hχ : ∀i∈S,M≤(χ i).modulus) :
     ∃τ : Character,M≤τ.modulus ∧ ∀n:O,
       elementCoeff τ n=elementCoeff base n*∏i∈S,(elementCoeff (χ i) n)^(e i) := by
@@ -42,7 +43,7 @@ theorem single_row_on_base (η : Character) (m p n : O)
     (hmLam : λ₀∣m) (hm2 : (2:O)∣m)
     (hn : rowTwist (elementHom η) m 1 1 n≠0) :
     rowTwist (elementHom (η.power 0)) m 1 p n=idealRowHom p (Ideal.span {n}) := by
-  have hs := (rowTwist_nonzero_coprime η m 1 1 n hmLam hm2 hn).1
+  pm_6948
   have hη : elementCoeff η n≠0 := left_ne_zero_of_mul hn
   have hunit := MulChar.apply_ne_zero_iff.mp hη
   have hp : elementCoeff (η.power 0) n=1 := by
@@ -58,7 +59,7 @@ theorem single_row_on_base (η : Character) (m p n : O)
   simp [coprimalityMask,hm]
 
 theorem row_product_formula {ι : Type*} (S : Finset ι)
-    (η : Character) (m : O) (p : ι→O) (e : ι→ℕ)
+    (η : Character) (m : O) (p : ι→ O) (e : ι→ℕ)
     (hmLam : λ₀∣m) (hm2 : (2:O)∣m) (n : O) :
     rowTwist (elementHom η) m 1 1 n*
       (∏i∈S,(rowTwist (elementHom (η.power 0)) m 1 (p i) n)^(e i))=
@@ -66,7 +67,7 @@ theorem row_product_formula {ι : Type*} (S : Finset ι)
   conv_rhs => rw [rowTwist_row_factor]
   by_cases hn : rowTwist (elementHom η) m 1 1 n=0
   · rw [hn,zero_mul,zero_mul]
-  have hs := (rowTwist_nonzero_coprime η m 1 1 n hmLam hm2 hn).1
+  pm_6948
   congr 1
   simp_rw [single_row_on_base η m _ n hmLam hm2 hn]
   induction S using Finset.induction_on with
@@ -77,7 +78,7 @@ theorem row_product_formula {ι : Type*} (S : Finset ι)
 
 theorem exists_radical_row_presentation {ι : Type*} [Fintype ι]
     (η : Character) (m : O) (hm : m≠0) (hmLam : λ₀∣m) (hm2 : (2:O)∣m)
-    (p : ι→O) (hp : ∀i,Supported (Ideal.span {p i}))
+    (p : ι→ O) (hp : ∀i,Supported (Ideal.span {p i}))
     (e : ι→ℕ) (he : ∀i,0<e i) :
     ∃τ : Character,
       η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*(∏i,Ideal.span {p i})≤τ.modulus ∧
@@ -108,7 +109,7 @@ theorem exists_radical_row_presentation {ι : Type*} [Fintype ι]
   · have hd : τ.modulus∣M := Ideal.dvd_iff_le.mpr hM
     have hn := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hMn))
       (map_dvd Ideal.absNorm hd)
-    simpa only [M,B,map_mul,map_prod] using hn
+    pm_89 M B map_mul map_prod hn
   · intro n
     rw [ht,hbasec]
     simp_rw [hc]

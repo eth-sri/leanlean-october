@@ -1,6 +1,7 @@
 module
 public import Mathlib.Analysis.PSeries
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,9 +34,7 @@ theorem sum_nat_occupancy_eq_sum_superlevel
     ∑ x ∈ S, f x =
       ∑ m ∈ Finset.Icc 1 M, (S.filter (fun x => m ≤ f x)).card := by
   classical
-  simp only [Finset.card_filter]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pm_566 Finset.card_filter Finset.sum_comm
   intro x hx
   have hf : (Finset.Icc 1 M).filter (fun m => m ≤ f x) =
       Finset.Icc 1 (f x) := by

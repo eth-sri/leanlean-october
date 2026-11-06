@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorNormalized
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,10 +20,10 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_normalized_nonfloor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
-    (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
-    (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0< c) (hcb : c≤b) (hA : 0≤A)
+    (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0< rmin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤ cost) (hmesh : 0< mesh)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε< rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -56,37 +57,36 @@ theorem actual_normalized_nonfloor_cube (N n : ℕ) (e eps c b A R dmin dmax rmi
     ∀η : Character,∀ᶠZ : ℝ in atTop,
       ∀d : ℝ,dmin≤d → d≤dmax → ∀(v a C0 : ℝ),0≤v → v≤13/16+ζ → d-v≤μ →
       51/100<a → a≤1 → 0≤C0 → ∀rows : Finset FreeRow,
-      (∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧
-        (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ rowNorm u≤Z^(d-margin)) →
-      (∀u∈rows,Z^v≤rowNorm u ∧ rowNorm u≤2*Z^v) →
+      (∀u∈rows,u.val≠1 ∧ Z ^(1/100:ℝ)≤ rowNorm u ∧
+        (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ rowNorm u≤Z ^(d-margin)) →
+      (∀u∈rows,Z ^v≤ rowNorm u ∧ rowNorm u≤2*Z ^v) →
       ∀i : ℕ,i≤n →
       (∀u∈rows,detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u))
-        (3*(i+1:ℕ)*Z^τ)<a+2*e) →
+        (3*(i+1:ℕ)*Z ^τ)<a+2*e) →
       (∀u∈rows,a≤detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u))
-        ((3*i:ℕ)*Z^τ)) →
-      let Y : Fin N→ℝ := fun j=>Z^(ell j)
-      let T : Fin N→Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-      (∀t : HeightSpace,((|t.1.1|≤(3*i+1:ℕ)*Z^τ ∧ |t.2|≤(3*i+1:ℕ)*Z^τ) ∧ |t.1.2|≤(3*i+1:ℕ)*Z^τ) →
+        ((3*i:ℕ)*Z ^τ)) →
+      let Y : Fin N→ℝ := fun j=>Z ^(ell j)
+      let T : Fin N→ Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+      (∀t : HeightSpace,((|t.1.1|≤(3*i+1:ℕ)*Z ^τ ∧ |t.2|≤(3*i+1:ℕ)*Z ^τ) ∧ |t.1.2|≤(3*i+1:ℕ)*Z ^τ) →
       SourceMomentsAt M H hH S hS.prime η rows ell (fun j y=>(W j y:ℂ)) Z d a ε τ dmax b R mesh i
         ((17/50:ℂ)+t.1.2*Complex.I) Δ
         (if 2*a-1≤5/6 then counts.cB else counts.cH) (if 2*a-1≤5/6 then counts.kB else counts.kH)
-        (C0*Z^momentCost) (Z^heightCost) εm) →
+        (C0*Z ^momentCost) (Z ^heightCost) εm) →
       let normer := PrincipalMellinResidues.sourceResidueConstant W0 W1 (∏P∈S,P)*
         (Probe.principalScalar Finset.univ Z (1/6)
           (PrincipalSignalComparison.slotMass T (ProbePrincipalResidueActual.residueWeights W Y)) : ℂ)
       normer≠0 ∧ ‖finiteCentralCubeRows S hS hmax η rows T (nonfloorPoolOutside M H S N c b Y) (fun j y=>(W j y:ℂ)) Y
-        W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z e (fun _=>a) (fun _=>(3*i+1:ℕ)*Z^τ)/normer‖≤
-        C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*Z^(3/16+Δ-saving+nu) := by
-  let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
-  let WC : Fin N→ℝ→ℂ := fun j y=>(W j y:ℂ)
+        W0 W1 (Z ^(17/48:ℝ)) (Z ^(23/48:ℝ)) Z e (fun _=>a) (fun _=>(3*i+1:ℕ)*Z ^τ)/normer‖≤
+        C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*Z ^(3/16+Δ-saving+nu) := by
+  pm_3918
+  pm_348 N
   have hWC (j : Fin N) : ContDiff ℝ ∞ (WC j) := Complex.ofRealCLM.contDiff.comp (hW j)
   have hWCs (j : Fin N) : Function.support (WC j)⊆Ioo c b := by
     intro y hy
     apply hWs j
     intro hh
     exact hy (by dsimp [WC];rw [hh];simp)
-  have hWCB (j : Fin N) (y : ℝ) : ‖WC j y‖≤A := by
-    simpa only [WC,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hWB j y).1] using (hWB j y).2
+  pm_133 N A
   obtain ⟨C,hC,hbound⟩ :=
     actual_nonfloor_cube_norm M H hH N n e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss
       he he1 heps hc hcb hA hR hdmin hdmax hdRange hrmin hτ hε hκ hcost hmesh
@@ -96,22 +96,16 @@ theorem actual_normalized_nonfloor_cube (N n : ℕ) (e eps c b A R dmin dmax rmi
       εm Δ ν logCost heightCost momentCost hεm hΔ hΔ1 hν hlog hMomentHeight
       ζ μ saving hζ hζ1 hμ hcount hfinal
       W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 counts
-  have hellpos (j : Fin N) : 0<ell j :=
-    (mul_pos (hdmin.trans_le hdRange) hrmin).trans_le (hello j)
-  obtain ⟨Cn,hCn,hnormer⟩ := actual_ray_normalizer_inverse M H hH S hS c b hc hcb ell hellpos hellsum
-    W hW hcompact hWs (fun j y=>(hWB j y).1) hne W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-    hr0 hr1 hp0 hp1 hn0 hn1 nu hnu
-  refine ⟨C*Cn,mul_pos hC hCn,?_⟩
-  intro η
-  filter_upwards [hbound η,hnormer,eventually_gt_atTop (0:ℝ)] with Z hb hn hZ
-  intro d hd hd' v a C0 hv hv' hdv ha ha' hC0 rows hrows hnorm i hi hnext hcurrent
+  pm_936
+  pm_3903
+  pm_3171 C Cn mul_pos hC hCn
+  pm_5678
+  pm_3871
   dsimp only at hn ⊢
   intro hmom
   refine ⟨hn.1,?_⟩
   have hh := hb d hd hd' v a C0 hv hv' hdv ha ha' hC0 rows hrows hnorm i hi hnext hcurrent hmom
-  rw [div_eq_mul_inv,norm_mul]
-  have hm := mul_le_mul hh hn.2 (norm_nonneg _) (by positivity)
-  apply hm.trans_eq
+  pm_1565
   rw [Real.rpow_add hZ (3/16+Δ-saving) nu]
   ring
 

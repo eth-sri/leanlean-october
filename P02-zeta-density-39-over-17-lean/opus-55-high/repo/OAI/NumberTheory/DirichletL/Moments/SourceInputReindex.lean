@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -71,18 +72,21 @@ def reindex (e : α≃β) (s : Input α) : Input β where
   lower_le := fun i=>s.lower_le (e.symm i)
   upper_ge := fun i=>s.upper_ge (e.symm i)
 
-def tupleMap (e : α≃β) : Tuple α≃Tuple β :=
+def tupleMap (e : α≃β) : Tuple α≃ Tuple β :=
   (e.sumCongr (Equiv.refl (Fin 2))).arrowCongr (Equiv.refl (Ideal O))
 
+section
+variable (e : α≃β)
+include e
 omit [Fintype α] [Fintype β] in
-lemma tupleMap_apply (e : α≃β) (v : Tuple α) (j : β⊕Fin 2) :
+lemma tupleMap_apply (v : Tuple α) (j : β⊕Fin 2) :
     tupleMap e v j = v ((e.sumCongr (Equiv.refl (Fin 2))).symm j) := rfl
 
-lemma tupleMap_product (e : α≃β) (v : Tuple α) :
+lemma tupleMap_product (v : Tuple α) :
     finiteTupleProduct (tupleMap e v)=finiteTupleProduct v :=
   (e.sumCongr (Equiv.refl (Fin 2))).symm.prod_comp v
 
-lemma pools_map (e : α≃β) (s : Input α) :
+lemma pools_map (s : Input α) :
     (Fintype.piFinset s.pools).image (tupleMap e) = Fintype.piFinset (reindex e s).pools := by
   ext v
   simp only [Finset.mem_image,Fintype.mem_piFinset]
@@ -98,7 +102,7 @@ lemma pools_map (e : α≃β) (s : Input α) :
     | inl i => simpa [tupleMap,Input.pools,reindex] using hv (Sum.inl (e i))
     | inr i => exact hv (Sum.inr i)
 
-lemma profile_map (e : α≃β) (s : Input α) (R seed : Ideal O) (v : Tuple α) :
+lemma profile_map (s : Input α) (R seed : Ideal O) (v : Tuple α) :
     (original (reindex e s) R seed).profile (tupleMap e v) =
       (original s R seed).profile v := by
   simp only [OriginalData.profile,original,reindex,profileCoefficient,tupleMap_product,
@@ -108,24 +112,25 @@ lemma profile_map (e : α≃β) (s : Input α) (R seed : Ideal O) (v : Tuple α)
   exact e.symm.prod_comp (fun i=>s.ν i (v (Sum.inl i))*
     s.W i ((Ideal.absNorm (v (Sum.inl i)):ℝ)/s.P i))
 
-lemma coefficient_map (e : α≃β) (s : Input α) (R seed : Ideal O) :
+lemma coefficient_map (s : Input α) (R seed : Ideal O) :
     (original (reindex e s) R seed).beta=(original s R seed).beta := by
   funext I
   unfold OriginalData.beta finiteColumnCoefficient
   change (∑v∈(Fintype.piFinset (reindex e s).pools).filter (fun v=>finiteTupleProduct v=I),
     (original (reindex e s) R seed).profile v)=_
   rw [←pools_map,Finset.filter_image]
-  rw [Finset.sum_image (fun v _ w _ h => (tupleMap e).injective h)]
+  pm_8191 h tupleMap
   simp only [tupleMap_product,profile_map]
   rfl
 
-lemma volume_map (e : α≃β) (s : Input α) : volume (reindex e s)=volume s := by
+lemma volume_map (s : Input α) : volume (reindex e s)=volume s := by
   simp only [volume,reindex,e.symm.prod_comp]
 
-lemma sourceRadius_map (e : α≃β) (s : Input α) :
+lemma sourceRadius_map (s : Input α) :
     CenteredMomentOriginalCommonHarmonic.sourceRadius (reindex e s)=
       CenteredMomentOriginalCommonHarmonic.sourceRadius s := by
   simp only [CenteredMomentOriginalCommonHarmonic.sourceRadius,reindex,e.symm.prod_comp]
+end
 
 end SevenEighths.CenteredMomentSourceInputReindex
 

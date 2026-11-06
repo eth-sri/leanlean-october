@@ -13,9 +13,12 @@ noncomputable section
 variable {a b n : Type*} [Fintype a] [Fintype b] [Fintype n]
   [DecidableEq n]
 
-theorem squaredNorm_nonneg (A : Matrix a n ℂ) : 0 ≤ squaredNorm A := sq_nonneg _
+section
+variable (A : Matrix a n ℂ)
+include A
+theorem squaredNorm_nonneg : 0 ≤ squaredNorm A := sq_nonneg _
 
-theorem masked_energy_le (A : Matrix a n ℂ) (coef phase : n → ℂ)
+theorem masked_energy_le (coef phase : n → ℂ)
     (hphase : ∀ j, ‖phase j‖ ≤ 1) :
     (∑ i, ‖∑ j, A i j * (coef j * phase j)‖ ^ 2) ≤
       squaredNorm A * ∑ j, ‖coef j‖ ^ 2 := by
@@ -27,8 +30,7 @@ theorem masked_energy_le (A : Matrix a n ℂ) (coef phase : n → ℂ)
   apply pow_le_pow_left₀ (by positivity)
   exact mul_le_of_le_one_right (norm_nonneg _) (hphase j)
 
-theorem rectangular_block_energy_le
-    (A : Matrix a n ℂ) (B : Matrix b n ℂ) (coef mask : n → ℂ)
+theorem rectangular_block_energy_le (B : Matrix b n ℂ) (coef mask : n → ℂ)
     (hA : ∀ i j, ‖A i j‖ ≤ 1) (hB : ∀ k j, ‖B k j‖ ≤ 1)
     (hmask : ∀ j, ‖mask j‖ ≤ 1) :
     (∑ k, ∑ i, ‖∑ j, A i j * star (B k j) * coef j * mask j‖ ^ 2) ≤
@@ -71,8 +73,8 @@ theorem rectangular_block_energy_le
       ((Fintype.card a : ℝ) * squaredNorm B) with h | h
   · rw [min_eq_left h]
     exact hleft
-  · rw [min_eq_right h]
-    exact hright
+  grind
+end
 
 theorem cube_family_block_energy_le {c : Type*} [Fintype c]
     (A : Matrix a n ℂ) (B : Matrix b n ℂ) (coef : n → ℂ) (mask : c → n → ℂ)

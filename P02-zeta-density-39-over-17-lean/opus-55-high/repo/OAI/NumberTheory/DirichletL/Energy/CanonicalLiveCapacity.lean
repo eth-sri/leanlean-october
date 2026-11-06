@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalLiveBound
 public import OAI.NumberTheory.DirichletL.Energy.DeletedChildCapacity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,12 +21,11 @@ open CenteredMomentEnergyDeletedChildCapacity CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-lemma original_deleted_excess (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
-    (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset
-      (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (J:Finset (CenteredMomentCommonProfile.liveIndices B.val))
-    (τ:Character)(v Z X₁ X₂ κ Mactual:ℝ)(w:α→ℝ)
-    (hZ:1<Z)(hscale:∀i,src.P i=Z^(w i))(F₁ F₂:Finset (Ideal O)):
+section
+variable (src:Input α) (C R:Ideal O) (B:actualAllocations src.pools C) (D:Ideal O) (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))) (J:Finset (CenteredMomentCommonProfile.liveIndices B.val)) (τ:Character)
+include src C R B D alloc J τ
+lemma original_deleted_excess(v Z X₁ X₂ κ Mactual:ℝ)(w:α→ℝ)
+    (hZ:1<Z)(hscale:∀i,src.P i=Z ^(w i))(F₁ F₂:Finset (Ideal O)):
     deletedExcess D alloc Z X₁ X₂ κ Mactual
       (commonData (withHeight src τ v) C R B).P F₁ F₂ J =
     CenteredMomentLiveCapacity.excess (originalImage src C B D alloc J) w
@@ -34,18 +34,12 @@ lemma original_deleted_excess (src:Input α)(C R:Ideal O)(B:actualAllocations sr
   simp only [Finset.sum_map,originalEmbedding,Function.Embedding.coeFn_mk]
   congr 3
   congr 1
-  apply Finset.sum_congr rfl
-  intro i hi
-  change Real.logb Z (src.P i.val)=w i.val
+  pm_7959 i.val
   rw [hscale,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
 
-theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
-    (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset
-      (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (J:Finset (CenteredMomentCommonProfile.liveIndices B.val))
-    (τ:Character)(rad:Radial)(V₁ V₂:Plain)(v Z X₁ X₂ κ A M Mnom Mactual u ell δ₁ δ₂ θ:ℝ)
+theorem live_source_paid_cost(rad:Radial)(V₁ V₂:Plain)(v Z X₁ X₂ κ A M Mnom Mactual u ell δ₁ δ₂ θ:ℝ)
     (w:α→ℝ)(h₁:0<X₁)(h₂:0<X₂)(F₁ F₂:Finset (Ideal O))
-    (hZ:1<Z)(hκ:0≤κ)(hw:∀i,0≤w i)(hscale:∀i,src.P i=Z^(w i))
+    (hZ:1<Z)(hκ:0≤κ)(hw:∀i,0≤w i)(hscale:∀i,src.P i=Z ^(w i))
     (hF₁:∀I∈F₁,I≠0)(hF₂:∀I∈F₂,I≠0)
     (hparent:A+(6*κ-1)*(∑i:CenteredMomentCommonProfile.liveIndices B.val,w i.val)≤M)
     (hshift:Real.logb Z (X₁*X₂*∏i:CenteredMomentCommonProfile.liveIndices B.val,src.P i.val)-Mnom≤
@@ -60,10 +54,10 @@ theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations sr
       (length Z (scale D alloc X₁ 0 F₁)) (length Z (scale D alloc X₂ 1 F₂)) Mactual κ/6≤
       δ₂+u+ell+δ₁/6+θ/3:=by
   obtain ⟨z,hz,hφ,hchild⟩:=hlive
-  let d:=commonData (withHeight src τ v) C R B
+  pm_5765 src
   have hP:∀i,1≤d.P i:=by
     intro i
-    change 1≤src.P i.val
+    change 1≤ src.P i.val
     rw [hscale]
     exact Real.one_le_rpow hZ.le (hw i.val)
   have hp:A+(6*κ-1)*(∑i,Real.logb Z (d.P i))≤M:=by
@@ -73,6 +67,7 @@ theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations sr
     hZ hκ hP hF₁ hF₂ hchild hp hshift hwidth hu hell hδ₁ hδ₂ hθ hclip
   rw [original_deleted_excess src C R B D alloc J τ v Z X₁ X₂ κ Mactual w hZ hscale F₁ F₂] at hb
   linarith
+end
 
 end SevenEighths.CenteredMomentEnergyCanonicalLiveCapacity
 

@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaMorseSupport
 public import TaoTrudgianYang2025.BetaModelJetEstimatesFull
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -46,9 +47,7 @@ theorem abs_segmentTaylorAverage_le
       ‖(1-t)*t^k*iteratedDeriv k f (a+t*(x-a))‖ ≤ M := by
     filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
     have hf : 0 ≤ (1-t)*t^k := mul_nonneg (by linarith [ht.2]) (pow_nonneg ht.1 k)
-    have hf' : (1-t)*t^k ≤ 1 := by
-      have hp : t^k ≤ 1 := pow_le_one₀ ht.1 ht.2
-      nlinarith [mul_nonneg ht.1 (pow_nonneg ht.1 k)]
+    pm_1627
     rw [norm_mul,Real.norm_eq_abs,abs_of_nonneg hf]
     exact (mul_le_of_le_one_left (norm_nonneg _) hf').trans
       (hb _ (affineSegment_mem_Ioo ha hx ht))
@@ -70,22 +69,20 @@ theorem approximateModelPhase_iteratedDeriv_abs_le
       (iteratedDeriv_modelPhase_abs_le hσ hu p)
     _ = _ := by ring
 
+section
+variable {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+include F σ δ v u P
 theorem iteratedDeriv_modelPhaseAveragedCurvature
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) (k : ℕ) :
     iteratedDeriv k (modelPhaseAveragedCurvature F v) u =
       -2*segmentTaylorAverage (deriv (deriv F)) (modelPhaseInverseSlope F v) k u := by
-  have hj : ∀ x ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ ∞ (deriv (deriv F)) x := by
-    intro x hx
-    simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
-      approximateModelPhase_iteratedDeriv_contDiffAt hF hx 2
+  pb_1919
   unfold modelPhaseAveragedCurvature
   rw [iteratedDeriv_const_mul_field,iteratedDeriv_segmentTaylorAverage hj
     (modelPhaseInverseSlope_mem hv) hu,Nat.zero_add]
 
 theorem abs_iteratedDeriv_modelPhaseAveragedCurvature_le
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
     (hσ : 0 ≤ σ) (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
     (k : ℕ) (hk : k+1 ≤ P) :
@@ -98,5 +95,6 @@ theorem abs_iteratedDeriv_modelPhaseAveragedCurvature_le
   intro x hx
   simpa only [iteratedDeriv_succ'] using
     approximateModelPhase_iteratedDeriv_abs_le hσ hF hx (k+1) hk
+end
 
 end TaoTrudgianYang2025

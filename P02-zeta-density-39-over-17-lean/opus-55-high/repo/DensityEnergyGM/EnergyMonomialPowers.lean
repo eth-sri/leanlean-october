@@ -1,11 +1,9 @@
 module
 public import DensityEnergyGM.SecondMomentPowerAlgebra
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
 namespace Montgomery.RationalMoment
 
 theorem energy_monomial_rpow {K N T R V : ℝ} (δ α β γ q : ℝ)

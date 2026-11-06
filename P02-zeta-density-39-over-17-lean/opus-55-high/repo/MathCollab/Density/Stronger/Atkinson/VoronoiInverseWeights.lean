@@ -18,24 +18,4 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-noncomputable def dfiVoronoiInvWeight (g : ℝ → ℂ) (x : ℝ) : ℂ :=
-  (x : ℂ)⁻¹ * g x
-
-/-- Repeated multiplication by the inverse source variable.  This is the
-Mellin-coordinate implementation of the repeated integration by parts used
-to truncate the Bessel transforms in DFI equation (29). -/
-noncomputable def dfiVoronoiInvWeightIterate :
-    ℕ → (ℝ → ℂ) → ℝ → ℂ
-  | 0, g => g
-  | k + 1, g => dfiVoronoiInvWeight (dfiVoronoiInvWeightIterate k g)
-
-@[simp]
-theorem dfiVoronoiInvWeightIterate_zero (g : ℝ → ℂ) :
-    dfiVoronoiInvWeightIterate 0 g = g := rfl
-
-@[simp]
-theorem dfiVoronoiInvWeightIterate_succ (k : ℕ) (g : ℝ → ℂ) :
-    dfiVoronoiInvWeightIterate (k + 1) g =
-      dfiVoronoiInvWeight (dfiVoronoiInvWeightIterate k g) := rfl
-
 end MathCollab.Density.Stronger.Atkinson

@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.DyadicMoment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -17,12 +18,9 @@ theorem integral_zero_le_of_two_dyadic_powers (f : ℝ → ℝ) (hf : Continuous
     (hdyad : ∀ H : ℝ, B ≤ H → H ≤ T →
       (∫ t in H..2*H,f t) ≤ A*H^p+D*H^r) :
     (∫ t in 0..T,f t) ≤ A*(2:ℝ)^p*T^p+D*(2:ℝ)^r*T^r := by
-  have hBp : 0 < B := by linarith
-  have hTp : 0 < T := hBp.trans_le hT
-  have htwoP : (2:ℝ) ≤ (2:ℝ)^p := by
-    simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ) ≤ 2) hp
-  have htwoR : (2:ℝ) ≤ (2:ℝ)^r := by
-    simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ) ≤ 2) hr
+  pm_4945 hBp B hTp T hBp.trans_le hT
+  pm_5477 htwoP p hp
+  pm_5477 htwoR r hr
   have hstep : ∀ m : ℕ, (2:ℝ)^m*B ≤ 2*T →
       (∫ t in 0..(2:ℝ)^m*B,f t) ≤ A*((2:ℝ)^m*B)^p+D*((2:ℝ)^m*B)^r := by
     intro m
@@ -34,7 +32,7 @@ theorem integral_zero_le_of_two_dyadic_powers (f : ℝ → ℝ) (hf : Continuous
     | succ m ih =>
       intro hupper
       have hm : B ≤ (2:ℝ)^m*B := by
-        have hh : 1 ≤ (2:ℝ)^m := one_le_pow₀ (by norm_num)
+        pm_394 hh m
         nlinarith
       have hX : 0 ≤ (2:ℝ)^m*B := by positivity
       have heq : (2:ℝ)^(m+1)*B=2*((2:ℝ)^m*B) := by rw [pow_succ']; ring
@@ -52,9 +50,7 @@ theorem integral_zero_le_of_two_dyadic_powers (f : ℝ → ℝ) (hf : Continuous
         _ ≤ A*(2:ℝ)^p*((2:ℝ)^m*B)^p+D*(2:ℝ)^r*((2:ℝ)^m*B)^r := by
           gcongr
         _ = _ := by
-          rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hX,
-            Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hX]
-          ring
+          pm_1470 hX
   obtain ⟨m,hlo,hhi⟩ := exists_dyadic_cutoff ((le_div_iff₀ hBp).mpr (by simpa using hT))
   have hlo' : T ≤ (2:ℝ)^m*B := (div_le_iff₀ hBp).mp hlo
   have hhi' : (2:ℝ)^m*B ≤ 2*T := by
@@ -63,13 +59,9 @@ theorem integral_zero_le_of_two_dyadic_powers (f : ℝ → ℝ) (hf : Continuous
     nlinarith
   calc
     _ ≤ ∫ t in 0..(2:ℝ)^m*B,f t := by
-      apply intervalIntegral.integral_mono_interval le_rfl hTp.le hlo'
-      · exact Filter.Eventually.of_forall hf0
-      · exact hf.intervalIntegrable _ _
+      pm_8293 hTp.le
     _ ≤ A*((2:ℝ)^m*B)^p+D*((2:ℝ)^m*B)^r := hstep m hhi'
     _ ≤ A*(2*T)^p+D*(2*T)^r := by gcongr
     _ = _ := by
-      rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hTp.le,
-        Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hTp.le]
-      ring
+      pm_1470 hTp.le
 end Montgomery.CriticalPeak

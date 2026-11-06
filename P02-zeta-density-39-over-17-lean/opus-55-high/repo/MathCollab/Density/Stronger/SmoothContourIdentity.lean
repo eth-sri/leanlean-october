@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.SmoothContourEstimates
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,12 +27,8 @@ theorem smoothDetector_contour_identity {ψ : ℝ → ℝ} {a b : ℝ}
   let Jl : ℂ := ∫ t : ℝ, F ((l : ℂ)+(t : ℂ)*I)
   let Jr : ℂ := ∫ t : ℝ, F (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)
   let c : ℂ := 1/(2*Real.pi*I)
-  have hl := intervalIntegral_tendsto_integral
-    (integrable_smoothDetectorKernel_left hψ ha hb hs ρ X hN hq)
-    tendsto_neg_atTop_atBot (tendsto_id : Tendsto (fun R : ℝ => R) atTop atTop)
-  have hr := intervalIntegral_tendsto_integral
-    (integrable_smoothDetectorKernel_right hψ ha hb hs X hN hq hβ)
-    tendsto_neg_atTop_atBot (tendsto_id : Tendsto (fun R : ℝ => R) atTop atTop)
+  pm_8792 hl integrable_smoothDetectorKernel_left ρ X hN hq
+  pm_8792 hr integrable_smoothDetectorKernel_right X hN hq hβ
   have hbottom := tendsto_smoothDetector_horizontal_integral hψ ha hb hs X hN hq hβ hβ'.le
     (show |(-1 : ℝ)| = 1 by norm_num)
   have htop := tendsto_smoothDetector_horizontal_integral hψ ha hb hs X hN hq hβ hβ'.le
@@ -46,7 +43,7 @@ theorem smoothDetector_contour_identity {ψ : ℝ → ℝ} {a b : ℝ}
         smoothDetectorResidue ψ ρ X N q := by
     filter_upwards [eventually_gt_atTop |ρ.im|] with R hR
     exact smoothDetector_finite_rectangle_residue hψ ha hs hN hβ hβ' hR
-  have he : c*(I*Jr-I*Jl) = smoothDetectorResidue ψ ρ X N q :=
+  have he  :=
     tendsto_nhds_unique hlim ((tendsto_congr' heq).mpr tendsto_const_nhds)
   change (((1/(2*Real.pi) : ℝ) : ℂ)*Jr) = smoothDetectorResidue ψ ρ X N q +
     (((1/(2*Real.pi) : ℝ) : ℂ)*Jl)

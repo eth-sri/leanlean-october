@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GcdReduction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,77 +8,33 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic
+open ActualEisensteinCubic
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open NumberField
+open Filter Asymptotics NumberField
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open ActualEisensteinCubic CompletedGauss
 open IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
 def weightedRayGramMatrix {m n : Type*} [Fintype m]
@@ -111,7 +68,7 @@ theorem rayPairValue_eq (N : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coo
 
 end
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open ActualEisensteinCubic CompletedGauss
 
 def highKernelShellRange (M K : ℝ) : Finset (Ideal O) :=
   (highKernelRange M K).filter (fun I => M / 2 < (Ideal.absNorm I : ℝ))
@@ -144,38 +101,34 @@ def annularSieveBump : ContDiffBump (3 / 4 : ℝ) where
   rIn_lt_rOut := by norm_num
 
 def annularSieveCutoff : 𝓢(ℝ, ℂ) := by
-  have hc : HasCompactSupport (fun t : ℝ => (annularSieveBump t : ℂ)) :=
-    annularSieveBump.hasCompactSupport.comp_left Complex.ofReal_zero
+  pm_7022 hc HasCompactSupport annularSieveBump annularSieveBump.hasCompactSupport.comp_left Complex.ofReal_zero
   have hs : ContDiff ℝ ∞ (fun t : ℝ => (annularSieveBump t : ℂ)) :=
     Complex.ofRealCLM.contDiff.comp annularSieveBump.contDiff
   exact hc.toSchwartzMap hs
 
 @[simp] theorem annularSieveCutoff_apply (t : ℝ) : annularSieveCutoff t = (annularSieveBump t : ℂ) := rfl
 
-theorem annularSieveBump_eq_one {t : ℝ} (ht0 : 1 / 2 ≤ t) (ht1 : t ≤ 1) : annularSieveBump t = 1 := by
+section
+variable {t : ℝ}
+include t
+theorem annularSieveBump_eq_one (ht0 : 1 / 2 ≤ t) (ht1 : t ≤ 1) : annularSieveBump t = 1 := by
   apply annularSieveBump.one_of_mem_closedBall
   change dist t (3 / 4) ≤ 1 / 4
   rw [Real.dist_eq, abs_le]
   constructor <;> linarith
 
-theorem annularSieveBump_zero_of_le {t : ℝ} (ht : t ≤ 1 / 4) : annularSieveBump t = 0 := by
-  apply annularSieveBump.zero_of_le_dist
-  change 1 / 2 ≤ dist t (3 / 4)
-  rw [Real.dist_eq, abs_of_nonpos (by linarith)]
-  linarith
+theorem annularSieveBump_zero_of_le (ht : t ≤ 1 / 4) : annularSieveBump t = 0 := by
+  pm_5600 abs_of_nonpos
 
-theorem annularSieveBump_zero_of_ge {t : ℝ} (ht : 5 / 4 ≤ t) : annularSieveBump t = 0 := by
-  apply annularSieveBump.zero_of_le_dist
-  change 1 / 2 ≤ dist t (3 / 4)
-  rw [Real.dist_eq, abs_of_nonneg (by linarith)]
-  linarith
+theorem annularSieveBump_zero_of_ge (ht : 5 / 4 ≤ t) : annularSieveBump t = 0 := by
+  pm_5600 abs_of_nonneg
+end
 
 @[simp] theorem annularSieveCutoff_zero : annularSieveCutoff 0 = 0 := by
   rw [annularSieveCutoff_apply, annularSieveBump_zero_of_le (by norm_num), Complex.ofReal_zero]
 
 end QuadraticInitialBound
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -196,7 +149,7 @@ def annularRayGcdBlock (M N K : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.
 end
 
 section
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open ActualEisensteinCubic CompletedGauss
 open IdealCoprimeSieveOperator DivisorBlockCauchy FiniteSieveRestriction
 
 end
@@ -250,7 +203,6 @@ end FiniteSieveOperator
 namespace CanonicalQuadraticSieve
 
 section
-open FiniteSieveOperator
 
 end
 

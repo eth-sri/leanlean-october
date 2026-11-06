@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Theta
 public import OAI.NumberTheory.DirichletL.LatticeSummability
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,21 +13,28 @@ open scoped BigOperators
 namespace SevenEighths.HeckeTheta
 open EisensteinTheta LatticeSummability
 
-@[simp] theorem periodicCoeff_zero {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
+section
+variable {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+include N w
+@[simp] theorem periodicCoeff_zero :
     periodicCoeff w (0, 0) = w (0, 0) := by
-  simp [periodicCoeff, residueEquiv, regroup, Int.divModEquiv, Int.natMod]
+  pm_564 periodicCoeff residueEquiv regroup Int.divModEquiv Int.natMod
 
-theorem norm_periodicCoeff_le {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+theorem norm_periodicCoeff_le
     (n : ℤ × ℤ) : ‖periodicCoeff w n‖ ≤ ∑ a, ‖w a‖ := by
   unfold periodicCoeff
   exact Finset.single_le_sum (fun a _ => norm_nonneg (w a)) (Finset.mem_univ _)
+end
 
 private theorem normForm_coordinates_eq_zero (n : ℤ × ℤ) :
     normForm n.1 n.2 = 0 ↔ n = (0, 0) := by
   rw [normForm_eq_zero_iff]
-  simp only [Int.cast_eq_zero, Prod.ext_iff]
+  aesop
 
-theorem theta_sub_zero_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+section
+variable {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+include N w
+theorem theta_sub_zero_hasSum
     {t : ℝ} (ht : 0 < t) :
     HasSum (fun n : ℤ × ℤ => if normForm n.1 n.2 = 0 then 0 else
       periodicCoeff w n * (Real.exp (-Real.pi * normForm n.1 n.2 * t) : ℂ))
@@ -39,9 +47,9 @@ theorem theta_sub_zero_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
   by_cases hn : n = (0, 0)
   · subst n
     simp [normForm]
-  · simp [hn]
+  grind
 
-theorem completed_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+theorem completed_hasSum
     {s : ℂ} (hs : 1 < s.re) :
     HasSum (fun n : ℤ × ℤ => (Real.pi : ℂ) ^ (-s) * Complex.Gamma s *
       periodicCoeff w n / (normForm n.1 n.2 : ℂ) ^ s) (completed w s) := by
@@ -55,12 +63,12 @@ theorem completed_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     (fun _ ht => theta_sub_zero_hasSum w ht) hsum
   rwa [(pair_hasMellin w hs).2] at h
 
-theorem latticeL_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+theorem latticeL_hasSum
     {s : ℂ} (hs : 1 < s.re) :
     HasSum (fun n : ℤ × ℤ => periodicCoeff w n / (normForm n.1 n.2 : ℂ) ^ s)
       (latticeL w s) := by
   have hΓ := Complex.Gamma_ne_zero_of_re_pos (by linarith : 0 < s.re)
-  have hπ : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  pm_115 hπ Real.pi Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hpow : (Real.pi : ℂ) ^ s ≠ 0 := fun h => hπ ((Complex.cpow_eq_zero_iff _ _).mp h).1
   have h := (completed_hasSum w hs).mul_left ((Real.pi : ℂ) ^ s * (Complex.Gamma s)⁻¹)
   change HasSum _ ((Real.pi : ℂ) ^ s * (Complex.Gamma s)⁻¹ * completed w s)
@@ -68,6 +76,7 @@ theorem latticeL_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
   funext n
   rw [Complex.cpow_neg]
   field_simp
+end
 
 end SevenEighths.HeckeTheta
 

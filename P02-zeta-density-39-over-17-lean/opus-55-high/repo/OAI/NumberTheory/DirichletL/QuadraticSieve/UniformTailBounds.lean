@@ -1,85 +1,41 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.ProductColumns
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic
+open ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
@@ -103,30 +59,25 @@ theorem full_uniform_secondPairRadialMode_tail (A : ℕ) :
       (Y / ‖eisEmbedding n‖) *
         ((C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) /
           ((min 1 scale)^2 * (1+H)^A)) := by
-  obtain ⟨s,C,hC,hbound⟩ := EisensteinSchwartzPoisson.paperRadialFourier_lattice_tail A
-  refine ⟨s,C,hC,?_⟩
+  pm_3085 s C hC hbound EisensteinSchwartzPoisson.paperRadialFourier_lattice_tail A
   intro ι _ p hp _ hg hinj hc
     S T e he W Y H hY hH
   dsimp only
-  let n := ∏ i : activeSupport T S, p i.val
-  let scale := Y / (‖eisEmbedding e‖^2 * ‖eisEmbedding n‖^2)
-  have hn : n ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i hi => hp i.val)
-  have hnorm : 0 < ‖eisEmbedding n‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero hn)
+  pm_3028
+  pm_3046
+  pm_8880 hnorm hn
   have hscale : 0 < scale := div_pos hY
     (mul_pos (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero he))) (sq_pos_of_pos hnorm))
-  let tailSet : Set O := {k | H ≤ scale * ‖eisEmbedding k‖^2}
+  pm_6623 tailSet
   let c := Y / ‖eisEmbedding n‖
   have hc0 : 0 ≤ c := (div_pos hY hnorm).le
   have hpnt (k : tailSet) : ‖secondPairRadialMode p hp hg hinj S T e k.val W Y‖ ≤
       c * ‖EisensteinSchwartzPoisson.paperRadialFourier W (scale * ‖eisEmbedding k.val‖^2)‖ := by
-    have ha : Y * ‖eisEmbedding k.val‖^2 / (‖eisEmbedding e‖^2 * ‖eisEmbedding n‖^2) =
-        scale * ‖eisEmbedding k.val‖^2 := by dsimp [scale]; ring
-    simp only [secondPairRadialMode, norm_mul]
+    pm_3029 k.val
     change ‖(Y : ℂ) / (‖eisEmbedding n‖ : ℂ)‖ * _ * _ ≤ _
     rw [ha, norm_div, Complex.norm_real, Complex.norm_real,
       Real.norm_eq_abs, Real.norm_eq_abs, abs_of_pos hY, abs_of_pos hnorm]
-    exact mul_le_of_le_one_right (by positivity)
-      (activeGaussRowFactor_norm_le_one p hp hg hinj hc T S e k.val)
+    pm_7122 k.val
   have hmajor : Summable (fun k : tailSet =>
       c * ‖EisensteinSchwartzPoisson.paperRadialFourier W (scale * ‖eisEmbedding k.val‖^2)‖) :=
     ((EisensteinSchwartzPoisson.paperRadialFourier_lattice_summable_norm W scale hscale).subtype tailSet).mul_left c
@@ -139,7 +90,10 @@ theorem full_uniform_secondPairRadialMode_tail (A : ℕ) :
           (scale * ‖eisEmbedding k.val‖^2)‖ := tsum_mul_left
     _ ≤ _ := mul_le_mul_of_nonneg_left (hbound W scale H hscale hH) hc0
 
-theorem full_uniform_secondPairRadialMode_remainder (A : ℕ) :
+section
+variable (A : ℕ)
+include A
+theorem full_uniform_secondPairRadialMode_remainder :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -154,17 +108,14 @@ theorem full_uniform_secondPairRadialMode_remainder (A : ℕ) :
       ‖∑' k : {k : O // k ∉ K}, secondPairRadialMode p hp hg hinj S T e k.val W Y‖ ≤
         (Y/‖eisEmbedding n‖) *
           ((C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/((min 1 scale)^2*(1+H)^A)) := by
-  obtain ⟨s,C,hC,hb⟩ := full_uniform_secondPairRadialMode_tail A
-  refine ⟨s,C,hC,?_⟩
-  intro ι _ p hp _ hg hinj hc
-  have hb := hb p hp hg hinj hc
+  pm_3008 s C hC hb full_uniform_secondPairRadialMode_tail A
+  pm_3001
   intro S T e he W Y H hY hH K
   dsimp only
   intro hK
-  let n := ∏ i : activeSupport T S, p i.val
-  let scale := Y / (‖eisEmbedding e‖^2 * ‖eisEmbedding n‖^2)
+  pm_3028
   let small : Set O := {k | k ∉ K}
-  let large : Set O := {k | H ≤ scale * ‖eisEmbedding k‖^2}
+  pm_6623 large
   let f : small → large := fun k => ⟨k.val,hK k.val k.property⟩
   have hi : Function.Injective f := by
     intro a b heq
@@ -178,7 +129,7 @@ theorem full_uniform_secondPairRadialMode_remainder (A : ℕ) :
         (hs.subtype large)
     _ ≤ _ := hb S T e he W Y H hY hH
 
-theorem full_uniform_residualSecondMode_tail_bound (A : ℕ) :
+theorem full_uniform_residualSecondMode_tail_bound :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -194,27 +145,21 @@ theorem full_uniform_residualSecondMode_tail_bound (A : ℕ) :
             ‖eisEmbedding k‖^2) →
       ‖∑' k : {k : O // k ∉ K}, residualSecondMode p hp hg hinj F G Ψ₁ Ψ₂ m c d H₁ H₂ e k.val W Y‖ ≤
       residualTailCost p hg F G Ψ₁ Ψ₂ m c d H₁ H₂ e Y H A (C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) := by
-  obtain ⟨s,C,hC,hb⟩ := full_uniform_secondPairRadialMode_remainder A
-  refine ⟨s,C,hC,?_⟩
-  intro ι _ p hp _ hg hinj hc
-  have hb := hb p hp hg hinj hc
+  pm_3008 s C hC hb full_uniform_secondPairRadialMode_remainder A
+  pm_3001
   intro F G Ψ₁ Ψ₂ m c d H₁ H₂ e he W Y H hY hH K hK
   rw [residualSecondMode_tail_eq p hp hg hinj F G Ψ₁ Ψ₂ m c d H₁ H₂ e he W Y hY K]
   unfold residualTailCost
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro S hS
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro T hT
+  pm_3719 S hS
+  pm_3719 T hT
   by_cases hd : Disjoint S T
   · simp only [ite_eq_left hd, norm_mul]
     by_cases hw : residualPairWeight p hg Ψ₁ Ψ₂ m c d H₁ H₂ S T = 0
-    · simp only [hw, norm_zero, zero_mul, le_refl]
+    pm_2997 hw norm_zero zero_mul le_refl
     · exact mul_le_mul_of_nonneg_left (hb S T e he W Y H hY hH K (hK S hS T hT hd hw)) (norm_nonneg _)
   · simp [hd]
 
-theorem full_uniform_secondSourceTail_bound (A : ℕ) :
+theorem full_uniform_secondSourceTail_bound :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
       (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -235,18 +180,12 @@ theorem full_uniform_secondSourceTail_bound (A : ℕ) :
         residualTailCost p hg F G Ψ Ψ m c d (fun U => Hcol (G∪U)) (fun U => Hcol (G∪U))
           (primeSubsetGenerator (fun i => Ideal.span {p i}) E.val) Y H A
           (C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) := by
-  obtain ⟨s,C,hC,hb⟩ := full_uniform_residualSecondMode_tail_bound A
-  refine ⟨s,C,hC,?_⟩
-  intro ι _ p hp _ hg hinj hc
-  have hb := hb p hp hg hinj hc
+  pm_3008 s C hC hb full_uniform_residualSecondMode_tail_bound A
+  pm_3001
   intro F Ψ m c d Hcol W Y H hY hH K hK
   unfold secondSourceTail
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro G hG
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro E hE
+  pm_3719 G hG
+  pm_3719 E hE
   rw [norm_mul]
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
   simp_rw [← residualSecondMode_eq_frequencyKernel p hp hg hinj F G E.val
@@ -254,16 +193,15 @@ theorem full_uniform_secondSourceTail_bound (A : ℕ) :
   exact hb F G Ψ Ψ m c d (fun U => Hcol (G∪U)) (fun U => Hcol (G∪U))
     (primeSubsetGenerator (fun i => Ideal.span {p i}) E.val) (primeSubsetGenerator_ne_zero _ _)
     W Y H hY hH (K G E.val) (hK G hG E)
+end
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace InitialMeanSquare
 open IdealMobiusDivisorSum
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
@@ -288,6 +226,5 @@ end
 
 end SecondPassArithmetic
 
-end
 
 end OAI

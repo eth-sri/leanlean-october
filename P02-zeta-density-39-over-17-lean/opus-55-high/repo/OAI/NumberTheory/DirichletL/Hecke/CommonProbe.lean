@@ -27,7 +27,10 @@ def UniformCommonProbe : Prop :=
   7/8 < beta → ∃ ω σ : ℝ,
     0 < ω ∧ ω < beta-7/8 ∧ 0 < σ ∧ PrimitiveContract ω σ
 
-theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
+section
+variable (h : UniformCommonProbe)
+include h
+theorem beta_le_seven_eighths : beta ≤ 7/8 := by
   by_contra hn
   obtain ⟨ω, σ, hω0, hω, hσ, hcontract⟩ := h (lt_of_not_ge hn)
   have hmargin := Supremum.continuationMargin_pos hω hσ
@@ -37,7 +40,7 @@ theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
   obtain ⟨χ, H, J, hmask, hH, hb, hJ, herr⟩ := hcontract η hp
   have hχpole : ρ ≠ 1 ∨ χ.residue ≠ 1 := by
     rcases hpole with h1 | hη
-    · exact Or.inl h1
+    grind
     · exact Or.inr (fun hc => hη ((HeckeFiniteDeletion.principal_iff_of_mask χ η hmask).mp hc))
   have hzχ : LFunction χ ρ = 0 := by
     rw [HeckeFiniteDeletion.LFunction_eq_of_mask_nonpole χ η hmask (by linarith) hχpole,
@@ -45,16 +48,17 @@ theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
   apply (HeckeSignal.nonzero_of_probe_bounds χ H J beta ω σ (-11/16)
     beta_le_one hω0 hω hσ hH hb ?_ ?_ hnear hχpole) hzχ
   · convert hJ using 1; ring_nf
-  · convert herr using 1; ring_nf
+  grind
 
-theorem hecke_ne_zero_of_common_probe (h : UniformCommonProbe)
+theorem hecke_ne_zero_of_common_probe
     (χ : Character) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
     (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := by
   exact LFunction_ne_zero_of_beta_lt χ ((beta_le_seven_eighths h).trans_lt hs) hpole
 
-theorem zeta_of_common_probe (h : UniformCommonProbe) (s : ℂ)
+theorem zeta_of_common_probe (s : ℂ)
     (hs : (7/8 : ℝ) < s.re) : riemannZeta s ≠ 0 :=
   HeckeDirichlet.zeta_seven_eighths_of_hecke (hecke_ne_zero_of_common_probe h) s hs
+end
 
 end SevenEighths.HeckeCommonProbe
 

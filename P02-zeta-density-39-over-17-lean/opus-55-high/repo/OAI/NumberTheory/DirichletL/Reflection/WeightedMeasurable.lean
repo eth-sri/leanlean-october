@@ -39,7 +39,7 @@ lemma weightedReflectedBranchHybridRow_aestronglyMeasurable
   apply Finset.aestronglyMeasurable_fun_sum
   intro b hb
   unfold frozenBranchColumn
-  exact (((((hw n hn b hb).const_mul _).mul_const _).mul_const _).mul_const _).mul_const _
+  fun_prop
 
 end
 end SevenEighths.InverseReflectedPhase

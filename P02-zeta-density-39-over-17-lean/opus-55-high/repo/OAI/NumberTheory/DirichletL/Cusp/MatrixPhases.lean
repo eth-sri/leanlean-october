@@ -1,14 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.ChineseRemainder.AdditiveCharacters
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinIdeals
+public import OAI.NumberTheory.DirichletL.Hecke.Family
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -26,7 +26,6 @@ def E : Matrix (Fin 2) (Fin 2) R := !![0,-1;1,0]
 end ShortDraftCusp
 
 namespace ShortDraftConcretePhase
-open ShortDraftTrace
 
 end ShortDraftConcretePhase
 
@@ -37,14 +36,16 @@ open scoped ComplexConjugate
 
 variable {F : Type*} [Field F] [Fintype F]
 
-theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
+section
+variable (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive)
+include χ ψ hχ hψ
+theorem norm_gaussSum_eq_sqrt_card :
     ‖gaussSum χ ψ‖ = Real.sqrt (Fintype.card F) := by
   let g := gaussSum χ ψ
   have hprod : g * conj g = (Fintype.card F : ℂ) := by
     have h := gaussSum_mul_gaussSum_eq_card hχ hψ
     rw [← star_gaussSum_eq] at h
-    simpa only [g, Complex.star_def] using h
+    aesop
   have hnorm : ‖g‖ ^ 2 = (Fintype.card F : ℝ) := by
     apply Complex.ofReal_injective
     calc
@@ -56,16 +57,16 @@ theorem norm_gaussSum_eq_sqrt_card (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   have hsqrt := Real.sq_sqrt hcard
   nlinarith [norm_nonneg g, Real.sqrt_nonneg (Fintype.card F)]
 
-theorem norm_normalized_gaussSum (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (hχ : χ ≠ 1) (hψ : ψ.IsPrimitive) :
+theorem norm_normalized_gaussSum :
     ‖((Real.sqrt (Fintype.card F) : ℝ) : ℂ)⁻¹ * gaussSum χ ψ‖ = 1 := by
   have hcard : (0 : ℝ) < Fintype.card F := by
-    exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
+    positivity
   have hsqrt : Real.sqrt (Fintype.card F) ≠ 0 :=
     ne_of_gt (Real.sqrt_pos.2 hcard)
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (Real.sqrt_pos.2 hcard), norm_gaussSum_eq_sqrt_card χ ψ hχ hψ]
-  exact inv_mul_cancel₀ hsqrt
+  grind
+end
 
 end ShortDraftGauss
 
@@ -89,7 +90,7 @@ theorem sextic_power_is_unit_mask (χ : MulChar R ℂ)
   rw [map_pow, ← MulChar.pow_apply' χ (by decide : 6 ≠ 0), hχ]
   by_cases hu : IsUnit u
   · simp [hu, MulChar.one_apply]
-  · simp [hu]
+  simp_all
 
 end ShortDraftSextic
 
@@ -116,10 +117,7 @@ theorem quadratic_gauss_as_square_phase (ψ : AddChar F ℂ)
     intro y _
     have hterm : (∑ x ∈ Finset.univ with x ^ 2 = y, ψ (x ^ 2)) =
         (#{x : F | x ^ 2 = y}.toFinset : ℂ) * ψ y := by
-      rw [Finset.sum_congr rfl (fun x hx => by
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hx
-        rw [hx])]
-      simp
+      pm_6130 x hx
     exact hterm
   have hcount (y : F) :
       (#{x : F | x ^ 2 = y}.toFinset : ℂ) =
@@ -142,7 +140,6 @@ end ShortDraftQuotientPhase
 namespace EisensteinEPrimaryPhase
 
 abbrev Coord := ZMod 4 × ZMod 4
-abbrev Bit := ZMod 2
 
 def mul (x y : Coord) : Coord :=
   (x.1 * y.1 - x.2 * y.2,
@@ -152,10 +149,6 @@ def odd (x : Coord) : Prop := x.1.val % 2 = 1 ∨ x.2.val % 2 = 1
 
 instance : DecidablePred odd := fun x =>
   inferInstanceAs (Decidable (x.1.val % 2 = 1 ∨ x.2.val % 2 = 1))
-
-def rep (e f : Bit) : Coord :=
-  if f = 0 then (if e = 0 then (1, 0) else (-1, 0))
-  else (if e = 0 then (1, 2) else (-1, -2))
 
 def norm (x : Coord) : ZMod 4 :=
   x.1 * x.1 - x.1 * x.2 + x.2 * x.2
@@ -178,8 +171,7 @@ namespace ShortDraftGaussianPhaseTable
 end ShortDraftGaussianPhaseTable
 
 namespace ActualEisensteinCoordinates
-abbrev K := CyclotomicField 3 ℚ
-abbrev O := NumberField.RingOfIntegers K
+export OAI.SevenEighths.HeckeFamily (K O)
 instance : IsCyclotomicExtension {3} ℚ K := CyclotomicField.isCyclotomicExtension 3 ℚ
 theorem hζ : IsPrimitiveRoot (IsCyclotomicExtension.zeta 3 ℚ K) 3 :=
   IsCyclotomicExtension.zeta_spec 3 ℚ K
@@ -194,26 +186,10 @@ theorem pb_gen : pb.gen = omega := by
 
 theorem exists_coordinates (x : O) :
     ∃ a b : ℤ, x = (a : O) + (b : O) * omega := by
-  let i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
-  let i1 : Fin pb.dim := ⟨1, by rw [pb_dim]; decide⟩
-  let a : ℤ := (pb.basis.repr x) i0
-  let b : ℤ := (pb.basis.repr x) i1
+  pm_246
+  pm_5833
   refine ⟨a, b, ?_⟩
-  have hsum := pb.basis.sum_repr x
-  have huniv : (Finset.univ : Finset (Fin pb.dim)) = {i0, i1} := by
-    ext i
-    have hi : i.val < 2 := by simpa only [pb_dim] using i.isLt
-    have hv : i.val = 0 ∨ i.val = 1 := by omega
-    simp only [Finset.mem_univ, Finset.mem_insert, Finset.mem_singleton, true_iff]
-    rcases hv with h | h
-    · left; exact Fin.ext h
-    · right; exact Fin.ext h
-  rw [huniv] at hsum
-  have hne : i0 ≠ i1 := by decide
-  have hnot : i0 ∉ ({i1} : Finset (Fin pb.dim)) := by
-    simpa only [Finset.mem_singleton] using hne
-  rw [Finset.sum_insert hnot, Finset.sum_singleton] at hsum
-  simp only [pb.basis_eq_pow] at hsum
+  pm_120
   have hi0 : (i0 : ℕ) = 0 := rfl
   have hi1 : (i1 : ℕ) = 1 := rfl
   simpa [a, b, hi0, hi1, pb_gen, smul_eq_mul, mul_comm] using hsum.symm
@@ -229,17 +205,13 @@ private theorem eval_basis (a b : ℤ) :
 
 theorem unique_coordinates {a b c d : ℤ}
     (h : eval a b = eval c d) : a = c ∧ b = d := by
-  have h0 := congrArg (fun x : O => (pb.basis.repr x) i0) h
-  have h1 := congrArg (fun x : O => (pb.basis.repr x) i1) h
+  pm_8494 h0 i0
+  pm_8494 h1 i1
   have hne : i0 ≠ i1 := by decide
   rw [eval_basis, eval_basis] at h0 h1
   constructor
-  · simpa only [map_add, map_smul, pb.basis.repr_self, Finsupp.add_apply,
-      Finsupp.smul_apply, Finsupp.single_apply, ite_eq_left, ite_eq_right hne.symm,
-      smul_eq_mul, mul_one, mul_zero, add_zero] using h0
-  · simpa only [map_add, map_smul, pb.basis.repr_self, Finsupp.add_apply,
-      Finsupp.smul_apply, Finsupp.single_apply, ite_eq_left, ite_eq_right hne,
-      smul_eq_mul, mul_one, mul_zero, zero_add] using h1
+  pm_5924 hne.symm add_zero h0
+  pm_5924 hne zero_add h1
 
 private theorem omega_sq : omega ^ 2 = -omega - 1 := by
   simpa [omega] using IsCyclotomicExtension.Rat.Three.eta_sq hζ
@@ -338,9 +310,9 @@ theorem odd_residue_iff_not_two_dvd (x : O) :
     by_contra hodd
     obtain ⟨ha, hb⟩ := not_odd_cast_zero (residue x) hodd
     have ha' : ((coords x).1 : ZMod 2) = 0 := by
-      simpa [residue, ZMod.cast_intCast (by decide : 2 ∣ 4)] using ha
+      pm_7700 ha
     have hb' : ((coords x).2 : ZMod 2) = 0 := by
-      simpa [residue, ZMod.cast_intCast (by decide : 2 ∣ 4)] using hb
+      pm_7700 hb
     obtain ⟨a, ha2⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd (coords x).1 2).mp ha'
     obtain ⟨b, hb2⟩ := (ZMod.intCast_zmod_eq_zero_iff_dvd (coords x).2 2).mp hb'
     apply hdiv

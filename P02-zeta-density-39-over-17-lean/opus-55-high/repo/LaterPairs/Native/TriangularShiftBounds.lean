@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.DoubleShiftWeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -17,21 +18,23 @@ namespace TaoTrudgianYang2025
 
 theorem signed_shift_abs_le {N : ℕ} {q : ℤ}
     (hq : q ∈ Finset.Ioo (-(N:ℤ)) N) : |(q:ℝ)| ≤ N := by
-  have ht := Finset.mem_Ioo.mp hq
-  have ha : |q| ≤ (N:ℤ) := abs_le.mpr ⟨by omega,by omega⟩
+  pm_1001
   exact_mod_cast ha
 
 theorem signed_triangular_weight_nonneg {N : ℕ} (hN : 0 < N) {q : ℤ}
     (hq : q ∈ Finset.Ioo (-(N:ℤ)) N) : 0 ≤ 1-|(q:ℝ)|/N := by
-  have hp : (0:ℝ) < N := by exact_mod_cast hN
+  pm_4473 hp N hN
   have ha := signed_shift_abs_le hq
   exact sub_nonneg.mpr ((div_le_one hp).mpr ha)
 
-theorem sum_signed_triangular_weights (N : ℕ) (hN : 0 < N) :
+section
+variable (N : ℕ) (hN : 0 < N)
+include N hN
+theorem sum_signed_triangular_weights :
     (∑ q ∈ Finset.Ioo (-(N:ℤ)) N, (1-|(q:ℝ)|/N)) = N := by
-  have hp : (N:ℝ) ≠ 0 := by positivity
+  pm_489 hp N
   have ht := sum_signed_shift_differences N (fun _ => (1:ℝ))
-  simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul,mul_one] at ht
+  pm_423 Finset.sum_const Finset.card_range nsmul_eq_mul mul_one ht
   calc
     _ = ∑ q ∈ Finset.Ioo (-(N:ℤ)) N, (((N-q.natAbs:ℕ):ℝ)/N) := by
       apply Finset.sum_congr rfl
@@ -44,7 +47,7 @@ theorem sum_signed_triangular_weights (N : ℕ) (hN : 0 < N) :
       rw [← ht]
       field_simp
 
-theorem signed_triangular_first_moment (N : ℕ) (hN : 0 < N) :
+theorem signed_triangular_first_moment :
     (∑ q ∈ Finset.Ioo (-(N:ℤ)) N, (1-|(q:ℝ)|/N)*|(q:ℝ)|) ≤ (N:ℝ)^2 := by
   calc
     _ ≤ ∑ q ∈ Finset.Ioo (-(N:ℤ)) N, (1-|(q:ℝ)|/N)*(N:ℝ) := by
@@ -55,5 +58,6 @@ theorem signed_triangular_first_moment (N : ℕ) (hN : 0 < N) :
     _ = (N:ℝ)^2 := by
       rw [← Finset.sum_mul,sum_signed_triangular_weights N hN]
       ring
+end
 
 end TaoTrudgianYang2025

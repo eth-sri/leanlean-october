@@ -27,11 +27,14 @@ lemma sourceDependentExtension_at {X Y : Type*} {D : Y→Type*}
     intro z x hf hx
     subst x
     rfl
-  exact hcast _ _ h.choose_spec he
+  grind
 
 variable {α β γ σ : Type*} [Fintype α] [Fintype β] [Fintype σ]
 
-lemma markedActiveSet_injective (e : α⊕β≃γ) :
+section
+variable (e : α⊕β≃γ)
+include e
+lemma markedActiveSet_injective :
     Function.Injective (fun q : Finset β×Finset σ => markedActiveSet e q.1 q.2) := by
   intro x y he
   have hh := congrArg (optionalPrimeActive (joinedFiberEquiv e)) he
@@ -39,12 +42,10 @@ lemma markedActiveSet_injective (e : α⊕β≃γ) :
   rw [← complete_marked_set,← complete_marked_set,
     optionalPrimeActive_completeActiveSet,optionalPrimeActive_completeActiveSet] at hh
   apply Prod.ext
-  · have h := congrArg Finset.toLeft hh
-    simpa using h
-  · have h := congrArg Finset.toRight hh
-    simpa using h
+  simp_all
+  simp_all
 
-theorem exists_marked_source_selection (e : α⊕β≃γ)
+theorem exists_marked_source_selection
     (D : Finset (γ⊕σ)→Type*) (fallback : ∀ A, D A)
     (C : ∀ B : Finset β, ∀ T : Finset σ, D (markedActiveSet e B T)) :
     ∃ E : ∀ A, D A, ∀ B T, E (markedActiveSet e B T)=C B T := by
@@ -52,6 +53,7 @@ theorem exists_marked_source_selection (e : α⊕β≃γ)
     (fun q => C q.1 q.2) fallback,?_⟩
   intro B T
   exact sourceDependentExtension_at _ (markedActiveSet_injective e) _ _ (B,T)
+end
 end
 end SevenEighths.InverseReflectedPhase
 

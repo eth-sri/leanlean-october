@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem IntervalC1Bound.integral_mul_of_primitive_bound
     (hprimitive : ∀ x ∈ Icc a b, ‖∫ y in a..x, k y‖ ≤ B) :
     ‖∫ y in a..b, f y*k y‖ ≤ 2*B*M := by
   have hB : 0 ≤ B := (norm_nonneg _).trans (hprimitive a ⟨le_rfl,hab⟩)
-  let K : ℝ → ℂ := fun x => ∫ y in a..x, k y
+  pm_8469 K k
   have hki {x : ℝ} (hx : x ∈ Icc a b) : IntervalIntegrable k volume a x := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hx.1]
@@ -35,10 +36,8 @@ theorem IntervalC1Bound.integral_mul_of_primitive_bound
   have hd (x : ℝ) (hx : x ∈ Icc a b) : HasDerivAt K (k x) x :=
     intervalIntegral.integral_hasDerivAt_right (hki hx)
       (ContinuousAt.stronglyMeasurableAtFilter hJ hk x (hsub hx)) (hk x (hsub hx))
-  have hK : ContinuousOn K (uIcc a b) := by
-    rw [uIcc_of_le hab]
-    exact fun x hx => (hd x hx).continuousAt.continuousWithinAt
-  have hKb (x : ℝ) (hx : x ∈ Icc a b) : ‖K x‖ ≤ B := hprimitive x hx
+  pm_7581 hK K b hab
+  pm_963 hKb b K
   have hparts := intervalIntegral.integral_mul_deriv_eq_deriv_mul
     (u := f) (u' := deriv f) (v := K) (v' := k)
     (fun x hx => by
@@ -57,9 +56,7 @@ theorem IntervalC1Bound.integral_mul_of_primitive_bound
         · simpa only [norm_mul] using
             (hf.derivative_integrable hab).norm.mul_continuousOn hK.norm
         · exact (hf.derivative_integrable hab).norm.mul_const B
-        · intro y hy
-          rw [norm_mul]
-          exact mul_le_mul_of_nonneg_left (hKb y hy) (norm_nonneg _)
+        pm_5719 y hy hKb
       _ = (∫ y in a..b, ‖deriv f y‖)*B := by rw [intervalIntegral.integral_mul_const]
       _ ≤ B*M := by nlinarith [hf.variation_le]
   rw [hparts,hKa,mul_zero,sub_zero]

@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPrimitiveProjection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -22,15 +23,11 @@ def robertSargosFromFrequencyKey (z t : ℤ × ℤ × ℤ) : RobertSargosPoint :
 
 theorem robertSargos_from_frequency_coordinates (p : RobertSargosPoint) :
     robertSargosFromFrequencyKey (robertSargosFrequencyKey p)
-      (robertSargosCoefficientTriple p) = p := by
-  cases p
-  rfl
+      (robertSargosCoefficientTriple p) = p := by aesop
 
 theorem robertSargos_from_fixed_frequency {p : RobertSargosPoint} {z : ℤ × ℤ × ℤ}
     (hz : robertSargosFrequencyKey p = z) :
-    robertSargosFromFrequencyKey z (robertSargosCoefficientTriple p) = p := by
-  rw [← hz]
-  exact robertSargos_from_frequency_coordinates p
+    robertSargosFromFrequencyKey z (robertSargosCoefficientTriple p) = p := by aesop
 
 theorem robertSargos_frequency_fiber_image_card
     (S : Finset RobertSargosPoint) {z : ℤ × ℤ × ℤ}
@@ -48,10 +45,9 @@ theorem robertSargos_frequency_fiber_image_valid
     (hfix : ∀ p ∈ S, robertSargosFrequencyKey p = z) :
     ∀ t ∈ S.image robertSargosCoefficientTriple,
       RobertSargosPrimitiveSystem R H Q δ (robertSargosFromFrequencyKey z t) := by
-  intro t ht
-  obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp ht
+  pm_2532 t ht p hp
   rw [robertSargos_from_fixed_frequency (hfix p hp)]
-  exact hmem p hp
+  grind
 
 end TaoTrudgianYang2025
 

@@ -7,19 +7,17 @@ See ../../../../third_party/twelfth/HIGH_LOW_MOMENT_MANIFEST.json and LICENSE-MI
 public import MathCollab.Density.Stronger.MomentGrowth
 public import MathCollab.Density.Stronger.DyadicMoment
 public import WeylPort.GrowthAlgebra
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 open MeasureTheory Filter Set
 open scoped Interval
 open TaoTrudgianYang2025 (eventually_const_height_log_pow_mul_rpow_le_rpow)
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger
 
 theorem log_height_cube_div_le {H A : ℝ} (hH : 1 ≤ H) (hA : 1 ≤ A) :
     Real.log (H^3/A) ≤ 3*Real.log H := by
-  have hH0 : 0 < H := by linarith
-  have hA0 : 0 < A := by linarith
+  pm_72 hH0 H hA0 A
   rw [Real.log_div (by positivity : H^3 ≠ 0) hA0.ne',Real.log_pow]
   have hlog := Real.log_nonneg hA
   norm_num
@@ -49,15 +47,15 @@ theorem zeta_twelfth_high_eventually_of_tail
     ∀ᶠ H : ℝ in atTop,
       (∫ t in pointValueSuperlevel H (H^(1/8+ε)), zetaMomentCriticalNorm t^12) ≤ H^(2+ε) := by
   let η : ℝ := min (ε/2) (1/100)
-  have hη : 0 < η := lt_min (by positivity) (by norm_num)
-  have hηsmall : η ≤ 1/100 := min_le_right _ _
+  pm_251 hη η
+  pm_7855
   have hηε : η < ε := (min_le_left _ _).trans_lt (by linarith)
   filter_upwards [eventually_ge_atTop (1 : ℝ),hTail η hη,
     zetaMomentCriticalNorm_twelfth_eventually_le_cube,eventually_zeta_high_log_budget hηε]
     with H hH1 hcount hGrowth hbudget
   have hH0 : 0 < H := by linarith
   let V : ℝ := H^(1/8+η)
-  have hV : 0 < V := by dsimp only [V]; positivity
+  pm_116 hV V
   have hV1 : 1 ≤ V := Real.one_le_rpow hH1 (by linarith)
   have hA1 : 1 ≤ V^12 := one_le_pow₀ hV1
   have hVM : V^12 ≤ H^3 := by
@@ -101,8 +99,8 @@ theorem zeta_twelfth_dyadic_of_fourth_and_tail
       (∫ t in H..2*H, zetaMomentCriticalNorm t^12) ≤ D*H^(2+ε) := by
   intro ε hε
   let η : ℝ := ε/20
-  have hη : 0 < η := by dsimp only [η]; positivity
-  obtain ⟨C,hC,hfourth⟩ := hFourth η hη
+  pm_116 hη η
+  pm_69 C hC hfourth hFourth η hη
   refine ⟨1+C,by positivity,?_⟩
   filter_upwards [eventually_ge_atTop (1 : ℝ),hfourth,zeta_twelfth_high_eventually_of_tail hTail hη]
     with H hH1 hfourthH hhigh
@@ -140,8 +138,7 @@ theorem zeta_twelfth_physical_of_dyadic {ε D : ℝ} (hε : 0 < ε) (hD : 0 ≤ 
     (le_max_left 1 B) hD (fun H hH => hB H ((le_max_right _ _).trans hH))
   refine ⟨K*(3:ℝ)^(2+ε),by positivity,?_⟩
   filter_upwards [eventually_ge_atTop (max 1 B)] with T hT
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT
-  have hTp : 0 < T := by linarith
+  pm_306 hT1 hT hTp
   have hh := hfull (3*T) (by linarith)
   rw [intervalIntegral.integral_of_le (by positivity : (0:ℝ) ≤ 3*T),
     ← integral_Icc_eq_integral_Ioc] at hh

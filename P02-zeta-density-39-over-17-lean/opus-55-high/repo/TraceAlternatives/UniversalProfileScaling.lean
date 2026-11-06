@@ -33,6 +33,6 @@ theorem universalShortProfile_scale {D T M R E : ℝ}
   have hd := mul_le_mul_of_nonneg_right h4 (by positivity : (0:ℝ)≤T^(1/16:ℝ)*M^(3/2:ℝ)*R^(19/12:ℝ)*E^(5/48:ℝ))
   rw [Real.rpow_add hDp] at hc hd
   norm_num only [Real.rpow_ofNat] at hb
-  nlinarith only [ha,hb,hc,hd]
+  grind
 
 end Montgomery.RationalMoment

@@ -2,12 +2,11 @@ module
 public import TraceAlternatives.UniversalNativeLevelCount
 public import TraceAlternatives.SquareLevelMonomial
 public import DensityEnergyGM.PoweredLargeValues
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
-noncomputable section
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -25,21 +24,20 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
           T^(2/3:ℝ)*(M:ℝ)^(16/3:ℝ)*U^(-8:ℝ)+
           T^(3/5:ℝ)*(M:ℝ)^(72/5:ℝ)*U^(-96/5:ℝ)) := by
   let ν : ℝ := ε/100
-  have hν : 0 < ν := by dsimp only [ν]; positivity
+  pm_116 hν ν
   obtain ⟨A,hA,hCoeff⟩ := finitePowCoeff_bound_uniform 2 ν hν
-  obtain ⟨C₀,D₀,hC₀,hD₀,hCount⟩ := universal_native_quadratic_level_count ν hν
+  pm_107 C₀ D₀ hC₀ hD₀ hCount universal_native_quadratic_level_count ν hν
   let B : ℝ := max 1 (2*A*(4:ℝ)^ν)
   let C : ℝ := 1024*C₀*(2:ℝ)^ν*B^10
   let D : ℝ := 8*D₀*(2:ℝ)^ν*B^4
-  have hB : 1 ≤ B := le_max_left _ _
+  pm_4884 hB B
   have hBp : 0 < B := by linarith
   refine ⟨C,D,by dsimp only [C]; positivity,by dsimp only [D]; positivity,?_⟩
   intro M T U a W hM hT hMT hU hCut ha hSep hBase hLarge
-  have hTp : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
-  have hMp : (0:ℝ) < M := by exact_mod_cast hM
+  pm_34 hTp T hT1
+  pm_4473 hMp M hM
   let d : ℝ := 2*(A*((2^2*M^2:ℕ):ℝ)^ν)
-  have hd : 0 < d := by dsimp only [d]; positivity
+  pm_116 hd d
   have hDen : 0 < A*((2^2*M^2:ℕ):ℝ)^ν := by positivity
   obtain ⟨r,hr,W',hsub,hcard,hLarge'⟩ :=
     extract_normalized_finite_powered_block M 2 a 0 A ν U W hM (by norm_num)
@@ -48,12 +46,12 @@ theorem universal_square_level_count (ε : ℝ) (hε : 0 < ε) :
         simpa [dirichletPoly,dyadicInterval,mul_comm] using hLarge t ht)
   let Q : ℕ := 2^r*M^2
   let V : ℝ := U^2/d
-  have hQ : 0 < Q := by dsimp only [Q]; positivity
-  have hV : 0 < V := by dsimp only [V]; positivity
+  pm_4187
+  pm_4838
   have hQle : (Q:ℝ) ≤ 2*(M:ℝ)^2 := by
     have hr1 : r ≤ 1 := by have := mem_range.mp hr; omega
     have hp : 2^r ≤ 2 := by
-      simpa only [pow_one] using Nat.pow_le_pow_right (by omega : 1 ≤ 2) hr1
+      pm_7685 hr1
     dsimp only [Q]
     exact_mod_cast Nat.mul_le_mul_right (M^2) hp
   have hdForm : d = (2*A*(4:ℝ)^ν)*((M:ℝ)^2)^ν := by

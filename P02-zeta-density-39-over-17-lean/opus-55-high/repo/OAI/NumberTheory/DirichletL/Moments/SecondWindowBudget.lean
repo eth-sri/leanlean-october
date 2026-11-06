@@ -31,11 +31,14 @@ theorem heightCost_le_envelope (t θ : ℝ) : heightCost t θ≤heightEnvelope t
 
 def windowBudget (J : ℕ) (t E : ℝ) : ℝ := Real.sqrt E*heightEnvelope t^J*profileMoment J
 
-theorem windowBudget_nonneg (J : ℕ) (t E : ℝ) : 0≤windowBudget J t E :=
+section
+variable (J : ℕ)
+include J
+theorem windowBudget_nonneg (t E : ℝ) : 0≤windowBudget J t E :=
   mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) (pow_nonneg (heightEnvelope_pos _).le _))
     (profileMoment_nonneg _)
 
-theorem shifted_window_budget (J : ℕ) (t θ E : ℝ) (hE : 0≤E) :
+theorem shifted_window_budget (t θ E : ℝ) (hE : 0≤E) :
     (E*heightCost t θ^(2*J))*profileMoment J^2≤
       (windowBudget J t E*(1+‖θ‖)^J)^2 := by
   calc
@@ -49,10 +52,11 @@ theorem shifted_window_budget (J : ℕ) (t θ E : ℝ) (hE : 0≤E) :
       simp only [windowBudget,mul_pow,Real.sq_sqrt hE]
       ring
 
-theorem conjugate_shifted_window_budget (J : ℕ) (t θ E : ℝ) (hE : 0≤E) :
+theorem conjugate_shifted_window_budget (t θ E : ℝ) (hE : 0≤E) :
     (E*heightCost t (-θ)^(2*J))*profileMoment J^2≤
       (windowBudget J t E*(1+‖θ‖)^J)^2 := by
   simpa only [norm_neg] using shifted_window_budget J t (-θ) E hE
+end
 
 end SevenEighths.CenteredMomentSecondWindowBudget
 

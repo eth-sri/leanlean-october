@@ -2,6 +2,7 @@ module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.AlternatingHarmonic
 public import Mathlib.Algebra.Field.GeomSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace DhimanKadiriQuesadaHerrera2026
 
-open scoped BigOperators Topology
+open scoped Topology
 
 /-- The source's negative Fourier mode. -/
 noncomputable def expMode (x : ℝ) (n : ℕ) : ℂ :=
@@ -31,40 +32,43 @@ noncomputable def finiteS1 (x y : ℝ) : ℂ :=
 theorem sum_Icc_one_eq_sum_range (f : ℕ → ℂ) (N : ℕ) :
     (∑ n ∈ Finset.Icc 1 N, f n) = ∑ n ∈ Finset.range N, f (n + 1) := by
   rw [← Finset.Ico_add_one_right_eq_Icc, Finset.sum_Ico_eq_sum_range]
-  simp [Nat.add_comm]
+  grind
 
+section
+variable (x : ℝ) (n : ℕ)
+include x n
 /-- Every actual Fourier mode has unit norm. -/
-theorem norm_expMode (x : ℝ) (n : ℕ) : ‖expMode x n‖ = 1 := by
+theorem norm_expMode : ‖expMode x n‖ = 1 := by
   exact Complex.norm_exp_I_mul_ofReal _
 
 /-- The Fourier modes are the actual powers of their first mode. -/
-theorem expMode_eq_pow (x : ℝ) (n : ℕ) : expMode x n = expMode x 1 ^ n := by
-  unfold expMode
-  rw [← Complex.exp_nat_mul]
-  congr 1
-  push_cast
-  ring
+theorem expMode_eq_pow : expMode x n = expMode x 1 ^ n := by
+  pm_5155 expMode Complex.exp_nat_mul
 
 /-- The exact trigonometric size of a mode minus one. -/
-theorem norm_expMode_sub_one (x : ℝ) (n : ℕ) :
+theorem norm_expMode_sub_one :
     ‖expMode x n - 1‖ = 2 * |Real.sin (Real.pi * x * n)| := by
   unfold expMode
   rw [Complex.norm_exp_I_mul_ofReal_sub_one,
     show (-2 * Real.pi * (n : ℝ) * x) / 2 = -(Real.pi * x * n) by ring,
     Real.sin_neg]
-  simp [norm_mul, Real.norm_eq_abs]
+  simp_all
+end
 
+section
+variable {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0)
+include x hx
 /-- The denominator is nonzero whenever the source sine denominator is nonzero. -/
-theorem expMode_one_ne_one {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) :
+theorem expMode_one_ne_one :
     expMode x 1 ≠ 1 := by
   intro h
   have he := norm_expMode_sub_one x 1
   rw [h, sub_self, norm_zero] at he
   norm_num at he
-  exact hx he
+  grind
 
 /-- The exact sine quotient for every integer cutoff, including the empty sum. -/
-theorem norm_finite_mode_sum {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (N : ℕ) :
+theorem norm_finite_mode_sum (N : ℕ) :
     ‖∑ n ∈ Finset.Icc 1 N, expMode x n‖ =
       |Real.sin (Real.pi * x * N)| / |Real.sin (Real.pi * x)| := by
   rw [sum_Icc_one_eq_sum_range]
@@ -79,18 +83,19 @@ theorem norm_finite_mode_sum {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (N : 
     norm_expMode, mul_one, norm_div, ← expMode_eq_pow, norm_expMode_sub_one,
     norm_expMode_sub_one]
   simp only [Nat.cast_one, mul_one]
-  rw [mul_div_mul_left _ _ (by norm_num : (2 : ℝ) ≠ 0)]
+  grind
 
 /-- Lemma 2's exact geometric expression at a real cutoff. -/
-theorem norm_finiteS0 {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (y : ℝ) :
+theorem norm_finiteS0 (y : ℝ) :
     ‖finiteS0 x y‖ = |Real.sin (Real.pi * x * ⌊y⌋₊)| / |Real.sin (Real.pi * x)| :=
   norm_finite_mode_sum hx _
 
 /-- The uniform geometric bound used by the summation-by-parts step. -/
-theorem norm_finiteS0_le {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (y : ℝ) :
+theorem norm_finiteS0_le (y : ℝ) :
     ‖finiteS0 x y‖ ≤ 1 / |Real.sin (Real.pi * x)| := by
   rw [norm_finiteS0 hx]
   exact div_le_div_of_nonneg_right (Real.abs_sin_le_one _) (abs_nonneg _)
+end
 
 /-- Below the first positive integer, both source sums are empty. -/
 theorem finite_sums_eq_zero {x y : ℝ} (hy : y < 1) : finiteS0 x y = 0 ∧ finiteS1 x y = 0 := by
@@ -102,20 +107,23 @@ theorem sin_pi_mul_ne_zero_of_noninteger {x : ℝ} (hx : ∀ n : ℤ, x ≠ (n :
   intro h
   obtain ⟨n, hn⟩ := Real.sin_eq_zero_iff.mp h
   have he : (n : ℝ) = x := by nlinarith [Real.pi_pos]
-  exact hx n he.symm
+  grind
 
+section
+variable (k : ℤ)
+include k
 /-- The actual mode at an integer frequency is one. -/
-theorem expMode_integer (k : ℤ) (n : ℕ) : expMode (k : ℝ) n = 1 := by
+theorem expMode_integer (n : ℕ) : expMode (k : ℝ) n = 1 := by
   rw [expMode_eq_pow]
   have h : expMode (k : ℝ) 1 = 1 := by
     unfold expMode
     rw [show Complex.I * ((-2 * Real.pi * (1 : ℕ) * (k : ℝ) : ℝ) : ℂ) =
       ((-k : ℤ) : ℂ) * (2 * Real.pi * Complex.I) by push_cast; ring,
       Complex.exp_int_mul_two_pi_mul_I]
-  rw [h, one_pow]
+  simp_all
 
 /-- At half-integers the actual modes have precisely the source's alternating signs. -/
-theorem expMode_half_integer (k : ℤ) (n : ℕ) :
+theorem expMode_half_integer (n : ℕ) :
     expMode ((k : ℝ) + 1 / 2) n = (-1 : ℂ) ^ n := by
   rw [expMode_eq_pow]
   have h : expMode ((k : ℝ) + 1 / 2) 1 = -1 := by
@@ -124,19 +132,20 @@ theorem expMode_half_integer (k : ℤ) (n : ℕ) :
       ((-k : ℤ) : ℂ) * (2 * Real.pi * Complex.I) + -(Real.pi * Complex.I) by
         push_cast; ring,
       Complex.exp_add, Complex.exp_int_mul_two_pi_mul_I]
-    simp [Complex.exp_neg, Complex.exp_pi_mul_I]
-  rw [h]
+    simp_all
+  grind
 
 /-- Integer frequencies return the actual harmonic number. -/
-theorem finiteS1_integer (k : ℤ) (y : ℝ) : finiteS1 (k : ℝ) y = (harmonic ⌊y⌋₊ : ℂ) := by
+theorem finiteS1_integer (y : ℝ) : finiteS1 (k : ℝ) y = (harmonic ⌊y⌋₊ : ℂ) := by
   rw [finiteS1, sum_Icc_one_eq_sum_range]
   simp only [expMode_integer, one_div, Nat.cast_add, Nat.cast_one]
   exact Complex.sum_inv_natCast_add_one _
+end
 
 private theorem antitone_reciprocal_succ : Antitone (fun n : ℕ => 1 / ((n : ℝ) + 1)) := by
   intro n m hnm
   apply one_div_le_one_div_of_le (by positivity)
-  exact add_le_add_left (Nat.cast_le.mpr hnm) 1
+  simp_all
 
 private theorem sum_range_even_pairs (f : ℕ → ℝ) (N : ℕ) :
     (∑ n ∈ Finset.range (2 * N), f n) = ∑ n ∈ Finset.range N, (f (2 * n) + f (2 * n + 1)) := by
@@ -156,7 +165,7 @@ theorem tendsto_alternating_harmonic_prefix :
       (Filter.tendsto_atTop_add_const_right Filter.atTop 1
         tendsto_natCast_atTop_atTop).inv_tendsto_atTop
   obtain ⟨l, hl⟩ := antitone_reciprocal_succ.tendsto_alternating_series_of_tendsto_zero hlim
-  have hp := hasSum_paired_reciprocal (by norm_num : (0 : ℝ) < 1)
+  pm_5564 hp hasSum_paired_reciprocal
   rw [paired_reciprocal_source_eq (by norm_num : (0 : ℝ) < 1)] at hp
   norm_num at hp
   have hfinite (N : ℕ) :
@@ -206,8 +215,11 @@ theorem alternating_harmonic_prefix_error (N : ℕ) :
     simp only [one_div, Nat.cast_add, Nat.cast_mul, Nat.cast_one, Nat.cast_ofNat] at hu hp ⊢
     constructor <;> linarith
 
+section
+variable (k : ℤ)
+include k
 /-- Exact conversion of the half-integer harmonic sum to a real alternating prefix. -/
-theorem finiteS1_half_integer (k : ℤ) (y : ℝ) :
+theorem finiteS1_half_integer (y : ℝ) :
     finiteS1 ((k : ℝ) + 1 / 2) y =
       -((∑ n ∈ Finset.range ⌊y⌋₊, (-1 : ℝ) ^ n * (1 / ((n : ℝ) + 1)) : ℝ) : ℂ) := by
   rw [finiteS1, sum_Icc_one_eq_sum_range]
@@ -219,16 +231,16 @@ theorem finiteS1_half_integer (k : ℤ) (y : ℝ) :
   ring
 
 /-- The norm retains the absolute value of the actual alternating prefix. -/
-theorem norm_finiteS1_half_integer (k : ℤ) (y : ℝ) :
+theorem norm_finiteS1_half_integer (y : ℝ) :
     ‖finiteS1 ((k : ℝ) + 1 / 2) y‖ =
       |∑ n ∈ Finset.range ⌊y⌋₊, (-1 : ℝ) ^ n * (1 / ((n : ℝ) + 1))| := by
   rw [finiteS1_half_integer, norm_neg, Complex.norm_real, Real.norm_eq_abs]
 
 /-- The half-integer refinement in Lemma 2, with its full two-sided O-star interpretation. -/
-theorem finiteS1_half_integer_error (k : ℤ) {y : ℝ} (hy : 1 ≤ y) :
+theorem finiteS1_half_integer_error {y : ℝ} (hy : 1 ≤ y) :
     |‖finiteS1 ((k : ℝ) + 1 / 2) y‖ - Real.log 2| ≤ 1 / y := by
   rw [norm_finiteS1_half_integer]
-  have hlog : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
+  pm_7450
   have hnorm :
       |(|∑ n ∈ Finset.range ⌊y⌋₊, (-1 : ℝ) ^ n * (1 / ((n : ℝ) + 1))|) - Real.log 2| ≤
         |(∑ n ∈ Finset.range ⌊y⌋₊, (-1 : ℝ) ^ n * (1 / ((n : ℝ) + 1))) - Real.log 2| := by
@@ -239,9 +251,10 @@ theorem finiteS1_half_integer_error (k : ℤ) {y : ℝ} (hy : 1 ≤ y) :
   exact one_div_le_one_div_of_le (by linarith) (Nat.lt_floor_add_one y).le
 
 /-- The corresponding half-integer upper bound used in the Poisson error. -/
-theorem norm_finiteS1_half_integer_le (k : ℤ) {y : ℝ} (hy : 1 ≤ y) :
+theorem norm_finiteS1_half_integer_le {y : ℝ} (hy : 1 ≤ y) :
     ‖finiteS1 ((k : ℝ) + 1 / 2) y‖ ≤ Real.log 2 + 1 / y := by
   have h := (abs_le.mp (finiteS1_half_integer_error k hy)).2
   linarith
+end
 
 end DhimanKadiriQuesadaHerrera2026

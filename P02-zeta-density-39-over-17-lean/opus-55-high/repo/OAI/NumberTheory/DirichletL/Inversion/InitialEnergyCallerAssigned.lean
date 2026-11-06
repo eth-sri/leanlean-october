@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCaller
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerAssigned
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -30,9 +31,7 @@ def erase {J : ℕ} (x : Source (ι:=ι) J) : Source (ι:=ι) 0 where
 omit [DecidableEq ι] in
 @[simp] theorem erase_attach {J : ℕ} (x : Source (ι:=ι) 0) (q : Fin J→ι) :
     erase (attach x q) = x := by
-  apply Source.ext <;> try rfl
-  funext i
-  exact Fin.elim0 i
+  pm_5488 Source.ext
 
 omit [DecidableEq ι] in
 theorem attach_injective {J : ℕ} :
@@ -58,7 +57,7 @@ theorem attachPair_injective (J₁ J₂ : Finset σ) :
       (congrArg (fun z : Source (ι:=ι) 0 × (Fin (J₁.card+J₂.card)→ι)=>z.2) he))
 
 def assignedSource (S : Finset (Source (ι:=ι) 0)) (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ→Finset ι) : Finset (Source (ι:=ι) (J₁.card+J₂.card)) :=
+    (L₁ L₂ : σ→ Finset ι) : Finset (Source (ι:=ι) (J₁.card+J₂.card)) :=
   ((S ×ˢ ((J₁.pi L₁) ×ˢ (J₂.pi L₂))).filter
     (fun z=>∀ i,pairedSlotAssignment J₁ J₂ z.2 i∈z.1.common∪z.1.overlap)).image
       (attachPair J₁ J₂)
@@ -74,56 +73,49 @@ omit [DecidableEq ι] [DecidableEq σ] in
 @[simp] theorem coefficient_attach (J₁ J₂ : Finset σ) (a₁ a₂ : σ→ι→ℂ)
     (x : Source (ι:=ι) 0) (q : (∀ i∈J₁,ι) × (∀ i∈J₂,ι)) :
     coefficient J₁ J₂ a₁ a₂ (attachPair J₁ J₂ (x,q)) = pairedSlotWeight J₁ J₂ a₁ a₂ q := by
-  simp only [coefficient,attachPair,attach,pairedSlotAssignment,
-    Fin.addCases_left,Fin.addCases_right,indexedSlotAssignment_apply,pairedSlotWeight]
+  pm_3650 coefficient attachPair attach pairedSlotAssignment Fin.addCases_left Fin.addCases_right indexedSlotAssignment_apply pairedSlotWeight
 
-theorem assignedSource_sum (S : Finset (Source (ι:=ι) 0)) (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ→Finset ι) (F : Source (ι:=ι) (J₁.card+J₂.card)→ℂ) :
+section
+variable (S : Finset (Source (ι:=ι) 0)) (J₁ J₂ : Finset σ) (L₁ L₂ : σ→ Finset ι)
+include S J₁ J₂ L₁ L₂
+theorem assignedSource_sum (F : Source (ι:=ι) (J₁.card+J₂.card)→ℂ) :
     ∑ x∈assignedSource S J₁ J₂ L₁ L₂,F x =
       ∑ y∈S,∑ q∈(J₁.pi (fun i=>L₁ i∩(y.common∪y.overlap))) ×ˢ
         (J₂.pi (fun i=>L₂ i∩(y.common∪y.overlap))),F (attachPair J₁ J₂ (y,q)) := by
   rw [assignedSource,Finset.sum_image (fun x _ y _ he=>attachPair_injective J₁ J₂ he),
     Finset.sum_filter,Finset.sum_product]
-  apply Finset.sum_congr rfl
-  intro y hy
-  rw [←Finset.sum_filter]
-  dsimp only
-  rw [paired_assignment_filter]
+  pm_6466
 
-theorem original_marks_eq_assigned (S : Finset (Source (ι:=ι) 0))
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ→Finset ι) (a₁ a₂ : σ→ι→ℂ)
+theorem original_marks_eq_assigned (a₁ a₂ : σ→ι→ℂ)
     (w P : Source (ι:=ι) 0→ℂ) :
     (∑ y∈S,w y*(star (primeMark J₁ L₁ a₁ (y.common∪y.overlap))*
       primeMark J₂ L₂ a₂ (y.common∪y.overlap))*P y) =
     ∑ x∈assignedSource S J₁ J₂ L₁ L₂,
       (w (erase x)*coefficient J₁ J₂ a₁ a₂ x)*P (erase x) := by
-  rw [assignedSource_sum]
-  apply Finset.sum_congr rfl
-  intro y hy
-  rw [paired_primeMark_assignments]
-  simp only [Finset.mul_sum,Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro q hq
+  pm_223 assignedSource_sum y hy paired_primeMark_assignments
+  pm_3526 Finset.mul_sum Finset.sum_mul Finset.sum_congr q hq
   rw [coefficient_attach]
   simp only [attachPair,erase_attach]
+end
 
-theorem assignedSource_support (S : Finset (Source (ι:=ι) 0))
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ→Finset ι)
+section
+variable (S : Finset (Source (ι:=ι) 0)) (J₁ J₂ : Finset σ) (L₁ L₂ : σ→ Finset ι)
+include S J₁ J₂ L₁ L₂
+theorem assignedSource_support
     (hdiv : ∀ x∈S,x.divisor⊆x.common)
     {x : Source (ι:=ι) (J₁.card+J₂.card)} (hx : x∈assignedSource S J₁ J₂ L₁ L₂) :
     erase x∈S ∧ x.divisor⊆x.common ∧ ∀ i,x.assigned i∈x.common∪x.overlap := by
-  obtain ⟨⟨y,q⟩,hy,rfl⟩ := Finset.mem_image.mp hx
+  pm_3195 y q hy
   obtain ⟨hmem,hq⟩ := Finset.mem_filter.mp hy
   have hyS := (Finset.mem_product.mp hmem).1
   exact ⟨by simpa only [attachPair,erase_attach] using hyS,hdiv y hyS,hq⟩
 
-theorem coefficient_norm_le_one (S : Finset (Source (ι:=ι) 0))
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ→Finset ι) (a₁ a₂ : σ→ι→ℂ)
+theorem coefficient_norm_le_one (a₁ a₂ : σ→ι→ℂ)
     (ha₁ : ∀ i∈J₁,∀ q∈L₁ i,‖a₁ i q‖≤1)
     (ha₂ : ∀ i∈J₂,∀ q∈L₂ i,‖a₂ i q‖≤1)
     {x : Source (ι:=ι) (J₁.card+J₂.card)} (hx : x∈assignedSource S J₁ J₂ L₁ L₂) :
     ‖coefficient J₁ J₂ a₁ a₂ x‖≤1 := by
-  obtain ⟨⟨y,q⟩,hy,rfl⟩ := Finset.mem_image.mp hx
+  pm_3195 y q hy
   obtain ⟨hmem,hq⟩ := Finset.mem_filter.mp hy
   have hq' : q∈(J₁.pi L₁ ×ˢ J₂.pi L₂).filter
       (fun q=>∀ i,pairedSlotAssignment J₁ J₂ q i∈y.common∪y.overlap) :=
@@ -131,6 +123,7 @@ theorem coefficient_norm_le_one (S : Finset (Source (ι:=ι) 0))
   rw [paired_assignment_filter] at hq'
   rw [coefficient_attach]
   exact pairedSlotWeight_norm_le_one J₁ J₂ L₁ L₂ a₁ a₂ _ q hq' ha₁ ha₂
+end
 
 end SevenEighths.InverseInitialEnergyCallerAssigned
 

@@ -37,9 +37,10 @@ lemma supported_conditions (hp : ∀i,p i≠0)
   ActualSecondSourceConditions.mono p (retained_conditions p hp extra original hvalid hextra negative J lists pool cutoff)
     (supported_subset p extra original negative J lists pool cutoff b X)
 
+section
+variable (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
+include extra original negative J lists pool
 lemma supported_frequency_ne_zero
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
     (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ) :
     ∀x∈supportedRetainedSource p extra original negative J lists pool cutoff b X,x.second.frequency≠0 := by
   intro x hx
@@ -47,8 +48,6 @@ lemma supported_frequency_ne_zero
     (supported_subset p extra original negative J lists pool cutoff b X hx)
 
 lemma supported_uniform_frequency_gate
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
     (Z delta eta L Y tau b X : ℝ) :
     ∀x∈supportedRetainedSource p extra original negative J lists pool
       (fun G E=>uniformSecondRadius p Z delta eta G E L Y (Z^tau)) b X,
@@ -57,6 +56,7 @@ lemma supported_uniform_frequency_gate
   intro x hx
   exact ((mem_unifiedSource p pool _ _ x).mp
     (supported_subset p extra original negative J lists pool _ b X hx)).2.2.2.2
+end
 
 theorem supported_cell_row_gates (hp : ∀i,p i≠0)
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))

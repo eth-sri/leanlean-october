@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.ChildEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,12 +21,10 @@ theorem finite_reflected_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a :
     (∑ z ∈ rows, ‖gaussPolynomial S a ha c (-z)‖ ^ 2) ≤
       (gaussEnergy S a ha c W K).re := by
   have hh := finite_energy_le_gaussEnergy S a ha c W K hK (rows.image Neg.neg) hW
-    (by intro z hz;obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hz
-        simpa only [map_neg,norm_neg] using hmajor w hw)
+    (by simp_all)
   rw [Finset.sum_image] at hh
-  · exact hh
-  · intro x hx y hy hxy
-    exact neg_injective hxy
+  grind
+  simp_all
 
 theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
@@ -51,8 +50,7 @@ theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
         (∑ i ∈ S, ∑ j ∈ T,
           ((c i * gaussRow (a i) (ha i) z) * star (d j * gaussRow (b j) (hb j) (-z))) *
             wholeKernel W V R (ρ z) (x z) (u i) (v j))‖ ≤ C * (E₁ * E₂) := by
-  obtain ⟨C, hC, hbound⟩ := whole_kernel_row_estimate W V M hM hV A (J₁ + J₂)
-  refine ⟨C, hC, ?_⟩
+  pm_709
   intro R hR α β rows S T a b ha hb c d u v ρ x η hη hV₀ hV₁ U K hK hU hmajor
     E₁ E₂ hE₁ hE₂ hleft hright
   apply hbound R hR rows S T
@@ -71,10 +69,7 @@ theorem whole_kernel_reflected_gauss_child_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
       ‖gaussPolynomial T b hb (fun j => d j * star (columnPhase (V 3) (v j) t)) (-z)‖ ^ 2) ≤
       E₂ * (1 + ‖t‖) ^ J₂ := (Real.sqrt_le_iff).mpr ⟨by positivity, hR'⟩
   simp only [leftColumn_eq_gaussPolynomial, rightColumn_eq_star_gaussPolynomial, norm_star]
-  calc
-    _ ≤ (E₁ * (1 + ‖t‖) ^ J₁) * (E₂ * (1 + ‖t‖) ^ J₂) :=
-      mul_le_mul hl hr (Real.sqrt_nonneg _) (by positivity)
-    _ = _ := by rw [pow_add]; ring
+  pm_332
 
 end SevenEighths.CenteredMomentReflectedChild
 

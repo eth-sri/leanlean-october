@@ -1,7 +1,7 @@
 module
 public import GafniTao.HeathBrownHChoice
 
-@[expose] public section
+public section
 
 /-!
 # The refined count at Heath-Brown's chosen scale
@@ -15,7 +15,6 @@ exponential-sum assembly.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownPairCount_card_cast_le_at_chosen_scale
     {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -60,6 +59,5 @@ theorem heathBrownPairCount_card_cast_le_at_chosen_scale
     hcoordLast hcoordLastD hraw hrawd hkBounds
 
 
-end
 
 end GafniTao

@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.PartitionNorm
 public import OAI.NumberTheory.DirichletL.Moments.Forcing
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondLedger
 open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal
@@ -61,18 +62,18 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
         · have hc2 : 2 ≤ c := by omega
           simp only [localSaving,min_self,h6,not_false_eq_true,hu,not_true_eq_false,
             and_self,and_false,false_and,ite_false,ite_true,hc1,add_zero]
-          have hcr : (2:ℝ) ≤ c := by exact_mod_cast hc2
+          pm_7583 hcr c hc2
           linarith
       · simp only [localSaving,min_self,h6,not_false_eq_true,hu,and_false,
           and_true,ite_false,ite_true,add_zero]
-        have hcr : (1:ℝ) ≤ c := by exact_mod_cast hc
+        pm_278 hcr c hc
         linarith
   · have hmin : 6 ≤ min c d := Nat.le_of_dvd (lt_of_lt_of_le Nat.zero_lt_one (le_min hc hd)) (huneq hcd)
     have hmr : (6:ℝ) ≤ min c d := by exact_mod_cast hmin
     have hmc : ((min c d : ℕ) : ℝ) ≤ c := by exact_mod_cast min_le_left c d
     have hmd : ((min c d : ℕ) : ℝ) ≤ d := by exact_mod_cast min_le_right c d
     simp only [Nat.cast_min] at hmr hmc hmd
-    simp only [localSaving,hcd,false_and,ite_false,add_zero]
+    pm_94 localSaving hcd false_and ite_false add_zero
     linarith
 
 theorem actual_localSaving_lower (p : O) [(Ideal.span {p}).IsMaximal]
@@ -97,12 +98,8 @@ theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaxi
     actualCorrelation (p i^c i) (p i^d i) (supported_power (p i) (hp i) (c i))
       (supported_power (p i) (hp i) (d i))
       (p i^min (c i) (d i)*dividedFrequency p c d w i) ≠ 0 := by
-  have hca : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i^c i})) := by
-    intro i j hij
-    exact (Ideal.isCoprime_span_singleton_iff _ _).mpr (hcop hij).pow
-  have hcb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i^d i})) := by
-    intro i j hij
-    exact (Ideal.isCoprime_span_singleton_iff _ _).mpr (hcop hij).pow
+  pm_1338 hca c
+  pm_1338 hcb d
   have hcab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i^c i*p i^d i})) := by
     intro i j hij
     dsimp only [Function.onFun]
@@ -138,8 +135,11 @@ def actualUnitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
 def actualNonunitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
   Finset.univ.filter (fun i => c i=d i ∧ ¬6∣c i ∧ p i∣dividedFrequency p c d w i)
 
+section
+variable (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+include p hp
 omit [Fintype ι] [DecidableEq ι] in
-theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+theorem log_norm_radical
     (S : Finset ι) (Z : ℝ) :
     Real.logb Z (Ideal.absNorm (∏ i ∈ S, Ideal.span {p i}) : ℝ) =
       ∑ i ∈ S, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
@@ -147,8 +147,7 @@ theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}
   exact Real.logb_prod _ _ (fun i _ => Nat.cast_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))
 
-theorem secondSaving_eq_norm_ledger (p : ι → O)
-    (hp : ∀ i, Supported (Ideal.span {p i})) (c d : ι → ℕ) (w : O) (Z : ℝ) :
+theorem secondSaving_eq_norm_ledger (c d : ι → ℕ) (w : O) (Z : ℝ) :
     secondSaving p c d w Z =
       Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ) +
       Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^d i) : ℝ) -
@@ -191,6 +190,7 @@ theorem secondSaving_eq_norm_ledger (p : ι → O)
   intro i hi
   simp only [localSaving,Nat.cast_min]
   split_ifs <;> ring
+end
 
 theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, Supported (Ideal.span {p i})) (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
@@ -217,7 +217,7 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
         (actual_localSaving_lower (p i) (hp i) (hg i) (hchar i) (c i) (d i) (hc i) (hd i)
           (dividedFrequency p c d w i) (local_nonzero_of_global p hp hcop c d w hne i))
       apply Real.logb_nonneg hZ
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+      pm_5047 Nat.one_le_iff_ne_zero.mpr hp
 
 end Global
 

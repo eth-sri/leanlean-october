@@ -16,7 +16,7 @@ def boundedExtension (z : ℂ) : ℂ := if ‖z‖ ≤ 1 then z else 0
 lemma boundedExtension_norm (z : ℂ) : ‖boundedExtension z‖ ≤ 1 := by
   unfold boundedExtension
   split_ifs with h
-  · exact h
+  grind
   · simp
 lemma boundedExtension_eq (z : ℂ) (hz : ‖z‖ ≤ 1) : boundedExtension z = z := ite_eq_left hz
 

@@ -1,10 +1,9 @@
 module
 public import RationalGeometricShortRange
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -20,20 +19,19 @@ theorem rational_energy_dilated_overlap {k : ℕ} (hk : 1 ≤ k)
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       Y^k ≤ W.card → T ≤ Y^k*W.card →
       rationalEnergy A W ≤ D*Y^η*Y*(W.card : ℝ)^2 := by
-  have hkp : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  pm_91 hkp k
   obtain ⟨C, hC, hdual⟩ := rational_dual_moment hk (show 0 < η*(k : ℝ) by positivity)
   let F := C*(1+B^(2*k))*B^(η*(k : ℝ))
   let D := max 1 F
-  have hD : 1 ≤ D := le_max_left _ _
+  pm_4884 hD D
   have hFD : F ≤ D^k := (le_max_right 1 F).trans (by
     simpa only [pow_one] using pow_le_pow_right₀ hD hk)
   refine ⟨D, by linarith, ?_⟩
   intro Y hY H hH hHY T t₀ hT A hA W hW hsep hYR hTR
-  have hHpos : (0 : ℝ) < H := by exact_mod_cast (show 0 < H by omega)
+  pm_91 hHpos H
   have hBpos : 0 < B := by linarith
-  let R : ℝ := W.card
-  have hR : 0 ≤ R := Nat.cast_nonneg _
-  have hE : 0 ≤ rationalEnergy A W := sum_nonneg (fun _ _ => sq_nonneg _)
+  pm_7974 hR
+  pm_978 hE
   have htotal : T+(H : ℝ)^(2*k) ≤ (1+B^(2*k))*Y^k*R := by
     have hh := pow_le_pow_left₀ hHpos.le hHY (2*k)
     rw [mul_pow, show Y^(2*k) = Y^k*Y^k by rw [← pow_add]; congr 1; omega] at hh
@@ -60,7 +58,10 @@ theorem rational_energy_dilated_overlap {k : ℕ} (hk : 1 ≤ k)
     _ ≤ D^k*(Y^η)^k*Y^k*R^(2*k) := by gcongr
     _ = _ := by simp only [mul_pow, ← pow_mul]; ring
 
-theorem rational_energy_dilated_cover {K : ℕ} (hK : 1 ≤ K)
+section
+variable {K : ℕ} (hK : 1 ≤ K)
+include K hK
+theorem rational_energy_dilated_cover
     {δ η B : ℝ} (hδ : 0 < δ) (hη : 0 < η) (hB : 1 ≤ B) :
     ∃ D : ℝ, 0 < D ∧ ∀ (T t₀ r m : ℝ), 1 ≤ T → r ≤ 1 →
       ((K : ℝ)+1)/(2*K+1) ≤ r → δ ≤ m → m ≤ r/K →
@@ -106,7 +107,7 @@ theorem rational_energy_dilated_cover {K : ℕ} (hK : 1 ≤ K)
 
 /-- Uniform real-height short-range theorem, including any fixed dilation
 of the denominator bound. The range condition uses the undilated length. -/
-theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
+theorem rational_energy_dilated_short_range
     {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ M : ℝ), 1 < T → 0 ≤ M →
       ∀ (A : Finset ℚ),
@@ -120,13 +121,12 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
     (show 0 < η/2 by positivity) (show 0 < η/2 by positivity) hB
   refine ⟨3*B^2+D, by positivity, ?_⟩
   intro T t₀ M hT hM A hA W hRT hR hMR hW hsep
-  have hTp : 0 < T := by linarith
-  have hBp : 0 < B := by linarith
-  have hBM : 0 ≤ B*M := mul_nonneg hBp.le hM
+  pm_72 hTp T hBp B
+  pm_6529 hBM B M hBp.le hM
   by_cases he : A.Nonempty
   · obtain ⟨q, hq⟩ := he
     have hMpos : 0 < M := by
-      have hd : (0 : ℝ) < q.den := by exact_mod_cast q.pos
+      pm_74 hd q.den q.pos
       nlinarith [(hA q hq).2.1]
     have hH : 1 ≤ ⌊B*M⌋₊ := (show 1 ≤ q.den from q.pos).trans
       ((Nat.le_floor_iff hBM).mpr (hA q hq).2.1)
@@ -134,7 +134,7 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
       intro q hq
       exact ⟨(hA q hq).1, (Nat.le_floor_iff hBM).mpr (hA q hq).2.1, (hA q hq).2.2⟩
     have hfH := Nat.floor_le hBM
-    have hhalf : T^(η/2) ≤ T^η := Real.rpow_le_rpow_of_exponent_le hT.le (by linarith)
+    pm_6398 hhalf
     by_cases hs : M ≤ T^(η/2)
     · have hcard : (A.card : ℝ) ≤ 3*(⌊B*M⌋₊ : ℝ)*(⌊B*M⌋₊ : ℝ) := by
         exact_mod_cast rational_card_le_height A ⌊B*M⌋₊ hAf
@@ -147,7 +147,7 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
         _ ≤ _ := by gcongr; linarith
     · have hlog : 0 < Real.log T := Real.log_pos hT
       have hRp : (0 : ℝ) < W.card := (Real.rpow_pos_of_pos hTp _).trans_le hR
-      have hKp : (0 : ℝ) < K := by exact_mod_cast (show 0 < K by omega)
+      pm_91 hKp K
       have hr1 : Real.log W.card / Real.log T ≤ 1 :=
         (div_le_one hlog).mpr (Real.log_le_log hRp hRT)
       have hr : ((K : ℝ)+1)/(2*K+1) ≤ Real.log W.card / Real.log T := by
@@ -180,5 +180,6 @@ theorem rational_energy_dilated_short_range {K : ℕ} (hK : 1 ≤ K)
   · have hAe : A = ∅ := not_nonempty_iff_eq_empty.mp he
     rw [hAe, rationalEnergy, sum_empty]
     positivity
+end
 
 end Montgomery.RationalMoment

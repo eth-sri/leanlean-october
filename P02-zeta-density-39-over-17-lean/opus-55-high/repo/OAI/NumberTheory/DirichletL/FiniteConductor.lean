@@ -6,6 +6,7 @@ public import Mathlib.Analysis.Complex.Polynomial.Basic
 public import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
 public import Mathlib.Order.Preorder.Finite
 public import Mathlib.RingTheory.Ideal.Maps
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,11 +24,10 @@ theorem exists_character_factor_iff {G H : Type*} [Group G] [CommGroup H]
     (∃ φ : H →* ℂˣ, φ.comp q = χ) ↔ q.ker ≤ χ.ker := by
   constructor
   · rintro ⟨φ, rfl⟩ g hg
-    simp only [MonoidHom.mem_ker, MonoidHom.comp_apply,
-      MonoidHom.mem_ker.mp hg, map_one]
+    simp_all
   · intro hker
     have hker' : q.rangeRestrict.ker ≤ χ.ker := by
-      simpa only [MonoidHom.ker_rangeRestrict] using hker
+      simp_all
     let θ : q.range →* ℂˣ :=
       MonoidHom.liftOfSurjective q.rangeRestrict q.rangeRestrict_surjective ⟨χ, hker'⟩
     have hθ : θ.comp q.rangeRestrict = χ := MonoidHom.liftOfRightInverse_comp ..
@@ -35,7 +35,7 @@ theorem exists_character_factor_iff {G H : Type*} [Group G] [CommGroup H]
     refine ⟨φ, ?_⟩
     calc
       φ.comp q = (φ.domRestrict q.range).comp q.rangeRestrict := rfl
-      _ = θ.comp q.rangeRestrict := by rw [← hφ]; rfl
+      _ = θ.comp q.rangeRestrict := by simp_all
       _ = χ := hθ
 
 variable {R : Type*} [CommRing R] [Finite R]
@@ -56,16 +56,15 @@ theorem quotientUnits_eq_one_iff (I : Ideal R) (u : Rˣ) :
 theorem factorsThroughIdeal_iff (χ : MulChar R ℂ) (I : Ideal R) :
     FactorsThroughIdeal χ I ↔
       ∀ u : Rˣ, (u : R) - 1 ∈ I → χ (u : R) = 1 := by
-  let : Finite (R ⧸ I) := Finite.of_surjective _ (Ideal.Quotient.mk_surjective (I := I))
+  pm_6053
   have hfactor : FactorsThroughIdeal χ I ↔
       ∃ φ : (R ⧸ I)ˣ →* ℂˣ, φ.comp (quotientUnits I) = χ.toUnitHom := by
     constructor
     · rintro ⟨φ, hφ⟩
-      exact ⟨φ.toUnitHom, hφ⟩
+      grind
     · rintro ⟨φ, hφ⟩
       refine ⟨MulChar.ofUnitHom φ, ?_⟩
-      simpa only [MulChar.toUnitHom_eq, MulChar.ofUnitHom_eq,
-        Equiv.apply_symm_apply] using hφ
+      simp_all
   rw [hfactor, exists_character_factor_iff]
   constructor
   · intro h u hu

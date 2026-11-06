@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.FirstStageLossBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,39 +26,37 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
     let r:=reserve M Bcap ε
     let es:=r/(4*(Bcommon+A+1))
     let em:=r/(Bcap+Bcap+1)
-    0<es ∧ es≤1 ∧ 0<em ∧ es*A≤r/4 ∧ es*Bcommon≤r/4 ∧
-    ∀(k:ℕ)(ell highReflection zeroReflection:ℝ),ell≤stageLoss M Bcap ε k→
-      highReflection≤r→zeroReflection≤r→∀j:Fin 4,
+    0<es ∧ es≤1 ∧ 0<em ∧ es*A≤ r/4 ∧ es*Bcommon≤ r/4 ∧
+    ∀(k:ℕ)(ell highReflection zeroReflection:ℝ),ell≤ stageLoss M Bcap ε k→
+      highReflection≤ r→ zeroReflection≤ r→∀j:Fin 4,
       losses es (r/4) (r/4) Bcap j+
         lossVector (amplification ε) (r/4) (r/4)
           (sourcePaid Bcap em ell (r/4) (r/4) (r/4) (r/4) (r/4) κ (mesh M Bcap κ ε))
           es A (2*amplification ε+1) j+
-        es*Bcommon+r/4+r/4+highReflection+zeroReflection≤stageLoss M Bcap ε (k+1):=by
-  dsimp only
-  let r:=reserve M Bcap ε
-  let es:=r/(4*(Bcommon+A+1))
+        es*Bcommon+r/4+r/4+highReflection+zeroReflection≤ stageLoss M Bcap ε (k+1):=by
+  pm_1157
   have hb:=bounds M Bcap κ ε hM hB hκ hε
-  have hr:0<r:=hb.2.2.2.1
+  have hr:0< r:=hb.2.2.2.1
   have hs:0<amplification ε:=hb.1
-  have hrsmall:r≤amplification ε/100:=min_le_left _ _
-  have hr1:r≤1:=by linarith [hb.2.1]
+  pm_5768 hrsmall
+  have hr1:r≤1:=by grind
   have hden:0<4*(Bcommon+A+1):=by positivity
-  have hes:0<es:=by dsimp [es];positivity
-  have hesle:es≤r/4:=by
+  pm_3592 hes es
+  have hesle:es≤ r/4:=by
     dsimp [es]
     apply (div_le_iff₀ hden).mpr
     nlinarith [mul_nonneg hr.le hBc,mul_nonneg hr.le hA]
-  have hescap:es*A≤r/4:=by
+  have hescap:es*A≤ r/4:=by
     dsimp [es]
     rw [div_mul_eq_mul_div]
     apply (div_le_iff₀ hden).mpr
     nlinarith [mul_nonneg hr.le hBc]
-  have hescommon:es*Bcommon≤r/4:=by
+  have hescommon:es*Bcommon≤ r/4:=by
     dsimp [es]
     rw [div_mul_eq_mul_div]
     apply (div_le_iff₀ hden).mpr
     nlinarith [mul_nonneg hr.le hA]
-  have hemscale:(Bcap+Bcap)*(r/(Bcap+Bcap+1))≤r:=by
+  have hemscale:(Bcap+Bcap)*(r/(Bcap+Bcap+1))≤ r:=by
     rw [←mul_div_assoc]
     apply (div_le_iff₀ (by positivity)).mpr
     nlinarith
@@ -78,7 +77,7 @@ theorem chosen_declared_four_budget (M A Bcap Bcommon κ ε:ℝ)
       κ (mesh M Bcap κ ε)) es M A (2*amplification ε+1) hes.le hM hA j
   have hj:=hh j
   change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_
-  linarith only [hj,hc]
+  grind
 
 end SevenEighths.CenteredMomentEnergyFirstDeclaredCapacityLossBudget
 

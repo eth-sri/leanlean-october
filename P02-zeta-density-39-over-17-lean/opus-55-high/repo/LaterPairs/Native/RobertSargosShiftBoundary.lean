@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerIntervalShift
 public import LaterPairs.Native.RobertSargosShiftSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -37,8 +38,7 @@ theorem norm_robertSargos_shifted_boundary (w : ℤ → ℂ) (M H Q N : ℕ) (h 
 theorem robertSargos_m_overlap_zero_source (M : ℕ) (h q : ℤ) :
     robertSargosMOverlap M h q 0 =
       Finset.Icc (max (h+1) (h+1-q)) (min ((M:ℤ)-h) ((M:ℤ)-h-q)) := by
-  ext m
-  simp only [robertSargosMOverlap,Finset.mem_Icc,max_le_iff,le_min_iff]
+  pm_187 m robertSargosMOverlap Finset.mem_Icc max_le_iff le_min_iff
   omega
 
 theorem robertSargos_source_shift_average (w : ℤ → ℂ) (M N : ℕ) (h q : ℤ)

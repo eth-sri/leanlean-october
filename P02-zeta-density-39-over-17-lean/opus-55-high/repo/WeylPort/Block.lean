@@ -1,5 +1,6 @@
 module
 public import GuthMaynard.WeylZeta
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ theorem norm_criticalLine_cpow_block_le
       (A + n : ℂ) ^ (-((1 / 2 : ℂ) + (t : ℂ) * I))‖ ≤
       30 * t ^ (1 / 6 : ℝ) := by
   have ht0 : 0 ≤ t := by linarith
-  let Y : ℝ := t ^ (1 / 3 : ℝ)
+  pm_880
   have hY : 1 ≤ Y := Real.one_le_rpow ht (by norm_num)
   have hcube : Y ^ 3 = t := by
     dsimp only [Y]
@@ -36,10 +37,7 @@ theorem norm_criticalLine_cpow_block_le
     dsimp only [Y]
     rw [Real.sqrt_eq_rpow, ← Real.rpow_mul ht0]
     norm_num
-  by_cases hNz : N = 0
-  · subst N
-    simp only [Finset.sum_range_zero, norm_zero]
-    positivity
+  pm_7574 hNz N Finset.sum_range_zero norm_zero
   have hb := RiemannZeta.GuthMaynard.norm_criticalLineWeylBlock_le
     Y A N hY hA (Nat.pos_of_ne_zero hNz) hlo (hcube ▸ hhi) hN
   rw [RiemannZeta.GuthMaynard.criticalLineWeylBlock_eq_cpow Y A N hA] at hb

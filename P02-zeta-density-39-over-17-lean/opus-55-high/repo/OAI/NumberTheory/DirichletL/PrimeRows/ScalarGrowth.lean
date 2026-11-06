@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.TupleGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.ReciprocalGrowth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,18 +31,14 @@ theorem calibrated_scalar_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
   refine ⟨(1+B)*Cn*Cr,by positivity,?_⟩
   intro η u hu x w z hx hw hz
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
-  have hN : 0<N := by
-    dsimp [N]
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
+  pm_451
   have hn' := hn u hu w hw
   have hr' := hr η u x hx
   have hz' : ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖≤1+B := by
     apply (HeckeStripActual.LFunction_norm_le _ (by norm_num : (1:ℝ)<2) (s:=6*z) ?_).trans
     · dsimp [B];linarith
     · norm_num [Complex.mul_re];linarith
-  have hη : (η.modulus.absNorm:ℝ)^(δ/2)≤(η.modulus.absNorm:ℝ)^δ :=
-    Real.rpow_le_rpow_of_exponent_le (HeckeLogarithmicInput.modulus_norm_ge_one η) (by linarith)
+  pm_3459
   have he : star ((calibrationForSet S hmax).residueMonoid u.val)*
       (LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) w*
@@ -53,15 +50,12 @@ theorem calibrated_scalar_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
   calc
     _ ≤ (1+B)*(Cn*N^(3/5+δ/2)*(3+|w.im|)^2)*
         (Cr*(η.modulus.absNorm:ℝ)^(δ/2)*N^(δ/2)*(3+|x.im|)^2) := by
-      apply mul_le_mul _ hr' (norm_nonneg _) (by positivity)
+      pm_6163 hr'
       exact mul_le_mul hz' hn' (norm_nonneg _) (by positivity)
     _ ≤ (1+B)*(Cn*N^(3/5+δ/2)*(3+|w.im|)^2)*
         (Cr*(η.modulus.absNorm:ℝ)^δ*N^(δ/2)*(3+|x.im|)^2) := by gcongr
     _ = ((1+B)*Cn*Cr)*(η.modulus.absNorm:ℝ)^δ*N^(3/5+δ)*(3+|x.im|)^2*(3+|w.im|)^2 := by
-      have hp : N^(3/5+δ/2)*N^(δ/2)=N^(3/5+δ) := by
-        rw [←Real.rpow_add hN]
-        congr 1
-        ring
+      pm_3458
       calc
         _ = ((1+B)*Cn*Cr)*(η.modulus.absNorm:ℝ)^δ*(N^(3/5+δ/2)*N^(δ/2))*(3+|x.im|)^2*(3+|w.im|)^2 := by ring
         _ = _ := by rw [hp]

@@ -1,12 +1,13 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointSlab
 public import GuthMaynard.NativeSource.GuthMaynard.WeylExplicit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Asymptotics Filter Topology
 open Complex Finset MeasureTheory Real Set
-open scoped BigOperators ContDiff FourierTransform SchwartzMap
+open scoped ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
 
@@ -42,13 +43,11 @@ theorem integrable_typeIReflectedMellinIntegrand
         typeIDyadicCutoffMellin r *
           typeIPowerReflectionIntegral sigma (t + r)
             (Q / 2) (2 * M * Q)) := by
-  let S := Finset.Icc 1 M
-  let A : ℝ := Q / 2
-  let B : ℝ := 2 * M * Q
-  have hA : 0 < A := by dsimp only [A]; positivity
+  pm_1314
+  pm_4161
   have hAB : A ≤ B := by
     dsimp only [A, B]
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hM
+    pm_77 hMReal M hM
     nlinarith
   have hMode : ∀ m ∈ S, Integrable (fun r : ℝ =>
       typeIReflectionScaleFactor sigma t m *
@@ -56,9 +55,8 @@ theorem integrable_typeIReflectedMellinIntegrand
     intro m hm
     have hmData := Finset.mem_Icc.mp hm
     have hmPos : (0 : ℝ) < m := by
-      exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hmData.1)
-    exact (integrable_typeICommonMellinMode hsigma (mul_pos hmPos hQ)
-      hA hAB).const_mul _
+      aesop
+    pm_7286
   have hSum : Integrable (fun r : ℝ =>
       ∑ m ∈ S, typeIReflectionScaleFactor sigma t m *
         typeICommonMellinMode sigma t ((m : ℝ) * Q) A B r) :=
@@ -67,9 +65,7 @@ theorem integrable_typeIReflectedMellinIntegrand
   filter_upwards with r
   unfold typeIReflectedMellinPolynomial typeICommonMellinMode
   dsimp only [S, A, B]
-  rw [Finset.sum_mul, Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro m _hm
+  pm_1063 Finset.sum_mul m _hm
   ring
 
 /-- A setwise norm bound for the exact reflected Mellin integral.  The
@@ -89,10 +85,7 @@ theorem norm_setIntegral_typeIReflectedMellinIntegrand_le
             typeIPowerReflectionIntegral sigma (t + r)
               (Q / 2) (2 * M * Q)‖ ≤
       Q * R * K * ∫ r : ℝ in S, ‖typeIDyadicCutoffMellin r‖ := by
-  have hMellin : Integrable typeIDyadicCutoffMellin := by
-    unfold typeIDyadicCutoffMellin
-    simpa only [VerticalIntegrable, Complex.ofReal_one] using
-      verticalIntegrable_typeIDyadicCutoffMellin
+  pm_4811 hMellin
   have hDom : IntegrableOn
       (fun r : ℝ => Q * R * K * ‖typeIDyadicCutoffMellin r‖) S :=
     hMellin.norm.const_mul (Q * R * K) |>.integrableOn
@@ -105,8 +98,7 @@ theorem norm_setIntegral_typeIReflectedMellinIntegrand_le
     filter_upwards [ae_restrict_mem hS] with r hr
     rw [norm_mul, norm_mul,
       norm_typeIReflectedMellinPolynomial_eq_fixed sigma t Q M r hQ]
-    have hF := hFixed r hr
-    have hP := hKernel r hr
+    pm_111 hF hFixed r hr hP hKernel
     calc
       Q * ‖typeIReflectedFixedPolynomial sigma (t + r) M‖ *
           ‖typeIDyadicCutoffMellin r‖ *
@@ -136,21 +128,18 @@ theorem norm_typeIPowerReflectionIntegral_le_on_symmetric_window
   have hTau : 1 ≤ t + r := by
     have hrLower := hr.1
     linarith
-  have hA : 0 < Q / 2 := by positivity
-  have hAB : Q / 2 ≤ 2 * M * Q := by
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hM
-    nlinarith
+  pm_4681
   have hRaw := norm_typeIPowerReflectionIntegral_le_stationary
     hsigma hTau hA hAB
   have hTauLower : t / 2 ≤ t + r := by
     have hrLower := hr.1
     linarith
   have hTauPos : 0 < t + r := zero_lt_one.trans_le hTau
-  have hHalfPos : 0 < t / 2 := by positivity
+  pm_4910 hHalfPos t
   have hInv : 8 / (t + r) ≤ 16 / t := by
     rw [div_le_div_iff₀ hTauPos htPos]
     nlinarith
-  have hExp : -sigma - 1 / 2 ≤ 0 := by linarith
+  pm_7284
   have hPow : (t + r) ^ (-sigma - 1 / 2) ≤
       (t / 2) ^ (-sigma - 1 / 2) :=
     Real.rpow_le_rpow_of_nonpos hHalfPos hTauLower hExp
@@ -178,13 +167,9 @@ theorem exists_norm_typeIReflectedMellinIntegral_tail_le
         Q * ((M : ℝ) * (M : ℝ) ^ sigma) *
           (((2 * M * Q - Q / 2) * ((Q / 2) ^ (-sigma) / (Q / 2))) *
             C * H ^ (1 - (n : ℝ))) := by
-  obtain ⟨C, hC, hTail⟩ := exists_typeIDyadicCutoffMellin_tail_bound n hn
-  refine ⟨C, hC, ?_⟩
+  pm_4289 C hC hTail exists_typeIDyadicCutoffMellin_tail_bound n hn
   intro sigma t Q H M hsigma hQ hM hH
-  have hA : 0 < Q / 2 := by positivity
-  have hAB : Q / 2 ≤ 2 * M * Q := by
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hM
-    nlinarith
+  pm_4681
   have hBase := norm_setIntegral_typeIReflectedMellinIntegrand_le
     measurableSet_Icc.compl hQ
     (mul_nonneg (Nat.cast_nonneg M) (Real.rpow_nonneg (Nat.cast_nonneg M) _))
@@ -211,7 +196,7 @@ theorem exists_norm_typeIReflectedMellinIntegral_tail_le
         positivity
       have hKernel : 0 ≤
           (2 * M * Q - Q / 2) * ((Q / 2) ^ (-sigma) / (Q / 2)) := by
-        have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hM
+        pm_77 hMReal M hM
         positivity
       have hMul := mul_le_mul_of_nonneg_left
         (mul_le_mul_of_nonneg_left (hTail H hH) hKernel) hFront
@@ -227,10 +212,7 @@ theorem norm_typeIPowerReflectionIntegral_neg_le_on_symmetric_window
     ‖typeIPowerReflectionIntegral sigma (-t + r)
         (Q / 2) (2 * M * Q)‖ ≤
       (8 / t) * (Q / 2) ^ (-sigma) := by
-  have hA : 0 < Q / 2 := by positivity
-  have hAB : Q / 2 ≤ 2 * M * Q := by
-    have hMReal : (1 : ℝ) ≤ M := by exact_mod_cast hM
-    nlinarith
+  pm_4681
   have hRight : -t + r < 2 * Real.pi * (Q / 2) := by
     have hrUpper := hr.2
     have hNeg : -t + r ≤ -t / 2 := by linarith
@@ -266,14 +248,10 @@ theorem integral_norm_typeIDyadicCutoffMellin_restrict_le
     ∫ r : ℝ in S, ‖typeIDyadicCutoffMellin r‖ ≤
       typeIDyadicCutoffMellinL1 := by
   have hInt : Integrable (fun r : ℝ => ‖typeIDyadicCutoffMellin r‖) := by
-    have hMellin : Integrable typeIDyadicCutoffMellin := by
-      unfold typeIDyadicCutoffMellin
-      simpa only [VerticalIntegrable, Complex.ofReal_one] using
-        verticalIntegrable_typeIDyadicCutoffMellin
+    pm_4811 hMellin
     exact hMellin.norm
   unfold typeIDyadicCutoffMellinL1
-  exact integral_mono_measure Measure.restrict_le_self
-    (Eventually.of_forall fun _ => norm_nonneg _) hInt
+  pm_8624 Eventually.of_forall norm_nonneg hInt
 
 /-- A large exact reflected Mellin integral forces a large value of the
 fixed reflected polynomial at one bounded ordinate displacement.  The tail
@@ -329,13 +307,14 @@ theorem exists_large_typeIReflectedFixedPolynomial_of_integral
                 (Q / 2) (2 * M * Q)‖ ≤
         Q * R * K * typeIDyadicCutoffMellinL1 + E := by
     rw [← hSplit]
-    exact (norm_add_le _ _).trans (add_le_add hCentral' hTail)
+    pm_243 norm_add_le hCentral' hTail
   linarith
 
+section
+variable {sigma t : ℝ} {Q M : ℕ} (hsigma : 0 ≤ sigma) (hQ : 0 < Q) (hM : 1 ≤ M)
+include sigma t Q M hsigma hQ hM
 /-- Norm form of the exact negative-mode Mellin identity. -/
-theorem norm_typeIReflectedMellinIntegral_eq_two_pi_mul_negativeModes
-    {sigma t : ℝ} {Q M : ℕ} (hsigma : 0 ≤ sigma)
-    (hQ : 0 < Q) (hM : 1 ≤ M) :
+theorem norm_typeIReflectedMellinIntegral_eq_two_pi_mul_negativeModes :
     ‖∫ r : ℝ,
         typeIReflectedMellinPolynomial sigma t (Q : ℝ) M r *
           typeIDyadicCutoffMellin r *
@@ -344,9 +323,7 @@ theorem norm_typeIReflectedMellinIntegral_eq_two_pi_mul_negativeModes
       2 * Real.pi *
         ‖typeISourceNormalizationScalar sigma t (Q : ℝ) *
           typeINormalizedNegativeModes sigma t Q M‖ := by
-  have hEq := sourceScalar_mul_negativeModes_eq_reflectedMellinIntegral
-    (t := t) hsigma hQ hM
-  have hNorm := congrArg norm hEq
+  pm_7151 sourceScalar_mul_negativeModes_eq_reflectedMellinIntegral
   simp only [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity :
       0 < 1 / (2 * Real.pi))] at hNorm
   have hPi : Real.pi ≠ 0 := Real.pi_ne_zero
@@ -356,9 +333,7 @@ theorem norm_typeIReflectedMellinIntegral_eq_two_pi_mul_negativeModes
 /-- Norm form of the exact positive-mode Mellin identity.  Conjugation
 changes neither side's norm, so the same `2π` normalization as in the
 negative half is retained. -/
-theorem norm_typeIReflectedPositiveMellinIntegral_eq_two_pi_mul_positiveModes
-    {sigma t : ℝ} {Q M : ℕ} (hsigma : 0 ≤ sigma)
-    (hQ : 0 < Q) (hM : 1 ≤ M) :
+theorem norm_typeIReflectedPositiveMellinIntegral_eq_two_pi_mul_positiveModes :
     ‖∫ r : ℝ,
         typeIReflectedMellinPolynomial sigma (-t) (Q : ℝ) M r *
           typeIDyadicCutoffMellin r *
@@ -367,20 +342,19 @@ theorem norm_typeIReflectedPositiveMellinIntegral_eq_two_pi_mul_positiveModes
       2 * Real.pi *
         ‖typeISourceNormalizationScalar sigma t (Q : ℝ) *
           typeINormalizedPositiveModes sigma t Q M‖ := by
-  have hEq := sourceScalar_mul_positiveModes_eq_reflectedMellinIntegral
-    (t := t) hsigma hQ hM
-  have hNorm := congrArg norm hEq
+  pm_7151 sourceScalar_mul_positiveModes_eq_reflectedMellinIntegral
   simp only [norm_star, norm_smul, Real.norm_eq_abs,
     abs_of_pos (by positivity : 0 < 1 / (2 * Real.pi))] at hNorm
   rw [hNorm]
   field_simp [Real.pi_ne_zero]
+end
 
+section
+variable {sigma t H L R K E : ℝ} {Q M : ℕ} (hsigma : 0 ≤ sigma) (hQ : 0 < Q) (hM : 1 ≤ M) (hH : 0 ≤ H) (hR : 0 ≤ R)
+include sigma t H L R K E Q M hsigma hQ hM hH hR
 /-- A large retained negative half forces a large value of the common
 fixed reflected polynomial at a bounded Mellin displacement. -/
 theorem exists_large_reflectedFixedPolynomial_of_negativeModes
-    {sigma t H L R K E : ℝ} {Q M : ℕ}
-    (hsigma : 0 ≤ sigma) (hQ : 0 < Q) (hM : 1 ≤ M)
-    (hH : 0 ≤ H) (hR : 0 ≤ R)
     (hLarge : L ≤
       ‖typeISourceNormalizationScalar sigma t (Q : ℝ) *
         typeINormalizedNegativeModes sigma t Q M‖)
@@ -407,16 +381,12 @@ theorem exists_large_reflectedFixedPolynomial_of_negativeModes
               ((Q : ℝ) / 2) (2 * M * Q)‖ := by
     rw [hIntegralEq]
     exact mul_le_mul_of_nonneg_left hLarge (by positivity)
-  exact exists_large_typeIReflectedFixedPolynomial_of_integral
-    hsigma (by exact_mod_cast hQ) hM hH hR hKernel hIntegralLarge hTail hGap
+  pm_7013
 
 /-- The corresponding extraction for the retained positive half.  Its
 fixed polynomial occurs at the reversed source ordinate, exactly as in the
 proved conjugation identity. -/
 theorem exists_large_reflectedFixedPolynomial_of_positiveModes
-    {sigma t H L R K E : ℝ} {Q M : ℕ}
-    (hsigma : 0 ≤ sigma) (hQ : 0 < Q) (hM : 1 ≤ M)
-    (hH : 0 ≤ H) (hR : 0 ≤ R)
     (hLarge : L ≤
       ‖typeISourceNormalizationScalar sigma t (Q : ℝ) *
         typeINormalizedPositiveModes sigma t Q M‖)
@@ -444,8 +414,8 @@ theorem exists_large_reflectedFixedPolynomial_of_positiveModes
               ((Q : ℝ) / 2) (2 * M * Q)‖ := by
     rw [hIntegralEq]
     exact mul_le_mul_of_nonneg_left hLarge (by positivity)
-  exact exists_large_typeIReflectedFixedPolynomial_of_integral
-    hsigma (by exact_mod_cast hQ) hM hH hR hKernel hIntegralLarge hTail hGap
+  pm_7013
+end
 
 /-- Zero-mode decay after restoring the exact source normalization. -/
 theorem exists_sourceScalar_zeroMode_decay (sigma : ℝ) (j : ℕ) :
@@ -454,10 +424,9 @@ theorem exists_sourceScalar_zeroMode_decay (sigma : ℝ) (j : ℕ) :
         ‖typeISourceNormalizationScalar sigma t (Q : ℝ) *
           ((Q : ℂ) * typeINormalizedFourier sigma t 0)‖ ≤
         (Q : ℝ) ^ (1 - sigma) * C := by
-  obtain ⟨C, hC, hDecay⟩ := typeINormalizedFourier_zero_uniform_decay sigma j
-  refine ⟨C, hC, ?_⟩
+  pm_4289 C hC hDecay typeINormalizedFourier_zero_uniform_decay sigma j
   intro t Q hQ
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  pm_4147
   have hNormQ : ‖(Q : ℂ)‖ = (Q : ℝ) := by
     rw [Complex.norm_natCast]
   have hQP : (Q : ℝ) ^ (-sigma) * (Q : ℝ) =
@@ -492,10 +461,9 @@ theorem exists_sourceScalar_farModes_bound (sigma : ℝ) (n : ℕ) :
         (Q : ℝ) ^ (-sigma) *
           (K * (1 + |t|) ^ (n + 2) /
             ((Q : ℝ) ^ (n + 1) * (M : ℝ) ^ n)) := by
-  obtain ⟨K, hK, hFar⟩ := typeINormalizedFarTail_bound_order sigma n
-  refine ⟨K, hK, ?_⟩
+  pm_4289 K hK hFar typeINormalizedFarTail_bound_order sigma n
   intro t Q M hQ hM
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  pm_4147
   rw [norm_mul, norm_typeISourceNormalizationScalar sigma t (Q : ℝ) hQReal]
   exact mul_le_mul_of_nonneg_left (hFar t Q M hQ hM)
     (Real.rpow_nonneg hQReal.le _)
@@ -526,11 +494,11 @@ theorem sourceSmoothBlock_large_forces_signedModes
       V / 4 ≤
         ‖typeISourceNormalizationScalar sigma t (2 ^ r * Y : ℕ) *
           typeINormalizedPositiveModes sigma t (2 ^ r * Y) M‖ := by
-  let Q : ℕ := 2 ^ r * Y
+  pm_4897 Q r Y
   let z : ℂ := (Q : ℂ) * typeINormalizedFourier sigma t 0
-  let neg : ℂ := typeINormalizedNegativeModes sigma t Q M
-  let pos : ℂ := typeINormalizedPositiveModes sigma t Q M
-  let far : ℂ := typeINormalizedFarTail sigma t Q M
+  pm_8458 neg typeINormalizedNegativeModes
+  pm_8458 pos typeINormalizedPositiveModes
+  pm_8458 far typeINormalizedFarTail
   let c : ℂ := typeISourceNormalizationScalar sigma t Q
   have hDecomp := typeISourceSmoothBlock_eq_mode_decomposition_of_interior
     hY hLower hUpper (M := M) (sigma := sigma) (t := t)
@@ -552,8 +520,8 @@ theorem sourceSmoothBlock_large_forces_signedModes
       _ = ‖c * z‖ + ‖c * neg‖ + ‖c * pos‖ + ‖c * far‖ := by ring
   have hTotal : V ≤ ‖c * z‖ + ‖c * neg‖ + ‖c * pos‖ + ‖c * far‖ :=
     hLarge.trans hTriangle
-  have hz : ‖c * z‖ ≤ V / 8 := by simpa only [Q, z, c] using hZero
-  have hf : ‖c * far‖ ≤ V / 8 := by simpa only [Q, far, c] using hFar
+  pm_7601 hz z hZero
+  pm_7601 hf far hFar
   by_contra h
   push Not at h
   have hn : ‖c * neg‖ < V / 4 := by simpa only [Q, neg, c] using h.1
@@ -667,27 +635,19 @@ theorem exists_signed_shift_large_normalized_reflected_wide
     (∃ u ∈ Set.Icc (-H) H,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff sigma M) (t - u)‖) := by
-  have hQ : 0 < 2 ^ r * Y := by positivity
+  pm_1123
   have hMOne : 1 ≤ M := hM.le
   rcases sourceSmoothBlock_large_forces_signedModes
       hY hLower hUpper hV hLarge hZero hFar with hNeg | hPos
   · left
-    have hGap' :
-        ((2 ^ r * Y : ℕ) : ℝ) * R * K *
-            typeIDyadicCutoffMellinL1 + E < 2 * Real.pi * (V / 4) := by
-      convert hGap using 1
-      ring_nf
+    pm_4682
     obtain ⟨u, hu, hFixed⟩ :=
       exists_large_reflectedFixedPolynomial_of_negativeModes
         hsigma hQ hMOne hH hR hNeg hKernelNeg hTailNeg hGap'
     exact ⟨u, hu,
       large_normalized_reflected_wide_of_fixed hM hNormalize hFixed⟩
   · right
-    have hGap' :
-        ((2 ^ r * Y : ℕ) : ℝ) * R * K *
-            typeIDyadicCutoffMellinL1 + E < 2 * Real.pi * (V / 4) := by
-      convert hGap using 1
-      ring_nf
+    pm_4682
     obtain ⟨u, hu, hFixed⟩ :=
       exists_large_reflectedFixedPolynomial_of_positiveModes
         hsigma hQ hMOne hH hR hPos hKernelPos hTailPos hGap'
@@ -708,7 +668,7 @@ theorem wideDirichletPoly_translate
   intro n hn
   have hnPos : 0 < n := by
     exact lt_of_le_of_lt (Nat.zero_le Q) (Finset.mem_Ioc.mp hn).1
-  have hnNe : (n : ℂ) ≠ 0 := by exact_mod_cast hnPos.ne'
+  pm_4837
   rw [phaseShiftCoeffs, ite_eq_right hnPos.ne', mul_assoc,
     ← Complex.cpow_add _ _ hnNe]
   congr 2
@@ -758,8 +718,7 @@ theorem exists_separated_bounded_shift_image_medium
       (2 * ⌈H⌉₊ + 1) hLocalShifted
   have hAll : W.filter (fun t => shift t ∈ W.image shift) = W := by
     apply Finset.filter_eq_self.mpr
-    intro t ht
-    exact Finset.mem_image.mpr ⟨t, ht, rfl⟩
+    pm_4831 t ht
   have hFiber := Finset.sum_fiberwise_eq_sum_filter W (W.image shift)
     shift weight
   rw [hAll] at hFiber
@@ -841,16 +800,7 @@ theorem extract_common_reflected_mhh_block
     simp only [displacement, dite_eq_left hx]
     exact (Classical.choose_spec (hEach (3 * T - x)
       (hOriginalMem x hx))).2
-  let shift : ℝ → ℝ := fun x => x - displacement x
-  have hShiftBound : ∀ x ∈ Wrev, |x - shift x| ≤ H := by
-    intro x hx
-    have hd := hDisplacementMem x hx
-    dsimp only [shift]
-    rw [show x - (x - displacement x) = displacement x by ring]
-    exact abs_le.mpr hd
-  obtain ⟨U₀, hU₀Image, hU₀Sep, hCardShift⟩ :=
-    exists_separated_bounded_shift_image_medium Wrev shift H hH
-      hWrevSeparated hShiftBound
+  pm_4906 x Wrev hx hWrevSeparated
   have hWide : ∀ v ∈ U₀,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (phaseShiftCoeffs (-3 * T)
@@ -865,37 +815,23 @@ theorem extract_common_reflected_mhh_block
       ring
     rw [hArg, wideDirichletPoly_translate] at hLarge
     exact hLarge
-  have hClog : 0 < Nat.clog 2 M := Nat.clog_pos Nat.one_lt_two hM
+  pm_4815 hClog M hM
   obtain ⟨j, hj, U, hUsub, hCardDyadic, hLargeDyadic⟩ :=
     exists_dyadic_block_and_subset 1 (Nat.clog 2 M)
       (phaseShiftCoeffs (-3 * T)
         (normalizedTypeIReflectedCoeff sigma M)) U₀ S hClog
       (fun v hv => (hWide v hv).le)
-  refine ⟨j, hj, U, ?_, ?_, ?_, ?_, ?_⟩
-  · intro x hx y hy hxy
-    exact hU₀Sep x (hUsub hx) y (hUsub hy) hxy
+  pm_4684
   · intro v hv
-    have hvU₀ := hUsub hv
-    have hvImage := hU₀Image hvU₀
-    rcases Finset.mem_image.mp hvImage with ⟨x, hx, rfl⟩
-    have hxRange := hRange (3 * T - x) (hOriginalMem x hx)
-    have hdu := hDisplacementMem x hx
-    rw [Set.mem_Icc]
-    constructor <;> dsimp only [shift]
+    pm_4683
+    pm_8127
     · have hduUpper : displacement x ≤ H := hdu.2
       linarith
     · have hduLower : -H ≤ displacement x := hdu.1
       linarith
   · intro v hv
-    have hvU₀ := hUsub hv
-    have hvImage := hU₀Image hvU₀
-    rcases Finset.mem_image.mp hvImage with ⟨x, hx, rfl⟩
-    have hxRange := hRange (3 * T - x) (hOriginalMem x hx)
-    have hdu := hDisplacementMem x hx
-    dsimp only [shift]
-    constructor
-    · linarith [hdu.2]
-    · linarith [hdu.1]
+    pm_4683
+    pm_6761
   · rw [← hWrevCard]
     calc
       Wrev.card ≤ 2 * (2 * ⌈H⌉₊ + 1) * U₀.card := hCardShift
@@ -933,58 +869,33 @@ theorem extract_common_positive_reflected_mhh_block
     if ht : t ∈ W then Classical.choose (hEach t ht) else 0
   have hDisplacementMem : ∀ t ∈ W,
       displacement t ∈ Set.Icc (-H) H := by
-    intro t ht
-    simp only [displacement, dite_eq_left ht]
-    exact (Classical.choose_spec (hEach t ht)).1
+    pm_4788 displacement
   have hDisplacementLarge : ∀ t ∈ W,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff sigma M)
           (t - displacement t)‖ := by
-    intro t ht
-    simp only [displacement, dite_eq_left ht]
-    exact (Classical.choose_spec (hEach t ht)).2
-  let shift : ℝ → ℝ := fun t => t - displacement t
-  have hShiftBound : ∀ t ∈ W, |t - shift t| ≤ H := by
-    intro t ht
-    have hd := hDisplacementMem t ht
-    dsimp only [shift]
-    rw [show t - (t - displacement t) = displacement t by ring]
-    exact abs_le.mpr hd
-  obtain ⟨U₀, hU₀Image, hU₀Sep, hCardShift⟩ :=
-    exists_separated_bounded_shift_image_medium W shift H hH
-      hSeparated hShiftBound
+    pm_6417 displacement
+  pm_4906 t W ht hSeparated
   have hWide : ∀ v ∈ U₀,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff sigma M) v‖ := by
     intro v hv
     rcases Finset.mem_image.mp (hU₀Image hv) with ⟨t, ht, rfl⟩
     exact hDisplacementLarge t ht
-  have hClog : 0 < Nat.clog 2 M := Nat.clog_pos Nat.one_lt_two hM
+  pm_4815 hClog M hM
   obtain ⟨j, hj, U, hUsub, hCardDyadic, hLargeDyadic⟩ :=
     exists_dyadic_block_and_subset 1 (Nat.clog 2 M)
       (normalizedTypeIReflectedCoeff sigma M) U₀ S hClog
       (fun v hv => (hWide v hv).le)
-  refine ⟨j, hj, U, ?_, ?_, ?_, ?_, ?_⟩
-  · intro x hx y hy hxy
-    exact hU₀Sep x (hUsub hx) y (hUsub hy) hxy
+  pm_4684
   · intro v hv
-    have hvU₀ := hUsub hv
-    rcases Finset.mem_image.mp (hU₀Image hvU₀) with ⟨t, ht, rfl⟩
-    have htRange := hRange t ht
-    have hdu := hDisplacementMem t ht
-    rw [Set.mem_Icc]
-    constructor <;> dsimp only [shift]
+    pm_4685
+    pm_8127
     · linarith [hdu.2]
     · linarith [hdu.1]
   · intro v hv
-    have hvU₀ := hUsub hv
-    rcases Finset.mem_image.mp (hU₀Image hvU₀) with ⟨t, ht, rfl⟩
-    have htRange := hRange t ht
-    have hdu := hDisplacementMem t ht
-    dsimp only [shift]
-    constructor
-    · linarith [hdu.2]
-    · linarith [hdu.1]
+    pm_4685
+    pm_6761
   · calc
       W.card ≤ 2 * (2 * ⌈H⌉₊ + 1) * U₀.card := hCardShift
       _ ≤ 2 * (2 * ⌈H⌉₊ + 1) *
@@ -1023,8 +934,7 @@ theorem select_common_signed_reflected_family
   let Wneg := W.filter isNegative
   by_cases hLargeHalf : W.card ≤ 2 * Wneg.card
   · left
-    refine ⟨Wneg, Finset.filter_subset _ _, hLargeHalf, ?_⟩
-    intro t ht
+    pm_8901 Wneg hLargeHalf
     exact (Finset.mem_filter.mp ht).2
   · right
     let Wpos := W.filter (fun t => ¬ isNegative t)
@@ -1032,8 +942,7 @@ theorem select_common_signed_reflected_family
       simpa only [Wneg, Wpos, isNegative] using
         W.card_filter_add_card_filter_not isNegative
     have hCard : W.card ≤ 2 * Wpos.card := by omega
-    refine ⟨Wpos, Finset.filter_subset _ _, hCard, ?_⟩
-    intro t ht
+    pm_8901 Wpos hCard
     have htData := Finset.mem_filter.mp ht
     rcases hEach t htData.1 with hNeg | hPos
     · exact False.elim (htData.2 hNeg)
@@ -1157,7 +1066,7 @@ theorem four_mul_le_reflectedEndpointScaleSlack
   by_cases hdz : d = 0
   · simp [hdz]
   · have hdPos : 0 < d := lt_of_le_of_ne hd (Ne.symm hdz)
-    have hgap : 0 < σ - 1 / 2 := by linarith
+    pm_4686 hgap σ
     rw [le_div_iff₀ hgap]
     nlinarith
 
@@ -1169,9 +1078,8 @@ theorem reflectedEndpointScaleSlack_le_tau0_sixth
     (hdGap : d ≤ (σ - 1 / 2) / 1000)
     (hdUpperGap : d ≤ (1 - σ) / 1000) :
     reflectedEndpointScaleSlack σ d ≤ τ₀ / 6 := by
-  have hgap : 0 < σ - 1 / 2 := by linarith
-  have hDensity : 3 * (1 - σ) ≤ τ₀ := by
-    nlinarith [hcert.density_base_le_tau0]
+  pm_4686 hgap σ
+  pm_7152 hDensity
   have hSlackCore : reflectedEndpointScaleSlack σ d ≤
       (2 / 5 : ℝ) * (1 - σ) := by
     unfold reflectedEndpointScaleSlack
@@ -1201,10 +1109,9 @@ theorem exists_bounded_positive_power_scale_reduction_with_gap
       (τ + s) / k - τ / k ≤ s := by
   have hRaised : 4 * τ₀ / 3 ≤ τ + s := by linarith
   have hUpper : τ + s ≤ U + s := by linarith
-  obtain ⟨k, hk, hkB, hkLower, hkUpper⟩ :=
-    exists_bounded_positive_power_scale_reduction hτ₀ hRaised hUpper
-  have hkReal : (1 : ℝ) ≤ k := by exact_mod_cast hk
-  have hkPos : (0 : ℝ) < k := by exact_mod_cast hk
+  pm_351 k hk hkB hkLower hkUpper exists_bounded_positive_power_scale_reduction hτ₀ hRaised hUpper
+  pm_77 hkReal k hk
+  pm_74 hkPos k hk
   refine ⟨k, hk, hkB, hkLower, hkUpper, ?_, ?_⟩
   · exact div_le_div_of_nonneg_right (by linarith) hkPos.le
   · rw [← sub_div]
@@ -1234,8 +1141,7 @@ theorem exists_bounded_positive_power_augmented_endpoint_with_gap
   obtain ⟨k, hk, hkB, hkLower, hkUpper, hkActual, hkGap⟩ :=
     exists_bounded_positive_power_scale_reduction_with_gap
       hcert.tau0_pos hs hNear hτUpper
-  have hTauDensity : 3 * (1 - σ) ≤ τ₀ := by
-    nlinarith [hcert.density_base_le_tau0]
+  pm_7152 hTauDensity
   have hActualLower : τ₀ / 2 ≤ τ / k := by
     have hGapAt : (τ + s) / k - s ≤ τ / k := by linarith
     have hCore : τ₀ / 2 ≤ (τ + s) / k - s := by
@@ -1274,13 +1180,13 @@ theorem reflected_total_power_budget_with_gap_le
     24 * d * (B : ℝ) + 2 * s / tau0 + 6 * d ≤ eta / 4 := by
   dsimp only
   let gap : ℝ := sigma - 1 / 2
-  have hgap : 0 < gap := by dsimp only [gap]; linarith
+  pm_4638 hgap gap
   let s : ℝ := 100 * d / gap
-  have hs : 0 < s := by dsimp only [s]; positivity
+  pm_4760
   let U : ℝ := 4 / gap
-  have hU : 0 < U := by dsimp only [U]; positivity
+  pm_3981
   let x : ℝ := 3 * (U + s) / (2 * tau0)
-  have hx : 0 ≤ x := by dsimp only [x]; positivity
+  pm_82 hx x
   let B : ℕ := ⌈x⌉₊
   have hB : (B : ℝ) < x + 1 := by
     simpa only [B] using Nat.ceil_lt_add_one hx
@@ -1349,13 +1255,11 @@ theorem reflected_dyadic_scale_lower_of_expanded_cutoff
     (hd : 0 ≤ d) (hScale : (Q : ℝ) ^ τ = T)
     (hPM : P ≤ M) (hM : (M : ℝ) ≤ T ^ (1 + d) / Q) :
     1 / (1 / 2 + d) ≤ typeILogarithmicScale T P := by
-  have hTPos : 0 < T := by linarith
-  have hTOne : 1 ≤ T := hT.le
-  have hQReal : (1 : ℝ) < Q := by exact_mod_cast hQ
+  pm_8479 hTPos hTOne
+  pm_4728 hQReal Q hQ
   have hSqrtQ : T ^ (1 / 2 : ℝ) ≤ (Q : ℝ) := by
-    rw [← hScale, ← Real.rpow_mul (by positivity : (0 : ℝ) ≤ Q)]
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le
-      hQReal.le (by nlinarith : τ * (1 / 2 : ℝ) ≤ 1)
+    pm_5880
+    pm_5796 τ
   have hSplit : T ^ (1 + d) = T ^ (1 / 2 + d) * T ^ (1 / 2 : ℝ) := by
     rw [← Real.rpow_add hTPos]
     congr 1
@@ -1372,7 +1276,7 @@ theorem reflected_dyadic_scale_lower_of_expanded_cutoff
         field_simp [(Real.rpow_pos_of_pos hTPos (1 / 2 : ℝ)).ne']
   have hPUpper : (P : ℝ) ≤ T ^ (1 / 2 + d) := by
     exact (by exact_mod_cast hPM : (P : ℝ) ≤ M) |>.trans hMUpper
-  have ha : 0 < 1 / 2 + d := by linarith
+  pm_5776 ha
   have hInv : 0 ≤ 1 / (1 / 2 + d) := by positivity
   have hRaised := Real.rpow_le_rpow (Nat.cast_nonneg P) hPUpper hInv
   have hCancel : (T ^ (1 / 2 + d)) ^ (1 / (1 / 2 + d)) = T := by
@@ -1426,9 +1330,7 @@ theorem reflected_actual_scale_powered_gap_or_weyl_margin
   · exact Or.inl hNear
   right
   have hBelow : τ + s < 4 * τ₀ / 3 := by linarith
-  have hReciprocal : 2 - 4 * d < 1 / (1 / 2 + d) := by
-    rw [lt_div_iff₀ (by linarith : 0 < 1 / 2 + d)]
-    nlinarith [sq_pos_of_pos hd]
+  pm_4687
   have hNearTwo : 2 - 4 * d < τ := hReciprocal.trans_le hτLower
   have hWindow : 2 < 4 * τ₀ / 3 := by linarith
   have hWeyl := endpoint_zeta_window_upper_lt_weyl hσUpper hcert hWindow
@@ -1450,15 +1352,13 @@ theorem reflected_weyl_exponent_margin
     (hFar : θ < 6 * σ - 3 - s) :
     1 / (2 * θ) + 1 / 6 + 2 * d + s / 24 ≤
       1 / 2 - u - d * σ + (σ - 1) / τ - d := by
-  have hgap : 0 < σ - 1 / 2 := by linarith
+  pm_4686 hgap σ
   have hgapUpper : σ - 1 / 2 < 1 / 2 := by linarith
   have hτPos : 0 < τ := zero_lt_one.trans hτOne
   have hθPos : 0 < θ := by
-    have hden : 0 < 1 / 2 + d := by linarith
+    pm_5776 hden
     exact (div_pos (by norm_num) hden).trans_le hθLower
-  have hReciprocal : 2 - 4 * d < 1 / (1 / 2 + d) := by
-    rw [lt_div_iff₀ (by linarith : 0 < 1 / 2 + d)]
-    nlinarith [sq_pos_of_pos hd]
+  pm_4687
   have hSigmaMargin : s - 4 * d < 6 * σ - 5 := by
     linarith
   have hScaleSlack : 200 * d ≤ s := by
@@ -1528,7 +1428,7 @@ theorem typeISourceSmoothWeight_support
     (hn : typeISourceSmoothWeight Y A r n ≠ 0) :
     (((2 ^ r * Y : ℕ) : ℝ) / 2) < n ∧
       (n : ℝ) < 2 * (2 ^ r * Y : ℕ) := by
-  let Q : ℕ := 2 ^ r * Y
+  pm_4897 Q r Y
   have hCut : typeIDyadicCutoff ((n : ℝ) / Q) ≠ 0 := by
     intro h
     apply hn
@@ -1564,10 +1464,12 @@ noncomputable def normalizedTypeISourceDirichletCoeff
   ((((((2 ^ r * Y : ℕ) : ℝ) / 2) ^ σ : ℝ) : ℂ)) *
     typeISourceDirichletCoeff Y A r σ n
 
+section
+variable (Y A r : ℕ)
+include Y A r
 /-- The normalized coefficients of the actual source-smooth block are bounded
 by one on the entire natural line. -/
-theorem norm_normalizedTypeISourceDirichletCoeff_le_one
-    (Y A r : ℕ) (σ : ℝ) (hσ : 0 ≤ σ) :
+theorem norm_normalizedTypeISourceDirichletCoeff_le_one (σ : ℝ) (hσ : 0 ≤ σ) :
     ∀ n : ℕ, ‖normalizedTypeISourceDirichletCoeff Y A r σ n‖ ≤ 1 := by
   intro n
   by_cases hw : typeISourceSmoothWeight Y A r n = 0
@@ -1609,13 +1511,12 @@ theorem norm_normalizedTypeISourceDirichletCoeff_le_one
 /-- A source-smooth block is exactly one finite wide Dirichlet polynomial.
 The two apparent endpoint discrepancies are genuine zero terms: the left
 endpoint is killed by `typeITailBoundary`, and so is `A + 1`. -/
-theorem typeISourceSmoothBlock_eq_wideDirichletPoly
-    (Y A r : ℕ) (σ t : ℝ) (hY : 1 ≤ Y) :
+theorem typeISourceSmoothBlock_eq_wideDirichletPoly (σ t : ℝ) (hY : 1 ≤ Y) :
     typeISourceSmoothBlock Y A r σ t =
       wideDirichletPoly 1 (Nat.clog 2 (A + 1))
         (typeISourceDirichletCoeff Y A r σ) t := by
   classical
-  let k := Nat.clog 2 (A + 1)
+  pm_8402
   let term : ℕ → ℂ := fun n =>
     typeISourceDirichletCoeff Y A r σ n *
       (n : ℂ) ^ (-(t : ℂ) * I)
@@ -1627,9 +1528,7 @@ theorem typeISourceSmoothBlock_eq_wideDirichletPoly
       term n = 0 := by
     intro n hn hnSmall
     have hnOne : n = 1 := by
-      have hnData := Finset.mem_Icc.mp hn
-      simp only [Finset.mem_Ioc, not_and_or] at hnSmall
-      omega
+      pm_5938 Finset.mem_Icc.mp hnSmall
     subst n
     have hnotTail : 1 ∉ Finset.Ioc Y A := by
       simp only [Finset.mem_Ioc, not_and_or]
@@ -1646,16 +1545,12 @@ theorem typeISourceSmoothBlock_eq_wideDirichletPoly
     dsimp only [k]
     exact Nat.le_pow_clog (by omega) (A + 1)
   have hTailSubset : Finset.Ioc 1 (A + 1) ⊆ Finset.Ioc 1 (2 ^ k) := by
-    intro n hn
-    exact Finset.mem_Ioc.mpr ⟨(Finset.mem_Ioc.mp hn).1,
-      (Finset.mem_Ioc.mp hn).2.trans hCover⟩
+    pm_5250 n hn
   have hRightZero : ∀ n ∈ Finset.Ioc 1 (2 ^ k),
       n ∉ Finset.Ioc 1 (A + 1) → term n = 0 := by
     intro n hn hnSmall
     have hnAbove : A + 1 < n := by
-      have hnData := Finset.mem_Ioc.mp hn
-      simp only [Finset.mem_Ioc, not_and_or] at hnSmall
-      omega
+      pm_5938 Finset.mem_Ioc.mp hnSmall
     have hnotTail : n ∉ Finset.Ioc Y A := by
       simp only [Finset.mem_Ioc, not_and_or]
       exact Or.inr (by omega)
@@ -1675,18 +1570,15 @@ theorem typeISourceSmoothBlock_eq_wideDirichletPoly
 
 /-- Normalizing the source coefficients scales the complete source block by
 the same positive real scalar. -/
-theorem wideDirichletPoly_normalizedTypeISourceDirichletCoeff
-    (Y A r : ℕ) (σ t : ℝ) (hY : 1 ≤ Y) :
+theorem wideDirichletPoly_normalizedTypeISourceDirichletCoeff (σ t : ℝ) (hY : 1 ≤ Y) :
     wideDirichletPoly 1 (Nat.clog 2 (A + 1))
         (normalizedTypeISourceDirichletCoeff Y A r σ) t =
       (((((2 ^ r * Y : ℕ) : ℝ) / 2) ^ σ : ℝ) : ℂ) *
         typeISourceSmoothBlock Y A r σ t := by
   rw [typeISourceSmoothBlock_eq_wideDirichletPoly Y A r σ t hY]
-  unfold wideDirichletPoly normalizedTypeISourceDirichletCoeff
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro n _hn
+  pm_315 wideDirichletPoly normalizedTypeISourceDirichletCoeff Finset.mul_sum Finset.sum_congr n _hn
   ring
+end
 
 /-- A large actual source-smooth block yields one common nonzero dyadic
 block with unit-bounded coefficients.  The selected dyadic length remains
@@ -1709,12 +1601,12 @@ theorem extract_normalized_source_dyadic_block
       2 ^ j < 2 * (2 ^ r * Y) ∧
       2 ^ r * Y < 4 * 2 ^ j := by
   dsimp only
-  let k := Nat.clog 2 (A + 1)
+  pm_8402
   have hk : 0 < k := by
     dsimp only [k]
     apply Nat.clog_pos Nat.one_lt_two
     omega
-  have hQ : 0 < 2 ^ r * Y := by positivity
+  pm_1123
   have hScalePos : 0 < ((((2 ^ r * Y : ℕ) : ℝ) / 2) ^ σ) := by
     apply Real.rpow_pos_of_pos
     positivity
@@ -1734,14 +1626,13 @@ theorem extract_normalized_source_dyadic_block
       (((((2 ^ r * Y : ℕ) : ℝ) / 2) ^ σ) * V) hk hWide
   simp only [mul_one] at hLarge'
   have hSep' : IsSeparated 1 W' := by
-    intro x hx y hy hxy
-    exact hSeparated x (hWsub hx) y (hWsub hy) hxy
+    pm_203 hSeparated hWsub
   have hW' : W'.Nonempty := by
     by_contra hnot
     have hCardZero : W'.card = 0 := Finset.card_eq_zero.mpr
       (Finset.not_nonempty_iff_eq_empty.mp hnot)
     rw [hCardZero, Nat.cast_zero, mul_zero] at hCard
-    have hWCardPos : (0 : ℝ) < W.card := by exact_mod_cast hW.card_pos
+    pm_74 hWCardPos W.card hW.card_pos
     linarith
   obtain ⟨t, ht⟩ := hW'
   have hThresholdPos : 0 <
@@ -1790,8 +1681,7 @@ theorem extracted_source_logarithmic_scale_upper
     (hScale : typeILogarithmicScale T Q ≤ U) :
     1 < P ∧ typeILogarithmicScale T P ≤ 2 * U := by
   have hPFour : 4 ≤ P := by omega
-  have hPOne : 1 < P := by omega
-  have hQOne : 1 < Q := by omega
+  pm_6310
   have hTPos : 0 < T := zero_lt_one.trans_le hT
   have hPhysicalQ : T ≤ (Q : ℝ) ^ U :=
     (Real.logb_le_iff_le_rpow (by exact_mod_cast hQOne) hTPos).mp hScale
@@ -1805,8 +1695,7 @@ theorem extracted_source_logarithmic_scale_upper
   have hPower : ((P ^ 2 : ℕ) : ℝ) ^ U = (P : ℝ) ^ (2 * U) := by
     rw [Nat.cast_pow, ← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
     norm_num
-  refine ⟨hPOne, (Real.logb_le_iff_le_rpow
-    (by exact_mod_cast hPOne) hTPos).mpr ?_⟩
+  pm_5568 Real.logb_le_iff_le_rpow hTPos
   calc
     T ≤ (Q : ℝ) ^ U := hPhysicalQ
     _ ≤ ((P ^ 2 : ℕ) : ℝ) ^ U := hRaised
@@ -1822,8 +1711,7 @@ theorem extracted_source_logarithmic_scale_lower
     (hQP : Q < 4 * P) (hPQ : P < 2 * Q)
     (hScale : L ≤ typeILogarithmicScale T Q) :
     1 < P ∧ L / 2 ≤ typeILogarithmicScale T P := by
-  have hPOne : 1 < P := by omega
-  have hQOne : 1 < Q := by omega
+  pm_6310
   have hPhysicalQ : (Q : ℝ) ^ L ≤ T :=
     (Real.le_logb_iff_rpow_le (by exact_mod_cast hQOne) hT).mp hScale
   have hPQSquareNat : P ≤ Q ^ 2 := by
@@ -1838,8 +1726,7 @@ theorem extracted_source_logarithmic_scale_lower
     rw [Nat.cast_pow, ← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
     congr 1
     ring
-  refine ⟨hPOne, (Real.le_logb_iff_rpow_le
-    (by exact_mod_cast hPOne) hT).mpr ?_⟩
+  pm_5568 Real.le_logb_iff_rpow_le hT
   exact hRaised.trans_eq hPower |>.trans hPhysicalQ
 
 /-- A dyadic interval within a factor two above its physical source scale
@@ -1856,16 +1743,16 @@ theorem eventually_extracted_source_logarithmic_scale_lower_additive
         τ - δ ≤ typeILogarithmicScale T P := by
   let X : ℝ := U ^ 2 * Real.log 2 / δ
   let T₀ : ℝ := max 8 (Real.exp X)
-  refine ⟨T₀, le_max_left _ _, ?_⟩
+  pm_4889
   intro T τ Q P hT hQ hP hPQ hτ hτPos hτUpper
-  have hTEight : 8 ≤ T := (le_max_left _ _).trans hT
+  pm_4629
   have hTExp : Real.exp X ≤ T := (le_max_right _ _).trans hT
   have hTPos : 0 < T := by linarith
   have hTOne : 1 < T := by linarith
   have hLogT : 0 < Real.log T := Real.log_pos hTOne
-  have hLogQ : 0 < Real.log (Q : ℝ) := Real.log_pos (by exact_mod_cast hQ)
-  have hLogP : 0 < Real.log (P : ℝ) := Real.log_pos (by exact_mod_cast hP)
-  have hLogTwo : 0 < Real.log (2 : ℝ) := Real.log_pos (by norm_num)
+  pm_1456 hLogQ Q hQ
+  pm_1456 hLogP P hP
+  pm_7446 hLogTwo
   have hXLog : X ≤ Real.log T := by
     have hLogMono := Real.log_le_log (Real.exp_pos X) hTExp
     simpa only [Real.log_exp] using hLogMono
@@ -1921,10 +1808,7 @@ theorem sum_zero_real_part_eq_dirichletPoly
     (∑ n ∈ Finset.Ioc N (2 * N),
       a n * (n : ℂ) ^ (-(((0 : ℝ) : ℂ) + I * (t : ℂ)))) =
       dirichletPoly N a t := by
-  unfold dirichletPoly
-  apply Finset.sum_congr rfl
-  intro n _hn
-  congr 2
+  pm_8145 dirichletPoly n _hn
   norm_num
   ring
 
@@ -1939,7 +1823,7 @@ theorem unit_coeff_threshold_le_dyadic_length
     V ≤ (N : ℝ) := by
   have hEnergy := dyadic_energy_le_length N a ha
   have hThreshold := threshold_sq_le_length_mul_energy N V W a hV hW hLarge
-  have hN : 0 ≤ (N : ℝ) := Nat.cast_nonneg N
+  pm_1199 hN N
   nlinarith [sq_nonneg (V - (N : ℝ))]
 
 /-! ## Finite interval Abel bridges for the source boundary -/
@@ -1991,13 +1875,8 @@ theorem norm_weighted_sum_le_of_monotone
                   (∑ j ∈ Finset.range (i + 1), g j)‖ := norm_sum_le _ _
           _ ≤ ∑ i ∈ Finset.Ico 0 (N - 1),
               (f (i + 1) - f i) * B := by
-            apply Finset.sum_le_sum
-            intro i hi
-            have hi' := Finset.mem_Ico.mp hi
-            rw [norm_mul, norm_real, Real.norm_eq_abs,
-              abs_of_nonneg (sub_nonneg.mpr (hmono i (by omega)))]
-            exact mul_le_mul_of_nonneg_left (hpartial (i + 1) (by omega))
-              (sub_nonneg.mpr (hmono i (by omega)))
+            pm_5926 abs_of_nonneg sub_nonneg.mpr hmono
+            pm_5614 hmono
     _ = (2 * f (N - 1) - f 0) * B := by
       have htel : ∑ i ∈ Finset.Ico 0 (N - 1),
           (f (i + 1) - f i) = f (N - 1) - f 0 := by
@@ -2024,8 +1903,7 @@ theorem dirichletPoly_normalizedTypeIReflectedCoeff_eq_range
     omega
   unfold dirichletPoly dyadicInterval
   rw [hInterval, Finset.sum_Ico_eq_sum_range]
-  have hLength : 2 * P + 1 - (P + 1) = P := by omega
-  rw [hLength]
+  pm_4641 hLength P
   push_cast
   symm
   calc
@@ -2039,7 +1917,7 @@ theorem dirichletPoly_normalizedTypeIReflectedCoeff_eq_range
       intro i hi
       have hiL : i < min P (M - P) := Finset.mem_range.mp hi
       have hiDiff : i < M - P := lt_of_lt_of_le hiL (min_le_right _ _)
-      have hnPos : 0 < P + 1 + i := by omega
+      pm_8165 hnPos P i
       have hnM : P + 1 + i ≤ M := by omega
       rw [normalizedTypeIReflectedCoeff, ite_eq_left ⟨by omega, hnM⟩,
         Complex.real_smul]
@@ -2080,28 +1958,14 @@ theorem norm_dirichletPoly_normalizedTypeIReflectedCoeff_le_weyl_with_slack
     ‖dirichletPoly P (normalizedTypeIReflectedCoeff sigma M) t‖ ≤
       60 * (((2 * (P + 1) : ℕ) : ℝ) ^ sigma / (M : ℝ) ^ sigma) *
         Real.sqrt (X * ((P + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ)) := by
-  let Y : ℝ := t ^ (1 / 3 : ℝ)
+  pm_880
   let L : ℕ := min P (M - P)
   let f : ℕ → ℝ := fun i =>
     ((P + 1 + i : ℕ) : ℝ) ^ sigma / (M : ℝ) ^ sigma
   let g : ℕ → ℂ := fun i =>
     unitaryPhase (logarithmicPhase t (P + 1 + i))
-  have htPos : 0 < t := zero_lt_one.trans_le htOne
-  have hYOne : 1 ≤ Y := Real.one_le_rpow htOne (by norm_num)
-  have hYcube : Y ^ (3 : ℕ) = t := by
-    dsimp only [Y]
-    rw [← Real.rpow_natCast, ← Real.rpow_mul htPos.le]
-    norm_num
-  have hYUpper : Y ≤ ((P + 1 : ℕ) : ℝ) := by
-    have hRoot := Real.rpow_le_rpow htPos.le htP
-      (by norm_num : (0 : ℝ) ≤ 1 / 3)
-    have hBasePos : (0 : ℝ) < (P + 1 : ℕ) := by positivity
-    have hRight :
-        ((((P + 1 : ℕ) : ℝ) ^ (3 : ℕ)) ^ (1 / 3 : ℝ)) =
-          ((P + 1 : ℕ) : ℝ) := by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul hBasePos.le]
-      norm_num
-    simpa only [Y, hRight] using hRoot
+  pm_4688
+  pm_4689 P htP
   have hLPos : 0 < L := by
     dsimp only [L]
     exact lt_min hP (Nat.sub_pos_of_lt hPM)
@@ -2118,16 +1982,14 @@ theorem norm_dirichletPoly_normalizedTypeIReflectedCoeff_le_weyl_with_slack
       (by simpa only [hYcube] using hPt) (hj.trans hLUpper)
     rw [logarithmicSum_eq_sum_range] at hWeyl
     norm_num only [Nat.cast_add, Nat.cast_one] at hWeyl
-    rw [hYcube] at hWeyl
-    simpa only [Nat.cast_add, Nat.cast_one] using hWeyl
+    pm_354 hYcube hWeyl Nat.cast_add Nat.cast_one
   have hFNonneg : ∀ i, i < L → 0 ≤ f i := by
     intro i _hi
     dsimp only [f]
     positivity
   have hFMono : ∀ i, i + 1 < L → f i ≤ f (i + 1) := by
     intro i _hi
-    dsimp only [f]
-    apply div_le_div_of_nonneg_right _ (Real.rpow_nonneg (Nat.cast_nonneg M) _)
+    pm_6762
     apply Real.rpow_le_rpow
     · positivity
     · exact_mod_cast (show P + 1 + i ≤ P + 1 + (i + 1) by omega)
@@ -2140,8 +2002,7 @@ theorem norm_dirichletPoly_normalizedTypeIReflectedCoeff_le_weyl_with_slack
     omega
   have hFLast : f (L - 1) ≤
       (((2 * (P + 1) : ℕ) : ℝ) ^ sigma / (M : ℝ) ^ sigma) := by
-    dsimp only [f]
-    apply div_le_div_of_nonneg_right _ (Real.rpow_nonneg (Nat.cast_nonneg M) _)
+    pm_6762
     exact Real.rpow_le_rpow (by positivity) (by exact_mod_cast hLastTwo) hsigma
   rw [dirichletPoly_normalizedTypeIReflectedCoeff_eq_range
     sigma t P M hP hPM]
@@ -2175,11 +2036,11 @@ theorem norm_normalizedTypeIReflectedCoeff_le_physical_weyl
       (60 * 4 ^ sigma * Real.sqrt 12) *
         T ^ (2 * d + 1 / (2 * theta) + 1 / 6) := by
   have hTPos : 0 < T := zero_lt_one.trans_le hT
-  have hPReal : (1 : ℝ) < P := by exact_mod_cast hP
+  pm_4728 hPReal P hP
   have hMPos : (0 : ℝ) < M := by
     exact_mod_cast (lt_trans Nat.zero_lt_one (lt_trans hP hPM))
   have hXOne : (1 : ℝ) ≤ 2 * T ^ (4 * d) := by
-    have hPow : 1 ≤ T ^ (4 * d) := Real.one_le_rpow hT (by positivity)
+    pm_6094
     nlinarith
   have hRaw := norm_dirichletPoly_normalizedTypeIReflectedCoeff_le_weyl_with_slack
     sigma w (2 * T ^ (4 * d)) P M hsigma (by omega) hPM hwOne hXOne hPt htP
@@ -2204,17 +2065,13 @@ theorem norm_normalizedTypeIReflectedCoeff_le_physical_weyl
     rw [← hPEq]
     nlinarith [hPReal.le]
   have hwThird : w ^ (1 / 3 : ℝ) ≤ 3 * T ^ (1 / 3 : ℝ) := by
-    have hRpow := Real.rpow_le_rpow (by positivity : (0 : ℝ) ≤ w) hwUpper
-      (by norm_num : (0 : ℝ) ≤ 1 / 3)
+    pm_5927 hRpow w hwUpper
     calc
       w ^ (1 / 3 : ℝ) ≤ (3 * T) ^ (1 / 3 : ℝ) := hRpow
       _ = 3 ^ (1 / 3 : ℝ) * T ^ (1 / 3 : ℝ) := by
-        rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 3) hTPos.le]
+        pm_1232 hTPos.le
       _ ≤ 3 * T ^ (1 / 3 : ℝ) := by
-        gcongr
-        simpa only [Real.rpow_one] using
-          Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 3)
-            (by norm_num : (1 / 3 : ℝ) ≤ 1)
+        pm_4690
   have hInside :
       (2 * T ^ (4 * d)) * ((P + 1 : ℕ) : ℝ) * w ^ (1 / 3 : ℝ) ≤
         12 * T ^ (4 * d + 1 / theta + 1 / 3) := by
@@ -2267,11 +2124,7 @@ theorem norm_dirichletPoly_normalizedTypeIReflectedCoeff_neg
       sourceDirichletPoly P (normalizedTypeIReflectedCoeff sigma M) t =
         dirichletPoly P (normalizedTypeIReflectedCoeff sigma M) (-t) := by
     unfold sourceDirichletPoly dirichletPoly
-    apply Finset.sum_congr rfl
-    intro n _hn
-    congr 2
-    push_cast
-    ring
+    pm_8456 n _hn
   calc
     ‖dirichletPoly P (normalizedTypeIReflectedCoeff sigma M) (-t)‖ =
         ‖sourceDirichletPoly P (normalizedTypeIReflectedCoeff sigma M) t‖ :=
@@ -2330,24 +2183,12 @@ theorem extract_common_signed_reflected_block
     ⟨Wsign, hWsign, hSignCard, hNegative⟩ |
       ⟨Wsign, hWsign, hSignCard, hPositive⟩
   · have hSepSign : IsSeparated 1 Wsign := by
-      intro x hx y hy hxy
-      exact hSeparated x (hWsign hx) y (hWsign hy) hxy
-    have hRangeSign : ∀ t ∈ Wsign,
-        T - D ≤ t ∧ t ≤ 2 * T + D := by
-      intro t ht
-      exact hRange t (hWsign ht)
-    obtain ⟨j, hj, U, hSepU, hBaseU, hURange, hCardU, hLargeU⟩ :=
-      extract_common_reflected_mhh_block Wsign hM hH hT hDH
-        hSepSign hRangeSign hNegative
+      pm_203 hSeparated hWsign
+    pm_4692
+    pm_5755 extract_common_reflected_mhh_block hNegative
     let a : ℕ → ℂ := phaseShiftCoeffs (-3 * T)
       (normalizedTypeIReflectedCoeff sigma M)
-    refine ⟨j, hj, U, a, hSepU, hBaseU, hURange, ?_, ?_, ?_, ?_⟩
-    · calc
-        W.card ≤ 2 * Wsign.card := hSignCard
-        _ ≤ 2 * ((2 * (2 * ⌈H⌉₊ + 1)) *
-            (Nat.clog 2 M) * U.card) := by gcongr
-        _ = 2 * (2 * (2 * ⌈H⌉₊ + 1)) *
-            (Nat.clog 2 M) * U.card := by ring
+    pm_4691
     · intro n hn
       dsimp only [a]
       rw [norm_phaseShiftCoeffs]
@@ -2362,23 +2203,11 @@ theorem extract_common_signed_reflected_block
       · dsimp only [a]
         exact norm_phaseShifted_normalized_reflected_eq sigma T v (2 ^ j) M
   · have hSepSign : IsSeparated 1 Wsign := by
-      intro x hx y hy hxy
-      exact hSeparated x (hWsign hx) y (hWsign hy) hxy
-    have hRangeSign : ∀ t ∈ Wsign,
-        T - D ≤ t ∧ t ≤ 2 * T + D := by
-      intro t ht
-      exact hRange t (hWsign ht)
-    obtain ⟨j, hj, U, hSepU, hBaseU, hURange, hCardU, hLargeU⟩ :=
-      extract_common_positive_reflected_mhh_block Wsign hM hH hT hDH
-        hSepSign hRangeSign hPositive
+      pm_203 hSeparated hWsign
+    pm_4692
+    pm_5755 extract_common_positive_reflected_mhh_block hPositive
     let a : ℕ → ℂ := normalizedTypeIReflectedCoeff sigma M
-    refine ⟨j, hj, U, a, hSepU, hBaseU, hURange, ?_, ?_, ?_, ?_⟩
-    · calc
-        W.card ≤ 2 * Wsign.card := hSignCard
-        _ ≤ 2 * ((2 * (2 * ⌈H⌉₊ + 1)) *
-            (Nat.clog 2 M) * U.card) := by gcongr
-        _ = 2 * (2 * (2 * ⌈H⌉₊ + 1)) *
-            (Nat.clog 2 M) * U.card := by ring
+    pm_4691
     · intro n hn
       dsimp only [a]
       exact norm_normalizedTypeIReflectedCoeff_le_one hsigma
@@ -2421,7 +2250,7 @@ theorem norm_weighted_Ioc_le_of_antitone
   rw [hIoc, Finset.sum_Ico_eq_sum_range]
   have hLength : U + 1 - (L + 1) = U - L := by omega
   rw [hLength]
-  simpa only [F, G, Nat.cast_add, Nat.cast_one] using hBound
+  pm_99 F G Nat.cast_add Nat.cast_one hBound
 
 /-- The fixed smooth step used by the Type-I partition is decreasing. -/
 theorem antitone_typeISmoothStep : Antitone typeISmoothStep := by
@@ -2460,8 +2289,7 @@ theorem source_weighted_cpow_eq_smul_phase
         unitaryPhase (logarithmicPhase t n) := by
   rw [Complex.real_smul,
     unitaryPhase_logarithmicPhase_eq_cpow t n hn]
-  rw [Complex.ofReal_mul, Complex.ofReal_cpow (Nat.cast_nonneg n)]
-  simp only [Complex.ofReal_natCast]
+  pm_8019 Complex.ofReal_mul
   push_cast
   ring
 
@@ -2476,42 +2304,14 @@ theorem norm_smoothStep_weighted_Ioc_le_sqrt
         (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
           unitaryPhase (logarithmicPhase t n)‖ ≤
       (L + 1 : ℝ) ^ (-σ) * (100 * Real.sqrt t) := by
-  let f : ℕ → ℝ := fun n =>
-    typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    dsimp only [f]
-    exact mul_nonneg (typeISmoothStep_nonneg _) (Real.rpow_nonneg (by positivity) _)
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    have hnPos : 0 < n := lt_trans hL hnL
-    have harg : c * (n : ℝ) / Q ≤ c * ((n + 1 : ℕ) : ℝ) / Q := by
-      apply div_le_div_of_nonneg_right _ hQReal.le
-      exact mul_le_mul_of_nonneg_left (by exact_mod_cast Nat.le_succ n) hc
-    have hstep := antitone_typeISmoothStep harg
-    have hpow : ((n + 1 : ℕ) : ℝ) ^ (-σ) ≤ (n : ℝ) ^ (-σ) := by
-      apply Real.rpow_le_rpow_of_nonpos
-      · positivity
-      · exact_mod_cast Nat.le_succ n
-      · linarith
-    dsimp only [f]
-    exact mul_le_mul hstep hpow (Real.rpow_nonneg (by positivity) _)
-      (typeISmoothStep_nonneg _)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤ 100 * Real.sqrt t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_sqrt L j t hL
-        (hj.trans hLength) hLt htL
+  pm_4695
+  pm_4147
+  pm_4696
+  pm_4693
+  pm_4697
   have hBound := norm_weighted_Ioc_le_of_antitone f g L U
     (100 * Real.sqrt t) hLU hf hanti hpartial
-  have hStepOne : typeISmoothStep
-      (c * (((L + 1 : ℕ) : ℝ)) / Q) ≤ 1 := typeISmoothStep_le_one _
-  have hPowNonneg : 0 ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) :=
-    Real.rpow_nonneg (by positivity) _
+  pm_4694
   calc
     ‖∑ n ∈ Finset.Ioc L U,
         (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
@@ -2539,47 +2339,17 @@ theorem norm_smoothStep_weighted_Ioc_le_weyl
           unitaryPhase (logarithmicPhase t n)‖ ≤
       ((L + 1 : ℕ) : ℝ) ^ (-σ) *
         (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ))) := by
-  let f : ℕ → ℝ := fun n =>
-    typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  let Y : ℝ := t ^ (1 / 3 : ℝ)
-  have htPos : 0 < t := zero_lt_one.trans_le htOne
-  have hYOne : 1 ≤ Y := Real.one_le_rpow htOne (by norm_num)
-  have hYcube : Y ^ (3 : ℕ) = t := by
-    dsimp only [Y]
-    rw [← Real.rpow_natCast, ← Real.rpow_mul htPos.le]
-    norm_num
-  have hYUpper : Y ≤ ((L + 1 : ℕ) : ℝ) := by
-    have hRoot := Real.rpow_le_rpow htPos.le hCube
-      (by norm_num : (0 : ℝ) ≤ 1 / 3)
-    have hBasePos : (0 : ℝ) < (L + 1 : ℕ) := by positivity
-    have hRight :
-        ((((L + 1 : ℕ) : ℝ) ^ (3 : ℕ)) ^ (1 / 3 : ℝ)) =
-          ((L + 1 : ℕ) : ℝ) := by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul hBasePos.le]
-      norm_num
-    simpa only [Y, hRight] using hRoot
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  pm_4695
+  pm_880
+  pm_4688
+  pm_4689 L hCube
+  pm_4147
   have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
     intro n _hn
     dsimp only [f]
     exact mul_nonneg (typeISmoothStep_nonneg _)
       (Real.rpow_nonneg (by positivity) _)
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    have hnPos : 0 < n := lt_trans hL hnL
-    have harg : c * (n : ℝ) / Q ≤ c * ((n + 1 : ℕ) : ℝ) / Q := by
-      apply div_le_div_of_nonneg_right _ hQReal.le
-      exact mul_le_mul_of_nonneg_left (by exact_mod_cast Nat.le_succ n) hc
-    have hstep := antitone_typeISmoothStep harg
-    have hpow : ((n + 1 : ℕ) : ℝ) ^ (-σ) ≤ (n : ℝ) ^ (-σ) := by
-      apply Real.rpow_le_rpow_of_nonpos
-      · positivity
-      · exact_mod_cast Nat.le_succ n
-      · linarith
-    dsimp only [f]
-    exact mul_le_mul hstep hpow (Real.rpow_nonneg (by positivity) _)
-      (typeISmoothStep_nonneg _)
+  pm_4693
   have hpartial : ∀ j, j ≤ U - L →
       ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤
         30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * Y) := by
@@ -2591,13 +2361,10 @@ theorem norm_smoothStep_weighted_Ioc_le_weyl
       (hj.trans hLength |>.trans (Nat.le_succ L))
     rw [logarithmicSum_eq_sum_range] at hWeyl
     rw [hYcube] at hWeyl
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using hWeyl
+    pm_99 Nat.cast_add Nat.cast_one Nat.add_assoc add_assoc hWeyl
   have hBound := norm_weighted_Ioc_le_of_antitone f g L U
     (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * Y)) hLU hf hanti hpartial
-  have hStepOne : typeISmoothStep
-      (c * (((L + 1 : ℕ) : ℝ)) / Q) ≤ 1 := typeISmoothStep_le_one _
-  have hPowNonneg : 0 ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) :=
-    Real.rpow_nonneg (by positivity) _
+  pm_4694
   calc
     ‖∑ n ∈ Finset.Ioc L U,
         (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
@@ -2660,8 +2427,8 @@ theorem typeISourceSmoothBlock_eq_terminal_three_sums
         (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
           unitaryPhase (logarithmicPhase t n)) := by
   dsimp only
-  let Q : ℕ := 2 ^ r * Y
-  have hQ : 0 < Q := by dsimp only [Q]; positivity
+  pm_4897 Q r Y
+  pm_4187
   have hYHalf : Y ≤ Q / 2 := by
     apply (Nat.le_div_iff_mul_le (by omega : 0 < 2)).mpr
     omega
@@ -2678,9 +2445,7 @@ theorem typeISourceSmoothBlock_eq_terminal_three_sums
       ∑ n ∈ Finset.Ioc (Q / 2) (min Q A),
         (typeIDyadicCutoff ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
           unitaryPhase (logarithmicPhase t n) := by
-    rw [← Finset.sum_subset hLowerSubset]
-    intro n hn hnSmall
-    have hnData := Finset.mem_Ioc.mp hn
+    pm_8028 hLowerSubset
     have hnHalf : n ≤ Q / 2 := by
       by_contra hnot
       exact hnSmall (Finset.mem_Ioc.mpr ⟨lt_of_not_ge hnot, hnData.2⟩)
@@ -2774,23 +2539,8 @@ theorem norm_plain_weighted_Ioc_le_sqrt
     ‖∑ n ∈ Finset.Ioc L U,
         ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
       (L + 1 : ℝ) ^ (-σ) * (100 * Real.sqrt t) := by
-  let f : ℕ → ℝ := fun n => (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    exact Real.rpow_nonneg (Nat.cast_nonneg n) _
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    dsimp only [f]
-    exact Real.rpow_le_rpow_of_nonpos (by exact_mod_cast (lt_trans hL hnL))
-      (by exact_mod_cast Nat.le_succ n) (neg_nonpos.mpr hσ)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤ 100 * Real.sqrt t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_sqrt L j t hL
-        (hj.trans hLength) hLt htL
+  pm_4698
+  pm_4697
   simpa only [f, g, Nat.cast_add, Nat.cast_one] using
     norm_weighted_Ioc_le_of_antitone f g L U
       (100 * Real.sqrt t) hLU hf hanti hpartial
@@ -2806,14 +2556,9 @@ theorem norm_smoothStep_weighted_Ioc_le_div
         (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
           unitaryPhase (logarithmicPhase t n)‖ ≤
       (L + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (L : ℝ) / t) := by
-  let f : ℕ → ℝ := fun n =>
-    typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    dsimp only [f]
-    exact mul_nonneg (typeISmoothStep_nonneg _) (Real.rpow_nonneg (by positivity) _)
+  pm_4695
+  pm_4147
+  pm_4696
   have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
     intro n hnL _hnU
     have hnPos : 0 < n := lt_trans hL hnL
@@ -2827,20 +2572,10 @@ theorem norm_smoothStep_weighted_Ioc_le_div
     dsimp only [f]
     exact mul_le_mul hstep hpow (Real.rpow_nonneg (by positivity) _)
       (typeISmoothStep_nonneg _)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤
-        6 * Real.pi * (L : ℝ) / t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_div L j t hL
-        (hj.trans hLength) htOne htL
+  pm_4699
   have hBound := norm_weighted_Ioc_le_of_antitone f g L U
     (6 * Real.pi * (L : ℝ) / t) hLU hf hanti hpartial
-  have hStepOne : typeISmoothStep
-      (c * (((L + 1 : ℕ) : ℝ)) / Q) ≤ 1 := typeISmoothStep_le_one _
-  have hPowNonneg : 0 ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) :=
-    Real.rpow_nonneg (by positivity) _
+  pm_4694
   calc
     ‖∑ n ∈ Finset.Ioc L U,
         (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
@@ -2864,24 +2599,8 @@ theorem norm_plain_weighted_Ioc_le_div
     ‖∑ n ∈ Finset.Ioc L U,
         ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
       (L + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (L : ℝ) / t) := by
-  let f : ℕ → ℝ := fun n => (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    exact Real.rpow_nonneg (Nat.cast_nonneg n) _
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    dsimp only [f]
-    exact Real.rpow_le_rpow_of_nonpos (by exact_mod_cast (lt_trans hL hnL))
-      (by exact_mod_cast Nat.le_succ n) (neg_nonpos.mpr hσ)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤
-        6 * Real.pi * (L : ℝ) / t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_div L j t hL
-        (hj.trans hLength) htOne htL
+  pm_4698
+  pm_4699
   simpa only [f, g, Nat.cast_add, Nat.cast_one] using
     norm_weighted_Ioc_le_of_antitone f g L U
       (6 * Real.pi * (L : ℝ) / t) hLU hf hanti hpartial
@@ -2905,15 +2624,9 @@ theorem norm_plain_weighted_Ioc_le_sqrt_add_div
           nlinarith [Real.sqrt_nonneg t])
     · exact (norm_plain_weighted_Ioc_le_sqrt hσ hLU hL hLength
           (le_of_not_ge htL) htSq).trans (by
-            apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg (by positivity) _)
-            have hDiv : 0 ≤ 6 * Real.pi * (L : ℝ) / t := by positivity
+            pm_4700
             linarith)
-  · have hEmpty : Finset.Ioc L U = ∅ := by
-      ext n
-      simp
-      omega
-    rw [hEmpty, Finset.sum_empty, norm_zero]
-    positivity
+  pm_1315
 
 /-- Smooth-cutoff counterpart of
 `norm_plain_weighted_Ioc_le_sqrt_add_div`. -/
@@ -2936,15 +2649,9 @@ theorem norm_smoothStep_weighted_Ioc_le_sqrt_add_div
     · exact (norm_smoothStep_weighted_Ioc_le_sqrt c σ t Q L U hc hσ hQ
           hL hLU hLength (le_of_not_ge htL) htSq).trans
         (by
-          apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg (by positivity) _)
-          have hDiv : 0 ≤ 6 * Real.pi * (L : ℝ) / t := by positivity
+          pm_4700
           linarith)
-  · have hEmpty : Finset.Ioc L U = ∅ := by
-      ext n
-      simp
-      omega
-    rw [hEmpty, Finset.sum_empty, norm_zero]
-    positivity
+  pm_1315
 
 /-- Quantitative elimination bound for a classified upper-edge source block.
 The proof uses the exact three-sum identity above and controls all three
@@ -2959,26 +2666,20 @@ theorem norm_typeISourceSmoothBlock_terminal_le
       3 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
         (100 * Real.sqrt t +
           6 * Real.pi * ((2 ^ r * Y : ℕ) : ℝ) / t) := by
-  let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
+  pm_4704
   have hpowFour : 4 ≤ 2 ^ r := by
-    simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
+    pm_4703
   have hQFour : 4 ≤ Q := by
     dsimp only [Q]
     have hYOne : 1 ≤ Y := hY
-    calc
-      4 = 4 * 1 := by omega
-      _ ≤ 4 * Y := Nat.mul_le_mul_left 4 hYOne
-      _ ≤ 2 ^ r * Y := Nat.mul_le_mul_right Y hpowFour
+    pm_5584 hYOne hpowFour
   have hQ : 0 < Q := by omega
-  have hL : 0 < L := by dsimp only [L]; omega
+  pm_4647 hL L
   have hEven : 2 ∣ Q := by
     dsimp only [Q]
     exact dvd_mul_of_dvd_left (by
       exact dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
+  pm_4705
   have hLower : 2 * (Y + 1) ≤ Q := by
     calc
       2 * (Y + 1) ≤ 4 * Y := by omega
@@ -2988,46 +2689,27 @@ theorem norm_typeISourceSmoothBlock_terminal_le
   have hLowerLength : min Q A - L ≤ L := by omega
   have hUpperLength : A - Q ≤ Q := by omega
   have htSqQ : t ≤ (Q : ℝ) ^ 2 := by
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
+    pm_6311
     have hSq : (L : ℝ) ^ 2 ≤ (Q : ℝ) ^ 2 := by nlinarith
     exact htSq.trans hSq
-  let B : ℝ := 100 * Real.sqrt t + 6 * Real.pi * (Q : ℝ) / t
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
-  have hPlain := norm_plain_weighted_Ioc_le_sqrt_add_div
-    (L := L) (U := min Q A) hσ hL hLowerLength htOne htSq
-  have hRise := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    2 σ t Q L (min Q A) (by norm_num) hσ hQ hL hLowerLength htOne htSq
-  have hFall := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    1 σ t Q Q A (by norm_num) hσ hQ hQ hUpperLength htOne htSqQ
-  have hLowerB :
-      100 * Real.sqrt t + 6 * Real.pi * (L : ℝ) / t ≤ B := by
-    dsimp only [B]
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
-    have htPos : 0 < t := by linarith
-    gcongr
-  have hWeight : ((Q + 1 : ℕ) : ℝ) ^ (-σ) ≤
-      ((L + 1 : ℕ) : ℝ) ^ (-σ) := by
-    apply Real.rpow_le_rpow_of_nonpos
-    · positivity
-    · exact_mod_cast Nat.add_le_add_right (Nat.div_le_self Q 2) 1
-    · linarith
+  pm_5706
+  pm_4165
+  pm_4706
+  pm_6652 A
+  pm_4702
   have hPlain' :
       ‖∑ n ∈ Finset.Ioc L (min Q A),
           ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
         ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
     by
-      simpa only [Nat.cast_add, Nat.cast_one] using
-        hPlain.trans (mul_le_mul_of_nonneg_left hLowerB
-          (Real.rpow_nonneg (show 0 ≤ (L : ℝ) + 1 by positivity) (-σ)))
+      pm_996 hPlain.trans
   have hRise' :
       ‖∑ n ∈ Finset.Ioc L (min Q A),
           (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
             unitaryPhase (logarithmicPhase t n)‖ ≤
         ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
     by
-      simpa only [Nat.cast_add, Nat.cast_one] using
-        hRise.trans (mul_le_mul_of_nonneg_left hLowerB
-          (Real.rpow_nonneg (show 0 ≤ (L : ℝ) + 1 by positivity) (-σ)))
+      pm_996 hRise.trans
   have hFall' :
       ‖∑ n ∈ Finset.Ioc Q A,
           (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
@@ -3035,19 +2717,10 @@ theorem norm_typeISourceSmoothBlock_terminal_le
         ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
     calc
       _ ≤ ((Q + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-        simpa only [B, Nat.cast_add, Nat.cast_one, one_mul] using hFall
+        pm_99 B Nat.cast_add Nat.cast_one one_mul hFall
       _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
         mul_le_mul_of_nonneg_right hWeight hB
-  rw [typeISourceSmoothBlock_eq_terminal_three_sums Y A r σ t hY
-    (by simpa only [Q] using hLower)]
-  change ‖(∑ n ∈ Finset.Ioc L (min Q A),
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)) -
-      (∑ n ∈ Finset.Ioc L (min Q A),
-        (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)) +
-      (∑ n ∈ Finset.Ioc Q A,
-        (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n))‖ ≤ _
+  pm_4701
   calc
     _ ≤ ‖∑ n ∈ Finset.Ioc L (min Q A),
           ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ +
@@ -3057,7 +2730,7 @@ theorem norm_typeISourceSmoothBlock_terminal_le
         ‖∑ n ∈ Finset.Ioc Q A,
           (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
             unitaryPhase (logarithmicPhase t n)‖ := by
-      exact (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
+      pm_4707
     _ ≤ (((L + 1 : ℕ) : ℝ) ^ (-σ) * B) +
         (((L + 1 : ℕ) : ℝ) ^ (-σ) * B) +
         (((L + 1 : ℕ) : ℝ) ^ (-σ) * B) := by linarith
@@ -3080,9 +2753,7 @@ theorem source_upper_smooth_sum_eq_min_two_mul
     intro n hn
     exact Finset.mem_Ioc.mpr ⟨(Finset.mem_Ioc.mp hn).1,
       (Finset.mem_Ioc.mp hn).2.trans (min_le_right _ _)⟩
-  rw [← Finset.sum_subset hSub]
-  intro n hn hnSmall
-  have hnData := Finset.mem_Ioc.mp hn
+  pm_8028 hSub
   have hnTwo : 2 * Q ≤ n := by
     by_contra hnot
     have hnLt : n < 2 * Q := lt_of_not_ge hnot
@@ -3093,87 +2764,42 @@ theorem source_upper_smooth_sum_eq_min_two_mul
     exact_mod_cast hnTwo
   rw [typeISmoothStep_eq_zero hRatio, zero_mul, zero_smul]
 
+section
+variable {Y A r : ℕ} {σ t : ℝ} (hY : 0 < Y) (hr : 2 ≤ r)
+include Y A r σ t hY hr
 /-- Uniform square-root cancellation bound for every classified source
 block, with no upper-edge assumption.  The proof uses the exact support at
 `2Q`; consequently the ambient sharp cutoff never appears in an interval
 length estimate. -/
-theorem norm_typeISourceSmoothBlock_le_sqrt
-    {Y A r : ℕ} {σ t : ℝ}
-    (hY : 0 < Y) (hr : 2 ≤ r) (hσ : 0 ≤ σ)
+theorem norm_typeISourceSmoothBlock_le_sqrt (hσ : 0 ≤ σ)
     (htOne : 1 ≤ t)
     (htSq : t ≤ (((2 ^ r * Y) / 2 : ℕ) : ℝ) ^ 2) :
     ‖typeISourceSmoothBlock Y A r σ t‖ ≤
       3 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
         (100 * Real.sqrt t +
           6 * Real.pi * ((2 ^ r * Y : ℕ) : ℝ) / t) := by
-  let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
-  let U : ℕ := min (2 * Q) A
-  have hpowFour : 4 ≤ 2 ^ r := by
-    simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-  have hQFour : 4 ≤ Q := by
-    dsimp only [Q]
-    calc
-      4 = 4 * 1 := by omega
-      _ ≤ 4 * Y := Nat.mul_le_mul_left 4 hY
-      _ ≤ 2 ^ r * Y := Nat.mul_le_mul_right Y hpowFour
-  have hQ : 0 < Q := by omega
-  have hL : 0 < L := by dsimp only [L]; omega
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left
-      (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
-  have hLower : 2 * (Y + 1) ≤ Q := by
-    calc
-      2 * (Y + 1) ≤ 4 * Y := by omega
-      _ ≤ Q := by
-        dsimp only [Q]
-        exact Nat.mul_le_mul_right Y hpowFour
-  have hLowerLength : min Q A - L ≤ L := by omega
-  have hUpperLength : U - Q ≤ Q := by
-    dsimp only [U]
-    omega
+  pm_4704
+  pm_7861
+  pm_4708
   have htSqQ : t ≤ (Q : ℝ) ^ 2 := by
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
+    pm_6311
     exact htSq.trans (by nlinarith)
-  let B : ℝ := 100 * Real.sqrt t + 6 * Real.pi * (Q : ℝ) / t
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
-  have hPlain := norm_plain_weighted_Ioc_le_sqrt_add_div
-    (L := L) (U := min Q A) hσ hL hLowerLength htOne htSq
-  have hRise := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    2 σ t Q L (min Q A) (by norm_num) hσ hQ hL hLowerLength htOne htSq
-  have hFall := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    1 σ t Q Q U (by norm_num) hσ hQ hQ hUpperLength htOne htSqQ
-  have hLowerB :
-      100 * Real.sqrt t + 6 * Real.pi * (L : ℝ) / t ≤ B := by
-    dsimp only [B]
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
-    have htPos : 0 < t := by linarith
-    gcongr
-  have hWeight : ((Q + 1 : ℕ) : ℝ) ^ (-σ) ≤
-      ((L + 1 : ℕ) : ℝ) ^ (-σ) := by
-    apply Real.rpow_le_rpow_of_nonpos
-    · positivity
-    · exact_mod_cast Nat.add_le_add_right (Nat.div_le_self Q 2) 1
-    · linarith
+  pm_5706
+  pm_4165
+  pm_4706
+  pm_6652 U
+  pm_4702
   have hPlain' :
       ‖∑ n ∈ Finset.Ioc L (min Q A),
           ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
         ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-    simpa only [Nat.cast_add, Nat.cast_one] using
-      hPlain.trans (mul_le_mul_of_nonneg_left hLowerB
-        (Real.rpow_nonneg (by positivity) _))
+    pm_6418 hPlain.trans
   have hRise' :
       ‖∑ n ∈ Finset.Ioc L (min Q A),
           (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
             unitaryPhase (logarithmicPhase t n)‖ ≤
         ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-    simpa only [Nat.cast_add, Nat.cast_one] using
-      hRise.trans (mul_le_mul_of_nonneg_left hLowerB
-        (Real.rpow_nonneg (by positivity) _))
+    pm_6418 hRise.trans
   have hFall' :
       ‖∑ n ∈ Finset.Ioc Q A,
           (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
@@ -3183,19 +2809,10 @@ theorem norm_typeISourceSmoothBlock_le_sqrt
     calc
       _ ≤ ((Q + 1 : ℕ) : ℝ) ^ (-σ) *
           (100 * Real.sqrt t + 6 * Real.pi * (Q : ℝ) / t) := by
-        simpa only [U, Nat.cast_add, Nat.cast_one, one_mul] using hFall
+        pm_99 U Nat.cast_add Nat.cast_one one_mul hFall
       _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
         mul_le_mul_of_nonneg_right hWeight hB
-  rw [typeISourceSmoothBlock_eq_terminal_three_sums Y A r σ t hY
-    (by simpa only [Q] using hLower)]
-  change ‖(∑ n ∈ Finset.Ioc L (min Q A),
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)) -
-      (∑ n ∈ Finset.Ioc L (min Q A),
-        (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)) +
-      (∑ n ∈ Finset.Ioc Q A,
-        (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n))‖ ≤ _
+  pm_4701
   calc
     _ ≤ ‖∑ n ∈ Finset.Ioc L (min Q A),
           ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ +
@@ -3205,7 +2822,7 @@ theorem norm_typeISourceSmoothBlock_le_sqrt
         ‖∑ n ∈ Finset.Ioc Q A,
           (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
             unitaryPhase (logarithmicPhase t n)‖ := by
-      exact (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
+      pm_4707
     _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B +
         ((L + 1 : ℕ) : ℝ) ^ (-σ) * B +
         ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by linarith
@@ -3219,8 +2836,6 @@ range `Q^2 \lesssim t \lesssim Q^3`.  This theorem consumes the exact
 three-sum expansion of the source block, including both smooth boundary
 pieces, rather than replacing it by a coefficient-free model. -/
 theorem norm_typeISourceSmoothBlock_le_weyl
-    {Y A r : ℕ} {σ t : ℝ}
-    (hY : 0 < Y) (hr : 2 ≤ r)
     (hInterior : 2 * (2 ^ r * Y) ≤ A) (hσ : 0 ≤ σ)
     (htOne : 1 ≤ t)
     (hSquare : ((((2 ^ r * Y) + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ 8 * t)
@@ -3228,37 +2843,10 @@ theorem norm_typeISourceSmoothBlock_le_weyl
     ‖typeISourceSmoothBlock Y A r σ t‖ ≤
       90 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
         Real.sqrt (8 * (((2 ^ r * Y + 1 : ℕ) : ℝ)) * t ^ (1 / 3 : ℝ)) := by
-  let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
-  let U : ℕ := min (2 * Q) A
+  pm_4704
+  pm_7861
   let R : ℝ := Real.sqrt (8 * ((Q + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ))
-  have hpowFour : 4 ≤ 2 ^ r := by
-    simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-  have hQFour : 4 ≤ Q := by
-    dsimp only [Q]
-    calc
-      4 = 4 * 1 := by omega
-      _ ≤ 4 * Y := Nat.mul_le_mul_left 4 hY
-      _ ≤ 2 ^ r * Y := Nat.mul_le_mul_right Y hpowFour
-  have hQ : 0 < Q := by omega
-  have hL : 0 < L := by dsimp only [L]; omega
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left
-      (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
-  have hLower : 2 * (Y + 1) ≤ Q := by
-    calc
-      2 * (Y + 1) ≤ 4 * Y := by omega
-      _ ≤ Q := by
-        dsimp only [Q]
-        exact Nat.mul_le_mul_right Y hpowFour
-  have hLowerLength : min Q A - L ≤ L := by omega
-  have hUpperLength : U - Q ≤ Q := by
-    dsimp only [U]
-    omega
+  pm_4708
   have hLQ : L + 1 ≤ Q + 1 := by omega
   have hLQReal : (((L + 1 : ℕ) : ℝ)) ≤ (((Q + 1 : ℕ) : ℝ)) := by
     exact_mod_cast hLQ
@@ -3297,17 +2885,13 @@ theorem norm_typeISourceSmoothBlock_le_weyl
       ‖∑ n ∈ Finset.Ioc L (min Q A),
           ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
         (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
-    exact hPlain.trans (mul_le_mul_of_nonneg_left
-      (mul_le_mul_of_nonneg_left hRoot (by norm_num))
-      (Real.rpow_nonneg (by positivity) _))
+    pm_6419 hPlain.trans
   have hRise' :
       ‖∑ n ∈ Finset.Ioc L (min Q A),
           (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
             unitaryPhase (logarithmicPhase t n)‖ ≤
         (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
-    exact hRise.trans (mul_le_mul_of_nonneg_left
-      (mul_le_mul_of_nonneg_left hRoot (by norm_num))
-      (Real.rpow_nonneg (by positivity) _))
+    pm_6419 hRise.trans
   have hFall' :
       ‖∑ n ∈ Finset.Ioc Q A,
           (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
@@ -3319,16 +2903,7 @@ theorem norm_typeISourceSmoothBlock_le_weyl
         simpa only [U, R, one_mul] using hFall
       _ ≤ (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
         exact mul_le_mul_of_nonneg_right hWeight (by positivity)
-  rw [typeISourceSmoothBlock_eq_terminal_three_sums Y A r σ t hY
-    (by simpa only [Q] using hLower)]
-  change ‖(∑ n ∈ Finset.Ioc L (min Q A),
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)) -
-      (∑ n ∈ Finset.Ioc L (min Q A),
-        (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)) +
-      (∑ n ∈ Finset.Ioc Q A,
-        (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n))‖ ≤ _
+  pm_4701
   calc
     _ ≤ ‖∑ n ∈ Finset.Ioc L (min Q A),
           ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ +
@@ -3338,7 +2913,7 @@ theorem norm_typeISourceSmoothBlock_le_weyl
         ‖∑ n ∈ Finset.Ioc Q A,
           (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
             unitaryPhase (logarithmicPhase t n)‖ := by
-      exact (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
+      pm_4707
     _ ≤ (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) +
         (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) +
         (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by linarith
@@ -3346,6 +2921,7 @@ theorem norm_typeISourceSmoothBlock_le_weyl
         Real.sqrt (8 * (((2 ^ r * Y + 1 : ℕ) : ℝ)) * t ^ (1 / 3 : ℝ)) := by
       dsimp only [L, Q, R]
       ring
+end
 
 /-- Physical form of the preceding source-block Weyl estimate.  The source
 length is kept as the actual natural `Q = 2^r Y`, and the identity
@@ -3363,23 +2939,16 @@ theorem norm_typeISourceSmoothBlock_le_physical_weyl
     ‖typeISourceSmoothBlock Y A r σ t‖ ≤
       (180 * Real.sqrt 48) *
         T ^ ((1 / 2 - σ) / tau + 1 / 6) := by
-  let Q : ℕ := 2 ^ r * Y
+  pm_4897 Q r Y
   have hQFour : 4 ≤ Q := by
     have hPow : 4 ≤ 2 ^ r := by
-      simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-    dsimp only [Q]
-    exact hPow.trans (Nat.le_mul_of_pos_right _ hY)
-  have hQPos : (0 : ℝ) < Q := by positivity
-  have hQOne : (1 : ℝ) ≤ Q := by exact_mod_cast (by omega : 1 ≤ Q)
+      pm_4703
+    pm_1381
+  pm_4711
+  pm_308 hQOne Q
   have hTPos : 0 < T := zero_lt_one.trans_le hT
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left
-      (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hHalfCast : ((Q / 2 : ℕ) : ℝ) = (Q : ℝ) / 2 := by
-    have hTwice : 2 * (Q / 2) = Q := Nat.mul_div_cancel' hEven
-    have hTwiceReal : (2 : ℝ) * (Q / 2 : ℕ) = Q := by exact_mod_cast hTwice
-    linarith
+  pm_4709
+  pm_4710
   have hHalfPos : (0 : ℝ) < Q / 2 := by positivity
   have hWeight : (((Q / 2 + 1 : ℕ) : ℝ)) ^ (-σ) ≤
       2 * (Q : ℝ) ^ (-σ) := by
@@ -3400,21 +2969,15 @@ theorem norm_typeISourceSmoothBlock_le_physical_weyl
         rw [Real.rpow_neg (by norm_num : (2 : ℝ) ≥ 0)]
         field_simp [Real.rpow_pos_of_pos (by norm_num : (0 : ℝ) < 2) σ]
       _ ≤ 2 * (Q : ℝ) ^ (-σ) := by gcongr
-  have hQSucc : (((Q + 1 : ℕ) : ℝ)) ≤ 2 * Q := by
-    norm_num only [Nat.cast_add, Nat.cast_one]
-    linarith
+  pm_1512 hQSucc
   have htThird : t ^ (1 / 3 : ℝ) ≤ 3 * T ^ (1 / 3 : ℝ) := by
-    have hPow := Real.rpow_le_rpow (by positivity : (0 : ℝ) ≤ t) htUpper
-      (by norm_num : (0 : ℝ) ≤ 1 / 3)
+    pm_5927 hPow t htUpper
     calc
       t ^ (1 / 3 : ℝ) ≤ (3 * T) ^ (1 / 3 : ℝ) := hPow
       _ = 3 ^ (1 / 3 : ℝ) * T ^ (1 / 3 : ℝ) := by
-        rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 3) hTPos.le]
+        pm_1232 hTPos.le
       _ ≤ 3 * T ^ (1 / 3 : ℝ) := by
-        gcongr
-        simpa only [Real.rpow_one] using
-          Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 3)
-            (by norm_num : (1 / 3 : ℝ) ≤ 1)
+        pm_4690
   have hInside : 8 * (((Q + 1 : ℕ) : ℝ)) * t ^ (1 / 3 : ℝ) ≤
       48 * (Q : ℝ) * T ^ (1 / 3 : ℝ) := by
     calc
@@ -3481,20 +3044,17 @@ theorem eventually_source_weyl_geometry
     exact hTauMaxThree
   have hTop := tendsto_rpow_atTop hRho
   have hEventually := (tendsto_atTop.1 hTop) 24
-  rw [eventually_atTop] at hEventually
-  obtain ⟨Tpow, hTpow⟩ := hEventually
+  pm_4712
   let T₀ := max 8 Tpow
-  refine ⟨T₀, le_max_left _ _, ?_⟩
+  pm_4889
   intro T t tau Q hT hQ hEven hTauTwo hTauUpper hScale hDisp htLower htUpper
-  have hTEight : 8 ≤ T := (le_max_left _ _).trans hT
-  have hTPow : Tpow ≤ T := (le_max_right _ _).trans hT
-  have hTOne : 1 ≤ T := by linarith
-  have hTPos : 0 < T := by linarith
+  pm_4629
+  pm_4713
+  pm_4169
   have hTauPos : 0 < tau := by linarith
-  have hQPos : (0 : ℝ) < Q := by positivity
-  have hQOne : (1 : ℝ) ≤ Q := by exact_mod_cast hQ.le
-  have htHalf : T / 2 ≤ t := by linarith
-  have htThree : t ≤ 3 * T := by linarith
+  pm_4711
+  pm_4739
+  pm_1082 htHalf htThree
   have hQSquare : (Q : ℝ) ^ (2 : ℕ) ≤ T := by
     calc
       (Q : ℝ) ^ (2 : ℕ) = (Q : ℝ) ^ (2 : ℝ) := by
@@ -3502,9 +3062,7 @@ theorem eventually_source_weyl_geometry
       _ ≤ (Q : ℝ) ^ tau :=
         Real.rpow_le_rpow_of_exponent_le hQOne hTauTwo
       _ = T := hScale
-  have hSucc : (((Q + 1 : ℕ) : ℝ)) ≤ 2 * Q := by
-    norm_num only [Nat.cast_add, Nat.cast_one]
-    linarith
+  pm_1512 hSucc
   have hQuadratic : (((Q + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ 8 * t := by
     calc
       (((Q + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ (2 * (Q : ℝ)) ^ (2 : ℕ) := by
@@ -3538,10 +3096,7 @@ theorem eventually_source_weyl_geometry
         rw [← Real.rpow_add hQPos]
         convert Real.rpow_natCast (Q : ℝ) 3 using 1
         all_goals ring_nf
-  have hHalfCast : ((Q / 2 : ℕ) : ℝ) = (Q : ℝ) / 2 := by
-    have hTwice : 2 * (Q / 2) = Q := Nat.mul_div_cancel' hEven
-    have hTwiceReal : (2 : ℝ) * (Q / 2 : ℕ) = Q := by exact_mod_cast hTwice
-    linarith
+  pm_4710
   refine ⟨hQuadratic, ?_⟩
   calc
     t ≤ 3 * T := htThree
@@ -3581,42 +3136,33 @@ theorem eventually_source_far_family_impossible
   let tauMax : ℝ := 6 * sigma - 3 - q
   have hTauMaxTwo' : 2 ≤ tauMax := by simpa only [tauMax] using hTauMaxTwo
   have hTauMaxThree : tauMax < 3 := by dsimp only [tauMax]; linarith
-  obtain ⟨Tgeo, hTgeo, hGeo⟩ :=
-    eventually_source_weyl_geometry hTauMaxTwo' hTauMaxThree
+  pm_4081 Tgeo hTgeo hGeo eventually_source_weyl_geometry hTauMaxTwo' hTauMaxThree
   have hSaving : 0 < q / 18 - u - v := by linarith
   let Cw : ℝ := 180 * Real.sqrt 48
-  have hCw : 0 < Cw := by dsimp only [Cw]; positivity
+  pm_116 hCw Cw
   have hTop := tendsto_rpow_atTop hSaving
   have hEventually := (tendsto_atTop.1 hTop)
     ((8 / 3 : ℝ) * Clog * Cw + 1)
-  rw [eventually_atTop] at hEventually
-  obtain ⟨Tconst, hTconst⟩ := hEventually
+  pm_4610 eventually_atTop hEventually Tconst hTconst
   let T₀ : ℝ := max Tgeo Tconst
-  refine ⟨T₀, hTgeo.trans (le_max_left _ _), ?_⟩
+  pm_4266 T₀ hTgeo.trans le_max_left
   intro T tau Y A r W hT hA hY hr hInterior hTau hTauTwo hFar hDisp
     hW hRange hLog hLarge
-  have hTGeo : Tgeo ≤ T := (le_max_left _ _).trans hT
+  pm_4630 hTGeo Tgeo le_max_left hT
   have hTEight : 8 ≤ T := hTgeo.trans hTGeo
-  have hTConst : Tconst ≤ T := (le_max_right _ _).trans hT
-  have hTOne : 1 ≤ T := by linarith
-  have hTPos : 0 < T := by linarith
+  pm_4630 hTConst Tconst le_max_right hT
+  pm_4169
   have hTauPos : 0 < tau := by linarith
-  have hTauUpper : tau ≤ tauMax := by dsimp only [tauMax]; linarith
+  pm_4046 hTauUpper tau tauMax
   obtain ⟨t, ht⟩ := hW
-  let Q : ℕ := 2 ^ r * Y
+  pm_4897 Q r Y
   have hQFour : 4 ≤ Q := by
     have hPow : 4 ≤ 2 ^ r := by
-      simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-    dsimp only [Q]
-    exact hPow.trans (Nat.le_mul_of_pos_right _ hY)
+      pm_4703
+    pm_1381
   have hQOne : 1 < Q := by omega
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left
-      (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hScale : (Q : ℝ) ^ tau = T := by
-    rw [hTau]
-    simpa only [Q] using rpow_typeILogarithmicScale_eq hTPos hQOne
+  pm_4709
+  pm_4714
   have htLower : T / 2 ≤ t := by linarith [(hRange t ht).1]
   have htOne : 1 ≤ t := by linarith
   have htUpper : t ≤ 3 * T := by linarith [(hRange t ht).2]
@@ -3707,7 +3253,7 @@ theorem eventually_large_source_forces_complementary_margin
             (Nat.clog 2 A + 1 : ℕ) ≤
           ‖typeISourceSmoothBlock Y A r σ t‖ →
         -100 * d ≤ τ / 2 - σ := by
-  let a : ℝ := 2 * σ - 200 * d
+  pm_1221 σ
   have haOne : 1 < a := by
     dsimp only [a]
     have hScaled : 200 * d ≤ (σ - 1 / 2) / 5 := by
@@ -3724,8 +3270,7 @@ theorem eventually_large_source_forces_complementary_margin
     exact haTwo
   have hPowTop := tendsto_rpow_atTop hδ
   have hEventuallyPow := (tendsto_atTop.1 hPowTop) 48
-  rw [eventually_atTop] at hEventuallyPow
-  obtain ⟨Tpow, hTpow⟩ := hEventuallyPow
+  pm_4610 eventually_atTop hEventuallyPow Tpow hTpow
   have hDecay : u + 1 / 2 < σ / a := by
     have hGapEq : σ / a - 1 / 2 = 100 * d / a := by
       field_simp [haPos.ne']
@@ -3740,47 +3285,35 @@ theorem eventually_large_source_forces_complementary_margin
     linarith
   have hRatioTop := tendsto_typeI_terminal_ratio (σ / a) (u + 1 / 2) hDecay
   let c : ℝ := 6 * (100 * Real.sqrt 3 + 36 * Real.pi) * 2 ^ σ
-  have hc : 0 < c := by dsimp only [c]; positivity
-  have hScaled := hRatioTop.const_mul c
-  have hEventuallySmall := (tendsto_order.1 hScaled).2 (3 / 8 : ℝ) (by norm_num)
-  rw [eventually_atTop] at hEventuallySmall
-  obtain ⟨Tsmall, hTsmall⟩ := hEventuallySmall
-  obtain ⟨Thalf, hThalf, hHalf⟩ := eventually_rpow_le_half_self d hdOne
+  pm_116 hc c
+  pm_6594 hRatioTop.const_mul hEventuallySmall
+  pm_4610 eventually_atTop hEventuallySmall Tsmall hTsmall
+  pm_98 Thalf hThalf hHalf eventually_rpow_le_half_self d hdOne
   let T₀ : ℝ := max 8 (max Tpow (max Tsmall Thalf))
-  refine ⟨T₀, le_max_left _ _, ?_⟩
+  pm_4889
   intro T t τ Y A r hT hA hY hr hUpper htLower htUpper hDisp hτ hLarge
-  have hTEight : 8 ≤ T := (le_max_left _ _).trans hT
-  have hRest : max Tpow (max Tsmall Thalf) ≤ T := (le_max_right _ _).trans hT
-  have hTPow : Tpow ≤ T := (le_max_left _ _).trans hRest
-  have hRest₁ : max Tsmall Thalf ≤ T := (le_max_right _ _).trans hRest
-  have hTSmall : Tsmall ≤ T := (le_max_left _ _).trans hRest₁
-  have hTHalf : Thalf ≤ T := (le_max_right _ _).trans hRest₁
-  have hTPos : 0 < T := by linarith
-  have hTOne : 1 ≤ T := by linarith
+  pm_4629
+  pm_5098 hRest Tpow Tsmall Thalf hT
+  pm_4630 hTPow Tpow le_max_left hRest
+  pm_4639 hRest₁ Tsmall Thalf hRest
+  pm_4630 hTSmall Tsmall le_max_left hRest₁
+  pm_4630 hTHalf Thalf le_max_right hRest₁
+  pm_4185
   by_contra hMargin
   have hτa : τ < a := by
     have : τ / 2 - σ < -100 * d := lt_of_not_ge hMargin
     dsimp only [a]
     linarith
-  let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
+  pm_4704
   have hQFour : 4 ≤ Q := by
     dsimp only [Q]
     have hpow : 4 ≤ 2 ^ r := by
-      simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-    calc
-      4 = 4 * 1 := by omega
-      _ ≤ 4 * Y := Nat.mul_le_mul_left 4 hY
-      _ ≤ 2 ^ r * Y := Nat.mul_le_mul_right Y hpow
+      pm_4703
+    pm_5584 hY hpow
   have hQOne : 1 < Q := by omega
   have hQ : 0 < Q := by omega
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left
-      (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
+  pm_4709
+  pm_4705
   have hL : 0 < L := by omega
   have hScale : (Q : ℝ) ^ τ = T := by
     subst τ
@@ -3795,40 +3328,27 @@ theorem eventually_large_source_forces_complementary_margin
     calc
       T ^ (1 / a) ≤ ((Q : ℝ) ^ a) ^ (1 / a) := hRaised
       _ = (Q : ℝ) := by
-        rw [← Real.rpow_mul (by positivity)]
-        field_simp [haPos.ne']
-        exact Real.rpow_one (Q : ℝ)
+        pm_5879
   have hPowAt : 48 ≤ T ^ δ := hTpow T hTPow
   have hQSquare : 48 * T ≤ (Q : ℝ) ^ 2 := by
     have hSquare := pow_le_pow_left₀ (Real.rpow_nonneg hTPos.le _) hRoot 2
     have hPowerEq : (T ^ (1 / a)) ^ (2 : ℕ) = T ^ (2 / a) := by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul hTPos.le]
-      congr 1
-      ring
+      pm_336 Real.rpow_natCast Real.rpow_mul hTPos.le
     have hSplit : T ^ (2 / a) = T * T ^ δ := by
       rw [show 2 / a = 1 + δ by dsimp only [δ]; ring,
         Real.rpow_add hTPos, Real.rpow_one]
     rw [hPowerEq, hSplit] at hSquare
     nlinarith [mul_le_mul_of_nonneg_left hPowAt hTPos.le]
-  have htHalf : T / 2 ≤ t := by linarith
-  have htThree : t ≤ 3 * T := by linarith
+  pm_1082 htHalf htThree
   have htSq : t ≤ (L : ℝ) ^ 2 := by
-    have hLReal : (L : ℝ) = (Q : ℝ) / 2 := by
-      have hTwiceLReal : (2 : ℝ) * L = Q := by exact_mod_cast hTwiceL
-      linarith
+    pm_4716
     rw [hLReal]
     nlinarith
   have hNorm := norm_typeISourceSmoothBlock_le_sqrt
     (Y := Y) (A := A) (r := r) (σ := σ) (t := t)
     hY hr (by linarith) (by linarith) (by simpa only [Q, L] using htSq)
-  subst A
-  let A : ℕ := ⌊sharpZetaCutoff T⌋₊
-  have hCutNonneg : 0 ≤ sharpZetaCutoff T := by
-    linarith [four_mul_lt_sharpZetaCutoff T]
-  have hAUpper : (A : ℝ) ≤ 6 * T := by
-    dsimp only [A]
-    exact (Nat.floor_le hCutNonneg).trans
-      (sharpZetaCutoff_le_six_mul (by linarith))
+  pm_1380
+  pm_4715
   have hQUpper : (Q : ℝ) ≤ 3 * T := by
     have hUpperReal : (2 : ℝ) * Q ≤ A := by exact_mod_cast hUpper
     linarith
@@ -3870,9 +3390,7 @@ theorem eventually_large_source_forces_complementary_margin
     apply Real.rpow_le_rpow_of_nonpos
     · positivity
     · norm_num only [Nat.cast_add, Nat.cast_one]
-      have hLReal : (L : ℝ) = (Q : ℝ) / 2 := by
-        have hTwiceLReal : (2 : ℝ) * L = Q := by exact_mod_cast hTwiceL
-        linarith
+      pm_4716
       linarith
     · linarith
   have hWeightT : ((Q : ℝ) / 2) ^ (-σ) ≤
@@ -3930,17 +3448,14 @@ theorem eventually_large_source_forces_complementary_margin
             ring_nf
   have hAOne : 1 < A := by
     dsimp only [A]
-    apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
-    apply Nat.le_floor
-    exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
-      (four_mul_lt_sharpZetaCutoff T).le
+    pm_4735
   have hClog := sharp_cutoff_clog_le_log_majorant T hTEight
   have hkBound : ((Nat.clog 2 A + 1 : ℕ) : ℝ) ≤
       2 * (1 + (Real.log 6 + Real.log T) / Real.log 2) := by
     have hEnvelopeOne : 1 ≤
         1 + (Real.log 6 + Real.log T) / Real.log 2 := by
-      have hLogTwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
-      have hLogSix : 0 ≤ Real.log 6 := Real.log_nonneg (by norm_num)
+      pm_4778
+      pm_234 hLogSix
       have hLogT : 0 ≤ Real.log T := Real.log_nonneg hTOne
       have : 0 ≤ (Real.log 6 + Real.log T) / Real.log 2 :=
         div_nonneg (add_nonneg hLogSix hLogT) hLogTwo.le
@@ -3961,8 +3476,7 @@ theorem eventually_large_source_forces_complementary_margin
           (3 * (100 * Real.sqrt 3 + 36 * Real.pi) * 2 ^ σ *
             T ^ (1 / 2 - σ / a)) <
         (3 / 4) * (T ^ (-u) / 2) := by
-    have hMul := mul_lt_mul_of_pos_right hSmallAt
-      (Real.rpow_pos_of_pos hTPos (-u))
+    pm_5777 hSmallAt
     calc
       _ ≤ (2 * (1 + (Real.log 6 + Real.log T) / Real.log 2)) *
           (3 * (100 * Real.sqrt 3 + 36 * Real.pi) * 2 ^ σ *
@@ -4047,16 +3561,16 @@ theorem exists_signed_shift_large_normalized_reflected_wide_of_budget
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff σ M) (t - u)‖) := by
   dsimp only
-  let Q : ℕ := 2 ^ r * Y
+  pm_4897 Q r Y
   let R : ℝ := (Real.pi * V) /
     (8 * (Q : ℝ) * K * (typeIDyadicCutoffMellinL1 + 1))
   let S : ℝ := R / (2 * (M : ℝ) ^ σ)
-  have hQ : 0 < Q := by dsimp only [Q]; positivity
+  pm_4187
   have hMass : 0 ≤ typeIDyadicCutoffMellinL1 :=
     typeIDyadicCutoffMellinL1_nonneg
   have hDen : 0 < 8 * (Q : ℝ) * K *
       (typeIDyadicCutoffMellinL1 + 1) := by positivity
-  have hRPos : 0 < R := by dsimp only [R]; positivity
+  pm_116 hRPos R
   have hCentral : (Q : ℝ) * R * K * typeIDyadicCutoffMellinL1 ≤
       Real.pi * V / 8 := by
     dsimp only [R]
@@ -4106,32 +3620,21 @@ theorem eventually_terminal_source_majorant_lt_threshold
   have hDecay : u + 1 / 2 < σ := by linarith
   have hTendsto := tendsto_typeI_terminal_ratio σ (u + 1 / 2) hDecay
   let c : ℝ := 6 * (100 * Real.sqrt 3 + 288 * Real.pi) * 2 ^ σ
-  have hc : 0 < c := by dsimp only [c]; positivity
-  have hScaled := hTendsto.const_mul c
-  have hEventually := (tendsto_order.1 hScaled).2 (3 / 8 : ℝ) (by norm_num)
-  rw [eventually_atTop] at hEventually
-  obtain ⟨Tscale, hTscale⟩ := hEventually
-  let T₀ := max 8 Tscale
-  refine ⟨T₀, le_max_left _ _, ?_⟩
+  pm_116 hc c
+  pm_6594 hTendsto.const_mul hEventually
+  pm_4635
   intro T t Q L hT hTL hQT htLower htUpper
-  have hTEight : 8 ≤ T := (le_max_left _ _).trans hT
-  have hTscale' : Tscale ≤ T := (le_max_right _ _).trans hT
-  have hTPos : 0 < T := by linarith
-  have htPos : 0 < t := by linarith
-  have hLPos : (0 : ℝ) < L + 1 := by positivity
+  pm_4629
+  pm_4636
+  pm_72 hTPos T htPos t
+  pm_8896 hLPos L
   have hWeight : (((L + 1 : ℕ) : ℝ)) ^ (-σ) ≤ (T / 2) ^ (-σ) := by
     apply Real.rpow_le_rpow_of_nonpos
     · positivity
     · norm_num only [Nat.cast_add, Nat.cast_one]
       linarith
     · linarith
-  have hSqrt : Real.sqrt t ≤ Real.sqrt 3 * T ^ (1 / 2 : ℝ) := by
-    calc
-      Real.sqrt t ≤ Real.sqrt (3 * T) := Real.sqrt_le_sqrt htUpper
-      _ = Real.sqrt 3 * Real.sqrt T := by rw [Real.sqrt_mul (by norm_num)]
-      _ = Real.sqrt 3 * T ^ (1 / 2 : ℝ) := by
-        congr 1
-        exact Real.sqrt_eq_rpow T
+  pm_4736
   have hRatio : (Q : ℝ) / t ≤ 48 := by
     rw [div_le_iff₀ htPos]
     nlinarith
@@ -4160,8 +3663,7 @@ theorem eventually_terminal_source_majorant_lt_threshold
         linarith
       _ = (100 * Real.sqrt 3 + 288 * Real.pi) * T ^ (1 / 2 : ℝ) := by ring
   have hDivPow : (T / 2) ^ (-σ) = 2 ^ σ * T ^ (-σ) := by
-    rw [Real.div_rpow hTPos.le (by norm_num : (0 : ℝ) ≤ 2),
-      Real.rpow_neg (by norm_num : (0 : ℝ) ≤ 2)]
+    pm_1355 hTPos.le
     field_simp
   have hPowCombine : T ^ (-σ) * T ^ (1 / 2 : ℝ) =
       T ^ (1 / 2 - σ) := by
@@ -4184,18 +3686,15 @@ theorem eventually_terminal_source_majorant_lt_threshold
   let A := ⌊sharpZetaCutoff T⌋₊
   have hAOne : 1 < A := by
     dsimp only [A]
-    apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
-    apply Nat.le_floor
-    exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
-      (four_mul_lt_sharpZetaCutoff T).le
+    pm_4735
   have hkPos : 0 < (Nat.clog 2 A + 1 : ℕ) := by omega
   have hkRealPos : (0 : ℝ) < (Nat.clog 2 A + 1 : ℕ) := by exact_mod_cast hkPos
   have hClog := sharp_cutoff_clog_le_log_majorant T hTEight
   have hEnvelopeOne : 1 ≤
       1 + (Real.log 6 + Real.log T) / Real.log 2 := by
-    have hLogT : 0 ≤ Real.log T := Real.log_nonneg (by linarith)
-    have hLogSix : 0 ≤ Real.log 6 := Real.log_nonneg (by norm_num)
-    have hLogTwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
+    pm_301 hLogT T
+    pm_234 hLogSix
+    pm_4778
     have hFrac : 0 ≤ (Real.log 6 + Real.log T) / Real.log 2 := by positivity
     linarith
   have hkBound : (Nat.clog 2 A + 1 : ℕ) ≤
@@ -4217,8 +3716,7 @@ theorem eventually_terminal_source_majorant_lt_threshold
           (3 * (100 * Real.sqrt 3 + 288 * Real.pi) * 2 ^ σ *
             T ^ (1 / 2 - σ)) <
         (3 / 4) * (T ^ (-u) / 2) := by
-    have hMul := mul_lt_mul_of_pos_right hRatioSmall
-      (Real.rpow_pos_of_pos hTPos (-u))
+    pm_5777 hRatioSmall
     calc
       (Nat.clog 2 A + 1 : ℕ) *
           (3 * (100 * Real.sqrt 3 + 288 * Real.pi) * 2 ^ σ *
@@ -4257,26 +3755,19 @@ theorem eventually_no_terminal_classified_source
           ‖typeISourceSmoothBlock Y A r σ t‖) →
       (∀ t ∈ W, T - T ^ d ≤ t ∧ t ≤ 2 * T + T ^ d) →
       T ^ d ≤ T / 2 → False := by
-  obtain ⟨Tterminal, hTterminal, hTerminalSmall⟩ :=
-    eventually_terminal_source_majorant_lt_threshold hσ hu
+  pm_4081 Tterminal hTterminal hTerminalSmall eventually_terminal_source_majorant_lt_threshold hσ hu
   let T₀ := max Tterminal 12
   have hEightTwelve : (8 : ℝ) ≤ 12 := by norm_num
-  refine ⟨T₀, hEightTwelve.trans (le_max_right _ _), ?_⟩
+  pm_4266 T₀ hEightTwelve.trans le_max_right
   intro T Y A r W hT hA hY hr hTerminal hW hSep hLarge hRange hDisp
-  have hTTerminal : Tterminal ≤ T := (le_max_left _ _).trans hT
+  pm_4630 hTTerminal Tterminal le_max_left hT
   have hTTwelve : 12 ≤ T := (le_max_right _ _).trans hT
-  have hTEight : 8 ≤ T := by linarith
-  have hTPos : 0 < T := by linarith
-  subst A
-  let A : ℕ := ⌊sharpZetaCutoff T⌋₊
-  let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
+  pm_6312
+  pm_1380
+  pm_4704
   have hAOne : 1 < A := by
     dsimp only [A]
-    apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
-    apply Nat.le_floor
-    exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
-      (four_mul_lt_sharpZetaCutoff T).le
+    pm_4735
   have hV : 0 < ((3 / 4) * (T ^ (-u) / 2)) /
       (Nat.clog 2 A + 1 : ℕ) := by positivity
   obtain ⟨j, hj, W', _hWsub, _hSep', _hCard, _hLarge', _hPUpper, hQFourP⟩ :=
@@ -4285,12 +3776,7 @@ theorem eventually_no_terminal_classified_source
     have hjClog : j < Nat.clog 2 (A + 1) := Finset.mem_range.mp hj
     have hpow : 2 ^ j < A + 1 := Nat.pow_lt_of_lt_clog hjClog
     omega
-  have hCutNonneg : 0 ≤ sharpZetaCutoff T := by
-    linarith [four_mul_lt_sharpZetaCutoff T]
-  have hAUpper : (A : ℝ) ≤ 6 * T := by
-    dsimp only [A]
-    exact (Nat.floor_le hCutNonneg).trans
-      (sharpZetaCutoff_le_six_mul (by linarith))
+  pm_4715
   have hQUpperNat : Q < 4 * A := by
     dsimp only [Q] at hQFourP ⊢
     exact hQFourP.trans_le (Nat.mul_le_mul_left 4 hPA)
@@ -4301,9 +3787,7 @@ theorem eventually_no_terminal_classified_source
   have hEven : 2 ∣ Q := by
     dsimp only [Q]
     exact dvd_mul_of_dvd_left (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
+  pm_4705
   obtain ⟨t, htW⟩ := hW
   have hCutLt : sharpZetaCutoff T < (A : ℝ) + 1 := by
     dsimp only [A]
@@ -4359,36 +3843,29 @@ theorem eventually_lower_source_logarithmic_scale_bounds
       let N := 2 ^ r * Y
       1 < N ∧ 1 / (2 * d) ≤ typeILogarithmicScale T N ∧
         typeILogarithmicScale T N ≤ 2 / d := by
-  obtain ⟨Tupper, hTupper, hUpper⟩ :=
-    eventually_typeI_logarithmic_scale_upper d hd
+  pm_4081 Tupper hTupper hUpper eventually_typeI_logarithmic_scale_upper d hd
   let T₀ : ℝ := max Tupper ((2 : ℝ) ^ (1 / d))
-  refine ⟨T₀, hTupper.trans (le_max_left _ _), ?_⟩
+  pm_4266 T₀ hTupper.trans le_max_left
   intro T r hT hr
   dsimp only
-  have hTUpper : Tupper ≤ T := (le_max_left _ _).trans hT
+  pm_4630 hTUpper Tupper le_max_left hT
   have hTConst : (2 : ℝ) ^ (1 / d) ≤ T :=
     (le_max_right _ _).trans hT
   have hTTwo : 2 ≤ T := hTupper.trans hTUpper
-  have hTPos : 0 < T := by linarith
-  let Y := ⌊T ^ d⌋₊
-  let N := 2 ^ r * Y
-  have hUpperAt := hUpper T r hTUpper
-  dsimp only at hUpperAt
-  rcases hUpperAt with ⟨hNOne, hTauUpper⟩
+  pm_1056
+  pm_6775 hUpperAt hUpper hTUpper hTauUpper
   have hPowTwo : 2 ≤ T ^ d := by
     have hRaised := Real.rpow_le_rpow
       (Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) _)
       hTConst hd.le
     have hCancel : ((2 : ℝ) ^ (1 / d)) ^ d = 2 := by
-      rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
+      pm_4302
       have hExp : 1 / d * d = 1 := by field_simp [hd.ne']
       rw [hExp, Real.rpow_one]
     simpa only [hCancel] using hRaised
-  have hYUpper : (Y : ℝ) ≤ T ^ d := by
-    dsimp only [Y]
-    exact Nat.floor_le (Real.rpow_nonneg hTPos.le _)
+  pm_4741 hYUpper d
   have hPowR : 2 ^ r ≤ 2 := by
-    have hrCases : r = 0 ∨ r = 1 := by omega
+    pm_7057 hrCases r
     rcases hrCases with rfl | rfl <;> norm_num
   have hNUpper : (N : ℝ) ≤ T ^ (2 * d) := by
     have hFirst : (N : ℝ) ≤ 2 * T ^ d := by
@@ -4412,7 +3889,7 @@ theorem eventually_lower_source_logarithmic_scale_bounds
         ring
   have hNPos : (0 : ℝ) < N := by exact_mod_cast (lt_trans Nat.zero_lt_one hNOne)
   have hLowerPhysical : (N : ℝ) ^ (1 / (2 * d)) ≤ T := by
-    have hExp : 0 ≤ 1 / (2 * d) := by positivity
+    pm_8854 hExp d
     have hRaised := Real.rpow_le_rpow hNPos.le hNUpper hExp
     calc
       (N : ℝ) ^ (1 / (2 * d)) ≤

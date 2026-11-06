@@ -1,12 +1,11 @@
 module
 public import DensityEnergyGM.SecondMomentOptimized
 public import DensityEnergyGM.SecondMomentPowerAlgebra
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -24,37 +23,35 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
               (W.card : ℝ) * (discreteAdditiveEnergy W : ℝ) ^ (1 / 4 : ℝ) *
                 ((M : ℝ) ^ (9 / 5 : ℝ) +
                   T ^ (1 / 4 : ℝ) * (M : ℝ) ^ (6 / 5 : ℝ))) := by
-  obtain ⟨C₀, T₀, hC₀, hT₀, hLog⟩ := actual_second_moment_optimized_log ε hε
+  pm_4083 C₀ T₀ hC₀ hT₀ hLog actual_second_moment_optimized_log ε hε
   let D : ℝ := (2 : ℝ) ^ (1 / 4 : ℝ)
   let K₁ : ℝ := 2 * C₀ ^ (1 / 4 : ℝ) * (2 : ℝ) ^ (ε / 4) * D
   let K₂ : ℝ := 3 * C₀ ^ (1 / 2 : ℝ) * (2 : ℝ) ^ (ε / 2) / (ε / 2)
   let C : ℝ := K₁ + K₂ + 1
   have hCpos : 0 < C := by dsimp only [C, K₁, K₂, D]; positivity
-  refine ⟨C, T₀, hCpos, hT₀, ?_⟩
+  pm_505 C T₀ hCpos hT₀
   intro M T a W hM hT hMT ha hSep hBase
   have hTtwo : 2 ≤ T := hT₀.trans hT
-  have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := by linarith
-  have hM0 : (0 : ℝ) ≤ M := Nat.cast_nonneg _
-  have hE0 : 0 ≤ (discreteAdditiveEnergy W : ℝ) := Nat.cast_nonneg _
+  pm_4035
+  pm_391 hM0 M
+  pm_5014 hE0 discreteAdditiveEnergy W
   by_cases hW : W.Nonempty
   swap
   · have he : W = ∅ := Finset.not_nonempty_iff_eq_empty.mp hW
     subst W
     simp only [Finset.sum_empty]
     positivity
-  let E : ℝ := discreteAdditiveEnergy W
-  let R : ℝ := W.card
-  let K : ℝ := E * C₀ * (2 * T) ^ ε
-  let B : ℝ := (M : ℝ) ^ (36 / 5 : ℝ) + (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ)
+  pm_1116
+  pm_7712 C₀
+  pm_3947
   let P : ℝ := (M : ℝ) ^ (9 / 5 : ℝ)
   let Z : ℝ := T ^ (1 / 4 : ℝ) * (M : ℝ) ^ (6 / 5 : ℝ)
   have hCzero : 0 ≤ C₀ := by linarith
-  have hK0 : 0 ≤ K := by dsimp only [K]; positivity
-  have hB0 : 0 ≤ B := by dsimp only [B]; positivity
+  pm_82 hK0 K
+  pm_82 hB0 B
   have hR0 : 0 ≤ R := Nat.cast_nonneg _
-  have hP0 : 0 ≤ P := by dsimp only [P]; positivity
-  have hZ0 : 0 ≤ Z := by dsimp only [Z]; positivity
+  pm_82 hP0 P
+  pm_82 hZ0 Z
   have hD : 1 ≤ D := Real.one_le_rpow (by norm_num) (by norm_num)
   have hBquarter : B ^ (1 / 4 : ℝ) ≤ D * (P + Z) := by
     have h : B ^ (1 / 4 : ℝ) ≤ P + D * Z := by
@@ -103,10 +100,10 @@ theorem actual_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
   change (∑ t ∈ W, ∑ u ∈ W, ‖dirichletPoly M a (t - u)‖ ^ 2) ≤
     2 * R * Real.sqrt (Real.sqrt K * Real.sqrt B) +
       3 * Real.sqrt K * (M : ℝ) ^ 2 * Real.log T at h
-  have hK₁zero : 0 ≤ K₁ := by dsimp only [K₁, D]; positivity
-  have hK₂zero : 0 ≤ K₂ := by dsimp only [K₂]; positivity
-  have hK₁ : K₁ ≤ C := by dsimp only [C]; linarith
-  have hK₂ : K₂ ≤ C := by dsimp only [C]; linarith
+  pm_3988 hK₁zero K₁ D
+  pm_82 hK₂zero K₂
+  pm_4046 hK₁ K₁ C
+  pm_4046 hK₂ K₂ C
   calc
     _ ≤ K₁ * T ^ ε * (R * E ^ (1 / 4 : ℝ) * (P + Z)) +
         K₂ * T ^ ε * ((M : ℝ) ^ 2 * E ^ (1 / 2 : ℝ)) :=

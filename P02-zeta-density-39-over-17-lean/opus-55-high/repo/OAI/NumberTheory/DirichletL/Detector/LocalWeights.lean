@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PrimeConstants
 public import OAI.NumberTheory.DirichletL.Detector.PhasePowers
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,7 +32,7 @@ theorem localCubePhase_even (C omega : ℂ) (hC : C^2=omega) (ho : omega^2=1)
   rw [he, pow_add, pow_mul omega 2, ho, one_pow, mul_one]
 
 def weightedScalar (Q eta a G1 C omega X W V scalar : ℂ) (e l k m : ℕ) : ℂ :=
-  (-eta*X/G1)^e * (a*X^3/Q)^l * localCubePhase C omega e l k * scalar * W^k * V^m
+  (-eta*X/G1)^e * (a*X^3/Q)^l * localCubePhase C omega e l k * scalar * W^k * V ^m
 
 lemma weightedScalar_zero (Q eta a G1 C omega X W V : ℂ) (e l k m : ℕ) :
     weightedScalar Q eta a G1 C omega X W V 0 e l k m = 0 := by
@@ -43,52 +44,39 @@ lemma weighted_squarefree_boundary (Q eta a G1 C omega X W V : ℂ)
     (hQ : Q ≠ 0) (hG : G1 ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r : ℕ) :
     weightedScalar Q eta a G1 C omega X W V (Q^(6*r)*G1) 1 (2*r) 0 r =
       evenRatio Q a X V ^ r * (-eta*X) := by
-  unfold weightedScalar
-  rw [localCubePhase_even C omega hC ho]
+  pm_8387
   simp only [mul_zero, pow_zero, pow_one, mul_one]
   unfold evenRatio
   rw [mul_pow, mul_pow, mul_pow, div_pow, mul_pow, pow_mul, pow_mul, pow_mul, pow_mul]
   field_simp
   ring
 
-lemma weighted_even_bulk (Q eta a G1 C omega X W V : ℂ)
-    (hQ : Q ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
+section
+variable (Q eta a G1 C omega X W V : ℂ) (hQ : Q ≠ 0)
+include Q eta a G1 C omega X W V hQ
+lemma weighted_even_bulk (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
     weightedScalar Q eta a G1 C omega X W V (Q^(6*r+5)*(Q-1))
       0 (2*r+2) 0 (r+1+d) =
-      evenRatio Q a X V ^ r * (evenRatio Q a X V*(1-Q⁻¹)*V^d) := by
-  unfold weightedScalar
-  rw [show 2*r+2=2*(r+1) by ring, localCubePhase_even C omega hC ho]
-  simp only [zero_mul, pow_zero, one_mul, mul_one]
-  unfold evenRatio
-  simp only [mul_pow, div_pow, pow_add, pow_mul]
-  field_simp
-  ring
+      evenRatio Q a X V ^ r * (evenRatio Q a X V*(1-Q⁻¹)*V ^d) := by
+  pm_3876 zero_mul pow_zero
 
-lemma weighted_even_kone (Q eta a G1 C omega X W V : ℂ)
-    (hQ : Q ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r : ℕ) :
+lemma weighted_even_kone (hC : C^2=omega) (ho : omega^2=1) (r : ℕ) :
     weightedScalar Q eta a G1 C omega X W V (Q^(6*r+6))
       0 (2*r+2) 1 (r+1) = evenRatio Q a X V ^ r * (W*evenRatio Q a X V) := by
-  unfold weightedScalar
-  rw [show 2*r+2=2*(r+1) by ring, localCubePhase_even C omega hC ho]
-  simp only [pow_zero, pow_one, one_mul, mul_one]
-  unfold evenRatio
-  simp only [mul_pow, div_pow, pow_add, pow_mul]
-  field_simp
-  ring
+  pm_3876 pow_zero pow_one
 
-lemma weighted_squarefree_bulk (Q eta a G1 C omega X W V : ℂ)
-    (hQ : Q ≠ 0) (hG : G1 ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
+lemma weighted_squarefree_bulk (hG : G1 ≠ 0) (hC : C^2=omega) (ho : omega^2=1) (r d : ℕ) :
     weightedScalar Q eta a G1 C omega X W V
       ((omega⁻¹*G1)*(Q^(6*r)*(Q-1))) 1 (2*r) 1 (r+1+d) =
-      evenRatio Q a X V ^ r * (-eta*(Q-1)*X*W*V^(d+1)) := by
+      evenRatio Q a X V ^ r * (-eta*(Q-1)*X*W*V ^(d+1)) := by
   have hω : omega ≠ 0 := by intro h; rw [h, zero_pow (by decide)] at ho; norm_num at ho
-  unfold weightedScalar
-  rw [localCubePhase_even C omega hC ho]
+  pm_8387
   simp only [one_mul, pow_one]
   unfold evenRatio
   simp only [mul_pow, div_pow, pow_add, pow_mul]
   field_simp
   ring
+end
 
 end SevenEighths.ProbeEuler
 end

@@ -7,81 +7,38 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace SecondPassIntegration
 
-open scoped BigOperators Classical
+open scoped Classical
 open MeasureTheory
 open ActualEisensteinCubic SecondPassArithmetic
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
@@ -290,9 +247,10 @@ theorem masked_source_principal_difference (l : ℕ) :
   rw [norm_mul]
   exact add_le_add (add_le_add (mul_le_mul_of_nonneg_left hl (norm_nonneg _)) hm) he
 
-lemma sourcePrincipalMajorant_nonneg {n : Type} [Fintype n]
-    (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ)
-    {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
+section
+variable {n : Type} [Fintype n] (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ) {α : ℝ} (hexp : HasSieveExponent α)
+include n s C hC l α hexp
+lemma sourcePrincipalMajorant_nonneg (deltaLoss : ℝ) (hδ : 0<deltaLoss)
     (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B N M T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
     (hB : 0≤B) (hN : 0≤N) (_hM : 0≤M) (hT : 0≤T) :
     0≤sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B N M T a W := by
@@ -304,27 +262,24 @@ lemma sourcePrincipalMajorant_nonneg {n : Type} [Fintype n]
   unfold sourcePrincipalMajorant
   positivity
 
-lemma sourcePrincipalMajorant_mono {n : Type} [Fintype n]
-    (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ)
-    {α : ℝ} (hexp : HasSieveExponent α) (hα : 1/2≤α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
+lemma sourcePrincipalMajorant_mono (hα : 1/2≤α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
     (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B' B N M T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
     (hB' : 0≤B') (hB : B'≤B) (hN : 0≤N) (_hM : 0≤M) (hT : 0≤T) :
     sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B' N M T a W ≤
       sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B N M T a W := by
-  have hB0 := hB'.trans hB
-  have hα0 : 0≤α-1/2 := by linarith
-  have he := divisorEnergyFactor_nonneg ε hε N a a
-  have hc := (divisorExponentConstant_pos hexp deltaLoss hδ).le
-  have hs := (supportConstant_pos ε hε).le
-  have hlat := nonzeroLatticeEnvelopeConstant_nonneg
-  have hW := originalMiddleDecayConstant_nonneg W
-  unfold sourcePrincipalMajorant
-  gcongr
+        have hB0 := hB'.trans hB
+        have hα0 : 0≤α-1/2 := by linarith
+        have he := divisorEnergyFactor_nonneg ε hε N a a
+        have hc := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+        have hs := (supportConstant_pos ε hε).le
+        have hlat := nonzeroLatticeEnvelopeConstant_nonneg
+        have hW := originalMiddleDecayConstant_nonneg W
+        unfold sourcePrincipalMajorant
+        gcongr
+end
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 lemma maskedPrincipalSourceDifference_dyadic {n : Type} [Fintype n] [DecidableEq n]
     (G : Ideal O) (W : 𝓢(ℝ,ℂ)) (S : Finset (Ideal O)) (K : ℝ)
@@ -403,19 +358,22 @@ end
 section
 open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
 
-theorem primePoolDensity_eq_support (G : Ideal O) :
+section
+variable (G : Ideal O)
+include G
+theorem primePoolDensity_eq_support :
     primePoolDensity G = ∏ P ∈ primeSupport G, (1-(1:ℂ)/(Ideal.absNorm P:ℂ)) := by
   rw [primePoolDensity,Finset.prod_coe_sort (primePool {G})
     (fun P : Ideal O => (1-(1:ℂ)/(Ideal.absNorm P:ℂ)))]
   simp [primePool,primeSupport]
 
-theorem primePoolDensity_eq_real (G : Ideal O) :
+theorem primePoolDensity_eq_real :
     primePoolDensity G = (idealPrimeDensity {G} G : ℂ) := by
   simp only [primePoolDensity,idealPrimeDensity,idealSupport_singleton_univ,
     Complex.ofReal_prod,Complex.ofReal_sub,Complex.ofReal_one,
     Complex.ofReal_div,Complex.ofReal_natCast]
 
-theorem primePoolDensity_norm_le_one (G : Ideal O) (hG : G ≠ 0) :
+theorem primePoolDensity_norm_le_one (hG : G ≠ 0) :
     ‖primePoolDensity G‖ ≤ 1 := by
   rw [primePoolDensity_eq_real,Complex.norm_real,Real.norm_eq_abs]
   have hb := idealPrimeDensity_mem_Icc {G}
@@ -423,9 +381,10 @@ theorem primePoolDensity_norm_le_one (G : Ideal O) (hG : G ≠ 0) :
   rw [abs_of_nonneg hb.1]
   exact hb.2
 
-theorem primePoolDensity_star (G : Ideal O) : star (primePoolDensity G) = primePoolDensity G := by
+theorem primePoolDensity_star : star (primePoolDensity G) = primePoolDensity G := by
   rw [primePoolDensity_eq_real]
   simp
+end
 
 theorem primePoolDensity_mul (G H : Ideal O) (hG : G ≠ 0) (hH : H ≠ 0)
     (hcop : IsCoprime G H) : primePoolDensity (G*H) = primePoolDensity G*primePoolDensity H := by

@@ -6,6 +6,7 @@ See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundati
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSaddleSupport
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNaturalAmplitude
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -79,7 +80,7 @@ theorem abs_atkinsonRootSlope_zero_le_band {T G L y : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
     (hy : y ∈ Icc (atkinsonRootBandLower T G L) (atkinsonRootBandUpper T G L)) :
     |atkinsonRootSlope T 0 y| ≤ 6 * Real.sqrt T * (L / G) := by
-  have hy0 := (atkinsonRootBandLower_pos hT G L).trans_le hy.1
+  pm_8116
   have hlog := zetaDivisorBand_log_bound hT (atkinsonRootBand_square_mem hT hy)
   rw [← zetaAtkinsonSaddle_inverse_root hT hy0] at hlog
   have hb := abs_frequency_le_of_saddle_log_bound hT hG hL hwidth hlog
@@ -107,10 +108,7 @@ theorem atkinsonPowerIntegral_eq_root_band {T G L : ℝ}
       (fun x hx => (zetaDivisorBandEdge_pos hT G (-2 * L)).trans_le hx.1)
     intro x hx
     have hz : zetaAtkinsonDivisorTest T G L x = 0 := by
-      by_contra hn
-      have hs : x ∈ Function.support (zetaSmoothDivisorTest T G L) := by
-        rw [← support_zetaAtkinsonDivisorTest]
-        exact hn
+      pm_411
       exact hx.2 (support_zetaSmoothDivisorTest hT hG hL hs)
     simp [atkinsonPowerIntegrand, hz]
   have hc := intervalIntegral.integral_deriv_smul_comp_of_deriv_nonneg
@@ -119,17 +117,12 @@ theorem atkinsonPowerIntegral_eq_root_band {T G L : ℝ}
     (a := atkinsonRootBandLower T G L) (b := atkinsonRootBandUpper T G L)
     (by fun_prop) (fun y _ => by simpa using! (hasDerivAt_id y).pow 2)
     (fun y hy => by
-      rw [min_eq_left hab, max_eq_right hab] at hy
-      have := ha.trans hy.1
+      pm_7272
       positivity)
   rw [show (atkinsonRootBandLower T G L) ^ 2 = zetaDivisorBandEdge T G (-2 * L) from
     Real.sq_sqrt (zetaDivisorBandEdge_pos hT G (-2 * L)).le,
     show (atkinsonRootBandUpper T G L) ^ 2 = zetaDivisorBandEdge T G (2 * L) from
     Real.sq_sqrt (zetaDivisorBandEdge_pos hT G (2 * L)).le] at hc
-  rw [he, ← hc, ← intervalIntegral.integral_const_mul]
-  apply intervalIntegral.integral_congr
-  intro y hy
-  rw [uIcc_of_le hab] at hy
-  exact atkinsonPowerIntegrand_sq hT (ha.trans_le hy.1) G L α b
+  pm_4341
 
 end MathCollab.Density.Stronger.Atkinson

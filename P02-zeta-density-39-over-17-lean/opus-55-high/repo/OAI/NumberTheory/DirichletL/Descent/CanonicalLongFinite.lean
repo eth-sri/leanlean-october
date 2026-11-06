@@ -1,17 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongAggregate
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum
+open IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
@@ -97,6 +96,5 @@ theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
 
 end SevenEighths.InverseMoment
 
-end
 
 end OAI

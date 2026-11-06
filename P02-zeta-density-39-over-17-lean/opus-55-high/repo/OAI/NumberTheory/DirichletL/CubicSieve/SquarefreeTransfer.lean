@@ -109,17 +109,6 @@ open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter crossCoeff)
 
-structure SquarefreeBudgetData where
-  windows : Fin 7 → ℝ → ℂ
-  arithmetic : ℝ
-  smooth : ℝ
-  windowBound : ℝ
-  tail : ℝ
-  arithmetic_pos : 0 < arithmetic
-  smooth_nonneg : 0 ≤ smooth
-  windowBound_nonneg : 0 ≤ windowBound
-  tail_pos : 0 < tail
-
 end SecondPassArithmetic
 
 namespace FirstPassCubeLabels

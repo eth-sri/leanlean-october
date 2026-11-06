@@ -1,5 +1,6 @@
 module
 public import DetectorPowerRange
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -32,11 +33,9 @@ theorem tail_budgets_of_fraction {σ n d φ b : ℝ} (hd : 0 < d)
     φ-b*((3*(n/d)/4)*(σ-1/2)) ≤ 3*(n/d)*(1-σ) := by
   constructor
   · apply first_tail_budget_of_length
-    rw [div_mul_eq_mul_div]
-    exact (le_div_iff₀ hd).mpr hfirst
+    pm_8908 hfirst
   · apply second_tail_budget_of_length
-    rw [div_mul_eq_mul_div]
-    exact (le_div_iff₀ hd).mpr hsecond
+    pm_8908 hsecond
 
 /-- Both exact tail exponents meet all five closed solid branches. -/
 theorem rightSolid_tail_budgets {σ : ℝ} (hl : 7/9 ≤ σ) (hr : σ ≤ 4/5) :
@@ -49,20 +48,10 @@ theorem rightSolid_tail_budgets {σ : ℝ} (hl : 7/9 ≤ σ) (hr : σ ≤ 4/5) :
   by_cases h1 : σ ≤ 29359/37574
   · have h2 : σ ≤ (1015:ℝ)/1294 := by linarith
     simp only [rightSolidLengthExponent,rightSolidTailK,rightSolidTailL,ite_eq_left h1,ite_eq_left h2]
-    rw [show (1:ℝ)+(122/243)/(64/135)=593/288 by norm_num,
-      show (4:ℝ)+(2+4*(122/243))/(64/135)=3587/288 by norm_num]
-    apply tail_budgets_of_fraction
-    · linarith
-    · nlinarith
-    · nlinarith
+    pm_2718
   by_cases h2 : σ ≤ 1015/1294
   · simp only [rightSolidLengthExponent,rightSolidTailK,rightSolidTailL,ite_eq_right h1,ite_eq_left h2]
-    rw [show (1:ℝ)+(122/243)/(64/135)=593/288 by norm_num,
-      show (4:ℝ)+(2+4*(122/243))/(64/135)=3587/288 by norm_num]
-    apply tail_budgets_of_fraction
-    · linarith
-    · nlinarith
-    · nlinarith
+    pm_2718
   by_cases h3 : σ ≤ 353/447
   · simp only [rightSolidLengthExponent,rightSolidTailK,rightSolidTailL,ite_eq_right h1,ite_eq_right h2,ite_eq_left h3]
     rw [show (1:ℝ)+(177/352)/(371/792)=3077/1484 by norm_num,
@@ -80,8 +69,7 @@ theorem rightSolid_tail_budgets {σ : ℝ} (hl : 7/9 ≤ σ) (hr : σ ≤ 4/5) :
     · nlinarith
     · nlinarith
   simp only [rightSolidLengthExponent,rightSolidTailK,rightSolidTailL,ite_eq_right h1,ite_eq_right h2,ite_eq_right h3,ite_eq_right h4]
-  rw [show (1:ℝ)+(41/81)/(85/189)=542/255 by norm_num,
-    show (4:ℝ)+(2+4*(41/81))/(85/189)=3302/255 by norm_num]
+  pm_2719
   apply tail_budgets_of_fraction
   · linarith
   · nlinarith

@@ -1,6 +1,7 @@
 module
 public import Mathlib
 public import TaoTrudgianYang2025.ExponentPair
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -24,8 +25,7 @@ theorem approximateModelPhase_iteratedDeriv_error
   have hc : ContDiffAt ℝ (p+1) F u :=
     (hF.1.contDiffAt (Icc_mem_nhds hu.1 hu.2)).of_le
       (ENat.natCast_le_of_coe_top_le_withTop le_rfl (p+1))
-  have hm : ContDiffAt ℝ p (modelPhase σ) u :=
-    Real.contDiffAt_rpow_const_of_ne (zero_lt_one.trans hu.1).ne'
+  pm_977 hm
   change ‖iteratedDerivWithin (p+1) F phaseInterval u -
     iteratedDerivWithin p (modelPhase σ) phaseInterval u‖ ≤ δ at he
   rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hc

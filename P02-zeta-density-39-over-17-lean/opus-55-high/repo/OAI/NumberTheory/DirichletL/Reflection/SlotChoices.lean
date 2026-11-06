@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.TupleFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,30 +14,33 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
-def slotChoiceSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) :
+def slotChoiceSplit (L : σ→ Finset (Ideal Eis)) (T : Finset σ) :
     (∀ i, L i)≃(∀ i : T, L i.val)×(∀ i : {i // i∉T}, L i.val) :=
   Equiv.piEquivPiSubtypeProd (fun i => i∈T) (fun i => L i)
 
 omit [Fintype σ] in
-lemma slotChoiceSplit_active (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+lemma slotChoiceSplit_active (L : σ→ Finset (Ideal Eis)) (T : Finset σ)
     (a : ∀ i : T, L i.val) (b : ∀ i : {i // i∉T}, L i.val) (i : T) :
     (slotChoiceSplit L T).symm (a,b) i.val=a i := by
   simp only [slotChoiceSplit,Equiv.piEquivPiSubtypeProd,Equiv.coe_fn_symm_mk,dite_eq_left i.property]
 
+section
+variable (L : σ→ Finset (Ideal Eis)) (T : Finset σ)
+include L T
 omit [Fintype σ] in
-lemma slotChoiceSplit_inactive (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+lemma slotChoiceSplit_inactive
     (a : ∀ i : T, L i.val) (b : ∀ i : {i // i∉T}, L i.val) (i : {i // i∉T}) :
     (slotChoiceSplit L T).symm (a,b) i.val=b i := by
   simp only [slotChoiceSplit,Equiv.piEquivPiSubtypeProd,Equiv.coe_fn_symm_mk,dite_eq_right i.property]
 
-lemma slot_choice_inactive_weight (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+lemma slot_choice_inactive_weight
     (p : ∀ i, L i) :
     (∏ i∈(Finset.univ:Finset σ)\T,(Ideal.absNorm (p i).val:ℂ)⁻¹)=
       ∏ i : {i // i∉T}, (Ideal.absNorm ((slotChoiceSplit L T p).2 i).val:ℂ)⁻¹ := by
   exact Finset.prod_subtype (Finset.univ\T) (fun i => by simp)
     (fun i => (Ideal.absNorm (p i).val:ℂ)⁻¹)
 
-lemma slot_choice_coprime_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+lemma slot_choice_coprime_split
     (a : ∀ i : T, L i.val) (b : ∀ i : {i // i∉T}, L i.val) (K : Ideal Eis) :
     IsCoprime K (∏ i, ((slotChoiceSplit L T).symm (a,b) i).val) ↔
       IsCoprime K (∏ i : T, (a i).val) ∧ IsCoprime K (∏ i : {i // i∉T}, (b i).val) := by
@@ -50,10 +54,9 @@ lemma slot_choice_coprime_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
       simpa only [slotChoiceSplit_inactive] using h i.val
   · rintro ⟨ha,hb⟩ i
     by_cases hi : i∈T
-    · rw [slotChoiceSplit_active L T a b ⟨i,hi⟩]
-      exact ha ⟨i,hi⟩
-    · rw [slotChoiceSplit_inactive L T a b ⟨i,hi⟩]
-      exact hb ⟨i,hi⟩
+    pm_7362 slotChoiceSplit_active ha
+    pm_7362 slotChoiceSplit_inactive hb
+end
 end
 end SevenEighths.InverseReflectedPhase
 

@@ -1,13 +1,12 @@
 module
 public import MathCollab.Density.Stronger.ShortPoweredFamily
 public import MathCollab.Density.DensityExponentAccounting
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Real Set Filter
-open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+open Real Filter
+open scoped Topology
 namespace MathCollab.Density.Stronger
 
 /-- The stronger lower scale still exceeds sqrt(T), preserving the original
@@ -38,15 +37,14 @@ theorem smoothPoweredFamily_largeValues_admissible {σ η κ : ℝ}
   filter_upwards [eventually_ge_atTop (2 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1,
     densityAmbient_eventually_cubeRoot_le, smoothPoweredFamily_admissible hσ hη δ]
     with T hT hlog hroot hadm
-  have hTpos : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
+  pm_34 hTpos T hT1
   have hH : T ≤ densityAmbient T := by unfold densityAmbient; nlinarith [sq_nonneg (Real.log T-1)]
   refine ⟨hT.trans hH, by linarith, ?_⟩
   intro q hq
   obtain ⟨hlo, _, hhi, hc⟩ := hadm q hq
   have hL := smoothPoweredFamilyScale_pos q
   have hsqrt := (sqrt_le_stronger_lower_scale (by linarith : 0 < σ) hσ' hT1).trans hlo
-  have hLreal : (0 : ℝ) < smoothPoweredFamilyScale q := by exact_mod_cast hL
+  pm_8415 hLreal smoothPoweredFamilyScale q hL
   refine ⟨hL, by positivity, hroot.trans hsqrt, hhi.trans hH, ?_, fun n _ => hc n⟩
   exact (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hL) hmargin).trans
     (detectorHeight_ge_scale hTpos hsqrt hη.le)
@@ -59,8 +57,7 @@ theorem smooth_largeValue_term_le {T L σ η : ℝ} (K : ℕ)
     (hhi : L ≤ (2 : ℝ)^K*T^(smoothingExponent σ)) :
     L^2/(L^σ*T^(-2*η))^2+L^3*Real.sqrt (densityAmbient T)/(L^σ*T^(-2*η))^4 ≤
       ((2 : ℝ)^K+32)*Real.log T*T^(densityExponent σ+8*η) := by
-  have hTpos : 0 < T := by linarith
-  have hLpos : 0 < L := (Real.rpow_pos_of_pos hTpos _).trans_le hlo
+  pm_438 hTpos hLpos L hlo
   have hid := short_exponent_identities (show 0 < σ by linarith)
   have hlow := Real.rpow_le_rpow_of_nonpos (Real.rpow_pos_of_pos hTpos (lowerExponent σ)) hlo
     (show 3-4*σ ≤ 0 by linarith)
@@ -73,22 +70,17 @@ theorem smooth_largeValue_term_le {T L σ η : ℝ} (K : ℕ)
     have he : smoothingExponent σ*(2-2*σ) = densityExponent σ := by nlinarith [hid.1]
     rw [he] at hb
     exact hb.trans (mul_le_mul_of_nonneg_right hpow (by positivity))
-  have hsqrt : Real.sqrt (densityAmbient T) ≤ 32*T^(1/2 : ℝ)*Real.log T := by
-    simpa only [Real.sqrt_eq_rpow] using densityAmbient_small_rpow hT hlog
-      (by norm_num : (0 : ℝ) ≤ 1/2) (by norm_num : (1/2 : ℝ) ≤ 1/2)
+  pm_4258
   have he₁ : T^(densityExponent σ)*T^(4*η) = T^(densityExponent σ+4*η) :=
     (Real.rpow_add hTpos _ _).symm
   have he₂ : (T^(lowerExponent σ))^(3-4*σ)*T^(1/2 : ℝ)*T^(8*η) =
       T^(densityExponent σ+8*η) := by
-    rw [← Real.rpow_mul hTpos.le, ← Real.rpow_add hTpos, ← Real.rpow_add hTpos]
-    congr 1
+    pm_8852 hTpos.le hTpos
     nlinarith [hid.2]
   have hp : T^(densityExponent σ+4*η) ≤ T^(densityExponent σ+8*η) :=
     Real.rpow_le_rpow_of_exponent_le hT (by linarith)
   have hfirst : L^2/(L^σ*T^(-2*η))^2 ≤ (2 : ℝ)^K*Real.log T*T^(densityExponent σ+8*η) := by
-    rw [normalizedHeight_quotient hTpos hLpos]
-    norm_num only [Nat.cast_ofNat]
-    have hh := mul_le_mul_of_nonneg_right hhigh (show 0 ≤ T^(4*η) by positivity)
+    pm_4261
     calc
       _ = L^(2-2*σ)*T^(4*η) := by congr 1 <;> congr 1 <;> ring
       _ ≤ ((2 : ℝ)^K*T^(densityExponent σ))*T^(4*η) := hh
@@ -97,14 +89,10 @@ theorem smooth_largeValue_term_le {T L σ η : ℝ} (K : ℕ)
       _ ≤ _ := by nlinarith [show 0 ≤ (2 : ℝ)^K*T^(densityExponent σ+8*η) by positivity]
   have hsecond : L^3*Real.sqrt (densityAmbient T)/(L^σ*T^(-2*η))^4 ≤
       32*Real.log T*T^(densityExponent σ+8*η) := by
-    rw [mul_div_right_comm, normalizedHeight_quotient hTpos hLpos]
-    norm_num only [Nat.cast_ofNat]
-    have hh := mul_le_mul hlow hsqrt (Real.sqrt_nonneg _) (by positivity)
-    have hh' := mul_le_mul_of_nonneg_right hh (show 0 ≤ T^(8*η) by positivity)
+    pm_4259
     calc
       _ = (L^(3-4*σ)*Real.sqrt (densityAmbient T))*T^(8*η) := by
-        rw [show 3-σ*4 = 3-4*σ by ring, show 2*η*4 = 8*η by ring]
-        ring
+        pm_4260
       _ ≤ ((T^(lowerExponent σ))^(3-4*σ)*(32*T^(1/2 : ℝ)*Real.log T))*T^(8*η) := hh'
       _ = 32*Real.log T*T^(densityExponent σ+8*η) := by rw [← he₂]; ring
   nlinarith
@@ -143,17 +131,7 @@ theorem smooth_family_sum_eventually {η σ : ℝ}
       _ ≤ (144*(K : ℝ)^2*(Real.log T)^2)*(((2 : ℝ)^K+32)*Real.log T*T^(densityExponent σ+8*η)) :=
         mul_le_mul_of_nonneg_right hcard (by positivity)
       _ = _ := by ring
-  have hHpow : (densityAmbient T)^η ≤ T^(2*η) := by
-    have hh := Real.rpow_le_rpow (show 0 ≤ densityAmbient T by unfold densityAmbient; positivity) hH hη.le
-    rw [← Real.rpow_natCast_mul hTpos.le] at hh
-    simpa only [Nat.cast_ofNat] using hh
-  have hlogs : Real.log (2*T) ≤ 2*Real.log T := by
-    rw [Real.log_mul (by norm_num) hTpos.ne']
-    have hh := Real.log_le_log (by norm_num : (0 : ℝ) < 2) hT
-    linarith
-  have hHnonneg : 0 ≤ densityAmbient T := by unfold densityAmbient; positivity
-  have hmul := mul_le_mul (mul_le_mul hlogs hHpow (by positivity) (by positivity)) hsum
-    (by positivity) (by positivity)
+  pm_4262
   calc
     _ ≤ (2*Real.log T*T^(2*η))*
         ((144*(K : ℝ)^2*((2 : ℝ)^K+32))*(Real.log T)^3*T^(densityExponent σ+8*η)) := hmul

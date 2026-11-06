@@ -1,24 +1,24 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerBranch
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerMass
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open scoped Classical
+open ActualEisensteinCubic CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAllSlots
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
+open InverseInitialProfile
 open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
 open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -27,7 +27,7 @@ theorem rowMode_sum_allocations
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)(u:Eisˣ)
     (hu:∀x∈S,unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
     (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
-    (lists:σ→Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
+    (lists:σ→ Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
     (ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))(w:Source (ι:=ι) 0→ℂ) :
     (∑x∈S,w x*rowMode p hp hcop hg hpr pool Ψ j slots lists a ω₁ ω₂ Z D B v θ H x ρ z)=
       ∑J₁∈slots.powerset,∑J₂∈slots.powerset,
@@ -49,7 +49,7 @@ theorem rowMode_sum_allocations
 
 theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
@@ -58,10 +58,10 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
       (S:Finset (Source (ι:=ι) 0))(u:Eisˣ)(_hdiv:∀x∈S,x.divisor⊆x.common)
       (_hu:∀x∈S,unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
       (pool:Finset ι)(Ψ:Eis→*ℂ)(_hΨ:∀n,‖Ψ n‖≤1)(j:Eis)
-      (slots:Finset σ)(_hslots:slots.card≤N)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+      (slots:Finset σ)(_hslots:slots.card≤N)(lists:σ→ Finset ι)(a:σ→ι→ℂ)
       (_ha:∀i∈slots,∀q∈lists i,‖a i q‖≤1)
       (ω₁ ω₂:ℝ→ℂ)(Z D B v θ H R:ℝ)(_hZ:1≤Z)(_hR:R≤U)
-      (_hn:∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z^R)
+      (_hn:∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z ^R)
       (ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))
       (w:Source (ι:=ι) 0→ℂ)(_hw:∀x∈S,‖w x‖≤1)
       (labels:Finset (Ideal Eis))(rows:Finset Eis)
@@ -74,19 +74,19 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
         normalizedColumnEnergy p hp hcop hg pool (secondRayMinus Ψ ρ) (j*primaryGenerator t)
           (slots\J₁) lists a labels rows (fun f=>((idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1))
           (childLogTest ω₁ (-(profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2) 4))
-          (Z^(columnCenter D B v)) Z F≤E ∧
+          (Z ^(columnCenter D B v)) Z F≤E ∧
         normalizedColumnEnergy p hp hcop hg pool (secondRayPlus Ψ ρ) (j*primaryGenerator t)
           (slots\J₂) lists a labels rows (fun f=>((idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1))
           (childLogTest ω₂ ((profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2) 5))
-          (Z^(columnCenter D B v)) Z F≤E),
+          (Z ^(columnCenter D B v)) Z F≤E),
       ‖∑x∈S,w x*rowMode p hp hcop hg hpr pool Ψ j slots lists a ω₁ ω₂
-        Z D B v θ H x ρ z‖≤C*‖secondRayCoefficient ρ‖*Z^(F+R+π)*E := by
+        Z D B v θ H x ρ z‖≤C*‖secondRayCoefficient ρ‖*Z ^(F+R+π)*E := by
   obtain ⟨C,hC,hmass⟩ := InverseInitialEnergyCallerMass.assigned_quotient_mass (2*N) U π hU hπ
   refine ⟨C*4^N,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hpr hc S u hdiv hu pool Ψ hΨ j slots hslots lists a ha ω₁ ω₂
     Z D B v θ H R hZ hR hn ρ z w hw labels rows hlabels hneg hchild F E hE hmoment
   have hZp : 0<Z := zero_lt_one.trans_le hZ
-  let bound := C*‖secondRayCoefficient ρ‖*Z^(F+R+π)*E
+  let bound := C*‖secondRayCoefficient ρ‖*Z ^(F+R+π)*E
   have hb (J₁:Finset σ)(hJ₁:J₁∈slots.powerset)(J₂:Finset σ)(hJ₂:J₂∈slots.powerset) :
       ‖∑x∈S,w x*allocatedMode p hp hcop hg u pool Ψ j slots J₁ J₂ lists a ω₁ ω₂
         Z D B v θ H x ρ z‖≤bound := by
@@ -105,7 +105,7 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     have hm := hmass p hp S J₁ J₂ lists lists hJ Z R hZ hR hn
     apply he.trans
     calc
-      _≤‖secondRayCoefficient ρ‖*(Z^F*(C*Z^(R+π)))*E := by gcongr
+      _≤‖secondRayCoefficient ρ‖*(Z ^F*(C*Z ^(R+π)))*E := by gcongr
       _=bound := by dsimp only [bound];rw [add_assoc F R π,Real.rpow_add hZp F (R+π)];ring
   rw [rowMode_sum_allocations p hp hcop hg hpr S hdiv u hu]
   calc
@@ -116,7 +116,7 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     _≤∑_J₁∈slots.powerset,∑_J₂∈slots.powerset,bound :=
       Finset.sum_le_sum fun J₁ hJ₁=>Finset.sum_le_sum fun J₂ hJ₂=>hb J₁ hJ₁ J₂ hJ₂
     _=(4:ℝ)^slots.card*bound := by
-      simp only [Finset.sum_const,Finset.card_powerset,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
+      pm_94 Finset.sum_const Finset.card_powerset nsmul_eq_mul Nat.cast_pow Nat.cast_ofNat
       rw [show (4:ℝ)=2*2 by norm_num,mul_pow]
       ring
     _≤(4:ℝ)^N*bound := mul_le_mul_of_nonneg_right
@@ -125,6 +125,5 @@ theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
 
 end SevenEighths.InverseInitialEnergyCallerAllSlots
 
-end
 
 end OAI

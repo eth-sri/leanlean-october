@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection4Congruence
 public import GafniTao.WooleySection7MomentIdentity
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Wooley equation (4.12)
@@ -15,7 +16,6 @@ mean, retaining the alpha-dependent coefficient twist used in (4.10)--(4.13).
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleySourceNormalizedMixedRealAverage_self_zero
     {k q s : ℕ} [NeZero q]
@@ -53,7 +53,7 @@ theorem wooleySourcePolynomialMean_eq_zero_of_massSq_eq_zero
     simp [wooleySourceNormalizedPolynomialSum, hmass]
   unfold wooleySourcePolynomialMean
   simp_rw [hnormalized]
-  simp [zero_pow h2s]
+  simp_all
 
 /-- The tuple implication behind equation (4.12). -/
 theorem wooleySection4_originalDisplacement_forces_inserted
@@ -109,8 +109,7 @@ theorem wooleySection4_originalDisplacement_forces_inserted
           simp_rw [wooleyAffinePolynomialSystem_eval]
           norm_num only [Nat.cast_pow]
         _ = 0 := congr_fun hleft j
-    rw [ZMod.intCast_zmod_eq_zero_iff_dvd] at hz
-    norm_num only [Nat.cast_pow] at hz
+    pm_1451 ZMod.intCast_zmod_eq_zero_iff_dvd hz Nat.cast_pow
     exact hz
   have hnew := htransfer (fun x : ↑gamma.support => (x : ℤ)) omega.1 hdiv
   funext i
@@ -168,10 +167,7 @@ theorem wooleySourcePolynomial_equation_4_12
           theta theta (p ^ B) s 0 gamma gamma =
         wooleySourceInsertedRealAverage
           theta theta Psi (p ^ B) (p ^ (B - k * h)) s 0 gamma gamma := by
-    apply Complex.ofReal_injective
-    rw [← wooleySourceRawMixedComplexAverage_eq_ofReal,
-      ← wooleySourceInsertedComplexAverage_eq_ofReal]
-    exact hrawComplex
+    pm_7783
   by_cases hmass : wooleySourceMassSq gamma = 0
   · rw [wooleySourcePolynomialMean_eq_zero_of_massSq_eq_zero
       theta gamma hs hmass]
@@ -202,10 +198,8 @@ theorem wooleySourcePolynomial_equation_4_12
           gamma gamma hmass hmass]
       rw [hrawReal]
     rw [wooleySourceNormalizedMixedRealAverage_self_zero] at hnormalized
-    rw [wooleySourceInsertedNormalizedRealAverage_self_zero] at hnormalized
-    simpa only [theta] using hnormalized
+    pm_293 wooleySourceInsertedNormalizedRealAverage_self_zero hnormalized theta
 
 
-end
 
 end GafniTao

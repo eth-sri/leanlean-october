@@ -20,15 +20,19 @@ lemma stratumShapeFactor_mul_one {H : Matrix.SpecialLinearGroup (Fin 2) Eis}
     s.stratumShapeFactor (c*r)=s.stratumShapeFactor c*shapeArgument r := by
   simpa only [mul_one,shapeArgument_one] using stratumShapeFactor_mul s c r 1
 
-lemma primeFamily_primary_product_ne_zero {φ : Type*} [Fintype φ] (F : PrimeFamily φ) :
+section
+variable {φ : Type*} [Fintype φ]
+include φ
+lemma primeFamily_primary_product_ne_zero (F : PrimeFamily φ) :
     primaryGenerator (∏ i,F.ideal i)≠0 := by
   rw [←F.generator_product]
   exact Finset.prod_ne_zero_iff.mpr (fun i _ => F.generator_ne_zero i)
 
-lemma stratumShapeFactor_frozen_norm {φ : Type*} [Fintype φ]
+lemma stratumShapeFactor_frozen_norm
     {H : Matrix.SpecialLinearGroup (Fin 2) Eis} (s : FixedCuspShape H) (c : Eis) (F : PrimeFamily φ) :
     ‖s.stratumShapeFactor (c*primaryGenerator (∏ i,F.ideal i))‖=‖s.stratumShapeFactor c‖ := by
   rw [stratumShapeFactor_mul_one,norm_mul,shapeArgument_norm _ (primeFamily_primary_product_ne_zero F),mul_one]
+end
 
 lemma row_shape_weight_norm (r : Ideal Eis→ℂ) (K : Ideal Eis) (hK : Admissible K) :
     ‖r K*shapeArgument (primaryGenerator K)‖=‖r K‖ := by

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SlotProducts
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,10 +18,10 @@ theorem common_measure_energy {Ω κ : Type*} [MeasurableSpace Ω] [Fintype κ]
     (hφ : ∀ k, Integrable (fun t => b t * φ k t) μ)
     (hbound : ∀ t, (∑ k, ‖φ k t‖ ^ 2) ≤ E) :
     (∑ k, ‖∫ t, b t * φ k t ∂μ‖ ^ 2) ≤ E * (∫ t, ‖b t‖ ∂μ) ^ 2 := by
-  let e := PiLp.continuousLinearEquiv 2 ℂ (fun _ : κ => ℂ)
+  pm_3725
   let F : Ω → EuclideanSpace ℂ κ := fun t => e.symm (fun k => b t * φ k t)
   have hF (t : Ω) : ‖F t‖ ≤ ‖b t‖ * Real.sqrt E := by
-    apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
+    pm_3726
     rw [EuclideanSpace.norm_sq_eq, mul_pow, Real.sq_sqrt hE]
     change (∑ k, ‖b t * φ k t‖ ^ 2) ≤ ‖b t‖ ^ 2 * E
     simp only [norm_mul, mul_pow, ← Finset.mul_sum]

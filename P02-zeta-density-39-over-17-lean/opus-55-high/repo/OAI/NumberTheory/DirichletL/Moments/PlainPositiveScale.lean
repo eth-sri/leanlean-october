@@ -19,7 +19,7 @@ open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
   have hB:0≤B:=apply_nonneg _ _
   have hWs':Function.support (W:ℝ→ℂ)⊆Set.Icc a (max 0 b):=by
     intro x hx
-    exact ⟨(hWs hx).1,(hWs hx).2.trans (le_max_right _ _)⟩
+    grind
   have hs:=twistedIdealSum_absolute χ W a (max 0 b) B ha (le_max_left _ _) hB hWs' (W.smooth ⊤)
     (fun x=>SchwartzMap.norm_le_seminorm ℝ W x) freq D hD
   rw [←plain_height_norm χ W a b ha hWs (W.smooth ⊤) freq D hD,norm_mul,norm_inv,

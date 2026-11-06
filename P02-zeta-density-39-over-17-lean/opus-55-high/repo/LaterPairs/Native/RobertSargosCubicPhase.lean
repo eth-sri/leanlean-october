@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.FiniteSmoothTaylor
 public import LaterPairs.Native.RobertSargosFourthGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -34,8 +35,7 @@ theorem robertSargos_cubic_polynomial (f : ℝ → ℝ) (m y : ℝ) :
     finiteTaylorPolynomial f 3 m (m+y) =
       f m+deriv f m*y+iteratedDeriv 2 f m*y^2/2+
         iteratedDeriv 3 f m*y^3/6 := by
-  norm_num [finiteTaylorPolynomial,taylor_within_apply,Finset.sum_range_succ,
-    iteratedDerivWithin_univ,iteratedDeriv_zero,iteratedDeriv_one,smul_eq_mul]
+  pm_6666
   ring
 
 theorem robertSargos_mixed_taylor_identity (f : ℝ → ℝ) (m r q h n : ℝ) :

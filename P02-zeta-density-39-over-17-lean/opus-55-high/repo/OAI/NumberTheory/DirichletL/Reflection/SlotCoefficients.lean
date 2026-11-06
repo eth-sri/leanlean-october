@@ -27,8 +27,11 @@ def slotChoiceFamily (L : σ→Finset (Ideal Eis))
   maximal i := hmax i _ (p i).property
   good i := hgood i _ (p i).property
 
+section
+variable (L : σ→Finset (Ideal Eis))
+include L
 omit [Fintype σ] in
-lemma slotChoiceFamily_active (L : σ→Finset (Ideal Eis))
+lemma slotChoiceFamily_active
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
     (T : Finset σ) (a : ∀ i : T,L i.val) (b : ∀ i : {i // i∉T},L i.val) :
@@ -38,7 +41,7 @@ lemma slotChoiceFamily_active (L : σ→Finset (Ideal Eis))
   funext i
   exact congrArg Subtype.val (slotChoiceSplit_active L T a b i)
 
-lemma slot_coefficient_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+lemma slot_coefficient_split (T : Finset σ)
     (w : ∀ i,L i→ℂ) (a : ∀ i : T,L i.val) (b : ∀ i : {i // i∉T},L i.val) :
     (∏ i,w i ((slotChoiceSplit L T).symm (a,b) i))=
       (∏ i : T,w i.val (a i))*(∏ i : {i // i∉T},w i.val (b i)) := by
@@ -47,9 +50,10 @@ lemma slot_coefficient_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
   simp only [slotChoiceSplit_active,slotChoiceSplit_inactive] at he
   refine he.symm.trans ?_
   congr 1
-  apply Finset.prod_congr (by ext; simp only [Finset.mem_univ])
+  apply Finset.prod_congr (by grind)
   intro i hi
   rfl
+end
 
 omit [DecidableEq σ] in
 lemma slot_coefficient_norm (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ)

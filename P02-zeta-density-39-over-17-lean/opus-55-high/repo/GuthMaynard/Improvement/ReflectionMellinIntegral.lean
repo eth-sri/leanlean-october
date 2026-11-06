@@ -1,16 +1,16 @@
 module
 public import GuthMaynard.Improvement.ReflectionNear
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+public section
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
+section
+variable (w : MathCollab.Density.ReflectionCutoff) (ν : Measure ℝ) [IsFiniteMeasure ν]
+include w ν
 /-- Actual weighted reflected energy is jointly integrable for every finite
 time measure. The Mellin integral is not truncated or treated formally. -/
-theorem reflection_mellin_integrable (w : MathCollab.Density.ReflectionCutoff)
-    (ν : Measure ℝ) [IsFiniteMeasure ν] (L H u : ℝ) :
+theorem reflection_mellin_integrable (L H u : ℝ) :
     Integrable (fun z : ℝ × ℝ =>
       ‖MathCollab.Density.mellinLine (fun x => (w x:ℂ)) z.2‖ *
         ‖MathCollab.Density.bandPhaseSum L H (z.1-u) z.2‖^2) (ν.prod volume) := by
@@ -29,8 +29,7 @@ theorem reflection_mellin_integrable (w : MathCollab.Density.ReflectionCutoff)
 
 /-- Fubini retains the actual Mellin weight. A uniform inner time-energy
 budget is the sole estimate premise of this assembly helper. -/
-theorem reflection_mellin_integral_bound (w : MathCollab.Density.ReflectionCutoff)
-    (ν : Measure ℝ) [IsFiniteMeasure ν] (L H u B : ℝ)
+theorem reflection_mellin_integral_bound (L H u B : ℝ)
     (hB : ∀ r : ℝ, (∫ t, ‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2 ∂ν) ≤ B) :
     (∫ t, (∫ r, ‖MathCollab.Density.mellinLine (fun x => (w x:ℂ)) r‖ *
       ‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2) ∂ν) ≤
@@ -46,5 +45,6 @@ theorem reflection_mellin_integral_bound (w : MathCollab.Density.ReflectionCutof
   · exact hW.norm.mul_const B
   · filter_upwards with r
     exact mul_le_mul_of_nonneg_left (hB r) (norm_nonneg _)
+end
 
 end GuthMaynard.Improvement

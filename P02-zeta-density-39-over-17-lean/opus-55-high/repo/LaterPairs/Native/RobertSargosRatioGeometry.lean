@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosDisplacement
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -14,24 +15,25 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_ratio_square_gap {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
-    (hH : 0 < H) (hQ : 0 < Q) (hδ : 0 ≤ δ)
-    (hr : |r| ≤ H/2) (hh₂ : H ≤ h₂) (hq₁ : Q ≤ |q₁|)
+section
+variable {r q₁ q₂ h₁ h₂ d H Q δ : ℝ} (hH : 0 < H) (hQ : 0 < Q) (hδ : 0 ≤ δ) (hr : |r| ≤ H/2)
+include r q₁ q₂ h₁ h₂ d H Q δ hH hQ hδ hr
+theorem robertSargos_ratio_square_gap (hh₂ : H ≤ h₂) (hq₁ : Q ≤ |q₁|)
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
     |(q₂/q₁)^2-h₁*(h₁-r)/(h₂*(h₂-r))| ≤ 2*δ*|r|/H := by
   have hhp : 0 < h₂ := hH.trans_le hh₂
-  have hdiff : H/2 ≤ h₂-r := by linarith [le_abs_self r]
+  have hdiff : H/2 ≤ h₂-r := by grind
   have hdiffp : 0 < h₂-r := by linarith
-  have hqp : 0 < |q₁| := hQ.trans_le hq₁
+  pm_4888 hqp q₁ hQ.trans_le hq₁
   have hqn : q₁ ≠ 0 := abs_pos.mp hqp
   have ha : 0 < h₂*(h₂-r) := mul_pos hhp hdiffp
   have haLower : H^2/2 ≤ h₂*(h₂-r) := by
     have hm := mul_le_mul hh₂ hdiff (by positivity : 0 ≤ H/2) hhp.le
-    nlinarith only [hm]
+    grind
   have hqLower : Q^2 ≤ q₁^2 := by
     have hm := sq_le_sq₀ hQ.le (abs_nonneg q₁) |>.mpr hq₁
-    simpa only [sq_abs] using hm
+    simp_all
   have hden : 0 < (h₂*(h₂-r))*q₁^2 := mul_pos ha (sq_pos_of_ne_zero hqn)
   have hdenLower : (H^2/2)*Q^2 ≤ (h₂*(h₂-r))*q₁^2 :=
     mul_le_mul haLower hqLower (sq_nonneg Q) ha.le
@@ -50,9 +52,7 @@ theorem robertSargos_ratio_square_gap {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
 
                                                                       
                                                                          
-theorem robertSargos_ratio_sqrt_gap {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
-    (hH : 0 < H) (hQ : 0 < Q) (hδ : 0 ≤ δ)
-    (hr : |r| ≤ H/2) (hh₁ : H ≤ h₁) (hh₂ : H ≤ h₂)
+theorem robertSargos_ratio_sqrt_gap (hh₁ : H ≤ h₁) (hh₂ : H ≤ h₂)
     (hq₁ : |q₁| ∈ Set.Icc Q (2*Q)) (hq₂ : Q ≤ |q₂|)
     (hsign : 0 < q₁*q₂)
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
@@ -83,7 +83,8 @@ theorem robertSargos_ratio_sqrt_gap {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
   change |q₂/q₁-Real.sqrt A| ≤ 4*δ*|r|/H
   have hm := mul_le_mul_of_nonneg_left (show 1/2 ≤ q₂/q₁+Real.sqrt A by linarith)
     (abs_nonneg (q₂/q₁-Real.sqrt A))
-  have hdouble := mul_le_mul_of_nonneg_left (hm.trans hs) (by norm_num : (0:ℝ) ≤ 2)
+  pm_8633 hdouble hm.trans hs
   convert hdouble using 1 <;> ring
+end
 
 end TaoTrudgianYang2025

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussianCrude
 public import OAI.NumberTheory.DirichletL.Detector.GaussianTailBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
 def gaussianCompletedFamilyIntegral {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→ Id) (Ψ : α→ O→*ℂ)
     (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) : ℂ :=
   ∫t : ℝ,(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
@@ -26,14 +27,15 @@ def gaussianCompletedFamilyMass {α ι : Type*} [Fintype ι]
     (F : Finset α) (a : α→ℂ) (W : ι→ℝ→ℂ) (q : α→ι→ℝ) : ℝ :=
   ∑k∈F,‖a k‖*∏i,‖W i (q k i)‖
 
-lemma gaussianCompletedFamilyMass_nonneg {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (W : ι→ℝ→ℂ) (q : α→ι→ℝ) :
+section
+variable {α ι : Type*} [Fintype ι] (F : Finset α) (a : α→ℂ)
+include α ι F a
+lemma gaussianCompletedFamilyMass_nonneg (W : ι→ℝ→ℂ) (q : α→ι→ℝ) :
     0≤gaussianCompletedFamilyMass F a W q := by
   unfold gaussianCompletedFamilyMass
   positivity
 
-lemma gaussianCompletedFamily_integrable {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+lemma gaussianCompletedFamily_integrable (S : Finset Id) (D : α→ Id) (Ψ : α→ O→*ℂ)
     (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) (hT : 0<T) :
     Integrable (fun t : ℝ=>(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
@@ -42,16 +44,16 @@ lemma gaussianCompletedFamily_integrable {α ι : Type*} [Fintype ι]
   have hh := integrable_finsetSum F (fun k _=>(gaussian_selected_completed_integrable W (q k)
     (gaussianJointDensity V hV (T/Z)) S (D k) (Ψ k) T hT).const_mul (a k))
   simpa only [Finset.sum_mul,mul_assoc] using hh
+end
 
 theorem gaussianCompletedFamily_crude :
     ∃C : ℝ,0<C ∧ ∀{α ι : Type*} [Fintype ι],∀F : Finset α,∀a : α→ℂ,
-      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→O→*ℂ,
+      ∀S : Finset Id,∀D : α→ Id,∀Ψ : α→ O→*ℂ,
       (∀k∈F,∀n,‖Ψ k n‖≤1)→∀W : ι→ℝ→ℂ,∀q : α→ι→ℝ,
       ∀V : SchwartzMap ℝ ℂ,∀hV : HasCompactSupport (V:ℝ→ℂ),∀T Z : ℝ,0<T→
       ‖gaussianCompletedFamilyIntegral F a S D Ψ W q V hV T Z‖≤
         C*T^2*gaussianCompletedFamilyMass F a W q*gaussianJointMoment V hV 0 (T/Z) := by
-  obtain ⟨C,hC,hb⟩ := gaussianFixedWindow_completed_crude
-  refine ⟨C,hC,?_⟩
+  pm_155 C hC hb gaussianFixedWindow_completed_crude
   intro α ι _ F a S D Ψ hΨ W q V hV T Z hT
   have hf := gaussianCompletedFamily_integrable F a S D Ψ W q V hV T Z hT
   have hp (t : ℝ) :
@@ -85,14 +87,14 @@ theorem gaussianCompletedFamily_crude :
 theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (N : ℕ) :
     ∃C : ℝ,0<C ∧ ∀{α ι : Type*} [Fintype ι],∀F : Finset α,∀a : α→ℂ,
-      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→O→*ℂ,
+      ∀S : Finset Id,∀D : α→ Id,∀Ψ : α→ O→*ℂ,
       (∀k∈F,∀n,‖Ψ k n‖≤1)→∀W : ι→ℝ→ℂ,∀q : α→ι→ℝ,
       ∀Z A : ℝ,0<Z→1≤A→
       Summable (fun j : ℕ=>if (2:ℝ)^j/Z≤A⁻¹ ∨ A≤(2:ℝ)^j/Z then
         ‖gaussianCompletedFamilyIntegral F a S D Ψ W q V hV ((2:ℝ)^j) Z‖ else 0) ∧
       (∑'j : ℕ,if (2:ℝ)^j/Z≤A⁻¹ ∨ A≤(2:ℝ)^j/Z then
         ‖gaussianCompletedFamilyIntegral F a S D Ψ W q V hV ((2:ℝ)^j) Z‖ else 0)≤
-          C*gaussianCompletedFamilyMass F a W q*Z^2/A^N := by
+          C*gaussianCompletedFamilyMass F a W q*Z ^2/A^N := by
   obtain ⟨Cr,hCr,hr⟩ := gaussianCompletedFamily_crude
   obtain ⟨Cg,hCg,hg⟩ := gaussianRemoteMoment_summed V hV 0 N 2 (by norm_num)
   refine ⟨Cr*Cg,by positivity,?_⟩
@@ -116,7 +118,7 @@ theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
   calc
     _ ≤ ∑'j : ℕ,(Cr*M)*gaussianRemoteMoment V hV 0 2 Z A j := hsum.tsum_le_tsum hb (hs.mul_left (Cr*M))
     _ = (Cr*M)*∑'j : ℕ,gaussianRemoteMoment V hV 0 2 Z A j := tsum_mul_left
-    _ ≤ (Cr*M)*(Cg*Z^(2:ℝ)/A^N) := mul_le_mul_of_nonneg_left ht (mul_nonneg hCr.le hM)
+    _ ≤ (Cr*M)*(Cg*Z ^(2:ℝ)/A^N) := mul_le_mul_of_nonneg_left ht (mul_nonneg hCr.le hM)
     _ = _ := by rw [Real.rpow_two];dsimp only [M];ring
 
 end SevenEighths.ProbePhysical

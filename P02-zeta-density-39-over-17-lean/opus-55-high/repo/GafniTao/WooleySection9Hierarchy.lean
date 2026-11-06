@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection9Admissible
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Arithmetic hierarchy for Wooley Sections 7--10
@@ -16,7 +17,6 @@ they are not retained as opaque hypotheses.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The signed Section-7 depth is never larger than the ambient numerator
 `(k-r+1)b`, hence (for `r>=1`) never larger than `kb`. -/
@@ -24,16 +24,13 @@ theorem wooleySection7BPrimeNat_le_k_mul
     {k r a b gammaVal : ℕ} (hr : 1 ≤ r) (hrk : r ≤ k) :
     wooleySection7BPrimeNat k r a b gammaVal ≤ k * b := by
   unfold wooleySection7BPrimeNat wooleySection7BPrimeInt
-  have hcoeff : k - r + 1 ≤ k := by omega
+  pm_5243 hcoeff r
   have htoNat :
       (((((k - r + 1) * b : ℕ) : ℤ) - ((r * a : ℕ) : ℤ) -
           (((k - r) * gammaVal : ℕ) : ℤ)).toNat) ≤
         ((k - r + 1) * b : ℕ) := by
     rw [Int.toNat_le]
-    exact_mod_cast (show
-      (((k - r + 1) * b : ℕ) : ℤ) - ((r * a : ℕ) : ℤ) -
-          (((k - r) * gammaVal : ℕ) : ℤ) ≤
-        (((k - r + 1) * b : ℕ) : ℤ) by omega)
+    grind
   exact htoNat.trans (Nat.mul_le_mul_right b hcoeff)
 
 /-- A compact collection of scale inequalities implies every field of the
@@ -69,8 +66,7 @@ theorem wooleySection9Admissible_of_scale_hierarchy
     have hgammaNu : k * gammaVal ≤ k * nu :=
       Nat.mul_le_mul_left k hgamma.le
     have hsub : (k - r) * gammaVal ≤ a := by
-      have : (k - r) * gammaVal ≤ k * gammaVal :=
-        Nat.mul_le_mul_right gammaVal (Nat.sub_le k r)
+      pm_6847 gammaVal
       exact this.trans (hgammaNu.trans hknua)
     have hmargin' :
         tau * ((k * b : ℕ) : ℝ) +
@@ -91,7 +87,7 @@ theorem wooleySection9Admissible_of_scale_hierarchy
   · have hbp := wooleySection7BPrimeNat_le_k_mul
       (k := k) (r := r) (a := a) (b := b) (gammaVal := 0)
       hr hrk.le
-    have heps2 : 0 ≤ epsilon ^ 2 := sq_nonneg epsilon
+    pm_4913 heps2 epsilon
     exact lt_of_le_of_lt
       (mul_le_mul_of_nonneg_right (by exact_mod_cast hbp) heps2) hepsilon
   · intro hall gammaVal hgamma
@@ -116,12 +112,9 @@ theorem wooleySection9Admissible_predecessor
     (hepsilon : ((k * b : ℕ) : ℝ) * epsilon ^ 2 < (nu : ℝ)) :
     WooleySection9Admissible k (r - 1) B
       (wooleyNextB k r b) b nu B0 tau epsilon := by
-  have hrOne : 1 ≤ r := by omega
-  have hrPred : 1 ≤ r - 1 := by omega
+  pm_5825
   have hrPredK : r - 1 < k := by omega
-  have hdivisor := wooley_nextB_ge_divisor_scale
-    (k := k) (r := r) (b := b) hrOne hrk.le
-  have hkpos : 0 < k := by omega
+  pm_5483 hdivisor hrOne
   have hknuNext : k * nu ≤ wooleyNextB k r b := by
     have hfour : 4 * k * (k * nu) ≤ k * wooleyNextB k r b := by
       calc
@@ -135,8 +128,7 @@ theorem wooleySection9Admissible_predecessor
     have hkSq : k ≤ k ^ 2 := by nlinarith
     have hkScale : k ^ 2 ≤ 4 * k ^ 2 * nu := by nlinarith
     exact hrk.le.trans (hkSq.trans (hkScale.trans hscaleNu))
-  have hnextMul := wooley_section7_nextB_mul_upper
-    (k := k) (r := r) (b := b) hrOne
+  pm_734 hnextMul wooley_section7_nextB_mul_upper k r b hrOne
   have hrelPred :
       (r - 1) * wooleyNextB k r b ≤ (k - (r - 1) + 1) * b := by
     rw [← wooleySection7NextB_eq_wooleyNextB]
@@ -159,9 +151,7 @@ theorem wooleySection9Admissible_predecessor
   have hmargin :
       tau * ((k * b : ℕ) : ℝ) + ((k * nu : ℕ) : ℝ) ≤
         (wooleyNextB k r b : ℝ) := by
-    have hdivisorR : (b : ℝ) ≤
-        (k : ℝ) * (wooleyNextB k r b : ℝ) := by
-      exact_mod_cast hdivisor
+    pm_6803 hdivisorR r hdivisor
     have hscaleNuR : (4 : ℝ) * (k : ℝ) ^ 2 * (nu : ℝ) ≤
         (b : ℝ) := by
       exact_mod_cast hscaleNu
@@ -186,7 +176,7 @@ theorem wooleySection9Admissible_predecessor
         exact Nat.le_of_mul_le_mul_left hmul hkpos)
     nlinarith
   have hnuScale : nu ≤ 4 * k ^ 2 * nu := by
-    have hcoeff : 1 ≤ 4 * k ^ 2 := by nlinarith
+    pm_1103
     exact Nat.le_mul_of_pos_left nu hcoeff
   exact wooleySection9Admissible_of_scale_hierarchy
     hrPred hrPredK hnu hB0nu
@@ -242,9 +232,7 @@ theorem wooleySourcePolynomial_lemma_9_1_of_scale_hierarchy
   have hnuNext : ∀ r, 1 ≤ r → r < k →
       nu ≤ wooleyNextB k r b := by
     intro r hr hrk
-    have hdiv := wooley_nextB_ge_divisor_scale
-      (k := k) (r := r) (b := b) hr hrk.le
-    have hkpos : 0 < k := by omega
+    pm_5483 hdiv hr
     have hnuB : k * nu ≤ b := by
       have hkSq : k ≤ k ^ 2 := by nlinarith
       have hfirst : k * nu ≤ k ^ 2 * nu := Nat.mul_le_mul_right nu hkSq
@@ -254,7 +242,7 @@ theorem wooleySourcePolynomial_lemma_9_1_of_scale_hierarchy
     have hmul : k * nu ≤ k * wooleyNextB k r b := hnuB.trans hdiv
     exact Nat.le_of_mul_le_mul_left hmul hkpos
   have hnub : nu ≤ b := by
-    have hcoeff : 1 ≤ 4 * k ^ 2 := by nlinarith
+    pm_1103
     have : nu ≤ 4 * k ^ 2 * nu := Nat.le_mul_of_pos_left nu hcoeff
     exact this.trans hscaleNu
   have hnukb : nu ≤ k * b := hnub.trans (Nat.le_mul_of_pos_left b (by omega))
@@ -272,6 +260,5 @@ theorem wooleySourcePolynomial_lemma_9_1_of_scale_hierarchy
   · exact hloss
 
 
-end
 
 end GafniTao

@@ -1,8 +1,9 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedSharpCore
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Original source expansion with sharp stationary error
@@ -13,13 +14,10 @@ Every omitted mode is estimated, and no eta^-3 stationary loss remains.
 The far-tail radius and all finite harmonic lengths remain explicit.
 -/
 
-noncomputable section
 
 open Set Expdb
-open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 theorem modelPhase_buffered_source_sharp_expansion
     {σ : ℝ} (hσ : 0 < σ) :
@@ -47,8 +45,8 @@ theorem modelPhase_buffered_source_sharp_expansion
               (2*(T/N)*(σ+1)*η+6)*E*N/Real.sqrt T+
               (4/Real.pi)*(2+Real.log ((L-A).toNat : ℝ)+Real.log ((B-U).toNat : ℝ)) := by
   obtain ⟨C,hC,hsource⟩ := modelPhase_buffered_poisson_core_precision hσ
-  obtain ⟨D,hD,E,hE,hsharp⟩ := modelPhaseBufferedSharpCore_error hσ
-  refine ⟨C,hC,D,hD,E,hE,?_⟩
+  pm_231 D hD E hE hsharp modelPhaseBufferedSharpCore_error hσ
+  pm_211 C hC D hD E hE
   intro N η a b hN hη hη₁ ha hb hflat F δ T ε hδ hF hT hε A B L U P Q R
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hs := (hsource N η a b hN hη hη₁ ha hb F δ T ε hδ hF₁ hT hε).2.2.2
@@ -57,7 +55,7 @@ theorem modelPhase_buffered_source_sharp_expansion
     F δ T N hδ hF hT hN
   let core := ∑ q ∈ Finset.Icc A B,
     modelPhaseFourierMode (modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η) F T N q
-  let main := ∑ q ∈ Finset.Ioo P Q, modelPhaseStationaryMainTerm F T N q
+  pm_6908
   have he : exponentialSumAt F T N a b-main =
       (exponentialSumAt F T N a b-core)+(core-main) := by abel
   change ‖exponentialSumAt F T N a b-main‖ ≤ _
@@ -104,7 +102,7 @@ theorem modelPhase_buffered_source_inverse_sqrt_expansion
               D*(1+Real.log ((Q-P-1).toNat : ℝ))+
               (4/Real.pi)*(2+Real.log ((L-A).toNat : ℝ)+Real.log ((B-U).toNat : ℝ)) := by
   obtain ⟨C,hC,D,hD,E,hE,hsource⟩ := modelPhase_buffered_source_sharp_expansion hσ
-  refine ⟨C,hC,D,hD,E,hE,?_⟩
+  pm_211 C hC D hD E hE
   intro N T a b hN hT ha hb hflat F δ hδ hF η A B L U P Q R
   have hTpos : 0 < T := zero_lt_one.trans_le hT
   have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hTpos

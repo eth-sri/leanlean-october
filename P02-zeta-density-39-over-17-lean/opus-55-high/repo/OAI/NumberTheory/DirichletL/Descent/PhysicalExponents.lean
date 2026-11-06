@@ -26,7 +26,10 @@ def secondCount (ell R j t g θ : ℝ) : ℝ := ell+R/2-j+t+g-θ
 def secondFormalColumn (r A B t g v : ℝ) : ℝ := r-A-B-t-g-v
 def secondFormalLabel (B θ v j : ℝ) : ℝ := B+θ+v+j
 
-theorem first_physical_scalar (Z : ℝ) (hZ : 0 < Z)
+section
+variable (Z : ℝ) (hZ : 0 < Z)
+include Z hZ
+theorem first_physical_scalar
     (M r ell V δ A₁ A₂ B R t h : ℝ) :
     Z^(-r-2*ell-V) * Z^M /
       firstRootScale (fun i => Z^(![A₁,A₂,B,δ,R,t,h,r-A₁-B-t,r-A₂-B-t] i)) =
@@ -36,7 +39,7 @@ theorem first_physical_scalar (Z : ℝ) (hZ : 0 < Z)
   norm_num [firstKappa]
   ring
 
-theorem second_physical_scalar (Z : ℝ) (hZ : 0 < Z)
+theorem second_physical_scalar
     (M r ell V δ A B j t g θ v η τ : ℝ) :
     Z^(firstPhysicalHeight M r ell V δ B j+12*η+τ) /
       (Z^θ*Z^v*Z^(secondFormalColumn r A B t g v)) * Real.exp (6*(η*Real.log Z)) =
@@ -49,6 +52,7 @@ theorem second_physical_scalar (Z : ℝ) (hZ : 0 < Z)
   congr 1
   unfold secondLambda secondFormalColumn
   ring
+end
 
 theorem physical_prefactor_identity (M r ell V δ A B R j t g θ v : ℝ) :
     firstKappa M r ell V δ A B R + secondLambda M r ell V δ A B j t g θ +

@@ -1,6 +1,7 @@
 module
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.Rellich
 public import OAI.NumberTheory.DirichletL.MeanSquare.PoissonSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,74 +9,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic
+open ActualEisensteinCubic
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FirstPassCubeLabels
@@ -87,7 +44,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 
@@ -131,7 +87,7 @@ end SecondPassArithmetic
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+open scoped Classical Topology ENNReal
 
 open RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean
 
@@ -189,8 +145,7 @@ theorem euclidean_C1c_family_precompact (K : Set EuclideanSpatial) (hK : IsCompa
     (h1OnToL2 (E := EuclideanSpatial) K hKm)
     (isCompactOperator_h1OnToL2 (E := EuclideanSpatial) hK hKm) R
   apply hc.of_isClosed_subset isClosed_closure
-  apply closure_mono
-  rintro _ ⟨f,hf,rfl⟩
+  pm_6601 closure_mono
   refine ⟨euclideanC1cToSupportedH1 K hKm f (hsupp f hf),?_,rfl⟩
   have hn : ‖euclideanC1cToSupportedH1 K hKm f (hsupp f hf)‖≤R :=
     max_le (hmass f hf) (hgrad f hf)
@@ -199,7 +154,7 @@ theorem euclidean_C1c_family_precompact (K : Set EuclideanSpatial) (hK : IsCompa
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal InnerProductSpace
+open scoped Classical Topology ContDiff Manifold ENNReal InnerProductSpace
 
 namespace CubicEisenstein
 
@@ -208,7 +163,10 @@ abbrev KernelFundamentalVolume : Measure HyperbolicSpace :=
 
 abbrev KernelGradientL2 := Lp (EuclideanSpace ℂ (Fin 3)) 2 KernelFundamentalVolume
 
-lemma kernelTestPartial_continuous (f : kernelSmoothTests) (j : Fin 3) :
+section
+variable (f : kernelSmoothTests)
+include f
+lemma kernelTestPartial_continuous (j : Fin 3) :
     Continuous (fun w => kernelTestPartial f w j) := by
   rw [continuous_iff_continuousAt]
   intro w
@@ -216,15 +174,13 @@ lemma kernelTestPartial_continuous (f : kernelSmoothTests) (j : Fin 3) :
     (by simp)).clm_apply continuousAt_const).comp
       hyperbolicEuclideanCoordinates_continuous.continuousAt
 
-lemma kernelGradientAt_continuous (f : kernelSmoothTests) :
+lemma kernelGradientAt_continuous :
     Continuous (fun w => kernelGradientAt w f) := by
-  apply (PiLp.continuousLinearEquiv 2 ℂ (fun _ : Fin 3 => ℂ)).symm.continuous.comp
-  apply continuous_pi
-  intro j
+  pm_5856
   exact (Complex.continuous_ofReal.comp hyperbolicHeight_continuous).mul
     (kernelTestPartial_continuous f j)
 
-lemma kernelGradientAt_memLp (f : kernelSmoothTests) :
+lemma kernelGradientAt_memLp :
     MemLp (fun w => kernelGradientAt w f) 2 KernelFundamentalVolume := by
   apply (memLp_two_iff_integrable_sq_norm
     (kernelGradientAt_continuous f).aestronglyMeasurable).mpr
@@ -233,8 +189,8 @@ lemma kernelGradientAt_memLp (f : kernelSmoothTests) :
   have he : (fun w => kernelQuotientEnergyDensity f (integralOrbitProjection globalKubotaKernel w))=
       kernelTestEnergyDensity f := rfl
   dsimp only [Function.comp_def] at hh
-  rw [he] at hh
-  simpa only [kernelGradientAt_norm_sq] using hh
+  pm_293 he hh kernelGradientAt_norm_sq
+end
 
 def kernelGradientToL2 (f : kernelSmoothTests) : KernelGradientL2 :=
   (kernelGradientAt_memLp f).toLp (fun w => kernelGradientAt w f)
@@ -265,12 +221,12 @@ def kernelGradientLinear : kernelSmoothTests →ₗ[ℂ] KernelGradientL2 where
     filter_upwards [kernelGradientToL2_coe (f+g),kernelGradientToL2_coe f,
       kernelGradientToL2_coe g,Lp.coeFn_add (kernelGradientToL2 f) (kernelGradientToL2 g)]
       with w hfg hf hg hadd
-    simp only [hfg,hadd,Pi.add_apply,hf,hg,map_add]
+    pm_382 hfg hadd Pi.add_apply hf hg map_add
   map_smul' c f := by
     apply Lp.ext
     filter_upwards [kernelGradientToL2_coe (c•f),kernelGradientToL2_coe f,
       Lp.coeFn_smul c (kernelGradientToL2 f)] with w hcf hf hsmul
-    simp only [RingHom.id_apply,hcf,hsmul,Pi.smul_apply,hf,map_smul]
+    pm_382 RingHom.id_apply hcf hsmul Pi.smul_apply hf map_smul
 
 def kernelInitialGradientGraph : Submodule ℂ (KernelQuotientL2 × KernelGradientL2) :=
   LinearMap.range (kernelSmoothTestsToL2.prod kernelGradientLinear)

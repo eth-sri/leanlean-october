@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalCommon
 public import OAI.NumberTheory.DirichletL.Descent.FirstFreshMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,16 +40,9 @@ theorem firstPhysicalCommonRows_indexed (F : Finset ι) (C₁ C₂ : Finset ι �
     firstPhysicalCommonRows p hg F C₁ C₂ W₁ W₂ Φ A₁ A₂ C R K d h =
     ∑ j ∈ firstCommonIndices F, firstCommonWeight p hg C₁ C₂ h j *
       firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K (firstCommonNorms p A₁ A₂ C R d h j) := by
-  simp only [firstPhysicalCommonRows,firstCommonIndices,Finset.sum_product,Finset.sum_sigma,
-    firstCommonWeight,firstCommonNorms,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro r hr
-  apply Finset.sum_congr rfl
-  intro D hD
-  apply Finset.sum_congr rfl
-  intro U hU
-  apply Finset.sum_congr rfl
-  intro V hV
+  pm_437 firstPhysicalCommonRows firstCommonIndices Finset.sum_product Finset.sum_sigma firstCommonWeight firstCommonNorms Finset.mul_sum
+  pm_3728
+  pm_3811
   ring
 
 end

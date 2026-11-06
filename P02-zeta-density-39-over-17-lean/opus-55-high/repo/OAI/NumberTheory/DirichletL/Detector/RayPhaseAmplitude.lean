@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RaySlots
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeRow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,17 +13,14 @@ namespace SevenEighths.ProbeRaySlots
 open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
 local notation "Id" => Ideal HeckeFamily.O
 
-lemma pool_sum_complex (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℂ) :
+section
+variable (C : Set Id) (S : Finset Id)
+include C S
+lemma pool_sum_complex (a b x : ℝ) (f : Id→ℂ) :
     (∑P∈pool C S a b x,f P.val)=∑P∈annularPrimeIdeals C a b x\S,f P := by
-  apply Finset.sum_bij (fun P _=>P.val)
-  · intro P hP;exact Finset.mem_subtype.mp hP
-  · intro P hP Q hQ he;exact Subtype.ext he
-  · intro P hP
-    have hp : Prime P := ((mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1).2.1
-    exact ⟨⟨P,hp⟩,Finset.mem_subtype.mpr hP,rfl⟩
-  · intro P hP;rfl
+  pm_7538
 
-theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
+theorem weighted_pool_eq_annular
     (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (_hab : a≤b) (hD : 0<D)
     (hW : Function.support W⊆Set.Ioo a b)
     (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (g : Id→ℂ) :
@@ -62,13 +60,13 @@ theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
       have := hS P hs
       have := (lt_div_iff₀ hD).mp hy.1
       linarith
-  simp only [hw,zero_mul]
+  grind
+end
 
-theorem central_phase_eq_amplitude (M : Id) [NeZero M]
-    [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
-    (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ)
-    (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b)
-    (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ) :
+section
+variable (M : Id) [NeZero M] [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b) (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ)
+include M H S u W a b D ha hab hD hW hS z
+theorem central_phase_eq_amplitude :
     (∑P∈pool (RayQuotient.identityClass M H) S a b D,
       W ((P.val.absNorm:ℝ)/D)*(P.val.absNorm:ℂ)^(z-1)*
         (-star (CanonicalRowCompletion.idealRowHom u P.val)))=
@@ -80,9 +78,7 @@ theorem central_phase_eq_amplitude (M : Id) [NeZero M]
   unfold HeckePrimeRow.canonicalPrimeAmplitude
   rw [←mul_assoc,neg_mul,←Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
   have hexp : (z-(1/2:ℂ)) + -(1/2:ℂ)=z-1 := by ring
-  rw [hexp,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro P hP
+  pm_3813 hexp Finset.mul_sum Finset.sum_congr P hP
   have hprime := (Finset.mem_filter.mp hP).2.1
   have hn : (0:ℝ)<P.absNorm := by exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hprime.ne_zero)
   rw [Complex.ofReal_div,Complex.div_cpow_ofReal_nonneg hn.le hD.le]
@@ -91,29 +87,26 @@ theorem central_phase_eq_amplitude (M : Id) [NeZero M]
   simp only [starRingEnd_apply,Complex.ofReal_natCast]
   ring
 
-theorem central_phase_norm (M : Id) [NeZero M]
-    [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
-    (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ)
-    (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b)
-    (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ) :
+theorem central_phase_norm :
     ‖∑P∈pool (RayQuotient.identityClass M H) S a b D,
       W ((P.val.absNorm:ℝ)/D)*(P.val.absNorm:ℂ)^(z-1)*
         (-star (CanonicalRowCompletion.idealRowHom u P.val))‖=
-      D^(z.re-1/2)*‖HeckePrimeRow.canonicalPrimeAmplitude M H u W b D z‖ := by
+      D ^(z.re-1/2)*‖HeckePrimeRow.canonicalPrimeAmplitude M H u W b D z‖ := by
   rw [central_phase_eq_amplitude M H S u W a b D ha hab hD hW hS z,
     norm_mul,norm_neg,Complex.norm_cpow_eq_rpow_re_of_pos hD]
   norm_num
+end
 
 theorem power_fixed_exclusions (S : Finset Id) (a ellMin : ℝ) (ha : 0<a) (hmin : 0<ellMin)
     {ι : Type*} (ell : ι→ℝ) (hell : ∀j,ellMin≤ell j) :
-    ∀ᶠZ : ℝ in Filter.atTop,∀j,∀P∈S,(P.absNorm:ℝ)≤a*Z^(ell j) := by
+    ∀ᶠZ : ℝ in Filter.atTop,∀j,∀P∈S,(P.absNorm:ℝ)≤a*Z ^(ell j) := by
   have ht := (tendsto_rpow_atTop hmin).const_mul_atTop ha
   filter_upwards [ht.eventually (Filter.eventually_ge_atTop (∑P∈S,(P.absNorm:ℝ))),
     Filter.eventually_ge_atTop (1:ℝ)] with Z hnorm hZ j P hP
   calc
     (P.absNorm:ℝ) ≤ ∑Q∈S,(Q.absNorm:ℝ) := Finset.single_le_sum (fun Q _=>Nat.cast_nonneg _) hP
-    _ ≤ a*Z^ellMin := hnorm
-    _ ≤ a*Z^(ell j) := mul_le_mul_of_nonneg_left
+    _ ≤ a*Z ^ellMin := hnorm
+    _ ≤ a*Z ^(ell j) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hZ (hell j)) ha.le
 
 end SevenEighths.ProbeRaySlots

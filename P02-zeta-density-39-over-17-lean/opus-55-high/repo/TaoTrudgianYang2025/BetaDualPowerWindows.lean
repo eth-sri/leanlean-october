@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSourceChartBound
 public import TaoTrudgianYang2025.PointMeanLemmaThreeEdges
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,13 +42,11 @@ theorem eventually_reflected_power_windows {A k δ : ℝ}
   have hklo : 0 < k^(α-δ) := Real.rpow_pos_of_pos hk _
   have hkhi : 0 < k^(α+δ) := Real.rpow_pos_of_pos hk _
   have hleft : k^(α-δ)*T^(1-δ/2) ≤ A*T := by
-    have hh := mul_le_mul_of_nonneg_left hlo hA.le
-    rw [Real.rpow_one] at hh
+    pm_126 hh mul_le_mul_of_nonneg_left hlo hA.le Real.rpow_one
     convert hh using 1
     field_simp
   have hright : A*T ≤ k^(α+δ)*T^(1+δ/2) := by
-    have hh := mul_le_mul_of_nonneg_left hhi hkhi.le
-    rw [Real.rpow_one] at hh
+    pm_126 hh mul_le_mul_of_nonneg_left hhi hkhi.le Real.rpow_one
     convert hh using 1
     field_simp
   constructor

@@ -7,6 +7,7 @@ third_party/twelfth/LICENSE-MIT-0.
 Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerGapBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,11 +16,13 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {δ η : ℝ} (hδ : 0 < δ) (hη : 0 < η)
+include δ η hδ hη
 /-- The literal divisor-weighted maximal-prefix Gram budget at the original
 source cutoff is bounded by the closed physical power budget. No stationary
 source, local-mean excess, or moment estimate is a premise. -/
-theorem exists_atkinsonPhysicalGramBudget_le_power {δ η : ℝ}
-    (hδ : 0 < δ) (hη : 0 < η) :
+theorem exists_atkinsonPhysicalGramBudget_le_power :
     ∃ C : ℝ, 0 < C ∧ ∃ H₀ : ℝ, 40000 ≤ H₀ ∧
       ∀ H G A L : ℝ, ∀ W : Finset ℝ, H₀ ≤ H → H^δ ≤ G → IsSeparated G W →
       (∀ t ∈ W, H ≤ t ∧ t ≤ 2*H) →
@@ -32,7 +35,7 @@ theorem exists_atkinsonPhysicalGramBudget_le_power {δ η : ℝ}
   refine ⟨C,hC,H₀,hH₀,?_⟩
   intro H G A L W hH hwidth hsep hrange hlocal
   have hH0 : 0 < H := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hH0 δ).trans_le hwidth
+  pm_650 hG G Real.rpow_pos_of_pos hH0 δ hwidth
   let N := atkinsonSourceCutoff (2*H) G (Real.log (2*H))
   have hgap : ∀ j < Nat.clog 2 N, ∀ t ∈ W, ∀ u ∈ W,
       atkinsonPrefixGramMax (2^j) (2^j) t u ≤ atkinsonPrefixGapMajorant (2^j) (2^j) t u := by
@@ -58,8 +61,7 @@ theorem exists_atkinsonPhysicalGramBudget_le_power {δ η : ℝ}
 
 /-- Genuine weighted phase-prefix packets satisfy the same closed bound,
 with all heights and their separate maximizing prefixes retained. -/
-theorem exists_sum_atkinsonUndampedDyadicPhaseBound_sq_le_power {δ η : ℝ}
-    (hδ : 0 < δ) (hη : 0 < η) :
+theorem exists_sum_atkinsonUndampedDyadicPhaseBound_sq_le_power :
     ∃ C : ℝ, 0 < C ∧ ∃ H₀ : ℝ, 40000 ≤ H₀ ∧
       ∀ H G A L : ℝ, ∀ W : Finset ℝ, H₀ ≤ H → H^δ ≤ G → IsSeparated G W →
       (∀ t ∈ W, H ≤ t ∧ t ≤ 2*H) →
@@ -68,10 +70,11 @@ theorem exists_sum_atkinsonUndampedDyadicPhaseBound_sq_le_power {δ η : ℝ}
         (atkinsonSourceCutoff (2*H) G (Real.log (2*H))))^2 ≤
         C*atkinsonPowerGapBudget η H G L
           (atkinsonSourceCutoff (2*H) G (Real.log (2*H))) W.card := by
-  obtain ⟨C,hC,H₀,hH₀,hbound⟩ := exists_atkinsonPhysicalGramBudget_le_power hδ hη
+  pm_107 C hC H₀ hH₀ hbound exists_atkinsonPhysicalGramBudget_le_power hδ hη
   refine ⟨C,hC,H₀,hH₀,?_⟩
   intro H G A L W hH hwidth hsep hrange hlocal
   exact (sum_atkinsonUndampedDyadicPhaseBound_sq_le_budget _ W).trans
     (hbound H G A L W hH hwidth hsep hrange hlocal)
+end
 
 end MathCollab.Density.Stronger.Atkinson

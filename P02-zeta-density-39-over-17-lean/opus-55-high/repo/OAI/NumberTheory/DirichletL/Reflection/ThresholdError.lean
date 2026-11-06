@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.TerminalThreshold
 public import OAI.NumberTheory.DirichletL.Reflection.RamifiedWidth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,8 +29,8 @@ lemma reflectedExponent_threshold_error (O₀ H S₀ B₀ za v ell el Td err η 
   have he : -η≤err := (abs_le.mp herr).1
   have hh : max 0 (Td-v-3*ell-el) ≤ max 0 (Td+err-v-3*ell-el)+η := by
     apply max_le
-    · linarith [le_max_left (0:ℝ) (Td+err-v-3*ell-el)]
-    · linarith [le_max_right (0:ℝ) (Td+err-v-3*ell-el)]
+    grind
+    grind
   unfold InverseTerminalWidths.reflectedExponent
   linarith
 
@@ -42,7 +43,7 @@ theorem literal_threshold_error_uniform (C η : ℝ) (hC : 0<C) (hη : 0<η) :
   obtain ⟨Z₀,hZ₀,herr⟩ := fixed_abs_log_threshold (C/81) η hη
   refine ⟨Z₀,hZ₀,?_⟩
   intro Z hZ m O₀ H S₀ B₀ za v ell Td
-  have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
+  pm_4952 hz
   have hid : Td+Real.logb Z C-4*Real.logb Z 3=Td+Real.logb Z (C/81) := by
     rw [Real.logb_div hC.ne' (by norm_num)]
     have hp := Real.logb_pow Z 3 4

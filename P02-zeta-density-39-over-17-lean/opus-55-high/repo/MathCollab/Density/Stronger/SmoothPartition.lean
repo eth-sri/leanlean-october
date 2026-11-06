@@ -4,12 +4,12 @@ public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
 public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Real Set Filter
-open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
+open scoped Topology ContDiff
 set_option maxHeartbeats 1000000
 noncomputable section
 
@@ -26,7 +26,7 @@ theorem dyadicStep_bounds (x : ℝ) : 0 ≤ dyadicStep x ∧ dyadicStep x ≤ 1 
   have h0 := Real.smoothTransition.nonneg (4*x-5)
   have h1 := Real.smoothTransition.le_one (4*x-5)
   dsimp [dyadicStep]
-  constructor <;> linarith
+  grind
 
 theorem dyadicStep_antitone : Antitone dyadicStep := by
   intro x y hxy
@@ -69,7 +69,7 @@ theorem smoothDyadicWeight_bounds (x : ℝ) :
     have h1 := (dyadicStep_bounds (2*x)).1
     have hmono := dyadicStep_antitone (show x ≤ 2*x by linarith)
     dsimp [smoothDyadicWeight]
-    constructor <;> linarith
+    grind
 
 theorem smoothDyadicWeight_tsupport :
     tsupport smoothDyadicWeight ⊆ Icc (5/8 : ℝ) (3/2) := by
@@ -82,7 +82,10 @@ theorem smoothDyadicWeight_tsupport :
   · by_contra h
     exact hx (smoothDyadicWeight_zero_of_ge (by linarith))
 
-theorem smoothDyadicWeight_div_pow_succ (x : ℝ) (n : ℕ) :
+section
+variable (x : ℝ)
+include x
+theorem smoothDyadicWeight_div_pow_succ (n : ℕ) :
     smoothDyadicWeight (x/(2 : ℝ)^(n+1)) =
       dyadicStep (x/(2 : ℝ)^(n+1))-dyadicStep (x/(2 : ℝ)^n) := by
   rw [smoothDyadicWeight]
@@ -90,7 +93,7 @@ theorem smoothDyadicWeight_div_pow_succ (x : ℝ) (n : ℕ) :
   rw [pow_succ]
   field_simp
 
-theorem dyadicStep_div_pow_tendsto (x : ℝ) :
+theorem dyadicStep_div_pow_tendsto :
     Tendsto (fun n : ℕ => dyadicStep (x/(2 : ℝ)^n)) atTop (𝓝 1) := by
   have ht : Tendsto (fun n : ℕ => x/(2 : ℝ)^n) atTop (𝓝 0) := by
     simpa only [div_eq_mul_inv, one_mul, inv_pow, mul_zero] using
@@ -99,11 +102,10 @@ theorem dyadicStep_div_pow_tendsto (x : ℝ) :
   simpa only [Function.comp_def, dyadicStep_one (by norm_num : (0 : ℝ) ≤ 5/4)] using
     dyadicStep_contDiff.continuous.continuousAt.tendsto.comp ht
 
-theorem hasSum_smoothDyadicWeight_nonneg_scales (x : ℝ) :
+theorem hasSum_smoothDyadicWeight_nonneg_scales :
     HasSum (fun n : ℕ => smoothDyadicWeight (x/(2 : ℝ)^n)) (1-dyadicStep (2*x)) := by
   have hs : HasSum (fun n : ℕ => smoothDyadicWeight (x/(2 : ℝ)^(n+1))) (1-dyadicStep x) := by
-    apply (hasSum_iff_tendsto_nat_of_nonneg
-      (fun n => (smoothDyadicWeight_bounds _).1) _).mpr
+    pm_6755
     simp_rw [smoothDyadicWeight_div_pow_succ,
       Finset.sum_range_sub (fun n : ℕ => dyadicStep (x/(2 : ℝ)^n)), pow_zero, div_one]
     exact (dyadicStep_div_pow_tendsto x).sub_const _
@@ -112,8 +114,12 @@ theorem hasSum_smoothDyadicWeight_nonneg_scales (x : ℝ) :
   convert hh using 1
   simp only [pow_zero, div_one, smoothDyadicWeight]
   ring
+end
 
-theorem dyadicStep_mul_pow_tendsto {x : ℝ} (hx : 0 < x) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+theorem dyadicStep_mul_pow_tendsto :
     Tendsto (fun n : ℕ => dyadicStep (x*(2 : ℝ)^n)) atTop (𝓝 0) := by
   have he : ∀ᶠ n : ℕ in atTop, dyadicStep (x*(2 : ℝ)^n) = 0 := by
     filter_upwards [(tendsto_pow_atTop_atTop_of_one_lt (by norm_num : (1 : ℝ) < 2)).eventually_ge_atTop ((3/2)/x)] with n hn
@@ -122,21 +128,20 @@ theorem dyadicStep_mul_pow_tendsto {x : ℝ} (hx : 0 < x) :
     nlinarith
   exact (tendsto_congr' he).mpr tendsto_const_nhds
 
-theorem hasSum_smoothDyadicWeight_neg_scales {x : ℝ} (hx : 0 < x) :
+theorem hasSum_smoothDyadicWeight_neg_scales :
     HasSum (fun n : ℕ => smoothDyadicWeight (x*(2 : ℝ)^(n+1))) (dyadicStep (2*x)) := by
-  apply (hasSum_iff_tendsto_nat_of_nonneg
-    (fun n => (smoothDyadicWeight_bounds _).1) _).mpr
+  pm_6755
   have he (n : ℕ) : smoothDyadicWeight (x*(2 : ℝ)^(n+1)) =
       dyadicStep ((2*x)*(2 : ℝ)^n)-dyadicStep ((2*x)*(2 : ℝ)^(n+1)) := by
     rw [smoothDyadicWeight, pow_succ]
-    congr 1 <;> congr 1 <;> ring
+    grind
   simp_rw [he, Finset.sum_range_sub' (fun n : ℕ => dyadicStep ((2*x)*(2 : ℝ)^n)),
     pow_zero, mul_one]
   simpa only [sub_zero] using
     (dyadicStep_mul_pow_tendsto (show 0 < 2*x by positivity)).const_sub (dyadicStep (2*x))
 
 /-- Genuine absolute summation over every integer dyadic scale. -/
-theorem hasSum_smoothDyadicWeight {x : ℝ} (hx : 0 < x) :
+theorem hasSum_smoothDyadicWeight :
     HasSum (fun j : ℤ => smoothDyadicWeight (x/(2 : ℝ)^j)) 1 := by
   have hpos : HasSum (fun n : ℕ => smoothDyadicWeight (x/(2 : ℝ)^(n : ℤ)))
       (1-dyadicStep (2*x)) := by
@@ -147,5 +152,6 @@ theorem hasSum_smoothDyadicWeight {x : ℝ} (hx : 0 < x) :
       hasSum_smoothDyadicWeight_neg_scales hx
   simpa only [sub_add_cancel] using
     HasSum.of_nat_of_neg_add_one (f := fun j : ℤ => smoothDyadicWeight (x/(2 : ℝ)^j)) hpos hneg
+end
 
 end MathCollab.Density.Stronger

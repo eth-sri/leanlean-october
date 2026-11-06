@@ -3,7 +3,6 @@ public import GuthMaynard.Improvement.RatioFourierBridge
 public import GuthMaynard.Improvement.OrdinaryFourierMoments
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform
@@ -27,16 +26,19 @@ theorem ratioFourierInput_nonneg (μ : ℝ → ℝ) (a b v : ℝ) :
   unfold ratioFourierInput
   exact indicator_nonneg (fun _ _ => norm_nonneg _) _
 
-theorem ratioFourierInput_on {μ : ℝ → ℝ} {a b v : ℝ} (hv : v ∈ Icc a b) :
+section
+variable {μ : ℝ → ℝ}
+include μ
+theorem ratioFourierInput_on {a b v : ℝ} (hv : v ∈ Icc a b) :
     ratioFourierInput μ a b v = ‖𝓕 (fun t => (μ t : ℂ)) (mellinFrequency v)‖ :=
   indicator_of_mem hv _
 
-theorem ratioFourierInput_off {μ : ℝ → ℝ} {a b v : ℝ} (hv : v ∉ Icc a b) :
+theorem ratioFourierInput_off {a b v : ℝ} (hv : v ∉ Icc a b) :
     ratioFourierInput μ a b v = 0 := indicator_of_notMem hv _
 
 /-- Every positive ordinary Fourier moment transfers through the compact
 logarithmic coordinate with its measurable mask exactly retained. -/
-theorem ratioFourierInput_masked_moment {μ : ℝ → ℝ} {a b : ℝ} {A : Set ℝ}
+theorem ratioFourierInput_masked_moment {a b : ℝ} {A : Set ℝ}
     {n : ℕ} (hn : n ≠ 0) (ha : 0 < a) (hab : a ≤ b)
     (hA : MeasurableSet A)
     (hF : Integrable (fun ξ => ‖𝓕 (fun t => (μ t : ℂ)) ξ‖^n)) :
@@ -45,9 +47,9 @@ theorem ratioFourierInput_masked_moment {μ : ℝ → ℝ} {a b : ℝ} {A : Set 
       (2*Real.pi*b)*(∫ ξ in A, ‖𝓕 (fun t => (μ t : ℂ)) ξ‖^n) := by
   let w : ℝ → ℝ := (Icc a b).indicator (fun _ => 1)
   have hw : Measurable w := measurable_const.indicator measurableSet_Icc
-  have hw0 : ∀ v, 0 ≤ w v := by intro v; exact indicator_nonneg (by intros; norm_num) _
+  have hw0 : ∀ v, 0 ≤ w v := by intro v; exact indicator_nonneg (by grind) _
   have hw1 : ∀ v, w v ≤ 1 := by intro v; by_cases hv : v ∈ Icc a b <;> simp [w,hv]
-  have hws : ∀ v, v ∉ Icc a b → w v = 0 := by intro v hv; simp [w,hv]
+  have hws : ∀ v, v ∉ Icc a b → w v = 0 := by intro v hv; aesop
   have hp := mellin_compact_mask_integral ha hab (by norm_num : (0:ℝ) ≤ 1)
     hw hw0 hw1 hws hA hF (fun ξ => pow_nonneg (norm_nonneg _) _)
   have hpre : MeasurableSet (mellinFrequency ⁻¹' A) :=
@@ -65,14 +67,14 @@ theorem ratioFourierInput_masked_moment {μ : ℝ → ℝ} {a b : ℝ} {A : Set 
   ring
 
 /-- Actual L2 input, including a zero or degenerate ratio interval. -/
-theorem ratioFourierInput_square_integrable {μ : ℝ → ℝ} {a b : ℝ}
+theorem ratioFourierInput_square_integrable {a b : ℝ}
     (ha : 0 < a) (hab : a ≤ b) (h1 : Integrable μ)
     (h2 : Integrable (fun t => μ t^2)) :
     Integrable (fun v => ratioFourierInput μ a b v^2) := by
   simpa using (ratioFourierInput_masked_moment (by norm_num : (2:ℕ) ≠ 0)
     ha hab MeasurableSet.univ (ordinary_real_fourier_square_integrable h1 h2)).1
 
-theorem ratioFourierInput_fourth_integrable {μ : ℝ → ℝ} {a b : ℝ}
+theorem ratioFourierInput_fourth_integrable {a b : ℝ}
     (ha : 0 < a) (hab : a ≤ b) (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ)
     (h2 : Integrable (fun t => μ t^2)) :
     Integrable (fun v => ratioFourierInput μ a b v^4) := by
@@ -80,7 +82,7 @@ theorem ratioFourierInput_fourth_integrable {μ : ℝ → ℝ} {a b : ℝ}
     ha hab MeasurableSet.univ (ordinary_real_fourier_fourth_integrable h0 h1 h2)).1
 
 /-- Mask-sensitive second moment for ordinary input; A is not enlarged. -/
-theorem ratioFourierInput_masked_square {μ : ℝ → ℝ} {a b : ℝ} {A : Set ℝ}
+theorem ratioFourierInput_masked_square {a b : ℝ} {A : Set ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hA : MeasurableSet A)
     (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) :
     (∫ v in mellinFrequency ⁻¹' A, ratioFourierInput μ a b v^2) ≤
@@ -89,7 +91,7 @@ theorem ratioFourierInput_masked_square {μ : ℝ → ℝ} {a b : ℝ} {A : Set 
     (ordinary_real_fourier_square_integrable h1 h2)).2
 
 /-- The analogous fourth moment retains exactly the same Fourier mask. -/
-theorem ratioFourierInput_masked_fourth {μ : ℝ → ℝ} {a b : ℝ} {A : Set ℝ}
+theorem ratioFourierInput_masked_fourth {a b : ℝ} {A : Set ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hA : MeasurableSet A)
     (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) :
     (∫ v in mellinFrequency ⁻¹' A, ratioFourierInput μ a b v^4) ≤
@@ -98,12 +100,13 @@ theorem ratioFourierInput_masked_fourth {μ : ℝ → ℝ} {a b : ℝ} {A : Set 
     (ordinary_real_fourier_fourth_integrable h0 h1 h2)).2
 
 /-- Pointwise mass control includes the cut-off region and zero input. -/
-theorem ratioFourierInput_le_mass {μ : ℝ → ℝ} (h0 : ∀ t, 0 ≤ μ t)
+theorem ratioFourierInput_le_mass (h0 : ∀ t, 0 ≤ μ t)
     (a b v : ℝ) : ratioFourierInput μ a b v ≤ ∫ t, μ t := by
   by_cases hv : v ∈ Icc a b
   · rw [ratioFourierInput_on hv]
     exact fourier_nonneg_mass h0 _
   · rw [ratioFourierInput_off hv]
     exact integral_nonneg h0
+end
 
 end GuthMaynard.Improvement

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.Bands
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,30 +26,27 @@ def widenProfiles {a b a' b':ℝ}(p:Profiles a b)(ha:a'≤a)(hb:b≤b'):Profiles
 
 lemma profile_control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(hst:S⊆T):
     p.control S≤p.control T:=by
-  unfold Profiles.control
-  exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono hst) (p.profile 0))
-    (Seminorm.le_def.mp (Finset.sup_mono hst) (p.profile 1))
-    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+  pm_112 hst
 
 theorem zeroAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
     (a' b' radial' mask' L' Mcap' eps':ℝ)
     (J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
-    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤mask)
+    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤ radial)(hm:mask'≤ mask)
     (hL:L'≤L)(hM:Mcap'≤Mcap)(he:eps≤eps')(hJ:J≤J')(hS:S⊆T)
     (hC:0≤C)(hCC:C≤C')
     (h:ZeroAt Q a b radial mask L Mcap eps Z J S C):
     ZeroAt Q a' b' radial' mask' L' Mcap' eps' Z J' T C':=by
   intro s hQ hwidth p t X₁ X₂ hX₁ hX₂ hcap₁ hcap₂
-  have hcap:Z^L'≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ hL
+  have hcap:Z ^L'≤Z ^L:=Real.rpow_le_rpow_of_exponent_le hZ hL
   have hh:=h (widenState s hm hr) hQ (hwidth.trans hM) (widenProfiles p ha hb)
     t X₁ X₂ hX₁ hX₂ (hcap₁.trans hcap) (hcap₂.trans hcap)
   change s.plainEnergy p t X₁ X₂≤C*diagonalControl s.radial.profile*(p.control S)^2*
-    (1+‖t‖)^J*Z^(s.width+eps) at hh
+    (1+‖t‖)^J*Z ^(s.width+eps) at hh
   have hp:=profile_control_mono p hS
   have hp0:=p.control_nonneg S
   have hd:=diagonalControl_nonneg s.radial.profile
-  have ht:(1+‖t‖)^J≤(1+‖t‖)^J':=pow_le_pow_right₀ (by linarith [norm_nonneg t]) hJ
-  have hz:Z^(s.width+eps)≤Z^(s.width+eps'):=Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
+  have ht:(1+‖t‖)^J≤(1+‖t‖)^J':=pow_le_pow_right₀ (by simp_all) hJ
+  have hz:Z ^(s.width+eps)≤Z ^(s.width+eps'):=Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
   have hCnew:0≤C':=hC.trans hCC
   apply hh.trans
   gcongr
@@ -62,25 +60,25 @@ omit [Fintype α] [DecidableEq α] in
 theorem positiveAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo hi Mcap eps κ Z:ℝ)
     (a' b' radial' mask' L' Mcap' eps':ℝ)
     (η₀:Character)(Q:Ideal O)(J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
-    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤radial)(hm:mask'≤mask)
+    (hZ:1≤Z)(ha:a≤a')(hb:b'≤b)(hr:radial'≤ radial)(hm:mask'≤ mask)
     (hL:L'≤L)(hM:Mcap'≤Mcap)(he:eps≤eps')(hJ:J≤J')(hS:S⊆T)
     (hC:0≤C)(hCC:C≤C')
     (h:PositiveAt (α:=α) M H hH W bslot a b radial mask L Lslot lo hi Mcap eps κ Z η₀ Q J S C):
     PositiveAt (α:=α) M H hH W bslot a' b' radial' mask' L' Lslot lo hi Mcap' eps' κ Z η₀ Q J' T C':=by
   intro A θ w σ freq t height hw hwL hσlo hσhi hheight hfreq s hQ hwidth
     p X₁ X₂ hX₁ hX₂ hcap₁ hcap₂ hcapacity
-  have hcap:Z^L'≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ hL
+  have hcap:Z ^L'≤Z ^L:=Real.rpow_le_rpow_of_exponent_le hZ hL
   have hh:=h A θ w σ freq t height hw hwL hσlo hσhi hheight hfreq
     (widenState s hm hr) hQ (hwidth.trans hM) (widenProfiles p ha hb)
     X₁ X₂ hX₁ hX₂ (hcap₁.trans hcap) (hcap₂.trans hcap) hcapacity
   change _≤C*diagonalControl s.radial.profile*(p.control S)^2*
-    (1+|t|+height)^J*Z^(s.width+eps) at hh
+    (1+|t|+height)^J*Z ^(s.width+eps) at hh
   have hp:=profile_control_mono p hS
   have hp0:=p.control_nonneg S
   have hd:=diagonalControl_nonneg s.radial.profile
   have ht:(1+|t|+height)^J≤(1+|t|+height)^J':=
-    pow_le_pow_right₀ (by linarith [abs_nonneg t]) hJ
-  have hz:Z^(s.width+eps)≤Z^(s.width+eps'):=Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
+    pow_le_pow_right₀ (by grind) hJ
+  have hz:Z ^(s.width+eps)≤Z ^(s.width+eps'):=Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
   have hCnew:0≤C':=hC.trans hCC
   apply hh.trans
   gcongr

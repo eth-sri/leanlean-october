@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatchCount
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorAmplitudeFirst
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorClassBudget
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,7 +19,10 @@ open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRow
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
-lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : ℝ)
+section
+variable (B : Batch M H Label Slot U a ε tstar T allowance i)
+include B
+lemma fiber_mean_eq (q : ℝ)
     (hq : ∀u∈B.rows,rowMean B.slots U ((2*a-1)/2) B.binWidth B.widths
       (physical M H (fun u : FreeRow=>u.val) B.profile B.upper B.widths B.external U) u=q)
     (bin : B.Bin) (j : Label) (J K : Fin (dyadicLength U))
@@ -33,7 +37,7 @@ lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : �
   intro s hs
   exact congrArg (fun g=>B.widths s*g) ((B.fiber bin j J K hne).fixed_bin u hu s hs).symm
 
-lemma batch_mean_bounds (B : Batch M H Label Slot U a ε tstar T allowance i)
+lemma batch_mean_bounds
     (hne : B.rows.Nonempty) (ha : 1/2≤a) (q : ℝ)
     (hq : ∀u∈B.rows,rowMean B.slots U ((2*a-1)/2) B.binWidth B.widths
       (physical M H (fun u : FreeRow=>u.val) B.profile B.upper B.widths B.external U) u=q) :
@@ -43,7 +47,8 @@ lemma batch_mean_bounds (B : Batch M H Label Slot U a ε tstar T allowance i)
   apply weightedMean_bounds B.slots B.widths _ (2*a-1)
     (fun s hs=>(B.widths_pos s hs).le) (by linarith [B.supply])
   intro s hs
-  exact HeckePrimeAmplitudeBins.amplitude_bounds _ _ _ _ (by linarith)
+  pm_5999
+end
 
 theorem fixed_amplitude_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -53,7 +58,7 @@ theorem fixed_amplitude_count_from_raw_moments
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀y,φ y≤B₀)
     (εm : ℝ) (hεm : 0<εm) :
-    ∃c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠU : ℝ in atTop,
+    ∃c κ K₀ : ℝ,0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠU : ℝ in atTop,
       ∀(a ε tstar T allowance Δ ν C height q : ℝ) (i : ℕ),
       1<U → 51/100<a → 2*a-1≤5/6 → 0≤ε → ε≤1/1000 →
       1≤tstar → tstar≤3/2 → 0≤Δ → Δ≤1/8 → 0<ν → 0≤C → 0≤height →
@@ -67,9 +72,8 @@ theorem fixed_amplitude_count_from_raw_moments
         (Fintype.card B.Bin:ℝ)*
         U^(max (shortExponent (2*a-1) (q/(2*a-1)) tstar) (longExponent (2*a-1) tstar)+
           Δ/4+159*ε+εm+B.mesh+7*ν) := by
-  obtain ⟨c,κ,K₀,hc,hc1,hκ,hK,hcount⟩ := HeckeDetectorCountFromMoments.count_from_raw_moments
-    M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
-  refine ⟨c,κ,K₀,hc,hc1,hκ,hK,?_⟩
+  pm_570 HeckeDetectorCountFromMoments.count_from_raw_moments
+  pm_3149
   filter_upwards [hcount] with U hcount
   intro a ε tstar T allowance Δ ν C height q i hU ha hd hε hε' ht ht' hΔ hΔ' hν hC hh hf Label Slot _ B hq moments
   have hb := B.card_bound (fiberConstant C height K₀)
@@ -81,7 +85,7 @@ theorem fixed_amplitude_count_from_raw_moments
         (B.fiber bin j J K hne) (moments bin j J K hne)
       rw [fiber_mean_eq B q hq bin j J K hne] at hc'
       exact hc')
-  simpa only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_assoc] using hb
+  pm_89 Finset.sum_const Finset.card_univ nsmul_eq_mul mul_assoc hb
 end SevenEighths.HeckeDetectorFixedAmplitudeCount
 
 end

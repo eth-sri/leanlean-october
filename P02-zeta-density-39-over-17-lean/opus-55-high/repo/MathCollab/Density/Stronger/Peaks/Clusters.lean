@@ -9,6 +9,7 @@ PointMeanInput and LocalMeanPacketInput remain explicit unproved analytic inputs
 No unconditional high-value, twelfth-moment or stronger-density bound is asserted.
 -/
 public import MathCollab.Density.Stronger.Peaks.Inputs
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -42,30 +43,32 @@ theorem pointCluster_subset (H G : ℝ) (W : Finset ℝ) (n : ℕ) :
 
 theorem mem_pointClusterBins_iff {H G : ℝ} {W : Finset ℝ} {n : ℕ} :
     n ∈ pointClusterBins H G W ↔ (pointCluster H G W n).Nonempty := by
-  simp only [pointClusterBins, pointCluster, atkinsonHeightFiber,
-    Finset.mem_image, Finset.Nonempty, Finset.mem_filter]
+  pm_232 pointClusterBins pointCluster atkinsonHeightFiber Finset.mem_image Finset.Nonempty Finset.mem_filter
 
 theorem pointCluster_card_partition (H G : ℝ) (W : Finset ℝ) :
     W.card = ∑ n ∈ pointClusterBins H G W, (pointCluster H G W n).card := by
   exact Finset.card_eq_sum_card_image (atkinsonHeightBin H (G/2)) W
 
-theorem pointCluster_interval {H G : ℝ} {W : Finset ℝ} (n : ℕ)
+section
+variable {H G : ℝ}
+include H G
+theorem pointCluster_interval {W : Finset ℝ} (n : ℕ)
     (hG : 0 < G) (hlow : ∀ t ∈ W, H ≤ t) :
     ∀ t ∈ pointCluster H G W n,
       pointClusterCenter H G n ≤ t ∧
         t ≤ pointClusterCenter H G n+G/2 :=
   atkinsonHeightFiber_interval n (half_pos hG) hlow
 
-theorem pointCluster_symmetric_interval {H G : ℝ} {W : Finset ℝ} (n : ℕ)
+theorem pointCluster_symmetric_interval {W : Finset ℝ} (n : ℕ)
     (hG : 0 < G) (hlow : ∀ t ∈ W, H ≤ t) :
     ∀ t ∈ pointCluster H G W n,
       pointClusterCenter H G n-G/2 ≤ t ∧
         t ≤ pointClusterCenter H G n+G/2 := by
   intro t ht
   have hi := pointCluster_interval n hG hlow t ht
-  exact ⟨by linarith [hi.1],hi.2⟩
+  grind
 
-theorem pointClusterCenter_range {H G : ℝ} {W : Finset ℝ} {n : ℕ}
+theorem pointClusterCenter_range {W : Finset ℝ} {n : ℕ}
     (hG : 0 < G) (hrange : ∀ t ∈ W, H ≤ t ∧ t ≤ 2*H)
     (hn : n ∈ pointClusterBins H G W) :
     H ≤ pointClusterCenter H G n ∧ pointClusterCenter H G n ≤ 2*H := by
@@ -74,10 +77,10 @@ theorem pointClusterCenter_range {H G : ℝ} {W : Finset ℝ} {n : ℕ}
   have hi := pointCluster_interval n hG (fun t ht => (hrange t ht).1) t ht
   constructor
   · unfold pointClusterCenter
-    exact le_add_of_nonneg_right (by positivity)
-  · exact hi.1.trans (hrange t htW).2
+    simp_all
+  grind
 
-theorem pointClusterCenter_injective {H G : ℝ} (hG : 0 < G) :
+theorem pointClusterCenter_injective (hG : 0 < G) :
     Function.Injective (pointClusterCenter H G) := by
   intro k l h
   have hm : (k:ℝ)*(G/2) = (l:ℝ)*(G/2) := by
@@ -86,11 +89,11 @@ theorem pointClusterCenter_injective {H G : ℝ} (hG : 0 < G) :
     mul_right_cancel₀ (ne_of_gt (half_pos hG)) hm
   exact_mod_cast he
 
-theorem pointClusterCenters_card {H G : ℝ} (hG : 0 < G) (U : Finset ℕ) :
+theorem pointClusterCenters_card (hG : 0 < G) (U : Finset ℕ) :
     (pointClusterCenters H G U).card = U.card :=
   Finset.card_image_of_injective U (pointClusterCenter_injective hG)
 
-theorem pointClusterCenter_gap_of_same_parity {H G : ℝ} {k l : ℕ}
+theorem pointClusterCenter_gap_of_same_parity {k l : ℕ}
     (hG : 0 < G) (hkl : k < l) (hmod : k%2 = l%2) :
     G ≤ pointClusterCenter H G l-pointClusterCenter H G k := by
   have hk : k+2 ≤ l := by omega
@@ -99,19 +102,19 @@ theorem pointClusterCenter_gap_of_same_parity {H G : ℝ} {k l : ℕ}
   unfold pointClusterCenter
   nlinarith
 
-theorem pointClusterCenters_separated {H G : ℝ} (hG : 0 < G)
+theorem pointClusterCenters_separated (hG : 0 < G)
     (U : Finset ℕ) (e : ℕ) (hmod : ∀ n ∈ U, n%2 = e) :
     separatedAt G (pointClusterCenters H G U) := by
   intro x hx y hy hxy
-  obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-  obtain ⟨l,hl,rfl⟩ := Finset.mem_image.mp hy
-  have hne : k ≠ l := by intro h; subst l; exact hxy rfl
+  pm_5095 k hk hx l hl hy
+  have hne : k ≠ l := by intro h; subst l; grind
   have he : k%2 = l%2 := (hmod k hk).trans (hmod l hl).symm
   rw [Real.dist_eq]
   rcases lt_or_gt_of_ne hne with hkl | hlk
   · rw [abs_sub_comm]
     exact (pointClusterCenter_gap_of_same_parity hG hkl he).trans (le_abs_self _)
   · exact (pointClusterCenter_gap_of_same_parity hG hlk he.symm).trans (le_abs_self _)
+end
 
 theorem card_eq_sum_parity_cards (U : Finset ℕ) :
     U.card = (U.filter (fun n => n%2 = 0)).card +

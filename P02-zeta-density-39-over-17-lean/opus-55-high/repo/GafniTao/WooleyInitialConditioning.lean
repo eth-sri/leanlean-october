@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleyLemma63
 public import GafniTao.WooleyThreeFactorHolder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ sums, so that equations (6.6)--(6.9) can be audited against the source.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -29,26 +29,12 @@ theorem wooley_critical_interpolation_term
           (w * v ^ 2 * u ^ (2 * (s - 1))) ^ (1 / (s : ℝ)) =
       w * (u * u) * (v * v) := by
   have hsReal : (0 : ℝ) < s := by
-    exact_mod_cast (by omega : 0 < s)
-  have hroot : 0 < 1 / (s : ℝ) := by positivity
+    positivity
+  pm_8873 hroot s
   by_cases hw0 : w = 0
-  · calc
-      w ^ (((s : ℝ) - 2) / (s : ℝ)) *
-          (w * u ^ 2 * v ^ (2 * (s - 1))) ^ (1 / (s : ℝ)) *
-            (w * v ^ 2 * u ^ (2 * (s - 1))) ^ (1 / (s : ℝ)) = 0 := by
-        rw [show w * u ^ 2 * v ^ (2 * (s - 1)) = 0 by simp [hw0],
-          Real.zero_rpow hroot.ne']
-        ring
-      _ = w * (u * u) * (v * v) := by simp [hw0]
+  pm_2827 hw0
   by_cases hu0 : u = 0
-  · calc
-      w ^ (((s : ℝ) - 2) / (s : ℝ)) *
-          (w * u ^ 2 * v ^ (2 * (s - 1))) ^ (1 / (s : ℝ)) *
-            (w * v ^ 2 * u ^ (2 * (s - 1))) ^ (1 / (s : ℝ)) = 0 := by
-        rw [show w * u ^ 2 * v ^ (2 * (s - 1)) = 0 by simp [hu0],
-          Real.zero_rpow hroot.ne']
-        ring
-      _ = w * (u * u) * (v * v) := by simp [hu0]
+  pm_2827 hu0
   by_cases hv0 : v = 0
   · calc
       w ^ (((s : ℝ) - 2) / (s : ℝ)) *
@@ -58,9 +44,9 @@ theorem wooley_critical_interpolation_term
           Real.zero_rpow hroot.ne']
         ring
       _ = w * (u * u) * (v * v) := by simp [hv0]
-  have hwpos : 0 < w := lt_of_le_of_ne hw (Ne.symm hw0)
-  have hupos : 0 < u := lt_of_le_of_ne hu (Ne.symm hu0)
-  have hvpos : 0 < v := lt_of_le_of_ne hv (Ne.symm hv0)
+  pm_485 hwpos w lt_of_le_of_ne hw Ne.symm hw0
+  pm_485 hupos u lt_of_le_of_ne hu Ne.symm hu0
+  pm_485 hvpos v lt_of_le_of_ne hv Ne.symm hv0
   rw [Real.mul_rpow (mul_nonneg hw (sq_nonneg u))
       (pow_nonneg hv _),
     Real.mul_rpow hw (sq_nonneg u),
@@ -68,26 +54,23 @@ theorem wooley_critical_interpolation_term
       (pow_nonneg hu _),
     Real.mul_rpow hw (sq_nonneg v)]
   simp only [← Real.rpow_natCast]
-  rw [← Real.rpow_mul hu, ← Real.rpow_mul hv,
-    ← Real.rpow_mul hv, ← Real.rpow_mul hu]
+  pm_8656 hu hv
   have hwexp : ((s : ℝ) - 2) / (s : ℝ) + 1 / (s : ℝ) +
       1 / (s : ℝ) = 1 := by field_simp; ring
   have huexp : (2 : ℝ) * (1 / (s : ℝ)) +
       2 * (s - 1 : ℕ) * (1 / (s : ℝ)) = 2 := by
-    rw [Nat.cast_sub (by omega : 1 ≤ s)]
+    pm_567 Nat.cast_sub s
     field_simp
     ring
   have hvexp : 2 * (s - 1 : ℕ) * (1 / (s : ℝ)) +
       (2 : ℝ) * (1 / (s : ℝ)) = 2 := by
-    rw [Nat.cast_sub (by omega : 1 ≤ s)]
+    pm_567 Nat.cast_sub s
     field_simp
     ring
   have hcast : ((2 * (s - 1) : ℕ) : ℝ) = 2 * (s - 1 : ℕ) := by
     norm_num
-  have huTwo : u ^ (2 : ℝ) = u * u := by
-    rw [Real.rpow_two, pow_two]
-  have hvTwo : v ^ (2 : ℝ) = v * v := by
-    rw [Real.rpow_two, pow_two]
+  pm_7618 huTwo u
+  pm_7618 hvTwo v
   calc
     w ^ (((s : ℝ) - 2) / (s : ℝ)) *
           (w ^ (1 / (s : ℝ)) * u ^ ((2 : ℝ) * (1 / (s : ℝ))) *
@@ -109,7 +92,7 @@ theorem wooley_critical_interpolation_term
       rw [Real.rpow_add hwpos, Real.rpow_add hwpos,
         Real.rpow_add hupos, Real.rpow_add hvpos]
     _ = w * (u * u) * (v * v) := by
-      rw [hcast, hwexp, huexp, hvexp, Real.rpow_one]
+      pm_265 hcast hwexp huexp hvexp Real.rpow_one
       rw [huTwo, hvTwo]
 
 /-- The exact three-factor Hölder inequality used before (6.8).  The two
@@ -126,19 +109,13 @@ theorem wooley_pair_mixed_holder
         (∑ i ∈ t, w i * u i ^ 2 * v i ^ (2 * (s - 1))) *
           (∑ i ∈ t, w i * v i ^ 2 * u i ^ (2 * (s - 1))) := by
   let f₀ : ι → ℝ := w
-  let f₁ : ι → ℝ := fun i =>
-    w i * u i ^ 2 * v i ^ (2 * (s - 1))
-  let f₂ : ι → ℝ := fun i =>
-    w i * v i ^ 2 * u i ^ (2 * (s - 1))
+  pm_6122 f₁ u v
+  pm_6122 f₂ v u
   have hf₀ : ∀ i ∈ t, 0 ≤ f₀ i := by
     intro i hi
     exact hw i hi
-  have hf₁ : ∀ i ∈ t, 0 ≤ f₁ i := by
-    intro i hi
-    exact mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _)) (pow_nonneg (hv i hi) _)
-  have hf₂ : ∀ i ∈ t, 0 ≤ f₂ i := by
-    intro i hi
-    exact mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _)) (pow_nonneg (hu i hi) _)
+  pm_5126 hf₁ f₁ hv
+  pm_5126 hf₂ f₂ hu
   have hholder := wooley_three_factor_holder_critical_real
     t f₀ f₁ f₂ hf₀ hf₁ hf₂ hs
   have hterm (i : ι) (hi : i ∈ t) :
@@ -197,8 +174,10 @@ def wooleySeparatedResiduePairs (p nu : ℕ) [NeZero p] :
   (Finset.univ.product Finset.univ).filter fun xy =>
     wooleyResiduesSeparated nu xy.1 xy.2
 
+section
+variable {p nu : ℕ} [NeZero p]
+include p nu
 theorem wooley_sum_separatedResiduePairs
-    {p nu : ℕ} [NeZero p]
     (F : ZMod (p ^ nu) → ZMod (p ^ nu) → ℝ) :
     ∑ xy ∈ wooleySeparatedResiduePairs p nu, F xy.1 xy.2 =
       ∑ xi : ZMod (p ^ nu),
@@ -214,7 +193,6 @@ theorem wooley_sum_separatedResiduePairs
         F xy.1 xy.2 else 0))
 
 theorem wooley_sum_separatedResiduePairs_apply
-    {p nu : ℕ} [NeZero p]
     (F : ZMod (p ^ nu) × ZMod (p ^ nu) → ℝ) :
     ∑ xy ∈ wooleySeparatedResiduePairs p nu, F xy =
       ∑ xi : ZMod (p ^ nu),
@@ -222,6 +200,7 @@ theorem wooley_sum_separatedResiduePairs_apply
           wooleyResiduesSeparated nu xi eta, F (xi, eta) := by
   simpa using wooley_sum_separatedResiduePairs
     (p := p) (nu := nu) (fun xi eta => F (xi, eta))
+end
 
 theorem wooleySeparatedResiduePairs_card_le (p nu : ℕ) [NeZero p] :
     #(wooleySeparatedResiduePairs p nu) ≤ (p ^ nu) ^ 2 := by
@@ -252,13 +231,11 @@ theorem wooley_cauchy_three_factor_symmetric
     (∑ i ∈ t, Real.sqrt (w i) * u i * v i) ^ s ≤
       q ^ s * M ^ (s - 2) *
         ∑ i ∈ t, w i * u i ^ 2 * v i ^ (2 * (s - 1)) := by
-  let S : ℝ := ∑ i ∈ t, Real.sqrt (w i) * u i * v i
-  let W : ℝ := ∑ i ∈ t, w i
+  pm_7084 i
+  pm_7784
   let A : ℝ := ∑ i ∈ t, w i * u i ^ 2 * v i ^ 2
-  let F : ℝ := ∑ i ∈ t,
-    w i * u i ^ 2 * v i ^ (2 * (s - 1))
-  let G : ℝ := ∑ i ∈ t,
-    w i * v i ^ 2 * u i ^ (2 * (s - 1))
+  pm_4965 F i u v
+  pm_4965 G i v u
   have hS : 0 ≤ S := by
     dsimp [S]
     exact Finset.sum_nonneg fun i hi =>
@@ -270,16 +247,8 @@ theorem wooley_cauchy_three_factor_symmetric
     dsimp [A]
     exact Finset.sum_nonneg fun i hi =>
       mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _)) (sq_nonneg _)
-  have hF : 0 ≤ F := by
-    dsimp [F]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _))
-        (pow_nonneg (hv i hi) _)
-  have hG : 0 ≤ G := by
-    dsimp [G]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (mul_nonneg (hw i hi) (sq_nonneg _))
-        (pow_nonneg (hu i hi) _)
+  pm_5159 hF F hv
+  pm_5159 hG G hu
   have hCauchy : S ^ 2 ≤ (#t : ℝ) * A := by
     have h := sum_mul_sq_le_sq_mul_sq (R := ℝ) t
       (fun _ : ι => 1)
@@ -356,9 +325,7 @@ theorem wooley_norm_sum_sq_le_diagonal_add_offDiagonal
   calc
     ‖∑ i ∈ t, z i‖ ^ 2 ≤ (∑ i ∈ t, ‖z i‖) ^ 2 := hsq
     _ = ∑ i ∈ t, ∑ j ∈ t, ‖z i‖ * ‖z j‖ := by
-      rw [pow_two, Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro i hi
+      pm_266 pow_two Finset.sum_mul Finset.sum_congr i hi
       rw [Finset.mul_sum]
     _ = (∑ i ∈ t, ‖z i‖ ^ 2) +
         ∑ i ∈ t, ∑ j ∈ t with j ≠ i, ‖z i‖ * ‖z j‖ := by
@@ -394,8 +361,7 @@ theorem wooley_separated_pair_mass_le_square {Q : ℕ}
         wooleyWeightedResidueMassSq gamma xi *
           wooleyWeightedResidueMassSq gamma eta) ≤
       wooleyWeightedMassSq gamma ^ 2 := by
-  let w : ZMod (p ^ nu) → ℝ := fun xi =>
-    wooleyWeightedResidueMassSq gamma xi
+  pm_6248
   have hfilter (xi : ZMod (p ^ nu)) :
       (∑ eta : ZMod (p ^ nu) with wooleyResiduesSeparated nu xi eta,
           w xi * w eta) ≤
@@ -415,9 +381,7 @@ theorem wooley_separated_pair_mass_le_square {Q : ℕ}
       intro xi hxi
       simpa [w] using hfilter xi
     _ = (∑ xi : ZMod (p ^ nu), w xi) ^ 2 := by
-      rw [pow_two, Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro xi hxi
+      pm_266 pow_two Finset.sum_mul Finset.sum_congr xi hxi
       rw [Finset.mul_sum]
     _ = wooleyWeightedMassSq gamma ^ 2 := by
       rw [show (∑ xi : ZMod (p ^ nu), w xi) =
@@ -425,21 +389,22 @@ theorem wooley_separated_pair_mass_le_square {Q : ℕ}
         simpa [w] using wooley_sum_weightedResidueMassSq
           (q := p ^ nu) gamma]
 
-theorem wooley_inv_pow_mul_pow_pred
-    {M : ℝ} {s : ℕ} (hM : 0 < M) (hs : 1 ≤ s) :
+section
+variable {M : ℝ} {s : ℕ} (hM : 0 < M)
+include M s hM
+theorem wooley_inv_pow_mul_pow_pred (hs : 1 ≤ s) :
     M⁻¹ ^ s * M ^ (s - 1) = M⁻¹ := by
-  have hpow : M ^ s = M ^ (s - 1) * M := by
-    conv_lhs => rw [← Nat.sub_add_cancel hs, pow_add, pow_one]
+  pm_645
   rw [inv_pow, hpow]
   field_simp
 
-theorem wooley_inv_pow_mul_pow_sub_two
-    {M : ℝ} {s : ℕ} (hM : 0 < M) (hs : 2 ≤ s) :
+theorem wooley_inv_pow_mul_pow_sub_two (hs : 2 ≤ s) :
     M⁻¹ ^ s * M ^ (s - 2) = M⁻¹ ^ 2 := by
   have hpow : M ^ s = M ^ (s - 2) * M ^ 2 := by
     conv_lhs => rw [← Nat.sub_add_cancel hs, pow_add]
   rw [inv_pow, hpow]
   field_simp
+end
 
 /-- The elementary convexity estimate used when equation (6.6) is raised
 to the `s`-th power.  The constant is retained explicitly. -/

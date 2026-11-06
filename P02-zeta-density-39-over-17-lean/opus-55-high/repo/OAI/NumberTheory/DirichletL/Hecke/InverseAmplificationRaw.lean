@@ -27,14 +27,14 @@ theorem RawMoment.scaleEnergy {data : RowData} {W : ℝ→ℂ} {c κ C : ℝ}
   have hHp : 0<U*V^6 := zero_lt_one.trans_le hH
   have hexp : Real.exp l≤D := by
     rw [←Real.exp_log hDp]
-    exact Real.exp_le_exp.mpr hl.2
+    simp_all
   have hp : (Real.exp l)^(1+c)≤U*V^6 :=
     (Real.rpow_le_rpow (Real.exp_pos l).le hexp (by linarith)).trans hHD
   have hh := hraw (U*V^6) (Real.exp l) hH (Real.exp_pos l) hp rows hrows
   refine hh.trans ?_
   apply mul_le_mul_of_nonneg_left _ (mul_nonneg hC hHp.le)
   apply Real.rpow_le_rpow (by positivity) _ hκ
-  exact mul_le_mul_of_nonneg_left (max_le hD hexp) hHp.le
+  simp_all
 
 end SevenEighths.HeckeInverseAmplification
 

@@ -1,14 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierSeparation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
-noncomputable section
+open scoped Classical ContDiff FourierTransform SchwartzMap
 
 lemma frequency_interval_compl (R : ℝ) :
     (Set.Icc (-R) R)ᶜ = {t : ℝ | R < ‖t‖} := by
@@ -22,7 +22,7 @@ private lemma exists_interval_norm_product (f h : ℝ → ℂ) (hf : Continuous 
     ∃ t : ℝ, ‖t‖ ≤ R ∧
       ‖∫ u : ℝ in Set.Icc (-R) R, h u * f u‖ ≤ (∫ u : ℝ, ‖h u‖) * ‖f t‖ := by
   obtain ⟨t, ht, hmax⟩ := isCompact_Icc.exists_isMaxOn
-    (show (Set.Icc (-R) R).Nonempty from ⟨0, by constructor <;> linarith⟩)
+    (show (Set.Icc (-R) R).Nonempty from ⟨0, by grind⟩)
     hf.norm.continuousOn
   refine ⟨t, by simpa only [Real.norm_eq_abs, abs_le, Set.mem_Icc] using ht, ?_⟩
   have hb : Integrable (fun u => ‖h u‖ * ‖f t‖) := hh.norm.mul_const _
@@ -92,8 +92,10 @@ private theorem schwartz_tail_le (g : SchwartzMap ℝ ℂ) (R : ℝ)
   simpa only [pow_zero, one_mul, Nat.zero_add, mul_comm] using
     schwartz_weighted_tail g 0 N R hR
 
-private theorem separated_pair_tail_of_bound {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
+section
+variable {α β : Type*} (S : Finset α) (T : Finset β) (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
+include α β S T a b x y
+private theorem separated_pair_tail_of_bound
     (w : ℝ → ℂ) (R M : ℝ) (N : ℕ)
     (hi : Integrable (fun u => w u * phasePolynomial S a x u * phasePolynomial T b y u))
     (hw : Integrable w) (hbound : (∫ u : ℝ in {u | R < ‖u‖}, ‖w u‖) ≤ M / R^N) :
@@ -113,8 +115,7 @@ private theorem separated_pair_tail_of_bound {α β : Type*} (S : Finset α) (T 
     _ ≤ E * (M / R^N) := mul_le_mul_of_nonneg_left hbound hE
     _ = _ := by rw [div_mul_eq_mul_div, mul_div_assoc]
 
-theorem separated_pair_tail {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
+theorem separated_pair_tail
     (g : SchwartzMap ℝ ℂ) (R : ℝ) (hR : 0 < R) (N : ℕ) :
     ‖(∫ u : ℝ, (𝓕 g) u*phasePolynomial S a x u*phasePolynomial T b y u) -
       (∫ u : ℝ in Set.Icc (-R) R,
@@ -126,8 +127,7 @@ theorem separated_pair_tail {α β : Type*} (S : Finset α) (T : Finset β)
     (separated_pair_integrable S T a b x y g) (𝓕 g).integrable
     (schwartz_tail_le g R hR N)
 
-theorem exists_bounded_frequency {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
+theorem exists_bounded_frequency
     (g : SchwartzMap ℝ ℂ) (R : ℝ) (hR : 0 < R) (N : ℕ) :
     ∃ t : ℝ, ‖t‖ ≤ R ∧
       ‖∑ i ∈ S, ∑ j ∈ T, a i*b j*g (x i+y j)‖ ≤
@@ -139,9 +139,9 @@ theorem exists_bounded_frequency {α β : Type*} (S : Finset α) (T : Finset β)
   refine ⟨t,ht,?_⟩
   rw [finite_pair_separation]
   have htail := separated_pair_tail S T a b x y g R hR N
-  exact (norm_le_norm_sub_add _ _).trans (add_le_add htail hb)
-
+  pm_243 norm_le_norm_sub_add htail hb
 end
+
 end SevenEighths.HeckeDetectorFourier
 
 end OAI

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Moments.Lattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 

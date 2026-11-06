@@ -1,5 +1,6 @@
 module
 public import LaterPairs.Native.RobertSargosPrimitiveSystem
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -11,7 +12,7 @@ theorem robertSargos_affine_residual_identity {r q₁ q₂ h₁ h₂ d : ℝ}
     h₂*q₂*(q₁+2*d-q₂) =
       robertSargosReduced r q₁ q₂ h₁ h₂ d+r*d*(q₁+d) := by
   rw [robertSargos_reduced_coefficient_factor hlin]
-  linear_combination -(q₁+d)*hlin
+  grind
 
 theorem robertSargos_affine_band_of_displacement {r q₁ q₂ h₁ h₂ d R D H Q δ : ℝ}
     (hH : 0 < H) (hQ : 0 < Q) (hr : |r| ≤ R) (hd : |d| ≤ D)
@@ -19,8 +20,7 @@ theorem robertSargos_affine_band_of_displacement {r q₁ q₂ h₁ h₂ d R D H 
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
     |2*d+q₁-q₂| ≤ δ*Q+R*D*(2*Q+D)/(H*Q) := by
-  have hR : 0 ≤ R := (abs_nonneg r).trans hr
-  have hD : 0 ≤ D := (abs_nonneg d).trans hd
+  pm_1002
   have hh₂p := hH.trans_le hh₂
   have hsum : |q₁+d| ≤ 2*Q+D :=
     (abs_add_le q₁ d).trans (add_le_add hq₁ hd)
@@ -28,7 +28,7 @@ theorem robertSargos_affine_band_of_displacement {r q₁ q₂ h₁ h₂ d R D H 
     rw [abs_mul,abs_mul]
     exact mul_le_mul (mul_le_mul hr hd (abs_nonneg d) hR) hsum
       (abs_nonneg (q₁+d)) (mul_nonneg hR hD)
-  have hden : H*Q ≤ h₂*|q₂| := mul_le_mul hh₂ hq₂ hQ.le hh₂p.le
+  pm_8201 q₂ hq₂
   have hbound : H*Q*|2*d+q₁-q₂| ≤ δ*H*Q^2+R*D*(2*Q+D) := by
     calc
       _ ≤ h₂*|q₂| * |2*d+q₁-q₂| :=
@@ -54,9 +54,7 @@ theorem robertSargos_affine_band {r q₁ q₂ h₁ h₂ d R H Q δ : ℝ}
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
     |2*d+q₁-q₂| ≤ δ*Q+99*R*Q/H := by
-  have hdisp := robertSargos_displacement_same_sign hH hQ hh₁ hh₂ hq₁ hq₂
-    hsign hlin hnear
-  have hd : |d| ≤ 9*Q := by nlinarith
+  pm_1003
   have hb := robertSargos_affine_band_of_displacement hH hQ hr hd hh₂.1 hq₁.2
     hq₂.1 hlin hnear
   calc

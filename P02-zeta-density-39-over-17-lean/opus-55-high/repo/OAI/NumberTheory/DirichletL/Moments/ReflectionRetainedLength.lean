@@ -18,7 +18,7 @@ lemma retained_scale_lower (R Y : ℝ) (hY : 0<Y) (n : ℤ)
   obtain ⟨hr,q,hq,hne⟩ := (retainedAnnuli_mem R Y hY n).mp hn
   have hs := (dyadicWeight_support n hne).2.le
   have hh := mul_le_mul_of_nonneg_right (hq.trans hs) hY.le
-  simpa only [inv_mul_cancel₀ hY.ne'] using hh
+  grind
 
 theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
     (hbox : 1≤box) (hxi : 0<xi) :

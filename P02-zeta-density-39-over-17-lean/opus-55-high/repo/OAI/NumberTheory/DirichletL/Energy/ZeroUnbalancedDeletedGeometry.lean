@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,8 +34,7 @@ theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
   have hZ0 : 0 < Z := zero_lt_one.trans hZ
   obtain ⟨hn₁, _⟩ := divisor_norm s D₁ hD₁
   obtain ⟨hn₂, hc₂⟩ := divisor_norm s D₂ hD₂
-  have hl₁ := Real.logb_nonneg hZ hn₁
-  have hlonglog := Real.logb_nonneg hZ hlong
+  pm_733 hl₁ Real.logb_nonneg hZ hn₁ hlonglog hlong
   have hu₂ : Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ) ≤ Bmask :=
     (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le hn₂)).mpr hc₂
   have hM := s.width_nonneg
@@ -55,10 +55,8 @@ theorem actual_deleted_gates {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
     (Real.logb Z X₂ - Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ))
     xi hM (by linarith) hxi hxiM with hd | hr
   · refine Or.inl ⟨?_, hd⟩
-    have hh₁ := le_max_right (0 : ℝ)
-      (Real.logb Z X₂ - Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ))
-    have hh₂ := le_max_left (0 : ℝ)
-      (Real.logb Z X₁ - Real.logb Z ((∏ P ∈ D₁, P).absNorm : ℝ))
+    pm_7038 hh₁ le_max_right X₂ D₂
+    pm_7038 hh₂ le_max_left X₁ D₁
     linarith
   · exact Or.inr hr
 

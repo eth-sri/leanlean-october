@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCells
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,24 +13,24 @@ open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmeti
 open InverseMomentFirstChildWindows CompletedHeight
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def coefficient (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (negative : Bool)
+def coefficient (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→ Finset ι→ℂ) (negative : Bool)
     (x : OriginalIndex ι) : Finset ι→ℂ :=
   firstCanonicalCoefficient p hp hcop hg x.1.1 x.1.2.1 negative Ψ m (divisorElement p x.1)
     (mark (if negative then x.1.1.rightExponent else x.1.1.leftExponent)) x.2
 
 def weight (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
     (x : OriginalIndex ι) : ℂ :=
   retainedCubeWeight p hp hcop hg x.1.1 x.1.2.1 Ψ Ψ m m
     (divisorElement p x.1) (firstOriginalWeight p β R x.1) x.2
 
 def sourceSummand (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
-    (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ) (Ψ : O→*ℂ) (m : O)
+    (mark : (ι→₀ℕ)→ Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
     (x : OriginalIndex ι) (j : FirstCommonIndex ι) : ℂ :=
   weight p hp hcop hg β R Ψ m x *
     firstCommonWeight p hg (coefficient p hp hcop hg Ψ m mark true x)
@@ -40,9 +41,9 @@ def sourceSummand (β : Ideal O→(ι→₀ℕ)→ℂ)
 
 theorem original_retained_sum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
-    (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (s : Fin 9→ℝ) (hs : ∀i,0<s i) :
-    originalRetainedFamily p hp hcop hg pool Q labels β Ψ m mark W Φ K Y R s=
+    (mark : (ι→₀ℕ)→ Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ) (s : Fin 9→ℝ) (hs : ∀i,0< s i) :
+    originalRetainedFamily p hp hcop hg pool Q labels β Ψ m mark W Φ K Y R s =
       ∑x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y,
         ∑j∈firstCommonIndices pool,sourceSummand p hp hcop hg β R Ψ m mark W Φ K x j := by
   have hleft : s 0*s 2*s 5*s 7≠0 := ne_of_gt (mul_pos (mul_pos (mul_pos (hs 0) (hs 2)) (hs 5)) (hs 7))
@@ -50,10 +51,7 @@ theorem original_retained_sum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   simp only [originalRetainedFamily,firstFamilyPhysicalRows,firstBlockedPhysicalRows,
     Finset.mul_sum,sourceSummand,weight,coefficient,leftNorm,rightNorm,commonNorm,activeNorm,divisorElement,
     Bool.false_eq_true,ite_true,ite_false,one_mul]
-  apply Finset.sum_congr rfl
-  intro x hx
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_3397 x hx j hj
   simp only [firstNormProfile,mul_div_cancel₀ _ hleft,mul_div_cancel₀ _ hright]
   ring
 

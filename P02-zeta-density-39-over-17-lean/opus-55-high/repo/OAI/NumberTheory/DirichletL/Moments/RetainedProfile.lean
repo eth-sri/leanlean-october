@@ -1,16 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.HeckeHeight
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedProfile
-open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist
-open CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily
+open CenteredMomentLattice CenteredMomentTwist
+open CenteredMomentHeckeHeight HeckeFamily
 open EisensteinSchwartzPoisson QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
@@ -26,10 +27,9 @@ theorem dilated_support (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
     Function.support (dilated W c) ⊆ Set.Icc (a / B) b := by
   intro x hx
   have hv := hs hx
-  have hc0 : 0 < c := lt_of_lt_of_le zero_lt_one hc
-  have hB0 : 0 < B := lt_of_lt_of_le zero_lt_one hB
+  pm_1190 hc0 c hc hB0 B hB
   have hx0 : 0 < x := (mul_pos_iff.mp (lt_of_lt_of_le ha hv.1)).resolve_right
-    (by intro h; linarith [h.1]) |>.2
+    (by grind) |>.2
   constructor
   · apply (div_le_iff₀ hB0).mpr
     exact hv.1.trans (by nlinarith)
@@ -62,9 +62,10 @@ theorem seminorm_dilation_le (f g : 𝓢(ℝ, ℂ)) (ζ : ℂ) (c B : ℝ)
     _ ≤ B ^ n * SchwartzMap.seminorm ℝ k n f :=
       mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hc0 hcB _) (apply_nonneg _ _)
 
-theorem normPowerProfile_dilated (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
-    (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) (t x : ℝ) :
+section
+variable (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a) (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B) (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+include W a b B c ha hB hc hcB hs hW
+theorem normPowerProfile_dilated (t x : ℝ) :
     normPowerProfile (dilated W c) (a / B) b
       (div_pos ha (lt_of_lt_of_le zero_lt_one hB))
       (dilated_support W a b B c ha hB hc hcB hs) (dilated_contDiff W hW c) t x =
@@ -84,9 +85,7 @@ theorem normPowerProfile_dilated (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
   dsimp only [dilated]
   simp only [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
 
-theorem normPowerProfile_dilated_seminorm (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
-    (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+theorem normPowerProfile_dilated_seminorm
     (t : ℝ) (k n : ℕ) :
     SchwartzMap.seminorm ℝ k n
       (normPowerProfile (dilated W c) (a / B) b
@@ -99,9 +98,7 @@ theorem normPowerProfile_dilated_seminorm (W : ℝ → ℂ) (a b B c : ℝ) (ha 
   intro x
   exact normPowerProfile_dilated W a b B c ha hB hc hcB hs hW t x
 
-theorem normPowerProfile_dilated_finite (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
-    (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+theorem normPowerProfile_dilated_finite
     (t : ℝ) (F : Finset (ℕ × ℕ)) :
     F.sup (schwartzSeminormFamily ℝ ℝ ℂ)
       (normPowerProfile (dilated W c) (a / B) b
@@ -114,6 +111,7 @@ theorem normPowerProfile_dilated_finite (W : ℝ → ℂ) (a b B c : ℝ) (ha : 
   apply (normPowerProfile_dilated_seminorm W a b B c ha hB hc hcB hs hW t z.1 z.2).trans
   exact mul_le_mul (pow_le_pow_right₀ hB (Finset.le_sup hz))
     (Seminorm.le_finset_sup_apply (p := schwartzSeminormFamily ℝ ℝ ℂ) hz) (apply_nonneg _ _) (by positivity)
+end
 
 def clippedScale (S : ℝ) : ℝ := max 1 S
 
@@ -143,13 +141,14 @@ theorem strict_subunit_ideal_zero (W : ℝ → ℂ) (b S : ℝ) (hS : 0 < S)
     (hs : Function.support W ⊆ Set.Iic b) (hstrict : S * b < 1)
     (I : Ideal O) (hI : I ≠ 0) : W ((Ideal.absNorm I : ℝ) / S) = 0 := by
   by_contra h
-  have hn : 1 ≤ (Ideal.absNorm I : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-      (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
+  pm_1457 hn I hI
   have hu := (div_le_iff₀ hS).mp (hs h)
   nlinarith
 
-theorem strict_subunit_sum_zero (A : Ideal O → ℂ) (hA : A 0 = 0)
+section
+variable (A : Ideal O → ℂ)
+include A
+theorem strict_subunit_sum_zero (hA : A 0 = 0)
     (W : ℝ → ℂ) (b S : ℝ) (hS : 0 < S)
     (hs : Function.support W ⊆ Set.Iic b) (hstrict : S * b < 1) :
     (∑' I : Ideal O, A I * W ((Ideal.absNorm I : ℝ) / S)) = 0 := by
@@ -162,25 +161,28 @@ theorem strict_subunit_sum_zero (A : Ideal O → ℂ) (hA : A 0 = 0)
       · rw [strict_subunit_ideal_zero W b S hS hs hstrict I hI, mul_zero]
     _ = 0 := tsum_zero
 
-theorem clipped_ideal_sum (A : Ideal O → ℂ) (W : ℝ → ℂ) (S : ℝ) (hS : 0 < S) :
+theorem clipped_ideal_sum (W : ℝ → ℂ) (S : ℝ) (hS : 0 < S) :
     (∑' I : Ideal O, A I * W ((Ideal.absNorm I : ℝ) / S)) =
       ∑' I : Ideal O, A I * dilated W (clipDilation S)
         ((Ideal.absNorm I : ℝ) / clippedScale S) := by
   apply tsum_congr
   intro I
   rw [clipped_source W S _ hS]
+end
 
-theorem clipped_rowTwistedSum (η : Character) (m A₀ z : O)
-    (W : ℝ → ℂ) (t S : ℝ) (hS : 0 < S) :
+section
+variable (η : Character) (m A₀ z : O) (W : ℝ → ℂ)
+include η m A₀ z W
+theorem clipped_rowTwistedSum (t S : ℝ) (hS : 0 < S) :
     rowTwistedSum η m A₀ z W t S =
       rowTwistedSum η m A₀ z (dilated W (clipDilation S)) t (clippedScale S) :=
   clipped_ideal_sum _ W S hS
 
-theorem strict_subunit_rowTwistedSum_zero (η : Character) (m A₀ z : O)
-    (W : ℝ → ℂ) (b t S : ℝ) (hS : 0 < S) (hs : Function.support W ⊆ Set.Iic b)
+theorem strict_subunit_rowTwistedSum_zero (b t S : ℝ) (hS : 0 < S) (hs : Function.support W ⊆ Set.Iic b)
     (hstrict : S * b < 1) : rowTwistedSum η m A₀ z W t S = 0 := by
   apply strict_subunit_sum_zero _ _ W b S hS hs hstrict
   simp only [map_zero, zero_mul]
+end
 
 def retainedProfile (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)

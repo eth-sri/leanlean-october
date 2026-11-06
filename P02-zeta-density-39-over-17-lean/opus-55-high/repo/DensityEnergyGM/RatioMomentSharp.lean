@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.SecondMomentSharp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,8 +32,8 @@ theorem ratio_second_moment_sharp_native (ε : ℝ) (hε : 0 < ε) :
             (W.card : ℝ) * (discreteAdditiveEnergy W : ℝ) ^ (1 / 4 : ℝ) *
               ((M : ℝ) ^ (9 / 5 : ℝ) +
                 T ^ (1 / 4 : ℝ) * (M : ℝ) ^ (6 / 5 : ℝ))) := by
-  obtain ⟨C, T₀, hC, hT₀, h⟩ := actual_second_moment_sharp_native ε hε
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_4083 C T₀ hC hT₀ h actual_second_moment_sharp_native ε hε
+  pm_4084
   intro M T W hM hT hMT hSep hBase
   rw [← coefficient_one_difference_eq_ratio_second]
   exact h M T (fun _ => 1) W hM hT hMT (by simp) hSep hBase

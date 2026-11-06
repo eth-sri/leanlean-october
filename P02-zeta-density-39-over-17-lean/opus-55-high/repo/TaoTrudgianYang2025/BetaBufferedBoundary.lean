@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedCutoff
 public import TaoTrudgianYang2025.BetaPoissonBoundary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,11 +16,10 @@ uniformly by 4*N*eta+2. Empty, reversed and singleton intervals are allowed.
 
 noncomputable section
 
-open Set Expdb
-open scoped ContDiff FourierTransform BigOperators
+open Expdb
+open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 def modelPhaseBufferedBoundary (a b : ℤ) (m : ℕ) : Finset ℤ := by
   classical
@@ -34,21 +34,23 @@ theorem modelPhaseBufferedBoundary_card_le (a b : ℤ) (m : ℕ) :
     have h := Finset.mem_filter.mp hn
     have hi := Finset.mem_Icc.mp h.1
     rcases h.2 with hl | hr
-    · exact Finset.mem_union.mpr (Or.inl (Finset.mem_Ico.mpr ⟨hi.1,hl⟩))
-    · exact Finset.mem_union.mpr (Or.inr (Finset.mem_Ioc.mpr ⟨hr,hi.2⟩))
+    grind
+    grind
   apply (Finset.card_le_card hs).trans
   apply (Finset.card_union_le _ _).trans
-  simp only [Int.card_Ico,Int.card_Ioc,add_sub_cancel_left,sub_sub_cancel,Int.toNat_natCast]
+  pm_94 Int.card_Ico Int.card_Ioc add_sub_cancel_left sub_sub_cancel Int.toNat_natCast
   omega
 
+section
+variable {N η : ℝ} (hN : 0 < N) (hη : 0 < η)
+include N η hN hη
 theorem modelPhaseBufferedCutoff_one_off_boundary
-    {N η : ℝ} (hN : 0 < N) (hη : 0 < η)
     {a b n : ℤ} (hn : n ∈ Finset.Icc a b)
     (hnot : n ∉ modelPhaseBufferedBoundary a b ⌈2*N*η⌉₊) :
     modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η ((n : ℝ)/N) = 1 := by
   classical
   have h : ¬ (n < a+(⌈2*N*η⌉₊ : ℤ) ∨ b-(⌈2*N*η⌉₊ : ℤ) < n) := by
-    simpa only [modelPhaseBufferedBoundary,Finset.mem_filter,hn,true_and] using hnot
+    pm_89 modelPhaseBufferedBoundary Finset.mem_filter hn true_and hnot
   have hl : a+(⌈2*N*η⌉₊ : ℤ) ≤ n := le_of_not_gt (fun h' => h (Or.inl h'))
   have hr : n ≤ b-(⌈2*N*η⌉₊ : ℤ) := le_of_not_gt (fun h' => h (Or.inr h'))
   have hl' : (a : ℝ)+(⌈2*N*η⌉₊ : ℝ) ≤ n := by exact_mod_cast hl
@@ -65,7 +67,6 @@ theorem modelPhaseBufferedCutoff_one_off_boundary
     linarith
 
 theorem modelPhaseBufferedKernel_zero_outside
-    {N η : ℝ} (hN : 0 < N) (hη : 0 < η)
     (F : ℝ → ℝ) (T : ℝ) {a b n : ℤ} (hn : n ∉ Finset.Icc a b) :
     modelPhaseWeightedKernel (modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η)
       F T N n = 0 := by
@@ -73,13 +74,10 @@ theorem modelPhaseBufferedKernel_zero_outside
     simpa only [Finset.mem_Icc,not_and_or,not_le] using hn
   have hz : modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η ((n : ℝ)/N) = 0 := by
     rcases hout with hl | hr
-    · apply modelPhaseBufferedCutoff_zero_left hη
-      have h := (div_lt_div_iff_of_pos_right hN).mpr (show (n : ℝ) < a by exact_mod_cast hl)
-      linarith
-    · apply modelPhaseBufferedCutoff_zero_right hη
-      have h := (div_lt_div_iff_of_pos_right hN).mpr (show (b : ℝ) < n by exact_mod_cast hr)
-      linarith
+    pm_8155 modelPhaseBufferedCutoff_zero_left n a hl
+    pm_8155 modelPhaseBufferedCutoff_zero_right b n hr
   simp only [modelPhaseWeightedKernel,hz,Complex.ofReal_zero,zero_mul]
+end
 
 theorem norm_modelPhase_source_sub_buffered_le
     {N η : ℝ} (hN : 0 < N) (hη : 0 < η) (F : ℝ → ℝ) (T : ℝ) (a b : ℤ) :
@@ -87,7 +85,7 @@ theorem norm_modelPhase_source_sub_buffered_le
       ∑' n : ℤ, modelPhaseWeightedKernel
         (modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η) F T N n‖ ≤ 4*N*η+2 := by
   classical
-  let χ := modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η
+  pm_1644
   let S := modelPhaseBufferedBoundary a b ⌈2*N*η⌉₊
   let E : ℤ → ℂ := fun n => (𝐞 (T*F ((n : ℝ)/N)) : ℂ)-
     modelPhaseWeightedKernel χ F T N n
@@ -96,11 +94,11 @@ theorem norm_modelPhase_source_sub_buffered_le
     apply Finset.sum_subset (Finset.filter_subset _ _)
     intro n hn hnot
     have hχ := modelPhaseBufferedCutoff_one_off_boundary hN hη hn hnot
-    simp only [E,modelPhaseWeightedKernel,χ,hχ,Complex.ofReal_one,one_mul,sub_self]
+    pm_545 E modelPhaseWeightedKernel χ hχ Complex.ofReal_one one_mul sub_self
   have hnorm : ∀ n : ℤ, ‖E n‖ ≤ 1 := by
     intro n
-    have hχ₀ := modelPhaseBufferedCutoff_nonneg ((a : ℝ)/N) ((b : ℝ)/N) η ((n : ℝ)/N)
-    have hχ₁ := modelPhaseBufferedCutoff_le_one ((a : ℝ)/N) ((b : ℝ)/N) η ((n : ℝ)/N)
+    pm_5340 hχ₀ modelPhaseBufferedCutoff_nonneg
+    pm_5340 hχ₁ modelPhaseBufferedCutoff_le_one
     have he : E n = ((1-χ ((n : ℝ)/N) : ℝ) : ℂ)*
         (𝐞 (T*F ((n : ℝ)/N)) : ℂ) := by
       simp only [E,modelPhaseWeightedKernel,Complex.ofReal_sub,Complex.ofReal_one]

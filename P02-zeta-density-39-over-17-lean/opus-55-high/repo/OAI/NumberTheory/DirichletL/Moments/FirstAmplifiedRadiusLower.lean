@@ -42,16 +42,15 @@ theorem common_radii_lower (Z d K0 c sigma reserve Csec Tsec xi H0 : ℝ)
   constructor
   · apply hb.trans
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
-    linarith [le_max_right (d-c) (0:ℝ)]
+    grind
   · apply hb.trans
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
-    linarith [le_max_right (d-c-2*errorRemoval p Z k+errorMoving p Z k) (0:ℝ)]
+    grind
 
-theorem actual_retained_radii_lower (I J E : Ideal O) (hE : E≠0)
-    (K X Z Csec Tsec xi d c sigma reserve : ℝ)
-    (hK : 0<K) (hX : 0<X) (hZ : 1<Z) (hC : 0<Csec)
-    (hsigma : 0≤sigma) (hreserve : 0≤reserve)
-    (hsec : Tsec≤Csec*firstNominalScale I J E K X)
+section
+variable (I J E : Ideal O) (hE : E≠0) (K X Z Csec Tsec xi d c sigma reserve : ℝ) (hK : 0<K) (hX : 0<X) (hZ : 1<Z) (hC : 0<Csec) (hsigma : 0≤sigma) (hreserve : 0≤reserve) (hsec : Tsec≤Csec*firstNominalScale I J E K X)
+include I J E hE K X Z Csec Tsec xi d c sigma reserve hK hX hZ hC hsigma hreserve hsec
+theorem actual_retained_radii_lower
     (n : ℤ) (hn : Retained (frequencyRadius Tsec Z xi) n) (p : O) (k : ℕ) :
     dyadicScale n≤mainCommonRadius Z d (nominalLog I J E K X Z) c sigma
       (frequencyLoss Z (32*Csec) xi) reserve ∧
@@ -62,11 +61,7 @@ theorem actual_retained_radii_lower (I J E : Ideal O) (hE : E≠0)
       (firstNominalScale_pos I J E hE K X hK hX)] using hsec
   · exact retained_scale_le _ n hn
 
-theorem active_row_reciprocals (I J E : Ideal O) (hE : E≠0)
-    (K X Z Csec Tsec xi d c sigma reserve : ℝ)
-    (hK : 0<K) (hX : 0<X) (hZ : 1<Z) (hC : 0<Csec)
-    (hsigma : 0≤sigma) (hreserve : 0≤reserve)
-    (hsec : Tsec≤Csec*firstNominalScale I J E K X)
+theorem active_row_reciprocals
     (rows : Finset O) (n : Fin 4→ℤ)
     (hn : Retained (frequencyRadius Tsec Z xi) (n 1))
     (hne : (activeRows rows n).Nonempty) (p : O) (k : ℕ) :
@@ -78,6 +73,7 @@ theorem active_row_reciprocals (I J E : Ideal O) (hE : E≠0)
     hK hX hZ hC hsigma hreserve hsec (n 1) hn p k
   have ho := (activeRows_scale_gt_one rows n hne).le
   exact ⟨inv_le_one_of_one_le₀ (ho.trans hb.1),inv_le_one_of_one_le₀ (ho.trans hb.2)⟩
+end
 
 end SevenEighths.CenteredMomentFirstAmplifiedRadiusLower
 

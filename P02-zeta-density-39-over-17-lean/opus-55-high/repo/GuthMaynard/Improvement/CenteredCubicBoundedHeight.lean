@@ -1,19 +1,19 @@
 module
 public import GuthMaynard.Improvement.CenteredKernelBridge
 public import GuthMaynard.Improvement.CubicTimeMeasure
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
+include a ha l u hl hlu hs
 /-- Actual centered cubic, with its full homogeneous mass cubed and
 L cubed. The kernel bound is derived from the fixed smooth cutoff. -/
-theorem centered_cubic_mass_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0) :
+theorem centered_cubic_mass_bound :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (L : ℝ) (μ : ℝ → ℝ),
       1 ≤ L → Measurable μ → (∀ t, 0 ≤ μ t) → Integrable μ →
       Integrable (fun t : Triple => centeredKernel a l u L (t.1-t.2.1)*
@@ -21,13 +21,13 @@ theorem centered_cubic_mass_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
           (tripleMeasure (timeMeasure μ)) ∧
       ‖kernelCubic (timeMeasure μ) (centeredKernel a l u L)‖ ≤
         C*L^3*(∫ t, μ t)^3 := by
-  obtain ⟨D,hD,hbound⟩ := centeredKernel_uniform_bound ha hl hlu hs
+  pm_97 D hD hbound centeredKernel_uniform_bound ha hl hlu hs
   refine ⟨D^3,by positivity,?_⟩
   intro L μ hL hm h0 hi
   let := timeMeasure_finite hi
   let : IsFiniteMeasure (tripleMeasure (timeMeasure μ)) := by unfold tripleMeasure; infer_instance
   have hLp : 0 < L := by linarith
-  have hDL : 0 ≤ D*L := mul_nonneg hD hLp.le
+  pm_6529 hDL D L hD hLp.le
   refine ⟨kernelCubic_integrable (timeMeasure μ)
     (centeredKernel_measurable ha.continuous.measurable l u L) hDL
     (fun s => hbound L s hL),?_⟩
@@ -46,9 +46,7 @@ theorem centered_cubic_mass_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
 /-- Uniform bounded-height absorption. The constant is chosen after the
 fixed height cutoff T0 and before T,L,the interval and the ordinary density.
 There is no assumed pointwise kernel bound and no positive-mass division. -/
-theorem centered_cubic_bounded_height {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0)
+theorem centered_cubic_bounded_height
     (T₀ : ℝ) (_hT₀ : 1 ≤ T₀) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (T L t₀ t₁ : ℝ) (μ : ℝ → ℝ),
       1 ≤ T → T ≤ T₀ → 1 ≤ L → L ≤ T → t₀ ≤ t₁ → t₁-t₀ ≤ T →
@@ -56,15 +54,12 @@ theorem centered_cubic_bounded_height {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
       (∀ t, t ∉ Icc t₀ t₁ → μ t = 0) →
       ‖kernelCubic (timeMeasure μ) (centeredKernel a l u L)‖ ≤
         C*T^2*Real.sqrt (∫ t, μ t^2)^3 := by
-  obtain ⟨D,hD,hbound⟩ := centered_cubic_mass_bound ha hl hlu hs
+  pm_97 D hD hbound centered_cubic_mass_bound ha hl hlu hs
   refine ⟨D*T₀^4,by positivity,?_⟩
   intro T L t₀ t₁ μ hT hTT₀ hL hLT ht hlen hm h0 hi h2 hsup
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := by linarith
-  have hsqrt : Real.sqrt (t₁-t₀) ≤ T := (Real.sqrt_le_iff).mpr ⟨hTp.le,by nlinarith⟩
-  have hmass : (∫ t, μ t) ≤ T*Real.sqrt (∫ t, μ t^2) :=
-    (compact_time_mass_bound ht hm h0 h2 hsup).trans (by gcongr)
-  have hm0 : 0 ≤ ∫ t, μ t := integral_nonneg h0
+  pm_4599
+  pm_292
+  pm_4518 hm0 t μ integral_nonneg h0
   have hscale : L^3*T^3 ≤ T₀^4*T^2 := by
     calc
       _ ≤ T^3*T^3 := by gcongr
@@ -76,5 +71,6 @@ theorem centered_cubic_bounded_height {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
     _ = D*(L^3*T^3)*Real.sqrt (∫ t, μ t^2)^3 := by ring
     _ ≤ D*(T₀^4*T^2)*Real.sqrt (∫ t, μ t^2)^3 := by gcongr
     _ = _ := by ring
+end
 
 end GuthMaynard.Improvement

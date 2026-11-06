@@ -14,9 +14,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-lemma originalNorms_eq_caps : originalNorms p=InverseFirstGlobalCaps.originalNorms p := by
-  funext x i
-  fin_cases i <;> rfl
+lemma originalNorms_eq_caps : originalNorms p=InverseFirstGlobalCaps.originalNorms p := by aesop
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma originalOuterCell_eq_caps (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) :

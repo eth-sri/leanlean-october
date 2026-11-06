@@ -7,6 +7,7 @@ Only the oscillatory endpoint dependency slice is ported here.
 -/
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,40 +48,27 @@ theorem hasDerivAt_gmReflectionPrimitive {tau v : ℝ} (hv : v ≠ 0) :
     convert ((Real.hasDerivAt_log hv).const_mul tau).sub
       ((hasDerivAt_id v).const_mul (2 * Real.pi)) using 1
     · rfl
-    · simp only [div_eq_mul_inv, mul_one]
-  have hExp := (hReal.ofReal_comp.mul_const I).cexp.const_mul I⁻¹
-  change HasDerivAt (gmReflectionPrimitive tau) _ v
-  convert hExp using 1
+    grind
+  pm_1432
   · rfl
   · field_simp [Complex.I_ne_zero]
 
-theorem hasDerivAt_gmReflectionRatio {tau v : ℝ}
-    (hv : tau - 2 * Real.pi * v ≠ 0) :
+section
+variable {tau v : ℝ} (hv : tau - 2 * Real.pi * v ≠ 0)
+include tau v hv
+theorem hasDerivAt_gmReflectionRatio :
     HasDerivAt (gmReflectionRatio tau)
       (((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) v := by
-  have hLinear : HasDerivAt
-      (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
-    convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
-    all_goals simp only [id_eq, mul_one] <;> ring
-  have hInv := (hLinear.inv hv).ofReal_comp
-  change HasDerivAt (gmReflectionRatio tau) _ v
-  convert hInv using 1
-  · funext x
-    simp [gmReflectionRatio]
-  · push_cast
-    field_simp
+  pm_4281
+  pm_950
+  grind
 
-theorem hasDerivAt_gmReflectionRatioReal {tau v : ℝ}
-    (hv : tau - 2 * Real.pi * v ≠ 0) :
+theorem hasDerivAt_gmReflectionRatioReal :
     HasDerivAt (gmReflectionRatioReal tau)
       (2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2) v := by
-  have hLinear : HasDerivAt
-      (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
-    convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
-    all_goals simp only [id_eq, mul_one] <;> ring
-  change HasDerivAt (fun x : ℝ => (tau - 2 * Real.pi * x)⁻¹) _ v
-  convert hLinear.inv hv using 1
-  field_simp
+  pm_4281
+  pm_828
+end
 
 /-- Pointwise factorization of the reflection integrand as a smooth quotient
 times the derivative of a unit-modulus primitive. -/
@@ -93,15 +81,15 @@ theorem gmReflectionRatio_mul_primitiveDeriv {tau v : ℝ}
       (v : ℂ)⁻¹ * Complex.exp
         ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) := by
   unfold gmReflectionRatio
-  have hvC : (v : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hv
+  pm_115 hvC v Complex.ofReal_ne_zero.mpr hv
   have hstatC : ((tau - 2 * Real.pi * v : ℝ) : ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.mpr hstat
   have hDerivative : ((tau / v - 2 * Real.pi : ℝ) : ℂ) =
       ((tau - 2 * Real.pi * v : ℝ) : ℂ) * (v : ℂ)⁻¹ := by
     push_cast
-    field_simp [hvC]
+    grind
   rw [hDerivative]
-  field_simp [hstatC]
+  grind
 
 /-- Exact integration-by-parts identity on an interval which does not meet
 the stationary point. -/
@@ -139,7 +127,7 @@ theorem gmReflectionIntegral_eq_parts {tau a b : ℝ}
       (fun v : ℝ => ((2 * Real.pi /
         (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) volume a b :=
     (continuousOn_of_forall_continuousAt fun v hv => by
-      have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
+      pm_4282
       have hden : tau - 2 * Real.pi * v ≠ 0 := hstat v hvIcc
       exact Complex.continuous_ofReal.continuousAt.comp
         (continuousAt_const.div
@@ -150,14 +138,11 @@ theorem gmReflectionIntegral_eq_parts {tau a b : ℝ}
         Complex.exp
           ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) volume a b :=
     (continuousOn_of_forall_continuousAt fun v hv => by
-      have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
+      pm_4282
       have hvNe : v ≠ 0 := (hpos v hvIcc).ne'
       have hFirst : ContinuousAt (fun x : ℝ => tau / x - 2 * Real.pi) v :=
         continuousAt_const.div continuousAt_id hvNe |>.sub continuousAt_const
-      have hPhase : ContinuousAt
-          (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x) v :=
-        (continuousAt_const.mul (Real.continuousAt_log hvNe)).sub
-          (continuousAt_const.mul continuousAt_id)
+      pm_876 hvNe
       exact (Complex.continuous_ofReal.continuousAt.comp hFirst).mul
         ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul
           continuousAt_const).cexp).intervalIntegrable
@@ -211,7 +196,7 @@ theorem norm_gmReflectionIntegral_le_endpoint_variation {tau a b : ℝ}
       (Set.uIcc a b) := by
     apply continuousOn_of_forall_continuousAt
     intro v hv
-    have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
+    pm_4282
     exact continuousAt_const.div
       ((continuousAt_const.sub (continuousAt_const.mul continuousAt_id)).pow 2)
       (pow_ne_zero 2 (hstat v hvIcc))
@@ -271,15 +256,16 @@ theorem norm_gmReflectionIntegral_le_endpoint_variation {tau a b : ℝ}
       rw [norm_mul, norm_mul, norm_gmReflectionRatio, norm_gmReflectionRatio,
         norm_gmReflectionPrimitive, norm_gmReflectionPrimitive, mul_one, mul_one]
 
+section
+variable {tau a b : ℝ} (hab : a ≤ b) (ha : 0 < a)
+include tau a b hab ha
 /-- First-derivative bound on an interval strictly to the left of the
 stationary point. -/
-theorem norm_gmReflectionIntegral_le_left {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) (hleft : 2 * Real.pi * b < tau) :
+theorem norm_gmReflectionIntegral_le_left (hleft : 2 * Real.pi * b < tau) :
     ‖gmReflectionIntegral tau a b‖ ≤ 2 / (tau - 2 * Real.pi * b) := by
-  have hdb : 0 < tau - 2 * Real.pi * b := by linarith
+  pm_4284 hdb b
   have hda : 0 < tau - 2 * Real.pi * a := by
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
+    pm_4283
   have hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0 := by
     intro v hv
     have := mul_le_mul_of_nonneg_left hv.2 (by positivity : 0 ≤ 2 * Real.pi)
@@ -288,28 +274,23 @@ theorem norm_gmReflectionIntegral_le_left {tau a b : ℝ}
   have hInvOrder : (tau - 2 * Real.pi * a)⁻¹ ≤
       (tau - 2 * Real.pi * b)⁻¹ := by
     apply (inv_le_inv₀ hda hdb).2
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hDiff : 0 ≤ gmReflectionRatioReal tau b - gmReflectionRatioReal tau a := by
-    simpa only [gmReflectionRatioReal] using sub_nonneg.mpr hInvOrder
+    pm_4283
+  pm_1584
   calc
     ‖gmReflectionIntegral tau a b‖ ≤
         |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
           |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := hBase
     _ = 2 / (tau - 2 * Real.pi * b) := by
-      rw [abs_of_pos hdb, abs_of_pos hda, abs_of_nonneg hDiff]
-      unfold gmReflectionRatioReal
+      pm_8714 abs_of_pos
       ring
 
 /-- First-derivative bound on an interval strictly to the right of the
 stationary point. -/
-theorem norm_gmReflectionIntegral_le_right {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) (hright : tau < 2 * Real.pi * a) :
+theorem norm_gmReflectionIntegral_le_right (hright : tau < 2 * Real.pi * a) :
     ‖gmReflectionIntegral tau a b‖ ≤ 2 / (2 * Real.pi * a - tau) := by
   have hda : tau - 2 * Real.pi * a < 0 := by linarith
   have hdb : tau - 2 * Real.pi * b < 0 := by
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
+    pm_4283
   have hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0 := by
     intro v hv
     have := mul_le_mul_of_nonneg_left hv.1 (by positivity : 0 ≤ 2 * Real.pi)
@@ -318,27 +299,19 @@ theorem norm_gmReflectionIntegral_le_right {tau a b : ℝ}
   have hInvOrder : (tau - 2 * Real.pi * a)⁻¹ ≤
       (tau - 2 * Real.pi * b)⁻¹ := by
     apply (inv_le_inv_of_neg hda hdb).2
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hDiff : 0 ≤ gmReflectionRatioReal tau b - gmReflectionRatioReal tau a := by
-    simpa only [gmReflectionRatioReal] using sub_nonneg.mpr hInvOrder
+    pm_4283
+  pm_1584
   calc
     ‖gmReflectionIntegral tau a b‖ ≤
         |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
           |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := hBase
     _ = 2 / (2 * Real.pi * a - tau) := by
-      rw [abs_of_neg hdb, abs_of_neg hda, abs_of_nonneg hDiff]
-      unfold gmReflectionRatioReal
-      have hNegInv : (tau - 2 * Real.pi * a)⁻¹ =
-          -(2 * Real.pi * a - tau)⁻¹ := by
-        rw [show tau - 2 * Real.pi * a = -(2 * Real.pi * a - tau) by ring,
-          inv_neg]
-      have hNegInvB : (tau - 2 * Real.pi * b)⁻¹ =
-          -(2 * Real.pi * b - tau)⁻¹ := by
-        rw [show tau - 2 * Real.pi * b = -(2 * Real.pi * b - tau) by ring,
-          inv_neg]
+      pm_8714 abs_of_neg
+      pm_615 hNegInv a
+      pm_615 hNegInvB b
       rw [hNegInv, hNegInvB]
       ring
+end
 
 /-- Trivial amplitude bound on a positive interval. -/
 theorem norm_gmReflectionIntegral_le_length_div {tau a b L : ℝ}
@@ -372,12 +345,9 @@ theorem intervalIntegrable_gmReflectionIntegrand {tau a b : ℝ}
   apply ContinuousOn.intervalIntegrable
   apply continuousOn_of_forall_continuousAt
   intro v hv
-  have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
+  pm_4282
   have hvPos : 0 < v := ha.trans_le hvIcc.1
-  have hPhase : ContinuousAt
-      (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x) v :=
-    (continuousAt_const.mul (Real.continuousAt_log hvPos.ne')).sub
-      (continuousAt_const.mul continuousAt_id)
+  pm_876 hvPos.ne'
   exact (Complex.continuous_ofReal.continuousAt.comp continuousAt_id).inv₀
       (Complex.ofReal_ne_zero.mpr hvPos.ne') |>.mul
     ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul continuousAt_const).cexp

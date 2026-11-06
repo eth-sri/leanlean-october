@@ -3,11 +3,9 @@ public import GuthMaynard.Improvement.WeakUpperDensity
 public import GuthMaynard.Improvement.GlobalDensityConditional
 public import MathCollab.Density.DensityTheorem
 
-@[expose] public section
+public section
 
 open MathCollab.Density
-set_option autoImplicit false
-noncomputable section
 namespace GuthMaynard.Improvement
 
 /-- The padded middle-range estimate closes the interval through sigma=3/4;

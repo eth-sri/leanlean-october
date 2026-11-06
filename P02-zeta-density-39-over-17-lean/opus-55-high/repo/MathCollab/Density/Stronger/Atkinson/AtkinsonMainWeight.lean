@@ -8,6 +8,7 @@ public import MathCollab.Density.Stronger.Atkinson.MainElementaryWeights
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonAmplitude
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCompactProfiles
 public import MathCollab.Density.Stronger.Atkinson.ZetaQuadraticLogGaussianVariation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,7 +25,10 @@ def zetaAtkinsonMainWeight (T G L x : ℝ) : ℂ :=
       zetaMainMellinProfile (x / T) * zetaSquareReflectedGammaPhase T *
         zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi)))
 
-theorem zetaAtkinsonMainWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G L : ℝ) :
+section
+variable {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G L : ℝ)
+include T x hT hx G L
+theorem zetaAtkinsonMainWeight_eq_amplitude :
     zetaAtkinsonMainWeight T G L x =
       (x : ℂ) * ((Real.log x : ℂ) + 2 * Real.eulerMascheroniConstant) *
         zetaAtkinsonAmplitude T G L x := by
@@ -33,15 +37,16 @@ theorem zetaAtkinsonMainWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x
   push_cast
   ring
 
-theorem zetaAtkinsonMainWeight_carrier {T x : ℝ} (hT : 0 < T) (hx : 0 < x) (G L : ℝ) :
+theorem zetaAtkinsonMainWeight_carrier :
     zetaAtkinsonMainWeight T G L x * ((x : ℂ)⁻¹ *
       Complex.exp (((T * Real.log x - 2 * Real.pi * x : ℝ) : ℂ) * I)) =
         ((Real.log x : ℂ) + 2 * Real.eulerMascheroniConstant) * zetaAtkinsonDivisorTest T G L x := by
   rw [zetaAtkinsonMainWeight_eq_amplitude hT hx G L,
     zetaAtkinsonDivisorTest_eq_amplitude_phase T G L hx]
   simp only [zetaAtkinsonPhase, mul_zero, zero_mul, add_zero]
-  have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.ne'
+  pm_115 hxC x Complex.ofReal_ne_zero.mpr hx.ne'
   field_simp
+end
 
 theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 1 ≤ Real.log T →
@@ -52,10 +57,8 @@ theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
   refine ⟨768 * C * Real.sqrt Real.pi, by positivity, ?_⟩
   intro T G L hT hlog hG hGT hL
   have hT0 : 0 < T := by linarith
-  have hinterval : T / 16 ≤ T := by linarith
-  have hphase : IntervalC1Bound (fun _ : ℝ => zetaSquareReflectedGammaPhase T) (T / 16) T 1 := by
-    simpa only [norm_zetaSquareReflectedGammaPhase] using
-      intervalC1Bound_const (zetaSquareReflectedGammaPhase T) (T / 16) T
+  pm_6602 hinterval
+  pm_604 hphase
   have h := (((((intervalC1Bound_source_log hT).mul
     (intervalC1Bound_zetaDivisorBandCutoff hT0 hG hL hinterval) hinterval).mul
       (intervalC1Bound_source_sqrt hT0) hinterval).mul (hprofile T hT0) hinterval).mul
@@ -63,6 +66,6 @@ theorem exists_intervalC1Bound_zetaAtkinsonMainWeight :
   apply h.mono
   have hp : 0 ≤ 256 * C * Real.sqrt Real.pi * G * Real.sqrt T := by positivity
   have hl := mul_le_mul_of_nonneg_left (sourceLogWeight_le_three_log hlog) hp
-  convert hl using 1 <;> ring
+  grind
 
 end MathCollab.Density.Stronger.Atkinson

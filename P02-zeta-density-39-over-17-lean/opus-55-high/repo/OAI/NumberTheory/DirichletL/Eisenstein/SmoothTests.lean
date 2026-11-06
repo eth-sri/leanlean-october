@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.RowCaps
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,77 +8,34 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix ContDiff Manifold
+open scoped Classical Topology MatrixGroups Matrix ContDiff Manifold
 
 instance hyperbolicSpatialChartedSpace : ChartedSpace SpatialCoordinates HyperbolicSpace :=
   hyperbolicSpatialChart.singletonChartedSpace hyperbolicSpatialChart_source
@@ -114,8 +72,7 @@ lemma kernelProjection_contMDiff : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(�
   intro w
   rw [contMDiffAt_iff]
   refine ⟨(continuous_integralOrbitProjection globalKubotaKernel).continuousAt,?_⟩
-  have hp : hyperbolicSpatialCoordinates w∈hyperbolicSpatialChart.target :=
-    hyperbolicSpatialChart.map_source (Set.mem_univ _)
+  pm_7525
   have hq : integralOrbitProjection globalKubotaKernel
       (hyperbolicSpatialChart.symm (hyperbolicSpatialCoordinates w))∈
       (kernelLocalLift (integralOrbitProjection globalKubotaKernel w).out).source := by
@@ -128,17 +85,13 @@ lemma kernelProjection_contMDiff : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(�
       (hyperbolicSpatialCoordinates w) :=
     (kernelCoordinateTransition_contDiffAt _ _ hp hq).contDiffWithinAt
   unfold kernelCoordinateTransition at h
-  simpa only [extChartAt_coe,extChartAt_coe_symm,modelWithCornersSelf_coe,
-    modelWithCornersSelf_coe_symm,Function.id_comp,Function.comp_id,Set.range_id,
-    kernelSpatial_chartAt,hyperbolicSpatial_chartAt,kernelCoordinateTransition,
-    kernelQuotientChart,OpenPartialHomeomorph.trans_apply,Function.comp_def,
-    hyperbolicSpatialChart_apply,id_eq] using h
+  aesop
 
 end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal NNReal
+open scoped Classical Topology ContDiff Manifold ENNReal NNReal
 
 def kernelSmoothTests : Submodule ℂ (KernelQuotient→ℂ) where
   carrier f := ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f ∧ HasCompactSupport f
@@ -166,7 +119,7 @@ lemma kernelL2_smooth_compact_approx (f : KernelQuotientL2) (ε : ℝ) (hε : 0<
   let mass : ℝ≥0∞ := (integralQuotientVolume globalKubotaKernel Set.univ)^((2:ℝ≥0∞).toReal⁻¹)
   have hm : mass≠(∞:ℝ≥0∞) := ENNReal.rpow_ne_top_of_nonneg (by norm_num) (measure_ne_top _ _)
   let deltaLoss : ℝ := ε/(2*(mass.toReal+1))
-  have hδ : 0<deltaLoss := div_pos hε (by positivity)
+  pm_3587 hδ deltaLoss hε
   obtain ⟨k,hkg,hksupp⟩ := hgc.exists_contMDiff_approx 𝓘(ℝ,SpatialCoordinates) ⊤
     (ε := fun _ => deltaLoss) continuous_const (fun _ => hδ)
   have hkK : HasCompactSupport (k : KernelQuotient→ℂ) :=
@@ -218,7 +171,7 @@ lemma kernelSmoothTestsToL2_dense : DenseRange kernelSmoothTestsToL2 := by
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal
+open scoped Classical Topology ContDiff Manifold ENNReal
 
 lemma hyperbolicSpatialChart_symm_eq {p : SpatialCoordinates}
     (hp : p∈hyperbolicSpatialChart.target) :
@@ -231,7 +184,7 @@ lemma hyperbolicSpatialChart_symm_eq {p : SpatialCoordinates}
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace InitialMeanSquare
 
 section
@@ -266,13 +219,12 @@ end
 end
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
+open scoped Classical SchwartzMap ContDiff FourierTransform
 open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (columnLog)
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 
@@ -280,9 +232,9 @@ theorem descent_ideal_inverse_sum (S : Finset (Ideal O)) (H : ℝ)
     (hS : ∀ I∈S,I≠0) (hH : ∀ I∈S,(Ideal.absNorm I : ℝ)≤H) :
     (∑ I∈S,1/(Ideal.absNorm I : ℝ))≤128*Real.exp 1*(normLogBin H+1 : ℝ) := by
   have hpos (I : Ideal O) (hI : I∈S) : 1≤(Ideal.absNorm I : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hS I hI (Ideal.absNorm_eq_zero_iff.mp hz))
+    pm_5453 Nat.one_le_iff_ne_zero.mpr I hI
   let T := Finset.range (normLogBin H+1)
-  let bin (j : ℕ) := S.filter (fun I => normLogBin (Ideal.absNorm I)=j)
+  let bin (j : ℕ) := S.filter (fun I=> normLogBin (Ideal.absNorm I)=j)
   have hmap : ∀ I∈S,normLogBin (Ideal.absNorm I : ℝ)∈T := by
     intro I hI
     exact Finset.mem_range.mpr (Nat.lt_succ_of_le (normLogBin_mono (by linarith [hpos I hI]) (hH I hI)))
@@ -323,7 +275,6 @@ theorem descent_normLogBin_small_power (ε : ℝ) (hε : 0<ε) (H : ℝ) (hH : 1
     _ ≤ H^ε/ε+H^ε := add_le_add le_rfl hp
     _ = _ := by ring
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel squarefreeLabel b0Label j2Label cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
@@ -356,10 +307,8 @@ theorem cubeParityKey_product (x : CubeCoordinates ι) :
 omit [∀ (i : ι), (span {p i}).IsMaximal] in
 theorem cubeDivisorKey_dvd (x : CubeCoordinates ι) (i : Fin 3) :
     cubeDivisorKey p x i ∣ cubeProductIdeal p x := by
-  have hA1 := span_dvd_of_element_dvd
-    (aLabel_dvd_primeProduct p x.support (fun i => x.leftExponent i+x.rightExponent i) x.leftBit x.support_pos)
-  have hA2 := span_dvd_of_element_dvd
-    (aLabel_dvd_primeProduct p x.support (fun i => x.leftExponent i+x.rightExponent i) x.rightBit x.support_pos)
+  pm_7363 hA1 x.leftBit
+  pm_7363 hA2 x.rightBit
   rw [primeProduct_add,←Ideal.span_singleton_mul_span_singleton] at hA1 hA2
   fin_cases i
   · exact dvd_mul_right _ _
@@ -399,10 +348,8 @@ theorem cubeDivisorKey_injective_on_product {x y : CubeCoordinates ι}
     x.rightExponent y.rightExponent x.right_off y.right_off h2
   change Ideal.span {aLabel p x.support x.leftBit}=Ideal.span {aLabel p y.support y.leftBit} at hA1
   change Ideal.span {aLabel p x.support x.rightBit}=Ideal.span {aLabel p y.support y.rightBit} at hA2
-  rw [CubeCoordinates.aLabel_left p x hx,CubeCoordinates.aLabel_left p y hy,
-    FiniteGaussPhase.span_finset_prod,FiniteGaussPhase.span_finset_prod] at hA1
-  rw [CubeCoordinates.aLabel_right p x hx,CubeCoordinates.aLabel_right p y hy,
-    FiniteGaussPhase.span_finset_prod,FiniteGaussPhase.span_finset_prod] at hA2
+  pm_8465 CubeCoordinates.aLabel_left hA1
+  pm_8465 CubeCoordinates.aLabel_right hA2
   exact CubeCoordinates.ext (Finsupp.ext (congrFun hv1)) (Finsupp.ext (congrFun hv2))
     (FirstCauchyArithmetic.family_product_injective _ hinj hA1)
     (FirstCauchyArithmetic.family_product_injective _ hinj hA2)

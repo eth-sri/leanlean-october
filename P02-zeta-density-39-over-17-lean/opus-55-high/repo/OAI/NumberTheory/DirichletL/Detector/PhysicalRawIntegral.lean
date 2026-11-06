@@ -27,9 +27,10 @@ def rawPhysicalTotalIntegral (η : HeckeFamily.Character) (S : Finset (Ideal O))
     ∫p : SourceRawIndex S×HeightSpace,originalRawOnLines η S hS D W0 W1 X Y Z p.1 p.2
       ∂((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure)
 
-theorem rawNestedPhysicalProbe_eq_integral (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
+section
+variable (η : HeckeFamily.Character) (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P) (hbad : fixedBadPrimes⊆S)
+include η S hS hpS hbad
+theorem rawNestedPhysicalProbe_eq_integral (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
@@ -65,9 +66,7 @@ theorem rawNestedPhysicalProbe_eq_integral (η : HeckeFamily.Character)
   intro H
   congr 1 ; ring
 
-theorem markedPhysicalProbe_eq_raw_integral (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
+theorem markedPhysicalProbe_eq_raw_integral (hSne : S.Nonempty) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
@@ -77,6 +76,7 @@ theorem markedPhysicalProbe_eq_raw_integral (η : HeckeFamily.Character)
     X Y Z 2 3 hX hY hZ (by norm_num),nestedMellinPhysicalProbe_eq_raw]
   exact rawNestedPhysicalProbe_eq_integral η S hS hpS hbad D W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z hX hY hZ
+end
 
 end SevenEighths.ProbePhysical
 end

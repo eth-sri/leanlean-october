@@ -36,7 +36,7 @@ local notation "O" => ActualEisensteinCubic.O
   intro I hI
   dsimp only [C]
   rw [IsCoprime.pow_left_iff hk]
-  split_ifs <;> simp only [zero_mul]
+  grind
 
  theorem residual_energy_eq_punctured (S : Finset (Ideal O)) (c f : Ideal O → ℂ)
     (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))

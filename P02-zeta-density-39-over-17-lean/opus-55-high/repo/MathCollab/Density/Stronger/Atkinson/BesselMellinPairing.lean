@@ -9,8 +9,9 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinInversion
 public import MathCollab.Density.Stronger.Atkinson.VoronoiTransforms
 public import Mathlib.Analysis.MellinInversion
 public import Mathlib.MeasureTheory.Integral.Prod
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Mellin pairing for DFI test functions
@@ -24,27 +25,23 @@ explicit Tonelli majorant.
 open Complex Set MeasureTheory
 open scoped FourierTransform SchwartzMap Topology
 
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {f : ℝ → ℂ} {s : ℂ} (hf : MellinConvergent f s)
+include f s hf
 /-- Absolute Mellin convergence recovers measurability of the underlying
 physical function on the positive half-line. -/
-theorem MellinConvergent.aestronglyMeasurable_positive
-    {f : ℝ → ℂ} {s : ℂ} (hf : MellinConvergent f s) :
+theorem MellinConvergent.aestronglyMeasurable_positive :
     AEStronglyMeasurable f (volume.restrict (Set.Ioi 0)) := by
-  have hf' : IntegrableOn
-      (fun x : ℝ => (x : ℂ) ^ (s - 1) • f x) (Set.Ioi 0) := by
-    simpa only [MellinConvergent] using hf
+  pm_4404
   let w : ℝ → ℂ := fun x => (x : ℂ) ^ (-(s - 1))
   have hwCont : ContinuousOn w (Set.Ioi 0) := by
     intro x hx
     apply ContinuousAt.continuousWithinAt
     exact Complex.continuousAt_ofReal_cpow_const x (-(s - 1))
       (Or.inr hx.ne')
-  have hwMeas : AEStronglyMeasurable w
-      (volume.restrict (Set.Ioi 0)) :=
-    hwCont.aestronglyMeasurable measurableSet_Ioi
+  pm_5895 hwMeas w hwCont.aestronglyMeasurable measurableSet_Ioi
   have hWeighted : AEStronglyMeasurable
       (fun x : ℝ => (x : ℂ) ^ (s - 1) * f x)
       (volume.restrict (Set.Ioi 0)) := by
@@ -58,13 +55,10 @@ theorem MellinConvergent.aestronglyMeasurable_positive
   simp
 
 /-- The real norm majorant encoded by Mellin convergence. -/
-theorem MellinConvergent.integrableOn_rpow_mul_norm
-    {f : ℝ → ℂ} {s : ℂ} (hf : MellinConvergent f s) :
+theorem MellinConvergent.integrableOn_rpow_mul_norm :
     IntegrableOn (fun x : ℝ => x ^ (s.re - 1) * ‖f x‖)
       (Set.Ioi 0) := by
-  have hf' : IntegrableOn
-      (fun x : ℝ => (x : ℂ) ^ (s - 1) • f x) (Set.Ioi 0) := by
-    simpa only [MellinConvergent] using hf
+  pm_4404
   have hnorm : IntegrableOn
       (fun x : ℝ => ‖(x : ℂ) ^ (s - 1) • f x‖) (Set.Ioi 0) :=
     hf'.norm
@@ -73,6 +67,7 @@ theorem MellinConvergent.integrableOn_rpow_mul_norm
   simp only [norm_smul]
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hx]
   congr 2
+end
 
 /-- The Mellin transform of a DFI test function is continuous along every
 vertical line. -/
@@ -80,8 +75,8 @@ theorem DFIVoronoiTestFunction.continuous_mellin_vertical
     {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
     Continuous (fun u : ℝ =>
       mellin g ((σ : ℂ) + (u : ℂ) * I)) := by
-  let F : 𝓢(ℝ, ℂ) := 𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)
-  have hF : Continuous (F : ℝ → ℂ) := F.continuous
+  pb_2616
+  pm_5906 hF Continuous F.continuous
   have hComp : Continuous (fun u : ℝ => F (u / (2 * Real.pi))) := by
     fun_prop
   apply hComp.congr
@@ -124,7 +119,7 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
         fun_prop
       exact (Complex.continuousAt_ofReal_cpow p.2 (-z p.1)
         (Or.inr hpPos.ne')).comp_of_eq hBaseExp rfl
-    exact hMellin.continuousWithinAt.mul hPow.continuousWithinAt
+    fun_prop
   have hFMeas : AEStronglyMeasurable F
       (volume.prod (volume.restrict (Set.Ioi 0))) := by
     have hF₀Meas : AEStronglyMeasurable F₀
@@ -183,7 +178,7 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
     unfold mellin
     apply setIntegral_congr_fun measurableSet_Ioi
     intro x hx
-    have hxC : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hx.ne'
+    pm_115 hxC x Complex.ofReal_ne_zero.mpr hx.ne'
     rw [show 1 - z u - 1 = -z u by ring]
     ring
   have hOuter (x : ℝ) (hx : x ∈ Set.Ioi (0 : ℝ)) :
@@ -228,6 +223,6 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
   rw [hSwap, ← MeasureTheory.integral_const_mul]
   apply setIntegral_congr_fun measurableSet_Ioi
   intro x hx
-  exact hOuter x hx
+  grind
 
 end MathCollab.Density.Stronger.Atkinson

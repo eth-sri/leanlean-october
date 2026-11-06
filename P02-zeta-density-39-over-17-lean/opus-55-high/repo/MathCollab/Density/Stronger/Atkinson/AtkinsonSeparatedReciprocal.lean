@@ -7,6 +7,7 @@ third_party/twelfth/LICENSE-MIT-0.
 Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.SeparatedReciprocal
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,13 +24,12 @@ theorem atkinson_isSeparated_div {G : ℝ} {W : Finset ℝ}
     IsSeparated 1 (W.image (fun t => t/G)) := by
   classical
   intro x hx y hy hne
-  obtain ⟨t,ht,rfl⟩ := Finset.mem_image.mp hx
-  obtain ⟨u,hu,rfl⟩ := Finset.mem_image.mp hy
-  have htu : t ≠ u := fun h => hne (by rw [h])
+  pm_5095 t ht hx u hu hy
+  have htu : t ≠ u := fun h => hne (by grind)
   have hs := hSep t ht u hu htu
   rw [Real.dist_eq] at hs ⊢
   rw [← sub_div, abs_div, abs_of_pos hG]
-  exact (le_div_iff₀ hG).mpr (by simpa using hs)
+  exact (le_div_iff₀ hG).mpr (by grind)
 
 theorem atkinson_sum_inv_gap_le_harmonic {G : ℝ} {W S : Finset ℝ} {t : ℝ}
     (N : ℕ) (hG : 0 < G) (hSep : IsSeparated G W) (ht : t ∈ W)
@@ -41,8 +41,7 @@ theorem atkinson_sum_inv_gap_le_harmonic {G : ℝ} {W S : Finset ℝ} {t : ℝ}
   have hinj : Function.Injective (fun u : ℝ => u/G) :=
     fun _ _ h => (div_left_inj' hG.ne').mp h
   have hAV : A ⊆ {v ∈ V | v ≠ t/G ∧ |v-t/G| ≤ (N:ℝ)} := by
-    intro v hv
-    obtain ⟨u,hu,rfl⟩ := Finset.mem_image.mp hv
+    pm_67 v hv u hu Finset.mem_image.mp
     refine Finset.mem_filter.mpr ⟨Finset.mem_image.mpr ⟨u,hSW hu,rfl⟩,?_,?_⟩
     · exact fun h => (hnear u hu).1 (hinj h)
     · rw [← sub_div, abs_div, abs_of_pos hG]

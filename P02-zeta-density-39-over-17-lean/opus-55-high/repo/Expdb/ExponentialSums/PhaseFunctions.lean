@@ -57,7 +57,7 @@ def modelPhaseError
 
 /-- The phase interval has unique derivatives. -/
 theorem uniqueDiffOn_phaseInterval : UniqueDiffOn ℝ phaseInterval :=
-  uniqueDiffOn_Icc (by norm_num [phaseInterval])
+  uniqueDiffOn_Icc (by grind)
 
 /-- Every reference model phase is smooth on the phase interval. -/
 theorem contDiffOn_modelPhase (σ : ℝ) :
@@ -75,7 +75,7 @@ theorem iteratedDerivWithin_modelPhase (σ : ℝ) (p : ℕ) {u : ℝ}
   have hu0 : u ≠ 0 := ne_of_gt (zero_lt_one.trans_le hu.1)
   have hsmooth : ContDiffAt ℝ p (modelPhase σ) u := by
     change ContDiffAt ℝ p (fun x : ℝ ↦ x ^ (-σ)) u
-    exact Real.contDiffAt_rpow_const_of_ne hu0
+    fun_prop
   rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hsmooth hu,
     iteratedDeriv_eq_iterate]
   exact Real.iter_deriv_rpow_const (-σ) u p
@@ -89,9 +89,7 @@ theorem norm_iteratedDerivWithin_modelPhase_le {σ : ℝ} (hσ : 0 ≤ σ) (p : 
   rw [iteratedDerivWithin_modelPhase σ p hu, norm_mul,
     Real.norm_of_nonneg (Real.rpow_nonneg (zero_le_one.trans hu.1) _)]
   simpa only [mul_one] using mul_le_mul_of_nonneg_left
-    (Real.rpow_le_one_of_one_le_of_nonpos hu.1 (by
-      have hp : 0 ≤ (p : ℝ) := Nat.cast_nonneg p
-      linarith))
+    (Real.rpow_le_one_of_one_le_of_nonpos hu.1 (by grind))
     (norm_nonneg ((descPochhammer ℝ p).eval (-σ)))
 
 /-- The iterated derivatives of a reference model phase vary continuously on the phase

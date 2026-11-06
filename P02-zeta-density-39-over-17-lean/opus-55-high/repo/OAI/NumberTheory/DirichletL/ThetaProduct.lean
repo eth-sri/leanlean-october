@@ -1,6 +1,7 @@
 module
 public import Mathlib.NumberTheory.LSeries.HurwitzZetaEven
 public import Mathlib.Tactic.Ring
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,7 +22,7 @@ theorem rapid_product_sub (f g : ℝ → ℂ) (a b : ℂ)
     have hc : (fun _ : ℝ => b) =O[atTop] (fun x : ℝ => x ^ (0 : ℝ)) := by
       simpa using (isBigO_const_one ℝ b (atTop : Filter ℝ))
     have h := (hg 0).add hc
-    simpa using h
+    simp_all
   have h₁ := (hf r).mul hg0
   have h₂ := (hg r).const_mul_left a
   have hid : (fun x => f x * g x - a * b) =
@@ -30,7 +31,7 @@ theorem rapid_product_sub (f g : ℝ → ℂ) (a b : ℂ)
     ring
   rw [hid]
   have h₁' : (fun x => (f x - a) * g x) =O[atTop] (fun x : ℝ => x ^ r) := by
-    simpa using h₁
+    grind
   exact h₁'.add h₂
 
 def product (P Q : WeakFEPair ℂ)
@@ -63,7 +64,7 @@ theorem rapid_rescale (f : ℝ → ℂ) (a : ℂ)
   have h := (hf r).comp_tendsto ht
   have heq : (fun x : ℝ => (u * x) ^ r) =ᶠ[atTop]
       (fun x : ℝ => u ^ r * x ^ r) := by
-    filter_upwards [eventually_ge_atTop (0 : ℝ)] with x hx
+    pm_414 eventually_ge_atTop x hx
     exact Real.mul_rpow hu.le hx
   exact h.trans (heq.isBigO.trans ((isBigO_refl (fun x : ℝ => x ^ r) atTop).const_mul_left _))
 
@@ -99,9 +100,6 @@ def shiftedPair (a b : UnitAddCircle) : WeakFEPair ℂ :=
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel b))
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel b))
 
-@[simp] theorem shiftedPair_k (a b : UnitAddCircle) : (shiftedPair a b).k = 1 := by
-  norm_num [shiftedPair, product, HurwitzZeta.hurwitzEvenFEPair]
-
 @[simp] theorem shiftedPair_f (a b : UnitAddCircle) (t : ℝ) :
     (shiftedPair a b).f t =
       (HurwitzZeta.evenKernel a t : ℂ) * (HurwitzZeta.evenKernel b t : ℂ) := rfl
@@ -111,17 +109,21 @@ def scaledEvenPair (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) : WeakFEPair ℂ :
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_evenKernel a))
     (Complex.continuous_ofReal.comp_continuousOn (HurwitzZeta.continuousOn_cosKernel a)) u hu
 
-theorem scaledEvenPair_f_continuous (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) :
+section
+variable (a : UnitAddCircle) (u : ℝ) (hu : 0 < u)
+include a u hu
+theorem scaledEvenPair_f_continuous :
     ContinuousOn (scaledEvenPair a u hu).f (Ioi 0) :=
   (Complex.continuous_ofReal.comp_continuousOn
     (HurwitzZeta.continuousOn_evenKernel a)).comp (by fun_prop)
       (fun x hx => mul_pos hu hx)
 
-theorem scaledEvenPair_g_continuous (a : UnitAddCircle) (u : ℝ) (hu : 0 < u) :
+theorem scaledEvenPair_g_continuous :
     ContinuousOn (scaledEvenPair a u hu).g (Ioi 0) :=
   (Complex.continuous_ofReal.comp_continuousOn
     (HurwitzZeta.continuousOn_cosKernel a)).comp (by fun_prop)
       (fun x hx => mul_pos (inv_pos.mpr hu) hx)
+end
 
 def rectangularPair (a b : UnitAddCircle) (u v : ℝ) (hu : 0 < u) (hv : 0 < v) :
     WeakFEPair ℂ :=

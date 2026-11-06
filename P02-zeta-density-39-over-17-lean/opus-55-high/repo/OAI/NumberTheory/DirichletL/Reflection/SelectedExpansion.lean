@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.SourceSelection
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -77,10 +77,7 @@ private theorem original_controlled_source_sum
         (reflectedExponent (fun b : B => completedLocalExponent R F b.val.val))
         (slotIndices B (PrimeIndex K) T) W X := by
   rw [original_fiber_inactive_sum D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S hSodd]
-  apply Finset.sum_congr rfl
-  intro B hB
-  apply Finset.sum_congr rfl
-  intro T hT
+  pm_3397 B hB T hT
   congr 1
   rw [hCC B T]
   exact original_chosen_reflected_source_eq D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T
@@ -135,13 +132,9 @@ theorem original_selected_reflected_expansion
   choose CC hCC using hchoose
   rw [(Pall).marked_reflected_source_of_controlled hP hodd Jall hj markedSumSlots φ hφnorm Q₀ hQ₀ hφperiod
     c hc hcQ G N hN CC W hWcompact lo hi hlo hsupp hW X hX]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro h hh
-  congr 1
+  pm_5046 h hh
   exact original_controlled_source_sum D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask
     S hSodd (C h) (CC h) (hCC h) (G h).shape (G h).denominator_ne_zero W X
-end
 end SevenEighths.InverseReflectedPhase
 
 end OAI

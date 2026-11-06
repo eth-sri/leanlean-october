@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.NonprincipalGate
 public import OAI.NumberTheory.DirichletL.Hecke.MaskDescent
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeRay
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,42 +15,39 @@ namespace SevenEighths.CenteredMomentRayNonprincipal
 open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion HeckePrimeRay
 local notation "O" => HeckeFamily.O
 
-theorem product_principal_descent (χ θ:Character)
-    (hp:(χ.product θ).residue=1) :
+section
+variable (χ θ:Character) (hp:(χ.product θ).residue=1)
+include χ θ hp
+theorem product_principal_descent :
     FiniteConductor.FactorsThroughIdeal χ.residue
       (θ.modulus.map (Ideal.Quotient.mk χ.modulus)) := by
   let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
-  rw [FiniteConductor.factorsThroughIdeal_iff]
-  intro u hu
-  obtain ⟨q,hq,hqu⟩ := (Ideal.mem_map_iff_of_surjective
-    (Ideal.Quotient.mk χ.modulus) Ideal.Quotient.mk_surjective).mp hu
+  pm_1026
   let a:O := 1+q
   have ha:Ideal.Quotient.mk χ.modulus a=(u:O⧸χ.modulus) := by
     dsimp [a]; rw [map_add,map_one,hqu]; ring
   have hθa:Ideal.Quotient.mk θ.modulus a=1 := by
     simp only [a,map_add,map_one,Ideal.Quotient.eq_zero_iff_mem.mpr hq,add_zero]
-  have hcχ:IsCoprime (Ideal.span {a}) χ.modulus :=
-    (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (ha ▸ u.isUnit)
-  have hcθ:IsCoprime (Ideal.span {a}) θ.modulus :=
-    (IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (hθa ▸ isUnit_one)
+  pm_8811 hcχ χ.modulus ha u.isUnit
+  pm_8811 hcθ θ.modulus hθa isUnit_one
   have hcp:IsCoprime (Ideal.span {a}) (χ.product θ).modulus :=
     (hcχ.mul_right hcθ).of_isCoprime_of_dvd_right
       (Ideal.dvd_iff_le.mpr Ideal.mul_le_inf)
   have hv:elementCoeff (χ.product θ) a=1 := by
     change (χ.product θ).residue _=1
     rw [hp]
-    exact MulChar.one_apply ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mpr hcp)
+    pm_8920 hcp
   rw [elementCoeff_product] at hv
   change χ.residue (Ideal.Quotient.mk χ.modulus a)*
     θ.residue (Ideal.Quotient.mk θ.modulus a)=1 at hv
-  simpa only [ha,hθa,map_one,mul_one] using hv
+  grind
 
-theorem product_principal_inducing (χ θ:Character)
-    (hp:(χ.product θ).residue=1) :
+theorem product_principal_inducing :
     ∃ψ:Character, FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       θ.modulus≤ψ.modulus ∧ InducedBy χ ψ :=
   HeckeMaskDescent.exists_primitive_above χ θ.modulus
     (product_principal_descent χ θ hp)
+end
 
 theorem actual_row_twist_nonprincipal (η χ θ:Character) (Q:Ideal O) (m A z:O)
     (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicPointwise
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,10 +27,10 @@ theorem buffered_polynomial_bound (e ε : ℝ)
         (1+|t|)^(n+2)*‖mellin W ((x : ℂ)+t*I)‖≤Cn) →
       let K := C*(presentationComplexity (χ j) ((3*i+2 : ℕ)*T))^ε
       ‖polynomial (χ j) inverse W D σ freq‖≤(1/(2*Real.pi))*
-        (C₂*D^(a+6*e-1/2)*K*Real.pi +
-         2*(Cn*D^(3/2 : ℝ)*K/(1+V)^n)*|2-a-6*e| +
-         (Cn*D^(3/2 : ℝ)*HeckeReciprocalBound.bound 2)/(1+V)^n*Real.pi) := by
-  obtain ⟨C,hC,hrect⟩ := buffered_rectangle_control e ε he he' hε
+        (C₂*D ^(a+6*e-1/2)*K*Real.pi +
+         2*(Cn*D ^(3/2 : ℝ)*K/(1+V)^n)*|2-a-6*e| +
+         (Cn*D ^(3/2 : ℝ)*HeckeReciprocalBound.bound 2)/(1+V)^n*Real.pi) := by
+  pm_3547 C hC hrect buffered_rectangle_control e ε he he' hε
   refine ⟨C,hC,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j inverse W A B hA hWs hW
     D σ freq V C₂ Cn n hD hV hfreq hC₂ hCn hm₂ hmn
@@ -48,8 +49,8 @@ theorem buffered_polynomial_bound (e ε : ℝ)
       ‖series (χ j) inverse (s+shift σ freq)‖≤K := by
     have hb := (hz hs).2
     cases inverse
-    · exact (le_add_of_nonneg_right (norm_nonneg _)).trans hb
-    · exact (le_add_of_nonneg_left (norm_nonneg _)).trans hb
+    pm_8927 le_add_of_nonneg_right
+    pm_8927 le_add_of_nonneg_left
   have hbound := polynomial_bound_of_rectangle (χ j) (hχ j) inverse W A B hA hWs hW
     D σ freq (a+6*e-σ) (2-σ) V C₂ Cn K n hD hlr (by linarith) hV hC₂ hCn hK hm₂ hmn
     (fun _ hs _ => (hz hs).1) hseries

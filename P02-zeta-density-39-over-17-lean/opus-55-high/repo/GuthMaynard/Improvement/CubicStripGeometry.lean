@@ -1,8 +1,7 @@
 module
 public import Mathlib
 
-@[expose] public section
-set_option autoImplicit false
+public section
 namespace GuthMaynard.Improvement
 
 /-- Exact strip-to-window conversion, including a negative denominator. -/

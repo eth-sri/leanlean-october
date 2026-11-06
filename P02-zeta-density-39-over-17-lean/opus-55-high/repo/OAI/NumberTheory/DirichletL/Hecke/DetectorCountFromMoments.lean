@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorCountFromMoments
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBranchBudget
+open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBranchBudget
 open HeckeDetectorRowCount
 
 theorem count_from_raw_moments
@@ -20,7 +20,7 @@ theorem count_from_raw_moments
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
     (εm : ℝ) (hεm : 0<εm) :
-    ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
+    ∃ c κ K₀ : ℝ,0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (a ε tstar T allowance Δ ν C height : ℝ) (i : ℕ),
       1<U → 51/100<a → 2*a-1≤5/6 → 0≤ε → ε≤1/1000 →
       1≤tstar → tstar≤3/2 → 0≤Δ → Δ≤1/8 → 0<ν → 0≤C → 0≤height →
@@ -30,9 +30,8 @@ theorem count_from_raw_moments
       (F.rows.card : ℝ)≤fiberConstant C height K₀*
         U^(max (shortExponent (2*a-1) (F.q/(2*a-1)) tstar) (longExponent (2*a-1) tstar)+
           Δ/4+159*ε+εm+F.mesh+7*ν) := by
-  obtain ⟨c,κ,K₀,hc,hc1,hκ,hK,hamp⟩ := HeckeDetectorNoSlotInverseCount.no_slot_inverse_count
-    M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB 2 εm (by norm_num) hεm
-  refine ⟨c,κ,K₀,hc,hc1,hκ,hK,?_⟩
+  pm_3131
+  pm_3149
   filter_upwards [hamp] with U hamp
   intro a ε tstar T allowance Δ ν C height i hU ha hδcap hε hεsmall ht ht' hΔ hΔ' hν hC hh hf
     Label Slot F moments
@@ -45,11 +44,9 @@ theorem count_from_raw_moments
   have hx : 0≤x := div_nonneg hq0 hδ.le
   have hx' : x≤1/2 := (div_le_iff₀ hδ).mpr (by dsimp [δ]; linarith)
   have hqx : δ*x=F.q := by dsimp [x]; field_simp
-  have hgeom := F.lengths hU
-  have hr0 : 0≤F.r := by linarith [hgeom.2.2.2.1]
-  have hr2 : F.r≤2 := by linarith [hgeom.2.1]
+  pm_713
   have hUp : 0<U := zero_lt_one.trans hU
-  obtain ⟨hconst,hconstP,hconstI,hconstI0⟩ := fiberConstant_bounds C height K₀ hC hh hK
+  pm_562 hconst hconstP hconstI hconstI0 fiberConstant_bounds C height K₀ hC hh hK
   have promote (C' p q : ℝ) (hC' : C'≤fiberConstant C height K₀)
       (hb : (F.rows.card : ℝ)≤C'*U^p) (hpq : p≤q) :
       (F.rows.card : ℝ)≤fiberConstant C height K₀*U^q := by
@@ -71,12 +68,12 @@ theorem count_from_raw_moments
       (F.rows.card : ℝ)≤fiberConstant C height K₀*
         U^(inverseExponent δ x F.r+commonLoss ε εm F.mesh ν) := by
     intro hr hr1 hv
-    obtain ⟨hz,hz',hcap1,hcap2⟩ := inverse_requested_capacity F.r ν hr hr1 hν hv
+    pm_562 hz hz' hcap1 hcap2 inverse_requested_capacity F.r ν hr hr1 hν hv
     have hb := F.inverse_marked_count moments hU ha' hC hh hf ((1-F.r)/2-ν) hz hz' hcap1 hcap2
     apply promote _ _ _ hconstI hb
     have hl := inverse_marked_loss F.r δ x ε εm F.mesh ν hδ.le hδ1 hx hx' hε F.mesh_nonneg hν.le
     rwa [hqx] at hl
-  have hP : F.r≤crossing x tstar → F.m<1/2 → ν<(1-2*F.m)/(9/2+12*Δ) →
+  have hP : F.r≤ crossing x tstar → F.m<1/2 → ν<(1-2*F.m)/(9/2+12*Δ) →
       (F.rows.card : ℝ)≤fiberConstant C height K₀*
         U^(1-2*δ*F.m-2*(δ*x)*(1-2*F.m)/(9/2+12*Δ)+commonLoss ε εm F.mesh ν) := by
     intro hr hm hv
@@ -96,6 +93,5 @@ theorem count_from_raw_moments
 
 end SevenEighths.HeckeDetectorCountFromMoments
 
-end
 
 end OAI

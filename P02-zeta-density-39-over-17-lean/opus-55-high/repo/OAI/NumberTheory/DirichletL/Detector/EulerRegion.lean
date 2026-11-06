@@ -17,10 +17,8 @@ lemma rpow_le_half (Q a : ℝ) (hQ : 4 ≤ Q) (ha : a ≤ -(1/2)) : Q^a ≤ 1/2 
     _ = (Real.sqrt Q)⁻¹ := by rw [Real.rpow_neg hQ0.le, ← Real.sqrt_eq_rpow]
     _ ≤ 1/2 := by rw [← one_div, div_le_iff₀ hs]; nlinarith [Real.sqrt_nonneg Q]
 
-theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
-    (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
-    (hx : (7/8:ℝ) ≤ x.re) (hw : (19/20:ℝ) ≤ w.re) (hz : (33/200:ℝ) ≤ z.re) :
-    ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q ^ (-(363/200:ℝ)) := by
+set_option hygiene false in
+macro "pf_18" x1:term:max x2:term:max x3:term:max x4:term:max x5:term:max x6:term:max x7:term:max x8:term:max x9:term:max : tactic => `(tactic| (
   have hQ0 : 0 < Q := by linarith
   have hQ1 : 1 ≤ Q := by linarith
   let V := coordV Q z
@@ -28,30 +26,30 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   let W := coordW Q v w
   let D := coordD Q eta v x
   let K := coordK Q eta x w
-  have hV : ‖V‖ ≤ Q ^ (-(99/100:ℝ)) := by
+  have hV : ‖V‖ ≤ Q ^ (-($x1:term/$x2:term :ℝ)) := by
     rw [show V = coordV Q z from rfl, coordV_norm Q hQ0]
     exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
-  have hR : ‖R‖ ≤ Q ^ (-(56/25:ℝ)) :=
+  have hR : ‖R‖ ≤ Q ^ (-($x3:term/$x4:term :ℝ)) :=
     (coordR_norm_le Q hQ0 A x z hA).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
-  have hW : ‖W‖ ≤ Q ^ (-(19/20:ℝ)) :=
+  have hW : ‖W‖ ≤ Q ^ (-($x5:term/$x6:term :ℝ)) :=
     (coordW_norm_le Q hQ0 v w hv).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hD : ‖D‖ ≤ Q ^ (-(7/8:ℝ)) :=
     (coordD_norm_le Q hQ0 eta v x heta hv).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
-  have hK : ‖K‖ ≤ Q ^ (-(33/40:ℝ)) :=
+  have hK : ‖K‖ ≤ Q ^ (-($x7:term/40:ℝ)) :=
     (coordK_norm_le Q hQ1 eta x w heta).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hVh : ‖V‖ ≤ 1/2 := hV.trans (rpow_le_half Q _ hQ (by norm_num))
   have hRh : ‖R‖ ≤ 1/2 := hR.trans (rpow_le_half Q _ hQ (by norm_num))
   have hDh : ‖D‖ ≤ 1/2 := hD.trans (rpow_le_half Q _ hQ (by norm_num))
   have hWh : ‖W‖ ≤ 1 := by
-    exact hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -(19/20:ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
+    exact hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -($x5:term/$x6:term :ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
   have hqi : ‖(Q:ℂ)⁻¹‖ ≤ 1 := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ0, ← one_div]
     exact (div_le_one hQ0).mpr hQ1
-  let T := Q ^ (-(363/200:ℝ))
+  let T := Q ^ (-($x8:term/$x9:term :ℝ))
   have hT : 0 ≤ T := Real.rpow_nonneg hQ0.le _
   have hRT : ‖R‖ ≤ T := hR.trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num))
   have hprod (a b a' b' : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b)
-      (haa : a ≤ Q^a') (hbb : b ≤ Q^b') (he : a'+b' ≤ -(363/200:ℝ)) : a*b ≤ T := by
+      (haa : a ≤ Q^a') (hbb : b ≤ Q^b') (he : a'+b' ≤ -($x8:term/$x9:term :ℝ)) : a*b ≤ T := by
     calc
       a*b ≤ Q^a' * Q^b' := mul_le_mul haa hbb hb (Real.rpow_nonneg hQ0.le _)
       _ = Q^(a'+b') := (Real.rpow_add hQ0 _ _).symm
@@ -77,7 +75,11 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
     calc
       _ ≤ 2*(28*T) := mul_le_mul (by linarith) hE (norm_nonneg _) (by norm_num)
       _ = _ := by ring
-  nlinarith
+  nlinarith))
+theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
+    (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
+    (hx : (7/8:ℝ) ≤ x.re) (hw : (19/20:ℝ) ≤ w.re) (hz : (33/200:ℝ) ≤ z.re) :
+    ‖unramifiedClosed Q A eta v x w z - 1‖ ≤ 240 * Q ^ (-(363/200:ℝ)) := by pf_18 99 100 56 25 19 20 33 363 200
 
 end SevenEighths.ProbeEuler
 end

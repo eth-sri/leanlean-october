@@ -26,22 +26,21 @@ def robertSargosReduced (r q₁ q₂ h₁ h₂ d : ℝ) : ℝ :=
 def robertSargosTaylorQuadratic (r q h n : ℝ) : ℝ :=
   h*q^2+2*h*q*n-r*n^2-r*h^2-r^2*h
 
-theorem robertSargos_reduced_symmetric {r q₁ q₂ h₁ h₂ d : ℝ}
-    (h : r*d+h₁*q₁-h₂*q₂ = 0) :
+section
+variable {r q₁ q₂ h₁ h₂ d : ℝ} (h : r*d+h₁*q₁-h₂*q₂ = 0)
+include r q₁ q₂ h₁ h₂ d h
+theorem robertSargos_reduced_symmetric :
     robertSargosReduced r q₁ q₂ h₁ h₂ d =
       (h₁*q₁+h₂*q₂)*d+h₁*q₁^2-h₂*q₂^2 := by
   unfold robertSargosReduced
-  nlinarith only [mul_eq_zero_of_left h d]
+  grind
 
-theorem robertSargos_reduced_factor {r q₁ q₂ h₁ h₂ d : ℝ}
-    (h : r*d+h₁*q₁-h₂*q₂ = 0) :
+theorem robertSargos_reduced_factor :
     r*robertSargosReduced r q₁ q₂ h₁ h₂ d =
       h₂*(h₂-r)*q₂^2-h₁*(h₁-r)*q₁^2 := by
   unfold robertSargosReduced
-  have he : r*d = h₂*q₂-h₁*q₁ := by linarith only [h]
-  calc
-    r*(r*d^2+2*h₁*q₁*d+h₁*q₁^2-h₂*q₂^2) =
-        (r*d)^2+2*h₁*q₁*(r*d)+r*h₁*q₁^2-r*h₂*q₂^2 := by ring
-    _ = _ := by rw [he]; ring
+  have he : r*d = h₂*q₂-h₁*q₁ := by grind
+  grind
+end
 
 end TaoTrudgianYang2025

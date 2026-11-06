@@ -1,16 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SourceCoefficient
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
+open CompletedGauss ConcreteTraceCRT CenteredMomentCommonSupport
+open ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma finite_fourier_invariant_unit {R : Type*} [CommRing R] [Fintype R]
@@ -18,9 +18,7 @@ lemma finite_fourier_invariant_unit {R : Type*} [CommRing R] [Fintype R]
     (∑ x,F x*ψ (((u:R)*H)*x)) = ∑ x,F x*ψ (H*x) := by
   symm
   rw [← Equiv.sum_comp u.mulLeft (fun x=>F x*ψ (H*x))]
-  simp only [Units.mulLeft_apply,hF]
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_3526 Units.mulLeft_apply hF Finset.sum_congr x hx
   congr 1
   congr 1
   ring
@@ -29,14 +27,13 @@ lemma supported_sixth_value (A v : O) (hA : Supported (Ideal.span {A}))
     (hcop : IsCoprime A v) : idealRowHom (v^6) (Ideal.span {A})=1 := by
   rw [idealRowHom_sixth_mask _ _ hA, ite_eq_left ((Ideal.isCoprime_span_singleton_iff A v).mpr hcop)]
 
-theorem barePhysicalFourier_sixth_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (v H : O) (hcop : IsCoprime v (A*s)) :
+section
+variable (A s : O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s})) (v H : O) (hcop : IsCoprime v (A*s))
+include A s hA hs v H hcop
+theorem barePhysicalFourier_sixth_frequency :
     barePhysicalFourier A s (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs) (v^6*H) =
       barePhysicalFourier A s (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs) H := by
-  have hAs := mul_ne_zero (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs)
-  let := finite_quotient_span hAs
-  let : Fintype (Residue (A*s)) := Fintype.ofFinite _
+  pm_3833
   let u := residueUnit (A*s) (v^6) hcop.pow_left.symm
   have hF (x : Residue (A*s)) :
       movingQuotient A s (supportedElement_ne_zero s hs) ((u:Residue (A*s))*x) =
@@ -53,19 +50,16 @@ theorem barePhysicalFourier_sixth_frequency (A s : O)
     quotientTrace (A*s) hAs (Ideal.Quotient.mk _ (v^6*H)*x)) =
     ∑ x,movingQuotient A s (supportedElement_ne_zero s hs) x *
       quotientTrace (A*s) hAs (Ideal.Quotient.mk _ H*x)
-  simpa only [u,residueUnit_coe,map_mul] using he
+  aesop
 
-theorem bareCongruenceCoefficient_sixth_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (v H : O) (hcop : IsCoprime v (A*s)) :
+theorem bareCongruenceCoefficient_sixth_frequency :
     bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) (v^6*H) =
       bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H := by
   have he := barePhysicalFourier_sixth_frequency A s hA hs v H hcop
   simp only [barePhysicalFourier_eq] at he
-  have hn : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero s hs))
-  exact mul_left_cancel₀ hn he
+  pm_3847 hn s hs
+  grind
+end
 
 theorem bareSourceCoefficient_sixth_frequency (η : HeckeFamily.Character)
     (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O)
@@ -108,6 +102,5 @@ theorem bareSourceCoefficient_product_frequency (η : HeckeFamily.Character) (I 
   exact he
 
 end SevenEighths.ProbePhysical
-end
 
 end OAI

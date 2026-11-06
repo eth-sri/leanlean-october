@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQBlock
 public import LaterPairs.Native.RobertSargosZeroRWeighted
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -31,7 +32,7 @@ theorem robertSargos_zero_q_weighted_column_bound
           2*H*R) := by
   have hCp : 0 ≤ C := zero_le_one.trans hC
   let B := (H:ℝ)*(1+120*C*(1+2*Real.pi*C)*M*(2*(R:ℝ)*lam)^((1:ℝ)/12))+2*H*R
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  pm_61 hB B
   have hpoint (r : ℤ) (hr : r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0) :
       (1-|(r:ℝ)|/R)*(robertSargosTrimmedCorrelation f M H 0 r).re ≤ B := by
     obtain ⟨hr0,hrmem⟩ := Finset.mem_erase.mp hr
@@ -50,14 +51,12 @@ theorem robertSargos_zero_q_weighted_column_bound
       dsimp [B]
       nlinarith [hblock,herr]
     have hw0 := signed_triangular_weight_nonneg hR hrmem
-    have hw1 : 1-|(r:ℝ)|/R ≤ 1 := by
-      have hn : 0 ≤ |(r:ℝ)|/R := by positivity
-      linarith
+    pm_5209 r R
     calc
       _ ≤ (1-|(r:ℝ)|/R)*‖robertSargosTrimmedCorrelation f M H 0 r‖ :=
         mul_le_mul_of_nonneg_left (Complex.re_le_norm _) hw0
       _ ≤ ‖robertSargosTrimmedCorrelation f M H 0 r‖ := by
-        simpa only [one_mul] using mul_le_mul_of_nonneg_right hw1 (norm_nonneg _)
+        pm_6157 hw1
       _ ≤ B := hb
   have hcard : ((Finset.Ioo (-(R:ℤ)) R).erase 0).card ≤ 2*R := by
     have he := Finset.card_le_card (Finset.erase_subset 0 (Finset.Ioo (-(R:ℤ)) R))

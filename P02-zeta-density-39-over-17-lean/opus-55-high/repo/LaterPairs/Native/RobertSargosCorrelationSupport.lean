@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSymmetricArray
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -26,7 +27,7 @@ def robertSargosMOverlap (M : ℕ) (h q r : ℤ) : Finset ℤ :=
 theorem mem_robertSargosHOverlap (H : ℕ) (h r : ℤ) :
     h ∈ robertSargosHOverlap H r ↔
       h ∈ Finset.Ico (H:ℤ) (2*H) ∧ h+r ∈ Finset.Ico (H:ℤ) (2*H) := by
-  simp only [robertSargosHOverlap,Finset.mem_Icc,Finset.mem_Ico,max_le_iff,le_min_iff]
+  pm_94 robertSargosHOverlap Finset.mem_Icc Finset.mem_Ico max_le_iff le_min_iff
   omega
 
 theorem mem_robertSargosMOverlap (M : ℕ) (m h q r : ℤ) :
@@ -36,7 +37,10 @@ theorem mem_robertSargosMOverlap (M : ℕ) (m h q r : ℤ) :
   simp only [robertSargosMOverlap,Finset.mem_Icc,max_le_iff,le_min_iff]
   omega
 
-theorem robertSargos_symmetric_array_product (f : ℝ → ℝ) (M H : ℕ) (m h q r : ℤ) :
+section
+variable (f : ℝ → ℝ) (M H : ℕ) (m h q r : ℤ)
+include f M H m h q r
+theorem robertSargos_symmetric_array_product :
     robertSargosSymmetricArray f M H (m+q) h*
       conj (robertSargosSymmetricArray f M H m (h+r)) =
       if h ∈ robertSargosHOverlap H r ∧ m ∈ robertSargosMOverlap M h q r then
@@ -60,7 +64,7 @@ theorem robertSargos_symmetric_array_product (f : ℝ → ℝ) (M H : ℕ) (m h 
         ite_true,ite_false,map_zero,mul_zero]
   · simp only [robertSargosSymmetricArray,hh,false_and,ite_false,zero_mul]
 
-theorem robertSargos_symmetric_array_inner (f : ℝ → ℝ) (M H : ℕ) (m h q r : ℤ) :
+theorem robertSargos_symmetric_array_inner :
     ⟪robertSargosSymmetricArray f M H (m+q) h,
       robertSargosSymmetricArray f M H m (h+r)⟫_ℝ =
       if h ∈ robertSargosHOverlap H r ∧ m ∈ robertSargosMOverlap M h q r then
@@ -73,5 +77,6 @@ theorem robertSargos_symmetric_array_inner (f : ℝ → ℝ) (M H : ℕ) (m h q 
     conj (robertSargosSymmetricArray f M H m (h+r))).re = _
   rw [robertSargos_symmetric_array_product]
   split_ifs <;> rfl
+end
 
 end TaoTrudgianYang2025

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowPeriod
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,23 +16,27 @@ local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-lemma calibration_generator_dvd (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+include S hS
+lemma calibration_generator_dvd
     (a : O) (ha : Ideal.span {a}∈S) : a∣(calibrationForSet S hS).generator := by
   apply Ideal.span_singleton_dvd_span_singleton_iff_dvd.mp
   rw [calibrationForSet_span]
   exact Finset.dvd_prod_of_mem (fun P : Id=>P) ha
 
-lemma calibration_generator_bad (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) :
+lemma calibration_generator_bad (hbad : fixedBadPrimes⊆S) :
     λ₀∣(calibrationForSet S hS).generator ∧ (2:O)∣(calibrationForSet S hS).generator := by
   constructor
   · apply calibration_generator_dvd S hS
     apply hbad
     simp only [fixedBadPrimes,Finset.mem_insert,Finset.mem_singleton]
-    exact Or.inl rfl
+    aesop
   · apply calibration_generator_dvd S hS
     apply hbad
     simp only [fixedBadPrimes,Finset.mem_insert,Finset.mem_singleton]
-    exact Or.inr trivial
+    grind
+end
 
 lemma supported_of_coprime_bad (B n : O) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
     (hc : IsCoprime B n) : Supported (Ideal.span {n}) := by
@@ -41,18 +46,18 @@ lemma supported_of_coprime_bad (B n : O) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
       (hc.of_isCoprime_of_dvd_left hBL)
   · have h2 : IsCoprime (-2:O) n := (hc.of_isCoprime_of_dvd_left hB2).neg_left
     have hn := negative_two_prime.irreducible.coprime_iff_not_dvd.mp h2
-    simpa only [neg_dvd] using hn
+    simp_all
 
 lemma lowPeriodicBase_zero_of_not_coprime (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
     (D : GoodMaskRowData B 1 C.generator) (s : O) (hs : Supported (Ideal.span {s}))
     (χ : RayCharacter) (n : O) (hc : ¬IsCoprime B n) : lowPeriodicBase η C B D s hs χ n=0 := by
-  have hm : coprimalityMask B n=(0:ℂ) := by change (if IsCoprime B n then (1:ℂ) else 0)=0;rw [ite_eq_right hc]
+  have hm : coprimalityMask B n=(0:ℂ) := by change (if IsCoprime B n then (1:ℂ) else 0)=0;grind
   change ((rayMonoid χ n*targetMonoid η n)*star (C.residueMonoid n*
       ((((1:O→*ℂ) n*coprimalityMask B n)*
         numeratorBadTwist D.numeratorUnit D.numeratorLambda D.numeratorTwo D.numeratorGood D.numeratorSupported n)*
         movingNumeratorRow D.numeratorGood D.numeratorSupported n)))*sexticReciprocityPhase s n=0
   rw [hm]
-  simp only [mul_zero,zero_mul,star_zero]
+  grind
 
 lemma lowPeriodicRow_eq_primary (η : HeckeFamily.Character) (C : CalibrationData) (B : O)
     (D : GoodMaskRowData B 1 C.generator) (hBL : λ₀∣B) (hB2 : (2:O)∣B)
@@ -61,9 +66,9 @@ lemma lowPeriodicRow_eq_primary (η : HeckeFamily.Character) (C : CalibrationDat
       (coprimalityMask B*(rayMonoid χ*rowCoefficient η C.Xi s hs z)) n := by
   by_cases hc : IsCoprime B n
   · have hn := supported_of_coprime_bad B n hBL hB2 hc
-    have hm : coprimalityMask B n=(1:ℂ) := by change (if IsCoprime B n then (1:ℂ) else 0)=1;rw [ite_eq_left hc]
+    pm_3831
     rw [rowTwist_extract_sixth_mask _ _ _ _ _ hn,lowPeriodicBase_eq_primary η C B D hBL hB2 s hs χ n hn hpn hc]
-    simp only [MonoidHom.mul_apply,hm,mul_one,one_pow,one_mul]
+    pm_94 MonoidHom.mul_apply hm mul_one one_pow one_mul
     change (rayMonoid χ n*((targetMonoid η n*star (C.Xi n))*sexticReciprocityPhase s n))*
       idealRowHom z (Ideal.span {n})=rayMonoid χ n*
         (((targetMonoid η n*star (C.Xi n))*sexticReciprocityPhase s n)*idealRowHom z (Ideal.span {n}))

@@ -9,6 +9,7 @@ and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 public import Mathlib.Analysis.SpecialFunctions.Arsinh
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,7 +31,6 @@ open Real
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 def atkinsonSourcePhase (T : ℝ) (n : ℕ) : ℝ :=
@@ -66,9 +66,11 @@ theorem atkinsonIndexRealPhase_natCast (T : ℝ) (n : ℕ) :
     atkinsonIndexRealPhase T n = atkinsonSourcePhase T n := by
   rfl
 
+section
+variable {T x : ℝ}
+include T x
 /-- Algebraic normalization of the literal real-index phase. -/
-theorem atkinsonIndexRealPhase_eq_normalized
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+theorem atkinsonIndexRealPhase_eq_normalized (hT : 0 < T) (hx : 0 < x) :
     atkinsonIndexRealPhase T x =
       atkinsonIndexRealNormalizedPhase T x := by
   have hq : 0 < atkinsonIndexRealRatio T x := by
@@ -95,7 +97,7 @@ theorem atkinsonIndexRealPhase_eq_normalized
             Real.sqrt (1 + atkinsonIndexRealRatio T x)) ^ 2 by
         rw [hleftsq, mul_pow, mul_pow, hqsq, honesq]
         unfold atkinsonIndexRealRatio
-        field_simp [hT.ne'])
+        grind)
     |>.resolve_right (by
       intro hneg
       have hright : 0 <
@@ -113,8 +115,7 @@ theorem atkinsonIndexRealPhase_eq_normalized
   ring
 
 /-- Derivative of the real-index ratio. -/
-theorem hasDerivAt_atkinsonIndexRealRatio
-    {T x : ℝ} :
+theorem hasDerivAt_atkinsonIndexRealRatio :
     HasDerivAt (atkinsonIndexRealRatio T) (Real.pi / (2 * T)) x := by
   have h : HasDerivAt (fun u : ℝ => (Real.pi / (2 * T)) * u)
       (Real.pi / (2 * T)) x := by
@@ -126,8 +127,7 @@ theorem hasDerivAt_atkinsonIndexRealRatio
   ring
 
 /-- Derivative of the real-index square-root coordinate. -/
-theorem hasDerivAt_atkinsonIndexRealRoot
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexRealRoot (hT : 0 < T) (hx : 0 < x) :
     HasDerivAt (atkinsonIndexRealRoot T)
       (atkinsonIndexRealRoot T x / (2 * x)) x := by
   have hq : 0 < atkinsonIndexRealRatio T x := by
@@ -136,11 +136,11 @@ theorem hasDerivAt_atkinsonIndexRealRoot
   have hs := (hasDerivAt_atkinsonIndexRealRatio (T := T) (x := x)).sqrt hq.ne'
   have hrootpos : 0 < atkinsonIndexRealRoot T x := by
     unfold atkinsonIndexRealRoot
-    exact Real.sqrt_pos.2 hq
+    simp_all
   have hsquare : (atkinsonIndexRealRoot T x) ^ 2 =
       atkinsonIndexRealRatio T x := by
     unfold atkinsonIndexRealRoot
-    exact Real.sq_sqrt hq.le
+    grind
   have halg :
       Real.pi / (2 * T) /
           (2 * Real.sqrt (atkinsonIndexRealRatio T x)) =
@@ -151,20 +151,19 @@ theorem hasDerivAt_atkinsonIndexRealRoot
         2 * T * (atkinsonIndexRealRoot T x) ^ 2 = Real.pi * x := by
       rw [hsquare]
       unfold atkinsonIndexRealRatio
-      field_simp [hT.ne']
+      grind
     field_simp [hT.ne', hx.ne', hrootpos.ne']
-    nlinarith [hcross]
-  exact hs.congr_deriv halg
+    grind
+  aesop
 
 /-- The exact first derivative with respect to the real summation variable.
 This is the phase slope used in the source exponent-pair argument. -/
-theorem hasDerivAt_atkinsonIndexRealNormalizedPhase
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexRealNormalizedPhase (hT : 0 < T) (hx : 0 < x) :
     HasDerivAt (atkinsonIndexRealNormalizedPhase T)
       (Real.sqrt (2 * Real.pi * T / x + Real.pi ^ (2 : ℕ))) x := by
   have hr := hasDerivAt_atkinsonIndexRealRoot hT hx
   let r : ℝ := atkinsonIndexRealRoot T x
-  let rp : ℝ := r / (2 * x)
+  pm_5316 rp r x
   let s : ℝ := Real.sqrt (1 + r ^ 2)
   let sp : ℝ := (rp * r + r * rp) / (2 * s)
   have hr' : HasDerivAt (atkinsonIndexRealRoot T) rp x := by
@@ -185,7 +184,7 @@ theorem hasDerivAt_atkinsonIndexRealNormalizedPhase
         atkinsonIndexRealRoot T x ≠ 0 := by
       nlinarith [sq_nonneg (atkinsonIndexRealRoot T x)]
     have hs0 := hinside.sqrt hne
-    simpa only [pow_two, sp, s, r] using hs0
+    pm_99 pow_two sp s r hs0
   have hsum : HasDerivAt
       (fun u => Real.arsinh (atkinsonIndexRealRoot T u) +
         atkinsonIndexRealRoot T u *
@@ -246,8 +245,7 @@ theorem hasDerivAt_atkinsonIndexRealNormalizedPhase
   exact hphase.congr_deriv (hderiv.trans heq)
 
 /-- Exact first derivative of the literal equation-(11) real-index phase. -/
-theorem hasDerivAt_atkinsonIndexRealPhase
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexRealPhase (hT : 0 < T) (hx : 0 < x) :
     HasDerivAt (atkinsonIndexRealPhase T)
       (Real.sqrt (2 * Real.pi * T / x + Real.pi ^ (2 : ℕ))) x := by
   have hnorm := hasDerivAt_atkinsonIndexRealNormalizedPhase hT hx
@@ -256,6 +254,7 @@ theorem hasDerivAt_atkinsonIndexRealPhase
     filter_upwards [eventually_gt_nhds hx] with u hu
     exact atkinsonIndexRealPhase_eq_normalized hT hu
   exact hnorm.congr_of_eventuallyEq hev
+end
 
 
 end

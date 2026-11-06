@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownLemmaOneCore
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,68 +26,60 @@ theorem heathBrownCriticalMoment_cast
     (heathBrownCriticalMoment k : ℝ) =
       (k : ℝ) * ((k : ℝ) - 1) / 2 := by
   unfold heathBrownCriticalMoment
-  rw [Nat.cast_div
-    (even_iff_two_dvd.mp (Nat.even_mul_pred_self k))
-    (by norm_num : (2 : ℝ) ≠ 0)]
-  push_cast
+  pm_2813 Nat.even_mul_pred_self k
   rw [Nat.cast_sub hk]
   ring
 
-theorem heathBrownCriticalMoment_pos
-    {k : ℕ} (hk : 2 ≤ k) :
+section
+variable {k : ℕ} (hk : 2 ≤ k)
+include k hk
+theorem heathBrownCriticalMoment_pos :
     (0 : ℝ) < heathBrownCriticalMoment k := by
-  rw [heathBrownCriticalMoment_cast (by omega : 1 ≤ k)]
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hkmOne : (0 : ℝ) < (k : ℝ) - 1 := by linarith
+  pm_567 heathBrownCriticalMoment_cast k
+  pm_2792
+  pm_759 hkmOne
   positivity
 
-theorem heathBrownCriticalReciprocal_pos
-    {k : ℕ} (hk : 2 ≤ k) :
+theorem heathBrownCriticalReciprocal_pos :
     0 < heathBrownCriticalReciprocal k := by
   unfold heathBrownCriticalReciprocal
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hkmOne : (0 : ℝ) < (k : ℝ) - 1 := by linarith
+  pm_2792
+  pm_759 hkmOne
   positivity
 
-theorem heathBrownCriticalReciprocal_le_half
-    {k : ℕ} (hk : 2 ≤ k) :
+theorem heathBrownCriticalReciprocal_le_half :
     heathBrownCriticalReciprocal k ≤ 1 / 2 := by
   unfold heathBrownCriticalReciprocal
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
+  pm_2792
   have hden : (2 : ℝ) ≤ (k : ℝ) * ((k : ℝ) - 1) := by
     nlinarith
   exact one_div_le_one_div_of_le (by norm_num) hden
 
-theorem heathBrown_two_mul_criticalMoment
-    {k : ℕ} (hk : 2 ≤ k) :
+theorem heathBrown_two_mul_criticalMoment :
     2 * (heathBrownCriticalMoment k : ℝ) =
       (k : ℝ) * ((k : ℝ) - 1) := by
-  rw [heathBrownCriticalMoment_cast (by omega : 1 ≤ k)]
+  pm_567 heathBrownCriticalMoment_cast k
   ring
 
-theorem heathBrown_half_critical_eq_reciprocal
-    {k : ℕ} (hk : 2 ≤ k) :
+theorem heathBrown_half_critical_eq_reciprocal :
     1 / (2 * (heathBrownCriticalMoment k : ℝ)) =
       heathBrownCriticalReciprocal k := by
   rw [heathBrown_two_mul_criticalMoment hk]
   rfl
+end
 
-theorem heathBrown_inverse_critical_eq_two_reciprocal
-    {k : ℕ} (hk : 2 ≤ k) :
+section
+variable {k : ℕ} (hk : 2 ≤ k)
+include k hk
+theorem heathBrown_inverse_critical_eq_two_reciprocal :
     1 / (heathBrownCriticalMoment k : ℝ) =
-      2 * heathBrownCriticalReciprocal k := by
-  rw [heathBrownCriticalMoment_cast (by omega : 1 ≤ k)]
-  unfold heathBrownCriticalReciprocal
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hk0 : (k : ℝ) ≠ 0 := by linarith
-  have hkm10 : (k : ℝ) - 1 ≠ 0 := by linarith
-  field_simp
+      2 * heathBrownCriticalReciprocal k := by pm_2793
 
-theorem heathBrown_critical_core_exponent
-    {k : ℕ} (hk : 2 ≤ k) :
+theorem heathBrown_critical_core_exponent :
     1 - 1 / (heathBrownCriticalMoment k : ℝ) =
       1 - 2 * heathBrownCriticalReciprocal k := by
   rw [heathBrown_inverse_critical_eq_two_reciprocal hk]
+end
 
 
 end

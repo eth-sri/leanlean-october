@@ -1,6 +1,7 @@
 module
 public import MathCollab.Density.MollifierCoefficients
 public import Mathlib.Analysis.SpecialFunctions.Sqrt
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,13 +37,9 @@ theorem norm_zetaMollifier_le_two_sqrt {X : ℝ} {s : ℂ}
         ‖(ArithmeticFunction.moebius d : ℂ)*(d : ℂ)^(-s)‖ := norm_sum_le _ _
     _ ≤ ∑ d ∈ Finset.Icc 1 ⌊X⌋₊, (1 / Real.sqrt (d : ℝ)) := by
       apply Finset.sum_le_sum
-      intro d hd
-      have hdpos : 0 < d := (Finset.mem_Icc.mp hd).1
-      have hdreal : (1 : ℝ) ≤ d := by exact_mod_cast hdpos
-      have hm : ‖(ArithmeticFunction.moebius d : ℂ)‖ ≤ 1 := by
-        rw [Complex.norm_intCast]
-        exact_mod_cast (ArithmeticFunction.abs_moebius_le_one (n := d))
-      rw [norm_mul, Complex.norm_natCast_cpow_of_pos hdpos, Complex.neg_re]
+      pm_7579 d hd hdpos
+      pm_77 hdreal d hdpos
+      pm_501
       calc
         _ ≤ (d : ℝ)^(-s.re) := by nlinarith [Real.rpow_nonneg (show 0 ≤ (d : ℝ) by positivity) (-s.re)]
         _ ≤ (d : ℝ)^(-(1/2 : ℝ)) := Real.rpow_le_rpow_of_exponent_le hdreal (by linarith)

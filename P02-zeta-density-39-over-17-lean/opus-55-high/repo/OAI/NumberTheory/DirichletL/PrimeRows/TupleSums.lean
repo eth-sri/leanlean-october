@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.SlotSums
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,9 +14,9 @@ open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrime
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<eps)
-    (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
-    ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) (T : Fin K→Finset PrimeIdeal)
-      (hT : ∀i P,P∈T i→Supported P.val ∧ (4:ℝ)≤P.val.absNorm)
+    (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤ r) (hB : 0≤B) :
+    ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) (T : Fin K→ Finset PrimeIdeal)
+      (hT : ∀i P,P∈T i→ Supported P.val ∧ (4:ℝ)≤P.val.absNorm)
       (Y : Fin K→ℝ), (∀i,1≤Y i) → ∀(W : Fin K→ℝ→ℂ),
       (∀i,Function.support (W i)⊆Set.Icc a b) → (∀i y,‖W i y‖≤B) →
       ∀(x w z : ℂ),(7/8:ℝ)≤x.re → (1/2:ℝ)≤w.re → z.re=r →
@@ -26,15 +27,12 @@ theorem continued_selected_tuple_bound (K : ℕ) (eps a b r B : ℝ) (heps : 0<e
           (((P i).val.val.absNorm:ℂ)^(-w))‖)
       ≤C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*∏i,(Y i)^r := by
   let d : ℝ := eps/((K:ℝ)+1)
-  have hd : 0<d := div_pos heps (by positivity)
+  pm_3587 hd d heps
   obtain ⟨C,hC,hmain⟩ := continued_selected_slot_bound d a b r B hd ha hb hr hB
   refine ⟨C^K,pow_pos hC K,?_⟩
   intro η u T hT Y hY W hWS hWB x w z hx hw hz
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
-  have hN : 1≤N := by
-    dsimp [N]
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr u.property.1))
+  pm_7625 hN N
   have hdK : d*(K:ℝ)≤eps := by
     dsimp [d]
     rw [div_mul_eq_mul_div,div_le_iff₀ (by positivity : (0:ℝ)<(K:ℝ)+1)]

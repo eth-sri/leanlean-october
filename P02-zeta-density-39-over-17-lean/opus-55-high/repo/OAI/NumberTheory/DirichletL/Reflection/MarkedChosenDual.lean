@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedChosenSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,14 +33,10 @@ lemma fixed_active_sum_eq_mixed_of_controlled
           (P.restrict A).generator_product_primary (G h).primary (G h).shape
           (P.restrict A).generator_ne_zero (G h).denominator_ne_zero (P.restrict A).generator_good
           (fun i => j i.val) (activeMarks A S) W X := by
-  simp only [FixedActiveCuspIndex,Fintype.sum_sigma,fixedActiveFunctionWeight,fixedActiveCuspDatum,
-    Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro h hh
-  apply Finset.sum_congr rfl
-  intro A hA
+  pm_1443 FixedActiveCuspIndex Fintype.sum_sigma fixedActiveFunctionWeight fixedActiveCuspDatum Finset.mul_sum
+  pm_3397 h hh A hA
   simp only [mixedSmoothedValue,Finset.mul_sum]
-  apply Finset.sum_congr (by ext v; simp only [Finset.mem_univ])
+  apply Finset.sum_congr (by grind)
   intro v hv
   rw [localActiveWeight_restrict]
   have hw : fullLocalFourierWeight (P.restrict A).generator_ne_zero
@@ -77,10 +74,7 @@ theorem marked_reflected_source_of_controlled
   rw [P.marked_source_of_controlled hP j S φ hφnorm Q hQ hφperiod c hc hcQ G N hN C
     W hWcompact lo hi hlo hsupp hW X hX,
     P.fixed_active_sum_eq_mixed_of_controlled hP j S φ c hc G N hN C W X]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro h hh
-  congr 1
+  pm_5046 h hh
   apply Finset.sum_congr rfl
   intro A hA
   congr 1
@@ -88,15 +82,12 @@ theorem marked_reflected_source_of_controlled
   · intro i k hik
     change IsCoprime (Ideal.span {P.generator i.val}) (Ideal.span {P.generator k.val})
     rw [P.generator_span,P.generator_span]
-    exact hP (fun he => hik (Subtype.ext he))
+    pm_3042 hP he hik Subtype.ext
   · intro i
     rw [P.generator_span]
     exact hodd i.val
   · exact fun i => hj i.val
-  · exact hlo
-  · exact hsupp
-  · exact hW
-  · exact hX
+  pm_87 hlo hsupp hW hX
 end PrimeFamily
 end
 end SevenEighths.InverseReflectedPhase

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramJointPeriod
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,7 +39,7 @@ theorem exists_nonexceptional_separation (L R I p : Id) (hI : I≠0)
     [p.IsMaximal] (hp0 : p≠0) (hL : ¬p∣L) (hR : ¬p∣R) :
     ∃J : Id,I=J*p^((normalizedFactors I).count p) ∧
       IsCoprime (L*R*J) (p^((normalizedFactors I).count p)) ∧ J≠0 := by
-  obtain ⟨J,hJ,hcop,hJ0⟩ := exists_prime_separation I p hI hp0
+  pm_732 J hJ hcop hJ0 exists_prime_separation I p hI hp0
   exact ⟨J,hJ,((maximal_coprime_of_not_dvd p L hL).mul_left
     (maximal_coprime_of_not_dvd p R hR)).mul_left hcop |>.pow_right,hJ0⟩
 

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationEnergy
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwisePlain
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem scaleProfile_support (W : ℝ→ℂ) (a b : ℝ)
     (hs : Function.support W⊆Icc a b) : Function.support (scaleProfile W)⊆Icc a b := by
   intro y hy
   by_contra hn
-  have hw : W y=0 := by by_contra hw; exact hn (hs hw)
+  have hw : W y=0 := by by_contra hw; simp_all
   have hd : deriv W y=0 := by
     apply deriv_of_notMem_tsupport
     exact fun h => hn ((closure_minimal hs isClosed_Icc) h)
@@ -42,15 +43,12 @@ theorem scaleSum_continuous (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal 
 theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
     (hW : Differentiable ℝ W) (l : ℝ) :
     HasDerivAt (scaleSum χ W S) (scaleSum χ (scaleProfile W) S l) l := by
-  have hE : HasDerivAt (fun t : ℝ => Complex.exp (-(t : ℂ)/2))
-      (Complex.exp (-(l : ℂ)/2)*(-(1 : ℂ)/2)) l := by
-    convert ((Complex.ofRealCLM.hasDerivAt (x:=l)).neg.div_const (2 : ℂ)).cexp using 1
-    all_goals rfl
+  pm_3126
   have hd (J : Ideal O) (hJ : J∈S) :
       HasDerivAt (fun t => coefficient χ true J*W ((J.absNorm : ℝ)*Real.exp (-t)))
         (coefficient χ true J*(deriv W ((J.absNorm : ℝ)*Real.exp (-l))*
           (-((J.absNorm : ℝ)*Real.exp (-l)) : ℝ))) l := by
-    have hy := ((hasDerivAt_id l).neg.exp).const_mul (J.absNorm : ℝ)
+    pm_6697
     convert ((hW _).hasDerivAt.scomp l hy).const_mul (coefficient χ true J) using 1
     · rfl
     · change coefficient χ true J*(deriv W ((J.absNorm : ℝ)*Real.exp (-l))*
@@ -60,22 +58,15 @@ theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
       rw [Complex.real_smul]
       push_cast
       ring
-  convert hE.mul (HasDerivAt.sum (u:=S) hd) using 1
+  pm_7491
   · ext t
     simp only [scaleSum,Pi.mul_apply,Finset.sum_apply]
   · dsimp [scaleSum,scaleProfile]
-    simp only [Finset.sum_apply]
-    simp_rw [Finset.mul_sum]
-    rw [←Finset.sum_add_distrib]
-    apply Finset.sum_congr rfl
-    intro J hJ
-    push_cast
-    ring
+    pm_1547
 
 theorem scale_normalization (l : ℝ) :
     ((Real.exp l : ℝ) : ℂ)^(-(1/2 : ℂ))=Complex.exp (-(l : ℂ)/2) := by
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (Real.exp_pos l).ne'),
-    ←Complex.ofReal_log (Real.exp_pos l).le,Real.log_exp]
+  pm_6378 l
   congr 1
   ring
 
@@ -83,7 +74,7 @@ theorem scaleSum_eq_polynomial (χ : Character) (W : ℝ→ℂ) (S : Finset (Ide
     (l : ℝ) (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈S) :
     scaleSum χ W S l=polynomial χ true W (Real.exp l) 0 0 := by
   rw [polynomial_eq_finite χ true W (Real.exp l) 0 0 S hc,scale_normalization]
-  simp only [HeckeDyadic.shift,ofReal_zero,zero_mul,sub_self,neg_zero,Complex.cpow_zero,mul_one]
+  pm_545 HeckeDyadic.shift ofReal_zero zero_mul sub_self neg_zero Complex.cpow_zero mul_one
   unfold scaleSum
   congr 1
   apply Finset.sum_congr rfl

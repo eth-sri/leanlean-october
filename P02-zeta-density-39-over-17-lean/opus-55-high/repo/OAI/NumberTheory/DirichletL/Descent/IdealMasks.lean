@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Descent.Marks
 public import OAI.NumberTheory.DirichletL.Descent.Overlap
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,11 +23,7 @@ theorem ideal_coprime_mobius (K P : Ideal ActualEisensteinCubic.O) (hK : K ≠ 0
     intro hz
     apply hK
     exact le_antisymm (show K ≤ 0 from hz ▸ (le_sup_left : K ≤ G)) bot_le
-  have hdiv : (idealDivisors K).filter (fun R => R ∣ P) = idealDivisors G := by
-    ext R
-    simp only [Finset.mem_filter, mem_idealDivisors hK, mem_idealDivisors hG,
-      Ideal.dvd_iff_le, G, sup_le_iff]
-  rw [← Finset.sum_filter, hdiv, sum_moebius_divisors G hG]
+  pm_5000 K R P hK
   simp only [Ideal.isCoprime_iff_sup_eq, G]
 
 theorem idealZeroMask_primary_indicator
@@ -65,11 +62,7 @@ theorem hybrid_double_mask_mobius
     by_cases hP : IsCoprime k P <;> by_cases hc : IsCoprime k c <;> simp [hP, hc]
   rw [hsplit, ideal_coprime_mobius k P hk, ideal_coprime_mobius k c hk,
     Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro R hR
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro r hr
+  pm_3170 R hR Finset.mul_sum r hr
   by_cases hP : R ∣ P <;> by_cases hc : r ∣ c <;> simp [hP, hc]
 
 theorem hybrid_column_decomposition
@@ -110,8 +103,7 @@ theorem scaled_product_fiber_card
     rw [← (Finset.mem_filter.mp hp).2]
     ring
   · intro p hp q hq hpq
-    have hep := (Finset.mem_filter.mp hp).2
-    have heq := (Finset.mem_filter.mp hq).2
+    pm_547 hep Finset.mem_filter.mp hp heq hq
     have hBm : B * p.1 ≠ 0 := by
       intro hz
       apply hJ

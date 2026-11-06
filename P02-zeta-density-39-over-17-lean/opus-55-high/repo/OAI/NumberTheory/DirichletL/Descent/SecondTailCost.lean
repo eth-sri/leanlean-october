@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.MarkedTails
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -24,10 +24,8 @@ theorem residualPairWeight_bounded_test
     ‖residualPairWeight p hg Ψ Ψ m c d
       (fun U => Hcol (G ∪ U)) (fun U => Hcol (G ∪ U)) S T‖ ≤ B^2 := by
   simp only [residualPairWeight, norm_mul, norm_star, sourceSupportMobius_norm p hinj, one_mul]
-  have hS := (secondInputCoefficient_norm_le_test p hg Ψ hΨ m c d
-    (fun U => Hcol (G ∪ U)) S).trans (hcol _)
-  have hT := (secondInputCoefficient_norm_le_test p hg Ψ hΨ m c d
-    (fun U => Hcol (G ∪ U)) T).trans (hcol _)
+  pm_5489 hS S
+  pm_5489 hT T
   simpa only [pow_two] using mul_le_mul hS hT (norm_nonneg _) hB
 
 include hp hinj
@@ -43,15 +41,15 @@ theorem residualTailCost_bounded_test
       if primeProductNorm p G ≤ lengthScale then
         (128*lengthScale)^2 * (B^2 *
           (Y*P*(1+lengthScale^3/Y)^2/(1+H)^A)) else 0 := by
-  let C := B^2 * (Y*P*(1+lengthScale^3/Y)^2/(1+H)^A)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  pm_3733
+  pm_3442
   let w := residualPairWeight p hg Ψ Ψ m c d
     (fun S => Hcol (G∪S))
     (fun S => Hcol (G∪S))
   have hsupp (S T : Finset ι) (hw : w S T ≠ 0) :
       primeProductNorm p G ≤ lengthScale ∧ primeProductNorm p E ≤ lengthScale ∧
       primeProductNorm p S ≤ lengthScale ∧ primeProductNorm p T ≤ lengthScale := by
-    obtain ⟨hS,hT⟩ := residualPairWeight_test_ne_zero p hg Ψ Ψ m c d _ _ S T hw
+    pm_7650 hS hT
     have hGS := hsupport (G ∪ S) hS
     have hGT := hsupport (G ∪ T) hT
     have hG := (primeProductNorm_mono p hp Finset.subset_union_left).trans hGS
@@ -63,12 +61,7 @@ theorem residualTailCost_bounded_test
     calc
       _ ≤ ∑ S ∈ (F\G).powerset, ∑ T ∈ (F\G).powerset,
           if primeProductNorm p S ≤ lengthScale ∧ primeProductNorm p T ≤ lengthScale then C else 0 := by
-        unfold residualTailCost
-        apply Finset.sum_le_sum
-        intro S hS
-        apply Finset.sum_le_sum
-        intro T hT
-        by_cases hd : Disjoint S T
+        pm_7378 Finset.sum_le_sum
         · rw [ite_eq_left hd]
           dsimp only
           by_cases hw : w S T = 0
@@ -113,12 +106,7 @@ theorem residualTailCost_bounded_test
         (fun S => Hcol (G∪S))
         (fun S => Hcol (G∪S))
         (primeSubsetGenerator (fun i => Ideal.span {p i}) E) Y H A P = 0 := by
-      unfold residualTailCost
-      apply Finset.sum_eq_zero
-      intro S hS
-      apply Finset.sum_eq_zero
-      intro T hT
-      by_cases hd : Disjoint S T
+      pm_7378 Finset.sum_eq_zero
       · rw [ite_eq_left hd]
         have hw : w S T = 0 := by
           by_contra hw
@@ -139,8 +127,8 @@ theorem secondSourceTailCost_bounded_test
         (fun S => Hcol (G∪S))
         (primeSubsetGenerator (fun i => Ideal.span {p i}) E.val) Y H A P) ≤
       (128*lengthScale)^4 * (B^2 * (Y*P*(1+lengthScale^3/Y)^2/(1+H)^A)) := by
-  let C := B^2 * (Y*P*(1+lengthScale^3/Y)^2/(1+H)^A)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  pm_3733
+  pm_3442
   have h128 : 0 ≤ 128*lengthScale := by positivity
   calc
     _ ≤ ∑ G ∈ F.powerset, if primeProductNorm p G ≤ lengthScale then (128*lengthScale)^3*C else 0 := by
@@ -157,9 +145,7 @@ theorem secondSourceTailCost_bounded_test
         calc
           _ ≤ ∑ E : G.powerset, (128*lengthScale)^2*C := by
             apply Finset.sum_le_sum
-            intro E hE
-            have hr := residualTailCost_bounded_test p hp hg hinj F G E.val (Finset.mem_powerset.mp E.property)
-              Ψ hΨ m c d Hcol B Y H lengthScale P A hB hY hH hP hL hcol hsupport
+            pm_3734
             rw [ite_eq_left hGn] at hr
             have hc := secondSourceCommonCoefficient_norm_le_one p hp hg hinj Ψ hΨ m c d G E.val
             exact (mul_le_mul_of_nonneg_left hr (norm_nonneg _)).trans
@@ -170,9 +156,7 @@ theorem secondSourceTailCost_bounded_test
           _ = _ := by ring
       · rw [ite_eq_right hGn]
         apply Finset.sum_nonpos
-        intro E hE
-        have hr := residualTailCost_bounded_test p hp hg hinj F G E.val (Finset.mem_powerset.mp E.property)
-          Ψ hΨ m c d Hcol B Y H lengthScale P A hB hY hH hP hL hcol hsupport
+        pm_3734
         rw [ite_eq_right hGn] at hr
         exact mul_nonpos_of_nonneg_of_nonpos (norm_nonneg _) hr
     _ = ((boundedPrimeSupports p F lengthScale).card : ℝ)*((128*lengthScale)^3*C) := by
@@ -183,7 +167,6 @@ theorem secondSourceTailCost_bounded_test
         (mul_nonneg (pow_nonneg h128 _) hC)
     _ = _ := by ring
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

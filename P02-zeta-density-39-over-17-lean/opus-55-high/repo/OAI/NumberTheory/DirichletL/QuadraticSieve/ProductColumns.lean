@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.TransformedColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,73 +8,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 
@@ -83,10 +40,9 @@ theorem product_fiber_card (P : Finset (Ideal O×Ideal O)) (I : Ideal O) (hI : I
   · intro p hp
     apply (mem_idealDivisors hI).mpr
     rw [←(Finset.mem_filter.mp hp).2]
-    exact dvd_mul_right _ _
+    aesop
   · intro p hp q hq he
-    have hp' := (Finset.mem_filter.mp hp).2
-    have hq' := (Finset.mem_filter.mp hq).2
+    pm_547 hp' Finset.mem_filter.mp hp hq' hq
     have hz : p.1≠0 := by intro hz; simp only [hz,zero_mul] at hp'; exact hI hp'.symm
     apply Prod.ext he
     apply mul_left_cancel₀ hz
@@ -120,29 +76,13 @@ theorem mem_shortCubeRange (H₀ : ℝ) (H : Ideal O) :
     exact ⟨⟨Nat.one_le_iff_ne_zero.mpr (fun hz => hH (Ideal.absNorm_eq_zero_iff.mp hz)),
       Nat.cast_le.mp (hn.le.trans (Nat.le_ceil H₀))⟩,hn⟩
 
-theorem shortCompletedSum_eq (Ψ : O →* ℂ) (W : ℝ → ℂ) (X H₀ : ℝ) :
-    shortCompletedSum Ψ W X H₀ = ∑H∈shortCubeRange H₀,
-      (UniqueFactorizationMonoid.moebius H:ℂ)*cubeWeight Ψ H*
-        completedT Ψ W (X/(Ideal.absNorm H:ℝ)^3) := by
-  unfold shortCompletedSum
-  rw [tsum_eq_sum (s:=shortCubeRange H₀)]
-  · exact Finset.sum_congr rfl (fun H hH => ite_eq_left ((mem_shortCubeRange H₀ H).mp hH).2)
-  · intro H hH
-    by_cases hz : H=0
-    · simp [hz]
-    · have hn : ¬(Ideal.absNorm H:ℝ)<H₀ := fun hn => hH ((mem_shortCubeRange H₀ H).mpr ⟨hz,hn⟩)
-      exact ite_eq_right hn
-
 theorem cube_inverse_weight_norm (Ψ : O →* ℂ) (hΨ : ∀z,‖Ψ z‖≤1) (H : Ideal O) :
     ‖(UniqueFactorizationMonoid.moebius H:ℂ)*cubeWeight Ψ H‖≤1/(Ideal.absNorm H:ℝ) := by
   have hang : ‖FiniteGaussPhase.angularFactor (primaryGenerator H)‖≤1 := by
-    by_cases hz : primaryGenerator H=0
-    · simp [hz,FiniteGaussPhase.angularFactor]
-    · exact (FiniteGaussPhase.norm_angularFactor _ hz).le
+    pm_6188 H
   have hw : ‖cubeWeight Ψ H‖≤1/(Ideal.absNorm H:ℝ) := by
     change ‖star (FiniteGaussPhase.angularFactor (primaryGenerator H))^3*Ψ (primaryGenerator H)^3/(Ideal.absNorm H:ℂ)‖≤_
-    rw [norm_div,norm_mul,norm_pow,norm_pow,norm_star,Complex.norm_natCast]
-    apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
+    pm_5666
     have h1 : ‖FiniteGaussPhase.angularFactor (primaryGenerator H)‖^3≤1 := by
       simpa only [one_pow] using pow_le_pow_left₀ (norm_nonneg _) hang 3
     have h2 : ‖Ψ (primaryGenerator H)‖^3≤1 := by
@@ -180,9 +120,9 @@ theorem squarefree_all_column_energy {n : Type*} [Fintype n]
     have hgood (j : sector E) : Admissible (good j) ∧ (Ideal.absNorm (good j):ℝ)≤X :=
       mem_idealRange.mp (goodSquarefreePart_mem_idealRange _ (hcols j.val).1 X (hcols j.val).2)
     let B : Matrix (sector E) (idealRange K) ℂ := fun j k => quadraticRow k.val (primaryGenerator (good j))
-    have hB := family_squared_norm_le good (fun k : idealRange K => k.val) hg Subtype.val_injective X K
+    have hB := family_squared_norm_le good (fun k : idealRange K=> k.val) hg Subtype.val_injective X K
       hgood (fun k => mem_idealRange.mp k.property)
-    change ‖FiniteSieveOperator.operator B‖^2≤sieveNorm X K at hB
+    change ‖FiniteSieveOperator.operator B‖^2≤ sieveNorm X K at hB
     have hBT : B.conjTranspose=(fun k j => quadraticRow k.val (primaryGenerator (good j))) := by
       ext k j
       exact canonical_quadraticRow_star _ (mem_idealRange.mp k.property).1 _
@@ -207,7 +147,7 @@ theorem squarefree_all_column_energy {n : Type*} [Fintype n]
           ‖∑j : sector E,quadraticRow k.val (primaryGenerator (good j))*a j.val‖^2 := by
       rw [hrow,norm_mul]
       apply pow_le_pow_left₀ (by positivity)
-      exact mul_le_of_le_one_left (norm_nonneg _) (quadraticRow_norm_le_one _ _)
+      pm_4925 mul_le_of_le_one_left quadraticRow_norm_le_one
     exact (Finset.sum_le_sum (fun k _ => hpoint k)).trans
       (he.trans (mul_le_mul_of_nonneg_right hB (by positivity)))
   have hpoint (k : idealRange K) :

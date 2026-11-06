@@ -1,10 +1,9 @@
 module
 public import RationalDyadicDifference
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -12,12 +11,14 @@ theorem rational_phase_sum_norm_le_card (r : ℚ) (W : Finset ℝ) :
     ‖∑ t ∈ W, phase r t‖ ≤ W.card := by
   have hp (t : ℝ) : ‖phase r t‖ = 1 := by
     rw [← exponentialPhase_log, exponentialPhase_norm]
-  exact (norm_sum_le _ _).trans_eq (by simp only [hp, sum_const, nsmul_eq_mul, mul_one])
+  pm_6595 norm_sum_le
 
+section
+variable {K : ℕ} (hK : 1 ≤ K) {η : ℝ} (hη : 0 < η)
+include K hK η hη
 /-- The second-moment estimate for only the large-gcd part of a longer
 dyadic interval. The short-range condition is imposed on X/D, not X. -/
-theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
-    {η : ℝ} (hη : 0 < η) :
+theorem large_gcd_pair_energy :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ X D : ℝ), 1 < T → 0 ≤ X → X ≤ T → 0 < D →
       ∀ (P : Finset (ℕ × ℕ)),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -29,16 +30,13 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖^2) ≤
         C*T^η*X*(W.card : ℝ)^2 := by
-  obtain ⟨C, hC, hbound⟩ := coprime_dyadic_short_range hK (show 0 < η/2 by positivity)
-  let L : ℝ := 1+4^(η/2)/(η/2)
-  have hL : 0 < L := by dsimp [L]; positivity
+  pm_8439 hbound coprime_dyadic_short_range hK
+  pm_4
   refine ⟨C*L, by positivity, ?_⟩
   intro T t₀ X D hT hX hXT hD P hP W hR hXR hW hsep
   have hgeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
       X < p.1 ∧ (p.1 : ℝ) ≤ 2*X ∧ X < p.2 ∧ (p.2 : ℝ) ≤ 2*X := by
-    intro p hp
-    obtain ⟨h1,h2,hl1,hu1,hl2,hu2,_⟩ := hP p hp
-    exact ⟨h1,h2,hl1,hu1,hl2,hu2⟩
+    pm_3
   have hblock : ∀ d ∈ gcdValues P,
       (∑ q ∈ reducedFiber P d, ‖∑ t ∈ W, phase (pairRatio q) t‖^2) ≤
         (C*T^(η/2)*(W.card : ℝ)^2)*(X/d) := by
@@ -46,12 +44,7 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
     obtain ⟨p, hp, he⟩ := mem_image.mp hd
     have hdD : D ≤ (d : ℝ) := he ▸ (hP p hp).2.2.2.2.2.2
     have hdiv : X/(d : ℝ) ≤ X/D := div_le_div_of_nonneg_left hX hD hdD
-    have hQ : ∀ q ∈ reducedFiber P d,
-        0 < q.1 ∧ 0 < q.2 ∧ Nat.Coprime q.1 q.2 ∧
-        X/d < q.1 ∧ (q.1 : ℝ) ≤ 2*(X/d) ∧
-        X/d < q.2 ∧ (q.2 : ℝ) ≤ 2*(X/d) := by
-      intro q hq
-      exact (reduced_fiber_bounds hgeom hq).2
+    pm_309 X
     have hh := hbound T t₀ (X/d) hT (by positivity) (reducedFiber P d) hQ W hR
       ((pow_le_pow_left₀ (by positivity) hdiv K).trans hXR) hW hsep
     convert hh using 1
@@ -63,8 +56,7 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
   have hh := pair_energy_le_log P hpN W
     (show 0 ≤ C*T^(η/2)*(W.card : ℝ)^2 by positivity) hX hblock
   have hN : (⌊2*X⌋₊ : ℝ) ≤ 4*T := (Nat.floor_le h2X).trans (by linarith)
-  have hl := logarithmic_height_loss hT.le (show 0 < η/2 by positivity) ⌊2*X⌋₊ hN
-  change 1+Real.log ⌊2*X⌋₊ ≤ L*T^(η/2) at hl
+  pm_5
   have hp : T^(η/2)*T^(η/2) = T^η := by
     rw [← Real.rpow_add (by linarith : 0 < T)]
     congr 1
@@ -77,8 +69,7 @@ theorem large_gcd_pair_energy {K : ℕ} (hK : 1 ≤ K)
 
 /-- The large-gcd cubic contribution used in the proposed two-term additive
 energy argument is bounded without any unproved analytic input. -/
-theorem large_gcd_cubic_energy {K : ℕ} (hK : 1 ≤ K)
-    {η : ℝ} (hη : 0 < η) :
+theorem large_gcd_cubic_energy :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ X D : ℝ), 1 < T → 0 ≤ X → X ≤ T → 0 < D →
       ∀ (P : Finset (ℕ × ℕ)),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -90,8 +81,7 @@ theorem large_gcd_cubic_energy {K : ℕ} (hK : 1 ≤ K)
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖^3) ≤
         C*T^η*X*(W.card : ℝ)^3 := by
-  obtain ⟨C, hC, hbound⟩ := large_gcd_pair_energy hK hη
-  refine ⟨C, hC, ?_⟩
+  pm_4289 C hC hbound large_gcd_pair_energy hK hη
   intro T t₀ X D hT hX hXT hD P hP W hR hXR hW hsep
   have hh := hbound T t₀ X D hT hX hXT hD P hP W hR hXR hW hsep
   calc
@@ -103,6 +93,7 @@ theorem large_gcd_cubic_energy {K : ℕ} (hK : 1 ≤ K)
     _ = (W.card : ℝ)*(∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖^2) := by rw [mul_sum]
     _ ≤ (W.card : ℝ)*(C*T^η*X*(W.card : ℝ)^2) := by gcongr
     _ = _ := by ring
+end
 
 /-- The large-gcd half of the proposed additive-energy split, at the
 actual cutoff D=X^2/T. This does not assert the still-open low-gcd or
@@ -119,8 +110,7 @@ theorem large_gcd_cubic_at_transition {K : ℕ} (hK : 1 ≤ K)
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∑ p ∈ P.filter (fun p => X^2/T ≤ (pairGcd p : ℝ)),
         ‖∑ t ∈ W, phase (pairRatio p) t‖^3) ≤ C*T^η*X*(W.card : ℝ)^3 := by
-  obtain ⟨C, hC, hbound⟩ := large_gcd_cubic_energy hK hη
-  refine ⟨C, hC, ?_⟩
+  pm_4289 C hC hbound large_gcd_cubic_energy hK hη
   intro T t₀ X hT hX hXT P hP W hR hXR hW hsep
   have hTp : 0 < T := by linarith
   have he : X/(X^2/T) = T/X := by field_simp
@@ -128,7 +118,7 @@ theorem large_gcd_cubic_at_transition {K : ℕ} (hK : 1 ≤ K)
     (by rw [he]; exact hXR) hW hsep
   intro p hp
   obtain ⟨hp, hd⟩ := mem_filter.mp hp
-  obtain ⟨h1,h2,hl1,hu1,hl2,hu2⟩ := hP p hp
+  pm_6
   exact ⟨h1,h2,hl1,hu1,hl2,hu2,hd⟩
 
 end Montgomery.RationalMoment

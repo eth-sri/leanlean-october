@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Split
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,12 +38,8 @@ theorem controlled_bad_phase_eq {ι κ : Type*} [Fintype ι] [Fintype κ]
     (hd : N ∣ D.matrix (fun _ => 1) 1 1 - D₀.matrix (fun _ => 1) 1 1) :
     ShortDraftCusp.A4BadPhase c hc (D.matrix (fun _ => 1) 1 1) D.U =
       ShortDraftCusp.A4BadPhase c hc (D₀.matrix (fun _ => 1) 1 1) D₀.U := by
-  have hu : ramifiedTraceLambda^3*c ∣ D.U*(∏ i, p i)-1 := by
-    refine ⟨-D.w, ?_⟩
-    linear_combination D.bezout
-  have hu₀ : ramifiedTraceLambda^3*c ∣ D₀.U*(∏ i, p₀ i)-1 := by
-    refine ⟨-D₀.w, ?_⟩
-    linear_combination D₀.bezout
+  pm_7874 hu D.U p D.w D.bezout
+  pm_7874 hu₀ D₀.U p₀ D₀.w D₀.bezout
   have hcop : IsCoprime (ramifiedTraceLambda^3*c) (∏ i, p i) := by
     refine ⟨D.w,D.U,?_⟩
     linear_combination D.bezout

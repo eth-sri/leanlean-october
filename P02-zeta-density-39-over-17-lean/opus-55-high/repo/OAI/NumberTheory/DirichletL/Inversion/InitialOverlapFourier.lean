@@ -36,7 +36,7 @@ lemma fourier_phase_integrable (g : 𝓢(ℝ,ℂ)) (x : ℝ) (a : ℂ) :
     (𝓕 g).integrable.mul_bdd (c:=1)
     (logPhase_continuous_left x).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun t=>le_of_eq (logPhase_norm t x)))
-  exact h.mul_const a
+  fun_prop
 
 theorem tuple_mark_phase (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ)
     (y : σ→ι→ℝ) (A : Finset ι) (t : ℝ) :
@@ -49,11 +49,12 @@ theorem tuple_mark_phase (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ
   rw [logPhase_sum,←Finset.prod_mul_distrib]
   apply Finset.prod_congr rfl
   intro i hi
-  split_ifs <;> simp
+  grind
 
-theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
-    (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
-    (A : Finset ι) (xj xc : ℝ) :
+section
+variable (g : 𝓢(ℝ,ℂ)) (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ) (A : Finset ι) (xj xc : ℝ)
+include g I L a y A xj xc
+theorem overlap_tuple_separation :
     (∑p∈I.pi L,(∏i∈I.attach,if p i.val i.property∈A then a i.val (p i.val i.property) else 0)*
       g (xj+xc-∑i∈I.attach,y i.val (p i.val i.property))) =
       ∫t:ℝ,density g xj t*logPhase t xc*
@@ -82,9 +83,7 @@ theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
   filter_upwards with t
   ring
 
-theorem overlap_mode_integrable (g : 𝓢(ℝ,ℂ))
-    (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
-    (A : Finset ι) (xj xc : ℝ) :
+theorem overlap_mode_integrable :
     Integrable (fun t:ℝ=>density g xj t*logPhase t xc*
       primeMark I L (fun i p=>a i p*logPhase (-t) (y i p)) A) := by
   simp_rw [tuple_mark_phase]
@@ -97,6 +96,7 @@ theorem overlap_mode_integrable (g : 𝓢(ℝ,ℂ))
   funext t
   rw [←phase_sub]
   ring
+end
 
 theorem actual_overlap_separation
     (W : ℝ→ℂ) (a₀ b₀ : ℝ) (ha₀ : 0<a₀)

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedSubset
 public import OAI.NumberTheory.DirichletL.PrimeRows.FiniteNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,9 +36,8 @@ theorem spectralCompensatedRow_original_L_factorization
         LFunction ((targetRow η u).excludePrimes S hS) x)*
       (globalCorrection (markExclusions S T) η u x w z*
         ∏P∈T,compensatedLocalCorrection η u P x w z (B P) (q P)) := by
-  have hx1 : 1<x.re := by linarith
-  have hw1 : 1<w.re := by linarith
-  have hz1 : 1<(6*z).re := by norm_num [Complex.mul_re];linarith
+  pm_523
+  pm_6062
   have hZ := LFunction_ne_zero_of_one_lt_re (fixedSourcePrincipal S hS) hz1
   have hW := LFunction_ne_zero_of_one_lt_re (rowCharacter S hS u) hw1
   have hD := LFunction_ne_zero_of_one_lt_re ((targetRow η u).excludePrimes S hS) hx1

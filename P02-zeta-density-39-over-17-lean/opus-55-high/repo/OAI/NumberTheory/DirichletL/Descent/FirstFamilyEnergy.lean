@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -53,13 +54,9 @@ theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
       weight (x,r,D)*firstCommonColumn p hg F D (C₂ x) false r.2 ω₂ (s 8) (H 8) (h x)*
         star (firstCommonColumn p hg F D (C₁ x) true r.1 ω₁ (s 7) (H 7) (h x))) =
       firstFamilySeparatedRow p hg source F selector C₁ C₂ w ω₁ ω₂ A₁ A₂ C R d h s z := by
-    simp only [firstFamilySeparatedRow,firstBlockedSeparatedRow,Finset.mul_sum]
-    apply Finset.sum_congr rfl
+    pm_335 firstFamilySeparatedRow firstBlockedSeparatedRow Finset.mul_sum
     intro x hx
-    apply Finset.sum_congr rfl
-    intro r hr
-    apply Finset.sum_congr rfl
-    intro D hD
+    pm_3728
     dsimp only [weight,firstBlockOuterWeight,H]
     ring
   rw [he] at hc
@@ -67,14 +64,14 @@ theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
       ‖w x‖*‖firstBlockOuterWeight p (selector x) r D (h x)‖*
         ‖firstCommonColumn p hg F D (C₁ x) true r.1 ω₁ (s 7) (H 7) (h x)‖^2) =
       firstFamilyEnergy p hg source F selector C₁ w true ω₁ (s 7) (H 7) h := by
-    simp only [firstFamilyEnergy,firstBlockEnergy,Finset.mul_sum,mul_assoc,ite_true]
+    pm_94 firstFamilyEnergy firstBlockEnergy Finset.mul_sum mul_assoc ite_true
   have hright : (∑ x∈source,∑ r : RayCharacter × RayCharacter,∑ D∈F.powerset,
       ‖w x‖*‖firstBlockOuterWeight p (selector x) r D (h x)‖*
         ‖firstCommonColumn p hg F D (C₂ x) false r.2 ω₂ (s 8) (H 8) (h x)‖^2) =
       firstFamilyEnergy p hg source F selector C₂ w false ω₂ (s 8) (H 8) h := by
-    simp only [firstFamilyEnergy,firstBlockEnergy,Finset.mul_sum,mul_assoc,Bool.false_eq_true,ite_false]
+    pm_382 firstFamilyEnergy firstBlockEnergy Finset.mul_sum mul_assoc Bool.false_eq_true ite_false
   rw [hleft,hright] at hc
-  exact hc.trans_eq (mul_comm _ _)
+  grind
 
 end
 end SevenEighths.InverseMoment

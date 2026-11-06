@@ -57,9 +57,11 @@ variable {s : Input α} {η₀ : Character} {θ : α → RayQuotient.Characters 
 
 include h
 
+section
+variable (τ : Character) (v : ℝ) (C R : Ideal O) (B : actualAllocations s.pools C)
+include τ v C R B
 omit [DecidableEq α] in
-lemma common_coefficient (τ : Character) (v : ℝ) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (i : CenteredMomentCommonProfile.liveIndices B.val)
+lemma common_coefficient (i : CenteredMomentCommonProfile.liveIndices B.val)
     (I : Ideal O) :
     (commonData (withHeight s τ v) C R B).coefficient i I =
       idealCoeff (relativeCharacter M H hH η₀ (θ i.val)) I *
@@ -68,8 +70,7 @@ lemma common_coefficient (τ : Character) (v : ℝ) (C R : Ideal O)
   rw [h.character, h.profile, h.scale]
   rfl
 
-theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (L : Ideal O)
+theorem common_energy (L : Ideal O)
     (a : Allocation L (Finset.univ : Finset (CenteredMomentCommonProfile.liveIndices B.val ⊕ Fin 2)))
     (J : Finset (CenteredMomentCommonProfile.liveIndices B.val))
     (m A : O) (W₁ W₂ : ℝ → ℂ) (X₁ X₂ : ℝ)
@@ -113,6 +114,7 @@ theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
     (fun i I => idealCoeff (relativeCharacter M H hH η₀ (θ i)) I *
       annularWeight W (Z^(w i)) (σ i) (v+freq i) I)
     (fun i => Z^(w i)) 0 X₁ X₂ keep Φ K
+end
 
 omit h
 

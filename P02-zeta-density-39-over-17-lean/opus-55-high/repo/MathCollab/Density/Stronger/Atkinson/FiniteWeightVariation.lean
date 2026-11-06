@@ -9,11 +9,11 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Algebra.BigOperators.Module
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex Set
-set_option autoImplicit false
+open Complex
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -27,7 +27,10 @@ theorem FiniteVariationBound.mono {f : ℕ → ℂ} {N : ℕ} {M D : ℝ}
     FiniteVariationBound f N D :=
   ⟨hf.nonneg.trans hMD,fun i hi => (hf.norm_le i hi).trans hMD,hf.variation_le.trans hMD⟩
 
-theorem FiniteVariationBound.congr {f g : ℕ → ℂ} {N : ℕ} {M : ℝ}
+section
+variable {f g : ℕ → ℂ} {N : ℕ}
+include f g N
+theorem FiniteVariationBound.congr {M : ℝ}
     (hf : FiniteVariationBound f N M) (he : ∀ i ≤ N, g i = f i) :
     FiniteVariationBound g N M := by
   refine ⟨hf.nonneg,fun i hi => ?_,?_⟩
@@ -36,16 +39,15 @@ theorem FiniteVariationBound.congr {f g : ℕ → ℂ} {N : ℕ} {M : ℝ}
   · convert hf.variation_le using 1
     apply Finset.sum_congr rfl
     intro i hi
-    rw [he i (Finset.mem_range.mp hi).le,he (i+1) (Finset.mem_range.mp hi)]
+    grind
 
-theorem FiniteVariationBound.mul {f g : ℕ → ℂ} {N : ℕ} {M D : ℝ}
+theorem FiniteVariationBound.mul {M D : ℝ}
     (hf : FiniteVariationBound f N M) (hg : FiniteVariationBound g N D) :
     FiniteVariationBound (fun i => f i*g i) N (2*M*D) := by
-  have hMD : 0 ≤ M*D := mul_nonneg hf.nonneg hg.nonneg
+  pm_6529 hMD M D hf.nonneg hg.nonneg
   refine ⟨by nlinarith,?_,?_⟩
   · intro i hi
-    rw [norm_mul]
-    have h := mul_le_mul (hf.norm_le i hi) (hg.norm_le i hi) (norm_nonneg _) hf.nonneg
+    pm_7347 i hi
     nlinarith
   · have hstep (i : ℕ) (hi : i ∈ Finset.range N) :
         ‖f (i+1)*g (i+1)-f i*g i‖ ≤ M*‖g (i+1)-g i‖+D*‖f (i+1)-f i‖ := by
@@ -53,55 +55,43 @@ theorem FiniteVariationBound.mul {f g : ℕ → ℂ} {N : ℕ} {M D : ℝ}
       have hi1N : i+1 ≤ N := Finset.mem_range.mp hi
       rw [show f (i+1)*g (i+1)-f i*g i =
         f (i+1)*(g (i+1)-g i)+(f (i+1)-f i)*g i by ring]
-      apply (norm_add_le _ _).trans
-      rw [norm_mul,norm_mul]
+      pm_861 norm_add_le
       apply add_le_add
       · exact mul_le_mul_of_nonneg_right (hf.norm_le _ hi1N) (norm_nonneg _)
       · exact (mul_le_mul_of_nonneg_left (hg.norm_le _ hiN) (norm_nonneg _)).trans_eq (mul_comm _ _)
     apply (Finset.sum_le_sum hstep).trans
     rw [Finset.sum_add_distrib,← Finset.mul_sum,← Finset.mul_sum]
-    have h₁ := mul_le_mul_of_nonneg_left hg.variation_le hf.nonneg
-    have h₂ := mul_le_mul_of_nonneg_left hf.variation_le hg.nonneg
+    pm_268 h₁ mul_le_mul_of_nonneg_left hg.variation_le hf.nonneg h₂ hf.variation_le hg.nonneg
     nlinarith
+end
 
-theorem finiteVariationBound_of_monotone {u : ℕ → ℝ} {N : ℕ} {M : ℝ}
-    (hM : 0 ≤ M) (hu : MonotoneOn u (Set.Iic N))
+section
+variable {u : ℕ → ℝ} {N : ℕ} {M : ℝ} (hM : 0 ≤ M)
+include u N M hM
+theorem finiteVariationBound_of_monotone (hu : MonotoneOn u (Set.Iic N))
     (hb : ∀ i ≤ N, 0 ≤ u i ∧ u i ≤ M) :
     FiniteVariationBound (fun i => (u i : ℂ)) N M := by
-  refine ⟨hM,?_,?_⟩
-  · intro i hi
-    simpa only [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hb i hi).1] using (hb i hi).2
+  pm_4345
   · have he : ∑ i ∈ Finset.range N, ‖(u (i+1):ℂ)-(u i:ℂ)‖ = u N-u 0 := by
       calc
         _ = ∑ i ∈ Finset.range N, (u (i+1)-u i) := by
-          apply Finset.sum_congr rfl
-          intro i hi
-          rw [← Complex.ofReal_sub,Complex.norm_real,Real.norm_eq_abs,
-            abs_of_nonneg (sub_nonneg.mpr (hu (Finset.mem_range.mp hi).le
-              (Finset.mem_range.mp hi) (by omega)))]
+          pm_5138 abs_of_nonneg sub_nonneg.mpr
         _ = _ := Finset.sum_range_sub u N
     rw [he]
-    linarith [(hb N le_rfl).2,(hb 0 (Nat.zero_le N)).1]
+    grind
 
-theorem finiteVariationBound_of_antitone {u : ℕ → ℝ} {N : ℕ} {M : ℝ}
-    (hM : 0 ≤ M) (hu : AntitoneOn u (Set.Iic N))
+theorem finiteVariationBound_of_antitone (hu : AntitoneOn u (Set.Iic N))
     (hb : ∀ i ≤ N, 0 ≤ u i ∧ u i ≤ M) :
     FiniteVariationBound (fun i => (u i : ℂ)) N M := by
-  refine ⟨hM,?_,?_⟩
-  · intro i hi
-    simpa only [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hb i hi).1] using (hb i hi).2
+  pm_4345
   · have he : ∑ i ∈ Finset.range N, ‖(u (i+1):ℂ)-(u i:ℂ)‖ = u 0-u N := by
       calc
         _ = ∑ i ∈ Finset.range N, (u i-u (i+1)) := by
-          apply Finset.sum_congr rfl
-          intro i hi
-          rw [← Complex.ofReal_sub,Complex.norm_real,Real.norm_eq_abs,
-            abs_of_nonpos (sub_nonpos.mpr (hu (Finset.mem_range.mp hi).le
-              (Finset.mem_range.mp hi) (by omega)))]
+          pm_5138 abs_of_nonpos sub_nonpos.mpr
           ring
         _ = _ := Finset.sum_range_sub' u N
-    rw [he]
-    linarith [(hb 0 (Nat.zero_le N)).2,(hb N le_rfl).1]
+    pm_6173 hb
+end
 
 theorem finiteVariationBound_of_envelope {f : ℕ → ℂ} {e : ℕ → ℝ} {N : ℕ} {M : ℝ}
     (hM : 0 ≤ M) (he : ∀ i ≤ N, 0 ≤ e i) (hm : AntitoneOn e (Set.Iic N))
@@ -144,8 +134,7 @@ theorem finiteVariationBound_comp_of_lipschitz {f : ℝ → ℂ} {u : ℕ → �
               (Finset.mem_range.mp hi) (by omega)))]
             ring
           _ = _ := Finset.sum_range_sub' u N
-      rw [he]
-      linarith [(hr 0 (Nat.zero_le N)).2,(hr N le_rfl).1]
+      pm_6173 hr
   calc
     _ ≤ ∑ i ∈ Finset.range N, M*|u (i+1)-u i| := by
       apply Finset.sum_le_sum

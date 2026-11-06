@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonLinearSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawCost
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,13 +36,7 @@ theorem source_normalized (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal
   apply Finset.sum_congr rfl
   intro B hB
   rw [live_column_rectangle]
-  have hv:=volume_pos (commonData s C R B)
-  have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
-  have he:volume (commonData s C R B)*rawReduction B.val s.P=volume s.toData:=by
-    rw [common_volume]
-    exact raw_scale_identity B.val (alloc_ne s C B) (s.X₁*s.X₂) s.P
-  have hs:Real.sqrt (volume s.toData)=Real.sqrt (volume (commonData s C R B))*
-      Real.sqrt (rawReduction B.val s.P):=by rw [←he,Real.sqrt_mul hv.le]
+  pm_2955
   unfold commonScalar maskedAmplitude
   change (Real.sqrt (volume s.toData):ℂ)⁻¹*(_*_) =
     ((Real.sqrt (rawReduction B.val s.P):ℂ)⁻¹*_)*

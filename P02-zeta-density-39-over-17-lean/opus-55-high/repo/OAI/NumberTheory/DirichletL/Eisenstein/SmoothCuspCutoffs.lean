@@ -9,75 +9,32 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 def cuspTransition (a b v : ℝ) : ℝ := Real.smoothTransition ((v-a)/(b-a))
 
@@ -85,12 +42,15 @@ lemma cuspTransition_contDiff (a b : ℝ) : ContDiff ℝ ∞ (cuspTransition a b
   unfold cuspTransition
   fun_prop
 
-lemma cuspTransition_zero (a b v : ℝ) (hab : a<b) (hv : v≤a) : cuspTransition a b v=0 :=
+section
+variable (a b v : ℝ) (hab : a<b)
+include a b v hab
+lemma cuspTransition_zero (hv : v≤a) : cuspTransition a b v=0 :=
   Real.smoothTransition.zero_of_nonpos (div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hv) (sub_pos.mpr hab).le)
-lemma cuspTransition_one (a b v : ℝ) (hab : a<b) (hv : b≤v) : cuspTransition a b v=1 :=
+lemma cuspTransition_one (hv : b≤v) : cuspTransition a b v=1 :=
   Real.smoothTransition.one_of_one_le ((one_le_div (sub_pos.mpr hab)).mpr (by linarith))
 
-lemma cuspTransition_derivatives (a b v : ℝ) (hab : a<b) (hv : v<a ∨ b<v) :
+lemma cuspTransition_derivatives (hv : v<a ∨ b<v) :
     deriv (cuspTransition a b) v=0 ∧ deriv (deriv (cuspTransition a b)) v=0 := by
   rcases hv with hv | hv
   · have heq : cuspTransition a b =ᶠ[𝓝 v] (fun _ => (0:ℝ)) := by
@@ -101,19 +61,23 @@ lemma cuspTransition_derivatives (a b v : ℝ) (hab : a<b) (hv : v<a ∨ b<v) :
       filter_upwards [Ioi_mem_nhds hv] with x hx
       exact cuspTransition_one a b x hab hx.le
     exact ⟨heq.deriv_eq.trans (deriv_const _ _),heq.deriv.deriv_eq.trans (by simp)⟩
+end
 
 def positiveHeightPower (s : ℂ) (v : ℝ) : ℂ := logRatioPower s v 1
-lemma positiveHeightPower_eq_cpow (s : ℂ) (v : ℝ) (hv : 0<v) :
+section
+variable (s : ℂ) (v : ℝ)
+include s v
+lemma positiveHeightPower_eq_cpow (hv : 0<v) :
     positiveHeightPower s v=(v:ℂ)^s := by
   simpa only [positiveHeightPower,div_one] using logRatioPower_eq_cpow s hv (by norm_num : (0:ℝ)<1)
 
-lemma positiveHeightPower_hasDerivAt (s : ℂ) (v : ℝ) (hv : v≠0) :
+lemma positiveHeightPower_hasDerivAt (hv : v≠0) :
     HasDerivAt (positiveHeightPower s) (positiveHeightPower s v*s/(v:ℂ)) v := by
   convert hasDerivAt_logRatioPower s (hasDerivAt_id v) (hasDerivAt_const v (1:ℝ)) hv one_ne_zero using 1
   · rfl
-  · simp [positiveHeightPower,div_eq_mul_inv]
+  aesop
 
-lemma positiveHeightPower_hasDerivAt_deriv (s : ℂ) (v : ℝ) (hv : v≠0) :
+lemma positiveHeightPower_hasDerivAt_deriv (hv : v≠0) :
     HasDerivAt (deriv (positiveHeightPower s))
       (positiveHeightPower s v*s*(s-1)/(v:ℂ)^2) v := by
   convert hasDerivAt_deriv_logRatioPower s id (fun _ => 1) (fun _ => 1) (fun _ => 0) v 0 0
@@ -125,24 +89,28 @@ lemma positiveHeightPower_hasDerivAt_deriv (s : ℂ) (v : ℝ) (hv : v≠0) :
       Complex.ofReal_zero,positiveHeightPower]
     field_simp [Complex.ofReal_ne_zero.mpr hv]
     ; ring
+end
 
 def cuspSeedProfile (a b : ℝ) (s : ℂ) (v : ℝ) : ℂ :=
   (cuspTransition a b v:ℂ)*positiveHeightPower s v
 
-lemma cuspSeedProfile_zero (a b : ℝ) (s : ℂ) (v : ℝ) (hab : a<b) (hv : v≤a) :
+section
+variable (a b : ℝ) (s : ℂ) (v : ℝ)
+include a b s v
+lemma cuspSeedProfile_zero (hab : a<b) (hv : v≤a) :
     cuspSeedProfile a b s v=0 := by simp [cuspSeedProfile,cuspTransition_zero a b v hab hv]
-lemma cuspSeedProfile_incoming (a b : ℝ) (s : ℂ) (v : ℝ)
+lemma cuspSeedProfile_incoming
     (hab : a<b) (hv : b≤v) (hpos : 0<v) : cuspSeedProfile a b s v=(v:ℂ)^s := by
   simp [cuspSeedProfile,cuspTransition_one a b v hab hv,positiveHeightPower_eq_cpow s v hpos]
 
-lemma cuspSeedProfile_hasDerivAt (a b : ℝ) (s : ℂ) (v : ℝ) (hv : v≠0) :
+lemma cuspSeedProfile_hasDerivAt (hv : v≠0) :
     HasDerivAt (cuspSeedProfile a b s)
       (((deriv (cuspTransition a b) v:ℝ):ℂ)*positiveHeightPower s v+
         (cuspTransition a b v:ℂ)*(positiveHeightPower s v*s/(v:ℂ))) v := by
   exact (((cuspTransition_contDiff a b).differentiable (by simp) v).hasDerivAt.ofReal_comp).mul
     (positiveHeightPower_hasDerivAt s v hv)
 
-lemma cuspSeedProfile_hasDerivAt_deriv (a b : ℝ) (s : ℂ) (v : ℝ) (hv : v≠0) :
+lemma cuspSeedProfile_hasDerivAt_deriv (hv : v≠0) :
     HasDerivAt (deriv (cuspSeedProfile a b s))
       (((deriv (deriv (cuspTransition a b)) v:ℝ):ℂ)*positiveHeightPower s v+
         2*((deriv (cuspTransition a b) v:ℝ):ℂ)*(positiveHeightPower s v*s/(v:ℂ))+
@@ -161,12 +129,16 @@ lemma cuspSeedProfile_hasDerivAt_deriv (a b : ℝ) (s : ℂ) (v : ℝ) (hv : v�
   convert (hdχ.mul hH).add (hχ.mul hdH) using 1
   · rw [hH.deriv]
     ring
+end
 
 def cuspSeedDefectProfile (a b : ℝ) (s : ℂ) (v : ℝ) : ℂ :=
   positiveHeightPower s v*((v:ℂ)^2*((deriv (deriv (cuspTransition a b)) v:ℝ):ℂ)+
     (2*s-1)*(v:ℂ)*((deriv (cuspTransition a b) v:ℝ):ℂ))
 
-lemma cuspSeedProfile_laplace_defect (a b : ℝ) (s : ℂ) (v : ℝ) (hv : v≠0) :
+section
+variable (a b : ℝ) (s : ℂ) (v : ℝ)
+include a b s v
+lemma cuspSeedProfile_laplace_defect (hv : v≠0) :
     (v:ℂ)^2*deriv (deriv (cuspSeedProfile a b s)) v-
       (v:ℂ)*deriv (cuspSeedProfile a b s) v-s*(s-2)*cuspSeedProfile a b s v=
         cuspSeedDefectProfile a b s v := by
@@ -175,10 +147,11 @@ lemma cuspSeedProfile_laplace_defect (a b : ℝ) (s : ℂ) (v : ℝ) (hv : v≠0
   field_simp [Complex.ofReal_ne_zero.mpr hv]
   ; ring
 
-lemma cuspSeedDefectProfile_zero (a b : ℝ) (s : ℂ) (v : ℝ) (hab : a<b) (hv : v<a ∨ b<v) :
+lemma cuspSeedDefectProfile_zero (hab : a<b) (hv : v<a ∨ b<v) :
     cuspSeedDefectProfile a b s v=0 := by
   obtain ⟨h₁,h₂⟩ := cuspTransition_derivatives a b v hab hv
   simp [cuspSeedDefectProfile,h₁,h₂]
+end
 
 lemma cuspSeedDefectProfile_hasCompactSupport (a b : ℝ) (s : ℂ) (hab : a<b) :
     HasCompactSupport (cuspSeedDefectProfile a b s) := by
@@ -192,12 +165,16 @@ def rowHeight (u : Fin 2 → ℂ) (p : SpatialCoordinates) : ℝ :=
   p 2 / quadraticHeightDenominator (Complex.normSq (u 0)) (u 0*star (u 1)).re
     (-(u 0*star (u 1)).im) (Complex.normSq (u 1)) (p 0) (p 1) (p 2)
 
-lemma rowHeight_pos (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (u : Fin 2 → ℂ)
+include u
+lemma rowHeight_pos (hu : u≠0) (p : SpatialCoordinates) (hp : 0<p 2) :
     0<rowHeight u p := div_pos hp (row_denominator_pos u hu p hp)
-lemma rowHeight_eq_transformedHeight (u : Fin 2 → ℂ) (p : SpatialCoordinates) :
+lemma rowHeight_eq_transformedHeight (p : SpatialCoordinates) :
     rowHeight u p=transformedHeight ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) u := by
   rw [transformedHeight,heightDenominator_eq_quadratic]
   rfl
+end
 lemma cosetHeight_upperPoint_rowHeight (r : CuspCosets) (p : SpatialCoordinates) (hp : 0<p 2) :
     cosetHeight r (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp)=rowHeight (embeddedRow r) p := by
   change (rowEnergy (rowOperator (upperSection ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp) (embeddedRow r)))⁻¹=_
@@ -246,7 +223,10 @@ lemma locally_finite_high_rows (p : SpatialCoordinates) (hp : 0<p 2) :
 def heightPoincareField (F : ℝ → ℂ) (p : SpatialCoordinates) : ℂ :=
   ∑'r : CuspCosets,(cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) p)
 
-lemma heightPoincareField_locally_finite (F : ℝ → ℂ) (hF : ∀v≤1,F v=0)
+section
+variable (F : ℝ → ℂ)
+include F
+lemma heightPoincareField_locally_finite (hF : ∀v≤1,F v=0)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     ∃S : Finset CuspCosets, heightPoincareField F =ᶠ[𝓝 p]
       (fun q => ∑r∈S,(cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) q)) := by
@@ -257,7 +237,7 @@ lemma heightPoincareField_locally_finite (F : ℝ → ℂ) (hF : ∀v≤1,F v=0)
   intro r hr
   rw [hF _ ((hrows q hq).2 r hr).le,mul_zero]
 
-lemma heightPoincareField_contDiffAt (F : ℝ → ℂ) (hzero : ∀v≤1,F v=0)
+lemma heightPoincareField_contDiffAt (hzero : ∀v≤1,F v=0)
     (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v) (p : SpatialCoordinates) (hp : 0<p 2) :
     ContDiffAt ℝ ∞ (heightPoincareField F) p := by
   obtain ⟨S,hS⟩ := heightPoincareField_locally_finite F hzero p hp
@@ -267,7 +247,7 @@ lemma heightPoincareField_contDiffAt (F : ℝ → ℂ) (hzero : ∀v≤1,F v=0)
   exact contDiffAt_const.mul ((hF _ (rowHeight_pos _ (embeddedRow_ne_zero r) p hp)).comp p
     (rowHeight_contDiffAt _ (embeddedRow_ne_zero r) p hp))
 
-lemma heightPoincareField_eq_cuspCorrection (F : ℝ → ℂ) (hzero : ∀v≤1,F v=0)
+lemma heightPoincareField_eq_cuspCorrection (hzero : ∀v≤1,F v=0)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     heightPoincareField F p=cuspCutoffCorrection 1 F
       (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp) := by
@@ -278,6 +258,7 @@ lemma heightPoincareField_eq_cuspCorrection (F : ℝ → ℂ) (hzero : ∀v≤1,
   split_ifs with h
   · rfl
   · rw [hzero _ (le_of_not_gt h),mul_zero]
+end
 
 open CubicKubota
 
@@ -289,12 +270,15 @@ lemma positiveHeightPower_contDiffAt (s : ℂ) (v : ℝ) (hv : v≠0) :
   unfold positiveHeightPower logRatioPower
   simpa only [Real.log_one,sub_zero] using hs.cexp
 
-lemma cuspSeedProfile_contDiffAt (a b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v) :
+section
+variable (a b : ℝ) (s : ℂ)
+include a b s
+lemma cuspSeedProfile_contDiffAt (v : ℝ) (hv : 0<v) :
     ContDiffAt ℝ ∞ (cuspSeedProfile a b s) v :=
   (Complex.ofRealCLM.contDiff.contDiffAt.comp v (cuspTransition_contDiff a b).contDiffAt).mul
     (positiveHeightPower_contDiffAt s v hv.ne')
 
-lemma cuspSeedDefectProfile_contDiffAt (a b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v) :
+lemma cuspSeedDefectProfile_contDiffAt (v : ℝ) (hv : 0<v) :
     ContDiffAt ℝ ∞ (cuspSeedDefectProfile a b s) v := by
   have hχ₁ : ContDiff ℝ ∞ (deriv (cuspTransition a b)) :=
     (contDiff_infty_iff_deriv.mp (cuspTransition_contDiff a b)).2
@@ -306,7 +290,7 @@ lemma cuspSeedDefectProfile_contDiffAt (a b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v
   exact (positiveHeightPower_contDiffAt s v hv.ne').mul
     (((hid.pow 2).mul hd₂).add ((contDiffAt_const.mul hid).mul hd₁))
 
-lemma cuspSeedDefectProfile_continuous (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) :
+lemma cuspSeedDefectProfile_continuous (ha : 0<a) (hab : a<b) :
     Continuous (cuspSeedDefectProfile a b s) := by
   rw [continuous_iff_continuousAt]
   intro v
@@ -316,6 +300,7 @@ lemma cuspSeedDefectProfile_continuous (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a
       exact cuspSeedDefectProfile_zero a b s x hab (Or.inl hx)
     exact continuousAt_const.congr heq.symm
   · exact (cuspSeedDefectProfile_contDiffAt a b s v (lt_of_lt_of_le ha (le_of_not_gt hv))).continuousAt
+end
 
 def smoothCuspSeed (a b : ℝ) (s : ℂ) : HyperbolicSpace → ℂ :=
   cuspCutoffCorrection 1 (cuspSeedProfile a b s)
@@ -323,33 +308,36 @@ def smoothCuspSeed (a b : ℝ) (s : ℂ) : HyperbolicSpace → ℂ :=
 def smoothCuspSeedDefect (a b : ℝ) (s : ℂ) : HyperbolicSpace → ℂ :=
   cuspCutoffCorrection 1 (cuspSeedDefectProfile a b s)
 
-lemma smoothCuspSeed_automorphy (a b : ℝ) (s : ℂ) (M : levelThree) (w : HyperbolicSpace) :
+section
+variable (a b : ℝ) (s : ℂ)
+include a b s
+lemma smoothCuspSeed_automorphy (M : levelThree) (w : HyperbolicSpace) :
     smoothCuspSeed a b s (complexMatrix M • w)=complexCharacter M*smoothCuspSeed a b s w :=
   cuspCutoffCorrection_automorphy 1 le_rfl _ M w
-lemma smoothCuspSeedDefect_automorphy (a b : ℝ) (s : ℂ) (M : levelThree) (w : HyperbolicSpace) :
+lemma smoothCuspSeedDefect_automorphy (M : levelThree) (w : HyperbolicSpace) :
     smoothCuspSeedDefect a b s (complexMatrix M • w)=complexCharacter M*smoothCuspSeedDefect a b s w :=
   cuspCutoffCorrection_automorphy 1 le_rfl _ M w
 
-lemma smoothCuspSeed_coordinate (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
+lemma smoothCuspSeed_coordinate (ha : 1<a) (hab : a<b)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     smoothCuspSeed a b s (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp)=
       heightPoincareField (cuspSeedProfile a b s) p :=
   (heightPoincareField_eq_cuspCorrection _
     (fun v hv => cuspSeedProfile_zero a b s v hab (hv.trans ha.le)) p hp).symm
-lemma smoothCuspSeedDefect_coordinate (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
+lemma smoothCuspSeedDefect_coordinate (ha : 1<a) (hab : a<b)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     smoothCuspSeedDefect a b s (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp)=
       heightPoincareField (cuspSeedDefectProfile a b s) p :=
   (heightPoincareField_eq_cuspCorrection _
     (fun v hv => cuspSeedDefectProfile_zero a b s v hab (Or.inl (lt_of_le_of_lt hv ha))) p hp).symm
 
-lemma smoothCuspSeed_contDiffAt (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
+lemma smoothCuspSeed_contDiffAt (ha : 1<a) (hab : a<b)
     (p : SpatialCoordinates) (hp : 0<p 2) :
     ContDiffAt ℝ ∞ (heightPoincareField (cuspSeedProfile a b s)) p :=
   heightPoincareField_contDiffAt _ (fun v hv => cuspSeedProfile_zero a b s v hab (hv.trans ha.le))
     (cuspSeedProfile_contDiffAt a b s) p hp
 
-lemma smoothCuspSeedDefect_support (a b : ℝ) (s : ℂ) (hab : a<b) (w : HyperbolicSpace)
+lemma smoothCuspSeedDefect_support (hab : a<b) (w : HyperbolicSpace)
     (hw : smoothCuspSeedDefect a b s w≠0) :
     ∃r : CuspCosets, a≤cosetHeight r w ∧ cosetHeight r w≤b := by
   by_contra hn
@@ -364,11 +352,11 @@ lemma smoothCuspSeedDefect_support (a b : ℝ) (s : ℂ) (hab : a<b) (w : Hyperb
         simpa only [not_and_or,not_le] using h
       simp [cuspCutoffTerm,cuspSeedDefectProfile_zero a b s _ hab hout]
     _ = 0 := tsum_zero
+end
 
 end
 
-open Filter
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 def rowLogHeight (u : Fin 2 → ℂ) (p : SpatialCoordinates) : ℝ :=
   Real.log (p 2)-Real.log (quadraticHeightDenominator (Complex.normSq (u 0))
@@ -391,8 +379,10 @@ lemma hasDerivAt_deriv_log_ratio (f g df dg : ℝ → ℝ) (x ddf ddg : ℝ)
     exact (((hf t).log ht.1).sub ((hg t).log ht.2)).deriv
   exact ((hdf.div (hf x) hf0).sub (hdg.div (hg x) hg0)).congr_of_eventuallyEq heq
 
-lemma rowLogHeight_hasDerivAt (u : Fin 2 → ℂ) (hu : u≠0)
-    (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
+section
+variable (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3)
+include u hu p hp j
+lemma rowLogHeight_hasDerivAt :
     HasDerivAt (fun t => rowLogHeight u (Function.update p j t)) (rowLogD u p j) (p j) := by
   let A := Complex.normSq (u 0)
   let B := (u 0*star (u 1)).re
@@ -410,8 +400,7 @@ lemma rowLogHeight_hasDerivAt (u : Fin 2 → ℂ) (hu : u≠0)
       ((quadraticHeightDenominator_hasDerivAt_v A B C D (p 0) (p 1) (p 2)).log hq)
     simpa [rowLogHeight,rowLogD,spatialLogD,heightLogDv,Function.update,A,B,C,D,Pi.sub_def] using! h
 
-lemma rowLogHeight_hasDerivAt_deriv (u : Fin 2 → ℂ) (hu : u≠0)
-    (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
+lemma rowLogHeight_hasDerivAt_deriv :
     HasDerivAt (deriv (fun t => rowLogHeight u (Function.update p j t))) (rowLogDD u p j) (p j) := by
   let A := Complex.normSq (u 0)
   let B := (u 0*star (u 1)).re
@@ -446,8 +435,12 @@ lemma rowLogHeight_hasDerivAt_deriv (u : Fin 2 → ℂ) (hu : u≠0)
       (by simpa only [id_eq,mul_one] using (hasDerivAt_id (p 2)).const_mul (2*A))
       hp.ne' hq
     simpa [rowLogHeight,rowLogDD,spatialLogDD,heightLogDvv,Function.update,A,B,C,D,div_eq_mul_inv] using h
+end
 
-lemma complex_profile_second_chain (F : ℝ → ℂ) (g : ℝ → ℝ) (x dg ddg : ℝ) (dF ddF : ℂ)
+section
+variable (F : ℝ → ℂ)
+include F
+lemma complex_profile_second_chain (g : ℝ → ℝ) (x dg ddg : ℝ) (dF ddF : ℂ)
     (hg : HasDerivAt g dg x) (hdg : HasDerivAt (deriv g) ddg x)
     (hF : HasDerivAt F dF (g x)) (hdF : HasDerivAt (deriv F) ddF (g x))
     (hlocal : ∀ᶠy in 𝓝 x,DifferentiableAt ℝ g y ∧ DifferentiableAt ℝ F (g y)) :
@@ -462,13 +455,13 @@ lemma complex_profile_second_chain (F : ℝ → ℂ) (g : ℝ → ℝ) (x dg ddg
   · simp only [Function.comp_apply,hg.deriv,hF.deriv,Complex.real_smul]
     ring
 
-lemma positiveProfile_differentiable (F : ℝ → ℂ)
+lemma positiveProfile_differentiable
     (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v) (v : ℝ) (hv : 0<v) :
     DifferentiableAt ℝ F v ∧ DifferentiableAt ℝ (deriv F) v :=
   ⟨(hF v hv).differentiableAt (by simp),
     ((hF v hv).derivWithin (m := ∞) (by simp)).differentiableAt (by simp)⟩
 
-lemma positiveProfile_exp_derivatives (F : ℝ → ℂ)
+lemma positiveProfile_exp_derivatives
     (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v) (t : ℝ) :
     HasDerivAt (fun y => F (Real.exp y))
       (deriv F (Real.exp t)*(Real.exp t:ℂ)) t ∧
@@ -483,6 +476,7 @@ lemma positiveProfile_exp_derivatives (F : ℝ → ℂ)
       (by simpa only [Real.deriv_exp] using Real.hasDerivAt_exp t) hdf.1.hasDerivAt hdf.2.hasDerivAt
     exact Filter.Eventually.of_forall (fun y =>
       ⟨Real.differentiable_exp y,(positiveProfile_differentiable F hF _ (Real.exp_pos y)).1⟩)
+end
 
 lemma rowProfile_axis_derivatives (F : ℝ → ℂ)
     (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v) (u : Fin 2 → ℂ) (hu : u≠0)
@@ -500,7 +494,7 @@ lemma rowProfile_axis_derivatives (F : ℝ → ℂ)
   have hgval : g (p j)=rowLogHeight u p := by simp [g,Function.update_eq_self]
   have hexp : Real.exp (g (p j))=rowHeight u p := by rw [hgval,exp_rowLogHeight u hu p hp]
   have hG := positiveProfile_exp_derivatives F hF (g (p j))
-  have hnear : ∀ᶠt in 𝓝 (p j),0<(Function.update p j t) 2 :=
+  have hnear : ∀ᶠ t in 𝓝 (p j),0<(Function.update p j t) 2 :=
     ((continuous_apply 2).comp (continuous_axis_update p j)).continuousAt.eventually_const_lt
       (by simpa only [Function.comp_apply,Function.update_eq_self] using hp)
   have heq : axisSlice (fun q => F (rowHeight u q)) p j =ᶠ[𝓝 (p j)] (fun t => G (g t)) := by
@@ -527,14 +521,18 @@ lemma rowProfile_axis_derivatives (F : ℝ → ℂ)
     · rw [hexp]
       ring
 
-lemma rowLog_eikonal (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hp : 0<p 2)
+include u hu p hp
+lemma rowLog_eikonal :
     (p 2)^2*((rowLogD u p 0)^2+(rowLogD u p 1)^2+(rowLogD u p 2)^2)=1 := by
   exact heightLog_eikonal _ _ _ _ _ _ _ (complex_row_quadratic_relation (u 0) (u 1)) hp.ne'
     (row_denominator_pos u hu p hp).ne'
-lemma rowLog_laplacian (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma rowLog_laplacian :
     (p 2)^2*(rowLogDD u p 0+rowLogDD u p 1+rowLogDD u p 2)-(p 2)*rowLogD u p 2= -2 := by
   exact heightLog_laplacian _ _ _ _ _ _ _ (complex_row_quadratic_relation (u 0) (u 1)) hp.ne'
     (row_denominator_pos u hu p hp).ne'
+end
 
 theorem rowProfile_laplacian (F : ℝ → ℂ) (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v)
     (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hp : 0<p 2) :
@@ -553,8 +551,6 @@ theorem rowProfile_laplacian (F : ℝ → ℂ) (hF : ∀v,0<v→ContDiffAt ℝ �
       deriv F (rowHeight u p)*(rowHeight u p:ℂ))*hE+
     (deriv F (rowHeight u p)*(rowHeight u p:ℂ))*hD
 
-open Filter
-open scoped BigOperators Classical Topology ContDiff
 
 lemma axisLaplacian_congr_eventuallyEq (f g : SpatialCoordinates → ℂ) (p : SpatialCoordinates)
     (heq : f =ᶠ[𝓝 p] g) : axisLaplacian f p=axisLaplacian g p := by
@@ -596,7 +592,7 @@ lemma axisLaplacian_finset_sum {ι : Type*} (S : Finset ι) (f : ι → SpatialC
       convert HasDerivAt.sum (fun i hiS => (hi i hiS).hasDerivAt) using 1
       ext y
       simp only [axisSlice,Finset.sum_apply]
-    have hnear : ∀ᶠx in 𝓝 (p j),0<(Function.update p j x) 2 :=
+    have hnear : ∀ᶠ x in 𝓝 (p j),0<(Function.update p j x) 2 :=
       ((continuous_apply 2).comp (continuous_axis_update p j)).continuousAt.eventually_const_lt
         (by simpa only [Function.comp_apply,Function.update_eq_self] using hp)
     have heq : deriv (axisSlice (fun q => ∑i∈S,f i q) p j) =ᶠ[𝓝 (p j)]

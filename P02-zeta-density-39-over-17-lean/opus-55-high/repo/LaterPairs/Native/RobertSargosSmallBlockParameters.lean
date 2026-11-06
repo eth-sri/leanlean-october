@@ -57,6 +57,6 @@ theorem robertSargos_small_block_parameters {M H lam : ℝ}
       _ = _ := (Real.sqrt_eq_rpow _).symm
   have hsqrt : Real.sqrt lam ≤ 1/4 := by
     nlinarith [Real.sq_sqrt hlam.le,Real.sqrt_nonneg lam]
-  exact ⟨hHM.trans (hHtoM.trans hM),by linarith,hfirst,hsecond⟩
+  grind
 
 end TaoTrudgianYang2025

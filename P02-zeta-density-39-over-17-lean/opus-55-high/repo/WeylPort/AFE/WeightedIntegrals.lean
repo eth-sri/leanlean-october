@@ -2,6 +2,7 @@ module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.FirstDerivativeTest
 public import WeylPort.AFE.WeightedIntegralSums
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,13 +38,13 @@ theorem linear_wave_hasDerivAt (m u : ℝ) :
       ((2 * (Real.pi : ℂ) * I * (m : ℂ)) *
         exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (u : ℂ))) u := by
   have hd := ((hasDerivAt_id (u : ℂ)).const_mul (2 * (Real.pi : ℂ) * I * (m : ℂ))).cexp
-  simpa only [id_eq, mul_one, mul_comm, one_mul] using hd.comp_ofReal
+  pm_99 id_eq mul_one mul_comm one_mul hd.comp_ofReal
 
 /-- Every finite J integral is integrable at zero when Re(s)<1. -/
 theorem intervalIntegrable_weighted_integrand {s : ℂ} (hs : s.re < 1) (a b m : ℝ) :
     IntervalIntegrable (fun u : ℝ => (u : ℂ) ^ (-s) *
       exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (u : ℂ))) volume a b := by
-  exact (intervalIntegral.intervalIntegrable_cpow' (show -1 < (-s).re by simp; linarith)).mul_continuousOn
+  exact (intervalIntegral.intervalIntegrable_cpow' (show -1 < (-s).re by simp_all)).mul_continuousOn
     (continuous_linear_wave m).continuousOn
 
 /-- Integration by parts for a positive-real-part primitive, including the zero endpoint. -/
@@ -54,12 +55,12 @@ theorem integral_cpow_linear_wave_parts {z : ℂ} (hz : 0 < z.re) {x : ℝ} (hx 
         (2 * (Real.pi : ℂ) * I * (m : ℂ)) *
           (∫ u in 0..x, (u : ℂ) ^ z *
             exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (u : ℂ))) := by
-  have hzn : z ≠ 0 := by intro h; rw [h] at hz; simp at hz
+  have hzn : z ≠ 0 := by intro h; rw [h] at hz; simp_all
   have hu := (continuous_ofReal_cpow_const hz).continuousOn (s := Set.uIcc 0 x)
   have hv := (continuous_linear_wave m).continuousOn (s := Set.uIcc 0 x)
   have hdu (u : ℝ) (hu : u ∈ Set.Ioo (min 0 x) (max 0 x)) :
       HasDerivAt (fun v : ℝ => (v : ℂ) ^ z) (z * (u : ℂ) ^ (z - 1)) u := by
-    have hup : 0 < u := by simpa only [min_eq_left hx.le] using hu.1
+    have hup : 0 < u := by grind
     exact hasDerivAt_ofReal_cpow_const hup.ne' hzn
   have hui : IntervalIntegrable (fun u : ℝ => z * (u : ℂ) ^ (z - 1)) volume 0 x :=
     (intervalIntegral.intervalIntegrable_cpow' (show -1 < (z - 1).re by simp; linarith)).const_mul z
@@ -83,10 +84,13 @@ theorem integral_cpow_linear_wave_parts {z : ℂ} (hz : 0 < z.re) {x : ℝ} (hx 
     simp_rw [mul_left_comm ((_) ^ z) (2 * (Real.pi : ℂ) * I * (m : ℂ))]
     exact intervalIntegral.integral_const_mul _ _
   rw [he₁, he₂] at h
-  exact eq_sub_iff_add_eq.mpr h
+  grind
 
+section
+variable {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) (m : ℝ)
+include s hs x hx m
 /-- One integration by parts for the actual J integral, with its vanishing lower boundary proved. -/
-theorem weightedIntegral_parts {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) (m : ℝ) :
+theorem weightedIntegral_parts :
     (1 - s) * weightedIntegral s 0 x m =
       (x : ℂ) ^ (1 - s) * exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (x : ℂ)) -
         (2 * (Real.pi : ℂ) * I * (m : ℂ)) * weightedIntegral (s - 1) 0 x m := by
@@ -94,7 +98,7 @@ theorem weightedIntegral_parts {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) 
   simpa only [weightedIntegral, neg_sub, show (1 - s) - 1 = -s by ring] using h
 
 /-- Two integrations by parts give every term of the source J(0,x,m) identity. -/
-theorem weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0 < x) (m : ℝ) :
+theorem weightedIntegral_parts_twice :
     weightedIntegral s 0 x m =
       (x : ℂ) ^ (1 - s) * exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (x : ℂ)) / (1 - s) -
         (2 * (Real.pi : ℂ) * I * (m : ℂ)) * (x : ℂ) ^ (2 - s) *
@@ -105,9 +109,7 @@ theorem weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0
   have h₂ := weightedIntegral_parts (s := s - 1) (by simp only [sub_re, one_re]; linarith) hx m
   rw [show 1 - (s - 1) = 2 - s by ring, show s - 1 - 1 = s - 2 by ring] at h₂
   have hn₁ : 1 - s ≠ 0 := by
-    intro h
-    have hr := congrArg Complex.re h
-    simp only [sub_re, one_re, zero_re] at hr
+    pm_5552 hr sub_re one_re
     linarith
   have hn₂ : 2 - s ≠ 0 := by
     intro h
@@ -129,6 +131,7 @@ theorem weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1) {x : ℝ} (hx : 0
   dsimp only [A] at hprod
   field_simp
   linear_combination hprod
+end
 
 /-- The positive-frequency endpoint wave has the exact alternating sign at every half-integer. -/
 theorem linear_wave_half_integer (k : ℤ) (m : ℕ) :

@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosShiftBoundary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -18,17 +19,15 @@ namespace TaoTrudgianYang2025
 theorem norm_integer_average_le (v : ℤ → ℂ) (N : ℕ) (hN : 0 < N) (B : ℝ)
     (hv : ∀ n ∈ Finset.Icc (1:ℤ) N, ‖v n‖ ≤ B) :
     ‖(N:ℂ)⁻¹*∑ n ∈ Finset.Icc (1:ℤ) N, v n‖ ≤ B := by
-  have hc : (Finset.Icc (1:ℤ) N).card = N := by rw [Int.card_Icc]; omega
-  have hn : (N:ℝ) ≠ 0 := by positivity
+  pm_1385
+  pm_489 hn N
   rw [norm_mul,norm_inv,Complex.norm_natCast]
   calc
     _ ≤ (N:ℝ)⁻¹*∑ n ∈ Finset.Icc (1:ℤ) N, ‖v n‖ :=
       mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
     _ ≤ (N:ℝ)⁻¹*∑ _n ∈ Finset.Icc (1:ℤ) N, B :=
       mul_le_mul_of_nonneg_left (Finset.sum_le_sum hv) (by positivity)
-    _ = B := by
-      simp only [Finset.sum_const,hc,nsmul_eq_mul]
-      rw [← mul_assoc,inv_mul_cancel₀ hn,one_mul]
+    _ = B := by simp_all
 
 theorem norm_robertSargos_common_shift_error (w : ℤ → ℂ) (M H Q N : ℕ) (h q : ℤ)
     (hN : 0 < N) (hh : h ∈ Finset.Ico (H:ℤ) (2*H))

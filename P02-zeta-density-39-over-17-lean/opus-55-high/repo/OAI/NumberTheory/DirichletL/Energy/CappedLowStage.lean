@@ -1,17 +1,18 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.NaturalLowStage
 public import OAI.NumberTheory.DirichletL.Energy.CappedRequests
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedLowStage
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
@@ -28,13 +29,13 @@ theorem actual_capped_low
     (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
     (hW:ContDiff ℝ ∞ W)(haslot:0<aslot)
     (hWs:Function.support W⊆Set.Icc aslot bslot)(hbslot:0≤bslot)
-    (ha:0<a)(hb:0≤b)(hrad:2≤radial)(hmask:0≤Bmask)(hMcap:0≤Mcap)
+    (ha:0<a)(hb:0≤b)(hrad:2≤ radial)(hmask:0≤Bmask)(hMcap:0≤Mcap)
     (hκ:(3/4:ℝ)≤κ)(hε:0<ε)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
-    (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(k:ℕ)(hk:k<count Mcap ε)
+    (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(k:ℕ)(hk:k< count Mcap ε)
     (hold:CenteredMomentEnergyCappedWidthInduction.CertifiedBand (α:=α) M H hH
       W bslot a b radial Bmask L lo hi Mcap κ ε k):
     ∃U:Finset (ℕ×ℕ),∃J:ℕ,∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+      internalQ Q η₀≠0→ internalQ Q η₀≠⊤→ internalQ Q η₀≤Ideal.span {(72:O)}→
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
         PositiveLowAt (α:=α) M H hH W bslot (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (requestLength Mcap Bmask (lengthAt Mcap Bmask L ε (k+1)))
@@ -46,31 +47,28 @@ theorem actual_capped_low
           (bandWidth Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
           (physicalLoss Mcap (finalSourceCap Mcap Bmask L ε) ε k) Z J U C :=by
   let Bs:=finalSourceCap Mcap Bmask L ε
-  let Ag:=2*range Mcap Bmask L (count Mcap ε)+Mcap+1
-  let Mp:=bandWidth Mcap Bs ε (k+1)
-  let Mc:=bandWidth Mcap Bs ε k
+  pm_7129 Ag
+  pm_5842
   let Lreq:=requestLength Mcap Bmask (lengthAt Mcap Bmask L ε (k+1))
-  have hBs:0≤Bs:=sourceCap_nonneg Mcap Bmask L hMcap hmask _
-  have hRange:=range_nonneg Mcap Bmask L hMcap hmask (count Mcap ε)
-  have hAg:0≤Ag:=by dsimp [Ag];positivity
+  pm_6536 hBs Bs sourceCap_nonneg hMcap
+  pm_8267 hMcap
+  pm_100 hAg Ag
   have hMp:0≤Mp:=bandWidth_nonneg Mcap Bs ε hMcap hBs hε (k+1)
   have hMc:0≤Mc:=bandWidth_nonneg Mcap Bs ε hMcap hBs hε k
   have hMpCap:Mp≤Mcap:=bandWidth_le Mcap Bs ε (k+1)
-  have hMpAg:Mp≤Ag:=by dsimp [Ag];linarith
+  pm_844 hMpAg Mp Ag
   have hLnext:0≤lengthAt Mcap Bmask L ε (k+1):=
     range_nonneg Mcap Bmask L hMcap hmask _
   have hLreq:0≤Lreq:=(request_bounds Mcap Bmask _ hMcap hmask hLnext).1
   have hκ0:0≤κ:=by linarith
   have hbounds:=bounds Mcap Bs κ ε hMcap hBs hκ0 hε
   have hmesh:0≤fineMesh Mcap Bmask L κ ε:=hbounds.2.2.2.2.1.le
-  have hr:0<reserve Mcap Bs ε:=hbounds.2.2.2.1
+  have hr:0< reserve Mcap Bs ε:=hbounds.2.2.2.1
   have hr4:reserve Mcap Bs ε/4≤1:=by
-    have hh:reserve Mcap Bs ε≤amplification ε/100:=min_le_left _ _
+    pm_6549 hh Mcap Bs
     have hs:=hbounds.2.1
     linarith
-  have hready:CenteredMomentEnergyFirstLiveAdmission.readyBudget Ag Bmask≤Bs:=
-    readyBudget_le_schedule Mcap Bmask L ε Ag Bmask hMcap hmask le_rfl le_rfl
-  have hdrop:Mp-amplification ε/2≤Mc:=parent_drop Mcap Bs ε hε k
+  pm_5249 CenteredMomentEnergyFirstLiveAdmission.readyBudget Ag hMcap
   have hlength:2*max Lreq Mp+reserve Mcap Bs ε/4≤lengthAt Mcap Bmask L ε k:=
     previous_admits Mcap Bmask L ε Mp (reserve Mcap Bs ε/4) hMcap hmask hMpCap hr4 k hk
   have hsupport:=child_support a b Mcap ε k hk
@@ -81,9 +79,8 @@ theorem actual_capped_low
     Mcap Ag Bs Bmask Mp Mc Lreq (fineMesh Mcap Bmask L κ ε) κ ε k
     hMcap hAg hBs hmask hMp hMc hLreq hmesh hMpAg hready hκ hbeta hκbeta hε
     le_rfl hdrop degree S
-  refine ⟨U,J,?_⟩
-  intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨Cz,Cp,hCz,hCp,hold⟩:=hold η₀ Q hQM hQ0 hQt hQ72
+  pm_3332
+  pm_7298 Cz Cp hCz hCp hold
   obtain ⟨Cs,hCs,hstage⟩:=hstage η₀ Q hQM hQ0 hQt hQ72
   refine ⟨Cs*(Cz+Cp+1),by positivity,?_⟩
   filter_upwards [hold,hstage] with Z hold hs

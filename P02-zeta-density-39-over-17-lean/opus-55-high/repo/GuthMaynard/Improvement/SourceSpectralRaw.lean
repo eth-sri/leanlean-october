@@ -2,6 +2,7 @@ module
 public import GuthMaynard.Improvement.SpectralMassAssembly
 public import GuthMaynard.Improvement.OperatorSourceMixed
 public import GuthMaynard.Improvement.FixedCutoffs
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -33,9 +34,9 @@ theorem source_spectral_raw (w : MathCollab.Density.ComparisonCutoff)
     (by norm_num : (4:ℝ)≤5) w.one_on hs hη
   obtain ⟨R,hR,hmix⟩ := operator_source_mixed (squareReflectionCutoff w.toReflectionCutoff)
     hε hA hp
-  refine ⟨P,D,R,hP,hD,hR,?_⟩
+  pm_211 P D R hP hD hR
   intro N L T t₀ hN hNL hT hupper a μ ha hm hi h2 h0 hsupport B hB hμ
-  let _ : IsFiniteMeasure (timeMeasure μ) := timeMeasure_finite hi
+  pm_6603 hi
   obtain ⟨S,hS,⟨b⟩⟩ := operator_countable_hilbertBasis (timeMeasure μ)
   let : Countable S := hS
   have hμD (t : ℝ) : μ t ≤ ‖boundedPolynomial N a t‖^2 :=

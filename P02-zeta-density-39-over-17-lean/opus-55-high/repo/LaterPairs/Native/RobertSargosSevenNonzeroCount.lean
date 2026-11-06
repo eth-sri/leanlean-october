@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosReducedCount
 public import LaterPairs.Native.RobertSargosSevenMultiplicity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,18 +24,19 @@ theorem robertSargos_quadratic_difference {r q₁ q₂ h₁ h₂ n₁ n₂ : ℝ
     unfold robertSargosLinear at h
     linarith
   unfold robertSargosQuadratic robertSargosReduced
-  nlinarith only [mul_eq_zero_of_left hl (2*n₂)]
+  grind
 
 
-theorem RobertSargosSevenSystem.linear_real {R H Q N δ : ℝ}
-    {p : RobertSargosSevenPoint} (h : RobertSargosSevenSystem R H Q N δ p) :
+section
+variable {R H Q N δ : ℝ} {p : RobertSargosSevenPoint} (h : RobertSargosSevenSystem R H Q N δ p)
+include R H Q N δ p h
+theorem RobertSargosSevenSystem.linear_real :
     robertSargosLinear p.r p.q₁ p.h₁ p.n₁ =
       robertSargosLinear p.r p.q₂ p.h₂ p.n₂ := by
   unfold robertSargosLinear
   exact_mod_cast h.linear
 
-theorem RobertSargosSevenSystem.to_reduced {R H Q N δ : ℝ}
-    {p : RobertSargosSevenPoint} (h : RobertSargosSevenSystem R H Q N δ p)
+theorem RobertSargosSevenSystem.to_reduced
     (hne : p.n₁ ≠ p.n₂) :
     RobertSargosReducedSystem R H Q δ (robertSargosDisplacementPoint p) := by
   refine ⟨h.r_ne_zero,h.r_bound,h.q₁_support,h.q₂_support,h.h₁_support,
@@ -45,6 +47,7 @@ theorem RobertSargosSevenSystem.to_reduced {R H Q N δ : ℝ}
       δ*H*Q^2
     rw [Int.cast_sub,← robertSargos_quadratic_difference h.linear_real]
     exact h.near
+end
 
 
 
@@ -55,16 +58,13 @@ theorem exists_robertSargos_seven_nonzero_count (ε : ℝ) (hε : 0 < ε) :
       (∀ p ∈ S, p.n₁ ≠ p.n₂) →
       (S.card:ℝ) ≤ C*(R*N*H*Q)^(1+ε)*(1+δ*Q) := by
   classical
-  obtain ⟨C,hC,hcount⟩ := exists_robertSargos_reduced_count ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hcount exists_robertSargos_reduced_count ε hε
   intro S R H Q N δ hR hH hQ hN hδ hRH hmem hne
-  have hN0 : 0 ≤ N := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
+  pm_255 hN0 N hQ0 Q
   have hB : 0 ≤ R*H*Q := by positivity
   have ht : ∀ p ∈ S.image robertSargosDisplacementPoint,
       RobertSargosReducedSystem R H Q δ p := by
-    intro q hq
-    obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hq
+    pm_2532 q hq p hp
     exact (hmem p hp).to_reduced (hne p hp)
   have hb := hcount _ R H Q δ hR hH hQ hδ hRH ht
   calc

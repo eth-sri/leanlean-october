@@ -23,7 +23,7 @@ lemma sourceRowTerm_central_strict_norm (eta a rho x w z : ℂ)
     have ht : 0≤(Ideal.absNorm (Ideal.span {p}):ℝ)^(3/2:ℝ) := by positivity
     simpa only [sourceScalar,Nat.reduceMul,Nat.reduceAdd,Nat.reduceSub,ite_false,
       Nat.reduceEqDiff,mul_zero,add_zero] using hb.trans (show _≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^(3/2:ℝ) by linarith)
-  · norm_num ; linarith
+  grind
 
 include hc in
 lemma sourceRowTerm_central_boundary_norm (eta a rho x w z : ℂ)

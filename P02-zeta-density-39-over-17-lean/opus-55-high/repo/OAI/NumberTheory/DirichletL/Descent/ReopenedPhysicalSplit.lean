@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedBlocks
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedPhysical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,13 +15,13 @@ open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def reopenedPhysicalSourceSum (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (source : CubeCoordinates ι→Finset ι→Ideal O→ℂ) : ℂ :=
+    (source : CubeCoordinates ι→ Finset ι→ Ideal O→ℂ) : ℂ :=
   ∑ b∈reopenedCubeFamily Q,∑ C∈(pool\b.support).powerset,∑ I∈labels,
     reopenedPairCoefficient β b C I*source b C I
 
@@ -31,7 +32,7 @@ def reopenedPhysicalCutoff (b : CubeCoordinates ι) (I : Ideal O)
 
 def reopenedPhysicalRetained (pool : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
     (Ψ : O→*ℂ) (m : O) (I : Ideal O)
-    (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
+    (mark : (ι→₀ℕ)→ Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
     (K : ℝ) (R : Finset ι→ℝ) : ℂ :=
   canonicalCubeOuter p hp hcop hg b C Ψ Ψ m m (idealGenerator I)*
     ∑ D∈(C∪cubePrincipalSupport b.support b.leftExponent b.rightExponent b.leftBit b.rightBit).powerset,
@@ -48,8 +49,8 @@ theorem original_reopened_physical_split
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (hQ : ∀ v∈Q,v.support⊆pool)
     (labels : Finset (Ideal O)) (hlabels : ∀ I∈labels,I≠0)
     (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
-    (mark : Ideal O→(ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (K : ℝ) (hK : 0<K) (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
+    (mark : Ideal O→(ι→₀ℕ)→ Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
+    (K : ℝ) (hK : 0<K) (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
     (hR : ∀ b∈reopenedCubeFamily Q,∀ C∈(pool\b.support).powerset,∀ I∈labels,∀ D,0≤R b C I D) :
     (∑ I∈labels,∑' z:O,Φ (‖eisEmbedding z‖^2/K)*
       (‖varyingReopenedRow p hp hcop hg pool Q (β I) Ψ m (idealGenerator I)
@@ -68,10 +69,7 @@ theorem original_reopened_physical_split
   rw [varying_reopened_smoothed_source p hp hcop hg hinj hpr pool Q hQ labels β Ψ m]
   · unfold varyingCanonicalSourceTotal reopenedPhysicalSourceSum
     simp only [←Finset.sum_add_distrib]
-    apply Finset.sum_congr rfl
-    intro b hb
-    apply Finset.sum_congr rfl
-    intro C hC
+    pm_3397 b hb C hC
     apply Finset.sum_congr rfl
     intro I hI
     have hCb : Disjoint C b.support := by
@@ -84,10 +82,10 @@ theorem original_reopened_physical_split
     rw [he]
     simp only [reopenedPhysicalRetained]
     rw [show reopenedPhysicalCutoff p b I (R b C I) =
-      (fun D=>childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent
+      (fun D =>childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent
         b.leftBit b.rightBit I) (R b C I D)) from rfl]
     ring
-  · exact hK
+  grind
 
 end
 end SevenEighths.InverseMoment

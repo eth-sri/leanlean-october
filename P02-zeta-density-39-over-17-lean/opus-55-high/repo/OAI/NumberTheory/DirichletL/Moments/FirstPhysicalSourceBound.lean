@@ -1,19 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSource
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentFirstReduced
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
+open HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentCanonicalFirst
+open CenteredMomentFirstColumns CenteredMomentGaussEnergy
 open CenteredMomentFirstChildBound CenteredMomentChildAssembly CenteredMomentMobiusRegroup
 open CenteredMomentSmooth RayFourExpansion IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
@@ -85,6 +83,5 @@ theorem physical_block_child_bound (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 
-end
 
 end OAI

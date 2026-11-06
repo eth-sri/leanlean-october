@@ -52,7 +52,7 @@ theorem markedPhysicalProbe_eq_nested_mellin (η : HeckeFamily.Character)
       ←outer_source_scaled_inverse W1 a1 b1 ha1 hW1 υ (Ideal.absNorm s.val:ℝ) Y
         (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)) hY]
     ring
-  · simp only [mul_zero]
+  grind
 
 end SevenEighths.ProbePhysical
 end

@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.ShortDetectorLocalMass
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Complex MeasureTheory Set Filter MathCollab.Density
+public section
+open Complex MeasureTheory Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
 
@@ -21,7 +20,7 @@ theorem short_exponential_tail_domination {R t : ℝ} (ht : R ≤ |t|) :
   have hp : (1+|t|)^2 ≤ 48*(1+|t|/2)^2 := by nlinarith [abs_nonneg t,sq_nonneg |t|]
   have he : Real.exp (-|t|/2) ≤ Real.exp (-R/2) := Real.exp_le_exp.mpr (by linarith)
   have heq : Real.exp (-|t|) = Real.exp (-|t|/2)*Real.exp (-|t|/2) := by
-    rw [← Real.exp_add]; congr 1; ring
+    pm_6012
   unfold detectorGammaMajorant
   rw [hab,heq]
   have hh := mul_le_mul (mul_le_mul_of_nonneg_right hp (Real.exp_pos (-|t|/2)).le) he
@@ -35,10 +34,7 @@ theorem short_detector_kernel_coarse {ρ : ℂ} {Y : ℝ} (hY : 1 ≤ Y)
       384*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)*(1+|t|)^2*Real.exp (-|t|) := by
   have hYpos : 0 < Y := by linarith
   rw [short_detector_kernel_norm hYpos]
-  have ha : 0 < ρ.re-1/2 := by linarith
-  have hg := short_detector_gamma_bound ha (show ρ.re-1/2 ≤ 1/2 by linarith) t
-  rw [show -(ρ.re-1/2)=1/2-ρ.re by ring] at hg
-  have hc : 12/(ρ.re-1/2) ≤ 96 := (div_le_iff₀ ha).mpr (by linarith)
+  pm_4569 ρ.re hg
   have hg' : ‖Complex.Gamma (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖ ≤
       96*(1+|t|)*Real.exp (-|t|) := hg.trans (by gcongr)
   have hshift : shortTwistedNorm H (ρ.im+t) ≤
@@ -65,7 +61,7 @@ theorem short_detector_ordinate_tail :
   refine ⟨384*(J+1),by positivity,?_⟩
   intro H Y R ρ hY hβ hβ'
   let B := 384*(⌊2*H^((1:ℝ)/100)⌋₊:ℝ)*(1+|ρ.im|)
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  pm_61 hB B
   have hi := (short_integrable_detectorKernel_left (X := 2*H^((1:ℝ)/100))
     (show 0 < Y by linarith) hβ hβ').norm
   have hm := (short_scaled_majorant_integrable.const_mul (B*Real.exp (-R/2)))
@@ -107,7 +103,7 @@ theorem short_detector_ordinate_tail_eventually_small {δ : ℝ} (hδ : 0 < δ) 
   filter_upwards [eventually_ge_atTop (1:ℝ),hs] with H hH hsmall
   intro ρ hβ hβ' hγ
   have hn : 0 < H := by linarith
-  have hy : 1 ≤ H^((1:ℝ)/2) := Real.one_le_rpow hH (by norm_num)
+  pm_7889 hy H hH
   have hx : (⌊2*H^((1:ℝ)/100)⌋₊:ℝ) ≤ 2*H := by
     apply (Nat.floor_le (by positivity : 0 ≤ 2*H^((1:ℝ)/100))).trans
     have hh := Real.rpow_le_rpow_of_exponent_le hH (by norm_num : (1/100:ℝ) ≤ 1)

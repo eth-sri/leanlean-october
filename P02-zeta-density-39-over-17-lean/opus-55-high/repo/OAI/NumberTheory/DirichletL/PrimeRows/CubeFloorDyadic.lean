@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.SmallPartition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,13 +16,9 @@ lemma bounded_dyadic_power_sum (p : ℝ) (hp : 0<p) :
       (∀n∈F,(2:ℝ)^n≤H) → (∑n∈F,((2:ℝ)^n)^p)≤C*H^p := by
   obtain ⟨C,hC,hmain⟩ := CompletedDyadic.kernel_sum_bound p (p+1) hp (by linarith)
   refine ⟨(2:ℝ)^(p+1)*C,by positivity,?_⟩
-  intro H hH F hF
-  obtain ⟨hs,hb⟩ := hmain H⁻¹ (inv_pos.mpr hH)
+  pm_5854
   have hpoint (n : ℕ) (hn : n∈F) : ((2:ℝ)^n)^p≤(2:ℝ)^(p+1)*CompletedDyadic.kernelTerm H⁻¹ p (p+1) n := by
-    have hd : 0<1+H⁻¹*(2:ℝ)^n := by positivity
-    have hu : H⁻¹*(2:ℝ)^n≤1 := by
-      rw [mul_comm,←div_eq_mul_inv]
-      exact (div_le_one hH).mpr (hF n hn)
+    pm_305
     have hh : (1+H⁻¹*(2:ℝ)^n)^(p+1)≤(2:ℝ)^(p+1) :=
       Real.rpow_le_rpow hd.le (by linarith) (by linarith)
     unfold CompletedDyadic.kernelTerm
@@ -48,8 +45,7 @@ lemma retained_dyadic_partition (rows : Finset FreeRow) (H : ℝ)
   · intro hu
     obtain ⟨n,hn⟩ := exists_dyadicRows 1 (by norm_num) u (hrows u hu).1 (rowNorm_ge_one u)
     refine Finset.mem_biUnion.mpr ⟨n,?_,Finset.mem_inter.mpr ⟨hu,hn⟩⟩
-    rw [mem_smallDyadicIndices]
-    have hlo := (mem_dyadicRows.mp hn).2.1
+    pm_7813
     simpa only [one_mul] using hlo.trans (hrows u hu).2
 
 lemma retained_dyadic_sum {A : Type*} [AddCommMonoid A] (rows : Finset FreeRow) (H : ℝ)

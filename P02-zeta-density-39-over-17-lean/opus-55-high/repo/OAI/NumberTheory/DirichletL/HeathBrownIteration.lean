@@ -24,22 +24,26 @@ theorem step_sub (x : ℝ) (hx : (4 / 3 : ℝ) ≤ x) :
   rw [sub_mul, div_mul_cancel₀ _ hd]
   ring
 
-theorem step_gt {x : ℝ} (hx : (4 / 3 : ℝ) < x) :
+section
+variable {x : ℝ}
+include x
+theorem step_gt (hx : (4 / 3 : ℝ) < x) :
     (4 / 3 : ℝ) < step x := by
   have h := step_sub x hx.le
   have hp : 0 < 2 * (x - 4 / 3) / (3 * x - 1) :=
     div_pos (mul_pos (by norm_num) (sub_pos.mpr hx)) (by linarith)
   linarith
 
-theorem step_error_le {x : ℝ} (hx : (4 / 3 : ℝ) ≤ x) :
+theorem step_error_le (hx : (4 / 3 : ℝ) ≤ x) :
     step x - 4 / 3 ≤ (2 / 3 : ℝ) * (x - 4 / 3) := by
   rw [step_sub x hx]
   apply (div_le_iff₀ (by linarith : 0 < 3 * x - 1)).mpr
   nlinarith [sq_nonneg (x - 4 / 3)]
 
-theorem step_lt {x : ℝ} (hx : (4 / 3 : ℝ) < x) : step x < x := by
+theorem step_lt (hx : (4 / 3 : ℝ) < x) : step x < x := by
   have h := step_error_le hx.le
   linarith
+end
 
 def exponent : ℕ → ℝ
   | 0 => 2
@@ -62,7 +66,7 @@ theorem exponent_error_le (n : ℕ) :
         step_error_le (exponent_bounds n).1.le
       _ ≤ (2 / 3 : ℝ) * (2 / 3 : ℝ) ^ (n + 1) :=
         mul_le_mul_of_nonneg_left ih (by norm_num)
-      _ = (2 / 3 : ℝ) ^ (n + 1 + 1) := by rw [pow_succ]; ring
+      _ = (2 / 3 : ℝ) ^ (n + 1 + 1) := by grind
 
 theorem exists_exponent_lt {ε : ℝ} (hε : 0 < ε) :
     ∃ n : ℕ, exponent n < 4 / 3 + ε := by

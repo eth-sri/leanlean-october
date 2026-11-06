@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.DetectorPoweredHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,19 +42,18 @@ theorem poweredDetectorFamily_scales {T : ℝ} {p : (ℕ × ℕ) × ℕ}
       (2*(poweredDetectorScale T p) : ℝ) ≤ densityAmbient T := by
   obtain ⟨_, hlo, hhi, hℓ⟩ := Finset.mem_filter.mp hp
   let N := 2^p.1.1
-  have hN : 0 < N := by dsimp [N]; positivity
+  pm_64 hN N
   have hsc := detectorPower_piece_scales hT hlog hlo hhi hℓ
   refine ⟨by unfold poweredDetectorScale; positivity, hsc.1, ?_⟩
-  have hk := (detectorPower_spec (by linarith : 0 ≤ T) hlo).2.1
+  pm_7716 hlo
   have hs := detectorPower_support_scale hT hlog hlo hhi
   have hpw : (2 : ℝ)^(p.2+1) ≤ 2^(detectorPower T N) :=
-    pow_le_pow_right₀ (by norm_num) (by dsimp [N]; omega)
+    pow_le_pow_right₀ (by norm_num) (by grind)
   have hm := mul_le_mul_of_nonneg_right hpw (show 0 ≤ (N : ℝ)^(detectorPower T N) by positivity)
   dsimp [poweredDetectorScale]
   dsimp [N] at hm
   push_cast at hs hm ⊢
-  rw [mul_pow] at hs
-  rw [pow_succ] at hm
+  pm_4303 mul_pow hs pow_succ hm
   nlinarith
 
 /-- Complete normalized powered coverage. The family and all coefficients

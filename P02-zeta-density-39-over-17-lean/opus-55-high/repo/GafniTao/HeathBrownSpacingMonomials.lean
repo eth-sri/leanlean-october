@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownLogAbsorption
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,12 +48,12 @@ theorem heathBrown_three_sum_rpow_le
   rw [hmPower] at hpow
   have hmaxSum : max (x ^ r) (max (y ^ r) (z ^ r)) ≤
       x ^ r + y ^ r + z ^ r := by
-    have hxPower : 0 ≤ x ^ r := Real.rpow_nonneg hx _
-    have hyPower : 0 ≤ y ^ r := Real.rpow_nonneg hy _
-    have hzPower : 0 ≤ z ^ r := Real.rpow_nonneg hz _
+    pm_1446 hxPower x r hx
+    pm_1446 hyPower y r hy
+    pm_1446 hzPower z r hz
     apply max_le
     · linarith
-    · apply max_le <;> linarith
+    grind
   exact hpow.trans
     (mul_le_mul_of_nonneg_left hmaxSum (by positivity))
 
@@ -68,8 +69,10 @@ theorem heathBrownSpacingBase_rpow_le
   exact heathBrown_three_sum_rpow_le
     (by positivity) (by positivity) (by positivity) hr
 
-theorem heathBrown_spacing_monomial_identity
-    {N k : ℕ} (hN : 1 ≤ N) (hk : 2 ≤ k)
+section
+variable {N k : ℕ} (hN : 1 ≤ N)
+include N k hN
+theorem heathBrown_spacing_monomial_identity (hk : 2 ≤ k)
     {lambda : ℝ} (hlambda : 0 < lambda) :
     let r := heathBrownCriticalReciprocal k
     (N : ℝ) ^ (1 - 2 * r) *
@@ -79,10 +82,10 @@ theorem heathBrown_spacing_monomial_identity
       heathBrownThreeTerm N k lambda := by
   dsimp only
   let r := heathBrownCriticalReciprocal k
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+  pm_2780
   have hlambdaNonneg : 0 ≤ lambda := hlambda.le
   have hNnonneg : (0 : ℝ) ≤ N := hNpos.le
-  have hkr : (k : ℝ) ≠ 0 := by positivity
+  pm_392 hkr k
   rw [mul_add, mul_add]
   have hfirst :
       (N : ℝ) ^ (1 - 2 * r) * (N : ℝ) ^ r =
@@ -110,7 +113,7 @@ theorem heathBrown_spacing_monomial_identity
       _ = lambda ^ r * (N : ℝ) ^ (1 - 2 * r + 2 * r) := by
         rw [Real.rpow_add hNpos]
       _ = (N : ℝ) * lambda ^ r := by
-        rw [show 1 - 2 * r + 2 * r = 1 by ring, Real.rpow_one]
+        pm_2781
         ring
   have hlastPower :
       (lambda ^ (-(2 / (k : ℝ)))) ^ r =
@@ -126,14 +129,14 @@ theorem heathBrown_spacing_monomial_identity
     rw [hlastPower]
   unfold heathBrownThreeTerm
   dsimp only
-  rw [hfirst, hmiddle, hlast]
+  grind
 
 theorem heathBrownThreeTerm_pos
-    {N k : ℕ} (hN : 1 ≤ N)
     {lambda : ℝ} (hlambda : 0 < lambda) :
     0 < heathBrownThreeTerm N k lambda := by
   unfold heathBrownThreeTerm
   positivity
+end
 
 
 end

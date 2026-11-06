@@ -4,6 +4,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AbsoluteEnergy
 public import OAI.NumberTheory.DirichletL.Moments.Counting
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeRay
 public import OAI.NumberTheory.DirichletL.Moments.ComparisonReflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,28 +25,28 @@ lemma annularWeight_zero_norm (W : ℝ→ℂ) (D freq : ℝ) (hD : 0<D)
   have hn : 0<(I.absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (div_pos hn hD)]
-  simp only [Complex.neg_re,shift_re,neg_zero,Real.rpow_zero,mul_one]
+  simp_all
 
-lemma actual_coefficient_norm (χ : Character) (W : ℝ→ℂ) (D freq B : ℝ)
+section
+variable (χ : Character) (W : ℝ→ℂ)
+include χ W
+lemma actual_coefficient_norm (D freq B : ℝ)
     (hD : 0<D) (hB : 0≤B) (hW : ∀x,‖W x‖≤B) (I : Ideal O) :
     ‖idealCoeff χ I*annularWeight W D 0 freq I‖≤B := by
-  by_cases hI:I=0
-  · subst I
-    simpa only [idealCoeff_zero,zero_mul,norm_zero] using hB
-  rw [norm_mul,annularWeight_zero_norm W D freq hD I hI]
+  pm_1239 idealCoeff_zero
   exact (mul_le_mul (idealCoeff_norm_le_one χ I) (hW _) (norm_nonneg _) zero_le_one).trans_eq (one_mul B)
 
-lemma actual_coefficient_support (χ : Character) (W : ℝ→ℂ) (b D freq : ℝ)
+lemma actual_coefficient_support (b D freq : ℝ)
     (hD : 0<D) (hs : Function.support W⊆Set.Iic b) (I : Ideal O)
     (hne : idealCoeff χ I*annularWeight W D 0 freq I≠0) :
-    (I.absNorm:ℝ)≤max 1 b*D := by
+    (I.absNorm:ℝ)≤ max 1 b*D := by
   have hw : W ((I.absNorm:ℝ)/D)≠0:=by
     intro hz
-    exact hne (by simp only [annularWeight,hz,zero_mul,mul_zero])
+    pm_399 hne annularWeight hz zero_mul mul_zero
   exact ((div_le_iff₀ hD).mp (hs hw)).trans
     (mul_le_mul_of_nonneg_right (le_max_right 1 b) hD.le)
 
-lemma polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
+lemma polynomial_all_ideals (D freq : ℝ) :
     polynomial χ false W D 0 freq=
       (D:ℂ)^(-(1/2:ℂ))*∑'I:Ideal O,idealCoeff χ I*annularWeight W D 0 freq I := by
   unfold polynomial
@@ -54,23 +55,22 @@ lemma polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
       ∑'I:Ideal O,idealCoeff χ I*annularWeight W D 0 freq I:=by
     apply tsum_subtype_eq_of_support_subset (s:={I:Ideal O|I≠0})
       (f:=fun I:Ideal O=>idealCoeff χ I*annularWeight W D 0 freq I)
-    intro I hI hz
-    subst I
-    exact hI (by simp only [idealCoeff_zero,zero_mul])
+    pm_5256 idealCoeff_zero zero_mul
   simpa only [summand,coefficient,Bool.false_eq_true,ite_false,HeckeDyadic.norm,
     annularWeight,mul_assoc] using he
+end
 
 lemma normalized_linear_bound (D c : ℝ) (hD : 0<D) (v : ℂ)
-    (hv : ‖v‖≤c*D) : ‖(D:ℂ)^(-(1/2:ℂ))*v‖≤c*Real.sqrt D := by
+    (hv : ‖v‖≤ c*D) : ‖(D:ℂ)^(-(1/2:ℂ))*v‖≤ c*Real.sqrt D := by
   rw [inverse_half_power D hD.le,norm_mul,norm_inv,Complex.norm_real,
     Real.norm_of_nonneg (Real.sqrt_nonneg D)]
-  have hs:Real.sqrt D≠0:=(Real.sqrt_pos.mpr hD).ne'
-  have hd:D/Real.sqrt D=Real.sqrt D:=by
+  pm_5109 hs D hD
+  have hd:D /Real.sqrt D =Real.sqrt D:=by
     apply (div_eq_iff hs).mpr
     simpa only [pow_two] using (Real.sq_sqrt hD.le).symm
   calc
     _ ≤ (Real.sqrt D)⁻¹*(c*D):=mul_le_mul_of_nonneg_left hv (inv_nonneg.mpr (Real.sqrt_nonneg D))
-    _ = c*(D/Real.sqrt D):=by ring
+    _ = c*(D /Real.sqrt D):=by ring
     _ = _:=by rw [hd]
 
 theorem plain_polynomial_bound (χ : Character) (W : ℝ→ℂ) (b B D freq : ℝ)

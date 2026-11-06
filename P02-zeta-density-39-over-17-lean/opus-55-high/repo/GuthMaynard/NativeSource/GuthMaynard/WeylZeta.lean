@@ -1,5 +1,6 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.WeylExplicit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,8 +36,7 @@ theorem norm_weighted_sum_le_of_antitone
     _ = ‖(f (N - 1) : Complex) * (∑ i ∈ Finset.range N, g i) -
         ∑ i ∈ Finset.Ico 0 (N - 1),
           ((f (i + 1) - f i : Real) : Complex) *
-            (∑ j ∈ Finset.range (i + 1), g j)‖ := by
-      simp only [Finset.sum_range_zero, Complex.real_smul, mul_zero, sub_zero]
+            (∑ j ∈ Finset.range (i + 1), g j)‖ := by simp_all
     _ <= ‖(f (N - 1) : Complex) * (∑ i ∈ Finset.range N, g i)‖ +
         ‖∑ i ∈ Finset.Ico 0 (N - 1),
           ((f (i + 1) - f i : Real) : Complex) * (∑ j ∈ Finset.range (i + 1), g j)‖ :=
@@ -55,14 +55,9 @@ theorem norm_weighted_sum_le_of_antitone
                 ‖((f (i + 1) - f i : Real) : Complex) *
                   (∑ j ∈ Finset.range (i + 1), g j)‖ := norm_sum_le _ _
           _ <= ∑ i ∈ Finset.Ico 0 (N - 1), (f i - f (i + 1)) * B := by
-            apply Finset.sum_le_sum
-            intro i hi
-            have hi' := Finset.mem_Ico.mp hi
-            rw [norm_mul, norm_real, Real.norm_eq_abs,
-              abs_of_nonpos (sub_nonpos.mpr (hanti i (by omega)))]
+            pm_5926 abs_of_nonpos sub_nonpos.mpr hanti
             rw [neg_sub]
-            exact mul_le_mul_of_nonneg_left (hpartial (i + 1) (by omega))
-              (sub_nonneg.mpr (hanti i (by omega)))
+            pm_5614 hanti
     _ = f 0 * B := by
       have htel : ∑ i ∈ Finset.Ico 0 (N - 1), (f i - f (i + 1)) =
           f 0 - f (N - 1) := by

@@ -14,7 +14,7 @@ lemma norm_sq_le_retained (f g : ℂ) (E : ℝ) (_hE : 0≤E) (hf : ‖f-g‖≤
     ‖f‖^2≤2*‖g‖^2+2*E^2 := by
   have hh : ‖f‖≤‖g‖+E := by
     calc
-      _ = ‖g+(f-g)‖ := by congr 1;ring
+      _ = ‖g+(f-g)‖ := by simp_all
       _ ≤ ‖g‖+‖f-g‖ := norm_add_le _ _
       _ ≤ _ := add_le_add_right hf _
   have hsq := pow_le_pow_left₀ (norm_nonneg f) hh 2

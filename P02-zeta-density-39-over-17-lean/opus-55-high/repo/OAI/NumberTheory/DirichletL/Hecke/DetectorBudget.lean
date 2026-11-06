@@ -9,7 +9,10 @@ noncomputable section
 namespace SevenEighths.HeckeDetectorBudget
 open HeckeDetectorPartition
 
-lemma source_length_bound (U : ℝ) (hU : 2 ≤ U) :
+section
+variable (U : ℝ) (hU : 2 ≤ U)
+include U hU
+lemma source_length_bound :
     ((length (⌈2*U^21⌉₊ : ℝ)+1 : ℕ) : ℝ) ≤ 25*Real.logb 2 U := by
   have hUp : 0 < U := by linarith
   have hp : 1 ≤ U^21 := one_le_pow₀ (by linarith) (n := 21)
@@ -19,7 +22,7 @@ lemma source_length_bound (U : ℝ) (hU : 2 ≤ U) :
     linarith
   have hl : 1 ≤ Real.logb 2 U := by
     have h := Real.logb_le_logb_of_le (by norm_num : (1 : ℝ)<2) (by norm_num : (0 : ℝ)<2) hU
-    simpa using h
+    simp_all
   have hb := length_bound (⌈2*U^21⌉₊ : ℝ) hc
   have hm := Real.logb_le_logb_of_le (by norm_num : (1 : ℝ)<2) (by linarith : (0 : ℝ)<⌈2*U^21⌉₊) hcu
   have he : Real.logb 2 (4*U^21) = 2+21*Real.logb 2 U := by
@@ -33,11 +36,12 @@ lemma source_length_bound (U : ℝ) (hU : 2 ≤ U) :
   push_cast
   linarith
 
-lemma source_pair_count_bound (U : ℝ) (hU : 2 ≤ U) :
+lemma source_pair_count_bound :
     (((length (⌈2*U^21⌉₊ : ℝ)+1 : ℕ) : ℝ)^2) ≤ 625*(Real.logb 2 U)^2 := by
   have h := source_length_bound U hU
   have hl : 0 ≤ Real.logb 2 U := Real.logb_nonneg (by norm_num) (by linarith)
   nlinarith [sq_nonneg (((length (⌈2*U^21⌉₊ : ℝ)+1 : ℕ) : ℝ)-25*Real.logb 2 U)]
+end
 
 end SevenEighths.HeckeDetectorBudget
 

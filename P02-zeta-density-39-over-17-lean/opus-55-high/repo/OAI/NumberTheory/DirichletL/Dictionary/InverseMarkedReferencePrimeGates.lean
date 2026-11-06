@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceDeleted
 public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentPrimeGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,21 +18,16 @@ open InverseInitialExcludedPool InverseInitialExcludedOverlap Filter CanonicalQu
 local notation "O"=>HeckeFamily.O
 
 theorem deleted_large_eventually {Label Slot:Type*}[Fintype Label][Fintype Slot]
-    (data:Label→RowData)(ell:Slot→ℝ)(hell:∀s,0<ell s) :
+    (data:Label→ RowData)(ell:Slot→ℝ)(hell:∀s,0<ell s) :
     ∀ᶠZ:ℝ in atTop,1≤Z ∧ ∀d:ℝ,0<d→∀j:Label,∀s:Slot,
-      ((deletedBase (data j)).modulus.absNorm:ℝ)<(Z^d)^(ell s/d) := by
+      ((deletedBase (data j)).modulus.absNorm:ℝ)<(Z ^d)^(ell s/d) := by
   have ht:∀ᶠZ:ℝ in atTop,∀j:Label,∀s:Slot,
-      ((deletedBase (data j)).modulus.absNorm:ℝ)<Z^(ell s) := by
+      ((deletedBase (data j)).modulus.absNorm:ℝ)<Z ^(ell s) := by
     apply Filter.eventually_all.mpr
     intro j
-    apply Filter.eventually_all.mpr
-    intro s
-    exact (tendsto_rpow_atTop (hell s)).eventually (eventually_gt_atTop _)
-  filter_upwards [eventually_ge_atTop (1:ℝ),ht] with Z hZ ht
-  refine ⟨hZ,?_⟩
-  intro d hd j s
-  rw [←Real.rpow_mul (by linarith:0≤Z),mul_div_cancel₀ _ hd.ne']
-  exact ht j s
+    pm_6492
+  pm_3907
+  grind
 
 theorem deletedBase_supported (data:RowData)(I:Ideal O)
     (hI:idealCoeff (deletedBase data) I≠0) : CanonicalQuadraticSieve.Supported I := by

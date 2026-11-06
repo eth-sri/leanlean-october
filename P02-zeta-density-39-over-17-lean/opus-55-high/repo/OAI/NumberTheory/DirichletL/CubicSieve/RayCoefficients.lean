@@ -1,5 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstPassage
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -89,10 +91,14 @@ def rayMonoid (χ : RayCharacter) : O →* ℂ where
 def conjugateRayMonoid (χ : RayCharacter) : O →* ℂ :=
   (starRingEnd ℂ).toMonoidHom.comp (rayMonoid χ)
 
-@[simp] theorem rayMonoid_apply (χ : RayCharacter) (a : O) :
+section
+variable (χ : RayCharacter) (a : O)
+include χ a
+@[simp] theorem rayMonoid_apply :
     rayMonoid χ a = rayCharacter χ a := rfl
-@[simp] theorem conjugateRayMonoid_apply (χ : RayCharacter) (a : O) :
+@[simp] theorem conjugateRayMonoid_apply :
     conjugateRayMonoid χ a = star (rayCharacter χ a) := rfl
+end
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -121,12 +127,8 @@ theorem secondColumnMinus_ray_expansion
     secondColumnMinus p hp hcop hg (secondInputCoefficient p hg Ψ m c d H) e k S =
       ∑ χ : RayCharacter, star (gCoeff χ) *
         secondPreColumn p hp hcop hg (conjugateRayMonoid χ * Ψ) m c d e k H S := by
-  simp only [secondColumnMinus, columnG_eq_ray_sum p hp hcop hg hc hpr,
-    star_sum, star_mul, Finset.mul_sum, Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro χ hχ
-  simp only [secondPreColumn, secondInputCoefficient, MonoidHom.mul_apply, conjugateRayMonoid_apply]
-  ring
+  pm_5428 secondColumnMinus
+  pm_3523 secondPreColumn secondInputCoefficient MonoidHom.mul_apply conjugateRayMonoid_apply
 
 theorem secondColumnPlus_ray_expansion
     (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
@@ -135,15 +137,9 @@ theorem secondColumnPlus_ray_expansion
     secondColumnPlus p hp hcop hg (secondInputCoefficient p hg Ψ m c d H) e k S =
       ∑ χ : RayCharacter, star (gCoeff χ) *
         secondPreColumn p hp hcop hg (conjugateRayMonoid χ * Ψ) m c d e (-k) H S := by
-  have hk : finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (-k) =
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (-1) *
-        finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S k := by
-    simpa only [neg_one_mul] using finiteSquarefreeRow_mul (fun i => Ideal.span {p i}) hg S (-1) k
-  simp only [secondColumnPlus, columnG_eq_ray_sum p hp hcop hg hc hpr,
-    star_sum, star_mul, Finset.mul_sum, Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro χ hχ
-  simp only [secondPreColumn, secondInputCoefficient, MonoidHom.mul_apply, conjugateRayMonoid_apply, hk]
+  pm_3794 hk S k
+  pm_5428 secondColumnPlus
+  pm_93 secondPreColumn secondInputCoefficient MonoidHom.mul_apply conjugateRayMonoid_apply hk
   ring
 
 theorem second_gauss_ray_expansion
@@ -165,17 +161,10 @@ theorem second_gauss_ray_expansion
     secondColumnMinus_ray_expansion p hp hcop hg hc hpr,
     secondColumnPlus_ray_expansion p hp hcop hg hc hpr,
     RayFourExpansion.quadraticCrossPhase_character_expansion p hp hcop hg hc T S hd.symm]
-  simp only [star_sum, star_mul, star_star, Finset.sum_mul, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro b hb
-  apply Finset.sum_congr rfl
-  intro a ha
-  apply Finset.sum_congr rfl
-  intro χ hχ
-  apply Finset.sum_congr rfl
-  intro η hη
-  simp only [secondPreColumn, MonoidHom.mul_apply, conjugateRayMonoid_apply,
-    rayMonoid_apply, star_mul, star_star]
+  pm_93 star_sum star_mul star_star Finset.sum_mul Finset.mul_sum
+  pm_3397 b hb a ha
+  pm_3397 χ hχ η hη
+  pm_232 secondPreColumn MonoidHom.mul_apply conjugateRayMonoid_apply rayMonoid_apply star_mul star_star
   ring
 
 end
@@ -225,23 +214,13 @@ theorem symbol_ne_zero_of_isCoprime (x a : O) (ha : lambda ^ 2 ∣ a-1)
     (hcop : IsCoprime x a) : symbol x a ≠ 0 := by
   classical
   have ha0 := primary_ne_zero a ha
-  have hI0 : (Ideal.span {a} : Ideal O) ≠ 0 := Ideal.span_singleton_eq_bot.not.mpr ha0
+  pm_5026 hI0 a ha0
   rw [symbol, idealSymbol, ite_eq_right hI0]
   apply Multiset.prod_ne_zero
   intro hzero
   obtain ⟨P,hP,hzero⟩ := Multiset.mem_map.mp hzero
-  have hprime := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
-  let : P.IsMaximal := (Ideal.isPrime_of_prime hprime).isMaximal hprime.ne_zero
-  have hle := ((Ideal.mem_normalizedFactors_iff hI0).mp hP).2
-  have haP : a ∈ P := hle (Ideal.subset_span (by simp))
-  have hg := primary_maximal_divisor_good a ha P haP
-  have hxP : x ∉ P := by
-    intro hxP
-    obtain ⟨r,s,hrs⟩ := hcop
-    have hmem := P.add_mem (P.mul_mem_left r hxP) (P.mul_mem_left s haP)
-    rw [hrs] at hmem
-    exact (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal))
-      ((Ideal.eq_top_iff_one P).mpr hmem)
+  pm_3795
+  pm_3796 s hrs
   rw [primeValue_eq P hg] at hzero
   exact cubicValue_ne_zero P hg x hxP hzero
 
@@ -262,9 +241,8 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
   let productA := a*e+b*g
   let productC := c*e+d*g
   have hA : lambda ^ 2 ∣ productA-1 := by
-    have h := dvd_add (primary_mul a e ha he)
-      (dvd_mul_of_dvd_left (lambda_sq_dvd_three.trans hb) g)
-    convert h using 1 ; dsimp [productA] ; ring
+    pm_6891 h
+    pm_4976 h productA
   have hrelation : a*productC-c*productA=g := by
     dsimp [productA,productC]
     linear_combination g*hdet
@@ -301,7 +279,7 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
   ring
 
 lemma three_dvd_primary_sub_one (a : O) (ha : lambda ^ 2 ∣ a-1) : (3 : O) ∣ a-1 := by
-  obtain ⟨A,B,rfl⟩ := exists_primaryCoord a ha
+  pm_5437
   rw [primaryCoord_eq]
   exact ⟨(A : O)+(B : O)*omega,by ring⟩
 
@@ -310,17 +288,14 @@ theorem exists_coprime_three_shift (a c g : O)
     ∃ t : O, IsCoprime (a+3*t*c) g := by
   classical
   let : StrongNormalizationMonoid O := UniqueFactorizationMonoid.strongNormalizationMonoid
-  let s := (UniqueFactorizationMonoid.normalizedFactors g).filter (fun p => ¬p ∣ a)
+  pm_8491 UniqueFactorizationMonoid.normalizedFactors g
   refine ⟨s.prod, ?_⟩
   apply IsCoprime.symm
-  apply isCoprime_of_prime_dvd (by rintro ⟨h,-⟩; exact hg0 h)
-  intro p hp hpg hpnew
-  by_cases hpa : p ∣ a
+  pm_6149 hg0 hpg
   · have hp3 : ¬p ∣ (3 : O) := by
       intro h3
       have hsub : p ∣ a-1 := h3.trans (three_dvd_primary_sub_one a ha)
-      have hone : p ∣ (1 : O) := by
-        convert dvd_sub hpa hsub using 1 ; ring
+      pm_8647 p hpa hsub
       exact hp.not_dvd_one hone
     have hpc : ¬p ∣ c := by
       intro hpc
@@ -368,7 +343,7 @@ theorem kubota_mul (a b c d e f g h : O)
   by_cases hg0 : g = 0
   · have heh : e*h=1 := by simpa only [hg0,mul_zero,sub_zero] using hdet'
     have he1 : e=1 := A3_primary_unit_eq_one e (IsUnit.of_mul_eq_one h heh) he
-    simp only [hg0,he1,mul_one,mul_zero,add_zero,symbol_one]
+    pm_382 hg0 he1 mul_one mul_zero add_zero symbol_one
   have hac : IsCoprime a c := by
     refine ⟨d,-b,?_⟩
     linear_combination hdet
@@ -381,8 +356,7 @@ theorem kubota_mul (a b c d e f g h : O)
   have hC : (3 : O) ∣ c*e+d*g :=
     dvd_add (dvd_mul_of_dvd_left hc e) (dvd_mul_of_dvd_right hg d)
   have hA : lambda ^ 2 ∣ (a*e+b*g)-1 := by
-    have hh := dvd_add (primary_mul a e ha he)
-      (dvd_mul_of_dvd_left (lambda_sq_dvd_three.trans hb) g)
+    pm_6891 hh
     convert hh using 1 ; ring
   calc
     symbol (c*e+d*g) (a*e+b*g) =
@@ -406,33 +380,25 @@ theorem symbol_cube_of_isCoprime (x a : O) (ha : lambda ^ 2 ∣ a-1)
     Ideal.span_singleton_eq_bot.not.mpr (primary_ne_zero a ha)
   rw [symbol, idealSymbol, ite_eq_right hI0, ← Multiset.prod_map_pow]
   apply Multiset.prod_eq_one
-  intro y hy
-  obtain ⟨P,hP,rfl⟩ := Multiset.mem_map.mp hy
-  have hprime := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
-  let : P.IsMaximal := (Ideal.isPrime_of_prime hprime).isMaximal hprime.ne_zero
-  have hle := ((Ideal.mem_normalizedFactors_iff hI0).mp hP).2
-  have haP : a ∈ P := hle (Ideal.subset_span (by simp))
-  have hg := primary_maximal_divisor_good a ha P haP
-  have hxP : x ∉ P := by
-    intro hxP
-    obtain ⟨r,t,hrt⟩ := hcop
-    have hmem := P.add_mem (P.mul_mem_left r hxP) (P.mul_mem_left t haP)
-    rw [hrt] at hmem
-    exact (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal))
-      ((Ideal.eq_top_iff_one P).mpr hmem)
+  pm_67 y hy P hP Multiset.mem_map.mp
+  pm_3795
+  pm_3796 t hrt
   rw [primeValue_eq P hg]
   exact cubicValue_cube P hg x hxP
 end CubicJacobiGlobal
 
 namespace CubicKubota
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 open ActualEisensteinCubic CubicJacobiGlobal CubicRamified
 
 def levelThree : Subgroup (SL(2, O)) :=
   (Matrix.SpecialLinearGroup.map (n := Fin 2)
     (Ideal.Quotient.mk (Ideal.span {(3 : O)}))).ker
 
-lemma levelThree_entry (M : levelThree) (i j : Fin 2) :
+section
+variable (M : levelThree)
+include M
+lemma levelThree_entry (i j : Fin 2) :
     (3 : O) ∣ (M : SL(2,O)) i j - (if i=j then 1 else 0) := by
   have hm : Matrix.SpecialLinearGroup.map (n := Fin 2)
       (Ideal.Quotient.mk (Ideal.span {(3 : O)})) (M : SL(2,O)) = 1 := M.property
@@ -441,15 +407,16 @@ lemma levelThree_entry (M : levelThree) (i j : Fin 2) :
     (1 : Matrix (Fin 2) (Fin 2) (O ⧸ (Ideal.span {(3 : O)}))) i j at h
   apply Ideal.mem_span_singleton.mp
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
-  simpa only [Matrix.one_apply, apply_ite, map_one, map_zero] using h
+  pm_99 Matrix.one_apply apply_ite map_one map_zero h
 
-lemma levelThree_primary (M : levelThree) :
+lemma levelThree_primary :
     lambda ^ 2 ∣ (M : SL(2,O)) 0 0 - 1 := by
   exact lambda_sq_dvd_three.trans (by simpa using levelThree_entry M 0 0)
-lemma levelThree_upper (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 0 1 := by
+lemma levelThree_upper : (3 : O) ∣ (M : SL(2,O)) 0 1 := by
   simpa using levelThree_entry M 0 1
-lemma levelThree_lower (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 1 0 := by
+lemma levelThree_lower : (3 : O) ∣ (M : SL(2,O)) 1 0 := by
   simpa using levelThree_entry M 1 0
+end
 
 def value (M : levelThree) : O :=
   symbol ((M : SL(2,O)) 1 0) ((M : SL(2,O)) 0 0)
@@ -457,10 +424,10 @@ def value (M : levelThree) : O :=
 theorem value_mul (M N : levelThree) : value (M*N) = value M * value N := by
   have hM : (M : SL(2,O)) 0 0 * (M : SL(2,O)) 1 1 -
       (M : SL(2,O)) 0 1 * (M : SL(2,O)) 1 0 = 1 := by
-    simpa only [Matrix.det_fin_two] using (M : SL(2,O)).property
+    pm_3797
   have hN : (N : SL(2,O)) 0 0 * (N : SL(2,O)) 1 1 -
       (N : SL(2,O)) 0 1 * (N : SL(2,O)) 1 0 = 1 := by
-    simpa only [Matrix.det_fin_two] using (N : SL(2,O)).property
+    pm_5396 N O
   have hh := kubota_mul ((M : SL(2,O)) 0 0) ((M : SL(2,O)) 0 1)
     ((M : SL(2,O)) 1 0) ((M : SL(2,O)) 1 1)
     ((N : SL(2,O)) 0 0) ((N : SL(2,O)) 0 1)
@@ -469,7 +436,7 @@ theorem value_mul (M N : levelThree) : value (M*N) = value M * value N := by
     (levelThree_upper M) (levelThree_lower M) (levelThree_lower N)
   change symbol (((M : SL(2,O)) * (N : SL(2,O))) 1 0)
     (((M : SL(2,O)) * (N : SL(2,O))) 0 0) = _
-  simpa only [value, Matrix.SpecialLinearGroup.coe_mul, Matrix.mul_apply, Fin.sum_univ_two] using hh
+  pm_99 value Matrix.SpecialLinearGroup.coe_mul Matrix.mul_apply Fin.sum_univ_two hh
 
 @[simp] theorem value_one : value 1 = 1 := by
   change symbol (0 : O) 1 = 1
@@ -484,15 +451,13 @@ theorem value_zero_lower_left (M : levelThree) (hc : (M : SL(2,O)) 1 0 = 0) :
     value M = 1 := by
   have hm : (M : SL(2,O)) 0 0 * (M : SL(2,O)) 1 1 = 1 := by
     have hd := (M : SL(2,O)).property
-    simpa only [Matrix.det_fin_two, hc, mul_zero, sub_zero] using hd
+    pm_99 Matrix.det_fin_two hc mul_zero sub_zero hd
   have ha := A3_primary_unit_eq_one _ (IsUnit.of_mul_eq_one _ hm) (levelThree_primary M)
   simp only [value, hc, ha, symbol_one]
 
 theorem value_cube (M : levelThree) : value M ^ 3 = 1 := by
   apply symbol_cube_of_isCoprime _ _ (levelThree_primary M)
-  have hd : (M : SL(2,O)) 0 0 * (M : SL(2,O)) 1 1 -
-      (M : SL(2,O)) 0 1 * (M : SL(2,O)) 1 0 = 1 := by
-    simpa only [Matrix.det_fin_two] using (M : SL(2,O)).property
+  pm_3798
   refine ⟨-(M : SL(2,O)) 0 1, (M : SL(2,O)) 1 1, ?_⟩
   linear_combination hd
 

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalAnnularCommonBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,7 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentFirstWindowBudgets
 open CenteredMomentSecondWindowBudget
 
-lemma sqrt_sum_le {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i):
+lemma sqrt_sum_le {α:Type*} (s:Finset α) (E:α→ℝ) (hE:∀i∈s,0≤E i):
     Real.sqrt (∑i∈s,E i)≤∑i∈s,Real.sqrt (E i):=by
   induction s using Finset.induction_on with
   | empty => simp
@@ -27,7 +28,7 @@ lemma sqrt_sum_le {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i):
           mul_nonneg (Real.sqrt_nonneg (E a)) (Real.sqrt_nonneg (∑i∈s,E i))]
     exact hadd.trans (add_le_add le_rfl (ih (fun i hi=>hE i (Finset.mem_insert_of_mem hi))))
 
-lemma windowBudget_sum {α:Type*}(s:Finset α)(E:α→ℝ)(hE:∀i∈s,0≤E i)
+lemma windowBudget_sum {α:Type*} (s:Finset α) (E:α→ℝ) (hE:∀i∈s,0≤E i)
     (J:ℕ)(t:ℝ):
     windowBudget J t (∑i∈s,E i)≤∑i∈s,windowBudget J t (E i):=by
   unfold windowBudget
@@ -44,10 +45,7 @@ theorem windowBudget_pair_sum {α β:Type*}(s:Finset α)(u:Finset β)
   have hh:=mul_le_mul (windowBudget_sum s E hE J₁ t) (windowBudget_sum u F hF J₂ t)
     (windowBudget_nonneg J₂ t _) (Finset.sum_nonneg (fun i _=>windowBudget_nonneg J₁ t (E i)))
   apply hh.trans_eq
-  rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [Finset.mul_sum]
+  pm_223 Finset.sum_mul i hi Finset.mul_sum
 
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows

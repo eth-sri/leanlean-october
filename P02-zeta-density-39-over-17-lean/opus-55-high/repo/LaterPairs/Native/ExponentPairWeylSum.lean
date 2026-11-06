@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftDistanceSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -47,7 +48,7 @@ theorem interval_weyl_differencing_sum
       _ = _ := by simp
   have hdiag (h : ℕ) (hh : h ∈ range H) : ∑ n ∈ s, ‖b n h‖^2 ≤ (N : ℝ) := by
     dsimp [s,b]
-    rw [sum_norm_sq_paddedShift_eq a N H h (mem_range.mp hh)]
+    pm_8717 mem_range.mp
     calc
       _ ≤ ∑ _n ∈ Ico (0 : ℤ) N, (1 : ℝ) := by
         apply sum_le_sum
@@ -61,10 +62,7 @@ theorem interval_weyl_differencing_sum
     apply sum_congr rfl
     intro h _
     rw [sum_comm]
-    apply sum_congr rfl
-    intro k _
-    apply sum_congr rfl
-    intro n _
+    pm_156 sum_congr k n
     exact real_inner_comm _ _
   have hpair (h : ℕ) (hh : h ∈ range H) (k : ℕ) (hk : k ∈ range H) :
       ∑ n ∈ s, ⟪b n h,b n k⟫_ℝ ≤
@@ -82,8 +80,7 @@ theorem interval_weyl_differencing_sum
         intro n _
         simp
         ring
-      rw [hre]
-      exact (Complex.re_le_norm z).trans (hcorr h hh k hk he)
+      pm_8202 Complex.re_le_norm he
   have hrow (h : ℕ) (hh : h ∈ range H) :
       (∑ k ∈ range H, ∑ n ∈ s, ⟪b n h,b n k⟫_ℝ) ≤
         (N : ℝ)+2*∑ r ∈ Icc 1 (H-1), C r := by

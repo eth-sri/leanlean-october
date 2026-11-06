@@ -62,10 +62,7 @@ theorem paired_core_budget (s:Input ι) (C D:Ideal O) (hC:Supported C) (hD:Suppo
   rw [he C E₁,he D E₂]
   simp only [windowBudget,pow_add]
   have hh:=paired_sqrt _ E₁ E₂ _ _ hA hE₁ hE₂ hc hd
-  calc
-    _=(Real.sqrt (_*E₁/(C.absNorm:ℝ))*Real.sqrt (_*E₂/(D.absNorm:ℝ)))*
-      (heightEnvelope t^J₁*heightEnvelope t^J₂)*profileMoment J₁*profileMoment J₂:=by ring
-    _=_:=by rw [hh]
+  grind
 
 end SevenEighths.CenteredMomentSecondNonexceptionalPhysical
 

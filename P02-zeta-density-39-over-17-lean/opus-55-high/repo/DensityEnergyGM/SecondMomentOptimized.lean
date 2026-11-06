@@ -2,6 +2,7 @@ module
 public import DensityEnergyGM.SecondMomentIntegral
 public import DensityEnergyGM.ClippedRadicalIntegral
 public import DensityEnergyGM.CoprimeFourthNative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,24 +27,22 @@ theorem actual_second_moment_optimized_log (ε : ℝ) (hε : 0 < ε) :
         (∑ t ∈ W, ∑ u ∈ W, ‖dirichletPoly M a (t - u)‖ ^ 2) ≤
           2 * (W.card : ℝ) * Real.sqrt (Real.sqrt K * Real.sqrt B) +
             3 * Real.sqrt K * (M : ℝ) ^ 2 * Real.log T := by
-  obtain ⟨C₀, T₁, hC₀, hT₁, hActual⟩ := actual_second_moment_integral_native ε hε
+  pm_4083 C₀ T₁ hC₀ hT₁ hActual actual_second_moment_integral_native ε hε
   let C := max 1 C₀
   refine ⟨C, max 2 T₁, le_max_left _ _, le_max_left _ _, ?_⟩
   intro M T a W hM hT hMT ha hSep hBase hW
   let R : ℝ := W.card
   let E : ℝ := discreteAdditiveEnergy W
-  let B : ℝ := (M : ℝ) ^ (36 / 5 : ℝ) + (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ)
-  let K : ℝ := E * C * (2 * T) ^ ε
-  have hTtwo : 2 ≤ T := (le_max_left _ _).trans hT
-  have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := by linarith
-  have hR : 0 < R := by dsimp only [R]; exact_mod_cast Finset.card_pos.mpr hW
+  pm_3947
+  pm_7712 C
+  pm_225 hTtwo T le_max_left hT
+  pm_4035
+  pm_6501
   have hRone : 1 ≤ R := by dsimp only [R]; exact_mod_cast Finset.card_pos.mpr hW
-  have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast hM
+  pm_77 hMone M hM
+  pm_74 hMpos M hM
   have hEdiag : R ^ 2 ≤ E := by
-    have h := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
-    rw [native_approx_energy_eq] at h
+    pm_3946
     dsimp only [R, E]
     exact_mod_cast h
   have hEone : 1 ≤ E := by nlinarith
@@ -54,7 +53,7 @@ theorem actual_second_moment_optimized_log (ε : ℝ) (hε : 0 < ε) :
     linarith
   have hK : 1 ≤ K := by
     have hPow : 1 ≤ (2 * T) ^ ε := Real.one_le_rpow (by linarith) hε.le
-    have hC : 1 ≤ C := le_max_left _ _
+    pm_4884 hC C
     dsimp only [K]
     have hEC : 1 ≤ E * C := by nlinarith
     nlinarith

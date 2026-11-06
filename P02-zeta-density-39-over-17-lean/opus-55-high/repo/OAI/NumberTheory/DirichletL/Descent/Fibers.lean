@@ -30,7 +30,7 @@ theorem fiber_energy_bound {ι κ : Type*} [DecidableEq κ]
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
       intro i hi
-      rw [(Finset.mem_filter.mp hi).2]
+      grind
     _ ≤ ∑ j ∈ t, D j * E j :=
       Finset.sum_le_sum fun j hj => mul_le_mul_of_nonneg_right (hD j hj) (hE j hj)
 

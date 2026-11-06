@@ -1,6 +1,7 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalLargeValues
 public import GuthMaynard.NativeSource.GuthMaynard.FiniteDensityExponents
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,12 +35,7 @@ theorem exists_two_or_three_scale_reduction
     {τ₀ τ : ℝ} (hτLower : 4 * τ₀ / 3 ≤ τ)
     (hτUpper : τ ≤ 8 * τ₀ / 3) :
     (2 * τ₀ / 3 ≤ τ / 2 ∧ τ / 2 ≤ τ₀) ∨
-      (2 * τ₀ / 3 ≤ τ / 3 ∧ τ / 3 ≤ τ₀) := by
-  by_cases hτ : τ ≤ 2 * τ₀
-  · left
-    constructor <;> nlinarith
-  · right
-    constructor <;> nlinarith
+      (2 * τ₀ / 3 ≤ τ / 3 ∧ τ / 3 ≤ τ₀) := by grind
 
 /-- The second-moment branch gives the Montgomery exponent throughout
 `τ ≤ 1`. -/
@@ -48,8 +44,8 @@ theorem classicalMHHExponent_le_montgomery_of_tau_le_one
     classicalMHHExponent σ τ ≤ 2 - 2 * σ := by
   rw [classicalMHHExponent, max_le_iff]
   constructor
-  · exact le_rfl
-  · exact (min_le_left _ _).trans (by linarith)
+  grind
+  grind
 
 /-- Exact finite arithmetic behind Corollary 11.10.  Subdivision of a
 Montgomery range controls the entire basic window by the target line. -/
@@ -60,7 +56,7 @@ theorem corollary1110Envelope_le_target
     corollary1110Envelope σ τ₀ τ ≤
       (3 - 3 * σ) * τ / τ₀ := by
   rw [corollary1110Envelope, max_le_iff]
-  have hOneMinus : 0 ≤ 1 - σ := by linarith
+  pm_7905 hOneMinus σ
   have hTargetFirst : 2 - 2 * σ ≤ (3 - 3 * σ) * τ / τ₀ := by
     rw [le_div_iff₀ hτ₀]
     nlinarith
@@ -68,7 +64,7 @@ theorem corollary1110Envelope_le_target
       3 - 3 * σ + τ - τ₀ ≤ (3 - 3 * σ) * τ / τ₀ := by
     rw [le_div_iff₀ hτ₀]
     nlinarith
-  exact ⟨hTargetFirst, hTargetSecond⟩
+  grind
 
 /-- The exceptional zeta-polynomial window is either empty or lies in the
 proved Weyl-exclusion range. -/
@@ -104,10 +100,9 @@ theorem ingham_endpoint_scale_certificate
   · intro τ hτLower hτUpper
     exact corollary1110Envelope_le_target hσUpper.le (by linarith)
       (by linarith) hτLower hτUpper
-  · intro τ hτLower hτUpper
-    exact exists_two_or_three_scale_reduction hτLower hτUpper
+  grind
   · intro τ hτLower hτUpper
     left
-    exact ingham_zeta_polynomial_range_empty hσLower hτLower hτUpper
+    grind
 
 end GuthMaynard.NativeMoment

@@ -18,14 +18,17 @@ variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 def activeIndices (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
     (c : Ideal Eis) : Finset ι := (I.biUnion L).filter (fun p=>primes p∣c)
 
+section
+variable (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
+include primes I L
 omit [DecidableEq σ] in
-theorem activeIndices_mem (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
+theorem activeIndices_mem
     (c : Ideal Eis) {i : σ} (hi : i∈I) {p : ι} (hp : p∈L i) :
     p∈activeIndices primes I L c ↔ primes p∣c := by
   simp only [activeIndices,Finset.mem_filter]
-  exact and_iff_right (Finset.mem_biUnion.mpr ⟨i,hi,hp⟩)
+  grind
 
-theorem indexed_mark_active (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
+theorem indexed_mark_active
     (a : σ→ι→ℂ) (c : Ideal Eis) :
     indexedIdealMark primes I L a c=primeMark I L a (activeIndices primes I L c) := by
   unfold indexedIdealMark primeMark primeSlot
@@ -34,6 +37,7 @@ theorem indexed_mark_active (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→
   apply Finset.sum_congr rfl
   intro p hp
   simp only [activeIndices_mem primes I L c hi hp]
+end
 
 omit [DecidableEq σ] [DecidableEq ι] in
 theorem tuple_gate_product (primes : ι→Ideal Eis) (I : Finset σ)

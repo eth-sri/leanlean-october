@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.ConstantDirichletSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,85 +8,41 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 def columnDyadicLength (N : ℝ) : ℕ := ⌈Real.log N / Real.log 2⌉₊
 
 theorem columnDyadicLength_cover (N : ℝ) : N ≤ (2 : ℝ) ^ columnDyadicLength N := by
   apply Real.pow_le_of_le_log (by norm_num : (0 : ℝ) < 2)
-  have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_123 hlog
   exact (div_le_iff₀ hlog).mp (Nat.le_ceil (Real.log N / Real.log 2))
 
 theorem columnDyadicLength_small_power (ε : ℝ) (hε : 0 < ε) (N : ℝ) (hN : 1 ≤ N) :
     (columnDyadicLength N + 1 : ℝ) ≤ (2 + 1 / (ε * Real.log 2)) * N ^ ε := by
-  have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_123 hlog
   have hq : 0 ≤ Real.log N / Real.log 2 := div_nonneg (Real.log_nonneg hN) hlog.le
   have hceil := Nat.ceil_lt_add_one hq
   have hL : (columnDyadicLength N + 1 : ℝ) ≤ 2 + Real.log N / Real.log 2 := by
@@ -119,14 +76,12 @@ theorem dualSquarefreeTail_bound (A : ℕ) :
         ‖dualSquarefreeTail I J W t K‖ ≤
           (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) /
             ((min 1 t) ^ 2 * (1 + t * K) ^ A) := by
-  obtain ⟨s, C, hC, hb⟩ := paperRadialFourier_lattice_tail A
-  refine ⟨s, C, hC, ?_⟩
+  pm_3629 hb paperRadialFourier_lattice_tail A
   intro I J W t K ht hK
   let Q := {lengthScale : Ideal O // lengthScale ≠ 0 ∧ K < (Ideal.absNorm (squarefreePart lengthScale) : ℝ)}
   have hgen : Function.Injective (fun lengthScale : Q => idealGenerator lengthScale.val) := by
     intro lengthScale R h
-    apply Subtype.ext
-    simpa only [span_idealGenerator] using congrArg (fun z : O => Ideal.span {z}) h
+    pm_1334 span_idealGenerator h
   have hlat := paperRadialFourier_lattice_summable_norm W t ht
   have hQ : Summable (fun lengthScale : Q => ‖paperRadialFourier W (t * (Ideal.absNorm lengthScale.val : ℝ))‖) := by
     have hs := hlat.comp_injective hgen
@@ -166,7 +121,6 @@ theorem dualSquarefreeTail_bound (A : ℕ) :
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
 
@@ -184,12 +138,9 @@ lemma norm_fullIdealWeight (s : ℂ) (I : NonzeroIdeal) :
     norm_pos_iff.mpr (eisEmbedding_ne_zero (ConcretePrimeRowBridge.idealGenerator_ne_zero _ I.2))
   have hnorm : ‖eisEmbedding (ConcretePrimeRowBridge.idealGenerator I.1)‖^2=(Ideal.absNorm I.1:ℝ) := by
     rw [eisEmbedding_norm_sq_eq_absNorm_span,ConcretePrimeRowBridge.span_idealGenerator]
-  have hcast : (Ideal.absNorm I.1:ℂ)=((‖eisEmbedding (ConcretePrimeRowBridge.idealGenerator I.1)‖^2:ℝ):ℂ) := by
-    exact_mod_cast hnorm.symm
+  pm_1347 ConcretePrimeRowBridge.idealGenerator
   rw [hcast,Complex.norm_cpow_eq_rpow_re_of_pos (sq_pos_of_pos hn),← Real.rpow_natCast_mul hn.le 2]
-  congr 1
-  simp only [Complex.neg_re,Nat.cast_ofNat]
-  ring
+  pm_8351
 
 theorem fullIdealWeight_summable_norm (s : ℂ) (hs : 1<s.re) :
     Summable (fun I : Ideal O => ‖fullIdealWeight s I‖) := by
@@ -210,7 +161,10 @@ theorem fullIdealWeight_summable_norm (s : ℂ) (hs : 1<s.re) :
 
 def fullIdealZeta (s : ℂ) : ℂ := ∑' I : Ideal O,fullIdealWeight s I
 
-lemma fullIdealWeight_norm_fiber (s : ℂ) (n : ℕ) :
+section
+variable (s : ℂ)
+include s
+lemma fullIdealWeight_norm_fiber (n : ℕ) :
     (∑' I : {I : Ideal O // Ideal.absNorm I=n},fullIdealWeight s I.1)=
       LSeries.term (fun n => (Nat.card {I : Ideal O // Ideal.absNorm I=n}:ℂ)) s n := by
   by_cases hn : n=0
@@ -227,7 +181,7 @@ lemma fullIdealWeight_norm_fiber (s : ℂ) (n : ℕ) :
     simp only [hterm,tsum_fintype,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,
       LSeries.term_of_ne_zero hn,Nat.card_eq_fintype_card,Complex.cpow_neg,div_eq_mul_inv]
 
-theorem fullIdealZeta_eq_dedekindZeta (s : ℂ) (hs : 1<s.re) :
+theorem fullIdealZeta_eq_dedekindZeta (hs : 1<s.re) :
     fullIdealZeta s=NumberField.dedekindZeta ActualEisensteinCubic.K s := by
   have h := (fullIdealWeight_summable_norm s hs).of_norm.hasSum.tsum_fiberwise Ideal.absNorm
   change HasSum (fun n : ℕ =>
@@ -235,7 +189,7 @@ theorem fullIdealZeta_eq_dedekindZeta (s : ℂ) (hs : 1<s.re) :
   simp_rw [fullIdealWeight_norm_fiber] at h
   exact h.tsum_eq.symm
 
-lemma fullIdealWeight_lambdaFactor (s : ℂ) (n : ℕ) (I : GoodIdeal) :
+lemma fullIdealWeight_lambdaFactor (n : ℕ) (I : GoodIdeal) :
     fullIdealWeight s (lambdaFactorMap (n,I)).1=((3:ℂ)^(-s))^n*unramifiedNormWeight s I.1 := by
   rw [fullIdealWeight,ite_eq_right (lambdaFactorMap (n,I)).2]
   change (Ideal.absNorm (ramifiedIdeal^n*I.1):ℂ)^(-s)=_
@@ -246,12 +200,11 @@ lemma fullIdealWeight_lambdaFactor (s : ℂ) (n : ℕ) (I : GoodIdeal) :
   have h := (Complex.natCast_cpow_natCast_mul 3 n (-s)).symm.trans (Complex.cpow_nat_mul 3 n (-s))
   simpa only [Nat.cast_pow,Nat.cast_ofNat] using h
 
-theorem unramifiedIdealZeta_eq_dedekindZeta (s : ℂ) (hs : 1<s.re) :
+theorem unramifiedIdealZeta_eq_dedekindZeta (hs : 1<s.re) :
     unramifiedIdealZeta s=(1-(3:ℂ)^(-s))*NumberField.dedekindZeta ActualEisensteinCubic.K s := by
   have hnorm : ‖(3:ℂ)^(-s)‖<1 := by
     change ‖((3:ℝ):ℂ)^(-s)‖<1
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos (by norm_num : (0:ℝ)<3)]
-    apply Real.rpow_lt_one_of_one_lt_of_neg (by norm_num)
+    pm_1550
     simp only [Complex.neg_re]
     linarith
   have hne : 1-(3:ℂ)^(-s) ≠ 0 := by
@@ -284,12 +237,11 @@ theorem unramifiedIdealZeta_eq_dedekindZeta (s : ℂ) (hs : 1<s.re) :
         apply congrArg (fun z : ℂ => ((3:ℂ)^(-s))^n*z)
         apply tsum_subtype_eq_of_support_subset (f := unramifiedNormWeight s)
           (s := {I : Ideal O | primaryGenerator I ≠ 0})
-        intro I hI
-        change primaryGenerator I ≠ 0
-        intro hz
+        pm_8341
         exact hI (unramifiedNormWeight_of_bad s I hz)
       _ = _ := by rw [tsum_mul_right,tsum_geometric_of_norm_lt_one hnorm]
   rw [← fullIdealZeta_eq_dedekindZeta s hs,hfull,← mul_assoc,mul_inv_cancel₀ hne,one_mul]
+end
 
 end
 section
@@ -297,43 +249,21 @@ section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 
 lemma constantDirichletTerm_differentiable (c : LevelLower) :
-    Differentiable ℂ (fun s : ℂ => arithmeticDirichletTerm s 0 c) := by
-  by_cases hc : c.1=0
-  · simp only [arithmeticDirichletTerm,ite_eq_left hc]
-    exact differentiable_const _
-  · have hq : ((‖eisEmbedding c.1‖^2:ℝ):ℂ) ≠ 0 :=
-      Complex.ofReal_ne_zero.mpr (pow_ne_zero 2 (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hc)))
-    simp only [arithmeticDirichletTerm,ite_eq_right hc]
-    exact (differentiable_id.neg.const_cpow (Or.inl hq)).mul_const _
+    Differentiable ℂ (fun s : ℂ => arithmeticDirichletTerm s 0 c) := by pm_3081
 
 lemma constantDirichletTerm_norm_mono (a : ℝ) (s : ℂ) (ha : a ≤ s.re) (c : LevelLower) :
-    ‖arithmeticDirichletTerm s 0 c‖ ≤ ‖arithmeticDirichletTerm (a:ℂ) 0 c‖ := by
-  by_cases hc : c.1=0
-  · simp only [arithmeticDirichletTerm,ite_eq_left hc,norm_zero,le_refl]
-  · have hpos : 0<‖eisEmbedding c.1‖^2 := sq_pos_of_pos
-      (norm_pos_iff.mpr (eisEmbedding_ne_zero hc))
-    have hq : 1≤‖eisEmbedding c.1‖^2 := by
-      rw [eisEmbedding_norm_sq_eq_absNorm_span]
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-        (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hc))
-    simp only [arithmeticDirichletTerm,ite_eq_right hc,norm_mul,
-      Complex.norm_cpow_eq_rpow_re_of_pos hpos,Complex.neg_re,Complex.ofReal_re]
-    exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_exponent_le hq (neg_le_neg ha))
-      (norm_nonneg _)
+    ‖arithmeticDirichletTerm s 0 c‖ ≤ ‖arithmeticDirichletTerm (a:ℂ) 0 c‖ := by pm_3082
 
 theorem arithmeticDirichletSeries_zero_differentiableAt (s : ℂ) (hs : (4:ℝ)/3<s.re) :
     DifferentiableAt ℂ (fun z => arithmeticDirichletSeries z 0) s := by
   let a : ℝ := ((4:ℝ)/3+s.re)/2
   have ha : (4:ℝ)/3<a := by dsimp [a]; linarith
-  have has : a<s.re := by dsimp [a]; linarith
-  have hsum := constantDirichlet_summable_norm (a:ℂ) (by simpa using ha)
-  have hopen : IsOpen {z : ℂ | a<z.re} := isOpen_lt continuous_const Complex.continuous_re
+  pm_890
+  pm_7987 constantDirichlet_summable_norm
+  pm_3083
   have hd : DifferentiableOn ℂ (fun z => arithmeticDirichletSeries z 0) {z : ℂ | a<z.re} := by
-    apply Complex.differentiableOn_tsum_of_summable_norm hsum
-      (fun c => (constantDirichletTerm_differentiable c).differentiableOn) hopen
-    intro c z hz
-    exact constantDirichletTerm_norm_mono a z hz.le c
-  exact (hd s has).differentiableAt (hopen.mem_nhds has)
+    pm_8431 c constantDirichletTerm_differentiable constantDirichletTerm_norm_mono
+  pm_5615
 
 lemma unramifiedNormWeight_differentiable (I : Ideal O) :
     Differentiable ℂ (fun s : ℂ => unramifiedNormWeight s I) := by
@@ -362,20 +292,17 @@ theorem unramifiedIdealZeta_differentiableAt (s : ℂ) (hs : 1<s.re) :
     DifferentiableAt ℂ unramifiedIdealZeta s := by
   let a : ℝ := (1+s.re)/2
   have ha : 1<a := by dsimp [a]; linarith
-  have has : a<s.re := by dsimp [a]; linarith
-  have hsum := unramifiedNormWeight_summable_norm (a:ℂ) (by simpa using ha)
-  have hopen : IsOpen {z : ℂ | a<z.re} := isOpen_lt continuous_const Complex.continuous_re
+  pm_890
+  pm_7987 unramifiedNormWeight_summable_norm
+  pm_3083
   have hd : DifferentiableOn ℂ unramifiedIdealZeta {z : ℂ | a<z.re} := by
-    apply Complex.differentiableOn_tsum_of_summable_norm hsum
-      (fun I => (unramifiedNormWeight_differentiable I).differentiableOn) hopen
-    intro I z hz
-    exact unramifiedNormWeight_norm_mono a z hz.le I
-  exact (hd s has).differentiableAt (hopen.mem_nhds has)
+    pm_8431 I unramifiedNormWeight_differentiable unramifiedNormWeight_norm_mono
+  pm_5615
 
 end
 
 open Filter
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 
@@ -467,7 +394,6 @@ theorem scatteringCoefficient_zero_oneSidedResidue :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -512,9 +438,9 @@ theorem dual_ideal_low_add_tail (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (t K : ℝ)
   rw [← htail, dualSquarefreeLow, ← hl.tsum_add hh]
   apply tsum_congr
   intro lengthScale
-  by_cases hK : (Ideal.absNorm (squarefreePart lengthScale.val) : ℝ) ≤ K
-  · simp only [hK, not_lt_of_ge hK, ite_true, ite_false, add_zero, F]
-  · simp only [hK, lt_of_not_ge hK, ite_true, ite_false, zero_add, F]
+  pm_8261 lengthScale.val
+  pm_8488 not_lt_of_ge add_zero
+  pm_8488 lt_of_not_ge zero_add
 
 theorem dualSquarefreeLow_principal
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -537,7 +463,7 @@ theorem dualSquarefreeLow_principal
       unrestrictedPairCharacter I J (p.1.val ^ 2 * p.2.val) *
         paperRadialFourier W (t * (Ideal.absNorm (p.1.val ^ 2 * p.2.val) : ℝ)) else 0) = F p
     rw [(squarePart_mul_squarefree p.1.property p.2.property).2]
-    by_cases hK : (Ideal.absNorm p.2.val : ℝ) ≤ K
+    pm_8924 hK
     · simp only [hK, ite_true, F, unrestrictedPairCharacter_mul I J hI hJ hray,
         unrestrictedPairCharacter_square I J hI hJ hray, map_mul, map_pow, Nat.cast_mul, Nat.cast_pow]
     · simp only [hK, ite_false, F]
@@ -550,14 +476,12 @@ theorem dualSquarefreeLow_principal
       (Equiv.prodComm _ _).tsum_eq (fun p => F (p.2, p.1))
     _ = ∑' B : {B : Ideal O // Squarefree B}, ∑' A : NonzeroIdeal, F (A, B) := hf.prod_symm.tsum_prod
     _ = _ := by
-      apply tsum_congr
-      intro B
-      by_cases hK : (Ideal.absNorm B.val : ℝ) ≤ K
+      pm_5351 hK
       · rw [ite_eq_left hK, dualPrincipalIdeal, ← tsum_mul_left]
         apply tsum_congr
         intro A
         have hB : 0 < (Ideal.absNorm B.val : ℝ) := by
-          exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun h => B.property.ne_zero (Ideal.absNorm_eq_zero_iff.mp h))
+          pm_3073 Nat.pos_iff_ne_zero.mpr h B.property.ne_zero
         have htb : 0 < t * (Ideal.absNorm B.val : ℝ) := mul_pos ht hB
         have harg : ((Ideal.absNorm A.val : ℝ) / Real.sqrt (1 / (t * (Ideal.absNorm B.val : ℝ)))) ^ 2 =
             t * ((Ideal.absNorm A.val : ℝ) ^ 2 * (Ideal.absNorm B.val : ℝ)) := by

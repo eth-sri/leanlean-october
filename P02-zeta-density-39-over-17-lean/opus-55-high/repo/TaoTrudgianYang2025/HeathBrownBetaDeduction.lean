@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BetaUniformity
 public import TaoTrudgianYang2025.HeathBrownSourceEstimate
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,9 +19,10 @@ open scoped NNReal
 
 namespace TaoTrudgianYang2025
 
-theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
-    (hHB : GafniTao.HeathBrownKthDerivativeTheorem)
-    {k : ℕ} (hk : 3 ≤ k) {α : ℝ≥0} (hα : 0 < (α : ℝ)) :
+section
+variable (hHB : GafniTao.HeathBrownKthDerivativeTheorem) {k : ℕ} (hk : 3 ≤ k) {α : ℝ≥0} (hα : 0 < (α : ℝ))
+include hHB k hk α hα
+theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative :
     IsExponentSumBoundNonAsymptotic α (heathBrownBetaBound k α) := by
   intro ε hε σ hσ
   obtain ⟨η,d,hη,hη₁,hd,_,hbudget⟩ := heathBrown_epsilon_budget hα.le hε
@@ -28,13 +30,12 @@ theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
     source_exponentialSum_heathBrown_bound_of_derivative hHB hk hσ hη
   let δ := min δ₀ (min d ((α : ℝ)/2))
   have hδ : 0 < δ := lt_min hδ₀ (lt_min hd (by positivity))
-  have hδ₀le : δ ≤ δ₀ := min_le_left _ _
-  have hδd : δ ≤ d := (min_le_right _ _).trans (min_le_left _ _)
+  pm_7582 hδ₀le δ₀ hδd d
   have hδα : δ ≤ (α : ℝ)/2 := (min_le_right _ _).trans (min_le_right _ _)
   let K := max 1 (3*C)
-  have hK : 1 ≤ K := le_max_left _ _
+  pm_4884 hK K
   have hCK : 3*C ≤ K := le_max_right _ _
-  refine ⟨δ,hδ,P,hP,K,hK,?_⟩
+  pm_211 δ hδ P hP K hK
   intro T N F a b hs
   have hT : 1 ≤ T := hK.trans hs.threshold_le_param
   have hTpos := zero_lt_one.trans_le hT
@@ -68,11 +69,10 @@ theorem isExponentSumBoundNonAsymptotic_heathBrown_of_derivative
     simp only [exponentialSumAt,hempty,Finset.sum_empty,norm_zero]
     exact mul_nonneg (zero_le_one.trans hK) (Real.rpow_nonneg hTpos.le _)
 
-theorem exponentSumGrowthExponent_le_heathBrown_of_derivative
-    (hHB : GafniTao.HeathBrownKthDerivativeTheorem)
-    {k : ℕ} (hk : 3 ≤ k) {α : ℝ≥0} (hα : 0 < (α : ℝ)) :
+theorem exponentSumGrowthExponent_le_heathBrown_of_derivative :
     exponentSumGrowthExponent α ≤ heathBrownBetaBound k α :=
   exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
     (isExponentSumBoundNonAsymptotic_heathBrown_of_derivative hHB hk hα)
+end
 
 end TaoTrudgianYang2025

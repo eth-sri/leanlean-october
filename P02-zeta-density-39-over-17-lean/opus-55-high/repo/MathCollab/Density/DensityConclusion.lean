@@ -1,6 +1,7 @@
 module
 public import MathCollab.Density.DensitySlabBound
 public import MathCollab.Density.DensityDyadicSummation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ theorem densityCountingEta_margins {σ ε : ℝ} (hσ : 3/4 < σ) (hε : 0 < ε)
   unfold densityCountingEta
   have hleft := min_le_left ((σ-3/4)/16) (ε/24)
   have hright := min_le_right ((σ-3/4)/16) (ε/24)
-  exact ⟨lt_min (by positivity) (by positivity), by linarith, by linarith⟩
+  grind
 
 /-- The original count is empty to the right of the open critical strip. -/
 theorem zetaDensityCount_eq_zero_of_one_le {σ : ℝ} (hσ : 1 ≤ σ) (T : ℝ) :
@@ -45,7 +46,7 @@ theorem zeta_density_bound_of_weyl {σ ε η₀ Cw : ℝ}
     obtain ⟨A,hA,hslab⟩ := zetaSlab_density_bound_of_weyl hσ hσ' hm.1 hm.2.1
       hη₀ hη₀' hCw hW
     have hp : 0 < 2*(1-σ)+12*densityCountingEta σ ε := by linarith [hm.1]
-    obtain ⟨C,hC,hall⟩ := zetaDensity_bound_of_eventual_slabs hp hA hslab
+    pm_114 C hC hall zetaDensity_bound_of_eventual_slabs hp hA hslab
     refine ⟨C,hC,?_⟩
     intro T hT
     exact (hall T hT).trans (mul_le_mul_of_nonneg_left

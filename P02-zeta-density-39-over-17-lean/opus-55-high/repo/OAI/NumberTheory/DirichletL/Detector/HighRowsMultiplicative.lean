@@ -1,20 +1,23 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighEulerGeneral
 public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character) (u : O) (I J : Ideal O)
+section
+variable (η : HeckeFamily.Character) (u : O)
+include η u
+theorem bareSourceCoefficient_product_row_frequency (I J : Ideal O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hIJcop : IsCoprime I J)
     (n m s r : O)
@@ -45,27 +48,14 @@ theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character)
   rw [hi,hj] at he
   exact he
 
-theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
+theorem bareIdealHighCoefficient_row_mul
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
     bareIdealHighCoefficient η u (I*I') (J*J') (K*K') (L*L') =
       bareIdealHighCoefficient η u I J K L * bareIdealHighCoefficient η u I' J' K' L' := by
-  have hII := hcop.mono (first_block_dvd I J K L) (first_block_dvd I' J' K' L')
-  by_cases h : highSupport I J K L ∧ highSupport I' J' K' L'
+  pm_3906
   · have hprod := (highSupport_mul I J K L I' J' K' L' hII).mpr h
-    rcases h with ⟨h,h'⟩
-    have hsA := (supported_mul_iff (I*J^3) K).mpr
-      ⟨(supported_mul_iff I (J^3)).mpr ⟨h.2.1,supported_pow h.2.2.1 3⟩,h.2.2.2.1⟩
-    have hsB := (supported_mul_iff (I'*J'^3) K').mpr
-      ⟨(supported_mul_iff I' (J'^3)).mpr ⟨h'.2.1,supported_pow h'.2.2.1 3⟩,h'.2.2.2.1⟩
-    have hc3 : IsCoprime ((I*J*K*L)^3) ((I'*J'*K'*L')^3) := hcop.pow_left.pow_right
-    have hab := primaryGenerator_coprime _ _ hsA hsB
-      (hc3.mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
-    have hba := primaryGenerator_coprime _ _ h'.2.2.2.2 hsA
-      (hcop.symm.pow_right.mono (last_block_dvd I' J' K' L') (completed_block_dvd_cube I J K L))
-    have hab' := primaryGenerator_coprime _ _ h.2.2.2.2 hsB
-      (hcop.pow_right.mono (last_block_dvd I J K L) (completed_block_dvd_cube I' J' K' L'))
-    simp only [primaryGenerator_mul,primaryGenerator_pow] at hab hba hab'
+    pm_3904
     have he := bareSourceCoefficient_product_row_frequency η u I I'
       ⟨h.1,supported_primaryGenerator_ne_zero I h.2.1⟩
       ⟨h'.1,supported_primaryGenerator_ne_zero I' h'.2.1⟩
@@ -88,20 +78,13 @@ theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
     unfold bareIdealHighCoefficient
     rw [dite_eq_left hprod,dite_eq_left h,dite_eq_left h']
     simp only [primaryGenerator_mul]
-    dsimp only at he
-    convert he using 1 ; ring_nf
+    pm_8388
   · have hprod := mt (highSupport_mul I J K L I' J' K' L' hII).mp h
     unfold highSupport at hprod
     unfold bareIdealHighCoefficient
-    rw [dite_eq_right hprod]
-    by_cases hi : highSupport I J K L
-    · have hj : ¬highSupport I' J' K' L' := fun hj=>h ⟨hi,hj⟩
-      unfold highSupport at hj
-      rw [dite_eq_right hj,mul_zero]
-    · unfold highSupport at hi
-      rw [dite_eq_right hi,zero_mul]
+    pm_3905
 
-theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+theorem bareIdealHighSummand_row_mul (x w z : ℂ)
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
     bareIdealHighSummand η u x w z (I*I') (J*J') (K*K') (L*L') =
@@ -110,8 +93,8 @@ theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z
   rw [bareIdealHighCoefficient_row_mul η u I J K L I' J' K' L' hcop,
     fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul,fullIdealWeight_mul]
   ring
+end
 
 end SevenEighths.ProbePhysical
-end
 
 end OAI

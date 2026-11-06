@@ -9,6 +9,7 @@ actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannLaplaceRepresentation
 public import Mathlib.Analysis.RCLike.Sqrt
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,10 +31,12 @@ namespace MathCollab.Density.Stronger.Atkinson
 def neumannLaplaceAmplitude (u : ℝ) : ℂ :=
   (1 + (u : ℂ) * I) ^ (-(1 / 2 : ℂ))
 
-theorem norm_neumannLaplaceAmplitude_le_one (u : ℝ) :
+section
+variable (u : ℝ)
+include u
+theorem norm_neumannLaplaceAmplitude_le_one :
     ‖neumannLaplaceAmplitude u‖ ≤ 1 := by
-  have hz : 1 ≤ ‖1 + (u : ℂ) * I‖ := by
-    simpa using Complex.re_le_norm (1 + (u : ℂ) * I)
+  pm_4380
   have hn : ‖neumannLaplaceAmplitude u‖ = ‖1 + (u : ℂ) * I‖ ^ (-(1 / 2 : ℝ)) := by
     unfold neumannLaplaceAmplitude
     convert Complex.norm_cpow_real (1 + (u : ℂ) * I) (-(1 / 2 : ℝ)) using 1
@@ -42,20 +45,19 @@ theorem norm_neumannLaplaceAmplitude_le_one (u : ℝ) :
   simpa only [Real.one_rpow] using
     Real.rpow_le_rpow_of_nonpos zero_lt_one hz (by norm_num : -(1 / 2 : ℝ) ≤ 0)
 
-theorem neumann_sqrt_re_ge_one (u : ℝ) :
+theorem neumann_sqrt_re_ge_one :
     1 ≤ ((1 + (u : ℂ) * I) ^ (1 / 2 : ℂ)).re := by
-  have hz : 1 ≤ ‖1 + (u : ℂ) * I‖ := by
-    simpa using Complex.re_le_norm (1 + (u : ℂ) * I)
+  pm_4380
   rw [one_div, Complex.cpow_inv_two_re]
   have hr : (1 + (u : ℂ) * I).re = 1 := by simp
   rw [hr]
   exact (Real.one_le_sqrt).2 (by linarith)
 
-theorem norm_neumannLaplaceAmplitude_sub_linear_le (u : ℝ) :
+theorem norm_neumannLaplaceAmplitude_sub_linear_le :
     ‖neumannLaplaceAmplitude u - 1 + (u : ℂ) * I / 2‖ ≤ (3 / 8 : ℝ) * u ^ 2 := by
   let w : ℂ := (1 + (u : ℂ) * I) ^ (1 / 2 : ℂ)
   have hwRe : 1 ≤ w.re := neumann_sqrt_re_ge_one u
-  have hwn : 1 ≤ ‖w‖ := hwRe.trans (Complex.re_le_norm w)
+  pm_6771 hwn w hwRe.trans Complex.re_le_norm
   have hw : w ≠ 0 := by
     intro he
     simp only [he, zero_re] at hwRe
@@ -83,7 +85,7 @@ theorem norm_neumannLaplaceAmplitude_sub_linear_le (u : ℝ) :
   have hd2 : ‖w - 1‖ ^ 2 ≤ u ^ 2 / 4 := by
     have h := mul_self_le_mul_self (norm_nonneg (w - 1)) hd
     nlinarith [sq_abs u]
-  have hlin : (u : ℂ) * I = w ^ 2 - 1 := by linear_combination -hsq
+  have hlin : (u : ℂ) * I = w ^ 2 - 1 := by grind
   have heq : (2 : ℂ) * w * (neumannLaplaceAmplitude u - 1 + (u : ℂ) * I / 2) =
       (w - 1) ^ 2 * (w + 2) := by
     rw [ha, hlin]
@@ -101,5 +103,6 @@ theorem norm_neumannLaplaceAmplitude_sub_linear_le (u : ℝ) :
       _ ≤ (u ^ 2 / 4) * (‖w‖ + 2) := by gcongr
       _ ≤ _ := by nlinarith [mul_nonneg (sq_nonneg u) (sub_nonneg.mpr hwn)]
   exact le_of_mul_le_mul_left hbound (by positivity : 0 < 2 * ‖w‖)
+end
 
 end MathCollab.Density.Stronger.Atkinson

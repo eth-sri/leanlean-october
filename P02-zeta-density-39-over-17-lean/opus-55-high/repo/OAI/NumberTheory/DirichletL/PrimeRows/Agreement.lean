@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.Continuation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,9 +36,8 @@ theorem ramifiedFactor_hasProd (S : Finset (Ideal O)) (hS : SourceExclusions S)
     unfold ramifiedProduct
     apply Finset.prod_bij (fun P hP =>
       (⟨P.val,Finset.mem_filter.mpr ⟨Finset.mem_subtype.mp hP,P.property⟩⟩ : ramifiedPrimes S u))
-    · intro P hP; exact Finset.mem_attach _ _
-    · intro P hP Q hQ heq
-      exact Subtype.ext (congrArg (fun R : ramifiedPrimes S u => R.val) heq)
+    grind
+    grind
     · intro P hP
       refine ⟨⟨P.val,(Finset.mem_filter.mp P.property).2⟩,?_,?_⟩
       · exact Finset.mem_subtype.mpr (Finset.mem_filter.mp P.property).1
@@ -54,11 +54,7 @@ theorem supported_prime_coprime (P : PrimeIdeal) (hs : Supported P.val) (u : O)
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have he : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  have hnot : ¬p∣u := by
-    intro hd
-    apply hn
-    rw [Ideal.dvd_iff_le,←he,Ideal.span_singleton_le_span_singleton]
-    exact hd
+  pm_3492 u hn he
   rw [←he,Ideal.isCoprime_span_singleton_iff]
   exact hp.irreducible.coprime_iff_not_dvd.mpr hnot
 
@@ -76,7 +72,7 @@ theorem continuedCorrection_eq_initial (S : Finset (Ideal O)) (hS : SourceExclus
     have hs := outside_prime_supported S hS.bad P.val P.property
     by_cases h : P.val.val∣Ideal.span {u.val}
     · simp only [ramifiedFactor,unramifiedFactor,ite_eq_left h,mul_one]
-      exact (localCorrection_eq_ramified η u P.val hs h x w z hx hw hz).symm
+      pm_8694 P.val h
     · simp only [ramifiedFactor,unramifiedFactor,ite_eq_right h,one_mul]
       exact (localCorrection_unramified_ideal η u P.val hs
         (supported_prime_coprime P.val hs u.val h) x w z hx hw hz).symm

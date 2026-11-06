@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQPolynomialBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -21,8 +22,7 @@ theorem zero_q_a_times_a_column_budget {M H Q R C lam : ℝ}
     (8*M*H/(Q*R))*
       (2*R*(H*(1+120*C*(1+2*Real.pi*C)*M*(2*R*lam)^((1:ℝ)/12))+2*H*R)) ≤
         1944*C*(1+2*Real.pi*C)*M^2 := by
-  have hq0 : Q ≠ 0 := hQ.ne'
-  have hr0 : R ≠ 0 := hR.ne'
+  pm_4953 hq0 Q hQ.ne' hr0 R hR.ne'
   have hCp : 0 ≤ C := zero_le_one.trans hC
   let F := C*(1+2*Real.pi*C)
   have hF : 1 ≤ F := by

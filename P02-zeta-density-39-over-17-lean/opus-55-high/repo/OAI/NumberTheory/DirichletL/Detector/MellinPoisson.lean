@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SpectralPoisson
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,10 +19,10 @@ lemma finiteSupport_verticalIntegral {α : Type*} (c : α → ℂ)
     verticalIntegral σ (fun t => ∑' a, c a * F a t) =
       ∑' a, c a * verticalIntegral σ (F a) := by
   have hz (a : α) (ha : a∉hc.toFinset) : c a=0 := by
-    simpa only [Set.Finite.mem_toFinset, Function.mem_support, not_not] using ha
+    simp_all
   have he (t : ℂ) : (∑' a, c a*F a t) = ∑ a∈hc.toFinset, c a*F a t :=
-    tsum_eq_sum (fun a ha => by rw [hz a ha, zero_mul])
-  rw [tsum_eq_sum (s := hc.toFinset) (fun a ha => by rw [hz a ha, zero_mul])]
+    tsum_eq_sum (fun a ha => by grind)
+  rw [tsum_eq_sum (s := hc.toFinset) (fun a ha => by grind)]
   unfold verticalIntegral
   simp_rw [he]
   rw [integral_finsetSum _ (fun a ha => (hF a).const_mul (c a)), Finset.mul_sum]
@@ -46,16 +47,12 @@ theorem inner_mellin_poisson (η : HeckeFamily.Character) (C : CalibrationData)
   have hc : (Function.support c).Finite := by
     apply (elementWindow_finite_support W hWc K hK).subset
     intro m hm hz
-    exact hm (by simp only [c, hz, mul_zero])
+    aesop
   rw [← finiteSupport_verticalIntegral c hc
     (fun m t => (Z:ℂ)^t * Complex.exp (t^2) *
       spectralRow C.excluded D (rowCoefficient η C.Xi s hs m) t) 4
     (fun m => physicalRow_integrable η C D s hs m Z hZ)]
-  unfold verticalIntegral
-  congr 1
-  apply integral_congr_ae
-  apply Filter.Eventually.of_forall
-  intro y
+  pm_8147 verticalIntegral y
   dsimp only
   norm_num only [Complex.ofReal_ofNat]
   have ht : 1 < ((4:ℂ)+(y:ℂ)*Complex.I).re := by simp

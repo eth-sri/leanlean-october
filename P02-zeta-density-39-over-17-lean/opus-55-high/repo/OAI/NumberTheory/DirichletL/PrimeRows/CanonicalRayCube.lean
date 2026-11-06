@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.RayCharacterFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical Topology
 open MeasureTheory Set Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical CompletedGauss
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

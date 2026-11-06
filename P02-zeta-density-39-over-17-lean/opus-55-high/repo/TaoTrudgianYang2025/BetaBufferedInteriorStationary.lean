@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedWindowTails
 public import TaoTrudgianYang2025.BetaMorseRemainder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,6 @@ open Set Expdb MeasureTheory
 open scoped ContDiff FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 def bufferedInteriorStationaryConstant (σ : ℝ) : ℝ :=
   8*Real.sqrt (σ+1)/(modelPhaseCurvatureLower σ*Real.pi)+
@@ -52,10 +52,9 @@ theorem bufferedNormalizedMode_interior_window_remainder
   have hm := abs_lt.mp (hgeom (-H) hminus).2
   have hp := abs_lt.mp (hgeom H hplus).2
   have htail := norm_bufferedNormalizedMode_sub_window_le hσ hδ hF₁ hv hT hη hl hr hH
-    (hs hminus) (hs hplus) (show l+η ≤ modelPhaseMorseInverse F v (-H) by linarith [hm.1])
-    (show modelPhaseMorseInverse F v H ≤ r-η by linarith [hp.2])
-  have hcentral := bufferedMorseWeight_local_window_remainder_inverse hσ hδ hF hv hη hl hr hd
-    hleft hright hH hH₁ hsmall hT
+    (hs hminus) (hs hplus) (show l+η ≤ modelPhaseMorseInverse F v (-H) by grind)
+    (show modelPhaseMorseInverse F v H ≤ r-η by grind)
+  pm_8199 hcentral bufferedMorseWeight_local_window_remainder_inverse
   let mid := ∫ u in modelPhaseMorseInverse F v (-H)..modelPhaseMorseInverse F v H,
     (modelPhaseBufferedCutoff l r η u : ℂ)*(𝐞 (T*F u-(T*v)*u) : ℂ)
   let main := (𝐞 (-T*modelPhaseLegendreDual F v) : ℂ)*
@@ -74,8 +73,10 @@ theorem bufferedNormalizedMode_interior_window_remainder
   unfold bufferedInteriorStationaryConstant
   ring
 
-theorem modelPhaseBufferedMorseRemainder_interior_uniform
-    {σ : ℝ} (hσ : 0 < σ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+theorem modelPhaseBufferedMorseRemainder_interior_uniform :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (l r η d : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → 0 < d →
       ∀ (F : ℝ → ℝ) (δ v T : ℝ),
         δ ≤ min (modelPhaseCurvatureLower σ) 1 →
@@ -86,7 +87,7 @@ theorem modelPhaseBufferedMorseRemainder_interior_uniform
         ‖modelPhaseMorseRemainder (modelPhaseBufferedCutoff l r η) F T v‖ ≤ C/(T*d) := by
   let γ := min 1 (Real.sqrt (modelPhaseCurvatureLower σ)/2)
   have hsqrt := Real.sqrt_pos.mpr (modelPhaseCurvatureLower_pos hσ)
-  have hγ : 0 < γ := lt_min (by norm_num) (by positivity)
+  pm_1654 hγ γ
   have hγ₁ : γ ≤ 1 := min_le_left _ _
   have hγs : γ < Real.sqrt (modelPhaseCurvatureLower σ) :=
     (min_le_right _ _).trans_lt (by linarith)
@@ -94,11 +95,10 @@ theorem modelPhaseBufferedMorseRemainder_interior_uniform
   intro l r η d hl hr hη hd F δ v T hδ hF hv hT hleft hright
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hd₁ : d ≤ 1 := by linarith
-  have hH : 0 < γ*d := mul_pos hγ hd
+  pm_474 hH γ d hγ hd
   have hH₁ : γ*d ≤ 1 := (mul_le_mul hγ₁ hd₁ hd.le (by norm_num)).trans_eq (one_mul 1)
   have hsmall := mul_lt_mul_of_pos_right hγs hd
-  have hb := bufferedNormalizedMode_interior_window_remainder hσ hδ hF hv hη hl hr hd
-    hleft hright hH hH₁ hsmall hT
+  pm_8199 hb bufferedNormalizedMode_interior_window_remainder
   have hχ : modelPhaseBufferedCutoff l r η (modelPhaseInverseSlope F v) = 1 :=
     modelPhaseBufferedCutoff_one hη (by linarith) (by linarith)
   have he :
@@ -119,8 +119,7 @@ theorem modelPhaseBufferedMorseRemainder_interior_uniform
         (bufferedInteriorStationaryConstant σ/γ)/(T*d) := by ring
     _ ≤ _ := div_le_div_of_nonneg_right (le_max_left _ _) (mul_pos hT hd).le
 
-theorem modelPhaseBufferedFourierMode_interior_uniform
-    {σ : ℝ} (hσ : 0 < σ) :
+theorem modelPhaseBufferedFourierMode_interior_uniform :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (l r η d : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → 0 < d →
       ∀ (F : ℝ → ℝ) (δ T N q : ℝ),
         δ ≤ min (modelPhaseCurvatureLower σ) 1 →
@@ -130,8 +129,7 @@ theorem modelPhaseBufferedFourierMode_interior_uniform
         modelPhaseInverseSlope F (q*N/T)+d ≤ r-2*η →
         ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q-
           modelPhaseStationaryMainTerm F T N q‖ ≤ C*N/(T*d) := by
-  obtain ⟨C,hC,hR⟩ := modelPhaseBufferedMorseRemainder_interior_uniform hσ
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC hR modelPhaseBufferedMorseRemainder_interior_uniform hσ
   intro l r η d hl hr hη hd F δ T N q hδ hF hT hN hv hleft hright
   have hχ : modelPhaseBufferedCutoff l r η (modelPhaseInverseSlope F (q*N/T)) = 1 :=
     modelPhaseBufferedCutoff_one hη (by linarith) (by linarith)
@@ -142,5 +140,6 @@ theorem modelPhaseBufferedFourierMode_interior_uniform
   rw [he]
   exact (mul_le_mul_of_nonneg_left
     (hR l r η d hl hr hη hd F δ (q*N/T) T hδ hF hv hT hleft hright) hN.le).trans_eq (by ring)
+end
 
 end TaoTrudgianYang2025

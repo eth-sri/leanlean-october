@@ -21,7 +21,6 @@ namespace GafniTao
 noncomputable section
 
 open Finset Polynomial
-open scoped BigOperators
 
 /-- The unit extracted from a separated residue difference stays invertible
 modulo every power of the source prime. -/

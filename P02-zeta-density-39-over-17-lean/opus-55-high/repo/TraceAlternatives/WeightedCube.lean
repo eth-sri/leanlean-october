@@ -29,11 +29,11 @@ theorem weighted_cube_holder {ι : Type*} (S : Finset ι) (r v : ι → ℝ)
   have hProd : ∀ i ∈ S, Real.sqrt (r i) * r i = r i ^ (3 / 2 : ℝ) := by
     intro i hi
     by_cases hz : r i = 0
-    · simp [hz]
+    simp_all
     have hp : 0 < r i := lt_of_le_of_ne (hr i hi) (Ne.symm hz)
     rw [Real.sqrt_eq_rpow]
     calc
-      _ = r i ^ (1 / 2 : ℝ) * r i ^ (1 : ℝ) := by rw [Real.rpow_one]
+      _ = r i ^ (1 / 2 : ℝ) * r i ^ (1 : ℝ) := by simp_all
       _ = r i ^ ((1 / 2 : ℝ) + 1) := (Real.rpow_add hp _ _).symm
       _ = _ := by norm_num
   have hC : (∑ i ∈ S, r i ^ (3 / 2 : ℝ)) ≤

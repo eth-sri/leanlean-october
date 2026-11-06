@@ -1,20 +1,21 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Widths
 public import OAI.NumberTheory.DirichletL.Descent.Basic
+public import OAI.NumberTheory.DirichletL.Arithmetic.IdealMobius
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseTerminalWidths
 open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
 open InverseMoment CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
-lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+alias norm_one_le := OAI.CompletedGauss.norm_at_least_one
 
 theorem physical_residual_width (I Q : Ideal O) (hI : I ≠ 0)
     (Z M O₀ H Ck CO CH : ℝ) (hZ : 1 < Z) (hCk : 0 < Ck) (hCO : 0 < CO) (hCH : 0 < CH)
@@ -51,9 +52,7 @@ theorem constant_log_error (C η : ℝ) (_hC : 0 < C) (hη : 0 < η) :
   have he : Real.exp (Real.log C / η) ≤ Z := (le_max_right _ _).trans hZ
   have hl := Real.log_le_log (Real.exp_pos _) he
   rw [Real.log_exp] at hl
-  apply (div_le_iff₀ (Real.log_pos hz)).mpr
-  have hh := (div_le_iff₀ hη).mp hl
-  nlinarith
+  pm_8836 hz hη hl
 
 def activeCharge (j : ℕ) (e : Fin 3) : ℤ :=
   if j = 4 then (if e = 2 then -2 else 1) else if j = 0 then 1 else 2
@@ -66,27 +65,20 @@ def reflectionWidth {ι : Type*} [Fintype ι] (Z : ℝ)
     normWidth Z (reflectionExtractedDivisor P j e 0) -
       4 * normWidth Z (reflectionExtractedDivisor P j e 2)
 
-theorem reflectionConductorCost_pos {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+theorem reflectionConductorCost_pos
     (P : ι → Ideal O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
     0 < reflectionConductorCost P j e := by
-  have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hP i))
-  have hd (v : Fin 3) := actual_ideal_norm_pos (reflectionExtractedDivisor P j e v)
-    (reflectionExtractedDivisor_ne_zero P hP j e v)
-  have h₀ := hd 0
-  have h₁ := hd 1
-  have h₂ := hd 2
+  pm_3192
   unfold reflectionConductorCost
   positivity
 
-theorem logb_reflectionConductorCost {ι : Type*} [Fintype ι]
+theorem logb_reflectionConductorCost
     (Z : ℝ) (P : ι → Ideal O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
     Real.logb Z (reflectionConductorCost P j e) = reflectionWidth Z P j e := by
-  have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hP i))
-  have hd (v : Fin 3) := actual_ideal_norm_pos (reflectionExtractedDivisor P j e v)
-    (reflectionExtractedDivisor_ne_zero P hP j e v)
-  have h₀ := hd 0
-  have h₁ := hd 1
-  have h₂ := hd 2
+  pm_3192
   unfold reflectionConductorCost reflectionWidth normWidth
   rw [Real.logb_div (by positivity) (by positivity),
     Real.logb_mul (by positivity) (by positivity),
@@ -94,7 +86,7 @@ theorem logb_reflectionConductorCost {ι : Type*} [Fintype ι]
   norm_num
   ring
 
-theorem reflection_charge_width {ι : Type*} [Fintype ι]
+theorem reflection_charge_width
     (I F B R : Ideal O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
@@ -105,10 +97,8 @@ theorem reflection_charge_width {ι : Type*} [Fintype ι]
       reflectionWidth Z P (fun i => completedLocalExponent I F (P i)) e ≤
       normWidth Z B + 2 * normWidth Z I - normWidth Z (rowPowerfulPart I) +
         normWidth Z F + normWidth Z R := by
-  have hi := actual_ideal_norm_pos I hI
-  have hf := actual_ideal_norm_pos F hF
-  have hb := actual_ideal_norm_pos B hB
-  have hr := actual_ideal_norm_pos R hR
+  pm_268 hi actual_ideal_norm_pos I hI hf F hF
+  pm_268 hb actual_ideal_norm_pos B hB hr R hR
   have hp := actual_ideal_norm_pos (rowPowerfulPart I) (rowPowerfulPart_ne_zero I)
   have hx := actual_ideal_norm_pos (rowResidualPart I (B * F * R))
     (squarefreeResidualPart_ne_zero (rowSimplePart I) (B * F * R))
@@ -124,6 +114,7 @@ theorem reflection_charge_width {ι : Type*} [Fintype ι]
   unfold normWidth
   norm_num at hh ⊢
   linarith
+end
 
 theorem normWidth_upper (I : Ideal O) (hI : I ≠ 0) (Z C E : ℝ)
     (hZ : 1 < Z) (hC : 0 < C) (h : (Ideal.absNorm I : ℝ) ≤ C * Z ^ E) :
@@ -180,10 +171,10 @@ theorem terminal_common_width {ι : Type*} [Fintype ι]
         2 * M - O₀ + normWidth Z R + V - Nstar + 2 * za +
           Real.log (widthConstant B Ck CO CH Cf) / Real.log Z := by
   have hb := reflection_charge_width I F B R hI hF hB hR P hcop hpool hres e Z hZ
-  have h₁ := normWidth_upper I hI Z Ck M hZ hCk hk
+  pm_528 h₁ normWidth_upper I hI Z Ck M hZ hCk hk
   have h₂ := normWidth_lower (rowPowerfulPart I) Z CO O₀ hZ hCO hpow
   have h₃ := normWidth_lower (rowResidualPart I (B * F * R)) Z CH H hZ hCH hrow
-  have h₄ := normWidth_upper F hF Z Cf V hZ hCf hf
+  pm_528 h₄ normWidth_upper F hF Z Cf V hZ hCf hf
   change _ ≤ 2 * M - O₀ + normWidth Z R + V - Nstar + 2 * za +
     Real.logb Z (widthConstant B Ck CO CH Cf)
   rw [logb_widthConstant Z B hB Ck CO CH Cf hCk hCO hCH hCf]
@@ -212,10 +203,13 @@ def reflectedExponent (O₀ H S₀ B₀ za v ell el Td : ℝ) : ℝ :=
   O₀ / 2 + max H (v + ell) - S₀ - B₀ + za - hybridSaving v za - ell -
     2 * el / 3 - max 0 (Td - v - 3 * ell - el) / 2
 
-theorem hybridSaving_nonneg {v za : ℝ} (hv : 0 ≤ v) (hz : 0 ≤ za) :
+section
+variable {v za : ℝ} (hv : 0 ≤ v)
+include v za hv
+theorem hybridSaving_nonneg (hz : 0 ≤ za) :
     0 ≤ hybridSaving v za := by unfold hybridSaving; positivity
 
-theorem hybridSaving_half {v za : ℝ} (hv : 0 ≤ v)
+theorem hybridSaving_half
     (hu : hybridSaving v za ≠ za) : v / 2 ≤ hybridSaving v za := by
   unfold hybridSaving at *
   rcases le_total v (min za ((v + za) / 3)) with h | h
@@ -226,6 +220,7 @@ theorem hybridSaving_half {v za : ℝ} (hv : 0 ≤ v)
     · exact (hu (min_eq_left hz)).elim
     · rw [min_eq_right hz]
       linarith
+end
 
 theorem terminal_width_from_invariant
     {F₀ N V M Q z₀ c O₀ za Nstar hhat d η Td S₀ B₀ : ℝ}
@@ -242,8 +237,7 @@ theorem reflected_row_bound {O₀ H S₀ B₀ za v ell el Td M η : ℝ}
     (hrow : v + ell ≤ H) (hH : H ≤ M - O₀ + η) :
     reflectedExponent O₀ H S₀ B₀ za v ell el Td ≤ M + za + 5 * η / 3 := by
   have hu := hybridSaving_nonneg hv hz
-  have hm := le_max_left 0 (Td - v - 3 * ell - el)
-  unfold reflectedExponent
+  pm_3193
   rw [max_eq_left hrow]
   linarith
 
@@ -252,8 +246,7 @@ theorem reflected_column_full_bound {O₀ H S₀ B₀ za v ell el Td η τ : ℝ
     (hu : hybridSaving v za = za) (hret : v + 3 * ell + el ≤ Td + τ) :
     reflectedExponent O₀ H S₀ B₀ za v ell el Td ≤
       O₀ / 2 + (Td - S₀ - B₀) + 5 * η / 3 + τ := by
-  have hm := le_max_left 0 (Td - v - 3 * ell - el)
-  unfold reflectedExponent
+  pm_3193
   rw [max_eq_right hcol, hu]
   linarith
 
@@ -264,8 +257,7 @@ theorem reflected_column_partial_bound {O₀ H S₀ B₀ za v ell el Td η τ : 
     reflectedExponent O₀ H S₀ B₀ za v ell el Td ≤
       O₀ / 2 + (Td - S₀ - B₀) / 2 + za + 7 * η / 6 + τ / 2 := by
   have hu' := hybridSaving_half hv hu
-  have hm := le_max_left 0 (Td - v - 3 * ell - el)
-  unfold reflectedExponent
+  pm_3193
   rw [max_eq_right hcol]
   linarith
 
@@ -328,7 +320,7 @@ theorem ramified_width_threshold (η : ℝ) (hη : 0 < η) :
   change Real.logb Z ((3 : ℝ) ^ (4 : ℕ)) ≤ η at hl
   rw [Real.logb_pow] at hl
   have hn : 0 ≤ Real.logb Z 3 := Real.logb_nonneg hz (by norm_num)
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+  pm_322 hm m
   unfold ramifiedWidth
   norm_num at hl
   nlinarith

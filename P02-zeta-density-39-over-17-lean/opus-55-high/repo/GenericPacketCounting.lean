@@ -1,10 +1,10 @@
 module
 public import Mathlib
 public import MathCollab.Density.Stronger.AtkinsonHeightCover
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.CriticalPeak
@@ -43,27 +43,21 @@ theorem card_le_of_quadratic_packet {A H G Y X : ℝ} {W : Finset ℝ} {f : ℝ 
     (W.card:ℝ) ≤ 2*A*H/(G*Y^2) := by
   by_cases hW : W.Nonempty
   · have hR : (0:ℝ) < W.card := by exact_mod_cast hW.card_pos
-    have hsum : (W.card:ℝ)*Y ≤ ∑ t ∈ W, f t := by
-      simpa using Finset.sum_le_sum hlarge
-    have hsq := (pow_le_pow_left₀ (by positivity : 0 ≤ (W.card:ℝ)*Y) hsum 2).trans hpacket
-    have hhalf := mul_le_mul_of_nonneg_right habsorb (sq_nonneg (W.card:ℝ))
+    pm_4455
     have hquad : (W.card:ℝ)*((W.card:ℝ)*Y^2) ≤ (W.card:ℝ)*(2*A*(H/G)) := by
       ring_nf at hsq hhalf ⊢
       nlinarith
-    have hc := (mul_le_mul_iff_right₀ hR).mp hquad
-    apply (le_div_iff₀ (mul_pos hG (sq_pos_of_pos hY))).2
-    have he := (le_div_iff₀ hG).mp (show (W.card:ℝ)*Y^2 ≤ (2*A*H)/G by
-      convert hc using 1; ring)
-    nlinarith
-  · rw [Finset.not_nonempty_iff_eq_empty.mp hW]
-    simp only [Finset.card_empty,Nat.cast_zero]
-    positivity
+    pm_4456
+  pm_257 hW Finset.card_empty
 
-theorem covered_card_budget {k l A H G Y : ℝ}
+section
+variable {k l A H G Y : ℝ}
+include k l A H G Y
+theorem covered_card_budget
     (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y) :
     ((Nat.floor (H/absorptionLength k l A H G Y)+1:ℕ):ℝ)*(2*A*H/(G*Y^2)) ≤
       2*A*H/(G*Y^2)+(H/absorptionLength k l A H G Y)*(2*A*H/(G*Y^2)) := by
-  have hL := absorptionLength_pos (k := k) (l := l) hA hH hG hY
+  pm_7099 hH
   have hfloor := Nat.floor_le (div_nonneg hH.le hL.le)
   have hc : ((Nat.floor (H/absorptionLength k l A H G Y)+1:ℕ):ℝ) ≤
       H/absorptionLength k l A H G Y+1 := by
@@ -75,7 +69,7 @@ theorem covered_card_budget {k l A H G Y : ℝ}
     _ = _ := by ring
 
 /-- The generic subdivision lemma preserves the physical interval and packet powers. -/
-theorem card_le_of_local_packets {k l A H G Y : ℝ}
+theorem card_le_of_local_packets
     {W : Finset ℝ} {f : ℝ → ℝ}
     (hk : 0 < k) (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y)
     (hrange : ∀ t ∈ W, H ≤ t ∧ t ≤ 2*H)
@@ -89,17 +83,13 @@ theorem card_le_of_local_packets {k l A H G Y : ℝ}
   let L := absorptionLength k l A H G Y
   have hL : 0 < L := absorptionLength_pos hA hH hG hY
   have hfiber (j : ℕ) : ((atkinsonHeightFiber H L W j).card:ℝ) ≤ 2*A*H/(G*Y^2) := by
-    have hsub := atkinsonHeightFiber_subset H L W j
-    have hlocal := atkinsonHeightFiber_interval j hL (fun t ht => (hrange t ht).1)
-    have hp := hpacket (atkinsonHeightFiber H L W j) hsub (H+(j:ℝ)*L) hlocal
+    pm_552 j
     exact card_le_of_quadratic_packet hA hH.le hG hY
       (fun t ht => hlarge t (hsub ht)) hp (absorptionLength_absorbs hk hA hH hG)
-  have hc := atkinson_card_le_of_height_fibers hL
-    (fun t ht => (hrange t ht).2) (fun j _ => hfiber j)
-  exact hc.trans (covered_card_budget hA hH hG hY)
+  pm_6325 hc j hc.trans covered_card_budget
 
 /-- Exact dependence on all four positive physical parameters. -/
-theorem absorptionLength_eq {k l A H G Y : ℝ}
+theorem absorptionLength_eq
     (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y) :
     absorptionLength k l A H G Y =
       Y^(2/k)/(4^(1/k)*A^(1/k)*H^((l-k)/k)*G^((1+k-2*l)/k)) := by
@@ -113,7 +103,7 @@ theorem absorptionLength_eq {k l A H G Y : ℝ}
   congr 2 <;> ring_nf
 
 /-- The subdivision term has exactly the general exponent-pair powers. -/
-theorem subdivision_term_eq {k l A H G Y : ℝ}
+theorem subdivision_term_eq
     (hk : 0 < k) (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y) :
     (H/absorptionLength k l A H G Y)*(2*A*H/(G*Y^2)) =
       2*4^(1/k)*A^(1+1/k)*H^(1+l/k)/(G^((2*l-1)/k)*Y^(2+2/k)) := by
@@ -143,7 +133,7 @@ theorem subdivision_term_eq {k l A H G Y : ℝ}
   field_simp
 
 /-- The complete generic finite count, retaining both terms. -/
-theorem card_le_two_powers {k l A H G Y : ℝ}
+theorem card_le_two_powers
     {W : Finset ℝ} {f : ℝ → ℝ}
     (hk : 0 < k) (hA : 0 < A) (hH : 0 < H) (hG : 0 < G) (hY : 0 < Y)
     (hrange : ∀ t ∈ W, H ≤ t ∧ t ≤ 2*H)
@@ -154,8 +144,9 @@ theorem card_le_two_powers {k l A H G Y : ℝ}
           ((absorptionLength k l A H G Y)^k*H^(l-k)*G^(1+k-2*l)))) :
     (W.card:ℝ) ≤ 2*A*H/(G*Y^2)+
       2*4^(1/k)*A^(1+1/k)*H^(1+l/k)/(G^((2*l-1)/k)*Y^(2+2/k)) := by
-  have h := card_le_of_local_packets hk hA hH hG hY hrange hlarge hpacket
+  pm_528 h card_le_of_local_packets hk hA hH hG hY hrange hlarge hpacket
   rwa [subdivision_term_eq hk hA hH hG hY] at h
+end
 
 
 /-- Allocate the packet loss before the physical height is quantified. -/
@@ -168,7 +159,7 @@ theorem count_exponent_budget {k l D H G Y ν : ℝ}
       (2*D+2*4^(1/k)*D^(1+1/k))*H^ν*
         (H/(G*Y^2)+H^(1+l/k)/(G^((2*l-1)/k)*Y^(2+2/k))) := by
   have hH0 : 0 < H := by linarith
-  have hq : 0 < 1+1/k := by positivity
+  pm_7447
   have hq1 : 1 ≤ 1+1/k := le_add_of_nonneg_right (by positivity)
   have hp : H^(ν/(1+1/k)) ≤ H^ν :=
     Real.rpow_le_rpow_of_exponent_le hH (div_le_self hν hq1)

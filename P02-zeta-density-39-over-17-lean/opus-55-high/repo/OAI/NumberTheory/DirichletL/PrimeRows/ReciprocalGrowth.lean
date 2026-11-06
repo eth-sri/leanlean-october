@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.Conductor
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalGrowth
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,14 +21,14 @@ theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
       ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS) x‖≤
         C*(η.modulus.absNorm:ℝ)^δ*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^δ*(3+|x.im|)^2 := by
   obtain ⟨D,hD,hmain⟩ := HeckeReciprocalGrowth.reciprocal_subpower e (δ/2) he he' (by linarith)
-  let A : ℝ := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
-  have hA : 0≤A := by dsimp [A];positivity
-  refine ⟨D*(2:ℝ)^(δ/2)*(1+A^δ),by positivity,?_⟩
+  pm_1292
+  pm_3497
+  refine ⟨D *(2:ℝ)^(δ/2)*(1+A^δ),by positivity,?_⟩
   intro η u x hx
   let q : ℝ := η.modulus.absNorm
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
-  have hq : 0≤q := by dsimp [q];positivity
-  have hN : 0≤N := by dsimp [N];positivity
+  pm_3395 hq q
+  pm_3395 hN N
   have hQ : (((targetRow η u).excludePrimes S hS).modulus.absNorm:ℝ)≤A*q*N := by
     have hh := targetRow_excluded_conductor S hS η u
     dsimp [A,q,N]
@@ -47,12 +48,12 @@ theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
     ring
   have hbase := hmain ((targetRow η u).excludePrimes S hS) x hx
   calc
-    _ ≤ D*(2*(A*q*N)^2*(3+|x.im|)^2)^(δ/2) := by
+    _ ≤ D *(2*(A*q*N)^2*(3+|x.im|)^2)^(δ/2) := by
       apply hbase.trans
       apply mul_le_mul_of_nonneg_left _ hD.le
       exact Real.rpow_le_rpow (by unfold HeckeReciprocalGrowth.presentationComplexity HeckeLogarithmic.complexity;positivity) hc (by linarith)
-    _ = D*(2:ℝ)^(δ/2)*A^δ*q^δ*N^δ*(3+|x.im|)^δ := by rw [hpow];ring
-    _ ≤ D*(2:ℝ)^(δ/2)*(1+A^δ)*q^δ*N^δ*(3+|x.im|)^2 := by
+    _ = D *(2:ℝ)^(δ/2)*A^δ*q^δ*N^δ*(3+|x.im|)^δ := by rw [hpow];ring
+    _ ≤ D *(2:ℝ)^(δ/2)*(1+A^δ)*q^δ*N^δ*(3+|x.im|)^2 := by
       have hh : (3+|x.im|)^δ≤(3+|x.im|)^2 := by
         simpa only [Real.rpow_ofNat] using
           (Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg x.im] : (1:ℝ)≤3+|x.im|) hδ')

@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.DyadBound
 public import OAI.NumberTheory.DirichletL.PrimeRows.Measurable
 public import OAI.NumberTheory.DirichletL.PrimeRows.ProfileIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
@@ -16,23 +17,20 @@ local notation "O" => HeckeFamily.O
 
 def physicalDyadNorm {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
+    (T : Fin K→ Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) : ℝ :=
   ∑u∈R,∑P:(∀i,T i),‖frequencyWeight z ⟨u.val,u.property.1⟩*
     calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
       (fun i=>hT i (P i).val (P i).property) W Y x w z‖
 
-lemma physicalDyadNorm_nonneg {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
-    (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) :
+section
+variable {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow) (T : Fin K→ Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
+include K S hS hmax η R T hT W Y
+lemma physicalDyadNorm_nonneg (x w z : ℂ) :
     0≤physicalDyadNorm S hS hmax η R T hT W Y x w z := by
   exact Finset.sum_nonneg fun u hu=>Finset.sum_nonneg fun P hP=>norm_nonneg _
 
-lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
+lemma physicalDyadNorm_onLines_aestronglyMeasurable
     (σ υ r : ℝ) : AEStronglyMeasurable (fun p : HeightSpace=>physicalDyadNorm S hS hmax η R T hT W Y
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)) heightMeasure := by
   unfold physicalDyadNorm
@@ -45,11 +43,12 @@ lemma physicalDyadNorm_onLines_aestronglyMeasurable {K : ℕ}
         (fun i=>(P i).val) (fun i=>hT i (P i).val (P i).property) W Y σ υ r heightMeasure).norm.const_mul
           (((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(-r)))) using 1
   ext p
-  simp only [Finset.sum_apply]
+  simp_all
+end
 
 theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)
-    (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B)
+    (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤ r) (hB : 0≤B)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hυ : (1/2:ℝ)≤υ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S)
@@ -58,7 +57,7 @@ theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
     ∃C : ℝ,0<C ∧ ∀(η : Character) (U : ℝ),1≤U → ∀R : Finset FreeRow,
       (∀u∈R,u.val≠1 ∧ U≤((Ideal.span {u.val}:Ideal O).absNorm:ℝ) ∧
         ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤2*U) →
-      ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S),
+      ∀(T : Fin K→ Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S),
       (∀P:(∀i,T i),Function.Injective (fun i=>(P i).val)) →
       ∀(Y : Fin K→ℝ), (∀i,1≤Y i) → ∀(W : Fin K→ℝ→ℂ),
       (∀i,Function.support (W i)⊆Icc a b) → (∀i y,‖W i y‖≤B) →
@@ -70,17 +69,17 @@ theorem calibrated_physical_dyad_integral (K : ℕ) (e δ a b r B σ υ : ℝ)
       (∫p : HeightSpace,‖sourceMellinWeight W0 W1 X Y0 Z
         ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*
           physicalDyadNorm S hS hmax η R T hT W Y
-            ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I) ∂heightMeasure)
+            ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I) ∂ heightMeasure)
       ≤C*(η.modulus.absNorm:ℝ)^δ*U^(8/5+δ-r)*(∏i,(Y i)^r)*
-        (X^(1/2-r)*Z^(σ+r-1)*Y0^(υ-1)) := by
-  obtain ⟨C,hC,hD⟩ := calibrated_physical_row_dyad K e δ a b r B he he' hδ hδ' ha hb hr hB S hS hmax hfirst
+        (X^(1/2-r)*Z ^(σ+r-1)*Y0^(υ-1)) := by
+  pm_5582 hD calibrated_physical_row_dyad
   obtain ⟨D,hDp,hP⟩ := source_profile_integral_bound W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     σ σ r r υ υ (by linarith)
-  refine ⟨D*C,mul_pos hDp hC,?_⟩
+  pm_3171 D C mul_pos hDp hC
   intro η U hU R hR T hT hdis Y hY W hWS hWB X Y0 Z hX hY0 hZ
   let A : ℝ := C*(η.modulus.absNorm:ℝ)^δ*U^(8/5+δ-r)*(∏i,(Y i)^r)
-  have hYP : 0≤∏i,(Y i)^r := Finset.prod_nonneg fun i _=>Real.rpow_nonneg (by linarith [hY i]) _
-  have hA : 0≤A := by dsimp [A];positivity
+  pm_3511
+  pm_3497
   have hbnd (p : HeightSpace) : physicalDyadNorm S hS hmax η R T hT W Y
       ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)
       ≤A*(3+|p.1.1|)^2*(3+|p.2|)^2 := by

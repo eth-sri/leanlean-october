@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroRFloorBudgets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -16,12 +17,15 @@ noncomputable section
 open GafniTao
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_zero_zero_re (f : ℝ → ℝ) (M H : ℕ) :
+section
+variable (f : ℝ → ℝ) (M H : ℕ)
+include f M H
+theorem robertSargos_zero_zero_re :
     (robertSargosTrimmedCorrelation f M H 0 0).re =
       ∑ h ∈ robertSargosHOverlap H 0, ((robertSargosMOverlap M h 0 0).card:ℝ) := by
   simp [robertSargosTrimmedCorrelation,fordAdditiveCharacter]
 
-theorem robertSargos_zero_zero_bound (f : ℝ → ℝ) (M H : ℕ) :
+theorem robertSargos_zero_zero_bound :
     (robertSargosTrimmedCorrelation f M H 0 0).re ≤ (M:ℝ)*H := by
   rw [robertSargos_zero_zero_re]
   have hm : ∀ h ∈ robertSargosHOverlap H 0, (robertSargosMOverlap M h 0 0).card ≤ M := by
@@ -35,35 +39,34 @@ theorem robertSargos_zero_zero_bound (f : ℝ → ℝ) (M H : ℕ) :
       simp only [robertSargosMOverlap,add_zero,sub_zero,max_self,min_self,Finset.mem_Icc] at hm ⊢
       omega
     have hc := Finset.card_le_card hs
-    simpa only [Int.card_Icc,add_sub_cancel_right,Int.toNat_natCast] using hc
+    simp_all
   calc
     _ ≤ ∑ _h ∈ robertSargosHOverlap H 0, (M:ℝ) := by
       apply Finset.sum_le_sum
       intro h hh
-      exact_mod_cast hm h hh
+      simp_all
     _ ≤ (M:ℝ)*H := by
       simp only [Finset.sum_const,nsmul_eq_mul]
       have hc : ((robertSargosHOverlap H 0).card:ℝ) ≤ H := by
         exact_mod_cast robertSargos_h_overlap_card H 0
       simpa only [mul_comm] using mul_le_mul_of_nonneg_right hc (Nat.cast_nonneg M)
+end
 
 theorem zero_zero_floor_scale {lam : ℝ} (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
     {H : ℕ} (hHmax : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2) :
     (H:ℝ)^2 ≤ (⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) := by
-  let T := lam^(-(1:ℝ)/13)
+  pm_4903
   have hT : 1 ≤ T := by
     have := (thirteenth_root_physical_scale hlam hsmall).1
     dsimp [T]
     linarith
-  have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
-  have h3 : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
+  pm_291
+  pm_1494 h3
   obtain ⟨_,hQ,_⟩ := positive_floor_half_bounds
     (show 1 ≤ T^3 from one_le_pow₀ hT)
   obtain ⟨_,hR,_⟩ := positive_floor_half_bounds hT
-  have hprod := mul_le_mul hQ hR (by positivity) (by positivity)
-  have hh : (H:ℝ) ≤ T^2/2 := by rwa [h2]
+  pm_355 hprod hQ hR
+  pm_375 hh
   have hs := mul_self_le_mul_self (Nat.cast_nonneg H) hh
   rw [← h3]
   change (H:ℝ)^2 ≤ (⌊T^3⌋₊:ℝ)*(⌊T⌋₊:ℝ)

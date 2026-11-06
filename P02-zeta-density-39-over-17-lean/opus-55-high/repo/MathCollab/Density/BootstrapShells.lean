@@ -1,12 +1,11 @@
 module
 public import MathCollab.Density.BootstrapShell
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Set
-open scoped BigOperators
+open Real
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -37,7 +36,7 @@ theorem exists_shellIndex {U : Finset ℝ} {x : ℝ} (hx : 1 ≤ x) (hxU : x ≤
 theorem shellIndices_sum_le (U : Finset ℝ) :
     (∑ k ∈ shellIndices U, (2 : ℝ)^k) ≤ 2*localDiameter U := by
   let n := ⌊intervalSpan U⌋₊
-  have hn : (n : ℝ) ≤ intervalSpan U := Nat.floor_le (intervalSpan_nonneg U)
+  pm_6510
   have hpow : (2 : ℝ)^n.log2 ≤ localDiameter U := by
     by_cases hp : 0 < n
     · have hh : (2 : ℝ)^n.log2 ≤ n := by exact_mod_cast (log2_block_bounds hp).1
@@ -55,11 +54,11 @@ theorem shellIndices_sum_le (U : Finset ℝ) :
 theorem shellIndices_card_le_log {U : Finset ℝ} {T : ℝ} (hT : 2 ≤ T)
     (hD : intervalSpan U ≤ T) :
     ((shellIndices U).card : ℝ) ≤ Real.log (2*T)/Real.log 2 := by
-  have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_123 hlog
   by_cases hD1 : 1 ≤ intervalSpan U
   · let n := ⌊intervalSpan U⌋₊
     have hnp : 0 < n := (Nat.one_le_floor_iff _).2 hD1
-    have hn : (n : ℝ) ≤ intervalSpan U := Nat.floor_le (intervalSpan_nonneg U)
+    pm_6510
     have hp : (2 : ℝ)^n.log2 ≤ n := by exact_mod_cast (log2_block_bounds hnp).1
     have he : (2 : ℝ)^(n.log2+1) ≤ 2*T := by rw [pow_succ]; nlinarith
     have hh := Real.log_le_log (by positivity : (0 : ℝ) < (2 : ℝ)^(n.log2+1)) he

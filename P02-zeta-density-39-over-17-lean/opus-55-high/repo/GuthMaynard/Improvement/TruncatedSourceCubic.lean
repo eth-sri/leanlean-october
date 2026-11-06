@@ -1,6 +1,7 @@
 module
 public import GuthMaynard.Improvement.TruncatedSourceMeanValue
 public import GuthMaynard.Improvement.CenteredRestrictedCubic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -26,9 +27,7 @@ theorem fixed_truncated_source_cubic {ε : ℝ} (hε : 0 < ε) :
         C*(5*T)^ε*(25*T^2*M*Real.sqrt M+5*T*L*(D*(N^2+H))*M+
           3060*D*N^3*L*T^3*(Real.log (2*N))^2) := by
   have hs : ∀ t, t ∉ Icc (-2:ℝ) 3 → fixedTimeCutoff t=0 := by
-    intro t ht
-    by_contra hn
-    exact ht (fixedTimeCutoff_support (subset_closure hn))
+    pm_7277
   obtain ⟨D,hD,htail⟩ := boundedPolynomial_source_tail fixedTimeCutoff_smooth
     (fun t => (fixedTimeCutoff_bounds t).1) (fun t => (fixedTimeCutoff_bounds t).2) hs
   have hspace : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (fixedSquaredCutoff x:ℂ)=0 := by
@@ -40,17 +39,12 @@ theorem fixed_truncated_source_cubic {ε : ℝ} (hε : 0 < ε) :
   refine ⟨C,D,hC,hD,?_⟩
   intro N T L hN hNT hLl hLu a U ha
   dsimp only
-  let μ := sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U
-  let H := ∫ t, sourceRemovedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t
-  let M := ∫ t, μ t^2
+  pm_4538
   have hT : 0 < T := by linarith
-  have hlog : 0 ≤ Real.log (2*N) := Real.log_nonneg (by linarith)
+  pm_233 hlog N
   have hL : 0 < L := (Real.rpow_pos_of_pos (by positivity : 0 < 5*T) _).trans_le hLl
   obtain ⟨hm,hi,h2,h0,hμs,_⟩ := fixed_truncated_source_regular hN hT a ha U
-  have hH : 0 ≤ H := by
-    apply integral_nonneg
-    intro t
-    exact indicator_nonneg (fun x _ => mul_nonneg (fixedTimeCutoff_bounds (x/T)).1 (sq_nonneg _)) t
+  pm_877 hH
   have hΛ : 0 ≤ D*(N^2+H) := by positivity
   have hc := hcubic (5*T) L (-2*T) (3*T) (D*(N^2+H)) μ
     (by linarith) hLl hLu (by linarith) (by linarith) hΛ hm h0 hi h2

@@ -9,15 +9,14 @@ public import MathCollab.Density.ZetaCounting
 public import Mathlib.Analysis.Complex.JensenFormula
 public import Mathlib.NumberTheory.LSeries.HurwitzZetaValues
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MeromorphicOn
 open scoped Topology ArithmeticFunction.Moebius ComplexOrder
 
-set_option autoImplicit false
 
-noncomputable section
 namespace MathCollab.Density.ZetaGrowth
 
 theorem finset_analyticOrderNatAt_le_finsum_divisor {f : ℂ → ℂ} {U : Set ℂ}
@@ -25,48 +24,7 @@ theorem finset_analyticOrderNatAt_le_finsum_divisor {f : ℂ → ℂ} {U : Set �
     {c : ℂ} (hc : c ∈ U) (hcOrder : analyticOrderAt f c ≠ ⊤)
     (S : Finset ℂ) (hSU : ∀ u ∈ S, u ∈ U) :
     ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) ≤
-      ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := by
-  let g : ℂ → ℝ := fun u => if u ∈ S then (analyticOrderNatAt f u : ℝ) else 0
-  let d : ℂ → ℝ := fun u => (divisor f U u : ℝ)
-  have hgFin : Function.HasFiniteSupport g := by
-    apply Set.Finite.subset S.finite_toSet
-    intro u hu
-    simp only [Function.mem_support, ne_eq] at hu
-    by_contra huS
-    have huS' : u ∉ S := by simpa using huS
-    exact hu (by simp [g, huS'])
-  have hdFin : Function.HasFiniteSupport d := by
-    have hfin := (divisor f U).finiteSupport hU
-    exact hfin.subset (by
-      intro u hu
-      simpa only [Function.mem_support, d, Int.cast_eq_zero, ne_eq] using hu)
-  have hgd : g ≤ d := by
-    intro u
-    by_cases huS : u ∈ S
-    · have huU := hSU u huS
-      have huOrder := hf.analyticOrderAt_ne_top_of_isPreconnected hpre hc huU hcOrder
-      simp only [g, d, ite_eq_left huS]
-      rw [hf.divisor_apply huU, ← Nat.cast_analyticOrderNatAt huOrder]
-      simp
-    · simp only [g, ite_eq_right huS]
-      change 0 ≤ (divisor f U u : ℝ)
-      exact_mod_cast hf.divisor_nonneg u
-  have hle := finsum_le_finsum hgFin hdFin hgd
-  have hgSum : ∑ᶠ u, g u = ∑ u ∈ S, g u :=
-    finsum_eq_sum_of_support_subset g (by
-      intro u hu
-      simp only [Function.mem_support, ne_eq] at hu
-      by_contra huS
-      have huS' : u ∉ S := by simpa using huS
-      exact hu (by simp [g, huS']))
-  have hdSum : ((∑ᶠ u, divisor f U u : ℤ) : ℝ) = ∑ᶠ u, d u := by
-    simpa [d] using map_finsum (Int.castRingHom ℝ) ((divisor f U).finiteSupport hU)
-  change ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) ≤ _
-  calc
-    ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) = ∑ u ∈ S, g u := by simp [g]
-    _ = ∑ᶠ u, g u := hgSum.symm
-    _ ≤ ∑ᶠ u, d u := hle
-    _ = ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := hdSum.symm
+      ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := by pm_4304
 
 theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
     (ht : t ∈ Set.Icc (T - 1) (2 * T)) :
@@ -133,13 +91,11 @@ theorem moebius_LSeries_norm_lt_five_thirds (u : ℝ) :
     ‖LSeries (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) (2 + u * I)‖ <
       (5 / 3 : ℝ) := by
   let s : ℂ := 2 + u * I
-  have hsRe : s.re = 2 := by simp [s]
-  have hs : 1 < s.re := by rw [hsRe]; norm_num
+  pm_1053
   have hSumM : LSeriesSummable
       (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) s :=
     ArithmeticFunction.LSeriesSummable_moebius_iff.mpr hs
-  have hSumTwo : LSeriesSummable 1 (2 : ℂ) :=
-    LSeriesSummable_one_iff.mpr (by norm_num)
+  pm_6745
   rw [LSeries]
   calc
     ‖∑' n, LSeries.term (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) s n‖ ≤
@@ -156,13 +112,7 @@ theorem moebius_LSeries_norm_lt_five_thirds (u : ℝ) :
           rw [LSeries.norm_term_eq, LSeries.norm_term_eq, hsRe]
           norm_num
     _ = (LSeries 1 (2 : ℂ)).re := by
-      rw [LSeries, Complex.re_tsum hSumTwo]
-      apply tsum_congr
-      intro n
-      have hn : (0 : ℂ) ≤ LSeries.term 1 (2 : ℝ) n :=
-        LSeries.term_nonneg (by simp) 2
-      have heq := congrArg Complex.re (Complex.norm_of_nonneg' hn)
-      simpa using heq
+      pm_4305
     _ = Real.pi ^ 2 / 6 := by
       rw [LSeries_one_eq_riemannZeta (by norm_num), riemannZeta_two]
       norm_cast
@@ -173,8 +123,7 @@ convergent Möbius inverse of the zeta Dirichlet series. -/
 theorem euler_product_lower_bound_2 (t : ℝ) :
     (0.6 : ℝ) ≤ ‖riemannZeta (2 + I * (t + 1 / 2))‖ := by
   let s : ℂ := 2 + I * (t + 1 / 2)
-  have hsRe : s.re = 2 := by simp [s]
-  have hs : 1 < s.re := by rw [hsRe]; norm_num
+  pm_1053
   have hprod :
       riemannZeta s * LSeries (fun n => ((ArithmeticFunction.moebius n : ℤ) : ℂ)) s = 1 := by
     rw [← LSeries_one_eq_riemannZeta hs]

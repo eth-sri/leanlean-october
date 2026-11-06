@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.IdealFactorization
 public import OAI.NumberTheory.DirichletL.Detector.IdealUnit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,12 +37,8 @@ lemma highIdeals_injective : Function.Injective highIdeals := by
   apply highValuationEquiv.symm.injective
   rw [highIdeals_eq_equiv,highIdeals_eq_equiv] at h
   apply Prod.ext
-  · apply Prod.ext
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.1.1) h)
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.1.2) h)
-  · apply Prod.ext
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.2.1) h)
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.2.2) h)
+  grind
+  grind
 
 lemma highIdeals_zero : highIdeals 0=1 := by
   simp only [highIdeals,Finsupp.mapRange_zero,idealFromValuations_zero]
@@ -80,11 +77,14 @@ def highPrimeTerm (η : HeckeFamily.Character) (x w z : ℂ)
     (P : PrimeIdeal) (b : HighValuation) : ℂ :=
   bareIdealHighSummand η 1 x w z (P.val^b.1.1) (P.val^b.1.2) (P.val^b.2.1) (P.val^b.2.2)
 
-lemma highPrimeTerm_zero (η : HeckeFamily.Character) (x w z : ℂ) (P : PrimeIdeal) :
+section
+variable (η : HeckeFamily.Character) (x w z : ℂ)
+include η x w z
+lemma highPrimeTerm_zero (P : PrimeIdeal) :
     highPrimeTerm η x w z P 0=1 := by
-  simp only [highPrimeTerm,Prod.fst_zero,Prod.snd_zero,pow_zero,bareIdealHighSummand_one]
+  pm_94 highPrimeTerm Prod.fst_zero Prod.snd_zero pow_zero bareIdealHighSummand_one
 
-theorem highValuationTerm_eq_prod (η : HeckeFamily.Character) (x w z : ℂ)
+theorem highValuationTerm_eq_prod
     (v : PrimeIdeal→₀HighValuation) :
     highValuationTerm η x w z v=v.prod (highPrimeTerm η x w z) := by
   induction v using Finsupp.induction with
@@ -105,10 +105,11 @@ theorem highValuationTerm_eq_prod (η : HeckeFamily.Character) (x w z : ℂ)
     rw [highIdeals_add,highIdeals_single]
     exact bareIdealHighSummand_mul η x w z _ _ _ _ _ _ _ _ hpow
 
-theorem highValuationTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
+theorem highValuationTerm_summable_norm
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun v : PrimeIdeal→₀HighValuation=>‖highValuationTerm η x w z v‖) :=
   (bareIdealHighSummand_summable η 1 x w z hx hw hz).norm.comp_injective highIdeals_injective
+end
 
 end SevenEighths.ProbePhysical
 end

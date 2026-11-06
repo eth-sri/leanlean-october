@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownBlockSpread
 public import Mathlib.Analysis.Calculus.Deriv.Shift
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,9 +31,7 @@ theorem heathBrownShiftedDifference_nat
     (f : ℝ → ℝ) (j d n : ℕ) :
     heathBrownShiftedDifference f j d n =
       heathBrownDerivativeCoordinate f j (n + d) -
-        heathBrownDerivativeCoordinate f j n := by
-  unfold heathBrownShiftedDifference
-  norm_num
+        heathBrownDerivativeCoordinate f j n := by aesop
 
 theorem deriv_heathBrownShiftedDifference
     (f : ℝ → ℝ) (j d : ℕ) (x : ℝ)
@@ -55,57 +54,41 @@ theorem deriv_heathBrownShiftedDifference
         deriv_heathBrownDerivativeCoordinate]
       ring
 
+set_option hygiene false in
+macro "pf_101" x1:ident x2:term:max x3:ident x4:ident x5:ident x6:term:max : tactic => `(tactic| (
+  let s : Set ℝ := $x1:ident 0 ((N - d : ℕ) : ℝ)
+  have hsub : s ⊆ $x1:ident (0 : ℝ) N := by
+    intro x hx
+    change x ∈ $x1:ident (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
+    rw [Nat.cast_sub hdN] at hx
+    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
+    exact ⟨hx.1, $x2:term (sub_le_self _ hd0)⟩
+  have hmaps : Set.MapsTo (fun x : ℝ => x + d) s ($x1:ident 0 (N : ℝ)) := by
+    intro x hx
+    change x ∈ $x1:ident (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
+    rw [Nat.cast_sub hdN] at hx
+    change x + (d : ℝ) ∈ $x1:ident (0 : ℝ) (N : ℝ)
+    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
+    constructor
+    · exact $x3:ident hx.1 hd0
+    · linarith only [hx.2]
+  exact ($x4:ident ($x5:ident $x6:term) hmaps).sub
+    (hcoord.mono hsub)))
+section
+variable {N j d : ℕ} {f : ℝ → ℝ} (hdN : d ≤ N)
+include N j d f hdN
 theorem heathBrown_shiftedDifference_continuousOn
-    {N j d : ℕ} {f : ℝ → ℝ}
-    (hdN : d ≤ N)
     (hcoord : ContinuousOn (heathBrownDerivativeCoordinate f j)
       (Set.Icc 0 (N : ℝ))) :
     ContinuousOn (heathBrownShiftedDifference f j d)
-      (Set.Icc 0 ((N - d : ℕ) : ℝ)) := by
-  let s : Set ℝ := Set.Icc 0 ((N - d : ℕ) : ℝ)
-  have hsub : s ⊆ Set.Icc (0 : ℝ) N := by
-    intro x hx
-    change x ∈ Set.Icc (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
-    rw [Nat.cast_sub hdN] at hx
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    exact ⟨hx.1, hx.2.trans (sub_le_self _ hd0)⟩
-  have hmaps : Set.MapsTo (fun x : ℝ => x + d) s (Set.Icc 0 (N : ℝ)) := by
-    intro x hx
-    change x ∈ Set.Icc (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
-    rw [Nat.cast_sub hdN] at hx
-    change x + (d : ℝ) ∈ Set.Icc (0 : ℝ) (N : ℝ)
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    constructor
-    · exact add_nonneg hx.1 hd0
-    · linarith only [hx.2]
-  exact (hcoord.comp' (continuousOn_id.add continuousOn_const) hmaps).sub
-    (hcoord.mono hsub)
+      (Set.Icc 0 ((N - d : ℕ) : ℝ)) := by pf_101 Set.Icc hx.2.trans add_nonneg hcoord.comp' continuousOn_id.add continuousOn_const
 
 theorem heathBrown_shiftedDifference_differentiableOn
-    {N j d : ℕ} {f : ℝ → ℝ}
-    (hdN : d ≤ N)
     (hcoord : DifferentiableOn ℝ (heathBrownDerivativeCoordinate f j)
       (Set.Ioo 0 (N : ℝ))) :
     DifferentiableOn ℝ (heathBrownShiftedDifference f j d)
-      (Set.Ioo 0 ((N - d : ℕ) : ℝ)) := by
-  let s : Set ℝ := Set.Ioo 0 ((N - d : ℕ) : ℝ)
-  have hsub : s ⊆ Set.Ioo (0 : ℝ) N := by
-    intro x hx
-    change x ∈ Set.Ioo (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
-    rw [Nat.cast_sub hdN] at hx
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    exact ⟨hx.1, hx.2.trans_le (sub_le_self _ hd0)⟩
-  have hmaps : Set.MapsTo (fun x : ℝ => x + d) s (Set.Ioo 0 (N : ℝ)) := by
-    intro x hx
-    change x ∈ Set.Ioo (0 : ℝ) ((N - d : ℕ) : ℝ) at hx
-    rw [Nat.cast_sub hdN] at hx
-    change x + (d : ℝ) ∈ Set.Ioo (0 : ℝ) (N : ℝ)
-    have hd0 : (0 : ℝ) ≤ (d : ℝ) := Nat.cast_nonneg d
-    constructor
-    · exact add_pos_of_pos_of_nonneg hx.1 hd0
-    · linarith only [hx.2]
-  exact (hcoord.fun_comp (differentiableOn_id.add_const (d : ℝ)) hmaps).sub
-    (hcoord.mono hsub)
+      (Set.Ioo 0 ((N - d : ℕ) : ℝ)) := by pf_101 Set.Ioo hx.2.trans_le add_pos_of_pos_of_nonneg hcoord.fun_comp differentiableOn_id.add_const (d : ℝ)
+end
 
 theorem heathBrown_shiftedDifference_deriv_bounds
     {N k d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -135,8 +118,7 @@ theorem heathBrown_shiftedDifference_deriv_bounds
   have hxdI : x + (d : ℝ) ∈ Set.Icc (0 : ℝ) N := by
     constructor
     · exact add_nonneg hx.1.le hd0
-    · rw [Nat.cast_sub hdN] at hx
-      linarith only [hx.2]
+    pm_7482
   have hxd : x ≤ x + (d : ℝ) := by
     exact le_add_of_nonneg_right hd0
   have hxOpen : x ∈ Set.Ioo (0 : ℝ) N := by
@@ -147,20 +129,15 @@ theorem heathBrown_shiftedDifference_deriv_bounds
   have hxdOpen : x + (d : ℝ) ∈ Set.Ioo (0 : ℝ) N := by
     constructor
     · exact add_pos_of_pos_of_nonneg hx.1 hd0
-    · rw [Nat.cast_sub hdN] at hx
-      linarith only [hx.2]
-  have hkpred : k - 1 + 1 = k := by omega
+    pm_7482
+  pm_2812 hkpred k
   have hrawLower : ∀ y ∈ Set.Ioo (0 : ℝ) (N : ℝ),
       lambda ≤ deriv (iteratedDeriv (k - 1) f) y := by
-    intro y hy
-    rw [← iteratedDeriv_succ]
-    rw [hkpred]
+    pm_7782
     exact (hkBounds y hy).1
   have hrawUpper : ∀ y ∈ Set.Ioo (0 : ℝ) (N : ℝ),
       deriv (iteratedDeriv (k - 1) f) y ≤ A * lambda := by
-    intro y hy
-    rw [← iteratedDeriv_succ]
-    rw [hkpred]
+    pm_7782
     exact (hkBounds y hy).2
   have hlower := heathBrown_lower_slope hraw hrawd hrawLower hxI hxdI hxd
   have hupper := heathBrown_upper_slope hraw hrawd hrawUpper hxI hxdI hxd
@@ -169,7 +146,7 @@ theorem heathBrown_shiftedDifference_deriv_bounds
       deriv (heathBrownShiftedDifference f (k - 2) d) x =
         (iteratedDeriv (k - 1) f (x + d) -
           iteratedDeriv (k - 1) f x) / ((k - 2).factorial : ℝ) := by
-    have hkpred2 : k - 2 + 1 = k - 1 := by omega
+    pm_553 hkpred2
     rw [deriv_heathBrownShiftedDifference f (k - 2) d x
       ((hcoordd x hxOpen).differentiableAt
         (isOpen_Ioo.mem_nhds hxOpen))
@@ -177,12 +154,8 @@ theorem heathBrown_shiftedDifference_deriv_bounds
         (isOpen_Ioo.mem_nhds hxdOpen)), hkpred2]
   rw [hderiv]
   constructor
-  · apply (div_le_div_iff_of_pos_right (by positivity :
-      (0 : ℝ) < (k - 2).factorial)).2
-    simpa only [hxdiff] using hlower
-  · apply (div_le_div_iff_of_pos_right (by positivity :
-      (0 : ℝ) < (k - 2).factorial)).2
-    simpa only [hxdiff] using hupper
+  pm_1498 hlower
+  pm_1498 hupper
 
 
 end

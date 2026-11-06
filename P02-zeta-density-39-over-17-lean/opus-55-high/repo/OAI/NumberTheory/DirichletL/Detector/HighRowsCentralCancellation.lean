@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedCancellation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,18 +14,14 @@ theorem central_phase_error_bound (V W D P B q vInv : ℂ) (A T : ℝ)
     (hW : ‖W‖≤A) (hq : ‖q‖≤A) (hv : ‖vInv‖≤1)
     (hVT : A^2*‖V‖≤T) (hDT : A^2*‖D‖≤T)
     (hET : A^2*‖P+D‖≤28*T) (hBET : A*‖B‖*‖P+D‖≤28*T)
-    (hBD : B*D=vInv) (hWq : vInv*W=q) :
+    (hBD : B*D =vInv) (hWq : vInv*W=q) :
     ‖compensatedReplacement V W D P B q+continuedCorrection V W D P*vInv‖≤720*T := by
   have hA0 : 0≤A := by linarith
   have hT : 0≤T := (mul_nonneg (sq_nonneg A) (norm_nonneg V)).trans hVT
   have h1V : ‖1-V‖≤2 := by
-    have hh := norm_sub_le (1:ℂ) V
-    rw [norm_one] at hh
-    linarith
+    pm_7431 V
   have h1W : ‖1-W‖≤2*A := by
-    have hh := norm_sub_le (1:ℂ) W
-    rw [norm_one] at hh
-    linarith
+    pm_7431 W
   have hdiff : ‖vInv-q‖≤2*A := (norm_sub_le vInv q).trans (by linarith)
   have hfac : ‖(1-V)*(1-W)/(1-D)‖≤8*A := by
     rw [div_eq_mul_inv,norm_mul,norm_mul]
@@ -53,7 +50,7 @@ theorem central_phase_error_bound (V W D P B q vInv : ℂ) (A T : ℝ)
   calc
     _ ≤ (8*A)*(2*A*(2*‖V‖+‖D‖)+(‖B‖+2*A)*‖P+D‖) := by
       apply mul_le_mul hfac _ (norm_nonneg _) (by positivity)
-      exact (norm_add_le _ _).trans (add_le_add hleft hright)
+      pm_243 norm_add_le hleft hright
     _ = 32*(A^2*‖V‖)+16*(A^2*‖D‖)+8*(A*‖B‖*‖P+D‖)+16*(A^2*‖P+D‖) := by ring
     _ ≤ 720*T := by linarith
 

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.CentralCubeNorm
 public import OAI.NumberTheory.DirichletL.Detector.CentralExponent
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,17 +14,17 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical
 
 lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     (R : Finset FreeRow) (hcard : (R.card:ℝ)≤B)
-    (hR : ∀u∈R,U≤rowNorm u ∧ rowNorm u≤2*U)
+    (hR : ∀u∈R,U≤ rowNorm u ∧ rowNorm u≤2*U)
     (F : FreeRow→ℝ) (hF : ∀u∈R,F u≤C*rowNorm u^α)
     (z : ℂ) (hz : z.re=r) :
     (∑u∈R,‖frequencyWeight z ⟨u.val,u.property.1⟩‖*F u)≤
       B*C*ProbeSelectedPrimeSums.annularPower 1 2 (α-r)*U^(α-r) := by
-  have hA := ProbeSelectedPrimeSums.annularPower_nonneg 1 2 (α-r) (by norm_num)
+  pm_8000 α
   calc
     _ ≤ ∑u∈R,C*ProbeSelectedPrimeSums.annularPower 1 2 (α-r)*U^(α-r) := by
       apply Finset.sum_le_sum
       intro u hu
-      have hN : 0<rowNorm u := hU.trans_le (hR u hu).1
+      have hN : 0< rowNorm u := hU.trans_le (hR u hu).1
       rw [frequencyWeight_ideal_norm,hz]
       change rowNorm u^(-r)*F u≤_
       calc
@@ -41,7 +42,7 @@ lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     _ = _ := by ring
 
 lemma annular_power_uniform (p pmax : ℝ) (hp : p≤pmax) :
-    ProbeSelectedPrimeSums.annularPower 1 2 p≤max 1 ((2:ℝ)^pmax) := by
+    ProbeSelectedPrimeSums.annularPower 1 2 p≤ max 1 ((2:ℝ)^pmax) := by
   unfold ProbeSelectedPrimeSums.annularPower
   rw [Real.one_rpow]
   exact max_le_max le_rfl (Real.rpow_le_rpow_of_exponent_le (by norm_num) hp)
@@ -57,13 +58,13 @@ lemma mixed_source_slack (a v d R q μ Rmax : ℝ)
   unfold mixedSourceExponent
   linarith
 
-lemma dyad_conductor_margin (Z v margin : ℝ) (hZ : 0<Z) (hmargin : 2≤Z^margin)
-    (R : Finset FreeRow) (hR : ∀u∈R,rowNorm u≤2*Z^v) :
-    ∀u∈R,rowNorm u≤Z^((v+2*margin)-margin) := by
+lemma dyad_conductor_margin (Z v margin : ℝ) (hZ : 0<Z) (hmargin : 2≤Z ^margin)
+    (R : Finset FreeRow) (hR : ∀u∈R,rowNorm u≤2*Z ^v) :
+    ∀u∈R,rowNorm u≤Z ^((v+2*margin)-margin) := by
   intro u hu
   calc
-    rowNorm u≤2*Z^v := hR u hu
-    _ ≤ Z^margin*Z^v := mul_le_mul_of_nonneg_right hmargin (Real.rpow_nonneg hZ.le _)
+    rowNorm u≤2*Z ^v := hR u hu
+    _ ≤ Z ^margin*Z ^v := mul_le_mul_of_nonneg_right hmargin (Real.rpow_nonneg hZ.le _)
     _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
 end SevenEighths.ProbeHighRowFamily
 

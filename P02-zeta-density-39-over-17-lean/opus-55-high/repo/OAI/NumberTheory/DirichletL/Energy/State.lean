@@ -50,18 +50,22 @@ def plainEnergy (s:NaturalState Z Bmask bΦ) {a b:ℝ} (p:Profiles a b)
     (fun _:Fin 0=>∅) (fun _:Fin 0=>0) (fun _:Fin 0=>1)
     X₁ X₂ s.radial.keep s.radial.profile s.radial.scale
 
-lemma plainEnergy_eq_zero (s:NaturalState Z Bmask bΦ) {a b:ℝ} (p:Profiles a b)
+section
+variable (s:NaturalState Z Bmask bΦ)
+include s
+lemma plainEnergy_eq_zero {a b:ℝ} (p:Profiles a b)
     (t X₁ X₂:ℝ):
     s.plainEnergy p t X₁ X₂=CenteredMomentCoreFloor.zeroEnergy s.character s.mask 1 t
       (p.profile 0) (p.profile 1) X₁ X₂ s.radial :=
   (CenteredMomentCoreFloor.zero_energy_eq _ _ _ _ _ _ _ _ _).symm
 
-lemma radical_bound (s:NaturalState Z Bmask bΦ):
+lemma radical_bound:
     (s.puncture.radical.absNorm:ℝ)≤Z^Bmask :=by
   apply le_trans _ s.puncture_bound
   exact_mod_cast Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.puncture_ne_zero))
     (map_dvd Ideal.absNorm (Ideal.dvd_iff_le.mpr (Ideal.le_radical (I:=s.puncture))))
+end
 end NaturalState
 
 def ZeroBound (Q:Ideal O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×ℕ))(C Z₀:ℝ):Prop :=

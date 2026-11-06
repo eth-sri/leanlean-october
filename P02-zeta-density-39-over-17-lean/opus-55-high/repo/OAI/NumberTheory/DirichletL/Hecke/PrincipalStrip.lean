@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Presentation
 public import OAI.NumberTheory.DirichletL.Hecke.Origin
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,18 +38,22 @@ theorem normalized_norm_le (η : Character) {z : ℂ} (hz : z ∈ HeckeStrip.clo
   simpa only [mul_comm] using mul_le_mul_of_nonneg_right (norm_sub_one_le_shift z hz)
     (norm_nonneg (LFunction η z))
 
-private theorem norm_z_le_height (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
+section
+variable (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip)
+include z hz
+private theorem norm_z_le_height :
     ‖z‖ ≤ 3 + |z.im| := by
   apply (Complex.norm_le_abs_re_add_abs_im z).trans
   have hr : |z.re| ≤ 3 := abs_le.mpr ⟨by linarith [hz.1], by linarith [hz.2]⟩
   linarith
 
-private theorem norm_sub_one_le_height (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
+private theorem norm_sub_one_le_height :
     ‖z-1‖ ≤ 3 + |z.im| := by
   apply (Complex.norm_le_abs_re_add_abs_im (z-1)).trans
   have hr : |z.re-1| ≤ 3 := abs_le.mpr ⟨by linarith [hz.1], by linarith [hz.2]⟩
-  simp only [Complex.sub_re, Complex.sub_im, Complex.one_re, Complex.one_im, sub_zero]
+  pm_93 Complex.sub_re Complex.sub_im Complex.one_re Complex.one_im sub_zero
   linarith
+end
 
 theorem regularized_completion_bound (η : Character) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ z ∈ HeckeStrip.closedStrip,
@@ -62,8 +67,7 @@ theorem regularized_completion_bound (η : Character) :
   intro z hz
   have hΛ : ‖P.Λ₀ z‖ ≤ C := hbound z hz.1 hz.2
   have hT : 1 ≤ 3+|z.im| := by linarith [abs_nonneg z.im]
-  have hz0 := norm_z_le_height z hz
-  have hz1 := norm_sub_one_le_height z hz
+  pm_111 hz0 norm_z_le_height z hz hz1 norm_sub_one_le_height
   unfold HeckeMellinIdentity.regularized
   change ‖z*(z-1)*P.Λ₀ z - (z-1)*P.f₀ + z*P.ε*P.g₀‖ ≤ _
   apply (norm_add_le _ _).trans
@@ -72,7 +76,7 @@ theorem regularized_completion_bound (η : Character) :
   calc
     _ ≤ ((3+|z.im|)*(3+|z.im|))*C + (3+|z.im|)*‖P.f₀‖ +
         (3+|z.im|)*‖P.ε‖*‖P.g₀‖ := by gcongr
-    _ ≤ D*(3+|z.im|)^2 := by
+    _ ≤ D *(3+|z.im|)^2 := by
       dsimp [D]
       have hf := norm_nonneg P.f₀
       have hg := mul_nonneg (norm_nonneg P.ε) (norm_nonneg P.g₀)
@@ -86,10 +90,9 @@ theorem normalized_exp_growth (η : Character) :
   obtain ⟨G, hG, hGbound⟩ := CubicGammaExponential.inverse_Gamma_strip_exp_bound_complex
     (9/10) (21/10)
   let S : ℝ := Real.pi ^ (-(1/10) : ℝ) + Real.pi ^ (11/10 : ℝ)
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  pm_3168
   refine ⟨9*S*G*C, Real.pi+2, by positivity, by positivity, ?_⟩
-  intro z hz
-  have hzc : z ∈ HeckeStrip.closedStrip := ⟨hz.1.le, hz.2.le⟩
+  pm_7991 HeckeStrip.closedStrip
   have hp : ‖(Real.pi : ℂ)^z‖ ≤ S := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos Real.pi_pos]
     exact VerticalContourShift.rpow_between_endpoints Real.pi (-(1/10)) (11/10) z.re
@@ -132,7 +135,7 @@ theorem primitive_normalized_bound (c : O) [NeZero c]
         HeckeStripActual.conductor c ^ (3/5 : ℝ) * (3+|z.im|)^2 := by
   let η := HeckePrimitive.character c χ hu
   let D := HeckeReciprocalBound.bound (11/10)
-  have hD : 0 ≤ D := tsum_nonneg (fun _ => norm_nonneg _)
+  pm_5073 hD D tsum_nonneg norm_nonneg
   have hc := HeckeStrip.leftConstant_pos
   have hQ := HeckeStripActual.conductor_ge_one c
   apply HeckeStrip.uniform_strip_bound (HeckeStripActual.conductor c)
@@ -172,8 +175,7 @@ theorem poleRemoved_principalCharacter (η : Character) (s : ℂ) :
       (HeckeOrigin.poleRemoved_entire _)) (z₀ := (2 : ℂ))
     filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds
       (by norm_num : (1 : ℝ)<(2 : ℂ).re)] with z hz
-    have h0 : z ≠ 0 := by intro h; norm_num [h] at hz
-    have h1 : z ≠ 1 := by intro h; norm_num [h] at hz
+    pm_3137
     rw [HeckeOrigin.poleRemoved_eq _ h0 h1, HeckeOrigin.poleRemoved_eq _ h0 h1]
     congr 1
     unfold LFunction
@@ -193,8 +195,7 @@ theorem uniform_normalized_strip_bound (η : Character)
     (HeckePresentation.principalResidue_primitive η hp) z hz
   change ‖normalized (HeckePresentation.principalCharacter η) z‖ ≤ _ at h
   unfold normalized at h ⊢
-  rw [poleRemoved_principalCharacter] at h
-  simpa only [HeckeStripActual.conductor, HeckePresentation.span_generator] using h
+  pm_354 poleRemoved_principalCharacter h HeckeStripActual.conductor HeckePresentation.span_generator
 
 def sourceNormalized (η : Character) (s : ℂ) : ℂ :=
   HeckeOrigin.poleRemoved η s / (s+1)
@@ -203,8 +204,7 @@ theorem sourceNormalized_norm_le (η : Character) (z : ℂ)
     (hz : z ∈ HeckeStrip.closedStrip) :
     ‖sourceNormalized η z‖ ≤ 3 * ‖normalized η z‖ := by
   have hlow : (9/10 : ℝ) ≤ ‖z+1‖ := by
-    have hre := Complex.re_le_norm (z+1)
-    simp only [Complex.add_re, Complex.one_re] at hre
+    pm_8464 hre z
     linarith [hz.1]
   have hn1 : z+1 ≠ 0 := norm_pos_iff.mp (by linarith)
   have hn2 : z+2 ≠ 0 := HeckeStrip.shift_ne_zero z hz

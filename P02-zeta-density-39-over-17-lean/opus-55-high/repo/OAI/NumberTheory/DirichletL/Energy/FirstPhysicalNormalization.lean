@@ -1,20 +1,24 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstReferenceEnergy
 public import OAI.NumberTheory.DirichletL.Moments.FirstWindowBudgets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstPhysicalNormalization
 open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentFirstReferenceEnergy CenteredMomentSecondWindowBudget
 open CenteredMomentFirstPhysicalSource
 
-lemma window_pair_le (J₁ J₂ : ℕ) (t L R H : ℝ) (hH : 0 ≤ H)
+section
+variable (J₁ J₂ : ℕ)
+include J₁ J₂
+lemma window_pair_le (t L R H : ℝ) (hH : 0 ≤ H)
     (hL : L ≤ H) (hR : R ≤ H) :
     windowBudget J₁ t L * windowBudget J₂ t R ≤
       H * heightEnvelope t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ := by
@@ -30,7 +34,7 @@ lemma window_pair_le (J₁ J₂ : ℕ) (t L R H : ℝ) (hH : 0 ≤ H)
         (profileMoment_nonneg _)) (profileMoment_nonneg _))
   convert hp using 1 <;> simp only [windowBudget, pow_add] <;> ring
 
-theorem pairedBudget_le_cap (J₁ J₂ : ℕ) (t H : ℝ) (EL ER : Fin 4 → ℝ)
+theorem pairedBudget_le_cap (t H : ℝ) (EL ER : Fin 4 → ℝ)
     (hH : 0 ≤ H) (hL : ∀ i, EL i ≤ H) (hR : ∀ j, ER j ≤ H) :
     pairedBudget J₁ J₂ t EL ER ≤
       16 * H * heightEnvelope t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ := by
@@ -44,7 +48,7 @@ theorem pairedBudget_le_cap (J₁ J₂ : ℕ) (t H : ℝ) (EL ER : Fin 4 → ℝ
   norm_num
   ring
 
-theorem pairedBudget_le_powers (J₁ J₂ : ℕ) (t Z F Mdecl M₀ ell : ℝ)
+theorem pairedBudget_le_powers (t Z F Mdecl M₀ ell : ℝ)
     (lossL lossR EL ER : Fin 4 → ℝ) (hZ : 1 ≤ Z) (hF : 0 ≤ F)
     (hL : ∀ i, EL i ≤ F * Z ^ (Mdecl - M₀ + lossL i))
     (hR : ∀ j, ER j ≤ F * Z ^ (Mdecl - M₀ + lossR j))
@@ -55,10 +59,11 @@ theorem pairedBudget_le_powers (J₁ J₂ : ℕ) (t Z F Mdecl M₀ ell : ℝ)
   have hcap := pairedBudget_le_cap J₁ J₂ t (F * Z ^ (Mdecl - M₀ + ell)) EL ER
     (mul_nonneg hF (Real.rpow_nonneg (by linarith) _))
     (fun i => (hL i).trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hZ (by linarith [hellL i])) hF))
+      (Real.rpow_le_rpow_of_exponent_le hZ (by grind)) hF))
     (fun j => (hR j).trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hZ (by linarith [hellR j])) hF))
-  simpa only [mul_assoc] using hcap
+      (Real.rpow_le_rpow_of_exponent_le hZ (by grind)) hF))
+  grind
+end
 
 theorem physical_power_identity (Z K q Mdecl ell : ℝ) (hZ : 1 < Z)
     (hK : 0 < K) (hq : 0 < q) :
@@ -119,7 +124,7 @@ theorem sourceFactor_pairedBudget_le (lowerProduct : ℝ) (hlower : 0 < lowerPro
     lossL lossR EL ER hZ.le hF hL hR hellL hellR
   have hsource := sourceFactor_nonneg s a₁ a₂ K ha₁ ha₂ hK
   have hden := div_le_div_of_nonneg_left (Real.exp_pos (Real.log 4)).le hlower hsupport
-  have hmass : 0 ≤ (s.η.modulus.absNorm : ℝ) := Nat.cast_nonneg _
+  pm_6814 hmass s.η.modulus.absNorm
   have hpresent := fixedPresentationCost_pos.le
   have hsource' : sourceFactor s a₁ a₂ K ≤
       (Real.exp (Real.log 4) / lowerProduct) * fixedPresentationCost * K *
@@ -183,9 +188,9 @@ theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < 
           (by positivity)) hm₁) hm₂
     _ = _ := by unfold polynomialConstant; ring
 
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
+open Filter CenteredMomentFirstSourceReduction
+open CenteredMomentFirstReferenceSource
+open CenteredMomentFirstNonexceptionalWeightSum
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : ℕ)

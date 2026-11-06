@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Family
 public import Mathlib.Data.ZMod.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,26 +24,10 @@ private theorem pb_gen : pb.gen = HeckeFamily.omega := hζ.integralPowerBasis_ge
 theorem coordinateElement_surjective :
     Function.Surjective (fun n : ℤ × ℤ => coordinateElement n.1 n.2) := by
   intro x
-  let i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
-  let i1 : Fin pb.dim := ⟨1, by rw [pb_dim]; decide⟩
-  let a : ℤ := (pb.basis.repr x) i0
-  let b : ℤ := (pb.basis.repr x) i1
+  pm_246
+  pm_5833
   refine ⟨(a,b), ?_⟩
-  have hsum := pb.basis.sum_repr x
-  have huniv : (Finset.univ : Finset (Fin pb.dim)) = {i0, i1} := by
-    ext i
-    have hi : i.val < 2 := by simpa only [pb_dim] using i.isLt
-    have hv : i.val = 0 ∨ i.val = 1 := by omega
-    simp only [Finset.mem_univ, Finset.mem_insert, Finset.mem_singleton, true_iff]
-    rcases hv with h | h
-    · left; exact Fin.ext h
-    · right; exact Fin.ext h
-  rw [huniv] at hsum
-  have hne : i0 ≠ i1 := by decide
-  have hnot : i0 ∉ ({i1} : Finset (Fin pb.dim)) := by
-    simpa only [Finset.mem_singleton] using hne
-  rw [Finset.sum_insert hnot, Finset.sum_singleton] at hsum
-  simp only [pb.basis_eq_pow] at hsum
+  pm_120
   simpa [a, b, i0, i1, pb_gen, coordinateElement, smul_eq_mul, mul_comm] using hsum
 
 def intQuotientHom (χ : Character) : ℤ →+ (O ⧸ χ.modulus) :=
@@ -68,25 +53,28 @@ def coordinateQuotientHom (χ : Character) :
   map_zero' := by simp
   map_add' x y := by simp only [Prod.fst_add, Prod.snd_add, map_add]; ring
 
-@[simp] theorem coordinateQuotientHom_intCast (χ : Character) (a b : ℤ) :
+section
+variable (χ : Character)
+include χ
+@[simp] theorem coordinateQuotientHom_intCast (a b : ℤ) :
     coordinateQuotientHom χ (a, b) =
       Ideal.Quotient.mk χ.modulus (coordinateElement a b) := by
   simp only [coordinateQuotientHom, AddMonoidHom.coe_mk, ZeroHom.coe_mk,
     zmodQuotientHom_intCast, coordinateElement, map_add, map_mul]
 
-theorem coordinateQuotientHom_surjective (χ : Character) :
+theorem coordinateQuotientHom_surjective :
     Function.Surjective (coordinateQuotientHom χ) := by
-  intro x
-  obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective x
+  pm_5264 z
   obtain ⟨⟨a,b⟩, hab⟩ := coordinateElement_surjective z
   change coordinateElement a b = z at hab
   exact ⟨(a,b), by rw [coordinateQuotientHom_intCast, hab]⟩
 
-theorem coefficients_eq_quotient_character (χ : Character)
+theorem coefficients_eq_quotient_character
     (a : Fin χ.period × Fin χ.period) :
     coefficients χ a = χ.residue (coordinateQuotientHom χ (a.1, a.2)) := by
   simp [HeckeFamily.coefficients, HeckeFamily.elementCoeff, coordinateQuotientHom,
     coordinateElement]
+end
 
 end SevenEighths.HeckeCoordinates
 

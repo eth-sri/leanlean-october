@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerBoxCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -36,10 +37,7 @@ theorem integer_box_quadruples_card_le
       (fun z hz' => by
         obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hz'
         exact hz p hp)
-  have hY : (Y.card:ℝ) ≤ b₄-a₄+1 :=
-    integer_card_le_interval_length_add_one Y h₄ (fun y hy' => by
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hy'
-      exact hw p hp)
+  pm_1061 hY Y.card b₄ a₄ Y h₄ y hy' hw
   have hsub : S ⊆ X ×ˢ Y := by
     intro p hp
     exact Finset.mem_product.mpr

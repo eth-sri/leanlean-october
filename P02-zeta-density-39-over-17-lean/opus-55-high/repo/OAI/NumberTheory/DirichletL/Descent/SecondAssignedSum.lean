@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,9 +28,7 @@ def eraseSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : MarkedSec
 omit [DecidableEq ι] in
 @[simp] theorem erase_attachSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo 0) (a : Fin Jn → ι) :
     eraseSecondSlots (attachSecondSlots x a) = x := by
-  apply MarkedSecondSource.ext <;> try rfl
-  funext i
-  exact Fin.elim0 i
+  pm_5488 MarkedSecondSource.ext
 
 def assignedSecondCoefficient {Jo : ℕ} (J₁ J₂ : Finset σ) (a₁ a₂ : σ → ι → ℂ)
     (x : MarkedSecondSource ι Jo (J₁.card+J₂.card)) : ℂ :=
@@ -57,28 +56,23 @@ theorem paired_assignment_filter (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Fin
     obtain ⟨hq₁,hq₂⟩ := Finset.mem_product.mp hmem
     apply Finset.mem_product.mpr
     constructor
-    · apply Finset.mem_pi.mpr
-      intro i hi
-      refine Finset.mem_inter.mpr ⟨Finset.mem_pi.mp hq₁ i hi,?_⟩
-      simpa only [pairedSlotAssignment,Fin.addCases_left,Fin.addCases_right,indexedSlotAssignment_apply] using hs (Fin.castAdd J₂.card (J₁.equivFin ⟨i,hi⟩))
-    · apply Finset.mem_pi.mpr
-      intro i hi
-      refine Finset.mem_inter.mpr ⟨Finset.mem_pi.mp hq₂ i hi,?_⟩
-      simpa only [pairedSlotAssignment,Fin.addCases_left,Fin.addCases_right,indexedSlotAssignment_apply] using hs (Fin.natAdd J₁.card (J₂.equivFin ⟨i,hi⟩))
+    pm_5240 hq₁ Fin.castAdd J₂.card J₁.equivFin
+    pm_5240 hq₂ Fin.natAdd J₁.card J₂.equivFin
   · intro hq
     obtain ⟨hq₁,hq₂⟩ := Finset.mem_product.mp hq
     refine Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨?_,?_⟩,?_⟩
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₁ i hi)).1)
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₂ i hi)).1)
+    pm_3749
     · intro j
-      refine Fin.addCases (fun k => ?_) (fun k => ?_) j
+      pm_6983
       · simpa only [pairedSlotAssignment,Fin.addCases_left] using
           (Finset.mem_inter.mp (indexedSlotAssignment_support J₁ L₁ _ q.1 hq₁ k)).2
       · simpa only [pairedSlotAssignment,Fin.addCases_right] using
           (Finset.mem_inter.mp (indexedSlotAssignment_support J₂ L₂ _ q.2 hq₂ k)).2
 
-theorem assignedSecondSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι)
+section
+variable {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0)) (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι)
+include Jo source J₁ J₂ L₁ L₂
+theorem assignedSecondSource_sum
     (F : MarkedSecondSource ι Jo (J₁.card+J₂.card) → ℂ) :
     ∑ x ∈ assignedSecondSource source J₁ J₂ L₁ L₂, F x =
       ∑ y ∈ source, ∑ q ∈
@@ -87,24 +81,19 @@ theorem assignedSecondSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource
           F (attachPairedSlots J₁ J₂ (y,q)) := by
   rw [assignedSecondSource,Finset.sum_image (fun q _ r _ h => attachPairedSlots_injective J₁ J₂ h),
     Finset.sum_filter,Finset.sum_product]
-  apply Finset.sum_congr rfl
-  intro y hy
-  rw [←Finset.sum_filter]
-  dsimp only
-  rw [paired_assignment_filter]
+  pm_6466
 
-theorem assignedSecondCoefficient_norm_le_one {Jo : ℕ}
-    (source : Finset (MarkedSecondSource ι Jo 0)) (J₁ J₂ : Finset σ)
-    (L₁ L₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
+theorem assignedSecondCoefficient_norm_le_one (a₁ a₂ : σ → ι → ℂ)
     (ha₁ : ∀ i ∈ J₁, ∀ p ∈ L₁ i, ‖a₁ i p‖ ≤ 1)
     (ha₂ : ∀ i ∈ J₂, ∀ p ∈ L₂ i, ‖a₂ i p‖ ≤ 1)
     (x : MarkedSecondSource ι Jo (J₁.card+J₂.card))
     (hx : x ∈ assignedSecondSource source J₁ J₂ L₁ L₂) :
     ‖assignedSecondCoefficient J₁ J₂ a₁ a₂ x‖ ≤ 1 := by
-  obtain ⟨y,hy,q₁,hq₁,q₂,hq₂,rfl⟩ := (mem_assignedSecondSource source J₁ J₂ L₁ L₂ x).mp hx
+  pm_813
   rw [assignedSecondCoefficient_attach]
   exact pairedSlotWeight_norm_le_one J₁ J₂ L₁ L₂ a₁ a₂ _ (q₁,q₂)
     (Finset.mem_product.mpr ⟨hq₁,hq₂⟩) ha₁ ha₂
+end
 
 end
 end SevenEighths.InverseMoment

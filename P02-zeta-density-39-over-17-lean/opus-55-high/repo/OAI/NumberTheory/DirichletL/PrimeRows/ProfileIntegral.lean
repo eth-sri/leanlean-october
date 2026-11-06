@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.InitialScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,10 +16,10 @@ lemma two_height_bound (t v w : ℝ) :
     (3+|t|)^2*(3+|w|)^2≤81*jointHeight t v w^4 := by
   have ht : 3+|t|≤3*jointHeight t v w := by
     unfold jointHeight
-    linarith [abs_nonneg t,abs_nonneg v,abs_nonneg w]
+    grind
   have hw : 3+|w|≤3*jointHeight t v w := by
     unfold jointHeight
-    linarith [abs_nonneg t,abs_nonneg v,abs_nonneg w]
+    grind
   calc
     _ ≤ (3*jointHeight t v w)^2*(3*jointHeight t v w)^2 := by gcongr
     _ = _ := by ring
@@ -34,17 +35,17 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
       Integrable (fun p=>‖sourceMellinWeight W0 W1 X Y Z
         ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*F p) heightMeasure ∧
       (∫p,‖sourceMellinWeight W0 W1 X Y Z
-        ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*F p ∂heightMeasure)
-        ≤C*A*(X^(1/2-r)*Z^(σ+r-1)*Y^(υ-1)) := by
+        ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*F p ∂ heightMeasure)
+        ≤C*A*(X^(1/2-r)*Z ^(σ+r-1)*Y^(υ-1)) := by
   obtain ⟨D,hD,hM⟩ := profile_uniform_moments W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     slo shi zlo zhi wlo whi hzlo 4
   refine ⟨81*D,by positivity,?_⟩
   intro σ hσ r hr υ hυ X Y Z hX hY hZ A hA F hF hF0 hFb
-  let E : ℝ := X^(1/2-r)*Z^(σ+r-1)*Y^(υ-1)
-  have hE : 0≤E := by dsimp [E];positivity
+  let E : ℝ := X^(1/2-r)*Z ^(σ+r-1)*Y^(υ-1)
+  pm_3479
   let M : HeightSpace→ℝ := fun p=>jointHeight p.1.1 p.1.2 p.2^4*‖onLines W0 W1 σ r υ p‖
   have hMi : Integrable M heightMeasure := (hM σ hσ r hr υ hυ).1
-  have hMb : (∫p,M p ∂heightMeasure)≤D := (hM σ hσ r hr υ hυ).2
+  have hMb : (∫p,M p ∂ heightMeasure)≤D := (hM σ hσ r hr υ hυ).2
   let f : HeightSpace→ℝ := fun p=>‖sourceMellinWeight W0 W1 X Y Z
     ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*F p
   have hfm : AEStronglyMeasurable f heightMeasure :=
@@ -68,9 +69,9 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
     (Filter.Eventually.of_forall fun p=>by rw [Real.norm_eq_abs,abs_of_nonneg (hf0 p)];exact hfb p)
   refine ⟨hfi,?_⟩
   calc
-    (∫p,f p ∂heightMeasure) ≤ ∫p,(E*A*81)*M p ∂heightMeasure :=
+    (∫p,f p ∂ heightMeasure) ≤ ∫p,(E*A*81)*M p ∂ heightMeasure :=
       integral_mono hfi (hMi.const_mul _) hfb
-    _ = (E*A*81)*(∫p,M p ∂heightMeasure) := integral_const_mul _ _
+    _ = (E*A*81)*(∫p,M p ∂ heightMeasure) := integral_const_mul _ _
     _ ≤ (E*A*81)*D := mul_le_mul_of_nonneg_left hMb (by positivity)
     _ = _ := by ring
 

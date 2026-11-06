@@ -8,6 +8,7 @@ and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexCurvature
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -44,9 +45,11 @@ theorem atkinsonIndexCurvatureMagnitude_eq_neg
     atkinsonIndexRealCurvature
   ring
 
+section
+variable {T x : ℝ} (hT : 0 < T) (hx : 0 < x)
+include T x hT hx
 /-- Height derivative of the exact real-index slope. -/
-theorem hasDerivAt_atkinsonIndexRealSlope_height
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexRealSlope_height :
     HasDerivAt (fun u => atkinsonIndexRealSlope u x)
       (Real.pi / (x * atkinsonIndexRealSlope T x)) T := by
   have hlin : HasDerivAt
@@ -55,16 +58,14 @@ theorem hasDerivAt_atkinsonIndexRealSlope_height
     simpa only [mul_one, id_eq] using!
       (((hasDerivAt_id T).const_mul (2 * Real.pi)).div_const x).add_const
         (Real.pi ^ (2 : ℕ))
-  have hpos : 0 < 2 * Real.pi * T / x + Real.pi ^ (2 : ℕ) := by
-    positivity
+  pm_1435
   have hsqrt := hlin.sqrt hpos.ne'
   unfold atkinsonIndexRealSlope
   convert hsqrt using 1
   ring
 
 /-- Exact height derivative of the positive curvature magnitude. -/
-theorem hasDerivAt_atkinsonIndexCurvatureMagnitude
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexCurvatureMagnitude :
     HasDerivAt (fun u => atkinsonIndexCurvatureMagnitude u x)
       (Real.pi / x ^ (2 : ℕ) *
         (Real.pi * T / x + Real.pi ^ (2 : ℕ)) /
@@ -85,23 +86,14 @@ theorem hasDerivAt_atkinsonIndexCurvatureMagnitude
   unfold atkinsonIndexCurvatureMagnitude
   convert hquot using 1
   have hspos := atkinsonIndexRealSlope_pos hT hx
-  have hsquare :
-      (atkinsonIndexRealSlope T x) ^ 2 =
-        2 * Real.pi * T / x + Real.pi ^ (2 : ℕ) := by
-    unfold atkinsonIndexRealSlope
-    rw [Real.sq_sqrt]
-    positivity
+  pm_1227 T
   have hsquare_mul :
       x * (atkinsonIndexRealSlope T x) ^ 2 =
         2 * Real.pi * T + Real.pi ^ (2 : ℕ) * x := by
-    calc
-      x * (atkinsonIndexRealSlope T x) ^ 2 =
-          x * (2 * Real.pi * T / x + Real.pi ^ (2 : ℕ)) := by
-        rw [hsquare]
-      _ = 2 * Real.pi * T + Real.pi ^ (2 : ℕ) * x := by
-        field_simp [hx.ne']
+    grind
   field_simp [hx.ne', hspos.ne']
-  nlinarith [hsquare_mul]
+  grind
+end
 
 /-- Mean-value representation of the curvature difference in the height
 variable. -/
@@ -127,8 +119,7 @@ theorem exists_atkinsonIndexCurvatureDifference_eq
     exact hasDerivAt_atkinsonIndexCurvatureMagnitude
       (hu.trans hv.1) hx
   obtain ⟨c, hc, heq⟩ := exists_hasDerivAt_eq_slope F F' htu hcont hderiv
-  refine ⟨c, hc, ?_⟩
-  dsimp only [F, F'] at heq ⊢
+  pm_8226 c hc
   rw [atkinsonIndexCurvatureMagnitude_eq_neg,
     atkinsonIndexCurvatureMagnitude_eq_neg] at heq
   rw [heq]

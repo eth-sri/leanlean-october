@@ -6,6 +6,7 @@ Narrow extraction; see third_party/twelfth/ATKINSON_CORRECTION_SERIES_MANIFEST.j
 Mathlib and the nonstationary foundations retain their Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCarrierAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,8 +28,7 @@ theorem integrable_atkinsonPowerIntegrand {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) (α b : ℝ) :
     Integrable (atkinsonPowerIntegrand T G L α b) := by
   let hg := zetaAtkinsonDivisorVoronoiTest hT hG hL
-  have hi : Integrable (zetaAtkinsonDivisorTest T G L) :=
-    hg.continuous.integrable_of_hasCompactSupport hg.hasCompactSupport
+  pm_7547
   have hr : Measurable (fun x : ℝ => x ^ (-α)) := by fun_prop
   have he : Continuous (fun x : ℝ =>
       Complex.exp ((4 * Real.pi * b * Real.sqrt x : ℝ) * I)) := by fun_prop
@@ -44,11 +44,7 @@ theorem integrable_atkinsonPowerIntegrand {T G L : ℝ}
   apply Filter.Eventually.of_forall
   intro x
   rw [norm_atkinsonPowerIntegrand]
-  by_cases hz : zetaAtkinsonDivisorTest T G L x = 0
-  · simp [hz]
-  have hs : x ∈ Function.support (zetaSmoothDivisorTest T G L) := by
-    rw [← support_zetaAtkinsonDivisorTest]
-    exact hz
+  pm_4408
   have hb := hB x (support_zetaSmoothDivisorTest_physical hT hG hL hwidth hs)
   rw [Real.norm_eq_abs] at hb
   calc
@@ -65,8 +61,10 @@ def atkinsonTwoTermCarrierIntegral (T G L : ℝ) (n : ℕ) : ℂ :=
       (neumannCorrectionPlus * atkinsonPowerIntegral T G L (3 / 4) (Real.sqrt n) +
        neumannCorrectionMinus * atkinsonPowerIntegral T G L (3 / 4) (-Real.sqrt n)))
 
-theorem integral_zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+section
+variable {T G L : ℝ} (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+include T G L hT hG hL hwidth
+theorem integral_zetaAtkinsonTwoTermIntegrand_eq_carriers
     {n : ℕ} (hn : 0 < n) :
     (∫ x : ℝ in Ioi 0, zetaAtkinsonTwoTermIntegrand T G L n x) =
       atkinsonTwoTermCarrierIntegral T G L n := by
@@ -96,13 +94,12 @@ theorem integral_zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L : ℝ}
     integral_add (h3p.const_mul neumannCorrectionPlus) (h3m.const_mul neumannCorrectionMinus)]
   simp only [integral_const_mul, atkinsonTwoTermCarrierIntegral, atkinsonPowerIntegral]
 
-theorem zetaAtkinsonTwoTerm_eq_carrierIntegral {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) (n : ℕ) :
+theorem zetaAtkinsonTwoTerm_eq_carrierIntegral (n : ℕ) :
     zetaAtkinsonTwoTerm T G L n =
       divisorWeight n * (-(2 * Real.pi) : ℂ) * atkinsonTwoTermCarrierIntegral T G L n := by
-  by_cases hn : n = 0
-  · simp [hn, zetaAtkinsonTwoTerm, divisorWeight]
+  pm_8016 zetaAtkinsonTwoTerm
   rw [zetaAtkinsonTwoTerm,
     integral_zetaAtkinsonTwoTermIntegrand_eq_carriers hT hG hL hwidth (Nat.pos_of_ne_zero hn)]
+end
 
 end MathCollab.Density.Stronger.Atkinson

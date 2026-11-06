@@ -18,14 +18,17 @@ lemma logTest_eq_iterate (W : ℝ→ℂ) (n : ℕ) : logTest W n=(logProfile^[n]
   | zero => rfl
   | succ n ih => simp only [logTest,Function.iterate_succ_apply',ih]
 
-theorem detector_profile_support (reverse : Bool) (n : ℕ) (σ t : ℝ) :
+section
+variable (reverse : Bool) (n : ℕ) (σ t : ℝ)
+include reverse n σ t
+theorem detector_profile_support :
     Function.support (twistProfile (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) σ t)
       ⊆Set.Icc (1/4) (9/4) := by
   apply (oriented_twist_support reverse _ σ t).trans
   rw [←logTest_eq_iterate]
   exact (logTest_support positiveAnnular n).trans positiveAnnular_support
 
-theorem detector_profile_smooth (reverse : Bool) (n : ℕ) (σ t : ℝ) :
+theorem detector_profile_smooth :
     ContDiff ℝ ∞ (twistProfile (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) σ t) := by
   apply twistProfile_smooth _ σ t (1/4) (9/4) (by norm_num)
   · cases reverse <;> simp only [orientedProfile,ite_true]
@@ -37,8 +40,9 @@ theorem detector_profile_smooth (reverse : Bool) (n : ℕ) (σ t : ℝ) :
       positiveAnnular_support positiveAnnular_smooth
     rw [logTest_eq_iterate] at hw
     cases reverse
-    · exact hw
+    aesop
     · exact conjugate_profile_smooth _ hw
+end
 
 end SevenEighths.CenteredMomentDetectorDictionary
 

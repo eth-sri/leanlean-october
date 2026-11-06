@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftChoice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -39,7 +40,7 @@ theorem integer_shift_optimization
   by_cases hlarge : 2 ≤ η*R
   · obtain ⟨H,hH,hHN,hlower,hupper⟩ :=
       exists_comparable_source_shift hη hη₁ hRN hlarge
-    have hHpos : 0 < (H : ℝ) := by exact_mod_cast (show 0 < H by omega)
+    pm_5654
     have hinv : N^2/(H : ℝ) ≤ (2/η)*(N^2/R) := by
       calc
         _ ≤ N^2/(η*R/2) :=

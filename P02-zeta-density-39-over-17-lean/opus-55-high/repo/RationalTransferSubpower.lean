@@ -1,9 +1,9 @@
 module
 public import RationalFiniteHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -13,22 +13,25 @@ def momentTransferCost (k H : ℕ) (T : ℝ) : ℝ :=
     (T+1+4*Real.exp (k : ℝ)*(H : ℝ)^(2*k)*
       (1+Real.log ⌊2*(k : ℝ)*Real.exp (k : ℝ)*(H : ℝ)^(2*k)⌋₊))
 
+section
+variable {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η)
+include k hk η hη
 /-- The logarithmic finite-height cost is uniformly a small power of H.
 The constant is chosen before H and T. -/
-theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem moment_transfer_cost_subpower :
     ∃ C : ℝ, 0 < C ∧ ∀ H : ℕ, 1 ≤ H → ∀ T : ℝ, 0 ≤ T →
       momentTransferCost k H T ≤ C * (T + (H : ℝ)^(2*k)) * (H : ℝ)^η := by
-  have hkR : (1 : ℝ) ≤ k := by exact_mod_cast hk
-  have hkpos : (0 : ℝ) < k := by linarith
+  pm_77 hkR k hk
+  pm_389 hkpos k
   let J := 1 + Real.log (2*(k : ℝ)) + (k : ℝ)
   let D := J + 2*(k : ℝ)/η
   have hlogk : 0 ≤ Real.log (2*(k : ℝ)) := Real.log_nonneg (by linarith)
-  have hJ : 0 < J := by dsimp [J]; positivity
-  have hD : 0 < D := by dsimp [D]; positivity
+  pm_64 hJ J
+  pm_4497
   refine ⟨(2+(k : ℝ)^2)*(1+4*Real.exp (k : ℝ)*D), by positivity, ?_⟩
   intro H hH T hT
-  have hHR : (1 : ℝ) ≤ H := by exact_mod_cast hH
-  have hHpos : (0 : ℝ) < H := by linarith
+  pm_77 hHR H hH
+  pm_389 hHpos H
   let P := (H : ℝ)^(2*k)
   let Z := (H : ℝ)^η
   have hP : 1 ≤ P := one_le_pow₀ hHR
@@ -39,9 +42,9 @@ theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη :
     have hke : 1 ≤ 2*(k : ℝ)*Real.exp (k : ℝ) := by
       nlinarith [mul_nonneg (show 0 ≤ 2*(k : ℝ)-1 by linarith) (sub_nonneg.mpr he)]
     dsimp only [X]
-    nlinarith [mul_nonneg (sub_nonneg.mpr hke) (sub_nonneg.mpr hP)]
+    pm_385 mul_nonneg sub_nonneg.mpr hke hP
   have hfloor : (1 : ℝ) ≤ ⌊X⌋₊ := by
-    have hn : 1 ≤ ⌊X⌋₊ := Nat.le_floor (by simpa using hX1)
+    have hn : 1 ≤ ⌊X⌋₊ := Nat.le_floor (by grind)
     exact_mod_cast hn
   have hlogX : Real.log ⌊X⌋₊ ≤ Real.log X :=
     Real.log_le_log (by linarith) (Nat.floor_le (by linarith))
@@ -80,7 +83,7 @@ theorem moment_transfer_cost_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη :
 /-- Coefficient-energy transfer with the exact asymptotic shape needed in the
 research argument. The arithmetic small-power estimate for the coefficient
 energy is not assumed or proved by this theorem. -/
-theorem rational_moment_transfer_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem rational_moment_transfer_subpower :
     ∃ C : ℝ, 0 < C ∧ ∀ (H : ℕ), 1 ≤ H → ∀ (T t₀ : ℝ), 0 ≤ T →
       ∀ (A : Finset ℚ) (c : ℚ → ℂ),
       (∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ 1) →
@@ -88,7 +91,7 @@ theorem rational_moment_transfer_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (h
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∑ t ∈ W, ‖∑ r ∈ A, c r * phase r t‖ ^ (2*k)) ≤
         C * (T+(H : ℝ)^(2*k)) * (H : ℝ)^η * rationalCoefficientEnergy A k c := by
-  obtain ⟨C, hC, hcost⟩ := moment_transfer_cost_subpower hk hη
+  pm_98 C hC hcost moment_transfer_cost_subpower hk hη
   refine ⟨C, hC, ?_⟩
   intro H hH T t₀ hT A c hA W hW hsep
   have hh := rational_finite_height_moment A c k H hH (by norm_num : (0 : ℝ) ≤ 1)
@@ -105,5 +108,6 @@ theorem rational_moment_transfer_subpower {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (h
     ring
   exact hb.trans (mul_le_mul_of_nonneg_right (hcost H hH T hT)
     (sum_nonneg (fun _ _ => sq_nonneg _)))
+end
 
 end Montgomery.RationalMoment

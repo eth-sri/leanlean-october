@@ -1,18 +1,18 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalPhysicalEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open JointLogSeparation MeasureTheory
 local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+open InverseMomentFirstProfileUniform
 theorem actual_first_moving_family_two_energies_uniform
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 9 → ℝ) (m₁ m₂ bcap : ℝ)
@@ -56,8 +56,7 @@ theorem actual_first_moving_family_two_energies_uniform
         ((Real.sqrt B₁*Real.sqrt B₂)*(Cprofile*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /
           (1+K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8))^Aker)) := by
-  obtain ⟨Cprofile,hCprofile,hmeasure⟩ := InverseMomentFirstProfileUniform.first_profile_common_measure
-    U₀ g₁ g₂ Φ M₀ B₀ m₁ m₂ bcap hM hB₀ hU hg₁ hg₂ Aker J
+  pm_506 Cprofile hCprofile hmeasure InverseMomentFirstProfileUniform.first_profile_common_measure
   refine ⟨Cprofile,hCprofile,?_⟩
   intro ι κ _ p hp _ hg source F selector C₁ C₂ w ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂
     A₁ A₂ C R K L hK d h s hpos hs hρ hc₁ hc₂ hc₁b hc₂b hL
@@ -66,12 +65,7 @@ theorem actual_first_moving_family_two_energies_uniform
     exact div_pos (mul_pos hK (hs 6))
       (mul_pos (mul_pos (mul_pos (mul_pos (hs 3) (hs 4)) (sq_pos_of_pos (hs 5))) (hs 7)) (hs 8))
   obtain ⟨b₃,hb₃⟩ := hmeasure (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) hRad
-  obtain ⟨hsep,hWeighted,hMoment⟩ := hb₃ ρ c₁ c₂ θ₁ θ₂ L hρ hc₁ hc₂ hc₁b hc₂b hL
-  let g := fun i => rooted (U₀ i) (M₀ i) (InverseClippingProfiles.firstBalancedSlope i) (hU i)
-  let f₁ := rooted g₁ m₁ (-(1/2:ℝ)) hg₁
-  let f₂ := rooted g₂ m₂ (-(1/2:ℝ)) hg₂
-  let den := density g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L
-  have hden : Integrable den := first_balanced_density_integrable g f₁ f₂ b₃ ρ c₁ c₂ θ₁ θ₂ L
+  pm_166 InverseClippingProfiles.firstBalancedSlope first_balanced_density_integrable
   have he := actual_first_family_two_energies p hg hp source F selector C₁ C₂ w
     (positiveSource g₁ c₁ θ₁) (positiveSource g₂ c₂ θ₂) ω₁ ω₂ Φ (fun i y => U₀ i (y+ρ i))
     A₁ A₂ C R K L d h s hpos hs den hden hsep hω₁ hω₂ hcut
@@ -86,20 +80,20 @@ theorem actual_first_moving_family_two_energies_uniform
     (by have := firstRootScale_pos s hs; positivity))
 
 theorem first_global_retained_push_uniform (ε:ℝ)(hε:0<ε):
-    ∃ K:ℝ,0<K ∧ ∀ {ι κ:Type*} [DecidableEq ι] [DecidableEq κ] (p:ι→Eis)(hp:∀i,p i≠0)
+    ∃ K:ℝ,0<K ∧ ∀ {ι κ:Type*} [DecidableEq ι] [DecidableEq κ] (p:ι→ Eis)(hp:∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (_hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
     (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (F:Finset ι)(outer:Finset κ)(cube:κ→CubeCoordinates ι)(common:κ→Finset ι)
-    (Ψ₁ Ψ₂:Eis→*ℂ)(m₁ m₂:Eis)(d:κ→Eis)
-    (labels:κ→Finset (Ideal Eis))(a:κ→Ideal Eis×Eis→ℂ)(Γ Y:ℝ),
+    (F:Finset ι)(outer:Finset κ)(cube:κ→ CubeCoordinates ι)(common:κ→ Finset ι)
+    (Ψ₁ Ψ₂:Eis→*ℂ)(m₁ m₂:Eis)(d:κ→ Eis)
+    (labels:κ→ Finset (Ideal Eis))(a:κ→ Ideal Eis×Eis→ℂ)(Γ Y:ℝ),
     (∀u,‖Ψ₁ u‖≤1)→(∀u,‖Ψ₂ u‖≤1)→0≤Γ→0<Y→
     (∀k∈outer,∀f∈labels k,Squarefree f)→(∀k∈outer,∀f∈labels k,f≠0)→
     (∀k∈outer,∀x∈firstRetainedSource p (labels k) (cube k) Y,‖a k x‖≤Γ)→
-    ∀(negative:Bool)(H selector:κ→Finset ι→ℂ)(ω:ℝ→ℂ)(X t:ℝ),0<X→
+    ∀(negative:Bool)(H selector:κ→ Finset ι→ℂ)(ω:ℝ→ℂ)(X t:ℝ),0<X→
     firstFamilyEnergy p hg (firstGlobalRetainedSource p outer labels cube Y) F
       (fun x=>selector x.1)
       (fun x=>firstCanonicalCoefficient p hp hcop hg (cube x.1) (common x.1) negative
@@ -110,19 +104,17 @@ theorem first_global_retained_push_uniform (ε:ℝ)(hε:0<ε):
     Γ*K*Y^ε*∑k∈outer,firstCanonicalSecondEnergy p hp hg hinj F (cube k) (common k)
       negative (if negative then Ψ₁ else Ψ₂) (if negative then m₁ else m₂) (d k)
       (H k) (selector k) ω X t Y := by
-  obtain ⟨K,hK,hpush⟩:=first_retained_actual_second_energy ε hε
+  pm_3599 K hK hpush first_retained_actual_second_energy ε hε
   refine ⟨K,hK,?_⟩
   intro ι κ _ _ p hp _ hinj hcop hg hc hpr F outer cube common Ψ₁ Ψ₂ m₁ m₂ d labels a Γ Y
     hΨ₁ hΨ₂ hΓ hY hs hn ha negative H selector ω X t hX
-  simp only [firstFamilyEnergy,firstGlobalRetainedSource,Finset.sum_sigma]
-  rw [Finset.mul_sum]
+  pm_487 firstFamilyEnergy firstGlobalRetainedSource Finset.sum_sigma Finset.mul_sum
   apply Finset.sum_le_sum
   intro k hk
   exact hpush p hp hinj hcop hg hc hpr F (cube k) (common k) Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂
     (d k) (labels k) (a k) Γ Y hΓ hY (hs k hk) (hn k hk) (ha k hk)
     negative (H k) (selector k) ω X t hX
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

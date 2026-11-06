@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RadialSpectral
 public import OAI.NumberTheory.DirichletL.Detector.Transformed
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,7 +32,7 @@ theorem markedPhysicalProbe_eq_radial_mellin (η : HeckeFamily.Character)
     (D : Ideal O) (W0 : SchwartzMap ℝ ℂ) (W1 : ℝ→ℂ)
     (a b : ℝ) (ha : 0<a) (hW : Function.support W0⊆Set.Icc a b)
     (X Y Z σ : ℝ) (hX : 0<X) (hZ : 0<Z) (hσ : 1<σ) :
-    markedPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z=
+    markedPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z =
       radialMellinPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z σ := by
   have hWc : HasCompactSupport (W0 : ℝ→ℂ) := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW
   rw [markedPhysicalProbe_eq_poisson η (calibrationForSet S hS) D W0 W1 hWc (W0.smooth (⊤:ℕ∞)) X Y Z hX hZ]
@@ -43,17 +44,11 @@ theorem markedPhysicalProbe_eq_radial_mellin (η : HeckeFamily.Character)
   · dsimp only
     congr 1
     unfold verticalIntegral
-    congr 1
-    apply MeasureTheory.integral_congr_ae
-    apply Filter.Eventually.of_forall
-    intro t
-    dsimp only
-    congr 1
+    pm_7341 MeasureTheory.integral_congr_ae t
     apply tsum_congr
     intro p
     have hcs : IsCoprime (calibrationForSet S hS).generator (primaryGenerator s.val) := by
-      apply calibrationForSet_coprime_of_excluded S hS
-      rw [(primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1]
+      pm_8664 s.val s.property
       simpa only [calibrationForSet_excluded] using hs
     have hK : 0<elementNorm (calibrationForSet S hS).generator*(Ideal.absNorm s.val:ℝ)*X :=
       mul_pos (mul_pos (elementNorm_pos _ (calibrationForSet S hS).generator_ne_zero)

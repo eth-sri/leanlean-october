@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.SharpCenteredReflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,8 +20,7 @@ theorem sharpCenteredBudget_nonneg {T L R E : ℝ}
 
 theorem sharp_shell_scale {H L : ℝ} (hH : 0<H) (hL : 0<L) (q : ℝ) :
     L^2/H*(H/L)^q = H^(q-1)*L^(2-q) := by
-  rw [Real.div_rpow hH.le hL.le,Real.rpow_sub hH,Real.rpow_sub hL,
-    Real.rpow_one,Real.rpow_two]
+  pm_6688
   ring
 
 theorem sharp_small_height_rpow {T H a : ℝ} (hT : 0<T) (hH : 0≤H)
@@ -29,10 +29,7 @@ theorem sharp_small_height_rpow {T H a : ℝ} (hT : 0<T) (hH : 0≤H)
     _ ≤ (2*T)^a := Real.rpow_le_rpow hH hHT ha
     _ = (2:ℝ)^a*T^a := Real.mul_rpow (by norm_num) hT.le
     _ ≤ 2*T^a := by
-      apply mul_le_mul_of_nonneg_right _ (by positivity)
-      have h := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2) ha1
-      norm_num at h
-      exact h
+      pm_290 h ha1
 
 /-- Exact scale conversion from the sharp short-polynomial profile to the
 three physical centered-trace powers. -/
@@ -49,9 +46,7 @@ theorem sharp_shell_budget_le {T L H R E : ℝ}
     rw [← Real.rpow_add hT]
     norm_num
   have hTpow' : T^(1/4:ℝ)*(2*T^(1/5:ℝ))=2*T^(9/20:ℝ) := by
-    calc
-      _ = 2*(T^(1/4:ℝ)*T^(1/5:ℝ)) := by ring
-      _ = _ := by rw [hTpow]
+    grind
   calc
     _ = (L^2/H*(H/L)^2)*E^(1/2:ℝ)+R*E^(1/4:ℝ)*
         ((L^2/H*(H/L)^(9/5:ℝ))+T^(1/4:ℝ)*(L^2/H*(H/L)^(6/5:ℝ))) := by
@@ -63,8 +58,8 @@ theorem sharp_shell_budget_le {T L H R E : ℝ}
     _ ≤ (2*T)*E^(1/2:ℝ)+R*E^(1/4:ℝ)*
         ((2*T^(4/5:ℝ))*L^(1/5:ℝ)+T^(1/4:ℝ)*((2*T^(1/5:ℝ))*L^(4/5:ℝ))) := by
       gcongr
-      · exact sharp_small_height_rpow hT hH.le hHT (by norm_num) (by norm_num)
-      · exact sharp_small_height_rpow hT hH.le hHT (by norm_num) (by norm_num)
+      pm_7264
+      pm_7264
     _ = 2*sharpCenteredBudget T L R E := by
       rw [← mul_assoc (T^(1/4:ℝ)) (2*T^(1/5:ℝ)),hTpow']
       unfold sharpCenteredBudget

@@ -2,19 +2,19 @@ module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferencePaddedEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferencePrimeGates
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceShift
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification HeckeDyadic CanonicalQuadraticSieve
-open CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT
+open HeckeFamily HeckeInverseAmplification CanonicalQuadraticSieve
+open ConcretePrimeRowBridge ConcreteTraceCRT
 open InverseInitialDetectorSource
-open InverseMoment InverseInitialProfile InverseInitialRawDictionary InverseInitialPhysicalSlots
+open InverseMoment InverseInitialRawDictionary InverseInitialPhysicalSlots
 open InverseInitialConjugateEnergy InverseInitialEnergyCallerWindow InverseInitialExcludedPeriod
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawConjugateGates
 open IdealMobiusDivisorSum Filter
@@ -57,7 +57,7 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
       (((Finset.univ:Finset ι):Set ι).PairwiseDisjoint
         (fun i=>livePrimes M H F.W 2 (U^(ell i)))) →
       (∀i,((deletedBase data).modulus.absNorm:ℝ)<U^(ell i)) →
-    ∀r:ℝ,0≤r → r+2*(∑i,ell i)<1 → 2*r+8*(∑i,ell i)<3 →
+    ∀r:ℝ,0≤ r → r+2*(∑i,ell i)<1 → 2*r+8*(∑i,ell i)<3 →
     ∀j∈idealDivisors (∏P∈excluded data,P),
     ∀rows:Finset O,(∀u∈rows,‖eisEmbedding u‖^2≤U) → ∀θ:ℝ,
       (∑u∈rows,‖deletedSelectedSource data M H (childLogTest W θ) (fun _=>F.W)
@@ -66,19 +66,19 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   obtain ⟨eta,heta,degree,henergy⟩:=padded_source_energy W ao bo hao hab hsW hW εm hεm K
   refine ⟨degree,?_⟩
   intro data
-  obtain ⟨hq,hqset,hn,hperiod⟩:=raw_conjugate_base_gates data
-  obtain ⟨C,U₀,hC,hU₀,henergy⟩:=henergy (deletedPeriod (basePeriod data)) hq
+  pm_3698 hq hqset hn hperiod raw_conjugate_base_gates data
+  pm_8437 U₀ hU₀ henergy
   obtain ⟨Ushift,hshift⟩:=eventually_atTop.mp (marked_shift_eventually data eta heta)
-  refine ⟨C,max U₀ Ushift,hC,lt_max_of_lt_left hU₀,?_⟩
+  pm_8001 Ushift
   intro U hU ι inst hK M neM H ell ζ hell hζ hdis hlarge r hr hfirst hsecond j hj rows hrows θ
-  have hU0:U₀≤U:=(le_max_left _ _).trans hU
+  pm_5224 hU0 U₀ U hU
   have hUone:1<U:=hU₀.trans_le hU0
   have hUp:0<U:=zero_lt_one.trans hUone
-  have hjshift: r-eta≤shiftedExponent data U r j ∧ shiftedExponent data U r j≤r ∧
+  have hjshift: r-eta≤ shiftedExponent data U r j ∧ shiftedExponent data U r j≤ r ∧
       U^(shiftedExponent data U r j)=U^r/(j.absNorm:ℝ):=
     (hshift U ((le_max_right _ _).trans hU)).2 j hj r
-  let L:ι→Finset (Ideal O):=fun i=>livePrimes M H F.W 2 (U^(ell i))
-  let coeff:ι→Ideal O→ℂ:=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
+  let L:ι→ Finset (Ideal O):=fun i=>livePrimes M H F.W 2 (U^(ell i))
+  let coeff:ι→ Ideal O→ℂ:=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
     idealCoeff (deletedBase data) P
   have hg (i:ι)(P:Ideal O)(hP:P∈L i):
       Prime P ∧ InverseInitialExcludedPool.outside (excluded data) P ∧
@@ -101,6 +101,5 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
 end OAI

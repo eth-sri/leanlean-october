@@ -21,11 +21,11 @@ lemma gaussianLog_ofReal (y : ℝ) : gaussianLog (y:ℂ)=gaussianMellinProfile y
 lemma gaussianLog_analytic (z : ℂ) (hz : 0<z.re) : AnalyticAt ℂ gaussianLog z := by
   have hl := analyticAt_clog (Complex.mem_slitPlane_iff.mpr (Or.inl hz))
   unfold gaussianLog
-  exact analyticAt_const.mul (((hl.pow 2).neg.div_const (c:=4)).cexp)
+  fun_prop
 
 lemma gaussianLog_scaled_analytic (r : ℝ) (hr : 0<r) (z : ℂ) (hz : 0<z.re) :
     AnalyticAt ℂ (fun w : ℂ=>gaussianLog ((r:ℂ)*w)) z := by
-  have h : 0<((r:ℂ)*z).re := by simpa using mul_pos hr hz
+  have h : 0<((r:ℂ)*z).re := by simp_all
   exact (gaussianLog_analytic _ h).comp (analyticAt_const.mul analyticAt_id)
 
 end SevenEighths.ProbePhysical

@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleyTranslatedNormalChange
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ factor `p^(c+h)`.  This file records that polynomial identity exactly.
 -/
 
 open Finset Polynomial
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -55,17 +55,11 @@ theorem wooleySection7NormalSystem_eval_dilation
       h * ((i : ℕ) + 1) + (c + h) +
           h * (k - ((i : ℕ) + 1)) =
         c + h * (k + 1) := by
-    have hi : (i : ℕ) + 1 ≤ k := i.isLt
+    pm_5223 hi i k i.isLt
     have hsplit :
         h * ((i : ℕ) + 1) + h * (k - ((i : ℕ) + 1)) = h * k := by
       rw [← Nat.mul_add, Nat.add_sub_of_le hi]
-    calc
-      h * ((i : ℕ) + 1) + (c + h) +
-          h * (k - ((i : ℕ) + 1)) =
-        c + h + (h * ((i : ℕ) + 1) +
-          h * (k - ((i : ℕ) + 1))) := by omega
-      _ = c + h + h * k := by rw [hsplit]
-      _ = c + h * (k + 1) := by rw [Nat.mul_succ]; omega
+    grind
   have hpow :
       (p : ℤ) ^ c * (p : ℤ) ^ (h * (k + 1)) =
         (p : ℤ) ^ (h * ((i : ℕ) + 1)) *
@@ -76,7 +70,7 @@ theorem wooleySection7NormalSystem_eval_dilation
     omega
   unfold wooleySection7NormalSystem wooleySection4DilatedSystem
     wooleySection4DilatedTail
-  simp only [eval_add, eval_pow, eval_X, eval_mul, eval_C, eval_comp]
+  pm_316 eval_add eval_pow eval_X eval_mul eval_C eval_comp
   simp only [mul_pow, ← pow_mul]
   have htail :
       (p : ℤ) ^ c *
@@ -86,10 +80,7 @@ theorem wooleySection7NormalSystem_eval_dilation
           ((p : ℤ) ^ (c + h) *
             ((p : ℤ) ^ (h * (k - ((i : ℕ) + 1))) *
               y ^ (k + 1) * (psi i).eval ((p : ℤ) ^ h * y))) := by
-    calc
-      _ = ((p : ℤ) ^ c * (p : ℤ) ^ (h * (k + 1))) *
-          (y ^ (k + 1) * (psi i).eval ((p : ℤ) ^ h * y)) := by ring
-      _ = _ := by rw [hpow]; ring
+    grind
   rw [htail]
   ring
 

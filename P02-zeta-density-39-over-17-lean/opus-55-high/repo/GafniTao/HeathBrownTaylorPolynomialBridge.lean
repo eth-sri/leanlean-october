@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownTaylorRemainder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,8 +13,7 @@ This file proves that normalization bridge, including the index shift and
 factorials.
 -/
 
-open Set Finset
-open scoped BigOperators
+open Finset
 
 namespace GafniTao
 
@@ -54,7 +54,7 @@ theorem taylorWithinEval_deriv_eq_heathBrownTaylorDerivativePolynomial
       heathBrownTaylorDerivativePolynomial k f n x := by
   rw [taylor_within_apply]
   unfold heathBrownTaylorDerivativePolynomial
-  have hcard : k - 2 + 1 = k - 1 := by omega
+  pm_553 hcard
   rw [hcard]
   apply Finset.sum_congr rfl
   intro j hj

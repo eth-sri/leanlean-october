@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -71,13 +72,13 @@ theorem attached_family_conditions {Jo : ℕ} (parents : Finset (SecondParentSou
   have h (x : MarkedSecondSource ι Jo 0) (hx : x∈attachedSecondFamily parents source) :=
     (mem_attachedSecondFamily parents source x).mp hx
   constructor
-  · intro x hx; exact ha (secondParentOf x) (h x hx).1
-  · intro x hx; exact hC (secondParentOf x) (h x hx).1
-  · intro x hx; exact hD (secondParentOf x) (h x hx).1
+  pm_3752 ha
+  pm_3752 hC
+  pm_3752 hD
   · intro x hx; exact hE (secondParentOf x) (h x hx).1 x.second (h x hx).2
   · intro x hx i; exact hold (secondParentOf x) (h x hx).1 i
   · intro x hx i; exact Fin.elim0 i
-  · intro x hx; exact hq (secondParentOf x) (h x hx).1
+  pm_3752 hq
 
 end
 end SevenEighths.InverseMoment

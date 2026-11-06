@@ -28,7 +28,7 @@ theorem third_derivative_shift_curvature
     (fun y hy => hder y (hin y hy))
     (fun y hy => hlo y (hin y hy))
     (fun y hy => hhi y (hin y hy))
-  simpa only [add_sub_cancel_left,mul_comm] using hb
+  grind
 
 theorem hasDerivAt_shift_difference
     (F F' : ℝ → ℝ) {x h : ℝ}

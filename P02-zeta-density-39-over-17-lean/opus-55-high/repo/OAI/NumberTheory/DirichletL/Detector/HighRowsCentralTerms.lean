@@ -1,11 +1,11 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedTerms
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
@@ -22,101 +22,45 @@ theorem sourceRowTerm_central_nonstrict (eta a rho x w z : ℂ) (alpha eps : ℝ
     (hf : (e=0 ∧ l=2) ∨ (e=1 ∧ l=0) ∨ (e=0 ∧ l=1) ∨ (e=1 ∧ l=1))
     (hstrict : ¬(e=1 ∧ l=0 ∧ k=1 ∧ m=0)) :
     ‖sourceRowTerm p hp hg eta a rho x w z j e l k m‖≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^(1/2-x.re) := by
-  let Q : ℝ := Ideal.absNorm (Ideal.span {p})
-  have hQ : 0<Q := by
-    dsimp only [Q]
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
-  have hm0 : (0:ℝ)≤m := Nat.cast_nonneg m
+  pb_820
   have hzpos : 0<z.re := by rw [hz];norm_num
-  have hzm : 0≤6*z.re*(m:ℝ) := by positivity
-  have hzm1 (hm : m≠0) : 6*z.re≤6*z.re*(m:ℝ) := by
-    have hm1 : (1:ℝ)≤m := by exact_mod_cast (by omega : 1≤m)
-    nlinarith
-  have hrelax (v : ℝ) : Q^v≤2*Q^v := by nlinarith [Real.rpow_nonneg hQ.le v]
-  have hz0 (t k : ℕ) (ht : t≠0) : sourceScalar p hp hg t k (j+6*m)=
-      positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (t-1) k (j+6*m) := by
-    rw [sourceScalar,ite_eq_right ht]
-  rcases hf with ⟨rfl,rfl⟩|⟨rfl,rfl⟩|⟨rfl,rfl⟩|⟨rfl,rfl⟩
+  pb_118
   · rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hk with rfl|rfl
     · by_cases hm : m=0
       · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 0 2 0 m 5 (1/2-x.re)
-        · have hs := even_base_kzero_norm p hp hg hc m j hj
-          rw [ite_eq_left hm] at hs
-          simpa only [Nat.reduceMul,Nat.reduceAdd,hz0 6 0 (by decide),Nat.reduceSub,Real.rpow_natCast,Real.rpow_ofNat] using
-            hs.trans (show Q^5≤2*Q^5 by nlinarith [pow_nonneg hQ.le 5])
-        · norm_num only [Nat.cast_zero,Nat.cast_ofNat,mul_zero,mul_one,sub_zero]
-          linarith
+        pm_3856
       · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 0 2 0 m 6 (1/2-x.re)
-        · have hs := even_base_kzero_norm p hp hg hc m j hj
-          rw [ite_eq_right hm] at hs
-          simpa only [Nat.reduceMul,Nat.reduceAdd,hz0 6 0 (by decide),Nat.reduceSub,Real.rpow_natCast,Real.rpow_ofNat] using
-            hs.trans (show Q^6≤2*Q^6 by nlinarith [pow_nonneg hQ.le 6])
-        · norm_num only [Nat.cast_zero,Nat.cast_ofNat,mul_zero,mul_one,sub_zero]
-          nlinarith [hzm1 hm]
+        pm_3855
     · by_cases hm : m=0
       · subst m
-        simp only [sourceRowTerm,sourceScalar,Nat.reduceMul,Nat.reduceAdd,Nat.reduceSub,
-          Nat.reduceEqDiff,ite_false,mul_zero,add_zero,even_base_kone_zero p hp hg hc j hj,
-          sourceWeightedScalar,zero_mul,mul_zero,norm_zero]
+        pm_3862
         positivity
       · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 0 2 1 m 6 (1/2-x.re)
-        · have hs := nonprincipal_kone_norm p hp hg hc 5 (j+6*m) (by decide) (by decide)
-          simpa only [Nat.reduceMul,Nat.reduceAdd,hz0 6 1 (by decide),Nat.reduceSub,Real.rpow_natCast,Real.rpow_ofNat] using
-            hs.trans (show Q^6≤2*Q^6 by nlinarith [pow_nonneg hQ.le 6])
-        · norm_num only [Nat.cast_zero,Nat.cast_ofNat,mul_zero,mul_one,sub_zero]
-          nlinarith [hzm1 hm]
+        pm_3854
   · rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hk with rfl|rfl
     · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 1 0 0 m (1/2) (1/2-x.re)
-      · have hs := nonprincipal_kzero_norm p hp hg hc 0 (j+6*m) (by decide)
-        simp only [pow_zero,one_mul,Real.sqrt_eq_rpow] at hs
-        simpa only [Nat.reduceMul,Nat.reduceAdd,hz0 1 0 (by decide),Nat.reduceSub] using hs.trans (hrelax (1/2))
-      · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
-        linarith
+      pm_3861
+      pm_3852
     · have hm : m≠0 := by intro hm;exact hstrict ⟨rfl,rfl,rfl,hm⟩
       apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 1 0 1 m (3/2) (1/2-x.re)
-      · have hs := positiveScalar_norm_le p hp hg hc 0 1 (j+6*m) (by decide)
-        simp only [Nat.zero_add,pow_one] at hs
-        have he : 2*Q*Real.sqrt Q=2*Q^(3/2:ℝ) := by
-          have ht := pow_mul_sqrt Q hQ 1
-          norm_num at ht
-          rw [mul_assoc,ht]
-        rw [he] at hs
-        simpa only [Nat.reduceMul,Nat.reduceAdd,hz0 1 1 (by decide),Nat.reduceSub] using hs
+      pm_3853
       · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
         nlinarith [hzm1 hm]
   · rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hk with rfl|rfl
     · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 0 1 0 m (5/2) (1/2-x.re)
-      · have hs := nonprincipal_kzero_norm p hp hg hc 2 (j+6*m) (by decide)
-        rw [pow_mul_sqrt _ hQ] at hs
-        norm_num only [Nat.cast_ofNat] at hs
-        convert hs.trans (hrelax (5/2)) using 1 ;
-          simp only [sourceScalar,Nat.reduceMul,Nat.reduceAdd,Nat.reduceEqDiff,ite_false,Nat.reduceSub]
-      · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
-        linarith
+      pm_3859
+      pm_3852
     · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 0 1 1 m 3 (1/2-x.re)
-      · have hs := nonprincipal_kone_norm p hp hg hc 2 (j+6*m) (by decide) (by decide)
-        simpa only [Nat.reduceMul,Nat.reduceAdd,hz0 3 1 (by decide),Nat.reduceSub,Real.rpow_natCast,Real.rpow_ofNat] using
-          hs.trans (show Q^3≤2*Q^3 by nlinarith [pow_nonneg hQ.le 3])
-      · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
-        linarith
+      pm_3857
+      pm_3852
   · rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hk with rfl|rfl
     · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 1 1 0 m (7/2) (1/2-x.re)
-      · have hs := nonprincipal_kzero_norm p hp hg hc 3 (j+6*m) (by decide)
-        rw [pow_mul_sqrt _ hQ] at hs
-        norm_num only [Nat.cast_ofNat] at hs
-        convert hs.trans (hrelax (7/2)) using 1 ;
-          simp only [sourceScalar,Nat.reduceMul,Nat.reduceAdd,Nat.reduceEqDiff,ite_false,Nat.reduceSub]
-      · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
-        linarith
+      pm_3860
+      pm_3852
     · apply sourceRowTerm_norm_from_scalar_power p hp hg hc eta a rho x w z heta ha hρ j 1 1 1 m 4 (1/2-x.re)
-      · have hs := nonprincipal_kone_norm p hp hg hc 3 (j+6*m) (by decide) (by decide)
-        simpa only [Nat.reduceMul,Nat.reduceAdd,hz0 4 1 (by decide),Nat.reduceSub,Real.rpow_natCast,Real.rpow_ofNat] using
-          hs.trans (show Q^4≤2*Q^4 by nlinarith [pow_nonneg hQ.le 4])
-      · norm_num only [Nat.cast_zero,Nat.cast_one,mul_zero,mul_one,sub_zero]
-        linarith
+      pm_3858
+      pm_3852
 
 end SevenEighths.ProbeEuler
-end
 
 end OAI

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileData
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,14 +14,14 @@ open CompletedHeight FourierBridge
 open InverseMomentFirstProfileUniform
 local notation "O" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 include hp in
 lemma physical_rows_congr_positive (F : Finset ι) (selector C₁ C₂ : Finset ι→ℂ)
     (W₁ W₂ V₁ V₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R K : ℝ) (d h : O)
     (hA₁ : 0<A₁) (hA₂ : 0<A₂) (hC : 0<C)
-    (h₁ : ∀x,0<x→W₁ x=V₁ x) (h₂ : ∀x,0<x→W₂ x=V₂ x) :
+    (h₁ : ∀x,0<x→ W₁ x=V₁ x) (h₂ : ∀x,0<x→ W₂ x=V₂ x) :
     firstBlockedPhysicalRows p hg F selector C₁ C₂ W₁ W₂ Φ A₁ A₂ C R K d h=
       firstBlockedPhysicalRows p hg F selector C₁ C₂ V₁ V₂ Φ A₁ A₂ C R K d h := by
   unfold firstBlockedPhysicalRows
@@ -34,12 +35,12 @@ lemma physical_rows_congr_positive (F : Finset ι) (selector C₁ C₂ : Finset 
 
 include hp in
 lemma physical_family_congr_positive (S : Finset κ) (F : Finset ι)
-    (selector C₁ C₂ : κ→Finset ι→ℂ) (w : κ→ℂ)
+    (selector C₁ C₂ : κ→ Finset ι→ℂ) (w : κ→ℂ)
     (W₁ W₂ V₁ V₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R : κ→ℝ) (K : ℝ)
-    (d h : κ→O) (s : Fin 9→ℝ) (hs : ∀i,0<s i)
+    (d h : κ→ O) (s : Fin 9→ℝ) (hs : ∀i,0< s i)
     (hpos : ∀x∈S,0<A₁ x ∧ 0<A₂ x ∧ 0<C x)
-    (h₁ : ∀x,0<x→W₁ x=V₁ x) (h₂ : ∀x,0<x→W₂ x=V₂ x) :
-    firstFamilyPhysicalRows p hg S F selector C₁ C₂ w W₁ W₂ Φ A₁ A₂ C R K d h s=
+    (h₁ : ∀x,0<x→ W₁ x=V₁ x) (h₂ : ∀x,0<x→ W₂ x=V₂ x) :
+    firstFamilyPhysicalRows p hg S F selector C₁ C₂ w W₁ W₂ Φ A₁ A₂ C R K d h s =
       firstFamilyPhysicalRows p hg S F selector C₁ C₂ w V₁ V₂ Φ A₁ A₂ C R K d h s := by
   unfold firstFamilyPhysicalRows
   apply Finset.sum_congr rfl
@@ -53,24 +54,24 @@ lemma physical_family_congr_positive (S : Finset κ) (F : Finset ι)
 include hp in
 
 theorem original_family_profiles (S : Finset κ) (F : Finset ι)
-    (selector C₁ C₂ : κ→Finset ι→ℂ) (w : κ→ℂ)
+    (selector C₁ C₂ : κ→ Finset ι→ℂ) (w : κ→ℂ)
     (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hsom : Function.support om⊆Set.Icc a b)
     (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C R : κ→ℝ) (K X theta : ℝ)
-    (d h : κ→O) (s : Fin 9→ℝ) (hs : ∀i,0<s i)
+    (d h : κ→ O) (s : Fin 9→ℝ) (hs : ∀i,0< s i)
     (hpos : ∀x∈S,0<A₁ x ∧ 0<A₂ x ∧ 0<C x)
     (hX : 0<X) (hleft : s 0*s 2*s 5*s 7=X) (hright : s 1*s 2*s 5*s 8=X) :
     firstFamilyPhysicalRows p hg S F selector C₁ C₂ w
       (fun y=>star (normTwistedSource om theta ((s 0*s 2*s 5*s 7)*y/X)))
-      (fun y=>normTwistedSource om theta ((s 1*s 2*s 5*s 8)*y/X)) Φ A₁ A₂ C R K d h s=
+      (fun y=>normTwistedSource om theta ((s 1*s 2*s 5*s 8)*y/X)) Φ A₁ A₂ C R K d h s =
     firstFamilyPhysicalRows p hg S F selector C₁ C₂ w
       (positiveSource (priorityLogWindow om a b ha hsom true) 1 (-theta))
       (positiveSource (priorityLogWindow om a b ha hsom false) 1 theta) Φ A₁ A₂ C R K d h s := by
   apply physical_family_congr_positive p hp hg S F selector C₁ C₂ w _ _ _ _ Φ A₁ A₂ C R K d h s hs hpos
   · intro y hy
-    rw [hleft,mul_div_cancel_left₀ y (ne_of_gt hX)]
+    pm_8936 hleft
     exact (actual_old_profile om a b ha hsom theta y hy).2.symm
   · intro y hy
-    rw [hright,mul_div_cancel_left₀ y (ne_of_gt hX)]
+    pm_8936 hright
     exact (actual_old_profile om a b ha hsom theta y hy).1.symm
 
 end SevenEighths.InverseMomentFirstOriginalProfile

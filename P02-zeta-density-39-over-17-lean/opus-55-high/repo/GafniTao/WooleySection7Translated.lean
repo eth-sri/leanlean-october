@@ -13,7 +13,6 @@ the exact factor `p^(a*i)` under `t ↦ p^a t`.
 -/
 
 open Finset Polynomial
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -33,26 +32,27 @@ def wooleySection7TranslatedDilatedPolynomial
     (p a : ℕ) (h : ℤ) (phi : Polynomial ℤ) : Polynomial ℤ :=
   (taylor h phi).comp (C ((p : ℤ) ^ a) * X) - C (phi.eval h)
 
-theorem wooleySection7TranslatedDilatedPolynomial_eval
-    (p a : ℕ) (h y : ℤ) (phi : Polynomial ℤ) :
+section
+variable (p a : ℕ)
+include p a
+theorem wooleySection7TranslatedDilatedPolynomial_eval (h y : ℤ) (phi : Polynomial ℤ) :
     (wooleySection7TranslatedDilatedPolynomial p a h phi).eval y =
       phi.eval ((p : ℤ) ^ a * y + h) - phi.eval h := by
   simp [wooleySection7TranslatedDilatedPolynomial, taylor_eval]
 
-theorem wooleySection7TranslatedDilatedPolynomial_eq_comp
-    (p a : ℕ) (h : ℤ) (phi : Polynomial ℤ) :
+theorem wooleySection7TranslatedDilatedPolynomial_eq_comp (h : ℤ) (phi : Polynomial ℤ) :
     wooleySection7TranslatedDilatedPolynomial p a h phi =
       (wooleyTaylorDifference h phi).comp (C ((p : ℤ) ^ a) * X) := by
   simp [wooleySection7TranslatedDilatedPolynomial,
     wooleyTaylorDifference]
 
-theorem wooleySection7TranslatedDilatedPolynomial_coeff_zero
-    (p a : ℕ) (h : ℤ) (phi : Polynomial ℤ) :
+theorem wooleySection7TranslatedDilatedPolynomial_coeff_zero (h : ℤ) (phi : Polynomial ℤ) :
     (wooleySection7TranslatedDilatedPolynomial p a h phi).coeff 0 = 0 := by
   unfold wooleySection7TranslatedDilatedPolynomial
   rw [coeff_sub, comp_C_mul_X_coeff, coeff_C, pow_zero, mul_one,
     taylor_coeff]
   simp
+end
 
 /-- Exact coefficient scaling under the substitution in (7.9). -/
 theorem wooleySection7TranslatedDilatedPolynomial_coeff_succ

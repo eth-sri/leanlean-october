@@ -4,16 +4,14 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSevenCount
 public import LaterPairs.Native.RobertSargosTaylorSystem
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
+public section
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
                                                                 
                                                                        
 
-noncomputable section
 namespace TaoTrudgianYang2025
 
 theorem robertSargosTaylorQuadratic_eq (r q h n : ℝ) :
@@ -28,15 +26,14 @@ theorem robertSargos_taylor_remainder_le {R H r h : ℝ}
     |r*h^2+r^2*h| ≤ 6*R*H^2 := by
   have hr2 : r^2 ≤ R^2 := by
     have ht := sq_le_sq₀ (abs_nonneg r) hR |>.mpr hr
-    simpa only [sq_abs] using ht
+    simp_all
   have hh2 : h^2 ≤ (2*H)^2 := by
     have ht := sq_le_sq₀ (abs_nonneg h) (by positivity : 0 ≤ 2*H) |>.mpr hh
-    simpa only [sq_abs] using ht
+    simp_all
   have hR2 : R^2 ≤ R*H := by nlinarith [mul_nonneg hR (sub_nonneg.mpr hRH)]
   calc
     _ ≤ |r*h^2|+|r^2*h| := abs_add_le _ _
-    _ = |r| * h^2+r^2*|h| := by
-      rw [abs_mul,abs_mul,abs_of_nonneg (sq_nonneg h),abs_of_nonneg (sq_nonneg r)]
+    _ = |r| * h^2+r^2*|h| := by simp_all
     _ ≤ R*(2*H)^2+R^2*(2*H) :=
       add_le_add (mul_le_mul hr hh2 (sq_nonneg h) hR)
         (mul_le_mul hr2 hh (abs_nonneg h) (sq_nonneg R))
@@ -97,7 +94,7 @@ theorem RobertSargosTaylorSystem.to_counting {R H Q N E δ : ℝ}
     RobertSargosSevenSystem R H Q N δ (robertSargosReverseR p) := by
   refine ⟨neg_ne_zero.mpr h.r_ne_zero,?_,h.q₁_support,h.q₂_support,
     h.h₁_support,h.h₂_support,h.n₁_support,h.n₂_support,h.same_sign,?_,?_⟩
-  · simpa only [robertSargosReverseR,Int.cast_neg,abs_neg] using h.r_bound
+  pm_504 robertSargosReverseR Int.cast_neg abs_neg h.r_bound
   · change (-p.r)*p.n₁+p.h₁*p.q₁ = (-p.r)*p.n₂+p.h₂*p.q₂
     linarith only [h.linear]
   · simpa only [robertSargosReverseR,Int.cast_neg] using
@@ -110,13 +107,11 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
       1 ≤ R → 1 ≤ H → 1 ≤ Q → 1 ≤ N → 0 ≤ E → R ≤ H/2 →
       (∀ p ∈ S, RobertSargosTaylorSystem R H Q N E p) →
       (S.card:ℝ) ≤ C*(R*N*H*Q)^(1+ε)*(1+(E+12*R*H^2)/(H*Q)) := by
-  obtain ⟨C,hC,hcount⟩ := exists_robertSargos_seven_count ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hcount exists_robertSargos_seven_count ε hε
   intro S R H Q N E hR hH hQ hN hE hRH hS
-  have hHp : 0 < H := by linarith
-  have hQp : 0 < Q := by linarith
+  pm_2549
   let δ := (E+12*R*H^2)/(H*Q^2)
-  have hδ : 0 ≤ δ := by dsimp [δ]; positivity
+  pm_61 hδ δ
   have hscale : E+12*R*H^2 = δ*H*Q^2 := by
     dsimp [δ]
     field_simp
@@ -124,8 +119,7 @@ theorem exists_robertSargos_taylor_count (ε : ℝ) (hε : 0 < ε) :
     Finset.card_image_of_injective S robertSargos_reverseR_injective
   have ht := hcount (S.image robertSargosReverseR) R H Q N δ hR hH hQ hN hδ hRH
     (by
-      intro p hp
-      obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
+      pm_2551
       exact (hS q hq).to_counting (by linarith) hHp.le (by linarith) hscale.le)
   have hfactor : 1+δ*Q = 1+(E+12*R*H^2)/(H*Q) := by
     dsimp [δ]

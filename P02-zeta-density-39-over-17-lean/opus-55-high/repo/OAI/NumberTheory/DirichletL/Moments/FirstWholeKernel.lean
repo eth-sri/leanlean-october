@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstFrequency
 public import OAI.NumberTheory.DirichletL.Moments.Scale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -62,25 +63,16 @@ theorem dilated_frequency_whole_kernel {ι : Type*} [Fintype ι]
   rw [harg]
   simp only [windows,Real.sqrt_sq haN.le,Real.sqrt_sq hbN.le,
     Complex.star_def,map_div₀,Complex.conj_ofReal]
-  have hA : (Real.sqrt A₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
-  have hB : (Real.sqrt B₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
+  pm_3642 hA A₀ hA₀
+  pm_3642 hB B₀ hB₀
   have hr : (‖eisEmbedding (finitePrimeModulus P)‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hrN.ne'
-  have ha' : (‖eisEmbedding a‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr haN.ne'
-  have hb' : (‖eisEmbedding b‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hbN.ne'
+  pm_6547 ha' a haN.ne'
+  pm_6547 hb' b hbN.ne'
   have alg (c r a b A B x y u v : ℂ) (hr : r≠0) (ha : a≠0) (hb : b≠0)
       (hA : A≠0) (hB : B≠0) :
       (c/r*x*(u/a*(v/b)))*y=c/(r*A*B)*x*(u*v)*((A*B/(a*b))*y) := by
     field_simp
-  convert alg ((k:ℂ)*canonicalNormalizedGauss P hcop hg j)
-    (‖eisEmbedding (finitePrimeModulus P)‖:ℂ) (‖eisEmbedding a‖:ℂ) (‖eisEmbedding b‖:ℂ)
-    (Real.sqrt A₀:ℂ) (Real.sqrt B₀:ℂ)
-    (star (finiteSexticRow P hg j h)*originalPhase e (finitePrimeModulus P) (finiteSexticRow P hg j) a b)
-    (windows V (k/‖eisEmbedding (finitePrimeModulus P)‖^2) (‖eisEmbedding h‖^2)
-      (‖eisEmbedding a‖^2) (‖eisEmbedding b‖^2) K₀ H₀ A₀ B₀*
-      paperRadialFourier W ((k/‖eisEmbedding (finitePrimeModulus P)‖^2)*‖eisEmbedding h‖^2/
-        (‖eisEmbedding a‖^2*‖eisEmbedding b‖^2)))
-    (gaussRow a ha h) (star (gaussRow b hb (-h))) hr ha' hb' hA hB using 1 <;>
-    simp only [windows,Complex.star_def] <;> ring
+  grind
 
 end SevenEighths.CenteredMomentFirstWholeKernel
 

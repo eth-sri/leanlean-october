@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Energy.State
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainFiberSource
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFixedIdeal
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -66,36 +67,38 @@ def detectorProfiles (reverse:Bool)(j k:ℕ)(σ t:ℝ):Profiles (1/4) (9/4) wher
 theorem radialMajorant_support_bound:
     ∃bΦ:ℝ,0<bΦ ∧ Function.support (radialMajorant:ℝ→ℂ)⊆Set.Iic bΦ:=by
   obtain ⟨b,hb⟩:=radialMajorant_compact.isCompact.bddAbove
-  refine ⟨max 1 b,lt_of_lt_of_le zero_lt_one (le_max_left _ _),?_⟩
+  pm_7681 b
   intro x hx
   exact (hb (subset_tsupport _ hx)).trans (le_max_right _ _)
 
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
-theorem source_label_modulus_eventually (F:ProbeFinalAssembly.SourceData D)
-    (η:Character)(δ:ℝ)(hδ:0<δ):
+section
+variable (F:ProbeFinalAssembly.SourceData D) (η:Character)
+include F η
+theorem source_label_modulus_eventually(δ:ℝ)(hδ:0<δ):
     ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀label:Sum Bool (RayQuotient.Characters F.modulus ⊤),∀d:ℝ,(1/200:ℝ)≤d→
       ((sourceMomentBase F.modulus ⊤ le_top F.S F.exclusions.prime η label).modulus.absNorm:ℝ)
-        ≤(Z^d)^δ:=by
+        ≤(Z ^d)^δ:=by
   have hc:∀ᶠZ:ℝ in atTop,∀label:Sum Bool (RayQuotient.Characters F.modulus ⊤),
       ((sourceMomentBase F.modulus ⊤ le_top F.S F.exclusions.prime η label).modulus.absNorm:ℝ)
-        ≤Z^((1/200)*δ):=by
+        ≤Z ^((1/200)*δ):=by
     apply Filter.eventually_all.mpr
     intro label
     exact (tendsto_rpow_atTop (mul_pos (by norm_num) hδ)).eventually (eventually_ge_atTop _)
-  filter_upwards [hc,eventually_gt_atTop (1:ℝ)] with Z hz hZ
+  pm_550 hc eventually_gt_atTop hz hZ
   refine ⟨hZ,?_⟩
   intro label d hd
   apply (hz label).trans
   rw [←Real.rpow_mul (zero_lt_one.trans hZ).le]
   exact Real.rpow_le_rpow_of_exponent_le hZ.le (mul_le_mul_of_nonneg_right hd hδ.le)
 
-lemma source_keep_iff (F:ProbeFinalAssembly.SourceData D)(η:Character)(u:FreeRow):
+lemma source_keep_iff(u:FreeRow):
     initialKeep η (internalQ (sourceFixedIdeal F) η) u.val↔¬sourceExceptional F η u:=by
   exact and_iff_right u.property.1
 
-lemma source_fixed_gates (F:ProbeFinalAssembly.SourceData D)(η:Character):
+lemma source_fixed_gates:
     internalQ (sourceFixedIdeal F) η≠0 ∧
     internalQ (sourceFixedIdeal F) η≤F.modulus ∧
     internalQ (sourceFixedIdeal F) η≤η.modulus ∧
@@ -103,6 +106,7 @@ lemma source_fixed_gates (F:ProbeFinalAssembly.SourceData D)(η:Character):
   ⟨internalQ_ne_zero _ (sourceFixedIdeal_ne_zero F) η,
     inf_le_left.trans (sourceFixedIdeal_le_modulus F),inf_le_right,
     inf_le_left.trans (sourceFixedIdeal_le_72 F)⟩
+end
 
 end SevenEighths.CenteredMomentDetectorEnergyInitialState
 

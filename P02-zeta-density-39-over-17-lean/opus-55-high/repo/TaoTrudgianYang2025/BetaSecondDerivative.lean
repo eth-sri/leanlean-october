@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BetaUniformity
 public import GuthMaynard.SecondOrderMeanValue
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,11 +25,10 @@ theorem modelPhaseCurvatureLower_pos {σ : ℝ} (hσ : 0 < σ) :
   unfold modelPhaseCurvatureLower
   positivity
 
-theorem approximateModelPhase_curvature_bounds {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {u : ℝ} (hu : u ∈ phaseInterval) :
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) {u : ℝ}
+include σ δ F hσ hδ hF u
+theorem approximateModelPhase_curvature_bounds (hu : u ∈ phaseInterval) :
     modelPhaseCurvatureLower σ ≤ -iteratedDerivWithin 2 F phaseInterval u ∧
       -iteratedDerivWithin 2 F phaseInterval u ≤ σ+1 := by
   have he := hF.2 1 le_rfl ⟨u,hu⟩
@@ -40,16 +40,11 @@ theorem approximateModelPhase_curvature_bounds {σ δ : ℝ} {F : ℝ → ℝ}
     Real.rpow_le_rpow_of_nonpos huPos hu.2 (by linarith)
   have hhigh : u^(-σ-1) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos hu.1 (by linarith)
-  have hd₀ := hδ.trans (min_le_left _ _)
-  have hd₁ := hδ.trans (min_le_right _ _)
+  pm_1650
   unfold modelPhaseCurvatureLower at hd₀ ⊢
   constructor <;> nlinarith
 
-theorem approximateModelPhase_curvature_deriv_bounds {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
+theorem approximateModelPhase_curvature_deriv_bounds (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseCurvatureLower σ ≤ -deriv (deriv F) u ∧
       -deriv (deriv F) u ≤ σ+1 := by
   have huClosed : u ∈ phaseInterval := ⟨hu.1.le,hu.2.le⟩
@@ -58,5 +53,6 @@ theorem approximateModelPhase_curvature_deriv_bounds {σ δ : ℝ} {F : ℝ → 
   have h := approximateModelPhase_curvature_bounds hσ hδ hF huClosed
   rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hcont huClosed] at h
   simpa only [iteratedDeriv_succ, iteratedDeriv_zero] using h
+end
 
 end TaoTrudgianYang2025

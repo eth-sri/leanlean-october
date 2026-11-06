@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.DetectorInverseRawField
 public import OAI.NumberTheory.DirichletL.Detector.DetectorInverseMarkedField
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,7 @@ local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite
 
 private lemma raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
     (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by
-  intro X D hX hD hcap rows hrows
-  apply (h X D hX hD hcap rows hrows).trans
+  pm_5370 X D hX hD hcap
   gcongr
 
 theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
@@ -31,7 +31,7 @@ theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
     1<Z ∧ ∀d:ℝ,(1/200:ℝ)≤d →
     ∀(a ε tstar T allowance:ℝ)(i:ℕ)
       (B:Batch M H (Sum Bool (RayQuotient.Characters M H)) (Fin D.N)
-        (Z^d) a ε tstar T allowance i),
+        (Z ^d) a ε tstar T allowance i),
       B.data=sourceMomentData M H hH S.S S.exclusions.prime η →
       B.profile=(fun _ x=>(S.w x:ℂ)) → B.upper=(fun _=>2) →
       B.widths=(fun s=>D.ell s/d) → (∀s,(B.external s).re=17/50) →
@@ -49,8 +49,8 @@ theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
       ∀n:ℕ,n≤2 → ∀s∈Set.Icc (0:ℝ) 1,∀t∈Set.Icc (-height) height,
         (∑u∈F.rows,‖polynomial (F.family u F.label) true
           ((HeckeDetectorRowwisePolynomial.logProfile^[n]) F.inverseProfile)
-          ((Z^d)^F.r) s t*F.physicalProduct selected u‖^2)≤
-          (C*(1+height)^J)*(Z^d)^(1+D.t)) := by
+          ((Z ^d)^F.r) s t*F.physicalProduct selected u‖^2)≤
+          (C*(1+height)^J)*(Z ^d)^(1+D.t)) := by
   obtain ⟨Jr,hr⟩ := ProbeDetectorInverseRawField.source_batch_inverse_raw
     M H hH S.S S.exclusions.prime D.t counts
   obtain ⟨Jm,hm⟩ := ProbeDetectorInverseMarkedField.source_batch_inverse_marked M H hH S
@@ -59,24 +59,15 @@ theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
   obtain ⟨Cr,hCr,hr⟩ := hr η
   obtain ⟨Cm,hCm,hm⟩ := hm η
   refine ⟨Cr+Cm,add_pos hCr hCm,?_⟩
-  filter_upwards [hm] with Z hZ
-  refine ⟨hZ.1,?_⟩
+  pm_168 hm
   intro d hd a ε tstar T allowance i B hdata hprofile hupper hwidths hex
     bin label left right hne height hheight F
-  have hU:0<Z^d := Real.rpow_pos_of_pos (zero_lt_one.trans hZ.1) _
+  have hU:0<Z ^d := Real.rpow_pos_of_pos (zero_lt_one.trans hZ.1) _
   have hscale:1≤1+height := by linarith
   have hraw:Cr*(1+height)^Jr≤(Cr+Cm)*(1+height)^(Jr+Jm) := by
-    apply mul_le_mul
-    · linarith
-    · exact pow_le_pow_right₀ hscale (Nat.le_add_right _ _)
-    · positivity
-    · positivity
+    pm_7429 Nat.le_add_right
   have hmarked:Cm*(1+height)^Jm≤(Cr+Cm)*(1+height)^(Jr+Jm) := by
-    apply mul_le_mul
-    · linarith
-    · exact pow_le_pow_right₀ hscale (Nat.le_add_left _ _)
-    · positivity
-    · positivity
+    pm_7429 Nat.le_add_left
   constructor
   · intro n hn s hs t ht
     have hh:=hr hU B hdata bin label left right hne height hheight n hn s hs t ht

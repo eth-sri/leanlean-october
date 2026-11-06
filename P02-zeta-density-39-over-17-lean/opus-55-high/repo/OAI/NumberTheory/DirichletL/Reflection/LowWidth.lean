@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.PoolArithmetic
 public import OAI.NumberTheory.DirichletL.Inversion.TerminalWidths
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,8 +13,10 @@ open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTermina
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma nonresidual_prime_product_square_dvd {ι : Type*} [Fintype ι]
-    (I Q : Ideal Eis) (hI : I≠0) (P : ι→Ideal Eis) [∀ i,(P i).IsMaximal]
+section
+variable {ι : Type*} [Fintype ι] (I Q : Ideal Eis) (hI : I≠0)
+include ι I Q hI
+lemma nonresidual_prime_product_square_dvd (P : ι→ Ideal Eis) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i,P i∣I*Q) (hres : ∀ i,¬P i∣rowResidualPart I Q) :
     (∏ i,P i)^2∣rowPowerfulPart I*Q^2 := by
@@ -26,8 +29,7 @@ lemma nonresidual_prime_product_square_dvd {ι : Type*} [Fintype ι]
       (mul_dvd_mul_left _ (pow_dvd_pow_of_dvd (rowMaskPart_dvd I Q) 2))
   · exact dvd_mul_of_dvd_right (pow_dvd_pow_of_dvd ((hp.dvd_mul.mp (hpool i)).resolve_left hi) 2) _
 
-lemma nonresidual_prime_product_width {ι : Type*} [Fintype ι]
-    (I Q : Ideal Eis) (hI : I≠0) (hQ : Q≠0) (P : ι→Ideal Eis) [∀ i,(P i).IsMaximal]
+lemma nonresidual_prime_product_width (hQ : Q≠0) (P : ι→ Ideal Eis) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i,P i∣I*Q) (hres : ∀ i,¬P i∣rowResidualPart I Q)
     (Z : ℝ) (hZ : 1<Z) :
@@ -38,11 +40,12 @@ lemma nonresidual_prime_product_width {ι : Type*} [Fintype ι]
     (Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (P i)))
   have hpn := actual_ideal_norm_pos _ (rowPowerfulPart_ne_zero I)
   have hqn := actual_ideal_norm_pos Q hQ
-  simp only [map_pow,map_mul,Nat.cast_pow,Nat.cast_mul] at hn
+  pm_423 map_pow map_mul Nat.cast_pow Nat.cast_mul hn
   have hh := Real.logb_le_logb_of_le hZ (sq_pos_of_pos hp) hn
   rw [Real.logb_pow,Real.logb_mul hpn.ne' (pow_ne_zero 2 hqn.ne'),Real.logb_pow] at hh
   norm_num at hh
   simpa only [normWidth,map_prod,Nat.cast_prod] using hh
+end
 
 lemma original_optional_powerful_width (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I) (hmask : rowMaskPart J Q=rowMaskPart I Q)
@@ -55,7 +58,7 @@ lemma original_optional_powerful_width (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI
     (fun b => FreeReflection.pool_nonresidual I Q Q₀
       (CanonicalRowCompletion.nonresidualPoolEquiv J I Q Q₀ hJ hI hQ hpower hmask b.val)) Z hZ
 lemma frozenExtracted_width_le {ι : Type*} [Fintype ι] (G : PrimeFamily ι)
-    (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) (Z : ℝ) (hZ : 1<Z) :
+    (j : ι→ℕ) (e : ι→ Fin 3) (v : Fin 3) (Z : ℝ) (hZ : 1<Z) :
     normWidth Z (frozenExtracted G j e v)≤normWidth Z (∏ i,G.ideal i) := by
   have hd : reflectionExtractedDivisor G.ideal j e v∣∏ i,G.ideal i := by
     apply Finset.prod_dvd_prod_of_dvd

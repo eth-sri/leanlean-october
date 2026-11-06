@@ -1,7 +1,7 @@
 module
 public import GafniTao.WooleySourceRefinement
 
-@[expose] public section
+public section
 
 /-!
 # Expansion of the conditioned mean in Wooley equation (7.20)
@@ -12,11 +12,9 @@ normalization, and twisting commutes exactly with restriction.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
     {k r q qPrime qH R : ℕ}
@@ -65,7 +63,7 @@ theorem wooleySourcePolynomialConditionedMean_polynomialTwist_expand
     wooleySourcePolynomialMean
   rw [hmassTwist, ite_eq_right hleft]
   simp_rw [hresidue, hsum]
-  rw [← mul_assoc, mul_inv_cancel₀ hleft, one_mul]
+  grind
 
 /-- Exact equation (7.20) before the lower-degree loss factor is inserted.
 The right side is a literal finite sum of the inserted averages attached to
@@ -131,11 +129,7 @@ theorem wooley_equation_7_20_expansion
                   (wooleySourceResidueSequence left qH zeta)
                   (fun n => wooleySourcePolynomialPhase leftPhi alpha n))) *
             ‖wooleySourceNormalizedPolynomialSum
-                rightPhi right alpha‖ ^ (2 * S) := by
-      apply congrArg (fun x : ℝ => ((((q ^ k : ℕ) : ℝ))⁻¹) * x)
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      rw [hexpand alpha]
+                rightPhi right alpha‖ ^ (2 * S) := by grind
     _ = ∑ zeta : ZMod qH,
         wooleySourceResidueMassSq left qH zeta *
           (((((q ^ k : ℕ) : ℝ))⁻¹) *
@@ -153,6 +147,5 @@ theorem wooley_equation_7_20_expansion
       ring_nf
 
 
-end
 
 end GafniTao

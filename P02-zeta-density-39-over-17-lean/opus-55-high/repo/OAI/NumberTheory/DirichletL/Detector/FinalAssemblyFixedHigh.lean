@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyHigh
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyMomentInput
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,11 +21,11 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
     (hτ : 0<τ) (hτd : τ<(1/200:ℝ)/2) (hτcost : 4*τ<(1/200:ℝ)*D.cost)
     (hτt : τ<D.t) (hτ2 : 2*τ≤D.t) (hτeps : τ*(2+4*D.eps)<D.t) :
     ∃C : ℝ,0<C ∧ ∀η : Character,∃Ct : ℝ,0<Ct ∧ ∀ᶠZ : ℝ in atTop,
-      ∀C0 : ℝ,0≤C0 → SourceMomentBound F counts η Z τ (C0*Z^D.t) (Z^(2*τ)) →
+      ∀C0 : ℝ,0≤C0 → SourceMomentBound F counts η Z τ (C0*Z ^D.t) (Z ^(2*τ)) →
       ‖F.probe η Z-HeckeSignal.signal (η.excludePrimes F.S F.exclusions.prime)
         (sourceCorrection η F.S) (-11/16) Z‖≤
-        (Ct+C*C0*(η.modulus.absNorm:ℝ)^(2*D.eps))*Z^(HeckeZeroSupremum.beta-11/16-D.sigma) := by
-  let : NeZero (∏P∈F.S,P) := ⟨fixedPrimeProduct_ne_zero F.S F.exclusions.prime⟩
+        (Ct+C*C0*(η.modulus.absNorm:ℝ)^(2*D.eps))*Z ^(HeckeZeroSupremum.beta-11/16-D.sigma) := by
+  pm_465 P F.S F.exclusions.prime
   have ht := D.t_pos
   have ht1 := D.t_small
   have hconductor : (13/16:ℝ)+D.t+2*D.t≤7/8 := by linarith
@@ -48,8 +49,7 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
     D.sigma D.sigma_pos D.geometric_budget D.principal_budget D.window_budget D.floor_budget D.high_saving counts
   refine ⟨C,hC,?_⟩
   intro η
-  obtain ⟨Ct,hCt,hb⟩ := hbound η
-  refine ⟨Ct,hCt,?_⟩
+  pm_102 Ct hCt hb hbound η
   filter_upwards [hb,sourceDyad_geometry_eventually (1/200) (7/8) D.t (13/16+D.t)
     (by norm_num) (by norm_num) ht hconductor,
     HeckeDyadic.constant_absorbed_eventually (3*(n:ℝ)+1) τ hτ,
@@ -60,11 +60,11 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
   intro k hk i hi j hj
   dsimp only
   intro hne t htheight
-  let rows := supportedNonfloorRows F.S F.maximal (rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+D.t))) grid
+  let rows := supportedNonfloorRows F.S F.maximal (rowBand (Z ^(1/100:ℝ)) (Z ^((13/16:ℝ)+D.t))) grid
   let rows' := cubeBinRows (rows∩dyadicRows 1 k) idx grid i j
   have hsub : rows'⊆rows∩dyadicRows 1 k := Finset.filter_subset _ _
   have hsubr : rows'⊆rows := hsub.trans Finset.inter_subset_left
-  have hrows : ∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧ rowNorm u≤Z^(13/16+D.t) := by
+  have hrows : ∀u∈rows,u.val≠1 ∧ Z ^(1/100:ℝ)≤ rowNorm u ∧ rowNorm u≤Z ^(13/16+D.t) := by
     intro u hu
     have hh := mem_rowBand.mp ((mem_supportedNonfloorRows F.S F.maximal _ grid u).mp hu).1
     exact ⟨hh.1,hh.2.1,hh.2.2.le⟩
@@ -73,22 +73,22 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
   have huj : grid u=j := ((mem_cubeBinRows _ idx grid i j u).mp hu).2.2
   have hjne : j≠0 := huj ▸ ((mem_supportedNonfloorRows F.S F.maximal _ grid u).mp (hsubr hu)).2.2
   have ha : (51/100:ℝ)<51/100+D.e*j := by
-    have hjp : (0:ℝ)<j := by exact_mod_cast Nat.pos_of_ne_zero hjne
+    pm_8414 hjp j Nat.pos_of_ne_zero hjne
     nlinarith [D.e_pos]
   have ha' : (51/100:ℝ)+D.e*j≤1 := by simpa only [huj] using (hbins u).2.1
-  have hrow' : ∀v∈rows',v.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm v ∧
+  have hrow' : ∀v∈rows',v.val≠1 ∧ Z ^(1/100:ℝ)≤ rowNorm v ∧
       (calibrationForSet F.S F.maximal).residueMonoid v.val≠0 ∧
-      rowNorm v≤Z^(sourceDyadConductor Z D.t k-D.t) := by
+      rowNorm v≤Z ^(sourceDyadConductor Z D.t k-D.t) := by
     intro v hv
     exact ⟨(hrows v (hsubr hv)).1,(hrows v (hsubr hv)).2.1,
       ((mem_supportedNonfloorRows F.S F.maximal _ grid v).mp (hsubr hv)).2.1,hg.2.2.2.2.2 v (hsub hv)⟩
   have hi' : (i:ℝ)≤n := by exact_mod_cast Nat.le_of_lt_succ (Finset.mem_range.mp hi)
-  have hheight : (3*i+1:ℕ)*Z^τ≤Z^(2*τ) := by
+  have hheight : (3*i+1:ℕ)*Z ^τ≤Z ^(2*τ) := by
     have hZp : 0<Z := zero_lt_one.trans hZ
     calc
-      _≤(3*(n:ℝ)+1)*Z^τ := by push_cast;gcongr
-      _≤Z^τ*Z^τ := mul_le_mul_of_nonneg_right hnheight (by positivity)
-      _=Z^(2*τ) := by rw [←Real.rpow_add hZp];congr 1;ring
+      _≤(3*(n:ℝ)+1)*Z ^τ := by push_cast;gcongr
+      _≤Z ^τ*Z ^τ := mul_le_mul_of_nonneg_right hnheight (by positivity)
+      _=Z ^(2*τ) := by rw [←Real.rpow_add hZp];congr 1;ring
   apply hmom rows' (sourceDyadConductor Z D.t k) (51/100+D.e*j) hg.2.2.1 hg.2.2.2.1 ha ha' hrow' i
     ((17/50:ℂ)+t.1.2*Complex.I)
   · simp

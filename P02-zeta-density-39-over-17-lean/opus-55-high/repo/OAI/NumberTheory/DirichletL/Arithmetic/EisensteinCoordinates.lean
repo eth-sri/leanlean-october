@@ -179,12 +179,12 @@ public import Mathlib.NumberTheory.Chebyshev
 public import Mathlib.Analysis.Normed.Group.Tannery
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 public import Mathlib.Analysis.SpecialFunctions.Exp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
-open scoped BigOperators
 
 namespace ShortDraft
 
@@ -205,24 +205,21 @@ theorem eisenstein_norm_mul (x y : EisensteinCoordinates) :
 
 theorem eisenstein_norm_nonneg (x : EisensteinCoordinates) :
     0 ≤ eisensteinNorm x := by
-  rcases x with ⟨a, b⟩
-  dsimp [eisensteinNorm]
-  nlinarith [sq_nonneg (2 * a - b), sq_nonneg b]
+  pm_7814
+  pm_7236
 
 theorem eisenstein_norm_eq_zero_iff (x : EisensteinCoordinates) :
     eisensteinNorm x = 0 ↔ x = (0, 0) := by
-  rcases x with ⟨a, b⟩
-  dsimp [eisensteinNorm]
+  pm_7814
   constructor
   · intro h
     have hb : b = 0 := by
-      nlinarith [sq_nonneg (2 * a - b), sq_nonneg b]
+      pm_7236
     have ha : a = 0 := by
       subst b
-      nlinarith [sq_nonneg a]
-    simp [ha, hb]
-  · intro h
-    simp_all
+      simp_all
+    grind
+  grind
 
 private lemma square_le_two_squares {x y e : ℝ}
     (hx : 0 ≤ x) (hy : 0 ≤ y) (he : 0 ≤ e) (h : x ≤ y + e) :
@@ -233,8 +230,10 @@ private lemma square_le_two_squares {x y e : ℝ}
   have h₄ := sq_nonneg (y - e)
   nlinarith
 
-theorem finite_row_extraction {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (rows : Finset α) (primes : Finset β) (row : β → α)
+section
+variable {α β : Type*} [DecidableEq α] [DecidableEq β] (rows : Finset α) (primes : Finset β) (row : β → α)
+include α β rows primes row
+theorem finite_row_extraction
     (a : α → ℝ) (a₀ error bound : ℝ)
     (ha₀ : 0 ≤ a₀) (ha : ∀ u, 0 ≤ a u) (herror : 0 ≤ error)
     (hrows : primes.image row ⊆ rows)
@@ -246,12 +245,9 @@ theorem finite_row_extraction {α β : Type*} [DecidableEq α] [DecidableEq β]
   have hselected : (∑ p ∈ primes, (a (row p)) ^ 2) ≤ bound := by
     calc
       (∑ p ∈ primes, (a (row p)) ^ 2) =
-          ∑ u ∈ primes.image row, (a u) ^ 2 := by
-            rw [Finset.sum_image hinj]
+          ∑ u ∈ primes.image row, (a u) ^ 2 := by simp_all
       _ ≤ ∑ u ∈ rows, (a u) ^ 2 :=
-        Finset.sum_le_sum_of_subset_of_nonneg hrows (by
-          intro u _ _
-          positivity)
+        Finset.sum_le_sum_of_subset_of_nonneg hrows (by simp_all)
       _ ≤ bound := hmean
   have hpoint (p : β) (hp : p ∈ primes) :
       a₀ ^ 2 ≤ 2 * (a (row p)) ^ 2 + 2 * error ^ 2 :=
@@ -264,8 +260,7 @@ theorem finite_row_extraction {α β : Type*} [DecidableEq α] [DecidableEq β]
     Finset.sum_const, nsmul_eq_mul] at hsum
   nlinarith
 
-theorem complex_row_extraction {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (rows : Finset α) (primes : Finset β) (row : β → α)
+theorem complex_row_extraction
     (A : α → ℂ) (untwisted : α) (error bound : ℝ)
     (herror : 0 ≤ error)
     (hrows : primes.image row ⊆ rows)
@@ -279,10 +274,10 @@ theorem complex_row_extraction {α β : Type*} [DecidableEq α] [DecidableEq β]
     hrows hinj ?_ hmean
   intro p hp
   calc
-    ‖A untwisted‖ = ‖(A untwisted - A (row p)) + A (row p)‖ := by
-      rw [sub_add_cancel]
+    ‖A untwisted‖ = ‖(A untwisted - A (row p)) + A (row p)‖ := by simp_all
     _ ≤ ‖A untwisted - A (row p)‖ + ‖A (row p)‖ := norm_add_le _ _
-    _ ≤ ‖A (row p)‖ + error := by linarith [happrox p hp]
+    _ ≤ ‖A (row p)‖ + error := by grind
+end
 
 end ShortDraft
 
@@ -292,7 +287,10 @@ namespace ShortDraftLocal
 
 variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
 
-theorem gaussSum_mulShift_any (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+section
+variable (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+include χ ψ
+theorem gaussSum_mulShift_any
     (hχ : χ ≠ 1) (a : F) :
     gaussSum χ (ψ.mulShift a) = χ⁻¹ a * gaussSum χ ψ := by
   by_cases ha : a = 0
@@ -305,7 +303,7 @@ theorem gaussSum_mulShift_any (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   · have hu : IsUnit a := isUnit_iff_ne_zero.mpr ha
     simpa [hu.unit_spec] using gaussSum_mulShift_eq χ ψ hu.unit
 
-theorem gaussSum_eq_units_sum (χ : MulChar F ℂ) (ψ : AddChar F ℂ) :
+theorem gaussSum_eq_units_sum :
     gaussSum χ ψ = ∑ y : Fˣ, χ (y : F) * ψ (y : F) := by
   classical
   have hzero : χ (0 : F) * ψ (0 : F) = 0 := by simp
@@ -324,6 +322,7 @@ theorem gaussSum_eq_units_sum (χ : MulChar F ℂ) (ψ : AddChar F ℂ) :
         (fun x : {x : F // x ≠ 0} => χ x * ψ x) ?_).symm
       intro y
       rfl
+end
 
 theorem additive_unit_sum (ψ : AddChar F ℂ) (hψ : ψ ≠ 1) (a : F) :
     (∑ y : Fˣ, ψ (a * (y : F))) =
@@ -331,8 +330,7 @@ theorem additive_unit_sum (ψ : AddChar F ℂ) (hψ : ψ ≠ 1) (a : F) :
   classical
   have hgauss : (∑ y : Fˣ, ψ (a * (y : F))) =
       gaussSum (1 : MulChar F ℂ) (ψ.mulShift a) := by
-    rw [gaussSum_eq_units_sum]
-    simp only [MulChar.one_apply_coe, one_mul, AddChar.mulShift_apply]
+    pm_3514 gaussSum_eq_units_sum MulChar.one_apply_coe one_mul AddChar.mulShift_apply
   rw [hgauss]
   split_ifs with ha
   · subst a
@@ -344,7 +342,10 @@ theorem additive_unit_sum (ψ : AddChar F ℂ) (hψ : ψ ≠ 1) (a : F) :
       exact hψ ((AddChar.mulShift_unit_eq_one_iff ψ hu).mp heq)
     exact gaussSum_one_left hshift
 
-theorem sextic_fourth_mask (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+section
+variable (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+include χ ψ
+theorem sextic_fourth_mask
     (hχ : χ ^ 6 = 1) (hψ : ψ ≠ 1) (a : F) :
     (∑ h : Fˣ, ((χ⁻¹) ^ 4 * (χ⁻¹) ^ 2) h *
       ψ (a * ((h⁻¹ : Fˣ) : F))) =
@@ -364,7 +365,7 @@ theorem sextic_fourth_mask (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
           simp
     _ = _ := additive_unit_sum ψ hψ a
 
-theorem active_zero_local_row (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem active_zero_local_row
     (hχ₂ : χ ^ 2 ≠ 1) (ε x : F) :
     (∑ h : Fˣ, ((χ⁻¹) ^ 2) (h : F) *
       ψ ((ε * x) * ((h⁻¹ : Fˣ) : F))) =
@@ -387,20 +388,17 @@ theorem active_zero_local_row (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
       rw [map_mul]
       ring
 
-theorem nontrivial_fourier_coefficient (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem nontrivial_fourier_coefficient
     (hχ : χ ≠ 1) (h : F) :
     (∑ t : F, χ t * ψ (-(h * t))) =
       χ⁻¹ h * gaussSum χ (ψ.mulShift (-1)) := by
   calc
     (∑ t : F, χ t * ψ (-(h * t))) =
         gaussSum χ ((ψ.mulShift (-1)).mulShift h) := by
-          simp only [gaussSum, AddChar.mulShift_apply]
-          congr 1
-          funext t
-          congr 1
-          ring_nf
+          pm_7237
     _ = χ⁻¹ h * gaussSum χ (ψ.mulShift (-1)) :=
       gaussSum_mulShift_any χ (ψ.mulShift (-1)) hχ h
+end
 
 theorem trivial_fourier_coefficient (ψ : AddChar F ℂ)
     (hψ : ψ ≠ 1) (h : F) :
@@ -409,14 +407,9 @@ theorem trivial_fourier_coefficient (ψ : AddChar F ℂ)
   calc
     (∑ t : F, (1 : MulChar F ℂ) t * ψ (-(h * t))) =
         gaussSum (1 : MulChar F ℂ) (ψ.mulShift (-h)) := by
-          simp only [gaussSum, AddChar.mulShift_apply]
-          congr 1
-          funext t
-          congr 1
-          ring_nf
+          pm_7237
     _ = ∑ u : Fˣ, ψ ((-h) * (u : F)) := by
-      rw [gaussSum_eq_units_sum]
-      simp only [MulChar.one_apply_coe, one_mul, AddChar.mulShift_apply]
+      pm_3514 gaussSum_eq_units_sum MulChar.one_apply_coe one_mul AddChar.mulShift_apply
     _ = if h = 0 then (Fintype.card Fˣ : ℂ) else -1 := by
       simpa only [neg_eq_zero] using additive_unit_sum ψ hψ (-h)
 

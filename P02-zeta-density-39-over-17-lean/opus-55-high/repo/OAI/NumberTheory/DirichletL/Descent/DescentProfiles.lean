@@ -1,25 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
+public import OAI.NumberTheory.DirichletL.Poisson.PrincipalTruncation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
-noncomputable section
 
-lemma schwartz_logPhase_inversion (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
-    g x = ∫ t : ℝ, logPhase t x * (𝓕 g) t := by
-  convert schwartz_log_inversion g x using 1
-  apply integral_congr_ae
-  filter_upwards with t
-  congr 1
-  simp only [logPhase, Real.inner_apply]
-  congr 1
-  push_cast
-  ring
+alias schwartz_logPhase_inversion := OAI.JointLogSeparation.schwartz_phase_inversion
 
 theorem descent_profile_identity {ι : Type*} [Fintype ι]
     (g₁ g₂ W : 𝓢(ℝ, ℂ)) (V : ι → ℝ → ℂ) (a₁ a₂ ak : ι → ℝ)
@@ -36,9 +28,9 @@ theorem descent_profile_identity {ι : Type*} [Fintype ι]
             logPhase t₂ (a₂ i * y i) * logPhase t₃ (ak i * y i)) := by
   intro y
   let P : ℂ := ∏ i, V i (y i)
-  let x₁ : ℝ := ∑ i, a₁ i * y i
-  let x₂ : ℝ := ∑ i, a₂ i * y i
-  let xk : ℝ := ∑ i, ak i * y i
+  pm_6816 x₁ a₁
+  pm_6816 x₂ a₂
+  pm_6816 xk ak
   have hphase (t : ℝ) (a : ι → ℝ) :
       (∏ i, logPhase t (a i * y i)) = logPhase t (∑ i, a i * y i) :=
     (logPhase_sum Finset.univ t (fun i => a i * y i)).symm
@@ -49,7 +41,7 @@ theorem descent_profile_identity {ι : Type*} [Fintype ι]
       (∏ i, V i (y i) * logPhase t₁ (a₁ i * y i) *
         logPhase t₂ (a₂ i * y i) * logPhase t₃ (ak i * y i)) =
       P * logPhase t₁ x₁ * logPhase t₂ x₂ * logPhase t₃ xk := by
-    simp only [Finset.prod_mul_distrib, hphase, P, x₁, x₂, xk]
+    pm_316 Finset.prod_mul_distrib hphase P x₁ x₂ xk
   simp only [hprod, tripleCoefficient]
   have hinner (t₁ t₂ : ℝ) :
       (∫ t₃ : ℝ, (𝓕 g₁) t₁ * ((𝓕 g₂) t₂ * b t₃) *
@@ -75,7 +67,10 @@ theorem descent_profile_identity {ι : Type*} [Fintype ι]
   dsimp only [P, x₁, x₂, xk]
   ring
 
-theorem tripleCoefficient_weighted_integrable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+section
+variable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ)
+include b₁ b₂ b₃ J
+theorem tripleCoefficient_weighted_integrable :
     Integrable (fun t : Frequency =>
       ((1 + ‖t.1‖)^J * (1 + ‖t.2.1‖)^J * (1 + ‖t.2.2‖)^J) *
         ‖tripleCoefficient b₁ b₂ b₃ t‖) := by
@@ -87,7 +82,7 @@ theorem tripleCoefficient_weighted_integrable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) 
   simp only [tripleCoefficient, norm_mul]
   ring
 
-theorem tripleCoefficient_weighted_integral (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem tripleCoefficient_weighted_integral :
     (∫ t : Frequency,
       ((1 + ‖t.1‖)^J * (1 + ‖t.2.1‖)^J * (1 + ‖t.2.2‖)^J) *
         ‖tripleCoefficient b₁ b₂ b₃ t‖) =
@@ -109,8 +104,8 @@ theorem tripleCoefficient_weighted_integral (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J
   rw [MeasureTheory.integral_prod_mul
     (fun t : ℝ => (1 + ‖t‖)^J * ‖b₂ t‖) (fun t : ℝ => (1 + ‖t‖)^J * ‖b₃ t‖)]
   ring
-
 end
+
 end SevenEighths.InverseMoment
 
 end OAI

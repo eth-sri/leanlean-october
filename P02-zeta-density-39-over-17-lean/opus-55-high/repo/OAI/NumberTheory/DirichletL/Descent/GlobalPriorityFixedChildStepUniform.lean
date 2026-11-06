@@ -4,12 +4,11 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredStepUnif
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredStep
 public import OAI.NumberTheory.DirichletL.Descent.ClippedChild
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
@@ -203,6 +202,5 @@ theorem global_priority_fixed_child_step_uniform_types
   convert hnew using 1 ; ring
 end SevenEighths.InverseMoment
 
-end
 
 end OAI

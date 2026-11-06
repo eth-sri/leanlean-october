@@ -8,6 +8,7 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.QuadraticDivisorBand
 public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,23 +36,23 @@ theorem contDiff_zetaBandCutoff (a b c d : ℝ) : ContDiff ℝ ∞ (zetaBandCuto
   (Real.smoothTransition.contDiff.comp (by fun_prop)).mul
     (Real.smoothTransition.contDiff.comp (by fun_prop))
 
-theorem zetaBandCutoff_eq_one {a b c d x : ℝ} (hab : a < b) (hcd : c < d)
+section
+variable {a b c d x : ℝ}
+include a b c d x
+theorem zetaBandCutoff_eq_one (hab : a < b) (hcd : c < d)
     (hbx : b ≤ x) (hxc : x ≤ c) : zetaBandCutoff a b c d x = 1 := by
   unfold zetaBandCutoff
   rw [Real.smoothTransition.one_of_one_le ((le_div_iff₀ (sub_pos.mpr hab)).mpr (by linarith)),
     Real.smoothTransition.one_of_one_le ((le_div_iff₀ (sub_pos.mpr hcd)).mpr (by linarith)), one_mul]
 
-theorem zetaBandCutoff_eq_zero_left {a b c d x : ℝ} (hab : a < b)
+theorem zetaBandCutoff_eq_zero_left (hab : a < b)
     (hxa : x ≤ a) : zetaBandCutoff a b c d x = 0 := by
-  unfold zetaBandCutoff
-  rw [Real.smoothTransition.zero_of_nonpos
-    (div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hxa) (sub_pos.mpr hab).le), zero_mul]
+  pm_8655 hxa hab zero_mul
 
-theorem zetaBandCutoff_eq_zero_right {a b c d x : ℝ} (hcd : c < d)
+theorem zetaBandCutoff_eq_zero_right (hcd : c < d)
     (hdx : d ≤ x) : zetaBandCutoff a b c d x = 0 := by
-  unfold zetaBandCutoff
-  rw [Real.smoothTransition.zero_of_nonpos
-    (div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hdx) (sub_pos.mpr hcd).le), mul_zero]
+  pm_8655 hdx hcd mul_zero
+end
 
 theorem support_zetaBandCutoff {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
     Function.support (zetaBandCutoff a b c d) ⊆ Icc a d := by
@@ -78,18 +79,20 @@ theorem zetaDivisorBandEdge_strictMono {T G : ℝ} (hT : 0 < T) (hG : 0 < G) :
   exact mul_lt_mul_of_pos_left (Real.exp_lt_exp.mpr ((div_lt_div_iff_of_pos_right hG).mpr hvw))
     (by positivity)
 
-theorem zetaDivisorBandCutoff_eq_one {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
-    (hL : 0 < L) {n : ℕ} (hn : n ∈ zetaQuadraticDivisorBand T G L) :
+section
+variable {T G L : ℝ} (hT : 0 < T) (hG : 0 < G) (hL : 0 < L)
+include T G L hT hG hL
+theorem zetaDivisorBandCutoff_eq_one {n : ℕ} (hn : n ∈ zetaQuadraticDivisorBand T G L) :
     zetaDivisorBandCutoff T G L n = 1 := by
   have hm := zetaDivisorBandEdge_strictMono hT hG
   have hb := zetaQuadraticDivisorBand_index_bounds hT hG hn
   exact zetaBandCutoff_eq_one (hm (by linarith)) (hm (by linarith)) hb.1 hb.2
 
-theorem support_zetaDivisorBandCutoff {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
-    (hL : 0 < L) : Function.support (zetaDivisorBandCutoff T G L) ⊆
+theorem support_zetaDivisorBandCutoff : Function.support (zetaDivisorBandCutoff T G L) ⊆
       Icc (zetaDivisorBandEdge T G (-2 * L)) (zetaDivisorBandEdge T G (2 * L)) := by
   have hm := zetaDivisorBandEdge_strictMono hT hG
   exact support_zetaBandCutoff (hm (by linarith)) (hm (by linarith))
+end
 
 theorem contDiff_zetaDivisorBandCutoff (T G L : ℝ) :
     ContDiff ℝ ∞ (zetaDivisorBandCutoff T G L) := contDiff_zetaBandCutoff _ _ _ _

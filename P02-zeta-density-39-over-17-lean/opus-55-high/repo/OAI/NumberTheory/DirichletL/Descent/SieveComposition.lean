@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Fibers
 public import Mathlib.Algebra.BigOperators.Group.Finset.Sigma
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,14 +18,14 @@ theorem bounded_finset_coefficient_sum_sq {C : Type*} (s : Finset C)
   classical
   have h := finite_expansion_energy ({()} : Finset Unit) s
     (fun _ => s) (fun _ => b) (fun _ => f) (s.card : ℝ)
-    (by simp) (by simpa using hb) (by simp)
-  simpa using h
+    (by simp) (by grind) (by simp)
+  simp_all
 
 theorem bounded_coefficient_sum_sq {C : Type*} [Fintype C]
     (b f : C → ℂ) (hb : ∀ c, ‖b c‖ ≤ 1) :
     ‖∑ c, b c * f c‖ ^ 2 ≤ (Fintype.card C : ℝ) * ∑ c, ‖f c‖ ^ 2 := by
   classical
-  simpa using bounded_finset_coefficient_sum_sq Finset.univ b f (by simpa using hb)
+  simpa using bounded_finset_coefficient_sum_sq Finset.univ b f (by grind)
 
 theorem positive_triple_enlarge {M H C : Type*}
     [DecidableEq M] [DecidableEq H] [DecidableEq C]
@@ -43,8 +44,7 @@ theorem positive_triple_enlarge {M H C : Type*}
       rfl
     exact hi.injective
   have hmapped : ((pairs.sigma (fun p => cset p.1)).image f) ⊆ hs ×ˢ mc := by
-    intro u hu
-    obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hu
+    pm_136 u hu p hp Finset.mem_image.mp
     have hp' := Finset.mem_sigma.mp hp
     exact Finset.mem_product.mpr ⟨hh p.1 hp'.1, hm p.1 hp'.1 p.2 hp'.2⟩
   have hb := Finset.sum_le_sum_of_injOn f hf.injOn hmapped
@@ -71,9 +71,7 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
     intro y hy
     dsimp only [f]
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro x hx
-    rw [(Finset.mem_filter.mp hx).2]
+    pm_275 Finset.sum_congr x hx Finset.mem_filter.mp
   have hf := finite_expansion_energy target source
     (fun y => source.filter (fun x => φ x = y)) (fun _ _ => 1) (fun _ => a) D
     (fun _ _ => Finset.filter_subset _ _) (by simp) hfiber
@@ -84,8 +82,7 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
       apply Finset.sum_congr rfl
       intro x hx
       simp [hx, hφ x hx]
-    rw [hrhs] at hf
-    simpa only [one_mul, f] using hf
+    pm_354 hrhs hf one_mul f
   simp_rw [he]
   exact (hsieve f).trans (by
     calc

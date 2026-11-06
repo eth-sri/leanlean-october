@@ -1,10 +1,10 @@
 module
 public import FiniteAmplifier
 public import CenteredMixedTrace
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory InnerProductSpace Set
 open scoped InnerProductSpace ComplexOrder
@@ -16,24 +16,32 @@ variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 def finiteMatrixOperator (A : Matrix ι ι ℂ) : EuclideanSpace ℂ ι →L[ℂ] EuclideanSpace ℂ ι :=
   (Matrix.toEuclideanLin A).toContinuousLinearMap
 
-theorem finite_matrix_operator_apply (A : Matrix ι ι ℂ) (z : EuclideanSpace ℂ ι) (i : ι) :
+section
+variable (A : Matrix ι ι ℂ)
+include A
+theorem finite_matrix_operator_apply (z : EuclideanSpace ℂ ι) (i : ι) :
     finiteMatrixOperator A z i = ∑ j, A i j*z j := rfl
 
-theorem finite_matrix_operator_basis (A : Matrix ι ι ℂ) (i j : ι) :
+theorem finite_matrix_operator_basis (i j : ι) :
     finiteMatrixOperator A (EuclideanSpace.basisFun ι ℂ j) i = A i j := by
   simp [finite_matrix_operator_apply,EuclideanSpace.basisFun_apply,PiLp.single_apply]
+end
 
-theorem finite_matrix_operator_mul (A B : Matrix ι ι ℂ) :
+section
+variable (A B : Matrix ι ι ℂ)
+include A B
+theorem finite_matrix_operator_mul :
     finiteMatrixOperator (A*B) = finiteMatrixOperator A*finiteMatrixOperator B := by
   ext z i
   simp only [finite_matrix_operator_apply,mul_apply_eq_comp,
     Matrix.mul_apply,sum_mul,mul_sum,mul_assoc]
   rw [sum_comm]
 
-theorem finite_matrix_operator_sub (A B : Matrix ι ι ℂ) :
+theorem finite_matrix_operator_sub :
     finiteMatrixOperator (A-B) = finiteMatrixOperator A-finiteMatrixOperator B := by
   ext z i
   simp [finite_matrix_operator_apply,sub_mul,sum_sub_distrib]
+end
 
 theorem finite_matrix_operator_trace (A : Matrix ι ι ℂ) :
     (∑ i, inner ℂ (EuclideanSpace.basisFun ι ℂ i)
@@ -60,7 +68,10 @@ def finiteContinuousIntegral (a : ℝ → ℝ) (L : ℝ) (W : Finset ℝ) :
   operatorIntegral volume (fun x => ((L*a x:ℝ):ℂ) • finiteTimePhase W (mellinFrequency x))
     (fun x => finiteTimePhase W (mellinFrequency x))
 
-theorem finite_continuous_integrable {a : ℝ → ℝ} (ha : Integrable a) (L : ℝ) (W : Finset ℝ) :
+section
+variable {a : ℝ → ℝ} (ha : Integrable a)
+include a ha
+theorem finite_continuous_integrable (L : ℝ) (W : Finset ℝ) :
     Integrable (fun x => rankOne ℂ (((L*a x:ℝ):ℂ) • finiteTimePhase W (mellinFrequency x))
       (finiteTimePhase W (mellinFrequency x))) := by
   have hm : AEStronglyMeasurable (fun x => finiteTimePhase W (mellinFrequency x)) volume := by
@@ -75,19 +86,17 @@ theorem finite_continuous_integrable {a : ℝ → ℝ} (ha : Integrable a) (L : 
     rw [norm_smul,Complex.norm_real,mul_assoc,← pow_two,finite_time_phase_norm_sq]
   change Integrable (fun x => ‖((L*a x:ℝ):ℂ) • finiteTimePhase W (mellinFrequency x)‖ *
       ‖finiteTimePhase W (mellinFrequency x)‖)
-  simp_rw [he]
-  exact (ha.const_mul L).norm.mul_const _
+  pm_8935 ha.const_mul
 
-theorem finite_continuous_positive {a : ℝ → ℝ} (ha : Integrable a) (h0 : ∀ x, 0 ≤ a x)
+theorem finite_continuous_positive (h0 : ∀ x, 0 ≤ a x)
     {L : ℝ} (hL : 0 ≤ L) (W : Finset ℝ) : (finiteContinuousIntegral a L W).IsPositive := by
   apply operator_integral_positive volume (finite_continuous_integrable ha L W)
   filter_upwards with x
   rw [map_smul,smul_apply]
-  apply (isPositive_rankOne_self _).smul_of_nonneg
-  exact_mod_cast mul_nonneg hL (h0 x)
+  pm_8593 h0
 
 /-- Coefficients of the actual Bochner continuous correction. -/
-theorem finite_continuous_entry {a : ℝ → ℝ} (ha : Integrable a) (L : ℝ) (W : Finset ℝ)
+theorem finite_continuous_entry (L : ℝ) (W : Finset ℝ)
     (t u : W) :
     finiteContinuousIntegral a L W (EuclideanSpace.basisFun W ℂ u) t =
       (L:ℂ)*∫ x, (a x:ℂ)*GuthMaynard.Improvement.phase (((t:ℝ)-u)*mellinFrequency x) := by
@@ -111,17 +120,20 @@ theorem finite_continuous_entry {a : ℝ → ℝ} (ha : Integrable a) (L : ℝ) 
     ring
   simp_rw [he]
   rw [integral_const_mul]
+end
 
-theorem reflection_square_integrable (w : MathCollab.Density.ReflectionCutoff) :
+section
+variable (w : MathCollab.Density.ReflectionCutoff)
+include w
+theorem reflection_square_integrable :
     Integrable (fun x : ℝ => w x^2) := by
   apply (w.smooth.continuous.pow 2).integrable_of_hasCompactSupport
   apply HasCompactSupport.intro isCompact_Icc
-  intro x hx
-  have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+  pm_4496
   simp [hz]
 
 /-- Whole-space and positive-half-line cutoff normalizations agree exactly. -/
-theorem cutoff_integral_whole (w : MathCollab.Density.ReflectionCutoff) (s : ℝ) :
+theorem cutoff_integral_whole (s : ℝ) :
     (∫ x, (w x:ℂ)*GuthMaynard.Improvement.phase (s*mellinFrequency x)) =
       MathCollab.Density.cutoffIntegral w s := by
   unfold MathCollab.Density.cutoffIntegral
@@ -132,13 +144,9 @@ theorem cutoff_integral_whole (w : MathCollab.Density.ReflectionCutoff) (s : ℝ
     simp [hz])]
   apply integral_congr_ae
   filter_upwards with x
-  rw [mellinFrequency_phase]
-  unfold MathCollab.Density.dirichletPhase
-  congr 2
-  push_cast
-  ring
+  pm_8451 mellinFrequency_phase MathCollab.Density.dirichletPhase
 
-theorem finite_continuous_cutoff_entry (w : MathCollab.Density.ReflectionCutoff) (L : ℝ)
+theorem finite_continuous_cutoff_entry (L : ℝ)
     (W : Finset ℝ) (t u : W) :
     finiteContinuousIntegral (fun x => w x^2) L W (EuclideanSpace.basisFun W ℂ u) t =
       cutoffContinuousMatrix w L W t u := by
@@ -150,7 +158,7 @@ theorem finite_continuous_cutoff_entry (w : MathCollab.Density.ReflectionCutoff)
 
 /-- The finite divisor construction has the same natural-number Gram entries
 as the separately formalized reflection matrix. -/
-theorem finite_cutoff_gram_natural_entry (w : MathCollab.Density.ReflectionCutoff)
+theorem finite_cutoff_gram_natural_entry
     {L : ℝ} (hL : 0 < L) (W : Finset ℝ) (t u : W) :
     finiteCutoffGram w L (1/2) 5 W (EuclideanSpace.basisFun W ℂ u) t =
       cutoffGramMatrix w L W t u := by
@@ -162,34 +170,27 @@ theorem finite_cutoff_gram_natural_entry (w : MathCollab.Density.ReflectionCutof
   have hh := sub_left_inj.mp he
   simpa only [reflectionSquare,Complex.ofReal_pow,cutoffGramMatrix] using hh
 
-theorem finite_cutoff_gram_eq (w : MathCollab.Density.ReflectionCutoff)
+theorem finite_cutoff_gram_eq
     {L : ℝ} (hL : 0 < L) (W : Finset ℝ) :
     finiteMatrixOperator (cutoffGramMatrix w L W) = finiteCutoffGram w L (1/2) 5 W := by
-  apply ContinuousLinearMap.coe_injective
-  apply (EuclideanSpace.basisFun W ℂ).toBasis.ext
-  intro u
-  ext t
-  exact (finite_matrix_operator_basis _ t u).trans (finite_cutoff_gram_natural_entry w hL W t u).symm
+  pm_5492 finite_cutoff_gram_natural_entry hL
 
-theorem finite_cutoff_continuous_eq (w : MathCollab.Density.ReflectionCutoff)
+theorem finite_cutoff_continuous_eq
     (L : ℝ) (W : Finset ℝ) :
     finiteMatrixOperator (cutoffContinuousMatrix w L W) =
       finiteContinuousIntegral (fun x => w x^2) L W := by
-  apply ContinuousLinearMap.coe_injective
-  apply (EuclideanSpace.basisFun W ℂ).toBasis.ext
-  intro u
-  ext t
-  exact (finite_matrix_operator_basis _ t u).trans (finite_continuous_cutoff_entry w L W t u).symm
+  pm_5492 finite_continuous_cutoff_entry L
 
 /-- Positivity of both actual finite Gram matrices is proved from their
 constructed feature maps and positive continuous frequency integral. -/
-theorem cutoff_matrix_operators_positive (w : MathCollab.Density.ReflectionCutoff)
+theorem cutoff_matrix_operators_positive
     {L : ℝ} (hL : 0 < L) (W : Finset ℝ) :
     (finiteMatrixOperator (cutoffGramMatrix w L W)).IsPositive ∧
       (finiteMatrixOperator (cutoffContinuousMatrix w L W)).IsPositive := by
   rw [finite_cutoff_gram_eq w hL W,finite_cutoff_continuous_eq]
   exact ⟨ContinuousLinearMap.isPositive_self_comp_adjoint _,
     finite_continuous_positive (reflection_square_integrable w) (fun _ => sq_nonneg _) hL.le W⟩
+end
 
 /-- Finite Schur bound, proved directly on the quadratic form. -/
 theorem finite_matrix_schur_quadratic (A : Matrix ι ι ℂ) {B : ℝ}
@@ -197,20 +198,13 @@ theorem finite_matrix_schur_quadratic (A : Matrix ι ι ℂ) {B : ℝ}
     (z : EuclideanSpace ℂ ι) :
     (inner ℂ z (finiteMatrixOperator A z)).re ≤ B*‖z‖^2 := by
   have hfirst : (∑ i, ∑ j, ‖A i j‖*‖z i‖^2) ≤ B*‖z‖^2 := by
-    simp_rw [← sum_mul]
-    rw [PiLp.norm_sq_eq_of_L2,mul_sum]
-    exact sum_le_sum (fun i _ => mul_le_mul_of_nonneg_right (hr i) (sq_nonneg _))
+    pm_5946 i hr
   have hsecond : (∑ i, ∑ j, ‖A i j‖*‖z j‖^2) ≤ B*‖z‖^2 := by
     rw [sum_comm]
-    simp_rw [← sum_mul]
-    rw [PiLp.norm_sq_eq_of_L2,mul_sum]
-    exact sum_le_sum (fun j _ => mul_le_mul_of_nonneg_right (hc j) (sq_nonneg _))
+    pm_5946 j hc
   have he : inner ℂ z (finiteMatrixOperator A z) = ∑ i, ∑ j, star (z i)*A i j*z j := by
-    simp only [PiLp.inner_apply,finite_matrix_operator_apply,RCLike.inner_apply,sum_mul,starRingEnd_apply]
-    apply sum_congr rfl
-    intro i _
-    apply sum_congr rfl
-    intro j _
+    pm_94 PiLp.inner_apply finite_matrix_operator_apply RCLike.inner_apply sum_mul starRingEnd_apply
+    pm_156 sum_congr i j
     ring
   rw [he]
   calc
@@ -225,7 +219,7 @@ theorem finite_matrix_schur_quadratic (A : Matrix ι ι ℂ) {B : ℝ}
       simp only [norm_mul,norm_star]
       nlinarith [mul_nonneg (norm_nonneg (A i j)) (sq_nonneg (‖z i‖-‖z j‖))]
     _ = ((∑ i, ∑ j, ‖A i j‖*‖z i‖^2)+(∑ i, ∑ j, ‖A i j‖*‖z j‖^2))/2 := by
-      simp only [div_eq_mul_inv,add_mul,Finset.sum_add_distrib,← Finset.sum_mul]
+      pm_1444 div_eq_mul_inv add_mul Finset.sum_add_distrib Finset.sum_mul
     _ ≤ _ := by linarith
 
 /-- Uniform operator norm of the actual continuous matrix on a separated W. -/
@@ -233,8 +227,7 @@ theorem cutoff_continuous_operator_norm (w : MathCollab.Density.ReflectionCutoff
     ∃ B : ℝ, 0 ≤ B ∧ ∀ L : ℝ, 0 < L → ∀ W : Finset ℝ,
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       ‖finiteMatrixOperator (cutoffContinuousMatrix w L W)‖ ≤ B*L := by
-  obtain ⟨B,hB,h⟩ := cutoff_continuous_schur w
-  refine ⟨B,hB,?_⟩
+  pm_102 B hB h cutoff_continuous_schur w
   intro L hL W hsep
   obtain ⟨hr,hc⟩ := h L hL.le W hsep
   exact operator_positive_norm_of_quadratic _ (cutoff_matrix_operators_positive w hL W).2

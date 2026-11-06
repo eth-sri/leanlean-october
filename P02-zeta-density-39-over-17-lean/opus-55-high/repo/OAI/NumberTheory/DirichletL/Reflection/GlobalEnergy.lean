@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.WholePair
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ lemma fullRaySector_subset (N : Eis) (rows : Finset (Ideal Eis)) (r : Eis⧸Idea
 
 theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
     (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
+    (S : Ideal Eis→ PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -36,7 +37,7 @@ theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
   let f := literalPairEntry F rows Pset S hrows jF D s hc W θ X r aw
   have hs (r₀ p₀ : Eis⧸Ideal.span {N^2}) :
       (∑ K∈fullRaySector N rows r₀,‖∑ P∈fullRaySector N Pset p₀,f K P‖^2)≤B := by
-    obtain ⟨E,hE,hbound⟩ := hsector r₀ p₀
+    pm_69 E hE hbound hsector r₀ p₀
     have he : (∑ K : fullRaySector N rows r₀,‖literalWholeRow F K.val
           (hrows K.val (fullRaySector_subset N rows r₀ K.property)) S jF (fullRaySector N Pset p₀)
           (E.completion K) s hc W θ X r aw‖^2)=
@@ -45,17 +46,13 @@ theorem literal_global_sector_energy [Fintype (Eis⧸Ideal.span {N^2})]
         (fun K hK => hrows K (fullRaySector_subset N rows r₀ hK)) jF E.completion s hc W θ X r aw
       calc
         _ = ∑ K : fullRaySector N rows r₀,‖∑ P∈fullRaySector N Pset p₀,fl K.val P‖^2 := by
-          apply Finset.sum_congr rfl
-          intro K hK
-          apply congrArg (fun z : ℂ => ‖z‖^2)
+          pm_471
           exact literalWholeRow_eq_pairs F (fullRaySector N rows r₀) (fullRaySector N Pset p₀) S
             (fun K hK => hrows K (fullRaySector_subset N rows r₀ hK)) jF E.completion s hc W θ X r aw K
         _ = ∑ K∈fullRaySector N rows r₀,‖∑ P∈fullRaySector N Pset p₀,fl K P‖^2 :=
           Finset.sum_coe_sort _ (fun K => ‖∑ P∈fullRaySector N Pset p₀,fl K P‖^2)
         _ = _ := by
-          apply Finset.sum_congr rfl
-          intro K hK
-          apply congrArg (fun z : ℂ => ‖z‖^2)
+          pm_471
           apply Finset.sum_congr rfl
           intro P hP
           exact literalPairEntry_restrict F rows Pset (fullRaySector N rows r₀) (fullRaySector N Pset p₀)

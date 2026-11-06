@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,7 +23,10 @@ def physicalQuotient (C : CalibrationData) (A s : O) (hs : s≠0)
   calibratedNumerator C A (representative ((C.generator*A)*s) m) *
     sexticGauss s hs (-representative ((C.generator*A)*s) m)
 
-lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
+section
+variable (C : CalibrationData) (A s : O)
+include C A s
+lemma physicalQuotient_mk (hs : s≠0) (m : O) :
     physicalQuotient C A s hs (Ideal.Quotient.mk _ m) =
       calibratedNumerator C A m * sexticGauss s hs (-m) := by
   have hd : (C.generator*A)*s ∣ representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m :=
@@ -39,7 +43,7 @@ lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
   unfold physicalQuotient
   rw [calibratedNumerator_congr C A _ m hA, sexticGauss_frequency_congr s hs _ (-m) hs']
 
-theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s≠0)
+theorem physical_row_poisson (hA : A≠0) (hs : s≠0)
     (W : ℝ → ℂ) (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
     (K : ℝ) (hK : 0<K) :
     (∑' m : O, calibratedNumerator C A m * sexticGauss s hs (-m) * W (elementNorm m/K)) =
@@ -68,18 +72,18 @@ theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : 
     (K/elementNorm c:ℝ) • ∑' H : O,
       ((Ideal.absNorm (Ideal.span {s}):ℂ) * actualCongruenceCoefficient C A s hA H) *
         paperRadialFourier W (K*elementNorm H/elementNorm c) at ht
-  rw [ht]
-  simp only [mul_assoc, tsum_mul_left, Complex.real_smul, Complex.ofReal_div]
+  pm_214 ht mul_assoc tsum_mul_left Complex.real_smul Complex.ofReal_div
   have hn : (elementNorm s:ℂ)≠0 := by
     simp only [elementNorm, Complex.ofReal_natCast]
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hs)
+    simp_all
   have hnorm : elementNorm c = elementNorm (C.generator*A) * elementNorm s := by
     dsimp only [elementNorm, c]
-    rw [← Ideal.span_singleton_mul_span_singleton, map_mul, Nat.cast_mul]
+    simp_all
   simp only [← mul_assoc C.generator A s]
   rw [hnorm, Complex.ofReal_mul]
   simp only [elementNorm, Complex.ofReal_natCast] at hn ⊢
   field_simp
+end
 
 end SevenEighths.ProbePhysical
 end

@@ -1,10 +1,10 @@
 module
 public import DensityEnergyGM.PoweredLargeValues
 public import DensityEnergyGM.SquareLevelBounds
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 open Complex Finset
 namespace GuthMaynard.NativeMoment
@@ -25,29 +25,29 @@ theorem squared_polynomial_level_count_native (ε : ℝ) (hε : 0 < ε) :
             T * (M : ℝ) ^ (24 / 5 : ℝ) * U ^ (-8 : ℝ)) := by
   let η : ℝ := ε / 8
   let δ : ℝ := ε / 2
-  have hη : 0 < η := by dsimp only [η]; positivity
-  have hδ : 0 < δ := by dsimp only [δ]; positivity
+  pm_4756
+  pm_4644
   obtain ⟨A, C₀, T₀, hA, hC₀, hT₀, hPowered⟩ :=
     powered_unit_block_gm_large_values_native 2 η δ hη hδ
   let B : ℝ := max 1 (2 * A * (4 : ℝ) ^ η)
   let C : ℝ := 32 * C₀ * B ^ 4
-  have hBone : 1 ≤ B := le_max_left _ _
+  pm_4884 hBone B
   have hBpos : 0 < B := lt_of_lt_of_le zero_lt_one hBone
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  pm_4193
   intro M T U a W hM hT hMT hU ha hSep hBase hLarge
   have hTone : 1 ≤ T := hT₀.trans hT
   have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTone
-  have hMpos : (0 : ℝ) < M := by exact_mod_cast hM
+  pm_74 hMpos M hM
   obtain ⟨r, hr, W', hsub, hcard, hbound⟩ :=
     hPowered M a T U W hM (by norm_num) hT hU ha hSep hBase hLarge
   let q : ℝ := (2 ^ r * M ^ 2 : ℕ)
   let D : ℝ := 2 * (A * ((2 ^ 2 * M ^ 2 : ℕ) : ℝ) ^ η)
-  have hDpos : 0 < D := by dsimp only [D]; positivity
-  have hq : 0 ≤ q := by dsimp only [q]; positivity
+  pm_116 hDpos D
+  pm_82 hq q
   have hqx : q ≤ 2 * (M : ℝ) ^ 2 := by
     have hrle : r ≤ 1 := by have := Finset.mem_range.mp hr; omega
     have hp : 2 ^ r ≤ 2 := by
-      simpa only [pow_one] using Nat.pow_le_pow_right (by omega : 1 ≤ 2) hrle
+      pm_7685 hrle
     dsimp only [q]
     exact_mod_cast Nat.mul_le_mul_right (M ^ 2) hp
   have hDform : D = (2 * A * (4 : ℝ) ^ η) * ((M : ℝ) ^ 2) ^ η := by

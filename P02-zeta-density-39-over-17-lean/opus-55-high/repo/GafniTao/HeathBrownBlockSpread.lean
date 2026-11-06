@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownCountLocalization
 public import GafniTao.HeathBrownDerivativeCoordinates
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The last-coordinate half-unit bound
@@ -15,30 +16,16 @@ value condition.
 
 namespace GafniTao
 
-noncomputable section
 
-theorem heathBrown_actualBlock_last_coordinate_spread
-    {N k H m n : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 ≤ A) (hlambda : 0 < lambda)
-    (hsmall : A * lambda ≤ 1 / 4)
-    (hg : ContinuousOn
-      (fun x => heathBrownDerivativeCoordinate f (k - 1) x)
-      (Set.Icc 0 (N : ℝ)))
-    (hgd : DifferentiableOn ℝ
-      (fun x => heathBrownDerivativeCoordinate f (k - 1) x)
-      (Set.Ioo 0 (N : ℝ)))
-    (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
-      lambda ≤ iteratedDeriv k f x ∧
-        iteratedDeriv k f x ≤ A * lambda)
-    (hp : (m, n) ∈ heathBrownPairCountTwo N k H
-      (heathBrownBlockParameter A lambda N) f) :
+section
+variable {N k H m n : ℕ} {f : ℝ → ℝ} {A lambda : ℝ} (hk : 1 ≤ k) (hA : 0 ≤ A) (hlambda : 0 < lambda) (hsmall : A * lambda ≤ 1 / 4) (hg : ContinuousOn (fun x => heathBrownDerivativeCoordinate f (k - 1) x) (Set.Icc 0 (N : ℝ))) (hgd : DifferentiableOn ℝ (fun x => heathBrownDerivativeCoordinate f (k - 1) x) (Set.Ioo 0 (N : ℝ))) (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), lambda ≤ iteratedDeriv k f x ∧ iteratedDeriv k f x ≤ A * lambda) (hp : (m, n) ∈ heathBrownPairCountTwo N k H (heathBrownBlockParameter A lambda N) f)
+include N k H m n f A lambda hk hA hlambda hsmall hg hgd hkBounds hp
+theorem heathBrown_actualBlock_last_coordinate_spread :
     |heathBrownDerivativeCoordinate f (k - 1) m -
         heathBrownDerivativeCoordinate f (k - 1) n| ≤ 1 / 2 := by
   let F : ℝ → ℝ := fun x => heathBrownDerivativeCoordinate f (k - 1) x
   let M : ℝ := A * lambda / ((k - 1).factorial : ℝ)
-  have hMnonneg : 0 ≤ M := by
-    dsimp [M]
-    positivity
+  pm_165 hMnonneg M
   have hderivLower : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
       0 ≤ deriv F x := by
     intro x hx
@@ -60,8 +47,7 @@ theorem heathBrown_actualBlock_last_coordinate_spread
   have hMle : M ≤ A * lambda := by
     dsimp [M]
     exact div_le_self (mul_nonneg hA hlambda.le) hfact
-  have hscale := heathBrown_block_scale_le_half
-    (A := A) (lambda := lambda) (N := N) hsmall
+  pm_734 hscale heathBrown_block_scale_le_half A lambda N hsmall
   have hlengthNonneg :
       0 ≤ 1 + (N : ℝ) / heathBrownBlockParameter A lambda N := by positivity
   calc
@@ -75,21 +61,7 @@ theorem heathBrown_actualBlock_last_coordinate_spread
       mul_le_mul_of_nonneg_right hMle hlengthNonneg
     _ ≤ 1 / 2 := hscale
 
-theorem heathBrown_actualBlock_pair_source_separation
-    {N k H m n : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 ≤ A) (hlambda : 0 < lambda)
-    (hsmall : A * lambda ≤ 1 / 4)
-    (hg : ContinuousOn
-      (fun x => heathBrownDerivativeCoordinate f (k - 1) x)
-      (Set.Icc 0 (N : ℝ)))
-    (hgd : DifferentiableOn ℝ
-      (fun x => heathBrownDerivativeCoordinate f (k - 1) x)
-      (Set.Ioo 0 (N : ℝ)))
-    (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
-      lambda ≤ iteratedDeriv k f x ∧
-        iteratedDeriv k f x ≤ A * lambda)
-    (hp : (m, n) ∈ heathBrownPairCountTwo N k H
-      (heathBrownBlockParameter A lambda N) f) :
+theorem heathBrown_actualBlock_pair_source_separation :
     |(m : ℝ) - n| ≤
       4 * ((k - 1).factorial : ℝ) /
         (lambda * (H : ℝ) ^ (k - 1)) := by
@@ -97,8 +69,8 @@ theorem heathBrown_actualBlock_pair_source_separation
     (fun x hx => (hkBounds x hx).1) hp
   exact heathBrown_actualBlock_last_coordinate_spread
     hk hA hlambda hsmall hg hgd hkBounds hp
-
-
 end
+
+
 
 end GafniTao

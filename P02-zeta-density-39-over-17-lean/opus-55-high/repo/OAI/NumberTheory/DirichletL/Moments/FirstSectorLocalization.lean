@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstLocalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,13 +31,13 @@ def discardedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
 
 theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) (hK : 0<K) :
-    reducedFirstSum I J hI hJ W K=canonicalZeroPair I J hI hJ W K+
+    reducedFirstSum I J hI hJ W K=canonicalZeroPair I J hI hJ W K +
       retainedPair I J hI hJ W K X Z ξ+discardedPair I J hI hJ W K X Z ξ := by
   unfold reducedFirstSum canonicalZeroPair retainedPair discardedPair
   rw [← Finset.sum_add_distrib,← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro E hE
-  let Tsec:=firstNominalScale I J (∏ P∈E,P.val) K X
+  pm_7689 Tsec
   dsimp only [canonicalZeroTerm,canonicalRetainedTerm,canonicalDiscardedTerm]
   simp_rw [← normValue_eq_embedding]
   let a := residualGenerator I J
@@ -45,8 +46,8 @@ theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Su
   have ha : a≠0 := supported_element_ne_zero _ (residualGenerator_supported I J hI)
   have hb : b≠0 := supported_element_ne_zero _ (residualGenerator_supported J I hJ)
   have hr : r≠0 := finitePrimeModulus_ne_zero _
-  have he : primeSubsetGenerator (fun P : CommonIndex I J => P.val) E≠0 := primeSubsetGenerator_ne_zero _ _
-  have hk : 0<(K/normValue (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E))/normValue (a*(b*r)) :=
+  have he : primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E≠0 := primeSubsetGenerator_ne_zero _ _
+  have hk : 0<(K/normValue (primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E))/normValue (a*(b*r)) :=
     div_pos (div_pos hK (norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr he)))
       (norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero ha (mul_ne_zero hb hr))))
   have hh := lattice_fourier_split W _ hk
@@ -54,7 +55,7 @@ theorem reducedFirstSum_sector_split (I J : Ideal O) (hI : Supported I) (hJ : Su
     (normValue (a*(b*r)))
     (tripleFourier_norm_le_full a b r ha hb hr _ _ _ (activeFunction_norm_le_one I J hI))
     (frequencyRadius Tsec Z ξ)
-  let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
+  pm_6952
   let k := (K/normValue e)/normValue (a*(b*r))
   let F := tripleFourier a b r ha hb hr (residualCharacter I J hI)
     (residualCharacter J I hJ)⁻¹ (activeFunction I J hI)
@@ -87,7 +88,7 @@ theorem finiteHeckeEnergy_sector_localized (η : Character) (m A : O) (t : ℝ)
     (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:O)∣m)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ))
     (K X Z ξ : ℝ) (hK : 0<K) :
-    finiteHeckeEnergy η m A t S c W K=
+    finiteHeckeEnergy η m A t S c W K =
       zeroEnergy η m A t S c W K+retainedEnergy η m A t S c W K X Z ξ+
         discardedEnergy η m A t S c W K X Z ξ := by
   rw [finiteHeckeEnergy_reduced_poisson η m A t hmLam hm2 S c W K hK]

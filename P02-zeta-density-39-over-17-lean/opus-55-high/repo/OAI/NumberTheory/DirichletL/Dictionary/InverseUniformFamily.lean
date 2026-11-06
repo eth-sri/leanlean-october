@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformLog
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,16 +34,16 @@ def inverseSchwartz (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (a b : ℝ) (ha
     ((baseProfile_support reverse n V W R).trans hs)
     (baseProfile_smooth reverse n V W R a b ha hV hW hs) σ t
 
-lemma inverseSchwartz_apply (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hV : ContDiff ℝ ∞ V) (hW : ContDiff ℝ ∞ W) (hs : Function.support W⊆Icc a b)
+section
+variable (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hV : ContDiff ℝ ∞ V) (hW : ContDiff ℝ ∞ W) (hs : Function.support W⊆Icc a b)
+include reverse n V W a b ha hV hW hs
+lemma inverseSchwartz_apply
     (R σ t x : ℝ) :
     inverseSchwartz reverse n V W a b ha hV hW hs R σ t x=
       twistProfile (baseProfile reverse n V W R) σ t x :=
   interpolatedProfile_apply _ _ _ _ _ _ _ _ _
 
-theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ)
-    (a b : ℝ) (ha : 0<a) (hV : ContDiff ℝ ∞ V) (hW : ContDiff ℝ ∞ W)
-    (hs : Function.support W⊆Icc a b) (Rmax : ℝ)
+theorem inverseSchwartz_operator_uniform (Rmax : ℝ)
     (op : 𝓢(ℝ,ℂ)→L[ℝ]𝓢(ℝ,ℂ)) (S : Finset (ℕ×ℕ)) :
     ∃J : ℕ,∃C : ℝ,0<C ∧ ∀R∈Icc (0:ℝ) Rmax,∀σ∈Icc (0:ℝ) 1,∀t : ℝ,
       S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (op (inverseSchwartz reverse n V W a b ha hV hW hs R σ t))≤C*(1+‖t‖)^J := by
@@ -54,12 +55,12 @@ theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ�
     (Icc (0:ℝ) 1 ×ˢ Icc (0:ℝ) Rmax) (isCompact_Icc.prod isCompact_Icc)
     (inverseLogSchwartz reverse n V W a b ha hV hW hs)
     (inverseLogSchwartz_apply reverse n V W a b ha hV hW hs) T
-  refine ⟨J,A*B,mul_pos hA hB,?_⟩
+  pm_3528 J A B hA hB
   intro R hR σ hσ t
   have hp : (σ,R)∈Icc (0:ℝ) 1 ×ˢ Icc (0:ℝ) Rmax := ⟨hσ,hR⟩
   have hheight : ‖t/(2*Real.pi)‖≤‖t‖ := by
     rw [norm_div,Real.norm_of_nonneg (by positivity : 0≤2*Real.pi)]
-    exact div_le_self (norm_nonneg _) (by linarith [Real.pi_gt_three])
+    pm_7489
   have hh := hcontrol (frequencyTwist (inverseLogSchwartz reverse n V W a b ha hV hW hs (σ,R)) (t/(2*Real.pi)))
   change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (op (inverseSchwartz reverse n V W a b ha hV hW hs R σ t))≤_ at hh
   apply hh.trans
@@ -68,6 +69,7 @@ theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ�
     (hbound (σ,R) hp (t/(2*Real.pi))).trans
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by linarith) J) hB.le)
   exact (mul_le_mul_of_nonneg_left hb hA.le).trans_eq (by ring)
+end
 
 end SevenEighths.DetectorDictionaryInverseUniform
 

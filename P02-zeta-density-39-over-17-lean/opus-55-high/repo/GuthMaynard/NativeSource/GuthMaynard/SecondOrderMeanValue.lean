@@ -32,8 +32,7 @@ theorem second_order_mean_value
       simp only [Pi.sub_apply, Pi.mul_apply]
       dsimp only [a, D, id_eq]
       ring
-    · dsimp only [a, D, id_eq]
-      ring
+    grind
   have hq' (y : Real) (hy : y ∈ Set.Icc x (x + 2)) :
       HasDerivAt q' (F'' y - D) y := by
     dsimp only [q', a]

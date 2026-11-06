@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalWeights
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,8 +19,7 @@ lemma bounded_row_multiplier_energy {κ : Type*} (rows : Finset κ) (r f : κ→
   apply Finset.sum_le_sum
   intro k hk
   apply pow_le_pow_left₀ (norm_nonneg _)
-  rw [norm_mul]
-  exact mul_le_of_le_one_left (norm_nonneg _) (hr k hk)
+  pm_514 hr k hk
 
 end
 end SevenEighths.InverseReflectedPhase

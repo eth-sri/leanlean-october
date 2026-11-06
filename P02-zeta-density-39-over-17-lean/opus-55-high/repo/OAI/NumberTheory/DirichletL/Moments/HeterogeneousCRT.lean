@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Local
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,14 +25,11 @@ theorem fullCorrelation_heterogeneous_pi {ι : Type*} [Fintype ι]
       ∏ i, if left i (x i) - right i (y i) = k i then f i (x i) * star (g i (y i)) else 0 := by
     by_cases h : ∀ i, left i (x i) - right i (y i) = k i
     · have he : (fun i => left i (x i)) - (fun i => right i (y i)) = k := funext h
-      simp only [he, ite_true, h, star_prod, Finset.prod_mul_distrib]
+      pm_93 he ite_true h star_prod Finset.prod_mul_distrib
     · obtain ⟨i, hi⟩ := not_forall.mp h
       have he : (fun i => left i (x i)) - (fun i => right i (y i)) ≠ k :=
         fun h => hi (congrFun h i)
-      rw [ite_eq_right he]
-      symm
-      apply Finset.prod_eq_zero (Finset.mem_univ i)
-      simp only [hi, ite_false]
+      pm_6873 he
   simp only [fullCorrelation]
   simp_rw [hterm]
   calc

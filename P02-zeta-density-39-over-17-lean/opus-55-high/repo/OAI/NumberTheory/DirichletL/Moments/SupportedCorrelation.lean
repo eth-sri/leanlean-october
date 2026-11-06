@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonSupport
 public import OAI.NumberTheory.DirichletL.Moments.Mask
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentSupportedCorrelation
 open CanonicalRowCompletion CanonicalQuadraticSieve
@@ -21,8 +22,7 @@ def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
   map_one' := idealRowHom_one_supported _ hd
   map_mul' := by
     intro x y
-    obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
-    obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
+    pm_2972
     exact idealRowHom_argument_mul x y _
   map_nonunit' := by
     intro x hx
@@ -41,28 +41,33 @@ def supportedModulusCharacter (d : O) (hd : Supported (Ideal.span {d})) :
     (hd : Supported (Ideal.span {d})) (x : O) :
     supportedModulusCharacter d hd (Ideal.Quotient.mk _ x) = idealRowHom x (Ideal.span {d}) := rfl
 
-lemma supported_mul_elements (d a : O)
-    (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a})) :
+section
+variable (d a : O) (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a}))
+include d a hd ha
+lemma supported_mul_elements :
     Supported (Ideal.span {d * a}) := by
   rw [← Ideal.span_singleton_mul_span_singleton]
   exact (supported_mul_iff _ _).mpr ⟨hd, ha⟩
 
-theorem supportedModulusCharacter_mul (d a : O)
-    (hd : Supported (Ideal.span {d})) (ha : Supported (Ideal.span {a})) (x : O) :
+theorem supportedModulusCharacter_mul (x : O) :
     supportedModulusCharacter (d * a) (supported_mul_elements d a hd ha) (Ideal.Quotient.mk _ x) =
       supportedModulusCharacter d hd (Ideal.Quotient.mk _ x) *
         supportedModulusCharacter a ha (Ideal.Quotient.mk _ x) := by
   simp only [supportedModulusCharacter_mk, ← Ideal.span_singleton_mul_span_singleton, map_mul]
+end
 
-lemma sexticReciprocityPhase_symm (a b : O) :
+section
+variable (a b : O)
+include a b
+lemma sexticReciprocityPhase_symm :
     sexticReciprocityPhase a b = sexticReciprocityPhase b a := by
   exact congrArg (fun z : ℤ => (z : ℂ)) (QuadraticAllOddCRT.quadraticRaySign_symm _ _)
 
-@[simp] lemma star_sexticReciprocityPhase (a b : O) :
+@[simp] lemma star_sexticReciprocityPhase :
     star (sexticReciprocityPhase a b) = sexticReciprocityPhase a b := by
   simp only [sexticReciprocityPhase, star_intCast]
 
-theorem supported_opposite_phase (a b : O)
+theorem supported_opposite_phase
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (hpa : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a - 1)
     (hpb : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ b - 1)
@@ -75,11 +80,11 @@ theorem supported_opposite_phase (a b : O)
   have hn := (supportedModulusCharacter a ha).apply_ne_zero_iff.mpr hunit
   change idealRowHom b (Ideal.span {a}) ≠ 0 at hn
   have heq : idealRowHom b (Ideal.span {a}) * star (idealRowHom b (Ideal.span {a})) = 1 := by
-    change supportedModulusCharacter a ha (Ideal.Quotient.mk _ b) *
-      star (supportedModulusCharacter a ha (Ideal.Quotient.mk _ b)) = 1
+    pm_8625 a ha b
     rw [MulChar.star_apply', MulChar.inv_apply_eq_inv']
     exact mul_inv_cancel₀ hn
   rw [heq, mul_one]
+end
 
 def supportedCorrelation (u v : O)
     (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v}))
@@ -123,8 +128,8 @@ def actualCorrelation (u v : O)
     (hu : Supported (Ideal.span {u})) (hv : Supported (Ideal.span {v})) (j : O) : ℂ := by
   letI := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero u hu)
   letI := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero v hv)
-  letI : Fintype (Residue u) := Fintype.ofFinite _
-  letI : Fintype (Residue v) := Fintype.ofFinite _
+  pm_8453 Residue u
+  pm_8453 Residue v
   exact supportedCorrelation u v hu hv j
 
 def completeSupportExtension (D E : O)
@@ -154,12 +159,11 @@ theorem actual_complete_common_support (D E a b : O)
     (mul_ne_zero (supported_element_ne_zero D hD) (supported_element_ne_zero a ha))
   let := ConcreteTraceCRT.finite_quotient_span
     (mul_ne_zero (supported_element_ne_zero E hE) (supported_element_ne_zero b hb))
-  let : Fintype (Residue D) := Fintype.ofFinite _
-  let : Fintype (Residue E) := Fintype.ofFinite _
-  let : Fintype (Residue a) := Fintype.ofFinite _
-  let : Fintype (Residue b) := Fintype.ofFinite _
-  let : Fintype (Residue (D * a)) := Fintype.ofFinite _
-  let : Fintype (Residue (E * b)) := Fintype.ofFinite _
+  pm_4890 Residue D
+  pm_4890 Residue E
+  pm_2956
+  pm_6348 D a
+  pm_6348 E b
   exact supported_complete_common_support D E a b hD hE ha hb hpD hpE hpa hpb hcopA hcopB hab j
 
 end SevenEighths.CenteredMomentSupportedCorrelation

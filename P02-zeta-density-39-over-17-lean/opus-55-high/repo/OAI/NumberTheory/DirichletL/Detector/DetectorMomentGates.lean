@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentData
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFiberSource
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatch
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedElement
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,15 +42,10 @@ theorem sourceMoment_large_eventually (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(
     ∀ᶠZ:ℝ in atTop,1≤Z ∧ ∀d:ℝ,0<d→
       ∀j:Sum Bool (RayQuotient.Characters M H),∀s:Slot,
         ((baseCharacter (sourceMomentData M H hH S hS η j)).modulus.absNorm:ℝ)<
-          (Z^d)^(ell s/d):=by
-  have ht:∀ᶠZ:ℝ in atTop,∀s:Slot,sourceMomentConductorBound M H hH S hS η<Z^(ell s):=by
-    apply Filter.eventually_all.mpr
-    intro s
-    exact (tendsto_rpow_atTop (hell s)).eventually (eventually_gt_atTop _)
-  filter_upwards [eventually_ge_atTop (1:ℝ),ht] with Z hZ ht
-  refine ⟨hZ,?_⟩
-  intro d hd j s
-  rw [←Real.rpow_mul (by linarith:0≤Z),mul_div_cancel₀ _ hd.ne']
+          (Z ^d)^(ell s/d):=by
+  have ht:∀ᶠZ:ℝ in atTop,∀s:Slot,sourceMomentConductorBound M H hH S hS η<Z ^(ell s):=by
+    pm_6492
+  pm_3907
   exact (sourceMomentConductor_le M H hH S hS η j).trans (ht s)
 
 end SevenEighths.ProbeHighRowFamily

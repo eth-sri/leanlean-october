@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownLemmaOnePreVMVT
 public import GafniTao.HeathBrownCenterWeyl
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,8 +14,8 @@ Weyl sums.  The local regularity hypotheses are displayed here; a later entry
 bridge derives them from the global source interval.
 -/
 
-open Complex Finset Set
-open scoped BigOperators ENNReal
+open Complex Finset
+open scoped ENNReal
 
 namespace GafniTao
 
@@ -103,12 +104,10 @@ theorem heathBrown_source_shift_double_sum_preVMVT
         (1 + ENNReal.ofReal
           (2 * Real.pi * ((k : ℝ) ^ 2 / H)) * H) *
         heathBrownIntegratedMajorant N k H s f := by
-  let V : ENNReal := ENNReal.ofReal
-    ((2 : ℝ) ^ (k - 1) *
-      (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))
+  pm_2848
   let c₁ : ℝ := 2 * Real.pi * (A * lambda * (H : ℝ) ^ (k - 1))
   let B : ENNReal := heathBrownIntegratedMajorant N k H s f
-  have hc₁ : 0 ≤ c₁ := by dsimp only [c₁]; positivity
+  pm_82 hc₁ c₁
   have hsource := ENNReal.ofReal_le_ofReal
     (norm_heathBrown_source_shift_double_sum_le
       (N := N) (k := k) (H := H) hk (by omega) hlocal)

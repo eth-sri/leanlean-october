@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection7MomentIdentity
 public import GafniTao.WooleySection7SourceShift
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Analytic equation (7.17) with the two source residue representatives
@@ -15,7 +16,6 @@ pullbacks along `p^a y + xi` and `p^b z + eta`.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- Uniform analytic form of (7.17).  The same lower system `Psi` works for
 all coefficient sequences, which is the quantifier order required when the
@@ -48,12 +48,8 @@ theorem wooley_exists_uniform_shifted_normalized_identity
             Psi (p ^ B)
             (p ^ wooleySection7BPrimeNat k r a b gamma)
             R S left right := by
-  obtain ⟨Psi, hPsi, hforcing⟩ :=
-    wooleySection7_exists_uniform_shifted_forcing
-      hpPrime hc hr hrk hkp hMB hgammaK hBPrime
-        omegaVal xi eta homega hcop hsep hdiff phi hphi
-  refine ⟨Psi, hPsi, ?_⟩
-  intro R S left right hleft hright
+  pm_5951 hforcing wooleySection7_exists_uniform_shifted_forcing
+  pm_8872 hleft hright
   have hrawComplex :
       wooleySourceRawMixedComplexAverage
           (wooleyAffinePolynomialSystem phi (p ^ a) xi)
@@ -80,16 +76,12 @@ theorem wooley_exists_uniform_shifted_normalized_identity
           Psi (p ^ B)
           (p ^ wooleySection7BPrimeNat k r a b gamma)
           R S left right := by
-    apply Complex.ofReal_injective
-    rw [← wooleySourceRawMixedComplexAverage_eq_ofReal,
-      ← wooleySourceInsertedComplexAverage_eq_ofReal]
-    exact hrawComplex
+    pm_7783
   rw [wooleySourceNormalizedMixedRealAverage_eq_mass_mul_raw
     _ _ _ _ _ left right hleft hright]
   rw [wooleySourceInsertedNormalizedRealAverage_eq_mass_mul_raw
     _ _ Psi _ _ _ _ left right hleft hright]
-  rw [hrawReal]
+  grind
 
-end
 
 end GafniTao

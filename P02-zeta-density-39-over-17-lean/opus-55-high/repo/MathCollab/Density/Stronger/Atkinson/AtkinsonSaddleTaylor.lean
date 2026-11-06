@@ -7,6 +7,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonRootIntegral
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,11 +39,11 @@ theorem atkinsonRootPhase_sub_quadratic {T y : ℝ} (hT : 0 < T) (hy : 0 < y) (b
             atkinsonSaddleRoot (T / (2 * Real.pi)) b +
               ((y - atkinsonSaddleRoot (T / (2 * Real.pi)) b) /
                 atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 2 / 2) := by
-  let r := atkinsonSaddleRoot (T / (2 * Real.pi)) b
-  have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
-  have he : r ^ 2 - b * r = T / (2 * Real.pi) := atkinsonSaddleRoot_equation (by positivity) b
+  pm_4412
+  pm_4370
+  pm_1177
   have hlog : Real.log y = Real.log r + Real.log (1 + (y - r) / r) := by
-    rw [show 1 + (y - r) / r = y / r by field_simp; ring,
+    rw [show 1 + (y - r) / r = y / r by grind,
       Real.log_div hy.ne' hr.ne']
     ring
   change atkinsonRootPhase T b y -
@@ -61,7 +62,7 @@ theorem norm_exp_real_phase_sub_le (a b : ℝ) :
     congr 2
     push_cast
     ring
-  rw [he, norm_mul, show ‖Complex.exp ((b : ℂ) * I)‖ = 1 by simp [Complex.norm_exp], one_mul]
+  rw [he, norm_mul, show ‖Complex.exp ((b : ℂ) * I)‖ = 1 by simp_all, one_mul]
   exact Real.norm_exp_I_mul_ofReal_sub_one_le
 
 end MathCollab.Density.Stronger.Atkinson

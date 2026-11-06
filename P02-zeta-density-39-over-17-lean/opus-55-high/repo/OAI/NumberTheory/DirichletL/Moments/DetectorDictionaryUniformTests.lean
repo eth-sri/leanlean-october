@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,13 +18,17 @@ lemma twistProfile_zero (W : ℝ→ℂ) : twistProfile W 0 0=W := by
   funext x
   simp [twistProfile,HeckeDyadic.shift]
 
-lemma oriented_detector_log_support (reverse : Bool) (n : ℕ) :
+section
+variable (reverse : Bool) (n : ℕ)
+include reverse n
+lemma oriented_detector_log_support :
     Function.support (orientedProfile reverse ((logProfile^[n]) positiveAnnular))⊆Icc (1/4) (9/4) := by
-  simpa only [twistProfile_zero] using detector_profile_support reverse n 0 0
+  pm_8919 detector_profile_support
 
-lemma oriented_detector_log_smooth (reverse : Bool) (n : ℕ) :
+lemma oriented_detector_log_smooth :
     ContDiff ℝ ∞ (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) := by
-  simpa only [twistProfile_zero] using detector_profile_smooth reverse n 0 0
+  pm_8919 detector_profile_smooth
+end
 
 def detectorSchwartz (reverse : Bool) (n : ℕ) (σ t : ℝ) : 𝓢(ℝ,ℂ) :=
   interpolatedProfile (orientedProfile reverse ((logProfile^[n]) positiveAnnular)) (1/4) (9/4)
@@ -49,13 +54,12 @@ theorem detectorSchwartz_uniform (S : Finset (ℕ×ℕ)) :
   have hCq : C q≤1+∑q : Bool×Fin 3,C q := by
     have hh := Finset.single_le_sum (fun q (_ : q∈(Finset.univ : Finset (Bool×Fin 3)))=>(hC q).le) (Finset.mem_univ q)
     linarith
-  have hdegree : degree q≤J := Finset.le_sup (Finset.mem_univ q)
+  pm_7486
   have he := hb q σ hσ (orientedFrequency reverse t)
   have hnorm : ‖orientedFrequency reverse t‖=‖t‖ := by cases reverse <;> simp [orientedFrequency]
   rw [hnorm] at he
   change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (detectorSchwartz reverse n σ t)≤_ at he
-  exact he.trans (mul_le_mul hCq (pow_le_pow_right₀ (by linarith [norm_nonneg t]) hdegree)
-    (by positivity) (by linarith))
+  pm_1025
 
 end SevenEighths.CenteredMomentDetectorDictionary
 

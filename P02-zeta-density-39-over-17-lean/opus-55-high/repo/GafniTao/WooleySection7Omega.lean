@@ -14,7 +14,6 @@ to the displayed power by itself.
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 

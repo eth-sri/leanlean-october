@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.FrequencyShell
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -56,18 +57,15 @@ lemma cubicDualRow_eq_gram {n : Type*} [Fintype n]
           ((Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ))) := by
   unfold cubicDualRow
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro j hj
-  apply Finset.sum_congr rfl
-  intro k hk
+  pm_3718
   rw [isCoprime_comm (x := cols k) (y := cols j)]
-  by_cases hcop : IsCoprime (cols j) (cols k)
+  pm_3817
   · rw [ite_eq_left hcop, ite_eq_left hcop]
     have hscale : (Ideal.absNorm (cols k) : ℝ) * (Ideal.absNorm (cols j) : ℝ) =
         (Ideal.absNorm (cols j) : ℝ) * (Ideal.absNorm (cols k) : ℝ) := mul_comm _ _
     rw [hscale]
     congr 1
-    simp only [cubicDualCoefficient, star_mul, star_div₀, Complex.star_def, Complex.conj_ofReal, Complex.conj_conj]
+    pm_316 cubicDualCoefficient star_mul star_div₀ Complex.star_def Complex.conj_ofReal Complex.conj_conj
     ring
   · simp only [ite_eq_right hcop, zero_mul]
 

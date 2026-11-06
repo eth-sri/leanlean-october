@@ -7,6 +7,7 @@ retain Apache-2.0 attribution. No Estermann/Voronoi identity is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.BesselY0Bounds
 public import MathCollab.Density.Stronger.Atkinson.BesselK0Mellin
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,12 +31,7 @@ theorem abs_dfiBesselY0Tail_le_quarter {x : ℝ} (hx : 0 < x) :
     ext t
     norm_num
   have hTail := integrableOn_dfiBesselY0Tail_integrand hx
-  have hnonneg : 0 ≤ dfiBesselY0Tail x := by
-    unfold dfiBesselY0Tail
-    exact integral_nonneg fun t =>
-      div_nonneg (Real.exp_pos _).le (Real.sqrt_nonneg _)
-  rw [abs_of_nonneg hnonneg]
-  unfold dfiBesselY0Tail
+  pm_7371 dfiBesselY0Tail
   calc
     ∫ t in Set.Ioi (0 : ℝ), Real.exp (-x * t) / Real.sqrt (1 + t ^ 2) ≤
         ∫ t in Set.Ioi (0 : ℝ),
@@ -43,7 +39,7 @@ theorem abs_dfiBesselY0Tail_le_quarter {x : ℝ} (hx : 0 < x) :
       exact setIntegral_mono_on hTail hMajorant measurableSet_Ioi fun t ht => by
         have htPos : 0 < t := ht
         have htPowPos : 0 < t ^ (3 / 4 : ℝ) := Real.rpow_pos_of_pos htPos _
-        have hsqrtPos : 0 < Real.sqrt (1 + t ^ 2) := by positivity
+        pm_7723 hsqrtPos
         have htPowLe : t ^ (3 / 4 : ℝ) ≤ Real.sqrt (1 + t ^ 2) := by
           by_cases htOne : t ≤ 1
           · have hpowOne : t ^ (3 / 4 : ℝ) ≤ 1 :=
@@ -51,13 +47,12 @@ theorem abs_dfiBesselY0Tail_le_quarter {x : ℝ} (hx : 0 < x) :
             have hsqrtOne : 1 ≤ Real.sqrt (1 + t ^ 2) := by
               have hsquare := Real.sq_sqrt (by positivity : 0 ≤ 1 + t ^ 2)
               nlinarith [Real.sqrt_nonneg (1 + t ^ 2), sq_nonneg t]
-            exact hpowOne.trans hsqrtOne
+            grind
           · have htOne' : 1 ≤ t := le_of_not_ge htOne
             have hpowT : t ^ (3 / 4 : ℝ) ≤ t := by
               simpa using Real.rpow_le_self_of_one_le htOne' (by norm_num : 3 / 4 ≤ (1 : ℝ))
             have htSqrt : t ≤ Real.sqrt (1 + t ^ 2) := by
-              have hsquare := Real.sq_sqrt (by positivity : 0 ≤ 1 + t ^ 2)
-              nlinarith [Real.sqrt_nonneg (1 + t ^ 2)]
+              pm_4413
             exact hpowT.trans htSqrt
         have hInv : 1 / Real.sqrt (1 + t ^ 2) ≤ 1 / t ^ (3 / 4 : ℝ) :=
           one_div_le_one_div_of_le htPowPos htPowLe

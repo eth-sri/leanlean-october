@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.QuarticCellGeometry
 public import GuthMaynard.Improvement.ClassicalLargeValues
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -18,8 +17,7 @@ theorem separated_three_intervals {T B : ℝ} (W : Finset ℝ)
   let Z₁ := W.filter (fun t => t ∈ Icc (-T) 0)
   let Z₂ := W.filter (fun t => t ∈ Icc (0:ℝ) T)
   let Z₃ := W.filter (fun t => t ∈ Icc T (2*T))
-  have hsub₁ : Z₁ ⊆ W := Finset.filter_subset _ _
-  have hsub₂ : Z₂ ⊆ W := Finset.filter_subset _ _
+  pm_5147 hsub₁ Z₁ W hsub₂ Z₂
   have hsub₃ : Z₃ ⊆ W := Finset.filter_subset _ _
   have h₁ : (Z₁.card:ℝ) ≤ B := hb Z₁ (-T) hsub₁ (by
     intro t ht; simpa using (Finset.mem_filter.mp ht).2)

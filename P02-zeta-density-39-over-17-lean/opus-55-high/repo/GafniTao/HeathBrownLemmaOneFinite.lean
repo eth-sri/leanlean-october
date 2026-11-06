@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownLemmaOneAverage
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Heath-Brown Lemma 1: exact finite pre-VMVT statement
@@ -11,12 +12,11 @@ summations.  This is the final finite analytic inequality before inserting
 the Vinogradov mean-value and derivative-pair-count estimates.
 -/
 
-open Complex Finset Set
-open scoped BigOperators ENNReal
+open Complex Finset
+open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrown_H_mul_exponentialSum_norm_le
     {N H : ℕ} (hHN : H ≤ N) (f : ℝ → ℝ) :
@@ -29,7 +29,7 @@ theorem heathBrown_H_mul_exponentialSum_norm_le
     ((H : ℂ) * heathBrownExponentialSum N f)
   rw [norm_mul, norm_natCast] at htri
   rw [norm_sub_rev] at htri
-  exact htri.trans (add_le_add le_rfl herror)
+  grind
 
 /-- Source-faithful finite form of Heath-Brown Lemma 1 prior to the two
 number-theoretic inputs.  Every factor is literal and all endpoint loss is
@@ -59,9 +59,7 @@ theorem heathBrown_lemma_one_finite_preVMVT
         heathBrownIntegratedMajorant N k H s f +
       V * ENNReal.ofReal ((H : ℝ) ^ 2) := by
   dsimp only
-  let V : ENNReal := ENNReal.ofReal
-    ((2 : ℝ) ^ (k - 1) *
-      (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))
+  pm_2848
   have hbase := heathBrown_H_mul_exponentialSum_norm_le hHN f
   have hbaseE := ENNReal.ofReal_le_ofReal hbase
   rw [ENNReal.ofReal_add (norm_nonneg _) (sq_nonneg _)] at hbaseE
@@ -88,6 +86,5 @@ theorem heathBrown_lemma_one_finite_preVMVT
       V * ENNReal.ofReal ((H : ℝ) ^ 2) := by gcongr
 
 
-end
 
 end GafniTao

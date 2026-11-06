@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondTailCost
 public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,8 +37,7 @@ theorem full_second_supported_tail (order : ℕ) :
         (128*lengthScale)^4 * (B^2 *
           (Y*(Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)*
             (1+lengthScale^3/Y)^2/(1+H)^order)) := by
-  obtain ⟨s,Ct,hCt,htail⟩ := full_uniform_secondSourceTail_bound order
-  refine ⟨s,Ct,hCt,?_⟩
+  pm_3085 s Ct hCt htail full_uniform_secondSourceTail_bound order
   intro ι _ p hp _ hg hinj hc F Ψ hΨ m c d Hcol W B Y H lengthScale hB hY hH hL hcol hsupp K hK
   exact (htail p hp hg hinj hc F Ψ m c d Hcol W Y H hY hH K hK).trans
     (secondSourceTailCost_bounded_test p hp hg hinj F Ψ hΨ m c d Hcol B Y H lengthScale

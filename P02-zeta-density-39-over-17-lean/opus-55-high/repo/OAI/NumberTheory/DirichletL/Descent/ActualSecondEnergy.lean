@@ -1,15 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceEncoding
 public import OAI.NumberTheory.DirichletL.Descent.SecondCauchy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers IdealMobiusDivisorSum
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_ne_zero)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -51,12 +52,10 @@ structure ActualSecondSourceConditions {Jo Jn : ℕ}
   new_support : ∀ x ∈ source, ∀ i, x.newAssigned i ∈ x.second.sourceCommon∪x.second.overlap
   quotient_nonzero : ∀ x ∈ source, x.quotient ≠ 0
 
-theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source) (c : SecondChild)
+section
+variable (hp : ∀ i, p i ≠ 0) (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn)) (hs : ActualSecondSourceConditions p source)
+include hp hpr hcop hinj Jo Jn u v source hs
+theorem actual_second_fiber_weight (c : SecondChild)
     (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K)
     (w : MarkedSecondSource ι Jo Jn → ℝ) (hw : ∀ x ∈ source, w x ≤ 1) :
     ∑ x ∈ source with actualSecondChild p u v x = c, w x ≤ secondDivisorWeight K c := by
@@ -80,12 +79,7 @@ theorem actual_second_fiber_weight (hp : ∀ i, p i ≠ 0)
     unfold secondDivisorWeight
     positivity
 
-theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source)
+theorem actual_second_energy_projection
     (labels : Finset (Ideal Eis)) (rows : Finset Eis)
     (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
       (actualSecondChild p u v x).2.2 ∈ rows)
@@ -102,21 +96,13 @@ theorem actual_second_energy_projection (hp : ∀ i, p i ≠ 0)
     (actualSecondChild p u v) w (secondDivisorWeight K) (fun c => ‖F c‖^2) hm
     (fun _ _ => sq_nonneg _) (fun c _ => actual_second_fiber_weight p hp hpr hcop hinj u v source hs c K ho hn w hw)
   apply hb.trans_eq
-  simp only [Finset.sum_product,secondDivisorWeight,tripleDivisorWeight,secondLabelEnergy,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro γ hγ
-  apply Finset.sum_congr rfl
-  intro f hf
+  pm_94 Finset.sum_product secondDivisorWeight tripleDivisorWeight secondLabelEnergy Finset.mul_sum
+  pm_3397 γ hγ f hf
   apply Finset.sum_congr rfl
   intro k hk
   ring
 
-theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source)
+theorem actual_second_weighted_count
     (labels : Finset (Ideal Eis)) (rows : Finset Eis)
     (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
       (actualSecondChild p u v x).2.2 ∈ rows)
@@ -134,6 +120,7 @@ theorem actual_second_weighted_count (hp : ∀ i, p i ≠ 0)
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw F))
     (Real.sqrt_le_sqrt (actual_second_energy_projection p hp hpr hcop hinj u v source hs labels rows hchild K ho hn (fun x => ‖w x‖) hw G))
     (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+end
 
 end
 end SevenEighths.InverseMoment

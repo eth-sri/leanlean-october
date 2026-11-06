@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramCommonActual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,8 +23,7 @@ lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
     refine ⟨-a,?_⟩
     linear_combination hab
   rw [idealRowHom_argument_mul] at he
-  let := finite_quotient_span (supported_element_ne_zero n hn)
-  let : Fintype (ResidueQ n) := Fintype.ofFinite _
+  pm_511 finite_quotient_span supported_element_ne_zero n hn ResidueQ
   change supportedModulusCharacter n hn (Ideal.Quotient.mk _ b)=
     star (supportedModulusCharacter n hn (Ideal.Quotient.mk _ m))
   rw [MulChar.star_apply',MulChar.inv_apply_eq_inv']
@@ -41,18 +41,14 @@ theorem actual_common_lift (C n₁ n₂ k : O)
   obtain ⟨a,b,hab⟩ := hn
   rw [actual_common_lift_bezout C n₁ n₂ a b k hC h₁ h₂ hab]
   have h₁b := supported_bezout_inverse n₁ n₂ a b h₁ hab
-  have h₂a := supported_bezout_inverse n₂ n₁ b a h₂ (by simpa only [add_comm] using hab)
+  have h₂a := supported_bezout_inverse n₂ n₁ b a h₂ (by grind)
   have he : idealRowHom (-a*k) (Ideal.span {n₂})=
       idealRowHom a (Ideal.span {n₂})*idealRowHom (-k) (Ideal.span {n₂}) := by
     rw [show -a*k=a*(-k) by ring,idealRowHom_argument_mul]
-  rw [idealRowHom_argument_mul,he,h₁b,h₂a,star_mul,star_star]
-  let := finite_quotient_span (supported_element_ne_zero n₁ h₁)
-  let : Fintype (ResidueQ n₁) := Fintype.ofFinite _
+  pm_502 idealRowHom_argument_mul he h₁b h₂a star_mul star_star
+  pm_511 finite_quotient_span supported_element_ne_zero n₁ h₁ ResidueQ
   have hphase := supported_opposite_phase n₁ n₂ h₁ h₂ hp₁ hp₂ ⟨a,b,hab⟩
-  calc
-    _ = idealRowHom k (Ideal.span {n₁})*star (idealRowHom (-k) (Ideal.span {n₂}))*
-        (idealRowHom n₁ (Ideal.span {n₂})*star (idealRowHom n₂ (Ideal.span {n₁})))*actualCommon C hC n₁ n₂ k := by ring
-    _ = _ := by rw [hphase]
+  grind
 
 end SevenEighths.ProbeGramCommon
 end

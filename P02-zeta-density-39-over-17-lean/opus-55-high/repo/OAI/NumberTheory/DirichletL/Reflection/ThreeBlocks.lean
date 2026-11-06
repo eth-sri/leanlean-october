@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Cross
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -61,13 +62,10 @@ theorem activePhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
     rw [← Finset.prod_union hF,hu]
   rw [hfull,hm,ordered_cross_frozen_partition _ l 4 2 R P F hRP hF hu,
     InverseMoment.row_slot_product_phase p hcop hg hprimary R P hRP,mul_one]
-  congr 2
+  pm_7996 l
   · apply Finset.prod_congr rfl
     intro i hi
-    simp [l,hi]
-  · apply Finset.prod_congr rfl
-    intro i hi
-    have hn : i ∉ R := fun hr => Finset.disjoint_left.mp hRP hr hi
+    pm_3040 hn R hr hRP
     simp [l,hn]
 
 end

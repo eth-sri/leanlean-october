@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.SmoothBlockContour
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,8 +20,8 @@ theorem smoothDetectorResidue_eventually_small {ψ : ℝ → ℝ} {a b : ℝ}
       ‖smoothDetectorResidue ψ ρ X N q‖ ≤ T^(-100 : ℝ) := by
   obtain ⟨C,hC,h⟩ := uniform_smoothDetectorResidue_bound hψ ha hb hs 104
   filter_upwards [eventually_ge_atTop (max C 2)] with T hT
-  have hCT : C ≤ T := (le_max_left _ _).trans hT
-  have hT2 : 2 ≤ T := (le_max_right _ _).trans hT
+  pm_207 hCT C T le_max_left hT
+  pm_225 hT2 T le_max_right hT
   have hTp : 0 < T := by linarith
   intro ρ X N q hβ hβ' hγ hX hXT hN hNT hq
   have hNp : 0 < N := by linarith

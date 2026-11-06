@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownLemmaOneOpenInterval
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,9 +25,10 @@ noncomputable def heathBrownLemmaOneFourTermConstant
   heathBrownLemmaOneSourceConstant k A C epsilon +
     (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ)))
 
-theorem heathBrownHChoice_cast_le_separated_scale
-    {k : ℕ} {A lambda : ℝ}
-    (hA : 0 < A) (hlambda : 0 < lambda) :
+section
+variable {k : ℕ} {A lambda : ℝ} (hA : 0 < A) (hlambda : 0 < lambda)
+include k A lambda hA hlambda
+theorem heathBrownHChoice_cast_le_separated_scale :
     (heathBrownHChoice k A lambda : ℝ) ≤
       A ^ (-(1 / (k : ℝ))) *
         lambda ^ (-(1 / (k : ℝ))) := by
@@ -39,25 +41,18 @@ theorem heathBrownHChoice_cast_le_separated_scale
       rw [Real.mul_rpow hA.le hlambda.le]
 
 theorem heathBrown_floor_endpoint_remainder_le
-    {k : ℕ} {A lambda : ℝ}
-    (hA : 0 < A) (hlambda : 0 < lambda)
     (hlargeH : 8 ≤ heathBrownHChoice k A lambda) :
     (heathBrownHChoice k A lambda : ℝ) + 2 ≤
       (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ))) *
         lambda ^ (-(1 / (k : ℝ))) := by
   let H := heathBrownHChoice k A lambda
-  have hHReal : (8 : ℝ) ≤ H := by exact_mod_cast hlargeH
+  pm_6347 hHReal hlargeH
   have hHScale := heathBrownHChoice_cast_le_separated_scale
     (k := k) hA hlambda
   change (H : ℝ) ≤
     A ^ (-(1 / (k : ℝ))) * lambda ^ (-(1 / (k : ℝ))) at hHScale
-  calc
-    (H : ℝ) + 2 ≤ (5 / 4 : ℝ) * H := by linarith
-    _ ≤ (5 / 4 : ℝ) *
-        (A ^ (-(1 / (k : ℝ))) *
-          lambda ^ (-(1 / (k : ℝ)))) := by gcongr
-    _ = (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ))) *
-        lambda ^ (-(1 / (k : ℝ))) := by ring
+  grind
+end
 
 theorem heathBrownLemmaOneFourTermConstant_pos
     {k : ℕ} {A C epsilon : ℝ}
@@ -92,17 +87,17 @@ theorem norm_heathBrownExponentialSum_le_fourTerm_open_of_vmvt
   let R := (5 / 4 : ℝ) * A ^ (-(1 / (k : ℝ)))
   let P := (N : ℝ) ^ epsilon
   let Q := heathBrownThreeTerm N k lambda
-  let L := lambda ^ (-(1 / (k : ℝ)))
+  pm_2811
   have hS0 : 0 ≤ S :=
     (heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le
-  have hR0 : 0 ≤ R := by dsimp only [R]; positivity
+  pm_82 hR0 R
   have hPone : 1 ≤ P := by
     dsimp only [P]
     exact Real.one_le_rpow (by exact_mod_cast (show 1 ≤ N by omega)) hepsilon.le
   have hP0 : 0 ≤ P := le_trans (by norm_num) hPone
   have hQ0 : 0 ≤ Q :=
     (heathBrownThreeTerm_pos (k := k) (show 1 ≤ N by omega) hlambda).le
-  have hL0 : 0 ≤ L := by dsimp only [L]; positivity
+  pm_82 hL0 L
   change (heathBrownHChoice k A lambda : ℝ) + 2 ≤ R * L at hrem
   change ‖heathBrownExponentialSum N f‖ ≤ S * P * Q +
     heathBrownHChoice k A lambda + 2 at hsource

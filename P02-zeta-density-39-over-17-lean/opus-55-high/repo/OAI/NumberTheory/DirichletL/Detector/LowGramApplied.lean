@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramBound
 public import OAI.NumberTheory.DirichletL.Detector.LowSlotPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (hb₀ : 0<b₀) :
     ∃J : ℕ,∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal),fixedBadPrimes⊆S→
       ∃K : ℝ,0<K ∧ ∀(W0 : ℝ→ℂ)(X Y : ℝ)(hX : 0<X)(hY : 1≤Y)
-        (B : RayRing→O→ℂ)(v : ℝ),1≤Y^2/lowPhysicalScale (calibrationForSet S hS) X Y→
+        (B : RayRing→ O→ℂ)(v : ℝ),1≤Y^2/lowPhysicalScale (calibrationForSet S hS) X Y→
       ‖lowSeparatedIntegrand (calibrationForSet S hS) W0 W1 (lowOuterCutoff a₀ b₀) X Y B v‖≤
         ‖mellin W0 ((v:ℂ)*Complex.I)‖*
         Real.sqrt (K*(1+|v|)^J*(lowPhysicalScale (calibrationForSet S hS) X Y/Y)*
@@ -37,7 +38,7 @@ theorem lowSeparatedIntegrand_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   refine ⟨K,hK,?_⟩
   intro W0 X Y hX hY B v hP
   have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
-  let Q := lowPhysicalScale (calibrationForSet S hS) X Y
+  pm_8099
   have hQ : 0<Q := lowPhysicalScale_pos _ X Y hX hy
   let A := K*(1+|v|)^J*(Q/Y)*(1+(Y^2/Q)^(1/6:ℝ)+(Y^2/Q)^2/Y)*Y^δ
   have hbound (σ : RayRing) :

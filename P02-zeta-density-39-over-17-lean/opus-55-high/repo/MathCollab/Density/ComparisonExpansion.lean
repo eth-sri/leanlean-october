@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.ComparisonAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,18 +21,12 @@ theorem weighted_mode_expansion {ι κ τ : Type*} (Q : Finset ι) (R : Finset �
   have hn (z : ℂ) : ((‖z‖^2 : ℝ) : ℂ) = z*conj z := by
     rw [Complex.ofReal_pow, ← Complex.mul_conj']
   simp only [Complex.ofReal_sum, Complex.ofReal_mul, hn, map_sum, Finset.sum_mul, Finset.mul_sum, Finset.sum_div]
-  simp_rw [Finset.sum_comm (s := R) (t := U)]
-  simp_rw [Finset.sum_comm (s := Q) (t := U)]
-  simp_rw [Finset.sum_comm (s := Q) (t := R)]
+  pm_584 R U
+  pm_584 Q U
+  pm_584 Q R
   conv_lhs => rw [Finset.sum_comm (s := U) (t := U)]
-  apply Finset.sum_congr rfl
-  intro t ht
-  apply Finset.sum_congr rfl
-  intro u hu
-  apply Finset.sum_congr rfl
-  intro m hm
-  apply Finset.sum_congr rfl
-  intro q hq
+  pm_4279
+  pm_90 Finset.sum_congr m hm q hq
   ring_nf
   simp only [map_mul, map_inv₀, conj_conj]
   ring
@@ -43,11 +38,11 @@ theorem cutoff_finite_sum (w : ReflectionCutoff) {L : ℝ} (hL : 0 < L) (v : ℝ
       ∑ n ∈ Finset.range (⌈5*L⌉₊+1), (w ((n : ℝ)/L) : ℂ)*dirichletPhase ((n : ℝ)/L) v := by
     apply tsum_eq_sum
     intro n hn
-    have hn' : ⌈5*L⌉₊ < n := by simpa using hn
+    have hn' : ⌈5*L⌉₊ < n := by grind
     have hbig : 5 < (n : ℝ)/L := (lt_div_iff₀ hL).2 (Nat.lt_of_ceil_lt hn')
     have hz : w ((n : ℝ)/L) = 0 :=
       image_eq_zero_of_notMem_tsupport (fun h => (not_le.mpr hbig) (w.support h).2)
-    simp only [hz, Complex.ofReal_zero, zero_mul]
+    simp_all
   rw [hKernel, he]
   ring
 
@@ -72,14 +67,11 @@ theorem comparisonExtension_identity (w : ComparisonCutoff) {N M : ℕ}
           conj (dyadicPolynomial M (t-u)) /
           (detectingPolynomial N a t * conj (detectingPolynomial N a u))) := by
   rw [comparisonExtension, weighted_mode_expansion]
-  apply Finset.sum_congr rfl
-  intro t ht
-  apply Finset.sum_congr rfl
-  intro u hu
+  pm_4279
   simp only [← dirichletPhase_sub]
   have hq : (∑ q ∈ Finset.Ico M (2*M), conj (dirichletPhase ((q : ℝ)/M) t) *
       dirichletPhase ((q : ℝ)/M) u) = conj (dyadicPolynomial M (t-u)) := by
-    simp only [dyadicPolynomial, map_sum, dirichletPhase_sub, map_mul, conj_conj]
+    pm_93 dyadicPolynomial map_sum dirichletPhase_sub map_mul conj_conj
   rw [hq, cutoff_finite_sum w.toReflectionCutoff (by positivity)]
   ring
 

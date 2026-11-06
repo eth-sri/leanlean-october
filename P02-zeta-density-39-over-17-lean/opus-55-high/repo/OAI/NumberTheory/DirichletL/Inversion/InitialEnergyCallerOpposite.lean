@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerCanonical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,18 +28,12 @@ theorem energy_neg_rows (T labels : Finset (Ideal Eis)) (rows : Finset Eis)
         ∑ k∈rows,‖F (t,f,k)‖^2 := by
   apply Finset.sum_congr rfl
   intro t ht
-  congr 1
-  apply Finset.sum_congr rfl
-  intro f hf
-  congr 1
+  pm_5046 f hf
   apply Finset.sum_bij (fun k _=>-k)
-  · exact hneg
-  · intro a ha b hb he
-    exact neg_injective he
-  · intro b hb
-    exact ⟨-b,hneg b hb,neg_neg b⟩
-  · intro k hk
-    rfl
+  grind
+  grind
+  grind
+  aesop
 
 variable {ι σ : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]

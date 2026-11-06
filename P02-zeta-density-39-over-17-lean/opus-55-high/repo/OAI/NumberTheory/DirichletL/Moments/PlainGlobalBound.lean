@@ -1,11 +1,10 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical Topology ContDiff
 open Set MeasureTheory Complex
 namespace SevenEighths.CenteredMomentPlainGlobalBound
@@ -24,7 +23,7 @@ open HeckeFamily HeckeDyadic
       filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
       rw [integrand_norm χ false W D 0 freq hD]
       have hm':(1+|t|)^2*(‖mellin W (((1/2:ℝ):ℂ)+t*I)‖*(1+|t|)^2)≤C:=by
-        nlinarith only [hm t]
+        grind
       have hb:=CubicReflectionKernel.weighted_two_to_cauchy
         (mul_nonneg (norm_nonneg _) (sq_nonneg _)) t hm'
       have hh:=mul_le_mul_of_nonneg_left (hs t ⟨ht.1.le,ht.2⟩)
@@ -34,7 +33,7 @@ open HeckeFamily HeckeDyadic
         sub_self,add_zero]
       norm_num only [add_zero,sub_self,Real.rpow_zero,mul_one]
       apply hh.trans
-      convert hbK using 1 <;> ring
+      grind
     _≤∫t:ℝ,(C*K)*(1+t^2)⁻¹:=
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
     _=_:=by rw [integral_const_mul,integral_univ_inv_one_add_sq]
@@ -101,6 +100,5 @@ open HeckeFamily HeckeDyadic
 
 end SevenEighths.CenteredMomentPlainGlobalBound
 
-end
 
 end OAI

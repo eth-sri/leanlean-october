@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -28,7 +29,7 @@ def sargosSincKernel (w x : ℝ) : ℝ := w*Real.sinc (Real.pi*w*x)^2
 
 theorem sargos_mul_sinc (x : ℝ) : x*Real.sinc x = Real.sin x := by
   by_cases hx : x = 0
-  · simp [hx]
+  simp_all
   · rw [Real.sinc_of_ne_zero hx]
     field_simp
 
@@ -48,9 +49,7 @@ theorem integrable_sargos_sinc_sq :
   have hmajor : Integrable (fun x : ℝ => 2/(1+x^2)) := by
     simpa only [div_eq_mul_inv] using integrable_inv_one_add_sq.const_mul 2
   apply hmajor.mono' (by fun_prop)
-  exact Filter.Eventually.of_forall (fun x => by
-    rw [Real.norm_eq_abs,abs_of_nonneg (sq_nonneg _)]
-    exact sargos_sinc_sq_majorant x)
+  pm_5236 Filter.Eventually.of_forall x sargos_sinc_sq_majorant
 
 theorem sargosSincKernel_nonneg {w : ℝ} (hw : 0 ≤ w) (x : ℝ) :
     0 ≤ sargosSincKernel w x := by
@@ -70,32 +69,38 @@ theorem sargosRealTent_le_one {w : ℝ} (hw : 0 < w) (x : ℝ) :
   have h : 0 ≤ |x|/w := by positivity
   linarith
 
-theorem sargosRealTent_zero_of_le_abs {w x : ℝ} (hw : 0 < w) (hx : w ≤ |x|) :
+section
+variable {w x : ℝ} (hw : 0 < w)
+include w x hw
+theorem sargosRealTent_zero_of_le_abs (hx : w ≤ |x|) :
     sargosRealTent w x = 0 := by
   apply max_eq_left
-  have h : 1 ≤ |x|/w := (le_div_iff₀ hw).mpr (by simpa using hx)
+  have h : 1 ≤ |x|/w := (le_div_iff₀ hw).mpr (by grind)
   linarith
 
-theorem sargosRealTent_eq_of_abs_le {w x : ℝ} (hw : 0 < w) (hx : |x| ≤ w) :
+theorem sargosRealTent_eq_of_abs_le (hx : |x| ≤ w) :
     sargosRealTent w x = 1-|x|/w := by
   apply max_eq_right
   exact sub_nonneg.mpr ((div_le_one hw).mpr hx)
+end
 
 theorem continuous_sargosRealTent (w : ℝ) : Continuous (sargosRealTent w) := by
   unfold sargosRealTent
   fun_prop
 
-theorem hasCompactSupport_sargosRealTent {w : ℝ} (hw : 0 < w) :
+section
+variable {w : ℝ} (hw : 0 < w)
+include w hw
+theorem hasCompactSupport_sargosRealTent :
     HasCompactSupport (sargosRealTent w) := by
   apply HasCompactSupport.intro (K := Icc (-w) w) isCompact_Icc
   intro x hx
-  apply sargosRealTent_zero_of_le_abs hw
-  by_contra h
-  exact hx (abs_le.mp (le_of_lt (lt_of_not_ge h)))
+  pm_6437
 
-theorem integrable_sargosRealTent {w : ℝ} (hw : 0 < w) :
+theorem integrable_sargosRealTent :
     Integrable (sargosRealTent w) :=
   (continuous_sargosRealTent w).integrable_of_hasCompactSupport
     (hasCompactSupport_sargosRealTent hw)
+end
 
 end TaoTrudgianYang2025

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonAllocationBox
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,9 +37,7 @@ theorem allocation_data (S : ι → Finset (Ideal O)) (C : Ideal O)
     (g:=fun v i => supportExtract (v i) (primeSupport C))
     (fun v hv => Finset.mem_image.mpr ⟨v,hv,rfl⟩) F
   symm
-  convert hh using 1
-  apply Finset.sum_congr rfl
-  intro B hB
+  pm_4983 hh B hB
   congr 1
 
 theorem sum_actual_allocations (S : ι → Finset (Ideal O))
@@ -54,10 +53,10 @@ theorem sum_actual_allocations (S : ι → Finset (Ideal O))
   obtain ⟨v,hv,hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hn
   have hp : (∏ i,v i)=C*a := by
     by_contra hh
-    exact hne (ite_eq_right hh)
+    grind
   have he := (tuple_products v C a hC ha hCa hp).1
   have hb := (Finset.mem_filter.mp hv).2
-  simpa only [hb] using he
+  grind
 
 theorem original_coefficient_allocated (S : ι → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (C a : Ideal O) (hC : C≠0) (ha : a≠0)
@@ -87,23 +86,22 @@ theorem actualAllocations_card (S : ι → Finset (Ideal O)) (C : Ideal O) (hC :
   have hf : Function.Injective f := by
     intro B D he
     apply Subtype.ext
-    funext i
-    exact congrArg Subtype.val (congrFun he i)
+    pm_5459 i he
   simpa only [Fintype.card_coe,Fintype.card_fun] using Fintype.card_le_of_injective f hf
 
 theorem actualAllocations_small_power [Nonempty ι] (ε : ℝ) (hε : 0<ε) :
     ∃ D : ℝ,0<D ∧ ∀ (S : ι → Finset (Ideal O)) (C : Ideal O),C≠0 →
-      ((actualAllocations S C).card:ℝ)≤D*(Ideal.absNorm C:ℝ)^ε := by
+      ((actualAllocations S C).card:ℝ)≤D *(Ideal.absNorm C:ℝ)^ε := by
   have hr : (0:ℝ)<Fintype.card ι := by exact_mod_cast Fintype.card_pos
   let δ := ε/(Fintype.card ι:ℝ)
   have hδ : 0<δ := div_pos hε hr
-  obtain ⟨D,hD,hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
-  refine ⟨D^(Fintype.card ι),pow_pos hD _,?_⟩
+  pm_69 D hD hdiv IdealDivisorBound.ideal_divisor_small_power δ hδ
+  refine ⟨D ^(Fintype.card ι),pow_pos hD _,?_⟩
   intro S C hC
   have hd : δ*(Fintype.card ι:ℝ)=ε := by dsimp only [δ];field_simp
   calc
     _ ≤ ((idealDivisors C).card:ℝ)^(Fintype.card ι) := by exact_mod_cast actualAllocations_card S C hC
-    _ ≤ (D*(Ideal.absNorm C:ℝ)^δ)^(Fintype.card ι) :=
+    _ ≤ (D *(Ideal.absNorm C:ℝ)^δ)^(Fintype.card ι) :=
       pow_le_pow_left₀ (Nat.cast_nonneg _) (hdiv C hC) _
     _ = _ := by rw [mul_pow,← Real.rpow_mul_natCast (Nat.cast_nonneg _),hd]
 

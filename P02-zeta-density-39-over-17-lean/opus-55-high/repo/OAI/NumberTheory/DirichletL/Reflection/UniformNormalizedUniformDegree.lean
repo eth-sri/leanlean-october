@@ -1,16 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.UniformNormalized
 public import OAI.NumberTheory.DirichletL.Reflection.UniformPhysicalUniformDegree
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
+open scoped Classical ContDiff
+open MeasureTheory InverseKernelSourceUniform CompletedDyadic
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
@@ -37,11 +37,11 @@ theorem normalized_surviving_physical_source_energy_type_uniform_uniform_degree
       (u : Eisˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
       0<T → 0<QK → 0<QP → 0<Qn → 0<Qb →
       X=kK*QK → Y=kn*Qn → B=kb*Qb → L=kP*QP →
-    ∀ (rows nset bset Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+    ∀ (rows nset bset Pset : Finset (Ideal Eis)) (S : Ideal Eis→ PrimeFamily σ)
       (hrows : ∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ)≤X)
       (D : ∀ K : rows, ∀ P : Pset, IsCoprime K.val P.val →
         ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property).1 (S P.val)).generator N a c mode)
-      (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→Ideal Eis→ℂ),
+      (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→ Ideal Eis→ℂ),
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
       (∀ P ∈ Pset, (∏ i, (S P).ideal i)=P) →
       (∀ P ∈ Pset, Pairwise (Function.onFun IsCoprime (F.sum (S P)).ideal)) →
@@ -59,7 +59,7 @@ theorem normalized_surviving_physical_source_energy_type_uniform_uniform_degree
       ((branches.card:ℝ)*∑ e∈branches,
         let U := Y/Ideal.absNorm (frozenExtracted F jF e 1)
         let Bb := B/Ideal.absNorm (frozenExtracted F jF e 2)
-        (Real.exp (M 2/2+M 3)*Real.sqrt kn*kb)^2*(6*C)*Z^(
+        (Real.exp (M 2/2+M 3)*Real.sqrt kn*kb)^2*(6*C)*Z ^(
           InverseTerminalWidths.reflectedExponent 0 (Real.logb Z X)
             (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 0))
             (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 2))
@@ -72,36 +72,10 @@ theorem normalized_surviving_physical_source_energy_type_uniform_uniform_degree
   refine ⟨degree,?_⟩
   intro N a c mode s hc
   obtain ⟨C₀,C,hC₀,hC,hsource⟩ := huniform (N:=N) (a:=a) (c:=c) (mode:=mode)
-  obtain ⟨Z₀,hZ₀,hshape⟩ := actual_physical_shape_uniform_type_uniform s hc
-    kK kP kn kb η hkK hkP hkn hkb hη
-  refine ⟨C₀,C,Z₀,hC₀,hC,hZ₀,?_⟩
-  intro φ σ _ _ Z hZ X Y B L hX hY hB hL F jF hN hbase hac hF hNF hcharF hj
-    ι _ G0 D0 u m T θ QK QP Qn Qb hT hQK hQP hQn hQb hsX hsY hsB hsL
-    rows nset bset Pset S hrows D r₀ aw₀ w₀
-    hrowcop hproducts hScop hSN hSchar hn hb hP hκ hA hr₀ haw₀ hw₀
-  have hh := hsource X Y B L hX hY hB hL F jF s hc hN hbase hac hF hNF hcharF hj
-    G0 D0 u m T θ QK QP Qn Qb hT hQK hQP hQn hQb rows nset bset Pset S hrows D r₀ aw₀ w₀
-    hrowcop hproducts hScop hSN hSchar hn hb hP hκ hA hr₀ haw₀ hw₀
-  let branches := survivingFrozenBranches F jF (actualCuspColumn D0 s hc u m) nset bset
-  let scalar := Real.exp (M 2/2+M 3)/(ramifiedScale 1 completedRamifiedStep m*Real.sqrt Qn*Qb)*
-    smallScalar (kernelCenter (actualKernelCoefficient F s m T) QK QP Qn Qb)
-  dsimp only at hh ⊢
-  apply hh.trans
-  apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
-  rw [mul_left_comm (scalar^2) (branches.card:ℝ)]
-  rw [Finset.mul_sum]
-  apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
-  apply Finset.sum_le_sum
-  intro e he
-  obtain ⟨heY,heB⟩ := surviving_extracted_scales F hF jF (actualCuspColumn D0 s hc u m)
-    nset bset Y B (fun n h => ⟨(hn n h).1.2,(hn n h).2⟩) hb e he
-  rw [heY,heB]
-  have hee := hshape Z hZ F jF e m T QK QP Qn Qb (Real.exp (M 2/2+M 3)) C ε hT hQK hQP hQn hQb hC.le
-  dsimp only at hee
-  rw [hsX,hsY,hsB,hsL]
-  convert hee using 1 ; ring
+  pm_1558
+  pm_3280
+  pm_3282
 
-end
 end SevenEighths.InverseReflectedPhase
 
 end OAI

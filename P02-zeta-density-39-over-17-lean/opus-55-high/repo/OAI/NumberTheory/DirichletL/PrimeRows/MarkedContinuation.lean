@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedAgreement
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedExclusions
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,10 +28,8 @@ theorem continuedCompensatedRow_eq_initial (S : Finset (Ideal O)) (hS : SourceEx
     (x w z : ℂ) (B q : PrimeIdeal→ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     continuedCompensatedRow S hS T hT η u x w z B q=spectralCompensatedRow S T η u.val x w z B q := by
-  have hx0 : x≠0 := by intro h; simp only [h,Complex.zero_re] at hx;linarith
-  have hx1 : x≠1 := by intro h; simp only [h,Complex.one_re] at hx;linarith
-  have hw0 : w≠0 := by intro h; simp only [h,Complex.zero_re] at hw;linarith
-  have hw1 : w≠1 := by intro h; simp only [h,Complex.one_re] at hw;linarith
+  pm_5191 hx0 x hx hx1
+  pm_5191 hw0 w hw hw1
   unfold continuedCompensatedRow
   rw [HeckeOrigin.continued_eq _ hw0 hw1,HeckeReciprocal.reciprocal_eq_inv _ hx0 hx1,
     continuedCorrection_eq_initial (markExclusions S T) (markedSourceExclusions S hS T) η u x w z hx hw hz]
@@ -40,13 +39,10 @@ theorem continuedCompensatedRow_eq_initial (S : Finset (Ideal O)) (hS : SourceEx
 
 theorem continuedCompensatedRow_eq_indexed {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
+    (P : Fin K→ PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
-    let hT : ∀Q∈Finset.univ.image P,Q.val∉S := by
-      intro Q hQ
-      obtain ⟨i,_,rfl⟩ := Finset.mem_image.mp hQ
-      exact hPS i
+    let hT : ∀Q∈Finset.univ.image P,Q.val∉S := by grind
     continuedCompensatedRow S hS (Finset.univ.image P) hT η u x w z
       (fun Q=>star (idealCoeff η Q.val)*(Q.val.absNorm:ℂ)^x)
       (fun Q=>(Q.val.absNorm:ℂ)^(-w))=

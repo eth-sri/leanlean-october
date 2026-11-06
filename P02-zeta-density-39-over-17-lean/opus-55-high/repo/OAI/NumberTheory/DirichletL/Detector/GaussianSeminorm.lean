@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussianDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,9 +20,7 @@ lemma gaussianFixedWindow_compact : HasCompactSupport gaussianFixedWindow := by
   apply HasCompactSupport.of_support_subset_isCompact (isCompact_Icc (a:=(1/2:ℝ)) (b:=2))
   intro y hy
   change gaussianFixedWindow y≠0 at hy
-  constructor
-  · by_contra h; exact hy (gaussianFixedWindow_small y (le_of_lt (lt_of_not_ge h)))
-  · by_contra h; exact hy (gaussianFixedWindow_large y (le_of_lt (lt_of_not_ge h)))
+  pm_3868
 lemma gaussianFixedWindow_contDiff : ContDiff ℝ ∞ gaussianFixedWindow := by
   rw [contDiff_iff_contDiffAt]
   intro y
@@ -36,7 +35,7 @@ lemma gaussianFixedWindow_contDiff : ContDiff ℝ ∞ gaussianFixedWindow := by
     filter_upwards [eventually_lt_nhds (show y<(1/2:ℝ) by linarith)] with x hx
     exact gaussianFixedWindow_small x hx.le
 
-lemma gaussianProfile_scaled_smooth (r : ℝ) (hr : 0<r) (y : ℝ) (hy : 0<y) :
+lemma gaussianProfile_scaled_smooth (r : ℝ) (hr : 0< r) (y : ℝ) (hy : 0<y) :
     ContDiffAt ℝ ∞ (fun x : ℝ=>gaussianMellinProfile (r*x)) y := by
   have hf : ContDiffAt ℂ ∞ (fun z : ℂ=>gaussianLog ((r:ℂ)*z)) (y:ℂ) :=
     (gaussianLog_scaled_analytic r hr (y:ℂ) hy).contDiffAt

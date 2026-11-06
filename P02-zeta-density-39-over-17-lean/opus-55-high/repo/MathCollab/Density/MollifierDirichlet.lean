@@ -7,6 +7,7 @@ The existing real floor-cutoff mollifier and integer coefficients are preserved.
 public import MathCollab.Density.MollifierCoefficients
 public import Mathlib.NumberTheory.LSeries.Dirichlet
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,39 +37,27 @@ theorem truncatedMoebius_hasFiniteSupport (X : ℝ) :
   intro n hn
   simp only [Function.mem_support, ne_eq] at hn
   by_contra hnMem
-  have hnMem' : n ∉ Icc 1 ⌊X⌋₊ := by simpa using hnMem
-  exact hn (by rw [truncatedMoebius_apply, ite_eq_right hnMem'])
+  have hnMem' : n ∉ Icc 1 ⌊X⌋₊ := by grind
+  simp_all
 
 theorem truncatedMoebius_LSeriesSummable (X : ℝ) (s : ℂ) :
-    LSeriesSummable (truncatedMoebius X) s := by
-  unfold LSeriesSummable
-  exact summable_of_hasFiniteSupport <|
-    (truncatedMoebius_hasFiniteSupport X).subset (by
-      intro n hn
-      simp only [Function.mem_support, ne_eq] at hn ⊢
-      contrapose! hn
-      rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-      simp [hn])
+    LSeriesSummable (truncatedMoebius X) s := by pm_4271
 
+section
+variable (X : ℝ)
+include X
 /-- The finite-sum definition of the mollifier agrees exactly with its
 L-series representation. -/
-theorem zetaMollifier_eq_LSeries (X : ℝ) (s : ℂ) :
+theorem zetaMollifier_eq_LSeries (s : ℂ) :
     zetaMollifier X s = LSeries (truncatedMoebius X) s := by
   rw [zetaMollifier, LSeries, tsum_eq_sum (s := Icc 1 ⌊X⌋₊)]
-  · apply Finset.sum_congr rfl
-    intro n hn
-    rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-    simp only [truncatedMoebius_apply, ite_eq_left hn]
-  · intro n hn
-    rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-    simp [hn]
+  pm_4272
 
 /-- Multiplication by zeta produces the truncated divisor-sum coefficient. -/
-theorem zeta_mul_truncatedMoebius_apply (X : ℝ) (n : ℕ) :
+theorem zeta_mul_truncatedMoebius_apply (n : ℕ) :
     ((ArithmeticFunction.zeta : ArithmeticFunction ℂ) * truncatedMoebius X) n =
       mollifierDirichletCoeff X n := by
-  rw [ArithmeticFunction.coe_zeta_mul_apply]
-  simp only [truncatedMoebius_apply, mollifierDirichletCoeff, mollifierCoefficient, Int.cast_sum]
+  pm_214 ArithmeticFunction.coe_zeta_mul_apply truncatedMoebius_apply mollifierDirichletCoeff mollifierCoefficient Int.cast_sum
   rw [← Finset.sum_filter]
   apply Finset.sum_congr
   · ext d
@@ -83,7 +72,7 @@ theorem zeta_mul_truncatedMoebius_apply (X : ℝ) (n : ℕ) :
 
 /-- In the half-plane of absolute convergence, the analytic mollified zeta
 product is the L-series with the truncated Möbius divisor coefficients. -/
-theorem riemannZeta_mul_zetaMollifier_eq_LSeries (X : ℝ) {s : ℂ}
+theorem riemannZeta_mul_zetaMollifier_eq_LSeries {s : ℂ}
     (hs : 1 < s.re) :
     riemannZeta s * zetaMollifier X s = LSeries (mollifierDirichletCoeff X) s := by
   have hProd :
@@ -111,7 +100,7 @@ theorem riemannZeta_mul_zetaMollifier_eq_LSeries (X : ℝ) {s : ℂ}
     _ = LSeries (mollifierDirichletCoeff X) s :=
       LSeries_congr (fun {_n} _hn => zeta_mul_truncatedMoebius_apply X _n) s
 
-theorem mollifierDirichletCoeff_LSeriesSummable (X : ℝ) {s : ℂ} (hs : 1 < s.re) :
+theorem mollifierDirichletCoeff_LSeriesSummable {s : ℂ} (hs : 1 < s.re) :
     LSeriesSummable (mollifierDirichletCoeff X) s := by
   have hMul := ArithmeticFunction.LSeriesSummable_mul
     (f := (ArithmeticFunction.zeta : ArithmeticFunction ℂ))
@@ -123,11 +112,11 @@ theorem mollifierDirichletCoeff_LSeriesSummable (X : ℝ) {s : ℂ} (hs : 1 < s.
 
 
 /-- The zero-index coefficient vanishes independently of the cutoff. -/
-theorem mollifierDirichletCoeff_zero (X : ℝ) : mollifierDirichletCoeff X 0 = 0 := by
+theorem mollifierDirichletCoeff_zero : mollifierDirichletCoeff X 0 = 0 := by
   simp [mollifierDirichletCoeff, mollifierCoefficient]
 
 /-- A bound uniform in the series index, with the exact finite cutoff. -/
-theorem norm_mollifierDirichletCoeff_le_cutoff (X : ℝ) (n : ℕ) :
+theorem norm_mollifierDirichletCoeff_le_cutoff (n : ℕ) :
     ‖mollifierDirichletCoeff X n‖ ≤ (⌊X⌋₊ : ℝ) := by
   let S := n.divisors.filter (fun d => d ≤ ⌊X⌋₊)
   have hsub : S ⊆ Finset.Icc 1 ⌊X⌋₊ := by
@@ -148,7 +137,7 @@ theorem norm_mollifierDirichletCoeff_le_cutoff (X : ℝ) (n : ℕ) :
     _ ≤ (⌊X⌋₊ : ℝ) := by exact_mod_cast hcard
 
 /-- The finite mollifier is entire in its complex argument. -/
-theorem differentiableAt_zetaMollifier (X : ℝ) (s : ℂ) :
+theorem differentiableAt_zetaMollifier (s : ℂ) :
     DifferentiableAt ℂ (zetaMollifier X) s := by
   unfold zetaMollifier
   apply DifferentiableAt.fun_sum
@@ -157,5 +146,6 @@ theorem differentiableAt_zetaMollifier (X : ℝ) (s : ℂ) :
   have hmZero : (m : ℂ) ≠ 0 := by
     exact_mod_cast (show m ≠ 0 from Nat.ne_zero_of_lt (Finset.mem_Icc.mp hm).1)
   exact differentiableAt_id.neg.const_cpow (Or.inl hmZero)
+end
 
 end MathCollab.Density

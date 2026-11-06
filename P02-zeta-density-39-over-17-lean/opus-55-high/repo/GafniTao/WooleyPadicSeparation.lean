@@ -41,7 +41,7 @@ theorem wooleyResidueDifference_ne_zero_of_separated
   intro hzero
   have hval : xi.val = eta.val := by
     exact_mod_cast (sub_eq_zero.mp hzero)
-  exact hsep (by simp [hval])
+  aesop
 
 theorem wooleyResidueDifference_factorization
     {p a b : ℕ} (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b)) :
@@ -63,23 +63,20 @@ theorem wooleyResidueDifference_factorization
         ((Nat.divMaxPow d.natAbs p : ℤ) *
           (p : ℤ) ^ padicValNat p d.natAbs) := by
       congr 1
-      exact_mod_cast (by simpa only [Nat.mul_comm] using hnat.symm)
+      exact_mod_cast (by grind)
     _ = _ := by ring
 
-theorem wooleyResidueUnitNat_coprime
-    {p a b nu : ℕ} (hp : p.Prime)
-    {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)}
-    (hsep : wooleyResiduesSeparated nu xi eta) :
+section
+variable {p a b nu : ℕ} (hp : p.Prime) {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)} (hsep : wooleyResiduesSeparated nu xi eta)
+include p a b nu hp xi eta hsep
+theorem wooleyResidueUnitNat_coprime :
     Nat.Coprime p (wooleyResidueUnitNat xi eta) := by
   rw [hp.coprime_iff_not_dvd]
   exact Nat.not_dvd_divMaxPow hp.one_lt
     (Int.natAbs_ne_zero.mpr
       (wooleyResidueDifference_ne_zero_of_separated hsep))
 
-theorem wooleyResidueValuation_lt
-    {p a b nu : ℕ} (hp : p.Prime)
-    {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)}
-    (hsep : wooleyResiduesSeparated nu xi eta) :
+theorem wooleyResidueValuation_lt :
     wooleyResidueValuation xi eta < nu := by
   let d := wooleyResidueDifference xi eta
   have hd : d ≠ 0 := wooleyResidueDifference_ne_zero_of_separated hsep
@@ -93,16 +90,13 @@ theorem wooleyResidueValuation_lt
       rw [Nat.modEq_iff_dvd]
       simpa [d, wooleyResidueDifference, sub_eq_add_neg,
         add_comm] using (Int.dvd_neg.mpr hdvdInt)
-    exact hsep hmodeq
+    aesop
   have hnotle : ¬ nu ≤ padicValNat p d.natAbs := by
     intro hle
     exact hnotdvd ((Nat.pow_dvd_iff_le_padicValNat hp.ne_one hn).2 hle)
-  exact Nat.lt_of_not_ge hnotle
+  aesop
 
-theorem wooley_padic_separation
-    {p a b nu : ℕ} (hp : p.Prime)
-    {xi : ZMod (p ^ a)} {eta : ZMod (p ^ b)}
-    (hsep : wooleyResiduesSeparated nu xi eta) :
+theorem wooley_padic_separation :
     ∃ gamma : ℕ, ∃ omega : ℤ,
       gamma < nu ∧ Nat.Coprime p omega.natAbs ∧
         wooleyResidueDifference xi eta = omega * (p : ℤ) ^ gamma := by
@@ -114,6 +108,7 @@ theorem wooley_padic_separation
     wooleyResidueDifference_ne_zero_of_separated hsep
   simpa [wooleyResidueUnit, wooleyResidueUnitNat,
     Int.natAbs_mul, Int.natAbs_sign, hd] using hcop
+end
 
 
 end

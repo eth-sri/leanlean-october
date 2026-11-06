@@ -8,6 +8,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNearGapBudget
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonFarGap
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,15 +20,17 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinson_far_gap_row_le {H L : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
+section
+variable {H L : ℝ} {M : ℕ} {W : Finset ℝ}
+include H L M W
+theorem atkinson_far_gap_row_le {t : ℝ}
     (hH : 0 < H) (hM : 0 < M) (ht : t ∈ W)
     (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H)
     (hdiam : ∀ u ∈ W, |u-t| ≤ L) :
     atkinsonFarGapRow H M W t ≤
       (W.card:ℝ)*(2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ)))) := by
   classical
-  have hM0 : (0:ℝ) < M := by exact_mod_cast hM
-  have hR : 0 < Real.sqrt (H*(M:ℝ)) := by positivity
+  pm_4359
   let S := W.filter (fun u => Real.sqrt (H*(M:ℝ)) < |u-t|)
   have hbound : ∀ u ∈ S, atkinsonPrefixGapMajorant M M t u ≤
       2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ))) := by
@@ -35,11 +38,11 @@ theorem atkinson_far_gap_row_le {H L : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
     have hd := Finset.mem_filter.mp hu
     have hf := atkinsonPrefixGapMajorant_le_far hH
       (hrange t ht).1 (hrange t ht).2 (hrange u hd.1).1 (hrange u hd.1).2 hM
-      (by simpa only [abs_sub_comm] using hd.2.le)
+      (by grind)
     have hmono : (M:ℝ)*|t-u|/Real.sqrt (H*(M:ℝ)) ≤
         (M:ℝ)*L/Real.sqrt (H*(M:ℝ)) :=
       div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left
-        (by simpa only [abs_sub_comm] using hdiam u hd.1) hM0.le) hR.le
+        (by grind) hM0.le) hR.le
     exact hf.trans (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hmono) (by norm_num))
   calc
     _ ≤ ∑ u ∈ S, 2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ))) :=
@@ -49,7 +52,7 @@ theorem atkinson_far_gap_row_le {H L : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
       (by exact_mod_cast Finset.card_le_card (Finset.filter_subset (s := W) _))
       (by positivity)
 
-theorem atkinson_far_gap_double_sum_le {H L : ℝ} {M : ℕ} {W : Finset ℝ}
+theorem atkinson_far_gap_double_sum_le
     (hH : 0 < H) (hM : 0 < M)
     (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H)
     (hdiam : ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ L) :
@@ -59,6 +62,7 @@ theorem atkinson_far_gap_double_sum_le {H L : ℝ} {M : ℕ} {W : Finset ℝ}
     _ ≤ ∑ t ∈ W, (W.card:ℝ)*(2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ)))) :=
       Finset.sum_le_sum (fun t ht => atkinson_far_gap_row_le hH hM ht hrange (hdiam t ht))
     _ = _ := by simp; ring
+end
 
 def atkinsonLocalizedGapBudget (η H G L : ℝ) (N R : ℕ) : ℝ :=
   (Nat.clog 2 N:ℝ)*∑ j ∈ Finset.range (Nat.clog 2 N),
@@ -71,10 +75,7 @@ theorem atkinsonSeparatedGapBudget_le_localized {H G L η : ℝ} {N : ℕ} {W : 
     (hdiam : ∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ L) :
     atkinsonSeparatedGapBudget η H G N W ≤
       atkinsonLocalizedGapBudget η H G L N W.card := by
-  unfold atkinsonSeparatedGapBudget atkinsonLocalizedGapBudget
-  apply mul_le_mul_of_nonneg_left _ (by positivity)
-  apply Finset.sum_le_sum
-  intro j hj
+  pm_8898 atkinsonSeparatedGapBudget atkinsonLocalizedGapBudget
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   have h := atkinson_far_gap_double_sum_le (M := 2^j) hH (pow_pos (by norm_num) _) hrange hdiam
   linarith

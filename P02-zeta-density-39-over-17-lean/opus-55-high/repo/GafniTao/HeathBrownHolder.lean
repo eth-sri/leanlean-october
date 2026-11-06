@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownCenterWeyl
 public import Mathlib.MeasureTheory.Integral.MeanInequalities
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,25 +30,26 @@ private def heathBrownHolderExponent (s : ℕ) : Bool → ℝ
   | false => 1 / (2 * (s : ℝ))
   | true => 1 - 1 / (s : ℝ)
 
-private theorem heathBrownHolderExponent_sum
-    {s : ℕ} (hs : 1 ≤ s) :
+section
+variable {s : ℕ} (hs : 1 ≤ s)
+include s hs
+private theorem heathBrownHolderExponent_sum :
     1 / (2 * (s : ℝ)) + ∑ i : Bool, heathBrownHolderExponent s i = 1 := by
-  have hs0 : (s : ℝ) ≠ 0 := by exact_mod_cast (by omega : s ≠ 0)
+  pm_300 hs0 s
   rw [Fintype.sum_bool]
   simp [heathBrownHolderExponent]
   field_simp
   ring
 
-private theorem heathBrownHolderExponent_nonneg
-    {s : ℕ} (hs : 1 ≤ s) (i : Bool) :
+private theorem heathBrownHolderExponent_nonneg (i : Bool) :
     0 ≤ heathBrownHolderExponent s i := by
   cases i
   · simp only [heathBrownHolderExponent]
     positivity
   · simp only [heathBrownHolderExponent]
-    have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
-    exact sub_nonneg.mpr (by
-      simpa using one_div_le_one_div_of_le zero_lt_one hsR)
+    pm_77 hsR s hs
+    pm_8333
+end
 
 private theorem prod_heathBrownHolderFunction
     {X : Type*} (A B : X → ENNReal) {s : ℕ} (hs : 1 ≤ s) (x : X) :
@@ -56,13 +58,12 @@ private theorem prod_heathBrownHolderFunction
           (heathBrownHolderFunction B i x) ^
             (heathBrownHolderExponent s i) =
       A x * B x := by
-  have hs0 : (s : ℝ) ≠ 0 := by exact_mod_cast (by omega : s ≠ 0)
+  pm_300 hs0 s
   have htwoS : (2 * (s : ℝ)) ≠ 0 := by positivity
   have hq : 0 ≤ 1 / (2 * (s : ℝ)) := by positivity
   have hr : 0 ≤ 1 - 1 / (s : ℝ) := by
-    have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
-    exact sub_nonneg.mpr (by
-      simpa using one_div_le_one_div_of_le zero_lt_one hsR)
+    pm_77 hsR s hs
+    pm_8333
   rw [Fintype.prod_bool]
   simp only [heathBrownHolderFunction, heathBrownHolderExponent]
   rw [← ENNReal.rpow_natCast, ← ENNReal.rpow_mul]
@@ -76,7 +77,7 @@ private theorem prod_heathBrownHolderFunction
     field_simp]
   rw [← ENNReal.rpow_add_of_nonneg _ _ hr (by positivity)]
   rw [show (1 - 1 / (s : ℝ)) + 1 / (s : ℝ) = 1 by ring]
-  rw [ENNReal.rpow_one]
+  simp_all
 
 /-- Heath-Brown's three-factor Hölder inequality, in the exact root form
 used in Lemma 1. -/

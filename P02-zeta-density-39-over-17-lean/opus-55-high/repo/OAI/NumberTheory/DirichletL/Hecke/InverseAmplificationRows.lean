@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowSpecialization
+public import OAI.NumberTheory.DirichletL.Hecke.Dyadic
 
 @[expose] public section
 
@@ -39,7 +40,7 @@ theorem ideal_decomposition_unique {I J A B : Ideal O}
       using congrArg Multiset.prod hAB
 
 abbrev FreeRow := {u : O // u≠0 ∧ SixthFree (Ideal.span {u})}
-abbrev NonzeroIdeal := UnrestrictedIdealReindex.NonzeroIdeal
+export OAI.SevenEighths.HeckeDyadic (NonzeroIdeal)
 
 def rowMap (p : FreeRow×NonzeroIdeal) : O :=
   p.1.val*(ConcretePrimeRowBridge.idealGenerator p.2.val)^6

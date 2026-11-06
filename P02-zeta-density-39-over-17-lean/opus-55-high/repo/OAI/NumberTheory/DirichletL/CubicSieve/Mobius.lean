@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -65,10 +66,7 @@ lemma residualGram_rescale {n : Type*} [Fintype n] (D : Ideal O) (cols : n → I
     residualGram D cols (fun j => if D ∣ cols j then a j else 0) (d * w) =
       residualGram D cols (descendedCoefficient D cols a d) w := by
   unfold residualGram
-  apply Finset.sum_congr rfl
-  intro j hj
-  apply Finset.sum_congr rfl
-  intro k hk
+  pm_3718
   split_ifs
   · rw [cubicRow_mul_argument _ (totalQuotient_cubic_admissible D _ (hcols j)).2,
       cubicRow_mul_argument _ (totalQuotient_cubic_admissible D _ (hcols k)).2]
@@ -83,8 +81,10 @@ lemma ideal_dvd_span_iff_generator (E : Ideal O) (z : O) :
     Ideal.mem_span_singleton
   rwa [span_idealGenerator] at he
 
-lemma sum_dividedRows_residualGram_rescale {n : Type*} [Fintype n]
-    (D : Ideal O) (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
+section
+variable {n : Type*} [Fintype n] (D : Ideal O)
+include n D
+lemma sum_dividedRows_residualGram_rescale (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
     (a : n → ℂ) (R : Finset O) (w : O → ℂ) (d : O) :
     (∑ z ∈ dividedRows R d,
       w (d * z) * residualGram D cols (fun j => if D ∣ cols j then a j else 0) (d * z)) =
@@ -94,8 +94,7 @@ lemma sum_dividedRows_residualGram_rescale {n : Type*} [Fintype n]
   intro z _
   rw [residualGram_rescale D cols hcols a]
 
-theorem cubic_gcd_mobius_descent {n : Type*} [Fintype n]
-    (D : Ideal O) (hD : primaryGenerator D ≠ 0)
+theorem cubic_gcd_mobius_descent (hD : primaryGenerator D ≠ 0)
     (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
     (a : n → ℂ) (R : Finset O) (w : O → ℂ) :
     (∑ z ∈ R, w z * ∑ j, ∑ k, cubicGcdTerm D cols a z j k) =
@@ -131,6 +130,7 @@ theorem cubic_gcd_mobius_descent {n : Type*} [Fintype n]
       rw [sum_divisible_rows]
       exact congrArg ((UniqueFactorizationMonoid.moebius E : ℂ) * ·)
         (sum_dividedRows_residualGram_rescale D cols hcols a R w (idealGenerator E))
+end
 
 end
 end SevenEighths.CubicSieve

@@ -4,9 +4,9 @@ public import GuthMaynard.Improvement.SourceDirichletPairing
 public import GuthMaynard.Improvement.SourceCutoffConvolution
 public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import MathCollab.Density.Packing
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform SchwartzMap ContDiff
@@ -34,8 +34,7 @@ theorem source_reproducing_frequency {N : ℝ} (hN : 0 < N) {n : ℕ}
     -mellinFrequency ((n:ℝ)/N) ∈ Icc (-1:ℝ) 2 := by
   obtain ⟨hn1,hn2⟩ := (sourceRatioIndices_mem hN.le n).mp hn
   have hx0 : 0 < (n:ℝ)/N := div_pos (hN.trans hn1) hN
-  have hx1 : 1 ≤ (n:ℝ)/N := (le_div_iff₀ hN).mpr (by linarith)
-  have hx2 : (n:ℝ)/N ≤ 2 := (div_le_iff₀ hN).mpr (by linarith)
+  pm_751 hx1 hx2
   have hl0 := Real.log_nonneg hx1
   have hl1 : Real.log ((n:ℝ)/N) ≤ 1 := by
     have hh := Real.log_le_sub_one_of_pos hx0
@@ -44,7 +43,7 @@ theorem source_reproducing_frequency {N : ℝ} (hN : 0 < N) {n : ℕ}
   have hf0 : 0 ≤ mellinFrequency ((n:ℝ)/N) := div_nonneg hl0 hd.le
   have hf1 : mellinFrequency ((n:ℝ)/N) ≤ 1 :=
     (div_le_one hd).mpr (by nlinarith [Real.pi_gt_three])
-  constructor <;> linarith
+  grind
 
 /-- A translated kernel reproduces one exponential by ordinary Fourier
 integration; this never applies inversion to the nonintegrable exponential. -/
@@ -56,10 +55,7 @@ theorem source_kernel_phase_integral (κ : ℝ → ℂ) (ξ w : ℝ) :
   simp_rw [add_mul,phase_add]
   calc
     _ = phase (w*ξ)*(∫ t, phase (t*ξ)*κ t) := by
-      rw [← integral_const_mul]
-      apply integral_congr_ae
-      filter_upwards with t
-      ring
+      pm_5629
     _ = _ := by
       rw [fourier_eq_phase_integral]
       simp only [neg_neg,mul_comm ξ]
@@ -81,15 +77,11 @@ theorem boundedPolynomial_reproduce {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ) (w 
       simp only [norm_mul,phase_norm,mul_one]
       exact le_rfl
   simp_rw [he,Finset.mul_sum]
-  rw [integral_finsetSum _ (fun n _ => hi n)]
-  apply Finset.sum_congr rfl
+  pm_7961 n
   intro n hn
   have hc : (∫ t, sourceReproducingKernel (t-w)*(a n*phase (t*mellinFrequency ((n:ℝ)/N)))) =
       a n*(∫ t, sourceReproducingKernel (t-w)*phase (t*mellinFrequency ((n:ℝ)/N))) := by
-    rw [← integral_const_mul]
-    apply integral_congr_ae
-    filter_upwards with t
-    ring
+    pm_5629
   rw [hc,source_kernel_phase_integral,sourceReproducingKernel_fourier,
     fixedTimeCutoff_one (source_reproducing_frequency hN hn)]
   simp only [Complex.ofReal_one,mul_one]

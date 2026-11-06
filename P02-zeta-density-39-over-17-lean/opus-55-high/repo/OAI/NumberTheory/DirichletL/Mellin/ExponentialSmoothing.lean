@@ -14,21 +14,6 @@ namespace AnalyticBridge
 
 variable {Ω : Type*}
 
-structure CRTChoice where
-  J : ℕ
-  C : ℕ
-  e : ℕ
-  v : ℕ
-  s : ℕ
-  J2 : ℕ
-  b1 : ℕ
-  b2 : ℕ
-  A1 : ℕ
-  A2 : ℕ
-  d : ℕ
-  kpp : ℕ
-  deriving DecidableEq
-
 end AnalyticBridge
 
 open Filter Asymptotics MeasureTheory

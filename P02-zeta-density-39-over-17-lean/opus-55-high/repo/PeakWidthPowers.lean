@@ -1,5 +1,6 @@
 module
 public import GenericPeakClusters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,15 +24,9 @@ theorem width_second_term {a g b K P L V H : ℝ}
     Real.div_rpow hVp.le (by positivity),
     Real.mul_rpow hK.le (sq_nonneg L),
     Real.mul_rpow (by positivity : 0 ≤ 16*P) hL.le]
-  have hLg : (L^2)^g = L^(2*g) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul hL.le]
-    norm_num
-  have hVg : (V^2)^g = V^(2*g) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul hV.le]
-    norm_num
-  have hVb : (V^2)^b = V^(2*b) := by
-    rw [← Real.rpow_natCast, ← Real.rpow_mul hV.le]
-    norm_num
+  pm_4957 hLg L g hL.le
+  pm_4957 hVg V g hV.le
+  pm_4957 hVb V b hV.le
   rw [hLg,hVg,hVb,Real.rpow_add hL,Real.rpow_add hV]
   have hKg : K^g ≠ 0 := (Real.rpow_pos_of_pos hK _).ne'
   have hLg' : L^(2*g) ≠ 0 := (Real.rpow_pos_of_pos hL _).ne'

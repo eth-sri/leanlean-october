@@ -3,6 +3,7 @@ public import MathCollab.Density.Stronger.ConditionalMoment
 public import MathCollab.Density.Stronger.SeparatedVolume
 public import MathCollab.Density.Stronger.Fourth.FourthMoment
 public import MathCollab.Density.Stronger.ConditionalDensity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ namespace MathCollab.Density.Stronger
 theorem actual_fourth_moment_eventually (η : ℝ) (hη : 0 < η) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ᶠ H : ℝ in atTop,
       (∫ t in H..2*H, zetaMomentCriticalNorm t^4) ≤ C*H^(1+η) := by
-  obtain ⟨C,B,hC,hfourth⟩ := Fourth.zeta_fourth_dyadic η hη
+  pm_205 C B hC hfourth Fourth.zeta_fourth_dyadic η hη
   refine ⟨C,hC,?_⟩
   filter_upwards [eventually_ge_atTop B,eventually_gt_atTop (0 : ℝ)] with H hH hH0
   exact hfourth H hH hH0

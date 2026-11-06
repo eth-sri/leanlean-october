@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.ActualWeightedEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -48,12 +49,8 @@ theorem weightedPhysicalReflectedRow_eq_branches (F : PrimeFamily φ) (K : Ideal
   rw [← Finset.sum_coe_sort Pset]
   apply Finset.sum_congr rfl
   intro P hP
-  conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro n hn
-  conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro b hb'
+  pm_172 Finset.sum_comm n hn
+  pm_172 Finset.sum_comm b hb'
   rw [he P n b hb',Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro e he'

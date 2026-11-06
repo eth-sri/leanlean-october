@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalBound
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,10 +17,9 @@ lemma freeRow_count (R : Finset FreeRow) (H : ℝ) (hH : 1≤H)
     (hR : ∀u∈R,((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤H) :
     (R.card:ℝ)≤128*H := by
   have hc := DescentFiberCost.finite_element_count_real (R.image Subtype.val) H hH (by
-    intro a ha
-    obtain ⟨u,hu,rfl⟩ := Finset.mem_image.mp ha
+    pm_67 a ha u hu Finset.mem_image.mp
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
-    exact hR u hu)
+    grind)
   rw [Finset.card_image_of_injective R Subtype.val_injective] at hc
   exact hc
 
@@ -44,7 +44,7 @@ lemma dyadic_weighted_rows (a r C U : ℝ) (hC : 0≤C) (hU : 1≤U)
   have hcard : (R.card:ℝ)≤256*U := by
     have hc := freeRow_count R (2*U) (by linarith) (fun u hu=>(hR u hu).2)
     linarith
-  have hA := ProbeSelectedPrimeSums.annularPower_nonneg 1 2 (a-r) (by norm_num)
+  pm_8000 a
   calc
     _ ≤ ∑u∈R,C*ProbeSelectedPrimeSums.annularPower 1 2 (a-r)*U^(a-r) := by
       apply Finset.sum_le_sum

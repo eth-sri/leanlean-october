@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountOptimization
 public import OAI.NumberTheory.DirichletL.Endpoint
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,39 +18,34 @@ lemma primeWeight_endpoint (x : ℝ) : primeWeight x=Endpoint.primeWeight (1/2-x
   unfold primeWeight Endpoint.primeWeight
   ring
 
-theorem balanced_cutoff_bounds {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
-    (hx : 0≤x) (hx' : x≤1/2) :
+theorem balanced_cutoff_bounds {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6) (hx : 0≤x) (hx' : x≤1/2) :
     1≤Endpoint.balancedCutoff δ (1/2-x) ∧ Endpoint.balancedCutoff δ (1/2-x)≤3/2 := by
-  have hy : 0≤1/2-x := by linarith
-  have hy' : 1/2-x≤1/2 := by linarith
-  have hd := Endpoint.denominator_bounds hy hy'
-  have hp := Endpoint.primeWeight_bounds hy hy'
+  pm_799
+  pm_111 hd Endpoint.denominator_bounds hy hy' hp Endpoint.primeWeight_bounds
   have hJ := Endpoint.balanceDenominator_bounds hδ hδ' hy hy'
-  have hJp : 0<Endpoint.balanceDenominator δ (1/2-x) := by linarith [hJ.1]
+  have hJp : 0<Endpoint.balanceDenominator δ (1/2-x) := by grind
   unfold Endpoint.balancedCutoff
   constructor
-  · exact le_add_of_nonneg_right (div_nonneg (mul_nonneg hδ (by linarith [hp.1])) (by positivity))
+  · exact le_add_of_nonneg_right (div_nonneg (mul_nonneg hδ (by grind)) (by positivity))
   · have hnum : δ*Endpoint.primeWeight (1/2-x)≤Endpoint.balanceDenominator δ (1/2-x) := by
       unfold Endpoint.balanceDenominator
-      have hh := mul_nonneg (sub_nonneg.mpr hδ') (show 0≤Endpoint.denominator (1/2-x) by linarith [hd.1])
+      have hh := mul_nonneg (sub_nonneg.mpr hδ') (show 0≤Endpoint.denominator (1/2-x) by grind)
       linarith
     have hh : δ*Endpoint.primeWeight (1/2-x)/(2*Endpoint.balanceDenominator δ (1/2-x))≤1/2 :=
       (div_le_iff₀ (by positivity)).mpr (by linarith)
     linarith
 
-theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
-    (hx : 0≤x) (hx' : x≤1/2) :
+theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6) (hx : 0≤x) (hx' : x≤1/2) :
     max (shortExponent δ x (Endpoint.balancedCutoff δ (1/2-x)))
         (longExponent δ (Endpoint.balancedCutoff δ (1/2-x))) =
       Endpoint.balancedRowCount δ (1/2-x) := by
-  have hy : 0≤1/2-x := by linarith
-  have hy' : 1/2-x≤1/2 := by linarith
+  pm_799
   have hDb : 0<Endpoint.denominator (1/2-x) := by
     have hh := Endpoint.denominator_bounds hy hy'
-    linarith [hh.1]
+    grind
   have hJb : 0<Endpoint.balanceDenominator δ (1/2-x) := by
     have hh := Endpoint.balanceDenominator_bounds hδ hδ' hy hy'
-    linarith [hh.1]
+    grind
   have hl : longExponent δ (Endpoint.balancedCutoff δ (1/2-x))=
       Endpoint.balancedRowCount δ (1/2-x) := by
     unfold longExponent Endpoint.balancedRowCount
@@ -62,24 +58,23 @@ theorem balanced_count_identity {δ x : ℝ} (hδ : 0≤δ) (hδ' : δ≤5/6)
     generalize hDd : Endpoint.denominator (1/2-x) = D at *
     generalize hPd : Endpoint.primeWeight (1/2-x) = P at *
     generalize hJd : Endpoint.balanceDenominator δ (1/2-x) = J at *
-    have hJdef : J=(5/6-δ)*D+δ*P := by
-      rw [←hJd, Endpoint.balanceDenominator, hDd, hPd]
-    have hD : D ≠ 0 := hDb.ne'
-    have hJ : J ≠ 0 := hJb.ne'
+    have hJdef : J=(5/6-δ)*D +δ*P := by
+      aesop
+    pm_4953 hD D hDb.ne' hJ J hJb.ne'
     field_simp [hD,hJ]
     rw [hJdef]
     ring
-  rw [hl,hs,max_self]
+  grind
 
 theorem high_bin_count {B C U δ r ε γ : ℝ}
     (hC : 0≤C) (hU : 1≤U) (hδ : 5/6≤δ) (hδ' : δ≤1)
-    (hγ : 0≤γ) (hr : 1-γ≤r)
+    (hγ : 0≤γ) (hr : 1-γ≤ r)
     (hI : B≤C*U^(max 1 ((1+5*r)/6)-δ*r+ε)) :
     B≤C*U^(1-δ+ε+γ) := by
   apply hI.trans
   apply mul_le_mul_of_nonneg_left _ hC
   apply Real.rpow_le_rpow_of_exponent_le hU
-  by_cases hr1 : 1≤r
+  by_cases hr1 : 1≤ r
   · rw [max_eq_right (show 1≤(1+5*r)/6 by linarith)]
     have hh := mul_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hδ) (sub_nonneg.mpr hr1)
     nlinarith

@@ -9,9 +9,8 @@ noncomputable section
 open scoped Classical SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow
+open ProbeCompleted
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
 
 abbrev SelectedSlot {K : ℕ} (J : Finset (Fin K)) := ↥(Finset.univ\J)
 
@@ -31,13 +30,16 @@ def compensationRowTest {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationD
       correctedCompletedT C.excluded (Ideal.span {slotProduct p (Finset.univ\J)})
         (physicalRowMonoid η C r) (CompletedHeight.normTwistedSource gaussianFixedWindow t) T
 
-lemma gaussian_slot_window_split {K : ℕ} (W : Fin K→ℝ→ℂ) (q : Fin K→ℝ) (J : Finset (Fin K)) :
+section
+variable {K : ℕ}
+include K
+lemma gaussian_slot_window_split (W : Fin K→ℝ→ℂ) (q : Fin K→ℝ) (J : Finset (Fin K)) :
     (∏i,W i (q i))=(∏i∈J,W i (q i))*(∏i : SelectedSlot J,W i.val (q i.val)) := by
   rw [Finset.prod_coe_sort (Finset.univ\J) (fun i=>W i (q i))]
   have hh := Finset.prod_sdiff (Finset.subset_univ J) (f:=fun i=>W i (q i))
-  simpa only [mul_comm] using hh.symm
+  grind
 
-lemma gaussian_compensation_scale {K : ℕ} (P : Fin K→ℝ) (hP : ∀i,0<P i)
+lemma gaussian_compensation_scale (P : Fin K→ℝ) (hP : ∀i,0<P i)
     (p : Fin K→O) (J : Finset (Fin K)) (Z : ℝ) :
     (Z*∏i∈Finset.univ\J,P i)*(∏i : SelectedSlot J,elementNorm (p i.val)/P i.val)=
       Z*elementNorm (slotProduct p (Finset.univ\J)) := by
@@ -46,7 +48,7 @@ lemma gaussian_compensation_scale {K : ℕ} (P : Fin K→ℝ) (hP : ∀i,0<P i)
     (fun i : SelectedSlot J=>elementNorm (p i.val)) (fun i=>hP i.val)]
   rw [Finset.prod_coe_sort (Finset.univ\J) (fun i=>elementNorm (p i)),elementNorm_slotProduct]
 
-theorem compensation_subset_common {K : ℕ} {α : Type*}
+theorem compensation_subset_common {α : Type*}
     (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ)
     (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (hsep : ∀R : ℝ,0<R→∀x : ℝ,0<x→∀q : SelectedSlot J→ℝ,(∀i,0<q i)→
@@ -85,6 +87,7 @@ theorem compensation_subset_common {K : ℕ} {α : Type*}
       unfold compensationSubsetProbe compensationSubsetWeight
       ring
     _ = _ := hh
+end
 
 end SevenEighths.ProbePhysical
 end

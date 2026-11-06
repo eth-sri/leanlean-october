@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.AdditiveEnergy
 public import LaterPairs.Native.PrimitiveCongruenceSpacing
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -26,7 +27,7 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     (S.card:ℝ) ≤ 1+4*V^2*(β-α)/c := by
   classical
   let ε : ℝ := (c:ℝ)/(4*V^2)
-  have hcp : (0:ℝ) < c := by exact_mod_cast hc
+  pm_4473 hcp c hc
   have hε : 0 < ε := div_pos hcp (by positivity)
   let f : ℤ × ℤ → ℝ := fun p => ((p.1:ℝ)/p.2)/ε
   let W := S.image f
@@ -41,8 +42,7 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     exact Prod.ext heq.1 heq.2
   have hsep : ∀ x ∈ W, ∀ y ∈ W, x ≠ y → 1 ≤ |x-y| := by
     intro x hx y hy hxy
-    obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hx
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hy
+    pm_5095 p hp hx q hq hy
     have hpq : (p.1,p.2) ≠ (q.1,q.2) := by
       intro he
       apply hxy
@@ -55,8 +55,7 @@ theorem primitive_congruence_card_le (S : Finset (ℤ × ℤ))
     apply (le_div_iff₀ hε).mpr
     simpa only [one_mul,ε] using hs
   have hmem : ∀ x ∈ W, α/ε ≤ x ∧ x ≤ β/ε := by
-    intro x hx
-    obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hx
+    pm_67 x hx p hp Finset.mem_image.mp
     exact ⟨div_le_div_of_nonneg_right (hratio p hp).1 hε.le,
       div_le_div_of_nonneg_right (hratio p hp).2 hε.le⟩
   have hb := oneSeparated_card_cast_le_interval_length_add_one W hsep

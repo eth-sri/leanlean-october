@@ -2,6 +2,7 @@ module
 public import GuthMaynard.Improvement.SourceDirichletPairing
 public import GuthMaynard.Improvement.SourceRatioBound
 public import GuthMaynard.Improvement.SourceTailConditional
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -27,7 +28,7 @@ theorem boundedPolynomial_source_sampling {χ : ℝ → ℝ}
     have hχ : χ (t/T) ≠ 0 := hf ht
     have hmem : t/T ∈ Icc (-2:ℝ) 3 := by
       by_contra hn
-      exact hχ (hs _ hn)
+      grind
     constructor
     · have hh := (le_div_iff₀ hTp).mp hmem.1
       linarith
@@ -50,9 +51,9 @@ theorem boundedPolynomial_source_tail {χ : ℝ → ℝ} (hχd : ContDiff ℝ �
         C*N^2*T*Real.log (2*N) := by
   obtain ⟨D,hD,hbound⟩ := boundedPolynomial_source_sampling hs
   let J := ∫ ξ, ‖𝓕 (fun t => (χ t:ℂ)) ξ‖
-  have hJ : 0 ≤ J := integral_nonneg (fun _ => norm_nonneg _)
+  pm_5073 hJ J integral_nonneg norm_nonneg
   let C := 4*D^2+2*(D*J+1)+1
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_64 hC C
   refine ⟨C,hC,?_⟩
   intro N T hN hT a U Λ ha hΛ
   let H := ∫ t, sourceRemovedDensity (fun t => χ (t/T)) (boundedPolynomial N a) U t
@@ -60,9 +61,8 @@ theorem boundedPolynomial_source_tail {χ : ℝ → ℝ} (hχd : ContDiff ℝ �
     apply integral_nonneg
     intro t
     exact indicator_nonneg (fun x _ => mul_nonneg (hχ0 (x/T)) (sq_nonneg _)) t
-  have hNp : 0 < N := by linarith
-  have hTp : 0 < T := by linarith
-  have hlog : 0 ≤ Real.log (2*N) := Real.log_nonneg (by linarith)
+  pm_72 hNp N hTp T
+  pm_233 hlog N
   have hΛp : 0 < Λ := (mul_pos hC (by positivity : 0 < N^2+H)).trans_le hΛ
   have hc1 : 2*(D*J) ≤ C := by dsimp [C]; nlinarith [sq_nonneg D]
   have hc2 : 2 ≤ C := by dsimp [C]; nlinarith [sq_nonneg D,mul_nonneg hD.le hJ]

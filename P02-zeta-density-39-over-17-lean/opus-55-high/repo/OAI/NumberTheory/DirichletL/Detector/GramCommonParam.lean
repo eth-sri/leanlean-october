@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FullCorrelation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -44,7 +45,7 @@ lemma param_condition (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : Resid
   rw [scaledResidue_congruence]
   have he : C*n₂*(b*k+n₁*t)-C*n₁*(-a*k+n₂*t)-C*k=C*k*(a*n₁+b*n₂-1) := by ring
   rw [he,hab,sub_self,mul_zero]
-  exact dvd_zero _
+  simp_all
 
 def param (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : ResidueQ C) : Solutions C n₁ n₂ k :=
   ⟨(leftParam C n₁ b k t,rightParam C n₂ a k t),param_condition C n₁ n₂ a b k hab t⟩
@@ -72,7 +73,7 @@ lemma param_surjective (C n₁ n₂ a b k : A) (hC : C≠0) (hab : a*n₁+b*n₂
   have hc : condition C n₁ n₂ k (Ideal.Quotient.mk _ x,Ideal.Quotient.mk _ y) := by
     rw [hx,hy]
     exact p.property
-  have hd := condition_divided C n₁ n₂ k x y hC hc
+  pm_528 hd condition_divided C n₁ n₂ k x y hC hc
   refine ⟨Ideal.Quotient.mk _ (a*x+b*y),?_⟩
   apply Subtype.ext
   apply Prod.ext

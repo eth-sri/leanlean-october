@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainMarkedState
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainUnmarkedState
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,22 +26,18 @@ def stageError (D:Parameters.HighData Δ):ℝ := D.t/4
 def kappaPlain (_D:Parameters.HighData Δ):ℝ := 3/4+2*Δ
 
 theorem fixed_parameters (D:Parameters.HighData Δ):
-    0<delta D ∧ delta D≤1/4 ∧ 0<stageError D ∧
-    delta D+stageError D≤D.t ∧ 3/4<kappaPlain D ∧ 0<kappaPlain D := by
+    0<delta D ∧ delta D ≤1/4 ∧ 0< stageError D ∧
+    delta D +stageError D ≤D.t ∧ 3/4<kappaPlain D ∧ 0<kappaPlain D := by
   have hΔ:0<Δ:=by linarith [D.t_pos,D.t_delta]
   dsimp [delta,stageError,kappaPlain]
-  constructor
-  · exact div_pos D.t_pos (by norm_num)
-  constructor
+  pm_8338
   · linarith [D.t_small]
-  constructor
-  · exact div_pos D.t_pos (by norm_num)
-  constructor
+  pm_8338
   · linarith [D.t_pos]
-  constructor <;> linarith
+  grind
 
 lemma source_base_gt_one (_D:Parameters.HighData Δ)(Z d:ℝ)
-    (hZ:1<Z)(hd:(1/200:ℝ)≤d):1<Z^d :=
+    (hZ:1<Z)(hd:(1/200:ℝ)≤d):1<Z ^d :=
   Real.one_lt_rpow hZ (by linarith)
 
 lemma witness_length_cap (D:Parameters.HighData Δ):
@@ -49,7 +46,10 @@ lemma witness_length_cap (D:Parameters.HighData Δ):
 variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label:Type*}
 variable {U a tstar T heightAllowance:ℝ}{i:ℕ}
 
-theorem actual_fiber_lengths (D:Parameters.HighData Δ)
+section
+variable (D:Parameters.HighData Δ)
+include D
+theorem actual_fiber_lengths
     (F:Fiber M H Label (Fin D.N) U a D.ε tstar T heightAllowance i)(hU:1<U):
     0≤F.m ∧ F.m≤1/2+75*D.ε ∧ F.m≤23/40 ∧
     1≤U^F.m ∧ U^F.m≤U ∧ length U (U^F.m)=F.m := by
@@ -60,11 +60,11 @@ theorem actual_fiber_lengths (D:Parameters.HighData Δ)
       Real.rpow_le_rpow_of_exponent_le hU.le (show F.m≤1 by linarith)
   · exact plain_length_eq F hU
 
-lemma width_bands (D:Parameters.HighData Δ)(m:ℝ)(hm:m≤23/40):
-    1≤1+delta D ∧ 1+delta D≤2 ∧
-    1≤max 1 (2*m)+delta D ∧ max 1 (2*m)+delta D≤2 := by
+lemma width_bands(m:ℝ)(hm:m≤23/40):
+    1≤1+delta D ∧ 1+delta D ≤2 ∧
+    1≤ max 1 (2*m)+delta D ∧ max 1 (2*m)+delta D ≤2 := by
   have hδ:0<delta D:=(fixed_parameters D).1
-  have hd:delta D≤1/4:=(fixed_parameters D).2.1
+  have hd:delta D ≤1/4:=(fixed_parameters D).2.1
   have hmax:max 1 (2*m)≤23/20:=max_le (by norm_num) (by linarith)
   have hlo:=le_max_left (1:ℝ) (2*m)
   constructor
@@ -73,7 +73,7 @@ lemma width_bands (D:Parameters.HighData Δ)(m:ℝ)(hm:m≤23/40):
   · linarith
   constructor <;> linarith
 
-theorem unmarked_state_admission (D:Parameters.HighData Δ)
+theorem unmarked_state_admission
     (F:Fiber M H Label (Fin D.N) U a D.ε tstar T heightAllowance i)
     (η:Character)(Q:Ideal O)(Φ:𝓢(ℝ,ℂ))(bΦ:ℝ)(hU:1<U)
     (hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)(hp:∀x,0≤(Φ x).re)
@@ -81,8 +81,8 @@ theorem unmarked_state_admission (D:Parameters.HighData Δ)
     let s:=state F η Q Φ bΦ (delta D) hU.le (fixed_parameters D).1.le hs hp hη;
     s.character=η ∧ s.fixedModulus=Q ∧ s.puncture=1 ∧
     s.radial.profile=Φ ∧ s.radial.scale=U ∧ s.radial.keep=initialKeep η Q ∧
-    s.width=max 1 (2*F.m)+delta D ∧ 1≤s.width ∧ s.width≤2 ∧
-    1≤U^F.m ∧ U^F.m≤U ∧ 2*length U (U^F.m)≤s.width := by
+    s.width=max 1 (2*F.m)+delta D ∧ 1≤ s.width ∧ s.width≤2 ∧
+    1≤U^F.m ∧ U^F.m≤U ∧ 2*length U (U^F.m)≤ s.width := by
   dsimp only
   have hf:=actual_fiber_lengths D F hU
   have hw:=width_bands D F.m hf.2.2.1
@@ -94,17 +94,18 @@ theorem unmarked_state_admission (D:Parameters.HighData Δ)
   · rw [he,hf.2.2.2.2.2]
     exact (le_max_right 1 (2*F.m)).trans (le_add_of_nonneg_right (fixed_parameters D).1.le)
 
-theorem source_label_fixed_allowance (D:Parameters.HighData Δ)
+theorem source_label_fixed_allowance
     (S:ProbeFinalAssembly.SourceData D)(η:Character):
     ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀label:Sum Bool (RayQuotient.Characters S.modulus ⊤),∀d:ℝ,(1/200:ℝ)≤d→
       ((sourceMomentBase S.modulus ⊤ le_top S.S S.exclusions.prime η label).modulus.absNorm:ℝ)
-        ≤(Z^d)^(delta D) :=
+        ≤(Z ^d)^(delta D) :=
   source_label_modulus_eventually S η (delta D) (fixed_parameters D).1
 
-lemma final_exponent_budget (D:Parameters.HighData Δ)(base:ℝ):
-    base+delta D+stageError D≤base+D.t := by
+lemma final_exponent_budget(base:ℝ):
+    base+delta D +stageError D ≤base+D.t := by
   linarith [(fixed_parameters D).2.2.2.1]
+end
 
 end SevenEighths.CenteredMomentDetectorPlainMomentParameters
 

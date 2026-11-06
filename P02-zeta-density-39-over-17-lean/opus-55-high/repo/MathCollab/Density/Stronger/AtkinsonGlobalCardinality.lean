@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.AtkinsonHeightCover
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,14 +42,10 @@ theorem atkinson_card_le_of_local_packets {A H G Y : ℝ}
   have hL : 0 < L := atkinsonAbsorptionLength_pos hA hG hY
   have hfiber (k : ℕ) :
       ((atkinsonHeightFiber H L W k).card:ℝ) ≤ 2*A*H/(G*Y^2) := by
-    have hsub := atkinsonHeightFiber_subset H L W k
-    have hlocal := atkinsonHeightFiber_interval k hL (fun t ht => (hrange t ht).1)
-    have hp := hpacket (atkinsonHeightFiber H L W k) hsub (H+(k:ℝ)*L) hlocal
+    pm_552 k
     exact atkinson_card_le_of_packet hA hH hG hY
       (fun t ht => hlarge t (hsub ht)) hp (atkinsonAbsorptionLength_absorbs hA hG)
-  have hcover := atkinson_card_le_of_height_fibers hL
-    (fun t ht => (hrange t ht).2) (fun k _ => hfiber k)
-  exact hcover.trans (atkinson_covered_card_budget hA hH hG hY)
+  pm_6325 hcover k hcover.trans atkinson_covered_card_budget
 
 theorem atkinson_count_exponent_budget {D H G Y ν : ℝ}
     (hD : 0 ≤ D) (hH : 1 ≤ H) (hG : 0 < G) (hY : 0 < Y) (hν : 0 ≤ ν) :
@@ -60,7 +57,7 @@ theorem atkinson_count_exponent_budget {D H G Y ν : ℝ}
   have hcube : (H^(ν/3))^3 = H^ν := by
     rw [← Real.rpow_natCast,← Real.rpow_mul hH0.le]
     norm_num
-  have he : (D*H^(ν/3))^3 = D^3*H^ν := by rw [mul_pow,hcube]
+  have he : (D*H^(ν/3))^3 = D^3*H^ν := by grind
   rw [he]
   calc
     _ ≤ 2*(D*H^ν)*H/(G*Y^2)+32*(D^3*H^ν)*H^2/Y^6 := by

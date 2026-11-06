@@ -2,10 +2,10 @@ module
 public import TraceAlternatives.UniversalDifferenceLevels
 public import TraceAlternatives.UniversalWeakProfile
 public import TraceAlternatives.DyadicWeakMoment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
 noncomputable section
 open Finset GuthMaynard.NativeMoment
@@ -34,7 +34,7 @@ theorem universal_low_level_bound {D H M U δ : ℝ}
     rw [Real.mul_rpow (by positivity) (by positivity),Real.mul_rpow hD (by positivity),
       ← Real.rpow_mul hHp.le,← Real.rpow_natCast_mul hM]
     norm_num only [Nat.cast_ofNat, show (6:ℝ)*(1/4)=3/2 by norm_num]
-    rw [show δ*(1/4:ℝ)=δ/4 by ring]
+    grind
   rw [hLeft,hRight] at hh
   exact hh.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul (fractional_constant_le_one_add hD (by norm_num) (by norm_num))
@@ -51,20 +51,19 @@ theorem actual_second_moment_universal_log (δ : ℝ) (hδ : 0<δ) :
       (2+Real.logb 2 T)*((W.card:ℝ)^2+4*K*(2*T)^δ*
         universalShortProfile (2*T) M W.card (discreteAdditiveEnergy W)) := by
   classical
-  obtain ⟨C,D,hC,hD,hLevels⟩ := universal_difference_cell_level_count δ hδ
+  pm_107 C D hC hD hLevels universal_difference_cell_level_count δ hδ
   let K : ℝ := 2+D+3*C
-  have hK : 0<K := by dsimp only [K]; positivity
+  pm_307 hK K
   refine ⟨K,hK,?_⟩
-  intro M T a W hM hT hMT ha hBase
-  have hTp : 0<T := by linarith
+  pm_6036
   have hH : 1≤2*T := by linarith
-  have hMp : (0:ℝ)<M := by exact_mod_cast hM
+  pm_5449 hMp M hM
   obtain ⟨p,hrep,hCount⟩ := hLevels M T a W hM hT hMT ha hBase
   let S := differenceFloorSupport W
   let r : ℤ→ℝ := fun j => differenceFloorCount W j
   let v : ℤ→ℝ := fun j => ‖dirichletPoly M a ((p j).1-(p j).2)‖
-  have hr : ∀ j∈S, 0≤r j := fun _ _ => Nat.cast_nonneg _
-  have hv : ∀ j∈S, 0≤v j := fun _ _ => norm_nonneg _
+  pm_8833 hr r Nat.cast_nonneg
+  pm_8833 hv v norm_nonneg
   have hTotal : (∑ j∈S, r j) = (W.card:ℝ)^2 := by
     dsimp only [S,r]
     exact_mod_cast sum_differenceFloorCount W
@@ -74,7 +73,7 @@ theorem actual_second_moment_universal_log (δ : ℝ) (hδ : 0<δ) :
     exact norm_negative_polynomial_le_scale a _ ha
   have hvT : ∀ j∈S, v j≤T := by
     intro j hj
-    have hM1 : (1:ℝ)≤M := by exact_mod_cast hM
+    pm_277 hM1 M hM
     have hm : (M:ℝ)≤T := by nlinarith
     exact (hvM j hj).trans hm
   let F := universalShortProfile (2*T) M W.card (discreteAdditiveEnergy W)
@@ -135,7 +134,7 @@ theorem actual_second_moment_universal_log (δ : ℝ) (hδ : 0<δ) :
         apply sum_le_sum
         intro q hq
         have hj : differenceFloor q∈S := mem_image.mpr ⟨q,hq,rfl⟩
-        exact pow_le_pow_left₀ (norm_nonneg _) ((hrep _ hj).2.2 q hq rfl) 2
+        pm_6242
       _ = _ := sum_differenceFloor_values W (fun j => v j^2)
   exact hOriginal.trans (hDyad.trans_eq (by dsimp only [F]; ring))
 

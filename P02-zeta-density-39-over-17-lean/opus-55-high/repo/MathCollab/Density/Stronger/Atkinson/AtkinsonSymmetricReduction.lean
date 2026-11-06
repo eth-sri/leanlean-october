@@ -7,6 +7,7 @@ Mathlib and previously ported PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSymmetricStationary
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryMain
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ def atkinsonSymmetricError (T b R H : ℝ) : ℝ :=
 theorem atkinsonSymmetricError_tail_le {T R H : ℝ} (hT : 0 < T)
     (hR : 0 ≤ R) (hH : 0 ≤ H) (b : ℝ) :
     4/(H*Real.pi) ≤ atkinsonSymmetricError T b R H := by
-  have hr := atkinsonSaddleRoot_pos (by positivity : 0 < T/(2*Real.pi)) b
+  pm_4398
   unfold atkinsonSymmetricError
   have h1 : 0 ≤ 4*R^2*H^3 := by positivity
   have h2 : 0 ≤ 8*R*T*H^5/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^3 := by positivity
@@ -57,7 +58,7 @@ theorem IntervalC2Bound.atkinsonSymmetricApproximation {f : ℝ → ℂ}
       (M/2)*atkinsonSymmetricError T b R H := by
   have hlocal := hf.atkinsonLocalSymmetric hT b hH.le hleft hright hwindow
   have htail := hv.atkinsonRoot_sub_local hT b ha hH hleft hright
-  apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add htail hlocal).trans_eq ?_)
+  pm_8515 htail hlocal
   unfold atkinsonSymmetricError
   ring
 
@@ -69,12 +70,8 @@ theorem exists_atkinsonPowerIntegral_finite_symmetric_approximation (α : ℝ) :
       H ≤ atkinsonSaddleRoot (T/(2*Real.pi)) b/2 →
       ‖atkinsonPowerIntegral T G L α b-atkinsonFiniteStationaryMain T G L α b H‖ ≤
         C*G*T^(-α)*atkinsonSymmetricError T b (G/Real.sqrt T) H := by
-  obtain ⟨A,hA,hv⟩ := exists_intervalC1Bound_atkinsonPowerWeight_root α
-  obtain ⟨B,hB,hf⟩ := exists_intervalC2Bound_atkinsonPowerWeight_root_natural α
-  refine ⟨A+B,by positivity,?_⟩
-  intro T G L b H hT hG hGT hL hwidth hH hleft hright hwindow
-  have hG0 : 0 < G := by linarith
-  have hL0 : 0 < L := by linarith
+  pm_313 A hA hv exists_intervalC1Bound_atkinsonPowerWeight_root α B hB hf exists_intervalC2Bound_atkinsonPowerWeight_root_natural
+  pm_4361
   have hAM : A*G*T^(-α) ≤ (A+B)*G*T^(-α) := by gcongr; linarith
   have hBM : B*G*T^(-α) ≤ (A+B)*G*T^(-α) := by gcongr; linarith
   have h := ((hf T G L hT hG hGT hL hwidth).mono hBM le_rfl).atkinsonSymmetricApproximation
@@ -95,18 +92,14 @@ theorem exists_atkinsonPowerIntegral_symmetric_approximation (α : ℝ) :
       H ≤ atkinsonSaddleRoot (T/(2*Real.pi)) b/2 →
       ‖atkinsonPowerIntegral T G L α b-atkinsonStationaryMain T G L α b‖ ≤
         C*G*T^(-α)*atkinsonSymmetricError T b (G/Real.sqrt T) H := by
-  obtain ⟨A,hA,hfinite⟩ := exists_atkinsonPowerIntegral_finite_symmetric_approximation α
-  obtain ⟨B,hB,hmain⟩ := exists_norm_atkinsonFiniteStationaryMain_sub_main_le α
-  refine ⟨A+B,by positivity,?_⟩
-  intro T G L b H hT hG hGT hL hwidth hH hleft hright hwindow
-  have hG0 : 0 < G := by linarith
-  have hL0 : 0 < L := by linarith
+  pm_313 A hA hfinite exists_atkinsonPowerIntegral_finite_symmetric_approximation α B hB hmain exists_norm_atkinsonFiniteStationaryMain_sub_main_le
+  pm_4361
   have hf := hfinite T G L b H hT hG hGT hL hwidth hH hleft hright hwindow
   have hm := hmain T G L b H hT hG0 hGT hL0 hH ⟨by linarith,by linarith⟩
   have hm' := hm.trans (mul_le_mul_of_nonneg_left
     (atkinsonSymmetricError_tail_le (R := G/Real.sqrt T) hT (by positivity) hH.le b)
     (by positivity))
-  apply (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans ((add_le_add hf hm').trans_eq ?_)
+  pm_8515 hf hm'
   ring
 
 end MathCollab.Density.Stronger.Atkinson

@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Presentation
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicBounded
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical Topology
 open Set Complex
 namespace SevenEighths.HeckeDyadicReflection
@@ -26,10 +26,10 @@ theorem functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   · subst s
     rw [LFunction_eq_uncompleted c χ hu hp hχ]
     simp
-  have h1 : s≠1 := by intro h; norm_num [h] at hs
+  pm_7800
   have hs0 : 1-s≠0 := sub_ne_zero.mpr (Ne.symm h1)
-  have hs1 : 1-s≠1 := by intro h; apply h0; linear_combination -h
-  have hΓ : Complex.Gamma (1-s)≠0 := Complex.Gamma_ne_zero_of_re_pos (by simp; linarith)
+  have hs1 : 1-s≠1 := by intro h; apply h0; grind
+  have hΓ : Complex.Gamma (1-s)≠0 := Complex.Gamma_ne_zero_of_re_pos (by simp_all)
   have he := completedL_functional_equation c χ hu hp hs0 hs1
   rw [sub_sub_cancel] at he
   rw [LFunction_eq_uncompleted c χ hu hp hχ,he,
@@ -44,13 +44,7 @@ theorem functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     congr 1
     ring
   rw [div_eq_mul_inv]
-  calc
-    _ = TraceCharacter.normalizedGauss c χ *
-        ((HeckeStrip.completionScale (conductor c) : ℂ)^(-s)*
-          (HeckeStrip.completionScale (conductor c) : ℂ)^(1-s)) *
-        (Complex.Gamma (1-s)*(Complex.Gamma s)⁻¹) *
-        LFunction (character c χ⁻¹ (inverse_unit_trivial c χ hu)) (1-s) := by ring
-    _ = _ := by rw [hpow]
+  grind
 
 theorem gamma_real_ratio_bound : ∃ C : ℝ, 0<C ∧
     ∀ x ∈ Icc (-(1/10 : ℝ)) (1/2), Real.Gamma (1-x)/Real.Gamma (x+2)≤C := by
@@ -58,23 +52,22 @@ theorem gamma_real_ratio_bound : ∃ C : ℝ, 0<C ∧
       (Icc (-(1/10 : ℝ)) (1/2)) := by
     intro x hx
     have hnum : DifferentiableAt ℝ Real.Gamma (1-x) :=
-      Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.2])
+      Real.differentiableAt_Gamma (by grind)
     have hden : DifferentiableAt ℝ Real.Gamma (x+2) :=
-      Real.differentiableAt_Gamma (by intro n hn; have hnn := Nat.cast_nonneg (α:=ℝ) n; linarith [hx.1])
+      Real.differentiableAt_Gamma (by grind)
     exact ((hnum.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => 1-y) (show ContinuousAt (fun y : ℝ => 1-y) x by fun_prop)).div
       (hden.continuousAt.comp (g := Real.Gamma) (f := fun y : ℝ => y+2) (show ContinuousAt (fun y : ℝ => y+2) x by fun_prop))
-      (Real.Gamma_pos_of_pos (show 0<x+2 by linarith [hx.1])).ne').continuousWithinAt
+      (Real.Gamma_pos_of_pos (show 0<x+2 by grind)).ne').continuousWithinAt
   obtain ⟨C,hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hcont
-  refine ⟨|C|+1,by positivity,?_⟩
+  pm_862 C
   intro x hx
-  exact (le_abs_self _).trans ((hC x hx).trans (by linarith [le_abs_self C]))
+  exact (le_abs_self _).trans ((hC x hx).trans (by grind))
 
 theorem gamma_ratio_strip_bound : ∃ C : ℝ, 0<C ∧ ∀ s : ℂ,
-    -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖Complex.Gamma (1-s)/Complex.Gamma s‖≤C*(3+|s.im|)^2 := by
   obtain ⟨C,hC,hreal⟩ := gamma_real_ratio_bound
-  refine ⟨C,hC,?_⟩
-  intro s hl hr
+  pm_3532 C hC s hl hr
   have hb := CubicReflectionKernel.Gamma_shifted_pair_bound
     (1/2) (1/2-s.re) (-s.im) 2 (by linarith) (by norm_num; linarith)
   have hnum : ((1/2 : ℝ) : ℂ)+((1/2-s.re : ℝ)+(-s.im)*I)=1-s := by
@@ -101,7 +94,7 @@ theorem gamma_ratio_strip_bound : ∃ C : ℝ, 0<C ∧ ∀ s : ℂ,
   have hf' : ‖∏ k ∈ Finset.range 2,(s+k)‖≤(3+|s.im|)^2 :=
     hf.trans (pow_le_pow_left₀ (by positivity) (show ‖s‖+2≤3+|s.im| by linarith) 2)
   rw [heq,norm_mul]
-  exact (mul_le_mul hf' hb' (norm_nonneg _) (sq_nonneg _)).trans_eq (mul_comm _ _)
+  pm_6626 hb'
 
 theorem completionScale_rpow_le {Q x : ℝ} (hQ : 0<Q) (hx : 0≤x) :
     HeckeStrip.completionScale Q ^ x≤Q^(x/2) := by
@@ -125,12 +118,11 @@ theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
     ∀ (c : O) [NeZero c] (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O))=1)
       (_hp : FiniteFourier.IsPrimitiveOnIdeals χ), χ≠1 →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction (character c χ hu) s‖≤
       C*(conductor c)^(1/2-s.re)*(3+|s.im|)^2*
         ‖LFunction (character c χ⁻¹ (inverse_unit_trivial c χ hu)) (1-s)‖ := by
-  obtain ⟨C,hC,hgamma⟩ := gamma_ratio_strip_bound
-  refine ⟨C,hC,?_⟩
+  pm_155 C hC hgamma gamma_ratio_strip_bound
   intro c _ χ hu hp hχ s hl hr
   rw [functional_equation c χ hu hp hχ (by linarith),norm_mul,norm_mul,norm_mul,
     TraceCharacter.normalizedGauss_norm c χ hp,one_mul,
@@ -152,6 +144,5 @@ theorem primitive_reflected_bound : ∃ C : ℝ, 0<C ∧
 
 end SevenEighths.HeckeDyadicReflection
 
-end
 
 end OAI

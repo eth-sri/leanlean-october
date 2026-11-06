@@ -7,8 +7,9 @@ Mathlib and previously ported PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSymmetricReduction
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSampleGeometry
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
@@ -21,7 +22,6 @@ They replace the earlier cubic/fifth-power balance. Both physical
 frequency signs are handled by the same actual-source theorem.
 -/
 
-noncomputable section
 
 open Complex
 
@@ -33,8 +33,8 @@ theorem atkinsonSymmetricError_le_physical {T G H b : ℝ}
     atkinsonSymmetricError T b (G/Real.sqrt T) H ≤
       4/(H*Real.pi) + 4*G^2*H^3/T + 216*G*H^5/T +
         1296*H^5/T + 11664*H^7/T := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hr := atkinsonSaddleRoot_pos (by positivity : 0 < T/(2*Real.pi)) b
+  pm_4891 hs T hT
+  pm_4398
   have hlo := (atkinsonSaddleRoot_small_frequency hT hb).1
   have h3 : 8*(G/Real.sqrt T)*T*H^5/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^3 ≤
       8*(G/Real.sqrt T)*T*H^5/(Real.sqrt T/3)^3 := by gcongr
@@ -109,8 +109,7 @@ theorem exists_atkinsonPowerIntegral_symmetric_balance (α : ℝ) :
   obtain ⟨C,hC,hbound⟩ := exists_atkinsonPowerIntegral_symmetric_approximation α
   refine ⟨20*C,by positivity,?_⟩
   intro T G L b X hT hG hGT hL hwidth hX hGX hXS hb
-  have hT0 : 0 < T := by linarith
-  have hX0 : 0 < X := by linarith
+  pm_72 hT0 T hX0 X
   have hXpow : X ≤ X^4 := by
     simpa only [pow_one] using pow_le_pow_right₀ hX (by norm_num : (1:ℕ) ≤ 4)
   have hXle : X ≤ Real.sqrt T := hXpow.trans hXS

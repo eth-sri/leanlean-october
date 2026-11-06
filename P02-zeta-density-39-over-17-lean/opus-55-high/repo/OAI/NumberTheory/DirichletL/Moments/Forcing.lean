@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.ChildRows
 public import OAI.NumberTheory.DirichletL.Moments.PartitionNorm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentForcing
 open UniqueFactorizationMonoid CenteredExceptionalCount CanonicalQuadraticSieve
@@ -43,29 +44,34 @@ theorem valuation_prime (P Q : Ideal O) (hP : Prime P) :
   simp only [valuation,hf,Multiset.count_singleton]
   simp only [eq_comm]
 
+section
+variable (P : ι → Ideal O) (hp : ∀ i, Prime (P i)) (hinj : Function.Injective P)
+include P hp hinj
 omit [Fintype ι] in
-theorem valuation_prime_product (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
-    (hinj : Function.Injective P) (S : Finset ι) (i : ι) :
+theorem valuation_prime_product (S : Finset ι) (i : ι) :
     valuation (∏ j ∈ S, P j) (P i) = if i ∈ S then 1 else 0 := by
   rw [valuation_product S P (fun j _ => (hp j).ne_zero)]
   simp only [valuation_prime _ _ (hp _), hinj.eq_iff]
   simp
 
-theorem valuation_prime_power_product (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
-    (hinj : Function.Injective P) (n : ι → ℕ) (i : ι) :
+theorem valuation_prime_power_product (n : ι → ℕ) (i : ι) :
     valuation (∏ j, P j ^ n j) (P i) = n i := by
   rw [valuation_product Finset.univ _ (fun j _ => pow_ne_zero _ (hp j).ne_zero)]
   simp only [valuation_pow,valuation_prime _ _ (hp _),hinj.eq_iff,mul_ite,mul_one,mul_zero]
   simp
+end
 
+section
+variable (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+include P hp
 omit [DecidableEq ι] in
-theorem movingIdeal_ne_zero (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+theorem movingIdeal_ne_zero
     (c d : ι → ℕ) (V : Finset ι) : movingIdeal P c d V ≠ 0 := by
   unfold movingIdeal
   exact mul_ne_zero (Finset.prod_ne_zero_iff.mpr (fun i _ => pow_ne_zero _ (hp i).ne_zero))
     (Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero))
 
-theorem movingIdeal_valuation (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+theorem movingIdeal_valuation
     (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι) (i : ι) :
     valuation (movingIdeal P c d V) (P i) = min (c i) (d i) + if i ∈ V then 1 else 0 := by
   rw [movingIdeal,valuation_mul _ _ _
@@ -73,12 +79,13 @@ theorem movingIdeal_valuation (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
     (Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)),
     valuation_prime_power_product P hp hinj, valuation_prime_product P hp hinj]
 
-theorem forcing_valuation_two (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+theorem forcing_valuation_two
     (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι)
     (i : ι) (hi : i ∈ forcingSet c d V) : valuation (movingIdeal P c d V) (P i) = 2 := by
   obtain ⟨hiV,hc,hd⟩ := Finset.mem_filter.mp hi
   rw [movingIdeal_valuation P hp hinj c d V i,hc,hd,ite_eq_left hiV]
   norm_num
+end
 
 omit [Fintype ι] [DecidableEq ι] in
 theorem forcingIdeal_squarefree (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
@@ -86,11 +93,10 @@ theorem forcingIdeal_squarefree (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
     Squarefree (forcingIdeal P c d V) := by
   apply Finset.squarefree_prod_of_pairwise_isCoprime
   · intro i hi j hj hij
-    let : (P i).IsMaximal := (Ideal.isPrime_of_prime (hp i)).isMaximal (hp i).ne_zero
-    let : (P j).IsMaximal := (Ideal.isPrime_of_prime (hp j)).isMaximal (hp j).ne_zero
+    pm_6848 i
+    pm_6848 j
     exact (Ideal.isCoprime_of_isMaximal (hinj.ne hij)).isRelPrime
-  · intro i hi
-    exact (hp i).squarefree
+  pm_8346
 
 omit [Fintype ι] [DecidableEq ι] in
 theorem forcing_prime_mem (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
@@ -100,8 +106,7 @@ theorem forcing_prime_mem (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
   have hf : normalizedFactors (forcingIdeal P c d V) =
       (forcingSet c d V).val.map P := by
     apply normalizedFactors_prod_of_prime
-    intro R hR
-    obtain ⟨i,hi,rfl⟩ := Multiset.mem_map.mp hR
+    pm_67 R hR i hi Multiset.mem_map.mp
     exact hp i
   rw [hf] at hQ
   obtain ⟨i,hi,hPi⟩ := Multiset.mem_map.mp hQ
@@ -113,8 +118,7 @@ def movingElement (p : ι → O) (c d : ι → ℕ) (V : Finset ι) : O :=
 omit [DecidableEq ι] in
 theorem movingElement_span (p : ι → O) (c d : ι → ℕ) (V : Finset ι) :
     Ideal.span {movingElement p c d V} = movingIdeal (fun i => Ideal.span {p i}) c d V := by
-  simp only [movingElement,movingIdeal,Ideal.span_singleton_pow,
-    Ideal.prod_span_singleton,Ideal.span_singleton_mul_span_singleton]
+  pm_352 movingElement movingIdeal Ideal.span_singleton_pow Ideal.prod_span_singleton Ideal.span_singleton_mul_span_singleton
 
 end SevenEighths.CenteredMomentForcing
 

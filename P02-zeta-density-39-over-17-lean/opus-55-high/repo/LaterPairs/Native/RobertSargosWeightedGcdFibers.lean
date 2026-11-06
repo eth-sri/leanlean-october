@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosGcdScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -22,7 +23,7 @@ theorem exists_robertSargos_weighted_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
       (∀ p ∈ S, j = robertSargosCoefficientGcd p) →
       (∀ p ∈ S, k = robertSargosFrequencyGcd p) →
       (S.card:ℝ) ≤ C*(R*H*Q)^(1+ε)*(1+δ*Q)/((j:ℝ)*(k:ℝ)) := by
-  obtain ⟨C,hC,hcount⟩ := exists_robertSargos_gcd_fiber_count ε hε
+  pm_69 C hC hcount exists_robertSargos_gcd_fiber_count ε hε
   refine ⟨C*(4*(2:ℝ)^ε),by positivity,?_⟩
   intro S R H Q δ j k hR hH hQ hδ hRH hj hk hkQ hmem hjfix hkfix
   have ha := robertSargos_gcd_scale_bound (j := (j:ℝ)) (k := (k:ℝ)) hR hH hQ hδ hε.le

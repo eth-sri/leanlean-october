@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramResidue
 public import OAI.NumberTheory.DirichletL.Detector.GramPeriodicPoisson
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,8 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       ∀{ι : Type*}[Fintype ι],∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C k : O)(_hC : C≠0)(_hk0 : k≠0)(u : Oˣ)(a b : ℕ)(r : O)
       (hr : Supported (Ideal.span {r})),k=u.val*goodLambda^a*(2:O)^b*r→
-      ∀(P : ι→Id)[_hmax : ∀i,(P i).IsMaximal](hg : ∀i,goodLambda∉P i)(c : ι→ℕ),
-      (∀i,1≤c i)→Ideal.span {C}=∏i,P i^c i→
+      ∀(P : ι→ Id)[_hmax : ∀i,(P i).IsMaximal](hg : ∀i,goodLambda∉P i)(c : ι→ℕ),
+      (∀i,1≤ c i)→ Ideal.span {C}=∏i,P i^c i→
       ∀(p : Id)[_hpmax : p.IsMaximal],p≠0→∀_hgp : goodLambda∉p,
       ringChar (O⧸p)≠2→(¬p∣jointFixedModulus S hS)→(¬p∣∏i,P i)→
       (¬6∣(normalizedFactors (Ideal.span {k})).count p)→
@@ -35,7 +36,7 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
         K*ProbeGramLatticeDecay.sourceControl H W*(Ideal.absNorm (Ideal.span {C}):ℝ)*N^2*
           min 1 (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
             Ideal.absNorm (Ideal.span {k})/N)^A) := by
-  obtain ⟨H,K,hK,hengine⟩ := ProbeGramPeriodicPoisson.ideal_annular_periodic_bound A hA a₀ b₀ ha₀ hab
+  pm_562 H K hK hengine ProbeGramPeriodicPoisson.ideal_annular_periodic_bound A hA a₀ b₀ ha₀ hab
   refine ⟨H,K,hK,?_⟩
   intro ι inst S hS σ C k hC hk0 u a b r hr hk P hmax hg c hc hfac p hpmax hp0 hgp hchar hfixed hcommon he W hW d N hN
   have hcount : (normalizedFactors (Ideal.span {k})).count p=
@@ -47,7 +48,7 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     P hg c hc hfac p hp0 hgp hchar hfixed hcommon heR
   let : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient hM
   let : Fintype (O⧸M) := Fintype.ofFinite _
-  obtain ⟨f,hf,hfn,hfm⟩ := hres d
+  pm_3008 f hf hfn hfm hres d
   have hmean : (∑'v : (O⧸M)×(O⧸M),f v.1 v.2)=0 := by
     rw [tsum_fintype,Fintype.sum_prod_type]
     exact hfm

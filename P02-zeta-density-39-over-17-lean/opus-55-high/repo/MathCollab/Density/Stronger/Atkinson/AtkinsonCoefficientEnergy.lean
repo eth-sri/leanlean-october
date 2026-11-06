@@ -7,6 +7,7 @@ third_party/twelfth/LICENSE-MIT-0.
 Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonWeightedGram
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,9 +27,9 @@ theorem exists_atkinsonBlockCoefficientEnergy_le {ε : ℝ} (hε : 0 < ε) :
   have hD : 0 < D := by linarith
   have hdiv (n : ℕ) (hn : 0 < n) : ‖divisorWeight n‖ ≤ D*(n:ℝ)^(ε/2) := by
     simpa only [divisorWeight, Complex.norm_natCast] using hdiv₀ n hn
-  refine ⟨D^2*(2:ℝ)^ε,by positivity,?_⟩
+  pm_7932 D ε
   intro m N hm hN
-  have hmR : (0:ℝ) < m := Nat.cast_pos.mpr hm
+  pm_4474 hmR m Nat.cast_pos.mpr hm
   have h2m : (0:ℝ) < 2*(m:ℝ) := by positivity
   have hterm (i : ℕ) (hi : i ∈ Finset.range N) :
       ‖divisorWeight (m+i)‖^2 ≤ D^2*(2:ℝ)^ε*(m:ℝ)^ε := by
@@ -42,7 +43,7 @@ theorem exists_atkinsonBlockCoefficientEnergy_le {ε : ℝ} (hε : 0 < ε) :
     rw [mul_pow,sq ((2*(m:ℝ))^(ε/2)),← Real.rpow_add h2m,
       show ε/2+ε/2 = ε by ring,Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hmR.le]
     ring
-  have hNR : (N:ℝ) ≤ m := by exact_mod_cast hN
+  pm_404 hNR N m hN
   calc
     _ ≤ ∑ i ∈ Finset.range N, D^2*(2:ℝ)^ε*(m:ℝ)^ε := Finset.sum_le_sum hterm
     _ = (N:ℝ)*(D^2*(2:ℝ)^ε*(m:ℝ)^ε) := by simp

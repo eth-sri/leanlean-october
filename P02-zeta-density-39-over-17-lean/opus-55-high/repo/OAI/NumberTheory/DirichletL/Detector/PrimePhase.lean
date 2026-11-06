@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PhaseCancellation
 public import OAI.NumberTheory.DirichletL.Detector.Sextic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,8 +14,10 @@ open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss
 open ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
-theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+section
+variable (p : O) (hp : p ≠ 0) [(Ideal.span {p} : Ideal O).IsMaximal]
+include p hp
+theorem normalizedTraceGauss_eq_normalizedGauss
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) :
     letI : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
     letI : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
@@ -28,22 +31,18 @@ theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)
   simp only [ConcreteBreveE.normalizedTraceGauss, ProbeGauss.normalizedGauss,
     quotientTrace, ← Nat.card_eq_fintype_card, hn]
 
-theorem quadraticRayValue_eq_normalizedTraceGauss (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem quadraticRayValue_eq_normalizedTraceGauss
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
     quadraticRayValue (residue p) =
       ConcreteBreveE.normalizedTraceGauss p hp (actualSextic (Ideal.span {p}) hg ^ 3) := by
   let pp : Unit → O := fun _ => p
   have hpp : ∀ i, pp i ≠ 0 := fun _ => hp
-  have hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {pp i})) := by
-    intro i j hij
-    exact (hij (Subsingleton.elim i j)).elim
+  pm_7322 pp j hij
   have he := canonicalProductGauss_three_eq_rayValue pp hpp hcop (fun _ => hg) (fun _ => hc)
-  rw [canonicalProductGauss_cross_factors pp hpp hcop (fun _ => hg) (fun _ => 3)] at he
-  simpa [pp] using he.symm
+  pm_5683
+  aesop
 
-theorem G_cube_eq_normalizedTraceGauss (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem G_cube_eq_normalizedTraceGauss
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (ho : EisensteinEPrimaryPhase.odd (residue p)) :
     G (p ^ 3) =
@@ -51,8 +50,7 @@ theorem G_cube_eq_normalizedTraceGauss (p : O) (hp : p ≠ 0)
   rw [G_cube p ho (cubicTwo_isUnit_of_odd p ho)]
   exact quadraticRayValue_eq_normalizedTraceGauss p hp hg hc
 
-theorem normalizedTraceGauss_three_sq (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem normalizedTraceGauss_three_sq
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
     ConcreteBreveE.normalizedTraceGauss p hp (actualSextic (Ideal.span {p}) hg ^ 3) ^ 2 =
       actualSextic (Ideal.span {p}) hg (-1) := by
@@ -66,8 +64,7 @@ theorem normalizedTraceGauss_three_sq (p : O) (hp : p ≠ 0)
     apply inv_eq_of_mul_eq_one_right
     rw [← pow_add]
     exact h6
-  have hψ : (quotientTrace p hp).IsPrimitive :=
-    GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp
+  pm_8422 hψ quotientTrace hp
   have he := ProbeGauss.normalizedGauss_inverse_pair (χ ^ 3) (quotientTrace p hp) h3 hψ
   rw [hi, ← pow_two] at he
   rw [normalizedTraceGauss_eq_normalizedGauss]
@@ -76,8 +73,7 @@ theorem normalizedTraceGauss_three_sq (p : O) (hp : p ≠ 0)
   norm_num
   rfl
 
-theorem reciprocitySign_self_eq_sextic_neg_one (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem reciprocitySign_self_eq_sextic_neg_one
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (ho : EisensteinEPrimaryPhase.odd (residue p)) :
     reciprocitySign p p = actualSextic (Ideal.span {p}) hg (-1) := by
@@ -93,6 +89,7 @@ theorem reciprocitySign_self_eq_sextic_neg_one (p : O) (hp : p ≠ 0)
     _ = reciprocitySign p p * (reciprocitySign p p * actualSextic (Ideal.span {p}) hg (-1)) := by rw [hprod]
     _ = reciprocitySign p p ^ 2 * actualSextic (Ideal.span {p}) hg (-1) := by ring
     _ = _ := by rw [reciprocitySign_sq p p ho ho, one_mul]
+end
 
 end SevenEighths.ProbePhase
 end

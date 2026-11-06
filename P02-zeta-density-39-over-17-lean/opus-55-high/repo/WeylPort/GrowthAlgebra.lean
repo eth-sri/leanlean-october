@@ -1,5 +1,6 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,14 +35,12 @@ theorem eventually_const_height_log_pow_mul_rpow_le_rpow
   have hH0 : 0 < H := by linarith
   have hlog3 : Real.log 3 ≤ Real.log H :=
     Real.log_le_log (by norm_num) hH
-  have hlog : Real.log (3*H) ≤ 2*Real.log H := by
-    rw [Real.log_mul (by norm_num) hH0.ne']
-    linarith
+  pm_5512 hlog
   have hp := mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ (Real.log_nonneg (by linarith : 1 ≤ 3*H)) hlog k) hC
   rw [mul_pow] at hp
   have hsmall : C*(Real.log (3*H))^k ≤ H^(b-a) := by
-    exact hp.trans (by nlinarith [hs])
+    grind
   calc
     C*(Real.log (3*H))^k*H^a ≤ H^(b-a)*H^a :=
       mul_le_mul_of_nonneg_right hsmall (by positivity)
@@ -58,14 +57,12 @@ theorem eventually_pointValue_sixth_power_source_range
   let r : ℝ := 1/2-(1/48:ℝ)
   have hlower := eventually_const_height_log_pow_mul_rpow_le_rpow
     (C := K*2^q) (a := q) (b := 1/3+2*η) (by positivity) 2
-    (by dsimp only [q]; linarith)
+    (by grind)
   have hlog := Real.tendsto_log_atTop.eventually
     (eventually_ge_atTop (max 1 (1/K)))
   filter_upwards [hlower,hlog,eventually_ge_atTop (3:ℝ)] with H hlower hlog hH
-  have hH0 : 0 < H := by linarith
-  have hH1 : 1 ≤ H := by linarith
-  have hLmono : Real.log H ≤ Real.log (3*H) :=
-    Real.log_le_log hH0 (by linarith)
+  pm_34 hH0 H hH1
+  pm_6855 hLmono
   have hL1 : 1 ≤ Real.log (3*H) := ((le_max_left _ _).trans hlog).trans hLmono
   have hKL : 1 ≤ K*Real.log (3*H) := by
     have hr : 1/K ≤ Real.log (3*H) :=
@@ -76,9 +73,7 @@ theorem eventually_pointValue_sixth_power_source_range
     have hp := mul_le_mul_of_nonneg_right hL1 (by positivity : 0 ≤ K*Real.log (3*H))
     nlinarith
   have hp : (H^(1/6+η))^2 = H^(1/3+2*η) := by
-    rw [← Real.rpow_natCast,← Real.rpow_mul hH0.le]
-    congr 1
-    norm_num
+    pm_6156 hH0.le
     ring
   rw [hp]
   constructor

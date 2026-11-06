@@ -2,12 +2,12 @@ module
 public import MathCollab.Density.DetectorIdentity
 public import MathCollab.Density.MollifierBound
 public import MathCollab.Density.DetectorParameters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open scoped BigOperators Topology
-set_option autoImplicit false
+open Complex MeasureTheory Filter
+open scoped Topology
 noncomputable section
 namespace MathCollab.Density
 
@@ -29,7 +29,7 @@ theorem detector_shifted_rpow_le {T γ v q : ℝ} (hT : 1 ≤ T)
     _ = 3^q*T^q*(1+|v|)^q := by rw [Real.mul_rpow (by positivity) (by positivity), Real.mul_rpow (by positivity) (by positivity)]
     _ ≤ 3*T^q*(1+|v|) := by
       have h3 : (3 : ℝ)^q ≤ 3 := by simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 3) hq'
-      have hv : (1+|v|)^q ≤ 1+|v| := by simpa using Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg v] : 1 ≤ 1+|v|) hq'
+      have hv : (1+|v|)^q ≤ 1+|v| := by simpa using Real.rpow_le_rpow_of_exponent_le (by grind : 1 ≤ 1+|v|) hq'
       gcongr
 
 /-- Conditional estimate: its only missing analytic input is the displayed
@@ -47,7 +47,7 @@ theorem uniform_detector_integral_bound :
   let g := fun t : ℝ => Complex.Gamma ((a : ℂ)+(t : ℂ)*I)
   let F := fun t : ℝ => detectorKernel ρ X Y ((a : ℂ)+(t : ℂ)*I)
   let B : ℝ := 6*C*Real.sqrt X*Y^a*T^q
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  pm_61 hB B
   have he : ∀ t : ℝ, ρ+((a : ℂ)+(t : ℂ)*I) = (1/2 : ℂ)+((ρ.im+t : ℝ) : ℂ)*I := by
     intro t
     apply Complex.ext <;> simp [a]
@@ -90,11 +90,9 @@ theorem norm_detectorResidue_le {ρ : ℂ} {X Y : ℝ}
     (hγ : 1 ≤ |ρ.im|) :
     ‖detectorResidue ρ X Y‖ ≤
       24*Real.sqrt X*Y^(1-ρ.re)*(1+|ρ.im|)*Real.exp (-|ρ.im|) := by
-  have hm := norm_zetaMollifier_le_two_sqrt (s := 1) hX (by norm_num)
+  pm_8290 hm
   have hg := norm_Gamma_one_sub_zero_le hβ hβ' hγ
-  dsimp [detectorResidue]
-  rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hY]
-  simp only [Complex.sub_re, Complex.one_re]
+  pm_6647 hY
   calc
     _ ≤ Y^(1-ρ.re)*(12*(1+|ρ.im|)*Real.exp (-|ρ.im|))*(2*Real.sqrt X) := by gcongr
     _ = _ := by ring
@@ -104,25 +102,19 @@ theorem norm_firstDetector_residue_le {ρ : ℂ} {T : ℝ}
     (hT : 1 ≤ T) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
     (hγ : T ≤ |ρ.im|) (hγ' : |ρ.im| ≤ 2*T) :
     ‖detectorResidue ρ (firstDetectorX T) T‖ ≤ 72*T^3*Real.exp (-T) := by
-  have hTpos : 0 < T := by linarith
-  have hX : 0 ≤ firstDetectorX T := by unfold firstDetectorX; positivity
+  pm_1585
   have hXle : firstDetectorX T ≤ 2*T := by
-    dsimp [firstDetectorX]
-    have hp := Real.rpow_le_rpow_of_exponent_le hT (by norm_num : (1/8 : ℝ) ≤ 1)
+    pm_5985 hp
     simpa using mul_le_mul_of_nonneg_left hp (by norm_num : (0 : ℝ) ≤ 2)
   have hm := (norm_zetaMollifier_le_cutoff (firstDetectorX T) (s := 1) (by norm_num)).trans
     ((Nat.floor_le hX).trans hXle)
   have hg := norm_Gamma_one_sub_zero_le hβ hβ' (hT.trans hγ)
   have hp : T^(1-ρ.re) ≤ T := by simpa using Real.rpow_le_rpow_of_exponent_le hT (by linarith : 1-ρ.re ≤ 1)
-  have hexp : Real.exp (-|ρ.im|) ≤ Real.exp (-T) := Real.exp_le_exp.mpr (by linarith)
-  dsimp [detectorResidue]
-  rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hTpos]
-  simp only [Complex.sub_re, Complex.one_re]
+  pm_1080 hexp T
+  pm_6647 hTpos
   calc
     _ ≤ T*(12*(3*T)*Real.exp (-T))*(2*T) := by
-      apply mul_le_mul _ hm (norm_nonneg _) (by positivity)
-      apply mul_le_mul hp _ (norm_nonneg _) (by positivity)
-      exact hg.trans (by gcongr; linarith)
+      pm_4300
     _ = _ := by ring
 
 /-- The pole term is uniformly small with no Weyl dependency. -/
@@ -130,13 +122,7 @@ theorem firstDetector_residue_eventually_small {δ : ℝ} (hδ : 0 < δ) :
     ∀ᶠ T : ℝ in atTop, ∀ ρ : ℂ,
       3/4 ≤ ρ.re → ρ.re ≤ 1 → T ≤ |ρ.im| → |ρ.im| ≤ 2*T →
       ‖detectorResidue ρ (firstDetectorX T) T‖ < δ := by
-  have ht := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 3).const_mul 72
-  simp only [mul_zero] at ht
-  have he : ∀ᶠ T : ℝ in atTop, 72*T^3*Real.exp (-T) < δ := by
-    simpa only [mul_zero, mul_assoc] using ht.eventually (gt_mem_nhds hδ)
-  filter_upwards [eventually_ge_atTop (1 : ℝ), he] with T hT hsmall
-  intro ρ hβ hβ' hγ hγ'
-  exact (norm_firstDetector_residue_le hT hβ hβ' hγ hγ').trans_lt hsmall
+  pm_4301 T hT norm_firstDetector_residue_le
 
 /-- Conditional on one explicit pointwise zeta estimate, the original detector
 is uniformly small. The threshold precedes every actual zero in the slab. -/

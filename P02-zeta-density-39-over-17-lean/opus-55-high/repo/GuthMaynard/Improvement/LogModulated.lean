@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.RadialDecay
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Filter
 open scoped ContDiff Topology
@@ -11,8 +11,10 @@ namespace GuthMaynard.Improvement
 def logModulated (a : ℝ → ℂ) (s x : ℝ) : ℂ :=
   a x * Complex.exp ((s:ℂ)*Complex.I*(Real.log x:ℂ))
 
-theorem logModulated_smoothOn {a : ℝ → ℂ}
-    (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ) :
+section
+variable {a : ℝ → ℂ} (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ)
+include a ha s
+theorem logModulated_smoothOn :
     ContDiffOn ℝ ∞ (logModulated a s) (Ioi 0) := by
   apply ha.mul
   apply ContDiffOn.cexp
@@ -20,8 +22,7 @@ theorem logModulated_smoothOn {a : ℝ → ℂ}
   exact Complex.ofRealCLM.contDiff.comp_contDiffOn
     (Real.contDiffOn_log.mono (fun x hx => ne_of_gt hx))
 
-theorem logModulated_deriv {a : ℝ → ℂ}
-    (ha : ContDiffOn ℝ ∞ a (Ioi 0)) (s : ℝ) {x : ℝ} (hx : 0 < x) :
+theorem logModulated_deriv {x : ℝ} (hx : 0 < x) :
     deriv (logModulated a s) x =
       logModulated (deriv a) s x + (s:ℂ)*Complex.I*logModulated (fun x => a x/(x:ℂ)) s x := by
   have hd : HasDerivAt a (deriv a x) x :=
@@ -33,6 +34,7 @@ theorem logModulated_deriv {a : ℝ → ℂ}
   unfold logModulated
   push_cast
   ring
+end
 
 /-- Derivatives of the actual logarithmically modulated amplitude have
 polynomial time growth. The constant precedes every real time parameter. -/
@@ -44,7 +46,7 @@ theorem logModulated_uniform_deriv (n : ℕ) {l u : ℝ} (hl : 0 < l)
   | zero =>
     obtain ⟨C,hC⟩ := isCompact_Icc.exists_bound_of_continuousOn
       (ha.continuousOn.mono (fun x hx => lt_of_lt_of_le hl hx.1))
-    refine ⟨max 1 C,lt_of_lt_of_le zero_lt_one (le_max_left _ _),?_⟩
+    pm_4545
     intro s x hx
     have he : ‖Complex.exp ((s:ℂ)*Complex.I*(Real.log x:ℂ))‖ = 1 := by
       rw [show (s:ℂ)*Complex.I*(Real.log x:ℂ) = ((s*Real.log x:ℝ):ℂ)*Complex.I by push_cast; ring]
@@ -73,7 +75,7 @@ theorem logModulated_uniform_deriv (n : ℕ) {l u : ℝ} (hl : 0 < l)
       _ ≤ ‖iteratedDeriv n (logModulated (deriv a) s) x‖ +
           ‖(s:ℂ)*Complex.I*iteratedDeriv n (logModulated (fun z => a z/(z:ℂ)) s) x‖ := norm_add_le _ _
       _ ≤ C*(1+|s|)^n + |s| *(D*(1+|s|)^n) := by
-        simp only [norm_mul,Complex.norm_real,Real.norm_eq_abs,Complex.norm_I,mul_one]
+        pm_94 norm_mul Complex.norm_real Real.norm_eq_abs Complex.norm_I mul_one
         gcongr
         · exact hc s x hx
         · exact hd s x hx
@@ -82,13 +84,13 @@ theorem logModulated_uniform_deriv (n : ℕ) {l u : ℝ} (hl : 0 < l)
         nlinarith [mul_nonneg (mul_nonneg hC.le (abs_nonneg s)) (pow_nonneg (by positivity : 0 ≤ 1+|s|) n),
           mul_nonneg hD.le (pow_nonneg (by positivity : 0 ≤ 1+|s|) n)]
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0)
+include a ha l u hl hs
 /-- A cutoff supported away from zero removes the logarithm's singularity. -/
-theorem logModulated_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
+theorem logModulated_smooth (s : ℝ) :
     ContDiff ℝ ∞ (logModulated a s) := by
-  rw [contDiff_iff_contDiffAt]
-  intro x
-  by_cases hx : 0 < x
+  pm_7613 x hx
   · exact (logModulated_smoothOn ha.contDiffOn s).contDiffAt (isOpen_Ioi.mem_nhds hx)
   · apply (contDiffAt_const : ContDiffAt ℝ ∞ (fun _ : ℝ => (0:ℂ)) x).congr_of_eventuallyEq
     have hxl : x < l := lt_of_le_of_lt (le_of_not_gt hx) hl
@@ -97,8 +99,7 @@ theorem logModulated_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     simp [logModulated,haz]
 
 /-- A global uniform derivative bound for the genuine compact cutoff. -/
-theorem logModulated_global_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0) (n : ℕ) :
+theorem logModulated_global_deriv (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ s x : ℝ,
       ‖iteratedDeriv n (logModulated a s) x‖ ≤ C*(1+|s|)^n := by
   obtain ⟨C,hC,hb⟩ := logModulated_uniform_deriv n (u := u) hl a ha.contDiffOn
@@ -110,5 +111,6 @@ theorem logModulated_global_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       intro z hz; simp [logModulated,hs z hz]
     rw [iteratedDeriv_zero_off_interval hz n hx,norm_zero]
     positivity
+end
 
 end GuthMaynard.Improvement

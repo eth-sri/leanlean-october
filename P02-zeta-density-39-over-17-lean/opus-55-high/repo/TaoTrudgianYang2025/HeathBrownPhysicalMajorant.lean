@@ -1,5 +1,6 @@
 module
 public import TaoTrudgianYang2025.HeathBrownPowerWindow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,7 +35,10 @@ theorem heathBrownDerivativeMajorant_expand (k : ℕ) (η lambda : ℝ)
     Real.rpow_add hL (1+η) (-2*heathBrownDerivativeExponent k)]
   ring
 
-theorem heathBrownDerivativeMajorant_mono_length {k : ℕ} (hk : 3 ≤ k)
+section
+variable {k : ℕ} (hk : 3 ≤ k)
+include k hk
+theorem heathBrownDerivativeMajorant_mono_length
     {η L N lambda : ℝ} (hη : 0 ≤ η) (hL : 0 < L) (hLN : L ≤ N) (hlambda : 0 < lambda) :
     heathBrownDerivativeMajorant k η L lambda ≤ heathBrownDerivativeMajorant k η N lambda := by
   have hN := hL.trans_le hLN
@@ -43,15 +47,11 @@ theorem heathBrownDerivativeMajorant_mono_length {k : ℕ} (hk : 3 ≤ k)
   have hd := (heathBrownDerivativeExponent_bounds hk).2.2
   apply add_le_add
   · apply add_le_add
-    · exact mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow hL.le hLN (by linarith))
-        (Real.rpow_nonneg hlambda.le _)
+    pm_6425
     · exact Real.rpow_le_rpow hL.le hLN (by linarith)
-  · exact mul_le_mul_of_nonneg_right
-      (Real.rpow_le_rpow hL.le hLN (by linarith))
-      (Real.rpow_nonneg hlambda.le _)
+  pm_6425
 
-theorem heathBrownDerivativeMajorant_physical {k : ℕ} (hk : 3 ≤ k)
+theorem heathBrownDerivativeMajorant_physical
     {c T N : ℝ} (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) (η : ℝ) :
     heathBrownDerivativeMajorant k η N (c*T/N^k) =
       N^η * (c^(heathBrownDerivativeExponent k)*T^(heathBrownDerivativeExponent k)*
@@ -76,7 +76,7 @@ theorem heathBrownDerivativeMajorant_physical {k : ℕ} (hk : 3 ≤ k)
   rw [h₂]
   ring
 
-theorem heathBrownDerivativeMajorant_le_powerMajorant {k : ℕ} (hk : 3 ≤ k)
+theorem heathBrownDerivativeMajorant_le_powerMajorant
     {c T N : ℝ} (hc : 0 < c) (hT : 0 < T) (hN : 0 < N) (η : ℝ) :
     heathBrownDerivativeMajorant k η N (c*T/N^k) ≤
       (c^(heathBrownDerivativeExponent k)+1+c^(-heathBrownInverseExponent k))*
@@ -87,7 +87,7 @@ theorem heathBrownDerivativeMajorant_le_powerMajorant {k : ℕ} (hk : 3 ≤ k)
   have h₃ : 0 ≤ c^(-heathBrownInverseExponent k) := Real.rpow_nonneg hc.le _
   have ha : 0 ≤ T^(heathBrownDerivativeExponent k)*N^(1-(k : ℝ)*heathBrownDerivativeExponent k) := by positivity
   have hb : 0 ≤ N^(1-heathBrownDerivativeExponent k) := by positivity
-  have hd : 0 ≤ N*T^(-heathBrownInverseExponent k) := by positivity
+  pm_7387 hd
   have hinner :
       c^(heathBrownDerivativeExponent k)*
           (T^(heathBrownDerivativeExponent k)*N^(1-(k : ℝ)*heathBrownDerivativeExponent k)) +
@@ -101,20 +101,21 @@ theorem heathBrownDerivativeMajorant_le_powerMajorant {k : ℕ} (hk : 3 ≤ k)
   have hm := mul_le_mul_of_nonneg_left hinner (Real.rpow_nonneg hN.le η)
   convert hm using 1 <;> ring
 
-theorem one_le_heathBrownPowerMajorant {k : ℕ} (hk : 3 ≤ k)
+theorem one_le_heathBrownPowerMajorant
     {η T N : ℝ} (hη : 0 ≤ η) (hT : 0 < T) (hN : 1 ≤ N) :
     1 ≤ heathBrownPowerMajorant k η T N := by
   have hd := (heathBrownDerivativeExponent_bounds hk).2.2
   have h₁ := Real.one_le_rpow hN hη
   have h₂ := Real.one_le_rpow hN (show 0 ≤ 1-heathBrownDerivativeExponent k by linarith)
   have hm : 1 ≤ N^η*N^(1-heathBrownDerivativeExponent k) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr h₁) (sub_nonneg.mpr h₂)]
+    pm_385 mul_nonneg sub_nonneg.mpr h₁ h₂
   apply hm.trans
   unfold heathBrownPowerMajorant
   apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg (zero_le_one.trans hN) η)
   have ha : 0 ≤ T^(heathBrownDerivativeExponent k)*
       N^(1-(k : ℝ)*heathBrownDerivativeExponent k) := by positivity
-  have hb : 0 ≤ N*T^(-heathBrownInverseExponent k) := by positivity
+  pm_7387 hb
   linarith
+end
 
 end TaoTrudgianYang2025

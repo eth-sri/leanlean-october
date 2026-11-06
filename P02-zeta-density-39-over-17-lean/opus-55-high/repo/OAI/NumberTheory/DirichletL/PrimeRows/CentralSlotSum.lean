@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSplit
 public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeIndexed
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 
 theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
-    (hc : 0<c) (hd : 0<d) (hB : 0≤B) :
+    (hc : 0< c) (hd : 0<d) (hB : 0≤B) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) (T : Finset PrimeIdeal)
       (hT : ∀P∈T,Supported P.val ∧ (480:ℝ)≤P.val.absNorm ∧ IsCoprime P.val η.modulus)
       (Y : ℝ),1≤Y → ∀(W : ℝ→ℂ),Function.support W⊆Set.Icc c d →
@@ -28,7 +29,7 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
     eps c d (-(4/25:ℝ)) 1 B 1440 heps hc hd (by norm_num) hB (by norm_num)
   refine ⟨C,hC,?_⟩
   intro η u T hT Y hY W hWS hWB a e x w z ha ha1 he he1 hx hw hz hsmall
-  let f : T→Ideal O := fun P=>P.val.val
+  let f : T→ Ideal O := fun P=>P.val.val
   have hf : Function.Injective f := fun P Q h=>Subtype.ext (Subtype.ext h)
   let E : T→ℂ := fun P=>centralRegularError η u P.val (hT P.val P.property).1 x w z
   let G : T→ℂ := fun P=>((f P).absNorm:ℂ)^(1/2:ℂ)*E P
@@ -48,7 +49,7 @@ theorem central_regular_slot_sum (eps c d B : ℝ) (heps : 0<eps)
           ((f P).absNorm:ℝ)^(1/2:ℝ) else ((f P).absNorm:ℝ)^(-(51/100:ℝ)))) :=
         mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hQ0.le _)
       _ ≤ _ := by
-        by_cases hp : f P∣Ideal.span {u.val}
+        pm_8373
         · simp only [ite_eq_left hp]
           rw [mul_left_comm,←Real.rpow_add hQ0]
           norm_num

@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -27,16 +28,15 @@ theorem isExponentPairEstimateNonAsymptotic_half_half :
   let K := modelPhaseSumConstant σ
   have hK : 0 < K := modelPhaseSumConstant_pos hσ
   let C := max 1 (max (2*K) 3)
-  have hC : 1 ≤ C := le_max_left _ _
+  pm_4884 hC C
   have hCK : 2*K ≤ C := (le_max_left _ _).trans (le_max_right _ _)
   have hCthree : 3 ≤ C := (le_max_right _ _).trans (le_max_right _ _)
   refine ⟨δ,hδ,1,le_rfl,C,hC,?_⟩
   intro T N F a b h
   have hT : 1 ≤ T := hC.trans h.threshold_le_param
-  have hTp : 0 < T := lt_of_lt_of_le zero_lt_one hT
-  have hNp : 0 < N := lt_of_lt_of_le zero_lt_one h.one_le_scale
+  pm_1190 hTp T hT hNp N h.one_le_scale
   have hspos : 0 < Real.sqrt T := Real.sqrt_pos.mpr hTp
-  have hsone : 1 ≤ Real.sqrt T := by simpa using Real.sqrt_le_sqrt hT
+  have hsone : 1 ≤ Real.sqrt T := by simp_all
   have hsquare : (Real.sqrt T)^2 = T := Real.sq_sqrt hTp.le
   have hbound : ‖exponentialSumAt F T N a b‖ ≤ C*Real.sqrt T := by
     by_cases hscale : T ≤ N^2
@@ -54,9 +54,7 @@ theorem isExponentPairEstimateNonAsymptotic_half_half :
       calc
         _ ≤ 3*Real.sqrt T := by linarith [h.end_le_two_mul_scale]
         _ ≤ C*Real.sqrt T := mul_le_mul_of_nonneg_right hCthree hspos.le
-  have hsbound : Real.sqrt T ≤ T^((1 : ℝ)/2+ε) := by
-    rw [Real.sqrt_eq_rpow]
-    exact Real.rpow_le_rpow_of_exponent_le hT (by linarith)
+  pm_1235 hsbound
   have heq : (T/N)^((1 : ℝ)/2+ε)*N^((1 : ℝ)/2+ε) =
       T^((1 : ℝ)/2+ε) := by
     rw [← Real.mul_rpow (div_nonneg hTp.le hNp.le) hNp.le,

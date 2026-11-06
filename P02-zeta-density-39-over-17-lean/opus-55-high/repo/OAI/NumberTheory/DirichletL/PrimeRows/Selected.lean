@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedCoordinates
 public import OAI.NumberTheory.DirichletL.PrimeRows.Agreement
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedActual
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedRamified
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,12 +29,12 @@ theorem localNormalization_coordinates (η : Character) (u : FreeRow) (P : Prime
         (1-coordD P.val.absNorm (idealCoeff η P.val) (idealRowHom u.val P.val) x) := by
   unfold localNormalization coordV coordW coordD CubicEisenstein.fullIdealWeight
   simp only [P.property.ne_zero,ite_false,Complex.ofReal_natCast]
-  rw [show -(6*z)=(-6:ℂ)*z by ring]
+  pm_5677
   rfl
 
 theorem row_phase_ramified (u : FreeRow) (P : PrimeIdeal) (hP : P.val∣Ideal.span {u.val}) :
     idealRowHom u.val P.val=0 := by
-  have hu : u.val∈P.val := (Ideal.dvd_iff_le.mp hP) (Ideal.subset_span (by simp))
+  pm_6278
   exact idealRowHom_zero_of_dvd u.val P.property (dvd_refl _) hu
 
 theorem continuedCompensatedLocal_ramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
@@ -48,18 +49,15 @@ theorem continuedCompensatedLocal_ramified (η : Character) (u : FreeRow) (P : P
         (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ (unitPart u p hp)))
         x w z (multiplicity p u.val) := by
   dsimp only
-  let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
+  pm_3885
   let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+  pm_3886
   have he := ramifiedSelected_eq_replacement p hp hg.1 (targetMonoid η p) (actualACube η p)
     (actualSextic (Ideal.span {p}) hg.1 (Ideal.Quotient.mk _ (unitPart u p hp))) x w z (multiplicity p u.val)
   rw [he]
   unfold continuedCompensatedLocal
   rw [row_phase_ramified u P hP]
-  simp only [coordW,coordD,zero_mul,mul_zero,star_zero]
+  pm_94 coordW coordD zero_mul mul_zero star_zero
   rw [←targetMonoid_primaryGenerator η P.val hs]
   unfold continuedMarkedLocal
   simp only [hspan]

@@ -1,19 +1,20 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstActiveFourier
 public import OAI.NumberTheory.DirichletL.Moments.CompleteCommon
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentCanonicalFirst
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredExceptionalCount
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentActive
+open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
+open CenteredMomentFirstReduced CenteredMomentActive
 open CenteredMomentCompleteCommon UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 
@@ -25,29 +26,33 @@ instance commonIndexMaximal (I J : Ideal O) (P : CommonIndex I J) : P.val.IsMaxi
 def leftExponent (I J : Ideal O) (P : CommonIndex I J) := valuation I P.val
 def rightExponent (I J : Ideal O) (P : CommonIndex I J) := valuation J P.val
 
-theorem common_good (I J : Ideal O) (hI : Supported I) (P : CommonIndex I J) :
+section
+variable (I J : Ideal O)
+include I J
+theorem common_good (hI : Supported I) (P : CommonIndex I J) :
     ConcretePrimeRowBridge.goodLambda ∉ P.val :=
   (supported_factors_good I hI P.val (Multiset.mem_toFinset.mp (Finset.mem_inter.mp P.property).1)).2.1
 
-theorem common_odd (I J : Ideal O) (hI : Supported I) (P : CommonIndex I J) :
+theorem common_odd (hI : Supported I) (P : CommonIndex I J) :
     ringChar (O ⧸ P.val)≠2 :=
   (supported_factors_good I hI P.val (Multiset.mem_toFinset.mp (Finset.mem_inter.mp P.property).1)).2.2
 
-theorem leftExponent_pos (I J : Ideal O) (P : CommonIndex I J) : 0<leftExponent I J P :=
+theorem leftExponent_pos (P : CommonIndex I J) : 0<leftExponent I J P :=
   (common_valuations_pos I J P.val P.property).1
 
-theorem rightExponent_pos (I J : Ideal O) (P : CommonIndex I J) : 0<rightExponent I J P :=
+theorem rightExponent_pos (P : CommonIndex I J) : 0< rightExponent I J P :=
   (common_valuations_pos I J P.val P.property).2
 
-theorem commonPart_left_product (I J : Ideal O) :
+theorem commonPart_left_product :
     commonPart I J=∏ P : CommonIndex I J,P.val^leftExponent I J P := by
   exact (Finset.prod_coe_sort (s:=commonSupport I J) (f:=fun P => P^valuation I P)).symm
 
-theorem commonPart_right_product (I J : Ideal O) :
+theorem commonPart_right_product :
     commonPart J I=∏ P : CommonIndex I J,P.val^rightExponent I J P := by
   unfold commonPart
   rw [commonSupport_comm J I]
   exact (Finset.prod_coe_sort (s:=commonSupport I J) (f:=fun P => P^valuation J P)).symm
+end
 
 abbrev ActiveIndex (I J : Ideal O) :=
   activeSupport (Finset.univ : Finset (CommonIndex I J)) (leftExponent I J) (rightExponent I J)
@@ -62,7 +67,7 @@ theorem activeGood (I J : Ideal O) (hI : Supported I) (P : ActiveIndex I J) :
     ConcretePrimeRowBridge.goodLambda ∉ activePrime I J P := common_good I J hI P.val
 
 theorem activeCoprime (I J : Ideal O) : Pairwise (Function.onFun IsCoprime (activePrime I J)) :=
-  activePrimes_pairwise_coprime (fun P : CommonIndex I J => P.val) Subtype.val_injective
+  activePrimes_pairwise_coprime (fun P : CommonIndex I J=> P.val) Subtype.val_injective
     Finset.univ (leftExponent I J) (rightExponent I J)
 
 def activeFunction (I J : Ideal O) (hI : Supported I) : Residue (activeConductor I J) → ℂ :=
@@ -71,23 +76,30 @@ def activeFunction (I J : Ideal O) (hI : Supported I) : Residue (activeConductor
 
 def residualGenerator (I J : Ideal O) : O := CompletedGauss.primaryGenerator (residualPart I J)
 
-theorem residualGenerator_span (I J : Ideal O) (hI : Supported I) :
+section
+variable (I J : Ideal O) (hI : Supported I)
+include I J hI
+theorem residualGenerator_span :
     Ideal.span {residualGenerator I J}=residualPart I J :=
   (CompletedGauss.primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ (residualPart_supported I J hI))).1
 
-theorem residualGenerator_supported (I J : Ideal O) (hI : Supported I) :
+theorem residualGenerator_supported :
     Supported (Ideal.span {residualGenerator I J}) := by
   rw [residualGenerator_span I J hI]
   exact residualPart_supported I J hI
+end
 
 def residualCharacter (I J : Ideal O) (hI : Supported I) : MulChar (Residue (residualGenerator I J)) ℂ :=
   supportedModulusCharacter _ (residualGenerator_supported I J hI)
 
-@[simp] theorem residualCharacter_mk (I J : Ideal O) (hI : Supported I) (z : O) :
+section
+variable (I J : Ideal O) (hI : Supported I)
+include I J hI
+@[simp] theorem residualCharacter_mk (z : O) :
     residualCharacter I J hI (Ideal.Quotient.mk _ z)=idealRowHom z (residualPart I J) := by
   rw [residualCharacter,supportedModulusCharacter_mk,residualGenerator_span I J hI]
 
-theorem original_pair_factor (I J : Ideal O) (hI : Supported I) (hJ : Supported J) (z : O) :
+theorem original_pair_factor (hJ : Supported J) (z : O) :
     idealRowHom z I*star (idealRowHom z J)=
       residualCharacter I J hI (Ideal.Quotient.mk _ z)*
         (residualCharacter J I hJ)⁻¹ (Ideal.Quotient.mk _ z)*
@@ -101,17 +113,18 @@ theorem original_pair_factor (I J : Ideal O) (hI : Supported I) (hJ : Supported 
   simp only [map_mul] at hi hj
   rw [hi,hj,star_mul]
   ring
+end
 
 def reducedFirstSum (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
   ∑ E ∈ (principalSupport (Finset.univ : Finset (CommonIndex I J)) (leftExponent I J) (rightExponent I J)).powerset,
-    let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
+    let e := primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E
     let k := K/‖eisEmbedding e‖^2
     let a := residualGenerator I J
     let b := residualGenerator J I
     let r := activeConductor I J
     (UniqueFactorizationMonoid.moebius (∏ P∈E,P.val):ℂ)*
-      tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e*
+      tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e *
       (((k/‖eisEmbedding (a*(b*r))‖^2:ℝ):ℂ)*∑' h : O,
         tripleFourier a b r (supported_element_ne_zero _ (residualGenerator_supported I J hI))
           (supported_element_ne_zero _ (residualGenerator_supported J I hJ)) (finitePrimeModulus_ne_zero _)
@@ -123,7 +136,7 @@ theorem canonical_pair_reduced_poisson (I J : Ideal O) (hI : Supported I) (hJ : 
     (∑' z : O,(idealRowHom z I*star (idealRowHom z J))*W (‖eisEmbedding z‖^2/K))=
       reducedFirstSum I J hI hJ W K := by
   simp_rw [original_pair_factor I J hI hJ]
-  exact common_residual_reduced_poisson (fun P : CommonIndex I J => P.val) Subtype.val_injective
+  exact common_residual_reduced_poisson (fun P : CommonIndex I J=> P.val) Subtype.val_injective
     (common_good I J hI) (common_odd I J hI) Finset.univ (leftExponent I J) (rightExponent I J)
     (fun P _ => ne_of_gt (leftExponent_pos I J P)) (fun P _ => ne_of_gt (rightExponent_pos I J P))
     (residualGenerator I J) (residualGenerator J I)
@@ -137,11 +150,9 @@ theorem activeConductor_span_dvd (I J : Ideal O) :
   change (∏ P : ActiveIndex I J,P.val.val) ∣ commonPart I J
   rw [Finset.prod_coe_sort]
   refine (Finset.prod_dvd_prod_of_subset _ Finset.univ
-    (fun P : CommonIndex I J => P.val) (Finset.subset_univ _)).trans ?_
+    (fun P : CommonIndex I J=> P.val) (Finset.subset_univ _)).trans ?_
   rw [commonPart_left_product]
-  apply Finset.prod_dvd_prod_of_dvd
-  intro P hP
-  simpa only [pow_one] using pow_dvd_pow P.val (leftExponent_pos I J P)
+  pm_760 leftExponent_pos
 
 end SevenEighths.CenteredMomentCanonicalFirst
 

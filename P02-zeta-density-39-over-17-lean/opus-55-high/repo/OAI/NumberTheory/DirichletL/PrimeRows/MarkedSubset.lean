@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedNormalization
 public import OAI.NumberTheory.DirichletL.Detector.TuplePrime
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEulerFinsupp
 local notation "O" => HeckeFamily.O
@@ -27,9 +28,7 @@ theorem markedRowSeries_subset_replacement (S : Finset (Ideal O)) (hS : ∀P∈S
       (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
     simpa only [A,Finset.prod_ite_mem,Finset.inter_self] using hh
   have hB : HasProd B (∏P∈J,idealRowHighLocalFactor η u P.val x w z) := by
-    have hh := hasProd_prod_of_ne_finset_one (s:=J) (f:=B)
-      (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
-    simpa only [B,Finset.prod_ite_mem,Finset.inter_self] using hh
+    pm_5581 J B
   have he := ((excludedIdealHighSeries_row_hasProd (markExclusions S T)
     (markExclusions_prime S hS T) η u x w z hx hw hz).mul hA).mul hB
   have heq (P : PrimeIdeal) :
@@ -58,7 +57,7 @@ theorem markedRowSeries_subset_replacement (S : Finset (Ideal O)) (hS : ∀P∈S
   apply (markedRowSeries_hasProd S hS (T\J) η u x w z hx hw hz).unique
   convert he using 1
   funext P
-  exact (heq P).symm
+  grind
 
 def spectralCompensatedRow (S : Finset (Ideal O)) (T : Finset PrimeIdeal)
     (η : Character) (u : O) (x w z : ℂ) (B q : PrimeIdeal→ℂ) : ℂ :=
@@ -73,15 +72,13 @@ theorem spectralCompensatedRow_eq_product (S : Finset (Ideal O)) (hS : ∀P∈S,
       markedIdealHighSeries (markExclusions S T) 1 η u x w z*
         ∏P∈T,(B P*idealRowMarkedLocalFactor η u P x w z-
           q P*idealRowHighLocalFactor η u P.val x w z) := by
-  rw [spectralCompensatedRow,Finset.prod_sub,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro J hJ
+  pm_476 spectralCompensatedRow Finset.prod_sub Finset.mul_sum J hJ
   rw [markedRowSeries_subset_replacement S hS T J (Finset.mem_powerset.mp hJ) hT η u x w z hx hw hz]
   simp only [Finset.prod_mul_distrib]
   ring
 
 theorem indexedCompensatedHigh_eq_spectral {K : ℕ} (η : Character) (S : Finset (Ideal O))
-    (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
+    (P : Fin K→ PrimeIdeal) (hP : Function.Injective P)
     (hs : ∀i,CanonicalQuadraticSieve.Supported (P i).val) (u : O) (x w z : ℂ) :
     indexedCompensatedHigh η S (fun i=>CompletedGauss.primaryGenerator (P i).val) u x w z=
       spectralCompensatedRow S (Finset.univ.image P) η u x w z
@@ -89,18 +86,12 @@ theorem indexedCompensatedHigh_eq_spectral {K : ℕ} (η : Character) (S : Finse
         (fun Q=>(Q.val.absNorm:ℂ)^(-w)) := by
   unfold indexedCompensatedHigh spectralCompensatedRow
   rw [Finset.powerset_image,Finset.sum_image (Finset.image_injective hP).injOn]
-  apply Finset.sum_congr rfl
-  intro J hJ
-  rw [Finset.card_image_of_injective J hP,←Finset.image_sdiff _ _ hP]
+  pm_6279
   simp only [Finset.prod_image hP.injOn]
   have hnorm (i : Fin K) : (elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)=
       ((P i).val.absNorm:ℂ) := by
-    rw [primaryTuple_norm (P i) (hs i)]
-    norm_cast
-  have hc (i : Fin K) : elementCoeff η (CompletedGauss.primaryGenerator (P i).val)=
-      idealCoeff η (P i).val := targetMonoid_primaryGenerator η (P i).val (hs i)
-  simp only [tupleIndexedCoefficient,hnorm,hc,span_tupleProduct,
-    span_primaryGenerator_of_supported _ (hs _)]
+    pm_7518
+  pm_3878 elementCoeff CompletedGauss.primaryGenerator idealCoeff
 
 end SevenEighths.ProbeHighRowFamily
 

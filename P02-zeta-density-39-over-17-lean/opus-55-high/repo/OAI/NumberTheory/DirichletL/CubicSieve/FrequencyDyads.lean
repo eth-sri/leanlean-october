@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.DualShell
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,10 +19,10 @@ lemma mem_frequencyDyad (h : O) (j : ℕ) :
     h ∈ frequencyDyad j ↔ h ≠ 0 ∧ Nat.clog 2 (Ideal.absNorm (Ideal.span {h})) = j := by
   simp only [frequencyDyad, Finset.mem_filter, mem_elementRange]
   constructor
-  · exact fun h => ⟨h.1.1, h.2⟩
+  grind
   · rintro ⟨hh, hj⟩
     refine ⟨⟨hh, ?_⟩, hj⟩
-    have hu := Nat.le_pow_clog (by norm_num : 1 < 2) (Ideal.absNorm (Ideal.span {h}))
+    pm_5681
     rw [hj] at hu
     exact_mod_cast hu
 
@@ -31,7 +32,7 @@ lemma frequencyDyad_bounds (j : ℕ) (h : O) (hh : h ∈ frequencyDyad j) :
   obtain ⟨hn, hj⟩ := (mem_frequencyDyad h j).mp hh
   have hnorm : Ideal.absNorm (Ideal.span {h}) ≠ 0 := by
     exact Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hn)
-  have hu := Nat.le_pow_clog (by norm_num : 1 < 2) (Ideal.absNorm (Ideal.span {h}))
+  pm_5681
   have hl := two_pow_clog_le_double _ (Nat.one_le_iff_ne_zero.mpr hnorm)
   rw [hj] at hu hl
   refine ⟨hn, ?_, by exact_mod_cast hu⟩
@@ -57,8 +58,7 @@ theorem tsum_frequencyDyads_with_zero (f : O → ℂ) (hf : Summable f) :
     have hset : ((↑({0} : Finset O) : Set O)ᶜ) = {h : O | h ≠ 0} := by
       ext h
       simp
-    rw [hset] at hs
-    simpa only [Finset.sum_singleton, Set.coe_ofPred] using hs
+    pm_354 hset hs Finset.sum_singleton Set.coe_ofPred
   rw [he]
   congr 1
   let g := (fun h : {h : O // h ≠ 0} => f h.val) ∘ frequencyDyadicEquiv.symm

@@ -6,6 +6,7 @@ Narrow extraction only; see third_party/twelfth/ATKINSON_AMPLITUDE_MANIFEST.json
 The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteStationaryMain
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -45,8 +46,7 @@ theorem exists_norm_atkinsonFiniteStationaryMain_sub_main_le (α : ℝ) :
         Icc (Real.sqrt T / 4) (Real.sqrt T) →
       ‖atkinsonFiniteStationaryMain T G L α b H - atkinsonStationaryMain T G L α b‖ ≤
         C * G * T ^ (-α) * (4 / (H * Real.pi)) := by
-  obtain ⟨C, hC, hbound⟩ := exists_intervalC1Bound_atkinsonPowerWeight_root α
-  refine ⟨C, hC, ?_⟩
+  pm_1062 C hC hbound exists_intervalC1Bound_atkinsonPowerWeight_root α
   intro T G L b H hT hG hGT hL hH hr
   have hc : 1 < atkinsonSaddleCurvature T b := one_lt_atkinsonSaddleCurvature hT b
   have hW := (hbound T G L hT hG hGT hL).norm_le _ hr

@@ -8,6 +8,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonLeadingFinite
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationarySeries
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonFourthRootRadius
 public import MathCollab.Density.Stronger.Atkinson.DivisorQuarterPrefix
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,22 +28,20 @@ theorem exists_norm_atkinsonLeadingTerm_sub_stationary_le :
   obtain ⟨C,hC,hbound⟩ := exists_atkinsonPowerIntegral_fourthRoot_pair (1/4)
   let q : ℝ := Real.sqrt Real.pi/Real.pi
   let D : ℝ := 1+‖neumannLeadingPlus‖+‖neumannLeadingMinus‖
-  have hq : 0 < q := by dsimp [q]; positivity
-  have hD : 0 < D := by dsimp [D]; positivity
+  pm_64 hq q
+  pm_64 hD D
   refine ⟨2*Real.pi*q*(4*Real.pi)^(-(1/2 : ℝ))*D*C,by positivity,?_⟩
   intro T G L hT hlower hupper hL hwidth n hn
-  have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
+  pm_4371
   obtain ⟨hp,hm⟩ := hbound T G L hT hlower hupper hL hwidth n hn
   norm_num only [show (-(1/4 : ℝ)-1/4) = -(1/2 : ℝ) by norm_num] at hp hm
   let E : ℝ := C*G*Real.sqrt G*T^(-(1/2 : ℝ))
-  have hE : 0 ≤ E := by dsimp [E]; positivity
+  pm_61 hE E
   have hpair : ‖neumannLeadingPlus*(atkinsonPowerIntegral T G L (1/4) (Real.sqrt n)-
       atkinsonStationaryMain T G L (1/4) (Real.sqrt n)) +
     neumannLeadingMinus*(atkinsonPowerIntegral T G L (1/4) (-Real.sqrt n)-
       atkinsonStationaryMain T G L (1/4) (-Real.sqrt n))‖ ≤ D*E := by
-    apply (norm_add_le _ _).trans
-    rw [norm_mul,norm_mul]
+    pm_861 norm_add_le
     apply (add_le_add (mul_le_mul_of_nonneg_left hp (norm_nonneg _))
       (mul_le_mul_of_nonneg_left hm (norm_nonneg _))).trans
     change ‖neumannLeadingPlus‖*E+‖neumannLeadingMinus‖*E ≤ D*E
@@ -63,9 +62,8 @@ theorem exists_norm_atkinsonLeadingTerm_sub_stationary_le :
   have hqn : ‖(Real.sqrt Real.pi/Real.pi : ℂ)‖ = q := by
     simp [q,Real.norm_eq_abs,abs_of_pos Real.pi_pos]
   have hs : ‖(atkinsonBesselScale (1/4) n : ℂ)‖ = atkinsonBesselScale (1/4) n := by
-    rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (atkinsonBesselScale_nonneg _ _)]
-  have hd := norm_divisorDirichletTerm_real (1/4) n
-  norm_num only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] at hd
+    pm_8555 atkinsonBesselScale_nonneg
+  pm_6611 hd
   rw [he,norm_mul,norm_mul,norm_mul,norm_mul,hpi,hqn,hs,hd]
   apply (mul_le_mul_of_nonneg_left hpair (by
     exact mul_nonneg (by positivity) (atkinsonBesselScale_nonneg _ _))).trans_eq
@@ -80,14 +78,11 @@ theorem exists_norm_atkinsonLeadingFiniteSum_sub_stationary_mass_le :
       ‖atkinsonLeadingFiniteSum T G L N-atkinsonStationaryLeadingFiniteSum T G L N‖ ≤
         C*G*Real.sqrt G*T^(-(1/2 : ℝ))*
           ∑ n ∈ Finset.range N, ‖divisorDirichletTerm (1/4) n‖ := by
-  obtain ⟨C,hC,hbound⟩ := exists_norm_atkinsonLeadingTerm_sub_stationary_le
-  refine ⟨C,hC,?_⟩
+  pm_155 C hC hbound exists_norm_atkinsonLeadingTerm_sub_stationary_le
   intro T G L hT hlower hupper hL hwidth N hN
   unfold atkinsonLeadingFiniteSum atkinsonStationaryLeadingFiniteSum
   rw [← Finset.sum_sub_distrib]
-  apply (norm_sum_le _ _).trans
-  rw [Finset.mul_sum]
-  apply Finset.sum_le_sum
+  pm_492
   intro n hn
   apply hbound T G L hT hlower hupper hL hwidth n
   have hnR : (n:ℝ) ≤ N := by exact_mod_cast (Finset.mem_range.mp hn).le
@@ -103,8 +98,7 @@ theorem exists_norm_atkinsonLeadingFiniteSum_sub_stationary_le {ε : ℝ} (hε :
   obtain ⟨D,hD,hprefix⟩ := exists_sum_norm_divisorDirichletTerm_quarter_le hε
   refine ⟨C*D,by positivity,?_⟩
   intro T G L hT hlower hupper hL hwidth N hN
-  have hT0 : 0 < T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 _).trans_le hlower
+  pm_4371
   apply (hbound T G L hT hlower hupper hL hwidth N hN).trans
   apply (mul_le_mul_of_nonneg_left (hprefix N) (by positivity)).trans_eq
   ring

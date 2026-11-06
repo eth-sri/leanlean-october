@@ -1,11 +1,10 @@
 module
 public import AdjacentMomentEnvelope
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -23,7 +22,7 @@ theorem adjacent_scaled_dual {S R T H Z C η : ℝ} {k : ℕ}
   calc
     _ ≤ R^(2*k-1)*(C*(T+H^(2*k))*H^η) := hm
     _ = (C*H^η)*((T+H^(2*k))*R^(2*k-1)) := by ring
-    _ ≤ Z^k*((T+H^(2*k))*R^(2*k-1)) := by gcongr; exact hc.trans hz
+    _ ≤ Z^k*((T+H^(2*k))*R^(2*k-1)) := by gcongr; grind
     _ = _ := by ring
 
 /-- Actual rational-frequency second moment from moments 2,3,4, on the
@@ -48,13 +47,12 @@ theorem rational_energy_adjacent_second {η : ℝ} (hη : 0 < η) :
   let D : ℝ := 1+C₂+C₃+C₄
   have hD : 1 ≤ D := by dsimp [D]; linarith
   let C : ℝ := C₀+2*D*2^η
-  refine ⟨C,by dsimp [C]; positivity,?_⟩
+  pm_345 C
   intro T t₀ hT H hH hHT A hA W hR hRT hW hsep
-  have ht : 0 < T := by linarith
-  have ht1 : 1 ≤ T := hT.le
-  have hHr : (0:ℝ) ≤ H := Nat.cast_nonneg _
-  have hRr : (0:ℝ) ≤ W.card := Nat.cast_nonneg _
-  have hE : 0 ≤ rationalEnergy A W := sum_nonneg (fun _ _ => sq_nonneg _)
+  pm_8479 ht ht1
+  pm_491 hHr H
+  pm_491 hRr W.card
+  pm_978 hE
   have hC : C₀ ≤ C := by
     have hh : 0 ≤ 2*D*2^η := by positivity
     dsimp [C]
@@ -120,7 +118,7 @@ theorem rational_energy_adjacent_second {η : ℝ} (hη : 0 < η) :
             (H:ℝ)*T^((1:ℝ)/4)*(W.card:ℝ)^((19:ℝ)/12) ≤
             (H:ℝ)*(W.card:ℝ)^2+(H:ℝ)^2*(W.card:ℝ)^((3:ℝ)/2)+
             (H:ℝ)*T^((1:ℝ)/4)*(W.card:ℝ)^((19:ℝ)/12) := by
-          have hn : 0 ≤ (H:ℝ)*(W.card:ℝ)^2 := by positivity
+          pm_6397 hn
           linarith
         gcongr
 

@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosDisplacement
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -30,14 +31,13 @@ theorem robertSargos_coefficient_linear_ratio_gap {r q₁ q₂ h₁ h₂ d R D H
   have hh₂p := hH.trans_le hh₂
   have hq₁p := hQ.trans_le hq₁
   have hq₁n := abs_pos.mp hq₁p
-  have hR : 0 ≤ R := (abs_nonneg r).trans hr
-  have hD : 0 ≤ D := (abs_nonneg d).trans hd
+  pm_1002
   have he : h₁/h₂-q₂/q₁ = -r*d/(h₂*q₁) := by
     field_simp
-    nlinarith only [hlin]
+    grind
   rw [he,abs_div,abs_mul,abs_neg,abs_mul,abs_of_pos hh₂p]
   have hnum : |r| * |d| ≤ R*D := mul_le_mul hr hd (abs_nonneg d) hR
-  have hden : H*Q ≤ h₂*|q₁| := mul_le_mul hh₂ hq₁ hQ.le hh₂p.le
+  pm_8201 q₁ hq₁
   exact (div_le_div_of_nonneg_right hnum (by positivity)).trans
     (div_le_div_of_nonneg_left (mul_nonneg hR hD) (mul_pos hH hQ) hden)
 
@@ -62,8 +62,7 @@ theorem robertSargos_coefficient_conic_ratio_gap {r q₁ q₂ h₁ h₂ d H Q δ
       robertSargosReduced r q₁ q₂ h₁ h₂ d/(h₂*(q₁*(q₁+d))) := by
     rw [robertSargos_reduced_coefficient_factor hlin]
     field_simp [hh₂p.ne',hqn,hsn]
-  rw [he,abs_div,abs_of_pos hdenp]
-  apply (div_le_iff₀ hdenp).mpr
+  pm_8230 hdenp
   calc
     _ ≤ δ*H*Q^2 := hnear
     _ ≤ δ*(h₂*(q₁*(q₁+d))) := by

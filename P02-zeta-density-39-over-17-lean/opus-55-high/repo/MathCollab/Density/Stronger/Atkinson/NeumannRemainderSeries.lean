@@ -9,6 +9,7 @@ actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaNeumannRemainder
 public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -40,13 +41,10 @@ theorem exists_norm_zetaNeumannRemainderTerm_le :
         ‖zetaNeumannRemainderTerm T G L n‖ ≤ C * G * ‖divisorDirichletTerm (5 / 4) n‖ := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_integral_zetaNeumannRemainder_le
   refine ⟨2 * Real.pi * C, by positivity, ?_⟩
-  intro T G L hT hG hGT hL hwidth n
-  by_cases hn : n = 0
-  · simp [hn, zetaNeumannRemainderTerm, divisorWeight, divisorDirichletTerm, LSeries.term]
+  pm_377 zetaNeumannRemainderTerm
   have hpi : ‖(-(2 * Real.pi) : ℂ)‖ = 2 * Real.pi := by
-    simp [Real.norm_eq_abs, abs_of_pos Real.pi_pos]
-  have hd := norm_divisorDirichletTerm_real (5 / 4) n
-  norm_num only [Complex.ofReal_div, Complex.ofReal_ofNat] at hd
+    simp_all
+  pm_4377
   rw [zetaNeumannRemainderTerm, norm_mul, norm_mul, hpi, hd]
   calc
     _ ≤ ‖divisorWeight n‖ * (2 * Real.pi) * (C * G * (n : ℝ) ^ (-(5 / 4 : ℝ))) :=
@@ -54,16 +52,13 @@ theorem exists_norm_zetaNeumannRemainderTerm_le :
         (by positivity)
     _ = _ := by ring
 
-theorem summable_zetaNeumannRemainderTerm {T G L : ℝ}
-    (hT : 16 ≤ T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
-    Summable (zetaNeumannRemainderTerm T G L) := by
-  obtain ⟨C, _, hbound⟩ := exists_norm_zetaNeumannRemainderTerm_le
-  exact Summable.of_norm_bounded
-    ((summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm.mul_left (C * G))
-    (hbound T G L hT hG hGT hL hwidth)
+section
+variable {T G L : ℝ} (hT : 16 ≤ T) (hG : 0 < G)
+include T G L hT hG
+theorem summable_zetaNeumannRemainderTerm (hGT : G ^ 2 ≤ 2 * T) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
+    Summable (zetaNeumannRemainderTerm T G L) := by pm_4378 exists_norm_zetaNeumannRemainderTerm_le
 
-theorem zetaAtkinsonTwoTerm_eq_sub {T G L : ℝ}
-    (hT : 16 ≤ T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) (n : ℕ) :
+theorem zetaAtkinsonTwoTerm_eq_sub (hL : 0 < L) (hwidth : 8 * L ≤ G) (n : ℕ) :
     zetaAtkinsonTwoTerm T G L n =
       zetaAtkinsonY0Term T G L n - zetaNeumannRemainderTerm T G L n := by
   by_cases hn : n = 0
@@ -74,23 +69,11 @@ theorem zetaAtkinsonTwoTerm_eq_sub {T G L : ℝ}
     (integrable_zetaAtkinsonY0Integrand hT hG hL hwidth (Nat.pos_of_ne_zero hn)).integrableOn
     (integrable_zetaNeumannRemainderIntegrand hT hG hL hwidth (Nat.pos_of_ne_zero hn)).integrableOn]
   ring
+end
 
 theorem exists_norm_tsum_zetaNeumannRemainderTerm_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
       0 < L → 8 * L ≤ G →
-        ‖∑' n : ℕ, zetaNeumannRemainderTerm T G L n‖ ≤ C * G := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_zetaNeumannRemainderTerm_le
-  let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
-  refine ⟨C * (1 + S), by positivity, ?_⟩
-  intro T G L hT hG hGT hL hwidth
-  have hs := summable_zetaNeumannRemainderTerm hT hG hGT hL hwidth
-  have hd := (summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm
-  calc
-    _ ≤ ∑' n : ℕ, ‖zetaNeumannRemainderTerm T G L n‖ := norm_tsum_le_tsum_norm hs.norm
-    _ ≤ ∑' n : ℕ, (C * G) * ‖divisorDirichletTerm (5 / 4) n‖ :=
-      hs.norm.tsum_le_tsum (hbound T G L hT hG hGT hL hwidth) (hd.mul_left _)
-    _ = C * G * S := tsum_mul_left
-    _ ≤ _ := by nlinarith
+        ‖∑' n : ℕ, zetaNeumannRemainderTerm T G L n‖ ≤ C * G := by pm_4379 exists_norm_zetaNeumannRemainderTerm_le summable_zetaNeumannRemainderTerm zetaNeumannRemainderTerm
 
 end MathCollab.Density.Stronger.Atkinson

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstSecondInputGates
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ local notation "O"=>HeckeFamily.O
 local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
 def commonExponent (A D P C q ε ξ:ℝ):ℝ:=
-  max (A+ε) (max (2*A+D+ε+ξ/2) (max (P+C) q))
+  max (A+ε) (max (2*A+D +ε+ξ/2) (max (P+C) q))
 
 theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
     (hb:1≤b)(hb₁:1≤b₁)(hb₂:1≤b₂)(hε:0<ε):
@@ -27,12 +28,10 @@ theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
     Fintype.card ι≤N → Endpoints b b₁ b₂ s →
     ∀(C R:Ideal O)(B:actualAllocations s.pools C)(τ:Character)(t:ℝ),
     R≠0 → frozenCoefficient B.val C R s.ν s.W s.P≠0 →
-    ∀K A D P Ccap q ξ:ℝ,0<K → 0≤ξ → volume s≤Z^A → K⁻¹≤Z^D →
-    (R.absNorm:ℝ)≤Z^P → (C.absNorm:ℝ)≤Z^Ccap → (τ.modulus.absNorm:ℝ)≤Z^q →
+    ∀K A D P Ccap q ξ:ℝ,0<K → 0≤ξ → volume s≤Z ^A → K⁻¹≤Z ^D →
+    (R.absNorm:ℝ)≤Z ^P → (C.absNorm:ℝ)≤Z ^Ccap → (τ.modulus.absNorm:ℝ)≤Z ^q →
     Ready (child s C R B τ t) (R*C) K Z ξ (commonExponent A D P Ccap q ε ξ):=by
-  filter_upwards [eventual_geometry (geometry N b b₁ b₂) ε
-    (geometry_ge_one N b b₁ b₂ hb hb₁ hb₂) hε] with Z hZ
-  refine ⟨hZ.1,?_⟩
+  pm_5344 hb₁ hb₂
   intro ι _ s hs he C R B τ t hR hB K A D P Ccap q ξ hK hξ hV hKi hRN hCN hτ
   have hC:=allocation_ne s C B
   have hNc:=norm_ge_one C hC
@@ -54,26 +53,26 @@ theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
     apply hr.2.trans
     apply (mul_le_mul_of_nonneg_left hcv (show 0≤b^N*b₁*b₂ by positivity)).trans_eq
     unfold geometry
-    rw [show 2*N=N+N by omega,pow_add]
+    pm_854 N
     ring
   have hc:=polynomial_caps (geometry N b b₁ b₂) (volume s)
     (volume (child s C R B τ t)) (sourceRadius (child s C R B τ t)) K Z A D ε ξ
     (geometry_ge_one N b b₁ b₂ hb hb₁ hb₂) hZ.1 hZ.2.2 hv (volume_pos _) hr.1 hK
     hVg hHg hV hKi
-  have h₁:A+ε≤commonExponent A D P Ccap q ε ξ:=le_max_left _ _
-  have h₂:2*A+D+ε+ξ/2≤commonExponent A D P Ccap q ε ξ:=
+  have h₁:A+ε≤ commonExponent A D P Ccap q ε ξ:=le_max_left _ _
+  have h₂:2*A+D +ε+ξ/2≤ commonExponent A D P Ccap q ε ξ:=
     (le_max_left _ _).trans (le_max_right _ _)
-  have h₃:P+Ccap≤commonExponent A D P Ccap q ε ξ:=
+  have h₃:P+Ccap≤ commonExponent A D P Ccap q ε ξ:=
     (le_max_left _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
-  have h₄:q≤commonExponent A D P Ccap q ε ξ:=
+  have h₄:q≤ commonExponent A D P Ccap q ε ξ:=
     (le_max_right _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
-  have hpow {x y:ℝ}(h:x≤y):Z^x≤Z^y:=Real.rpow_le_rpow_of_exponent_le hZ.1.le h
-  have hRC:((R*C).absNorm:ℝ)≤Z^(P+Ccap):=by
+  have hpow {x y:ℝ}(h:x≤y):Z ^x≤Z ^y:=Real.rpow_le_rpow_of_exponent_le hZ.1.le h
+  have hRC:((R*C).absNorm:ℝ)≤Z ^(P+Ccap):=by
     rw [map_mul,Nat.cast_mul,Real.rpow_add (zero_lt_one.trans hZ.1)]
     exact mul_le_mul hRN hCN (Nat.cast_nonneg _) (Real.rpow_nonneg (zero_le_one.trans hZ.1.le) P)
   refine ⟨mul_ne_zero hR hC,hK,hc.1.trans (hpow h₁),hr.1,hc.2.1.trans (hpow h₁),
     hτ.trans (hpow h₄),hRC.trans (hpow h₃),nominal_pos _ K hK,
-    hc.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
+    hc.2.2.1.trans (hpow ((by linarith : 2*A+D +ε≤2*A+D +ε+ξ/2).trans h₂)),
     hc.2.2.2.1,hc.2.2.2.2.trans (hpow h₂)⟩
 
 end SevenEighths.CenteredMomentFirstSecondInputGates

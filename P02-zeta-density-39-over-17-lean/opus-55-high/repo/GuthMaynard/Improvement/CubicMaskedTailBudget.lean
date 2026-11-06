@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.CubicMaskedStrip
 public import GuthMaynard.Improvement.RadialScaleBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ContDiff
 namespace GuthMaynard.Improvement
@@ -29,7 +28,7 @@ theorem masked_radial_truncated_discard_bound {a : ℝ → ℂ}
   have hcard : (S.card:ℝ) ≤ 27*U^3 := by
     have hh : (S.card:ℝ) ≤ (cubicModes U).card := by exact_mod_cast Finset.card_le_card hS
     exact hh.trans (cubicModes_card hU)
-  have hmass : 0 ≤ ∫ t, μ t := integral_nonneg h0
+  pm_4517
   calc
     _ ≤ |L|^3*S.card*D/H^n*(∫ t, μ t)^3*((v₁-v₀)*(y₁-y₀)) :=
       h L H S μ A B C hH hA hB hC hm h0 hi
@@ -57,14 +56,10 @@ theorem masked_radial_discard_negligible {a : ℝ → ℂ}
   obtain ⟨n,hn⟩ := choose_radial_discard_order hη
   obtain ⟨D,hD,h⟩ := masked_radial_truncated_discard_bound ha hlu hs v₀ v₁ y₀ y₁ hv hy n
   refine ⟨D,hD,?_⟩
-  intro T L t₀ t₁ S μ A B C hT hL hLT ht hlen hS hA hB hC hm h0 hi h2 hsup
-  have hTp : 0 < T := by linarith
-  have hH : 0 < T^η := Real.rpow_pos_of_pos hTp _
+  pm_4558
   have hU : 1 ≤ T^(1+η)/L := (le_div_iff₀ hL).mpr (by simpa using hLT)
-  have hsqrt : Real.sqrt (t₁-t₀) ≤ T := (Real.sqrt_le_iff).mpr ⟨hTp.le,by nlinarith⟩
-  have hmass : (∫ t, μ t) ≤ T*Real.sqrt (∫ t, μ t^2) :=
-    (compact_time_mass_bound ht hm h0 h2 hsup).trans (by gcongr)
-  have hm0 : 0 ≤ ∫ t, μ t := integral_nonneg h0
+  pm_292
+  pm_4518 hm0 t μ integral_nonneg h0
   have he : |L|^3*(T^(1+η)/L)^3*T^3 = T^(6+3*η) := by
     rw [abs_of_pos hL,div_pow]
     have hh : L^3*((T^(1+η))^(3:ℕ)/L^3)*T^3 = (T^(1+η))^(3:ℕ)*T^3 := by field_simp

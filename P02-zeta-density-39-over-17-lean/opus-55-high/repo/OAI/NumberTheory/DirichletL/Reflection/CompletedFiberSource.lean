@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Reflection.SourcePhysical
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalActiveReflection
 public import OAI.NumberTheory.DirichletL.Reflection.FixedLevel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -29,7 +30,7 @@ variable (Q : Ideal Eis) (hQ : Q≠0) (c : Eis) (hc : c≠0)
     (hcQ : Ideal.span {c}=Ideal.span {(9:Eis)}*(Q*Ideal.span {(72:Eis)}))
     (G : ∀ h : Eis⧸Ideal.span {c},FixedFourierGeometry c h)
     (hcop : ∀ K∈originalResidualRows parents J (Ideal.span {m}*F),IsCoprime (Q*Ideal.span {(72:Eis)}) K)
-    (lists : σ→Finset (Ideal Eis))
+    (lists : σ→ Finset (Ideal Eis))
     (hmax : ∀ i,∀ P∈lists i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈lists i,ConcretePrimeRowBridge.goodLambda∉P)
     (hdis : Pairwise (fun i j => Disjoint (lists i) (lists j)))
@@ -37,8 +38,7 @@ variable (Q : Ideal Eis) (hQ : Q≠0) (c : Eis) (hc : c≠0)
     (hperiod : ∀ i,∀ P∈lists i,IsCoprime (Q*Ideal.span {(72:Eis)}) P)
 
 abbrev originalResidualAdmissible : ∀ K∈originalResidualRows parents J (Ideal.span {m}*F),Admissible K := by
-  intro K hK
-  obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hK
+  pm_67 K hK I hI Finset.mem_image.mp
   exact rowResidualPart_admissible I _ hbad
 
 variable (D : ∀ h : Eis⧸Ideal.span {c},∀ A : Finset (FreeReflection.pool J (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})),

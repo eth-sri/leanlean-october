@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicLengths
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
 open scoped Classical Topology
 open Filter
@@ -14,29 +14,28 @@ namespace SevenEighths.HeckeDetectorSimultaneousSupport
 open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
 open HeckeDetectorDyadicGeometry HeckeDetectorSaturation HeckeDetectorNormalized
 
-theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
-    (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
-    (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η)
-    (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)
-    (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2) :
+section
+variable (dmin dmax τ ε e κ η : ℝ) (I : ℕ) (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ) (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η) (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η) (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2)
+include dmin dmax τ ε e κ η I hdmin hdmax hτ hτzero hτheight hε he he' hκ hκ' hη hbudget
+theorem from_actual_zero :
     ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀≤Z → ∀ d : ℝ, dmin≤d → d≤dmax →
-      ∀ {ι : Type*} [Fintype ι] (χ : ι→Character) (hχ : ∀ j, (χ j).residue≠1)
+      ∀ {ι : Type*} [Fintype ι] (χ : ι→ Character) (hχ : ∀ j, (χ j).residue≠1)
         (a : ℝ) (i : ℕ), i≤I → 51/100≤a → a≤1 →
-        HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z^τ))<a+2*e →
-        ∀ j : ι, (χ j).modulus.absNorm≤Z^d → ∀ ρ : ℂ,
-        LFunction (χ j) ρ=0 → a≤ρ.re → |ρ.im|≤(3*i : ℕ)*Z^τ →
+        HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z ^τ))<a+2*e →
+        ∀ j : ι, (χ j).modulus.absNorm≤Z ^d → ∀ ρ : ℂ,
+        LFunction (χ j) ρ=0 → a≤ρ.re → |ρ.im|≤(3*i : ℕ)*Z ^τ →
         ∀ tstar : ℝ, 1≤tstar → tstar≤3/2 →
-        ∃ J∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z^d)^21⌉₊ : ℝ)+1),
-          ∃ K∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z^d)^21⌉₊ : ℝ)+1),
+        ∃ J∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z ^d)^21⌉₊ : ℝ)+1),
+          ∃ K∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z ^d)^21⌉₊ : ℝ)+1),
             ∃ ν r m : ℝ,
-              ‖ν‖≤(Z^d)^(τ/(2*dmax)) ∧ (Z^d)^r=(2 : ℝ)^J ∧ (Z^d)^m=(2 : ℝ)^K ∧
-              tstar-1/2-76*ε≤r ∧ r≤tstar+ε ∧ 0≤m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤m ∧
-              (Z^d)^((2*a-1)*r-2*ε)≤
+              ‖ν‖≤(Z ^d)^(τ/(2*dmax)) ∧ (Z ^d)^r=(2 : ℝ)^J ∧ (Z ^d)^m=(2 : ℝ)^K ∧
+              tstar-1/2-76*ε≤ r ∧ r≤tstar+ε ∧ 0≤ m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤ m ∧
+              (Z ^d)^((2*a-1)*r-2*ε)≤
                 ‖polynomial (χ j) true
-                  (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular ((Z^d)^tstar) ((Z^d)^r))
-                  ((Z^d)^r) ρ.re (2*Real.pi*ν-ρ.im)‖^2 ∧
-              (Z^d)^((2*a-1)*m-2*ε)≤
-                ‖polynomial (χ j) false positiveAnnular ((Z^d)^m) ρ.re (2*Real.pi*ν-ρ.im)‖^2 := by
+                  (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular ((Z ^d)^tstar) ((Z ^d)^r))
+                  ((Z ^d)^r) ρ.re (2*Real.pi*ν-ρ.im)‖^2 ∧
+              (Z ^d)^((2*a-1)*m-2*ε)≤
+                ‖polynomial (χ j) false positiveAnnular ((Z ^d)^m) ρ.re (2*Real.pi*ν-ρ.im)‖^2 := by
   have hdmaxp : 0<dmax := hdmin.trans_le hdmax
   have hτF : 0<τ/(2*dmax) := by positivity
   obtain ⟨C,UN,hC,hN⟩ := exists_normalized_product 1 (1/2) (τ/(2*dmax))
@@ -54,8 +53,8 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   obtain ⟨Z₀,hZ₀⟩ := Filter.eventually_atTop.mp hall
   refine ⟨Z₀,?_⟩
   intro Z hZlarge d hd hd' ι _ χ hχ a i hi ha ha' hmax j hQ ρ hzero hρ him tstar ht ht'
-  obtain ⟨hscale,hzeroH,hbudgetH,hFourier,hcost,hT,hZ⟩ := hZ₀ Z hZlarge
-  let U := Z^d
+  pm_371 hscale hzeroH hbudgetH hFourier hcost hT hZ hZ₀ Z hZlarge
+  let U := Z ^d
   have hd0 : 0≤d := (hdmin.trans_le hd).le
   have hlarge := hscale d hd
   have hU8 : 8≤U := (le_max_left _ _).trans hlarge
@@ -72,16 +71,16 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   obtain ⟨J,hJ,K,hK,ν,hν,hprod,hD,hDN,hterminal⟩ :=
     hN U hUN (χ j) (hχ j) (U^tstar) hDs hDs' (by simpa using hQ) ρ hρlo hzero hh
   obtain ⟨hr,hr',hm,hm',heJ,heK⟩ := dyadic_scale_bounds U hU8 J K hterminal
-  let r := Real.logb U ((2 : ℝ)^J)
-  let m := Real.logb U ((2 : ℝ)^K)
+  pm_439 r J
+  pm_439 m K
   change U^r=(2 : ℝ)^J at heJ
   change U^m=(2 : ℝ)^K at heK
-  have hJpow : (Z^d)^r=(2 : ℝ)^J := heJ
-  have hKpow : (Z^d)^m=(2 : ℝ)^K := heK
+  have hJpow : (Z ^d)^r=(2 : ℝ)^J := heJ
+  have hKpow : (Z ^d)^m=(2 : ℝ)^K := heK
   have hcostU : 8≤U^ε := by simpa using hcost d hd
   have hsupport := support_exponents U tstar r m ε hU1 hcostU
     (by simpa only [heJ] using hD) (by simpa only [heJ,heK] using hDN)
-  have hfreq : |2*Real.pi*ν-ρ.im|+(Z^τ)/2≤(3*i+2 : ℕ)*Z^τ := by
+  have hfreq : |2*Real.pi*ν-ρ.im|+(Z ^τ)/2≤(3*i+2 : ℕ)*Z ^τ := by
     have habs : |ν|≤U^(τ/(2*dmax)) := by simpa only [Real.norm_eq_abs] using hν
     have hnu := (mul_le_mul_of_nonneg_left habs (show 0≤2*Real.pi by positivity)).trans
       (hFourier d hd0 hd')
@@ -99,42 +98,38 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (by linarith [hsupport.2]),hs.2.1,hs.2.2⟩
   linarith [hsupport.2,hs.1]
 
-theorem from_actual_maximum (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
-    (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)
-    (hτzero : τ<dmin/2) (hτheight : 4*τ<dmin*η)
-    (hε : 0<ε) (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)
-    (hbudget : 12*e*((22 : ℝ)+2)+8*κ+2*η≤ε/2) :
+theorem from_actual_maximum :
     ∃ Z₀ : ℝ, ∀ Z : ℝ, Z₀≤Z → ∀ d : ℝ, dmin≤d → d≤dmax →
-      ∀ {ι : Type*} [Fintype ι] (χ : ι→Character) (hχ : ∀ j, (χ j).residue≠1)
+      ∀ {ι : Type*} [Fintype ι] (χ : ι→ Character) (hχ : ∀ j, (χ j).residue≠1)
         (a : ℝ) (i : ℕ), i≤I → 51/100<a → a≤1 →
-        HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z^τ))<a+2*e →
-        a≤HeckeDetectorZeros.zeroMaximum χ hχ ((3*i : ℕ)*Z^τ) →
-        (∀ j : ι, (χ j).modulus.absNorm≤Z^d) →
+        HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z ^τ))<a+2*e →
+        a≤HeckeDetectorZeros.zeroMaximum χ hχ ((3*i : ℕ)*Z ^τ) →
+        (∀ j : ι, (χ j).modulus.absNorm≤Z ^d) →
         ∀ tstar : ℝ, 1≤tstar → tstar≤3/2 →
-        ∃ j : ι, ∃ ρ : ℂ, LFunction (χ j) ρ=0 ∧ a≤ρ.re ∧ |ρ.im|≤(3*i : ℕ)*Z^τ ∧
-        ∃ J∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z^d)^21⌉₊ : ℝ)+1),
-          ∃ K∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z^d)^21⌉₊ : ℝ)+1),
+        ∃ j : ι, ∃ ρ : ℂ, LFunction (χ j) ρ=0 ∧ a≤ρ.re ∧ |ρ.im|≤(3*i : ℕ)*Z ^τ ∧
+        ∃ J∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z ^d)^21⌉₊ : ℝ)+1),
+          ∃ K∈Finset.range (HeckeDetectorPartition.length (⌈2*(Z ^d)^21⌉₊ : ℝ)+1),
             ∃ ν r m : ℝ,
-              ‖ν‖≤(Z^d)^(τ/(2*dmax)) ∧ (Z^d)^r=(2 : ℝ)^J ∧ (Z^d)^m=(2 : ℝ)^K ∧
-              tstar-1/2-76*ε≤r ∧ r≤tstar+ε ∧ 0≤m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤m ∧
-              (Z^d)^((2*a-1)*r-2*ε)≤
+              ‖ν‖≤(Z ^d)^(τ/(2*dmax)) ∧ (Z ^d)^r=(2 : ℝ)^J ∧ (Z ^d)^m=(2 : ℝ)^K ∧
+              tstar-1/2-76*ε≤ r ∧ r≤tstar+ε ∧ 0≤ m ∧ m≤1/2+75*ε ∧ tstar-r-ε≤ m ∧
+              (Z ^d)^((2*a-1)*r-2*ε)≤
                 ‖polynomial (χ j) true
-                  (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular ((Z^d)^tstar) ((Z^d)^r))
-                  ((Z^d)^r) ρ.re (2*Real.pi*ν-ρ.im)‖^2 ∧
-              (Z^d)^((2*a-1)*m-2*ε)≤
-                ‖polynomial (χ j) false positiveAnnular ((Z^d)^m) ρ.re (2*Real.pi*ν-ρ.im)‖^2 := by
+                  (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular ((Z ^d)^tstar) ((Z ^d)^r))
+                  ((Z ^d)^r) ρ.re (2*Real.pi*ν-ρ.im)‖^2 ∧
+              (Z ^d)^((2*a-1)*m-2*ε)≤
+                ‖polynomial (χ j) false positiveAnnular ((Z ^d)^m) ρ.re (2*Real.pi*ν-ρ.im)‖^2 := by
   obtain ⟨Z₀,hZ₀⟩ := from_actual_zero dmin dmax τ ε e κ η I hdmin hdmax hτ
     hτzero hτheight hε he he' hκ hκ' hη hbudget
   refine ⟨Z₀,?_⟩
   intro Z hZ d hd hd' ι _ χ hχ a i hi ha ha' hnext hcurrent hQ tstar ht ht'
   obtain ⟨j,ρ,hzero,him,heq⟩ := HeckeDetectorZeros.maximum_attained χ hχ
-    ((3*i : ℕ)*Z^τ) (ha.trans_le hcurrent)
+    ((3*i : ℕ)*Z ^τ) (ha.trans_le hcurrent)
   have hρ : a≤ρ.re := by rw [heq]; exact hcurrent
   exact ⟨j,ρ,hzero,hρ,him,hZ₀ Z hZ d hd hd' χ hχ a i hi ha.le ha' hnext j
     (hQ j) ρ hzero hρ him tstar ht ht'⟩
+end
 
 end SevenEighths.HeckeDetectorSimultaneousSupport
 
-end
 
 end OAI

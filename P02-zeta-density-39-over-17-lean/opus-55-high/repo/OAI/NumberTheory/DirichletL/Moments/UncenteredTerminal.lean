@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.TerminalEnergy
 public import OAI.NumberTheory.DirichletL.Moments.AbsoluteEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,8 +27,8 @@ def uncenteredProfileCoefficient {ι : Type*} [Fintype ι]
 
 def comparisonScale (b : ℝ) : ℝ := 1/(2*max 1 b)
 
-lemma comparisonScale_pos (b : ℝ) : 0<comparisonScale b := by
-  have hb : 0<max 1 b := zero_lt_one.trans_le (le_max_left _ _)
+lemma comparisonScale_pos (b : ℝ) : 0< comparisonScale b := by
+  have hb : 0< max 1 b := zero_lt_one.trans_le (le_max_left _ _)
   unfold comparisonScale
   positivity
 
@@ -41,8 +42,8 @@ theorem comparison_first_zero (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     linarith [ht.1]
   have hn : 1≤(Ideal.absNorm (B*I):ℝ) :=
     QuadraticMainBoundary.norm_one_le (mul_ne_zero hB hI)
-  have hmax : 1≤max 1 b := le_max_left _ _
-  have hb : b≤max 1 b := le_max_right _ _
+  have hmax : 1≤ max 1 b := le_max_left _ _
+  have hb : b≤ max 1 b := le_max_right _ _
   have harg : (Ideal.absNorm (B*I):ℝ)/comparisonScale b=
       (Ideal.absNorm (B*I):ℝ)*(2*max 1 b) := by
     simp [comparisonScale,div_eq_mul_inv]
@@ -55,7 +56,7 @@ theorem profileCoefficient_eq_uncentered {ι : Type*} [Fintype ι]
     (W₁ W₂ : ℝ → ℂ) (a₁ b₁ : ℝ) (ha₁ : 0<a₁)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
     (X₁ X₂ Y₂ : ℝ) (B₁ B₂ s : Ideal O) (hB₁ : B₁≠0) :
-    profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ (comparisonScale b₁) Y₂ B₁ B₂ s=
+    profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ (comparisonScale b₁) Y₂ B₁ B₂ s =
       uncenteredProfileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ B₁ B₂ s := by
   funext v
   simp only [profileCoefficient,idealRectangle,

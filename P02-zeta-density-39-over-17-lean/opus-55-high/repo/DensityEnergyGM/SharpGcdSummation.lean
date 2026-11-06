@@ -1,12 +1,11 @@
 module
 public import DensityEnergyGM.SharpCoprimeCubic
 public import RationalLargeGcdEnergy
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -18,17 +17,14 @@ theorem pair_cubic_le_log (P : Finset (ℕ × ℕ)) {N : ℕ}
     (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 3) ≤
       B * M * (1 + Real.log N) := by
   have hSub : gcdValues P ⊆ Finset.Icc 1 N := by
-    intro d hd
-    obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hd
-    exact Finset.mem_Icc.mpr ⟨Nat.gcd_pos_of_pos_left _ (hP p hp).1,
-      (Nat.gcd_le_left _ (hP p hp).1).trans (hP p hp).2⟩
+    pm_136 d hd p hp Finset.mem_image.mp
+    pm_1497 Finset.mem_Icc.mpr
   have hReciprocal : (∑ d ∈ gcdValues P, (d : ℝ)⁻¹) ≤ 1 + Real.log N := by
     calc
       _ ≤ ∑ d ∈ Finset.Icc 1 N, (d : ℝ)⁻¹ :=
         Finset.sum_le_sum_of_subset_of_nonneg hSub (fun d hd hnot => by positivity)
       _ ≤ _ := by
-        simpa only [harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast]
-          using harmonic_le_one_add_log N
+        pm_7202
   rw [sum_by_gcd P (fun p hp => (hP p hp).1)
     (fun r : ℚ => ‖∑ t ∈ W, phase (r : ℝ) t‖ ^ 3)]
   calc
@@ -52,11 +48,10 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C, T₀, hC, hT₀, hCubic⟩ :=
     real_scale_coprime_cubic_sharp_native (ε / 2) (by positivity)
   let L : ℝ := 1 + (4 : ℝ) ^ (ε / 2) / (ε / 2)
-  have hL : 0 < L := by dsimp only [L]; positivity
+  pm_4801
   refine ⟨C * L, T₀, by positivity, hT₀, ?_⟩
   intro T N P W hT hN hTN hNT hP hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
-  have hTpos : 0 < T := by linarith
+  pm_8409 hTtwo T hT₀.trans hT hTpos
   have hGeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
       N < p.1 ∧ (p.1 : ℝ) ≤ 2 * N ∧ N < p.2 ∧ (p.2 : ℝ) ≤ 2 * N := by
     intro p hp
@@ -67,8 +62,8 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
         (C * T ^ (ε / 2) * sharpCubicProfile T W) * (N / d) := by
     intro d hd
     obtain ⟨p, hp, he⟩ := Finset.mem_image.mp hd
-    have hdPos : 0 < d := he ▸ Nat.gcd_pos_of_pos_left _ (hP p hp).1
-    have hdR : (0 : ℝ) < d := by exact_mod_cast hdPos
+    pm_7433 hdPos
+    pm_74 hdR d hdPos
     have hdLower : N ^ 2 / T ≤ (d : ℝ) := he ▸ (hP p hp).2.2.2.2.2.2
     have hDiv : N / (d : ℝ) ≤ T / N := by
       have hh := div_le_div_of_nonneg_left hN.le (show 0 < N ^ 2 / T by positivity) hdLower
@@ -94,9 +89,7 @@ theorem large_gcd_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
         ∑ q ∈ reducedFiber P d, ‖gmR W ((q.1 : ℝ) / q.2)‖ ^ 3 := by
       apply Finset.sum_congr rfl
       intro q hq
-      rw [native_ratio_sum_eq_phase W
-        (div_pos (by exact_mod_cast (hQ q hq).1) (by exact_mod_cast (hQ q hq).2.1))]
-      simp only [pairRatio, Rat.cast_div, Rat.cast_natCast]
+      pm_4222
     rw [hEq]
     exact h.trans_eq (by ring)
   have hBound := pair_cubic_le_log P (N := ⌊2 * N⌋₊) (by

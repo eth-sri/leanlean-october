@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPhysicalShift
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -22,14 +23,14 @@ theorem robertSargos_initial_floor_budget
       1860*C*(Real.log M/Real.log 2)*(M:ℝ)^2*lam^((2:ℝ)/13) := by
   let H := ⌊lam^(-(2:ℝ)/13)⌋₊
   obtain ⟨hH,hHM,hhalf,_⟩ := robertSargos_physical_floor_shift M hlam hsmall hM
-  have hHp : (0:ℝ) < H := by exact_mod_cast (show 0 < H by dsimp [H]; omega)
-  have hHMreal : (H:ℝ) ≤ M := by dsimp only [H]; exact_mod_cast hHM
+  have hHp : (0:ℝ) < H := by positivity
+  pm_8824 hHMreal H hHM
   have hlog : Real.log H ≤ Real.log M := Real.log_le_log hHp hHMreal
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_123 hlog2
   have hlogH : 0 ≤ Real.log H := Real.log_nonneg (by
-    exact_mod_cast (show 1 ≤ H by dsimp [H]; omega))
+    exact_mod_cast (show 1 ≤ H by grind))
   have hlogM : 0 ≤ Real.log M := hlogH.trans hlog
-  have hR : 0 < lam^(-(2:ℝ)/13) := by positivity
+  pm_6615 hR
   have hrec : 1/lam^(-(2:ℝ)/13) = lam^((2:ℝ)/13) := by
     rw [show -(2:ℝ)/13 = -((2:ℝ)/13) by ring,Real.rpow_neg hlam.le]
     simp
@@ -40,12 +41,12 @@ theorem robertSargos_initial_floor_budget
       linarith
     have he := mul_le_mul_of_nonneg_left hi (sq_nonneg (M:ℝ))
     rw [div_eq_mul_one_div 2,hrec] at he
-    simpa only [div_eq_mul_inv,one_mul,mul_assoc,mul_comm,mul_left_comm] using he
+    grind
   have hlogdiv := div_le_div_of_nonneg_right hlog hlog2.le
   have hprod := mul_le_mul hlogdiv hbound
     (by positivity : 0 ≤ (M:ℝ)^2/(H:ℝ)) (div_nonneg hlogM hlog2.le)
   have hall := mul_le_mul_of_nonneg_left hprod (show 0 ≤ 930*C by positivity)
   dsimp [H] at hall
-  convert hall using 1 <;> ring
+  grind
 
 end TaoTrudgianYang2025

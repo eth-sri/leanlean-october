@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownInteriorShift
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,6 @@ the result back to the literal nonnegative real expression, retaining every
 factor before the source exponent algebra is applied.
 -/
 
-open Set
 open scoped ENNReal
 
 namespace GafniTao
@@ -46,8 +46,8 @@ theorem heathBrownLemmaOne_source_P_pos
     0 < heathBrownLemmaTwoConstant k A *
       (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *
       (1 + Real.log N) := by
-  have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hlog : 0 ≤ Real.log (N : ℝ) := Real.log_nonneg hNreal
+  pm_2809
+  pm_888
   have hmiddle : 0 < (N : ℝ) + lambda * N ^ 2 +
       lambda ^ (-(2 / (k : ℝ))) := by positivity
   exact mul_pos (mul_pos (heathBrownLemmaTwoConstant_pos k hA) hmiddle)
@@ -62,19 +62,14 @@ theorem heathBrownLemmaOneRawBound_toReal
   let H := heathBrownHChoice k A lambda
   let s := heathBrownCriticalMoment k
   let V := (2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ s)⁻¹)
-  let P := heathBrownLemmaTwoConstant k A *
-    (N + lambda * N ^ 2 + lambda ^ (-(2 / (k : ℝ)))) *
-    (1 + Real.log N)
-  have hH : 0 < H := heathBrownHChoice_pos (by omega) hA hlambda hsmall
-  have hHr : (0 : ℝ) < H := by exact_mod_cast hH
+  pm_2796
+  pm_7976 hH
+  pm_74 hHr H hH
   have hs : 0 < s := by
     dsimp only [s, heathBrownCriticalMoment]
-    have hprod : 2 ≤ k * (k - 1) := by
-      calc
-        2 = 2 * 1 := by omega
-        _ ≤ k * (k - 1) := Nat.mul_le_mul (by omega) (by omega)
-    exact Nat.div_pos hprod (by omega)
-  have hsReal : (0 : ℝ) < s := by exact_mod_cast hs
+    pm_2795
+    grind
+  pm_74 hsReal s hs
   have hV : 0 < V := by
     dsimp only [V]
     positivity

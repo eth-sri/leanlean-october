@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,18 +24,19 @@ local notation "O" => ActualEisensteinCubic.O
     IsCoprime.prod_right_iff,Finset.mem_univ,forall_const]
   exact forall_and
 
-theorem residualBoxes_sum {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+theorem residualBoxes_sum
     (S : ι → Finset (Ideal O)) (C : Ideal O) (B : ι → Ideal O) (hB : ∀ i,B i≠0)
     (F : (ι → Ideal O) → ℂ) :
     (∑ u∈residualBoxes S C B hB,F u)=
       ∑ u∈Fintype.piFinset (fun i => residualPool (B i) (hB i) (S i)),
         (if IsCoprime C (∏ i,u i) then 1 else 0)*F u := by
-  rw [residualBoxes_filter,Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro u hu
-  split_ifs <;> simp
+  pm_3813 residualBoxes_filter Finset.sum_filter Finset.sum_congr u hu
+  grind
 
-theorem profileCoefficient_puncture {ι : Type*} [Fintype ι]
+theorem profileCoefficient_puncture
     (C R : Ideal O) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ s : Ideal O) (v : Tuple ι) :
     (if IsCoprime C (finiteTupleProduct v) then 1 else 0)*
@@ -42,8 +44,8 @@ theorem profileCoefficient_puncture {ι : Type*} [Fintype ι]
       profileCoefficient (R*C) ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s v := by
   unfold profileCoefficient
   rw [IsCoprime.mul_right_iff,show IsCoprime C (finiteTupleProduct v) ↔ IsCoprime (finiteTupleProduct v) C from isCoprime_comm]
-  by_cases hC : IsCoprime (finiteTupleProduct v) C <;>
-    by_cases hR : IsCoprime (finiteTupleProduct v) R <;> simp [hC,hR]
+  grind
+end
 
 end SevenEighths.CenteredMomentCommonPuncture
 

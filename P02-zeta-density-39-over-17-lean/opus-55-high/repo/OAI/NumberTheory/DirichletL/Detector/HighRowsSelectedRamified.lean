@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,25 +26,26 @@ lemma ramifiedSelected_eq_replacement (eta a rho x w z : ℂ) (j : ℕ) :
           ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV (Ideal.absNorm (Ideal.span {p})) z) rho j)
         (star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x) ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) := by
   rw [ProbeLocal.continued_ramified_compensation]
-  simp only [ramifiedSelected,ramifiedClosed,ProbeLocal.continuedCorrection,mul_zero,sub_zero,mul_one,div_one]
+  pm_545 ramifiedSelected ramifiedClosed ProbeLocal.continuedCorrection mul_zero sub_zero mul_one div_one
 
+include hc in
 include hc in
 theorem ramifiedSelected_bound (eta a rho x w z : ℂ)
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p}))
     (heta : ‖eta‖≤1) (ha : ‖a‖≤1) (hρ : rho^6=1)
     (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) (j : ℕ) (hj : j<6) :
     ‖ramifiedSelected p hp hg eta a rho x w z j‖≤385*(Ideal.absNorm (Ideal.span {p}):ℝ)^(max (1-w.re) 0) := by
-  let Q : ℝ := Ideal.absNorm (Ideal.span {p})
+  pm_7340 Q p
   let B : ℝ := max (1-w.re) 0
-  have hQ0 : 0<Q := by dsimp [Q];linarith
-  have hQ1 : 1≤Q := by dsimp [Q];linarith
+  pm_3925
+  pm_7253
   have hB0 : 0≤B := le_max_right _ _
   have hM := rowClosedMarked_selected_bound p hp hg hc eta a rho x w z hQ heta ha hρ hx hw hz j hj
   have hH := ramifiedClosed_first_region_bound p hp hg hc eta a rho x w z hQ heta ha hρ
     (by linarith) (by linarith) hz (by linarith) j hj
   have hV := first_region_V_half _ hQ z hz
   have h1V : ‖1-coordV (Ideal.absNorm (Ideal.span {p})) z‖≤3/2 := by
-    have hh := norm_sub_le (1:ℂ) (coordV (Ideal.absNorm (Ideal.span {p})) z)
+    pm_3916 hh
     simp only [norm_one] at hh
     linarith
   have hphase : ‖star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x‖≤Q^x.re := by
@@ -56,8 +58,7 @@ theorem ramifiedSelected_bound (eta a rho x w z : ℂ)
     exact Real.rpow_le_rpow_of_exponent_le hQ1 (by dsimp [B];linarith)
   have he : Q^x.re*Q^(-x.re+B)=Q^B := by rw [←Real.rpow_add hQ0];congr 1;ring
   unfold ramifiedSelected
-  apply (norm_sub_le _ _).trans
-  simp only [norm_mul] at hphase ⊢
+  pm_6990
   calc
     _ ≤ (Q^x.re*(3/2))*(128*Q^(-x.re+B))+Q^B*193 := by
       gcongr

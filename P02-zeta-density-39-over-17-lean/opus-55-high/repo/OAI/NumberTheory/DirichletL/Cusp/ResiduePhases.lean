@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.ChineseRemainder.PrimaryCompletions
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,77 +8,32 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 namespace ShortDraftCusp
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
 section
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase IdealGaussCRT
@@ -86,10 +42,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 lemma A4_bad_modulus_ne_zero (c0:Eis) (hc0:c0≠0) : ramifiedTraceLambda^3*c0≠0 := by
   apply mul_ne_zero _ hc0
   apply pow_ne_zero
-  intro hz
-  have he:=ramifiedEmbedding_traceLambda
-  rw [hz,map_zero] at he
-  exact eisLam_ne_zero he.symm
+  pm_6471
 
 def A4BadPhase (c0:Eis) (hc0:c0≠0) (d U x:Eis) : ℂ :=
   quotientTrace (ramifiedTraceLambda^3*c0) (A4_bad_modulus_ne_zero c0 hc0)
@@ -102,14 +55,14 @@ lemma A4BadPhase_eq (c0:Eis) (hc0:c0≠0) (d U x:Eis) :
     (eisEmbedding (-d*U*x)/(eisEmbedding (ramifiedTraceLambda^3*c0)*eisLam))=_
   simp only [map_mul,map_pow,map_neg,ramifiedEmbedding_traceLambda]
   congr 1
-  field_simp [eisLam_ne_zero,eisEmbedding_ne_zero hc0]
+  grind
 
 noncomputable local instance A4phaseField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
 noncomputable local instance A4phaseFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
 
-theorem A4_phase_product {ι : Type*} [Fintype ι] (p : ι→Eis)
+theorem A4_phase_product {ι : Type*} [Fintype ι] (p : ι→ Eis)
     [∀i,(Ideal.span {p i}).IsMaximal] (hp : ∀i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (a b c0 d U w x:Eis) (hc0:c0≠0)
@@ -142,7 +95,7 @@ theorem A4_phase_product {ι : Type*} [Fintype ι] (p : ι→Eis)
   apply Finset.prod_congr rfl
   intro i hi
   rw [productElementCRT_mk]
-  obtain ⟨t,v,hlocal⟩:=bezout_of_principal_coprime (cofactor_coprime p hcop i)
+  pm_8689 t hlocal
   have hc:=coordinate_trace_character p hp hcop i t v hlocal
   change coordinateAddChar (fun i=>Eis⧸Ideal.span {p i}) (productElementCRT p hcop)
     (quotientTrace (∏i,p i) hr) i (Ideal.Quotient.mk _ (-d*w*x))=_
@@ -168,7 +121,7 @@ noncomputable local instance A4frequencyField (P : Ideal Eis) [P.IsMaximal] :
 noncomputable local instance A4frequencyFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
 
-theorem A3_A4_frequency_product {ι : Type*} [Fintype ι] (p : ι→Eis)
+theorem A3_A4_frequency_product {ι : Type*} [Fintype ι] (p : ι→ Eis)
     [∀i,(Ideal.span {p i}).IsMaximal] (hp : ∀i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,lambda∉Ideal.span {p i})
@@ -201,7 +154,10 @@ theorem A3_A4_frequency_product {ι : Type*} [Fintype ι] (p : ι→Eis)
       have hn:=(A4_active_local p a b c0 d hdet σ ε h ha hε x i).1
       simp only [frequencyMultiplier,ite_eq_right hn]
 
-lemma A4BadPhase_eq_of_residue (c0:Eis) (hc0:c0≠0) (d U d' U' x:Eis)
+section
+variable (c0:Eis) (hc0:c0≠0)
+include c0 hc0
+lemma A4BadPhase_eq_of_residue (d U d' U' x:Eis)
     (hres:ramifiedTraceLambda^3*c0∣d*U-d'*U') :
     A4BadPhase c0 hc0 d U x=A4BadPhase c0 hc0 d' U' x := by
   unfold A4BadPhase
@@ -211,14 +167,14 @@ lemma A4BadPhase_eq_of_residue (c0:Eis) (hc0:c0≠0) (d U d' U' x:Eis)
   have hd:=dvd_mul_of_dvd_left hres (-x)
   convert hd using 1 ; ring
 
-lemma A4BadPhase_norm (c0:Eis) (hc0:c0≠0) (d U x:Eis) :
+lemma A4BadPhase_norm (d U x:Eis) :
     ‖A4BadPhase c0 hc0 d U x‖=1 := by
   rw [A4BadPhase_eq]
   exact breveE_norm _
+end
 
 end ShortDraftCusp
 
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 open CubicEisenstein
@@ -242,7 +198,7 @@ open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT IdealGaussCRT
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem exists_product_trace_shifts {ι : Type*} [Fintype ι]
-    (p : ι→Eis) (hp : ∀i,p i≠0)
+    (p : ι→ Eis) (hp : ∀i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) :
     ∃k : ∀i,(Eis⧸Ideal.span {p i})ˣ,
       (∀i,Ideal.Quotient.mk (Ideal.span {p i}) (cofactor p i)*(k i:Eis⧸Ideal.span {p i})=1) ∧
@@ -254,7 +210,7 @@ theorem exists_product_trace_shifts {ι : Type*} [Fintype ι]
       coordinateAddChar (fun i=>Eis⧸Ideal.span {p i}) (productElementCRT p hcop)
         (quotientTrace (∏i,p i) (Finset.prod_ne_zero_iff.mpr (fun i _=>hp i))) i=
           (quotientTrace (p i) (hp i)).mulShift (k:Eis⧸Ideal.span {p i}) := by
-    obtain ⟨u,v,hbez⟩:=bezout_of_principal_coprime (cofactor_coprime p hcop i)
+    pm_8689 u hbez
     have hv : Ideal.Quotient.mk (Ideal.span {p i}) v*
         Ideal.Quotient.mk (Ideal.span {p i}) (cofactor p i)=1 := by
       simpa only [mul_comm] using bezout_inverse_left hbez
@@ -265,13 +221,13 @@ theorem exists_product_trace_shifts {ι : Type*} [Fintype ι]
   exact ⟨k,hki,hkψ⟩
 
 noncomputable def productTraceShift {ι : Type*} [Fintype ι]
-    (p : ι→Eis) (hp : ∀i,p i≠0)
+    (p : ι→ Eis) (hp : ∀i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) :
     ∀i,(Eis⧸Ideal.span {p i})ˣ :=
   (exists_product_trace_shifts p hp hcop).choose
 
 lemma productTraceShift_inverse {ι : Type*} [Fintype ι]
-    (p : ι→Eis) (hp : ∀i,p i≠0)
+    (p : ι→ Eis) (hp : ∀i,p i≠0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) (i:ι) :
     Ideal.Quotient.mk (Ideal.span {p i}) (cofactor p i)*
       (productTraceShift p hp hcop i:Eis⧸Ideal.span {p i})=1 :=
@@ -294,7 +250,7 @@ noncomputable local instance productReflectionFintype (P : Ideal Eis) [P.IsMaxim
 
 end LocalReflectionBrackets
 
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace ShortDraftCusp
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT
@@ -342,24 +298,23 @@ open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
 end CubicEisenstein
 
-open scoped Classical BigOperators
 
 namespace ShortDraftCRT
 open ActualEisensteinCubic FiniteGaussPhase ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι]
 
-def finiteCrossNumerator (a c l:Eis) (p h:ι→Eis) : Eis :=
+def finiteCrossNumerator (a c l:Eis) (p h:ι→ Eis) : Eis :=
   a*(∏i,p i)+l^2*c*∑i,h i*cofactor p i
 
-lemma prime_dvd_other_cofactor (p:ι→Eis) {i k:ι} (hik:i≠k) : p i∣cofactor p k := by
+lemma prime_dvd_other_cofactor (p:ι→ Eis) {i k:ι} (hik:i≠k) : p i∣cofactor p k := by
   exact Finset.dvd_prod_of_mem p (Finset.mem_erase.mpr ⟨hik,Finset.mem_univ i⟩)
 
-lemma finiteCrossNumerator_local (a c l:Eis) (p h:ι→Eis) (i:ι) :
+lemma finiteCrossNumerator_local (a c l:Eis) (p h:ι→ Eis) (i:ι) :
     Ideal.Quotient.mk (Ideal.span {p i}) (finiteCrossNumerator a c l p h)=
       Ideal.Quotient.mk (Ideal.span {p i}) (l^2*c*cofactor p i)*
         Ideal.Quotient.mk (Ideal.span {p i}) (h i) := by
-  let q:=Ideal.Quotient.mk (Ideal.span {p i})
+  pm_8082
   have hz:q (∏k,p k)=0 := by
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     exact Ideal.mem_span_singleton.mpr ⟨cofactor p i, (prime_mul_cofactor p i).symm⟩
@@ -375,13 +330,13 @@ lemma finiteCrossNumerator_local (a c l:Eis) (p h:ι→Eis) (i:ι) :
   simp only [finiteCrossNumerator,map_add,map_mul,map_sum,map_pow,hz,mul_zero,zero_add,hs]
   ring
 
-lemma finiteCrossNumerator_fixed (N a c l:Eis) (p h:ι→Eis)
+lemma finiteCrossNumerator_fixed (N a c l:Eis) (p h:ι→ Eis)
     (hh:∀i,N∣h i) : N∣finiteCrossNumerator a c l p h-a*(∏i,p i) := by
   have hs:N∣∑i,h i*cofactor p i:=Finset.dvd_sum (fun i _=>dvd_mul_of_dvd_left (hh i) _)
   convert dvd_mul_of_dvd_right hs (l^2*c) using 1 ; simp [finiteCrossNumerator]
 
 lemma finiteCrossNumerator_fixed_sector {κ:Type*} [Fintype κ]
-    (M a c l:Eis) (p h:ι→Eis) (p0 h0:κ→Eis)
+    (M a c l:Eis) (p h:ι→ Eis) (p0 h0:κ→ Eis)
     (hc:c∣M) (hh:∀i,M^2∣h i) (hh0:∀i,M^2∣h0 i)
     (hr:M^2∣(∏i,p i)-(∏i,p0 i)) :
     M*c∣finiteCrossNumerator a c l p h-finiteCrossNumerator a c l p0 h0 := by
@@ -392,7 +347,7 @@ lemma finiteCrossNumerator_fixed_sector {κ:Type*} [Fintype κ]
   have h2:=dvd_mul_of_dvd_right hr a
   convert dvd_sub (dvd_add h1 h2) h0 using 1 ; ring
 
-lemma finiteCrossNumerator_coprime (a c l:Eis) (p h:ι→Eis)
+lemma finiteCrossNumerator_coprime (a c l:Eis) (p h:ι→ Eis)
     (hbase:IsCoprime a c) (hpair:Pairwise (Function.onFun IsCoprime p))
     (hc:∀i,IsCoprime c (p i)) (hl:∀i,IsCoprime l (p i))
     (hh:∀i,IsCoprime (h i) (p i)) :

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.RestoreCorrection
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralNormalized
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralRamified
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,7 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 def centralNormalizedSlot (η : Character) (u : FreeRow) (P : PrimeIdeal)
@@ -20,7 +21,7 @@ def centralNormalizedSlot (η : Character) (u : FreeRow) (P : PrimeIdeal)
     supportedCorrection η u P x w z
 
 def repeatedRowPrime (u : FreeRow) (P : PrimeIdeal) : Prop :=
-  P.val∣Ideal.span {u.val} ∧ 2≤multiplicity (primaryGenerator P.val) u.val
+  P.val∣Ideal.span {u.val} ∧ 2≤ multiplicity (primaryGenerator P.val) u.val
 
 def centralRegularError (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (x w z : ℂ) : ℂ :=
@@ -31,8 +32,10 @@ def centralRepeatedTerm (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (x w z : ℂ) : ℂ :=
   if repeatedRowPrime u P then centralNormalizedSlot η u P hs x w z else 0
 
-theorem centralNormalizedSlot_split (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) :
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
+include η u P hs
+theorem centralNormalizedSlot_split (x w z : ℂ) :
     centralNormalizedSlot η u P hs x w z=
       -star (idealRowHom u.val P.val)+centralRegularError η u P hs x w z+
         centralRepeatedTerm η u P hs x w z := by
@@ -42,8 +45,7 @@ theorem centralNormalizedSlot_split (η : Character) (u : FreeRow) (P : PrimeIde
   · simp only [centralRegularError,centralRepeatedTerm,ite_eq_right hp]
     ring
 
-theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hη : IsCoprime P.val η.modulus)
+theorem central_actual_local_bounds (hη : IsCoprime P.val η.modulus)
     (a e : ℝ) (x w z : ℂ) (hQ : (480:ℝ)≤P.val.absNorm)
     (hsmall : 198*(P.val.absNorm:ℝ)^(-10*e)≤1/2)
     (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he1 : e≤1/1000)
@@ -55,14 +57,14 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
     ‖centralRepeatedTerm η u P hs x w z‖≤
       if repeatedRowPrime u P then 812*(P.val.absNorm:ℝ)^(1-w.re) else 0 := by
   have hQ0 : (0:ℝ)<P.val.absNorm := by linarith
-  have hQ1 : (1:ℝ)≤P.val.absNorm := by linarith
+  pm_7515
   by_cases hd : P.val∣Ideal.span {u.val}
   · have hb := actual_central_ramified_normalized η u P hs hd (by linarith)
       a e x w z hsmall ha ha1 he he1 hx hw hz
     have hcorr : supportedCorrection η u P x w z=ramifiedCorrection η u P hs x w z := by
       simp [supportedCorrection,hs,hd]
     refine ⟨hcorr.symm ▸ hb.1,?_,?_⟩
-    · by_cases hj : 2≤multiplicity (primaryGenerator P.val) u.val
+    · by_cases hj : 2≤ multiplicity (primaryGenerator P.val) u.val
       · simp [centralRegularError,repeatedRowPrime,hd,hj]
         positivity
       · have hp : ¬repeatedRowPrime u P := fun h=>hj h.2
@@ -73,17 +75,16 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
           dsimp only [centralNormalizedSlot]
           rw [hcorr]
           have hm := mul_le_mul_of_nonneg_left h hQ0.le
-          have hpow : (P.val.absNorm:ℝ)*(P.val.absNorm:ℝ)^(-1:ℝ)=1 := by
-            rw [Real.rpow_neg_one];exact mul_inv_cancel₀ hQ0.ne'
+          pm_1093 hpow
           have hp2 : (P.val.absNorm:ℝ)*(P.val.absNorm:ℝ)^(-(1/2:ℝ))=
               (P.val.absNorm:ℝ)^(1/2:ℝ) := by
-            conv_lhs => lhs;rw [←Real.rpow_one (P.val.absNorm:ℝ)]
+            pm_7235
             rw [←Real.rpow_add hQ0];norm_num
           rw [←mul_assoc,hpow,one_mul] at hm
           rw [mul_left_comm (P.val.absNorm:ℝ) 800,hp2] at hm
           exact hm
         exact hn.trans (mul_le_mul_of_nonneg_right (by norm_num) (Real.rpow_nonneg hQ0.le _))
-    · by_cases hj : 2≤multiplicity (primaryGenerator P.val) u.val
+    · by_cases hj : 2≤ multiplicity (primaryGenerator P.val) u.val
       · have hp : repeatedRowPrime u P := ⟨hd,hj⟩
         rw [centralRepeatedTerm,ite_eq_left hp,ite_eq_left hp]
         have h := hb.2
@@ -96,11 +97,10 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
           dsimp only [centralNormalizedSlot];rw [hcorr]
           nlinarith
         have hm := mul_le_mul_of_nonneg_left hn hQ0.le
-        have hi : (P.val.absNorm:ℝ)*(P.val.absNorm:ℝ)^(-1:ℝ)=1 := by
-          rw [Real.rpow_neg_one];exact mul_inv_cancel₀ hQ0.ne'
+        pm_1093 hi
         have heq : (P.val.absNorm:ℝ)*(P.val.absNorm:ℝ)^(-w.re)=
             (P.val.absNorm:ℝ)^(1-w.re) := by
-          conv_lhs => lhs;rw [←Real.rpow_one (P.val.absNorm:ℝ)]
+          pm_7235
           rw [←Real.rpow_add hQ0]; congr 1
         rw [←mul_assoc,hi,one_mul] at hm
         rw [mul_left_comm (P.val.absNorm:ℝ) 812,heq] at hm
@@ -115,6 +115,7 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
     refine ⟨hc.symm ▸ hb.1,?_,?_⟩
     · simpa only [centralRegularError,ite_eq_right hp,centralNormalizedSlot,hc,ite_eq_right hd] using hb.2
     · simp only [centralRepeatedTerm,ite_eq_right hp,norm_zero,le_refl]
+end
 end SevenEighths.ProbeHighRowFamily
 end
 

@@ -1,25 +1,25 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.MarkedTails
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_first_supported_remainder (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i}) (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool),Disjoint F B →
+      (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→ Bool),Disjoint F B →
       ∀ (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (G₁ G₂ X₁ X₂ K P M₁ M₂ : ℝ),
       0≤G₁ → 0≤G₂ → 0<X₁ → 0<X₂ → 0<K → 0≤P →
       (∀N∈F.powerset,‖C₁ N‖≤G₁) → (∀N∈F.powerset,‖C₂ N‖≤G₂) →
@@ -36,7 +36,7 @@ theorem full_first_supported_remainder (A : ℕ) :
       (128*U₁)*(128*U₂)*(G₁*G₂*K)*
         ((C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
           ((min 1 slow)^2*(1+P)^A)) := by
-  obtain ⟨s,C,hC,hb⟩:=full_uniform_canonicalPairMode_remainder A
+  pm_3698 s C hC hb full_uniform_canonicalPairMode_remainder A
   refine ⟨s,C,hC,?_⟩
   intro ι _ p hp _ hinj hcop hg hc F B v ε₁ ε₂ hFB C₁ C₂ W G₁ G₂ X₁ X₂ K P M₁ M₂ hG₁ hG₂ hX₁ hX₂ hK hP hC₁ hC₂ hS₁ hS₂ d hd T hT
   dsimp only
@@ -50,7 +50,7 @@ theorem full_first_supported_remainder (A : ℕ) :
   have hU₁:0<U₁:=mul_pos hX₁ (Real.exp_pos _)
   have hU₂:0<U₂:=mul_pos hX₂ (Real.exp_pos _)
   have hNd:0<‖eisEmbedding d‖^2:=sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))
-  have hslow:0<slow:=div_pos hK (mul_pos (mul_pos (mul_pos hNd (primeProductNorm_pos p hp S)) hU₁) hU₂)
+  have hslow:0< slow:=div_pos hK (mul_pos (mul_pos (mul_pos hNd (primeProductNorm_pos p hp S)) hU₁) hU₂)
   have hH:0≤P:=hP
   have htail:0≤tail:=by dsimp [tail]; positivity
   have hQ:0≤Q:=mul_nonneg (mul_nonneg (mul_nonneg hG₁ hG₂) hK.le) htail
@@ -66,9 +66,7 @@ theorem full_first_supported_remainder (A : ℕ) :
     change (∑N∈F.powerset,∑R∈F.powerset,rem N R)=_
     calc
       _ = ∑N∈boundedPrimeSupports p F U₁,∑R∈F.powerset,rem N R := by
-        symm
-        apply Finset.sum_subset (Finset.filter_subset _ _)
-        intro N hN hn
+        pm_3521 Finset.sum_subset N hN hn
         have hz:C₁ N=0:=by
           by_contra h
           exact hn (Finset.mem_filter.mpr ⟨hN,columnLog_norm_upper p hp X₁ M₁ hX₁ N (hS₁ N hN h)⟩)
@@ -76,9 +74,7 @@ theorem full_first_supported_remainder (A : ℕ) :
       _ = _ := by
         apply Finset.sum_congr rfl
         intro N hN
-        symm
-        apply Finset.sum_subset (Finset.filter_subset _ _)
-        intro R hR hr
+        pm_3521 Finset.sum_subset R hR hr
         have hz:C₂ R=0:=by
           by_contra h
           exact hr (Finset.mem_filter.mpr ⟨hR,columnLog_norm_upper p hp X₂ M₂ hX₂ R (hS₂ R hR h)⟩)
@@ -141,7 +137,6 @@ theorem full_first_supported_remainder (A : ℕ) :
         (boundedPrimeSupports_card_positive p hp hinj F U₂ hU₂) (Nat.cast_nonneg _) (by positivity)) hQ
     _ = _ := by dsimp [Q,tail,slow,U₁,U₂,S];ring
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

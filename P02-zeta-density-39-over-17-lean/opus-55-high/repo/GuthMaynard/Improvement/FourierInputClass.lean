@@ -1,13 +1,13 @@
 module
-public import GuthMaynard.AffineSource.LargeValuesAffineHeight
+public import DensityEnergyGM.LargeValuesAffineHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- The manuscript's fixed family of supremum-normalized Fourier constants.
 D is fixed before T and f; the condition is imposed only at nonzero frequency. -/
@@ -45,10 +45,13 @@ theorem fourier_sup_family_seminorm (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 
     have hd := hD β n
     positivity)
   intro ξ
-  simpa only [iteratedDeriv_zero,Real.norm_eq_abs,F,C] using hall ξ
+  aesop
 
+section
+variable (f : 𝓢(ℝ, ℝ))
+include f
 /-- Fourier inversion bounds the source supremum by the Fourier L1 norm. -/
-theorem source_sup_le_fourier_l1 (f : 𝓢(ℝ, ℝ)) :
+theorem source_sup_le_fourier_l1 :
     SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f) ≤
       ∫ ξ, ‖𝓕 (gmAffineComplexify f) ξ‖ := by
   apply SchwartzMap.seminorm_le_bound' (𝕜 := ℝ) 0 0 _
@@ -63,7 +66,7 @@ theorem source_sup_le_fourier_l1 (f : 𝓢(ℝ, ℝ)) :
 
 /-- Splitting at U gives the uniform mass/supremum interpolation used to
 replace supremum-normalized decay by a height-mass Fourier profile. -/
-theorem fourier_l1_le_mass_and_tail (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x)
+theorem fourier_l1_le_mass_and_tail (hf : ∀ x, 0 ≤ f x)
     {U B : ℝ} (hU : 0 < U)
     (hdec : ∀ ξ : ℝ, ξ ≠ 0 → ‖𝓕 (gmAffineComplexify f) ξ‖ ≤ B/|ξ|^2) :
     (∫ ξ, ‖𝓕 (gmAffineComplexify f) ξ‖) ≤ 2*U*(∫ x, f x)+2*B/U := by
@@ -105,10 +108,11 @@ theorem fourier_l1_le_mass_and_tail (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x)
   have hcompl : (gmAffineLowFrequencyRegion U)ᶜ = gmAffineHighFrequencyRegion U := by
     ext ξ
     simp [gmAffineLowFrequencyRegion,gmAffineHighFrequencyRegion]
-  have hsplit := integral_add_compl (measurableSet_gmAffineLowFrequencyRegion U) hFi
+  have hsplit := integral_add_compl (s := gmAffineLowFrequencyRegion U) (measurableSet_le continuous_abs.measurable measurable_const) hFi
   rw [hcompl] at hsplit
   rw [← hsplit]
   exact add_le_add hlo hhi
+end
 
 /-- A uniform supremum-to-mass estimate derived from order-two Fourier
  decay. It includes zero input without dividing by mass or supremum. -/
@@ -120,8 +124,8 @@ theorem fourier_sup_le_height_mass (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 �
   let S := SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f)
   let A := (D β 2+1)*T^β*T^2
   have hD2 := hD β 2
-  have hA : 0 < A := by dsimp only [A]; positivity
-  have hS : 0 ≤ S := by dsimp only [S]; positivity
+  pm_4161
+  pm_4027
   have hdec : ∀ ξ : ℝ, ξ ≠ 0 → ‖𝓕 (gmAffineComplexify f) ξ‖ ≤ (A*S)/|ξ|^2 := by
     intro ξ hξ
     calc
@@ -142,7 +146,10 @@ theorem fourier_sup_le_height_mass (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 �
 def massProfile (D : ℝ → ℕ → ℝ) (β : ℝ) (n : ℕ) : ℝ :=
   16*D (β/2) n*(D (β/2) 2+1)
 
-theorem massProfile_nonneg (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n) :
+section
+variable (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
+include D hD
+theorem massProfile_nonneg :
     ∀ β n, 0 ≤ massProfile D β n := by
   intro β n
   unfold massProfile
@@ -153,8 +160,7 @@ theorem massProfile_nonneg (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β 
 /-- Full input-class bridge: the manuscript's supremum-normalized decay
 implies the audited height-family premise, with one fixed profile before
 all heights and all nonnegative Schwartz inputs. No smoothing-class premise. -/
-theorem fourier_sup_family_to_height_mass (D : ℝ → ℕ → ℝ)
-    (hD : ∀ β n, 0 ≤ D β n) {T : ℝ} (hT : 0 < T)
+theorem fourier_sup_family_to_height_mass {T : ℝ} (hT : 0 < T)
     (f : 𝓢(ℝ, ℝ)) (hf : ∀ x, 0 ≤ f x) (hp : FourierSupFamily D T f) :
     GMAffineHeightFourierMassFamilyAtDepth T (massProfile D) 0 f := by
   intro β hβ n
@@ -164,10 +170,7 @@ theorem fourier_sup_family_to_height_mass (D : ℝ → ℕ → ℝ)
   have hDn := hD (β/2) n
   have hmul := mul_le_mul_of_nonneg_left hsup
     (show 0 ≤ D (β/2) n*T^(β/2)*T^n by positivity)
-  have hpow : T^(β/2)*T^(β/2) = T^β := by
-    rw [← Real.rpow_add hT]
-    congr 1
-    ring
+  pm_5917 hpow β hT
   unfold GMAffineHeightFourierMassBound
   simp only [pow_zero,one_mul]
   refine hsemi.trans (hmul.trans_eq ?_)
@@ -175,5 +178,6 @@ theorem fourier_sup_family_to_height_mass (D : ℝ → ℕ → ℝ)
     _ = (16*D (β/2) n*(D (β/2) 2+1))*(T^(β/2)*T^(β/2))*
         (T^n*T^2)*(∫ x, f x) := by ring
     _ = _ := by rw [hpow,← pow_add]; rfl
+end
 
 end GuthMaynard.Improvement

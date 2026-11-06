@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -28,7 +29,7 @@ def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p 
 
 theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
     ∃ K : ℝ,0<K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -45,7 +46,7 @@ theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
         (retainedCubeWeight p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ d a) negative ω X t Prod.snd ≤
       Γ*K*Y^ε * firstCanonicalSecondEnergy p hp hg hinj F b C negative
         (if negative then Ψ₁ else Ψ₂) (if negative then m₁ else m₂) d H selector ω X t Y := by
-  obtain ⟨K,hK,hstep⟩ := retained_cube_energy_to_second ε hε
+  pm_69 K hK hstep retained_cube_energy_to_second ε hε
   refine ⟨K,hK,?_⟩
   intro ι _ p hp _ hinj hcop hg hc hpr F b C Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂ d labels a Γ Y hΓ hY
     hlabels hn ha negative H selector ω X t hX

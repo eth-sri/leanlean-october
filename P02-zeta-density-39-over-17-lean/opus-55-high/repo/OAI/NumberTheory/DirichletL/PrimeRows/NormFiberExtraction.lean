@@ -1,5 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeExtraction
+public import OAI.NumberTheory.DirichletL.Hecke.Family
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,42 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 
 namespace ConcretePrimeRowBridge
 
@@ -50,8 +32,7 @@ section
 
 open ActualEisensteinCubic ShortDraftHeckeBridge
 
-abbrev K := CyclotomicField 3 ℚ
-abbrev O := NumberField.RingOfIntegers K
+export OAI.SevenEighths.HeckeFamily (K O)
 
 instance : IsCyclotomicExtension {3} ℚ K :=
   CyclotomicField.isCyclotomicExtension 3 ℚ
@@ -109,33 +90,39 @@ theorem mem_primePool_iff {F : Finset (Ideal O)} {P : Ideal O} :
   classical
   simp only [primePool, Finset.mem_biUnion, Multiset.mem_toFinset]
 
-theorem primePool_maximal (F : Finset (Ideal O))
+section
+variable (F : Finset (Ideal O))
+include F
+theorem primePool_maximal
     (_hFpos : ∀ I ∈ F, I ≠ ⊥) (i : primePool F) :
     (i.1).IsMaximal := by
   obtain ⟨I, hIF, hfac⟩ := mem_primePool_iff.mp i.property
   have hp : Prime i.1 := UniqueFactorizationMonoid.prime_of_normalized_factor i.1 hfac
   exact (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
 
-theorem primePool_good (F : Finset (Ideal O))
+theorem primePool_good
     (hFgood : ∀ I ∈ F,
       ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I,
         goodLambda ∉ P)
     (i : primePool F) : goodLambda ∉ i.1 := by
   obtain ⟨I, hIF, hfac⟩ := mem_primePool_iff.mp i.property
   exact hFgood I hIF i.1 hfac
+end
 
 noncomputable def idealSupport (F : Finset (Ideal O)) (I : Ideal O) :
     Finset (primePool F) :=
   Finset.univ.filter (fun i => i.1 ∈ UniqueFactorizationMonoid.normalizedFactors I)
 
-theorem mem_idealSupport_iff (F : Finset (Ideal O)) (I : Ideal O)
+section
+variable (F : Finset (Ideal O))
+include F
+theorem mem_idealSupport_iff (I : Ideal O)
     (i : primePool F) :
     i ∈ idealSupport F I ↔ i.1 ∈ UniqueFactorizationMonoid.normalizedFactors I := by
   classical
   simp [idealSupport]
 
-theorem idealGenerator_mem_prime_of_support
-    (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
+theorem idealGenerator_mem_prime_of_support (hFpos : ∀ I ∈ F, I ≠ ⊥)
     (I : Ideal O) (hIF : I ∈ F) (i : primePool F)
     (hi : i ∈ idealSupport F I) : idealGenerator I ∈ i.1 := by
   have hfac := (mem_idealSupport_iff F I i).mp hi
@@ -144,6 +131,7 @@ theorem idealGenerator_mem_prime_of_support
     Ideal.subset_span (Set.mem_singleton _)
   rw [span_idealGenerator I] at hmem
   exact hle hmem
+end
 
 noncomputable def idealSexticRow
     (F : Finset (Ideal O))
@@ -152,7 +140,7 @@ noncomputable def idealSexticRow
       ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I,
         goodLambda ∉ P)
     (I : Ideal O) (u : O) : ℂ := by
-  letI : ∀ i : primePool F, (i.1).IsMaximal := primePool_maximal F hFpos
+  pm_3474
   exact ActualEisensteinCubic.finiteSquarefreeRow
     (fun i : primePool F => i.1) (primePool_good F hFgood)
     (idealSupport F I) u
@@ -166,22 +154,24 @@ private theorem idealMoebius_norm_le_one (I : Ideal O) :
   · rw [UniqueFactorizationMonoid.moebius_of_not_squarefree h]
     simp
 
-theorem baseChangeWeight_norm_le_one {q : ℕ}
-    (χ : DirichletCharacter ℂ q) (I : Ideal O) :
+section
+variable {q : ℕ} (χ : DirichletCharacter ℂ q)
+include q χ
+theorem baseChangeWeight_norm_le_one (I : Ideal O) :
     ‖baseChangeWeight χ I‖ ≤ 1 := by
   rw [baseChangeWeight, norm_mul]
   have hμ := idealMoebius_norm_le_one I
   have hχ := χ.norm_le_one (Ideal.absNorm I)
-  exact (mul_le_mul hμ hχ (norm_nonneg _) (by positivity)).trans (by norm_num)
+  pm_6882 hχ
 
-theorem columnWeight_norm_le_one {q : ℕ}
-    (χ : DirichletCharacter ℂ q) (W : ℕ → ℂ)
+theorem columnWeight_norm_le_one (W : ℕ → ℂ)
     (hW : ∀ n, ‖W n‖ ≤ 1) (x : O) :
     ‖columnWeight χ W x‖ ≤ 1 := by
   rw [columnWeight, norm_mul]
   have hμ := baseChangeWeight_norm_le_one χ (Ideal.span {x})
   have hW' := hW (Ideal.absNorm (Ideal.span {x}))
-  exact (mul_le_mul hμ hW' (norm_nonneg _) (by positivity)).trans (by norm_num)
+  pm_6882 hW'
+end
 
 noncomputable def elementRow
     (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
@@ -190,7 +180,7 @@ noncomputable def elementRow
         goodLambda ∉ P)
     {q : ℕ} (χ : DirichletCharacter ℂ q) (W : ℕ → ℂ) (u : O) : ℂ := by
   classical
-  letI : ∀ i : primePool F, (i.1).IsMaximal := primePool_maximal F hFpos
+  pm_3474
   exact ∑ x ∈ F.image idealGenerator,
     columnWeight χ W x *
       finiteSquarefreeRow (fun i : primePool F => i.1)
@@ -215,8 +205,7 @@ theorem elementRow_eq_idealRowSum
     {q : ℕ} (χ : DirichletCharacter ℂ q) (W : ℕ → ℂ) (u : O) :
     elementRow F hFpos hFgood χ W u =
       idealRowSum F hFpos hFgood χ W u := by
-  classical
-  let : ∀ i : primePool F, (i.1).IsMaximal := primePool_maximal F hFpos
+  pm_6486
   unfold elementRow idealRowSum
   rw [Finset.sum_image]
   · apply Finset.sum_congr rfl
@@ -226,7 +215,6 @@ theorem elementRow_eq_idealRowSum
   · intro I hI J hJ h
     exact idealGenerator_injective h
 
-open ActualEisensteinCubic ShortDraftHeckeBridge
 open scoped Classical
 
 noncomputable def rowNormDisk (H : ℕ) : Finset O := by
@@ -257,14 +245,13 @@ theorem sixth_power_rows_in_rowNormDisk
     (hH : Nat.floor ((D : ℝ) ^ (11 / 10 : ℝ)) ≤ H) :
     selected.image (fun i => p i ^ 6) ⊆ rowNormDisk H := by
   classical
-  intro u hu
-  obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hu
+  pm_136 u hu i hi Finset.mem_image.mp
   rw [mem_rowNormDisk]
   have hpNorm : Ideal.absNorm (Ideal.span {p i}) ≠ 0 :=
     (Ideal.absNorm_eq_zero_iff).not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr (hp i hi))
-  have hDreal : (1 : ℝ) ≤ D := by exact_mod_cast hD
-  have hDpos : (0 : ℝ) < D := lt_of_lt_of_le zero_lt_one hDreal
+  pm_77 hDreal D hD
+  pm_7228
   have hupper : (Ideal.absNorm (Ideal.span {p i ^ 6}) : ℝ) ≤
       (D : ℝ) ^ (11 / 10 : ℝ) := by
     calc
@@ -312,8 +299,7 @@ theorem baseChange_prime_extraction_from_MS
         (D : ℝ) ^ ((21 / 10 : ℝ) + ε)) :
     ‖∑ I ∈ F, baseChangeWeight χ I * W (Ideal.absNorm I)‖ ≤
       384 * (D : ℝ) ^ ((23 / 24 : ℝ) + ε) := by
-  classical
-  let : ∀ i : primePool F, (i.1).IsMaximal := primePool_maximal F hFpos
+  pm_6486
   let P : primePool F → Ideal O := fun i => i.1
   let support : O → Finset (primePool F) :=
     fun x => idealSupport F (Ideal.span {x})
@@ -327,8 +313,7 @@ theorem baseChange_prime_extraction_from_MS
     exact idealGenerator_mem_prime_of_support F hFpos I hIF i hi
   have hcolnorm : ∀ x ∈ columns,
       Ideal.absNorm (Ideal.span {x}) ≤ D := by
-    intro x hx
-    obtain ⟨I, hIF, rfl⟩ := Finset.mem_image.mp hx
+    pm_136 x hx I hIF Finset.mem_image.mp
     rw [span_idealGenerator I]
     exact hFnorm I hIF
   have hweight : ∀ x ∈ columns, ‖weight x‖ ≤ 1 := by
@@ -384,23 +369,24 @@ theorem mem_outsideIdealsUpTo {S : Finset (Ideal O)} {D : ℕ}
   classical
   simp [outsideIdealsUpTo, mem_idealsUpTo, and_assoc]
 
-theorem outsideIdealsUpTo_ne_bot (S : Finset (Ideal O)) (D : ℕ)
-    (I : Ideal O) (hI : I ∈ outsideIdealsUpTo S D) : I ≠ ⊥ := by
+section
+variable (S : Finset (Ideal O)) (D : ℕ) (I : Ideal O) (hI : I ∈ outsideIdealsUpTo S D)
+include S D I hI
+theorem outsideIdealsUpTo_ne_bot : I ≠ ⊥ := by
   have hn := (mem_outsideIdealsUpTo.mp hI).1
   intro h
   subst I
   simp at hn
 
-theorem outsideIdealsUpTo_norm_le (S : Finset (Ideal O)) (D : ℕ)
-    (I : Ideal O) (hI : I ∈ outsideIdealsUpTo S D) :
+theorem outsideIdealsUpTo_norm_le :
     Ideal.absNorm I ≤ D :=
   (mem_outsideIdealsUpTo.mp hI).2.1
+end
 
 theorem goodLambda_prime : Prime goodLambda := by
   let : IsCyclotomicExtension {3} ℚ K :=
     CyclotomicField.isCyclotomicExtension 3 ℚ
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
-  exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
+  pm_3517
 
 theorem outsideIdealsUpTo_good
     (S : Finset (Ideal O)) (D : ℕ)

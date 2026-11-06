@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Actual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,8 +48,7 @@ theorem sourceColumn_eq_sum_frozenBranches (F : PrimeFamily φ) (K : Ideal Eis) 
     sourceColumn D s hc (F.reflected K hK S).generator_good (reflectedExponent jF)
       (frozenIndices φ (PrimeIndex K) σ) u m n b =
       ∑ e : φ → Fin 3, frozenBranchColumn F jF e (actualCuspColumn D s hc u m) n b := by
-  classical
-  let : DecidableEq (φ ⊕ (PrimeIndex K ⊕ σ)) := Classical.decEq _
+  pm_3316
   unfold sourceColumn frozenIndices
   rw [Finset.prod_image Sum.inl_injective.injOn]
   change actualCuspColumn D s hc u m n b *

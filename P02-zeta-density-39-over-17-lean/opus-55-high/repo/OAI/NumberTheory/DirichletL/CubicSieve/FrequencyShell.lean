@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.KernelTransfer
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,21 +16,13 @@ local notation "O" => ActualEisensteinCubic.O
 lemma log_shell_ratio (K q : ℝ) (hK : 0 < K) (hq : K / 2 ≤ q ∧ q ≤ K) :
     |Real.log (q / K)| ≤ 4 := by
   apply CanonicalQuadraticSieve.middleRatio_log_bound
-  constructor
-  · apply (le_div_iff₀ hK).mpr
-    linarith [hq.1]
-  · apply (div_le_iff₀ hK).mpr
-    linarith [hq.2]
+  pm_5181 hK
 
 lemma log_inverse_shell_ratio (N q : ℝ) (hN : 0 < N) (hq : N / 2 ≤ q ∧ q ≤ N) :
     |Real.log (N / q)| ≤ 4 := by
-  have hq0 : 0 < q := by linarith [hq.1]
+  have hq0 : 0 < q := by grind
   apply CanonicalQuadraticSieve.middleRatio_log_bound
-  constructor
-  · apply (le_div_iff₀ hq0).mpr
-    linarith [hq.2]
-  · apply (div_le_iff₀ hq0).mpr
-    linarith [hq.1]
+  pm_5181 hq0
 
 lemma radial_product_log_identity (M K N q u v : ℝ)
     (hK : 0 < K) (hN : 0 < N) (hq : 0 < q) (hu : 0 < u) (hv : 0 < v) :

@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosNormalizedFrequency
 public import LaterPairs.Native.RobertSargosPrimitiveCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -24,8 +25,7 @@ theorem exists_robertSargos_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
       (S.card:ℝ) ≤ C*((R/j)*(H/j)*(max 1 (Q/k)))^(1+ε)*
         (1+δ*max 1 (Q/k)) := by
   classical
-  obtain ⟨C,hC,hbound⟩ := exists_robertSargos_primitive_count ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hbound exists_robertSargos_primitive_count ε hε
   intro S R H Q δ j k hR hH hQ hδ hRH hmem hj hk
   by_cases hs : S.Nonempty
   · obtain ⟨p₀,hp₀⟩ := hs
@@ -38,16 +38,13 @@ theorem exists_robertSargos_gcd_fiber_count (ε : ℝ) (hε : 0 < ε) :
     have hcard : T.card = S.card :=
       Finset.card_image_of_injOn (robertSargos_normalize_injective_on_gcd_fiber S hj hk)
     have hT : ∀ p ∈ T, RobertSargosPrimitiveSystem (R/j) (H/j) (max 1 (Q/k)) δ p := by
-      intro q hq
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hq
+      pm_2532 q hq p hp
       exact (hmem p hp).normalized_primitive (by linarith) (by linarith) hδ
         (hj p hp) (hk p hp)
     have hb := hbound T (R/j) (H/j) (max 1 (Q/k)) δ
       hsc.1 hsc.2.1 hsc.2.2.1 hδ hsc.2.2.2 hT
     rwa [hcard] at hb
-  · rw [Finset.not_nonempty_iff_eq_empty.mp hs]
-    simp only [Finset.card_empty,Nat.cast_zero]
-    positivity
+  pm_257 hs Finset.card_empty
 
 end TaoTrudgianYang2025
 

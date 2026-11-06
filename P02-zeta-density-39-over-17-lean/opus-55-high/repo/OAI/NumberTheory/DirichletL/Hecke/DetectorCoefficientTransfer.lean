@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationConjugation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ def orientedProfile (reverse : Bool) (W : ℝ→ℂ) : ℝ→ℂ :=
 def orientedFrequency (reverse : Bool) (freq : ℝ) : ℝ := if reverse then -freq else freq
 
 theorem norm_of_oriented_coefficients (χ ψ : Character) (reverse : Bool)
-    (hc : ∀ J : Ideal O,idealCoeff χ J=
+    (hc : ∀ J : Ideal O,idealCoeff χ J =
       if reverse then conj (idealCoeff ψ J) else idealCoeff ψ J)
     (inv : Bool) (W : ℝ→ℂ) (D σ freq : ℝ) (hD : 0<D) :
     ‖polynomial χ inv W D σ freq‖=
@@ -36,10 +37,10 @@ theorem norm_of_oriented_coefficients (χ ψ : Character) (reverse : Bool)
   · exact congrArg (fun z : ℂ => ‖z‖) (polynomial_eq_of_idealCoeff χ ψ hc inv W D σ freq)
   · have hc' : ∀ J : Ideal O,idealCoeff χ J=idealCoeff ψ.inverse J := by
       intro J
-      simpa only [Bool.true_eq,ite_true,idealCoeff_inverse_conj] using hc J
+      pm_475 Bool.true_eq ite_true idealCoeff_inverse_conj hc J
     rw [polynomial_eq_of_idealCoeff χ ψ.inverse hc' inv W D σ freq]
     have hh := polynomial_inverse_norm ψ inv (fun x => conj (W x)) D σ (-freq) hD
-    simpa only [orientedProfile,orientedFrequency,Bool.true_eq,ite_true,conj_conj,neg_neg] using hh
+    aesop
 
 theorem orientedFrequency_abs (reverse : Bool) (freq : ℝ) :
     |orientedFrequency reverse freq|=|freq| := by cases reverse <;> simp [orientedFrequency]

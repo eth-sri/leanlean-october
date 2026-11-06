@@ -37,11 +37,10 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import TaoTrudgianYang2025.HeathBrownModelJetCore
 public import TaoTrudgianYang2025.HeathBrownPhysicalPhase
 public import TaoTrudgianYang2025.ModelEndpointEntry
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
+public section
 set_option maxHeartbeats 0
-set_option maxErrors 1000
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
  
@@ -189,24 +188,14 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 
 open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open Polynomial
 open Set
 open scoped Classical
 open scoped ContDiff
-open scoped FourierTransform BigOperators
+open scoped FourierTransform
 open scoped Topology
 
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
 universe huxleyNarrowV
-noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 private theorem positive_difference_physical_lower_pair_compression
     {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
@@ -237,45 +226,23 @@ private theorem positive_difference_physical_lower_pair_compression
     |γ| *|h ya (xa 1)-h ya (xa 0)| ≤ C*(Δ+1/M) := by
   obtain ⟨η₀,a,C,hη₀,hηcap,ha,hac,hC,hcompression⟩ :=
     nativeHuxleyReference_positive_difference_physical_lower_endpoint_compression hσ hc hU
-  refine ⟨η₀,a,C,hη₀,hηcap,ha,hac,hC,?_⟩
+  pm_145 η₀ a C hη₀ hηcap ha hac hC
   intro F η x₀ y₀ ya yb γ Δ T M xa xb hη hηsmall hx₀ hy₀ hya hyb
     hf hbound htests hT hM hΔ hpoints f h μ u t bnorm H z₀ hmap hthird hends
   have hpair (i j : Fin 2) (hij : u i < u j) :
       |γ| *|h ya (xa j)-h ya (xa i)| ≤ C*(Δ+1/M) := by
-    exact hcompression F η x₀ y₀ ya yb γ Δ T M ![xa i,xa j] ![xb i,xb j]
-      hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hΔ
-      (by
-        intro k
-        fin_cases k
-        · exact hpoints i
-        · exact hpoints j)
-      hij
-      (by
-        intro k
-        fin_cases k
-        · exact hmap i
-        · exact hmap j)
-      (by
-        intro k
-        fin_cases k
-        · exact hthird i
-        · exact hthird j)
-      (by
-        intro k
-        fin_cases k
-        · exact hends i
-        · exact hends j)
-  rcases lt_trichotomy (u 0) (u 1) with hlt | heq | hgt
-  · exact hpair 0 1 hlt
+    pm_2468 γ hηsmall
+  pm_1531
   · have he : h ya (xa 0)=h ya (xa 1) := inv_injective heq
     rw [he,sub_self,abs_zero,mul_zero]
-    have hMpos : 0 < M := by linarith only [hM]
+    pm_2580
     positivity
-  · have hh := hpair 1 0 hgt
-    rwa [abs_sub_comm] at hh
+  pm_7185
 
-private theorem positive_difference_physical_lower_reference_gap_packing
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+section
+variable {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U)
+include σ c U hσ hc hU
+private theorem positive_difference_physical_lower_reference_gap_packing :
     ∃ η₀ a C : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb γ Δ T M R Uref : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) (xa xb : ℝ × ℝ → ℝ),
@@ -306,36 +273,13 @@ private theorem positive_difference_physical_lower_reference_gap_packing
     (Gaps.card:ℝ) ≤ 4*C*(Δ+1/M)*R^2/(|γ| *Uref)+2 := by
   obtain ⟨η₀,a,C,hη₀,hηcap,ha,_hac,hC,hcompression⟩ :=
     positive_difference_physical_lower_pair_compression hσ hc hU
-  refine ⟨η₀,a,C,hη₀,hηcap,ha,hC,?_⟩
-  intro F η x₀ y₀ ya yb γ Δ T M R Uref Refs Gaps xa xb
-    hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hR hUref hγ hΔ
-    hpoints hsep hgap f h μ t bnorm H z₀ hinside hmap hthird hends
-  have hMpos : 0 < M := by linarith only [hM]
-  have hγpos : 0 < |γ| := abs_pos.mpr hγ
+  pm_2030 η₀ a C hη₀ hηcap ha hC
+  pm_620 γ hγ
+  pm_2580
+  pm_4888 hγpos γ abs_pos.mpr hγ
   have hdiam ab (hab : ab∈Gaps) cd (hcd : cd∈Gaps) :
       |h ya (xa ab)-h ya (xa cd)| ≤ C*(Δ+1/M)/|γ| := by
-    have hh := hcompression F η x₀ y₀ ya yb γ Δ T M ![xa ab,xa cd] ![xb ab,xb cd]
-      hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hΔ
-      (by
-        intro i
-        fin_cases i
-        · exact hpoints ab hab
-        · exact hpoints cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hmap ab hab
-        · exact hmap cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hthird ab hab
-        · exact hthird cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hends ab hab
-        · exact hends cd hcd)
+    pm_2469 γ
     change |γ| *|h ya (xa cd)-h ya (xa ab)| ≤ C*(Δ+1/M) at hh
     apply (le_div_iff₀ hγpos).mpr
     rw [mul_comm,abs_sub_comm]
@@ -343,15 +287,11 @@ private theorem positive_difference_physical_lower_reference_gap_packing
   have hh := nativeHuxleyReference_reference_gap_count_of_closed_profile_width Refs Gaps (fun ab => h ya (xa ab))
     (by positivity : 0 < Uref/(4*R^2))
     (by positivity : 0 ≤ C*(Δ+1/M)/|γ|) hsep hgap hinside (fun ab hab cd hcd => hdiam cd hcd ab hab)
-  convert hh using 1
-  ring_nf
-  simp only [inv_inv]
-  ring
+  pm_8060
 
                                                                   
                                                                             
-private theorem positive_difference_physical_upper_pair_compression
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+private theorem positive_difference_physical_upper_pair_compression :
     ∃ a C : ℝ, 0 < a ∧ a ≤ 1/2 ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b Δ T M : ℝ) (xa xb : Fin 2 → ℝ),
     0 < η → η ≤ 1/8 → x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
@@ -378,45 +318,20 @@ private theorem positive_difference_physical_upper_pair_compression
     4*M^4*|b| *|u 1-u 0| ≤ C*(Δ+1/M)*T^2 := by
   obtain ⟨a,C,ha,hac,hC,hcompression⟩ :=
     nativeHuxleyReference_positive_difference_physical_upper_endpoint_compression hσ hc hU
-  refine ⟨a,C,ha,hac,hC,?_⟩
+  pm_164 a C ha hac hC
   intro F η x₀ y₀ ya yb b Δ T M xa xb hη hηmax hx₀ hy₀ hya hyb
     hf hbound htests hT hM hΔ hpoints f μ u t bnorm H z₀ hmap hthird hends
   have hpair (i j : Fin 2) (hij : u i < u j) :
       4*M^4*|b| *|u j-u i| ≤ C*(Δ+1/M)*T^2 := by
     rw [abs_of_pos (sub_pos.mpr hij)]
-    exact hcompression F η x₀ y₀ ya yb b Δ T M ![xa i,xa j] ![xb i,xb j]
-      hη hηmax hx₀ hy₀ hya hyb hf hbound htests hT hM hΔ
-      (by
-        intro k
-        fin_cases k
-        · exact hpoints i
-        · exact hpoints j)
-      hij
-      (by
-        intro k
-        fin_cases k
-        · exact hmap i
-        · exact hmap j)
-      (by
-        intro k
-        fin_cases k
-        · exact hthird i
-        · exact hthird j)
-      (by
-        intro k
-        fin_cases k
-        · exact hends i
-        · exact hends j)
-  rcases lt_trichotomy (u 0) (u 1) with hlt | heq | hgt
-  · exact hpair 0 1 hlt
+    pm_2468 b hηmax
+  pm_1531
   · rw [heq,sub_self,abs_zero,mul_zero]
-    have hMpos : 0 < M := by linarith only [hM]
+    pm_2580
     positivity
-  · have hh := hpair 1 0 hgt
-    rwa [abs_sub_comm] at hh
+  pm_7185
 
-private theorem positive_difference_physical_upper_reference_gap_packing
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+private theorem positive_difference_physical_upper_reference_gap_packing :
     ∃ a C : ℝ, 0 < a ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b Δ T M R Uref : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) (xa xb : ℝ × ℝ → ℝ),
@@ -448,35 +363,12 @@ private theorem positive_difference_physical_upper_reference_gap_packing
   obtain ⟨a,C,ha,_hac,hC,hcompression⟩ :=
     positive_difference_physical_upper_pair_compression hσ hc hU
   refine ⟨a,C,ha,hC,?_⟩
-  intro F η x₀ y₀ ya yb b Δ T M R Uref Refs Gaps xa xb
-    hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hR hUref hb hΔ
-    hpoints hsep hgap f h μ t bnorm H z₀ hinside hmap hthird hends
-  have hMpos : 0 < M := by linarith only [hM]
-  have hbpos : 0 < |b| := abs_pos.mpr hb
+  pm_620 b hb
+  pm_2580
+  pm_4888 hbpos b abs_pos.mpr hb
   have hdiam ab (hab : ab∈Gaps) cd (hcd : cd∈Gaps) :
       |h ya (xa ab)-h ya (xa cd)| ≤ C*(Δ+1/M)*T^2/(4*M^4*|b|) := by
-    have hh := hcompression F η x₀ y₀ ya yb b Δ T M ![xa ab,xa cd] ![xb ab,xb cd]
-      hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hΔ
-      (by
-        intro i
-        fin_cases i
-        · exact hpoints ab hab
-        · exact hpoints cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hmap ab hab
-        · exact hmap cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hthird ab hab
-        · exact hthird cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hends ab hab
-        · exact hends cd hcd)
+    pm_2469 b
     change 4*M^4*|b| *|h ya (xa cd)-h ya (xa ab)| ≤ C*(Δ+1/M)*T^2 at hh
     apply (le_div_iff₀ (by positivity : 0 < 4*M^4*|b|)).mpr
     rw [mul_comm,abs_sub_comm]
@@ -484,10 +376,8 @@ private theorem positive_difference_physical_upper_reference_gap_packing
   have hh := nativeHuxleyReference_reference_gap_count_of_closed_profile_width Refs Gaps (fun ab => h ya (xa ab))
     (by positivity : 0 < Uref/(4*R^2))
     (by positivity : 0 ≤ C*(Δ+1/M)*T^2/(4*M^4*|b|)) hsep hgap hinside (fun ab hab cd hcd => hdiam cd hcd ab hab)
-  convert hh using 1
-  ring_nf
-  simp only [inv_inv]
-  ring
+  pm_8060
+end
 
 private theorem upper_reference_gap_source_scale
     {C K Tsrc E T M N R L b Uref : ℝ}
@@ -497,32 +387,27 @@ private theorem upper_reference_gap_source_scale
     C*(K*R^2/(L^2*N^2)+1/M)*Tsrc^2*R^2/(M^4*|b| *Uref) ≤
       C*(K+1)*E^2*M^2/(L^2*N^4*|b| *Uref) := by
   have hRpos : 0 < R := zero_lt_one.trans_le hR
-  have hbpos : 0 < |b| := abs_pos.mpr hb
-  have hInv : 1/M ≤ R^2/(L^2*N^2) := by
-    apply (div_le_div_iff₀ hM (by positivity)).mpr
-    have hRR : R ≤ R^2 := by nlinarith only [hR]
-    nlinarith only [hNL,mul_le_mul_of_nonneg_left hRR hM.le]
-  have herr : K*R^2/(L^2*N^2)+1/M ≤ (K+1)*R^2/(L^2*N^2) :=
-    (add_le_add le_rfl hInv).trans_eq (by ring)
+  pm_4888 hbpos b abs_pos.mpr hb
+  pm_2470
+  pm_2471 herr K
   have hAmp : Tsrc^2 ≤ E^2*T^2 := by
     have hh := pow_le_pow_left₀ hTsrc.le hsource 2
     nlinarith only [hh]
   calc
     _ ≤ C*((K+1)*R^2/(L^2*N^2))*(E^2*T^2)*R^2/(M^4*|b| *Uref) := by
-      apply div_le_div_of_nonneg_right _ (by positivity)
-      apply mul_le_mul_of_nonneg_right _ (sq_nonneg R)
+      pm_2680
       exact mul_le_mul (mul_le_mul_of_nonneg_left herr hC) hAmp
         (sq_nonneg Tsrc) (by positivity)
     _ = _ := by
-      have hTval : T=M^3/(N*R^2) :=
-        (eq_div_iff (by positivity)).mpr (by nlinarith only [hscale])
-      rw [hTval]
+      pm_1782
       field_simp
 
                                                               
                                                                         
-private theorem positive_difference_normalized_quartic_lower_reference_gap_packing
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+section
+variable {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
+include σsrc csrc Usrc hσsrc hcsrc hUsrc
+private theorem positive_difference_normalized_quartic_lower_reference_gap_packing :
     ∃ η₀ a Csrc : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < Csrc ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb γ Tsrc : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ))
@@ -600,74 +485,16 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
   classical
   obtain ⟨η₀,a,Csrc,hη₀,hηcap,ha,hCsrc,hcompression⟩ :=
     positive_difference_physical_lower_reference_gap_packing hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,Csrc,hη₀,hηcap,ha,hCsrc,?_⟩
+  pm_1747
   intro Fsrc η xcenter ycenter ya yb γ Tsrc Refs Gaps x xref e r v s curve d alpha beta
     σ δ T M N R Uref L K A W
     hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hγ
     yp F Hsrc center hσ hδ hF hT hM hN hR hU hL hNL hK hA hW hsep hgap hd href hcurve hr hdet hden hmono htransport
     f n mu nu Den g H Gcoord profile hbase hpoint hends hsquare hspacing hres hlocalEnds
     κ Cphys Gamma Cthird
-  let munew := fun ab t i => iteratedDeriv 3 (f i) (round (curve ab t i))/6
-  have hηmax : η ≤ 1/8 := hηsmall.trans hηcap
-  have hRpos : 0 < R := zero_lt_one.trans_le hR
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCp : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hδ0 : 0 ≤ δ := approximateModelPhase_tolerance_nonneg (hF 0)
-  have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hC₄ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 4) hδ0
-  have hCR : 0 ≤ quarticReciprocalConstant σ δ := by
-    dsimp only [quarticReciprocalConstant]
-    positivity
-  have hCt : 0 ≤ Cthird := by dsimp only [Cthird,Gamma]; positivity
-  have hdenpos ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      0 < Den ab t i := (hd ab hab).trans_le (hden ab hab t ht i).1
-  have hex : ∀ ab∈Gaps, ∃ z∈Ioo (x ab 0) (x ab 3),
-      |munew ab z 1*(Den ab z 1)^3/(munew ab z 0*(Den ab z 0)^3)-1| ≤ Cthird*R^2/(L^2*N^2) := by
-    intro ab hab
-    exact physicalModelPhase_quartic_long_block_third_condition
-      (σ := σ) (δ := δ) (T := T) (M := M) (N := N) (R := R)
-      (L := L) (d := d ab) (K := K) (α := alpha ab) (β := beta ab)
-      (F := F) (A := fun i => (A i : ℝ)) (W := W) (x₀ := xref ab)
-      (e := e ab) (r := r ab) (v := v ab) (s := s ab) (x₁ := curve ab) (x ab)
-      hσ hδ hF hT hM hN hR hL hNL (hd ab hab) hK hA hW
-      (href ab hab) (hcurve ab hab) (hr ab hab) (hdet ab hab)
-      (fun t ht i => (hden ab hab t ht i).1)
-      (fun t ht i => (hden ab hab t ht i).2) (hmono ab hab)
-      (hbase ab hab) (hpoint ab hab) (hsquare ab hab) (hspacing ab hab) (hres ab hab)
-  choose! z hz hthird using hex
-  have hzcc ab (hab : ab∈Gaps) : z ab∈Icc (x ab 0) (x ab 3) := ⟨(hz ab hab).1.le,(hz ab hab).2.le⟩
-  have hinside ab (hab : ab∈Gaps) : profile ab (z ab)∈Ioo ab.1 ab.2 := by
-    have hx03 : x ab 0 ≤ x ab 3 := (hmono ab hab).monotone (by decide)
-    have hx0 : x ab 0∈Icc (x ab 0) (x ab 3) := ⟨le_rfl,hx03⟩
-    have hx3 : x ab 3∈Icc (x ab 0) (x ab 3) := ⟨hx03,le_rfl⟩
-    have hlow : profile ab (x ab 3) ≤ profile ab (z ab) := by
-      dsimp only [profile]
-      rw [hpoint ab hab _ hx3 0,hpoint ab hab _ (hzcc ab hab) 0]
-      exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab 0)
-        (hdenpos ab hab _ (hzcc ab hab) 0) (hdenpos ab hab _ hx3 0) (hzcc ab hab).2
-    have hhigh : profile ab (z ab) ≤ profile ab (x ab 0) := by
-      dsimp only [profile]
-      rw [hpoint ab hab _ (hzcc ab hab) 0,hpoint ab hab _ hx0 0]
-      exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab 0)
-        (hdenpos ab hab _ hx0 0) (hdenpos ab hab _ (hzcc ab hab) 0) (hzcc ab hab).1
-    exact ⟨(hends ab hab).2.1.trans_le hlow,hhigh.trans_lt (hends ab hab).1.2⟩
-  let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
-  have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
-    funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
-    field_simp
-  have hjet i k t : iteratedDeriv k (f i) t=
-      iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-  have hrounded i t : iteratedDeriv 3 (f i) (round t)=
-      iteratedDeriv 3 (Src (yp i)) (round ((A i:ℝ)+t)) := by
-    rw [hjet,round_intCast_add,Int.cast_add]
-  have hyp i : yp i∈Icc (1:ℝ) 2 := by fin_cases i <;> assumption
-  have hphysical ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      (A i:ℝ)+curve ab t i∈Icc M (2*M) :=
-    ⟨by linarith only [hA i,(hcurve ab hab t ht i).1],
-     by linarith only [hW i,(hcurve ab hab t ht i).2]⟩
+  pm_1138
+  pm_4902 hηmax hηsmall.trans
+  pm_2472
   have hcurvNe ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
       iteratedDeriv 2 (f i) (curve ab t i)/2 ≠ 0 := by
     rw [hjet]
@@ -689,9 +516,9 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
     exact nativeHuxleyReference_reciprocal_fraction_strictMonoOn (hdet ab hab i) hnum hu hw huw
   have hlocal ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
       ‖((yp i,(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab t i)/2)⁻¹):ℝ × ℝ)-center‖ < a := by
-    have hxorder := (hmono ab hab).monotone (by decide : (0:Fin 4) ≤ 3)
-    have hl := hlocalEnds ab hab (x ab 0) (by simp) i
-    have hu := hlocalEnds ab hab (x ab 3) (by simp) i
+    pm_1532
+    pm_7678 hl
+    pm_7679 hu
     have hlo := mul_le_mul_of_nonneg_left
       ((hinvMono ab hab i).monotoneOn ⟨le_rfl,hxorder⟩ ht ht.1)
       (by positivity : 0 ≤ Tsrc/(2*M^2))
@@ -704,13 +531,10 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
       |(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab (x ab 3) i)/2)⁻¹-center.2| < a at hu
     change max |yp i-center.1|
       |(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab t i)/2)⁻¹-center.2| < a
-    refine max_lt_iff.mpr ⟨(max_lt_iff.mp hl).1,abs_lt.mpr ⟨?_,?_⟩⟩
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hl).2).1,hlo]
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hu).2).2,hhi]
+    pm_1738
   have hDmap ab (hab : ab∈Gaps) t :
       Den ab t 1=Den ab t 0+γ*(e ab 0*t+v ab 0) := by
-    dsimp only [Den]
-    rw [(htransport ab hab).2.2.1,(htransport ab hab).2.2.2]
+    pm_1687
     ring
   have hratio ab (hab : ab∈Gaps) :
       γ*profile ab (z ab)+1=Den ab (z ab) 1/Den ab (z ab) 0 := by
@@ -744,13 +568,7 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
       ring_nf
     rw [hratio ab hab,he]
     exact hthird ab hab
-  let xa := fun ab => (A 0:ℝ)+curve ab (z ab) 0
-  let xb := fun ab => (A 1:ℝ)+curve ab (z ab) 1
-  have hua ab : iteratedDeriv 2 (Src ya) (xa ab)/2=profile ab (z ab) :=
-    (congrArg (fun u : ℝ => u/2) (hjet 0 2 (curve ab (z ab) 0))).symm
-  have hub ab : iteratedDeriv 2 (Src yb) (xb ab)/2=
-      iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2 :=
-    (congrArg (fun u : ℝ => u/2) (hjet 1 2 (curve ab (z ab) 1))).symm
+  pm_2473
   have hcount := hcompression Fsrc η xcenter ycenter ya yb γ
     (Cthird*R^2/(L^2*N^2)) Tsrc M R Uref Refs Gaps xa xb
     hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hRpos hU hγ
@@ -760,8 +578,7 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
         rw [hua]; exact ⟨(hinside ab hab).1.le,(hinside ab hab).2.le⟩)
     (by
       intro ab hab
-      change iteratedDeriv 2 (Src yb) (xb ab)/2=
-        (iteratedDeriv 2 (Src ya) (xa ab)/2)/(γ*(iteratedDeriv 2 (Src ya) (xa ab)/2)+1)
+      pm_1748 ab
       rw [hua,hub]
       exact hmap ab hab)
     (by
@@ -781,34 +598,24 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
       change ‖((ya,(Tsrc/(2*M^2))*(iteratedDeriv 2 (Src ya) (xa ab)/2)⁻¹):ℝ × ℝ)-center‖ < a ∧
         ‖((yb,(Tsrc/(2*M^2))*(iteratedDeriv 2 (Src ya) (xa ab)/2)⁻¹+
           Tsrc*γ/(2*M^2)):ℝ × ℝ)-center‖ < a
-      rw [hua]
-      constructor
-      · exact hlocal ab hab _ (hzcc ab hab) 0
+      pm_6443
       · have he : (Tsrc/(2*M^2))*(profile ab (z ab))⁻¹+Tsrc*γ/(2*M^2)=
             (Tsrc/(2*M^2))*(iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2)⁻¹ := by
           rw [hinvMap ab hab]
           ring
         rw [he]
         exact hlocal ab hab _ (hzcc ab hab) 1)
-  have hInv : 1/M ≤ R^2/(L^2*N^2) := by
-    apply (div_le_div_iff₀ hM (by positivity)).mpr
-    have hRR : R ≤ R^2 := by nlinarith only [hR]
-    nlinarith only [hNL,mul_le_mul_of_nonneg_left hRR hM.le]
-  have herror : Cthird*R^2/(L^2*N^2)+1/M ≤ (Cthird+1)*R^2/(L^2*N^2) :=
-    (add_le_add le_rfl hInv).trans_eq (by ring)
+  pm_2470
+  pm_2471 herror Cthird
   apply hcount.trans
   calc
     _ ≤ 4*Csrc*((Cthird+1)*R^2/(L^2*N^2))*R^2/(|γ| *Uref)+2 := by
-      apply add_le_add _ le_rfl
-      apply div_le_div_of_nonneg_right _ (by positivity)
-      exact mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left herror (by positivity)) (sq_nonneg R)
+      pm_1139
     _ = _ := by ring_nf
 
                                                               
                                                                         
-private theorem positive_difference_normalized_quartic_upper_reference_gap_packing
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+private theorem positive_difference_normalized_quartic_upper_reference_gap_packing :
     ∃ a Csrc : ℝ, 0 < a ∧ 0 < Csrc ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb b Tsrc E : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ))
@@ -884,76 +691,17 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
     let Cthird := Gamma*(32*K+9*quarticReciprocalConstant σ δ)
     (Gaps.card:ℝ) ≤ Csrc*(Cthird+1)*E^2*M^2/(L^2*N^4*|b| *Uref)+2 := by
   classical
-  obtain ⟨a,Csrc,ha,hCsrc,hcompression⟩ :=
-    positive_difference_physical_upper_reference_gap_packing hσsrc hcsrc hUsrc
-  refine ⟨a,Csrc,ha,hCsrc,?_⟩
+  pm_8471 hcompression positive_difference_physical_upper_reference_gap_packing
+  pm_119 a Csrc ha hCsrc
   intro Fsrc η xcenter ycenter ya yb b Tsrc E Refs Gaps x xref e r v s curve d alpha beta
     σ δ T M N R Uref L K A W
     hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hb hsourceScale hscale
     yp F Hsrc center hσ hδ hF hT hM hN hR hU hL hNL hK hA hW hsep hgap hd href hcurve hr hdet hden hmono htransport
     f n mu nu Den g H Gcoord profile hbase hpoint hends hsquare hspacing hres hlocalEnds
     κ Cphys Gamma Cthird
-  let munew := fun ab t i => iteratedDeriv 3 (f i) (round (curve ab t i))/6
+  pm_1138
   have hηmax : η ≤ 1/8 := hηsmall
-  have hRpos : 0 < R := zero_lt_one.trans_le hR
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCp : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hδ0 : 0 ≤ δ := approximateModelPhase_tolerance_nonneg (hF 0)
-  have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hC₄ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 4) hδ0
-  have hCR : 0 ≤ quarticReciprocalConstant σ δ := by
-    dsimp only [quarticReciprocalConstant]
-    positivity
-  have hCt : 0 ≤ Cthird := by dsimp only [Cthird,Gamma]; positivity
-  have hdenpos ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      0 < Den ab t i := (hd ab hab).trans_le (hden ab hab t ht i).1
-  have hex : ∀ ab∈Gaps, ∃ z∈Ioo (x ab 0) (x ab 3),
-      |munew ab z 1*(Den ab z 1)^3/(munew ab z 0*(Den ab z 0)^3)-1| ≤ Cthird*R^2/(L^2*N^2) := by
-    intro ab hab
-    exact physicalModelPhase_quartic_long_block_third_condition
-      (σ := σ) (δ := δ) (T := T) (M := M) (N := N) (R := R)
-      (L := L) (d := d ab) (K := K) (α := alpha ab) (β := beta ab)
-      (F := F) (A := fun i => (A i : ℝ)) (W := W) (x₀ := xref ab)
-      (e := e ab) (r := r ab) (v := v ab) (s := s ab) (x₁ := curve ab) (x ab)
-      hσ hδ hF hT hM hN hR hL hNL (hd ab hab) hK hA hW
-      (href ab hab) (hcurve ab hab) (hr ab hab) (hdet ab hab)
-      (fun t ht i => (hden ab hab t ht i).1)
-      (fun t ht i => (hden ab hab t ht i).2) (hmono ab hab)
-      (hbase ab hab) (hpoint ab hab) (hsquare ab hab) (hspacing ab hab) (hres ab hab)
-  choose! z hz hthird using hex
-  have hzcc ab (hab : ab∈Gaps) : z ab∈Icc (x ab 0) (x ab 3) := ⟨(hz ab hab).1.le,(hz ab hab).2.le⟩
-  have hinside ab (hab : ab∈Gaps) : profile ab (z ab)∈Ioo ab.1 ab.2 := by
-    have hx03 : x ab 0 ≤ x ab 3 := (hmono ab hab).monotone (by decide)
-    have hx0 : x ab 0∈Icc (x ab 0) (x ab 3) := ⟨le_rfl,hx03⟩
-    have hx3 : x ab 3∈Icc (x ab 0) (x ab 3) := ⟨hx03,le_rfl⟩
-    have hlow : profile ab (x ab 3) ≤ profile ab (z ab) := by
-      dsimp only [profile]
-      rw [hpoint ab hab _ hx3 0,hpoint ab hab _ (hzcc ab hab) 0]
-      exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab 0)
-        (hdenpos ab hab _ (hzcc ab hab) 0) (hdenpos ab hab _ hx3 0) (hzcc ab hab).2
-    have hhigh : profile ab (z ab) ≤ profile ab (x ab 0) := by
-      dsimp only [profile]
-      rw [hpoint ab hab _ (hzcc ab hab) 0,hpoint ab hab _ hx0 0]
-      exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab 0)
-        (hdenpos ab hab _ hx0 0) (hdenpos ab hab _ (hzcc ab hab) 0) (hzcc ab hab).1
-    exact ⟨(hends ab hab).2.1.trans_le hlow,hhigh.trans_lt (hends ab hab).1.2⟩
-  let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
-  have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
-    funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
-    field_simp
-  have hjet i k t : iteratedDeriv k (f i) t=
-      iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-  have hrounded i t : iteratedDeriv 3 (f i) (round t)=
-      iteratedDeriv 3 (Src (yp i)) (round ((A i:ℝ)+t)) := by
-    rw [hjet,round_intCast_add,Int.cast_add]
-  have hyp i : yp i∈Icc (1:ℝ) 2 := by fin_cases i <;> assumption
-  have hphysical ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      (A i:ℝ)+curve ab t i∈Icc M (2*M) :=
-    ⟨by linarith only [hA i,(hcurve ab hab t ht i).1],
-     by linarith only [hW i,(hcurve ab hab t ht i).2]⟩
+  pm_2472
   have horder ab (hab : ab∈Gaps) u (hu : u∈Icc (x ab 0) (x ab 3))
       w (hw : w∈Icc (x ab 0) (x ab 3)) (huw : u ≤ w) i :
       iteratedDeriv 2 (f i) (curve ab w i)/2 ≤ iteratedDeriv 2 (f i) (curve ab u i)/2 := by
@@ -962,9 +710,9 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
       (hdenpos ab hab u hu i) (hdenpos ab hab w hw i) huw
   have hlocal ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
       ‖((yp i,(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab t i)/2)):ℝ × ℝ)-center‖ < a := by
-    have hxorder := (hmono ab hab).monotone (by decide : (0:Fin 4) ≤ 3)
-    have hl := hlocalEnds ab hab (x ab 3) (by simp) i
-    have hu := hlocalEnds ab hab (x ab 0) (by simp) i
+    pm_1532
+    pm_7679 hl
+    pm_7678 hu
     have hlo := mul_le_mul_of_nonneg_left
       (horder ab hab t ht (x ab 3) ⟨hxorder,le_rfl⟩ ht.2 i)
       (by positivity : 0 ≤ 2*M^2/Tsrc)
@@ -977,17 +725,14 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
       |(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab (x ab 0) i)/2)-center.2| < a at hu
     change max |yp i-center.1|
       |(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab t i)/2)-center.2| < a
-    refine max_lt_iff.mpr ⟨(max_lt_iff.mp hl).1,abs_lt.mpr ⟨?_,?_⟩⟩
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hl).2).1,hlo]
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hu).2).2,hhi]
+    pm_1738
   have hDsame ab (hab : ab∈Gaps) t : Den ab t 1=Den ab t 0 := by
-    dsimp only [Den]
-    rw [(htransport ab hab).2.2.1,(htransport ab hab).2.2.2]
+    pm_1687
   have hmap ab (hab : ab∈Gaps) :
       iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2=profile ab (z ab)+b := by
     change _=iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2+b
     rw [hpoint ab hab _ (hzcc ab hab) 1,hpoint ab hab _ (hzcc ab hab) 0,hDsame ab hab]
-    rw [(htransport ab hab).1,(htransport ab hab).2.1]
+    pm_6662
     have hdz : r ab 0*z ab+s ab 0 ≠ 0 := (hdenpos ab hab _ (hzcc ab hab) 0).ne'
     dsimp only [Den]
     field_simp [hdz]
@@ -997,13 +742,7 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
     have hh := hthird ab hab
     rw [hDsame ab hab] at hh
     rwa [mul_div_mul_right _ _ (pow_ne_zero 3 (hdenpos ab hab _ (hzcc ab hab) 0).ne')] at hh
-  let xa := fun ab => (A 0:ℝ)+curve ab (z ab) 0
-  let xb := fun ab => (A 1:ℝ)+curve ab (z ab) 1
-  have hua ab : iteratedDeriv 2 (Src ya) (xa ab)/2=profile ab (z ab) :=
-    (congrArg (fun u : ℝ => u/2) (hjet 0 2 (curve ab (z ab) 0))).symm
-  have hub ab : iteratedDeriv 2 (Src yb) (xb ab)/2=
-      iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2 :=
-    (congrArg (fun u : ℝ => u/2) (hjet 1 2 (curve ab (z ab) 1))).symm
+  pm_2473
   have hcount := hcompression Fsrc η xcenter ycenter ya yb b
     (Cthird*R^2/(L^2*N^2)) Tsrc M R Uref Refs Gaps xa xb
     hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hRpos hU hb
@@ -1031,9 +770,7 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
       change ‖((ya,(2*M^2/Tsrc)*(iteratedDeriv 2 (Src ya) (xa ab)/2)):ℝ × ℝ)-center‖ < a ∧
         ‖((yb,(2*M^2/Tsrc)*(iteratedDeriv 2 (Src ya) (xa ab)/2)+
           2*M^2*b/Tsrc):ℝ × ℝ)-center‖ < a
-      rw [hua]
-      constructor
-      · exact hlocal ab hab _ (hzcc ab hab) 0
+      pm_6443
       · have he : (2*M^2/Tsrc)*profile ab (z ab)+2*M^2*b/Tsrc=
             (2*M^2/Tsrc)*(iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2) := by
           rw [hmap ab hab]
@@ -1042,6 +779,7 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
         exact hlocal ab hab _ (hzcc ab hab) 1)
   exact hcount.trans (add_le_add (upper_reference_gap_source_scale hCsrc.le hCt
     hTsrc hM hN hR hL hU hb hNL hscale hsourceScale) le_rfl)
+end
 
                                                                       
                                                                   
@@ -1193,12 +931,8 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
       (Gaps.card:ℝ) ≤ Cupper*(Cthird+1)*E^2*M^2/(L^2*N^4*|(Mat 1:ℝ)| *(Uref:ℝ))+2) ∧
     ((Mat 0=1 ∧ Mat 1=0 ∧ Mat 3=1) → Mat 2≠0 →
       (Gaps.card:ℝ) ≤ 4*Clower*(Cthird+1)*R^4/(L^2*N^2*|(Mat 2:ℝ)| *(Uref:ℝ))+2) := by
-  classical
-  obtain ⟨aU,CU,haU,hCU,hupper⟩ :=
-    positive_difference_normalized_quartic_upper_reference_gap_packing hσsrc hcsrc hUsrc
-  obtain ⟨η₀,aL,CL,hη₀,hηcap,haL,hCL,hlower⟩ :=
-    positive_difference_normalized_quartic_lower_reference_gap_packing hσsrc hcsrc hUsrc
-  refine ⟨η₀,min aU aL,CU,CL,hη₀,hηcap,lt_min haU haL,hCU,hCL,?_⟩
+  pm_1750 positive_difference_normalized_quartic_upper_reference_gap_packing positive_difference_normalized_quartic_lower_reference_gap_packing
+  pm_1749
   intro Fsrc η xcenter ycenter ya yb Tsrc E Uref Refs Gaps Bselect
     Bmajor Cmajor n S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -1211,19 +945,11 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
     H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
     Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Blabels m0 hBmajor hCmajor hblocks L Gamma Cthird
-  have hηmax : η ≤ 1/8 := hηsmall.trans hηcap
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hLp : 0 < L := by dsimp only [L]; positivity
-  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
-  have hS ab (hab : ab∈Gaps) :
-      6+Ccharts ab*(105+544*Blabels ab) ≤ (S ab).card := by
-    have hb : 6+Ccharts ab*(105+544*Blabels ab) ≤ m0 := by
-      dsimp only [m0]
-      gcongr
-      exact hCmajor ab hab
-      exact hBmajor ab hab
-    exact hb.trans ((Nat.le_mul_of_pos_right m0 hn).trans (hblocks ab hab))
+  pm_4902 hηmax hηsmall.trans
+  pm_1689
+  pm_116 hLp L
+  pm_1693
+  pm_1697
   have hall ab (hab : ab∈Gaps) :=
     physicalModelPhase_actual_fourier_charted_reference_gap_quartic_witnesses
       Uref Refs (Bselect:=Bselect) (gapLo:=ab.1) (gapHi:=ab.2)
@@ -1235,42 +961,11 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
       (hsourceColor ab hab) (hS ab hab) (hlevel ab hab) (hcolor ab hab) (hnear ab hab)
       hsmall hNR hRN hNcube hminscale hMatdet (hMatt ab hab) (hMatmap ab hab) hMatgamma
       hNtwo (hL ab hab) (hU ab hab) (hanchor ab hab) (hcut ab hab) (hcount ab hab)
-  choose! Schart hSchart hSmass Good hGood hGoodmass jref hjref xref hxr hrest using hall
-  have hselected ab (hab : ab∈Gaps) := hrest ab hab hsize hD hΔ hBsize
-  choose! d l w hd S₀ hS₀ hcard hinside j z curve alpha beta hj hmono hLsource hNL hKp
-    hcurve hspacing hres using hselected
-  let ep := fun ab => (![e ab,Mat 0*e ab+Mat 1*r ab] : Fin 2 → ℤ)
-  let rp := fun ab => (![r ab,Mat 2*e ab+Mat 3*r ab] : Fin 2 → ℤ)
-  let vp := fun ab => (![v ab,Mat 0*v ab+Mat 1*s ab] : Fin 2 → ℤ)
-  let sp := fun ab => (![s ab,Mat 2*v ab+Mat 3*s ab] : Fin 2 → ℤ)
-  have hlong ab (hab : ab∈Gaps) :
-      L ≤ κ/(16*(Blabels ab:ℝ)*Cphys)*((S₀ ab).card:ℝ) :=
-    nativeHuxleyReference_charted_selected_source_length
-      (by dsimp only [Blabels]; omega) (by dsimp only [Ccharts]; omega)
-      (hBmajor ab hab) (hCmajor ab hab) hn hκ hCphys (hcard ab hab) (hblocks ab hab)
-  by_cases hne : Gaps.Nonempty
+  pm_1695
+  pm_1698 nativeHuxleyReference_charted_selected_source_length
   · obtain ⟨ab₀,hab₀⟩ := hne
-    have hNLL : (L*N)^2 ≤ M*R :=
-      (pow_le_pow_left₀ (mul_pos hLp hN).le
-        (mul_le_mul_of_nonneg_right (hlong ab₀ hab₀) hN.le) 2).trans (hNL ab₀ hab₀)
-    let take : Fin 4 → Fin 8 := fun i => ⟨i.val,by omega⟩
-    have htake : StrictMono take := fun _ _ hh => hh
-    let z4 := fun ab i => z ab (take i)
-    have hsub ab (hab : ab∈Gaps) : Icc (z4 ab 0) (z4 ab 3) ⊆ Icc (z ab 0) (z ab 7) := by
-      intro t ht
-      exact ⟨ht.1,ht.2.trans ((hmono ab hab).monotone (by change (3:Fin 8) ≤ 7; decide))⟩
-    have hdetp ab (hab : ab∈Gaps) i : vp ab i*rp ab i-ep ab i*sp ab i=1 := by
-      fin_cases i
-      · exact hchart ab hab
-      · change (Mat 0*v ab+Mat 1*s ab)*(Mat 2*e ab+Mat 3*r ab)-
-          (Mat 0*e ab+Mat 1*r ab)*(Mat 2*v ab+Mat 3*s ab)=1
-        linear_combination (v ab*r ab-e ab*s ab)*hMatdet+hchart ab hab
-    have hends ab (hab : ab∈Gaps) (a : Fin 4) :
-        iteratedDeriv 2 (f 0) (curve ab (z4 ab a) 0)/2∈Ioo ab.1 ab.2 := by
-      have ha : z4 ab a∈Icc (z ab 0) (z ab 7) :=
-        ⟨(hmono ab hab).monotone (by omega),(hmono ab hab).monotone (by omega)⟩
-      rw [((hcurve ab hab _ ha).2 0).2.2.2.1,←(hj ab hab (take a)).2 0]
-      exact hinside ab hab _ (hj ab hab (take a)).1
+    pm_1694
+    pm_1696
     have hendlevel ab (hab : ab∈Gaps) k i :
         iteratedDeriv 2 (f i) (curve ab (z ab k) i)/2=(rat ab (j ab k) i:ℝ) := by
       have hzk : z ab k∈Icc (z ab 0) (z ab 7) :=
@@ -1318,12 +1013,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
         rw [hendlevel ab hab]
         exact ((hlocal ab hab _ (hS₀ ab hab (hj ab hab k).1) i).1).trans_le
           (min_le_left _ _)
-      rcases Finset.mem_insert.mp ht with he | he
-      · subst t
-        exact hsample (take 0)
-      · have he' : t=z4 ab 3 := Finset.mem_singleton.mp he
-        subst t
-        exact hsample (take 3)
+      pm_2474
     · intro htri hentry
       apply hlower Fsrc η xcenter ycenter ya yb (Mat 2) Tsrc
         Refs Gaps z4 xref
@@ -1365,18 +1055,12 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
         rw [hendlevel ab hab]
         exact ((hlocal ab hab _ (hS₀ ab hab (hj ab hab k).1) i).2).trans_le
           (min_le_right _ _)
-      rcases Finset.mem_insert.mp ht with he | he
-      · subst t
-        exact hsample (take 0)
-      · have he' : t=z4 ab 3 := Finset.mem_singleton.mp he
-        subst t
-        exact hsample (take 3)
+      pm_2474
   · rw [Finset.not_nonempty_iff_eq_empty.mp hne,Finset.card_empty,Nat.cast_zero]
     have hδ0 := approximateModelPhase_tolerance_nonneg (hF 0)
-    have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-    have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
+    pm_2669
     obtain ⟨hCR,hCN⟩ := nativeHuxleyReference_physical_source_quartic_constants_nonneg hσ hδ0
-    have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
+    pm_1856
     constructor <;> intro _ _ <;>
       dsimp only [Cthird,Kres,Gamma,Cc,Ct,C₂,C₃] <;> positivity
 
@@ -1397,16 +1081,11 @@ private theorem original_block_mass_of_cubic_and_gap_bounds
   classical
   let Dcap := ac*max Bcap Btail*W₁*W₂*W₃
   let Dtail := bt*max Bcap Btail*W₁*W₂*W₃
-  have hDcap : 0 ≤ Dcap := by dsimp only [Dcap]; positivity
-  have hDtail : 0 ≤ Dtail := by dsimp only [Dtail]; positivity
-  have hcapMono : ac*Bcap*W₁*W₂*W₃ ≤ Dcap :=
-    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (le_max_left _ _) hac) hW₁) hW₂) hW₃
-  have htailMono : bt*Btail*W₁*W₂*W₃ ≤ Dtail :=
-    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (le_max_right _ _) hat) hW₁) hW₂) hW₃
-  let n := fun ab => (S ab).card/m0
-  have hn ab (hab : ab∈Gaps) := nativeHuxleyReference_quotient_block_mass (S ab).card m0 hm0 (hS ab hab)
+  pm_82 hDcap Dcap
+  pm_82 hDtail Dtail
+  pm_8139 hcapMono ac Bcap Dcap le_max_left hac
+  pm_8139 htailMono bt Btail Dtail le_max_right hat
+  pm_2475
   have hcap' ab (hab : ab∈Gaps) : (n ab:ℝ)^3*c ≤ Dcap/(κ*L^3*P) := by
     apply (le_div_iff₀ (by positivity : 0 < κ*L^3*P)).mpr
     calc
@@ -1415,10 +1094,7 @@ private theorem original_block_mass_of_cubic_and_gap_bounds
   let Cost := Dtail/(L^2*P*c*U)
   have htail' (m : ℕ) (hm : 0 < m) :
       ((Gaps.filter (fun ab => m ≤ n ab)).card:ℝ) ≤ 2+Cost/(m:ℝ)^2 := by
-    let Long := Gaps.filter (fun ab => m ≤ n ab)
-    have hin : Long ⊆ Gaps := Finset.filter_subset _ _
-    have hb ab (hab : ab∈Long) : m0*m ≤ (S ab).card :=
-      (Nat.mul_le_mul_left m0 (Finset.mem_filter.mp hab).2).trans (hn ab (hin hab)).2.1
+    pm_1701
     calc
       _ ≤ bt*Btail*W₁*W₂*W₃/((L*(m:ℝ))^2*P*c*U)+2 := htail Long hin m hm hb
       _ ≤ Dtail/((L*(m:ℝ))^2*P*c*U)+2 :=
@@ -1427,11 +1103,7 @@ private theorem original_block_mass_of_cubic_and_gap_bounds
   have hsum := nativeHuxleyReference_finite_occupied_cubic_tail_sum Gaps n (by norm_num : (0:ℝ) ≤ 2)
     (show 0 ≤ Cost by dsimp only [Cost]; positivity)
     (show 0 ≤ Dcap/(κ*L^3*P) by positivity) hc hcap' htail'
-  have hmass : (∑ ab∈Gaps, ((S ab).card:ℝ)) ≤ 2*(m0:ℝ)*(∑ ab∈Gaps, (n ab:ℝ)) := by
-    rw [Finset.mul_sum]
-    apply Finset.sum_le_sum
-    intro ab hab
-    exact_mod_cast (hn ab hab).2.2
+  pm_1702
   calc
     _ ≤ 2*(m0:ℝ)*(∑ ab∈Gaps, (n ab:ℝ)) := hmass
     _ ≤ 2*(m0:ℝ)*(2*(Dcap/(κ*L^3*P)/c)^((3:ℝ)⁻¹)+2*Cost) :=
@@ -1598,8 +1270,8 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
     positive_difference_actual_fourier_charted_triangular_long_gap_packing hσsrc hcsrc hUsrc
   let CU := max CUb CUg
   let CL := max CLb CLg
-  have hCU : 0 < CU := hCUb.trans_le (le_max_left _ _)
-  have hCL : 0 < CL := hCLb.trans_le (le_max_left _ _)
+  pm_2546 hCU CU hCUb.trans_le le_max_left
+  pm_2546 hCL CL hCLb.trans_le le_max_left
   refine ⟨min ηb ηg,min ab ag,CU,CL,lt_min hηb hηg,
     (min_le_left _ _).trans hηbcap,lt_min hab hag,hCU,hCL,?_⟩
   intro Fsrc η xcenter ycenter ya yb Tsrc E Uref Refs Gaps Bselect
@@ -1614,25 +1286,17 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
     H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
     Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Blabels m0 hBmajor hCmajor hS Lunit Gamma Cthird
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hunit : 0 < Lunit := div_pos (mul_pos (by norm_num) hκ) hCphys
-  have hm0 : 0 < m0 := by dsimp only [m0]; omega
-  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
+  pm_1689
+  pm_1700
+  pm_1693
   have hδ0 := approximateModelPhase_tolerance_nonneg (hF 0)
-  have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
+  pm_2669
   obtain ⟨hCR,hCN⟩ := nativeHuxleyReference_physical_source_quartic_constants_nonneg hσ hδ0
-  have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
-  have hCt : 0 ≤ Ct := by dsimp only [Ct]; positivity
-  have hCc : 0 ≤ Cc := by dsimp only [Cc]; positivity
-  have hK : 0 ≤ Kres := by dsimp only [Kres]; positivity
-  have hΓ : 0 ≤ Gamma := div_nonneg hCphys.le hκ.le
-  have hCthird : 0 ≤ Cthird :=
-    mul_nonneg hΓ (add_nonneg (mul_nonneg (by norm_num) hK)
-      (mul_nonneg (by norm_num) hCR))
-  let n := fun ab => (S ab).card/m0
-  have hn ab (hab : ab∈Gaps) := nativeHuxleyReference_quotient_block_mass (S ab).card m0 hm0 (hS ab hab)
+  pm_1856
+  pm_1853
+  pm_82 hK Kres
+  pm_2476
+  pm_2475
   have hfamily (G : Finset (ℝ × ℝ)) (hsub : G ⊆ Gaps) (m : ℕ) (hm : 0 < m)
       (hblocks : ∀ ab∈G, m0*m ≤ (S ab).card) :
       ((Mat 0=1 ∧ Mat 2=0 ∧ Mat 3=1) → Mat 1≠0 →
@@ -1693,7 +1357,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
         (fun G hsub m hm hb => by simpa only [one_mul] using
           (hfamily G hsub m hm hb).1 htri hentry)
   · intro htri hentry
-    have hCmat : 0 < |(Mat 2:ℝ)| := abs_pos.mpr (by exact_mod_cast hentry)
+    pm_1781 hCmat hentry
     simpa only [mul_one] using
       original_block_mass_of_cubic_and_gap_bounds Gaps S m0
         (κ:=κ) (L:=Lunit) (P:=N^2) (c:=|(Mat 2:ℝ)|) (U:=(Uref:ℝ))
@@ -1708,8 +1372,10 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
                                                                      
                                                                    
                                                           
-theorem positive_difference_actual_fourier_triangular_closed_gap_count
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+section
+variable {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
+include σsrc csrc Usrc hσsrc hcsrc hUsrc
+theorem positive_difference_actual_fourier_triangular_closed_gap_count :
     ∃ η₀ a Cupper Clower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
@@ -1784,12 +1450,8 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
       (Gaps.card:ℝ) ≤ Cupper*(B+1)*E^2*M^2/(N^4*|(Mat 1:ℝ)| *U)+2) ∧
     ((Mat 0=1 ∧ Mat 1=0 ∧ Mat 3=1) → Mat 2≠0 →
       (Gaps.card:ℝ) ≤ 4*Clower*(B+1)*R^4/(N^2*|(Mat 2:ℝ)| *U)+2) := by
-  classical
-  obtain ⟨aU,CU,haU,hCU,hupper⟩ :=
-    positive_difference_physical_upper_reference_gap_packing hσsrc hcsrc hUsrc
-  obtain ⟨η₀,aL,CL,hη₀,hηcap,haL,hCL,hlower⟩ :=
-    positive_difference_physical_lower_reference_gap_packing hσsrc hcsrc hUsrc
-  refine ⟨η₀,min aU aL,CU,CL,hη₀,hηcap,lt_min haU haL,hCU,hCL,?_⟩
+  pm_1750 positive_difference_physical_upper_reference_gap_packing positive_difference_physical_lower_reference_gap_packing
+  pm_1749
   intro Fsrc η xcenter ycenter ya yb Tsrc E Refs Gaps Mat Q K₀ inst rat vinv parity x
     σ δ T M N R U A W
     hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hsourceScale
@@ -1797,35 +1459,18 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
     hσ hδ hF hT hM hN hR hU hQ hscale hmesh hNscale hA hW hsep hgap hx hden hinv
     f hlevel q mu ell b cround tau dual cloud radius hcolor hnear hMatt hMatmap
     hsourceGap κ Cphys c J B
-  have hηmax : η ≤ 1/8 := hηsmall.trans hηcap
+  pm_4902 hηmax hηsmall.trans
   have hRp : 0 < R := zero_lt_one.trans_le hR
-  have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
+  pm_1856
   have hthird ab (hab : ab∈Gaps) :
       |mu ab 1*((Mat 2:ℝ)*(iteratedDeriv 2 (f 0) (x ab 0)/2)+Mat 3)^3/mu ab 0-1| ≤ B*R^2/N^2 := by
-    obtain ⟨_v,_hv,hh,_hrest⟩ := physicalModelPhase_actual_fourier_conditions
-      Q K₀ (rat ab) (vinv ab) (parity ab)
-      hσ hδ hF hT hM hN hRp hQ hscale hmesh hA hW
-      (hx ab hab) (hden ab hab) (hinv ab hab) (hlevel ab hab)
-      (hcolor ab hab) (hnear ab hab)
-    rw [hlevel ab hab 0,hMatt ab hab]
-    have he : mu ab 1*((q ab 1:ℝ)/q ab 0)^3/mu ab 0-1=
-        mu ab 1*(q ab 1:ℝ)^3/(mu ab 0*(q ab 0:ℝ)^3)-1 := by
-      rw [div_pow]
-      ring_nf
-    rw [he]
-    exact hh
-  let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
-  have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
-    funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
-    field_simp
-  have hjet i k t : iteratedDeriv k (f i) t=
-      iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
+    pm_1692 hRp
+    pm_1690
+  pm_2477
   have hrounded i t : iteratedDeriv 3 (f i) (round t)=
       iteratedDeriv 3 (Src (yp i)) (round ((A i:ℝ)+t)) := by
     rw [hjet,round_intCast_add,Int.cast_add]
-  have hyp i : yp i∈Icc (1:ℝ) 2 := by fin_cases i <;> assumption
+  pm_1746
   have hphysical ab (hab : ab∈Gaps) i :
       (A i:ℝ)+x ab i∈Icc M (2*M) :=
     ⟨by linarith only [hA i,(hx ab hab i).1],
@@ -1851,7 +1496,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
     have hmap ab (hab : ab∈Gaps) :
         iteratedDeriv 2 (Src yb) (xb ab)/2=
           iteratedDeriv 2 (Src ya) (xa ab)/2+(Mat 1:ℝ) := by
-      rw [hua,hub,hlevel ab hab 0,hlevel ab hab 1]
+      pm_6676
       simpa only [htri.1,htri.2.1,htri.2.2,Int.cast_one,Int.cast_zero,
         zero_mul,one_mul,zero_add,div_one] using (hMatmap ab hab).symm
     have hp := hupper Fsrc η xcenter ycenter ya yb (Mat 1) (B*R^2/N^2)
@@ -1860,9 +1505,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
       (by positivity)
       (fun ab hab => ⟨hphysical ab hab 0,hphysical ab hab 1⟩) hsep hgap
       (by
-        intro ab hab
-        change iteratedDeriv 2 (Src ya) (xa ab)/2∈Icc ab.1 ab.2
-        rw [hua,hlevel ab hab 0]
+        pm_703
         exact hsourceGap ab hab)
       hmap
       (by
@@ -1881,7 +1524,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
             (2*M^2/Tsrc)*(iteratedDeriv 2 (Src yb) (xb ab)/2) := by
           rw [hmap ab hab]
           ring
-        rw [he,hua,hub,hlevel ab hab 0,hlevel ab hab 1]
+        pm_6236
         exact ⟨((hlocal ab hab 0).1).trans_le (min_le_left _ _),
           ((hlocal ab hab 1).1).trans_le (min_le_left _ _)⟩)
     have hh := upper_reference_gap_source_scale (L:=1) hCU.le hB hTsrc hM hN hR
@@ -1896,7 +1539,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
         iteratedDeriv 2 (Src yb) (xb ab)/2=
           (iteratedDeriv 2 (Src ya) (xa ab)/2)/
             ((Mat 2:ℝ)*(iteratedDeriv 2 (Src ya) (xa ab)/2)+1) := by
-      rw [hua,hub,hlevel ab hab 0,hlevel ab hab 1]
+      pm_6676
       simpa only [htri.1,htri.2.1,htri.2.2,Int.cast_one,Int.cast_zero,
         one_mul,add_zero] using (hMatmap ab hab).symm
     have hinvMap ab (hab : ab∈Gaps) :
@@ -1912,9 +1555,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
       (by positivity)
       (fun ab hab => ⟨hphysical ab hab 0,hphysical ab hab 1⟩) hsep hgap
       (by
-        intro ab hab
-        change iteratedDeriv 2 (Src ya) (xa ab)/2∈Icc ab.1 ab.2
-        rw [hua,hlevel ab hab 0]
+        pm_703
         exact hsourceGap ab hab)
       hmap
       (by
@@ -1938,7 +1579,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
             (Tsrc/(2*M^2))*(iteratedDeriv 2 (Src yb) (xb ab)/2)⁻¹ := by
           rw [hinvMap ab hab]
           ring
-        rw [he,hua,hub,hlevel ab hab 0,hlevel ab hab 1]
+        pm_6236
         exact ⟨((hlocal ab hab 0).2).trans_le (min_le_right _ _),
           ((hlocal ab hab 1).2).trans_le (min_le_right _ _)⟩)
     have hInv : 1/M ≤ R^2/N^2 := by
@@ -1950,17 +1591,13 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
     apply hp.trans
     calc
       _ ≤ 4*CL*((B+1)*R^2/N^2)*R^2/(|(Mat 2:ℝ)| *U)+2 := by
-        apply add_le_add _ le_rfl
-        apply div_le_div_of_nonneg_right _ (by positivity)
-        exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left herror (by positivity)) (sq_nonneg R)
+        pm_1139
       _ = _ := by ring_nf
 
                                                              
                                                                      
                                                                     
-theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass :
     ∃ η₀ a Cupper Clower Dupper Dlower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
       0 < Cupper ∧ 0 < Clower ∧ 0 < Dupper ∧ 0 < Dlower ∧
     ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
@@ -2129,10 +1766,7 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
     H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
     Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Blabels m0 hBmajor hCmajor Lunit Gamma Cthird
-  let Long := Gaps.filter (fun ab => m0 ≤ (S ab).card)
-  let Short := Gaps.filter (fun ab => (S ab).Nonempty ∧ (S ab).card < m0)
-  have hinLong : Long ⊆ Gaps := Finset.filter_subset _ _
-  have hinShort : Short ⊆ Gaps := Finset.filter_subset _ _
+  pm_1705
   have hlong :
     ((Mat 0=1 ∧ Mat 2=0 ∧ Mat 3=1) → Mat 1≠0 →
       (∑ ab∈Long, ((S ab).card:ℝ)) ≤ 4*(m0:ℝ)*
@@ -2153,8 +1787,8 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
       hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW (fun ab hab => hx ab (hinLong hab)) (fun ab hab => hwindow ab (hinLong hab)) (fun ab hab => hden ab (hinLong hab)) hlambda hUband hθ hθmax (fun ab hab => hcurv ab (hinLong hab)) (fun ab hab => hinv ab (hinLong hab)) (fun ab hab => hchart ab (hinLong hab)) (fun ab hab => horientation ab (hinLong hab)) hBcut (fun ab hab => hs ab (hinLong hab)) (fun ab hab => hrefSet ab (hinLong hab)) (fun ab hab => hparentSet ab (hinLong hab)) hsep (fun ab hab => hwideL ab (hinLong hab)) (fun ab hab => hwideU ab (hinLong hab)) hUref hBselectSize hcutMargin hselectedWrap (fun ab hab => hreferenceDen ab (hinLong hab)) (fun ab hab => hgapWidth ab (hinLong hab)) hRQ hselectedUpper hscaleTen (fun ab hab => hfamilyGap ab (hinLong hab)) (fun ab hab => hgap ab (hinLong hab))
       (fun ab hab => hsourceColor ab (hinLong hab)) (fun ab hab => hlevel ab (hinLong hab)) (fun ab hab => hcolor ab (hinLong hab)) (fun ab hab => hnear ab (hinLong hab)) hsmall hNR hRN hNcube hminscale hMatdet (fun ab hab => hMatt ab (hinLong hab)) (fun ab hab => hMatmap ab (hinLong hab)) hMatgamma hNtwo (fun ab hab => hL ab (hinLong hab)) (fun ab hab => hU ab (hinLong hab)) (fun ab hab => hanchor ab (hinLong hab)) (fun ab hab => hcut ab (hinLong hab)) (fun ab hab => hcount ab (hinLong hab)) hsize hD hΔ hBsize (fun ab hab => hBmajor ab (hinLong hab)) (fun ab hab => hCmajor ab (hinLong hab))
       (fun _ hab => (Finset.mem_filter.mp hab).2)
-  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
-  have hF₃ i := approximateModelPhase_mono (hF i) (by norm_num : 3 ≤ 4) le_rfl
+  pm_1693
+  pm_1756
   have hNscale : N^2 ≤ M*R := by
     apply (mul_le_mul_iff_of_pos_right hN).mp
     calc
@@ -2197,22 +1831,9 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
   have hshortmass : (∑ ab∈Short, ((S ab).card:ℝ)) ≤ (m0:ℝ)*(Short.card:ℝ) := by
     calc
       _ ≤ ∑ _ab∈Short, (m0:ℝ) := by
-        apply Finset.sum_le_sum
-        intro ab hab
-        exact_mod_cast (Finset.mem_filter.mp hab).2.2.le
+        pm_8042
       _ = _ := by simp [mul_comm]
-  have hpartition : (∑ ab∈Gaps, ((S ab).card:ℝ)) =
-      (∑ ab∈Long, ((S ab).card:ℝ))+(∑ ab∈Short, ((S ab).card:ℝ)) := by
-    simp only [Long,Short,Finset.sum_filter,←Finset.sum_add_distrib]
-    apply Finset.sum_congr rfl
-    intro ab _
-    by_cases hh : m0 ≤ (S ab).card
-    · simp [hh,not_lt.mpr hh]
-    · have hlt : (S ab).card < m0 := lt_of_not_ge hh
-      by_cases he : (S ab).Nonempty
-      · simp [hh,he,hlt]
-      · have hz : (S ab).card=0 := by simp [Finset.not_nonempty_iff_eq_empty.mp he]
-        simp [he,hz]
+  pm_1704
   constructor
   · intro htri hentry
     rw [hpartition]
@@ -2222,6 +1843,7 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
     rw [hpartition]
     exact add_le_add (hlong.2 htri hentry)
       (hshortmass.trans (mul_le_mul_of_nonneg_left (hshortcount.2 htri hentry) (Nat.cast_nonneg _)))
+end
 
                                                                 
                                                                        
@@ -2298,29 +1920,22 @@ theorem positive_difference_source_chart_twelfth_partition
     have hh := scaled_floor_image_card (Q:=1) (δ:=a) (R:=2) S y
       (by norm_num) ha (by norm_num)
       (by intro i hi; rw [abs_of_nonneg (by linarith only [(hy i hi).1])]; simpa using (hy i hi).2)
-    simpa only [mul_one,show (2:ℝ)*2=4 by norm_num] using hh
+    pm_1846
   have h₂ : ((S.image (fun i => (color i).2.1)).card:ℝ) ≤ (6*U/σ)/a+3 := by
     have hh := scaled_floor_image_card (Q:=1) (δ:=a) (R:=3*U/σ) S u
       (by norm_num) ha (by positivity) (by intro i hi; simpa only [mul_one] using hu i hi)
-    simp only [mul_one] at hh
-    convert hh using 1
-    ring
+    pm_7758
   have h₃ : ((S.image (fun i => (color i).2.2)).card:ℝ) ≤ (4*σ/c)/a+3 := by
     have hh := scaled_floor_image_card (Q:=1) (δ:=a) (R:=2*σ/c) S w
       (by norm_num) ha (by positivity) (by intro i hi; simpa only [mul_one] using hw i hi)
-    simp only [mul_one] at hh
-    convert hh using 1
-    ring
+    pm_7758
   have hcard : ((S.image color).card:ℝ) ≤ Cap := by
     have hsub : S.image color ⊆
         (S.image (fun i => (color i).1)) ×ˢ
           ((S.image (fun i => (color i).2.1)) ×ˢ (S.image (fun i => (color i).2.2))) := by
-      intro k hk
-      obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hk
-      exact Finset.mem_product.mpr ⟨Finset.mem_image_of_mem _ hi,
-        Finset.mem_product.mpr ⟨Finset.mem_image_of_mem _ hi,Finset.mem_image_of_mem _ hi⟩⟩
-    have hh := Finset.card_le_card hsub
-    rw [Finset.card_product,Finset.card_product] at hh
+      pm_2532 k hk i hi
+      pm_7664 hi
+    pm_7459
     have hh' : ((S.image color).card:ℝ) ≤
         ((S.image (fun i => (color i).1)).card:ℝ)*
           (((S.image (fun i => (color i).2.1)).card:ℝ)*
@@ -2331,7 +1946,7 @@ theorem positive_difference_source_chart_twelfth_partition
     simpa only [Cap,mul_assoc] using hm
   have hsame {b d : ℝ} (he : ⌊b/a⌋=⌊d/a⌋) : |b-d| < a := by
     have hh := Int.abs_sub_lt_one_of_floor_eq_floor he
-    rw [←sub_div,abs_div,abs_of_pos ha] at hh
+    pm_1325 ha hh
     exact (div_lt_iff₀ ha).mp hh |>.trans_eq (one_mul a)
   refine ⟨hcard,?_,?_⟩
   · intro k hk
@@ -2352,16 +1967,9 @@ theorem positive_difference_source_chart_twelfth_partition
     let Keys := S.image color
     let V := fun k => S.filter (fun i => color i=k)
     let g := fun k => ∑ i∈V k,coeff i
-    have he : (∑ k∈Keys,g k)=∑ i∈S,coeff i :=
-      Finset.sum_fiberwise_of_maps_to (fun i hi => Finset.mem_image_of_mem color hi) coeff
-    have hnorm : ‖∑ i∈S,coeff i‖ ≤ ∑ k∈Keys,‖g k‖ := by
-      rw [←he]
-      exact norm_sum_le _ _
-    have hp := pow_le_pow_left₀ (norm_nonneg _) hnorm 12
-    have hholder := Real.rpow_sum_le_const_mul_sum_rpow_of_nonneg Keys
-      (f:=fun k => ‖g k‖) (p:=(12:ℝ)) (by norm_num) (fun _ _ => norm_nonneg _)
+    pm_1848 k Keys i S coeff hi
     have hh : (∑ k∈Keys,‖g k‖)^12 ≤ (Keys.card:ℝ)^11*∑ k∈Keys,‖g k‖^12 := by
-      simpa only [show (12:ℝ)-1=11 by norm_num,Real.rpow_ofNat] using hholder
+      pm_1905
     exact (hp.trans hh).trans (mul_le_mul_of_nonneg_right
       (pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ Keys.card) hcard 11)
       (Finset.sum_nonneg (fun _ _ => by positivity)))
@@ -2517,10 +2125,8 @@ theorem positive_difference_actual_fourier_charted_triangular_colored_sample_mas
         ((8*Clower*(Cthird+1)*R^4/(κ*Lunit^3*N^2*|(Mat 2:ℝ)|))^((3:ℝ)⁻¹)+
           4*Clower*(Cthird+1)*R^4/(Lunit^2*N^2*|(Mat 2:ℝ)| *(Uref:ℝ)))+
         (m0:ℝ)*(4*Dlower*(B+1)*R^4/(N^2*|(Mat 2:ℝ)| *(Uref:ℝ))+2)) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_charted_triangular_all_sample_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  pm_2479 hmassFn positive_difference_actual_fourier_charted_triangular_all_sample_mass
+  pm_2478
   intro Fsrc η ya yb Tsrc E chartKey Uref Refs Gaps Bselect
     Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -2533,22 +2139,15 @@ theorem positive_difference_actual_fourier_charted_triangular_colored_sample_mas
     H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
     Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Blabels m0 hBmajor hCmajor Lunit Gamma Cthird
-  let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
-  have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
-    funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
-    field_simp
-  have hjet i k t : iteratedDeriv k (f i) t=
-      iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
+  pm_2477
   let Hsrc := fun p : ℝ × ℝ =>
     (iteratedDeriv 2 Fsrc p.2-iteratedDeriv 2 Fsrc (p.2+η*p.1))/(σsrc*η)
   let Points : Finset ((ℝ × ℝ) × (ℕ × Fin 2)) :=
     Gaps.biUnion (fun ab => ((S ab) ×ˢ (Finset.univ : Finset (Fin 2))).image (fun p => (ab,p)))
   let py := fun p : (ℝ × ℝ) × (ℕ × Fin 2) => yp p.2.2
   let pz := fun p : (ℝ × ℝ) × (ℕ × Fin 2) => (A p.2.2:ℝ)+x p.1 p.2.1 p.2.2
-  let pr := fun p : (ℝ × ℝ) × (ℕ × Fin 2) => rat p.1 p.2.1 p.2.2
-  let pc := fun p : (ℝ × ℝ) × (ℕ × Fin 2) => chartColor p.1 p.2.1 p.2.2
+  pm_6829 pr rat
+  pm_6829 pc chartColor
   have hmem ab (hab : ab∈Gaps) j (hj : j∈S ab) i : (ab,(j,i))∈Points :=
     Finset.mem_biUnion.mpr ⟨ab,hab,Finset.mem_image_of_mem _
       (Finset.mem_product.mpr ⟨hj,Finset.mem_univ i⟩)⟩
@@ -2557,7 +2156,7 @@ theorem positive_difference_actual_fourier_charted_triangular_colored_sample_mas
     obtain ⟨⟨j,i⟩,hji,rfl⟩ := Finset.mem_image.mp hmem
     exact ⟨hab,(Finset.mem_product.mp hji).1⟩
   have hpy p : py p∈Icc (1:ℝ) 2 := by
-    have hyp i : yp i∈Icc (1:ℝ) 2 := by fin_cases i <;> assumption
+    pm_1746
     exact hyp p.2.2
   have hpz p (hp : p∈Points) : pz p∈Icc M (2*M) := by
     have hm := hmem' p hp
@@ -2586,7 +2185,7 @@ theorem positive_difference_actual_fourier_charted_triangular_colored_sample_mas
         Points Fsrc py pz pr hσsrc hcsrc hUsrc hη (hηsmall.trans hηcap)
         hTsrc hM ha (fun p _ => hpy p) hpz hreg hjets htests hlevels
       have hkey : chartKey∈Points.image pc := Finset.mem_image.mpr ⟨p,hp,hcolors p hp⟩
-      obtain ⟨iref,_hiref,_hrefKey,hxc,hyc,hwithin⟩ := hcenters chartKey hkey
+      pm_529 iref _hiref _hrefKey hxc hyc hwithin hcenters chartKey hkey
       refine ⟨pz iref/M,hxc,py iref,hyc,?_⟩
       intro ab hab j hj i
       exact hwithin (ab,(j,i)) (hmem ab hab j hj i) (hcolors _ (hmem ab hab j hj i))
@@ -2648,12 +2247,12 @@ private theorem integer_inverse_cuberoot_sum
       intro n _
       rw [abs_of_pos (by positivity : (0:ℝ) < (n:ℝ)+1)]
     _ ≤ 3*((H:ℝ)+1)^((2:ℝ)/3) := by
-      have hh := mul_le_mul_of_nonneg_left (inverse_cuberoot_nat_prefix H) (by norm_num : (0:ℝ) ≤ 2)
+      pm_8633 hh inverse_cuberoot_nat_prefix H
       linarith only [hh]
     _ ≤ _ := by
-      apply mul_le_mul_of_nonneg_left _ (by norm_num : (0:ℝ) ≤ 3)
+      pm_6930
       apply Real.rpow_le_rpow (by positivity) _ (by norm_num : (0:ℝ) ≤ 2/3)
-      have hh : (H:ℝ) < D+1 := Nat.ceil_lt_add_one hD
+      pm_7972 hh
       linarith only [hh]
 
 private theorem integer_cubic_reciprocal_weight_sum
@@ -2678,7 +2277,7 @@ private theorem integer_cubic_reciprocal_weight_sum
       (fun _ _ _ => by positivity : ∀ b∈(Finset.Icc (-(H:ℤ)) (H:ℤ)).erase 0,
         b∉S → (0:ℝ) ≤ 1/|(b:ℝ)|)).trans
       (TaoTrudgianYang2025.bourgain_integer_reciprocal_sum H)
-    have hceil : (H:ℝ) < D+1 := Nat.ceil_lt_add_one hD
+    pm_7972 hceil
     have hlog : Real.log ((H:ℝ)+1) ≤ Real.log (D+2) :=
       Real.log_le_log (by positivity) (by linarith only [hceil])
     linarith only [hh,hlog]
@@ -2731,18 +2330,13 @@ private theorem physical_source_triangular_constants_nonneg
     let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
     0 ≤ B ∧ 0 ≤ Cthird := by
   intro κ Cphys c J B C₂ C₃ Ct Cc Kres Gamma Cthird
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hC₄ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 4) hδ0
-  have hCR : 0 ≤ quarticReciprocalConstant σ δ := by
-    dsimp only [quarticReciprocalConstant]; positivity
+  pm_1689
+  pm_2669
+  pm_901
   have hCN : 0 ≤ quarticNonlinearResidualConstant σ δ := by
     dsimp only [quarticNonlinearResidualConstant]; positivity
-  have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
-  have hCt : 0 ≤ Ct := by dsimp only [Ct]; positivity
-  have hCc : 0 ≤ Cc := by dsimp only [Cc]; positivity
+  pm_1856
+  pm_1853
   have hK : 0 ≤ Kres := div_nonneg (mul_nonneg (by norm_num)
     (add_nonneg (add_nonneg (add_nonneg
       (add_nonneg (div_nonneg (mul_nonneg (by norm_num) hB) (by norm_num))
@@ -2750,10 +2344,7 @@ private theorem physical_source_triangular_constants_nonneg
       (mul_nonneg (by norm_num) hCt))
       (mul_nonneg (by norm_num) hCc))
       (mul_nonneg (by norm_num) hCN))) hκ.le
-  have hΓ : 0 ≤ Gamma := div_nonneg hCphys.le hκ.le
-  have hCthird : 0 ≤ Cthird :=
-    mul_nonneg hΓ (add_nonneg (mul_nonneg (by norm_num) hK)
-      (mul_nonneg (by norm_num) hCR))
+  pm_2476
   exact ⟨hB,hCthird⟩
 
                                                                  
@@ -2912,10 +2503,8 @@ theorem positive_difference_actual_fourier_charted_triangular_translation_sample
     ((∀ t∈Translations, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (∑ t∈Translations, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(Dtranslation+2)^((2:ℝ)/3)+
         2*Blower*(3+2*Real.log (Dtranslation+2))+(1/2:ℝ)*(2*Dtranslation+1))) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_charted_triangular_colored_sample_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  pm_2479 hmassFn positive_difference_actual_fourier_charted_triangular_colored_sample_mass
+  pm_2478
   intro Fsrc η ya yb Tsrc E Dtranslation Translations chartKey Uref Refs Gaps Bselect
     Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -2947,30 +2536,19 @@ theorem positive_difference_actual_fourier_charted_triangular_translation_sample
       hη hηsmall hya hyb hreg hjets htests hTsrc hMtwo hsourceScale (hchartColor t ht)
       hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW (hx t ht) (hwindow t ht) (hden t ht) hlambda hUband hθ hθmax (hcurv t ht) (hinv t ht) (hchart t ht) (horientation t ht) hBcut (hs t ht) (hrefSet t ht) (hparentSet t ht) hsep (hwideL t ht) (hwideU t ht) hUref hBselectSize hcutMargin hselectedWrap (hreferenceDen t ht) (hgapWidth t ht) hRQ hselectedUpper hscaleTen (hfamilyGap t ht) (hgap t ht)
       (hsourceColor t ht) (hlevel t ht) (hcolor t ht) (hnear t ht) hsmall hNR hRN hNcube hminscale (hMatdet t ht) (hMatt t ht) (hMatmap t ht) (hMatgamma t ht) hNtwo (hL t ht) (hU t ht) (hanchor t ht) (hcut t ht) (hcount t ht) hsize hD hΔ hBsize (hBmajor t ht) (hCmajor t ht)
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hLunit : 0 < Lunit := by dsimp only [Lunit]; positivity
-  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
+  pm_1689
+  pm_2480
+  pm_1693
   have hδ0 := approximateModelPhase_tolerance_nonneg (hF 0)
   obtain ⟨hB,hCthird⟩ := physical_source_triangular_constants_nonneg hσ hδ0
   have hthird1 : 0 ≤ Cthird+1 := add_nonneg hCthird zero_le_one
   have hB1 : 0 ≤ B+1 := add_nonneg hB zero_le_one
-  have hnumU : 0 ≤ CU*(Cthird+1)*E^2*M^2 :=
-    mul_nonneg (mul_nonneg (mul_nonneg hCU.le hthird1) (sq_nonneg E)) (sq_nonneg M)
-  have hnumDU : 0 ≤ DU*(B+1)*E^2*M^2 :=
-    mul_nonneg (mul_nonneg (mul_nonneg hDU.le hB1) (sq_nonneg E)) (sq_nonneg M)
-  have hnumL : 0 ≤ 4*CL*(Cthird+1)*R^4 :=
-    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hCL.le) hthird1) (by positivity)
-  have hnumDL : 0 ≤ 4*DL*(B+1)*R^4 :=
-    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hDL.le) hB1) (by positivity)
-  have hAU : 0 ≤ Aupper := div_nonneg
-    (by nlinarith only [hnumU]) (by positivity)
-  have hBU : 0 ≤ Bupper := add_nonneg
-    (div_nonneg hnumU (by positivity)) (div_nonneg hnumDU (by positivity))
-  have hAL : 0 ≤ Alower := div_nonneg
-    (by nlinarith only [hnumL]) (by positivity)
-  have hBL : 0 ≤ Blower := add_nonneg
-    (div_nonneg hnumL (by positivity)) (div_nonneg hnumDL (by positivity))
+  pm_6107 hnumU CU Cthird hCU.le hthird1
+  pm_6107 hnumDU DU B hDU.le hB1
+  pm_6540 hnumL CL Cthird hCL.le hthird1
+  pm_6540 hnumDL DL B hDL.le hB1
+  pm_5897 hAU Aupper hnumU hBU Bupper hnumDU
+  pm_5897 hAL Alower hnumL hBL Blower hnumDL
   constructor
   · intro htri
     have hweight t (ht : t∈Translations) :
@@ -2983,14 +2561,7 @@ theorem positive_difference_actual_fourier_charted_triangular_translation_sample
       exact hh.trans_eq (triangular_weight_normalize (m0:ℝ)
         (2*CU*(Cthird+1)*E^2*M^2) (CU*(Cthird+1)*E^2*M^2) (DU*(B+1)*E^2*M^2) (κ*Lunit^3*N^4)
         (Lunit^2*N^4) (N^4) (Uref:ℝ) |(t:ℝ)|)
-    calc
-      _ ≤ ∑ t∈Translations, 4*(m0:ℝ)*((Aupper/|(t:ℝ)|)^((3:ℝ)⁻¹)+Bupper/|(t:ℝ)|+1/2) :=
-        Finset.sum_le_sum hweight
-      _ = 4*(m0:ℝ)*(∑ t∈Translations, ((Aupper/|(t:ℝ)|)^((3:ℝ)⁻¹)+Bupper/|(t:ℝ)|+1/2)) :=
-        (Finset.mul_sum _ _ _).symm
-      _ ≤ _ := mul_le_mul_of_nonneg_left
-        (integer_cubic_reciprocal_weight_sum Translations hDtranslation
-          hAU hBU (by norm_num : (0:ℝ) ≤ 1/2) hTranslations) (by positivity)
+    pm_2481 Aupper Bupper hAU hBU
   · intro htri
     have hweight t (ht : t∈Translations) :
         (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤
@@ -3002,14 +2573,7 @@ theorem positive_difference_actual_fourier_charted_triangular_translation_sample
       exact hh.trans_eq (triangular_weight_normalize (m0:ℝ)
         (8*CL*(Cthird+1)*R^4) (4*CL*(Cthird+1)*R^4) (4*DL*(B+1)*R^4) (κ*Lunit^3*N^2)
         (Lunit^2*N^2) (N^2) (Uref:ℝ) |(t:ℝ)|)
-    calc
-      _ ≤ ∑ t∈Translations, 4*(m0:ℝ)*((Alower/|(t:ℝ)|)^((3:ℝ)⁻¹)+Blower/|(t:ℝ)|+1/2) :=
-        Finset.sum_le_sum hweight
-      _ = 4*(m0:ℝ)*(∑ t∈Translations, ((Alower/|(t:ℝ)|)^((3:ℝ)⁻¹)+Blower/|(t:ℝ)|+1/2)) :=
-        (Finset.mul_sum _ _ _).symm
-      _ ≤ _ := mul_le_mul_of_nonneg_left
-        (integer_cubic_reciprocal_weight_sum Translations hDtranslation
-          hAL hBL (by norm_num : (0:ℝ) ≤ 1/2) hTranslations) (by positivity)
+    pm_2481 Alower Blower hAL hBL
 
 
 private theorem rational_narrow_triangular_translation_bounds
@@ -3036,9 +2600,7 @@ private theorem rational_narrow_triangular_translation_bounds
     exact div_pos (by exact_mod_cast (p 1).pos) (by exact_mod_cast (p 0).pos)
   have hnumeq : ((Mat 0:ℝ)*(p 0:ℝ)+Mat 1)/(p 0:ℝ)=
       ((p 1).num:ℝ)/(p 0).num := by
-    rw [(div_eq_iff hdpos.ne').mp hmap,hdenmap]
-    simp only [Rat.cast_def]
-    field_simp
+    pm_8478 hdpos.ne' hdenmap
   constructor
   · intro htri
     have hh := hb.2
@@ -3212,10 +2774,8 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
     ((∀ t∈Translations, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (∑ t∈Translations, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(DlowerCut+2)^((2:ℝ)/3)+
         2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1))) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_charted_triangular_translation_sample_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  pm_2479 hmassFn positive_difference_actual_fourier_charted_triangular_translation_sample_mass
+  pm_2478
   intro Fsrc η ya yb Tsrc E Translations chartKey Uref Refs Gaps Bselect
     Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -3238,8 +2798,7 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
     apply Finset.sum_eq_zero
     intro ab hab
     have he : ¬(S t ab).Nonempty := by
-      intro hh
-      exact hnot (Finset.mem_filter.mpr ⟨ht,ab,hab,hh⟩)
+      pm_8846 hh ht
     simp only [Finset.not_nonempty_iff_eq_empty.mp he,Finset.card_empty,Nat.cast_zero]
   have hcuts t (ht : t∈Occupied) :
       ((Mat t 0=1 ∧ Mat t 2=0 ∧ Mat t 3=1) → |(Mat t 1:ℝ)| ≤ DupperCut) ∧
@@ -3507,10 +3066,8 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
     ((∀ t∈P.image entry, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (P.card:ℝ) ≤ 60*(4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(DlowerCut+2)^((2:ℝ)/3)+
         2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1)))) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_charted_triangular_source_cutoff_sample_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  pm_2479 hmassFn positive_difference_actual_fourier_charted_triangular_source_cutoff_sample_mass
+  pm_2478
   intro Fsrc η ya yb Tsrc E chartKey Uref Refs Gaps Bselect P entry Mat gap
     Bmajor Cmajor N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     σ δ T M R base Bcut lambda Uband θ A W x
@@ -3524,20 +3081,15 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
     Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Blabels m0 hBmajor hCmajor Lunit Gamma Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
   have hNnat : 0 < N := by exact_mod_cast hN
-  have hF₂ i := approximateModelPhase_mono (hF i) (by norm_num : 2 ≤ 4) le_rfl
-  have hz ij (hij : ij∈P) : zb ij.2.1∈Ioo 0 (W 1) := by
-    have hh := hx ij hij 1
-    rw [hxb ij hij] at hh
-    constructor <;> linarith only [hh.1,hh.2]
+  pm_1776
+  pm_1717
   have hmodelMap ij (hij : ij∈P) :
       ((Mat (entry ij) 0:ℝ)*(iteratedDeriv 2 (f 0) (za ij.1.1)/2)+Mat (entry ij) 1)/
       ((Mat (entry ij) 2:ℝ)*(iteratedDeriv 2 (f 0) (za ij.1.1)/2)+Mat (entry ij) 3)=
         iteratedDeriv 2 (f 1) (zb ij.2.1)/2 := by
-    rw [←hxa ij hij,←hxb ij hij,hlevel ij hij 0,hlevel ij hij 1]
-    exact hMatmap ij hij
-  let block := fun ij : (ℤ × Fin 2) × (ℤ × Fin 2) =>
-    ⌊(za ij.1.1-base)/(N:ℝ)⌋.toNat
-  let S := fun t ab => (P.filter (fun ij => entry ij=t ∧ gap ij=ab)).image block
+    pm_1005
+  pm_1718
+  pm_6352 t entry
   obtain ⟨pick,hpick,hpairNat⟩ := physicalModelPhase_reference_translation_window_selection
     P entry Mat hMat gap F (fun i => (A i:ℝ)) W za zb AlenA AlenB N Za Zb base
     hσ hδ hF₂ hT hM hNnat hA hW hbase hz hgeometryA hgeometryB hmodelMap
@@ -3545,20 +3097,17 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
       pick t ab j∈P ∧ entry (pick t ab j)=t ∧ gap (pick t ab j)=ab ∧
         block (pick t ab j)=j ∧
         za (pick t ab j).1.1∈Icc (base+(N:ℝ)*j) (base+(N:ℝ)*((j:ℝ)+1)) := by
-    obtain ⟨ij,hij,_he⟩ := Finset.mem_image.mp hj
-    have hh := Finset.mem_filter.mp hij
-    have hab' : ab∈P.image gap := Finset.mem_image.mpr ⟨ij,hh.1,hh.2.2⟩
+    pm_1719
     exact hpick t ht ab hab' j hj
   have hgapSub : P.image gap ⊆ Gaps := by
-    intro ab hab
-    obtain ⟨ij,hij,rfl⟩ := Finset.mem_image.mp hab
+    pm_2532 ab hab ij hij
     exact hgapMem ij hij
   have hpairNat' : P.card ≤ 60*∑ t∈P.image entry, ∑ ab∈Gaps, (S t ab).card := by
     apply hpairNat.trans
     apply Nat.mul_le_mul_left 60
     apply Finset.sum_le_sum
     intro t _
-    exact Finset.sum_le_sum_of_subset_of_nonneg hgapSub (fun _ _ _ => Nat.zero_le _)
+    pm_7739
   have hpair : (P.card:ℝ) ≤ 60*(∑ t∈P.image entry, ∑ ab∈Gaps, ((S t ab).card:ℝ)) := by
     exact_mod_cast hpairNat'
   have hmass :
@@ -3577,8 +3126,7 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
       (lambda:=lambda) (Uband:=Uband) (θ:=θ) A (W:=W) (x:=fun t ab j => x (pick t ab j))
       hη hηsmall hya hyb hreg hjets htests hTsrc hMtwo hsourceScale
       (by
-        intro t ht
-        obtain ⟨ij,hij,rfl⟩ := Finset.mem_image.mp ht
+        pm_2532 t ht ij hij
         exact hentry ij hij)
       (by
         intro t ht ab hab j hj i
@@ -3588,31 +3136,23 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
         exact hh)
       hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW (fun t ht ab hab j hj => hx _ (hdata t ht ab hab j hj).1)
       (by
-        intro t ht ab hab j hj
-        have hp := hdata t ht ab hab j hj
-        change x (pick t ab j) 0∈_
-        rw [hxa _ hp.1]
+        pm_2482
+        pm_7392 t
         exact hp.2.2.2.2)
       (fun t ht ab hab j hj => hden _ (hdata t ht ab hab j hj).1) hlambda hUband hθ hθmax (fun t ht ab hab j hj => hcurv _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hinv _ (hdata t ht ab hab j hj).1) (fun _ _ => hchart) (fun _ _ => horientation) hBcut (fun _ _ => hs) (fun _ _ => hrefSet) (fun _ _ => hparentSet) hsep (fun t ht ab hab j hj => hwideL _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hwideU _ (hdata t ht ab hab j hj).1) hUref hBselectSize hcutMargin hselectedWrap (fun _ _ => hreferenceDen) (fun _ _ => hgapWidth) hRQ hselectedUpper hscaleTen
       (by
-        intro t ht ab hab j hj
-        have hp := hdata t ht ab hab j hj
-        have hh := hfamilyGap _ hp.1
-        rw [hp.2.2.1] at hh
+        pm_2482
+        pm_7740
         exact hh)
       (fun _ _ => hgap) (fun t ht ab hab j hj => hsourceColor _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hlevel _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hcolor _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hnear _ (hdata t ht ab hab j hj).1) hsmall hNR hRN hNcube hminscale
       hMatdet
       (by
-        intro t ht ab hab j hj
-        have hp := hdata t ht ab hab j hj
-        have hh := hMatt _ hp.1
-        rw [hp.2.1] at hh
+        pm_2482
+        pm_1212 hMatt
         exact hh)
       (by
-        intro t ht ab hab j hj
-        have hp := hdata t ht ab hab j hj
-        have hh := hMatmap _ hp.1
-        rw [hp.2.1] at hh
+        pm_2482
+        pm_1212 hMatmap
         exact hh)
       hMatgamma hNtwo (fun t ht ab hab j hj => hL _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hU _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hanchor _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hcut _ (hdata t ht ab hab j hj).1) (fun t ht ab hab j hj => hcount _ (hdata t ht ab hab j hj).1) hsize hD hΔ hBsize (fun _ _ => hBmajor) (fun _ _ => hCmajor)
   constructor
@@ -3647,9 +3187,7 @@ private theorem positive_difference_approximate_model_source_amplitude
       (Tsrc/T)*iteratedDeriv 3 G (3/2) := by
     rw [hFu,iteratedDeriv_const_mul_field]
   have hlow : modelPhaseThirdLower σ ≤ iteratedDeriv 3 F (3/2) := by
-    simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
-      (approximateModelPhase_thirdDeriv_bounds hσ hδ hF
-        (by norm_num : (3/2:ℝ)∈Ioo (1:ℝ) 2)).1
+    pm_870 hF
   have hu := positive_jets_difference_mixed_upper Fsrc hσsrc hUsrc hη hηmax
     (by norm_num : (3/2:ℝ)∈Icc (3/4:ℝ) (9/4))
     (show y∈Icc (1/2:ℝ) 3 from
@@ -3871,10 +3409,8 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
       (P.card:ℝ) ≤ 60*(4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(DlowerCut+2)^((2:ℝ)/3)+
         2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1)))) := by
 
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_triangular_original_pair_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  pm_2479 hmassFn positive_difference_actual_fourier_triangular_original_pair_mass
+  pm_2478
   intro Fsrc η ya yb Tsrc E chartKey Uref Refs Gaps Bselect P entry Mat gap
     Bmajor Cmajor N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     σ δ T M R base Bcut θ A W x
@@ -3887,30 +3423,11 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
     H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
     Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Blabels m0 hBmajor hCmajor Lunit Gamma Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
-  have hκ : 0 < modelPhaseThirdLower σ := modelPhaseThirdLower_pos hσ
-  have hE : 0 < E := (mul_pos_iff_of_pos_right hT).mp (hTsrc.trans_le hsourceScale)
-  have hlambda : 0 < lambda := by dsimp only [lambda]; positivity
-  have hUband : 0 ≤ Uband := by dsimp only [Uband]; positivity
-  let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
-  have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
-    funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
-    field_simp
-  have hjet i k t : iteratedDeriv k (f i) t=
-      iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-  have hmodel₀ := approximateModelPhase_mono (hF 0) (by norm_num : 2 ≤ 4) le_rfl
-  have hband := positive_difference_model_normalized_curvature_band Fsrc
-    hσsrc hcsrc hUsrc hη (hηsmall.trans hηcap) hya
-    hTsrc hT hM hσ hδ hsourceScale hreg hjets htests hmodel₀
-  have hcurv ij (hij : ij∈P) i :
-      lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband := by
-    have hyi : yp i∈Icc (1:ℝ) 2 := by fin_cases i <;> assumption
-    have hxi := hx ij hij i
-    have hpoint : (A i:ℝ)+x ij i∈Icc M (2*M) :=
-      ⟨by linarith only [hA i,hxi.1],by linarith only [hW i,hxi.2]⟩
-    rw [←hlevel ij hij i,hjet]
-    exact hband (yp i) hyi _ hpoint
+  pm_2484
+  pm_1626
+  pm_2485
+  pm_2477
+  pm_2483
   exact hmassFn Fsrc η ya yb Tsrc E chartKey Uref Refs Gaps (Bselect:=Bselect)
     P entry Mat gap Bmajor Cmajor N za zb AlenA AlenB Za Zb Q K₀
     rat vinv parity anchor e r v s
@@ -3933,8 +3450,10 @@ private theorem two_thirds_cube {x : ℝ} (hx : 0 ≤ x) :
 
                                                                  
                                                                         
+section
+variable {M N R U L : ℝ} (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
+include M N R U L hM hN hR
 private theorem triangular_translation_source_regime
-    {M N R U L : ℝ} (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
     (hU : 0 ≤ U) (hL : 0 ≤ L) (hRN : R ≤ N)
     (hselected : U ≤ (N/R)^((2:ℝ)/3))
     (hregime : N^4 ≤ M*R^3*L^((3:ℝ)/2)) :
@@ -3973,7 +3492,6 @@ private theorem triangular_translation_source_regime
 
 
 private theorem triangular_physical_regime_costs
-    {M N R U L : ℝ} (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
     (hU : 0 < U) (hL : 0 ≤ L) (hRN : R ≤ N)
     (hselected : U ≤ (N/R)^((2:ℝ)/3))
     (hregime : N^4 ≤ M*R^3*L^((3:ℝ)/2)) :
@@ -3987,25 +3505,26 @@ private theorem triangular_physical_regime_costs
     have hh := pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ N^2*U) hfirst 3
     simp only [mul_pow,two_thirds_cube (by positivity : (0:ℝ) ≤ M*R^2)] at hh
     convert hh using 1 <;> ring
-  refine ⟨?_,?_,?_,?_⟩
+  pm_4898
   · rw [show (M^2/N^4)*(M/(N*R^2))^2=M^4/(N^6*R^4) by field_simp,
       show ((M^2/(N^4*U))*L)^3=M^6*L^3/(N^12*U^3) by field_simp]
-    apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+    pm_23
     have hh := mul_le_mul_of_nonneg_left hcore (by positivity : (0:ℝ) ≤ M^4*N^6)
     nlinarith only [hh]
   · rw [show (R^4/N^2)*(N*R^2/M)^2=R^8/M^2 by field_simp,
       show ((R^4/(N^2*U))*L)^3=R^12*L^3/(N^6*U^3) by field_simp]
-    apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+    pm_23
     have hh := mul_le_mul_of_nonneg_left hcore (by positivity : (0:ℝ) ≤ R^8)
     nlinarith only [hh]
   · rw [show (M^2/(N^4*U))*L^((3:ℝ)/2)=M^2*L^((3:ℝ)/2)/(N^4*U) by ring]
-    apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+    pm_23
     have hh := mul_le_mul_of_nonneg_left hshort (by positivity : (0:ℝ) ≤ M*N)
     nlinarith only [hh]
   · rw [show (R^4/(N^2*U))*L^((3:ℝ)/2)=R^4*L^((3:ℝ)/2)/(N^2*U) by ring]
     apply (div_le_div_iff₀ hM (by positivity)).mpr
     have hh := mul_le_mul_of_nonneg_left hshort (sq_nonneg R)
     nlinarith only [hh]
+end
 
 
 private theorem triangular_weight_regime_absorption
@@ -4025,7 +3544,7 @@ private theorem triangular_weight_regime_absorption
   have hrootCube (z : ℝ) (hz : 0 ≤ z) : (z^((3:ℝ)⁻¹))^3=z := by
     simpa only [Nat.cast_ofNat] using
       Real.rpow_inv_natCast_pow hz (by norm_num : (3:ℕ)≠0)
-  have hDnonneg : 0 ≤ Dconst*dbase := mul_nonneg hDconst hdbase
+  pm_6529 hDnonneg Dconst dbase hDconst hdbase
   have hthree : Dconst*dbase+2 ≤ 3*(Dconst*dbase) := by linarith only [hD]
   have hcube :
       ((Aconst*abase)^((3:ℝ)⁻¹)*(Dconst*dbase+2)^((2:ℝ)/3))^3 ≤
@@ -4085,24 +3604,16 @@ private theorem triangular_source_weight_scale_identities
   intro lambda Uband Aupper Bupper Alower Blower AupperConst BupperConst
     AlowerConst BlowerConst DupperConst DlowerConst
   have hforward : T/M^2=M/(N*R^2) := by
-    apply (div_eq_div_iff (by positivity) (by positivity)).mpr
+    pm_1804
     nlinarith only [hscale]
   have hreverse : M^2/T=N*R^2/M := by
     apply (div_eq_div_iff hT.ne' hM.ne').mpr
     nlinarith only [hscale]
-  refine ⟨?_,?_,?_,?_,?_,?_⟩
-  · dsimp only [Aupper,AupperConst]
-    simp only [div_eq_mul_inv,mul_inv_rev]
-    ring
-  · dsimp only [Bupper,BupperConst]
-    simp only [div_eq_mul_inv,mul_inv_rev]
-    ring
-  · dsimp only [Alower,AlowerConst]
-    simp only [div_eq_mul_inv,mul_inv_rev]
-    ring
-  · dsimp only [Blower,BlowerConst]
-    simp only [div_eq_mul_inv,mul_inv_rev]
-    ring
+  pm_2486
+  pm_965 Aupper AupperConst
+  pm_965 Bupper BupperConst
+  pm_965 Alower AlowerConst
+  pm_965 Blower BlowerConst
   · calc
       _ = DupperConst*(T/M^2) := by dsimp only [Uband,DupperConst]; ring
       _ = _ := by rw [hforward]
@@ -4156,16 +3667,9 @@ private theorem triangular_original_mass_regime_assembly
           (3/2:ℝ)*DlowerConst*Lregime^((3:ℝ)/2))) := by
   intro lambda Uband Aupper Bupper Alower Blower AupperConst BupperConst
     AlowerConst BlowerConst DupperConst DlowerConst CostUpper CostLower DupperCut DlowerCut
-  have hlambda : 0 < lambda := by dsimp only [lambda]; positivity
-  have hUband : 0 ≤ Uband := by dsimp only [Uband]; positivity
-  have hAU : 0 ≤ AupperConst := by dsimp only [AupperConst]; positivity
-  have hBU : 0 ≤ BupperConst := by dsimp only [BupperConst]; positivity
-  have hAL : 0 ≤ AlowerConst := by dsimp only [AlowerConst]; positivity
-  have hBL : 0 ≤ BlowerConst := by dsimp only [BlowerConst]; positivity
-  have hDUc : 0 ≤ DupperConst := by dsimp only [DupperConst]; positivity
-  have hDLc : 0 ≤ DlowerConst := by dsimp only [DlowerConst]; positivity
-  have hCostU : 0 ≤ CostUpper := by dsimp only [CostUpper]; positivity
-  have hCostL : 0 ≤ CostLower := by dsimp only [CostLower]; positivity
+  pm_1626
+  pm_2485
+  pm_2487
   have hphysical := triangular_physical_regime_costs hM hN hRpos hUp hLregime hRN
     hselected hregime
   have hid :
@@ -4183,10 +3687,8 @@ private theorem triangular_original_mass_regime_assembly
   · intro hraw hnonempty
     rcases hnonempty with hzero | hDcut
     · rw [hzero]
-      have hDcut0 : 0 ≤ DupperCut := by dsimp only [DupperCut]; positivity
-      have hlog : 0 ≤ Real.log (DupperCut+2) :=
-        Real.log_nonneg (by linarith only [hDcut0])
-      positivity
+      pm_82 hDcut0 DupperCut
+      pm_6181 DupperCut
     ·
       have hw := triangular_weight_regime_absorption (Bconst:=BupperConst)
         hAU hDUc (by positivity : (0:ℝ) ≤ M^2/N^4)
@@ -4206,10 +3708,8 @@ private theorem triangular_original_mass_regime_assembly
   · intro hraw hnonempty
     rcases hnonempty with hzero | hDcut
     · rw [hzero]
-      have hDcut0 : 0 ≤ DlowerCut := by dsimp only [DlowerCut]; positivity
-      have hlog : 0 ≤ Real.log (DlowerCut+2) :=
-        Real.log_nonneg (by linarith only [hDcut0])
-      positivity
+      pm_82 hDcut0 DlowerCut
+      pm_6181 DlowerCut
     ·
       have hw := triangular_weight_regime_absorption (Bconst:=BlowerConst)
         hAL hDLc (by positivity : (0:ℝ) ≤ R^4/N^2)
@@ -4402,10 +3902,8 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
         (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)*Lregime+
           2*BlowerConst*(3+2*Real.log (DlowerCut+2))+
           (3/2:ℝ)*DlowerConst*Lregime^((3:ℝ)/2))) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_triangular_original_source_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  pm_2479 hmassFn positive_difference_actual_fourier_triangular_original_source_mass
+  pm_2478
   intro Fsrc η ya yb Tsrc E Lregime chartKey Uref Refs Gaps Bselect P entry Mat gap
     Bmajor Cmajor N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     σ δ T M R base Bcut θ A W x
@@ -4424,30 +3922,11 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
   let Alower := 8*CL*(Cthird+1)*R^4/(κ*Lunit^3*(N:ℝ)^2)
   let Blower := 4*CL*(Cthird+1)*R^4/(Lunit^2*(N:ℝ)^2*(Uref:ℝ))+
     (4*DL*(B+1)*R^4)/(4*(N:ℝ)^2*(Uref:ℝ))
-  have hκ : 0 < modelPhaseThirdLower σ := modelPhaseThirdLower_pos hσ
-  have hE : 0 < E := (mul_pos_iff_of_pos_right hT).mp (hTsrc.trans_le hsourceScale)
-  have hlambda : 0 < lambda := by dsimp only [lambda]; positivity
-  have hUband : 0 ≤ Uband := by dsimp only [Uband]; positivity
-  let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
-  have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
-    funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
-    field_simp
-  have hjet i k t : iteratedDeriv k (f i) t=
-      iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-  have hmodel₀ := approximateModelPhase_mono (hF 0) (by norm_num : 2 ≤ 4) le_rfl
-  have hband := positive_difference_model_normalized_curvature_band Fsrc
-    hσsrc hcsrc hUsrc hη (hηsmall.trans hηcap) hya
-    hTsrc hT hM hσ hδ hsourceScale hreg hjets htests hmodel₀
-  have hcurv ij (hij : ij∈P) i :
-      lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband := by
-    have hyi : yp i∈Icc (1:ℝ) 2 := by fin_cases i <;> assumption
-    have hxi := hx ij hij i
-    have hpoint : (A i:ℝ)+x ij i∈Icc M (2*M) :=
-      ⟨by linarith only [hA i,hxi.1],by linarith only [hW i,hxi.2]⟩
-    rw [←hlevel ij hij i,hjet]
-    exact hband (yp i) hyi _ hpoint
+  pm_2484
+  pm_1626
+  pm_2485
+  pm_2477
+  pm_2483
   have hraw :
     ((∀ t∈P.image entry, Mat t 0=1 ∧ Mat t 2=0 ∧ Mat t 3=1 ∧ Mat t 1=t) →
       (P.card:ℝ) ≤ 60*(4*(m0:ℝ)*(3*Aupper^((3:ℝ)⁻¹)*(DupperCut+2)^((2:ℝ)/3)+
@@ -4470,10 +3949,10 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
       hMatdet hMatt hMatmap hMatgamma hNtwo hL hU hanchor hcut hcount hsize hD hΔ hBsize hBmajor hCmajor
 
   have hRpos : 0 < R := zero_lt_one.trans_le hR
-  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
-  have hQpos : (0:ℝ) < Q := by exact_mod_cast hQ
-  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hLunit : 0 < Lunit := by dsimp only [Lunit]; positivity
+  pm_1693
+  pm_4473 hQpos Q hQ
+  pm_2488
+  pm_2480
   obtain ⟨hBnonneg,hCthird⟩ := physical_source_triangular_constants_nonneg hσ
     (approximateModelPhase_tolerance_nonneg (hF 0))
   have hBselOne : 1 ≤ Bselect := by
@@ -4502,22 +3981,18 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
     apply hassembly.1 (hraw.1 htri)
     by_cases hne : P.Nonempty
     · obtain ⟨ij,hij⟩ := hne
-      have hsides := htri (entry ij) (Finset.mem_image_of_mem entry hij)
+      pm_7455
       have hcut := (hcuts ij hij).1 ⟨hsides.1,hsides.2.1,hsides.2.2.1⟩
-      rw [hsides.2.2.2] at hcut
-      have hone : (1:ℝ) ≤ |(entry ij:ℝ)| := by exact_mod_cast Int.one_le_abs (hentry ij hij)
-      exact Or.inr (hone.trans hcut)
-    · exact Or.inl (by simp only [Finset.not_nonempty_iff_eq_empty.mp hne,Finset.card_empty,Nat.cast_zero])
+      pm_2489
+    pm_6677
   · intro htri
     apply hassembly.2 (hraw.2 htri)
     by_cases hne : P.Nonempty
     · obtain ⟨ij,hij⟩ := hne
-      have hsides := htri (entry ij) (Finset.mem_image_of_mem entry hij)
+      pm_7455
       have hcut := (hcuts ij hij).2 ⟨hsides.1,hsides.2.1,hsides.2.2.1⟩
-      rw [hsides.2.2.2] at hcut
-      have hone : (1:ℝ) ≤ |(entry ij:ℝ)| := by exact_mod_cast Int.one_le_abs (hentry ij hij)
-      exact Or.inr (hone.trans hcut)
-    · exact Or.inl (by simp only [Finset.not_nonempty_iff_eq_empty.mp hne,Finset.card_empty,Nat.cast_zero])
+      pm_2489
+    pm_6677
 
 
 private theorem eventually_triangular_source_log_losses {Du Dl ε : ℝ} (hε : 0 < ε) :
@@ -4545,8 +4020,7 @@ private theorem eventually_triangular_source_log_losses {Du Dl ε : ℝ} (hε : 
         _ ≤ T*T := mul_le_mul_of_nonneg_right hD (zero_le_one.trans hT)
         _ = _ := pow_two T |>.symm
     have hlogd := Real.log_le_log (by linarith only [hd] : 0 < d+2) hbound
-    rw [Real.log_pow] at hlogd
-    norm_num only [Nat.cast_ofNat] at hlogd
+    pm_1451 Real.log_pow hlogd Nat.cast_ofNat
     exact (by nlinarith only [hlogd,hlog,hlogsq] :
       3+2*Real.log (d+2) ≤ 7*(Real.log T)^2).trans hsmall
   exact ⟨zero_le_one.trans hlog,hlogsq.trans hsquare,hpower.trans hsquare,
@@ -4560,13 +4034,10 @@ private theorem triangular_physical_cutoff_height
     Du*T/M^2 ≤ Du*T ∧ Dl*M^2/T ≤ Dl*T := by
   have hNp : 1 ≤ N := hR.trans hRN
   have hMp : 0 < M := zero_lt_one.trans_le hM
-  have hNM' : N ≤ M := (by nlinarith only [hNp] : N ≤ N^2).trans hNM
+  pm_1772 hNp
   have hR₂ : R^2 ≤ M :=
     (pow_le_pow_left₀ (zero_le_one.trans hR) hRN 2).trans hNM
-  have hprod : N*R^2 ≤ M^2 := by
-    calc
-      _ ≤ M*M := mul_le_mul hNM' hR₂ (sq_nonneg R) hMp.le
-      _ = _ := (pow_two M).symm
+  pm_1465 hNM' hR₂
   have hMT : M ≤ T := by
     apply (mul_le_mul_iff_left₀ (sq_pos_of_pos hMp)).mp
     calc
@@ -4598,10 +4069,7 @@ private theorem triangular_logarithmic_mass_absorption
       mul_le_mul_of_nonneg_left hlog (by positivity : (0:ℝ) ≤ 9*(A*D^2)^((3:ℝ)⁻¹)),
       mul_le_mul_of_nonneg_left hcut (by positivity : (0:ℝ) ≤ 2*B),
       mul_le_mul_of_nonneg_left hpow (by positivity : (0:ℝ) ≤ (3/2:ℝ)*D)]
-  have hproduct : T^(ε/2)*T^(ε/2)=T^ε := by
-    rw [←Real.rpow_add hT]
-    congr 1
-    ring
+  pm_7307 hproduct T ε hT
   calc
     _ ≤ 240*m*Cost*((9*(A*D^2)^((3:ℝ)⁻¹)+2*B+(3/2:ℝ)*D)*T^(ε/2)) :=
       hmass.trans (mul_le_mul_of_nonneg_left hterms (by positivity))
@@ -4777,10 +4245,8 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
       (P.card:ℝ) ≤ (240*CostLower*
         (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+
           2*BlowerConst+(3/2:ℝ)*DlowerConst))*T^εloss) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_triangular_original_source_regime_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  pm_2479 hmassFn positive_difference_actual_fourier_triangular_original_source_regime_mass
+  pm_2478
   intro σ Jref εloss E θ hσ hJref hεloss
   let Du := θ*(3*Usrc/σsrc)*E/2
   let Dl := 12*Usrc*θ/(csrc*modelPhaseThirdLower σ)
@@ -4805,13 +4271,9 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
     C₂ C₃ Ct Cc Δ Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst
     DupperConst DlowerConst CostUpper CostLower
-  have hδ₀ := approximateModelPhase_tolerance_nonneg (hF 0)
-  obtain ⟨Bmajor,Cmajor,hBmajor,hCmajor,hcost⟩ := hbudgets
-    Gaps e r v s Q Uref hδ₀ (hδ.trans (min_le_right _ _)) hT hM hR hRQ hQN
-    hNM hUref hUR hscale hrHeight hsHeight heHeight hvHeight
-    (fun ab hab => ⟨(hgap ab hab).2.2.1,hgapWidth ab hab⟩)
-  let m0 := 6+Cmajor*(105+544*Bmajor)
-  let Uband := (3*Usrc/σsrc)*E*T/(2*M^2)
+  pm_1727
+  pm_883
+  pm_1533
   let DupperCut := θ*Uband
   let DlowerCut := θ/lambda
   have hraw :
@@ -4839,20 +4301,12 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
       hsourceColor hlevel hcolor hnear hsmall hNR hRN hNcube hminscale
       hMatdet hMatt hMatmap hMatgamma hNtwo hL hU hanchor hcut hcount
       hsize hD hΔ hBsize hBmajor hCmajor
-  have hκ : 0 < modelPhaseThirdLower σ := modelPhaseThirdLower_pos hσ
-  have hE : 0 < E := (mul_pos_iff_of_pos_right hT).mp (hTsrc.trans_le hsourceScale)
-  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
-  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hLunit : 0 < Lunit := by dsimp only [Lunit]; positivity
+  pm_2484
+  pm_1693
+  pm_2488
+  pm_2480
   obtain ⟨hBnonneg,hCthird⟩ := physical_source_triangular_constants_nonneg hσ hδ₀
-  have hAU : 0 ≤ AupperConst := by dsimp only [AupperConst]; positivity
-  have hBU : 0 ≤ BupperConst := by dsimp only [BupperConst]; positivity
-  have hAL : 0 ≤ AlowerConst := by dsimp only [AlowerConst]; positivity
-  have hBL : 0 ≤ BlowerConst := by dsimp only [BlowerConst]; positivity
-  have hDUc : 0 ≤ DupperConst := by dsimp only [DupperConst]; positivity
-  have hDLc : 0 ≤ DlowerConst := by dsimp only [DlowerConst]; positivity
-  have hCostU : 0 ≤ CostUpper := by dsimp only [CostUpper]; positivity
-  have hCostL : 0 ≤ CostLower := by dsimp only [CostLower]; positivity
+  pm_2487
   have hcuts := triangular_physical_cutoff_height hT
     (by linarith only [hMtwo] : 1 ≤ M) hR hRN hNM hscale hDUc hDLc
   have hupper : DupperCut ≤ DupperConst*T := by
@@ -4867,8 +4321,8 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
         dsimp only [DlowerCut,lambda,DlowerConst,κ]
         field_simp
       _ ≤ _ := hcuts.2
-  have hupper0 : 0 ≤ DupperCut := by dsimp only [DupperCut,Uband]; positivity
-  have hlower0 : 0 ≤ DlowerCut := by dsimp only [DlowerCut,lambda]; positivity
+  pm_2156 hupper0 DupperCut Uband
+  pm_2156 hlower0 DlowerCut lambda
   constructor
   · intro htri
     exact triangular_logarithmic_mass_absorption hT (Nat.cast_nonneg m0)
@@ -4936,9 +4390,9 @@ theorem positive_difference_actual_source_joint_twelfth_partition
   classical
   intro Fmodel hmodel f hlevel Hsrc lambda u w chart narrow qell V offset color ChartCap NarrowCap Cap
   have hκ : 0 < modelPhaseThirdLower σ := modelPhaseThirdLower_pos hσ
-  have hE : 0 < E := (mul_pos_iff_of_pos_right hT).mp (hTsrc.trans_le hscale)
-  have hlambda : 0 < lambda := by dsimp only [lambda]; positivity
-  let Uband := (3*Usrc/σsrc)*E*T/(2*M^2)
+  pm_7677 hscale
+  pm_1626
+  pm_1533
   have hband i (hi : i∈S) : lambda ≤ |(rat i:ℝ)| ∧ |(rat i:ℝ)| ≤ Uband := by
     have hb := positive_difference_model_normalized_curvature_band Fsrc
       hσsrc hcsrc hUsrc hη hηmax (hy i hi) hTsrc hT hM hσ hδ hscale
@@ -4959,16 +4413,14 @@ theorem positive_difference_actual_source_joint_twelfth_partition
   have hV (ip : ι × Fin 2) (hip : ip∈V) : ip.1∈S := (Finset.mem_product.mp hip).1
   have hsub : V.image color ⊆
       (S.image chart) ×ˢ ((S.image narrow) ×ˢ (V.image offset)) := by
-    intro key hkey
-    obtain ⟨ip,hip,rfl⟩ := Finset.mem_image.mp hkey
+    pm_2532 key hkey ip hip
     exact Finset.mem_product.mpr ⟨Finset.mem_image_of_mem chart (hV ip hip),
       Finset.mem_product.mpr ⟨Finset.mem_image_of_mem narrow (hV ip hip),
         Finset.mem_image_of_mem offset hip⟩⟩
-  have hCnon : 0 ≤ ChartCap := by dsimp only [ChartCap]; positivity
-  have hNnon : 0 ≤ NarrowCap := by dsimp only [NarrowCap]; positivity
+  pm_82 hCnon ChartCap
+  pm_82 hNnon NarrowCap
   have hcard : ((V.image color).card:ℝ) ≤ Cap := by
-    have hh := Finset.card_le_card hsub
-    rw [Finset.card_product,Finset.card_product] at hh
+    pm_7459
     have hreal : ((V.image color).card:ℝ) ≤
         ((S.image chart).card:ℝ)*(((S.image narrow).card:ℝ)*((V.image offset).card:ℝ)) := by
       exact_mod_cast hh
@@ -4986,7 +4438,7 @@ theorem positive_difference_actual_source_joint_twelfth_partition
       rw [←he]
       exact Finset.mem_image_of_mem chart (hV ip hip)
     obtain ⟨iref,hiref,hkeyref,hxcenter,hycenter,hlocal⟩ := hchart.2.1 key.1 hk
-    refine ⟨iref,hiref,hkeyref,hxcenter,hycenter,?_⟩
+    pm_164 iref hiref hkeyref hxcenter hycenter
     intro jp hjp hjkey
     exact hlocal jp.1 (hV jp hjp) (congrArg Prod.fst hjkey)
   · intro ip hip jp hjp he
@@ -4994,18 +4446,10 @@ theorem positive_difference_actual_source_joint_twelfth_partition
       (congrArg (fun k : (ℤ × ℤ × ℤ) × (ℤ × ℤ) × ℤ => k.2.1) he)
     exact ⟨hn.1,hn.2,congrArg (fun k : (ℤ × ℤ × ℤ) × (ℤ × ℤ) × ℤ => k.2.2) he⟩
   · intro coeff
-    let Keys := V.image color
-    let g := fun key => ∑ ip∈V.filter (fun ip => color ip=key),coeff ip
-    have he : (∑ key∈Keys,g key)=∑ ip∈V,coeff ip :=
-      Finset.sum_fiberwise_of_maps_to (fun ip hip => Finset.mem_image_of_mem color hip) coeff
-    have hnorm : ‖∑ ip∈V,coeff ip‖ ≤ ∑ key∈Keys,‖g key‖ := by
-      rw [←he]
-      exact norm_sum_le _ _
-    have hp := pow_le_pow_left₀ (norm_nonneg _) hnorm 12
-    have hholder := Real.rpow_sum_le_const_mul_sum_rpow_of_nonneg Keys
-      (f:=fun key => ‖g key‖) (p:=(12:ℝ)) (by norm_num) (fun _ _ => norm_nonneg _)
+    pm_7042 Keys key coeff
+    pm_1848 key Keys ip V coeff hip
     have hh : (∑ key∈Keys,‖g key‖)^12 ≤ (Keys.card:ℝ)^11*∑ key∈Keys,‖g key‖^12 := by
-      simpa only [show (12:ℝ)-1=11 by norm_num,Real.rpow_ofNat] using hholder
+      pm_1905
     exact (hp.trans hh).trans (mul_le_mul_of_nonneg_right
       (pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 11)
       (Finset.sum_nonneg (fun _ _ => by positivity)))
@@ -5047,11 +4491,10 @@ public  theorem huxley_completed_colored_source_sieve {ε : ℝ} (hε : 0 < ε) 
   have hg key : 0 ≤ g key := Finset.sum_nonneg (fun i _ => hmass i)
   have he : (∑ key∈Keys,g key)=∑ i∈S,mass i :=
     Finset.sum_fiberwise_of_maps_to (fun i hi => Finset.mem_image_of_mem color hi) mass
-  have hholder := Real.rpow_sum_le_const_mul_sum_rpow_of_nonneg Keys
-    (f:=g) (p:=(12:ℝ)) (by norm_num) (fun key _ => hg key)
+  pm_7030 Keys g key hg
   have hh : (∑ key∈Keys,g key)^12 ≤
       (Keys.card:ℝ)^11*∑ key∈Keys,(g key)^12 := by
-    simpa only [show (12:ℝ)-1=11 by norm_num,Real.rpow_ofNat] using hholder
+    pm_1905
   have hcost : (∑ i∈S,mass i)^12 ≤ Cap^11*∑ key∈Keys,(g key)^12 := by
     rw [←he]
     exact hh.trans (mul_le_mul_of_nonneg_right
@@ -5224,7 +4667,7 @@ theorem exists_positive_difference_actual_joint_source_sieve
   have hjoint := positive_difference_actual_source_joint_twelfth_partition S Fsrc y z rat Q
     hσsrc hcsrc hUsrc hη hηmax hTsrc hT hM hσ hδ hscale hQ hθ ha
     hy hz hreg hjets htests hden hmodel hlevel
-  have hμ₀ : 0 < μ₀ := by dsimp only [μ₀]; positivity
+  pm_1849
   have hμbounds i (hi : i∈S) : μ₀ ≤ μ i ∧ μ i ≤ U₀ := by
     have hb := positive_difference_rounded_cubic_scales Fsrc (T:=Tsrc) (N:=M^3/Tsrc) (R:=1)
       hσsrc hcsrc hUsrc hη hηmax (hy i hi) hreg hjets hnegative hMtwo
@@ -5252,14 +4695,13 @@ theorem exists_positive_difference_actual_joint_source_sieve
     exact hcolored K₀ Vscale hVscale (ι × Fin 2) V x color Cap hbox hjoint.1 k
   · intro key ij hij
     have hp := Finset.mem_filter.mp hij
-    have hi := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).1
-    have hj := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).2
+    pm_2490
     have hiall := (Finset.mem_product.mp hi.1).1
     have hjall := (Finset.mem_product.mp hj.1).1
     have hijall : ij∈Pall := Finset.mem_filter.mpr
       ⟨Finset.mem_product.mpr ⟨hi.1,hj.1⟩,hp.2⟩
     have hsides := hjoint.2.2.1 ij.1 hi.1 ij.2 hj.1 (hi.2.trans hj.2.symm)
-    obtain ⟨hdet,ht,_htlo,_hthi,hmap,_hrest⟩ := hglobal ij hijall
+    pm_529 hdet ht _htlo _hthi hmap _hrest hglobal ij hijall
     simp only [hlevel ij.1.1 hiall,hlevel ij.2.1 hjall] at ht hmap
     have hlambda : 0 < lambda := by
       have hκ := modelPhaseThirdLower_pos hσ
@@ -5278,16 +4720,16 @@ theorem exists_positive_difference_actual_joint_source_sieve
         (by exact_mod_cast (rat ij.1.1).pos)
     have hnumeq : ((Mat ij 0:ℝ)*(rat ij.1.1:ℝ)+Mat ij 1)/(rat ij.1.1:ℝ)=
         ((rat ij.2.1).num:ℝ)/(rat ij.1.1).num := by
-      rw [(div_eq_iff htpos.ne').mp hmap,ht]
-      simp only [Rat.cast_def]
-      field_simp
+      pm_8478 htpos.ne' ht
     exact narrow_band_matrix_translation_cases (Mat ij 0) (Mat ij 1) (Mat ij 2) (Mat ij 3)
       hlambda hcurv.1 hcurv.2 hθ.le hθmax hdet
       (by rw [ht]; exact hsides.1) (by rw [hnumeq]; exact hsides.2.1)
 
 
-private theorem positive_difference_family_bounded_action_source_scale_at_action
-    {σ c U L : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hL : 0 ≤ L) :
+section
+variable {σ c U L : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hL : 0 ≤ L)
+include σ c U L hσ hc hU hL
+private theorem positive_difference_family_bounded_action_source_scale_at_action :
     ∃ D : ℝ, 0 < D ∧
       ∀ (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
         (Mat : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Fin 4 → ℤ)
@@ -5328,54 +4770,35 @@ private theorem positive_difference_family_bounded_action_source_scale_at_action
       (P.card:ℝ) ≤ D*((P.image (fun ij => ij.1.1.1)).card:ℝ)*
         (M/(N:ℝ))*(1+Δ*J) := by
   obtain ⟨K,C,hK,hC,hcount⟩ := positive_difference_family_bounded_action_pair_count hσ hc hU
-  let B := max 1 (max (3*U/σ) (2*σ/c))
-  let CMat := (2*(L+3)^2+1)*(2*L+5)^2*(L+3)^2
-  have hB : 0 < B := zero_lt_one.trans_le (le_max_left _ _)
-  have hCMat : 0 < CMat := by dsimp only [CMat]; positivity
+  pm_1839
+  pm_2491
+  pm_2546 hB B zero_lt_one.trans_le le_max_left
+  pm_116 hCMat CMat
   refine ⟨60*K*(1+40*C*B)*CMat,by positivity,?_⟩
   intro P Mat F z Alen N Z η Δ J T M hη hηmax hf hbound htests hnegative
     hT hM hN hΔ hJ hNM hJM hpoints hgeometryA hgeometryB hsep hdet hnontri haction
     f h μ t hmap hden hnum hthird
   classical
-  have hMp : 0 < M := by linarith only [hM]
-  have hNp : (0:ℝ) < N := by exact_mod_cast hN
+  pm_1811
+  pm_1815
   have hh := hcount P Mat F z Alen N Z η Δ J T M L hη hηmax hf hbound htests hnegative
     hT hM hN hΔ hJ hL hpoints hgeometryB hsep hdet hnontri haction hmap hden hnum hthird
   have hfirst := rounded_offset_family_point_count (P.image Prod.fst) z Alen N Z hMp.le hN
     (by
-      intro ip hip
-      obtain ⟨ij,hij,rfl⟩ := Finset.mem_image.mp hip
+      pm_1830
       exact (hpoints ij hij).1.2)
     (by
-      intro ip hip
-      obtain ⟨ij,hij,rfl⟩ := Finset.mem_image.mp hip
+      pm_1830
       exact hgeometryA ij hij)
-  rw [Finset.image_image] at hfirst
-  let I := ((P.image (fun ij => ij.1.1.1)).card:ℝ)
-  have hI : 0 ≤ I := by dsimp only [I]; positivity
-  have hscale : 1 ≤ M/(N:ℝ) := (le_div_iff₀ hNp).mpr (by simpa only [one_mul] using hNM)
-  have hfirst' : ((P.image Prod.fst).card:ℝ) ≤ 10*(M/(N:ℝ))*I := by
-    apply hfirst.trans
-    apply mul_le_mul_of_nonneg_right _ hI
-    linarith only [hscale]
-  have hJM' : J/M ≤ 1 := (div_le_iff₀ hMp).mpr (by simpa only [one_mul] using hJM)
-  have hfactor : 1+8*C*B*(Δ+5/M)*J ≤ (1+40*C*B)*(1+Δ*J) := by
-    calc
-      _ = 1+8*C*B*(Δ*J+5*(J/M)) := by ring
-      _ ≤ 1+8*C*B*(Δ*J+5) := by
-        gcongr
-        nlinarith only [hJM']
-      _ ≤ _ := by
-        have hp : 0 ≤ (32*C*B+1)*(Δ*J) := by positivity
-        nlinarith only [hp]
+  pm_1838
+  pb_426
   calc
     (P.card:ℝ) ≤ 6*K*(1+8*C*B*(Δ+5/M)*J)*CMat*((P.image Prod.fst).card:ℝ) := hh
     _ ≤ 6*K*((1+40*C*B)*(1+Δ*J))*CMat*(10*(M/(N:ℝ))*I) := by
       gcongr
     _ = _ := by ring
 
-private theorem positive_difference_family_type_one_source_scale_at_action
-    {σ c U L : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hL : 0 ≤ L) :
+private theorem positive_difference_family_type_one_source_scale_at_action :
     ∃ D : ℝ, 0 < D ∧
       ∀ (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
         (Mat : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Fin 4 → ℤ)
@@ -5416,15 +4839,14 @@ private theorem positive_difference_family_type_one_source_scale_at_action
         μ ij.1.1.1 (z ij.1.1.1 ij.1.1.2)*(t ij)^3-1| ≤ Δ) →
       (P.card:ℝ) ≤ D*((P.image (fun ij => ij.1.1.1)).card:ℝ)*
         (M/(N:ℝ))*(1+Δ*J) := by
-  obtain ⟨D₀,hD₀,hzero⟩ := positive_difference_family_identity_source_scale hσ hc hU
-  obtain ⟨D₁,hD₁,hnonzero⟩ := positive_difference_family_bounded_action_source_scale_at_action hσ hc hU hL
+  pm_114 D₀ hD₀ hzero positive_difference_family_identity_source_scale hσ hc hU
+  pm_97 D₁ hD₁ hnonzero positive_difference_family_bounded_action_source_scale_at_action hσ hc hU hL
   refine ⟨D₀+D₁,add_pos hD₀ hD₁,?_⟩
   intro P Mat F z Alen N Z η Δ J T M hη hηmax hf hbound htests hnegative
     hT hM hN hΔ hJ hNM hJM hpoints hgeometryA hgeometryB hsep hdet hbranch
     f h μ t hmap hden hnum hthird
   classical
-  let P₀ := P.filter (fun ij => Mat ij 1=0)
-  let P₁ := P.filter (fun ij => Mat ij 1≠0)
+  pm_6797 P₀ P.filter P₁
   have hlo ij (hij : ij∈P₀) : ij∈P ∧ Mat ij 1=0 := Finset.mem_filter.mp hij
   have hhi ij (hij : ij∈P₁) : ij∈P ∧ Mat ij 1≠0 := Finset.mem_filter.mp hij
   have hform ij (hij : ij∈P₀) :
@@ -5476,12 +4898,10 @@ private theorem positive_difference_family_type_one_source_scale_at_action
       ((P.image (fun ij => ij.1.1.1)).card:ℝ) := by
     exact_mod_cast Finset.card_le_card (Finset.image_subset_image
       (Finset.filter_subset (fun ij => Mat ij 1≠0) P))
-  have hMp : 0 < M := by linarith only [hM]
-  have hNp : (0:ℝ) < N := by exact_mod_cast hN
-  have h₀' : (P₀.card:ℝ) ≤ D₀*((P.image (fun ij => ij.1.1.1)).card:ℝ)*
-      (M/(N:ℝ))*(1+Δ*J) := h₀.trans (by gcongr)
-  have h₁' : (P₁.card:ℝ) ≤ D₁*((P.image (fun ij => ij.1.1.1)).card:ℝ)*
-      (M/(N:ℝ))*(1+Δ*J) := h₁.trans (by gcongr)
+  pm_1811
+  pm_1815
+  pm_5002 h₀' P₀.card D₀ h₀.trans
+  pm_5002 h₁' P₁.card D₁ h₁.trans
   have he : P.card=P₀.card+P₁.card := by
     exact (Finset.card_filter_add_card_filter_not (s:=P) (fun ij => Mat ij 1=0)).symm
   have heR : (P.card:ℝ)=(P₀.card:ℝ)+(P₁.card:ℝ) := by exact_mod_cast he
@@ -5490,6 +4910,7 @@ private theorem positive_difference_family_type_one_source_scale_at_action
     _ ≤ D₀*((P.image (fun ij => ij.1.1.1)).card:ℝ)*(M/(N:ℝ))*(1+Δ*J)+
         D₁*((P.image (fun ij => ij.1.1.1)).card:ℝ)*(M/(N:ℝ))*(1+Δ*J) := add_le_add h₀' h₁'
     _ = _ := by ring
+end
 
 private theorem source_model_large_action_threshold
     {σsrc csrc Usrc E σ δ T M gamma : ℝ}
@@ -5508,8 +4929,8 @@ private theorem source_model_large_action_threshold
         64*(modelPhaseJetCoefficient σ 3+δ)*M^2 ≤ |gamma| *κ^2*T) := by
   intro κ lambda Uband Ratio L
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hlambda : 0 < lambda := by dsimp only [lambda]; positivity
-  have hUband : 0 < Uband := by dsimp only [Uband]; positivity
+  pm_1626
+  pm_116 hUband Uband
   have hratio : Uband/lambda=Ratio := by
     dsimp only [Uband,lambda,Ratio]
     field_simp
@@ -5544,6 +4965,16 @@ private theorem source_model_large_action_threshold
                                                                                
                                                                             
                                                                           
+set_option hygiene false in
+macro "pb_268" : tactic => `(tactic| (
+  refine ⟨C,Dtype,hC,hDtype,?_⟩
+  intro S Fsrc z rat v Nlen Q K₀ N instK Vscale Rphys Jsep Z
+    η Tsrc T M δ θ a hη hηmax hTsrc hT hM hδ hscale hQ hθ ha
+    hθmax hθaction hy hz hreg hjets htests hden hinv hnegative hMtwo
+    hVscale hN hJsep hJM hNM hmesh hgeometry hseparation
+    Fmodel hmodel f hlevel hminor hcomplete Hsrc lambda Uband u w chart narrow
+    qell V offset color ChartCap NarrowCap Cap
+    q μ ell b tau dual x cloud radius Pall Fiber Pairs μ₀ U₀ h D Δ))
 theorem exists_positive_difference_joint_type_one_source_sieve
     {σsrc csrc Usrc E σ εloss : ℝ}
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
@@ -5702,15 +5133,8 @@ theorem exists_positive_difference_joint_type_one_source_sieve
   obtain ⟨C,hC,hsource⟩ := exists_positive_difference_actual_joint_source_sieve hεloss
   obtain ⟨Dtype,hDtype,hcount⟩ :=
     positive_difference_family_type_one_source_scale_at_action hσsrc hcsrc hUsrc hL
-  refine ⟨C,Dtype,hC,hDtype,?_⟩
-  intro S Fsrc z rat v Nlen Q K₀ N instK Vscale Rphys Jsep Z
-    η Tsrc T M δ θ a hη hηmax hTsrc hT hM hδ hscale hQ hθ ha
-    hθmax hθaction hy hz hreg hjets htests hden hinv hnegative hMtwo
-    hVscale hN hJsep hJM hNM hmesh hgeometry hseparation
-    Fmodel hmodel f hlevel hminor hcomplete Hsrc lambda Uband u w chart narrow
-    qell V offset color ChartCap NarrowCap Cap
-    q μ ell b tau dual x cloud radius Pall Fiber Pairs μ₀ U₀ h D Δ
-  have hNp : (0:ℝ) < N := by exact_mod_cast hN
+  pb_268
+  pm_1815
   obtain ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass⟩ :=
     hsource S Fsrc Prod.fst z rat v Nlen Q K₀ Vscale (N:ℝ) Rphys
       (σsrc:=σsrc) (csrc:=csrc) (Usrc:=Usrc) (η:=η) (Tsrc:=Tsrc) (T:=T)
@@ -5718,7 +5142,7 @@ theorem exists_positive_difference_joint_type_one_source_sieve
       hσsrc hcsrc hUsrc hη hηmax hTsrc hT hM hσ hδ hscale hQ hθ ha hθmax
       hy hz hreg hjets htests hden hinv hnegative hMtwo hVscale hNp hmesh
       hmodel hlevel hminor hcomplete
-  refine ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass,?_⟩
+  pm_2492
   intro TypeOne key
   constructor
   · let P₁ := TypeOne key
@@ -5729,18 +5153,16 @@ theorem exists_positive_difference_joint_type_one_source_sieve
       Finset.mem_filter.mp hij
     have hboth ij (hij : ij∈P₁) :
         ij.1.1∈S ∧ ij.2.1∈S := by
-      have hp := Finset.mem_product.mp (Finset.mem_filter.mp (hmem ij hij).1).1
-      exact ⟨(Finset.mem_product.mp (Finset.mem_filter.mp hp.1).1).1,
-        (Finset.mem_product.mp (Finset.mem_filter.mp hp.2).1).1⟩
+      pm_7186
+      pm_1534
     have hall ij (hij : ij∈P₁) : ij∈Pall := by
       have hp := Finset.mem_filter.mp (hmem ij hij).1
-      have hi := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).1
-      have hj := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).2
-      exact Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨hi.1,hj.1⟩,hp.2⟩
+      pm_2490
+      pm_7757
     have hsame ij (hij : ij∈P₁) :
         |((rat ij.2.1).den:ℝ)/(rat ij.1.1).den-1| ≤ θ ∧
         |((rat ij.2.1).num:ℝ)/(rat ij.1.1).num-1| ≤ θ := by
-      have hp := Finset.mem_product.mp (Finset.mem_filter.mp (hmem ij hij).1).1
+      pm_7186
       have hi := Finset.mem_filter.mp hp.1
       have hj := Finset.mem_filter.mp hp.2
       have hh := hratios ij.1 hi.1 ij.2 hj.1 (hi.2.trans hj.2.symm)
@@ -5768,7 +5190,7 @@ theorem exists_positive_difference_joint_type_one_source_sieve
         field_simp
       rw [hnumeq]
       exact (hsame ij hij).2
-    have hΔ : 0 ≤ Δ := by dsimp only [Δ,U₀,μ₀]; positivity
+    pm_2493
     have hh := hcount P₁ Mat Fsrc (fun a n => z (a,n)) (fun a n => Nlen (a,n))
       N Z η Δ Jsep Tsrc M hη hηmax hreg hjets htests hnegative
       hTsrc hMtwo hN hΔ hJsep hNM hJM
@@ -5795,14 +5217,12 @@ theorem exists_positive_difference_joint_type_one_source_sieve
       (fun ij hij => (hnum ij hij).trans hθaction)
       (fun ij hij => (hglobal ij (hall ij hij)).2.2.2.2.2.2.1)
     have hsub : P₁.image (fun ij => ij.1.1.1) ⊆ S.image Prod.fst := by
-      intro y hy
-      obtain ⟨ij,hij,rfl⟩ := Finset.mem_image.mp hy
+      pm_2532 y hy ij hij
       exact Finset.mem_image_of_mem Prod.fst (hboth ij hij).1
-    have hI : ((P₁.image (fun ij => ij.1.1.1)).card:ℝ) ≤ ((S.image Prod.fst).card:ℝ) := by
-      exact_mod_cast Finset.card_le_card hsub
+    pm_2494 P₁.image
     exact hh.trans (by gcongr)
   · intro ij hij hnot
-    rcases hclass key ij hij with hid | hu | hl | hn
+    pm_1100
     · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hij,Or.inl hid⟩))
     · exact Or.inl hu
     · exact Or.inr (Or.inl hl)
@@ -5828,25 +5248,23 @@ public  theorem actual_phase_pair_forget_card
   have hback ij (hij : ij∈Fiber) : embed (forget ij)=ij := by
     rcases ij with ⟨⟨⟨a,n⟩,ip⟩,⟨⟨b,m⟩,jp⟩⟩
     have he := (Finset.mem_filter.mp hij).2
-    dsimp only at he
-    rcases he with ⟨rfl,rfl⟩
+    pm_594 he
     rfl
   constructor
   · apply Finset.card_image_of_injOn
-    intro ij hij kl hkl he
-    exact (hback ij hij).symm.trans ((congrArg embed he).trans (hback kl hkl))
+    pm_1017
   · intro ij
     constructor
     · intro hij
-      obtain ⟨kl,hkl,rfl⟩ := Finset.mem_image.mp hij
-      rw [hback kl hkl]
+      pm_6444
       exact (Finset.mem_filter.mp hkl).1
     · intro hij
       exact Finset.mem_image.mpr ⟨embed ij,Finset.mem_filter.mpr ⟨hij,by constructor <;> rfl⟩,rfl⟩
 
+section
+variable (S : Finset (ℝ × ℤ)) (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
+include S P
 private theorem actual_phase_pair_sum_card
-    (S : Finset (ℝ × ℤ))
-    (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
     (hP : ∀ ij∈P, ij.1.1∈S ∧ ij.2.1∈S) :
     let Y := S.image Prod.fst
     let forget := fun ij : ((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2) =>
@@ -5855,8 +5273,7 @@ private theorem actual_phase_pair_sum_card
       (((P.filter (fun ij => ij.1.1.1=ab.1 ∧ ij.2.1.1=ab.2)).image forget).card:ℝ) := by
   classical
   intro Y forget
-  let phase := fun ij : ((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2) =>
-    (ij.1.1.1,ij.2.1.1)
+  pm_2495
   have hmaps : Set.MapsTo phase (P : Set _) (Y ×ˢ Y : Finset _) := by
     intro ij hij
     exact Finset.mem_product.mpr
@@ -5876,8 +5293,6 @@ private theorem actual_phase_pair_sum_card
 
 
 private theorem actual_type_one_phase_pair_partition
-    (S : Finset (ℝ × ℤ))
-    (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)))
     (Mat : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Fin 4 → ℤ)
     (small : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Prop)
     [DecidablePred small]
@@ -5900,26 +5315,26 @@ private theorem actual_type_one_phase_pair_partition
   intro TypeOne Rest Upper NonUpper Lower Large Y forget phaseFiber
   have hfirst : TypeOne.card+Rest.card=P.card :=
     Finset.card_filter_add_card_filter_not small
-  have hsecond : Upper.card+NonUpper.card=Rest.card :=
-    Finset.card_filter_add_card_filter_not (fun ij => Mat ij 2=0)
-  have hthird : Lower.card+Large.card=NonUpper.card :=
-    Finset.card_filter_add_card_filter_not (fun ij => Mat ij 1=0)
+  pm_7866 hsecond Upper.card NonUpper.card Rest.card hthird Lower.card Large.card
   have hsum : (P.card:ℝ)=(TypeOne.card:ℝ)+
       ((Upper.card:ℝ)+(Lower.card:ℝ)+(Large.card:ℝ)) := by
     exact_mod_cast (by omega : P.card=TypeOne.card+(Upper.card+Lower.card+Large.card))
   have hUpper := actual_phase_pair_sum_card S Upper (fun ij hij =>
     hP ij (Finset.mem_filter.mp (Finset.mem_filter.mp hij).1).1)
-  have hLower := actual_phase_pair_sum_card S Lower (fun ij hij =>
-    hP ij (Finset.mem_filter.mp (Finset.mem_filter.mp (Finset.mem_filter.mp hij).1).1).1)
-  have hLarge := actual_phase_pair_sum_card S Large (fun ij hij =>
-    hP ij (Finset.mem_filter.mp (Finset.mem_filter.mp (Finset.mem_filter.mp hij).1).1).1)
+  pm_5949 hLower Lower
+  pm_5949 hLarge Large
   rw [hsum,hUpper,hLower,hLarge]
   simp only [Finset.sum_add_distrib]
   rfl
+end
 
 
                                                                            
                                                                          
+set_option hygiene false in
+macro "pc_428" x1:ident : tactic => `(tactic| (
+  obtain ⟨C,Dtype,hC,hDtype,hsource⟩ :=
+    $x1:ident hσsrc hcsrc hUsrc hE hσ hεloss))
 theorem exists_positive_difference_joint_type_decomposed_source_sieve
     {σsrc csrc Usrc E σ εloss : ℝ}
     (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
@@ -6095,31 +5510,17 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
                   ((phaseFiber (Large key) ab).card:ℝ)))) := by
   classical
   intro κ Ratio L
-  obtain ⟨C,Dtype,hC,hDtype,hsource⟩ :=
-    exists_positive_difference_joint_type_one_source_sieve hσsrc hcsrc hUsrc hE hσ hεloss
-  refine ⟨C,Dtype,hC,hDtype,?_⟩
-  intro S Fsrc z rat v Nlen Q K₀ N instK Vscale Rphys Jsep Z
-    η Tsrc T M δ θ a hη hηmax hTsrc hT hM hδ hscale hQ hθ ha
-    hθmax hθaction hy hz hreg hjets htests hden hinv hnegative hMtwo
-    hVscale hN hJsep hJM hNM hmesh hgeometry hseparation
-    Fmodel hmodel f hlevel hminor hcomplete Hsrc lambda Uband u w chart narrow
-    qell V offset color ChartCap NarrowCap Cap
-    q μ ell b tau dual x cloud radius Pall Fiber Pairs μ₀ U₀ h D Δ
-  obtain ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass,htype⟩ :=
-    hsource S Fsrc z rat v Nlen Q K₀ N Vscale Rphys Jsep Z
-      (η:=η) (Tsrc:=Tsrc) (T:=T) (M:=M) (δ:=δ) (θ:=θ) (a:=a)
-      hη hηmax hTsrc hT hM hδ hscale hQ hθ ha hθmax hθaction
-      hy hz hreg hjets htests hden hinv hnegative hMtwo hVscale
-      hN hJsep hJM hNM hmesh hgeometry hseparation hmodel hlevel hminor hcomplete
-  refine ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass,?_⟩
+  pc_428 exists_positive_difference_joint_type_one_source_sieve
+  pb_268
+  pm_2496 htype
+  pm_2492
   intro TypeOne Rest Upper NonUpper Lower Large Y forget phaseFiber
   have hsplit key : ((Pairs key).card:ℝ)=((TypeOne key).card:ℝ)+∑ ab∈Y ×ˢ Y,
       (((phaseFiber (Upper key) ab).card:ℝ)+((phaseFiber (Lower key) ab).card:ℝ)+
         ((phaseFiber (Large key) ab).card:ℝ)) := by
     have hP ij (hij : ij∈Pairs key) : ij.1.1∈S ∧ ij.2.1∈S := by
       have hp := Finset.mem_product.mp (Finset.mem_filter.mp hij).1
-      exact ⟨(Finset.mem_product.mp (Finset.mem_filter.mp hp.1).1).1,
-        (Finset.mem_product.mp (Finset.mem_filter.mp hp.2).1).1⟩
+      pm_1534
     have hh := actual_type_one_phase_pair_partition S (Pairs key) Mat
       (fun ij => ij∈TypeOne key) hP
     have hsmall' : (Pairs key).filter (fun ij => ij∈TypeOne key)=TypeOne key := by
@@ -6132,7 +5533,7 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
     exact hh
   refine ⟨htype,hsplit,?_⟩
   intro k
-  have hCap : 0 ≤ Cap := (Nat.cast_nonneg _).trans hcard
+  pm_2279 hCap Cap Nat.cast_nonneg hcard
   have hVs : 0 ≤ Vscale := zero_le_one.trans hVscale
   apply (hfourier k).trans
   apply mul_le_mul_of_nonneg_left _
@@ -6311,12 +5712,9 @@ theorem eventually_positive_difference_global_triangular_source_mass
       (P.card:ℝ) ≤ (240*CostLower*
         (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+
           2*BlowerConst+(3/2:ℝ)*DlowerConst))*T^εloss) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    eventually_positive_difference_actual_fourier_triangular_original_source_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
-  intro σ Jref εloss E θ hσ hJref hεloss
-  filter_upwards [hmassFn (E:=E) (θ:=θ) hσ hJref hεloss] with T hmass
+  pm_2479 hmassFn eventually_positive_difference_actual_fourier_triangular_original_source_mass
+  pm_2478
+  pm_702
   intro Fsrc η ya yb Tsrc chartKey Uref Refs Gaps Bselect P entry Mat gap
     N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     δ M R base Bcut A W x xlocal
@@ -6335,50 +5733,8 @@ theorem eventually_positive_difference_global_triangular_source_mass
     Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst
     DupperConst DlowerConst CostUpper CostLower
 
-  let flocal := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-  have hsource i : flocal i = fun w => f i ((A i:ℝ)+w) := by
-    funext w
-    dsimp only [flocal,heathBrownPhysicalPhase,F,f]
-    field_simp
-  have hjet ij i k : iteratedDeriv k (flocal i) (xlocal ij i) =
-      iteratedDeriv k (f i) (x ij i) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,add_sub_cancel]
-  have hrjet ij i k : iteratedDeriv k (flocal i) (round (xlocal ij i)) =
-      iteratedDeriv k (f i) (round (x ij i)) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,round_sub_intCast,Int.cast_sub,add_sub_cancel]
-  have hrderiv ij i : deriv (flocal i) (round (xlocal ij i)) =
-      deriv (f i) (round (x ij i)) := by
-    simpa only [iteratedDeriv_one] using hrjet ij i 1
-  let mulocal := fun ij i => iteratedDeriv 3 (flocal i) (round (xlocal ij i))/6
-  let elllocal := fun ij i => deriv (flocal i) (round (xlocal ij i))
-  let blocal := fun ij i => (⌊(q ij i:ℝ)*elllocal ij i⌋+(parity ij i:ℕ) : ℤ)
-  let taulocal := fun ij i => ((blocal ij i:ℝ)-(q ij i:ℝ)*elllocal ij i)/2
-  let duallocal := fun ij i => -2*mulocal ij i*(Real.sqrt (2/(3*mulocal ij i*(q ij i:ℝ))))^3
-  let cloudlocal := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*blocal ij i/q ij i),
-    Int.fract (-(vinv ij i:ℝ)/q ij i),duallocal ij i/Real.sqrt K₀,
-    (3*duallocal ij i*taulocal ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-  have hcloud ij i : cloudlocal ij i=cloud ij i := by
-    dsimp only [cloudlocal,duallocal,mulocal,taulocal,blocal,elllocal]
-    simp only [hrjet,hrderiv]
-    rfl
-  have hgeomA ij (hij : ij∈P) :
-      N ≤ AlenA ij.1.1 ∧ AlenA ij.1.1 ≤ 3*N ∧
-        round (za ij.1.1-(A 0:ℝ))+(AlenA ij.1.1:ℤ)=
-          (Za-A 0)+(N:ℤ)*ij.1.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryA ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
-  have hgeomB ij (hij : ij∈P) :
-      N ≤ AlenB ij.2.1 ∧ AlenB ij.2.1 ≤ 3*N ∧
-        round (zb ij.2.1-(A 1:ℝ))+(AlenB ij.2.1:ℤ)=
-          (Zb-A 1)+(N:ℤ)*ij.2.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryB ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
+  pm_2499
+  pm_2497
   apply hmass Fsrc η ya yb Tsrc chartKey Uref Refs Gaps (Bselect:=Bselect)
     P entry Mat gap N (fun n => za n-(A 0:ℝ)) (fun n => zb n-(A 1:ℝ))
     AlenA AlenB (Za-A 0) (Zb-A 1) Q K₀ rat vinv parity anchor e r v s
@@ -6394,17 +5750,10 @@ theorem eventually_positive_difference_global_triangular_source_mass
     (by intro ij hij i; rw [show iteratedDeriv 2 (heathBrownPhysicalPhase (F i) T M (A i) 1)
       (xlocal ij i)=iteratedDeriv 2 (f i) (x ij i) from hjet ij i 2]; exact hlevel ij hij i)
     (by
-      intro ij hij
-      change (⌊(q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))⌋+(parity ij 0:ℕ):ℤ)-
-          round ((q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))) =
-        (⌊(q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1))⌋+(parity ij 1:ℕ):ℤ)-
-          round ((q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1)))
-      rw [hrderiv,hrderiv]
+      pm_2498
       exact hcolor ij hij)
     (by
-      intro ij hij d
-      change |cloudlocal ij 0 d-cloudlocal ij 1 d| ≤ 2*radius d
-      rw [hcloud,hcloud]
+      pm_2500
       exact hnear ij hij d)
     hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     hNtwo hL hU hanchor hcut hcount hsize hD hΔ hBsize
@@ -6559,8 +5908,7 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     V*(P.card:ℝ) ≤
       (2*Bselect*60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
         (Cmain+Ctail)*((Q:ℝ)/(N:ℝ))^((2:ℝ)/3))*T^εloss := by
-  filter_upwards [eventually_physicalModelPhase_actual_fourier_original_pair_mass hσ hJref hεloss]
-    with T hmass
+  pm_5380 eventually_physicalModelPhase_actual_fourier_original_pair_mass hmass
   intro Fsrc σsrc η Tsrc ya yb Uref Refs Gaps Bselect P Mat gap Q K₀ _ N za zb AlenA AlenB Za Zb
     rat vinv parity anchor e r v s δ M R base Bcut lambda Uband θ V A W x xlocal yp F
     hbase hgapMem hgeometryA hgeometryB hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW hx hden hlambda hUband hθ hθmax hcurv hinv hchart horientation hBcut hs hrefSet hparentSet hsep hwideL hwideU hUref hBselectSize hcutMargin hselectedWrap hreferenceDen hgapWidth hRQ hselectedUpper hscaleTen hfamilyGap hc hlarge haction hV hgap
@@ -6570,50 +5918,8 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     hMatdet hMatt hMatmap hMatgamma H hNtwo hL hU hanchor hcut hcount
     C₂ C₃ Ct Cc Δ Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
     Lunit Gamma Cthird Cpack Cfirst Cgap Cmain Ctail hvchoice hUlo
-  let flocal := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-  have hsource i : flocal i = fun w => f i ((A i:ℝ)+w) := by
-    funext w
-    dsimp only [flocal,heathBrownPhysicalPhase,F,f]
-    field_simp
-  have hjet ij i k : iteratedDeriv k (flocal i) (xlocal ij i) =
-      iteratedDeriv k (f i) (x ij i) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,add_sub_cancel]
-  have hrjet ij i k : iteratedDeriv k (flocal i) (round (xlocal ij i)) =
-      iteratedDeriv k (f i) (round (x ij i)) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,round_sub_intCast,Int.cast_sub,add_sub_cancel]
-  have hrderiv ij i : deriv (flocal i) (round (xlocal ij i)) =
-      deriv (f i) (round (x ij i)) := by
-    simpa only [iteratedDeriv_one] using hrjet ij i 1
-  let mulocal := fun ij i => iteratedDeriv 3 (flocal i) (round (xlocal ij i))/6
-  let elllocal := fun ij i => deriv (flocal i) (round (xlocal ij i))
-  let blocal := fun ij i => (⌊(q ij i:ℝ)*elllocal ij i⌋+(parity ij i:ℕ) : ℤ)
-  let taulocal := fun ij i => ((blocal ij i:ℝ)-(q ij i:ℝ)*elllocal ij i)/2
-  let duallocal := fun ij i => -2*mulocal ij i*(Real.sqrt (2/(3*mulocal ij i*(q ij i:ℝ))))^3
-  let cloudlocal := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*blocal ij i/q ij i),
-    Int.fract (-(vinv ij i:ℝ)/q ij i),duallocal ij i/Real.sqrt K₀,
-    (3*duallocal ij i*taulocal ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-  have hcloud ij i : cloudlocal ij i=cloud ij i := by
-    dsimp only [cloudlocal,duallocal,mulocal,taulocal,blocal,elllocal]
-    simp only [hrjet,hrderiv]
-    rfl
-  have hgeomA ij (hij : ij∈P) :
-      N ≤ AlenA ij.1.1 ∧ AlenA ij.1.1 ≤ 3*N ∧
-        round (za ij.1.1-(A 0:ℝ))+(AlenA ij.1.1:ℤ)=
-          (Za-A 0)+(N:ℤ)*ij.1.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryA ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
-  have hgeomB ij (hij : ij∈P) :
-      N ≤ AlenB ij.2.1 ∧ AlenB ij.2.1 ≤ 3*N ∧
-        round (zb ij.2.1-(A 1:ℝ))+(AlenB ij.2.1:ℤ)=
-          (Zb-A 1)+(N:ℤ)*ij.2.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryB ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
+  pm_2499
+  pm_2497
   apply hmass Uref Refs Gaps (Bselect:=Bselect) P Mat gap Q K₀ N
     (fun n => za n-(A 0:ℝ)) (fun n => zb n-(A 1:ℝ))
     AlenA AlenB (Za-A 0) (Zb-A 1) rat vinv parity anchor e r v s
@@ -6629,27 +5935,17 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     (by intro ij hij i; rw [show iteratedDeriv 2 (heathBrownPhysicalPhase (F i) T M (A i) 1)
       (xlocal ij i)=iteratedDeriv 2 (f i) (x ij i) from hjet ij i 2]; exact hlevel ij hij i)
     (by
-      intro ij hij
-      change (⌊(q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))⌋+(parity ij 0:ℕ):ℤ)-
-          round ((q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))) =
-        (⌊(q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1))⌋+(parity ij 1:ℕ):ℤ)-
-          round ((q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1)))
-      rw [hrderiv,hrderiv]
+      pm_2498
       exact hcolor ij hij)
     (by
-      intro ij hij d
-      change |cloudlocal ij 0 d-cloudlocal ij 1 d| ≤ 2*radius d
-      rw [hcloud,hcloud]
+      pm_2500
       exact hnear ij hij d)
     (by
-      intro ij hij
-      change |cloudlocal ij 0 1-cloudlocal ij 1 1| ≤ 1/(6*(K₀:ℝ)^2*V)
-      rw [hcloud,hcloud]
+      pm_2501
       exact hnearNarrow ij hij)
     hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     hNtwo hL hU hanchor hcut hcount hsize hD hΔ hBsize hvchoice hUlo
 
 -- Generated closures: source context is replayed in the next part.
 end TaoTrudgianYang2025.HuxleyRationalPhase
-end
 end

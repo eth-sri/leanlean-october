@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection7LocalBound
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Integrating Wooley's equation (7.22)
@@ -13,11 +14,9 @@ for either normalized exponential sum is introduced.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 /-- Equation (7.22) integrated against the unchanged right-hand factor in
 the mixed moment. -/
@@ -49,7 +48,7 @@ theorem wooley_equation_7_22_integrated_native
     wooley_section7_a_add_HPrime_le_nextB hr hBPrime
   let factor : ℝ := (p ^ (bPrime - A) : ℝ) ^ wooleyTriangular r
   let mass : ℝ := wooleySourceResidueMassSq gamma (p ^ A) kappa
-  let scale : ℝ := ((((p ^ B) ^ k : ℕ) : ℝ))⁻¹
+  pm_1277
   let rightNorm : (Fin k → ZMod (p ^ B)) → ℝ := fun alpha =>
     ‖wooleySourceNormalizedPolynomialResidueSum phi gamma alpha eta‖ ^
       (2 * (s - wooleyTriangular r))
@@ -195,6 +194,5 @@ theorem wooley_equation_7_22_integrated_native
       rw [Finset.sum_comm]
 
 
-end
 
 end GafniTao

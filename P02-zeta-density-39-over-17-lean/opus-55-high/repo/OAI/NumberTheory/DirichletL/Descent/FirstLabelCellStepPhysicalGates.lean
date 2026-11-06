@@ -30,7 +30,7 @@ lemma secondCutoff_nonneg (Z M r ell V eta tau window : ℝ) (k : SourceIndex) (
   apply uniformSecondRadius_nonneg _ _ _ _ _ _ _ _ _ hZ.le
   · unfold firstCellRadius
     positivity
-  · exact Real.rpow_nonneg hZ.le _
+  positivity
 
 include hp in
 theorem secondCutoff_dominates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -43,7 +43,7 @@ theorem secondCutoff_dominates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k 
   have hd := (InverseFirstGlobalCaps.parentCell_ideal_bounds p hp pool Q (fun _ _=>1) k l
     Z eta hZ hbin y (Finset.mem_filter.mp hy).1).2.1.2
   apply correlated_le_uniform p Z (exponent Z (k 3)) eta _ G E _ _ _
-    (by unfold firstCellRadius;exact Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _)
+    (by unfold firstCellRadius;positivity)
     (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
   simpa [secondParentDivisor,parent,InverseFirstGlobalCaps.sourceIdeal_norm,
     primeSubsetGenerator_norm_eq_productNorm] using hd

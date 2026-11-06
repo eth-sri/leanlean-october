@@ -1,6 +1,7 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.SecondEndpoints
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,8 +21,8 @@ theorem alternating_harmonic_tail_bound_sharp {N : ℕ} {y : ℝ} (hy : 0 < y)
       (Real.pi / 2) / y := by
   let d (u : ℝ) := ((Complex.digamma ((u + 1) / 2 : ℝ)).re -
     (Complex.digamma (u / 2 : ℝ)).re) / 2
-  have hd : 0 < (N : ℝ) + 1 - y := by linarith
-  have ha : 0 < (N : ℝ) + 1 := by positivity
+  pm_15
+  pm_6905
   have hs : (∑' n : ℕ, (-1 : ℝ) ^ n /
       (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y))) =
       (d ((N : ℝ) + 1 - y) - d ((N : ℝ) + 1)) / y := by

@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownShiftFiberBound
 public import Mathlib.NumberTheory.Harmonic.Bounds
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Summation over Heath-Brown's shifts
@@ -13,11 +14,9 @@ simplifications.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic_total
     {N k H K D d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -51,9 +50,7 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic_total
       hcoord hcoordd hraw hrawd hkBounds
   · have hdEq : d = N := Nat.le_antisymm hdN (Nat.le_of_not_gt hdStrict)
     have hempty : heathBrownPositiveShiftFiber N k H K f d = ∅ := by
-      apply Finset.not_nonempty_iff_eq_empty.mp
-      intro hne
-      obtain ⟨n, hn⟩ := hne
+      pm_7777
       have hn' := mem_heathBrownPositiveShiftFiber.mp hn
       omega
     rw [hempty]
@@ -171,6 +168,5 @@ theorem heathBrownPairCountTwo_card_cast_le_harmonic
   simpa only [D] using hcount.trans hsum'
 
 
-end
 
 end GafniTao

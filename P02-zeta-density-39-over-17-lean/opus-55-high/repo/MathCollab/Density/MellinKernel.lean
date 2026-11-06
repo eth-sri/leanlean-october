@@ -2,11 +2,12 @@ module
 public import MathCollab.Density.FixedBandError
 public import MathCollab.Density.AllFrequency
 public import Mathlib.MeasureTheory.Integral.Prod
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Real Complex Set MeasureTheory
-open scoped BigOperators ContDiff ComplexConjugate
+open scoped ContDiff ComplexConjugate
 
 noncomputable section
 namespace MathCollab.Density
@@ -52,11 +53,13 @@ theorem scaled_mellin_phase {k z : ℝ} (hk : 0 < k) (hz : 0 < z) (v r : ℝ) :
   simp only [mul_assoc] at he ⊢
   rw [← Complex.exp_add, he, Complex.exp_add]
   push_cast
-  field_simp [show (k : ℂ) ≠ 0 by exact_mod_cast hk.ne']
+  pm_7270
 
+section
+variable {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w) (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {a b : ℝ} (ha : 0 < a)
+include w hw hws a b ha
 /-- Absolute product domination, with the full Mellin line retained. -/
-theorem integrable_mellin_kernel {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {a b : ℝ} (ha : 0 < a)
+theorem integrable_mellin_kernel
     (k v : ℝ) :
     Integrable (fun p : ℝ × ℝ => mellinLine w p.2 *
       (dirichletPhase k (p.2-v) * oscillatoryKernel v p.2 p.1))
@@ -74,12 +77,11 @@ theorem integrable_mellin_kernel {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   apply (hi.mul_prod hm.norm).mono'
     (hm.aestronglyMeasurable.comp_snd.mul hp.aestronglyMeasurable)
   filter_upwards with p
-  simp only [Pi.mul_apply, norm_mul, norm_dirichletPhase, norm_oscillatoryKernel, one_mul]
-  exact le_of_eq (mul_comm _ _)
+  pm_93 Pi.mul_apply norm_mul norm_dirichletPhase norm_oscillatoryKernel one_mul
+  grind
 
 /-- Fubini is justified by the proved product majorant, not assumed. -/
-theorem mellin_kernel_integral_swap {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {a b : ℝ} (ha : 0 < a) (hab : a ≤ b)
+theorem mellin_kernel_integral_swap (hab : a ≤ b)
     (k v : ℝ) :
     (∫ z in a..b, ∫ r : ℝ, mellinLine w r *
       (dirichletPhase k (r-v) * oscillatoryKernel v r z)) =
@@ -91,9 +93,13 @@ theorem mellin_kernel_integral_swap {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   apply integral_congr_ae
   filter_upwards with r
   simp only [← mul_assoc, intervalIntegral.integral_const_mul]
+end
 
+section
+variable {w : ℝ → ℂ}
+include w
 /-- Positive dilation into any interval containing the scaled cutoff support. -/
-theorem modeIntegral_scaled {w : ℝ → ℂ}
+theorem modeIntegral_scaled
     (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {k a b : ℝ}
     (hk : 0 < k) (hab : a ≤ b) (ha : a ≤ k / 2) (hb : 5*k ≤ b) (v : ℝ) :
     modeIntegral w v k = ∫ z in a..b, (k : ℂ)⁻¹ * w (z/k) *
@@ -133,7 +139,7 @@ theorem modeIntegral_scaled {w : ℝ → ℂ}
   calc
     modeIntegral w v k = (k : ℂ)⁻¹ * ∫ z, f (z/k) := by
       rw [hg, hc]
-      field_simp [show (k : ℂ) ≠ 0 by exact_mod_cast hk.ne']
+      pm_7270
     _ = (k : ℂ)⁻¹ * ∫ z in a..b, f (z/k) := by rw [hr]
     _ = ∫ z in a..b, (k : ℂ)⁻¹ * w (z/k) *
         Complex.exp (I * ((v * Real.log (z/k) - 2*Real.pi*z : ℝ) : ℂ)) := by
@@ -146,7 +152,7 @@ theorem modeIntegral_scaled {w : ℝ → ℂ}
       ring
 
 /-- Pointwise Mellin expansion after the dilation, with no inverse-scale residue. -/
-theorem scaled_cutoff_mellin {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
+theorem scaled_cutoff_mellin (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {k z : ℝ} (hk : 0 < k) (hz : 0 < z)
     (v : ℝ) :
     (k : ℂ)⁻¹ * w (z/k) *
@@ -154,7 +160,7 @@ theorem scaled_cutoff_mellin {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
       ((1/(2*Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
         mellinLine w r * (dirichletPhase k (r-v) * oscillatoryKernel v r z) := by
   rw [cutoff_mellin_inversion_phase hw hws (div_pos hz hk)]
-  let C : ℂ := ((1/(2*Real.pi) : ℝ) : ℂ)
+  pm_630 C
   let E : ℂ := Complex.exp (I * ((v * Real.log (z/k) - 2*Real.pi*z : ℝ) : ℂ))
   change (k : ℂ)⁻¹ * (C * ∫ r : ℝ,
       ((z/k : ℝ) : ℂ)⁻¹ * dirichletPhase (z/k) (-r) * mellinLine w r) * E = _
@@ -174,7 +180,7 @@ theorem scaled_cutoff_mellin {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
         _ = _ := by rw [show E = _ from rfl, scaled_mellin_phase hk hz]
 
 /-- Exact common-interval Mellin identity, justified by absolute Fubini. -/
-theorem modeIntegral_mellin_common {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
+theorem modeIntegral_mellin_common (hw : ContDiff ℝ ∞ w)
     (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {k a b : ℝ}
     (hk : 0 < k) (ha : 0 < a) (hab : a ≤ b) (hlo : a ≤ k/2) (hhi : 5*k ≤ b)
     (v : ℝ) :
@@ -185,26 +191,31 @@ theorem modeIntegral_mellin_common {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   calc
     _ = ∫ z in a..b, ((1/(2*Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
         mellinLine w r * (dirichletPhase k (r-v) * oscillatoryKernel v r z) := by
-      apply intervalIntegral.integral_congr
-      intro z hz
-      rw [uIcc_of_le hab] at hz
+      pm_445 intervalIntegral.integral_congr z hz uIcc_of_le hab
       exact scaled_cutoff_mellin hw hws hk (ha.trans_le hz.1) v
     _ = _ := by
       rw [intervalIntegral.integral_const_mul, mellin_kernel_integral_swap hw hws ha hab]
+end
 
 def reflectionKernel (H v r : ℝ) : ℂ :=
   ∫ z in H/(40*Real.pi)..(20*H/Real.pi), oscillatoryKernel v r z
 
-theorem reflection_interval_pos {H : ℝ} (hH : 0 < H) : 0 < H/(40*Real.pi) := by
+section
+variable {H : ℝ} (hH : 0 < H)
+include H hH
+theorem reflection_interval_pos : 0 < H/(40*Real.pi) := by
   positivity
 
-theorem reflection_interval_order {H : ℝ} (hH : 0 < H) :
+theorem reflection_interval_order :
     H/(40*Real.pi) ≤ 20*H/Real.pi := by
   apply (div_le_div_iff₀ (by positivity) Real.pi_pos).2
   nlinarith [Real.pi_pos]
+end
 
-theorem band_modeIntegral_mellin {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {L H : ℝ}
+section
+variable {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w) (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5)
+include w hw hws
+theorem band_modeIntegral_mellin {L H : ℝ}
     (hL : 0 < L) (hH : 0 < H) {m : ℤ} (hm : inReflectionBand L H m) (v : ℝ) :
     modeIntegral w v ((m : ℝ)*L) = ((1/(2*Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
       mellinLine w r * dirichletPhase ((m : ℝ)*L) (r-v) * reflectionKernel H v r := by
@@ -218,8 +229,7 @@ theorem band_modeIntegral_mellin {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     apply (le_div_iff₀ Real.pi_pos).2
     nlinarith
 
-theorem integrable_reflection_kernel {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1/2 : ℝ) 5) {H : ℝ} (hH : 0 < H) (k v : ℝ) :
+theorem integrable_reflection_kernel {H : ℝ} (hH : 0 < H) (k v : ℝ) :
     Integrable (fun r => mellinLine w r * dirichletPhase k (r-v) * reflectionKernel H v r) := by
   have hh := (integrable_mellin_kernel hw hws
     (b := 20*H/Real.pi) (reflection_interval_pos hH) k v).integral_prod_right
@@ -227,8 +237,12 @@ theorem integrable_reflection_kernel {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   funext r
   simp only [reflectionKernel, intervalIntegral.integral_of_le (reflection_interval_order hH),
     ← mul_assoc, integral_const_mul]
+end
 
-theorem norm_reflectionKernel_sq_le {H : ℝ} (hH : 0 < H) (v r : ℝ) :
+section
+variable {H : ℝ} (hH : 0 < H)
+include H hH
+theorem norm_reflectionKernel_sq_le (v r : ℝ) :
     ‖reflectionKernel H v r‖ ^ 2 ≤ 2000 / H := by
   have hh := norm_oscillatoryIntegral_le (tau := v-r)
     (reflection_interval_pos hH) (reflection_interval_order hH)
@@ -243,7 +257,7 @@ theorem norm_reflectionKernel_sq_le {H : ℝ} (hH : 0 < H) (v r : ℝ) :
   apply (le_div_iff₀ hH).2
   nlinarith [sq_nonneg ‖reflectionKernel H v r‖]
 
-theorem measurable_reflectionKernel {H : ℝ} (hH : 0 < H) (v : ℝ) :
+theorem measurable_reflectionKernel (v : ℝ) :
     Measurable (reflectionKernel H v) := by
   have hm : Measurable (fun p : ℝ × ℝ => oscillatoryKernel v p.1 p.2) := by
     unfold oscillatoryKernel
@@ -253,6 +267,7 @@ theorem measurable_reflectionKernel {H : ℝ} (hH : 0 < H) (v : ℝ) :
   unfold reflectionKernel
   simpa only [intervalIntegral.integral_of_le (reflection_interval_order hH)]
     using hh.measurable
+end
 
 /-- The line-one Mellin transform is exactly the handoff's positive-axis cutoff integral. -/
 theorem mellinLine_eq_cutoffIntegral (w : ReflectionCutoff) (r : ℝ) :

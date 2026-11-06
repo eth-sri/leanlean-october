@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.FirstPriorityParents
 public import OAI.NumberTheory.DirichletL.Descent.PrincipalSelectorMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,15 +21,18 @@ abbrev Core (ι : Type*) := CubeCoordinates ι×Finset ι×Finset ι
 def core {ι : Type*} {Jo : ℕ} (x : Source ι Jo) : Core ι :=
   (x.cube,x.firstCommon,x.quotientSupport)
 
-def divisorTarget {ι : Type*} [DecidableEq ι] (p : ι→O) (q : Core ι) : Ideal O :=
+def divisorTarget {ι : Type*} [DecidableEq ι] (p : ι→ O) (q : Core ι) : Ideal O :=
   sourceIdeal p q.1.support*sourceIdeal p q.2.1*sourceIdeal p q.2.2
 
-lemma divisorTarget_ne_zero {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+section
+variable {ι : Type*} [DecidableEq ι] (p : ι→ O)
+include ι p
+lemma divisorTarget_ne_zero (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal] (q : Core ι) : divisorTarget p q≠0 :=
   mul_ne_zero (mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _))
     (sourceIdeal_ne_zero p hp _)
 
-lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
+lemma firstDivisor_dvd_target
     [∀i,(Ideal.span {p i}).IsMaximal] {Jo : ℕ} (x : Source ι Jo) (hx : SourceValid p x) :
     sourceIdeal p x.firstDivisor∣divisorTarget p (core x) := by
   have hd := sourceIdeal_dvd p _ _ hx.first_divisor
@@ -37,9 +41,9 @@ lemma firstDivisor_dvd_target {ι : Type*} [DecidableEq ι] (p : ι→O)
   change sourceIdeal p x.firstCommon*sourceIdeal p x.cube.support∣
     sourceIdeal p x.cube.support*sourceIdeal p x.firstCommon*sourceIdeal p x.quotientSupport
   rw [mul_comm (sourceIdeal p x.firstCommon)]
-  exact dvd_mul_right _ _
+  simp_all
 
-theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+theorem core_fiber_card (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i=>Ideal.span {p i})) {Jo : ℕ}
     (S : Finset (Source ι Jo)) (q : Core ι)
@@ -47,7 +51,7 @@ theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p 
     S.card≤(idealDivisors (divisorTarget p q)).card^(Jo+1) := by
   let D := idealDivisors (divisorTarget p q)
   have hD := divisorTarget_ne_zero p hp q
-  let encode (x : S) : D×(Fin Jo→D) :=
+  let encode (x : S) : D×(Fin Jo→ D) :=
     (⟨sourceIdeal p x.val.firstDivisor,(mem_idealDivisors hD).mpr (by
       simpa only [hq x.val x.property] using firstDivisor_dvd_target p x.val (hS x.val x.property))⟩,
       fun i=>⟨(x.val.oldAssigned i).val,(mem_idealDivisors hD).mpr (by
@@ -67,10 +71,11 @@ theorem core_fiber_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p 
     exact Source.ext (congrArg Prod.fst hk) (congrArg (fun q=>q.2.1) hk) hd
       (congrArg (fun q=>q.2.2) hk) ho
   have hh := Fintype.card_le_of_injective encode hi
-  simpa only [Fintype.card_coe,Fintype.card_prod,Fintype.card_fun,Fintype.card_fin,D,pow_succ,mul_comm] using hh
+  pm_314 Fintype.card_coe Fintype.card_prod Fintype.card_fun Fintype.card_fin D pow_succ mul_comm hh
+end
 
 theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(q : Core ι),
@@ -78,7 +83,7 @@ theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     (S.card:ℝ)≤C*(Ideal.absNorm (divisorTarget p q):ℝ)^eps := by
   obtain ⟨D,hD,hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power
     (eps/(Jmax+1)) (by positivity)
-  refine ⟨D^(Jmax+1),by positivity,?_⟩
+  refine ⟨D ^(Jmax+1),by positivity,?_⟩
   intro ι _ p hp _ hinj Jo hJo S q hS hq
   have h0 := divisorTarget_ne_zero p hp q
   have hcard : S.card≤(idealDivisors (divisorTarget p q)).card^(Jmax+1) :=
@@ -89,12 +94,11 @@ theorem core_fiber_small_power (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
   apply hb.trans_eq
   rw [mul_pow]
   congr 1
-  rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
-  congr 1
+  pm_459
   push_cast
   field_simp
 
-lemma divisorTarget_norm_bound {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+lemma divisorTarget_norm_bound {ι : Type*} [DecidableEq ι] (p : ι→ O) (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal] (q : Core ι) (B V T : ℝ)
     (hB : 0≤B) (hV : 0≤V) (_hT : 0≤T)
     (hb₁ : ‖eisEmbedding (primeProduct p q.1.support q.1.leftExponent)‖^2≤B)

@@ -9,6 +9,7 @@ actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannSourceBounds
 public import MathCollab.Density.Stronger.Atkinson.DivisorLatticePhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,6 @@ integrability is proved before subtracting their integrals. The
 complete source remainder retains the n^(-5/4) divisor weight.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set
@@ -38,7 +38,10 @@ def zetaNeumannRemainderIntegrand (T G L : ℝ) (n : ℕ) (x : ℝ) : ℂ :=
     ((dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n)) -
       neumannTwoTerm (4 * Real.pi * Real.sqrt (x * n)) : ℝ) : ℂ)
 
-theorem integrable_zetaAtkinson_kernel_of_support_bound {T G L : ℝ}
+section
+variable {T G L : ℝ}
+include T G L
+theorem integrable_zetaAtkinson_kernel_of_support_bound
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (n : ℕ)
     {K : ℝ → ℝ} (hK : Measurable K) {B : ℝ}
     (hbound : ∀ x ∈ Function.support (zetaSmoothDivisorTest T G L),
@@ -46,42 +49,34 @@ theorem integrable_zetaAtkinson_kernel_of_support_bound {T G L : ℝ}
     Integrable (fun x : ℝ => zetaAtkinsonDivisorTest T G L x *
       (K (4 * Real.pi * Real.sqrt (x * n)) : ℂ)) := by
   have hg := zetaAtkinsonDivisorVoronoiTest hT hG hL
-  have hi : Integrable (zetaAtkinsonDivisorTest T G L) :=
-    hg.continuous.integrable_of_hasCompactSupport hg.hasCompactSupport
+  pm_7547
   have hm : Measurable (fun x : ℝ => (K (4 * Real.pi * Real.sqrt (x * n)) : ℂ)) :=
     Complex.measurable_ofReal.comp (hK.comp (by fun_prop))
   apply (hi.norm.const_mul B).mono' (hg.continuous.aestronglyMeasurable.mul hm.aestronglyMeasurable)
   apply Eventually.of_forall
   intro x
-  by_cases hz : zetaAtkinsonDivisorTest T G L x = 0
-  · simp [hz]
-  have hs : x ∈ Function.support (zetaSmoothDivisorTest T G L) := by
-    rw [← support_zetaAtkinsonDivisorTest]
-    exact hz
+  pm_4408
   rw [Pi.mul_apply, norm_mul, Complex.norm_real, Real.norm_eq_abs]
   calc
     _ ≤ ‖zetaAtkinsonDivisorTest T G L x‖ * B :=
       mul_le_mul_of_nonneg_left (hbound x hs) (norm_nonneg _)
     _ = _ := mul_comm _ _
 
-theorem integrable_zetaAtkinsonY0Integrand {T G L : ℝ}
+theorem integrable_zetaAtkinsonY0Integrand
     (hT : 16 ≤ T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
     {n : ℕ} (hn : 0 < n) : Integrable (zetaAtkinsonY0Integrand T G L n) := by
   apply integrable_zetaAtkinson_kernel_of_support_bound (by linarith : 0 < T) hG hL n
     measurable_dfiBesselY0 (B := 7)
-  intro x hx
-  exact abs_dfiBesselY0_source_le_seven hT
-    (support_zetaSmoothDivisorTest_physical (by linarith) hG hL hwidth hx).1 hn
+  pm_6896 abs_dfiBesselY0_source_le_seven
 
-theorem integrable_zetaNeumannRemainderIntegrand {T G L : ℝ}
+theorem integrable_zetaNeumannRemainderIntegrand
     (hT : 16 ≤ T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
     {n : ℕ} (hn : 0 < n) : Integrable (zetaNeumannRemainderIntegrand T G L n) := by
   apply integrable_zetaAtkinson_kernel_of_support_bound (by linarith : 0 < T) hG hL n
     (measurable_dfiBesselY0.sub measurable_neumannTwoTerm)
     (B := neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) * (n : ℝ) ^ (-(5 / 4 : ℝ)))
-  intro x hx
-  exact abs_neumann_source_remainder_le hT
-    (support_zetaSmoothDivisorTest_physical (by linarith) hG hL hwidth hx).1 hn
+  pm_6896 abs_neumann_source_remainder_le
+end
 
 theorem zetaAtkinsonTwoTermIntegrand_eq_sub (T G L : ℝ) (n : ℕ) (x : ℝ) :
     zetaAtkinsonTwoTermIntegrand T G L n x =
@@ -113,8 +108,7 @@ theorem norm_integral_zetaNeumannRemainder_le {T G L : ℝ}
           (neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) * (n : ℝ) ^ (-(5 / 4 : ℝ))) :=
         mul_le_mul_of_nonneg_left (abs_neumann_source_remainder_le hT hs.1 hn) (norm_nonneg _)
       _ = _ := mul_comm _ _
-  have h := norm_integral_le_of_norm_le hi (Eventually.of_forall hb)
-  simpa only [integral_const_mul] using h
+  pm_7722 Eventually.of_forall
 
 theorem exists_norm_integral_zetaNeumannRemainder_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
@@ -122,7 +116,7 @@ theorem exists_norm_integral_zetaNeumannRemainder_le :
         ‖∫ x : ℝ in Ioi 0, zetaNeumannRemainderIntegrand T G L n x‖ ≤
           C * G * (n : ℝ) ^ (-(5 / 4 : ℝ)) := by
   obtain ⟨C, hC, hmass⟩ := exists_integral_norm_zetaSmoothDivisorTest_le
-  refine ⟨neumannTwoTermErrorConstant * C, mul_pos neumannTwoTermErrorConstant_pos hC, ?_⟩
+  pm_653 neumannTwoTermErrorConstant C neumannTwoTermErrorConstant_pos hC
   intro T G L hT hG hGT hL hwidth n hn
   apply (norm_integral_zetaNeumannRemainder_le hT hG hL hwidth hn).trans
   have hfac : 0 ≤ neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) *

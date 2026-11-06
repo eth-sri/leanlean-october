@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.CubicDyadicAssembly
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -28,22 +27,21 @@ theorem cubic_scaled_strip (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   obtain ⟨C,hC,hbound⟩ := cubic_dyadic_strip_assembly a b c d ha hab hc hcd hα
   obtain ⟨D,hD,hcount⟩ := cubicDyadicClasses_subpower hδ
   let q : ℝ := max 1 (1/a)
-  have hq : 1 ≤ q := le_max_left _ _
+  pm_4884 hq q
   have hsmall : 0 < min 1 (c/4) := lt_min (by norm_num) (by positivity)
-  obtain ⟨T₁,hT₁,hwidth⟩ := cubic_smoothing_width_eventually hη.le hη1 hq hsmall
+  pm_97 T₁ hT₁ hwidth cubic_smoothing_width_eventually hη.le hη1 hq hsmall
   refine ⟨η,C*D,max 2 T₁,hη,hη1,mul_pos hC hD,le_max_left _ _,?_⟩
   intro T L r₀ r A₀ S hT₀ hLl hLu hA hr₀ hmem₀ hr₀0 hr hr2 hr4 hr0 hs hS
-  have hT : 2 ≤ T := (le_max_left _ _).trans hT₀
-  have hT1 : 1 ≤ T := by linarith
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
-  let U := T^(1+η)/L
-  have hUp : 0 < U := by dsimp [U]; positivity
-  have hH : 0 < T^η := Real.rpow_pos_of_pos hTp _
-  have hid : T^(1+η) = T*T^η := by rw [Real.rpow_add hTp,Real.rpow_one]
+  pm_225 hT T le_max_left hT₀
+  pm_4572
+  pm_4573
+  pm_5436
+  pm_64 hUp U
+  pm_1364
+  pm_1183
   have hU : 1 ≤ U := by
     apply (le_div_iff₀ hLp).mpr
-    have hh : 1 ≤ T^η := Real.one_le_rpow hT1 hη.le
+    pm_153 hh T η hT1 hη.le
     rw [hid]
     nlinarith
   have hUT : U ≤ T := cubic_truncation_height_le hT1 hη1.le hLl
@@ -59,7 +57,7 @@ theorem cubic_scaled_strip (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     (hw.trans (min_le_left _ _)) (hw.trans (min_le_right _ _)) hLU
     hA hr₀ hmem₀ hr₀0 hr hr2 hr4 hr0 hs hS
   refine ⟨hi,?_⟩
-  have hM : 0 ≤ ∫ x, r x^2 := integral_nonneg (fun x => sq_nonneg _)
+  pm_5700
   have hcard : ((cubicDyadicClasses U).card:ℝ) ≤ D*T^δ :=
     (hcount U hU).trans (by gcongr)
   have he₁ : L^2*T^η*U^2 = T^(3*η)*T^2 := by

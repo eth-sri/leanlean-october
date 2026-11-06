@@ -11,11 +11,11 @@ public import MathCollab.Density.Stronger.Atkinson.QuadraticGaussian
 public import Mathlib.Analysis.SpecialFunctions.Arsinh
 public import Mathlib.Analysis.Real.Pi.Bounds
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.DistLEIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex MeasureTheory Set
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -36,7 +36,7 @@ theorem third_mul_le_arsinh {x : ℝ} (hx : 0 ≤ x) (hx2 : x ≤ 2) : x / 3 ≤
     have hs3 : Real.sqrt (1 + y ^ 2) ≤ 3 :=
       (Real.sqrt_le_iff).2 ⟨by norm_num, by nlinarith [hy.1, hy.2]⟩
     have h := one_div_le_one_div_of_le hs hs3
-    simpa only [one_div] using sub_nonneg.mpr h
+    grind
   have h := hm (by norm_num : (0 : ℝ) ∈ Icc 0 2) ⟨hx, hx2⟩ hx
   simp only [Real.arsinh_zero, zero_div, sub_zero] at h
   linarith
@@ -133,7 +133,7 @@ theorem quadraticFrequencyEnvelope_saddle_le_physical {T : ℝ}
     apply (Real.sqrt_le_iff).2
     refine ⟨by norm_num,?_⟩
     apply (div_le_iff₀ (by positivity : 0 < 2*T)).2
-    nlinarith [Real.pi_lt_four,Nat.cast_nonneg (α := ℝ) n]
+    pm_8784 Real.pi_lt_four
   have ha := third_mul_le_arsinh hx hx2
   have ha0 : 0 ≤ Real.arsinh x := Real.arsinh_nonneg_iff.mpr hx
   have hxsq : x^2 = Real.pi*(n:ℝ)/(2*T) := Real.sq_sqrt (by positivity)
@@ -143,7 +143,7 @@ theorem quadraticFrequencyEnvelope_saddle_le_physical {T : ℝ}
     rw [hxsq]
     apply (div_le_div_iff₀ (by positivity : 0 < 6*T) (by norm_num : (0:ℝ)<9)).2
     have he := (eq_div_iff (by positivity : 2*T ≠ 0)).mp hxsq
-    nlinarith [Real.pi_gt_three,Nat.cast_nonneg (α := ℝ) n]
+    pm_8784 Real.pi_gt_three
   have h := mul_le_mul_of_nonneg_left hsq (sq_nonneg G)
   apply Real.exp_le_exp.mpr
   change -(G*(2*Real.arsinh x))^2/8 ≤ _

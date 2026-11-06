@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
 public import OAI.NumberTheory.DirichletL.Supremum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,10 +26,7 @@ theorem zeroRealParts_le_one {x : ℝ} (hx : x ∈ zeroRealParts) : x ≤ 1 := b
 
 theorem zeroSet_bddAbove : BddAbove zeroSetWithSentinel := by
   refine ⟨1, ?_⟩
-  intro x hx
-  rcases Set.mem_insert_iff.mp hx with rfl | hx
-  · norm_num
-  · exact zeroRealParts_le_one hx
+  pm_6709
 
 theorem zeroSet_nonempty : zeroSetWithSentinel.Nonempty :=
   Set.insert_nonempty _ _
@@ -38,22 +36,23 @@ theorem half_le_beta : (1 / 2 : ℝ) ≤ beta :=
 
 theorem beta_le_one : beta ≤ 1 := by
   apply csSup_le zeroSet_nonempty
-  intro x hx
-  rcases Set.mem_insert_iff.mp hx with rfl | hx
-  · norm_num
-  · exact zeroRealParts_le_one hx
+  pm_6709
 
-theorem zero_re_le_beta (χ : Character) {s : ℂ} (hs : 0 < s.re)
+section
+variable (χ : Character) {s : ℂ}
+include χ s
+theorem zero_re_le_beta (hs : 0 < s.re)
     (hpole : s ≠ 1 ∨ χ.residue ≠ 1) (hz : LFunction χ s = 0) :
     s.re ≤ beta :=
   le_csSup zeroSet_bddAbove (Set.mem_insert_of_mem _ ⟨χ, s, hs, hpole, hz, rfl⟩)
 
-theorem LFunction_ne_zero_of_beta_lt (χ : Character) {s : ℂ}
+theorem LFunction_ne_zero_of_beta_lt
     (hs : beta < s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) :
     LFunction χ s ≠ 0 := by
   intro hz
   have hpos : 0 < s.re := lt_trans (by linarith [half_le_beta]) hs
   exact (not_lt_of_ge (zero_re_le_beta χ hpos hpole hz)) hs
+end
 
 end SevenEighths.HeckeZeroSupremum
 

@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection4Lemma42
 public import GafniTao.WooleySection10Bound
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The terminal normalized estimate in Wooley Section 10
@@ -14,7 +15,6 @@ keeps the exponent `(k-1)/(r(k-r))` visible throughout.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The sharp Lemma-4.2 estimate at normalization zero implies the terminal
 `p^(H epsilon)` estimate used after (10.9). -/
@@ -34,18 +34,14 @@ theorem wooleySourceNormalizedMixedMean_terminal
         r a b nu Lambda gamma ≤
       D * (p : ℝ) ^ ((H : ℝ) * epsilon) := by
   let s := wooleyTriangular k
-  let e := wooleyNormalizationExponent k r
-  let K := wooleySourcePolynomialMixedMean phi s r p B a b nu gamma
-  let Z := wooleySourcePolynomialConditionedMean s (p ^ B) (p ^ H) phi gamma
+  pm_6040
+  pm_2829
   have he0 : 0 ≤ e := (wooleyNormalizationExponent_pos hr hrk).le
   have he1 : e ≤ 1 := wooleyNormalizationExponent_le_one hr hrk
   have hK0 : 0 ≤ K := by
     dsimp [K]
     exact wooleySourcePolynomialMixedMean_nonneg phi s r p B a b nu gamma
-  have hZ0 : 0 ≤ Z := by
-    dsimp [Z]
-    exact wooleySourcePolynomialConditionedMean_nonneg phi s (p ^ B)
-      (p ^ H) gamma
+  pm_921
   by_cases hZzero : Z = 0
   · unfold wooleySourceNormalizedMixedMean wooleySourceNormalizationScale
     simp only [show wooleySourcePolynomialConditionedMean
@@ -54,18 +50,16 @@ theorem wooleySourceNormalizedMixedMean_terminal
       mul_zero, div_zero, Real.zero_rpow
         (ne_of_gt (wooleyNormalizationExponent_pos hr hrk))]
     exact mul_nonneg hD (Real.rpow_nonneg (by positivity) _)
-  have hZpos : 0 < Z := lt_of_le_of_ne hZ0 (Ne.symm hZzero)
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
+  pm_485 hZpos Z lt_of_le_of_ne hZ0 Ne.symm hZzero
+  pm_2786
   let P : ℝ := (p : ℝ) ^ (Lambda * (H : ℝ))
-  have hPpos : 0 < P := Real.rpow_pos_of_pos hpR _
+  pm_4907 hPpos P hpR
   have hbase : K / (P * Z) = (K / Z) / P := by
     field_simp
   have hscaleLambda :
       wooleySourceNormalizationScale phi p B H s Lambda gamma = P * Z := by
     simp only [wooleySourceNormalizationScale, P, Z, s]
-  have hscaleZero :
-      wooleySourceNormalizationScale phi p B H s 0 gamma = Z := by
-    simp [wooleySourceNormalizationScale, Z]
+  pm_5659
   have hchange :
       wooleySourceNormalizedMixedMean phi p B H s r a b nu Lambda gamma =
         wooleySourceNormalizedMixedMean phi p B H s r a b nu 0 gamma /
@@ -102,6 +96,5 @@ theorem wooleySourceNormalizedMixedMean_terminal
       (by exact_mod_cast (show 1 ≤ p by omega)) hexponent) hD
 
 
-end
 
 end GafniTao

@@ -2,6 +2,7 @@ module
 public import MathCollab.Density.Stronger.SmoothDetector
 public import MathCollab.Density.Stronger.SmoothContourIdentity
 public import MathCollab.Density.MollifierBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,10 +12,12 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
+section
+variable {ψ : ℝ → ℝ} {a b : ℝ} (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+include ψ a b hψ ha hb hs
 /-- Actual block identity after the second contour shift. Both the series
 representation and all contour convergence conditions are discharged. -/
-theorem smoothMollifierBlock_contour_identity {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem smoothMollifierBlock_contour_identity
     {ρ : ℂ} (X : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q)
     (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re < 1) :
     smoothMollifierBlock ψ ρ X N q = smoothDetectorResidue ψ ρ X N q +
@@ -25,8 +28,7 @@ theorem smoothMollifierBlock_contour_identity {ψ : ℝ → ℝ} {a b : ℝ}
 
 /-- Arbitrary-order uniform decay of the genuine zeta-pole residue. The
 constant precedes the cutoff, scale, damping parameter, and zero coordinates. -/
-theorem uniform_smoothDetectorResidue_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem uniform_smoothDetectorResidue_bound
     (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (ρ : ℂ) (X N q : ℝ),
       3/4 ≤ ρ.re → ρ.re ≤ 1 → 0 ≤ X → 0 < N → 0 ≤ q →
@@ -39,20 +41,18 @@ theorem uniform_smoothDetectorResidue_bound {ψ : ℝ → ℝ} {a b : ℝ}
   have he : ((1-ρ.re : ℝ) : ℂ)+(-ρ.im : ℝ)*I = 1-ρ := by
     apply Complex.ext <;> simp
   rw [he, abs_neg] at hm
-  have hM := norm_zetaMollifier_le_two_sqrt (s := 1) hX (by norm_num)
+  pm_8290 hM
   rw [smoothDetectorResidue, norm_mul, norm_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos hN]
   simp only [Complex.sub_re, Complex.one_re]
   calc
     _ ≤ (N^(1-ρ.re)*(B/(1+|ρ.im|)^A))*(2*Real.sqrt X) := by
-      exact mul_le_mul (mul_le_mul_of_nonneg_left hm (by positivity)) hM
-        (norm_nonneg _) (by positivity)
+      pm_6091
     _ = _ := by ring
 
 /-- The critical-line integrand has the manuscript's square-root mollifier
 factor and exact N exponent, uniformly before every zero, scale and frequency. -/
-theorem uniform_smoothDetectorKernel_critical_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem uniform_smoothDetectorKernel_critical_bound
     (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (ρ : ℂ) (X N q t : ℝ),
       3/4 ≤ ρ.re → ρ.re ≤ 1 → 0 ≤ X → 0 < N → 0 ≤ q →
@@ -76,8 +76,8 @@ theorem uniform_smoothDetectorKernel_critical_bound {ψ : ℝ → ℝ} {a b : �
     _ ≤ ((N^(1/2-ρ.re)*(B/(1+|t|)^A))*(2*Real.sqrt X))*
         ‖riemannZeta (ρ+(((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I))‖ := by
       apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-      exact mul_le_mul (mul_le_mul_of_nonneg_left hm (by positivity)) hM
-        (norm_nonneg _) (by positivity)
+      pm_6091
     _ = _ := by rw [he]; ring
+end
 
 end MathCollab.Density.Stronger

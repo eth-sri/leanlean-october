@@ -1,13 +1,12 @@
 module
 public import GuthMaynard.Improvement.MixedSourceScales
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Actual independent-triple two-Poisson reduction, with one divisor constant
 chosen before every height, scale and input. All discarded integrals/series
@@ -27,31 +26,20 @@ theorem mixed_two_poisson_raw {ε : ℝ} (hε : 0 < ε) :
             Real.sqrt (gmAffineJ (gmAffineTildeSchwartz
               (gmAffineSecondPoissonCutoff T Q M₂ M₃/Q)
               (by
-                have ht : 0 < T := zero_lt_one.trans_le hT
-                have hq : 0 < Q := zero_lt_one.trans_le hQ
+                pm_5886 ht T zero_lt_one.trans_le hT hq Q hQ
                 exact div_pos (gmAffineSecondPoissonCutoff_pos ht hq) hq) f) M₂))+
         gmAffineRegionIITailRawBound ε n T Q Y f M₁ M₂ M₃ Cdiv Ctail+
         gmAffineRegionIIIRawBound n Y f M₁ M₂ M₃ Q := by
-  obtain ⟨Cdiv,hCdiv,hcard⟩ := exists_global_card_gmAffineFirstPoissonPairs_middle_real_le hε
-  refine ⟨Cdiv,hCdiv,?_⟩
+  pm_102 Cdiv hCdiv hcard exists_global_card_gmAffineFirstPoissonPairs_middle_real_le hε
   intro n T Q Y Ctail f M₁ M₂ M₃ R K hn hT hQ hY hCtail hf hsupp h₁ h₂ h₃ h₁R h₂K h₃R hXY hCdecay
-  let B := gmAffineSecondPoissonCutoff T Q M₂ M₃
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hQpos : 0 < Q := zero_lt_one.trans_le hQ
-  have hBpos : 0 < B := by
-    dsimp only [B]
-    exact gmAffineSecondPoissonCutoff_pos hTpos hQpos
+  pm_4031
   have hmiddleBase :=
     integral_gmAffineMiddleFrequencyRegion_fourier_sq_le_sigmaIIReal_add_source_tails_of_constants
       hTpos hCdiv hCtail n f hCdecay h₁ h₂ h₃ hQpos hY.le hBpos
         (hcard h₁ h₃ hQpos hY.le)
         (by dsimp only [B]; exact
           gmAffineSecondPoissonCutoff_width hTpos hQpos)
-  have hsigma := norm_gmAffineSigmaIIReal_le_J_add_far
-    n hBpos hQpos (show 0 < (8 * M₃ : ℝ) by positivity)
-      (by dsimp only [B]; exact
-        gmAffineSecondPoissonCutoff_ge_Q hT (zero_le_one.trans hQ))
-      h₂ f hf hsupp
+  pm_4033 h₂
   let D : ℝ := Cdiv *
     (Y + gmAffineFirstPoissonRadius M₁ M₃ Q) ^ ε *
       (2 * gmAffineFirstPoissonRadius M₁ M₃ Q + 3)
@@ -60,15 +48,10 @@ theorem mixed_two_poisson_raw {ε : ℝ} (hε : 0 < ε) :
   have hrad : 0 ≤ gmAffineFirstPoissonRadius M₁ M₃ Q := by
     unfold gmAffineFirstPoissonRadius
     positivity
-  have hD : 0 ≤ D := by dsimp only [D]; positivity
-  have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
+  pm_3998
+  pm_4029
   have hmiddle := hmiddleBase.trans (by
-    apply add_le_add
-    · apply mul_le_mul_of_nonneg_left
-      · apply mul_le_mul_of_nonneg_left
-        · exact add_le_add hsigma le_rfl
-        · exact hZ
-      · positivity
+    pm_4022 hsigma le_rfl hZ
     · exact le_rfl)
   have hmiddleRaw :
       (∫ xi in gmAffineMiddleFrequencyRegion
@@ -81,10 +64,10 @@ theorem mixed_two_poisson_raw {ε : ℝ} (hε : 0 < ε) :
     dsimp only
     convert hmiddle using 1
     all_goals ring_nf
-  have hrad0 : 0 ≤ gmAffineFirstPoissonRadius M₁ M₃ Q := by unfold gmAffineFirstPoissonRadius; positivity
+  pm_5538 hrad0 gmAffineFirstPoissonRadius M₁ M₃ Q
   have hlow := (integral_gmAffineLowFrequencyRegion_fourier_sq_le n f h₁ h₂ h₃ hQpos hrad0).trans
     (mixed_source_low_frequency n f hf h₁ h₂ h₃ h₁R h₂K h₃R hQ)
-  have hhigh := integral_gmAffineHighFrequencyRegion_fourier_sq_le n hn f h₁ h₂ h₃ hQpos hY
+  pm_528 hhigh integral_gmAffineHighFrequencyRegion_fourier_sq_le n hn f h₁ h₂ h₃ hQpos hY
   have hentry := gmAffineTransformIntegral_le_smooth_fourier f hf h₁ h₂ h₃
   rw [integral_gmAffineSmoothTransform_fourier_sq_eq_regions f M₁ M₂ M₃ hXY] at hentry
   have hraw := hentry.trans (add_le_add (add_le_add hlow hmiddleRaw) hhigh)

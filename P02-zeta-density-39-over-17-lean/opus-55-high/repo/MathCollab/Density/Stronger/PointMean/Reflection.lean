@@ -9,14 +9,13 @@ error and Gronwall, keeping the exact coefficient of log(height).
 -/
 public import MathCollab.Density.Stronger.PointMean.GammaDisplacement
 public import MathCollab.Density.Stronger.PointMean.OffCriticalPositive
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex
 open MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem norm_GammaR_real_im (r t : ℝ) :
@@ -27,8 +26,7 @@ theorem norm_GammaR_real_im (r t : ℝ) :
   rw [Complex.Gammaℝ_def, norm_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos Real.pi_pos]
   congr 1
-  · congr 1
-    simp
+  simp_all
   · congr 2
     push_cast
     ring
@@ -60,8 +58,8 @@ theorem heathBrown_zeta_displaced_reflection
           (((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I)) *
         riemannZeta
           (((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I) := by
-  let sL : ℂ := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
-  let sR : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
+  pm_4437 sL t
+  pm_4435
   have hsLRe : 0 < sL.re := by simp [sL]; linarith
   have hsRRe : 0 < sR.re := by simp [sR]; linarith
   have hOneSub : 1 - sL = sR := by
@@ -74,14 +72,7 @@ theorem heathBrown_zeta_displaced_reflection
     Complex.Gammaℝ_ne_zero_of_re_pos hsLRe
   change riemannZeta sL =
     (Complex.Gammaℝ sR / Complex.Gammaℝ sL) * riemannZeta sR
-  calc
-    riemannZeta sL =
-        (riemannZeta sL * Complex.Gammaℝ sL) / Complex.Gammaℝ sL := by
-      field_simp
-    _ = (riemannZeta sR * Complex.Gammaℝ sR) / Complex.Gammaℝ sL := by
-      rw [hFE]
-    _ = (Complex.Gammaℝ sR / Complex.Gammaℝ sL) * riemannZeta sR := by
-      field_simp
+  grind
 
 /-- The archimedean quotient in the displaced functional equation. -/
 theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
@@ -95,8 +86,7 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
   obtain ⟨D, hD, hShift⟩ :=
     exists_norm_Gamma_right_displacement_le
       (a := (1 / 8 : ℝ)) (b := (1 : ℝ)) (by norm_num) (by norm_num)
-  refine ⟨D, hD, ?_⟩
-  intro delta t hdelta hdeltaUpper ht
+  pm_435 D hD delta t hdelta hdeltaUpper ht
   let z : ℂ := (((1 / 2 - delta) / 2 : ℝ) : ℂ) +
     ((t / 2 : ℝ) : ℂ) * I
   have hzRe : z.re = (1 / 2 - delta) / 2 := by simp [z]
@@ -164,7 +154,7 @@ theorem exists_norm_GammaR_heathBrown_reflection_ratio_le :
         rw [← hPiRatio]
         field_simp [ne_of_gt hPiDen, ne_of_gt hGammaDen]
     _ ≤ 1 * Real.exp ((Real.log (t / 2 + 2) + D) * delta) := by
-      exact mul_le_mul hPiPow hGammaRatio (by positivity) (by positivity)
+      pm_149 hPiPow hGammaRatio
     _ = Real.exp ((Real.log (t / 2 + 2) + D) * delta) := by ring
 
 theorem exists_heathBrown_offCritical_minus_strong_le :
@@ -177,11 +167,11 @@ theorem exists_heathBrown_offCritical_minus_strong_le :
   obtain ⟨P, hP, hPlus⟩ := exists_heathBrown_offCritical_plus_strong_le
   obtain ⟨D, hD, hRatio⟩ :=
     exists_norm_GammaR_heathBrown_reflection_ratio_le
-  refine ⟨P, D, hP, hD, ?_⟩
+  pm_505 P D hP hD
   intro delta t hdelta hdeltaUpper ht
   let sP : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
-  let sR : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + ((-t : ℝ) : ℂ) * I
-  let sL : ℂ := ((1 / 2 - delta : ℝ) : ℂ) + (t : ℂ) * I
+  pm_4435
+  pm_4437 sL t
   let q : ℂ := Complex.Gammaℝ sR / Complex.Gammaℝ sL
   have hReflect : riemannZeta sL = q * riemannZeta sR := by
     simpa only [sL, sR, q] using

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Independent
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,11 +22,7 @@ theorem residualWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]
     residualWithFrozen (fun i => hp (f i)) (fun i => hg (f i)) c R F =
       residualWithFrozen hp hg c (R.image f) (F.image f) := by
   unfold residualWithFrozen
-  rw [Finset.prod_image hf.injOn]
-  apply Finset.prod_congr rfl
-  intro i hi
-  rw [← Finset.image_erase hf R i,Finset.prod_image hf.injOn,Finset.prod_image hf.injOn]
-  rfl
+  pm_5529 R
 
 omit [Fintype ι] [Fintype κ] in
 theorem markedWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -34,11 +31,7 @@ theorem markedWithFrozen_transport [∀ i, (Ideal.span {p i}).IsMaximal]
     markedWithFrozen (fun i => hp (f i)) (fun i => hg (f i)) c S F =
       markedWithFrozen hp hg c (S.image f) (F.image f) := by
   unfold markedWithFrozen
-  rw [Finset.prod_image hf.injOn]
-  apply Finset.prod_congr rfl
-  intro i hi
-  rw [← Finset.image_erase hf S i,Finset.prod_image hf.injOn,Finset.prod_image hf.injOn]
-  rfl
+  pm_5529 S
 
 omit [Fintype ι] [Fintype κ] in
 theorem ramifiedBlock_transport [∀ i, (Ideal.span {p i}).IsMaximal]

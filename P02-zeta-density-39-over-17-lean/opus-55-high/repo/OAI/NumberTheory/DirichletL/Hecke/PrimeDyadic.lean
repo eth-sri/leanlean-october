@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicMellin
 public import OAI.NumberTheory.DirichletL.Hecke.LogDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical Topology ContDiff
 open MeasureTheory Set
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
@@ -20,7 +21,7 @@ def coefficient (χ : Character) (I : Ideal O) : ℂ :=
 
 @[simp] theorem coefficient_zero (χ : Character) : coefficient χ 0 = 0 := by
   unfold coefficient
-  rw [IdealMangoldt.value_zero, Complex.ofReal_zero, zero_mul]
+  grind
 
 def series (χ : Character) (s : ℂ) : ℂ := -deriv (LFunction χ) s / LFunction χ s
 
@@ -42,8 +43,7 @@ theorem series_eq_tsum (χ : Character) {s : ℂ} (hs : 1 < s.re) :
   rw [← IdealLogDerivative.mangoldt_series_eq_LSeries _ (idealCoeff_norm_le_one χ) s hs, ← he]
   apply tsum_congr
   intro I
-  simp only [coefficient, IdealEuler.weighted, IdealEuler.normWeight,
-    MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk, CubicEisenstein.fullIdealWeight]
+  pm_232 coefficient IdealEuler.weighted IdealEuler.normWeight MonoidWithZeroHom.coe_mk ZeroHom.coe_mk CubicEisenstein.fullIdealWeight
   rw [ite_eq_right_iff.mpr (fun h => (I.property h).elim)]
   simp only [HeckeDyadic.norm, Complex.ofReal_natCast, mul_assoc]
 
@@ -79,35 +79,27 @@ def summand (χ : Character) (W : ℝ → ℂ) (D σ freq : ℝ) (I : NonzeroIde
 def polynomial (χ : Character) (W : ℝ → ℂ) (D σ freq : ℝ) : ℂ :=
   (D : ℂ)^(-(1/2 : ℂ)) * ∑' I : NonzeroIdeal, summand χ W D σ freq I
 
-theorem twisted_series_eq (χ : Character) (σ freq : ℝ)
+section
+variable (χ : Character)
+include χ
+theorem twisted_series_eq (σ freq : ℝ)
     {s : ℂ} (hs : 1 < (s+shift σ freq).re) :
     (∑' I : NonzeroIdeal, twistedCoefficient χ σ freq I*(norm I : ℂ)^(-s)) =
       series χ (s+shift σ freq) := by
   rw [series_eq_tsum χ hs]
-  apply tsum_congr
-  intro I
-  unfold twistedCoefficient
-  rw [mul_assoc, ← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr (norm_pos I).ne')]
-  congr 2
-  ring
+  pm_1031
 
-theorem polynomial_eq_weighted (χ : Character) (W : ℝ → ℂ)
+theorem polynomial_eq_weighted (W : ℝ → ℂ)
     (D σ freq : ℝ) (hD : 0 < D) :
     polynomial χ W D σ freq =
       (D : ℂ)^(shift σ freq-(1/2 : ℂ)) *
         ∑' I : NonzeroIdeal, twistedCoefficient χ σ freq I * W (norm I/D) := by
   have he (I : NonzeroIdeal) : summand χ W D σ freq I =
       (D : ℂ)^(shift σ freq) * (twistedCoefficient χ σ freq I * W (norm I/D)) := by
-    unfold summand twistedCoefficient
-    rw [CompletedGauss.positive_quotient_cpow_neg _ _ (norm_pos I) hD]
-    ring
-  unfold polynomial
-  simp_rw [he]
-  rw [tsum_mul_left, ← mul_assoc, ← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
-  congr 2
-  ring
+    pm_6957
+  pm_1149
 
-theorem polynomial_mellin (χ : Character) (W : ℝ → ℂ)
+theorem polynomial_mellin (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0 < a) (hWs : Function.support W ⊆ Icc a b)
     (hW : ContDiff ℝ ∞ W) (D c σ freq : ℝ) (hD : 0 < D) (hc : 1 < c+σ) :
     polynomial χ W D σ freq = (1/(2*Real.pi) : ℂ)*∫ t : ℝ,
@@ -118,21 +110,15 @@ theorem polynomial_mellin (χ : Character) (W : ℝ → ℂ)
   rw [CompletedGauss.weightedMellin_inversion norm norm_pos
     (twistedCoefficient χ σ freq) c (twisted_coefficient_summable χ c σ freq hc)
     W a b ha hWs hW D hD]
-  rw [mul_left_comm, ← integral_const_mul]
-  congr 1
-  apply integral_congr_ae
-  filter_upwards [] with t
+  pm_5565 mul_left_comm integral_const_mul
   rw [twisted_series_eq χ σ freq (by simpa using hc)]
-  have he : (D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I) =
-      (D : ℂ)^(((c : ℂ)+t*Complex.I)+shift σ freq-(1/2 : ℂ)) := by
-    rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
-    congr 1
-    ring
+  pm_3136
   calc
     _ = mellin W ((c : ℂ)+t*Complex.I) *
         ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
           series χ (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
     _ = _ := by rw [he]
+end
 
 end SevenEighths.HeckePrimeDyadic
 

@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection10TwoLossContradiction
 public import GafniTao.WooleySection10HierarchySelection
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Section 10 hierarchy after selection of the counterexample scale
@@ -16,8 +17,8 @@ the earlier loss `eta`.
 
 namespace GafniTao
 
-noncomputable section
 
+set_option maxHeartbeats 1000000 in
 set_option maxHeartbeats 1000000 in
 /-- A complete Section-10 hierarchy subordinate to an already selected
 positive counterexample-spacing scale. -/
@@ -42,8 +43,8 @@ theorem wooley_section10_separatedHierarchy_exists
       wooley_section10_slopeHierarchy_exists (N := N) hk hLambda
   let tau : ℝ := min tauCap (tau0 / 2)
   have htauCap : 0 < tauCap := lt_trans heta hetaTauCap
-  have htau : 0 < tau := by dsimp [tau]; positivity
-  have htauLeCap : tau ≤ tauCap := by dsimp [tau]; exact min_le_left _ _
+  pm_64 htau tau
+  pm_5311 htauLeCap tau tauCap min_le_left
   have htauLeTau0 : tau ≤ tau0 := by
     dsimp [tau]
     exact (min_le_right _ _).trans (by linarith)
@@ -79,14 +80,8 @@ theorem wooley_section10_separatedHierarchy_exists
             gcongr
       _ < ((k : ℝ) ^ 2 * delta) * mu := hsecondCap
   let epsilonCap : ℝ := min eta tau
-  let epsilon : ℝ := epsilonCap / 2
-  have hepsilonCap : 0 < epsilonCap := by dsimp [epsilonCap]; positivity
-  have hepsilon : 0 < epsilon := by dsimp [epsilon]; linarith
-  have hepsilonLtCap : epsilon < epsilonCap := by dsimp [epsilon]; linarith
-  have hepsilonEta : epsilon ≤ eta :=
-    hepsilonLtCap.le.trans (by dsimp [epsilonCap]; exact min_le_left _ _)
-  have hepsilonTau : epsilon < tau :=
-    hepsilonLtCap.trans_le (by dsimp [epsilonCap]; exact min_le_right _ _)
+  pm_2819
+  pm_1205 hepsilonEta eta
   obtain ⟨H0, hglobalEta⟩ := wooley_section10_globalHierarchy_eventually
     hk hLambda
     (lt_trans (lt_trans htau htauDelta) hdeltaMu)
@@ -109,11 +104,10 @@ theorem wooley_initialNu_twoLoss_lower
     2 * (eta + epsilon) * (H : ℝ) / Lambda ≤
       (wooleyInitialNu eta Lambda H : ℝ) := by
   have heta0 : 0 ≤ eta := hepsilon.trans hepsilonEta
-  have hfour := wooley_initialNu_lower
-    (epsilon := eta) (Lambda := Lambda) (H := H)
+  pm_6039
   have htwo : 2 * (eta + epsilon) * (H : ℝ) / Lambda ≤
       4 * eta * (H : ℝ) / Lambda := by
-    have hH0 : (0 : ℝ) ≤ H := by positivity
+    pm_96 hH0 H
     apply div_le_div_of_nonneg_right _ hLambda.le
     nlinarith
   exact htwo.trans hfour
@@ -127,11 +121,9 @@ theorem wooley_iterationTheta_eventually_ge
   obtain ⟨H0 : ℕ, hH0⟩ := exists_nat_ge ((n : ℝ) / mu)
   refine ⟨H0, ?_⟩
   intro H hH
-  have hHreal : (H0 : ℝ) ≤ H := by exact_mod_cast hH
+  pm_106 hHreal H0 H hH
   have hn : (n : ℝ) ≤ mu * (H : ℝ) := by
-    have := hH0.trans hHreal
-    rw [div_le_iff₀ hmu] at this
-    simpa only [mul_comm] using this
+    pm_7115 hmu
   have := hn.trans (wooley_iterationTheta_lower (mu := mu) (H := H))
   exact_mod_cast this
 
@@ -145,13 +137,10 @@ theorem wooley_initialNu_eventually_ge
   obtain ⟨H0 : ℕ, hH0⟩ := exists_nat_ge ((n : ℝ) / (4 * eta / Lambda))
   refine ⟨H0, ?_⟩
   intro H hH
-  have hHreal : (H0 : ℝ) ≤ H := by exact_mod_cast hH
+  pm_106 hHreal H0 H hH
   have hn : (n : ℝ) ≤ (4 * eta / Lambda) * (H : ℝ) := by
-    have := hH0.trans hHreal
-    rw [div_le_iff₀ hslope] at this
-    simpa only [mul_comm] using this
-  have hfour := wooley_initialNu_lower
-    (epsilon := eta) (Lambda := Lambda) (H := H)
+    pm_7115 hslope
+  pm_6039
   have hrearrange : (4 * eta / Lambda) * (H : ℝ) =
       4 * eta * (H : ℝ) / Lambda := by field_simp
   rw [hrearrange] at hn
@@ -165,12 +154,10 @@ theorem wooley_initial_twoLoss_absorption_eventually
     ∃ H0 : ℕ, ∀ H : ℕ, H0 ≤ H →
       2 * 2 ^ (s - 1) *
         (p : ℝ) ^ (-(eta + epsilon) * (H : ℝ)) ≤ 1 := by
-  let C : ℝ := 2 * 2 ^ (s - 1)
+  pm_5501 C
   obtain ⟨H0, hH0⟩ := wooley_constant_le_primePower_rpow_eventually
     hp htotal (C := C)
-  refine ⟨H0, ?_⟩
-  intro H hH
-  have hbound := hH0 H hH
+  pm_7975 hbound
   have hpPos : 0 < p := by omega
   have hpowerPos : 0 < (p : ℝ) ^ ((H : ℝ) * (eta + epsilon)) := by
     positivity
@@ -189,7 +176,7 @@ theorem wooley_constant_le_prime_pow_iterationTheta_eventually
     {p : ℕ} (hp : 1 < p) {mu C : ℝ} (hmu : 0 < mu) :
     ∃ H0 : ℕ, ∀ H : ℕ, H0 ≤ H →
       C ≤ (p : ℝ) ^ wooleyIterationTheta mu H := by
-  have hpReal : (1 : ℝ) < p := by exact_mod_cast hp
+  pm_5451 hpReal p hp
   obtain ⟨n0, hn0⟩ := Filter.eventually_atTop.mp
     ((tendsto_pow_atTop_atTop_of_one_lt hpReal).eventually
       (Filter.eventually_ge_atTop C))
@@ -203,11 +190,9 @@ theorem wooley_constant_le_prime_pow_iterationTheta_eventually
 theorem wooley_le_ceilDiv_of_mul_le
     {k H0 B : ℕ} (hk : 1 ≤ k) (hB : k * H0 ≤ B) :
     H0 ≤ B ⌈/⌉ k := by
-  have hBceil : B ≤ k * (B ⌈/⌉ k) :=
-    le_smul_ceilDiv (by omega : 0 < k)
+  pm_1276
   exact Nat.le_of_mul_le_mul_left (hB.trans hBceil) (by omega)
 
 
-end
 
 end GafniTao

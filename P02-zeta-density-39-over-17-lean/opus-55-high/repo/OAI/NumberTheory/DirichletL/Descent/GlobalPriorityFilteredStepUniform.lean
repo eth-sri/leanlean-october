@@ -4,12 +4,11 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredAggregat
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredAggregate
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
@@ -169,6 +168,5 @@ theorem global_priority_filtered_physical_step_uniform_types
   exact hb'.trans (add_le_add (add_le_add hzbound hrbound) htbound)
 end SevenEighths.InverseMoment
 
-end
 
 end OAI

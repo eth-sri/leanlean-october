@@ -1,10 +1,10 @@
 module
 public import GuthMaynard.Improvement.MiddleLargeValues
 public import GuthMaynard.Improvement.SeparatedSecondMoment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -12,39 +12,35 @@ def shortDensityA (σ : ℝ) : ℝ := 6/(7*σ+3)
 def shortDensityB (σ : ℝ) : ℝ := 3*shortDensityA σ/2
 def shortDensityExponent (σ : ℝ) : ℝ := 18*(1-σ)/(7*σ+3)
 
+section
+variable {σ : ℝ} (hσ : 9/13 ≤ σ)
+include σ hσ
 /-- Exact scale margins and the mean-value comparison throughout the compact
 sigma range. The final inequality is sharp at sigma=5/7. -/
-theorem short_density_scale_bounds {σ : ℝ} (hσ : 9/13 ≤ σ) (hσ' : σ ≤ 5/7) :
+theorem short_density_scale_bounds (hσ' : σ ≤ 5/7) :
     3/4 ≤ shortDensityA σ ∧ shortDensityA σ ≤ 4/5 ∧
     0 ≤ shortDensityB σ ∧ shortDensityB σ ≤ 6/5 ∧
     0 < shortDensityExponent σ ∧
     11/6-5*σ/3 ≤ shortDensityExponent σ := by
-  have hd : 0 < 7*σ+3 := by linarith
+  pm_1115
   have ha : 3/4 ≤ shortDensityA σ := by
     unfold shortDensityA
     apply (le_div_iff₀ hd).mpr
     linarith
-  have ha' : shortDensityA σ ≤ 4/5 := by
-    unfold shortDensityA
-    apply (div_le_iff₀ hd).mpr
-    linarith
-  refine ⟨ha,ha',?_,?_,?_,?_⟩
-  · unfold shortDensityB; linarith
-  · unfold shortDensityB; linarith
-  · unfold shortDensityExponent
-    exact div_pos (by linarith) hd
+  pm_4534
   · unfold shortDensityExponent
     apply (le_div_iff₀ hd).mpr
     nlinarith [mul_nonneg (show 0 ≤ 5/7-σ by linarith)
       (show 0 ≤ 3/2-σ by linarith)]
 
 /-- The two large-value budgets meet at the intended density exponent. -/
-theorem short_density_scale_identities {σ : ℝ} (hσ : 9/13 ≤ σ) :
+theorem short_density_scale_identities :
     2*shortDensityB σ*(1-σ) = shortDensityExponent σ ∧
     shortDensityA σ*(18/7-4*σ)+6/7 = shortDensityExponent σ := by
   have hd : 7*σ+3 ≠ 0 := by linarith
   simp only [shortDensityB, shortDensityA, shortDensityExponent]
   constructor <;> field_simp [hd] <;> ring
+end
 
 /-- The length split at H^(5/6) respects both exact middle-range endpoints. -/
 theorem short_density_middle_time {σ H N : ℝ} (hσ : 9/13 ≤ σ)
@@ -104,8 +100,7 @@ theorem short_density_mean_budget {σ H N : ℝ} (hσ : 9/13 ≤ σ)
   calc
     _ ≤ H*(H^(5/6:ℝ))^(1-2*σ) := mul_le_mul_of_nonneg_left hm hH0.le
     _ = H^(11/6-5*σ/3) := by
-      rw [← Real.rpow_mul hH0.le]
-      nth_rw 1 [← Real.rpow_one H]
+      pm_4535
       rw [← Real.rpow_add hH0]
       congr 1; ring
     _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH he

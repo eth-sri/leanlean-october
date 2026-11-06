@@ -1,11 +1,10 @@
 module
 public import DensityEnergyGM.GcdScaleOptimization
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
 namespace Montgomery.RationalMoment
 
 theorem sqrt_add_le_sum {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
@@ -51,9 +50,9 @@ theorem sharp_second_shape_sqrt_min {M T R E H K : ℝ}
   let X := E ^ (1 / 2 : ℝ) * M ^ (2 : ℝ) * D
   let Y := (R * E ^ (1 / 4 : ℝ)) * M ^ (9 / 5 : ℝ) * D
   let Z := (R * E ^ (1 / 4 : ℝ) * T ^ (1 / 4 : ℝ)) * M ^ (6 / 5 : ℝ) * D
-  have hX : 0 ≤ X := by dsimp only [X, D]; positivity
-  have hY : 0 ≤ Y := by dsimp only [Y, D]; positivity
-  have hZ : 0 ≤ Z := by dsimp only [Z, D]; positivity
+  pm_5476 hX X
+  pm_5476 hY Y
+  pm_5476 hZ Z
   have hShape : (M ^ 2 * E ^ (1 / 2 : ℝ) +
       R * E ^ (1 / 4 : ℝ) * (M ^ (9 / 5 : ℝ) + T ^ (1 / 4 : ℝ) * M ^ (6 / 5 : ℝ))) *
         min (M * K) H = X + Y + Z := by

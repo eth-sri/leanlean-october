@@ -1,10 +1,11 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.SecondOrderMeanValue
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset Set
-open scoped BigOperators InnerProductSpace
+open scoped InnerProductSpace
 
 namespace GuthMaynard.NativeMoment
 
@@ -38,55 +39,47 @@ theorem interval_weyl_differencing_complex
     intro n _hn
     simp
     ring
-  rw [hre]
-  exact (abs_re_le_norm z).trans (hcorr h hh k hk hne)
+  pm_8202 abs_re_le_norm hne
 
 /-- Difference of two shifted logarithmic phases. -/
 noncomputable def logarithmicDifferencePhase
     (t A : Real) (h k : Nat) (x : Real) : Real :=
   logarithmicPhase t (A + x + h) - logarithmicPhase t (A + x + k)
 
-theorem hasDerivAt_logarithmicDifferencePhase
-    (t A : Real) (h k : Nat) {x : Real}
-    (hh : A + x + h ≠ 0) (hk : A + x + k ≠ 0) :
+section
+variable (t A : Real) (h k : Nat) {x : Real} (hh : A + x + h ≠ 0) (hk : A + x + k ≠ 0)
+include t A h k x hh hk
+theorem hasDerivAt_logarithmicDifferencePhase :
     HasDerivAt (logarithmicDifferencePhase t A h k)
       (-t / (A + x + h) + t / (A + x + k)) x := by
   have harg (m : Nat) : HasDerivAt (fun y : Real => A + y + m) 1 x := by
-    simpa only [Pi.add_apply, id_eq, zero_add] using
-      HasDerivAt.add_const (m : Real)
-        ((hasDerivAt_const x A).fun_add (hasDerivAt_id x))
+    pm_4789 m
   unfold logarithmicDifferencePhase
   convert ((hasDerivAt_logarithmicPhase t hh).comp x (harg h)).fun_sub
     ((hasDerivAt_logarithmicPhase t hk).comp x (harg k)) using 1
-  · funext y
-    simp only [Function.comp_apply]
+  grind
   · ring
 
-theorem hasDerivAt_logarithmicDifferencePhase_deriv
-    (t A : Real) (h k : Nat) {x : Real}
-    (hh : A + x + h ≠ 0) (hk : A + x + k ≠ 0) :
+theorem hasDerivAt_logarithmicDifferencePhase_deriv :
     HasDerivAt (fun y => -t / (A + y + h) + t / (A + y + k))
       (t / (A + x + h) ^ 2 - t / (A + x + k) ^ 2) x := by
   have hleft : HasDerivAt (fun y : Real => -t / (A + y + h))
       (t / (A + x + h) ^ 2) x := by
     have hden : HasDerivAt (fun y : Real => A + y + h) 1 x := by
-      simpa only [Pi.add_apply, id_eq, zero_add] using
-        HasDerivAt.add_const (h : Real)
-          ((hasDerivAt_const x A).fun_add (hasDerivAt_id x))
+      pm_4789 h
     convert (hasDerivAt_const x (-t)).div hden hh using 1
     field_simp [hh]
     ring
   have hright : HasDerivAt (fun y : Real => t / (A + y + k))
       (-t / (A + x + k) ^ 2) x := by
     have hden : HasDerivAt (fun y : Real => A + y + k) 1 x := by
-      simpa only [Pi.add_apply, id_eq, zero_add] using
-        HasDerivAt.add_const (k : Real)
-          ((hasDerivAt_const x A).fun_add (hasDerivAt_id x))
+      pm_4789 k
     convert (hasDerivAt_const x t).div hden hk using 1
     field_simp [hk]
     ring
   convert hleft.add hright using 1
   ring_nf
+end
 
 /-- A unit discrete second difference of the shifted logarithmic correlation
 equals its continuous second derivative at an intermediate point. -/
@@ -105,16 +98,15 @@ theorem logarithmicDifferencePhase_secondDifference
   have hmv := second_order_mean_value F F' F'' n
     (fun x hx => by
       dsimp only [F, F']
-      have hx0 : 0 <= x := (Nat.cast_nonneg n).trans hx.1
+      pm_7563
       exact hasDerivAt_logarithmicDifferencePhase t A h k
         (ne_of_gt (by positivity)) (ne_of_gt (by positivity)))
     (fun x hx => by
       dsimp only [F', F'']
-      have hx0 : 0 <= x := (Nat.cast_nonneg n).trans hx.1
+      pm_7563
       exact hasDerivAt_logarithmicDifferencePhase_deriv t A h k
         (ne_of_gt (by positivity)) (ne_of_gt (by positivity)))
-  obtain ⟨xi, hxi, heq⟩ := hmv
-  refine ⟨xi, hxi, ?_⟩
+  pm_157 xi hxi heq hmv
   dsimp only [F, F''] at heq
   linarith
 
@@ -135,8 +127,8 @@ theorem logarithmicDifferenceCurvature_bounds
   have hsumHigh : u + v <= 4 * A := by linarith
   have huSqLow : A ^ 2 <= u ^ 2 := by nlinarith
   have hvSqLow : A ^ 2 <= v ^ 2 := by nlinarith
-  have huSqHigh : u ^ 2 <= (2 * A) ^ 2 := by nlinarith
-  have hvSqHigh : v ^ 2 <= (2 * A) ^ 2 := by nlinarith
+  pm_8521 huSqHigh u
+  pm_8521 hvSqHigh v
   have hdenLow : A ^ 4 <= u ^ 2 * v ^ 2 := by
     calc
       A ^ 4 = A ^ 2 * A ^ 2 := by ring
@@ -194,7 +186,7 @@ theorem logarithmicDifference_secondDifference_bounds
   let v : Real := A + xi + k
   have hcastHK : ((k - h : Nat) : Real) = (k : Real) - h := by
     rw [Nat.cast_sub hhk.le]
-  have hr : 0 < ((k - h : Nat) : Real) := by exact_mod_cast Nat.sub_pos_of_lt hhk
+  pm_5710
   have huLow : A <= u := by
     dsimp only [u]
     have hxi0 : 0 <= xi := (Nat.cast_nonneg n).trans hxi.1.le
@@ -239,10 +231,8 @@ theorem logarithmicDifference_B_process
             (t * (k - h : Nat) / (8 * A ^ 3)) + 1)) := by
   let lambda : Real := t * (k - h : Nat) / (8 * A ^ 3)
   let Lambda : Real := 4 * t * (k - h : Nat) / A ^ 3
-  have hr : 0 < ((k - h : Nat) : Real) := by exact_mod_cast Nat.sub_pos_of_lt hhk
-  have hlambda : 0 < lambda := by
-    dsimp only [lambda]
-    positivity
+  pm_5710
+  pm_4790 hlambda lambda
   have hbounds := logarithmicDifference_secondDifference_bounds
     t A h k N ht hA hhk hsize
   simpa only [lambda, Lambda] using
@@ -271,10 +261,7 @@ theorem padded_logarithmic_correlation_eq (t A : Real) (N H h k : Nat)
         paddedShift (integerLogarithmicTerm t A) N n k) =
       star (∑ m ∈ Finset.range (N - (k - h)),
         unitaryPhase (logarithmicDifferencePhase t A 0 (k - h) m)) := by
-  unfold paddedShift
-  let s := (Finset.Ico (-(H : Int)) N).filter (fun n =>
-    n + (h : Int) ∈ Finset.Ico (0 : Int) N ∧
-      n + (k : Int) ∈ Finset.Ico (0 : Int) N)
+  pm_4792
   have hrestrict :
       (∑ n ∈ Finset.Ico (-(H : Int)) N,
         star (if n + (h : Int) ∈ Finset.Ico (0 : Int) N then
@@ -283,10 +270,7 @@ theorem padded_logarithmic_correlation_eq (t A : Real) (N H h k : Nat)
           integerLogarithmicTerm t A (n + k) else 0)) =
       ∑ n ∈ s, star (integerLogarithmicTerm t A (n + h)) *
         integerLogarithmicTerm t A (n + k) := by
-    simp only [s, Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro n _hn
-    by_cases hhmem : n + (h : Int) ∈ Finset.Ico (0 : Int) N
+    pm_4793
     · by_cases hkmem : n + (k : Int) ∈ Finset.Ico (0 : Int) N
       · simp [hhmem, hkmem]
       · simp [hhmem, hkmem]
@@ -299,7 +283,7 @@ theorem padded_logarithmic_correlation_eq (t A : Real) (N H h k : Nat)
         ∑ m ∈ Finset.range (N - (k - h)),
           star (integerLogarithmicTerm t A m) *
             integerLogarithmicTerm t A (m + (k - h)) := by
-    apply Finset.sum_bij (fun n _hn => Int.toNat (n + h))
+    pm_7188
     case hi =>
       intro n hn
       have hnData := Finset.mem_filter.mp hn
@@ -322,42 +306,12 @@ theorem padded_logarithmic_correlation_eq (t A : Real) (N H h k : Nat)
       intro n₁ hn₁ n₂ hn₂ heq
       have h1 := (Finset.mem_Ico.mp (Finset.mem_filter.mp hn₁).2.1).1
       have h2 := (Finset.mem_Ico.mp (Finset.mem_filter.mp hn₂).2.1).1
-      have heqInt := congrArg (fun m : Nat => (m : Int)) heq
+      pm_8522 heqInt heq
       change ((Int.toNat (n₁ + h) : Nat) : Int) =
         ((Int.toNat (n₂ + h) : Nat) : Int) at heqInt
       rw [Int.toNat_of_nonneg h1, Int.toNat_of_nonneg h2] at heqInt
       omega
-    case i_surj =>
-      intro m hm
-      have hm' := Finset.mem_range.mp hm
-      refine ⟨(m : Int) - h, ?_, ?_⟩
-      · apply Finset.mem_filter.mpr
-        constructor
-        · apply Finset.mem_Ico.mpr
-          constructor
-          · have := hh
-            omega
-          · omega
-        · constructor
-          · apply Finset.mem_Ico.mpr
-            constructor
-            · omega
-            · have hmk : m + (k - h) < N := by omega
-              omega
-          · apply Finset.mem_Ico.mpr
-            constructor
-            · omega
-            · have hmk : m + (k - h) < N := by omega
-              omega
-      · simp
-    case h =>
-      intro n hn
-      have hnonneg := (Finset.mem_Ico.mp (Finset.mem_filter.mp hn).2.1).1
-      have hnat : ((Int.toNat (n + h) : Nat) : Int) = n + h := Int.toNat_of_nonneg hnonneg
-      congr 2
-      · rw [hnat]
-      · rw [hnat]
-        omega
+    pm_4791
   rw [hsum]
   change (∑ m ∈ Finset.range (N - (k - h)),
       star (integerLogarithmicTerm t A m) *
@@ -437,12 +391,8 @@ theorem padded_logarithmic_correlation_norm_le
   · have hkh : k < h := lt_of_le_of_ne (Nat.le_of_not_gt hhk) (Ne.symm hne)
     have hb := padded_logarithmic_correlation_norm_le_of_lt
       t A N H k h ht hA hH hNA hk hh hkh
-    let z := ∑ n ∈ Finset.Ico (-(H : Int)) N,
-      star (paddedShift (integerLogarithmicTerm t A) N n h) *
-        paddedShift (integerLogarithmicTerm t A) N n k
-    let w := ∑ n ∈ Finset.Ico (-(H : Int)) N,
-      star (paddedShift (integerLogarithmicTerm t A) N n k) *
-        paddedShift (integerLogarithmicTerm t A) N n h
+    pm_5163 z h k
+    pm_5163 w k h
     have hzw : z = star w := by
       dsimp only [z, w]
       change (∑ n ∈ Finset.Ico (-(H : Int)) N,
@@ -485,7 +435,7 @@ theorem integerLogarithmicSum_eq (t : Real) (A N : Nat) :
     have h1 := (Finset.mem_Ico.mp hn₁).1
     have h2 := (Finset.mem_Ico.mp hn₂).1
     have hnat : Int.toNat n₁ = Int.toNat n₂ := by omega
-    have hcast := congrArg (fun m : Nat => (m : Int)) hnat
+    pm_8522 hcast hnat
     change ((Int.toNat n₁ : Nat) : Int) = ((Int.toNat n₂ : Nat) : Int) at hcast
     rw [Int.toNat_of_nonneg h1, Int.toNat_of_nonneg h2] at hcast
     exact hcast

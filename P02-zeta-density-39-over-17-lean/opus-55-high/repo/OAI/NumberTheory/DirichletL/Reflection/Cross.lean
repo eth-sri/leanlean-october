@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Frozen
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,8 +10,10 @@ namespace SevenEighths.InverseReflectedPhase
 open scoped BigOperators Classical
 noncomputable section
 
-theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ) (A B U : Finset ι)
+section
+variable {ι : Type*} [Fintype ι] [DecidableEq ι] (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ)
+include ι x l a b
+theorem ordered_cross_partition_on (A B U : Finset ι)
     (hd : Disjoint A B) (hu : A ∪ B = U) :
     (∏ i ∈ U, ((∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) * l i)) =
       (∏ i ∈ A, (∏ k ∈ A.erase i, x i k ^ a) * l i) *
@@ -19,43 +22,31 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
   have hA (i : ι) (hi : i ∈ A) :
       (∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) =
         (∏ k ∈ A.erase i, x i k ^ a) * (∏ k ∈ B, x i k ^ a) := by
-    have hn : i ∉ B := fun hb => Finset.disjoint_left.mp hd hi hb
+    pm_843 B hb hd
     have he : U.erase i = A.erase i ∪ B := by
-      rw [← hu]
-      ext k
-      by_cases hk : k = i
-      · subst k; simp [hn]
-      · simp [hk]
-    rw [he, ite_eq_left hi, Finset.prod_union (hd.mono_left (Finset.erase_subset _ _))]
+      pm_3037
+      grind
+      grind
+    pm_5025 ite_eq_left hi hd.mono_left
   have hB (i : ι) (hi : i ∈ B) :
       (∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) =
         (∏ k ∈ B.erase i, x i k ^ b) * (∏ k ∈ A, x i k ^ b) := by
-    have hn : i ∉ A := fun ha => Finset.disjoint_left.mp hd ha hi
+    pm_3040 hn A ha hd
     have he : U.erase i = B.erase i ∪ A := by
-      rw [← hu]
-      ext k
-      by_cases hk : k = i
-      · subst k; simp [hn]
+      pm_3037
+      grind
       · simp [hk, or_comm]
-    rw [he, ite_eq_right hn, Finset.prod_union (hd.symm.mono_left (Finset.erase_subset _ _))]
+    pm_5025 ite_eq_right hn hd.symm.mono_left
   have hpA : (∏ i ∈ A, ((∏ k ∈ U.erase i,
       x i k ^ (if i ∈ A then a else b)) * l i)) =
       (∏ i ∈ A, (∏ k ∈ A.erase i, x i k ^ a) * l i) *
         (∏ i ∈ A, ∏ k ∈ B, x i k ^ a) := by
-    rw [← Finset.prod_mul_distrib]
-    apply Finset.prod_congr rfl
-    intro i hi
-    rw [hA i hi]
-    ring
+    pm_3038
   have hpB : (∏ i ∈ B, ((∏ k ∈ U.erase i,
       x i k ^ (if i ∈ A then a else b)) * l i)) =
       (∏ i ∈ B, (∏ k ∈ B.erase i, x i k ^ b) * l i) *
         (∏ i ∈ B, ∏ k ∈ A, x i k ^ b) := by
-    rw [← Finset.prod_mul_distrib]
-    apply Finset.prod_congr rfl
-    intro i hi
-    rw [hB i hi]
-    ring
+    pm_3039
   calc
     _ = (∏ i ∈ A, ((∏ k ∈ U.erase i,
             x i k ^ (if i ∈ A then a else b)) * l i)) *
@@ -64,12 +55,11 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
       rw [← Finset.prod_union hd, hu]
     _ = _ := by
       rw [hpA, hpB]
-      rw [Finset.prod_comm (s := B) (t := A)]
+      pm_889
       simp only [Finset.prod_mul_distrib]
       ring
 
-theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (x : ι → ι → ℂ) (l : ι → ℂ) (a b : ℕ) (R P F : Finset ι)
+theorem ordered_cross_frozen_partition (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F)
     (hu : (R ∪ P) ∪ F = Finset.univ) :
     (∏ i ∈ R ∪ P, (∏ k ∈ Finset.univ.erase i,
@@ -84,25 +74,21 @@ theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι
         x i k ^ (if i ∈ R then a else b))*ll i := by
     apply Finset.prod_congr rfl
     intro i hi
-    have hn : i ∉ F := fun hf => Finset.disjoint_left.mp hF hi hf
+    pm_843 F hf hF
     have he : Finset.univ.erase i = (R ∪ P).erase i ∪ F := by
-      rw [← hu]
-      ext k
-      by_cases hk : k = i
+      pm_3037
       · subst k; simp [hn]
       · simp [hk,or_assoc]
     rw [he,Finset.prod_union (hF.mono_left (Finset.erase_subset _ _))]
     dsimp [ll]
     ring
   rw [hx,ordered_cross_partition_on x ll a b R P (R ∪ P) hRP rfl]
-  congr 2
+  pm_7996 ll
   · apply Finset.prod_congr rfl
     intro i hi
-    simp [ll,hi]
-  · apply Finset.prod_congr rfl
-    intro i hi
-    have hn : i ∉ R := fun hr => Finset.disjoint_left.mp hRP hr hi
+    pm_3040 hn R hr hRP
     simp [ll,hn]
+end
 
 end
 end SevenEighths.InverseReflectedPhase

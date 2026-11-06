@@ -3,28 +3,29 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialCost
 public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseUniform
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonLiveFrozen
 open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
+open CenteredMomentRadialEligibleEnergy
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 open CanonicalQuadraticSieve
 open CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceLiveColumn
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
+lemma source_mask_energy (keep:O→ Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
     (c f:Ideal O→ℂ) (W:𝓢(ℝ,ℂ)) (K:ℝ):
     CenteredMomentRestrictedSource.sourceRestrictedEnergy keep Q
       (fun I=>if IsCoprime C I ∧ L∣I then c I else 0) f W K =
@@ -35,7 +36,7 @@ lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
   congr 1
   funext I
   dsimp only
-  by_cases hc:IsCoprime C (I:Ideal O) <;> by_cases hl:L∣(I:Ideal O) <;> simp [hc,hl]
+  grind
 
 theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Supported C)
     (R seed L:Ideal O) (hseed:seed∣C) :
@@ -61,12 +62,12 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
  theorem actual_common_source_pointwise (lo hi:ι→ℝ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       ∀(r:Radial) (C:Ideal O) (hC:Supported C) (R seed L:Ideal O),seed∣C → Squarefree L →
-      ∀E Z:ℝ,0≤E → 1<Z → (Ideal.absNorm C:ℝ)≤Z^B → (Ideal.absNorm L:ℝ)≤Z^B →
+      ∀E Z:ℝ,0≤E → 1<Z → (Ideal.absNorm C:ℝ)≤Z ^B → (Ideal.absNorm L:ℝ)≤Z ^B →
       (∀b:actualAllocations s.pools C,frozenCoefficient b.val C R s.ν s.W s.P≠0 → ∀a∈(commonData s C R b).toSource.active L,
         childEnergy (commonData s C R b) r L a≤E) →
-      sourceEnergy s r C hC R seed L≤C0*Z^δ*(profileCost s*E)/
+      sourceEnergy s r C hC R seed L≤C0*Z ^δ*(profileCost s*E)/
         ((Ideal.absNorm C:ℝ)*Ideal.absNorm L) := by
-  obtain ⟨C₁,hC₁,hchild⟩:=CenteredMomentRadialPointwiseUniform.actual_uniform_divisor lo hi B (δ/2) hB (by linarith)
+  pm_8812 C₁ hC₁ hchild CenteredMomentRadialPointwiseUniform.actual_uniform_divisor
   obtain ⟨C₂,hC₂,hcount⟩:=card_squared_subpower (ι:=ι) B (δ/2) hB (by linarith)
   refine ⟨C₁*C₂,by positivity,?_⟩
   intro s hlo hhi r C hC R seed L hseed hL E Z hE hZ hNC hNL hc
@@ -75,26 +76,24 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
   have hz:0<Z:=zero_lt_one.trans hZ
   have hprof:=s.toData.profile_nonneg
   have heach (b:actualAllocations s.pools C) (hlive:frozenCoefficient b.val C R s.ν s.W s.P≠0):
-      energy (commonData s C R b) r L≤C₁*Z^(δ/2)*(s.toData.profileFactor*E)/(Ideal.absNorm L:ℝ):=by
+      energy (commonData s C R b) r L≤C₁*Z ^(δ/2)*(s.toData.profileFactor*E)/(Ideal.absNorm L:ℝ):=by
     have hh:=hchild (liveIndices b.val) (commonData s C R b)
       (fun i=>hlo i.val) (fun i=>hhi i.val) r L hL E Z hE hZ hNL (hc b hlive)
     apply hh.trans
     apply div_le_div_of_nonneg_right _ hnL.le
     apply mul_le_mul_of_nonneg_left _ (by positivity)
     exact mul_le_mul_of_nonneg_right (common_profile_le s C R b) hE
-  have hh:sourceEnergy s r C hC R seed L≤commonCost s C*
-      (((actualAllocations s.pools C).card:ℝ)*(C₁*Z^(δ/2)*(s.toData.profileFactor*E)/(Ideal.absNorm L:ℝ))):=by
+  have hh:sourceEnergy s r C hC R seed L≤ commonCost s C*
+      (((actualAllocations s.pools C).card:ℝ)*(C₁*Z ^(δ/2)*(s.toData.profileFactor*E)/(Ideal.absNorm L:ℝ))):=by
     apply (original_source_weighted s r C hC R seed L hseed).trans
-    unfold commonCost
-    rw [mul_assoc]
-    apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
+    pm_8162 commonCost mul_assoc Nat.cast_nonneg
     calc
       _≤∑b:actualAllocations s.pools C,
           (((∏i,s.M i)^2*(max 1 s.upper)^Fintype.card ι)/(C.absNorm:ℝ))*
-            (C₁*Z^(δ/2)*(s.toData.profileFactor*E)/(L.absNorm:ℝ)):=by
+            (C₁*Z ^(δ/2)*(s.toData.profileFactor*E)/(L.absNorm:ℝ)):=by
         apply Finset.sum_le_sum
         intro b hb
-        by_cases hzero:frozenCoefficient b.val C R s.ν s.W s.P=0
+        pm_7334 hzero b.val
         · simp only [hzero,norm_zero,zero_pow (by decide:2≠0),zero_div,zero_mul]
           positivity
         · have hcost:=frozen_normalized_cost (ι:=ι) b.val (alloc_ne s C b) C R hC.1
@@ -107,17 +106,17 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
   have hc2:=hcount s C hC.1 Z hZ hNC
   calc
     _=((actualAllocations s.pools C).card:ℝ)^2*
-        (C₁*Z^(δ/2)*(profileCost s*E)/((Ideal.absNorm C:ℝ)*Ideal.absNorm L)):=by
+        (C₁*Z ^(δ/2)*(profileCost s*E)/((Ideal.absNorm C:ℝ)*Ideal.absNorm L)):=by
       unfold commonCost profileCost
       ring
-    _≤(C₂*Z^(δ/2))*(C₁*Z^(δ/2)*(profileCost s*E)/
+    _≤(C₂*Z ^(δ/2))*(C₁*Z ^(δ/2)*(profileCost s*E)/
         ((Ideal.absNorm C:ℝ)*Ideal.absNorm L)):=
       mul_le_mul_of_nonneg_right hc2 (div_nonneg (mul_nonneg (by positivity)
         (mul_nonneg (profileCost_nonneg s) hE)) (mul_nonneg hnC.le hnL.le))
     _=_:=by
-      have hp:Z^(δ/2)*Z^(δ/2)=Z^δ:=by rw [←Real.rpow_add hz];congr 1;ring
+      have hp:Z ^(δ/2)*Z ^(δ/2)=Z ^δ:=by rw [←Real.rpow_add hz];congr 1;ring
       calc
-        _=(C₁*C₂)*(Z^(δ/2)*Z^(δ/2))*(profileCost s*E)/
+        _=(C₁*C₂)*(Z ^(δ/2)*Z ^(δ/2))*(profileCost s*E)/
           ((Ideal.absNorm C:ℝ)*Ideal.absNorm L):=by ring
         _=_:=by rw [hp]
 

@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.DifferenceFloorEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,8 +35,7 @@ theorem exists_difference_peak_representatives (W : Finset ℝ) (f : ℝ → ℝ
   dsimp only [p]
   rw [dite_eq_left hj]
   have h := Classical.choose_spec (hmax j hj)
-  exact ⟨(Finset.mem_filter.mp h.1).1, (Finset.mem_filter.mp h.1).2,
-    fun q hq hfloor => h.2 q (Finset.mem_filter.mpr ⟨hq, hfloor⟩)⟩
+  simp_all
 
 /-- Representatives of distinct cells in one residue class modulo three
 are one-separated, including closed cell-endpoint cases. -/
@@ -50,11 +50,7 @@ theorem difference_floor_residue_separated {x y : ℝ} {i j : ℤ}
   rw [hy] at hjL hjU
   have hgap : i + 3 ≤ j ∨ j + 3 ≤ i := by omega
   rcases hgap with hgap | hgap
-  · have hgapReal : (i : ℝ) + 3 ≤ j := by exact_mod_cast hgap
-    have h := neg_le_abs (x - y)
-    linarith
-  · have hgapReal : (j : ℝ) + 3 ≤ i := by exact_mod_cast hgap
-    have h := le_abs_self (x - y)
-    linarith
+  pm_6804 i j neg_le_abs
+  pm_6804 j i le_abs_self
 
 end Montgomery.RationalMoment

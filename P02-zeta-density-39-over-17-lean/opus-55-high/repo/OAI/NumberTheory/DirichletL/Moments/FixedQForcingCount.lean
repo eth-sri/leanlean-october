@@ -1,20 +1,20 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalCount
 public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFixedQForcingCount
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
 open CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical
 open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSupport
 open CenteredMomentSourceRow
 open UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
@@ -52,16 +52,20 @@ lemma goodIdeal_squarefree (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime
     Squarefree (goodIdeal Q P c d V) :=
   prime_product_squarefree P hp hinj _
 
+section
+variable (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+include Q P hp
 omit [Fintype ι] [DecidableEq ι] in
-lemma goodIdeal_ne_zero (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+lemma goodIdeal_ne_zero
     (c d : ι → ℕ) (V : Finset ι) : goodIdeal Q P c d V ≠ 0 :=
   Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
 
-lemma good_valuation_two (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+lemma good_valuation_two
     (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι) (i : ι)
     (hi : i ∈ goodSet Q P c d V) :
     CenteredExceptionalCount.valuation (movingIdeal P c d V) (P i) = 2 :=
   forcing_valuation_two P hp hinj c d V i (Finset.mem_filter.mp hi).1
+end
 
 omit [Fintype ι] [DecidableEq ι] in
 lemma forcing_split (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) :
@@ -112,12 +116,12 @@ lemma forcing_norm_le (Q : Ideal O) (hQ : Q ≠ 0)
 lemma fixed_radical_power_loss (Z M f g r : ℝ) (hZ : 1 < Z)
     (hf : 0 < f) (hg : 0 < g) (hr : 0 < r) (hfg : f ≤ g*r) :
     Z ^ ((M-4*Real.logb Z g)/6) ≤
-      r^(2/3:ℝ) * Z^((M-4*Real.logb Z f)/6) := by
+      r^(2/3:ℝ) * Z ^((M-4*Real.logb Z f)/6) := by
   have hz : 0 < Z := zero_lt_one.trans hZ
   have hl := Real.logb_le_logb_of_le hZ hf hfg
   rw [Real.logb_mul hg.ne' hr.ne'] at hl
   calc
-    _ ≤ Z^(Real.logb Z r*(2/3)+(M-4*Real.logb Z f)/6) :=
+    _ ≤ Z ^(Real.logb Z r*(2/3)+(M-4*Real.logb Z f)/6) :=
       Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
     _ = _ := by
       rw [Real.rpow_add hz,Real.rpow_mul hz.le,Real.rpow_logb hz hZ.ne' hr]
@@ -138,7 +142,7 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
     (hN : ∀ z ∈ rows, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ Cr * Z ^ M) :
     (rows.card : ℝ) ≤ (Ideal.absNorm (commonRadical Q Q):ℝ)^(2/3:ℝ) *
       (768 * (6 : ℝ) ^ (normalizedFactors Q).toFinset.card * Cr^(1/6:ℝ) *
-        Z^((M-4*Real.logb Z (Ideal.absNorm
+        Z ^((M-4*Real.logb Z (Ideal.absNorm
           (forcingIdeal (fun i => Ideal.span {p i}) c d V):ℝ))/6)) := by
   let P : ι → Ideal O := fun i => Ideal.span {p i}
   let G := goodIdeal Q P c d V
@@ -154,14 +158,14 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
       intro R hR
       obtain ⟨i,hi,rfl⟩ := prime_product_mem P hp (goodSet Q P c d V) R hR
       obtain ⟨hif,hQi⟩ := Finset.mem_filter.mp hi
-      obtain ⟨hl,h2,hd⟩ := hgood i hif
+      pm_69 hl h2 hd hgood i hif
       refine ⟨hl,h2,hQi,hd,?_⟩
       rw [movingElement_span,good_valuation_two Q P hp hinj c d V i hi])
     Z Cr M (2*Real.logb Z (Ideal.absNorm G:ℝ)) (zero_lt_one.trans hZ) hCr (by
       rw [show (2*Real.logb Z (Ideal.absNorm G:ℝ))/2=Real.logb Z (Ideal.absNorm G:ℝ) by ring,
         Real.rpow_logb (zero_lt_one.trans hZ) hZ.ne' hGn]) hN
   have hb' : (rows.card:ℝ) ≤ 768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ)*
-      Z^((M-4*Real.logb Z (Ideal.absNorm G:ℝ))/6) := by
+      Z ^((M-4*Real.logb Z (Ideal.absNorm G:ℝ))/6) := by
     have heq : (M-2*(2*Real.logb Z (Ideal.absNorm G:ℝ)))/6 =
         (M-4*Real.logb Z (Ideal.absNorm G:ℝ))/6 := by ring
     simpa only [heq] using hb
@@ -176,7 +180,7 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
   calc
     _ ≤ (768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*
         ((Ideal.absNorm (commonRadical Q Q):ℝ)^(2/3:ℝ)*
-          Z^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal P c d V):ℝ))/6)) :=
+          Z ^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal P c d V):ℝ))/6)) :=
       mul_le_mul_of_nonneg_left hs (by positivity)
     _ = _ := by ring
 
@@ -187,12 +191,12 @@ theorem actual_canonical_exceptional_count_fixedQ (η : Character) (χ : RayFour
     (m : O) (hm : m ≠ 0) (hmLam : goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
     (rows : Finset O) (hrows : ∀ z ∈ rows, z ≠ 0)
     (hex : ∀ z ∈ rows, CenteredExceptionalProfile.FixedInducingRow (childCharacter η χ) Q m
-      (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z)
+      (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U) z)
     (Z Cr M : ℝ) (hZ : 1 < Z) (hCr : 0 ≤ Cr)
-    (hN : ∀ z ∈ rows, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ Cr*Z^M) :
+    (hN : ∀ z ∈ rows, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ Cr*Z ^M) :
     (rows.card:ℝ) ≤ (Ideal.absNorm (commonRadical Q Q):ℝ)^(2/3:ℝ)*
       (768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ)*
-        Z^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D => P.val)
+        Z ^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D => P.val)
           (leftExponent C D) (rightExponent C D) (nonunitPartitionSet C D U)):ℝ))/6)) := by
   have he : elementCoeff η (primaryGenerator C) ≠ 0 := by
     rw [←idealCoeff_span η (supported_primaryGenerator_ne_zero C hC),primary_span_supported C hC]

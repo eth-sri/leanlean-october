@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.RamifiedTracePhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,15 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ShortDraftLatticeCount
@@ -27,7 +25,10 @@ theorem coordinate_squares (a b D : ℤ) (hD : 0 ≤ D)
     a ^ 2 ≤ 2 * D ∧ b ^ 2 ≤ 2 * D := by
   constructor <;> nlinarith [sq_nonneg (a - 2 * b), sq_nonneg (2 * a - b)]
 
-theorem finite_lattice_count (S : Finset (ℤ × ℤ)) (D R : ℕ)
+section
+variable (S : Finset (ℤ × ℤ))
+include S
+theorem finite_lattice_count (D R : ℕ)
     (hR : 2 * D < R ^ 2)
     (hS : ∀ x ∈ S, q x ≤ D) :
     S.card ≤ (2 * R + 1) ^ 2 := by
@@ -54,9 +55,9 @@ theorem finite_lattice_count (S : Finset (ℤ × ℤ)) (D R : ℕ)
   calc
     S.card ≤ (I.product I).card := Finset.card_le_card hbox
     _ = I.card * I.card := Finset.card_product _ _
-    _ = (2 * R + 1) ^ 2 := by rw [hI]; ring
+    _ = (2 * R + 1) ^ 2 := by grind
 
-theorem finite_lattice_count_linear (S : Finset (ℤ × ℤ)) (D : ℕ)
+theorem finite_lattice_count_linear (D : ℕ)
     (hS : ∀ x ∈ S, q x ≤ D) :
     S.card ≤ 64 * (D + 1) := by
   have hR : 2 * D < (Nat.sqrt (2 * D) + 1) ^ 2 := by
@@ -65,6 +66,7 @@ theorem finite_lattice_count_linear (S : Finset (ℤ × ℤ)) (D : ℕ)
   have hsquare : (Nat.sqrt (2 * D)) ^ 2 ≤ 2 * D := Nat.sqrt_le' _
   have hroot : Nat.sqrt (2 * D) ≤ 2 * D := Nat.sqrt_le_self _
   nlinarith
+end
 
 theorem actual_eisenstein_count
     (S : Finset ActualEisensteinCoordinates.O) (D : ℕ)
@@ -85,8 +87,7 @@ theorem actual_eisenstein_count
     Finset.card_image_of_injective S hinj
   have hbound : ∀ v ∈ S.image ActualEisensteinCoordinates.coords,
       q v ≤ D := by
-    intro v hv
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hv
+    pm_136 v hv x hx Finset.mem_image.mp
     exact hS x hx
   calc
     S.card = (S.image ActualEisensteinCoordinates.coords).card := himage.symm
@@ -96,14 +97,13 @@ end ShortDraftLatticeCount
 
 namespace ActualEisensteinCubic
 
-open ShortDraftCusp
 
 theorem A3_cubicChar_neg_one
     (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P) :
     cubicChar P hgood (-1 : O ⧸ P) = 1 := by
   let χ := cubicChar P hgood
   have hcube : χ (-1 : O ⧸ P) ^ 3 = 1 := by
-    rw [← χ.pow_apply' (by decide), cubicChar_pow_three P hgood]
+    pm_1110
     exact MulChar.one_apply isUnit_neg_one
   have hminus : (-1 : O ⧸ P) ^ 3 = -1 := by ring
   calc
@@ -174,8 +174,7 @@ theorem finite_multiples_count
     T.card ≤ 64 * (D / qNat p + 1) := by
   have hbound : ∀ x ∈ T, q (coords x) ≤ (D / qNat p : ℕ) := by
     intro x hx
-    have hmul := hT x hx
-    rw [qNat_mul] at hmul
+    pm_126 hmul hT x hx qNat_mul
     have hdiv : qNat x ≤ D / qNat p :=
       (Nat.le_div_iff_mul_le (qNat_pos hp)).mpr (by
         simpa [mul_comm] using hmul)
@@ -229,7 +228,7 @@ theorem finite_divisible_count
 end ShortDraftLatticeCount
 
 namespace IdealGaussCRT
-open AddChar MulChar
+open MulChar
 
 end IdealGaussCRT
 
@@ -255,8 +254,7 @@ theorem prime_sixth_row_approx
   classical
   let S := columns.filter (fun n => ∃ i ∈ support n, p ∈ P i)
   have hdiv : ∀ n ∈ S, p ∣ n := by
-    intro n hn
-    obtain ⟨hcol, hsupp⟩ := Finset.mem_filter.mp hn
+    pm_381 n hn hcol hsupp Finset.mem_filter.mp
     exact hfactor n hcol hsupp
   have hnorm : ∀ n ∈ S, qNat n ≤ D := by
     intro n hn
@@ -303,7 +301,7 @@ theorem prime_sixth_row_approx_maximal
     exact hsupport n hn i hi
   exact Ideal.mem_span_singleton.mp hnP
 
-open AddChar MulChar
+open MulChar
 
 end ActualEisensteinCubic
 

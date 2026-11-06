@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownThreeTermMonotone
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Heath-Brown Lemma 1 under the published open-interval regularity
@@ -13,7 +14,6 @@ omitted endpoint phases with their exact loss `2`.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
     {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
@@ -56,28 +56,15 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_open_of_vmvt
     (by simpa only [M] using hHN) hShiftDiff hCompact hShiftBounds hC hVMVT
   have hEndpoint := norm_heathBrownExponentialSum_le_interior_add_two
     (by omega : 2 ≤ N) f
-  have hConstant0 : 0 ≤
-      heathBrownLemmaOneSourceConstant k A C epsilon :=
-    (heathBrownLemmaOneSourceConstant_pos hk hA hC hepsilon).le
+  pm_8834 hConstant0 heathBrownLemmaOneSourceConstant heathBrownLemmaOneSourceConstant_pos
   have hMainMono := heathBrown_sourceScale_main_mono
     hM hMN hk hlambda hepsilon hConstant0
   change heathBrownLemmaOneSourceConstant k A C epsilon *
       (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda ≤
     heathBrownLemmaOneSourceConstant k A C epsilon *
       (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda at hMainMono
-  calc
-    ‖heathBrownExponentialSum N f‖ ≤
-        ‖heathBrownExponentialSum M (heathBrownInteriorShift f)‖ + 2 := by
-      simpa only [M] using hEndpoint
-    _ ≤ (heathBrownLemmaOneSourceConstant k A C epsilon *
-          (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda +
-        heathBrownHChoice k A lambda) + 2 := by gcongr
-    _ ≤ (heathBrownLemmaOneSourceConstant k A C epsilon *
-          (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda +
-        heathBrownHChoice k A lambda) + 2 := by gcongr
-    _ = _ := by ring
+  grind
 
 
-end
 
 end GafniTao

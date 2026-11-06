@@ -23,7 +23,7 @@ def poolDivisor (G : Finset SupportedIdeal) (D : Id) : SupportedIdeal :=
   if hD : D∈divisorPool G Subtype.val then ⟨D,divisorPool_supported G D hD⟩
   else ⟨1,by
     constructor
-    · exact one_ne_zero
+    simp_all
     · intro P hP
       change P∈normalizedFactors (1:Id) at hP
       rw [normalizedFactors_one] at hP
@@ -32,8 +32,10 @@ def poolDivisor (G : Finset SupportedIdeal) (D : Id) : SupportedIdeal :=
 lemma poolDivisor_val (G : Finset SupportedIdeal) (D : Id) (hD : D∈divisorPool G Subtype.val) :
     (poolDivisor G D).val=D := by simp [poolDivisor,hD]
 
-lemma finite_pair_eq_tsum (F G : Finset SupportedIdeal) (f : SupportedIdeal→SupportedIdeal→ℂ)
-    (hf : ∀I J,I∉F ∨ J∉G→f I J=0) :
+section
+variable (F G : Finset SupportedIdeal) (f : SupportedIdeal→SupportedIdeal→ℂ) (hf : ∀I J,I∉F ∨ J∉G→f I J=0)
+include F G f hf
+lemma finite_pair_eq_tsum :
     (∑I∈F,∑J∈G,f I J)=∑'I : SupportedIdeal,∑'J : SupportedIdeal,f I J := by
   have hinner (I : SupportedIdeal) : (∑J∈G,f I J)=∑'J : SupportedIdeal,f I J :=
     (tsum_eq_sum (fun J hJ=>hf I J (Or.inr hJ))).symm
@@ -43,8 +45,7 @@ lemma finite_pair_eq_tsum (F G : Finset SupportedIdeal) (f : SupportedIdeal→Su
   intro I hI
   simp only [hf I _ (Or.inl hI),tsum_zero]
 
-theorem finite_pair_mobius_dilation (F G : Finset SupportedIdeal)
-    (f : SupportedIdeal→SupportedIdeal→ℂ) (hf : ∀I J,I∉F ∨ J∉G→f I J=0) :
+theorem finite_pair_mobius_dilation :
     (∑I∈F,∑J∈G,if IsCoprime I.val J.val then f I J else 0)=
       ∑D∈divisorPool G Subtype.val,(moebius D:ℂ)*
         ∑'I : SupportedIdeal,∑'J : SupportedIdeal,
@@ -59,6 +60,7 @@ theorem finite_pair_mobius_dilation (F G : Finset SupportedIdeal)
     simp only [hf I J h,ite_self])]
   convert supported_divisor_pair_tsum (poolDivisor G D) f using 1
   rw [hd]
+end
 
 end SevenEighths.ProbeGramCommon
 end

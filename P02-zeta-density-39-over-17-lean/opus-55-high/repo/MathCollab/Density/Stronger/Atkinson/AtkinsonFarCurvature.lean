@@ -7,6 +7,7 @@ See ../../../../../third_party/twelfth/ATKINSON_PREFIX_MANIFEST.json
 and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNearGap
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,20 +23,18 @@ noncomputable section
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinson_far_slope_lower {H u M B : ℝ}
-    (hH : 0 < H) (hHu : H ≤ u) (hM : 0 < M) (hB : 0 < B) (hBM : B ≤ 4*M) :
+section
+variable {H u M B : ℝ} (hH : 0 < H) (hHu : H ≤ u)
+include H u M B hH hHu
+theorem atkinson_far_slope_lower (hM : 0 < M) (hB : 0 < B) (hBM : B ≤ 4*M) :
     Real.sqrt (H/M) ≤ atkinsonIndexSlopeLower u B := by
   unfold atkinsonIndexSlopeLower
   apply Real.sqrt_le_sqrt
   rw [div_le_div_iff₀ hM hB]
   have hcoef : B ≤ 2*Real.pi*M := by nlinarith [Real.pi_gt_three]
-  have h1 := mul_le_mul_of_nonneg_left hcoef hH.le
-  have h2 := mul_le_mul_of_nonneg_right hHu
-    (by positivity : 0 ≤ 2*Real.pi*M)
-  nlinarith
+  pm_1312
 
-theorem atkinson_far_box_curvature_bounds {H u M B : ℝ}
-    (hH : 0 < H) (hHu : H ≤ u) (huH : u ≤ 2*H)
+theorem atkinson_far_box_curvature_bounds (huH : u ≤ 2*H)
     (hM : 0 < M) (hB : 0 < B) (hBM : B ≤ 4*M) :
     1/(320*(M*Real.sqrt (H*M))) ≤ atkinsonIndexBoxCurvatureLower u M B ∧
       atkinsonIndexBoxCurvatureUpper u M B ≤ 4/(M*Real.sqrt (H*M)) := by
@@ -69,13 +68,14 @@ theorem atkinson_far_box_curvature_bounds {H u M B : ℝ}
     rw [div_le_div_iff₀ hDU hQ]
     have hp := mul_le_mul_of_nonneg_right Real.pi_lt_four.le hQ.le
     nlinarith
+end
 
 theorem atkinson_far_lambda_bounds {H t u : ℝ} {M : ℕ}
     (hH : 0 < H) (hHu : H ≤ u) (huH : u ≤ 2*H) (htu : u < t) (hM : 0 < M) :
     (t-u)/(320*((M:ℝ)*Real.sqrt (H*(M:ℝ)))) ≤ atkinsonIndexBProcessLambda t u M M ∧
       atkinsonIndexBProcessLambdaUpper t u M M ≤ 4*(t-u)/((M:ℝ)*Real.sqrt (H*(M:ℝ))) := by
-  have hMr : 0 < (M:ℝ) := by exact_mod_cast hM
-  have hM1 : (1:ℝ) ≤ M := by exact_mod_cast hM
+  pm_4411 hMr M hM
+  pm_4410
   have hB : (0:ℝ) < (M:ℝ)+(M:ℝ)+2 := by positivity
   have hBM : (M:ℝ)+(M:ℝ)+2 ≤ 4*(M:ℝ) := by linarith
   have hb := atkinson_far_box_curvature_bounds hH hHu huH hMr hB hBM

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Shape
 public import OAI.NumberTheory.DirichletL.Reflection.Denominator
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -75,7 +76,7 @@ lemma source_kernel_argument_factor {φ σ : Type*} [Fintype φ] [Fintype σ]
       (Ideal.absNorm n:ℝ)*(Ideal.absNorm b:ℝ)^3 /
       ((Ideal.absNorm K:ℝ)^2*(Ideal.absNorm (∏ i, S.ideal i):ℝ)^2) := by
   rw [reflected_conductor_norm]
-  simp only [fixedKernelCoefficient,map_mul,Nat.cast_mul,mul_pow,div_eq_mul_inv,mul_inv_rev]
+  pm_382 fixedKernelCoefficient map_mul Nat.cast_mul mul_pow div_eq_mul_inv mul_inv_rev
   ring
 
 end

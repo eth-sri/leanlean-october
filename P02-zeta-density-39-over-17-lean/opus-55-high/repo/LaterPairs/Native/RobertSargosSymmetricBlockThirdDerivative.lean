@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSourceThirdDerivative
 public import LaterPairs.Native.RobertSargosSymmetricArray
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -27,7 +28,7 @@ theorem robertSargos_symmetric_block_third_derivative_bound
     ‖robertSargosSymmetricSum f M H‖ ≤
       (H:ℝ)*(1+20*C*((M:ℝ)*(4*(H:ℝ)*lam)^((1:ℝ)/6)+
         Real.sqrt M*(2*(H:ℝ)*lam)^(-(1:ℝ)/6))) := by
-  have hHr : (0:ℝ) < H := by exact_mod_cast hH
+  pm_1661
   have hb (h : ℤ) (hh : h ∈ Finset.Ico (H:ℤ) (2*H)) :
       ‖robertSargosSourceCenteredPhase f M h‖ ≤
         1+20*C*((M:ℝ)*(4*(H:ℝ)*lam)^((1:ℝ)/6)+
@@ -35,7 +36,7 @@ theorem robertSargos_symmetric_block_third_derivative_bound
     have hhiI := Finset.mem_Ico.mp hh
     have hHh : (H:ℝ) ≤ h := by exact_mod_cast hhiI.1
     have hhH : (h:ℝ) < 2*H := by exact_mod_cast hhiI.2
-    have hhr : (0:ℝ) < h := hHr.trans_le hHh
+    pm_4474 hhr h hHr.trans_le hHh
     have hsmall : 2*(H:ℝ)*lam ≤ 2*(h:ℝ)*lam := by nlinarith
     have hlarge : 2*(h:ℝ)*lam ≤ 4*(H:ℝ)*lam := by nlinarith
     have hp := robertSargos_source_centered_third_derivative_bound f M h hC
@@ -46,8 +47,7 @@ theorem robertSargos_symmetric_block_third_derivative_bound
       (by positivity : 0 < 2*(H:ℝ)*lam) hsmall (by norm_num : -(1:ℝ)/6 ≤ 0)
     have hb1 := mul_le_mul_of_nonneg_left hpos (Nat.cast_nonneg (α := ℝ) M)
     have hb2 := mul_le_mul_of_nonneg_left hneg (Real.sqrt_nonneg (M:ℝ))
-    have hb3 := mul_le_mul_of_nonneg_left (add_le_add hb1 hb2)
-      (show 0 ≤ 20*C by positivity)
+    pm_8830 hb3 hb1 hb2
     linarith
   have hcard : (Finset.Ico (H:ℤ) (2*H)).card = H := by
     rw [Int.card_Ico]

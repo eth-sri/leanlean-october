@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.RetainedRadialAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff
@@ -23,7 +23,7 @@ theorem cycleSpatial_preserving : MeasurePreserving cycleSpatial volume volume :
 
 theorem cycleCubicMode_injective : Function.Injective cycleCubicMode := by
   rintro ⟨m₁,m₂,m₃⟩ ⟨n₁,n₂,n₃⟩ h
-  simpa only [cycleCubicMode,Prod.mk.injEq,and_assoc,and_left_comm,and_comm] using h
+  pm_124 cycleCubicMode Prod.mk.injEq and_assoc and_left_comm and_comm h
 
 /-- Cyclic reordering preserves the exact complex oscillatory integrand,
 rotating the three independently designated frequency masks with it. -/
@@ -49,9 +49,7 @@ theorem maskedSpatialCubicMode_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}
   have hmf : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
   have hsp := spatialCubicMode_measurable ha.measurable hi L m
   have hmasks : Measurable (maskedSpatialCubicMode a μ L m A B C) := by
-    have hAi : Measurable (A.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hA
-    have hBi : Measurable (B.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hB
-    have hCi : Measurable (C.indicator (fun _ : ℝ => (1:ℂ))) := measurable_const.indicator hC
+    pm_4520
     unfold maskedSpatialCubicMode
     fun_prop
   apply (spatialCubicMode_integrable ha hs hm h0 hi L m).norm.mono' hmasks.aestronglyMeasurable
@@ -62,20 +60,24 @@ theorem maskedSpatialCubicMode_integrable {a : ℝ → ℂ} {μ : ℝ → ℝ}
     by_cases hCx : mellinFrequency x.2.1-mellinFrequency x.2.2 ∈ C <;>
     simp [hAx,hBx,hCx]
 
+section
+variable (a : ℝ → ℂ) (μ : ℝ → ℝ) (L : ℝ)
+include a μ L
 /-- Exact integral equality before any absolute-value estimate. The separate
 integrability theorem supplies existence for the ordinary analytic inputs. -/
-theorem maskedSpatialCubicMode_integral_cycle (a : ℝ → ℂ) (μ : ℝ → ℝ) (L : ℝ)
+theorem maskedSpatialCubicMode_integral_cycle
     (m : ℤ × (ℤ × ℤ)) (A B C : Set ℝ) :
     (∫ x : Triple, maskedSpatialCubicMode a μ L m A B C x) =
       ∫ x : Triple, maskedSpatialCubicMode a μ L (cycleCubicMode m) B C A x := by
   rw [← cycleSpatial_preserving.integral_comp' (maskedSpatialCubicMode a μ L (cycleCubicMode m) B C A)]
   simp only [maskedSpatialCubicMode_cycle]
 
-theorem maskedSpatialCubicMode_sum_cycle (a : ℝ → ℂ) (μ : ℝ → ℝ) (L : ℝ)
+theorem maskedSpatialCubicMode_sum_cycle
     (S : Finset (ℤ × (ℤ × ℤ))) (A B C : Set ℝ) :
     (∑ m ∈ S, ∫ x : Triple, maskedSpatialCubicMode a μ L m A B C x) =
       ∑ m ∈ S.image cycleCubicMode, ∫ x : Triple, maskedSpatialCubicMode a μ L m B C A x := by
-  rw [Finset.sum_image (fun _ _ _ _ h => cycleCubicMode_injective h)]
+  pm_555 cycleCubicMode_injective
   exact Finset.sum_congr rfl (fun m _ => maskedSpatialCubicMode_integral_cycle a μ L m A B C)
+end
 
 end GuthMaynard.Improvement

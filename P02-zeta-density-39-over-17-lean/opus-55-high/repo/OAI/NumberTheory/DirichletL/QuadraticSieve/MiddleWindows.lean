@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.SupportNorms
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,75 +10,32 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
@@ -98,8 +56,10 @@ variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < de
 
 include hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT hr hl hri hrows ha hb
 
-theorem HasSieveExponent.original_middle_window
-    (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (P : Ideal O → m → Prop)
+section
+variable (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ))
+include hU W
+theorem HasSieveExponent.original_middle_window (P : Ideal O → m → Prop)
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
@@ -115,8 +75,7 @@ theorem HasSieveExponent.original_middle_window
     rows left right hr hl hri hrows a₀ b₀ a b ha hb W hleft hright).1
   have hbounds (h : {h : O // h ≠ 0}) :=
     originalMiddleWindowAt_bounds W S T rows left right (a h.val) (b h.val) M P h.val
-  have hs := Summable.of_nonneg_of_le (fun h => (hbounds h).1) (fun h => (hbounds h).2) hs0
-  refine ⟨hs, ?_⟩
+  pm_3090
   by_cases hcut : D₁ * D₂ ≤ (2 * U) * Real.sqrt (M / B)
   · exact (hs.tsum_le_tsum (fun h => (hbounds h).2) hs0).trans
       (hexp.original_middle_block deltaLoss hδ ε hε S T D₁ D₂ B N M (2 * U)
@@ -131,15 +90,11 @@ theorem HasSieveExponent.original_middle_window
     have hz : (fun h : {h : O // h ≠ 0} =>
         originalMiddleWindowAt W S T rows left right (a h.val) (b h.val) M P h.val) = fun _ => 0 :=
       funext (fun h => originalMiddleWindowAt_eq_zero W S T rows left right (a h.val) (b h.val) M P h.val hp)
-    rw [hz, tsum_zero]
-    have h1 := nonzeroLatticeEnvelopeConstant_nonneg
-    have h2 := originalMiddleDecayConstant_nonneg W
-    have h3 := divisorEnergyFactor_nonneg ε hε N a₀ b₀
-    have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+    pm_7988 originalMiddleDecayConstant_nonneg
+    pm_3089
     positivity
 
-theorem HasSieveExponent.dual_middle_window
-    (hU : 0 ≤ U) (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F) (P : Ideal O → m → Prop)
+theorem HasSieveExponent.dual_middle_window (F : ℝ) (hF : 0 < F) (P : Ideal O → m → Prop)
     (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hP : ∀ (D : S) (E : T) i, P (D.val * E.val) i →
@@ -156,8 +111,7 @@ theorem HasSieveExponent.dual_middle_window
     rows left right hr hl hri hrows a₀ b₀ a b ha hb W hleft hright).1
   have hbounds (h : {h : O // h ≠ 0}) :=
     dualMiddleWindowAt_bounds W S T rows left right (a h.val) (b h.val) M F P h.val
-  have hs := Summable.of_nonneg_of_le (fun h => (hbounds h).1) (fun h => (hbounds h).2) hs0
-  refine ⟨hs, ?_⟩
+  pm_3090
   by_cases hcut : D₁ * D₂ ≤ (2 * U) * (N * Real.sqrt (F / (M * B)))
   · exact (hs.tsum_le_tsum (fun h => (hbounds h).2) hs0).trans
       (hexp.dual_middle_block deltaLoss hδ ε hε S T D₁ D₂ B N M (2 * U)
@@ -172,12 +126,10 @@ theorem HasSieveExponent.dual_middle_window
     have hz : (fun h : {h : O // h ≠ 0} =>
         dualMiddleWindowAt W S T rows left right (a h.val) (b h.val) M F P h.val) = fun _ => 0 :=
       funext (fun h => dualMiddleWindowAt_eq_zero W S T rows left right (a h.val) (b h.val) M F P h.val hp)
-    rw [hz, tsum_zero]
-    have h1 := nonzeroLatticeEnvelopeConstant_nonneg
-    have h2 := dualMiddleDecayConstant_nonneg W
-    have h3 := divisorEnergyFactor_nonneg ε hε N a₀ b₀
-    have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+    pm_7988 dualMiddleDecayConstant_nonneg
+    pm_3089
     positivity
+end
 
 end
 
@@ -247,8 +199,7 @@ theorem HasSieveExponent.large_principal_correction {α : ℝ} (hexp : HasSieveE
   have hb := principalCorrectionAt_bound ε hε S T D₁ D₂ B N M hD₁ hD₂ hB hN hM hS hT
     rows left right hr hl hri hrows hleft hright a b
   have hc := divisor_cost_with_constant hexp deltaLoss hδ ε hε B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N a b
-  have hf := divisorEnergyFactor_nonneg ε hε N a b
-  have hconst := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+  pm_3249 hf a b hconst
   calc
     _ ≤ (2 * Real.sqrt (M / B) / (D₁ * D₂)) *
         (divisorEnergyFactor ε hε N a b *
@@ -272,7 +223,7 @@ variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
 theorem sum_two_subtype_pools {A : Type*} [AddCommMonoid A]
     (S T : Finset (Ideal O)) (f : Ideal O → Ideal O → A) :
     (∑ D : S, ∑ E : T, f D.val E.val) = ∑ D ∈ S, ∑ E ∈ T, f D E := by
-  rw [Finset.sum_coe_sort S (fun D => ∑ E : T, f D E.val)]
+  pm_7026 D E f E.val
   apply Finset.sum_congr rfl
   intro D hD
   exact Finset.sum_coe_sort T (f D)
@@ -305,9 +256,7 @@ theorem originalMiddleWindowAt_dyadic (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal 
       ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1),
         originalMiddleWindowAt W (divisorDyadicBin S N j) (divisorDyadicBin T N k)
           rows left right a b M P h := by
-  classical
-  simp_rw [originalMiddleWindowAt_eq_finset]
-  exact sum_divisorDyadicRectangles (A := ℝ) S T N _
+  pm_7693 originalMiddleWindowAt_eq_finset
 
 theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -339,8 +288,7 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
   have hV : 0 ≤ V := by
     have h1 := nonzeroLatticeEnvelopeConstant_nonneg
     have h2 := originalMiddleDecayConstant_nonneg W
-    have h3 := divisorEnergyFactor_nonneg ε hε N a₀ b₀
-    have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+    pm_3089
     dsimp only [V]
     positivity
   let f := fun (j k : Fin (columnDyadicLength N + 1)) (h : {h : O // h ≠ 0}) =>
@@ -359,39 +307,17 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
             ⟨D.val, (Finset.mem_filter.mp D.property).1⟩
             ⟨E.val, (Finset.mem_filter.mp E.property).1⟩ i hp)
       · have hz := Finset.not_nonempty_iff_eq_empty.mp hTk
-        have he : f j k = fun _ => 0 := by
-          funext h
-          apply originalMiddleWindowAt_eq_zero
-          intro D E i hp
-          have hh := E.property
-          simp only [hz, Finset.notMem_empty] at hh
-        rw [he]
-        simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+        pm_3093 originalMiddleWindowAt_eq_zero E.property
+        pm_3092
     · have hz := Finset.not_nonempty_iff_eq_empty.mp hSj
-      have he : f j k = fun _ => 0 := by
-        funext h
-        apply originalMiddleWindowAt_eq_zero
-        intro D E i hp
-        have hh := D.property
-        simp only [hz, Finset.notMem_empty] at hh
-      rw [he]
-      simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+      pm_3093 originalMiddleWindowAt_eq_zero D.property
+      pm_3092
   have he : (fun h : {h : O // h ≠ 0} =>
       originalMiddleWindowAt W S T rows left right (a h.val) (b h.val) M P h.val) =
       fun h => ∑ j, ∑ k, f j k h := by
     funext h
     exact originalMiddleWindowAt_dyadic W S T N rows left right (a h.val) (b h.val) M P h.val
-  rw [he]
-  refine ⟨summable_sum (fun j _ => summable_sum (fun k _ => (hf j k).1)), ?_⟩
-  rw [Summable.tsum_finsetSum (fun j _ => summable_sum (fun k _ => (hf j k).1))]
-  calc
-    _ = ∑ j, ∑ k, ∑' h, f j k h := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      exact Summable.tsum_finsetSum (fun k _ => (hf j k).1)
-    _ ≤ ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1), V :=
-      Finset.sum_le_sum (fun j _ => Finset.sum_le_sum (fun k _ => (hf j k).2))
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, V, pow_two]; ring
+  pm_3091
 
 end
 
@@ -428,9 +354,7 @@ theorem dualMiddleWindowAt_dyadic (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O)) 
       ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1),
         dualMiddleWindowAt W (divisorDyadicBin S N j) (divisorDyadicBin T N k)
           rows left right a b M F P h := by
-  classical
-  simp_rw [dualMiddleWindowAt_eq_finset]
-  exact sum_divisorDyadicRectangles (A := ℝ) S T N _
+  pm_7693 dualMiddleWindowAt_eq_finset
 
 theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -462,8 +386,7 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
   have hV : 0 ≤ V := by
     have h1 := nonzeroLatticeEnvelopeConstant_nonneg
     have h2 := dualMiddleDecayConstant_nonneg W
-    have h3 := divisorEnergyFactor_nonneg ε hε N a₀ b₀
-    have h4 := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+    pm_3089
     dsimp only [V]
     positivity
   let f := fun (j k : Fin (columnDyadicLength N + 1)) (h : {h : O // h ≠ 0}) =>
@@ -482,43 +405,21 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
             ⟨D.val, (Finset.mem_filter.mp D.property).1⟩
             ⟨E.val, (Finset.mem_filter.mp E.property).1⟩ i hp)
       · have hz := Finset.not_nonempty_iff_eq_empty.mp hTk
-        have he : f j k = fun _ => 0 := by
-          funext h
-          apply dualMiddleWindowAt_eq_zero
-          intro D E i hp
-          have hh := E.property
-          simp only [hz, Finset.notMem_empty] at hh
-        rw [he]
-        simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+        pm_3093 dualMiddleWindowAt_eq_zero E.property
+        pm_3092
     · have hz := Finset.not_nonempty_iff_eq_empty.mp hSj
-      have he : f j k = fun _ => 0 := by
-        funext h
-        apply dualMiddleWindowAt_eq_zero
-        intro D E i hp
-        have hh := D.property
-        simp only [hz, Finset.notMem_empty] at hh
-      rw [he]
-      simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+      pm_3093 dualMiddleWindowAt_eq_zero D.property
+      pm_3092
   have he : (fun h : {h : O // h ≠ 0} =>
       dualMiddleWindowAt W S T rows left right (a h.val) (b h.val) M F P h.val) =
       fun h => ∑ j, ∑ k, f j k h := by
     funext h
     exact dualMiddleWindowAt_dyadic W S T N rows left right (a h.val) (b h.val) M F P h.val
-  rw [he]
-  refine ⟨summable_sum (fun j _ => summable_sum (fun k _ => (hf j k).1)), ?_⟩
-  rw [Summable.tsum_finsetSum (fun j _ => summable_sum (fun k _ => (hf j k).1))]
-  calc
-    _ = ∑ j, ∑ k, ∑' h, f j k h := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      exact Summable.tsum_finsetSum (fun k _ => (hf j k).1)
-    _ ≤ ∑ j : Fin (columnDyadicLength N + 1), ∑ k : Fin (columnDyadicLength N + 1), V :=
-      Finset.sum_le_sum (fun j _ => Finset.sum_le_sum (fun k _ => (hf j k).2))
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, V, pow_two]; ring
+  pm_3091
 
 end
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
 theorem norm_double_sum_real_factor {n p : Type*} [Fintype n] [Fintype p]
@@ -565,23 +466,12 @@ theorem originalProductDivisorMiddleAt_le_window
   classical
   have hp (i : m) := originalColumnSum_divisor_rectangles K S T rows left right a b i
     hleft hright hS hT P (fun d i _ _ => originalPrincipalKernel W rows M h d i)
-  apply (Finset.sum_le_sum (fun i _ => hp i)).trans_eq
+  pm_1105
   rw [originalMiddleWindowAt_eq_finset]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro D hD
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro E hE
-  apply Finset.sum_congr rfl
-  intro i hi
-  by_cases hd : D * E ∈ K
+  pm_3094
   · by_cases hpi : P (D * E) i
-    · simp only [hd, hpi, and_self, ite_true]
-      unfold originalPrincipalKernel
-      simp only [map_mul, Nat.cast_mul]
-      exact norm_double_sum_real_factor _ _ _ (by positivity)
-    · simp only [hd, hpi, and_false, ite_false, ite_true]
+    pm_5486 originalPrincipalKernel norm_double_sum_real_factor
+    pm_3429 hd hpi and_false ite_false ite_true
   · simp only [hd, false_and, ite_false]
 
 theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasSieveExponent α)
@@ -605,10 +495,8 @@ theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasS
         ((2 * nonzeroLatticeEnvelopeConstant * originalMiddleDecayConstant W) *
           divisorEnergyFactor ε hε N a₀ b₀ * (divisorExponentConstant hexp deltaLoss hδ * (B * N) ^ deltaLoss) *
             (N + (2 * U) * Real.sqrt M * B ^ (α - 1 / 2))) := by
-  let S := columnDivisorPool left
-  let T := columnDivisorPool right
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
+  pm_5141
+  pm_3095
   have hs := hexp.original_middle_pool deltaLoss hδ ε hε S T B N M U hB hN hM hU
     (columnDivisorPool_norm_bounds left hl0 N (fun j => (hleft j).2))
     (columnDivisorPool_norm_bounds right hr0 N (fun k => (hright k).2))
@@ -620,7 +508,7 @@ theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasS
   have ht := Summable.of_nonneg_of_le
     (fun h : {h : O // h ≠ 0} => originalProductDivisorMiddleAt_nonneg W K rows left right
       (a h.val) (b h.val) M P h.val) hdom hs.1
-  exact ⟨ht, (ht.tsum_le_tsum hdom hs.1).trans hs.2⟩
+  pm_7797
 
 end CanonicalQuadraticSieve
 

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,15 +28,15 @@ structure Valid {J : ℕ} (x : InitialTuple J) (t f : Ideal O) (k : O) : Prop wh
   row_eq : primaryGenerator x.divisor * x.frequency = k
   assigned_dvd : ∀ i, (x.assigned i).val ∣ t * f
 
-lemma divisor_dvd {J : ℕ} {x : InitialTuple J} {t f : Ideal O} {k : O}
-    (hx : Valid x t f k) : x.divisor ∣ f := ⟨x.residual, hx.label_eq.symm⟩
+section
+variable {J : ℕ} {x : InitialTuple J} {t f : Ideal O} {k : O} (hx : Valid x t f k)
+include J x t f k hx
+lemma divisor_dvd : x.divisor ∣ f := ⟨x.residual, hx.label_eq.symm⟩
 
-lemma divisor_ne_zero {J : ℕ} {x : InitialTuple J} {t f : Ideal O} {k : O}
-    (hx : Valid x t f k) (hf : f ≠ 0) : x.divisor ≠ 0 := by
-  intro hz
-  have he := hx.label_eq
-  rw [hz, zero_mul] at he
+lemma divisor_ne_zero (hf : f ≠ 0) : x.divisor ≠ 0 := by
+  pm_8265 hx.label_eq
   exact hf he.symm
+end
 
 theorem valid_key_injective {J : ℕ} (t f : Ideal O) (k : O) (hf : f ≠ 0)
     {x y : InitialTuple J} (hx : Valid x t f k) (hy : Valid y t f k)
@@ -44,35 +45,38 @@ theorem valid_key_injective {J : ℕ} (t f : Ideal O) (k : O) (hf : f ≠ 0)
   have hc : x.common = y.common := by rw [← hx.common_eq, ← hy.common_eq, hd]
   have hs : x.residual = y.residual := by
     apply mul_left_cancel₀ hd0
-    exact hx.label_eq.trans (by simpa only [hd] using hy.label_eq.symm)
+    pm_3535 hx.label_eq.trans hd hy.label_eq.symm
   have hg : primaryGenerator x.divisor ≠ 0 := hx.divisor_good
   have hr : x.frequency = y.frequency := by
     apply mul_left_cancel₀ hg
-    exact hx.row_eq.trans (by simpa only [hd] using hy.row_eq.symm)
+    pm_3535 hx.row_eq.trans hd hy.row_eq.symm
   exact InitialTuple.ext hc hd hs hr ha
 
-lemma divisors_mul_image (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0) :
+section
+variable (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0)
+include I J hI hJ
+lemma divisors_mul_image :
     idealDivisors (I*J) =
       ((idealDivisors I) ×ˢ (idealDivisors J)).image (fun p => p.1*p.2) := by
   ext D
   rw [mem_idealDivisors (mul_ne_zero hI hJ), Finset.mem_image]
   constructor
   · intro hD
-    obtain ⟨A, B, hA, hB, hab⟩ := exists_dvd_and_dvd_of_dvd_mul hD
+    pm_206 A B hA hB hab exists_dvd_and_dvd_of_dvd_mul hD
     exact ⟨(A,B), Finset.mem_product.mpr
       ⟨(mem_idealDivisors hI).mpr hA, (mem_idealDivisors hJ).mpr hB⟩, hab.symm⟩
-  · rintro ⟨p, hp, rfl⟩
-    exact mul_dvd_mul ((mem_idealDivisors hI).mp (Finset.mem_product.mp hp).1)
-      ((mem_idealDivisors hJ).mp (Finset.mem_product.mp hp).2)
+  pm_6324 p hp hI hJ
 
-lemma divisor_card_mul_le (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0) :
+lemma divisor_card_mul_le :
     (idealDivisors (I*J)).card ≤ (idealDivisors I).card * (idealDivisors J).card := by
   rw [divisors_mul_image I J hI hJ, ← Finset.card_product]
   exact Finset.card_image_le
+end
 
-theorem valid_tuple_card_le {J : ℕ} (T : Finset (InitialTuple J))
-    (t f : Ideal O) (k : O) (ht : t ≠ 0) (hf : f ≠ 0)
-    (hT : ∀ x ∈ T, Valid x t f k) :
+section
+variable {J : ℕ} (T : Finset (InitialTuple J)) (t f : Ideal O) (k : O) (ht : t ≠ 0) (hf : f ≠ 0) (hT : ∀ x ∈ T, Valid x t f k)
+include J T t f k ht hf hT
+theorem valid_tuple_card_le :
     T.card ≤ (idealDivisors f).card * (idealDivisors (t*f)).card^J := by
   let D := idealDivisors f
   let E := idealDivisors (t*f)
@@ -91,9 +95,7 @@ theorem valid_tuple_card_le {J : ℕ} (T : Finset (InitialTuple J))
   simpa only [Fintype.card_coe, Fintype.card_prod, Fintype.card_fun,
     Fintype.card_fin, D, E] using Fintype.card_le_of_injective encode hi
 
-theorem valid_tuple_card_le_separated {J : ℕ} (T : Finset (InitialTuple J))
-    (t f : Ideal O) (k : O) (ht : t ≠ 0) (hf : f ≠ 0)
-    (hT : ∀ x ∈ T, Valid x t f k) :
+theorem valid_tuple_card_le_separated :
     T.card ≤ (idealDivisors f).card^(J+1) * (idealDivisors t).card^J := by
   apply (valid_tuple_card_le T t f k ht hf hT).trans
   calc
@@ -101,6 +103,7 @@ theorem valid_tuple_card_le_separated {J : ℕ} (T : Finset (InitialTuple J))
         ((idealDivisors t).card * (idealDivisors f).card)^J :=
       Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (divisor_card_mul_le t f ht hf) J)
     _ = _ := by rw [mul_pow, pow_succ]; ring
+end
 
 lemma divisor_card_pos (I : Ideal O) (hI : I ≠ 0) : 1 ≤ (idealDivisors I).card := by
   apply Finset.one_le_card.mpr

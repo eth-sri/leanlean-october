@@ -67,7 +67,7 @@ theorem residualColumns_eq (S : Finset (Ideal O)) (p : O) (hp : Prime p)
     refine Finset.mem_image.mpr ⟨J,hj,?_⟩
     apply mul_left_cancel₀ (pow_ne_zero k hs.1)
     have hh := residualIdeal_reconstruct p hp J hsJ
-    simpa only [hv] using hh
+    grind
 
 end SevenEighths.CenteredMomentAmplificationSourcePool
 

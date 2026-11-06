@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySlots
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,13 +16,10 @@ local notation "O" => HeckeFamily.O
 
 lemma normalizedSlot_character (η ν : Character) (m A z : O)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (t D : ℝ) :
-    normalizedSlot η m A z S (fun P=>idealCoeff ν P*β P) t D=
+    normalizedSlot η m A z S (fun P=>idealCoeff ν P*β P) t D =
       normalizedSlot (η.product ν) m A z S β t D := by
   unfold normalizedSlot rowSlot
-  congr 1
-  apply Finset.sum_congr rfl
-  intro P hP
-  rw [idealCoeff_product]
+  pm_739 P hP idealCoeff_product
   ring
 
 lemma product_row_presentation (η χ ν : Character) (m A z : O)
@@ -39,7 +37,7 @@ theorem relative_normalizedSlot_eq_ray (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
     (hrow : ∀n,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
     (W : ℝ→ℂ) (b D σ t v : ℝ) (hD : 0<D) :
     normalizedSlot η m A z (primePool M H b D)
-      (fun P=>idealCoeff ν P*HeckePrimeAnnular.annularWeight W D σ v P) t D=
+      (fun P=>idealCoeff ν P*HeckePrimeAnnular.annularWeight W D σ v P) t D =
       (D:ℂ)^(Complex.I*t)*HeckePrimeRay.rayPrimePolynomial M H (χ.product ν) W b D σ (t+v) := by
   rw [normalizedSlot_character]
   exact CenteredMomentPrimeSlotShift.normalizedSlot_eq_ray M H (η.product ν) (χ.product ν)

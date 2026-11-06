@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaDualPowerWindows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -46,9 +47,9 @@ theorem sourceStationaryChart_physical_bound
   let B := 2*(Real.sqrt (modelPhaseCurvatureLower σ))⁻¹*C*
     (A^(1-σ⁻¹))^(β+ε)
   let K := max 1 (max M B)
-  have hK : 1 ≤ K := le_max_left _ _
-  have hMK : M ≤ K := (le_max_left _ _).trans (le_max_right _ _)
-  have hBK : B ≤ K := (le_max_right _ _).trans (le_max_right _ _)
+  pm_4884 hK K
+  pm_1612 hMK M K le_max_left le_max_right
+  pm_372 hBK B K le_max_right
   have hhalf : d/2 ≤ d := by linarith
   refine ⟨d/2,by positivity,hhalf.trans hsmall,hhalf.trans hpos,P,hP,K,hK,?_⟩
   intro T N F a b hTK hN ha hb hlow hhigh hlong hF

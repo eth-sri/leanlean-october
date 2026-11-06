@@ -2,9 +2,9 @@ module
 public import GuthMaynard.Improvement.CubicMaskPartition
 public import GuthMaynard.Improvement.CenteredTruncation
 public import GuthMaynard.Improvement.CubicModeCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff
@@ -17,12 +17,15 @@ def maskedRetainedCubic (a : ℝ → ℂ) (μ : ℝ → ℝ) (L U : ℝ) (A B C 
   (L:ℂ)^3 * ∑ m ∈ retainedCubicModes U,
     ∫ x : Triple, maskedSpatialCubicMode a μ L m A B C x
 
-theorem retainedCubicModes_mem (U : ℝ) (m : ℤ × (ℤ × ℤ)) :
+section
+variable (U : ℝ)
+include U
+theorem retainedCubicModes_mem (m : ℤ × (ℤ × ℤ)) :
     m ∈ retainedCubicModes U ↔
       m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U := by
   simp only [retainedCubicModes,Finset.mem_product]
 
-theorem retainedCubicModes_subset (U : ℝ) : retainedCubicModes U ⊆ cubicModes U := by
+theorem retainedCubicModes_subset : retainedCubicModes U ⊆ cubicModes U := by
   intro m hm
   obtain ⟨h₁,h₂,h₃⟩ := (retainedCubicModes_mem U m).mp hm
   exact (mem_cubicModes U m).mpr ⟨((mem_poissonModes U m.1).mp h₁).2,
@@ -30,7 +33,7 @@ theorem retainedCubicModes_subset (U : ℝ) : retainedCubicModes U ⊆ cubicMode
 
 /-- The actual full retained nonzero cube is invariant under cyclic
 reindexing, with no duplication or missing modes. -/
-theorem retainedCubicModes_cycle (U : ℝ) :
+theorem retainedCubicModes_cycle :
     (retainedCubicModes U).image cycleCubicMode = retainedCubicModes U := by
   ext m
   constructor
@@ -43,39 +46,33 @@ theorem retainedCubicModes_cycle (U : ℝ) :
     refine Finset.mem_image.mpr ⟨(m.2.2,m.1,m.2.1),?_,?_⟩
     · exact (retainedCubicModes_mem U _).mpr ⟨h₃,h₁,h₂⟩
     · rfl
+end
 
 theorem maskedRetainedCubic_cycle (a : ℝ → ℂ) (μ : ℝ → ℝ) (L U : ℝ) (A B C : Set ℝ) :
     maskedRetainedCubic a μ L U A B C = maskedRetainedCubic a μ L U B C A := by
   unfold maskedRetainedCubic
   rw [maskedSpatialCubicMode_sum_cycle,retainedCubicModes_cycle]
 
+section
+variable {a : ℝ → ℂ} {μ : ℝ → ℝ} (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0) (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ) (L U : ℝ)
+include a μ ha l u hl hlu hs hm h0 hi L U
 /-- Genuine retained time kernel cubic equals the finite sum of full
 complex spatial integrals. The identity precedes threshold partition. -/
-theorem retained_cubic_spatial_assembly {a : ℝ → ℂ} {μ : ℝ → ℝ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ) (L U : ℝ) :
+theorem retained_cubic_spatial_assembly :
     kernelCubic (timeMeasure μ) (retainedPoissonKernel (volume.restrict (Icc l u)) a L (poissonModes U)) =
       (L:ℂ)^3 * ∑ m ∈ retainedCubicModes U,
         ∫ x : Triple, spatialCubicMode a μ L m x.1 x.2.1 x.2.2 := by
   rw [retained_cubic_radial_assembly ha hl hlu hs hm h0 hi]
   simp only [retainedCubicModes,Finset.sum_product]
   congr 1
-  apply Finset.sum_congr rfl
-  intro m₁ _
-  apply Finset.sum_congr rfl
-  intro m₂ _
+  pm_156 Finset.sum_congr m₁ m₂
   apply Finset.sum_congr rfl
   intro m₃ _
   exact (spatialCubicMode_integral_radial ha hl hlu hs hm h0 hi L (m₁,m₂,m₃)).symm
 
 /-- Exact threshold decomposition of the actual retained kernel cubic,
 with every exceptional mask moved to the first Fourier factor. -/
-theorem retained_cubic_designated_partition {a : ℝ → ℂ} {μ : ℝ → ℝ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u)
-    (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ)
-    (L U : ℝ) {A : Set ℝ} (hA : MeasurableSet A) :
+theorem retained_cubic_designated_partition {A : Set ℝ} (hA : MeasurableSet A) :
     kernelCubic (timeMeasure μ) (retainedPoissonKernel (volume.restrict (Icc l u)) a L (poissonModes U)) =
       maskedRetainedCubic a μ L U Aᶜ Aᶜ Aᶜ +
       maskedRetainedCubic a μ L U A univ univ +
@@ -91,5 +88,6 @@ theorem retained_cubic_designated_partition {a : ℝ → ℂ} {μ : ℝ → ℝ}
   rw [maskedRetainedCubic_cycle a μ L U Aᶜ A univ]
   rw [maskedRetainedCubic_cycle a μ L U Aᶜ Aᶜ A]
   rw [maskedRetainedCubic_cycle a μ L U Aᶜ A Aᶜ]
+end
 
 end GuthMaynard.Improvement

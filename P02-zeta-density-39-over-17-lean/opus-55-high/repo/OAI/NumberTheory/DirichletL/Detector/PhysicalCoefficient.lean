@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalFourier
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -54,7 +55,10 @@ def actualPhysicalFourier (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s�
     quotientTrace ((C.generator*A)*s) (mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs)
       (Ideal.Quotient.mk _ H*m)
 
-theorem actualPhysicalFourier_eq (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
+section
+variable (C : CalibrationData)
+include C
+theorem actualPhysicalFourier_eq (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
     actualPhysicalFourier C A s hA hs H =
       (Ideal.absNorm (Ideal.span {s}):ℂ) * actualCongruenceCoefficient C A s hA H := by
   unfold actualCongruenceCoefficient
@@ -69,7 +73,7 @@ theorem actualPhysicalFourier_eq (C : CalibrationData) (A s : O) (hA : A≠0) (h
     rfl
   rw [he, calibratedQuotient_mk]
 
-lemma calibratedNumerator_norm_le (C : CalibrationData) (A m : O) :
+lemma calibratedNumerator_norm_le (A m : O) :
     ‖calibratedNumerator C A m‖≤1 := by
   let := ConcreteTraceCRT.finite_quotient_span C.generator_ne_zero
   let : Fintype (O ⧸ Ideal.span {C.generator}) := Fintype.ofFinite _
@@ -78,7 +82,7 @@ lemma calibratedNumerator_norm_le (C : CalibrationData) (A m : O) :
   rw [calibratedNumerator, norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) hC).trans (idealRowHom_norm _ _)
 
-theorem actualCongruenceCoefficient_norm_le (C : CalibrationData) (A s : O)
+theorem actualCongruenceCoefficient_norm_le (A s : O)
     (hA : A≠0) (hs : s≠0) (H : O) :
     ‖actualCongruenceCoefficient C A s hA H‖ ≤
       (Ideal.absNorm (Ideal.span {s}):ℝ) *
@@ -88,6 +92,7 @@ theorem actualCongruenceCoefficient_norm_le (C : CalibrationData) (A s : O)
     exact calibratedNumerator_norm_le C A _
   · intro d
     exact idealRowHom_norm _ _
+end
 
 end SevenEighths.ProbePhysical
 end

@@ -1,6 +1,7 @@
 module
 public import Mathlib.NumberTheory.LSeries.ZetaZeros
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,10 @@ def IsNontrivialZetaZero (ρ : ℂ) : Prop :=
 are proved below, so conversion from the extended natural order loses nothing. -/
 def zetaMultiplicity (ρ : ℂ) : ℕ := analyticOrderNatAt riemannZeta ρ
 
-theorem zeta_analyticOrder_ne_top {ρ : ℂ} (hρ : ρ ≠ 1) :
+section
+variable {ρ : ℂ}
+include ρ
+theorem zeta_analyticOrder_ne_top (hρ : ρ ≠ 1) :
     analyticOrderAt riemannZeta ρ ≠ ⊤ := by
   intro h
   have he := analyticOn_riemannZeta.eqOn_zero_of_preconnected_of_eventuallyEq_zero
@@ -28,16 +32,17 @@ theorem zeta_analyticOrder_ne_top {ρ : ℂ} (hρ : ρ ≠ 1) :
     (show ρ ∈ ({1}ᶜ : Set ℂ) from hρ) (analyticOrderAt_eq_top.mp h)
   exact (riemannZeta_ne_zero_of_one_le_re (s := 2) (by norm_num)) (he (by simp))
 
-theorem nontrivialZetaZero_ne_one {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) : ρ ≠ 1 := by
+theorem nontrivialZetaZero_ne_one (hρ : IsNontrivialZetaZero ρ) : ρ ≠ 1 := by
   intro he
   have := hρ.2.2
-  simp [he] at this
+  simp_all
 
-theorem zetaMultiplicity_local_factorization {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
+theorem zetaMultiplicity_local_factorization (hρ : IsNontrivialZetaZero ρ) :
     ∃ g : ℂ → ℂ, AnalyticAt ℂ g ρ ∧ g ρ ≠ 0 ∧
       ∀ᶠ z in 𝓝 ρ, riemannZeta z = (z-ρ)^(zetaMultiplicity ρ)*g z := by
   exact (analyticOn_riemannZeta ρ (nontrivialZetaZero_ne_one hρ)).analyticOrderAt_ne_top.mp
     (zeta_analyticOrder_ne_top (nontrivialZetaZero_ne_one hρ))
+end
 
 /-- Closed height and real-part cutoffs, inside the open critical strip. -/
 def zetaZeroRegion (σ a b : ℝ) : Set ℂ :=
@@ -83,7 +88,7 @@ theorem zetaSlabCount_mono {σ σ' a a' b b' : ℝ}
     zetaSlabCount σ a b ≤ zetaSlabCount σ' a' b' := by
   apply Finset.sum_le_sum_of_subset
   intro ρ hρ
-  obtain ⟨hz, hs, hlo, hhi⟩ := mem_zetaZeroFinset.mp hρ
+  pm_269 hz hs hlo hhi mem_zetaZeroFinset.mp hρ
   exact mem_zetaZeroFinset.mpr ⟨hz, hσ.trans hs, ha.trans hlo, hhi.trans hb⟩
 
 theorem zetaDensityCount_mono {σ σ' T T' : ℝ} (hσ : σ' ≤ σ) (hT : T ≤ T') :

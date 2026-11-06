@@ -37,11 +37,14 @@ lemma coprime_support_iff (I R : Ideal O) (hR : R≠0) :
 def excluded (χ : Character) (R : Ideal O) : Character :=
   χ.excludePrimes (primeSupport R) (support_prime R)
 
-lemma excluded_ideal (χ : Character) (R : Ideal O) (hR : R≠0) (I : Ideal O) :
+section
+variable (χ : Character)
+include χ
+lemma excluded_ideal (R : Ideal O) (hR : R≠0) (I : Ideal O) :
     idealCoeff (excluded χ R) I=if IsCoprime I R then idealCoeff χ I else 0 := by
   simp only [excluded,idealCoeff_excludePrimes,coprime_support_iff I R hR]
 
-lemma excluded_element (χ : Character) (hχ0 : elementCoeff χ 0=0)
+lemma excluded_element (hχ0 : elementCoeff χ 0=0)
     (R : Ideal O) (hR : R≠0) (n : O) :
     elementCoeff (excluded χ R) n=
       if IsCoprime (Ideal.span {n}) R then elementCoeff χ n else 0 := by
@@ -54,12 +57,13 @@ lemma excluded_element (χ : Character) (hχ0 : elementCoeff χ 0=0)
     split_ifs <;> rfl
   · rw [←idealCoeff_span _ hn,excluded_ideal χ R hR,idealCoeff_span χ hn]
 
-lemma excluded_element_generator (χ : Character) (hχ0 : elementCoeff χ 0=0)
+lemma excluded_element_generator (hχ0 : elementCoeff χ 0=0)
     (R : Ideal O) (hR : R≠0) (n : O) :
     elementCoeff (excluded χ R) n=
       if IsCoprime n (idealGenerator R) then elementCoeff χ n else 0 := by
   rw [excluded_element χ hχ0 R hR]
   conv_lhs => rw [←span_idealGenerator R,Ideal.isCoprime_span_singleton_iff]
+end
 
 end SevenEighths.CenteredMomentNaturalRowSource
 

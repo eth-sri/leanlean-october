@@ -2,12 +2,11 @@ module
 public import DensityEnergyGM.SharpEnergyExpansion
 public import DensityEnergyGM.SublinearEnergyAbsorption
 public import DensityEnergyGM.EnergyMonomialPowers
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 3200000
-noncomputable section
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
 namespace Montgomery.RationalMoment
 
@@ -31,18 +30,14 @@ theorem discrete_energy_five_term_base_eventual (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨C₀, T₀, hC₀, hT₀, hNative⟩ := discrete_energy_sublinear_native δ (by dsimp only [δ]; positivity)
   let B : ℝ := 2 * C₀ + 1
   let K : ℝ := 5 * B
-  have hB : 0 < B := by dsimp only [B]; positivity
-  have hK : 0 < K := by dsimp only [K]; positivity
+  pm_116 hB B
+  pm_4213
   have hKone : 1 ≤ K := by dsimp only [K, B]; linarith
   refine ⟨K ^ 4, T₀, by positivity, hT₀, ?_⟩
-  intro T N a W V hT hN hTN hNT ha hV hValues hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
-  have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := by linarith
-  let E : ℝ := discreteAdditiveEnergy W
-  let R : ℝ := W.card
-  have hE0 : 0 ≤ E := Nat.cast_nonneg _
-  have hR0 : 0 ≤ R := Nat.cast_nonneg _
+  pm_4039
+  pm_4035
+  pm_1116
+  pm_5099 hE0 E hR0 R
   let A : ℝ → ℝ → ℝ → ℝ := fun α β γ => B * T ^ δ * N ^ α * T ^ β * R ^ γ
   have hA0 : ∀ α β γ, 0 ≤ A α β γ := by
     intro α β γ

@@ -1,13 +1,12 @@
 module
 public import MathCollab.Density.LargeValueDefinitions
 public import Mathlib.Analysis.PSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Set MeasureTheory
-open scoped BigOperators
+open Real MeasureTheory
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -16,31 +15,32 @@ theorem intervalSpan_nonneg (U : Finset ℝ) : 0 ≤ intervalSpan U := by
   by_cases hU : U.Nonempty
   · simp only [intervalSpan, dite_eq_left hU]
     exact sub_nonneg.mpr (U.min'_le _ (U.max'_mem hU))
-  · simp only [intervalSpan, dite_eq_right hU, le_refl]
+  aesop
 
 theorem localDiameter_ge_one (U : Finset ℝ) : 1 ≤ localDiameter U := by
   have := intervalSpan_nonneg U
   dsimp [localDiameter]
   linarith
 
-theorem abs_sub_le_intervalSpan {U : Finset ℝ} {t u : ℝ} (ht : t ∈ U) (hu : u ∈ U) :
+section
+variable {U : Finset ℝ}
+include U
+theorem abs_sub_le_intervalSpan {t u : ℝ} (ht : t ∈ U) (hu : u ∈ U) :
     |t-u| ≤ intervalSpan U := by
   have hU : U.Nonempty := ⟨t, ht⟩
   simp only [intervalSpan, dite_eq_left hU]
-  have htlo := U.min'_le t ht
-  have hthi := U.le_max' t ht
-  have hulo := U.min'_le u hu
-  have huhi := U.le_max' u hu
-  exact abs_le.mpr ⟨by linarith, by linarith⟩
+  pm_111 htlo U.min'_le t ht hthi U.le_max'
+  pm_111 hulo U.min'_le u hu huhi U.le_max'
+  grind
 
-theorem intervalSpan_le_of_forall {U : Finset ℝ} {D : ℝ} (hD : 0 ≤ D)
+theorem intervalSpan_le_of_forall {D : ℝ} (hD : 0 ≤ D)
     (h : ∀ t ∈ U, ∀ u ∈ U, |t-u| ≤ D) : intervalSpan U ≤ D := by
   by_cases hU : U.Nonempty
   · simp only [intervalSpan, dite_eq_left hU]
     exact (le_abs_self _).trans (h _ (U.max'_mem hU) _ (U.min'_mem hU))
-  · simpa only [intervalSpan, dite_eq_right hU] using hD
+  aesop
 
-theorem separated_floor_shift_injOn {U : Finset ℝ} (hU : oneSeparated U) (s : ℝ) :
+theorem separated_floor_shift_injOn (hU : oneSeparated U) (s : ℝ) :
     Set.InjOn (fun t : ℝ => ⌊t-s⌋) (U : Set ℝ) := by
   intro t ht u hu he
   by_contra hne
@@ -55,7 +55,7 @@ theorem separated_floor_shift_injOn {U : Finset ℝ} (hU : oneSeparated U) (s : 
   linarith
 
 /-- Exact packing without an additional cardinality factor. -/
-theorem separated_card_le_localDiameter {U : Finset ℝ} (hsep : oneSeparated U) :
+theorem separated_card_le_localDiameter (hsep : oneSeparated U) :
     (U.card : ℝ) ≤ localDiameter U := by
   by_cases hU : U.Nonempty
   · let a := U.min' hU
@@ -69,7 +69,7 @@ theorem separated_card_le_localDiameter {U : Finset ℝ} (hsep : oneSeparated U)
       · apply Int.le_floor.mpr
         have hh := U.min'_le t ht
         simp only [Int.cast_zero]
-        exact sub_nonneg.mpr hh
+        grind
       · exact Int.floor_mono (sub_le_sub_right (U.le_max' t ht) a)
     have hc := Finset.card_le_card_of_injOn (fun t : ℝ => ⌊t-a⌋) hmap
       (separated_floor_shift_injOn hsep a)
@@ -88,6 +88,7 @@ theorem separated_card_le_localDiameter {U : Finset ℝ} (hsep : oneSeparated U)
   · have he := Finset.not_nonempty_iff_eq_empty.mp hU
     subst U
     simp [localDiameter, intervalSpan]
+end
 
 /-- A single absolute constant for every separated row. -/
 def separationMass : ℝ := ∑' z : ℤ, 4/(1+|(z : ℝ)|)^2
@@ -96,7 +97,7 @@ theorem summable_separation_majorant : Summable (fun z : ℤ => 4/(1+|(z : ℝ)|
   have hn : Summable (fun n : ℕ => 1/((n : ℝ)+1)^2) := by
     have hh := (summable_nat_add_iff 1).2
       ((Real.summable_one_div_nat_pow (p := 2)).2 (by norm_num))
-    simpa only [Nat.cast_add, Nat.cast_one] using hh
+    grind
   have hi : Summable (fun z : ℤ => 1/(1+|(z : ℝ)|)^2) := by
     apply Summable.of_nat_of_neg
     · simpa only [Int.cast_natCast, Nat.abs_cast, add_comm] using hn
@@ -121,7 +122,10 @@ theorem decay_le_floor_majorant (x : ℝ) :
     (by positivity : (0 : ℝ) < (1+|(⌊x⌋ : ℝ)|)^2)).2
   simpa only [one_mul] using hp
 
-theorem separated_decay_row {U : Finset ℝ} (hsep : oneSeparated U) (t : ℝ) :
+section
+variable {U : Finset ℝ} (hsep : oneSeparated U)
+include U hsep
+theorem separated_decay_row (t : ℝ) :
     (∑ u ∈ U, 1/(1+|t-u|)^2) ≤ separationMass := by
   let f : ℝ → ℤ := fun u => ⌊u-t⌋
   calc
@@ -133,11 +137,12 @@ theorem separated_decay_row {U : Finset ℝ} (hsep : oneSeparated U) (t : ℝ) :
         (separated_floor_shift_injOn hsep t)).symm
     _ ≤ separationMass := summable_separation_majorant.sum_le_tsum _ (fun _ _ => by positivity)
 
-theorem separated_decay_pairs {U : Finset ℝ} (hsep : oneSeparated U) :
+theorem separated_decay_pairs :
     (∑ t ∈ U, ∑ u ∈ U, 1/(1+|t-u|)^2) ≤ separationMass * U.card := by
   calc
     _ ≤ ∑ _t ∈ U, separationMass := Finset.sum_le_sum (fun t _ => separated_decay_row hsep t)
     _ = _ := by simp [mul_comm]
+end
 
 theorem LargeValueData.local_card_le {κ : ℝ} (d : LargeValueData κ) {U : Finset ℝ}
     (hU : U ⊆ d.W) : (U.card : ℝ) ≤ localDiameter U ∧ localDiameter U ≤ d.T+1 := by

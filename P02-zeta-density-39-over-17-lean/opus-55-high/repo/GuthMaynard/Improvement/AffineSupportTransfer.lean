@@ -1,14 +1,13 @@
 module
 public import GuthMaynard.Improvement.AffineScaleTransfer
 public import GuthMaynard.Improvement.PoissonReduction
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Exact Fourier norm under the support-normalizing affine change. -/
 theorem fourier_norm_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) (ξ : ℝ) :
@@ -64,7 +63,7 @@ theorem affine_input_fourier_family (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 
   have harg : T/|ξ/L| = (L*T)/|ξ| := by rw [abs_div,abs_of_pos hLp]; field_simp
   rw [harg] at hdec
   have hTS : T ≤ L*T := le_mul_of_one_le_left hT.le hL
-  have hLi : L⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL
+  pm_8946 hLi
   have hd := hD β n
   calc
     _ ≤ L⁻¹*(D β n*T^β*((L*T)/|ξ|)^n*SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f)) := hdec
@@ -72,10 +71,13 @@ theorem affine_input_fourier_family (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 
       gcongr
     _ = _ := by rw [one_mul,hsup]
 
+section
+variable (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L)
+include f L hL
 /-- Every smooth input supported on [0,L] has the canonical representative.
 This constructs Schwartz structure from compact support, so no extra rapid
 spatial decay or derivative estimates are required. -/
-theorem canonical_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L)
+theorem canonical_affine_input
     (hf : ContDiff ℝ ∞ f) (hs : ∀ x, x ∉ Icc (0:ℝ) L → f x = 0) :
     ∃ g : 𝓢(ℝ, ℝ), (∀ x, g x = f (L*(x-1))) ∧ GMAffineSourceSupported g := by
   let g : ℝ → ℝ := fun x => f (L*(x-1))
@@ -96,7 +98,7 @@ theorem canonical_affine_input (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L)
   exact hg x (fun hh => hx ⟨by linarith [hh.1],hh.2⟩)
 
 /-- Exact mass and squared-L2 Jacobians for the support-normalizing change. -/
-theorem affine_input_integrals (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) :
+theorem affine_input_integrals :
     (∫ x, f (L*(x-1))) = L⁻¹*(∫ x, f x) ∧
     (∫ x, f (L*(x-1))^2) = L⁻¹*(∫ x, f x^2) := by
   constructor
@@ -106,5 +108,6 @@ theorem affine_input_integrals (f : ℝ → ℝ) {L : ℝ} (hL : 0 < L) :
   · rw [integral_sub_right_eq_self (fun x => f (L*x)^2) 1,
       Measure.integral_comp_mul_left (fun x => f x^2) L]
     simp [abs_of_pos hL,smul_eq_mul]
+end
 
 end GuthMaynard.Improvement

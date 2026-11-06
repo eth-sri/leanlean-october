@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SixthArray
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,16 +25,17 @@ def nonzeroLastEquiv : SixthInnerIndex ≃ {p : (Id×Id)×(Id×Id) // p.2.2≠0}
   left_inv _ := rfl
   right_inv _ := rfl
 
-lemma markedIdealHighSummand_last_zero (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K : Id) :
+section
+variable (S : Finset Id) (D : Id) (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+include S D η u x w z
+lemma markedIdealHighSummand_last_zero (I J K : Id) :
     markedIdealHighSummand S D η u x w z I J K 0=0 := by
   have hz : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (0:Id)) :=
     fun h=>h.2.2.2.2.1 rfl
   simp only [markedIdealHighSummand,bareIdealHighSummand,bareIdealHighCoefficient,
     dite_eq_right hz,zero_mul,mul_zero]
 
-lemma markedIdealHighSeries_eq_sixth_inner (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) :
+lemma markedIdealHighSeries_eq_sixth_inner :
     markedIdealHighSeries S D η u x w z=
       ∑'p : SixthInnerIndex,markedIdealHighSummand S D η u x w z p.2.1.1 p.2.1.2 p.2.2 p.1.val := by
   have he := nonzeroLastEquiv.tsum_eq (fun p=>
@@ -49,6 +51,7 @@ lemma markedIdealHighSeries_eq_sixth_inner (S : Finset Id) (D : Id) (η : HeckeF
   apply hp
   change markedIdealHighSummand S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2=0
   rw [hz,markedIdealHighSummand_last_zero]
+end
 
 theorem rawArithmeticSeries_eq_sixth_high (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (hprime : ∀P∈S,Prime P) (hbad : fixedBadPrimes⊆S)
@@ -58,8 +61,7 @@ theorem rawArithmeticSeries_eq_sixth_high (S : Finset Id) (hS : ∀P∈S,P.IsMax
       ∑'u : FreeRow,star ((calibrationForSet S hS).residueMonoid u.val)*
         frequencyWeight z ⟨u.val,u.property.1⟩*markedIdealHighSeries S D η u.val x w z := by
   let mask : NonzeroFrequency→ℂ := fun H=>star ((calibrationForSet S hS).residueMonoid H.val)
-  have hm (H : NonzeroFrequency) : ‖mask H‖≤1 := by
-    simpa only [mask,norm_star] using (calibrationForSet S hS).residueMonoid_norm_le_one H.val
+  pm_3924
   have hs := (fullHighSummand_summable S D η x w z hx hw hz mask hm).comp_injective
     rawHighEmbedding_injective
   have ht : Summable (fun p : FreeRow×SixthInnerIndex=>

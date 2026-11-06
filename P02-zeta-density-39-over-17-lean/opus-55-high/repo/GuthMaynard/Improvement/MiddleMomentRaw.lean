@@ -1,11 +1,10 @@
 module
 public import GuthMaynard.Improvement.TruncatedSourceMomentRaw
 public import GuthMaynard.Improvement.MiddleRangeIdentities
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+public section
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
 /-- Actual raw moment at the middle-range scales, with the actual removed
@@ -22,21 +21,16 @@ theorem middle_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 < ε) :
       M^3 ≤ S*N^δ*(125*P^3+C*(5*T)^ε*
         (5*P*Real.sqrt P*M*Real.sqrt M+5*D*N^4*T*(N^2+H)*M+
           3060*D*N^7*T^3*(Real.log (2*N))^2)+25*P^2*M) := by
-  obtain ⟨S,C,D,hS,hC,hD,hr⟩ := fixed_truncated_source_moment_raw hδ hε
-  refine ⟨S,C,D,hS,hC,hD,?_⟩
+  pm_371 S C D hS hC hD hr fixed_truncated_source_moment_raw hδ hε
+  pm_211 S C D hS hC hD
   intro N T hN hlo hhi a ha
   dsimp only
-  let L := middleLength N T
-  let U := middleThreshold N T
-  let P := middleMoment N T
-  let μ := sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U
-  let H := ∫ t, sourceRemovedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t
-  let M := ∫ t, μ t^2
+  pm_6254
+  pm_4538
   obtain ⟨hNT,hTN⟩ := middle_time_bounds hN hlo hhi
   obtain ⟨hNL,hLl,hLu,_⟩ := middle_rescaled_length_bounds hN hlo hhi
-  have hn : 0 < N := by linarith
-  have ht : 0 < T := by linarith
-  have hl : 0 < L := by dsimp [L,middleLength]; positivity
+  pm_4537
+  pm_8675 hl middleLength
   have h1 : N*L*U^2=P := middle_length_threshold_identity hn ht
   have h2 : N^4*T^2/L=P*Real.sqrt P :=
     (middle_moment_three_halves hn ht).1.trans (middle_moment_three_halves hn ht).2

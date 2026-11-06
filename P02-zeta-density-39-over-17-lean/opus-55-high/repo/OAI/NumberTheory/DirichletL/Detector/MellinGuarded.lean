@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.SpectralSupport
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
 public import OAI.NumberTheory.DirichletL.Detector.IdealUnit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -45,22 +46,17 @@ theorem physicalMellinCoefficientTerm_eq_guarded (η : HeckeFamily.Character)
     (X : ℝ) (hX : 0<X) (H : O) (hH : H≠0) (t z : ℂ) :
     physicalMellinCoefficientTerm η (calibrationForSet S hS) S D I J s hs X H t z=
       guardedHighMellinCoefficient η (calibrationForSet S hS) S D I J s X H (t+1-z) z := by
-  by_cases hg : Squarefree I ∧ Supported I ∧ Supported J
+  pm_8103
   · have hA : completedIndex I J≠0 := supportedElement_ne_zero _ (supported_completed _ _
       ((supported_span_primaryGenerator_iff I).mpr hg.2.1)
       ((supported_span_primaryGenerator_iff J).mpr hg.2.2))
     rw [physicalMellinCoefficientTerm,dite_eq_left hA,guardedHighMellinCoefficient,dite_eq_left hg]
     dsimp only
     by_cases hm : completedMask S D I J=0
-    · simp only [spectralSummand,hm,zero_mul,mul_zero]
+    pm_3814 spectralSummand hm zero_mul mul_zero
     · have hc : IsCoprime (calibrationForSet S hS).generator (completedIndex I J) := by
-        apply calibrationForSet_coprime_of_excluded S hS
-        rw [completedIndex_eq_primaryGenerator] at hA ⊢
-        rw [(primaryGenerator_spec (I*J^3) hA).1]
-        unfold completedMask at hm
-        split_ifs at hm with hd
-        · exact hd.2
-        · exact False.elim (hm rfl)
+        pm_1045
+        pm_3823
       exact physical_mellin_coefficient S hS D I J η s hs hg.2.1 hg.2.2 hg.1
         (hc.mul_right hcs) X hX H hH t z
   · have hz : spectralSummand S D (baseRowCoefficient η (calibrationForSet S hS).Xi s hs) t I J=0 := by
@@ -78,13 +74,12 @@ theorem guardedHighMellinCoefficient_eq_high (η : HeckeFamily.Character) (C : C
     (X:ℂ)^(1/2-z)*(elementNorm H:ℂ)^(-z)*star (C.residueMonoid H)*
       markedIdealHighSummand S D η H x w z I J K 1 := by
   have h1 : ∀P∈S,¬P∣(1:Ideal O) := by
-    intro P hP hd
-    exact (hS P hP).not_isUnit (isUnit_of_dvd_one hd)
+    pm_6988
   have hw : fullIdealWeight (6*z) (1:Ideal O)=1 := (IdealEuler.normWeight (6*z)).map_one
   unfold guardedHighMellinCoefficient markedIdealHighSummand highIdealMask
     bareIdealHighSummand bareIdealHighCoefficient
   simp only [ite_eq_left hKS,ite_eq_left h1,mul_one,hw,primaryGenerator_one,one_pow]
-  by_cases hg : Squarefree I ∧ Supported I ∧ Supported J
+  pm_8103
   · have hfull : Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (1:Ideal O) :=
       ⟨hg.1,hg.2.1,hg.2.2,hK,supported_one_ideal⟩
     rw [dite_eq_left hg,dite_eq_left hfull]

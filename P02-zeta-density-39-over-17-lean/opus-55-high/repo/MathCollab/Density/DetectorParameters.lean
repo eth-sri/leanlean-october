@@ -43,6 +43,6 @@ theorem first_detector_majorant_tendsto_zero {η₀ : ℝ} (hη₀ : η₀ < 1/4
     Tendsto (fun T : ℝ => Real.sqrt 2*T^(-1/48+η₀)) atTop (𝓝 0) := by
   have h := (tendsto_rpow_neg_atTop (show 0 < 1/48-η₀ by linarith)).const_mul (Real.sqrt 2)
   have he : -(1/48-η₀) = -1/48+η₀ := by ring
-  simpa only [he, mul_zero] using h
+  grind
 
 end MathCollab.Density

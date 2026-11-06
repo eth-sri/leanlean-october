@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramGcdSource
 public import OAI.NumberTheory.DirichletL.Detector.LowPuncture
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 abbrev PrimaryElement := {n : O // Supported (Ideal.span {n}) ∧ λ₀^2∣n-1}
 
-def primaryIdealEquiv : SupportedIdeal≃PrimaryElement where
+def primaryIdealEquiv : SupportedIdeal≃ PrimaryElement where
   toFun I := ⟨primaryGenerator I.val,(supported_span_primaryGenerator_iff _).mpr I.property,
     (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).2⟩
   invFun n := ⟨Ideal.span {n.val},n.property.1⟩
@@ -28,8 +29,7 @@ lemma primaryCoefficient_nonzero_supported (S : Finset Id) (hS : ∀p∈S,p.IsMa
     (hbad : fixedBadPrimes⊆S) (σ : RayRing) (n : O) (hn : primaryCoefficient S hS σ n≠0) :
     Supported (Ideal.span {n}) ∧ λ₀^2∣n-1 := by
   have hp : λ₀^2∣n-1 := by
-    by_contra h
-    exact hn (by simp [primaryCoefficient,h])
+    pm_1453 h hn primaryCoefficient
   have hc : IsCoprime (calibrationForSet S hS).generator n := by
     by_contra h
     exact hn (by rw [primaryCoefficient,ite_eq_left hp,gramCoefficientExtension_zero S hS σ n h])
@@ -51,16 +51,16 @@ lemma primaryCoefficient_residual (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
   exact ⟨((supported_mul_iff _ _).mp hsp).2,primary_factor_right A n hA hs.2⟩
 
 theorem primary_ideal_tsum (f : O→ℂ)
-    (hz : ∀n,¬(Supported (Ideal.span {n}) ∧ λ₀^2∣n-1)→f n=0) :
+    (hz : ∀n,¬(Supported (Ideal.span {n}) ∧ λ₀^2∣n-1)→ f n=0) :
     (∑'I : SupportedIdeal,f (primaryGenerator I.val))=∑'n : O,f n := by
   have he := primaryIdealEquiv.tsum_eq (fun n : PrimaryElement=>f n.val)
   change (∑'I : SupportedIdeal,f (primaryGenerator I.val))=∑'n : PrimaryElement,f n.val at he
   rw [he]
   exact tsum_subtype_eq_of_support_subset (by intro n hn;by_contra h;exact hn (hz n h))
 
-theorem primary_ideal_pair_tsum (f : O→O→ℂ)
-    (hl : ∀n m,¬(Supported (Ideal.span {n}) ∧ λ₀^2∣n-1)→f n m=0)
-    (hr : ∀n m,¬(Supported (Ideal.span {m}) ∧ λ₀^2∣m-1)→f n m=0) :
+theorem primary_ideal_pair_tsum (f : O→ O→ℂ)
+    (hl : ∀n m,¬(Supported (Ideal.span {n}) ∧ λ₀^2∣n-1)→ f n m=0)
+    (hr : ∀n m,¬(Supported (Ideal.span {m}) ∧ λ₀^2∣m-1)→ f n m=0) :
     (∑'I : SupportedIdeal,∑'J : SupportedIdeal,f (primaryGenerator I.val) (primaryGenerator J.val))=
       ∑'n : O,∑'m : O,f n m := by
   have hinner (n : O) : (∑'J : SupportedIdeal,f n (primaryGenerator J.val))=∑'m : O,f n m :=

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssigned
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,13 +37,11 @@ theorem actual_sector_energy {J : ℕ}
           ∑ k ∈ rows, ‖F (t,f,k)‖^2 := by
   let T := S.image (fun x => toTuple p (sectorSource u x))
   have hvalid : ∀ y ∈ T, InitialSourceValid y := by
-    intro y hy
-    obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hy
+    pm_67 y hy x hx Finset.mem_image.mp
     exact sourceTuple_valid p hp hpr x.common x.divisor x.overlap
       ((u:Eis)^5*x.frequency) x.assigned (hdiv x hx) (hsupport x hx)
   have hc : ∀ y ∈ T, (initialChild y).2.1 ∈ labels ∧ (initialChild y).2.2 ∈ rows := by
-    intro y hy
-    obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hy
+    pm_67 y hy x hx Finset.mem_image.mp
     exact hchild x hx
   have he := initial_energy_projection T hvalid labels rows hlabels hc
     (fun _ => 1) (fun _ _ => le_rfl) F
@@ -76,7 +75,7 @@ theorem actual_sector_signed_pair {J : ℕ}
         ∑ f ∈ labels, ((idealDivisors f).card : ℝ)^(J+1) * ∑ k ∈ rows, ‖F (t,f,k)‖^2) *
         Real.sqrt (∑ t ∈ quotientSet p S, ((idealDivisors t).card : ℝ)^J *
         ∑ f ∈ labels, ((idealDivisors f).card : ℝ)^(J+1) * ∑ k ∈ rows, ‖G (t,f,k)‖^2)) := by
-  let child := fun x : Source (ι:=ι) J => initialChild (toTuple p (sectorSource u x))
+  let child := fun x : Source (ι:=ι) J=> initialChild (toTuple p (sectorSource u x))
   have hF := actual_sector_energy p hp hinj hpr S u hdiv hsupport labels rows hlabels hchild F
   have hG := actual_sector_energy p hp hinj hpr S u hdiv hsupport labels rows hlabels hchild G
   calc

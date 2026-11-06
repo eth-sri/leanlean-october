@@ -1,27 +1,27 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
-open InverseSecondFibers
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def varyingAssignedGate {Jo : ℕ} (J₁ J₂ : Finset σ)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
+    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→ Finset ι)
     (x : MarkedSecondSource ι Jo (J₁.card+J₂.card)) : Prop :=
   (∀ i hi,x.newAssigned (Fin.castAdd J₂.card (J₁.equivFin ⟨i,hi⟩))∈L₁ (eraseSecondSlots x) i) ∧
   (∀ i hi,x.newAssigned (Fin.natAdd J₁.card (J₂.equivFin ⟨i,hi⟩))∈L₂ (eraseSecondSlots x) i)
 
 omit [DecidableEq ι] in
 lemma varyingAssignedGate_attach {Jo : ℕ} (J₁ J₂ : Finset σ)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
+    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→ Finset ι)
     (x : MarkedSecondSource ι Jo 0) (q : (∀ i∈J₁,ι)×(∀ i∈J₂,ι)) :
     varyingAssignedGate J₁ J₂ L₁ L₂ (attachPairedSlots J₁ J₂ (x,q)) ↔
       q.1∈J₁.pi (L₁ x) ∧ q.2∈J₂.pi (L₂ x) := by
@@ -30,45 +30,42 @@ lemma varyingAssignedGate_attach {Jo : ℕ} (J₁ J₂ : Finset σ)
     Fin.addCases_left,Fin.addCases_right,indexedSlotAssignment_apply,Finset.mem_pi]
 
 def varyingAssignedSource {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι) :=
+    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→ Finset ι)
+    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→ Finset ι) :=
   (assignedSecondSource source J₁ J₂ base₁ base₂).filter (varyingAssignedGate J₁ J₂ L₁ L₂)
 
-theorem varyingAssignedSource_mono {Jo : ℕ}
+section
+variable {Jo : ℕ}
+include Jo
+theorem varyingAssignedSource_mono
     {S T : Finset (MarkedSecondSource ι Jo 0)} (hST : S⊆T)
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι) :
+    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→ Finset ι)
+    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→ Finset ι) :
     varyingAssignedSource S J₁ J₂ base₁ base₂ L₁ L₂⊆
       varyingAssignedSource T J₁ J₂ base₁ base₂ L₁ L₂ := by
   exact Finset.filter_subset_filter _ (assignedSecondSource_mono hST J₁ J₂ base₁ base₂)
 
-theorem varyingAssignedSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
+theorem varyingAssignedSource_sum (source : Finset (MarkedSecondSource ι Jo 0))
+    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→ Finset ι)
+    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→ Finset ι)
     (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
     (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
     (F : MarkedSecondSource ι Jo (J₁.card+J₂.card)→ℂ) :
     ∑ x∈varyingAssignedSource source J₁ J₂ base₁ base₂ L₁ L₂,F x =
       ∑ y∈source,∑ q∈(J₁.pi (fun i=>L₁ y i∩(y.second.sourceCommon∪y.second.overlap)))×ˢ
         (J₂.pi (fun i=>L₂ y i∩(y.second.sourceCommon∪y.second.overlap))),F (attachPairedSlots J₁ J₂ (y,q)) := by
-  rw [varyingAssignedSource,Finset.sum_filter,assignedSecondSource_sum]
-  apply Finset.sum_congr rfl
-  intro y hy
+  pm_476 varyingAssignedSource Finset.sum_filter assignedSecondSource_sum y hy
   rw [←Finset.sum_filter]
   congr 1
   ext q
-  simp only [Finset.mem_filter,Finset.mem_product,varyingAssignedGate_attach,Finset.mem_pi,Finset.mem_inter]
+  pm_94 Finset.mem_filter Finset.mem_product varyingAssignedGate_attach Finset.mem_pi Finset.mem_inter
   constructor
-  · rintro ⟨⟨h₁,h₂⟩,h₃,h₄⟩
-    exact ⟨fun i hi=>⟨h₃ i hi,(h₁ i hi).2⟩,fun i hi=>⟨h₄ i hi,(h₂ i hi).2⟩⟩
-  · rintro ⟨h₁,h₂⟩
-    exact ⟨⟨fun i hi=>⟨hL₁ y hy i hi (h₁ i hi).1,(h₁ i hi).2⟩,
-      fun i hi=>⟨hL₂ y hy i hi (h₂ i hi).1,(h₂ i hi).2⟩⟩,
-      fun i hi=>(h₁ i hi).1,fun i hi=>(h₂ i hi).1⟩
+  grind
+  grind
 
-theorem varyingAssignedSource_sum_marks {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
+theorem varyingAssignedSource_sum_marks (source : Finset (MarkedSecondSource ι Jo 0))
+    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→ Finset ι)
+    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→ Finset ι)
     (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
     (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
     (a₁ a₂ : σ→ι→ℂ) (w P : MarkedSecondSource ι Jo 0→ℂ) :
@@ -80,13 +77,12 @@ theorem varyingAssignedSource_sum_marks {Jo : ℕ} (source : Finset (MarkedSecon
   apply Finset.sum_congr rfl
   intro y hy
   rw [paired_primeMark_assignments]
-  simp only [Finset.mul_sum,Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro q hq
+  pm_3526 Finset.mul_sum Finset.sum_mul Finset.sum_congr q hq
   rw [assignedSecondCoefficient_attach]
   simp only [attachPairedSlots,erase_attachSecondSlots]
+end
 
-variable (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 theorem actual_second_varying_lists_weighted_count
@@ -95,8 +91,8 @@ theorem actual_second_varying_lists_weighted_count
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     {Jo : ℕ} (u v : Oˣ) (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
+    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→ Finset ι)
+    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→ Finset ι)
     (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
     (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
     (a₁ a₂ : σ→ι→ℂ)

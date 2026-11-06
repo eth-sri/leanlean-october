@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondBlockAggregate
 public import OAI.NumberTheory.DirichletL.Moments.SecondRetainedWidth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,39 +37,40 @@ lemma common_height_zero_of_not_live (η:Character) (t:ℝ)
 
 def liveRows (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O):Finset O:=
   rows.filter (fun z=>retainedWeight R
-    (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z))≠0)
+    (normValue ((commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U)*z))≠0)
 
-lemma liveRows_weight (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O)
-    (z:O) (hz:z∈liveRows C D U R rows):
-    retainedWeight R (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z))≠0:=
+section
+variable (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (z:O) (hz:z∈liveRows C D U R rows)
+include C D U R rows z hz
+lemma liveRows_weight:
+    retainedWeight R (normValue ((commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U)*z))≠0:=
   (Finset.mem_filter.mp hz).2
 
-lemma liveRows_geometry (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O)
-    (z:O) (hz:z∈liveRows C D U R rows):
+lemma liveRows_geometry:
     0<R ∧ z≠0 ∧ 1≤normValue z ∧ normValue z≤
       4*R/(normValue (commonFrequencyGenerator C D)*normValue (nonunitFrequencyGenerator C D U)):=by
   obtain ⟨hr,hg,hv,hz0,h1,hbound,hmax⟩:=CenteredMomentSecondRetainedWidth.retained_geometry R
     (commonFrequencyGenerator C D) (nonunitFrequencyGenerator C D U) z
     (liveRows_weight C D U R rows z hz)
   exact ⟨hr,hz0,h1,hbound⟩
+end
 
-lemma physicalBlock_live_rows (η:Character) (t:ℝ) (S:Finset (Ideal O)) (β:Ideal O→ℂ)
+section
+variable (η:Character) (t:ℝ) (S:Finset (Ideal O)) (β:Ideal O→ℂ)
+include η t S β
+lemma physicalBlock_live_rows
     (C D:Ideal O) (hC:Supported C) (hD:Supported D) (U:Finset (CommonIndex C D))
     (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ):
     physicalBlock η t S β C D hC hD U R rows W K n=
       physicalBlock η t S β C D hC hD U R (liveRows C D U R rows) W K n:=by
-  unfold physicalBlock liveRows
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro z hz
+  pm_315 physicalBlock liveRows Finset.sum_filter Finset.sum_congr z hz
   by_cases hr:retainedWeight R
-      (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z))=0
+      (normValue ((commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U)*z))=0
   · simp only [hr,ne_eq,not_true_eq_false,physicalKernel,Complex.ofReal_zero,
       mul_zero,zero_mul,Finset.sum_const_zero,ite_self]
-  · simp only [hr,ne_eq,not_false_eq_true,ite_true]
+  pm_3814 hr ne_eq not_false_eq_true ite_true
 
-theorem original_live_blocks (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (W:𝓢(ℝ,ℂ))
+theorem original_live_blocks (W:𝓢(ℝ,ℂ))
     (K Tsec Z ξ H:ℝ) (hK:0<K)
     (hH:∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H):
     secondRetainedEnergy η t S β W K Tsec Z ξ=
@@ -101,11 +103,9 @@ theorem original_live_blocks (η:Character) (t:ℝ)
   · apply Finset.sum_congr rfl
     intro p hp
     apply congrArg (fun x : ℂ => heightCoeff η t p.val.1 * star (heightCoeff η t p.val.2) * x)
-    apply Finset.sum_congr rfl
-    intro U hU
-    apply Finset.sum_congr rfl
-    intro n hn
+    pm_3397 U hU n hn
     exact physicalBlock_live_rows _ _ _ _ _ _ _ _ _ _ _ _ _ _
+end
 
 end SevenEighths.CenteredMomentSecondLiveBlock
 

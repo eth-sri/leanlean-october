@@ -1,5 +1,6 @@
 module
 public import TraceAlternatives.UniversalCenteredReflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,7 @@ theorem universal_shell_monomial {T L H b s : ℝ}
     (hs : 1 ≤ s) (hs2 : s ≤ 2) :
     L^2/H*T^b*(H/L)^s  ≤  2*T^(b+s-1)*L^(2-s) := by
   have hId : L^2/H*(H/L)^s = H^(s-1)*L^(2-s) := by
-    rw [Real.div_rpow hH.le hL.le,Real.rpow_sub hH,Real.rpow_sub hL,
-      Real.rpow_one,Real.rpow_two]
+    pm_6688
     field_simp
   have hHPow : H^(s-1)  ≤  2*T^(s-1) := by
     calc
@@ -36,10 +36,10 @@ theorem universal_shell_monomial {T L H b s : ℝ}
         apply mul_le_mul_of_nonneg_right _ (by positivity)
         have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ) ≤ 2)
           (by linarith : s-1 ≤ 1)
-        simpa only [Real.rpow_one] using hh
+        simp_all
   calc
     _ = T^b*(L^2/H*(H/L)^s) := by ring
-    _ = T^b*(H^(s-1)*L^(2-s)) := by rw [hId]
+    _ = T^b*(H^(s-1)*L^(2-s)) := by grind
     _  ≤  T^b*((2*T^(s-1))*L^(2-s)) := by gcongr
     _ = 2*T^(b+s-1)*L^(2-s) := by
       rw [show b+s-1=b+(s-1) by ring,Real.rpow_add hT]
@@ -64,6 +64,6 @@ theorem universal_shell_budget_le {T L H R E : ℝ}
   have hc := mul_le_mul_of_nonneg_right h3 (by positivity : (0:ℝ) ≤ R*E^(1/4:ℝ))
   have hd := mul_le_mul_of_nonneg_right h4 (by positivity : (0:ℝ) ≤ R^(19/12:ℝ)*E^(5/48:ℝ))
   unfold universalLocalReflectionBudget universalShortProfile universalShortSublinearProfile universalCenteredBudget
-  nlinarith only [ha,hb,hc,hd]
+  grind
 
 end Montgomery.RationalMoment

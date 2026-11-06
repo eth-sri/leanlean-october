@@ -1,12 +1,10 @@
 module
 public import GuthMaynard.Improvement.ShortDensityUniform
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Finset MathCollab.Density
-open scoped BigOperators
-set_option autoImplicit false
-noncomputable section
 namespace GuthMaynard.Improvement
 
 /-- A finite grid uniformizes a fixed-sigma estimate on a closed interval,
@@ -22,37 +20,29 @@ theorem density_curve_uniform_on_interval {a b K : ℝ} {f : ℝ → ℝ}
     ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ, a ≤ σ → σ ≤ b → 2 ≤ T →
       (zetaDensityCount σ T:ℝ) ≤ C*T^(f σ+ε) := by
   classical
-  have hd : 0 < b-a := sub_pos.mpr hab
+  pm_5221 hd b a hab
   obtain ⟨n,hn⟩ := exists_nat_gt (2*K*(b-a)/ε)
   have hn0 : 0 < (n:ℝ) := (by positivity : 0 < 2*K*(b-a)/ε).trans hn
   have hmesh : K*((b-a)/(n:ℝ)) ≤ ε/2 := by
     have hh := (div_lt_iff₀ hε).mp hn
-    apply (le_div_iff₀ (by norm_num : (0:ℝ)<2)).mpr
+    pm_467 le_div_iff₀
     have he : K*((b-a)/(n:ℝ))*2 = 2*K*(b-a)/(n:ℝ) := by ring
     rw [he]
     exact (div_le_iff₀ hn0).mpr (by linarith)
   let grid := fun j : Fin (n+1) => a+(j:ℕ)*(b-a)/(n:ℝ)
   have hg (j : Fin (n+1)) : a ≤ grid j ∧ grid j ≤ b := by
-    have hj : (j:ℕ) ≤ n := Nat.le_of_lt_succ j.isLt
-    have hjr : ((j:ℕ):ℝ) ≤ (n:ℝ) := by exact_mod_cast hj
-    dsimp [grid]
-    constructor
+    pm_4597
     · have hh : 0 ≤ ((j:ℕ):ℝ)*(b-a)/(n:ℝ) := by positivity
       linarith
     · have hh : ((j:ℕ):ℝ)*(b-a)/(n:ℝ) ≤ b-a :=
         (div_le_iff₀ hn0).mpr (by nlinarith)
       linarith
-  have hex (j : Fin (n+1)) := hfixed (grid j) (hg j).1 (hg j).2 (ε/2) (by positivity)
-  choose C hC hbound using hex
-  let B : ℝ := 1+∑ j : Fin (n+1),C j
-  have hsum : 0 ≤ ∑ j : Fin (n+1),C j := Finset.sum_nonneg (fun j _ => (hC j).le)
-  refine ⟨B,by dsimp [B]; positivity,?_⟩
-  intro σ T hσ hσ' hT
+  pm_4595
   let u : ℝ := (σ-a)*(n:ℝ)/(b-a)
-  have hu : 0 ≤ u := by dsimp [u]; positivity
+  pm_61 hu u
   have hun : u ≤ (n:ℝ) := (div_le_iff₀ hd).mpr (by nlinarith)
   have hjn : ⌊u⌋₊ ≤ n := by exact_mod_cast (Nat.floor_le hu).trans hun
-  let j : Fin (n+1) := ⟨⌊u⌋₊,Nat.lt_succ_of_le hjn⟩
+  pm_6899 u
   have hjlow : grid j ≤ σ := by
     have hh := (le_div_iff₀ hd).mp (Nat.floor_le hu)
     have ht : (⌊u⌋₊:ℝ)*(b-a)/(n:ℝ) ≤ σ-a :=
@@ -70,13 +60,7 @@ theorem density_curve_uniform_on_interval {a b K : ℝ} {f : ℝ → ℝ}
     have hm := hmod (grid j) σ (hg j).1 hjlow hσ'
     have hh := (mul_le_mul_of_nonneg_left hjgap hK.le).trans hmesh
     linarith
-  have hmono : (zetaDensityCount σ T:ℝ) ≤ (zetaDensityCount (grid j) T:ℝ) := by
-    exact_mod_cast zetaDensityCount_mono hjlow (le_refl T)
-  have hCB : C j ≤ B := by
-    have hh : C j ≤ ∑ i : Fin (n+1),C i :=
-      Finset.single_le_sum (fun i _ => (hC i).le) (Finset.mem_univ j)
-    dsimp [B]
-    linarith
+  pm_4596
   calc
     _ ≤ C j*T^(f (grid j)+ε/2) := hmono.trans (hbound j T hT)
     _ ≤ C j*T^(f σ+ε) := mul_le_mul_of_nonneg_left

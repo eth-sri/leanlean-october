@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesUniform
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,10 +18,10 @@ theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
     ∃ C : ℝ, 0 ≤ C ∧ ∀ A B D : ℝ, 0 ≤ A → 0 ≤ B → 0 ≤ D →
       (∫ t : ℝ, (1+‖t‖)^J *
         ‖(𝓕 (logSource Ω V T hΩc hΩ (V.smooth ⊤) (T.smooth ⊤) A B D)) t‖) ≤ C := by
-  let p := (volume : Measure ℝ).integrablePower
+  pm_5382 volume Measure
   obtain ⟨C,hC,hb⟩ := logSource_uniform_seminorm Ω V T hΩc hΩ L hL hwindow (J+p)
   let C' := (1+L^p)*C
-  have hC' : 0 ≤ C' := by dsimp [C']; positivity
+  pm_61 hC' C'
   refine ⟨(2 : ℝ)^J*(FourierBridge.coefficientMomentBound 0 C'+
     FourierBridge.coefficientMomentBound J C'),?_,?_⟩
   · exact mul_nonneg (by positivity) (add_nonneg

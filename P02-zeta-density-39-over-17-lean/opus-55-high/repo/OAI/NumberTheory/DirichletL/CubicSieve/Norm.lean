@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Ideal
 public import OAI.NumberTheory.DirichletL.CubicSieve.Initial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,11 +15,7 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem primaryGenerator_inj_on_cubic_admissible {I J : Ideal O}
     (hI : Admissible I) (hJ : Admissible J)
-    (heq : primaryGenerator I = primaryGenerator J) : I = J := by
-  calc
-    I = Ideal.span {primaryGenerator I} := (primaryGenerator_spec I hI.2).1.symm
-    _ = Ideal.span {primaryGenerator J} := by rw [heq]
-    _ = J := (primaryGenerator_spec J hJ.2).1
+    (heq : primaryGenerator I = primaryGenerator J) : I = J := by pf_239 hI.2 hJ.2
 
 theorem idealSymbol_eq_idealSexticRow_sq
     (F : Finset (Ideal O)) (hFp : ∀ I ∈ F, I ≠ ⊥)
@@ -28,7 +25,7 @@ theorem idealSymbol_eq_idealSexticRow_sq
       (idealSexticRow F hFp hFg I z) ^ 2 := by
   rw [← CanonicalRowCompletion.idealRowHom_square]
   congr 1
-  let : ∀ i : primePool F, (i.val).IsMaximal := primePool_maximal F hFp
+  pm_1477 hFp
   conv_lhs => rw [← idealSupport_product_eq F hI hsq, map_prod]
   unfold idealSexticRow finiteSquarefreeRow
   apply Finset.prod_congr rfl
@@ -37,20 +34,10 @@ theorem idealSymbol_eq_idealSexticRow_sq
 
 theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     sieveNorm M N ≤ QuadraticInitialBound.initialSieveConstant * (M + (⌈N⌉₊ : ℝ) ^ 2) := by
-  let F := idealRange N
-  let R := (idealRange M).image primaryGenerator
-  have hF : ∀ I ∈ F, Admissible I := fun I hI => (mem_idealRange.mp hI).1
-  have hFp : ∀ I ∈ F, I ≠ ⊥ := fun I hI => primaryGenerator_ne_zero_ideal I (hF I hI).2
-  have hFg : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P :=
-    fun I hI P hP => (primaryPrime_spec P
-      (primaryPrime_factor_ne_zero I P (hF I hI).2 hP)).2.1
-  have hnat : 1 ≤ ⌈N⌉₊ := Nat.one_le_ceil_iff.mpr (by linarith)
-  have hnorm : ∀ I ∈ F, Ideal.absNorm I ≤ ⌈N⌉₊ := by
-    intro I hI
-    exact Nat.cast_le.mp ((mem_idealRange.mp hI).2.trans (Nat.le_ceil N))
+  pm_7214
+  pm_3820
   have hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M := by
-    intro z hz
-    obtain ⟨I, hI, rfl⟩ := Finset.mem_image.mp hz
+    pm_136 z hz I hI Finset.mem_image.mp
     rw [primaryGenerator_norm_sq I ((mem_idealRange.mp hI).1.2)]
     exact (mem_idealRange.mp hI).2
   have hgen : Set.InjOn primaryGenerator (idealRange M) := by
@@ -67,8 +54,7 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     rw [← Finset.sum_coe_sort]
     apply Finset.sum_congr rfl
     intro J _
-    rw [idealSymbol_eq_idealSexticRow_sq F hFp hFg J.val J.property (hF J.val J.property).1 z]
-    simp only [aext, dite_eq_left J.property]
+    pm_1301
     change a J * (idealSexticRow F hFp hFg J.val z) ^ 2 =
       (idealSexticRow F hFp hFg J.val z) ^ 2 * a J
     exact mul_comm _ _
@@ -76,18 +62,8 @@ theorem sieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     (fun I hI => (hF I hI).1) ⌈N⌉₊ hnat hnorm aext M hM R hR
   have heR : (∑ z ∈ R, ‖∑ I ∈ F, aext I * (idealSexticRow F hFp hFg I z) ^ 2‖ ^ 2) =
       ∑ I : idealRange M, ‖∑ J : F, eisEmbedding (CubicJacobiGlobal.idealSymbol J.val (primaryGenerator I.val)) * a J‖ ^ 2 := by
-    dsimp only [R]
-    rw [Finset.sum_image (fun I hI J hJ heq => hgen hI hJ heq)]
-    simp_rw [hinner]
-    exact (Finset.sum_coe_sort _ _).symm
-  have hea : (∑ I ∈ F, ‖aext I‖ ^ 2) = ∑ J : F, ‖a J‖ ^ 2 := by
-    rw [← Finset.sum_coe_sort]
-    apply Finset.sum_congr rfl
-    intro J _
-    simp only [aext, dite_eq_left J.property]
-    rfl
-  rw [heR, hea] at he
-  exact he
+    pm_3072
+  pm_3071
 
 end
 end SevenEighths.CubicSieve

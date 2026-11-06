@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamily
 public import OAI.NumberTheory.DirichletL.Moments.SecondDyadicRowSupport
 public import OAI.NumberTheory.DirichletL.Moments.SecondWidthDrop
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,7 +39,7 @@ theorem physicalBlock_live_dyadic_witness (η:Character)(t:ℝ)
 
 section Family
 variable {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
-  {U:Finset (CommonIndex C D)}{τ:RayCharacter→Character}
+  {U:Finset (CommonIndex C D)}{τ:RayCharacter→ Character}
   (h:Family η C D hC hD U τ)
   (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(R:ℝ)(rows:Finset O)
   (W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
@@ -55,7 +56,7 @@ theorem dyadic_log_budget (Z:ℝ)(hZ:1<Z)(χ:RayCharacter) :
   have hw:=(h.physical_budget t S β R rows W K hK n hne χ).2 Z hZ z hzl
   have hh:=Real.logb_le_logb_of_le hZ (dyadicScale_pos (n 1)) hscale.le
   rw [Real.logb_mul (by norm_num : (4:ℝ)≠0) (normValue_pos z hz0).ne'] at hh
-  have hF:(0:ℝ)<fixedFactor:=by exact_mod_cast fixedFactor_pos
+  pm_2895
   have hf:Real.logb Z (16*(fixedFactor:ℝ))=
       Real.logb Z (4:ℝ)+Real.logb Z (4*(fixedFactor:ℝ)) := by
     rw [←Real.logb_mul (by norm_num : (4:ℝ)≠0) (by positivity : 4*(fixedFactor:ℝ)≠0)]
@@ -78,7 +79,7 @@ theorem radial_radius_log_budget (Z:ℝ)(hZ:1<Z)(χ:RayCharacter)(b:ℝ)(hb:0<b)
         Real.logb Z (normValue (commonFrequencyGenerator C D))+
         Real.logb Z ((∏P∈U,P.val).absNorm:ℝ)+Real.logb Z (16*b*(fixedFactor:ℝ)) := by
   have hh:=dyadic_log_budget h t S β R rows W K hK n hne Z hZ χ
-  have hF:(0:ℝ)<fixedFactor:=by exact_mod_cast fixedFactor_pos
+  pm_2895
   have hf:Real.logb Z (16*b*(fixedFactor:ℝ))=
       Real.logb Z b+Real.logb Z (16*(fixedFactor:ℝ)) := by
     rw [←Real.logb_mul hb.ne' (by positivity : 16*(fixedFactor:ℝ)≠0)]

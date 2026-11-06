@@ -141,7 +141,7 @@ theorem canonicalCubeBeforePoisson_split
       (primeSubsetGenerator_ne_zero _ _) (T D)]
     rw [←Finset.sum_erase_add _ _ (hT D hD)]
     ring
-  · exact hK
+  grind
 
 end
 section

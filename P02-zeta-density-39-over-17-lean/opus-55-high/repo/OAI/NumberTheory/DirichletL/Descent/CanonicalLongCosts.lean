@@ -16,7 +16,7 @@ theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)
     (Ccoef*(Real.exp 1*Z^ell)^epsilon)^2≤
       Ccoef^2*Real.exp (2*epsilon)*Z^(2*L*epsilon) := by
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hex:(Real.exp 1)^epsilon=Real.exp epsilon:=by rw [Real.rpow_def_of_pos (Real.exp_pos _),Real.log_exp,one_mul]
+  have hex:(Real.exp 1)^epsilon=Real.exp epsilon:=by simp_all
   have hex2:(Real.exp epsilon)^2=Real.exp (2*epsilon):=by rw [←Real.exp_nat_mul];norm_num
   have hid:(Ccoef*(Real.exp 1*Z^ell)^epsilon)^2=
       Ccoef^2*Real.exp (2*epsilon)*Z^(2*ell*epsilon) := by
@@ -41,10 +41,7 @@ theorem actual_long_uniform_parent_cost (Z ell N V L epsilon Ccoef C A loss:ℝ)
   apply hh.trans_eq
   have hpow:Z^(2*L*epsilon)*Z^((N-3*ell)+3*ell+V+loss)=Z^(N+V+loss+2*L*epsilon):=by
     rw [←Real.rpow_add hz];congr 1;ring
-  calc
-    _=(C*Ccoef^2*Real.exp (2*epsilon))*(1+A)*
-        (Z^(2*L*epsilon)*Z^((N-3*ell)+3*ell+V+loss)):=by ring
-    _=_:=by rw [hpow]
+  grind
 
 end SevenEighths.InverseMoment
 

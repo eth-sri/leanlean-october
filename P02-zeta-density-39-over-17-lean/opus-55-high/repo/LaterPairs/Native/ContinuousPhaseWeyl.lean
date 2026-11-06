@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairFiniteCorrelation
 public import LaterPairs.Native.ExponentPairWeylSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -22,20 +23,18 @@ def continuousPhaseCorrelation (F : ℝ → ℝ) (A : ℝ) (N r : ℕ) : ℂ :=
 theorem sum_integer_zero_interval_eq_range (a : ℤ → ℂ) (N : ℕ) :
     (∑ n ∈ Finset.Ico (0:ℤ) N, a n) = ∑ n ∈ Finset.range N, a n := by
   symm
-  apply Finset.sum_bij (fun (n : ℕ) _ => (n:ℤ))
-  · intro n hn
-    exact Finset.mem_Ico.mpr ⟨by positivity,by exact_mod_cast Finset.mem_range.mp hn⟩
-  · intro n _ m _ he
-    exact_mod_cast he
+  pm_5182 n
+  grind
+  grind
   · intro n hn
     have hni := Finset.mem_Ico.mp hn
     refine ⟨n.toNat,Finset.mem_range.mpr (by omega),Int.toNat_of_nonneg hni.1⟩
-  · intro _ _
-    rfl
+  grind
 
-theorem padded_continuousPhase_correlation
-    (F : ℝ → ℝ) (A : ℝ) (N H h k : ℕ)
-    (hh : h < H) (hk : k < H) (hhk : h < k) :
+section
+variable (F : ℝ → ℝ) (A : ℝ) (N H h k : ℕ) (hh : h < H) (hk : k < H)
+include F A N H h k hh hk
+theorem padded_continuousPhase_correlation (hhk : h < k) :
     (∑ n ∈ Finset.Ico (-(H:ℤ)) N,
       star (paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n h)*
         paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n k) =
@@ -51,9 +50,7 @@ theorem padded_continuousPhase_correlation
   push_cast
   simp only [Nat.cast_sub hhk.le,add_assoc,sub_eq_add_neg,add_comm]
 
-theorem norm_padded_continuousPhase_correlation
-    (F : ℝ → ℝ) (A : ℝ) (N H h k : ℕ)
-    (hh : h < H) (hk : k < H) (hne : h ≠ k) :
+theorem norm_padded_continuousPhase_correlation (hne : h ≠ k) :
     ‖∑ n ∈ Finset.Ico (-(H:ℤ)) N,
       star (paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n h)*
         paddedShift (fun j => fordAdditiveCharacter (F (A+j))) N n k‖ =
@@ -65,6 +62,7 @@ theorem norm_padded_continuousPhase_correlation
     rw [padded_sequence_correlation_reverse _ N H h k,norm_star,
       padded_continuousPhase_correlation F A N H k h hk hh hkh]
     simp only [shiftDistance,Nat.sub_eq_zero_of_le hkh.le,add_zero]
+end
 
 theorem continuous_phase_weyl
     (F : ℝ → ℝ) (A : ℝ) (N H : ℕ) :
@@ -78,7 +76,6 @@ theorem continuous_phase_weyl
     (fun _ _ => norm_nonneg _)
     (fun h hh k hk hne => (norm_padded_continuousPhase_correlation F A N H h k
       (Finset.mem_range.mp hh) (Finset.mem_range.mp hk) hne).le)
-  rw [sum_integer_zero_interval_eq_range] at hb
-  simpa only [Int.cast_natCast] using hb
+  pm_293 sum_integer_zero_interval_eq_range hb Int.cast_natCast
 
 end TaoTrudgianYang2025

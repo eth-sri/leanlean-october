@@ -23,14 +23,18 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 def inverseJetMagnitudeBudget (σ : ℝ) (K : ℕ) : ℝ :=
   ∑ j ∈ Finset.range (K+1), inverseJetMagnitude σ j
 
-theorem inverseJetMagnitudeBudget_nonneg {σ : ℝ} (hσ : 0 < σ) (K : ℕ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+theorem inverseJetMagnitudeBudget_nonneg (K : ℕ) :
     0 ≤ inverseJetMagnitudeBudget σ K :=
   Finset.sum_nonneg fun j _ => inverseJetMagnitude_nonneg hσ j
 
-theorem inverseJetMagnitude_le_budget {σ : ℝ} (hσ : 0 < σ) {K j : ℕ} (hj : j ≤ K) :
+theorem inverseJetMagnitude_le_budget {K j : ℕ} (hj : j ≤ K) :
     inverseJetMagnitude σ j ≤ inverseJetMagnitudeBudget σ K :=
   Finset.single_le_sum (fun k _ => inverseJetMagnitude_nonneg hσ k)
     (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hj))
+end
 
 theorem approximateModelPhase_tolerance_nonneg
     {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}

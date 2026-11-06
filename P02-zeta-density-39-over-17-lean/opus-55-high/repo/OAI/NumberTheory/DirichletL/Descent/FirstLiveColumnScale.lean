@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicLiveRadius
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileScales
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCaps
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,7 +19,7 @@ open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem first_profile_live_products (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fin 9→ℝ)
-    (hq:∀i,1≤q i)(hW:∀x,W x≠0→x≤L)
+    (hq:∀i,1≤q i)(hW:∀x,W x≠0→ x≤L)
     (hn:firstNormProfile (fun y=>star (W y)) W Φ (fun _ _=>1) K q≠0):
     q 0*q 2*q 5≤L ∧ q 1*q 2*q 5≤L:=by
   have h₁:W (q 0*q 2*q 5*q 7)≠0:=by intro h;apply hn;simp [firstNormProfile,h]
@@ -44,39 +45,24 @@ private theorem dyadic_column_scale {a c z X b : ℝ}
   exact hscale.trans hprod
 
 theorem original_live_column_scale {ι:Type}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))(Y:ℝ)
-    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K X b:ℝ)
-    (_hX:0<X)(hW:∀y,W y≠0→y≤b*X)
+    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
+    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→ Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K X b:ℝ)
+    (_hX:0<X)(hW:∀y,W y≠0→ y≤b*X)
     (k:JointKey)(hk:k∈liveJointKeys p
       (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) pool
       (sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K)):
     1≤physicalScales X k.1 k.2.1 7*b ∧ 1≤physicalScales X k.1 k.2.1 8*b:=by
-  obtain ⟨⟨x,j⟩,hm,rfl⟩:=Finset.mem_image.mp hk
-  obtain ⟨hm,hnon⟩:=Finset.mem_filter.mp hm
+  pm_1297
   obtain ⟨hx,hj⟩:=Finset.mem_product.mp hm
   have hs:=original_source_norms_ge_one p hp pool Q labels Y x hx
   have hq:∀i,1≤firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
       (divisorElement p x.1) x.2.2 j i:=by
-    intro i
-    fin_cases i
-    · exact hs 0
-    · exact hs 1
-    · exact hs 2
-    · exact hs 3
-    · exact hs 4
-    · exact primeProductNorm_ge_one p hp _
-    · exact hs 5
-    · exact primeProductNorm_ge_one p hp _
-    · exact primeProductNorm_ge_one p hp _
-  have hprof:firstNormProfile (fun y=>star (W y)) W Φ (fun _ _=>1) K
-      (firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
-        (divisorElement p x.1) x.2.2 j)≠0:=by
-    intro hzero
-    exact hnon (by unfold sourceSummand;rw [hzero,mul_zero])
+    pm_3742
+  pm_3743 hzero hnon
   have hb:=first_profile_live_products W Φ K (b*X) _ hq hW hprof
   constructor
   · change 1 ≤ X / (dyadScale (dyadIndex (leftNorm p x)) *

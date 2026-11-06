@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.QuotientColumns
 public import OAI.NumberTheory.DirichletL.CubicSieve.Recurrence
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,13 +32,12 @@ theorem cubic_common_factor_frequency_bound :
           ∑ D ∈ gcdPool cols, ∑ E ∈ idealDivisors D,
             frequencyCost C ε hε (M / (Ideal.absNorm E : ℝ)) (N / (Ideal.absNorm D : ℝ)) *
               ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2 := by
-  obtain ⟨C,hC,hrec⟩ := cubic_smoothed_frequency_recurrence_all rowMajorant
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC hrec cubic_smoothed_frequency_recurrence_all rowMajorant
   intro n _ _ ε hε M N hM cols hinj hc hcols a R hR
   apply (finite_energy_le_compact_descendants cols hc a R M hM hR).trans
   apply Finset.sum_le_sum
   intro D hD
-  have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
+  pm_3790
   have hDcol := gcdPool_subset_columnDivisorPool cols hc0 hD
   have hDN := columnDivisorPool_norm_bounds cols hc0 N (fun j => (hcols j).2) D hDcol
   have hD0 := gcdPool_ne_zero cols hc0 D hD
@@ -45,10 +45,8 @@ theorem cubic_common_factor_frequency_bound :
   have hNshort : 1 ≤ N / (Ideal.absNorm D : ℝ) := (one_le_div hDN0).mpr hDN.2
   apply Finset.sum_le_sum
   intro E hE
-  have hEdiv := (mem_idealDivisors hD0).mp hE
-  have hE0 : E ≠ 0 := ne_zero_of_dvd_ne_zero hD0 hEdiv
-  have hEN : 0 < (Ideal.absNorm E : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hE0)
+  pm_7097 hEdiv
+  pm_318 hEN E hE0
   rw [compact_descendant_restrict]
   have hh := hrec ε hε (M / (Ideal.absNorm E : ℝ)) (N / (Ideal.absNorm D : ℝ))
     (div_pos hM hEN) hNshort (quotientColumn D cols) (quotientColumn_injective D cols hinj)
@@ -69,7 +67,7 @@ theorem common_factor_uniform_cost {n : Type*} [Fintype n]
       frequencyCost C ε hε (M/(Ideal.absNorm E : ℝ)) (N/(Ideal.absNorm D : ℝ)) *
         ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2) ≤
       U*(DivisorBlockCauchy.divisorConstant ε hε*N^ε)^2*∑ j, ‖a j‖^2 := by
-  have he := descended_energy_small_power ε hε cols hc N hN hnorm a
+  pm_528 he descended_energy_small_power ε hε cols hc N hN hnorm a
   have hsub := gcdPool_subset_columnDivisorPool cols
     (fun j => primaryGenerator_ne_zero_ideal _ (hc j).2)
   calc

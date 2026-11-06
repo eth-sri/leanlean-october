@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.OperatorCentered
 public import GuthMaynard.Improvement.OperatorKernel
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set InnerProductSpace
 open scoped InnerProductSpace ComplexOrder ENNReal
 namespace GuthMaynard.Improvement
@@ -36,9 +35,11 @@ theorem operator_integral_positive {α : Type*} [MeasurableSpace α]
     rw [ContinuousLinearMap.integral_apply hi, ← hil v v]
     exact integral_nonneg_of_ae (hp.mono fun x hx => hx.inner_nonneg_left v)
 
+section
+variable (ν : Measure ℝ) [IsFiniteMeasure ν] {a : ℝ → ℝ}
+include ν a
 /-- Nonnegative real cutoff gives a positive actual finite integer operator. -/
-theorem operator_discrete_positive (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (ha : ∀ x, 0 ≤ a x) (L l u : ℝ) :
+theorem operator_discrete_positive (ha : ∀ x, 0 ≤ a x) (L l u : ℝ) :
     (operatorDiscrete ν a L l u).IsPositive := by
   apply ContinuousLinearMap.isPositive_sum
   intro m hm
@@ -46,14 +47,13 @@ theorem operator_discrete_positive (ν : Measure ℝ) [IsFiniteMeasure ν]
   exact_mod_cast ha ((m:ℝ)/L)
 
 /-- Nonnegative real cutoff and scale give a positive actual continuous operator. -/
-theorem operator_continuous_positive (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (ha : ∀ x, 0 ≤ a x) {L : ℝ} (hL : 0 ≤ L) :
+theorem operator_continuous_positive (hi : Integrable a) (ha : ∀ x, 0 ≤ a x) {L : ℝ} (hL : 0 ≤ L) :
     (operatorContinuous ν a L).IsPositive := by
   apply operator_integral_positive volume (operator_continuous_integrable ν hi L)
   filter_upwards with x
   rw [map_smul, smul_apply]
-  apply (isPositive_rankOne_self _).smul_of_nonneg
-  exact_mod_cast mul_nonneg hL (ha x)
+  pm_8593 ha
+end
 
 omit [CompleteSpace E] in
 /-- Any orthonormal family in a separable complex Hilbert space has countable index. -/

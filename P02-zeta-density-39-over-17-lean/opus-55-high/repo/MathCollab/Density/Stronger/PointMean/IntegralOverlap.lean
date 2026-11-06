@@ -23,9 +23,11 @@ theorem intervalIntegrable_exp_neg_abs_sub_mul
   apply Continuous.intervalIntegrable
   fun_prop
 
+section
+variable (W : Finset ℝ)
+include W
 /-- Finite interchange for the exact translated exponential kernels. -/
-theorem sum_intervalIntegral_exp_neg_abs_sub_mul_eq
-    (W : Finset ℝ) (f : ℝ → ℝ) (hf : Continuous f) (a b : ℝ) :
+theorem sum_intervalIntegral_exp_neg_abs_sub_mul_eq (f : ℝ → ℝ) (hf : Continuous f) (a b : ℝ) :
     ∑ t ∈ W, (∫ u in a..b, Real.exp (-|t - u|) * f u) =
       ∫ u in a..b, ∑ t ∈ W, Real.exp (-|t - u|) * f u := by
   exact (intervalIntegral.integral_finsetSum fun t ht ↦
@@ -34,8 +36,7 @@ theorem sum_intervalIntegral_exp_neg_abs_sub_mul_eq
 /-- Heath--Brown's bounded-overlap consumer: summing the exact exponential
 local moments over a unit-separated family costs at most four times the
 underlying second moment on the common interval. -/
-theorem sum_intervalIntegral_exp_neg_abs_sub_mul_le_four
-    (W : Finset ℝ) (f : ℝ → ℝ) (hf : Continuous f)
+theorem sum_intervalIntegral_exp_neg_abs_sub_mul_le_four (f : ℝ → ℝ) (hf : Continuous f)
     (hNonneg : ∀ u, 0 ≤ f u) (a b : ℝ) (hab : a ≤ b)
     (hSep : oneSeparated W) :
     ∑ t ∈ W, (∫ u in a..b, Real.exp (-|t - u|) * f u) ≤
@@ -59,8 +60,7 @@ theorem sum_intervalIntegral_exp_neg_abs_sub_mul_le_four
 
 /-- Specialization to the actual critical-line local second-moment
 integrand. -/
-theorem sum_intervalIntegral_exp_kernel_zeta_sq_le_four
-    (W : Finset ℝ) (a b : ℝ) (hab : a ≤ b)
+theorem sum_intervalIntegral_exp_kernel_zeta_sq_le_four (a b : ℝ) (hab : a ≤ b)
     (hSep : oneSeparated W) :
     ∑ t ∈ W,
         (∫ u in a..b,
@@ -74,8 +74,7 @@ theorem sum_intervalIntegral_exp_kernel_zeta_sq_le_four
 half of a `2G` interval and their truncation radius fits in the remaining
 half, every moving interval is first enlarged to the exact source interval
 `[center-G, center+G]`. -/
-theorem sum_truncated_exp_kernel_zeta_sq_le_localSecondMoment
-    (W : Finset ℝ) (center G L : ℝ) (hG : 0 ≤ G) (hL : 0 ≤ L)
+theorem sum_truncated_exp_kernel_zeta_sq_le_localSecondMoment (center G L : ℝ) (hG : 0 ≤ G) (hL : 0 ≤ L)
     (hRange : ∀ t ∈ W, center - G / 2 ≤ t ∧ t ≤ center + G / 2)
     (hFit : G / 2 + L ≤ G) (hSep : oneSeparated W) :
     ∑ t ∈ W,
@@ -107,5 +106,6 @@ theorem sum_truncated_exp_kernel_zeta_sq_le_localSecondMoment
         (center - G) (center + G) (by linarith) hSep
     _ = 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ)) := by
       rfl
+end
 
 end MathCollab.Density.Stronger.PointMean

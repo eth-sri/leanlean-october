@@ -7,6 +7,7 @@ public import LaterPairs.Native.RobertSargosWeightedZeroSplit
 public import LaterPairs.Native.RobertSargosZeroQPhysical
 public import LaterPairs.Native.RobertSargosZeroRPhysical
 public import LaterPairs.Native.RobertSargosZeroZero
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -44,12 +45,7 @@ theorem robertSargos_physical_nonzero_a_times_a
     ⌊lam^(-(3:ℝ)/13)⌋₊ ⌊lam^(-(1:ℝ)/13)⌋₊ hQ hR hQM hRH
   rw [robertSargos_weighted_zero_shift_decomposition f M H _ _ hQ hR,
     mul_add,mul_add,mul_add] at ht
-  have hCp : 0 ≤ C := zero_le_one.trans hC
-  have hfactor : 1 ≤ 1+2*Real.pi*C := by
-    have hp : 0 ≤ 2*Real.pi*C := by positivity
-    linarith
-  have hCF : C ≤ C*(1+2*Real.pi*C) := by
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hfactor hCp
+  pm_2548
   have h1F : 1 ≤ C*(1+2*Real.pi*C) := hC.trans hCF
   have hCM := mul_le_mul_of_nonneg_right hCF (sq_nonneg (M:ℝ))
   have h1M := mul_le_mul_of_nonneg_right h1F (sq_nonneg (M:ℝ))

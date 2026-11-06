@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreTaylorTransition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,7 +19,6 @@ open Set Filter
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 def taylorLeftTransition (l h x : ℝ) : ℝ :=
   Real.smoothTransition ((x-l)/h-1)
@@ -33,27 +33,19 @@ def taylorPastedExtension (f : ℝ → ℝ) (Q : ℕ) (l r h x : ℝ) : ℝ :=
 
 theorem taylorLeftTransition_one {l h x : ℝ} (hh : 0 < h) (hx : l+2*h ≤ x) :
     taylorLeftTransition l h x = 1 := by
-  apply Real.smoothTransition.one_of_one_le
-  have hp : 2 ≤ (x-l)/h := (le_div_iff₀ hh).mpr (by linarith)
-  linarith
+  pm_6356 x l
 
 theorem taylorRightTransition_one {r h x : ℝ} (hh : 0 < h) (hx : x ≤ r-2*h) :
     taylorRightTransition r h x = 1 := by
-  apply Real.smoothTransition.one_of_one_le
-  have hp : 2 ≤ (r-x)/h := (le_div_iff₀ hh).mpr (by linarith)
-  linarith
+  pm_6356 r x
 
 theorem taylorLeftTransition_zero {l h x : ℝ} (hh : 0 < h) (hx : x ≤ l+h) :
     taylorLeftTransition l h x = 0 := by
-  apply Real.smoothTransition.zero_of_nonpos
-  have hp : (x-l)/h ≤ 1 := (div_le_one hh).mpr (by linarith)
-  linarith
+  pm_6357 x l
 
 theorem taylorRightTransition_zero {r h x : ℝ} (hh : 0 < h) (hx : r-h ≤ x) :
     taylorRightTransition r h x = 0 := by
-  apply Real.smoothTransition.zero_of_nonpos
-  have hp : (r-x)/h ≤ 1 := (div_le_one hh).mpr (by linarith)
-  linarith
+  pm_6357 r x
 
 theorem taylorPastedExtension_contDiff
     {f : ℝ → ℝ} {l r h : ℝ} (hh : 0 < h)
@@ -63,7 +55,7 @@ theorem taylorPastedExtension_contDiff
     apply smoothCutoff_mul_contDiff (modelPhaseBufferedCutoff_contDiff l r h)
     intro x hx
     have hs := modelPhaseBufferedCutoff_tsupport hh hx
-    exact hf x ⟨by linarith [hs.1],by linarith [hs.2]⟩
+    grind
   have hL : ContDiff ℝ ∞ (taylorLeftTransition l h) :=
     Real.smoothTransition.contDiff.comp (by fun_prop)
   have hR : ContDiff ℝ ∞ (taylorRightTransition r h) :=
@@ -71,8 +63,10 @@ theorem taylorPastedExtension_contDiff
   exact (hprod.add ((contDiff_const.sub hL).mul (finiteTaylorPolynomial_contDiff f Q (l+2*h)))).add
     ((contDiff_const.sub hR).mul (finiteTaylorPolynomial_contDiff f Q (r-2*h)))
 
+section
+variable (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
+include f Q l r h x hh
 theorem taylorPastedExtension_agrees
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hx : x ∈ Icc (l+2*h) (r-2*h)) :
     taylorPastedExtension f Q l r h x = f x := by
   rw [taylorPastedExtension,modelPhaseBufferedCutoff_one hh hx.1 hx.2,
@@ -80,29 +74,20 @@ theorem taylorPastedExtension_agrees
   ring
 
 theorem taylorPastedExtension_left_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hx : x ≤ r-2*h) :
     taylorPastedExtension f Q l r h x =
       finiteTaylorPolynomial f Q (l+2*h) x+
         taylorLeftTransition l h x*(f x-finiteTaylorPolynomial f Q (l+2*h) x) := by
-  have hprod : modelPhaseBufferedCutoff l r h x =
-      taylorLeftTransition l h x*taylorRightTransition r h x := rfl
-  rw [taylorPastedExtension,hprod,taylorRightTransition_one hh hx]
-  ring
+  pm_1346 taylorRightTransition_one
 
 theorem taylorPastedExtension_right_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hx : l+2*h ≤ x) :
     taylorPastedExtension f Q l r h x =
       finiteTaylorPolynomial f Q (r-2*h) x+
         taylorRightTransition r h x*(f x-finiteTaylorPolynomial f Q (r-2*h) x) := by
-  have hprod : modelPhaseBufferedCutoff l r h x =
-      taylorLeftTransition l h x*taylorRightTransition r h x := rfl
-  rw [taylorPastedExtension,hprod,taylorLeftTransition_one hh hx]
-  ring
+  pm_1346 taylorLeftTransition_one
 
 theorem taylorPastedExtension_eventuallyEq_left_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hx : x < r-2*h) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       (fun y => finiteTaylorPolynomial f Q (l+2*h) y+
@@ -111,7 +96,6 @@ theorem taylorPastedExtension_eventuallyEq_left_formula
   exact taylorPastedExtension_left_formula f Q hh hy.le
 
 theorem taylorPastedExtension_eventuallyEq_right_formula
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hx : l+2*h < x) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       (fun y => finiteTaylorPolynomial f Q (r-2*h) y+
@@ -120,14 +104,12 @@ theorem taylorPastedExtension_eventuallyEq_right_formula
   exact taylorPastedExtension_right_formula f Q hh hy.le
 
 theorem taylorPastedExtension_eventuallyEq_plateau
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hx : x ∈ Ioo (l+2*h) (r-2*h)) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x] f := by
   filter_upwards [isOpen_Ioo.mem_nhds hx] with y hy
   exact taylorPastedExtension_agrees f Q hh ⟨hy.1.le,hy.2.le⟩
 
 theorem taylorPastedExtension_eventuallyEq_left_polynomial
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hgap : l+4*h < r) (hx : x < l+h) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       finiteTaylorPolynomial f Q (l+2*h) := by
@@ -137,7 +119,6 @@ theorem taylorPastedExtension_eventuallyEq_left_polynomial
     taylorLeftTransition_zero hh hy.le,zero_mul,add_zero]
 
 theorem taylorPastedExtension_eventuallyEq_right_polynomial
-    (f : ℝ → ℝ) (Q : ℕ) {l r h x : ℝ} (hh : 0 < h)
     (hgap : l+4*h < r) (hx : r-h < x) :
     taylorPastedExtension f Q l r h =ᶠ[𝓝 x]
       finiteTaylorPolynomial f Q (r-2*h) := by
@@ -145,5 +126,6 @@ theorem taylorPastedExtension_eventuallyEq_right_polynomial
   change r-h < y at hy
   rw [taylorPastedExtension_right_formula f Q hh (show l+2*h ≤ y by linarith),
     taylorRightTransition_zero hh hy.le,zero_mul,add_zero]
+end
 
 end TaoTrudgianYang2025

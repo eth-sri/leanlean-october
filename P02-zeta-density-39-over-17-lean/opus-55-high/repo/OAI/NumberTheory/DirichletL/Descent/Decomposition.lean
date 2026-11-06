@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 public import Mathlib.Algebra.BigOperators.Group.Finset.Preimage
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,20 +25,23 @@ structure HybridColumnData where
 def HybridColumnData.reconstruct (d : HybridColumnData) : Ideal Eis × Ideal Eis :=
   (d.common * d.residualN, (d.common * d.residualB) * d.square ^ 2)
 
-theorem HybridColumnData.common_ne_zero (d : HybridColumnData) : d.common ≠ 0 :=
+section
+variable (d : HybridColumnData)
+include d
+theorem HybridColumnData.common_ne_zero : d.common ≠ 0 :=
   ne_zero_of_dvd_ne_zero d.n_squarefree.ne_zero (dvd_mul_right _ _)
 
-theorem HybridColumnData.common_eq_gcd (d : HybridColumnData) :
+theorem HybridColumnData.common_eq_gcd :
     d.common = gcd (d.common * d.residualN) (d.common * d.residualB) := by
   rw [gcd_mul_left, normalize_eq, Ideal.isCoprime_iff_gcd.mp d.residual_coprime, mul_one]
 
-theorem HybridColumnData.residual_product_squarefree (d : HybridColumnData) :
+theorem HybridColumnData.residual_product_squarefree :
     Squarefree (d.residualN * d.residualB) := by
   have hm := (squarefree_mul_iff.mp d.n_squarefree).2.2
   have hh := (squarefree_mul_iff.mp d.g_squarefree).2.2
   exact squarefree_mul_iff.mpr ⟨d.residual_coprime.isRelPrime, hm, hh⟩
 
-theorem HybridColumnData.primary_factors (d : HybridColumnData)
+theorem HybridColumnData.primary_factors
     (hn : CompletedGauss.primaryGenerator (d.common * d.residualN) ≠ 0)
     (hb : CompletedGauss.primaryGenerator ((d.common * d.residualB) * d.square ^ 2) ≠ 0) :
     CompletedGauss.primaryGenerator d.common ≠ 0 ∧
@@ -50,19 +54,18 @@ theorem HybridColumnData.primary_factors (d : HybridColumnData)
       CompletedGauss.primaryGenerator d.square ^ 2 :=
     map_pow CompletedGauss.primaryGeneratorHom d.square 2
   rw [CompletedGauss.primaryGenerator_mul, CompletedGauss.primaryGenerator_mul, hpow] at hb
-  have hc := (mul_ne_zero_iff.mp hn).1
-  have hm := (mul_ne_zero_iff.mp hn).2
+  pm_317 hc mul_ne_zero_iff.mp hn hm
   have hch := (mul_ne_zero_iff.mp hb).1
   have hh := (mul_ne_zero_iff.mp hch).2
   have ht : CompletedGauss.primaryGenerator d.square ≠ 0 := by
     intro hz
     apply (mul_ne_zero_iff.mp hb).2
     simp [hz]
-  refine ⟨hc, hm, hh, ht, ?_⟩
+  pm_505 hc hm hh ht
   rw [CompletedGauss.primaryGenerator_mul]
   exact mul_ne_zero hc ht
 
-theorem HybridColumnData.residual_norm_bounds (d : HybridColumnData)
+theorem HybridColumnData.residual_norm_bounds
     (N B C T : ℝ) (hN : 0 ≤ N) (_hB : 0 ≤ B) (hC : 0 < C) (hT : 0 < T)
     (hn : (Ideal.absNorm (d.common * d.residualN) : ℝ) ≤ N)
     (hb : (Ideal.absNorm ((d.common * d.residualB) * d.square ^ 2) : ℝ) ≤ B)
@@ -97,6 +100,7 @@ theorem HybridColumnData.residual_norm_bounds (d : HybridColumnData)
     _ ≤ (N / C) * (B / (C * T ^ 2)) :=
       mul_le_mul hm hh (Nat.cast_nonneg _) (div_nonneg hN hC.le)
     _ = N * B / (C ^ 2 * T ^ 2) := by ring
+end
 
 theorem HybridColumnData.reconstruct_injective :
     Function.Injective HybridColumnData.reconstruct := by
@@ -113,15 +117,8 @@ theorem HybridColumnData.reconstruct_injective :
       _ = gcd (e.common * e.residualN) (e.common * e.residualB) := by rw [hn, hg]
       _ = e.common := e.common_eq_gcd.symm
   rw [hc] at hn hg
-  have hm := mul_left_cancel₀ e.common_ne_zero hn
-  have hh := mul_left_cancel₀ e.common_ne_zero hg
-  cases d
-  cases e
-  cases hc
-  cases hm
-  cases hh
-  cases ht
-  rfl
+  pm_733 hm mul_left_cancel₀ e.common_ne_zero hn hh hg
+  pm_7532
 
 def HybridColumnData.toOriginal (d : HybridColumnData) :
     {p : Ideal Eis × Ideal Eis // Squarefree p.1 ∧ p.2 ≠ 0} :=

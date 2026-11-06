@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,39 +13,39 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [Fintype ι] [Fintype κ]
 
-lemma cofactor_reindex (p : ι→Eis) (e : κ≃ι) (k : κ) :
+lemma cofactor_reindex (p : ι→ Eis) (e : κ≃ι) (k : κ) :
     cofactor (fun k => p (e k)) k=cofactor p (e k) := by
   unfold cofactor
   apply Finset.prod_equiv e
   · intro i
-    simp only [Finset.mem_erase,Finset.mem_univ,and_true,ne_eq,EmbeddingLike.apply_eq_iff_eq]
+    pm_94 Finset.mem_erase Finset.mem_univ and_true ne_eq EmbeddingLike.apply_eq_iff_eq
   · intro i hi
     rfl
 
-lemma finiteCrossNumerator_reindex (a c l : Eis) (p : ι→Eis) (e : κ≃ι) (h : ι→Eis) :
+lemma finiteCrossNumerator_reindex (a c l : Eis) (p : ι→ Eis) (e : κ≃ι) (h : ι→ Eis) :
     finiteCrossNumerator a c l (fun k => p (e k)) (fun k => h (e k))=
       finiteCrossNumerator a c l p h := by
   unfold finiteCrossNumerator
   simp_rw [cofactor_reindex]
   rw [e.prod_comp,e.sum_comp (fun i => h i*cofactor p i)]
 
-def unitFrequencyEquiv (p : ι→Eis) (e : κ≃ι) :
+def unitFrequencyEquiv (p : ι→ Eis) (e : κ≃ι) :
     (∀ k, (Eis⧸Ideal.span {p (e k)})ˣ)≃(∀ i, (Eis⧸Ideal.span {p i})ˣ) :=
   Equiv.piCongrLeft (fun i => (Eis⧸Ideal.span {p i})ˣ) e
 
 omit [Fintype ι] [Fintype κ] in
-lemma unitFrequencyEquiv_apply (p : ι→Eis) (e : κ≃ι)
+lemma unitFrequencyEquiv_apply (p : ι→ Eis) (e : κ≃ι)
     (v : ∀ k, (Eis⧸Ideal.span {p (e k)})ˣ) (k : κ) :
     unitFrequencyEquiv p e v (e k)=v k := Equiv.piCongrLeft_apply_apply _ _ _ _
 
 omit [Fintype ι] [Fintype κ] in
-lemma unitFrequencyEquiv_one (p : ι→Eis) (e : κ≃ι) :
+lemma unitFrequencyEquiv_one (p : ι→ Eis) (e : κ≃ι) :
     unitFrequencyEquiv p e (fun _ => 1)=(fun _ => 1) := by
   funext i
   obtain ⟨k,rfl⟩ := e.surjective i
   exact unitFrequencyEquiv_apply p e _ k
 
-def reindexControlled {p : ι→Eis} {N a c : Eis} {mode : Bool}
+def reindexControlled {p : ι→ Eis} {N a c : Eis} {mode : Bool}
     (D : ControlledStratumArithmetic p N a c mode) (e : κ≃ι) :
     ControlledStratumArithmetic (fun k => p (e k)) N a c mode where
   lift v k := D.lift (unitFrequencyEquiv p e v) (e k)

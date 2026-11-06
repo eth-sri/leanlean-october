@@ -22,7 +22,7 @@ lemma inverse_vertical_continuous (c : ℝ) (hc : c≠0) :
   intro t h
   have he := congrArg Complex.re h
   simp at he
-  exact hc he
+  grind
 
 lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
     (∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) = (2*Real.arctan (T/c):ℝ) := by
@@ -51,7 +51,7 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
     rw [he, intervalIntegral.integral_neg, integral_id_div_sq_add_sq hc]
     simp
 
-lemma inverse_vertical_limit_pos (c : ℝ) (hc : 0<c) :
+lemma inverse_vertical_limit_pos (c : ℝ) (hc : 0< c) :
     Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) atTop (𝓝 (Real.pi:ℂ)) := by
   simp_rw [inverse_vertical_truncated c _ hc.ne']
   have ht := Real.tendsto_arctan_atTop.comp (Filter.tendsto_id.atTop_div_const hc)
@@ -142,7 +142,10 @@ lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
     have hh := congrArg Complex.im h
     exact hy (by simpa using hh)
 
-lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
+section
+variable (A F : ℂ → ℂ) {a b p : ℝ}
+include A F a b p
+lemma dslope_horizontal_limit (hab : a≤b)
     (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b})
     (hF : ∀ z : ℂ, a≤z.re → z.re≤b → z≠p → F z = A z/(z-p))
     (ε : ℝ) (hε : |ε|=1)
@@ -173,7 +176,7 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
   intro x hx
   exact (dslope_eq_sub_pole (hn x) (he x hx)).symm
 
-theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
+theorem verticalIntegral_simple_pole
     (hap : a<p) (hpb : p<b)
     (hA : DifferentiableOn ℂ A {z : ℂ | a≤z.re ∧ z.re≤b})
     (hF : ∀ z : ℂ, a≤z.re → z.re≤b → z≠p → F z = A z/(z-p))
@@ -217,9 +220,10 @@ theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
   unfold verticalIntegral
   rw [he']
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  have hpi : (Real.pi :ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   field_simp
   simp only [mul_comm]
+end
 
 structure BoundaryControl (F : ℂ → ℂ) (a b : ℝ) : Prop where
   left : Integrable (fun t : ℝ => F ((a:ℂ)+t*I))
@@ -229,7 +233,10 @@ structure BoundaryControl (F : ℂ → ℂ) (a b : ℝ) : Prop where
 
 open HeckeFamily
 
-theorem verticalIntegral_hecke (χ : Character) (K : ℂ → ℂ) {a b : ℝ}
+section
+variable (χ : Character) (K : ℂ → ℂ)
+include χ K
+theorem verticalIntegral_hecke {a b : ℝ}
     (ha : 0<a) (ha1 : a<1) (h1b : 1<b)
     (hK : DifferentiableOn ℂ K {z : ℂ | a≤z.re ∧ z.re≤b})
     (hB : BoundaryControl (fun z => K z * LFunction χ z) a b) :
@@ -249,7 +256,7 @@ theorem verticalIntegral_hecke (χ : Character) (K : ℂ → ℂ) {a b : ℝ}
     norm_num
     field_simp
 
-theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ}
+theorem verticalIntegral_hecke_six {a b : ℝ}
     (ha : 0<a) (hap : a<1/6) (hpb : 1/6<b)
     (hK : DifferentiableOn ℂ K {z : ℂ | a≤z.re ∧ z.re≤b})
     (hB : BoundaryControl (fun z => K z * LFunction χ (6*z)) a b) :
@@ -282,13 +289,14 @@ theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ
     push_cast
     field_simp
 
-theorem source_residue_z_shift (χ : Character) (K : ℂ → ℂ) {e : ℝ} (he : 0<e)
+theorem source_residue_z_shift {e : ℝ} (he : 0<e)
     (hK : DifferentiableOn ℂ K {z : ℂ | 33/200≤z.re ∧ z.re≤1/6+e})
     (hB : BoundaryControl (fun z => K z * LFunction χ (6*z)) (33/200) (1/6+e)) :
     verticalIntegral (1/6+e) (fun z => K z * LFunction χ (6*z)) =
       verticalIntegral (33/200) (fun z => K z * LFunction χ (6*z)) +
       K (1/6) * HeckeReciprocal.regularizedL χ 1 / 6 :=
   verticalIntegral_hecke_six χ K (by norm_num) (by norm_num) (by linarith) hK hB
+end
 
 lemma verticalIntegral_add (a : ℝ) (F G : ℂ → ℂ)
     (hF : Integrable (fun t : ℝ => F ((a:ℂ)+t*I)))
@@ -304,9 +312,9 @@ lemma verticalIntegral_mul_const (a : ℝ) (F : ℂ → ℂ) (c : ℂ) :
   ring
 
 theorem source_ordered_double_shift (χ : Character) (K : ℂ → ℂ → ℂ)
-    {cw e : ℝ} (hcw : 1<cw) (he : 0<e)
+    {cw e : ℝ} (hcw : 1< cw) (he : 0<e)
     (hwK : ∀ z : ℂ, z.re=1/6+e → DifferentiableOn ℂ (fun w => K w z)
-      {w : ℂ | 19/20≤w.re ∧ w.re≤cw})
+      {w : ℂ | 19/20≤w.re ∧ w.re≤ cw})
     (hwB : ∀ z : ℂ, z.re=1/6+e → BoundaryControl
       (fun w => K w z * LFunction χ (6*z) * LFunction χ w) (19/20) cw)
     (hzK : DifferentiableOn ℂ (fun z => K 1 z)

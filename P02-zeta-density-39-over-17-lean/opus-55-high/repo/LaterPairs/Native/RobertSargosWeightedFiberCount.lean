@@ -5,6 +5,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosFrequencyFibers
 public import LaterPairs.Native.RobertSargosFrequencyWeightSums
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,9 +24,7 @@ theorem RobertSargosPrimitiveSystem.displacement_natAbs_mem
     (h : RobertSargosPrimitiveSystem R H Q δ p)
     (hH : 0 < H) (hQ : 0 < Q) (hδ : δ ≤ 1) :
     p.d.natAbs ∈ Finset.Icc 1 ⌊9*Q⌋₊ := by
-  have hd : (p.d.natAbs:ℝ) = |(p.d:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.d)
+  pm_8832 hd p.d.natAbs p.d
   apply Finset.mem_Icc.mpr
   constructor
   · exact Nat.one_le_iff_ne_zero.mpr (Int.natAbs_ne_zero.mpr h.d_ne_zero)
@@ -50,11 +49,8 @@ theorem robertSargos_card_le_weighted_frequency_sum
   have hQp : 0 < Q := by linarith
   have hδ0 : 0 ≤ δ := hδ.1
   have hmaps : Set.MapsTo robertSargosFrequencyKey S U := by
-    intro p hp
-    exact Finset.mem_image.mpr ⟨p,hp,rfl⟩
-  have hcardR : (S.card:ℝ) =
-      ∑ z ∈ U, ((S.filter (fun p => robertSargosFrequencyKey p = z)).card:ℝ) := by
-    exact_mod_cast Finset.card_eq_sum_card_fiberwise hmaps
+    pm_1673
+  pm_132 U robertSargosFrequencyKey
   have hs := sum_affine_frequency_rpow_weight_le U hQp.le
     (show 0 ≤ δ*Q+99*R*Q/H by positivity) hε hA
     ((Nat.one_le_floor_iff (9*Q)).mpr (by linarith))

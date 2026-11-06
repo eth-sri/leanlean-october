@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RawPhysicalIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,24 +10,26 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 
-lemma count_product {A B : Type*} [Countable A] [Countable B]
-    [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B] :
+section
+variable {A B : Type*} [Countable A] [Countable B] [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B]
+include A B
+lemma count_product :
     (Measure.count:Measure A).prod (Measure.count:Measure B)=Measure.count := by
   apply Measure.ext_of_singleton
   rintro ⟨a,b⟩
   rw [←Set.singleton_prod_singleton,Measure.prod_prod]
   simp
 
-lemma count_equiv_preserving {A B : Type*} [Countable A] [Countable B]
-    [MeasurableSpace A] [MeasurableSpace B] [MeasurableSingletonClass A] [MeasurableSingletonClass B]
+lemma count_equiv_preserving
     (e : A≃ᵐB) : MeasurePreserving e Measure.count Measure.count := by
   refine ⟨e.measurable,?_⟩
   apply Measure.ext_of_singleton
   intro b
   rw [Measure.map_apply e.measurable (measurableSet_singleton b)]
-  have he : e ⁻¹' {b}={e.symm b} := by ext a;simp [e.eq_symm_apply]
+  have he : e ⁻¹' {b}={e.symm b} := by ext a;aesop
   rw [he]
   simp
+end
 
 def quadShuffle {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
     [MeasurableSpace C] [MeasurableSpace D] : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D) where
@@ -86,7 +89,7 @@ lemma physicalNesting_preserving {A B C D E F : Type*} [MeasurableSpace A] [Meas
 
 lemma integral_count_eq_tsum {A : Type*} [Countable A] [MeasurableSpace A]
     [MeasurableSingletonClass A] (f : A→ℂ) (hf : Integrable f Measure.count) :
-    (∫a,f a ∂Measure.count)=∑'a,f a := by
+    (∫a,f a ∂ Measure.count)=∑'a,f a := by
   simpa using integral_countable hf
 
 theorem integral_physical_nesting {A B C : Type*} [Countable A] [Countable B] [Countable C]
@@ -103,10 +106,7 @@ theorem integral_physical_nesting {A B C : Type*} [Countable A] [Countable B] [C
   intro a
   have ha := (Measure.ae_count_iff.mp hF.prod_right_ae) a
   rw [integral_prod _ ha]
-  apply integral_congr_ae
-  filter_upwards [ha.prod_right_ae] with w hw
-  rw [integral_prod _ hw]
-  apply integral_congr_ae
+  pm_8497 ha.prod_right_ae integral_prod
   filter_upwards [hw.prod_right_ae] with t ht
   rw [integral_prod _ ht,integral_count_eq_tsum _ ht.integral_prod_left]
   apply tsum_congr

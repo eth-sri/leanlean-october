@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaAveragedCurvature
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,8 +21,10 @@ open scoped ContDiff Topology
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem modelPhaseStationaryDeficit_hasDerivAt
-    {F : ℝ → ℝ} {σ δ u : ℝ} {P : ℕ}
+section
+variable {F : ℝ → ℝ}
+include F
+theorem modelPhaseStationaryDeficit_hasDerivAt {σ δ u : ℝ} {P : ℕ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (v : ℝ) (hu : u ∈ Ioo (1 : ℝ) 2) :
     HasDerivAt (modelPhaseStationaryDeficit F v) (v-deriv F u) u := by
@@ -33,8 +36,7 @@ theorem modelPhaseStationaryDeficit_hasDerivAt
   · rfl
   · ring
 
-theorem modelPhaseMorseCoordinate_deriv_mul
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
+theorem modelPhaseMorseCoordinate_deriv_mul {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
@@ -45,14 +47,12 @@ theorem modelPhaseMorseCoordinate_deriv_mul
   have hD := (modelPhaseStationaryDeficit_hasDerivAt hF v hu).const_mul 2
   have he : (fun x => (modelPhaseMorseCoordinate F v x)^2) =ᶠ[𝓝 u]
       (fun x => 2*modelPhaseStationaryDeficit F v x) := by
-    filter_upwards [isOpen_Ioo.mem_nhds hu] with x hx
-    exact modelPhaseMorseCoordinate_sq hσ hδ hF hv hx
+    pm_5348 modelPhaseMorseCoordinate_sq
   have h := hd.unique (hD.congr_of_eventuallyEq he)
   norm_num only [Nat.cast_ofNat,Nat.reduceSub,pow_one] at h
-  nlinarith only [h]
+  grind
 
-theorem modelPhaseMorseCoordinate_deriv_pos
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
+theorem modelPhaseMorseCoordinate_deriv_pos {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
@@ -77,8 +77,7 @@ theorem modelPhaseMorseCoordinate_deriv_pos
       rw [deriv_modelPhaseInverseSlope_apply hv] at h
       nlinarith
 
-theorem modelPhaseMorseCoordinate_strictMonoOn
-    {F : ℝ → ℝ} {σ δ v : ℝ}
+theorem modelPhaseMorseCoordinate_strictMonoOn {σ δ v : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) :
@@ -87,6 +86,7 @@ theorem modelPhaseMorseCoordinate_strictMonoOn
   · exact (modelPhaseMorseCoordinate_contDiffOn hσ hδ hF hv).continuousOn
   · intro u hu
     exact modelPhaseMorseCoordinate_deriv_pos hσ hδ hF hv (by simpa using hu)
+end
 
 end TaoTrudgianYang2025
 

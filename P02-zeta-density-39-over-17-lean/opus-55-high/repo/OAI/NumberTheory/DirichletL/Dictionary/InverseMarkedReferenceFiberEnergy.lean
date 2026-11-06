@@ -1,18 +1,18 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceDeletedEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPhysicalRows
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile
-open ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
+open HeckeDetectorCoefficientTransfer InverseMoment
+open ConcreteTraceCRT ConcretePrimeRowBridge
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows
 open InverseInitialPhysicalSlots IdealMobiusDivisorSum
 local notation "O"=>HeckeFamily.O
@@ -51,7 +51,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   refine ⟨∑b:Bool,J b,?_⟩
   intro data
   choose C U₀ hC hU₀ hb using fun b:Bool=>hj b data
-  let Tbad:=idealDivisors (∏P∈excluded data,P)
+  pm_8576 Tbad
   let Ctotal:ℝ:=((Tbad.card:ℝ)+1)^2*(∑b:Bool,C b)
   have hCsum:0<∑b:Bool,C b:=Finset.sum_pos (fun b _=>hC b) Finset.univ_nonempty
   refine ⟨Ctotal,max (U₀ false) (U₀ true),by dsimp [Ctotal];positivity,
@@ -78,8 +78,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   have hsum (f:O→ℝ):(∑u∈rows,f u)=∑u∈F.rows,f u.val:=
     Finset.sum_image (fun u _ w _ he=>Subtype.ext he)
   have hrows:∀u∈rows,‖eisEmbedding u‖^2≤U := by
-    intro u hu
-    obtain ⟨w,hw,rfl⟩:=Finset.mem_image.mp hu
+    pm_1192 u hu w hw
     rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span]
     exact F.row_norm w hw
   have hpow (b:Bool):((1+‖orientedFrequency b v‖)^(J b))^2≤
@@ -130,6 +129,5 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
 end OAI

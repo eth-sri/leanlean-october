@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaDuality
 public import TaoTrudgianYang2025.BetaUniformity
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -28,12 +29,12 @@ theorem exponentPair_rhs_eq_logb_power {T N : ℝ}
       rw [← Real.rpow_mul hTpos.le, ← Real.rpow_add hTpos]
     _ = _ := by congr 1; unfold exponentPairLine; ring
 
+section
+variable {k l : ℝ} (htri : InExponentPairTriangle k l) (hβ : ∀ α : ℝ≥0, (α : ℝ) ≤ 1 → exponentSumGrowthExponent α ≤ exponentPairLine k l α)
+include k l htri hβ
 /-- One uniform fixed-parameter estimate follows from beta bounds at every
 scale in [0,1]. The phase exponent and epsilon precede every constant. -/
-theorem isExponentPairEstimateNonAsymptotic_of_beta_bound
-    {k l : ℝ} (htri : InExponentPairTriangle k l)
-    (hβ : ∀ α : ℝ≥0, (α : ℝ) ≤ 1 →
-      exponentSumGrowthExponent α ≤ exponentPairLine k l α) :
+theorem isExponentPairEstimateNonAsymptotic_of_beta_bound :
     IsExponentPairEstimateNonAsymptotic k l := by
   classical
   intro ε hε σ hσ
@@ -55,19 +56,16 @@ theorem isExponentPairEstimateNonAsymptotic_of_beta_bound
     have := hrad ⟨x,hx⟩
     change x-radius ⟨x,hx⟩ < x ∧ x < x+radius ⟨x,hx⟩
     constructor <;> linarith
-  obtain ⟨s,hs⟩ := isCompact_Icc.elim_finite_subcover U (fun _ => isOpen_Ioo) hcover
+  pm_6656
   have hsne : s.Nonempty := by
     have hz := hs (show (0 : ℝ) ∈ Icc 0 1 by norm_num)
-    obtain ⟨α,hα,_⟩ := mem_iUnion₂.mp hz
-    exact ⟨α,hα⟩
-  let δall : ℝ := s.inf' hsne δ
-  let Pall : ℕ := max 1 (s.sup P)
-  let Call : ℝ := max 2 (s.sup' hsne C)
+    pm_6426
+  pm_1629
   have hδall : 0 < δall := by
     exact (Finset.lt_inf'_iff hsne).2 (fun α _ => hδ α)
-  have hPall : 1 ≤ Pall := le_max_left _ _
+  pm_4884 hPall Pall
   have hCall : 1 ≤ Call := le_trans (by norm_num) (le_max_left _ _)
-  refine ⟨δall,hδall,Pall,hPall,Call,hCall,?_⟩
+  pm_211 δall hδall Pall hPall Call hCall
   intro T N F a b hsetup
   have hT : 1 < T := lt_of_lt_of_le
     (lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2) (le_max_left _ _))
@@ -92,11 +90,9 @@ theorem isExponentPairEstimateNonAsymptotic_of_beta_bound
       approximateModelPhase_mono hsetup.isApproximateModelPhase hPle hδle,
       hsetup.scale_le_start,hsetup.end_le_two_mul_scale⟩
   have hd : 0 ≤ l-k := by
-    rcases htri with ⟨hk₀,hk₁,hl₀,hl₁,hkl⟩
-    linarith
+    pm_6914
   have hdhi : l-k ≤ 1 := by
-    rcases htri with ⟨hk₀,hk₁,hl₀,hl₁,hkl⟩
-    linarith
+    pm_6914
   have hexp : exponentPairLine k l α+ε/2 ≤
       exponentPairLine k l (Real.logb T N)+ε := by
     unfold exponentPairLine
@@ -113,12 +109,11 @@ theorem isExponentPairEstimateNonAsymptotic_of_beta_bound
 
 /-- The full converse in the source beta-duality lemma, including both
 scale endpoints and the uniform constants in the exponent-pair definition. -/
-theorem exponentPair_of_beta_bound {k l : ℝ} (htri : InExponentPairTriangle k l)
-    (hβ : ∀ α : ℝ≥0, (α : ℝ) ≤ 1 →
-      exponentSumGrowthExponent α ≤ exponentPairLine k l α) :
+theorem exponentPair_of_beta_bound :
     ExponentPair k l :=
   ⟨htri,isExponentPairEstimate_iff_nonAsymptotic.mpr
     (isExponentPairEstimateNonAsymptotic_of_beta_bound htri hβ)⟩
+end
 
 
 end TaoTrudgianYang2025

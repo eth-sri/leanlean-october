@@ -1,7 +1,8 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The weighted Hölder inequality used in Wooley (3.9)
@@ -12,11 +13,9 @@ hypotheses visible.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooley_weighted_rpow_sum_le
     {ι : Type*} (t : Finset ι) (w f : ι → ℝ) {p : ℝ}
@@ -25,7 +24,7 @@ theorem wooley_weighted_rpow_sum_le
       (∑ i ∈ t, w i) ^ (p - 1) *
         ∑ i ∈ t, w i * f i ^ p := by
   let A : ℝ := ∑ i ∈ t, w i * f i
-  let W : ℝ := ∑ i ∈ t, w i
+  pm_7784
   let D : ℝ := ∑ i ∈ t, w i * f i ^ p
   have hA : 0 ≤ A := by
     dsimp [A]
@@ -55,6 +54,5 @@ theorem wooley_weighted_rpow_sum_le
         ∑ i ∈ t, w i * f i ^ p := by rfl
 
 
-end
 
 end GafniTao

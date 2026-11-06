@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SpectralCompensation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,10 @@ open ActualEisensteinCubic ProbeEuler ProbeLocal
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
+section
+variable (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
+include η P x w z
+lemma initialPrime_denominators
     (hx : 0<x.re) (hw : 0<w.re) (hz : 0<z.re) :
     let Q : ℝ := Ideal.absNorm P.val
     (1-coordV Q z≠0) ∧ (1-coordW Q 1 w≠0) ∧
@@ -20,7 +24,7 @@ lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x
   dsimp only
   have hQ : (1:ℝ)<Ideal.absNorm P.val := by
     have hh := SmoothMobiusCorrection.prime_norm_two_le P
-    exact_mod_cast (by omega : 1<Ideal.absNorm P.val)
+    aesop
   have hQ0 : (0:ℝ)<Ideal.absNorm P.val := by linarith
   constructor
   · apply one_sub_ne_zero_of_norm_lt_one
@@ -28,19 +32,18 @@ lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ (by linarith)
   constructor
   · apply one_sub_ne_zero_of_norm_lt_one
-    apply (coordW_norm_le _ hQ0 1 w (by simp)).trans_lt
-    exact Real.rpow_lt_one_of_one_lt_of_neg hQ (by linarith)
+    pm_6639 hQ
   · apply one_sub_ne_zero_of_norm_lt_one
-    apply (coordD_norm_le _ hQ0 _ 1 x (HeckeFamily.idealCoeff_norm_le_one η P.val) (by simp)).trans_lt
-    exact Real.rpow_lt_one_of_one_lt_of_neg hQ (by linarith)
+    pm_7056 HeckeFamily.idealCoeff_norm_le_one P.val hQ
 
-lemma idealClosedCorrection_eq_continued (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) :
+lemma idealClosedCorrection_eq_continued :
     let Q : ℝ := Ideal.absNorm P.val
     idealClosedCorrection η P x w z=continuedCorrection (coordV Q z) (coordW Q 1 w)
       (coordD Q (HeckeFamily.idealCoeff η P.val) 1 x) (idealMarkedClosed η P x w z) := rfl
+end
 
 lemma standardFactor_times_continued (V W D M : ℂ)
-    (hV : 1-V≠0) (hW : 1-W≠0) (hD : 1-D≠0) :
+    (hV : 1-V≠0) (hW : 1-W≠0) (hD : 1-D ≠0) :
     (1-D)/((1-V)*(1-W))*continuedCorrection V W D M=localFactor V W M := by
   unfold continuedCorrection localFactor
   field_simp
@@ -52,17 +55,19 @@ lemma idealHighLocalFactor_eq_raw (η : HeckeFamily.Character) (P : PrimeIdeal)
     let Q : ℝ := Ideal.absNorm P.val
     idealHighLocalFactor η P.val x w z=
       localFactor (coordV Q z) (coordW Q 1 w) (idealMarkedClosed η P x w z) := by
-  have hd := initialPrime_denominators η P x w z (by linarith) (by linarith) (by linarith)
-  have he := idealHighLocalFactor_rational η P hs x w z hx hw hz
+  pm_5214 he idealHighLocalFactor_rational
   have hc := standardFactor_times_continued (coordV (Ideal.absNorm P.val) z)
     (coordW (Ideal.absNorm P.val) 1 w) (coordD (Ideal.absNorm P.val) (HeckeFamily.idealCoeff η P.val) 1 x)
     (idealMarkedClosed η P x w z) hd.1 hd.2.1 hd.2.2
   rw [←idealClosedCorrection_eq_continued] at hc
   dsimp only at he hc ⊢
   rw [he]
-  simpa only [coordV,coordW,coordD,star_one,mul_one,one_mul] using hc
+  pm_436 coordV coordW coordD star_one mul_one one_mul hc
 
-theorem idealCompensatedRatio_eq_continued (S : Finset Id) (hS : SourceExclusions S)
+section
+variable (S : Finset Id) (hS : SourceExclusions S)
+include S hS
+theorem idealCompensatedRatio_eq_continued
     (η : HeckeFamily.Character) (P : PrimeIdeal) (hP : P.val∉S) (x w z B q : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     let Q : ℝ := Ideal.absNorm P.val
@@ -71,8 +76,7 @@ theorem idealCompensatedRatio_eq_continued (S : Finset Id) (hS : SourceExclusion
         (coordD Q (HeckeFamily.idealCoeff η P.val) 1 x) (idealMarkedClosed η P x w z) B q /
           idealClosedCorrection η P x w z := by
   have hs := outside_prime_supported S hS.bad P hP
-  have hd := initialPrime_denominators η P x w z (by linarith) (by linarith) (by linarith)
-  have hraw := idealHighLocalFactor_eq_raw η P hs x w z hx hw hz
+  pm_5214 hraw idealHighLocalFactor_eq_raw
   have hn := source_idealHighLocalFactor_ne_zero S hS η P hP x w z hx hw hz
   rw [hraw] at hn
   have hH : idealClosedCorrection η P x w z≠0 :=
@@ -87,7 +91,7 @@ theorem idealCompensatedRatio_eq_continued (S : Finset Id) (hS : SourceExclusion
   rw [idealMarkedLocalFactor_rational η P hs x w z hx hz,hraw,he]
   exact (mul_div_cancel_left₀ _ hH).symm
 
-theorem spectralCompensatedHigh_continued (S : Finset Id) (hS : SourceExclusions S)
+theorem spectralCompensatedHigh_continued
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character)
     (x w z : ℂ) (B q : PrimeIdeal→ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
@@ -104,6 +108,7 @@ theorem spectralCompensatedHigh_continued (S : Finset Id) (hS : SourceExclusions
   apply Finset.prod_congr rfl
   intro P hP
   exact idealCompensatedRatio_eq_continued S hS η P (hT P hP) x w z (B P) (q P) hx hw hz
+end
 
 end SevenEighths.ProbePhysical
 end

@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection10Chain
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Composing the Section 10 analytic recurrence
@@ -14,7 +15,6 @@ than folded into asymptotic notation.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- Exact finite composition of (10.8), including the endpoint state,
 product weight, accumulated constant, and accumulated decay. -/
@@ -80,8 +80,8 @@ theorem WooleyIterationChain.composed_bound
       have hE : ((n + 1 : ℕ) : ℝ) * (b : ℝ) ≤ E := by
         have hEtail' : (n : ℝ) * (bPrime : ℝ) ≤ Etail := hEtail
         have hmul := mul_le_mul_of_nonneg_left hEtail' hrhoNonneg
-        have hbnonneg : (0 : ℝ) ≤ b := by positivity
-        have hnnonneg : (0 : ℝ) ≤ n := by positivity
+        pm_96 hbnonneg b
+        pm_96 hnnonneg n
         have hweightedN : (n : ℝ) * (b : ℝ) ≤
             (n : ℝ) * (rho * (bPrime : ℝ)) :=
           mul_le_mul_of_nonneg_left hweighted hnnonneg
@@ -180,6 +180,5 @@ theorem WooleyIterationChain.composed_bound
       · exact hsubstitute.trans_eq hrearrange
 
 
-end
 
 end GafniTao

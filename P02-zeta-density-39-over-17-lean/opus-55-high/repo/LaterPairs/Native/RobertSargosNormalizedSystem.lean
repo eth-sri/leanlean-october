@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosNormalizationGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -21,17 +22,12 @@ theorem RobertSargosReducedSystem.normalized {R H Q δ : ℝ}
     RobertSargosReducedSystem (R/j) (H/j) (Q/k) δ (robertSargosNormalize j k p) := by
   have hjp : 0 < j := hj ▸ h.coefficient_gcd_pos
   have hkp : 0 < k := hk ▸ h.frequency_gcd_pos
-  have hjR : (0:ℝ) < j := by exact_mod_cast hjp
-  have hkR : (0:ℝ) < k := by exact_mod_cast hkp
-  have hdj : (j:ℤ) ∣ p.r ∧ (j:ℤ) ∣ p.h₁ ∧ (j:ℤ) ∣ p.h₂ := by
-    rw [hj]
-    exact integerTripleGcd_dvd _ _ _
-  have hdk : (k:ℤ) ∣ p.d ∧ (k:ℤ) ∣ p.q₁ ∧ (k:ℤ) ∣ p.q₂ := by
-    rw [hk]
-    exact integerTripleGcd_dvd _ _ _
+  pm_4473 hjR j hjp
+  pm_4473 hkR k hkp
+  pm_2524
   have hcast (a : ℤ) (g : ℕ) (ha : (g:ℤ) ∣ a) :
       ((a/(g:ℤ):ℤ):ℝ) = (a:ℝ)/(g:ℝ) := by
-    rw [Int.cast_div_charZero ha,Int.cast_natCast]
+    simp_all
   constructor
   · exact fun he => h.r_ne_zero (Int.eq_zero_of_ediv_eq_zero hdj.1 he)
   · change |((p.r/(j:ℤ):ℤ):ℝ)| ≤ R/j

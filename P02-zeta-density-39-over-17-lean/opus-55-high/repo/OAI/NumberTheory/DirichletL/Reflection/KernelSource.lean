@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.KernelIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,7 +19,7 @@ theorem reflected_finite_source_uniform
     (hW : ContDiff ℝ ∞ W) (J : ℕ) :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧
       HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
-      ∀ θ C QK QP Qn Qb r : ℝ, 0<C → 0<QK → 0<QP → 0<Qn → 0<Qb → 0<r →
+      ∀ θ C QK QP Qn Qb r : ℝ, 0<C → 0<QK → 0<QP → 0<Qn → 0<Qb → 0< r →
       let R := kernelCenter C QK QP Qn Qb
       (∀ {κ : Type u} (source : Finset κ) (coeff : κ→ℂ) (k p n q : κ→ℝ),
         (∀ j ∈ source, 0<k j ∧ 0<p j ∧ 0<n j ∧ 0<q j) →
@@ -40,10 +41,10 @@ theorem reflected_finite_source_uniform
   obtain ⟨U,degree,C₀,hC₀,hUc,hUs,hsep⟩ := reflected_kernel_uniform_separation
     a b ha (reciprocalKernelWindows windows M) M hM
       (reciprocalKernelWindows_support windows M hwindows) W hWsupport hW J
-  refine ⟨U,degree,C₀,hC₀,hUc,hUs,?_⟩
+  pm_3271
   intro θ C QK QP Qn Qb r hC hQK hQP hQn hQb hr
   obtain ⟨he,hi,hm,hp⟩ := hsep θ C QK QP Qn Qb hC hQK hQP hQn hQb
-  have hR : 0<kernelCenter C QK QP Qn Qb := by unfold kernelCenter; positivity
+  pm_6474
   have hdi := reflected_density_integrable U W hUs.continuous.measurable
     a b ha hWsupport hW θ _ hR J hi
   refine ⟨?_,hdi,hi,hm,hp⟩

@@ -3,6 +3,7 @@ public import GafniTao.FordLemma51Fibers
 public import GafniTao.FordTentWeights
 public import Mathlib.Analysis.Fourier.AddCircle
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,7 +48,7 @@ theorem fordTentFourierCoefficient_of_ne_zero
     fordTentFourierCoefficient w n =
       (((Real.sin (Real.pi * (n : ℝ) * w)) ^ 2 /
         (Real.pi ^ 2 * w * (n : ℝ) ^ 2) : ℝ) : ℂ) := by
-  have hnR : (n : ℝ) ≠ 0 := by exact_mod_cast hn
+  pm_5013 hnR n hn
   have harg : Real.pi * (n : ℝ) * w ≠ 0 :=
     mul_ne_zero (mul_ne_zero Real.pi_ne_zero hnR) hw
   simp only [fordTentFourierCoefficient, Real.sinc_of_ne_zero harg]
@@ -59,15 +60,13 @@ theorem fordTentFourierCoefficient_of_ne_zero
 theorem summable_fordTentFourierCoefficient {w : ℝ} (hw : 0 < w) :
     Summable (fordTentFourierCoefficient w) := by
   let C : ℝ := 1 / (Real.pi ^ 2 * w)
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    positivity
+  pm_165 hC C
   have hmajor : Summable (fun n : ℤ => C * (1 / (n : ℝ) ^ 2)) :=
     (Real.summable_one_div_int_pow.mpr (by norm_num : 1 < 2)).mul_left C
   refine hmajor.of_norm_bounded_eventually ?_
-  filter_upwards [Filter.eventually_cofinite_ne (0 : ℤ)] with n hn
+  pm_7780
   rw [fordTentFourierCoefficient_of_ne_zero hw.ne' hn]
-  have hnR : (n : ℝ) ≠ 0 := by exact_mod_cast hn
+  pm_5013 hnR n hn
   have hden : 0 < Real.pi ^ 2 * w * (n : ℝ) ^ 2 := by positivity
   have hsin : Real.sin (Real.pi * (n : ℝ) * w) ^ 2 ≤ 1 := by
     nlinarith [sq_nonneg (Real.sin (Real.pi * (n : ℝ) * w)),
@@ -83,7 +82,7 @@ theorem summable_fordTentFourierCoefficient {w : ℝ} (hw : 0 < w) :
   have hrhs :
       1 / (n : ℝ) ^ 2 / (Real.pi ^ 2 * w) =
         1 / (Real.pi ^ 2 * w * (n : ℝ) ^ 2) := by
-    field_simp [Real.pi_ne_zero, hw.ne', hnR]
+    grind
   rw [hrhs]
   exact (div_le_div_iff_of_pos_right hden).2 hsin
 
@@ -141,10 +140,12 @@ theorem fordAdditiveCharacter_pair_eq_cos (x : ℝ) :
   rw [hpos, hneg, Complex.exp_mul_I, Complex.exp_mul_I]
   apply Complex.ext <;> simp <;> ring
 
+section
+variable {w : ℝ} (hw : 0 < w) (n : ℤ)
+include w hw n
 /-- The Fourier integral of the even tent reduces exactly to its cosine
 integral on the positive half interval. -/
-theorem ford_integral_symmetric_tent_character
-    {w : ℝ} (hw : 0 < w) (n : ℤ) :
+theorem ford_integral_symmetric_tent_character :
     (∫ x in -w..w,
         ((1 - |x| / w : ℝ) : ℂ) *
           fordAdditiveCharacter (-((n : ℝ) * x))) =
@@ -152,17 +153,7 @@ theorem ford_integral_symmetric_tent_character
           (1 - x / w) * Real.cos (2 * Real.pi * (n : ℝ) * x) : ℝ) : ℂ) := by
   let f : ℝ → ℂ := fun x =>
     ((1 - |x| / w : ℝ) : ℂ) * fordAdditiveCharacter (-((n : ℝ) * x))
-  have hchar : Continuous fordAdditiveCharacter := by
-    unfold fordAdditiveCharacter
-    fun_prop
-  have hfcont : Continuous f := by
-    dsimp [f]
-    fun_prop
-  have hf : ∀ a b : ℝ, IntervalIntegrable f MeasureTheory.volume a b := by
-    intro a b
-    exact hfcont.intervalIntegrable a b
-  rw [← intervalIntegral.integral_add_adjacent_intervals
-    (hf (-w) 0) (hf 0 w)]
+  pm_2788
   have hneg :
       (∫ x in (0 : ℝ)..w, f (-x)) = ∫ x in -w..0, f x := by
     rw [intervalIntegral.integral_comp_neg, neg_zero]
@@ -170,24 +161,14 @@ theorem ford_integral_symmetric_tent_character
       MeasureTheory.volume 0 w := by
     simpa only [Function.comp_def] using
       (hfcont.comp continuous_neg).intervalIntegrable (0 : ℝ) w
-  rw [← hneg, ← intervalIntegral.integral_add
-    hfneg (hf 0 w)]
+  pm_7199
   calc
     (∫ x in (0 : ℝ)..w, f (-x) + f x) =
         ∫ x in (0 : ℝ)..w,
           ((2 * ((1 - x / w) * Real.cos (2 * Real.pi * (n : ℝ) * x)) : ℝ) : ℂ) := by
-      apply intervalIntegral.integral_congr
-      intro x hx
-      have hx0 : 0 ≤ x := by
-        rcases Set.mem_uIcc.mp hx with h | h
-        · exact h.1
-        · linarith
-      simp only [f, abs_neg, abs_of_nonneg hx0]
+      pm_2789
       rw [show -((n : ℝ) * -x) = (n : ℝ) * x by ring]
-      rw [← mul_add]
-      rw [fordAdditiveCharacter_pair_eq_cos]
-      push_cast
-      ring_nf
+      pm_8061
     _ = ((∫ x in (0 : ℝ)..w,
           2 * ((1 - x / w) * Real.cos (2 * Real.pi * (n : ℝ) * x)) : ℝ) : ℂ) :=
       intervalIntegral.integral_ofReal
@@ -197,8 +178,7 @@ theorem ford_integral_symmetric_tent_character
 
 /-- The exact compactly supported Fourier transform of the tent, with the
 removable zero frequency included. -/
-theorem ford_integral_symmetric_tent_character_eq_coefficient
-    {w : ℝ} (hw : 0 < w) (n : ℤ) :
+theorem ford_integral_symmetric_tent_character_eq_coefficient :
     (∫ x in -w..w,
         ((1 - |x| / w : ℝ) : ℂ) *
           fordAdditiveCharacter (-((n : ℝ) * x))) =
@@ -206,8 +186,7 @@ theorem ford_integral_symmetric_tent_character_eq_coefficient
   rw [ford_integral_symmetric_tent_character hw n]
   by_cases hn : n = 0
   · subst n
-    simp only [Int.cast_zero, zero_mul, Real.cos_zero, mul_zero,
-      fordTentFourierCoefficient_zero]
+    pm_188 Int.cast_zero zero_mul Real.cos_zero mul_zero fordTentFourierCoefficient_zero
     have hlinear :
         (∫ x in (0 : ℝ)..w, (1 - x / w)) = w / 2 := by
       have hone : IntervalIntegrable (fun _ : ℝ => (1 : ℝ))
@@ -243,6 +222,7 @@ theorem ford_integral_symmetric_tent_character_eq_coefficient
     field_simp [Real.pi_ne_zero, hw.ne', hnR]
     push_cast
     ring_nf
+end
 
 private def fordTentCharacterIntegrand (w : ℝ) (n : ℤ) (x : ℝ) : ℂ :=
   ((max 0 (1 - |x| / w) : ℝ) : ℂ) *
@@ -270,16 +250,14 @@ private theorem support_fordTentCharacterIntegrand_subset
 private theorem ford_fourier_coe_eq_character (n : ℤ) (x : ℝ) :
     @fourier (1 : ℝ) (-n) (x : UnitAddCircle) =
       fordAdditiveCharacter (-((n : ℝ) * x)) := by
-  rw [fourier_coe_apply]
-  unfold fordAdditiveCharacter
-  congr 1
-  push_cast
-  ring
+  pm_8330
 
+section
+variable {w : ℝ} (hw : 0 < w) (hwHalf : w ≤ 1 / 2)
+include w hw hwHalf
 /-- The coefficient defined above is literally Mathlib's Fourier coefficient
 of the periodic tent. -/
-theorem fourierCoeff_fordTentCircle
-    {w : ℝ} (hw : 0 < w) (hwHalf : w ≤ 1 / 2) (n : ℤ) :
+theorem fourierCoeff_fordTentCircle (n : ℤ) :
     fourierCoeff (fordTentCircle w) n =
       fordTentFourierCoefficient w n := by
   rw [fourierCoeff_eq_intervalIntegral (fordTentCircle w) n (-1 / 2)]
@@ -313,19 +291,13 @@ theorem fourierCoeff_fordTentCircle
         (AddCircle.norm_coe_eq_abs_iff (p := (1 : ℝ))
           (by norm_num : (1 : ℝ) ≠ 0)).2 (by simpa using hxabs)
       simp only [fordTentCircle_coe]
-      rw [ford_fourier_coe_eq_character]
-      simp only [smul_eq_mul, fordTentCharacterIntegrand, fordTent, hnorm]
+      pm_214 ford_fourier_coe_eq_character smul_eq_mul fordTentCharacterIntegrand fordTent hnorm
       ring
     _ = ∫ x in -w..w, fordTentCharacterIntegrand w n x := hlarge.trans hsmall.symm
     _ = ∫ x in -w..w,
         ((1 - |x| / w : ℝ) : ℂ) *
           fordAdditiveCharacter (-((n : ℝ) * x)) := by
-      apply intervalIntegral.integral_congr
-      intro x hx
-      have hxabs : |x| ≤ w := by
-        rcases Set.mem_uIcc.mp hx with h | h
-        · exact abs_le.mpr h
-        · linarith
+      pm_772
       simp only [fordTentCharacterIntegrand]
       rw [max_eq_right]
       exact sub_nonneg.mpr ((div_le_one hw).mpr hxabs)
@@ -333,8 +305,7 @@ theorem fourierCoeff_fordTentCircle
       ford_integral_symmetric_tent_character_eq_coefficient hw n
 
 /-- The exact tent Fourier series, evaluated at a real representative. -/
-theorem hasSum_fordTentFourierSeries
-    {w : ℝ} (hw : 0 < w) (hwHalf : w ≤ 1 / 2) (y : ℝ) :
+theorem hasSum_fordTentFourierSeries (y : ℝ) :
     HasSum
       (fun n : ℤ => fordTentFourierCoefficient w n *
         fordAdditiveCharacter ((n : ℝ) * y))
@@ -349,12 +320,9 @@ theorem hasSum_fordTentFourierSeries
   · ext n
     rw [fourierCoeff_fordTentCircle hw hwHalf]
     simp only [smul_eq_mul]
-    rw [fourier_coe_apply]
-    unfold fordAdditiveCharacter
-    congr 2
-    push_cast
-    ring
+    pm_8451 fourier_coe_apply fordAdditiveCharacter
   · exact (fordTentCircle_coe y w).symm
+end
 
 end
 

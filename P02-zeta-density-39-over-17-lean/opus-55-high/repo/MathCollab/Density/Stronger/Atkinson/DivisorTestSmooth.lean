@@ -39,7 +39,7 @@ theorem contDiffAt_ofReal_cpow_positive (s : ℂ) {x : ℝ} (hx : 0 < x) :
     fun_prop
   apply hexp.congr_of_eventuallyEq
   filter_upwards [isOpen_Ioi.mem_nhds hx] with y hy
-  rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast ne_of_gt hy), ← Complex.ofReal_log hy.le]
+  rw [Complex.cpow_def_of_ne_zero (by aesop), ← Complex.ofReal_log hy.le]
 
 theorem contDiffAt_zetaShortDivisorTestFunction (T : ℝ) {G x : ℝ}
     (hG : G ≠ 0) (hx : 0 < x) :

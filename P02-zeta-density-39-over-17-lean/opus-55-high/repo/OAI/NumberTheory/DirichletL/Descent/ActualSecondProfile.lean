@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondWholeKernel
 public import OAI.NumberTheory.DirichletL.Descent.SecondFiniteMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,10 +39,8 @@ lemma secondActualNorms_pos {ι : Type*} (p : ι → Eis) (hp : ∀ i, p i ≠ 0
     ∀ i, 0 < secondActualNorms p x N M i := by
   intro i
   fin_cases i
-  · exact primeProductNorm_pos p hp x.common
-  · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero he))
-  · exact primeProductNorm_pos p hp x.overlap
-  · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero hk))
+  pm_8702 x.common he
+  pm_8702 x.overlap hk
   · exact primeProductNorm_pos p hp N
   · exact primeProductNorm_pos p hp M
 

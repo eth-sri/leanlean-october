@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.SecondKernelError
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 namespace GuthMaynard.Improvement
@@ -43,14 +43,12 @@ theorem cubicIntegrand_integrable (μ ν : Measure ℝ) [IsFiniteMeasure μ] [Is
     (hB : 0 ≤ B) (hb : ∀ x, ‖A x‖ ≤ B) :
     Integrable (fun p : Triple × Triple => cubicIntegrand A f p.1 p.2)
       ((tripleMeasure ν).prod (tripleMeasure μ)) := by
-  let : IsFiniteMeasure (tripleMeasure μ) := by unfold tripleMeasure; infer_instance
-  let : IsFiniteMeasure (tripleMeasure ν) := by unfold tripleMeasure; infer_instance
+  pm_4550
+  pm_4552
   apply (integrable_const (B^3)).mono' (cubicIntegrand_measurable hA hf).aestronglyMeasurable
   filter_upwards with p
   simp only [cubicIntegrand,norm_mul,phase_norm,mul_one]
-  calc
-    _ ≤ B*B*B := mul_le_mul (mul_le_mul (hb _) (hb _) (norm_nonneg _) hB) (hb _) (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  pm_4551
 
 theorem cubicIntegrand_time_integral (μ : Measure ℝ) [SFinite μ]
     (A : ℝ → ℂ) (f : ℝ → ℝ) (x : Triple) :
@@ -67,13 +65,8 @@ theorem cubicIntegrand_time_integral (μ : Measure ℝ) [SFinite μ]
         phase ((t.2.2-t.1)*f x.2.2) =
       phase (-(f x.2.2-f x.1)*t.1)*phase (-(f x.1-f x.2.1)*t.2.1)*
         phase (-(f x.2.1-f x.2.2)*t.2.2) := by
-      rw [← phase_add,← phase_add,← phase_add,← phase_add]
-      congr 1
-      ring
-    calc
-      _ = (A x.1*A x.2.1*A x.2.2)*
-        (phase ((t.1-t.2.1)*f x.1)*phase ((t.2.1-t.2.2)*f x.2.1)*phase ((t.2.2-t.1)*f x.2.2)) := by ring
-      _ = _ := by rw [hp]
+      pm_6522
+    grind
   simp_rw [hid]
   rw [integral_const_mul, triple_product_integral μ
     (fun t => phase (-(f x.2.2-f x.1)*t)) (fun t => phase (-(f x.1-f x.2.1)*t))
@@ -89,8 +82,8 @@ theorem frequencyKernel_cubic (μ ν : Measure ℝ) [IsFiniteMeasure μ] [IsFini
       ∫ x : Triple, (A x.1*A x.2.1*A x.2.2)*
         (measureFourier μ (f x.2.2-f x.1)*measureFourier μ (f x.1-f x.2.1)*
           measureFourier μ (f x.2.1-f x.2.2)) ∂tripleMeasure ν := by
-  let : IsFiniteMeasure (tripleMeasure μ) := by unfold tripleMeasure; infer_instance
-  let : IsFiniteMeasure (tripleMeasure ν) := by unfold tripleMeasure; infer_instance
+  pm_4550
+  pm_4552
   have hswap := integral_integral_swap (μ := tripleMeasure ν) (ν := tripleMeasure μ)
     (f := fun x t => cubicIntegrand A f x t) (cubicIntegrand_integrable μ ν hA hf hB hb)
   have hx : ∀ t : Triple, (∫ x, cubicIntegrand A f x t ∂tripleMeasure ν) =

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Fourier.LogDensity
 public import OAI.NumberTheory.DirichletL.CubicSieve.TwistedProfiles
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,73 +9,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -91,8 +48,7 @@ theorem normalizedPair_boundary_term
         (a * quadraticRow I (idealGenerator D * idealGenerator E))) *
        (quadraticRow J (primaryGenerator H) *
         (b * quadraticRow J (idealGenerator D * idealGenerator E)))) := by
-  have hspan : Ideal.span {idealGenerator D * idealGenerator E} = D * E := by
-    rw [← Ideal.span_singleton_mul_span_singleton, span_idealGenerator, span_idealGenerator]
+  pm_7593 hspan D E
   have hde := unrestrictedPairCharacter_span I J hI hJ hray (idealGenerator D * idealGenerator E)
   rw [hspan] at hde
   have hp : unrestrictedPairCharacter I J (H * D * E) =
@@ -138,20 +94,17 @@ theorem actualPrincipalDifference_bound
           (if IsCoprime (cols j) (cols k) then
             star (A H j * (a j * r D E j)) * (A H k * (a k * r D E k)) else 0) := by
     dsimp only [A, r]
-    by_cases hc : IsCoprime (cols j) (cols k)
+    pm_2996
     · rw [ite_eq_left hc, normalizedPair_main_difference (cols j) (cols k) (hcols j).1 (hcols k).1 (hray j k) G hG K]
       simp only [Finset.mul_sum]
       simp_rw [Finset.sum_comm (s := (Finset.univ : Finset (coprimeSquarefreeRange G K))) (t := idealDivisors G)]
-      apply Finset.sum_congr rfl
-      intro D hD
-      apply Finset.sum_congr rfl
-      intro E hE
+      pm_3438
       apply Finset.sum_congr rfl
       intro H _
       rw [ite_eq_left hc]
       exact normalizedPair_boundary_term (cols j) (cols k) H.val D E (hcols j).1 (hcols k).1
         (hray j k) (admissible_supported (mem_idealRange.mp (hS H.property)).1) K (a j) (a k)
-    · simp only [hc, ite_false, mul_zero, Finset.sum_const_zero]
+    pm_2997 hc ite_false mul_zero Finset.sum_const_zero
   have heq : actualPrincipalDifference cols a G K =
       ∑ D ∈ idealDivisors G, ∑ E ∈ idealDivisors G,
         (UniqueFactorizationMonoid.moebius E : ℂ) *
@@ -229,11 +182,7 @@ theorem middleRatio_argument (M B b D₁ d D₂ e q : ℝ)
     (Real.sqrt (M / B) * q / (D₁ * D₂)) * Real.exp (Real.log (middleRatio B b D₁ d D₂ e)) =
       Real.sqrt (M / b) * q / (d * e) := by
   have hb0 : 0 < b := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd.1
-  have he0 : 0 < e := hD₂.trans_le he.1
-  have hr : 0 < middleRatio B b D₁ d D₂ e := by
-    have hh := middleRatio_bounds B b D₁ d D₂ e hB hb hD₁ hd hD₂ he
-    linarith
+  pm_2998
   rw [Real.exp_log hr]
   have hs : Real.sqrt (M / B) * Real.sqrt (B / b) = Real.sqrt (M / b) := by
     rw [← Real.sqrt_mul (div_nonneg hM.le hB.le)]
@@ -270,17 +219,13 @@ theorem actual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
   obtain ⟨C, hC, hb⟩ := canonical_original_radial_divisor_block_bound W 4 0 0 (by norm_num) (by norm_num) (by norm_num) A
   refine ⟨C, hC, ?_⟩
   intro m n p _ _ _ _ _ _ ε hε S T D₁ D₂ B N M hD₁ hD₂ hB hN hM hS hT rows left right hr hl hri hrows hleft hright a b h hh
-  have hD₁0 : 0 < D₁ := by linarith
-  have hD₂0 : 0 < D₂ := by linarith
+  pm_72 hD₁0 D₁ hD₂0 D₂
   have hB0 : 0 < B := by linarith
   let R := Real.sqrt (M / B) * ‖eisEmbedding h‖ ^ 2 / (D₁ * D₂)
   have hR : 0 < R := div_pos (mul_pos (Real.sqrt_pos.mpr (div_pos hM hB0))
     (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hh)))) (mul_pos hD₁0 hD₂0)
-  let x : S → T → m → ℝ := fun D E i => Real.log
-    (middleRatio B (Ideal.absNorm (rows i)) D₁ (Ideal.absNorm D.val) D₂ (Ideal.absNorm E.val))
-  have hx (D : S) (E : T) (i : m) : |x D E i| ≤ 4 :=
-    middleRatio_log_bound _ (middleRatio_bounds _ _ _ _ _ _ hB0 (hrows i).2 hD₁0
-      (hS D.val D.property) hD₂0 (hT E.val E.property))
+  pm_3000
+  pm_2999
   have he := hb R hR ε hε S T D₁ D₂ B N hD₁ hD₂ hN hS hT rows left right hr hl hri
     (fun i => ⟨(hrows i).1, (hrows i).2.2⟩) hleft hright a b x (fun _ => 0) (fun _ => 0) hx
     (fun _ => by simp) (fun _ => by simp)
@@ -310,7 +255,7 @@ end SecondPassArithmetic
 namespace SecondPassIntegration
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap FourierTransform
 open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
 
 variable {ι : Type*} [DecidableEq ι]
@@ -320,7 +265,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
@@ -356,13 +301,9 @@ theorem residualSecondMode_tail_eq (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
   change (∑' k : {k : O // k ∉ K}, ∑ S ∈ (F\G).powerset, ∑ T ∈ (F\G).powerset,
     if Disjoint S T then residualPairWeight p hg Ψ₁ Ψ₂ m c d H₁ H₂ S T *
       secondPairRadialMode p hp hg hinj S T e k.val W Y else 0) = _
-  rw [Summable.tsum_finsetSum (fun S _ => summable_sum (fun T _ => hs S T))]
-  apply Finset.sum_congr rfl
-  intro S hS
+  pm_1030
   rw [Summable.tsum_finsetSum (fun T _ => hs S T)]
-  apply Finset.sum_congr rfl
-  intro T hT
-  by_cases hd : Disjoint S T
+  pm_6532 T hT hd S
   · simp only [ite_eq_left hd, tsum_mul_left]
   · simp [hd]
 

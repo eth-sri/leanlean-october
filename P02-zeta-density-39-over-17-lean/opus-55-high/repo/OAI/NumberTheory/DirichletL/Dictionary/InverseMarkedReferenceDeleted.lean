@@ -24,7 +24,7 @@ theorem deletedBase_zero_unsupported (data:RowData)(I:Ideal O)(hI:¬Supported I)
   unfold deletedBase excluded
   rw [idealCoeff_excludePrimes,baseCharacter_coeff,
     fixedBase_zero_unsupported data.η data.m data.f data.lambda_dvd data.two_dvd I hI]
-  split_ifs <;> rfl
+  grind
 
 def deletedSelectedSource (data:RowData)(M:Ideal O)[NeZero M]
     (H:Subgroup (O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)

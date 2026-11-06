@@ -2,38 +2,34 @@ module
 public import GuthMaynard.Improvement.CubicDyadicCover
 public import GuthMaynard.Improvement.CubicModeSymmetry
 public import GuthMaynard.Improvement.CubicScaleClosure
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
+section
+variable {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ))) (hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U) (k : ℕ × (ℕ × ℕ))
+include U S hS k
 /-- Each actual dyadic fiber lies in its literal signed shell box. -/
-theorem cubic_dyadic_fiber_box {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
-    (hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U)
-    (k : ℕ × (ℕ × ℕ)) :
+theorem cubic_dyadic_fiber_box :
     ∀ m ∈ S.filter (fun m => cubicDyadicClass m = k),
       InSignedCubicBox ((2:ℝ)^k.1) ((2:ℝ)^k.2.1) ((2:ℝ)^k.2.2) m := by
-  intro m hm
-  obtain ⟨hm,hk⟩ := Finset.mem_filter.mp hm
-  obtain ⟨h₁,h₂,h₃⟩ := hS m hm
+  pm_477 m hm hk
+  pm_69 h₁ h₂ h₃ hS m hm
   have hb₁ := integer_dyadic_bounds ((mem_poissonModes U m.1).mp h₁).1
   have hb₂ := integer_dyadic_bounds ((mem_poissonModes U m.2.1).mp h₂).1
   have hb₃ := integer_dyadic_bounds ((mem_poissonModes U m.2.2).mp h₃).1
   have hk₁ : integerDyadicIndex m.1 = k.1 := congrArg Prod.fst hk
   have hk₂ : integerDyadicIndex m.2.1 = k.2.1 := congrArg (fun x => x.2.1) hk
   have hk₃ : integerDyadicIndex m.2.2 = k.2.2 := congrArg (fun x => x.2.2) hk
-  rw [hk₁] at hb₁
-  rw [hk₂] at hb₂
+  pm_4303 hk₁ hb₁ hk₂ hb₂
   rw [hk₃] at hb₃
   exact ⟨hb₁.1,hb₁.2.le,hb₂.1,hb₂.2.le,hb₃.1,hb₃.2.le⟩
 
 /-- Nonempty retained fibers have all three shell parameters at most the
 actual real truncation scale U. No enlarged or mask-dependent cover. -/
-theorem cubic_dyadic_fiber_scales {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
-    (hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U)
-    (k : ℕ × (ℕ × ℕ)) (hne : (S.filter (fun m => cubicDyadicClass m = k)).Nonempty) :
+theorem cubic_dyadic_fiber_scales (hne : (S.filter (fun m => cubicDyadicClass m = k)).Nonempty) :
     (2:ℝ)^k.1 ≤ U ∧ (2:ℝ)^k.2.1 ≤ U ∧ (2:ℝ)^k.2.2 ≤ U := by
   obtain ⟨m,hm⟩ := hne
   have hb := cubic_dyadic_fiber_box S hS k m hm
@@ -41,6 +37,7 @@ theorem cubic_dyadic_fiber_scales {U : ℝ} (S : Finset (ℤ × (ℤ × ℤ)))
   exact ⟨hb.1.trans ((mem_poissonModes U m.1).mp h₁).2,
     hb.2.2.1.trans ((mem_poissonModes U m.2.1).mp h₂).2,
     hb.2.2.2.2.1.trans ((mem_poissonModes U m.2.2).mp h₃).2⟩
+end
 
 /-- Uniform sufficient width conditions for every denominator shell. -/
 theorem cubic_dyadic_width {a c T L H U K : ℝ} (_ha : 0 < a)
@@ -52,7 +49,7 @@ theorem cubic_dyadic_width {a c T L H U K : ℝ} (_ha : 0 < a)
     max 1 (1/a)*(H/(L*K)) ≤ 1 ∧
       max 1 (1/a)*(H/(L*K)) ≤ c/4 ∧
       (max 1 (1/a)*(H/(L*K)))⁻¹ ≤ T := by
-  have hq : 0 < max 1 (1/a) := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  pm_5875
   have hK0 : 0 < K := by linarith
   have hw : 0 < max 1 (1/a)*(H/(L*K)) := by positivity
   have hle : max 1 (1/a)*(H/(L*K)) ≤ max 1 (1/a)*(H/L) := by
@@ -91,11 +88,11 @@ theorem cubic_dyadic_strip_assembly (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     A₀.indicator r₀ v * ∑ m ∈ S.filter (fun m => cubicDyadicClass m = k), cubicStripMass r L H m v
   let Z := C*(H/L)*Real.sqrt (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b))*
     Real.sqrt (T^ε)*(U^2*(∫ x, r x^2)+U*Real.sqrt (∫ x, r x^4))
-  have hM : 0 ≤ ∫ x, r x^2 := integral_nonneg (fun x => sq_nonneg _)
+  pm_5700
   have hE : 0 ≤ ∫ x, r x^4 := integral_nonneg (fun x => pow_nonneg (hr0 x) _)
-  have hZ : 0 ≤ Z := by dsimp [Z]; positivity
+  pm_61 hZ Z
   have hTp : 0 < T := by linarith
-  have hTε : 0 ≤ T^ε := Real.rpow_nonneg hTp.le _
+  pm_6316 hTε T ε hTp.le
   have hf : ∀ k, IntegrableOn (F k) (Icc a b) ∧ (∫ v in Icc a b, F k v) ≤ Z := by
     intro k
     by_cases hn : (S.filter (fun m => cubicDyadicClass m = k)).Nonempty

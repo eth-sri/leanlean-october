@@ -9,11 +9,11 @@ Only mathlib integral facts are imported. No zeta or moment estimate is assumed.
 -/
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open MeasureTheory
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
@@ -22,16 +22,19 @@ decay out of the product of two strong Gamma bounds. -/
 noncomputable def heathBrownGammaReserveKernel (delta x : ℝ) : ℝ :=
   Real.exp (-|x| / 6) / (delta + |x|)
 
-theorem integrable_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
+section
+variable {delta : ℝ} (hdelta : 0 < delta)
+include delta hdelta
+theorem integrable_inv_delta_sq_add_sq :
     Integrable (fun x : ℝ => (delta ^ 2 + x ^ 2)⁻¹) := by
   have hbase : Integrable (fun x : ℝ => (1 + (x / delta) ^ 2)⁻¹) :=
     integrable_inv_one_add_sq.comp_div hdelta.ne'
   have hscaled := hbase.const_mul (delta ^ 2)⁻¹
   convert hscaled using 1
   funext x
-  field_simp [hdelta.ne']
+  grind
 
-theorem integral_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
+theorem integral_inv_delta_sq_add_sq :
     (∫ x : ℝ, (delta ^ 2 + x ^ 2)⁻¹) = Real.pi / delta := by
   let f : ℝ → ℝ := fun x => (1 + x ^ 2)⁻¹
   have hchange := MeasureTheory.Measure.integral_comp_div f delta
@@ -41,30 +44,29 @@ theorem integral_inv_delta_sq_add_sq {delta : ℝ} (hdelta : 0 < delta) :
           apply integral_congr_ae
           filter_upwards with x
           dsimp only [f]
-          field_simp [hdelta.ne']
+          grind
     _ = (delta ^ 2)⁻¹ * ∫ x : ℝ, f (x / delta) :=
       integral_const_mul _ _
-    _ = (delta ^ 2)⁻¹ * (|delta| * ∫ x : ℝ, f x) := by
-      rw [hchange]
-      rfl
+    _ = (delta ^ 2)⁻¹ * (|delta| * ∫ x : ℝ, f x) := by simp_all
     _ = Real.pi / delta := by
       rw [abs_of_pos hdelta]
       simp only [f, integral_univ_inv_one_add_sq]
-      field_simp [hdelta.ne']
+      grind
+end
 
 theorem heathBrownGammaReserveKernel_sq_le
     {delta x : ℝ} (hdelta : 0 < delta) :
     heathBrownGammaReserveKernel delta x ^ (2 : ℕ) ≤
       (delta ^ 2 + x ^ 2)⁻¹ := by
-  have hden : 0 < delta + |x| := by positivity
+  pm_425 hden delta x
   have hsmall : 0 < delta ^ 2 + x ^ 2 := by positivity
   have hdenCompare : delta ^ 2 + x ^ 2 ≤ (delta + |x|) ^ 2 := by
     nlinarith [sq_abs x, abs_nonneg x]
   have hexp : Real.exp (-|x| / 6) ≤ 1 := by
     rw [Real.exp_le_one_iff]
-    linarith [abs_nonneg x]
+    grind
   have hexpSq : Real.exp (-|x| / 6) ^ (2 : ℕ) ≤ 1 := by
-    nlinarith [Real.exp_pos (-|x| / 6)]
+    simp_all
   unfold heathBrownGammaReserveKernel
   calc
     (Real.exp (-|x| / 6) / (delta + |x|)) ^ (2 : ℕ) =
@@ -76,8 +78,10 @@ theorem heathBrownGammaReserveKernel_sq_le
       one_div_le_one_div_of_le hsmall hdenCompare
     _ = (delta ^ 2 + x ^ 2)⁻¹ := one_div _
 
-theorem integrable_heathBrownGammaReserveKernel_sq
-    {delta : ℝ} (hdelta : 0 < delta) :
+section
+variable {delta : ℝ} (hdelta : 0 < delta)
+include delta hdelta
+theorem integrable_heathBrownGammaReserveKernel_sq :
     Integrable (fun x : ℝ =>
       heathBrownGammaReserveKernel delta x ^ (2 : ℕ)) := by
   apply (integrable_inv_delta_sq_add_sq hdelta).mono'
@@ -88,15 +92,13 @@ theorem integrable_heathBrownGammaReserveKernel_sq
       apply Continuous.div
       · fun_prop
       · fun_prop
-      · intro x hx
-        exact (by positivity : 0 < delta + |x|).ne' hx
+      grind
     exact hcont.aestronglyMeasurable
   · filter_upwards with x
     rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
     exact heathBrownGammaReserveKernel_sq_le hdelta
 
-theorem integral_heathBrownGammaReserveKernel_sq_le
-    {delta : ℝ} (hdelta : 0 < delta) :
+theorem integral_heathBrownGammaReserveKernel_sq_le :
     (∫ x : ℝ, heathBrownGammaReserveKernel delta x ^ (2 : ℕ)) ≤
       Real.pi / delta := by
   rw [← integral_inv_delta_sq_add_sq hdelta]
@@ -104,6 +106,7 @@ theorem integral_heathBrownGammaReserveKernel_sq_le
     (integrable_heathBrownGammaReserveKernel_sq hdelta)
     (integrable_inv_delta_sq_add_sq hdelta)
     (fun x => heathBrownGammaReserveKernel_sq_le hdelta)
+end
 
 /-- Product of the two literal strong Gamma majorants before convolution. -/
 noncomputable def heathBrownStrongGammaConvolutionIntegrand
@@ -135,7 +138,7 @@ theorem heathBrownStrongGammaConvolutionIntegrand_le
   have hb : 0 ≤ b := by unfold b heathBrownGammaReserveKernel; positivity
   have hab : a * b ≤ (a ^ (2 : ℕ) + b ^ (2 : ℕ)) / 2 := by
     nlinarith [sq_nonneg (a - b)]
-  have hdenW : 0 < delta + |w| := by positivity
+  pm_425 hdenW delta w
   have hdenUW : 0 < delta + |u - w| := by positivity
   have hreserve := heathBrown_strong_exponential_reserve u w
   have hdiv :

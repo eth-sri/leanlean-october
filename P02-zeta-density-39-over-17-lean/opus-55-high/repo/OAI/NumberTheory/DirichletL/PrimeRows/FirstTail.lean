@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.Product
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstRegion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem firstPrimeDefectBound_summable (eps : ℝ) (heps : 0<eps) :
     Summable (firstPrimeDefectBound eps) := by
   have ht : 1<(1+min eps (1/50:ℝ) : ℂ).re := by
     simp only [Complex.add_re,Complex.one_re,Complex.ofReal_re]
-    have hm : 0<min eps (1/50:ℝ) := lt_min heps (by norm_num)
+    have hm : 0< min eps (1/50:ℝ) := lt_min heps (by norm_num)
     linarith
   have h := (CubicEisenstein.fullIdealWeight_summable_norm
     (1+min eps (1/50:ℝ) : ℂ) ht).comp_injective
@@ -44,24 +45,30 @@ structure FirstTail (eps : ℝ) (S : Finset (Ideal O)) : Prop where
   norm_four : ∀P : PrimeIdeal,P.val∉S → 4≤P.val.absNorm
   small : (∑' P : {P : PrimeIdeal // P.val∉S},firstPrimeDefectBound eps P.val)≤1/6
 
-theorem FirstTail.summable {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S) :
+section
+variable {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S)
+include eps S h
+theorem FirstTail.summable :
     Summable (fun P : {P : PrimeIdeal // P.val∉S}=>firstPrimeDefectBound eps P.val) :=
   (firstPrimeDefectBound_summable eps h.positive).subtype _
 
-theorem FirstTail.half {eps : ℝ} {S : Finset (Ideal O)} (h : FirstTail eps S)
+theorem FirstTail.half
     (P : {P : PrimeIdeal // P.val∉S}) : firstPrimeDefectBound eps P.val≤1/2 := by
   have hh := Summable.le_tsum h.summable P (fun Q _=>firstPrimeDefectBound_nonneg eps Q.val)
   linarith [h.small]
+end
 
-theorem exists_first_cutoff (eps : ℝ) (heps : 0<eps) :
+section
+variable (eps : ℝ) (heps : 0<eps)
+include eps heps
+theorem exists_first_cutoff :
     ∃N : ℕ,4≤N ∧ ∀S : Finset (Ideal O),
       (∀P : PrimeIdeal,P.val.absNorm≤N → P.val∈S) → FirstTail eps S := by
   have ht := (tendsto_order.1 (tendsto_tsum_compl_atTop_zero (firstPrimeDefectBound eps))).2
     (1/6) (by norm_num)
   obtain ⟨F,hF⟩ := ht.exists
   let N := max 4 (F.sup (fun P=>P.val.absNorm))
-  refine ⟨N,le_max_left _ _,?_⟩
-  intro S hS
+  pm_7517
   let T := {P : PrimeIdeal // P.val∉S}
   have hnot (P : T) : P.val∉F := by
     intro hm
@@ -74,19 +81,19 @@ theorem exists_first_cutoff (eps : ℝ) (heps : 0<eps) :
   refine ⟨heps,?_,?_⟩
   · intro P hP
     have hn : ¬P.val.absNorm≤N := fun hn=>hP (hS P hn)
-    exact (le_max_left _ _).trans (Nat.le_of_lt (Nat.lt_of_not_ge hn))
+    pm_7233
   · apply le_trans ?_ hF.le
     exact Summable.tsum_le_tsum_of_inj inc hi
       (fun P _=>firstPrimeDefectBound_nonneg eps P.val) (fun _=>le_rfl)
       ((firstPrimeDefectBound_summable eps heps).subtype _)
       ((firstPrimeDefectBound_summable eps heps).subtype _)
 
-theorem exists_both_source_exclusions (eps : ℝ) (heps : 0<eps)
+theorem exists_both_source_exclusions
     (S₀ : Finset (Ideal O)) (hp : ∀P∈S₀,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S₀) :
     ∃S : Finset (Ideal O),S₀⊆S ∧ SourceExclusions S ∧ FirstTail eps S := by
   obtain ⟨N₁,hN₁,hcut₁⟩ := exists_uniform_global_cutoff
-  obtain ⟨N₂,hN₂,hcut₂⟩ := exists_first_cutoff eps heps
+  pm_69 N₂ hN₂ hcut₂ exists_first_cutoff eps heps
   let N := max N₁ N₂
   let S := S₀∪smallPrimeSet N
   have hpS : ∀P∈S,Prime P := by
@@ -98,8 +105,9 @@ theorem exists_both_source_exclusions (eps : ℝ) (heps : 0<eps)
     intro P hP
     exact Finset.mem_union_right _ ((mem_smallPrimeSet N P).mpr hP)
   refine ⟨S,Finset.subset_union_left,⟨hpS,hbad.trans Finset.subset_union_left,?_⟩,?_⟩
-  · exact hcut₁ S (fun P hP=>hcut P (hP.trans (le_max_left _ _)))
-  · exact hcut₂ S (fun P hP=>hcut P (hP.trans (le_max_right _ _)))
+  pm_7646 hcut₁ le_max_left
+  pm_7646 hcut₂ le_max_right
+end
 
 end SevenEighths.ProbeHighRowFamily
 

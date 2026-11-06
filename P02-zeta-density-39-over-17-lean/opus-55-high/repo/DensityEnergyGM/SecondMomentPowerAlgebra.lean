@@ -2,11 +2,9 @@ module
 public import DensityEnergyGM.ClippedRadicalIntegral
 public import Mathlib.Analysis.MeanInequalitiesPow
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
 namespace Montgomery.RationalMoment
 
 theorem double_sqrt_eq_quarter_rpow {x : ℝ} (hx : 0 ≤ x) :

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorPlainFiberCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorProfiles Heck
 open HeckeDetectorRowwisePolynomial
 
 theorem no_slot_plain_count {Row Label : Type*}
-    (rows : Finset Row) (χ : Row→Label→Character)
+    (rows : Finset Row) (χ : Row→ Label→ Character)
     (U a ε tstar T allowance : ℝ) (i : ℕ) (hU : 1<U) (ha : 0≤a)
     (witness : ∀ u,Witness (χ u) U a ε tstar T allowance i)
     (label : Label) (J K : Fin (dyadicLength U))
@@ -30,9 +31,9 @@ theorem no_slot_plain_count {Row Label : Type*}
     (rows.card : ℝ)≤(192*(1+height)*C)*
       U^(max 1 (2*Real.logb U ((2 : ℝ)^K.val))-
         2*(2*a-1)*Real.logb U ((2 : ℝ)^K.val)+4*ε+εm) := by
-  let m := Real.logb U ((2 : ℝ)^K.val)
+  pm_439 m K.val
   have hUp : 0<U := zero_lt_one.trans hU
-  have hDp : 0<U^m := Real.rpow_pos_of_pos hUp _
+  pm_3773 hDp U m hUp
   have hE : 0≤C*U^(max 1 (2*m)+εm) := mul_nonneg hC (Real.rpow_nonneg hUp.le _)
   have hsp := HeckeDetectorFiberSpikes.fiber_spikes rows χ U a ε tstar T allowance i hU ha
     witness label J K hlabel hJ hK

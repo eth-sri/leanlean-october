@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.UniformNormalized
 public import OAI.NumberTheory.DirichletL.Reflection.SectorData
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,10 +36,10 @@ theorem sector_normalized_physical_energy
     ∀ (u : Eisˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
       0<T → 0<QK → 0<QP → 0<Qn → 0<Qb →
       X=kK*QK → Y=kn*Qn → B=kb*Qb → L=kP*QP →
-    ∀ (rows nset bset Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+    ∀ (rows nset bset Pset : Finset (Ideal Eis)) (S : Ideal Eis→ PrimeFamily σ)
       (hrows : ∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ)≤X)
       (E : SectorArithmetic (N:=N) F rows Pset S (fun K hK => (hrows K hK).1) s hc)
-      (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→Ideal Eis→ℂ),
+      (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→ Ideal Eis→ℂ),
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
       (∀ P ∈ Pset, (∏ i, (S P).ideal i)=P) →
       (∀ P ∈ Pset, Pairwise (Function.onFun IsCoprime (F.sum (S P)).ideal)) →
@@ -54,7 +55,7 @@ theorem sector_normalized_physical_energy
       ((branches.card:ℝ)*∑ e∈branches,
         let U := Y/Ideal.absNorm (frozenExtracted F jF e 1)
         let Bb := B/Ideal.absNorm (frozenExtracted F jF e 2)
-        (Real.exp (M 2/2+M 3)*Real.sqrt kn*kb)^2*(6*C)*Z^(
+        (Real.exp (M 2/2+M 3)*Real.sqrt kn*kb)^2*(6*C)*Z ^(
           InverseTerminalWidths.reflectedExponent 0 (Real.logb Z X)
             (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 0))
             (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 2))
@@ -65,14 +66,8 @@ theorem sector_normalized_physical_energy
   obtain ⟨degree,C₀,C,Z₀,hC₀,hC,hZ₀,hsource⟩ := normalized_surviving_physical_source_energy_type_uniform
     (N:=N) (a:=a) (c:=c) (mode:=mode) ε hε a₀ b₀ ha₀ windows M hM hwindowNorm hwindows
     W hWsupport hW s hc kK kP kn kb η hkK hkP hkn hkb hη
-  refine ⟨degree,C₀,C,Z₀,hC₀,hC,hZ₀,?_⟩
-  intro φ σ _ _ Z hZ X Y B L hX hY hB hL F jF hN hbase hac hF hNF hcharF hj
-    u m T θ QK QP Qn Qb hT hQK hQP hQn hQb hsX hsY hsB hsL
-    rows nset bset Pset S hrows E r₀ aw₀ w₀ hrowcop hproducts hScop hSN hSchar hn hb hP hr₀ haw₀ hw₀
-  exact hsource Z hZ X Y B L hX hY hB hL F jF hN hbase hac hF hNF hcharF hj
-    E.referencePrimes E.referenceArithmetic u m T θ QK QP Qn Qb hT hQK hQP hQn hQb hsX hsY hsB hsL
-    rows nset bset Pset S hrows E.completion r₀ aw₀ w₀ hrowcop hproducts hScop hSN hSchar hn hb hP
-    E.fixedFactor_eq E.cuspColumn_eq hr₀ haw₀ hw₀
+  pm_3283
+  pm_3289
 end
 end SevenEighths.InverseReflectedPhase
 

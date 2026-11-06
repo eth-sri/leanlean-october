@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.FirstSectorTransform
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourcePoisson
 public import OAI.NumberTheory.DirichletL.Moments.SecondScaled
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,20 +29,21 @@ theorem sectorPool_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
 def sectorElement (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
     (a : sectorPool C hC S) : O := primaryGenerator a
 
-theorem sectorElement_span (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : Ideal.span {sectorElement C hC S a}=a :=
+section
+variable (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) (a : sectorPool C hC S)
+include C hC S a
+theorem sectorElement_span : Ideal.span {sectorElement C hC S a}=a :=
   primary_span_supported a (sectorPool_supported C hC S a)
 
-theorem sectorElement_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : Supported (Ideal.span {sectorElement C hC S a}) := by
+theorem sectorElement_supported : Supported (Ideal.span {sectorElement C hC S a}) := by
   rw [sectorElement_span]
   exact sectorPool_supported C hC S a
 
-theorem sectorElement_primary (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : ConcretePrimeRowBridge.goodLambda^2∣sectorElement C hC S a-1 :=
+theorem sectorElement_primary : ConcretePrimeRowBridge.goodLambda^2∣sectorElement C hC S a-1 :=
   (primaryGenerator_spec a (supported_primaryGenerator_ne_zero a (sectorPool_supported C hC S a))).2
+end
 
-theorem coprime_of_same_support (C D a : Ideal O) (hC : C≠0) (hD : D≠0) (ha : a≠0)
+theorem coprime_of_same_support (C D a : Ideal O) (hC : C≠0) (hD : D ≠0) (ha : a≠0)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) :
     IsCoprime C a ↔ IsCoprime D a := by
   change IdealMobiusDivisorSum.primeSupport C=IdealMobiusDivisorSum.primeSupport D at hCD
@@ -59,7 +61,7 @@ theorem sectorElement_coprime (C D : Ideal O) (hC : Supported C) (hD : Supported
   exact hc.mul_left ((coprime_of_same_support C D a hC.1 hD.1
     (sectorPool_supported C hC.1 S a).1 hCD).mp hc)
 
-theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D≠0)
+theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D ≠0)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (S : Finset (Ideal O)) (F : Ideal O → Ideal O → ℂ) :
     (∑ a∈residualPool C hC (supportedColumns S),∑ b∈residualPool D hD (supportedColumns S),
@@ -73,9 +75,7 @@ theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D≠0)
   simp_rw [he]
   rw [Finset.sum_coe_sort (sectorPool C hC S)
     (fun a => ∑ b∈sectorPool D hD S,if IsCoprime a b then F a b else 0)]
-  simp only [sectorPool,Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro a ha
+  pm_3526 sectorPool Finset.sum_filter Finset.sum_congr a ha
   by_cases hCa : IsCoprime C a
   · simp only [hCa,ite_true,true_and]
     apply Finset.sum_congr rfl
@@ -83,7 +83,7 @@ theorem independent_sector_pools (C D : Ideal O) (hC : C≠0) (hD : D≠0)
     have hcb := coprime_of_same_support C D b hC hD
       (residualPool_supported D hD S ⟨b,hb⟩).1 hCD
     by_cases hDb : IsCoprime D b <;> simp [hcb,hDb]
-  · simp only [hCa,ite_false,false_and,Finset.sum_const_zero]
+  pm_3814 hCa ite_false false_and Finset.sum_const_zero
 
 end SevenEighths.CenteredMomentSecondSectorColumns
 

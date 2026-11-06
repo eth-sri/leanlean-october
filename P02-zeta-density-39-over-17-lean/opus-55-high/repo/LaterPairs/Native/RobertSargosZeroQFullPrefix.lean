@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQPerturbedPrefix
 public import LaterPairs.Native.SquareRootBlockAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -32,7 +33,7 @@ theorem robertSargos_zero_q_full_prefix
       (robertSargosSymmetricDifference f (A+n) h -
         robertSargosSymmetricDifference f (A+n) (h+r))‖ ≤
       120*C*(1+2*Real.pi*D)*M*(2*|r| *lam)^((1:ℝ)/12) := by
-  let μ := 2*|r| *lam
+  pm_8310
   have hμ : 0 < μ := mul_pos (mul_pos (by norm_num) (abs_pos.mpr hr)) hlam
   apply norm_range_from_square_root_blocks
     (fun n => fordAdditiveCharacter
@@ -45,12 +46,12 @@ theorem robertSargos_zero_q_full_prefix
     (show (n:ℝ) ≤ (⌊μ^(-(1:ℝ)/2)⌋₊:ℝ) by exact_mod_cast hn).trans
       (Nat.floor_le (Real.rpow_nonneg hμ.le _))
   have hp := robertSargos_zero_q_perturbed_prefix f (A+k) n hh hhr hr hC hlam hscale
-    (show a ≤ A+k-h by linarith [Nat.cast_nonneg (α := ℝ) k])
+    (show a ≤ A+k-h by grind)
     (show A+k+n+h ≤ b by linarith)
     (show a ≤ A+k-(h+r) by linarith [Nat.cast_nonneg (α := ℝ) k])
     (show A+k+n+(h+r) ≤ b by linarith) hf hlo hhi
   have hb' := hp.trans (third_derivative_abel_block_budget (Nat.cast_nonneg n)
     (zero_le_one.trans hC) hD hμ hscale hnc hslow)
-  simpa only [Nat.cast_add,add_assoc] using hb'
+  grind
 
 end TaoTrudgianYang2025

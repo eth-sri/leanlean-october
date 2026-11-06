@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.MiddleRangeIdentities
 public import GuthMaynard.Improvement.ClassicalLargeValues
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open Set
 namespace GuthMaynard.Improvement
 
@@ -14,8 +13,7 @@ theorem middle_threshold_le_length {N T : ℝ} (hN : 2 ≤ N)
     (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3)) :
     middleThreshold N T ≤ N := by
   obtain ⟨hNT,hTN⟩ := middle_time_bounds hN hlo hhi
-  have hn : 0 < N := by linarith
-  have ht : 0 ≤ T := by linarith
+  pm_254 hn N ht T
   unfold middleThreshold
   have hh := Real.rpow_le_rpow ht hTN (by norm_num : (0:ℝ) ≤ 1/14)
   rw [← Real.rpow_natCast N 2, ← Real.rpow_mul hn.le] at hh
@@ -31,7 +29,7 @@ bounded by the desired middle-range fourth-power contribution. -/
 theorem middle_high_threshold_budget {N T V : ℝ} (hn : 0 < N) (ht : 0 < T)
     (hV : middleThreshold N T ≤ V) :
     T*N^4/V^6 ≤ middleMoment N T/V^4 := by
-  have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
+  pm_4560
   have hv : 0 < V := hu.trans_le hV
   have hs : (middleThreshold N T)^2 ≤ V^2 := pow_le_pow_left₀ hu.le hV 2
   have hh : T*N^4/V^2 ≤ T*N^4/(middleThreshold N T)^2 := by gcongr
@@ -51,13 +49,11 @@ theorem middle_large_values_high {ε : ℝ} (hε : 0 < ε) :
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∀ t ∈ W, V ≤ ‖boundedPolynomial N a t‖) →
       (W.card:ℝ) ≤ C*N^ε*(N^2/V^2+middleMoment N T/V^4) := by
-  obtain ⟨C,hC,h⟩ := classical_large_values hε
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC h classical_large_values hε
   intro N T V t₀ hN hlo hhi hV a W ha hloc hsep hlarge
   obtain ⟨hNT,hTN⟩ := middle_time_bounds hN hlo hhi
-  have hn : 0 < N := by linarith
-  have ht : 0 < T := by linarith
-  have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
+  pm_4537
+  pm_4560
   have hv : 0 < V := hu.trans_le hV
   exact (h N T V t₀ hN hNT hTN hv a W ha hloc hsep hlarge).trans
     (mul_le_mul_of_nonneg_left (add_le_add le_rfl (middle_high_threshold_budget hn ht hV))
@@ -72,8 +68,7 @@ theorem middle_large_values_small {N T V t₀ : ℝ} (hN : 2 ≤ N)
     (W.card:ℝ) ≤ 2*N^2/V^2 := by
   have hspan := MathCollab.Density.intervalSpan_le_of_forall hT (U := W) (by
     intro t ht u hu
-    have ht' := hloc t ht
-    have hu' := hloc u hu
+    pm_268 ht' hloc t ht hu' u hu
     exact abs_le.mpr ⟨by linarith [ht'.1,hu'.2],by linarith [hu'.1,ht'.2]⟩)
   have hc := MathCollab.Density.separated_card_le_localDiameter hsep
   have hpack : (W.card:ℝ) ≤ T+1 := by

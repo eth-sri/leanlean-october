@@ -1,6 +1,7 @@
 module
 public import BoxTimeDensity
 public import AtomicRadialBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,10 +40,8 @@ theorem mellin_frequency_ratio_band {v : ℝ} (hv : v ∈ Icc (1/10:ℝ) 10) :
   unfold mellinFrequency
   apply abs_le.mpr
   constructor
-  · apply (le_div_iff₀ hp).mpr
-    nlinarith [log_ten_le_three,Real.pi_gt_three]
-  · apply (div_le_iff₀ hp).mpr
-    nlinarith [log_ten_le_three,Real.pi_gt_three]
+  pm_8582 le_div_iff₀
+  pm_8582 div_le_iff₀
 
 /-- Atomic triple Fourier magnitudes are controlled after radial
 cancellation, with a uniform factor eight independent of T,L and W. -/
@@ -57,8 +56,7 @@ theorem atomic_ratio_box_domination (W : Finset ℝ) {p : ℝ × ℝ}
   have h₂ : |mellinFrequency p.1-mellinFrequency p.2| ≤ 1 :=
     (abs_sub _ _).trans (by linarith)
   have h₃ : |mellinFrequency p.2| ≤ 1 := by linarith
-  have hb₁ := box_time_fourier_domination W h₁
-  have hb₂ := box_time_fourier_domination W h₂
+  pm_733 hb₁ box_time_fourier_domination W h₁ hb₂ h₂
   have hb₃ := box_time_fourier_domination W h₃
   simp only [GuthMaynard.Improvement.AtomicCubic.ratioFourierProduct,
     GuthMaynard.Improvement.ratioFourierProduct,norm_mul]

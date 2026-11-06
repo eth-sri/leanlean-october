@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.DualMiddleExpansion
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.MaskedPrincipalBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -91,8 +92,7 @@ open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 theorem sqrt_product_column_shell (N i j : ℝ) (hN : 0 < N)
     (hi : N / 2 ≤ i ∧ i ≤ N) (hj : N / 2 ≤ j ∧ j ≤ N) :
     N / 2 ≤ Real.sqrt (i * j) ∧ Real.sqrt (i * j) ≤ N := by
-  have hi0 : 0 < i := by linarith
-  have hj0 : 0 < j := by linarith
+  pm_72 hi0 i hj0 j
   have hlo : (N / 2) ^ 2 ≤ i * j := by
     simpa only [pow_two] using mul_le_mul hi.1 hj.1 (by linarith : 0 ≤ N / 2) hi0.le
   have hhi : i * j ≤ N ^ 2 := by

@@ -1,11 +1,10 @@
 module
 public import QuadraticLargeValueBound
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
-noncomputable section
 namespace Montgomery.RationalMoment
 
 /-- Absorption for the actual quadratic inequality. The coefficient of R²
@@ -21,10 +20,9 @@ theorem quadratic_scalar_absorption {N L T V R S Q Λ A : ℝ}
     (hsecond : N^3*T^((1:ℝ)/4) ≤ Q*S^((5:ℝ)/12)*V^4) :
     R ≤ (1+6*A)^3*Λ^3*Q^3*S := by
   have hR : 0 < R := hS.trans_le hSR
-  have hq : 0 < Q := by linarith
-  have hl : 0 < Λ := by linarith
+  pm_72 hq Q hl Λ
   let Y := S^((5:ℝ)/12)*R^((19:ℝ)/12)*V^4
-  have hY : 0 < Y := by dsimp [Y]; positivity
+  pm_64 hY Y
   have hb : S^2 ≤ S^((5:ℝ)/12)*R^((19:ℝ)/12) := by
     calc
       _ = S^((5:ℝ)/12)*S^((19:ℝ)/12) := by rw [← Real.rpow_add hS]; norm_num
@@ -50,7 +48,7 @@ theorem quadratic_scalar_absorption {N L T V R S Q Λ A : ℝ}
     exact (mul_le_mul_of_nonneg_right hsecond (by positivity)).trans_eq (by dsimp [Y]; ring)
   have hsum : (N*L)^2+N^3*R^2+(N^3*T/L)*R^((3:ℝ)/2)+
       N^3*T^((1:ℝ)/4)*R^((19:ℝ)/12) ≤ N^3*R^2+3*Q*Y := by linarith only [hb',hf',hs']
-  have hsource := hquad.trans (mul_le_mul_of_nonneg_left hsum (by positivity))
+  pm_738 hsource hquad.trans hsum
   have hsink' := mul_le_mul_of_nonneg_right hsink (sq_nonneg R)
   have hh : R^2*V^4 ≤ (6*A*Λ*Q)*(S^((5:ℝ)/12)*R^((19:ℝ)/12)*V^4) := by
     dsimp [Y] at hsource

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrincipalStrip
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,10 +21,7 @@ theorem regular_eq_nonprincipal (η : Character) (hη : η.residue ≠ 1) :
 theorem regular_differentiableAt (η : Character) {s : ℂ} (hs : 0 < s.re) :
     DifferentiableAt ℂ (regular η) s := by
   have hplus : s+1 ≠ 0 := by
-    intro h
-    have he := congrArg Complex.re h
-    simp only [Complex.add_re, Complex.one_re, Complex.zero_re] at he
-    linarith
+    pm_3143
   by_cases hη : η.residue = 1
   · have he : regular η = HeckePrincipalStrip.sourceNormalized η := by
       funext z; simp [regular, hη]
@@ -35,20 +33,16 @@ theorem regular_differentiableAt (η : Character) {s : ℂ} (hs : 0 < s.re) :
 theorem regular_ne_zero (η : Character) {s : ℂ}
     (hs : HeckeZeroSupremum.beta < s.re) : regular η s ≠ 0 := by
   have hs0 : 0 < s.re := by linarith [HeckeZeroSupremum.half_le_beta]
-  have h0 : s ≠ 0 := by intro h; simp [h] at hs0
+  pm_3256 h0 s h hs0
   have hplus : s+1 ≠ 0 := by
-    intro h
-    have he := congrArg Complex.re h
-    simp only [Complex.add_re, Complex.one_re, Complex.zero_re] at he
-    linarith
+    pm_3143
   by_cases hη : η.residue = 1
   · simp only [regular, ite_eq_left hη, HeckePrincipalStrip.sourceNormalized]
     apply div_ne_zero _ hplus
     by_cases h1 : s = 1
     · subst s; exact HeckeOrigin.poleRemoved_one_ne_zero η hη
     · rw [HeckeOrigin.poleRemoved_eq η h0 h1]
-      exact mul_ne_zero (sub_ne_zero.mpr h1)
-        (HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (Or.inl h1))
+      pm_7990 η
   · rw [regular_eq_nonprincipal η hη]
     exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (Or.inr hη)
 
@@ -66,8 +60,7 @@ theorem regular_norm_le (η : Character) {σ : ℝ} (hσ : 1 < σ)
   · have h0 : s ≠ 0 := by intro h; simp [h] at hs; linarith
     have h1 : s ≠ 1 := by intro h; simp [h] at hs; linarith
     have hp : 0 < ‖s+1‖ := by
-      have hr := Complex.re_le_norm (s+1)
-      simp only [Complex.add_re, Complex.one_re] at hr
+      pm_8464 hr s
       linarith
     simp only [regular, ite_eq_left hη, HeckePrincipalStrip.sourceNormalized,
       HeckeOrigin.poleRemoved_eq η h0 h1, norm_div, norm_mul]
@@ -82,15 +75,18 @@ def uniformConstant : ℝ :=
 
 theorem uniformConstant_nonneg : 0 ≤ uniformConstant := by
   have hc := HeckeStrip.leftConstant_pos
-  have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (fun _ => norm_nonneg _)
+  pm_3144
   unfold uniformConstant
   positivity
 
-theorem modulus_norm_ge_one (η : Character) : 1 ≤ (η.modulus.absNorm : ℝ) := by
+section
+variable (η : Character)
+include η
+theorem modulus_norm_ge_one : 1 ≤ (η.modulus.absNorm : ℝ) := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
 
-theorem regular_strip_bound (η : Character)
+theorem regular_strip_bound
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (z : ℂ)
     (hz : z ∈ HeckeStrip.closedStrip) :
     ‖regular η z‖ ≤ uniformConstant * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
@@ -101,11 +97,11 @@ theorem regular_strip_bound (η : Character)
   · rw [regular_eq_nonprincipal η hη]
     apply (HeckePresentation.uniform_strip_bound η hp hη z hz).trans
     have hc := HeckeStrip.leftConstant_pos
-    have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (fun _ => norm_nonneg _)
+    pm_3144
     unfold uniformConstant
     gcongr ; norm_num
 
-theorem regular_right_growth (η : Character)
+theorem regular_right_growth
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) {z : ℂ}
     (hz : -(1/10 : ℝ) ≤ z.re) :
     ‖regular η z‖ ≤ uniformConstant * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
@@ -113,7 +109,7 @@ theorem regular_right_growth (η : Character)
   by_cases hright : z.re ≤ 11/10
   · exact regular_strip_bound η hp z ⟨hz, hright⟩
   · apply (regular_norm_le η (by norm_num : (1 : ℝ)<11/10) (le_of_not_ge hright)).trans
-    have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (fun _ => norm_nonneg _)
+    pm_3144
     have hc := HeckeStrip.leftConstant_pos
     have hC : HeckeReciprocalBound.bound (11/10) ≤ uniformConstant := by
       unfold uniformConstant; nlinarith
@@ -123,7 +119,7 @@ theorem regular_right_growth (η : Character)
     exact hC.trans ((le_mul_of_one_le_right uniformConstant_nonneg hQ).trans
       (le_mul_of_one_le_right (mul_nonneg uniformConstant_nonneg (by linarith : 0 ≤ (η.modulus.absNorm : ℝ)^(3/5 : ℝ))) hT))
 
-theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
+theorem regular_ne_zero_on_disk (a e t : ℝ)
     (ha : HeckeZeroSupremum.beta ≤ a) (he : 0 < e) {z : ℂ}
     (hz : z ∈ Metric.ball ((2 : ℂ)+t*Complex.I) (2-a-2*e)) :
     regular η z ≠ 0 := by
@@ -135,21 +131,18 @@ theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
   norm_num [Complex.sub_re, Complex.add_re, Complex.mul_re] at hr hrl
   linarith
 
-theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
+theorem reciprocal_norm_le_regular_inverse {s : ℂ}
     (hs : HeckeZeroSupremum.beta < s.re) :
     ‖HeckeReciprocal.reciprocal η s‖ ≤ ‖(regular η s)⁻¹‖ := by
   have hs0 : 0 < s.re := by linarith [HeckeZeroSupremum.half_le_beta]
-  have h0 : s ≠ 0 := by intro h; simp [h] at hs0
+  pm_3256 h0 s h hs0
   by_cases hη : η.residue = 1
   · by_cases h1 : s = 1
     · subst s
       rw [HeckeReciprocal.reciprocal_principal_one η hη, norm_zero]
       exact norm_nonneg _
     have hp : s+1 ≠ 0 := by
-      intro h
-      have he := congrArg Complex.re h
-      simp only [Complex.add_re, Complex.one_re, Complex.zero_re] at he
-      linarith
+      pm_3143
     have hL := HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (Or.inl h1)
     have he : HeckeReciprocal.reciprocal η s =
         ((s-1)/(s+1))*(regular η s)⁻¹ := by
@@ -157,30 +150,24 @@ theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
       simp only [regular, ite_eq_left hη, HeckePrincipalStrip.sourceNormalized,
         HeckeOrigin.poleRemoved_eq η h0 h1]
       field_simp
-    rw [he, norm_mul]
-    apply mul_le_of_le_one_left (norm_nonneg _)
-    rw [norm_div]
-    exact (div_le_one (norm_pos_iff.mpr hp)).mpr (principal_regular_factor_bound hs0.le)
+    pm_8742 he
+    pm_7412 hs0.le
   · simp only [HeckeReciprocal.reciprocal, regular, ite_eq_right hη, le_refl]
 
-theorem regular_disk_growth (η : Character)
+theorem regular_disk_growth
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (a e t : ℝ)
     (ha : (1/2 : ℝ) ≤ a) (he : 0 ≤ e) {z : ℂ}
     (hz : z ∈ Metric.closedBall ((2 : ℂ)+t*Complex.I) (2-a-2*e)) :
     ‖regular η z‖ ≤ (4*uniformConstant) * (η.modulus.absNorm : ℝ)^(3/5 : ℝ) *
       (3+|t|)^2 := by
-  have hn : ‖z-((2 : ℂ)+t*Complex.I)‖ ≤ 2-a-2*e := by
-    simpa only [Metric.mem_closedBall, dist_eq_norm] using hz
-  have hr := Complex.abs_re_le_norm (z-((2 : ℂ)+t*Complex.I))
-  have hi := Complex.abs_im_le_norm (z-((2 : ℂ)+t*Complex.I))
+  pm_330 z hz
   norm_num [Complex.sub_re, Complex.add_re, Complex.mul_re,
     Complex.sub_im, Complex.add_im, Complex.mul_im] at hr hi
   have hzre : -(1/10 : ℝ) ≤ z.re := by
     have hh := neg_abs_le (z.re-2)
     linarith
   have hheight : 3+|z.im| ≤ 2*(3+|t|) := by
-    have hab := abs_add_le (z.im-t) t
-    rw [sub_add_cancel] at hab
+    pm_5732 hab z.im
     linarith [abs_nonneg t]
   apply (regular_right_growth η hp hzre).trans
   have hsq : (3+|z.im|)^2 ≤ 4*(3+|t|)^2 := by
@@ -191,6 +178,7 @@ theorem regular_disk_growth (η : Character)
     _ ≤ uniformConstant*(η.modulus.absNorm : ℝ)^(3/5 : ℝ)*(4*(3+|t|)^2) :=
       mul_le_mul_of_nonneg_left hsq (mul_nonneg uniformConstant_nonneg (Real.rpow_nonneg (by positivity) _))
     _ = _ := by ring
+end
 
 end SevenEighths.HeckeLogarithmicInput
 

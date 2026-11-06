@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalBudget
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem actual_common_log_ge_unit (C D : Ideal O) (hC : Supported C)
   have hh:=common_log_ge_unit (commonPrime C D) (commonPrime_supported C D hC)
     (leftExponent C D) (rightExponent C D) (leftExponent_pos C D) (rightExponent_pos C D) U Z hZ
   rw [←commonFrequencyGenerator_span C D hC] at hh
-  simpa only [unitIdeal,commonPrime_span C D hC,normValue] using hh
+  pm_8259 normValue
 
 end SevenEighths.CenteredMomentSecondActualWidth
 

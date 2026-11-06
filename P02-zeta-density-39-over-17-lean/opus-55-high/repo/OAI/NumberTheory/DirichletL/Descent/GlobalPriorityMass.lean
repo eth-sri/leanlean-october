@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityBranches
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,15 +18,15 @@ local notation "O"=>ActualEisensteinCubic.O
 
 theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      {Jo:ℕ}(original:Finset (Source ι Jo))(extra:CubeCoordinates ι→Finset ι)
+      {Jo:ℕ}(original:Finset (Source ι Jo))(extra:CubeCoordinates ι→ Finset ι)
       (negative:Bool)(Ψ:O→*ℂ)(m:O)(w:Source ι Jo→ℂ)
-      (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(B:ℝ),
+      (slots:Finset σ)(lists:σ→ Finset ι)(a:σ→ι→ℂ)(B:ℝ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀k∈lists i,‖a i k‖≤1)→
       (∀u,‖Ψ u‖≤1)→(∀x∈original,‖w x‖≤1)→0≤B→
-      ∀U:(RayCharacter×RayCharacter)→FirstCoreIndex→Finset σ→Source ι Jo→ℝ,
+      ∀U:(RayCharacter×RayCharacter)→ FirstCoreIndex→ Finset σ→ Source ι Jo→ℝ,
       (∀r core J,J∈slots.powerset→∀x∈original,0≤U r core J x)→
       (∀r core J,J∈slots.powerset→∀x∈original,U r core J x≤B)→
       (32*512)*(2:ℝ)^slots.card*∑r:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
@@ -33,7 +34,7 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
           ‖primeMark J lists a (wholeExtractedSupport (fun x=>extra x.cube) negative x)‖^2*U r core J x≤
       Cb*(4:ℝ)^slots.card*B*
         ∑x∈original,(primeProductNorm p (wholeExtractedSupport (fun x=>extra x.cube) negative x))^(2*ε):=by
-  obtain ⟨Cm,hCm,hmark⟩:=finite_primeMark_small_power ε hε
+  pm_3599 Cm hCm hmark finite_primeMark_small_power ε hε
   let Cr:ℝ:=Fintype.card (RayCharacter×RayCharacter)
   let Cc:ℝ:=Fintype.card FirstCoreIndex
   refine ⟨(32*512)*Cr*Cc*coefficientBound*Cm^2,by
@@ -50,23 +51,19 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
       (fun i hi=>ha i (hj hi)) (wholeExtractedSupport (fun x=>extra x.cube) negative x)
     have he:((primeProductNorm p (wholeExtractedSupport (fun x=>extra x.cube) negative x))^ε)^2=N x:=by
       dsimp [N]
-      rw [←Real.rpow_natCast,←Real.rpow_mul (primeProductNorm_pos p hp _).le]
+      pm_6984
       congr 1;ring
-    exact (pow_le_pow_left₀ (norm_nonneg _) hh 2).trans_eq (by rw [mul_pow,he])
+    pm_5860
   have hw'(r:RayCharacter×RayCharacter)(core:FirstCoreIndex)(x:Source ι Jo)(hx:x∈original):
-      ‖globalPriorityOuter p hg negative Ψ m r core w x‖≤coefficientBound:=by
+      ‖globalPriorityOuter p hg negative Ψ m r core w x‖≤ coefficientBound:=by
     rw [globalPriorityOuter,norm_mul]
     have ht:=priorityOuter_norm p hg x.cube negative Ψ m (fun _=>1) r core x.quotientSupport (by simp) (hΨ _)
-    exact (mul_le_mul (hw x hx) ht (norm_nonneg _) zero_le_one).trans_eq (one_mul _)
+    pm_8651 x hx ht
   calc
     _≤(32*512)*(2:ℝ)^slots.card*∑r:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
         ∑x∈original,coefficientBound*(Cm^2*N x)*B:=by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
-      apply Finset.sum_le_sum
-      intro r hr
-      apply Finset.sum_le_sum
-      intro core hc
-      apply Finset.sum_le_sum
+      pm_201 Finset.sum_le_sum r hr core hc
       intro J hJ
       apply Finset.sum_le_sum
       intro x hx
@@ -79,7 +76,7 @@ theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
         apply Finset.sum_congr rfl
         intros;ring
       rw [hsum]
-      simp only [Finset.sum_const,Finset.card_univ,Finset.card_powerset,nsmul_eq_mul,Nat.cast_pow,Nat.cast_ofNat]
+      pm_382 Finset.sum_const Finset.card_univ Finset.card_powerset nsmul_eq_mul Nat.cast_pow Nat.cast_ofNat
       have he:((2:ℝ)^slots.card)^2=(4:ℝ)^slots.card:=by rw [←pow_mul,pow_mul'];norm_num
       rw [←he]
       dsimp only [Cr,Cc,N]

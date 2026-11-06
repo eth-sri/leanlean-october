@@ -33,12 +33,13 @@ theorem mem_heathBrownPositiveShiftFiber
   constructor
   · intro hn
     have hp := mem_heathBrownPairCountTwo.mp hn.2
-    exact ⟨hn.1.1, hp.2.1, hn.2⟩
-  · intro hn
-    exact ⟨⟨hn.1, le_trans (Nat.le_add_right n d) hn.2.1⟩, hn.2.2⟩
+    grind
+  grind
 
-theorem heathBrownPositiveShiftFiber_subset_spacingSet
-    {N k H K d : ℕ} {f : ℝ → ℝ} :
+section
+variable {N k H K d : ℕ} {f : ℝ → ℝ}
+include N k H K d f
+theorem heathBrownPositiveShiftFiber_subset_spacingSet :
     heathBrownPositiveShiftFiber N k H K f d ⊆
       heathBrownSpacingSet (N - d)
         (heathBrownShiftedDifference f (k - 2) d)
@@ -48,16 +49,15 @@ theorem heathBrownPositiveShiftFiber_subset_spacingSet
   simp only [heathBrownSpacingSet, Finset.mem_filter, Finset.mem_Icc]
   have hp := (mem_heathBrownPairCountTwo.mp hn.2.2)
   refine ⟨⟨hn.1, Nat.le_sub_of_add_le hn.2.1⟩, ?_⟩
-  simpa only [heathBrownShiftedDifference_nat, Nat.cast_add] using
-    hp.2.2.2.2.2.1
+  aesop
 
-theorem heathBrownPositiveShiftFiber_card_le_spacingSet
-    {N k H K d : ℕ} {f : ℝ → ℝ} :
+theorem heathBrownPositiveShiftFiber_card_le_spacingSet :
     (heathBrownPositiveShiftFiber N k H K f d).card ≤
       (heathBrownSpacingSet (N - d)
         (heathBrownShiftedDifference f (k - 2) d)
         (4 * (((H : ℝ) ^ (k - 2))⁻¹))).card :=
   Finset.card_le_card heathBrownPositiveShiftFiber_subset_spacingSet
+end
 
 end
 

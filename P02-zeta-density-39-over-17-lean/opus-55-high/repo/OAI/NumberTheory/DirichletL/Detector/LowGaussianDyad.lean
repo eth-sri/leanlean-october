@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.LowCentralTuple
 public import OAI.NumberTheory.DirichletL.Detector.LowRemoteMass
 public import OAI.NumberTheory.DirichletL.Detector.GaussianCommon
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,16 +17,17 @@ local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
 def lowCommonDyad {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+    (W0 W1 : ℝ→ℂ) (slots : Fin K→ Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (J : Finset (Fin K)) (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) : ℂ :=
-  ∫t : ℝ,(∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
+  ∫t : ℝ,(∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J *
     compensationRowTest η C W0 W1 (fun i=>(p i).val) J X Y U t*
       selectedSlotFactor W Yp (fun i=>(p i).val) J t)*gaussianJointDensity V hV (U/R) t
 
-lemma lowCommonDyad_eq_family {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (J : Finset (Fin K)) (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ) (slots : Fin K→ Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (J : Finset (Fin K))
+include K η C W0 W1 slots W Yp J
+lemma lowCommonDyad_eq_family (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) :
     lowCommonDyad η C W0 W1 slots W Yp J X Y U R V hV=
     gaussianPhysicalFamilyIntegral η C W0 W1 (Finset.univ : Finset (∀i,slots i))
@@ -36,16 +38,14 @@ lemma lowCommonDyad_eq_family {K : ℕ} (η : HeckeFamily.Character) (C : Calibr
       (fun i : SelectedSlot J=>W i.val)
       (fun p i=>elementNorm (p i.val).val/Yp i.val) V hV U R := rfl
 
-lemma lowCommonDyad_norm_of_bound {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
-    (J : Finset (Fin K)) (X Y U R B : ℝ) (degree : ℕ) (V : SchwartzMap ℝ ℂ)
+lemma lowCommonDyad_norm_of_bound (X Y U R B : ℝ) (degree : ℕ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ))
-    (hb : ∀t : ℝ,‖∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
+    (hb : ∀t : ℝ,‖∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J *
       compensationRowTest η C W0 W1 (fun i=>(p i).val) J X Y U t*
         selectedSlotFactor W Yp (fun i=>(p i).val) J t‖≤B*(1+‖t‖)^degree) :
     ‖lowCommonDyad η C W0 W1 slots W Yp J X Y U R V hV‖≤
       B*gaussianJointMoment V hV degree (U/R) := by
-  let f := fun t : ℝ=>(∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
+  let f := fun t : ℝ=>(∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J *
       compensationRowTest η C W0 W1 (fun i=>(p i).val) J X Y U t*
         selectedSlotFactor W Yp (fun i=>(p i).val) J t)*gaussianJointDensity V hV (U/R) t
   have hi := (JointLogSeparation.weighted_schwartz_integrable (gaussianJointDensity V hV (U/R)) degree).const_mul B
@@ -55,7 +55,8 @@ lemma lowCommonDyad_norm_of_bound {K : ℕ} (η : HeckeFamily.Character) (C : Ca
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_right (hb t)
       (norm_nonneg (gaussianJointDensity V hV (U/R) t))
   have hh := norm_integral_le_of_norm_le hi (Filter.Eventually.of_forall hmajor)
-  simpa only [f,lowCommonDyad,gaussianJointMoment,integral_const_mul] using hh
+  pm_89 f lowCommonDyad gaussianJointMoment integral_const_mul hh
+end
 
 theorem low_central_gaussian_dyad (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
@@ -66,22 +67,20 @@ theorem low_central_gaussian_dyad (η : HeckeFamily.Character) (S : Finset Id)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1) (hWM : ∀x,‖W1 x‖≤M) :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀ᶠZ : ℝ in Filter.atTop,1<Z ∧
-    ∀(T : Fin K→Finset PrimeIdeal),(∀i P,P∈T i→Supported P.val)→
-      (∀i P,P∈T i→P.val∉S)→Pairwise (fun i j=>Disjoint (T i) (T j))→
-      (∀i P,P∈T i→a*Z^(ell i)≤(Ideal.absNorm P.val:ℝ) ∧ (Ideal.absNorm P.val:ℝ)≤b*Z^(ell i))→
+    ∀(T : Fin K→ Finset PrimeIdeal),(∀i P,P∈T i→ Supported P.val)→
+      (∀i P,P∈T i→P.val∉S)→ Pairwise (fun i j=>Disjoint (T i) (T j))→
+      (∀i P,P∈T i→ a*Z ^(ell i)≤(Ideal.absNorm P.val:ℝ) ∧ (Ideal.absNorm P.val:ℝ)≤b*Z ^(ell i))→
     ∀(J : Finset (Fin K))(U : ℝ),0<U→
-      Z^(1+lowSelectedLength ell J-ε/2)≤U→U≤Z^(1+lowSelectedLength ell J+ε/2)→
+      Z ^(1+lowSelectedLength ell J-ε/2)≤U→ U≤Z ^(1+lowSelectedLength ell J+ε/2)→
     ∀(W : Fin K→ℝ→ℂ),(∀i x,‖W i x‖≤1)→
     ∀(V : SchwartzMap ℝ ℂ)(hV : HasCompactSupport (V:ℝ→ℂ)),
       ‖lowCommonDyad η (calibrationForSet S hS) W0 W1 (fun i=>canonicalSlotSupport (T i))
-        W (fun i=>Z^(ell i)) J (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) U
-          (Z^(1+lowSelectedLength ell J)) V hV‖≤
-        C*Z^(3/16+254*ε)*gaussianJointMoment V hV degree (U/Z^(1+lowSelectedLength ell J)) := by
-  obtain ⟨degree,C,hC,he⟩ := low_central_compensated_tuple η S hS hbad ell hell hsum
-    a b ε ha hε hε1 W0 W1 a0 b0 a1 b1 M ha0 ha1 hab1 hM hW0 hW1 hW0s hW1s hWM
+        W (fun i=>Z ^(ell i)) J (Z ^(17/48:ℝ)) (Z ^(23/48:ℝ)) U
+          (Z ^(1+lowSelectedLength ell J)) V hV‖≤
+        C*Z ^(3/16+254*ε)*gaussianJointMoment V hV degree (U/Z ^(1+lowSelectedLength ell J)) := by
+  pm_3917 low_central_compensated_tuple
   refine ⟨degree,C,hC,?_⟩
-  filter_upwards [he] with Z hZ
-  refine ⟨hZ.1,?_⟩
+  pm_168 he
   intro T hT hout hdis hnorm J U hU hlo hhi W hW V hV
   apply lowCommonDyad_norm_of_bound
   intro t

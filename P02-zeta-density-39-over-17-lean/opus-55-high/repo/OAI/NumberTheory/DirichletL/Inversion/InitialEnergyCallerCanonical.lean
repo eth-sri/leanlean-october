@@ -68,9 +68,7 @@ theorem energy_le_moment (pool : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
 theorem sqrt_pair_mass (M B₁ B₂ : ℝ) (hM : 0≤M) :
     Real.sqrt (M*B₁)*Real.sqrt (M*B₂) = M*(Real.sqrt B₁*Real.sqrt B₂) := by
   rw [Real.sqrt_mul hM,Real.sqrt_mul hM]
-  calc
-    _ = (Real.sqrt M*Real.sqrt M)*(Real.sqrt B₁*Real.sqrt B₂) := by ring
-    _ = _ := by rw [Real.mul_self_sqrt hM]
+  grind
 
 end SevenEighths.InverseInitialEnergyCallerCanonical
 

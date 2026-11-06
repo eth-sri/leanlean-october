@@ -1,6 +1,7 @@
 module
 public import MathCollab.Density.ZetaCounting
 public import MathCollab.Density.LargeValueDefinitions
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,14 +29,8 @@ theorem occupied_bins_parity (K : Finset ℤ) :
   let B := K.filter (fun k => ¬k % 2 = 0)
   have hc : A.card+B.card = K.card := Finset.card_filter_add_card_filter_not _
   by_cases h : B.card ≤ A.card
-  · refine ⟨A, Finset.filter_subset _ _, by omega, ?_⟩
-    intro k hk l hl
-    exact (Finset.mem_filter.mp hk).2.trans (Finset.mem_filter.mp hl).2.symm
-  · refine ⟨B, Finset.filter_subset _ _, by omega, ?_⟩
-    intro k hk l hl
-    have hk' := (Finset.mem_filter.mp hk).2
-    have hl' := (Finset.mem_filter.mp hl).2
-    omega
+  grind
+  grind
 
 theorem same_parity_bins_separated {x y : ℝ} (hne : ⌊x⌋ ≠ ⌊y⌋)
     (hpar : ⌊x⌋ % 2 = ⌊y⌋ % 2) : 1 ≤ |x-y| := by
@@ -45,11 +40,11 @@ theorem same_parity_bins_separated {x y : ℝ} (hne : ⌊x⌋ ≠ ⌊y⌋)
   have hyhi := Int.lt_floor_add_one y
   rcases lt_or_gt_of_ne hne with h | h
   · have hi : ⌊x⌋+2 ≤ ⌊y⌋ := by omega
-    have hr : (⌊x⌋ : ℝ)+2 ≤ (⌊y⌋ : ℝ) := by exact_mod_cast hi
+    pm_6593 x y
     have := neg_le_abs (x-y)
     linarith
   · have hi : ⌊y⌋+2 ≤ ⌊x⌋ := by omega
-    have hr : (⌊y⌋ : ℝ)+2 ≤ (⌊x⌋ : ℝ) := by exact_mod_cast hi
+    pm_6593 y x
     have := le_abs_self (x-y)
     linarith
 
@@ -62,25 +57,20 @@ theorem weighted_separated_extraction (S : Finset ℂ) (w : ℂ → ℝ)
       oneSeparated (R.image Complex.im) ∧ (∑ ρ ∈ S, w ρ) ≤ 2*B*(R.card : ℝ) := by
   classical
   let K := S.image ordinateBin
-  obtain ⟨J, hJK, hcard, hpar⟩ := occupied_bins_parity K
+  pm_269 J hJK hcard hpar occupied_bins_parity K
   have hex : ∀ k : ℤ, ∃ ρ : ℂ, k ∈ K → ρ ∈ S ∧ ordinateBin ρ = k := by
     intro k
     by_cases hk : k ∈ K
-    · obtain ⟨ρ, hρ, he⟩ := Finset.mem_image.mp hk
-      exact ⟨ρ, fun _ => ⟨hρ, he⟩⟩
-    · exact ⟨0, fun h => (hk h).elim⟩
+    grind
+    simp_all
   choose f hf using hex
   have hfJ : ∀ k ∈ J, f k ∈ S ∧ ordinateBin (f k) = k := fun k hk => hf k (hJK hk)
   have hinj : Set.InjOn f (J : Set ℤ) := by
     intro k hk l hl he
-    calc
-      k = ordinateBin (f k) := (hfJ k hk).2.symm
-      _ = ordinateBin (f l) := congrArg ordinateBin he
-      _ = l := (hfJ l hl).2
+    grind
   have himinj : Set.InjOn Complex.im ((J.image f) : Set ℂ) := by
     intro ρ hρ ω hω he
-    obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hρ
-    obtain ⟨l, hl, rfl⟩ := Finset.mem_image.mp hω
+    pm_384 k hk Finset.mem_image.mp hρ l hl hω
     have hkl : k = l := by
       rw [← (hfJ k hk).2, ← (hfJ l hl).2]
       exact congrArg Int.floor he
@@ -90,17 +80,15 @@ theorem weighted_separated_extraction (S : Finset ℂ) (w : ℂ → ℝ)
     obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hρ
     exact (hfJ k hk).1
   · intro x hx y hy hxy
-    obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp hx
-    obtain ⟨ω, hω, rfl⟩ := Finset.mem_image.mp hy
-    obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hρ
-    obtain ⟨l, hl, rfl⟩ := Finset.mem_image.mp hω
+    pm_384 ρ hρ Finset.mem_image.mp hx ω hω hy
+    pm_384 k hk Finset.mem_image.mp hρ l hl hω
     apply same_parity_bins_separated
     · change ordinateBin (f k) ≠ ordinateBin (f l)
-      rw [(hfJ k hk).2, (hfJ l hl).2]
+      pm_6744
       intro he
       exact hxy (congrArg (fun i => (f i).im) he)
     · change ordinateBin (f k) % 2 = ordinateBin (f l) % 2
-      rw [(hfJ k hk).2, (hfJ l hl).2]
+      pm_6744
       exact hpar k hk l hl
   · rw [Finset.card_image_of_injOn hinj]
     have hsum : (∑ ρ ∈ S, w ρ) ≤ (K.card : ℝ)*B := by

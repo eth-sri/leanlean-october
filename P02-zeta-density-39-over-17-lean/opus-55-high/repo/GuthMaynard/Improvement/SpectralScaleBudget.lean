@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.SourceSpectralRaw
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -14,10 +13,9 @@ theorem spectral_prefactor_budget {δ η ε A p P N L : ℝ}
     (hexp : 3*p*η+ε ≤ δ) :
     4*(P*(1+L)^η*(N+1))^3*N^ε ≤
       (32*P^3*((1+A)^η)^3)*N^δ*N^3 := by
-  have hN0 : 0 < N := by linarith
-  have hL0 : 0 < L := by linarith
+  pm_72 hN0 N hL0 L
   have hN1 : 1 ≤ N := by linarith
-  have hNp : 1 ≤ N^p := Real.one_le_rpow hN1 hp.le
+  pm_153 hNp N p hN1 hp.le
   have hbase : 1+L ≤ (1+A)*N^p := by nlinarith
   have hpow : (1+L)^η ≤ (1+A)^η*N^(p*η) := by
     calc
@@ -27,7 +25,7 @@ theorem spectral_prefactor_budget {δ η ε A p P N L : ℝ}
   have hc : 4*(P*(1+L)^η*(N+1))^3*N^ε ≤
       4*(P*((1+A)^η*N^(p*η))*(2*N))^3*N^ε := by
     gcongr
-    first | positivity | exact hpow | linarith
+    grind
   have he : (N^(p*η))^3*N^ε ≤ N^δ := by
     rw [← Real.rpow_natCast (N^(p*η)) 3, ← Real.rpow_mul hN0.le,
       ← Real.rpow_add hN0]
@@ -50,12 +48,11 @@ theorem spectral_raw_scale_budget {δ η ε A p P D R N L T B M X : ℝ}
       ((D*L*B)^3+(2*N/L)*(X+R*N^ε*L^2*N*T*M)) ≤
     (32*P^3*((1+A)^η)^3)*(D^3+2+2*R)*N^δ*
       ((N*L*B)^3+(N^4/L)*X+N^5*L*T*M) := by
-  have hN0 : 0 < N := by linarith
-  have hL0 : 0 < L := by linarith
-  have he : 1 ≤ N^ε := Real.one_le_rpow (by linarith) hε.le
-  have hf := spectral_prefactor_budget hη hA hp hP hN hL hLA hexp
+  pm_72 hN0 N hL0 L
+  pm_4532 he ε hε.le
+  pm_528 hf spectral_prefactor_budget hη hA hp hP hN hL hLA hexp
   let K := 32*P^3*((1+A)^η)^3
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+  pm_61 hK K
   have hstep : (D*L*B)^3+(2*N/L)*(X+R*N^ε*L^2*N*T*M) ≤
       N^ε*((D*L*B)^3+(2*N/L)*(X+R*L^2*N*T*M)) := by
     have h1 : (D*L*B)^3 ≤ N^ε*(D*L*B)^3 := le_mul_of_one_le_left (by positivity) he
@@ -102,8 +99,8 @@ theorem source_spectral_scale (w : MathCollab.Density.ComparisonCutoff)
         N^5*L*T*(∫ t, μ t^2)) := by
   let η := δ/(6*p)
   let ε := δ/2
-  have hη : 0 < η := by dsimp [η]; positivity
-  have hε : 0 < ε := by dsimp [ε]; positivity
+  pm_64 hη η
+  pm_64 hε ε
   have hexp : 3*p*η+ε ≤ δ := by dsimp [η, ε]; field_simp; nlinarith
   obtain ⟨P,D,R,hP,hD,hR,hr⟩ := source_spectral_raw w hη hε hA hp
   refine ⟨(32*P^3*((1+A)^η)^3)*(D^3+2+2*R), by positivity, ?_⟩

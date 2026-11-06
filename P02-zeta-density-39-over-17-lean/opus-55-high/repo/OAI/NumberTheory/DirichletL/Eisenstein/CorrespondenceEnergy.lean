@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.CorrespondenceAdjoint
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,78 +10,33 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
+open scoped Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 section
@@ -91,17 +47,15 @@ lemma kernelTestField_comp_contDiffAt (f : kernelSmoothTests) (g : SL(2,ℂ))
     ContDiffAt ℝ ∞ (kernelTestField f ∘ euclideanAction g) p := by
   have hd := ((((f.2.1.comp kernelProjection_contMDiff).comp (hyperbolicAction_contMDiff g))
     (euclideanToHyperbolic p)).comp p (euclideanToHyperbolic_contMDiffAt p hp)).contDiffAt
-  simpa only [Function.comp_def,kernelTestField,euclideanAction,euclideanToHyperbolic_coordinates] using hd
+  pm_89 Function.comp_def kernelTestField euclideanAction euclideanToHyperbolic_coordinates hd
 
 lemma coverGradientAt_lift_continuous (F : EuclideanSpatial→ℂ)
-    (hF : ∀p,0<p 2→ContDiffAt ℝ ∞ F p) :
+    (hF : ∀p,0<p 2→ ContDiffAt ℝ ∞ F p) :
     Continuous (fun w : HyperbolicSpace=>coverGradientAt F (hyperbolicEuclideanCoordinates w)) := by
   apply (PiLp.continuousLinearEquiv 2 ℂ (fun _ : Fin 3=>ℂ)).symm.continuous.comp
   apply continuous_pi
   intro j
-  apply (Complex.continuous_ofReal.comp hyperbolicHeight_continuous).mul
-  rw [continuous_iff_continuousAt]
-  intro w
+  pm_7818
   exact (((hF _ (hyperbolicHeight_pos w)).continuousAt_fderiv (by simp)).clm_apply
     continuousAt_const).comp hyperbolicEuclideanCoordinates_continuous.continuousAt
 
@@ -134,7 +88,7 @@ lemma kernelCorrespondencePairLift_invariant (f h : kernelSmoothTests)
     rw [Function.comp_assoc,←euclideanAction_mul,he k,euclideanAction_mul,←Function.comp_assoc]
     have hh : kernelTestField h ∘ euclideanAction B=kernelTestField h :=
       funext (kernelTestField_invariant h ⟨(e k:SL(2,ActualEisensteinCubic.O)),hJK (e k).property⟩)
-    rw [hh]
+    grind
   have hp := hyperbolicHeight_pos w
   have hh := coverDirichletPair_comp A (kernelTestField f) (kernelTestField h ∘ euclideanAction g)
     (hyperbolicEuclideanCoordinates w) hp
@@ -144,7 +98,7 @@ lemma kernelCorrespondencePairLift_invariant (f h : kernelSmoothTests)
   change _=coverDirichletPair (kernelTestField f) (kernelTestField h ∘ euclideanAction g)
     (hyperbolicEuclideanCoordinates w)
   rw [integralSubgroup_smul]
-  simpa only [kernelCorrespondencePairLift,A,euclideanAction,euclideanToHyperbolic_coordinates] using hh.symm
+  pm_89 kernelCorrespondencePairLift A euclideanAction euclideanToHyperbolic_coordinates hh.symm
 
 def kernelCorrespondencePair (f h : kernelSmoothTests) : IntegralOrbitQuotient H→ℂ :=
   Quotient.lift (kernelCorrespondencePairLift g f h) (by
@@ -216,8 +170,7 @@ lemma kernelCorrespondencePairLift_kernel (g : SL(2,ℂ)) (f h : kernelSmoothTes
 lemma kernelTestField_comp_inverse (f : kernelSmoothTests) (g : SL(2,ℂ)) :
     (kernelTestField f ∘ euclideanAction g⁻¹) ∘ euclideanAction g=kernelTestField f := by
   funext p
-  simp only [Function.comp_def,kernelTestField,euclideanAction,euclideanToHyperbolic_coordinates,
-    inv_smul_smul]
+  pm_1443 Function.comp_def kernelTestField euclideanAction euclideanToHyperbolic_coordinates inv_smul_smul
 
 variable {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel)
@@ -228,7 +181,7 @@ lemma kernelCorrespondencePair_trace (f h : kernelSmoothTests) (q : KernelQuotie
     kernelDirichletPairDensity f (kernelCorrespondenceTest hHK hJK e g he h) q=
       integralCoverTraceFunction H globalKubotaKernel
         (kernelCorrespondencePair hHK hJK e g he f h) q := by
-  let : Fintype (IntegralCoverCosets H globalKubotaKernel) := Fintype.ofFinite _
+  pm_4885 globalKubotaKernel
   induction q using Quotient.inductionOn with
   | _ w =>
     change kernelDirichletPairDensity f (kernelCorrespondenceTest hHK hJK e g he h)
@@ -256,7 +209,7 @@ lemma kernelCorrespondencePair_trace (f h : kernelSmoothTests) (q : KernelQuotie
 
 lemma kernelCorrespondenceForm_integral (f h : kernelSmoothTests) :
     kernelDirichletForm f (kernelCorrespondenceTest hHK hJK e g he h)=
-      ∫q,kernelCorrespondencePair hHK hJK e g he f h q∂integralQuotientVolume H := by
+      ∫q,kernelCorrespondencePair hHK hJK e g he f h q∂ integralQuotientVolume H := by
   unfold kernelDirichletForm
   simp_rw [kernelCorrespondencePair_trace]
   exact integralCoverTraceFunction_integral hHK globalKubotaKernel_le_levelThree _
@@ -300,15 +253,15 @@ theorem kernelCorrespondenceForm_adjoint (f h : kernelSmoothTests) :
     (hHK.trans globalKubotaKernel_le_levelThree) (hJK.trans globalKubotaKernel_le_levelThree)
   rw [kernelCorrespondenceForm_integral]
   calc
-    _ = ∫q,star (opposite (integralConjugateMap e g he q))∂integralQuotientVolume H := by
+    _ = ∫q,star (opposite (integralConjugateMap e g he q))∂ integralQuotientVolume H := by
       apply integral_congr_ae
       exact Filter.Eventually.of_forall (kernelCorrespondencePair_conjugate hHK hJK e g he f h)
-    _ = ∫q,star (opposite q)∂integralQuotientVolume J := by
+    _ = ∫q,star (opposite q)∂ integralQuotientVolume J := by
       have hh := integral_map («μ»:=integralQuotientVolume H) hm.measurable.aemeasurable
         (continuous_star.measurable.comp hom).aestronglyMeasurable
       rw [hm.map_eq] at hh
       exact hh.symm
-    _ = star (∫q,opposite q∂integralQuotientVolume J) := by
+    _ = star (∫q,opposite q∂ integralQuotientVolume J) := by
       simp only [Complex.star_def]
       exact integral_conj
     _ = _ := by
@@ -319,7 +272,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
+open scoped Classical Topology MatrixGroups InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 local notation "O" => ActualEisensteinCubic.O
@@ -363,7 +316,7 @@ lemma kernelCorrespondenceEnergy_pairing_left (u v : KernelEnergyGraph) :
   simpa only [←starRingEnd_apply,inner_conj_symm] using hh
 
 lemma kernelCorrespondenceL2_pairing_left (F G : KernelQuotientL2) :
-    inner ℂ (kernelCorrespondenceL2 hHK hJK e g he F) G=
+    inner ℂ (kernelCorrespondenceL2 hHK hJK e g he F) G =
       inner ℂ F (kernelCorrespondenceL2 hJK hHK e.symm g⁻¹
         (integralCoverIntertwines_inverse e g he) G) := by
   have hh := congrArg star (kernelCorrespondenceL2_pairing hHK hJK e g he G F)
@@ -390,8 +343,7 @@ theorem kernelCorrespondence_operatorGraph (F G : KernelQuotientL2)
     (hFG : (F,G)∈kernelEnergyLaplacian.graph) :
     (kernelCorrespondenceL2 hHK hJK e g he F,
       kernelCorrespondenceL2 hHK hJK e g he G)∈kernelEnergyLaplacian.graph := by
-  rw [kernelEnergyLaplacian_graph,mem_kernelLaplacianGraph] at hFG ⊢
-  rw [←map_add,kernelCorrespondence_variationalResolvent,hFG]
+  pm_981 kernelCorrespondence_variationalResolvent
 
 theorem kernelCorrespondence_eigenvector (F : KernelQuotientL2) (eigenvalue : ℂ)
     (hF : (F,eigenvalue • F)∈kernelEnergyLaplacian.graph) :
@@ -404,7 +356,7 @@ end
 section
 
 open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
@@ -457,7 +409,7 @@ open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cube_upperPoint_continuous (v:ℝ) (hv:0<v) : Continuous (fun z:ℂ=>upperPoint z v hv) := by
-  let c:ℂ→UpperCoordinates:=fun z=>⟨(z,v),hv⟩
+  let c:ℂ→ UpperCoordinates:=fun z=>⟨(z,v),hv⟩
   have hc:Continuous c:=by
     apply Continuous.subtype_mk
     exact continuous_id.prodMk continuous_const
@@ -515,15 +467,14 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
   have hint:(∫z in periodDomain,∑' r:Eis⧸Ideal.span {p^3},term r z)=
       ∑' r:Eis⧸Ideal.span {p^3},∫z in periodDomain,term r z:=by
     simp only [tsum_fintype]
-    exact integral_finsetSum _ (fun r _=>hi r)
+    pm_8094
   have hterm (r:Eis⧸Ideal.span {p^3}):
       (∫z in periodDomain,term r z)=∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency (h*p^3)*z):=
     period_fourier_fractional_translation f hfperiod (p^3) (pow_ne_zero 3 hp) h _
   have hcard:(Nat.card (Eis⧸Ideal.span {p^3}):ℂ)=(Ideal.absNorm (Ideal.span {p}):ℂ)^3:=by
     change (Ideal.absNorm (Ideal.span {p^3}):ℂ)=_
     rw [←Ideal.span_singleton_pow,map_pow,Nat.cast_pow]
-  have hqN:Ideal.absNorm (Ideal.span {p})≠0:=
-    (Ideal.absNorm_ne_zero_iff _).mpr (finite_quotient_span hp)
+  pm_3700 hqN
   have hq:(Ideal.absNorm (Ideal.span {p}):ℂ)≠0:=by exact_mod_cast hqN
   change (∫z in periodDomain,H z)=∫z in periodDomain,f z*ShortDraftTrace.breveE (-cuspFrequency (h*p^3)*z)
   calc
@@ -542,11 +493,14 @@ theorem cubeAverage_fourier (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Con
 end
 
 open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem cubeSource_fourier (p:Eis) (hp:p≠0) (h:Eis) (v:ℝ) (hv:0<v) :
+section
+variable (p:Eis) (hp:p≠0)
+include p hp
+theorem cubeSource_fourier (h:Eis) (v:ℝ) (hv:0<v) :
     (∫z in periodDomain,cubeAverage p hp cubicSourceResidualFunction (upperPoint z v hv)*
       ShortDraftTrace.breveE (-cuspFrequency h*z))=
     ((9*Real.sqrt 3/2:ℝ):ℂ)*sourceResidualFullModeAmplitude (v/‖eisEmbedding p‖^3) (h*p^3) := by
@@ -555,7 +509,7 @@ theorem cubeSource_fourier (p:Eis) (hp:p≠0) (h:Eis) (v:ℝ) (hv:0<v) :
   simp_rw [cubicSourceResidualFunction_eq_bessel]
   exact sourceBesselFunction_fourier _ (div_pos hv (pow_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hp)) 3)) _
 
-lemma cubeSource_amplitude_of_eigenrelation (p:Eis) (hp:p≠0)
+lemma cubeSource_amplitude_of_eigenrelation
     (hU:∀w:HyperbolicSpace,cubeAverage p hp cubicSourceResidualFunction w=
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹*cubicSourceResidualFunction w)
     (h:Eis) (v:ℝ) (hv:0<v) :
@@ -576,6 +530,7 @@ lemma cubeSource_amplitude_of_eigenrelation (p:Eis) (hp:p≠0)
       simp_rw [cubicSourceResidualFunction_eq_bessel]
       rw [sourceBesselFunction_fourier]
     _=_:=by ring
+end
 
 lemma schlafliBesselK_cubic_ne_zero (x:ℝ) (hx:0<x) : schlafliBesselK (1/3:ℂ) x≠0 := by
   have hp:0<(schlafliBesselK (1/3:ℂ) x).re:=
@@ -590,10 +545,9 @@ theorem sourceResidualFourierCoefficient_cube_of_eigenrelation (p:Eis) (hp:p≠0
     (h:Eis) (hh:h≠0) :
     sourceResidualFourierCoefficient (h*p^3)=(‖eisEmbedding p‖:ℂ)*sourceResidualFourierCoefficient h := by
   have hhp:h*p^3≠0:=mul_ne_zero hh (pow_ne_zero 3 hp)
-  have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
+  pm_3607
   have hrC:(‖eisEmbedding p‖:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hr.ne'
-  have hf:‖cuspFrequency (h*p^3)‖=‖cuspFrequency h‖*‖eisEmbedding p‖^3:=by
-    rw [cuspFrequency_mul_right,norm_mul,map_pow,norm_pow]
+  pm_3593
   have hx:0<4*Real.pi*‖cuspFrequency h‖:=by
     exact mul_pos (mul_pos (by norm_num) Real.pi_pos) (norm_pos_iff.mpr (cuspFrequency_ne_zero h hh))
   have hK:=schlafliBesselK_cubic_ne_zero _ hx

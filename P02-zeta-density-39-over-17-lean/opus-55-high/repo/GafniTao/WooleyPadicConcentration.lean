@@ -44,7 +44,7 @@ theorem WooleyMonomialPadicConcentration.specialize
 theorem exists_prime_strictly_above (k : ℕ) :
     ∃ p : ℕ, Nat.Prime p ∧ k < p := by
   obtain ⟨p, hkp, hp⟩ := Nat.exists_infinite_primes (k + 1)
-  exact ⟨p, hp, by omega⟩
+  grind
 
 
 end

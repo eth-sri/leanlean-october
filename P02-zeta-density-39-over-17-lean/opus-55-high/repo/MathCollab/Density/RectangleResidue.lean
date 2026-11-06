@@ -11,13 +11,13 @@ public import Mathlib.Analysis.Complex.Convex
 public import Mathlib.Analysis.Complex.RemovableSingularity
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex BigOperators Nat Classical Real Topology Filter
+open Complex Nat Classical Real Topology Filter
 open Set MeasureTheory intervalIntegral
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Contour
 
@@ -49,10 +49,8 @@ theorem Set.ne_right_of_mem_uIoo {a b c : ℝ} (hc : c ∈ Set.uIoo a b) : c ≠
 theorem rectangleBorder_subset_rectangle (z w : ℂ) : RectangleBorder z w ⊆ Rectangle z w := by
   intro x hx
   obtain ⟨⟨h | h⟩ | h⟩ | h := hx
-  · exact ⟨h.1, h.2 ▸ left_mem_uIcc⟩
-  · exact ⟨h.1 ▸ left_mem_uIcc, h.2⟩
-  · exact ⟨h.1, h.2 ▸ right_mem_uIcc⟩
-  · exact ⟨h.1 ▸ right_mem_uIcc, h.2⟩
+  pm_7382 left_mem_uIcc
+  pm_7382 right_mem_uIcc
 
 theorem rectangleBorder_disjoint_singleton {z w p : ℂ}
     (h : p.re ≠ z.re ∧ p.re ≠ w.re ∧ p.im ≠ z.im ∧ p.im ≠ w.im) :
@@ -151,14 +149,7 @@ def RectangleBorderIntegrable (f : ℂ → E) (z w : ℂ) : Prop :=
 
 theorem RectangleBorderIntegrable.add {f g : ℂ → E}
     (hf : RectangleBorderIntegrable f z w) (hg : RectangleBorderIntegrable g z w) :
-    RectangleIntegral (f + g) z w = RectangleIntegral f z w + RectangleIntegral g z w := by
-  dsimp [RectangleIntegral, HIntegral, VIntegral]
-  have h₁ := intervalIntegral.integral_add hf.1 hg.1
-  have h₂ := intervalIntegral.integral_add hf.2.1 hg.2.1
-  have h₃ := intervalIntegral.integral_add hf.2.2.1 hg.2.2.1
-  have h₄ := intervalIntegral.integral_add hf.2.2.2 hg.2.2.2
-  rw [h₁, h₂, h₃, h₄]
-  module
+    RectangleIntegral (f + g) z w = RectangleIntegral f z w + RectangleIntegral g z w := by pm_4295
 
 omit [NormedSpace ℂ E] in
 theorem ContinuousOn.rectangleBorder_integrable (hf : ContinuousOn f (RectangleBorder z w)) :
@@ -280,13 +271,13 @@ theorem ResidueTheoremAtOrigin' {z w c : ℂ}
   simp only [RectangleIntegral, HIntegral, VIntegral, smul_eq_mul]
   rw [integral_const_div_re_add_self h1.ne, integral_const_div_re_add_self h3.ne.symm]
   rw [integral_const_div_self_add_im h2.ne, integral_const_div_self_add_im h4.ne.symm]
-  have l1 : z.im * w.re⁻¹ = (w.re * z.im⁻¹)⁻¹ := by group
+  pm_1069 l1 z.im w.re
   have l3 := arctan_inv_of_neg <| mul_neg_of_pos_of_neg h3 <| inv_lt_zero.mpr h2
-  have l4 : w.im * z.re⁻¹ = (z.re * w.im⁻¹)⁻¹ := by group
+  pm_1069 l4 w.im z.re
   have l6 := arctan_inv_of_neg <| mul_neg_of_neg_of_pos h1 <| inv_pos.mpr h4
-  have r1 : z.im * z.re⁻¹ = (z.re * z.im⁻¹)⁻¹ := by group
+  pm_1069 r1 z.im z.re
   have r3 := arctan_inv_of_pos <| mul_pos_of_neg_of_neg h1 <| inv_lt_zero.mpr h2
-  have r4 : w.im * w.re⁻¹ = (w.re * w.im⁻¹)⁻¹ := by group
+  pm_1069 r4 w.im w.re
   have r6 := arctan_inv_of_pos <| mul_pos h3 <| inv_pos.mpr h4
   ring_nf
   simp only [one_div, inv_I, mul_neg, neg_mul, I_sq, neg_neg, arctan_neg, ofReal_neg,

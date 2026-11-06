@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Descent.Marks
 public import OAI.NumberTheory.DirichletL.Descent.LocalReflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,8 +23,10 @@ noncomputable local instance markedQuotientField (P : Ideal ActualEisensteinCubi
 noncomputable local instance markedQuotientFintype (P : Ideal ActualEisensteinCubic.O)
     [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
 
+section
+variable (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
+include P hg
 theorem actual_marked_active_eq
-    (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
     (ψ : AddChar (ActualEisensteinCubic.O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
     (σ ε : (ActualEisensteinCubic.O ⧸ P)ˣ) (x : ActualEisensteinCubic.O ⧸ P) :
     localReflectionActive zeroMark (CompletedGauss.actualSextic P hg) ψ σ ε x =
@@ -33,8 +36,6 @@ theorem actual_marked_active_eq
     marked_active_eq_neg_trivial (CompletedGauss.actualSextic P hg) ψ hψ σ ε x
 
 theorem actual_marked_active_formula
-    (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
-    (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
     (hchar : ringChar (ActualEisensteinCubic.O ⧸ P) ≠ 2)
     (ψ : AddChar (ActualEisensteinCubic.O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
     (σ ε : (ActualEisensteinCubic.O ⧸ P)ˣ) (x : ActualEisensteinCubic.O ⧸ P) :
@@ -48,6 +49,7 @@ theorem actual_marked_active_formula
   simp only [LocalReflectionBrackets.phase, LocalReflectionBrackets.bracket,
     show (0 : ℕ) ≠ 4 by decide, ↓reduceIte, inv_pow, map_mul]
   ring
+end
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0)
@@ -66,19 +68,10 @@ theorem row_slot_cross_phase
       MixedCrossSeparation.crossSymbol p hg k i ^ 2 :=
     canonicalSextic_sq_reciprocity_primary (Ideal.span {p i}) (Ideal.span {p k})
       (hg i) (hg k) (p i) (p k) rfl rfl (hpr i) (hpr k)
-  have hnot : p k ∉ Ideal.span {p i} := by
-    intro hm
-    have hle : Ideal.span {p k} ≤ Ideal.span {p i} :=
-      Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hm)
-    have ht := (hcop hik).sup_eq
-    rw [sup_eq_left.mpr hle] at ht
-    exact (inferInstance : (Ideal.span {p i}).IsMaximal).ne_top ht
+  pm_3791
   have h6 : MixedCrossSeparation.crossSymbol p hg i k ^ 6 = 1 := by
-    simpa only [MixedCrossSeparation.crossSymbol, map_pow, ite_eq_right hnot] using
-      canonicalSextic_sixth_power_mask (Ideal.span {p i}) (hg i) (p k)
-  calc
-    _ = MixedCrossSeparation.crossSymbol p hg i k ^ 6 := by rw [← hs]; ring
-    _ = 1 := h6
+    pm_5427 MixedCrossSeparation.crossSymbol
+  grind
 
 omit [DecidableEq ι] in
 theorem row_slot_product_phase

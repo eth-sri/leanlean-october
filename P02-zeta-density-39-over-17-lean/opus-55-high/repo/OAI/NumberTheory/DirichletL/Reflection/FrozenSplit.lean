@@ -60,7 +60,7 @@ theorem frozenArgument_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
     ‖frozenArgument hg j F z‖ ≤ 1 := by
   simp only [frozenArgument,MonoidHom.finsetProd_apply,norm_prod]
   apply Finset.prod_le_one₀
-  · intro i hi; exact norm_nonneg _
+  grind
   · intro i hi
     unfold frozenCofactorCharacter
     split_ifs

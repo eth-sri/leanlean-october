@@ -1,102 +1,53 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.ReopeningBounds
 public import OAI.NumberTheory.DirichletL.CubicSieve.CutoffOrders
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic
+open ActualEisensteinCubic
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open NumberField UniqueFactorizationMonoid
+open Filter Asymptotics NumberField
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic FirstPassCubeLabels
+open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end
 
-open ActualEisensteinCubic FirstPassCubeLabels
+open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
@@ -106,9 +57,9 @@ theorem nonresidual_count_eq_on_fiber (I J Q P : Ideal ActualEisensteinCubic.O)
     (hT : rowMaskPart I Q=rowMaskPart J Q)
     (hpool : P∣I*Q) (hr : ¬P∣rowResidualPart I Q) :
     (normalizedFactors I).count P=(normalizedFactors J).count P := by
-  have ha := congrArg (fun A : Ideal ActualEisensteinCubic.O=>(normalizedFactors A).count P) hA
+  pm_7942 ha hA
   simp only [normalizedFactors_rowPowerfulPart,Multiset.count_filter] at ha
-  have ht := congrArg (fun A : Ideal ActualEisensteinCubic.O=>(normalizedFactors A).count P) hT
+  pm_7942 ht hT
   simp only [rowMaskPart,normalizedFactors_squarefreeMaskPart,
     normalizedFactors_rowSimplePart,Multiset.count_filter] at ht
   have hr0 : (normalizedFactors (rowResidualPart I Q)).count P=0 := by
@@ -119,14 +70,12 @@ theorem nonresidual_count_eq_on_fiber (I J Q P : Ideal ActualEisensteinCubic.O)
     normalizedFactors_rowSimplePart,Multiset.count_filter] at hr0
   by_cases hpq : P∣Q
   · simp only [hpq,ite_true] at ht
-    by_cases hi : 2≤(normalizedFactors I).count P <;>
-      by_cases hj : 2≤(normalizedFactors J).count P <;> simp only [hi,hj,ite_true,ite_false,not_true_eq_false,not_false_eq_true] at ha ht <;> omega
+    pm_3799 ht
   · have hpi : P∣I := (hP.dvd_mul.mp hpool).resolve_right hpq
     have hci : 0<(normalizedFactors I).count P :=
       Multiset.count_pos.mpr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hI).mpr ⟨hP,hpi⟩)
     simp only [hpq,not_false_eq_true,ite_true] at hr0
-    by_cases hi : 2≤(normalizedFactors I).count P <;>
-      by_cases hj : 2≤(normalizedFactors J).count P <;> simp only [hi,hj,ite_true,ite_false,not_true_eq_false,not_false_eq_true] at ha hr0 <;> omega
+    pm_3799 hr0
 
 theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
     (hI : I≠0) (hJ : J≠0) (hP : Prime P)
@@ -143,8 +92,7 @@ theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
     · exact dvd_mul_of_dvd_right hq J
   have hrc : (normalizedFactors (rowResidualPart I Q)).count P=
       (normalizedFactors (rowResidualPart J Q)).count P := by
-    simp only [rowResidualPart,normalizedFactors_squarefreeResidualPart,
-      normalizedFactors_rowSimplePart,Multiset.count_filter,hc]
+    pm_651 rowResidualPart normalizedFactors_squarefreeResidualPart normalizedFactors_rowSimplePart Multiset.count_filter hc
   refine ⟨hpoolJ,?_,?_⟩
   · intro hd
     have hm := (UniqueFactorizationMonoid.mem_normalizedFactors_iff (squarefreeResidualPart_ne_zero (rowSimplePart J) Q)).mpr ⟨hP,hd⟩
@@ -156,7 +104,7 @@ theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
 end CompletedGauss
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
@@ -165,7 +113,14 @@ variable {E F G : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpa
   [NormedAddCommGroup G] [NormedSpace ℂ G]
 
 omit [CompleteSpace E] in
-lemma compact_estimate_prod_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G) (A B : ℝ)
+set_option hygiene false in
+macro "pb_2076" : tactic => `(tactic| (
+  apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp))
+section
+variable (T : E→L[ℂ]F) (K : E→L[ℂ]G)
+include T K
+omit [CompleteSpace E] in
+lemma compact_estimate_prod_antilipschitz (A B : ℝ)
     (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) :
     ∃D : NNReal,AntilipschitzWith D (T.prod K) := by
   let R := max A 0+max B 0
@@ -177,18 +132,18 @@ lemma compact_estimate_prod_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G) (A
     (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr (norm_snd_le (T u,K u))
   have hh : ‖u‖^2≤R*‖(T.prod K) u‖^2 := calc
     _ ≤A*‖T u‖^2+B*‖K u‖^2 := hest u
-    _ ≤max A 0*‖T u‖^2+max B 0*‖K u‖^2 :=
+    _ ≤ max A 0*‖T u‖^2+max B 0*‖K u‖^2 :=
       add_le_add (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
         (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
-    _ ≤max A 0*‖(T.prod K) u‖^2+max B 0*‖(T.prod K) u‖^2 :=
+    _ ≤ max A 0*‖(T.prod K) u‖^2+max B 0*‖(T.prod K) u‖^2 :=
       add_le_add (mul_le_mul_of_nonneg_left hT (le_max_right _ _))
         (mul_le_mul_of_nonneg_left hK (le_max_right _ _))
     _ = _ := by dsimp only [R]; ring
   change ‖u‖≤Real.sqrt R*‖(T.prod K) u‖
-  apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
+  pb_2076
   simpa only [mul_pow,Real.sq_sqrt hR] using hh
 
-lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
+lemma finiteDimensional_ker_of_compact_estimate
     (hK : IsCompactOperator K) (A B : ℝ)
     (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) :
     FiniteDimensional ℂ T.ker := by
@@ -200,14 +155,14 @@ lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ
     have ht : T (u:E)=0 := u.2
     have hh := hest (u:E)
     rw [ht,norm_zero,zero_pow (by decide : 2≠0),mul_zero,zero_add] at hh
-    have hh' : ‖u‖^2≤max B 0*‖K (u:E)‖^2 :=
+    have hh' : ‖u‖^2≤ max B 0*‖K (u:E)‖^2 :=
       hh.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
     change ‖u‖≤Real.sqrt (max B 0)*‖K (u:E)‖
-    apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
+    pb_2076
     simpa only [mul_pow,Real.sq_sqrt (le_max_right B 0)] using hh'
   exact FiniteDimensional.of_isCompactOperator_id hid
 
-lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
+lemma antilipschitz_of_injective_compact_estimate
     (hK : IsCompactOperator K) (A B : ℝ)
     (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) (hT : Function.Injective T) :
     ∃D : NNReal,AntilipschitzWith D T := by
@@ -246,9 +201,9 @@ lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[�
   have hnorm : ‖v‖=1 := tendsto_nhds_unique hvlim.norm (by simpa only [hunorm] using tendsto_const_nhds)
   rw [hvzero,norm_zero] at hnorm
   norm_num at hnorm
+end
 
 end CubicEisenstein
 
-end
 
 end OAI

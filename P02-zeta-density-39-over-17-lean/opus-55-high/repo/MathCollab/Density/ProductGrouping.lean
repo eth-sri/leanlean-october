@@ -1,12 +1,11 @@
 module
 public import MathCollab.Density.ComparisonCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Complex Set
-open scoped BigOperators
+open Real Complex
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -22,7 +21,7 @@ theorem productMultiplicity_le_divisors {N M m : ℕ} (hm : m ≠ 0) :
   apply Finset.card_le_card_of_injOn Prod.fst
   · intro p hp
     have hp' := Finset.mem_filter.mp hp
-    exact Nat.mem_divisors.mpr ⟨⟨p.2, hp'.2.symm⟩, hm⟩
+    aesop
   · intro p hp q hq he
     have hp' := Finset.mem_filter.mp hp
     have hq' := Finset.mem_filter.mp hq
@@ -30,8 +29,8 @@ theorem productMultiplicity_le_divisors {N M m : ℕ} (hm : m ≠ 0) :
       have hh := (Finset.mem_Ioc.mp (Finset.mem_product.mp hp'.1).1).1
       omega
     apply Prod.ext he
-    have hh : p.1*p.2 = p.1*q.2 := by rw [hp'.2, he, hq'.2]
-    exact Nat.eq_of_mul_eq_mul_left hn hh
+    have hh : p.1*p.2 = p.1*q.2 := by grind
+    aesop
 
 theorem product_range {N M : ℕ} (_hN : 0 < N) (hM : 0 < M)
     {p : ℕ × ℕ} (hp : p ∈ productPairs N M) :
@@ -65,7 +64,7 @@ theorem original_product_divisors_le {T : ℝ} {N M : ℕ} (hN : 0 < N) (hM : 0 
   apply Finset.le_sup (f := fun m : ℕ => m.divisors.card) (b := p.1*p.2)
   apply Finset.mem_Icc.mpr
   refine ⟨hp0, ?_⟩
-  have hi : ((p.1*p.2 : ℕ) : ℝ) < 4*((N : ℝ)*M) := by exact_mod_cast hphi
+  pm_1510 hphi
   have hc := Nat.le_ceil (32*(T+1))
   have hh : ((p.1*p.2 : ℕ) : ℝ) ≤ (⌈32*(T+1)⌉₊ : ℝ) := by linarith
   exact_mod_cast hh
@@ -74,7 +73,7 @@ theorem product_cutoff_one (w : ComparisonCutoff) {N M : ℕ} (hN : 0 < N) (hM :
     {p : ℕ × ℕ} (hp : p ∈ productPairs N M) :
     w (((p.1*p.2 : ℕ) : ℝ)/((N : ℝ)*M)) = 1 := by
   have hh := product_range hN hM hp
-  have hL : (0 : ℝ) < (N : ℝ)*M := by positivity
+  pm_6085
   have hlo : (N : ℝ)*M < ((p.1*p.2 : ℕ) : ℝ) := by exact_mod_cast hh.2.1
   have hhi : ((p.1*p.2 : ℕ) : ℝ) < 4*((N : ℝ)*M) := by exact_mod_cast hh.2.2
   apply w.one_on
@@ -92,13 +91,12 @@ theorem product_grouping_cutoff (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
   let P := productPairs N M
   let S := P.image (fun p => p.1*p.2)
   let R := Finset.range (⌈5*((N : ℝ)*M)⌉₊+1)
-  have hL : (0 : ℝ) < (N : ℝ)*M := by positivity
+  pm_6085
   have hsub : S ⊆ R := by
-    intro m hm
-    obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hm
+    pm_136 m hm p hp Finset.mem_image.mp
     have hh := (product_range hN hM hp).2.2
     have hr : ((p.1*p.2 : ℕ) : ℝ) < 5*((N : ℝ)*M) := by
-      have hi : ((p.1*p.2 : ℕ) : ℝ) < 4*((N : ℝ)*M) := by exact_mod_cast hh
+      pm_1510 hh
       linarith
     have hc := Nat.le_ceil (5*((N : ℝ)*M))
     have hb : p.1*p.2 ≤ ⌈5*((N : ℝ)*M)⌉₊ := by exact_mod_cast hr.le.trans hc
@@ -113,9 +111,7 @@ theorem product_grouping_cutoff (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
     intro m hm
     calc
       _ = ∑ _p ∈ P.filter (fun p => p.1*p.2=m), F m := by
-        apply Finset.sum_congr rfl
-        intro p hp
-        rw [(Finset.mem_filter.mp hp).2]
+        pm_275 Finset.sum_congr p hp Finset.mem_filter.mp
       _ = _ := by simp [productMultiplicity, P]
   calc
     _ = ∑ p ∈ P, F (p.1*p.2) := (Finset.sum_product _ _ _).symm

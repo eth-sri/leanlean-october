@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullImprovement
 public import OAI.NumberTheory.DirichletL.HeathBrownIteration
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,21 +23,17 @@ lemma enlargement_bounds (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
   · unfold enlargementExponent SevenEighths.HeathBrownIteration.step
     exact div_le_div_of_nonneg_right (by linarith) hd.le
 
-lemma enlargement_cross_identity (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
+section
+variable (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ)
+include ξ hξ
+lemma enlargement_cross_identity :
     (enlargementExponent ξ+1)*(2/3 : ℝ) = SevenEighths.HeathBrownIteration.step ξ := by
-  have hd : 3*ξ-1 ≠ 0 := by linarith
-  unfold enlargementExponent SevenEighths.HeathBrownIteration.step
-  apply (eq_div_iff hd).mpr
-  have hc := div_mul_cancel₀ (6*ξ-5) hd
-  nlinarith [hc]
+  pm_3788
 
-lemma enlargement_secondary_identity (ξ : ℝ) (hξ : (4/3 : ℝ) ≤ ξ) :
+lemma enlargement_secondary_identity :
     enlargementExponent ξ*(1-ξ)+(2*ξ-1) = SevenEighths.HeathBrownIteration.step ξ := by
-  have hd : 3*ξ-1 ≠ 0 := by linarith
-  unfold enlargementExponent SevenEighths.HeathBrownIteration.step
-  apply (eq_div_iff hd).mpr
-  have hc := div_mul_cancel₀ (6*ξ-5) hd
-  nlinarith [hc]
+  pm_3788
+end
 
 theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
     (hξ : (4/3 : ℝ) ≤ ξ) :
@@ -46,26 +43,21 @@ theorem enlarged_improved_shape (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N)
   let α := enlargementExponent ξ
   let β := SevenEighths.HeathBrownIteration.step ξ
   let T := max M (N^α)
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
+  pm_3779
   have hαβ : α ≤ β := (enlargement_bounds ξ hξ).2
-  have hNb : 0 ≤ N^β := Real.rpow_nonneg hN0.le _
-  have hcross : 0 ≤ (M*N)^(2/3 : ℝ) := Real.rpow_nonneg (by positivity) _
+  pm_6316 hNb N β hN0.le
+  pm_5605 hcross
   have ht : T ≤ M+N^β := by
     apply max_le
-    · exact le_add_of_nonneg_right hNb
+    grind
     · exact (Real.rpow_le_rpow_of_exponent_le hN hαβ).trans (le_add_of_nonneg_left hM0.le)
   have hnx : (N^α*N)^(2/3 : ℝ) = N^β := by
     conv_lhs => arg 1; arg 2; rw [← Real.rpow_one N]
     rw [← Real.rpow_add hN0, ← Real.rpow_mul hN0.le, enlargement_cross_identity ξ hξ]
   have htc : (T*N)^(2/3 : ℝ) ≤ (M*N)^(2/3 : ℝ)+N^β := by
     by_cases hm : M ≤ N^α
-    · dsimp only [T]
-      rw [max_eq_right hm, hnx]
-      exact le_add_of_nonneg_left hcross
-    · dsimp only [T]
-      rw [max_eq_left (le_of_not_ge hm)]
-      exact le_add_of_nonneg_right hNb
+    grind
+    grind
   have hts : T^(1-ξ)*N^(2*ξ-1) ≤ N^β := by
     have hp := Real.rpow_le_rpow_of_nonpos (Real.rpow_pos_of_pos hN0 α)
       (le_max_right M (N^α)) (show 1-ξ ≤ 0 by linarith)
@@ -82,18 +74,17 @@ theorem HasCubicExponent.improve {ξ : ℝ} (h : HasCubicExponent ξ)
     HasCubicExponent (SevenEighths.HeathBrownIteration.step ξ) := by
   intro ε hε
   let θ := min (ε/14) (1/4 : ℝ)
-  have hθ : 0 < θ := lt_min (by positivity) (by norm_num)
+  pm_251 hθ θ
   have hθsmall : θ < 1/2 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
   have hθε : 7*θ ≤ ε := by
     have hh : θ ≤ ε/14 := min_le_left _ _
     linarith
-  obtain ⟨C,hC,hb⟩ := h.full_improved hξ.le hξ2 θ hθ hθsmall
+  pm_3547 C hC hb h.full_improved hξ.le hξ2 θ hθ hθsmall
   refine ⟨3*C, by positivity, ?_⟩
   intro M N hM hN
   let T := max M (N^(enlargementExponent ξ))
-  have hT : 1 ≤ T := hM.trans (le_max_left _ _)
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
+  pm_5105 hT T hM.trans
+  pm_3779
   have hp : N^(7*θ) ≤ (M*N)^ε :=
     (Real.rpow_le_rpow_of_exponent_le hN hθε).trans
       (Real.rpow_le_rpow hN0.le (by nlinarith) hε.le)

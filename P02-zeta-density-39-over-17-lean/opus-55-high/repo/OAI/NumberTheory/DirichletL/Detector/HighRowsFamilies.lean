@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSummability
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,7 +30,7 @@ lemma rowInner_two (eta a X W V rho : ℂ) (j e l : ℕ) :
 
 @[simp] lemma rowInner_zero (eta a X W V rho : ℂ) (j : ℕ) :
     rowInner p hp hg eta a X W V rho j 0 0=0 := by
-  simp only [rowInner,rowMarkedTerm,mul_zero,add_zero,ite_true,tsum_zero]
+  pm_382 rowInner rowMarkedTerm mul_zero add_zero ite_true tsum_zero
 
 include hc in
 theorem rowInner_family_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
@@ -55,20 +56,14 @@ theorem rowMarkedSeries_four_families (eta a X W V rho : ℂ) (hρ : rho^6=1)
        rowInner p hp hg eta a X W V rho j 0 1+
        rowInner p hp hg eta a X W V rho j 1 1)/
         (1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V) := by
-  have h02 := rowInner_family_hasSum p hp hg hc eta a X W V rho hρ hV hR j 0 2 hj (by omega)
+  pm_1166
   have h10 := rowInner_family_hasSum p hp hg hc eta a X W V rho hρ hV hR j 1 0 hj (by omega)
-  have h01 := rowInner_family_hasSum p hp hg hc eta a X W V rho hρ hV hR j 0 1 hj (by omega)
+  pm_1167
   have h11 := rowInner_family_hasSum p hp hg hc eta a X W V rho hρ hV hR j 1 1 hj (by omega)
   have he0 : HasSum (fun r=>rowInner p hp hg eta a X W V rho j 0 (2*r))
       (rowInner p hp hg eta a X W V rho j 0 2/(1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
-    have hshift : HasSum (fun r=>rowInner p hp hg eta a X W V rho j 0 (2*(r+1)))
-        (rowInner p hp hg eta a X W V rho j 0 2/(1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
-      convert h02 using 1
-      funext r
-      congr 1
-      omega
-    have h := hshift.sum_range_add (f:=fun r=>rowInner p hp hg eta a X W V rho j 0 (2*r)) (k:=1)
-    simpa only [Finset.sum_range_one,mul_zero,rowInner_zero,zero_add] using h
+    pm_3867 hshift h hshift.sum_range_add
+    pm_89 Finset.sum_range_one mul_zero rowInner_zero zero_add h
   have he1 : HasSum (fun r=>rowInner p hp hg eta a X W V rho j 1 (2*r))
       (rowInner p hp hg eta a X W V rho j 1 0/(1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
     simpa only [zero_add] using h10

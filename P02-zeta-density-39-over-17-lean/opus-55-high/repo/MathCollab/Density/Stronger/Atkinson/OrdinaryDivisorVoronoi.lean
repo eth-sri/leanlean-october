@@ -9,6 +9,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.OrdinaryDivisorDualSeries
 public import MathCollab.Density.Stronger.Atkinson.VoronoiMultiplierBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,44 +39,28 @@ theorem DFIVoronoiTestFunction.integrable_dualMultiplier_of_quadratic_bound
   calc
     _ ≤ (C*(1+|u|)^2)*‖mellin g ((-1/2 : ℂ)+(u : ℂ)*I)‖ :=
       mul_le_mul_of_nonneg_right (hb u) (norm_nonneg _)
-    _ = _ := by simp only [neg_div]; ring
+    _ = _ := by grind
 
-theorem DFIVoronoiTestFunction.integrable_voronoiMinusMultiplier
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+theorem DFIVoronoiTestFunction.integrable_voronoiMinusMultiplier :
     Integrable (fun u : ℝ => dfiVoronoiMinusMultiplier 1 ((-1/2 : ℂ)+(u : ℂ)*I)*
-      mellin g ((-1/2 : ℂ)+(u : ℂ)*I)) := by
-  apply hg.integrable_dualMultiplier_of_quadratic_bound (C := 10368)
-  · apply continuous_iff_continuousAt.mpr
-    intro u
-    exact (differentiableAt_dfiVoronoiMinusMultiplier_of_re_lt_one 1 (by norm_num)).continuousAt.comp
-      (f := fun v : ℝ => (-1/2 : ℂ)+(v : ℂ)*I) (by fun_prop)
-  · intro u
-    simpa using norm_dfiVoronoiMinusMultiplier_strip_le 1
-      (z := (-1/2 : ℂ)+(u : ℂ)*I) (by norm_num) (by norm_num)
+      mellin g ((-1/2 : ℂ)+(u : ℂ)*I)) := by pm_4415 differentiableAt_dfiVoronoiMinusMultiplier_of_re_lt_one norm_dfiVoronoiMinusMultiplier_strip_le
 
-theorem DFIVoronoiTestFunction.integrable_voronoiPlusMultiplier
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.integrable_voronoiPlusMultiplier :
     Integrable (fun u : ℝ => dfiVoronoiPlusMultiplier 1 ((-1/2 : ℂ)+(u : ℂ)*I)*
-      mellin g ((-1/2 : ℂ)+(u : ℂ)*I)) := by
-  apply hg.integrable_dualMultiplier_of_quadratic_bound (C := 10368)
-  · apply continuous_iff_continuousAt.mpr
-    intro u
-    exact (differentiableAt_dfiVoronoiPlusMultiplier_of_re_lt_one 1 (by norm_num)).continuousAt.comp
-      (f := fun v : ℝ => (-1/2 : ℂ)+(v : ℂ)*I) (by fun_prop)
-  · intro u
-    simpa using norm_dfiVoronoiPlusMultiplier_strip_le 1
-      (z := (-1/2 : ℂ)+(u : ℂ)*I) (by norm_num) (by norm_num)
+      mellin g ((-1/2 : ℂ)+(u : ℂ)*I)) := by pm_4415 differentiableAt_dfiVoronoiPlusMultiplier_of_re_lt_one norm_dfiVoronoiPlusMultiplier_strip_le
 
 /-- Absolute convergence of the complete native minus series, including n=0. -/
-theorem DFIVoronoiTestFunction.summable_divisorWeight_voronoiMinus
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.summable_divisorWeight_voronoiMinus :
     Summable (fun n : ℕ => divisorWeight n * dfiVoronoiMinusTransform 1 (mellin g) n) := by
   simpa only [dfiVoronoiMinusTransform, neg_div] using
     summable_divisorWeight_dualTransform hg.integrable_voronoiMinusMultiplier
 
 /-- Genuine q=1 Voronoi identity, with the exact logarithmic main term and
 both original Mellin transforms; all contour and exchange conditions proved. -/
-theorem ordinaryDivisorVoronoi_native {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem ordinaryDivisorVoronoi_native :
     (∑' n : ℕ, divisorWeight n*g n) = ordinaryDivisorVoronoiMain g +
       (∑' n : ℕ, divisorWeight n*dfiVoronoiMinusTransform 1 (mellin g) n) +
       (∑' n : ℕ, divisorWeight n*dfiVoronoiPlusTransform 1 (mellin g) n) := by
@@ -101,5 +86,6 @@ theorem ordinaryDivisorVoronoi_native {g : ℝ → ℂ} (hg : DFIVoronoiTestFunc
     (integrable_zetaSquare_dualMultiplier hg.integrable_voronoiMinusMultiplier)
     (integrable_zetaSquare_dualMultiplier hg.integrable_voronoiPlusMultiplier)]
   ring
+end
 
 end MathCollab.Density.Stronger.Atkinson

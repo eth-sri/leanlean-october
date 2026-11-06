@@ -16,7 +16,7 @@ lemma expNeg_smooth : ContDiff ℝ ∞ expNeg := by
 
 lemma expNeg_hasDerivAt (x : ℝ) : HasDerivAt expNeg (-expNeg x) x := by
   have h := ((Complex.ofRealCLM.hasDerivAt (x := x)).neg).cexp
-  convert! h using 1; simp [expNeg]
+  convert! h using 1; aesop
 
 lemma iteratedDeriv_expNeg (n : ℕ) :
     iteratedDeriv n expNeg = fun x => (-1 : ℂ)^n*expNeg x := by
@@ -36,7 +36,7 @@ lemma expNeg_derivative_norm (n : ℕ) (x : ℝ) :
 lemma expNeg_derivative_decay (n i : ℕ) (x : ℝ) (hx : 0 ≤ x) :
     (1+x)^n*‖iteratedFDeriv ℝ i expNeg x‖ ≤ (n.factorial : ℝ)*Real.exp 1 := by
   rw [expNeg_derivative_norm]
-  have hf : 0 < (n.factorial : ℝ) := by exact_mod_cast Nat.factorial_pos n
+  have hf : 0 < (n.factorial : ℝ) := by positivity
   have hp := (div_le_iff₀ hf).mp (Real.pow_div_factorial_le_exp (1+x) (by linarith : 0 ≤ 1+x) n)
   calc
     _ ≤ (Real.exp (1+x)*(n.factorial : ℝ))*Real.exp (-x) :=

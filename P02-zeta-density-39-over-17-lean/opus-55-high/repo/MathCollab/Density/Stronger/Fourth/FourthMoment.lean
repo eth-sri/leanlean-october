@@ -8,14 +8,13 @@ Mathlib and narrow DigammaSeries dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.SquareTail
 public import MathCollab.Density.Stronger.Fourth.SquarePrefix
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
 open MathCollab.Density.Stronger
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
 
@@ -25,23 +24,18 @@ theorem zeta_fourth_dyadic :
         (∫ t in H..2*H, zetaMomentCriticalNorm t^4) ≤ C*H^(1+η) := by
   intro η hη
   let q : ℝ := min η 1/20
-  have hq : 0 < q := by dsimp [q]; positivity
+  pm_64 hq q
   have hq1 : q ≤ 1 := by
-    have h := min_le_right η 1
-    dsimp [q]
-    linarith
+    pm_8945 min_le_right
   have hqη : 7*q ≤ η := by
-    have h := min_le_left η 1
-    dsimp [q]
-    linarith
-  obtain ⟨Kt,hKt,Ht,hHt,herror⟩ := exists_norm_fourthRightPiece_sub_cutoff_le hq
-  obtain ⟨Kg,hKg,hgaussian⟩ := exists_norm_sq_fourthPrefix_le_gaussian hq
-  obtain ⟨Dp,hDp,hmean⟩ := exists_integral_gaussian_fourthPolynomial_le hq
-  obtain ⟨Db,hDb,hbudget⟩ := exists_fourth_dyadic_budget hq hq1
+    pm_8945 min_le_left
+  pm_231 Kt hKt Ht hHt herror exists_norm_fourthRightPiece_sub_cutoff_le hq
+  pm_313 Kg hKg hgaussian exists_norm_sq_fourthPrefix_le_gaussian hq Dp hDp hmean exists_integral_gaussian_fourthPolynomial_le
+  pm_69 Db hDb hbudget exists_fourth_dyadic_budget hq hq1
   refine ⟨8*Kg*Dp*Db+8*Kt^2,max Ht (4*q),by positivity,?_⟩
   intro H hH hH0
-  have hHHt : Ht ≤ H := (le_max_left _ _).trans hH
-  have hHq : 4*q ≤ H := (le_max_right _ _).trans hH
+  pm_207 hHHt Ht H le_max_left hH
+  pm_8711 hHq q
   have hH4 : 4 ≤ H := hHt.trans hHHt
   have hH1 : 1 ≤ H := by linarith
   obtain ⟨M,hNlower,hNupper⟩ := exists_dyadic_cutoff
@@ -85,10 +79,7 @@ theorem zeta_fourth_dyadic :
     hbudget H hH1 M hNupper
   have hlast : H^(1+7*q) ≤ H^(1+η) :=
     Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
-  have hlinear : H ≤ H^(1+η) := by
-    calc
-      H = H^(1:ℝ) := (Real.rpow_one H).symm
-      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH1 (by linarith)
+  pm_5129 hlinear η hH1
   calc
     _ ≤ ∫ t in H..2*H, 8*Kg*(2*H)^(2*q)*F t+8*Kt^2 :=
       intervalIntegral.integral_mono_on (by linarith)

@@ -21,7 +21,10 @@ def lowSeparatedIntegrand (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
       ((elementNorm m/lowPhysicalScale C X Y:ℝ):ℂ)^(-((v:ℂ)*Complex.I))*
         ∑σ : RayRing,lowRayAmplitude C W1 Y σ m v*B σ m
 
-lemma lowSeparatedIntegrand_eq (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
+section
+variable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
+include C W0 W1 Ω
+lemma lowSeparatedIntegrand_eq
     (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω)
     (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : RayRing→O→ℂ) (v : ℝ) :
     (∑'r : PhysicalRowIndex,lowRowMellinIntegrand C W0 W1 Ω X Y r v*B (physicalIdealRay r.1) r.2)=
@@ -40,7 +43,7 @@ lemma lowSeparatedIntegrand_eq (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
   unfold lowRowMellinIntegrand
   ring
 
-lemma lowSeparatedIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
+lemma lowSeparatedIntegrand_integrable
     (a0 b0 : ℝ) (ha0 : 0<a0) (hW0 : Function.support W0⊆Set.Icc a0 b0)
     (hWs : ContDiff ℝ ∞ W0) (hW1 : HasCompactSupport W1)
     (hΩ : HasCompactSupport Ω) (hΩ0 : Ω 0=0)
@@ -49,6 +52,7 @@ lemma lowSeparatedIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→�
   have hh := lowRowMellinIntegrand_sum_integrable C W0 W1 Ω a0 b0 ha0 hW0 hWs hW1 hΩ hΩ0 X Y hX hY
     (fun r=>B (physicalIdealRay r.1) r.2)
   simpa only [lowSeparatedIntegrand_eq C W0 W1 Ω hW1 hΩ X Y hX hY B] using hh
+end
 
 theorem physicalRowWeight_low_separated (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)

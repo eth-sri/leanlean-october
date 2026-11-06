@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SpatialDerivatives
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstCoreCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,73 +9,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace EisensteinSchwartzPoisson
 open ActualEisensteinCubic ConcreteTraceCRT
@@ -111,8 +69,7 @@ theorem nonzero_lattice_envelope_sum
     Summable f ∧ t * (∑' h, f h) ≤ nonzeroLatticeEnvelopeConstant * C := by
   have hp (h : {h : O // h ≠ 0}) :
       f h ≤ C * ((1 + t * ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ := by
-    rw [← div_eq_mul_inv]
-    apply (le_div_iff₀ (by positivity)).mpr
+    pm_3437
     simpa only [mul_comm] using hbound h
   have hs := (scaled_eisenstein_cauchy_summable t ht).subtype (fun h : O => h ≠ 0)
   have hfs : Summable f := Summable.of_nonneg_of_le hf hp (hs.mul_left C)
@@ -141,13 +98,17 @@ def originalMiddleDecayConstant (W : 𝓢(ℝ, ℂ)) : ℝ :=
 def dualMiddleDecayConstant (W : 𝓢(ℝ, ℂ)) : ℝ :=
   (actual_dual_middle_radial_block_bound.{0, 0, 0} W 2).choose
 
-theorem originalMiddleDecayConstant_nonneg (W : 𝓢(ℝ, ℂ)) :
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+theorem originalMiddleDecayConstant_nonneg :
     0 ≤ originalMiddleDecayConstant W :=
   (actual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.1
 
-theorem dualMiddleDecayConstant_nonneg (W : 𝓢(ℝ, ℂ)) :
+theorem dualMiddleDecayConstant_nonneg :
     0 ≤ dualMiddleDecayConstant W :=
   (actual_dual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.1
+end
 
 theorem divisorBlockCost_mono_coefficients
     {n p : Type*} [Fintype n] [Fintype p]
@@ -155,8 +116,7 @@ theorem divisorBlockCost_mono_coefficients
     (a a₀ : n → ℂ) (b b₀ : p → ℂ)
     (ha : ∀ j, ‖a j‖ ≤ ‖a₀ j‖) (hb : ∀ k, ‖b k‖ ≤ ‖b₀ k‖) :
     divisorBlockCost ε hε D₁ D₂ B N a b ≤ divisorBlockCost ε hε D₁ D₂ B N a₀ b₀ := by
-  have hA := sieveNorm_nonneg B (N / D₁)
-  have hB := sieveNorm_nonneg B (N / D₂)
+  pm_5381 hA B hB
   unfold divisorBlockCost
   gcongr
   · exact ha _
@@ -226,20 +186,16 @@ theorem actual_original_middle_all_frequencies
         2 * nonzeroLatticeEnvelopeConstant * originalMiddleDecayConstant W *
           Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀) := by
   let t := Real.sqrt (M / B) / (D₁ * D₂)
-  have ht : 0 < t := by dsimp only [t]; positivity
-  let C := originalMiddleDecayConstant W * Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀)
-  have hC : 0 ≤ C := mul_nonneg (originalMiddleDecayConstant_nonneg W) (Real.sqrt_nonneg _)
+  pm_116 ht t
+  pm_5212 originalMiddleDecayConstant originalMiddleDecayConstant_nonneg
   have hpoint (h : {h : O // h ≠ 0}) :
       (1 + t * ‖eisEmbedding h.val‖ ^ 2) ^ 2 *
         originalMiddleAt W S T rows left right (a h.val) (b h.val) M h.val ≤ 2 * t * C := by
     have hk := (actual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.2 ε hε S T D₁ D₂ B N M
       hD₁ hD₂ hB hN hM hS hT rows left right hr hl hri hrows hleft hright (a h.val) (b h.val) h.val h.property
-    change _ ≤ originalMiddleDecayConstant W *
-      Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N (a h.val) (b h.val)) at hk
-    have hcost := divisorBlockCost_mono_coefficients ε hε D₁ D₂ B N
-      (by linarith) (by linarith) (a h.val) a₀ (b h.val) b₀ (ha h.val) (hb h.val)
-    have hk' := hk.trans (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hcost)
-      (originalMiddleDecayConstant_nonneg W))
+    pm_5528 originalMiddleDecayConstant
+    pm_3248
+    pm_7995 originalMiddleDecayConstant_nonneg
     have hp := principal_middle_prefactor_sum S T rows
       (fun D E i => ‖∑ j, ∑ k, originalTerm rows left right (a h.val) (b h.val) D.val E.val i j k *
         paperRadialFourier W (Real.sqrt (M / (Ideal.absNorm (rows i) : ℝ)) * ‖eisEmbedding h.val‖ ^ 2 /
@@ -259,7 +215,7 @@ theorem actual_original_middle_all_frequencies
       _ ≤ 2 * t * C := mul_le_mul_of_nonneg_left hk' (by positivity)
   obtain ⟨hs, hv⟩ := nonzero_lattice_envelope_sum t (2 * t * C) ht (by positivity)
     _ (fun h => originalMiddleAt_nonneg W S T rows left right (a h.val) (b h.val) M h.val) hpoint
-  refine ⟨hs, (mul_le_mul_iff_right₀ ht).mp ?_⟩
+  pm_8083
   calc
     _ ≤ nonzeroLatticeEnvelopeConstant * (2 * t * C) := hv
     _ = _ := by dsimp only [C]; ring
@@ -269,7 +225,7 @@ end
 theorem dual_middle_scale_identity (M F B N : ℝ)
     (hM : 0 < M) (hF : 0 < F) (hB : 0 < B) (hN : 0 < N) :
     Real.sqrt ((M / F) / B) = (M / (F * N)) * (N * Real.sqrt (F / (M * B))) := by
-  apply (sq_eq_sq₀ (Real.sqrt_nonneg _) (by positivity)).mp
+  pm_857 sq_eq_sq₀
   simp only [mul_pow, div_pow, Real.sq_sqrt (show 0 ≤ (M / F) / B by positivity),
     Real.sq_sqrt (show 0 ≤ F / (M * B) by positivity)]
   field_simp
@@ -299,21 +255,17 @@ theorem actual_dual_middle_all_frequencies
           Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀) := by
   let t := (N * Real.sqrt (F / (M * B))) / (D₁ * D₂)
   let r := M / (F * N)
-  have ht : 0 < t := by dsimp only [t]; positivity
-  have hr0 : 0 < r := by dsimp only [r]; positivity
-  let C := dualMiddleDecayConstant W * Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a₀ b₀)
-  have hC : 0 ≤ C := mul_nonneg (dualMiddleDecayConstant_nonneg W) (Real.sqrt_nonneg _)
+  pm_116 ht t
+  pm_116 hr0 r
+  pm_5212 dualMiddleDecayConstant dualMiddleDecayConstant_nonneg
   have hpoint (h : {h : O // h ≠ 0}) :
       (1 + t * ‖eisEmbedding h.val‖ ^ 2) ^ 2 *
         dualMiddleAt W S T rows left right (a h.val) (b h.val) M F h.val ≤ (2 * t * r) * C := by
     have hk := (actual_dual_middle_radial_block_bound.{0, 0, 0} W 2).choose_spec.2 ε hε S T D₁ D₂ B N M F
       hD₁ hD₂ hB hN hM hF hS hT rows left right hr hl hri hrows hleft hright (a h.val) (b h.val) h.val h.property
-    change _ ≤ dualMiddleDecayConstant W *
-      Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N (a h.val) (b h.val)) at hk
-    have hcost := divisorBlockCost_mono_coefficients ε hε D₁ D₂ B N
-      (by linarith) (by linarith) (a h.val) a₀ (b h.val) b₀ (ha h.val) (hb h.val)
-    have hk' := hk.trans (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hcost)
-      (dualMiddleDecayConstant_nonneg W))
+    pm_5528 dualMiddleDecayConstant
+    pm_3248
+    pm_7995 dualMiddleDecayConstant_nonneg
     have hp := principal_middle_prefactor_sum S T rows
       (fun D E i => ‖∑ j, ∑ k, originalTerm rows left right (a h.val) (b h.val) D.val E.val i j k *
         paperRadialFourier W (Real.sqrt (F * (Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ) /
@@ -337,7 +289,7 @@ theorem actual_dual_middle_all_frequencies
       _ ≤ (2 * t * r) * C := mul_le_mul_of_nonneg_left hk' (by positivity)
   obtain ⟨hs, hv⟩ := nonzero_lattice_envelope_sum t ((2 * t * r) * C) ht (by positivity)
     _ (fun h => dualMiddleAt_nonneg W S T rows left right (a h.val) (b h.val) M F h.val) hpoint
-  refine ⟨hs, (mul_le_mul_iff_right₀ ht).mp ?_⟩
+  pm_8083
   calc
     _ ≤ nonzeroLatticeEnvelopeConstant * ((2 * t * r) * C) := hv
     _ = _ := by dsimp only [C, r]; ring
@@ -349,10 +301,13 @@ open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 def divisorExponentConstant {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) : ℝ :=
   (h.divisor_pair deltaLoss hδ).choose
 
-theorem divisorExponentConstant_pos {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) :
+section
+variable {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
+include α h deltaLoss hδ
+theorem divisorExponentConstant_pos :
     0 < divisorExponentConstant h deltaLoss hδ := (h.divisor_pair deltaLoss hδ).choose_spec.1
 
-theorem divisor_cost_with_constant {α : ℝ} (h : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss)
+theorem divisor_cost_with_constant
     {n p : Type*} [Fintype n] [Fintype p]
     (ε : ℝ) (hε : 0 < ε) (B N D₁ D₂ : ℝ)
     (hB : 1 ≤ B) (hN : 1 ≤ N) (hD₁ : 1 ≤ D₁) (hD₂ : 1 ≤ D₂)
@@ -364,6 +319,7 @@ theorem divisor_cost_with_constant {α : ℝ} (h : HasSieveExponent α) (deltaLo
   exact mul_le_mul_of_nonneg_left
     ((h.divisor_pair deltaLoss hδ).choose_spec.2 B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N)
     (divisorEnergyFactor_nonneg ε hε N a b)
+end
 
 theorem sqrt_div_mul_rpow (M B α : ℝ) (hM : 0 ≤ M) (hB : 0 < B) :
     Real.sqrt (M / B) * B ^ α = Real.sqrt M * B ^ (α - 1 / 2) := by
@@ -408,8 +364,10 @@ variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < de
 
 include hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT hr hl hri hrows ha hb
 
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
 theorem HasSieveExponent.original_middle_block
-    (W : 𝓢(ℝ, ℂ))
     (hleft : ∀ j, Admissible (left j) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hcut : D₁ * D₂ ≤ U * Real.sqrt (M / B)) :
@@ -421,10 +379,8 @@ theorem HasSieveExponent.original_middle_block
   have hc := divisor_cost_with_constant hexp deltaLoss hδ ε hε B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N a₀ b₀
   have hs := (actual_original_middle_all_frequencies ε hε S T D₁ D₂ B N M hD₁ hD₂ hB hN hM hS hT
     rows left right hr hl hri hrows a₀ b₀ a b ha hb W hleft hright).2
-  have hk : 0 ≤ 2 * nonzeroLatticeEnvelopeConstant * originalMiddleDecayConstant W :=
-    mul_nonneg (mul_nonneg (by norm_num) nonzeroLatticeEnvelopeConstant_nonneg) (originalMiddleDecayConstant_nonneg W)
-  have hf := divisorEnergyFactor_nonneg ε hε N a₀ b₀
-  have hconst := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+  pm_6365 originalMiddleDecayConstant originalMiddleDecayConstant_nonneg
+  pm_3249 hf a₀ b₀ hconst
   calc
     _ ≤ (2 * nonzeroLatticeEnvelopeConstant * originalMiddleDecayConstant W) *
         (divisorEnergyFactor ε hε N a₀ b₀ *
@@ -436,8 +392,7 @@ theorem HasSieveExponent.original_middle_block
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (original_middle_scale_shape M B N (D₁ * D₂) U α hM.le (by linarith) hcut) (by positivity)
 
-theorem HasSieveExponent.dual_middle_block
-    (W : 𝓢(ℝ, ℂ)) (F : ℝ) (hF : 0 < F)
+theorem HasSieveExponent.dual_middle_block (F : ℝ) (hF : 0 < F)
     (hleft : ∀ j, Admissible (left j) ∧ N / 2 ≤ (Ideal.absNorm (left j) : ℝ) ∧ (Ideal.absNorm (left j) : ℝ) ≤ N)
     (hright : ∀ k, Admissible (right k) ∧ N / 2 ≤ (Ideal.absNorm (right k) : ℝ) ∧ (Ideal.absNorm (right k) : ℝ) ≤ N)
     (hcut : D₁ * D₂ ≤ U * (N * Real.sqrt (F / (M * B)))) :
@@ -449,10 +404,8 @@ theorem HasSieveExponent.dual_middle_block
   have hc := divisor_cost_with_constant hexp deltaLoss hδ ε hε B N D₁ D₂ hB hN hD₁ hD₂ hD₁N hD₂N a₀ b₀
   have hs := (actual_dual_middle_all_frequencies ε hε S T D₁ D₂ B N M F hD₁ hD₂ hB hN hM hF hS hT
     rows left right hr hl hri hrows a₀ b₀ a b ha hb W hleft hright).2
-  have hk : 0 ≤ 2 * nonzeroLatticeEnvelopeConstant * dualMiddleDecayConstant W :=
-    mul_nonneg (mul_nonneg (by norm_num) nonzeroLatticeEnvelopeConstant_nonneg) (dualMiddleDecayConstant_nonneg W)
-  have hf := divisorEnergyFactor_nonneg ε hε N a₀ b₀
-  have hconst := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+  pm_6365 dualMiddleDecayConstant dualMiddleDecayConstant_nonneg
+  pm_3249 hf a₀ b₀ hconst
   calc
     _ ≤ ((2 * nonzeroLatticeEnvelopeConstant * dualMiddleDecayConstant W) * (M / (F * N))) *
         (divisorEnergyFactor ε hε N a₀ b₀ *
@@ -463,12 +416,13 @@ theorem HasSieveExponent.dual_middle_block
           ((M / (F * N)) * (N + B ^ α * (D₁ * D₂))) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (dual_middle_scale_shape M F B N (D₁ * D₂) U α hM hF (by linarith) (by linarith) hcut) (by positivity)
+end
 
 end CanonicalQuadraticSieve
 
 namespace CubicEisenstein
 open Filter
-open scoped BigOperators Classical Topology Matrix MatrixGroups
+open scoped Classical Topology Matrix MatrixGroups
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 
@@ -480,7 +434,10 @@ def integralComplexMatrix : SL(2,O) →* SL(2,ℂ) := Matrix.SpecialLinearGroup.
 lemma integralComplexMatrix_levelThree (M : levelThree) :
     integralComplexMatrix (M : SL(2,O)) = complexMatrix M := rfl
 
-lemma row_wedge_gram (u v : Fin 2 → ℂ) :
+section
+variable (u v : Fin 2 → ℂ)
+include u v
+lemma row_wedge_gram :
     Complex.normSq (u 0*v 1-u 1*v 0) +
       Complex.normSq (u 0*star (v 0)+u 1*star (v 1)) = rowEnergy u * rowEnergy v := by
   simp only [rowEnergy,← Complex.normSq_eq_norm_sq,Complex.normSq_apply,
@@ -488,16 +445,16 @@ lemma row_wedge_gram (u v : Fin 2 → ℂ) :
     Complex.star_def,Complex.conj_re,Complex.conj_im]
   ring
 
-lemma row_wedge_le_energy (u v : Fin 2 → ℂ) :
+lemma row_wedge_le_energy :
     Complex.normSq (u 0*v 1-u 1*v 0) ≤ rowEnergy u * rowEnergy v := by
   rw [← row_wedge_gram u v]
   exact le_add_of_nonneg_right (Complex.normSq_nonneg _)
+end
 
 lemma bottom_row_wedge_mul (g h : SL(2,ℂ)) :
     complexBottomRow (g*h) 0 * complexBottomRow h 1 -
       complexBottomRow (g*h) 1 * complexBottomRow h 0 = g 1 0 := by
-  have hd : h 0 0*h 1 1-h 0 1*h 1 0=1 := by
-    simpa only [Matrix.det_fin_two] using h.property
+  pm_3250 hd h h.property
   simp only [complexBottomRow,Matrix.SpecialLinearGroup.coe_mul,Matrix.mul_apply,Fin.sum_univ_two]
   linear_combination g 1 0 * hd
 
@@ -535,7 +492,7 @@ theorem integral_hyperbolicHeight_mul_le_one (M : SL(2,O)) (hc : M 1 0≠0) (w :
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
@@ -551,7 +508,10 @@ lemma cosetHeight_rightEquiv (M : levelThree) (x : CuspCosets) (w : HyperbolicSp
     change cosetHeight (cosetOf (N*M)) w = cosetHeight (cosetOf N) (complexMatrix M • w)
     rw [cosetHeight_cosetOf,cosetHeight_cosetOf,map_mul,mul_smul]
 
-lemma high_coset_unique (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace)
+section
+variable (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace)
+include Y hY w
+lemma high_coset_unique
     (x y : CuspCosets) (hx : Y<cosetHeight x w) (hy : Y<cosetHeight y w) : x=y := by
   induction x using Quotient.inductionOn with | _ M =>
     induction y using Quotient.inductionOn with | _ N =>
@@ -570,16 +530,20 @@ lemma high_coset_unique (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace)
       have hn := lt_of_le_of_lt hY hy
       nlinarith [mul_pos (sub_pos.mpr hm) (sub_pos.mpr hn)]
 
-lemma high_cosets_finite (Y : ℝ) (hY : 1≤Y) (w : HyperbolicSpace) :
+lemma high_cosets_finite :
     Set.Finite {x : CuspCosets | Y<cosetHeight x w} := by
   have h : Set.Subsingleton {x : CuspCosets | Y<cosetHeight x w} :=
     fun x hx y hy => high_coset_unique Y hY w x y hx hy
   exact h.finite
+end
 
 def cuspCutoffTerm (Y : ℝ) (F : ℝ → ℂ) (x : CuspCosets) (w : HyperbolicSpace) : ℂ :=
   if Y<cosetHeight x w then (cosetCharacter x)⁻¹ * F (cosetHeight x w) else 0
 
-lemma cuspCutoffTerm_finiteSupport (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace) :
+section
+variable (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace)
+include Y hY F w
+lemma cuspCutoffTerm_finiteSupport :
     Function.HasFiniteSupport (fun x => cuspCutoffTerm Y F x w) := by
   apply (high_cosets_finite Y hY w).subset
   intro x hx
@@ -588,14 +552,18 @@ lemma cuspCutoffTerm_finiteSupport (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w :
   change ¬Y<cosetHeight x w at hn
   exact hx (by simp [cuspCutoffTerm,hn])
 
-lemma cuspCutoffTerm_summable (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ) (w : HyperbolicSpace) :
+lemma cuspCutoffTerm_summable :
     Summable (fun x => cuspCutoffTerm Y F x w) :=
   summable_of_hasFiniteSupport (cuspCutoffTerm_finiteSupport Y hY F w)
+end
 
 def cuspCutoffCorrection (Y : ℝ) (F : ℝ → ℂ) (w : HyperbolicSpace) : ℂ :=
   ∑'x,cuspCutoffTerm Y F x w
 
-lemma cuspCutoffTerm_automorphy (Y : ℝ) (F : ℝ → ℂ) (M : levelThree)
+section
+variable (Y : ℝ)
+include Y
+lemma cuspCutoffTerm_automorphy (F : ℝ → ℂ) (M : levelThree)
     (x : CuspCosets) (w : HyperbolicSpace) :
     cuspCutoffTerm Y F x (complexMatrix M • w) =
       complexCharacter M * cuspCutoffTerm Y F (rightEquiv M x) w := by
@@ -607,7 +575,7 @@ lemma cuspCutoffTerm_automorphy (Y : ℝ) (F : ℝ → ℂ) (M : levelThree)
   simp only [cuspCutoffTerm,cosetHeight_rightEquiv,cosetCharacter_rightEquiv]
   split_ifs <;> simp [mul_inv_rev,hM,mul_assoc,mul_left_comm,mul_comm]
 
-theorem cuspCutoffCorrection_automorphy (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
+theorem cuspCutoffCorrection_automorphy (hY : 1≤Y) (F : ℝ → ℂ)
     (M : levelThree) (w : HyperbolicSpace) :
     cuspCutoffCorrection Y F (complexMatrix M • w) = complexCharacter M*cuspCutoffCorrection Y F w := by
   have hsum := cuspCutoffTerm_summable Y hY F w
@@ -616,7 +584,7 @@ theorem cuspCutoffCorrection_automorphy (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
   exact (cuspCutoffTerm_summable Y hY F (complexMatrix M • w)).hasSum.unique
     (hscale.congr_fun (fun x => cuspCutoffTerm_automorphy Y F M x w))
 
-lemma cuspCutoffCorrection_eq (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
+lemma cuspCutoffCorrection_eq (hY : 1≤Y) (F : ℝ → ℂ)
     (w : HyperbolicSpace) (x : CuspCosets) (hx : Y<cosetHeight x w) :
     cuspCutoffCorrection Y F w = (cosetCharacter x)⁻¹*F (cosetHeight x w) := by
   unfold cuspCutoffCorrection
@@ -625,6 +593,7 @@ lemma cuspCutoffCorrection_eq (Y : ℝ) (hY : 1≤Y) (F : ℝ → ℂ)
   · intro y hy
     have hn : ¬Y<cosetHeight y w := fun hh => hy (high_coset_unique Y hY w y x hh hx)
     simp [cuspCutoffTerm,hn]
+end
 
 lemma hyperbolicHeight_upperPoint (z : ℂ) (v : ℝ) (hv : 0<v) :
     hyperbolicHeight (upperPoint z v hv)=v := by

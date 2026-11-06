@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedContinuation
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedHolomorphic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ theorem unselectedCorrection_first_subpower (δ : ℝ) (hδ : 0<δ) :
       (51/100:ℝ)≤x.re → -(1/100:ℝ)≤w.re → (17/50:ℝ)≤z.re → 1+eps≤x.re+w.re →
       ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤
         C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^δ := by
-  obtain ⟨C,hC,hbound⟩ := continuedCorrection_first_subpower δ hδ
+  pm_69 C hC hbound continuedCorrection_first_subpower δ hδ
   exact ⟨C,hC,fun eps S hS hfirst T η u x w z hx hw hz hxw=>
     hbound eps (markExclusions S T) (markedSourceExclusions S hS T) (marked_firstTail eps S hfirst T)
       η u x w z hx hw hz hxw⟩

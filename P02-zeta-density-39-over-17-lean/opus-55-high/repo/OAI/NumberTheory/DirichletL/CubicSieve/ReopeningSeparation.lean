@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.ReopenedFibers
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,76 +8,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic
+open ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
@@ -89,17 +44,12 @@ def normPhase (t : ℝ) : ActualEisensteinCubic.O →* ℂ where
   map_one' := by simp [FourierBridge.logPhase_zero]
   map_mul' a b := by
     by_cases ha : a=0
-    · simp [ha]
+    grind
     by_cases hb : b=0
-    · simp [hb]
+    grind
     simp only [ite_eq_right ha,ite_eq_right hb,ite_eq_right (mul_ne_zero ha hb),map_mul,norm_mul,mul_pow]
     rw [Real.log_mul (pow_ne_zero _ (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero ha)))
       (pow_ne_zero _ (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hb))),FourierBridge.logPhase_add]
-
-@[simp] theorem normPhase_zero (t : ℝ) : normPhase t 0=0 := by simp [normPhase]
-
-theorem normPhase_of_ne_zero (t : ℝ) (z : ActualEisensteinCubic.O) (hz : z≠0) :
-    normPhase t z=logPhase t (Real.log (‖eisEmbedding z‖^2)) := by simp [normPhase,hz]
 
 def normHeightTwist (Ψ : ActualEisensteinCubic.O →* ℂ) (t : ℝ) : ActualEisensteinCubic.O →* ℂ := Ψ*normPhase t
 
@@ -113,7 +63,7 @@ end SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FourierBridge (logPhase)
@@ -137,7 +87,6 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical
 open MeasureTheory
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
@@ -155,7 +104,6 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 end SecondPassIntegration
 end
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
@@ -171,17 +119,17 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 
 end
 
-open ActualEisensteinCubic FirstPassCubeLabels
+open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end SecondPassArithmetic
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 
 namespace CanonicalCubeSeparation
-open FourierBridge JointLogSeparation FirstPassCubeLabels
+open FourierBridge JointLogSeparation
 
 def columnWindowRadius (a b : ℝ) : ℝ := |Real.log a| + |Real.log b| + 3
 
@@ -192,13 +140,9 @@ lemma columnWindowRadius_nonneg (a b : ℝ) : 0 ≤ columnWindowRadius a b := by
 def sourceLogProfile (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) : 𝓢(ℝ,ℂ) := by
   have hc : HasCompactSupport (fun u : ℝ => W (Real.exp u)) := by
-    apply HasCompactSupport.of_support_subset_isCompact
-      (K := Set.Icc (Real.log a) (Real.log b)) isCompact_Icc
-    intro u hu
+    pm_6054
     have hm := hs hu
-    constructor
-    · simpa only [Real.log_exp] using Real.log_le_log ha hm.1
-    · simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos u) hm.2
+    pm_1281
   exact hc.toSchwartzMap (hW.comp Real.contDiff_exp)
 
 @[simp] lemma sourceLogProfile_apply (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)

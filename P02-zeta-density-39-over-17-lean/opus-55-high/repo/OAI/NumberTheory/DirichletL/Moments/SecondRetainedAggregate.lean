@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceFrequency
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,8 +21,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem commonLabels_supported (S : Finset (Ideal O)) (C D : Ideal O)
     (h : (C,D)∈commonLabels (supportedColumns S) (supportedColumns S)) :
     Supported C ∧ Supported D := by
-  obtain ⟨p,hp,he⟩ := Finset.mem_image.mp h
-  rcases Prod.mk.inj he with ⟨rfl,rfl⟩
+  pm_5828
   have hp' := Finset.mem_product.mp hp
   exact ⟨commonPart_supported _ _ (Finset.mem_filter.mp hp'.1).2,
     commonPart_supported _ _ (Finset.mem_filter.mp hp'.2).2⟩

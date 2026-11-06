@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceRayPrime
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,10 +23,7 @@ lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
     naturalSlot F.character pool (heightCoefficient β t) P=
       normalizedSlot η fixedBadMask 1 z pool β t P := by
   unfold naturalSlot normalizedSlot rowSlot
-  congr 1
-  apply Finset.sum_congr rfl
-  intro I hI
-  rw [F.ideal]
+  pm_739 I hI F.ideal
   simp only [heightCoefficient,one_mul]
   ring
 
@@ -39,43 +37,42 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
     (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀η₀ : Character,∀ᶠZ : ℝ in atTop,
-    ∀(θ : α→RayQuotient.Characters M H)(w σ v : α→ℝ)(t T : ℝ),
+    ∀(θ : α→ RayQuotient.Characters M H)(w σ v : α→ℝ)(t T : ℝ),
       (∀i∈F,0≤w i) → (∀i∈F,w i≤Lslot) →
       (∀i∈F,lo≤σ i) → (∀i∈F,σ i≤hi) → 0≤T → (∀i∈F,|v i|≤T) →
     ∀(η : Character)(z : O),z≠0 → ∀N : NaturalRow η z,
-      (N.character.modulus.absNorm:ℝ)≤Z^Lmod →
+      (N.character.modulus.absNorm:ℝ)≤Z ^Lmod →
     ∀Q : Ideal O,Q≤M → ¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z →
     ∀A : Finset α,A⊆F →
-      ‖∏i∈A,naturalSlot N.character (primePool M H b (Z^(w i)))
-        (heightCoefficient (fun I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
-          HeckePrimeAnnular.annularWeight W (Z^(w i)) (σ i) (v i) I) t) (Z^(w i))‖^2 ≤
-      C*(1+|t|+T)^degree*Z^(loss+κ*(∑i∈F,w i)) := by
+      ‖∏i∈A,naturalSlot N.character (primePool M H b (Z ^(w i)))
+        (heightCoefficient (fun I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I *
+          HeckePrimeAnnular.annularWeight W (Z ^(w i)) (σ i) (v i) I) t) (Z ^(w i))‖^2 ≤
+      C*(1+|t|+T)^degree*Z ^(loss+κ*(∑i∈F,w i)) := by
   let el : ℝ := loss/(F.card+1)
-  have hel : 0<el := div_pos hloss (by positivity)
+  pm_3587 hel el hloss
   obtain ⟨J,C,hC,hbound⟩ := natural_ray_slots_uniform M H hH W a b ha hWs hW
     Lmod Lslot el lo hi κ hLm hLs hel hbeta hκ
   let C₀ := max 1 C
-  have hC₀ : 1≤C₀ := le_max_left _ _
+  pm_4909 hC₀ C₀
   refine ⟨J*F.card,C₀^F.card,pow_pos (zero_lt_one.trans_le hC₀) _,?_⟩
-  intro η₀
-  filter_upwards [hbound η₀,eventually_gt_atTop (1:ℝ)] with Z hz hZ
+  pm_551 η₀ eventually_gt_atTop hz
   intro θ w σ v t T hw hwL hσlo hσhi hT hv η z hz0 N hmod Q hQM hex A hAF
   have hZ0 : 0<Z := zero_lt_one.trans hZ
   have hk : 0≤κ := by linarith
   have hh : 1≤1+|t|+T := by linarith [abs_nonneg t]
   have hslot (i : α) (hi : i∈A) :
-      ‖naturalSlot N.character (primePool M H b (Z^(w i)))
-        (heightCoefficient (fun I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
-          HeckePrimeAnnular.annularWeight W (Z^(w i)) (σ i) (v i) I) t) (Z^(w i))‖^2 ≤
-      (C₀*(1+|t|+T)^J)*Z^(el+κ*w i) := by
+      ‖naturalSlot N.character (primePool M H b (Z ^(w i)))
+        (heightCoefficient (fun I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I *
+          HeckePrimeAnnular.annularWeight W (Z ^(w i)) (σ i) (v i) I) t) (Z ^(w i))‖^2 ≤
+      (C₀*(1+|t|+T)^J)*Z ^(el+κ*w i) := by
     rw [natural_slot_eq N]
-    have he := hz (θ i) (Z^(w i)) (Real.one_le_rpow hZ.le (hw i (hAF hi)))
+    have he := hz (θ i) (Z ^(w i)) (Real.one_le_rpow hZ.le (hw i (hAF hi)))
       (Real.rpow_le_rpow_of_exponent_le hZ.le (hwL i (hAF hi))) η z hz0 N hmod Q hQM hex
       (σ i) t (v i) (hσlo i (hAF hi)) (hσhi i (hAF hi))
     apply he.trans
     rw [←Real.rpow_mul hZ0.le]
     calc
-      _ ≤ (C₀*(1+|t|+T)^J)*Z^el*Z^(w i*κ) := by
+      _ ≤ (C₀*(1+|t|+T)^J)*Z ^el*Z ^(w i*κ) := by
         gcongr
         · exact le_max_right 1 C
         · exact hv i (hAF hi)

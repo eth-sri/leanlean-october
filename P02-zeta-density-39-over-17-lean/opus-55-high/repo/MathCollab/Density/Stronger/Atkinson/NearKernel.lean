@@ -8,14 +8,13 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.GammaPhase
 public import MathCollab.Density.Stronger.Fourth.GammaShiftAmplitude
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Topology
+open MathCollab.Density.Stronger.Fourth
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -25,16 +24,14 @@ theorem norm_poleShift_gammaReal_sq_sub_exp_le {t : ℝ} (ht : 4 ≤ t)
         Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 - Complex.exp (w * zetaGammaLeadingLog t)‖ ≤
       (9 * zetaGammaShiftError t w + 12 * ‖w‖ / t) *
         Real.exp (zetaGammaShiftError t w) * Real.exp ((w * zetaGammaLeadingLog t).re) := by
-  let R := (Complex.Gammaℝ (afeCriticalPoint (-t) + w) /
-    Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2
-  let E := Complex.exp (w * zetaGammaLeadingLog t)
+  pm_4375
   have heq : zetaSquarePoleShift t w * R - E =
       zetaSquarePoleShift t w * (R - E) + (zetaSquarePoleShift t w - 1) * E := by ring
   change ‖zetaSquarePoleShift t w * R - E‖ ≤ _
   rw [heq]
   apply (norm_add_le _ _).trans
   simp only [norm_mul]
-  have hB : 0 ≤ zetaGammaShiftError t w := zetaGammaShiftError_nonneg (by linarith) w
+  pm_7003
   have hexp : 1 ≤ Real.exp (zetaGammaShiftError t w) := Real.one_le_exp hB
   have hnE : ‖E‖ = Real.exp ((w * zetaGammaLeadingLog t).re) := Complex.norm_exp _
   rw [hnE]
@@ -76,13 +73,16 @@ theorem zetaSquareRightKernel_normalized_reflected (t u : ℝ) :
   rw [zetaSquarePoleNormalization_neg]
   ring
 
-theorem norm_rightContour_shift_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t / 4) :
+section
+variable {t u : ℝ} (ht : 4 ≤ t)
+include t u ht
+theorem norm_rightContour_shift_le (hu : |u| ≤ t / 4) :
     ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ t / 2 := by
   have h := norm_add_le (1 : ℂ) ((u : ℂ) * I)
   simp [Real.norm_eq_abs] at h
   linarith
 
-private theorem near_shift_exponent_le {t u : ℝ} (ht : 4 ≤ t) :
+private theorem near_shift_exponent_le :
     zetaGammaShiftError t (1 + (u : ℂ) * I) + u * (Real.pi / 2) ≤ 20 + 10 * u ^ 2 := by
   have ht0 : 0 < t := by linarith
   have hw : ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ 1 + |u| := by
@@ -96,15 +96,19 @@ private theorem near_shift_exponent_le {t u : ℝ} (ht : 4 ≤ t) :
       _ ≤ |u| * (Real.pi / 2) := mul_le_mul_of_nonneg_right (le_abs_self _) (by positivity)
       _ ≤ _ := by nlinarith [Real.pi_lt_four, abs_nonneg u]
   nlinarith [sq_abs u, sq_nonneg (|u| - 1)]
+end
 
+section
+variable {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t / 4)
+include t u ht hu
 /-- The height power in the leading exponential cancels the inverse-height
 relative error. The resulting majorant has no height-dependent constant. -/
-theorem norm_near_pole_gamma_error_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t / 4) :
+theorem norm_near_pole_gamma_error_le :
     let w : ℂ := 1 + (u : ℂ) * I
     ‖zetaSquarePoleShift t w * (Complex.Gammaℝ (afeCriticalPoint (-t) + w) /
         Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 - Complex.exp (w * zetaGammaLeadingLog t)‖ ≤
       183 * (1 + |u|) ^ 2 * Real.exp (20 + 10 * u ^ 2) := by
-  let w : ℂ := 1 + (u : ℂ) * I
+  pm_4472
   have ht0 : 0 < t := by linarith
   have hwre : 0 ≤ w.re := by norm_num [w]
   have herr := norm_poleShift_gammaReal_sq_sub_exp_le ht hwre (norm_rightContour_shift_le ht hu)
@@ -124,8 +128,7 @@ theorem norm_near_pole_gamma_error_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t
     field_simp
     ring
   rw [hident] at herr
-  have hw : ‖w‖ ≤ 1 + |u| := by
-    simpa [w, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
+  pm_4376
   have hpoly : (165 * ‖w‖ + 18 * ‖w‖ ^ 2) / (2 * Real.pi) ≤ 183 * (1 + |u|) ^ 2 := by
     have h1 : 1 ≤ 2 * Real.pi := by linarith [Real.pi_gt_three]
     calc
@@ -136,30 +139,22 @@ theorem norm_near_pole_gamma_error_le {t u : ℝ} (ht : 4 ≤ t) (hu : |u| ≤ t
 
 /-- The complete normalized source-kernel error has an integrable Gaussian
 majorant, uniformly for every height `t ≥ 4` on the stated central segment. -/
-theorem norm_zetaSquareRightKernel_sub_leading_near_le {t u : ℝ}
-    (ht : 4 ≤ t) (hu : |u| ≤ t / 4) :
+theorem norm_zetaSquareRightKernel_sub_leading_near_le :
     ‖zetaSquareRightKernel (-t) u / zetaSquareGammaNormalization t -
       zetaSquareLeadingRightKernel t u‖ ≤
       114375 * Real.exp 120 * Real.exp (-90 * u ^ 2) * (1 + |u|) ^ 10 := by
-  let w : ℂ := 1 + (u : ℂ) * I
+  pm_4472
   let F := Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w / w
-  let R := (Complex.Gammaℝ (afeCriticalPoint (-t) + w) /
-    Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2
-  let E := Complex.exp (w * zetaGammaLeadingLog t)
+  pm_4375
   rw [zetaSquareRightKernel_normalized_reflected]
   change ‖F * zetaSquareReflectedGammaPhase t * (zetaSquarePoleShift t w * R) -
     F * zetaSquareReflectedGammaPhase t * E‖ ≤ _
-  rw [← mul_sub, norm_mul, norm_mul, norm_zetaSquareReflectedGammaPhase, mul_one]
-  have hw : ‖w‖ ≤ 1 + |u| := by
-    simpa [w, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
+  pm_7513
+  pm_4376
   have hwlower : 1 ≤ ‖w‖ := by simpa [w] using Complex.abs_re_le_norm w
   have haux := norm_hughesYoungAuxiliaryZero_le_polynomial
     (show 1 ≤ 1 + |u| by linarith [abs_nonneg u]) hw
-  have hexp : ‖Complex.exp (100 * w ^ 2)‖ = Real.exp (100 - 100 * u ^ 2) := by
-    rw [Complex.norm_exp]
-    congr 1
-    norm_num [w, pow_two, Complex.mul_re, Complex.mul_im]
-    ring
+  pm_434
   have hF : ‖F‖ ≤ Real.exp (100 - 100 * u ^ 2) * (625 * (1 + |u|) ^ 8) := by
     dsimp [F]
     rw [norm_div, norm_mul, hexp]
@@ -180,5 +175,6 @@ theorem norm_zetaSquareRightKernel_sub_leading_near_le {t u : ℝ}
         _ = 114375 * (Real.exp (100 - 100 * u ^ 2) * Real.exp (20 + 10 * u ^ 2)) *
             (1 + |u|) ^ 10 := by ring
         _ = _ := by rw [he]; ring
+end
 
 end MathCollab.Density.Stronger.Atkinson

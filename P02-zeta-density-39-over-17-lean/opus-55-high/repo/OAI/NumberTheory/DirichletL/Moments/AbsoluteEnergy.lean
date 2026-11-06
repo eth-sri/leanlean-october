@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 public import OAI.NumberTheory.DirichletL.Moments.FirstTailAggregate
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,18 +25,21 @@ theorem rowWeight_norm_le_one_all (η : Character) (m A z : O) (t : ℝ)
     norm_num
   · exact CenteredMomentFirstTailAggregate.rowWeight_norm_le_one η m A z t I hI
 
-theorem radial_norm_summable (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+section
+variable (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+include Φ K hK
+theorem radial_norm_summable :
     Summable (fun z : O => ‖Φ (‖eisEmbedding z‖^2/K)‖) := by
   simpa only [scaledRadialTest_apply] using
     actual_eisenstein_summable_norm (scaledRadialTest Φ K hK)
 
-theorem radial_weight_lattice_bound_all (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+theorem radial_weight_lattice_bound_all :
     (∑' z : O, ‖Φ (‖eisEmbedding z‖^2/K)‖) ≤ diagonalControl Φ*max 1 K := by
   by_cases hlarge : 1≤K
   · simpa only [max_eq_right hlarge] using radial_weight_lattice_bound Φ K hlarge
   have hsmall : K≤1 := (not_le.mp hlarge).le
   let B := 4*(Finset.Iic (2,0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ
-  have hB : 0≤B := by dsimp [B]; positivity
+  pm_3550
   have hp (z : O) : ‖Φ (‖eisEmbedding z‖^2/K)‖ ≤
       B*((1+1*‖eisEmbedding z‖^2)^2)⁻¹ := by
     have hq : 0≤‖eisEmbedding z‖^2/K := div_nonneg (sq_nonneg _) hK.le
@@ -50,8 +54,7 @@ theorem radial_weight_lattice_bound_all (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K
     have hden : (1+1*‖eisEmbedding z‖^2)^2≤(1+‖eisEmbedding z‖^2/K)^2 := by
       simp only [one_mul]
       gcongr
-    rw [← div_eq_mul_inv]
-    apply (le_div_iff₀ (by positivity)).mpr
+    pm_3437
     simpa only [mul_comm] using (mul_le_mul_of_nonneg_right hden (norm_nonneg _)).trans hh
   have hb := (radial_norm_summable Φ K hK).tsum_le_tsum hp
     ((scaled_eisenstein_cauchy_summable 1 (by norm_num)).mul_left B)
@@ -63,15 +66,13 @@ theorem radial_weight_lattice_bound_all (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K
   dsimp only [B] at ht
   unfold diagonalControl
   nlinarith
+end
 
 theorem finite_hecke_polynomial_norm (η : Character) (m A z : O) (t : ℝ)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) :
     ‖∑ I∈S,c I*rowWeight η m A z t I‖ ≤ ∑ I∈S,‖c I‖ := by
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro I hI
-  rw [norm_mul]
-  exact mul_le_of_le_one_right (norm_nonneg _) (rowWeight_norm_le_one_all η m A z t I)
+  pm_3719 I hI
+  pm_6869 mul_le_of_le_one_right
 
 theorem finite_hecke_energy_summable (η : Character) (m A : O) (t : ℝ)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
@@ -85,7 +86,7 @@ theorem finite_hecke_energy_summable (η : Character) (m A : O) (t : ℝ)
     exact mul_le_mul_of_nonneg_right
       (pow_le_pow_left₀ (norm_nonneg _) (finite_hecke_polynomial_norm η m A z t S c) 2)
       (norm_nonneg _)
-  · exact (radial_norm_summable Φ K hK).mul_left _
+  pm_8339
 
 end SevenEighths.CenteredMomentAbsoluteEnergy
 

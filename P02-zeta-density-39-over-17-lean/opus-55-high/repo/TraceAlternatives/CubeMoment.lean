@@ -2,12 +2,11 @@ module
 public import DensityEnergyGM.PoweredLargeValues
 public import RationalMomentDuality
 public import GuthMaynard.NativeSource.GuthMaynard.MeanValueProof
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
 open Complex Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.NativeMoment
@@ -23,17 +22,17 @@ theorem short_polynomial_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
         (∑ t ∈ W, ‖dirichletPoly M a t‖ ^ 6) ≤
           C * T ^ ε * ((M : ℝ) ^ 6 + T * (M : ℝ) ^ 3) := by
   let η : ℝ := ε / 3
-  have hη : 0 < η := by dsimp only [η]; positivity
+  pm_4756
   obtain ⟨A, hA, hCoeff⟩ := finitePowCoeff_bound_uniform 3 η hη
-  let K : ℝ := 3 * (2 + 2 * (5 * Real.pi + 1))
-  have hK : 0 < K := by dsimp only [K]; positivity
+  pm_6620 K
+  pm_4213
   refine ⟨144 * K * A ^ 2 * (8 : ℝ) ^ (2 * η), by positivity, ?_⟩
   intro M T a W hM hT hMT ha hSep hBase
-  have hMp : (0 : ℝ) < M := by exact_mod_cast hM
+  pm_74 hMp M hM
   have hTp : 0 < T := by linarith
   let c := finitePoweredLineCoeffs M 3 a 0
   let D : ℝ := A * (8 * (M : ℝ) ^ 3) ^ η
-  have hD : 0 < D := by dsimp only [D]; positivity
+  pm_116 hD D
   have hWide (t : ℝ) : wideDirichletPoly (M ^ 3) 3 c t =
       (dirichletPoly M a t) ^ 3 := by
     have hh := wideDirichletPoly_finitePoweredLineCoeffs M 3 a 0 t hM (by norm_num)
@@ -42,7 +41,7 @@ theorem short_polynomial_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
       neg_mul, ofReal_neg, ofReal_mul] using hh
   have hNorm : ∀ m ∈ Ioc (M ^ 3) (2 ^ 3 * M ^ 3), ‖c m‖ ≤ D := by
     intro m hm
-    have hmp : 0 < m := lt_of_le_of_lt (Nat.zero_le _) (mem_Ioc.mp hm).1
+    pm_663 hmp mem_Ioc.mp
     have hmU : (m : ℝ) ≤ 8 * (M : ℝ) ^ 3 := by
       exact_mod_cast (mem_Ioc.mp hm).2
     exact (norm_finitePoweredLineCoeffs_le M 3 m a 0 hM le_rfl hm).trans
@@ -54,7 +53,7 @@ theorem short_polynomial_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
         16 * K * D ^ 2 * ((M : ℝ) ^ 6 + T * (M : ℝ) ^ 3) := by
     intro r hr
     let Q := 2 ^ r * M ^ 3
-    have hQ : 0 < Q := by dsimp only [Q]; positivity
+    pm_4187
     have hr2 : r ≤ 2 := by have := mem_range.mp hr; omega
     have h2r : 2 ^ r ≤ 4 := by
       have hh := Nat.pow_le_pow_right (by norm_num : 1 ≤ 2) hr2
@@ -64,8 +63,7 @@ theorem short_polynomial_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
       dsimp only [Q]
       exact_mod_cast Nat.mul_le_mul_right (M ^ 3) h2r
     have hsub : Ioc Q (2 * Q) ⊆ Ioc (M ^ 3) (2 ^ 3 * M ^ 3) := by
-      intro m hm
-      obtain ⟨hmL, hmU⟩ := mem_Ioc.mp hm
+      pm_381 m hm hmL hmU mem_Ioc.mp
       apply mem_Ioc.mpr
       constructor
       · exact lt_of_le_of_lt (Nat.le_mul_of_pos_left _ (by positivity)) hmL
@@ -82,7 +80,7 @@ theorem short_polynomial_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
       apply (show (∑ t ∈ W, ‖dirichletPoly Q c t‖ ^ 2) ≤
         K * (T + (Q : ℝ)) * ∑ m ∈ Ioc Q (2 * Q), ‖c m‖ ^ 2 from ?_).trans
         (mul_le_mul_of_nonneg_left hEnergy (by positivity))
-      simpa only [K, dirichletPoly, dyadicInterval, ofReal_neg, ofReal_mul] using hh
+      pm_383 K dirichletPoly dyadicInterval ofReal_neg ofReal_mul hh
     apply hId.trans
     calc
       _ ≤ K * (T + 4 * (M : ℝ) ^ 3) * (4 * (M : ℝ) ^ 3 * D ^ 2) := by gcongr

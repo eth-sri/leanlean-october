@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.IdealEuler
 public import PrimeNumberTheoremAnd.Wiener
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,8 +9,8 @@ namespace OAI
 
 namespace SevenEighths.IdealMangoldt
 
-open ActualEisensteinCubic UniqueFactorizationMonoid ArithmeticFunction
-open scoped BigOperators Classical
+open ActualEisensteinCubic ArithmeticFunction
+open scoped Classical
 
 noncomputable section
 
@@ -19,12 +20,12 @@ theorem primeBase_spec {I : Ideal O} (hI : IsPrimePow I) :
     Prime (primeBase I) ∧ ∃ k : ℕ, 0 < k ∧ primeBase I ^ k = I := by
   obtain ⟨k, hp, hk, heq⟩ := hI.choose_spec
   simp only [primeBase, hI, dite_true]
-  exact ⟨hp, k, hk, heq⟩
+  grind
 
 theorem primeBase_pow {P : Ideal O} (hP : Prime P) {k : ℕ} (hk : 0 < k) :
     primeBase (P ^ k) = P := by
   have hpow : IsPrimePow (P ^ k) := ⟨P, k, hP, hk, rfl⟩
-  obtain ⟨hQ, l, hl, heq⟩ := primeBase_spec hpow
+  pm_269 hQ l hl heq primeBase_spec hpow
   apply associated_iff_eq.mp
   apply hQ.associated_of_dvd hP
   exact hQ.dvd_of_dvd_pow (heq ▸ dvd_pow_self (primeBase (P ^ k)) hl.ne')
@@ -48,7 +49,7 @@ theorem value_nonneg (I : Ideal O) : 0 ≤ value I := by
   · rw [value, ite_eq_left hI]
     apply Real.log_nonneg
     exact_mod_cast (SmoothMobiusCorrection.prime_norm_two_le ⟨_, (primeBase_spec hI).1⟩).trans' (by decide : 1 ≤ 2)
-  · simp only [value, hI, ite_false, le_refl]
+  pm_2997 value hI ite_false le_refl
 
 theorem isPrimePow_absNorm {I : Ideal O} (hI : IsPrimePow I) :
     IsPrimePow (Ideal.absNorm I) := by
@@ -60,7 +61,7 @@ theorem isPrimePow_absNorm {I : Ideal O} (hI : IsPrimePow I) :
 
 theorem value_eq_zero_of_norm_not_primePow {I : Ideal O}
     (hI : ¬IsPrimePow (Ideal.absNorm I)) : value I = 0 := by
-  exact ite_eq_right (fun h => hI (isPrimePow_absNorm h))
+  pm_3042 ite_eq_right h hI isPrimePow_absNorm
 
 theorem prime_mem_primesOver_of_dvd_norm {P : Ideal O} (hP : Prime P)
     {p : ℕ} (hp : p.Prime) (hd : p ∣ Ideal.absNorm P) :
@@ -74,28 +75,28 @@ theorem prime_mem_primesOver_of_dvd_norm {P : Ideal O} (hP : Prime P)
 theorem primeBase_mem_primesOver {p k : ℕ} (hp : p.Prime) (hk : 0 < k)
     {I : Ideal O} (hI : IsPrimePow I) (hn : Ideal.absNorm I = p ^ k) :
     primeBase I ∈ (Ideal.span {(p : ℤ)}).primesOver O := by
-  obtain ⟨hP, l, hl, heq⟩ := primeBase_spec hI
+  pm_269 hP l hl heq primeBase_spec hI
   apply prime_mem_primesOver_of_dvd_norm hP hp
   apply hp.dvd_of_dvd_pow
   have hnorm := congrArg Ideal.absNorm heq
   rw [map_pow, hn] at hnorm
   rw [hnorm]
-  exact dvd_pow_self _ hk.ne'
+  aesop
 
 theorem primeBase_injective_on_norm {I J : Ideal O} (hI : IsPrimePow I)
     (hJ : IsPrimePow J) (hn : Ideal.absNorm I = Ideal.absNorm J)
     (hbase : primeBase I = primeBase J) : I = J := by
-  obtain ⟨hP, k, hk, hPk⟩ := primeBase_spec hI
+  pm_269 hP k hk hPk primeBase_spec hI
   obtain ⟨_, l, hl, hPl⟩ := primeBase_spec hJ
   rw [← hbase] at hPl
   have hkl : k = l := by
     apply Nat.pow_right_injective (SmoothMobiusCorrection.prime_norm_two_le ⟨_, hP⟩)
     have hnI : Ideal.absNorm (primeBase I) ^ k = Ideal.absNorm I := by
-      simpa only [map_pow] using congrArg Ideal.absNorm hPk
+      grind
     have hnJ : Ideal.absNorm (primeBase I) ^ l = Ideal.absNorm J := by
-      simpa only [map_pow] using congrArg Ideal.absNorm hPl
+      grind
     exact hnI.trans (hn.trans hnJ.symm)
-  exact hPk.symm.trans ((congrArg (primeBase I ^ ·) hkl).trans hPl)
+  grind
 
 def normFiber (n : ℕ) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_eq (S := O) n).toFinset
@@ -105,15 +106,19 @@ def normFiber (n : ℕ) : Finset (Ideal O) :=
 
 def coeff (w : Ideal O → ℝ) (n : ℕ) : ℝ := ∑ I ∈ normFiber n, w I * value I
 
-theorem coeff_nonneg (w : Ideal O → ℝ) (hw : ∀ I, 0 ≤ w I) (n : ℕ) :
+section
+variable (w : Ideal O → ℝ)
+include w
+theorem coeff_nonneg (hw : ∀ I, 0 ≤ w I) (n : ℕ) :
     0 ≤ coeff w n :=
   Finset.sum_nonneg (fun I _ => mul_nonneg (hw I) (value_nonneg I))
 
-theorem coeff_le_unweighted (w : Ideal O → ℝ) (hw : ∀ I, w I ≤ 1) (n : ℕ) :
+theorem coeff_le_unweighted (hw : ∀ I, w I ≤ 1) (n : ℕ) :
     coeff w n ≤ coeff (fun _ => 1) n := by
   apply Finset.sum_le_sum
   intro I hI
   exact mul_le_mul_of_nonneg_right (hw I) (value_nonneg I)
+end
 
 theorem coeff_eq_sum_primePowers (n : ℕ) :
     coeff (fun _ => 1) n =
@@ -130,13 +135,17 @@ theorem coeff_eq_zero_of_not_primePow {n : ℕ} (hn : ¬IsPrimePow n)
 def primesOver (p : ℕ) [Fact p.Prime] : Finset (Ideal O) :=
   (IsDedekindDomain.primesOver_finite (Ideal.span {(p : ℤ)}) O).toFinset
 
-@[simp] theorem mem_primesOver (p : ℕ) [Fact p.Prime] (P : Ideal O) :
+section
+variable (p : ℕ) [Fact p.Prime]
+include p
+@[simp] theorem mem_primesOver (P : Ideal O) :
     P ∈ primesOver p ↔ P ∈ (Ideal.span {(p : ℤ)}).primesOver O :=
   Set.Finite.mem_toFinset _
 
-theorem primesOver_card (p : ℕ) [Fact p.Prime] :
+theorem primesOver_card :
     (primesOver p).card = ((Ideal.span {(p : ℤ)}).primesOver O).ncard := by
   exact (Set.ncard_eq_toFinset_card _).symm
+end
 
 theorem primesOver_log_sum_le (p : ℕ) [hp : Fact p.Prime] :
     ∑ P ∈ primesOver p, Real.log (Ideal.absNorm P) ≤ 2 * Real.log p := by
@@ -144,24 +153,16 @@ theorem primesOver_log_sum_le (p : ℕ) [hp : Fact p.Prime] :
   by_cases h1 : p % 3 = 1
   · have hv (P : Ideal O) (hP : P ∈ primesOver p) :
         Real.log (Ideal.absNorm P) = Real.log p := by
-      have hPP := (mem_primesOver p P).mp hP
-      let : P.IsPrime := hPP.1
-      let : P.LiesOver (Ideal.span {(p : ℤ)}) := hPP.2
+      pm_3542
       rw [ShortDraftHeckeBridge.absNorm_split hp.out h1 P]
-    rw [Finset.sum_congr rfl hv, Finset.sum_const, nsmul_eq_mul, primesOver_card,
-      ShortDraftHeckeBridge.split_count_of_mod_one hp.out h1]
-    norm_num
+    pm_8499 ShortDraftHeckeBridge.split_count_of_mod_one h1
   by_cases h2 : p % 3 = 2
   · have hv (P : Ideal O) (hP : P ∈ primesOver p) :
         Real.log (Ideal.absNorm P) = 2 * Real.log p := by
-      have hPP := (mem_primesOver p P).mp hP
-      let : P.IsPrime := hPP.1
-      let : P.LiesOver (Ideal.span {(p : ℤ)}) := hPP.2
+      pm_3542
       rw [ShortDraftHeckeBridge.absNorm_inert hp.out h2 P, Nat.cast_pow, Real.log_pow]
       norm_num
-    rw [Finset.sum_congr rfl hv, Finset.sum_const, nsmul_eq_mul, primesOver_card,
-      ShortDraftHeckeBridge.inert_count_of_mod_two hp.out h2]
-    norm_num
+    pm_8499 ShortDraftHeckeBridge.inert_count_of_mod_two h2
   have h3 : p = 3 := by
     have h0 : p % 3 = 0 := by have := Nat.mod_lt p (by decide : 0 < 3); omega
     have h := (Nat.dvd_prime hp.out).mp (Nat.dvd_of_mod_eq_zero h0)
@@ -192,8 +193,7 @@ theorem coeff_prime_pow_le (p : ℕ) [hp : Fact p.Prime] {k : ℕ} (hk : 0 < k) 
     exact primeBase_injective_on_norm (hS I hI).1 (hS J hJ).1
       ((hS I hI).2.trans (hS J hJ).2.symm) heq
   have hsub : S.image primeBase ⊆ primesOver p := by
-    intro P hP
-    obtain ⟨I, hI, rfl⟩ := Finset.mem_image.mp hP
+    pm_136 P hP I hI Finset.mem_image.mp
     exact (mem_primesOver p _).mpr (primeBase_mem_primesOver hp.out hk (hS I hI).1 (hS I hI).2)
   calc
     _ = ∑ P ∈ S.image primeBase, Real.log (Ideal.absNorm P) := (Finset.sum_image hinj).symm
@@ -207,7 +207,10 @@ theorem coeff_prime_pow_le (p : ℕ) [hp : Fact p.Prime] {k : ℕ} (hk : 0 < k) 
         (SmoothMobiusCorrection.prime_norm_two_le ⟨P, hprime⟩).trans' (by decide : 1 ≤ 2))
     _ ≤ _ := primesOver_log_sum_le p
 
-theorem coeff_le_two_vonMangoldt (w : Ideal O → ℝ) (hw : ∀ I, w I ≤ 1) (n : ℕ) :
+section
+variable (w : Ideal O → ℝ)
+include w
+theorem coeff_le_two_vonMangoldt (hw : ∀ I, w I ≤ 1) (n : ℕ) :
     coeff w n ≤ 2 * vonMangoldt n := by
   by_cases hn : IsPrimePow n
   · obtain ⟨p, k, hp, hk, rfl⟩ := (isPrimePow_nat_iff n).mp hn
@@ -216,7 +219,7 @@ theorem coeff_le_two_vonMangoldt (w : Ideal O → ℝ) (hw : ∀ I, w I ≤ 1) (
     exact (coeff_le_unweighted w hw _).trans (coeff_prime_pow_le p hk)
   · rw [coeff_eq_zero_of_not_primePow hn, vonMangoldt_eq_zero_iff.mpr hn, mul_zero]
 
-theorem coeff_chebyshev (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
+theorem coeff_chebyshev (hw0 : ∀ I, 0 ≤ w I)
     (hw1 : ∀ I, w I ≤ 1) :
     ∃ C : ℝ, ∀ N : ℕ, cumsum (fun n => ‖(coeff w n : ℂ)‖) N ≤ C * N := by
   obtain ⟨C, hC⟩ := vonMangoldt_cheby
@@ -233,7 +236,7 @@ theorem coeff_chebyshev (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
     _ ≤ 2 * (C * N) := mul_le_mul_of_nonneg_left (hC N) (by norm_num)
     _ = _ := by ring
 
-theorem coeff_summable_nterm (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
+theorem coeff_summable_nterm (hw0 : ∀ I, 0 ≤ w I)
     (hw1 : ∀ I, w I ≤ 1) {σ : ℝ} (hσ : 1 < σ) :
     Summable (nterm (fun n => (coeff w n : ℂ)) σ) := by
   have hs : Summable (nterm (fun n => (vonMangoldt n : ℂ)) σ) := by
@@ -244,38 +247,43 @@ theorem coeff_summable_nterm (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
     exact ite_nonneg (by positivity) (div_nonneg (norm_nonneg _) (Real.rpow_nonneg (by positivity) _))
   · intro n
     by_cases hn : n = 0
-    · simp only [nterm, hn, ite_true, mul_zero, le_refl]
+    pm_3429 nterm hn ite_true mul_zero le_refl
     · simp only [nterm, hn, ite_false, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (coeff_nonneg w hw0 n), abs_of_nonneg vonMangoldt_nonneg]
       rw [← mul_div_assoc]
       exact div_le_div_of_nonneg_right (coeff_le_two_vonMangoldt w hw1 n)
         (Real.rpow_nonneg (by positivity) _)
 
-theorem coeff_LSeriesSummable (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
+theorem coeff_LSeriesSummable (hw0 : ∀ I, 0 ≤ w I)
     (hw1 : ∀ I, w I ≤ 1) {s : ℂ} (hs : 1 < s.re) :
     LSeriesSummable (fun n => (coeff w n : ℂ)) s := by
   apply Summable.of_norm
   simpa only [norm_term_eq_nterm_re] using coeff_summable_nterm w hw0 hw1 hs
+end
 
 def classCoeff (C : Set (Ideal O)) (n : ℕ) : ℝ :=
   coeff (fun I => if I ∈ C then 1 else 0) n
 
-theorem classCoeff_nonneg (C : Set (Ideal O)) (n : ℕ) : 0 ≤ classCoeff C n :=
+section
+variable (C : Set (Ideal O))
+include C
+theorem classCoeff_nonneg (n : ℕ) : 0 ≤ classCoeff C n :=
   coeff_nonneg _ (fun _ => by split_ifs <;> norm_num) n
 
-theorem classCoeff_le_two_vonMangoldt (C : Set (Ideal O)) (n : ℕ) :
+theorem classCoeff_le_two_vonMangoldt (n : ℕ) :
     classCoeff C n ≤ 2 * vonMangoldt n :=
   coeff_le_two_vonMangoldt _ (fun _ => by split_ifs <;> norm_num) n
 
-theorem classCoeff_chebyshev (C : Set (Ideal O)) :
+theorem classCoeff_chebyshev :
     ∃ B : ℝ, ∀ N : ℕ, cumsum (fun n => ‖(classCoeff C n : ℂ)‖) N ≤ B * N :=
   coeff_chebyshev _ (fun _ => by split_ifs <;> norm_num)
     (fun _ => by split_ifs <;> norm_num)
 
-theorem classCoeff_summable_nterm (C : Set (Ideal O)) {σ : ℝ} (hσ : 1 < σ) :
+theorem classCoeff_summable_nterm {σ : ℝ} (hσ : 1 < σ) :
     Summable (nterm (fun n => (classCoeff C n : ℂ)) σ) :=
   coeff_summable_nterm _ (fun _ => by split_ifs <;> norm_num)
     (fun _ => by split_ifs <;> norm_num) hσ
+end
 
 end
 

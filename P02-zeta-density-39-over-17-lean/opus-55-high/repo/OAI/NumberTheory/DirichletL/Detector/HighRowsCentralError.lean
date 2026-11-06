@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralCancellation
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedUnramified
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 namespace SevenEighths.ProbeEuler
 open ProbeLocal
 
@@ -21,14 +21,8 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
     L^2*‖E‖≤28*Q^(-(51/100:ℝ)) ∧
     L*‖star eta*(Q:ℂ)^x‖*‖E‖≤28*Q^(-(51/100:ℝ)) := by
   dsimp only
-  have hQ0 : 0<Q := by linarith
-  have hQ1 : 1≤Q := by linarith
-  let R := coordR Q A x z
-  let V := coordV Q z
-  let W := coordW Q v w
-  let D := coordD Q eta v x
-  let K := coordK Q eta x w
-  let B := star eta*(Q:ℂ)^x
+  pm_3932
+  pm_3933
   let L : ℝ := Q^(6*e)
   have hL : 1≤L := Real.one_le_rpow hQ1 (by positivity)
   have hL0 : 0≤L := by positivity
@@ -37,19 +31,14 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
   have hD := coordD_norm_le Q hQ0 eta v x heta hv
   have hK := coordK_norm_le Q hQ1 eta x w heta
   have hW : ‖W‖≤L := (coordW_norm_le Q hQ0 v w hv).trans
-    (Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith))
-  have hB : ‖B‖≤Q^x.re := by
-    dsimp only [B]
-    rw [norm_mul,norm_star,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
-  have hRh : ‖R‖≤1/2 := hR.trans (rpow_le_half Q _ hQ (by rw [hx,hz];linarith))
-  have hVh : ‖V‖≤1/2 := hV.le.trans (rpow_le_half Q _ hQ (by rw [hz];norm_num))
+    (Real.rpow_le_rpow_of_exponent_le hQ1 (by grind))
+  pm_3935
+  pm_8179 hRh R hR.trans
+  pm_8179 hVh V hV.le.trans
   have hDh : ‖D‖≤1/2 := hD.trans (rpow_le_half Q _ hQ (by rw [hx];linarith))
-  have hqi : ‖(Q:ℂ)⁻¹‖≤1 := by
-    rw [norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hQ0,←one_div]
-    exact (div_le_one hQ0).mpr hQ1
+  pm_3934
   have hE : ‖unramifiedMarked Q A eta v x w z+D‖≤24*L*‖R‖+4*‖K‖*‖V‖ := by
-    have hh := unramified_marked_error_bound R V (Q:ℂ)⁻¹ K W D hRh hVh hqi hDh
+    pm_6640 hh
     apply hh.trans
     nlinarith [mul_le_mul_of_nonneg_left (show 1+‖W‖≤2*L by linarith) (norm_nonneg R)]
   have weighted (k r : ℝ) (N : ℝ) (hN : N≤Q^r) (hexp : k+r≤-(51/100:ℝ)) :
@@ -61,7 +50,7 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
   have hLR : L^3*‖R‖≤Q^(-(51/100:ℝ)) := by
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hR (by rw [hx,hz];linarith)
+    pm_5398 hR hx
   have hLKV : L^2*(‖K‖*‖V‖)≤Q^(-(51/100:ℝ)) := by
     have hkv : ‖K‖*‖V‖≤Q^(1-x.re-w.re-6*z.re) := by
       calc
@@ -77,7 +66,7 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
         _ = _ := by rw [←Real.rpow_add hQ0];congr 1;ring
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hbr (by rw [hx,hz];linarith)
+    pm_5398 hbr hx
   have hLBKV : L*(‖B‖*‖K‖*‖V‖)≤Q^(-(51/100:ℝ)) := by
     have hbkv : ‖B‖*‖K‖*‖V‖≤Q^(1-w.re-6*z.re) := by
       calc
@@ -85,16 +74,10 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
           gcongr
           exact hV.le
         _ = _ := by rw [←Real.rpow_add hQ0,←Real.rpow_add hQ0];congr 1;ring
-    exact weighted _ _ _ hbkv (by rw [hw,hz];linarith)
-  refine ⟨?_,?_,?_,?_⟩
-  · change L^2*‖V‖≤_
-    dsimp [L]
-    rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hV.le (by rw [hz];linarith)
-  · change L^2*‖D‖≤_
-    dsimp [L]
-    rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hD (by rw [hx];linarith)
+    pm_5398 hbkv hw
+  pm_4898
+  pm_5336 V hV.le hz
+  pm_5336 D hD hx
   · have hh := mul_le_mul_of_nonneg_left hE (sq_nonneg L)
     change L^2*‖unramifiedMarked Q A eta v x w z+D‖≤_
     nlinarith [hLR,hLKV]
@@ -103,6 +86,5 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
     nlinarith [hLBR,hLBKV]
 
 end SevenEighths.ProbeEuler
-end
 
 end OAI

@@ -2,15 +2,15 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.GramWeightedFrequency
 public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalTrivial
 public import OAI.NumberTheory.DirichletL.Detector.GramFrequencySummation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
+open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -27,22 +27,21 @@ theorem canonical_nonexceptional_frequency_sum (A : ℕ) (hA : 2<A) (a₀ b₀ :
       (∀k∈E,¬ExceptionalFrequency S hS C k)→
       ∀(d : O)(U : SchwartzMap ℝ ℂ)(v H N : ℝ),0<H→0<N→
         ‖∑k∈E,canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
-        K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*
+        K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J *
           (Ideal.absNorm C.val:ℝ)*N^2*H*
           min 1 (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val*H/N)^A) := by
-  obtain ⟨J,H₀,hblock⟩ := canonical_nonexceptional_weighted A hA a₀ b₀ ha₀ hab
+  pm_957 J H₀ hblock canonical_nonexceptional_weighted A hA a₀ b₀ ha₀ hab
   obtain ⟨L,hL,hcount⟩ := ProbeGramFrequencySummation.frequency_weighted_sum
-  refine ⟨J,H₀,?_⟩
-  intro W hs hW
+  pm_3532 J H₀ W hs hW
   obtain ⟨K,hK,hblock⟩ := hblock W hs hW
-  refine ⟨K*L,mul_pos hK hL,?_⟩
+  pm_3171 K L mul_pos hK hL
   intro S hS σ C E hE d U v H N hH hN
   have hc := hcount (E.image Subtype.val) H hH (by
     intro k hk;obtain ⟨j,hj,rfl⟩ := Finset.mem_image.mp hk;exact j.property)
   rw [gramFrequency_image_sum] at hc
   let V := K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*(Ideal.absNorm C.val:ℝ)*N^2*
     min 1 (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val*H/N)^A)
-  have hV : 0≤V := by dsimp [V];positivity
+  pm_3395 hV V
   calc
     _≤∑k∈E,‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖ := norm_sum_le _ _
     _≤∑k∈E,V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) :=
@@ -64,8 +63,8 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
         K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(Ideal.absNorm C.val:ℝ)*N^2*
           ((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val)^ε*H^(1/6:ℝ) := by
   obtain ⟨H₀,K,hK,hblock⟩ := canonical_trivial_block a b M ha hb hM 2
-  obtain ⟨L,hL,hcount⟩ := ProbeGramFrequencySummation.exceptional_frequency_weighted_sum ε hε
-  refine ⟨H₀,K*L,mul_pos hK hL,?_⟩
+  pm_69 L hL hcount ProbeGramFrequencySummation.exceptional_frequency_weighted_sum ε hε
+  pm_3528 H₀ K L hK hL
   intro W hcompact hs hW U S hS σ C E hE d v H N hH hN
   have hc := hcount (exceptionalModulus S hS C) (exceptionalModulus_nonzero S hS C)
     (E.image Subtype.val) H hH
@@ -73,7 +72,7 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     (by intro k hk;obtain ⟨j,hj,rfl⟩ := Finset.mem_image.mp hk;exact hE j hj)
   rw [gramFrequency_image_sum,exceptionalModulus_norm,Nat.cast_mul] at hc
   let V := K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(Ideal.absNorm C.val:ℝ)*N^2
-  have hV : 0≤V := by dsimp [V];positivity
+  pm_3395 hV V
   have hp (k : GramFrequency) :
       ‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
         V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) := by
@@ -82,7 +81,7 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     have hpos : 0<1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H := by positivity
     rw [Real.rpow_neg hpos.le,Real.rpow_two,←div_eq_mul_inv]
     apply (le_div_iff₀ (sq_pos_of_pos hpos)).mpr
-    convert hb using 1 ; dsimp [V] ; ring
+    pm_4976 hb V
   calc
     _≤∑k∈E,‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖ := norm_sum_le _ _
     _≤∑k∈E,V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) := Finset.sum_le_sum (fun k _=>hp k)
@@ -91,6 +90,5 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     _=_ := by dsimp [V];ring
 
 end SevenEighths.ProbeGramCommon
-end
 
 end OAI

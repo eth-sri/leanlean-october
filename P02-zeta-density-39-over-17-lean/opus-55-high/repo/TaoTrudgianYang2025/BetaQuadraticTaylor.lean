@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaQuadraticParts
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,32 +24,33 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 def quadraticTaylorCoefficient (W : ℝ → ℝ) : ℝ → ℝ :=
   segmentTaylorAverage (deriv (deriv W)) 0 0
 
-theorem quadraticTaylorCoefficient_contDiff {W : ℝ → ℝ} (hW : ContDiff ℝ ∞ W) :
+section
+variable {W : ℝ → ℝ}
+include W
+theorem quadraticTaylorCoefficient_contDiff (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (quadraticTaylorCoefficient W) := by
   have hW₂ : ContDiff ℝ ∞ (deriv (deriv W)) := by
     rw [contDiff_iff_contDiffAt]
     intro x
-    simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
-      contDiffAt_iteratedDeriv_infty (u := x) hW.contDiffAt 2
+    fun_prop
   exact segmentTaylorAverage_contDiff_global hW₂ 0 0
 
-theorem quadraticTaylorCoefficient_deriv {W : ℝ → ℝ} (hW : ContDiff ℝ ∞ W) (z : ℝ) :
+theorem quadraticTaylorCoefficient_deriv (hW : ContDiff ℝ ∞ W) (z : ℝ) :
     deriv (quadraticTaylorCoefficient W) z = segmentTaylorAverage (deriv (deriv W)) 0 1 z := by
   have hW₂ : ContDiff ℝ ∞ (deriv (deriv W)) := by
     rw [contDiff_iff_contDiffAt]
     intro x
-    simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
-      contDiffAt_iteratedDeriv_infty (u := x) hW.contDiffAt 2
+    fun_prop
   exact (segmentTaylorAverage_hasDerivAt_global hW₂ 0 z 0).deriv
 
-theorem abs_quadraticTaylorCoefficient_le {W : ℝ → ℝ} {M : ℝ}
+theorem abs_quadraticTaylorCoefficient_le {M : ℝ}
     (hb : ∀ z : ℝ, |iteratedDeriv 2 W z| ≤ M) (z : ℝ) :
     |quadraticTaylorCoefficient W z| ≤ M := by
   apply abs_segmentTaylorAverage_le_global 0 z 0
   intro u
   simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using hb u
 
-theorem abs_deriv_quadraticTaylorCoefficient_le {W : ℝ → ℝ} {M : ℝ}
+theorem abs_deriv_quadraticTaylorCoefficient_le {M : ℝ}
     (hW : ContDiff ℝ ∞ W) (hb : ∀ z : ℝ, |iteratedDeriv 3 W z| ≤ M) (z : ℝ) :
     |deriv (quadraticTaylorCoefficient W) z| ≤ M := by
   rw [quadraticTaylorCoefficient_deriv hW]
@@ -56,8 +58,7 @@ theorem abs_deriv_quadraticTaylorCoefficient_le {W : ℝ → ℝ} {M : ℝ}
   intro u
   simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using hb u
 
-theorem integral_weighted_betaQuadraticKernel_taylor
-    {W : ℝ → ℝ} (hW : ContDiff ℝ ∞ W) (T H : ℝ) :
+theorem integral_weighted_betaQuadraticKernel_taylor (hW : ContDiff ℝ ∞ W) (T H : ℝ) :
     (∫ z in (-H)..H, (W z : ℂ)*betaQuadraticKernel T z) =
       (W 0 : ℂ)*(∫ z in (-H)..H, betaQuadraticKernel T z)+
       ∫ z in (-H)..H, ((z^2*quadraticTaylorCoefficient W z : ℝ) : ℂ)*
@@ -91,5 +92,6 @@ theorem integral_weighted_betaQuadraticKernel_taylor
       ((hlinear.const_mul ((deriv W (0 : ℝ) : ℝ) : ℂ)).intervalIntegrable (-H) H),
     intervalIntegral.integral_const_mul,intervalIntegral.integral_const_mul,
     integral_betaQuadraticKernel_odd,mul_zero,add_zero]
+end
 
 end TaoTrudgianYang2025

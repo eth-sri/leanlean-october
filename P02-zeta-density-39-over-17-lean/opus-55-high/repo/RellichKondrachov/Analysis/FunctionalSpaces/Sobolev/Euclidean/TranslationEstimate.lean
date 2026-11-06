@@ -32,7 +32,7 @@ namespace Sobolev
 namespace Euclidean
 
 open scoped ENNReal MeasureTheory Topology
-open MeasureTheory Set
+open MeasureTheory
 
 section
 
@@ -60,8 +60,10 @@ lemma hasDerivAt_line (x a : E) (t : ℝ) :
     simpa [one_smul] using (hasDerivAt_id t).smul_const a
   exact HasDerivAt.const_add x hsmul
 
-lemma hasDerivAt_comp_line
-    {f : E → ℝ} (hf : ContDiff ℝ 1 f) (x a : E) (t : ℝ) :
+section
+variable {f : E → ℝ} (hf : ContDiff ℝ 1 f) (x a : E) (t : ℝ)
+include f hf x a t
+lemma hasDerivAt_comp_line :
     HasDerivAt (fun t => f (line (x := x) (a := a) t))
       (fderiv ℝ f (line (x := x) (a := a) t) a) t := by
   have hf' : HasFDerivAt f (fderiv ℝ f (line (x := x) (a := a) t)) (line (x := x) (a := a) t) :=
@@ -69,10 +71,11 @@ lemma hasDerivAt_comp_line
   exact
     HasFDerivAt.comp_hasDerivAt_of_eq t hf' (hasDerivAt_line (x := x) (a := a) t) rfl
 
-lemma deriv_comp_line {f : E → ℝ} (hf : ContDiff ℝ 1 f) (x a : E) (t : ℝ) :
+lemma deriv_comp_line :
     deriv (fun t => f (line (x := x) (a := a) t)) t =
       fderiv ℝ f (line (x := x) (a := a) t) a :=
   (hasDerivAt_comp_line (hf := hf) (x := x) (a := a) t).deriv
+end
 
 /-! ## Pointwise translation bound via the gradient -/
 
@@ -89,14 +92,14 @@ lemma enorm_fderiv_apply_le_enorm_grad_mul (f : E → ℝ) (x a : E) :
   have h₂ : ‖grad (E := E) f x‖ₑ = ‖fderiv ℝ f x‖ₑ := by
     -- `grad f x = (toDual).symm (fderiv f x)` and `toDual.symm` is an isometry.
     simp only [grad]
-    exact
-      (LinearIsometry.enorm_map
-        (f := (InnerProductSpace.toDual ℝ E).symm.toLinearIsometry)
-        (fderiv ℝ f x))
+    simp_all
   -- Replace the operator norm by the gradient norm.
-  simpa [h₂, mul_assoc, mul_left_comm, mul_comm] using h₁
+  grind
 
-lemma enorm_deriv_comp_line_le (x a : E) {f : E → ℝ} (hf : ContDiff ℝ 1 f) (t : ℝ) :
+section
+variable (x a : E) {f : E → ℝ} (hf : ContDiff ℝ 1 f)
+include x a f hf
+lemma enorm_deriv_comp_line_le (t : ℝ) :
     ‖deriv (fun t => f (line (x := x) (a := a) t)) t‖ₑ ≤
       ‖a‖ₑ * ‖grad (E := E) f (line (x := x) (a := a) t)‖ₑ := by
   -- Reduce to the `fderiv` bound.
@@ -107,7 +110,7 @@ lemma enorm_deriv_comp_line_le (x a : E) {f : E → ℝ} (hf : ContDiff ℝ 1 f)
   simpa [deriv_comp_line (hf := hf) (x := x) (a := a) t,
     mul_comm, mul_left_comm, mul_assoc] using this
 
-lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : ContDiff ℝ 1 f) :
+lemma enorm_sub_le_enorm_mul_lintegral_grad :
     ‖f (x + a) - f x‖ₑ ≤
       ‖a‖ₑ * ∫⁻ t in Set.Icc (0 : ℝ) 1, ‖grad (E := E) f (x + t • a)‖ₑ := by
   -- Apply FTC along the segment `t ↦ x + t • a`, then bound the derivative pointwise.
@@ -115,10 +118,9 @@ lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : Cont
       ContDiffOn ℝ 1 (fun t : ℝ => f (x + t • a)) (Set.Icc (0 : ℝ) 1) := by
     -- `t ↦ x + t • a` is `C^∞`; compose with `f`.
     have hInner : ContDiff ℝ ⊤ (fun t : ℝ => x + t • a) := by
-      simpa [line] using
-        (contDiff_const.add (contDiff_id.smul (contDiff_const : ContDiff ℝ ⊤ (fun _ : ℝ => a))))
+      fun_prop
     have hInner' : ContDiff ℝ 1 (fun t : ℝ => x + t • a) := hInner.of_le (by simp)
-    exact (hf.comp hInner').contDiffOn
+    fun_prop
   have hFTC :
       ‖f (x + a) - f x‖ₑ ≤ ∫⁻ t in Set.Icc (0 : ℝ) 1, ‖deriv (fun t : ℝ => f (x + t • a)) t‖ₑ := by
     simpa using
@@ -153,10 +155,8 @@ lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : Cont
         fun_prop
       exact this)).measurable.enorm
   -- Now finish: `∫⁻ t in Set.Icc, ‖a‖ * g t = ‖a‖ * ∫⁻ t in Set.Icc, g t`.
-  exact le_of_eq <| by
-    simpa [mul_assoc] using
-      (MeasureTheory.lintegral_const_mul (μ := volume.restrict (Set.Icc (0 : ℝ) 1)) (r := ‖a‖ₑ)
-        (f := fun t : ℝ => ‖grad (E := E) f (x + t • a)‖ₑ) hMeas)
+  simp_all
+end
 
 end
 

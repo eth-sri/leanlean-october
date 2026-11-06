@@ -19,7 +19,10 @@ def physicalRowValue {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaxim
   ∑P : (∀i,T i),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
     rowIntegral η S (calibrationForSet S hmax) (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z u
 
-theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+section
+variable {K : ℕ} (S : Finset (Ideal O))
+include K S
+theorem physicalRowValue_summable (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -39,8 +42,7 @@ theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P�
     | @insert P F hP ih => simpa only [Finset.sum_insert hP] using (hs P).add ih
   exact hh Finset.univ
 
-theorem canonical_physical_probe_partition {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+theorem canonical_physical_probe_partition (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -71,6 +73,7 @@ theorem canonical_physical_probe_partition {K : ℕ}
   congr 1
   · dsimp [f,physicalRowValue]
     simp only [rowIntegral_principal]
+end
 
 end SevenEighths.ProbeHighRowFamily
 

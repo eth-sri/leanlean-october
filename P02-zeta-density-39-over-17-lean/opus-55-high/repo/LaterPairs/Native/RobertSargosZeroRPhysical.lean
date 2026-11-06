@@ -5,6 +5,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroRFloorBudgets
 public import LaterPairs.Native.RobertSargosZeroRRootBudget
 public import LaterPairs.Native.RobertSargosZeroRWeighted
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -34,9 +35,7 @@ theorem robertSargos_zero_r_physical_a_times_a
     robertSargos_zero_r_floor_budgets M H hH hlam hsmall hM hHmax
   have hrow := robertSargos_zero_r_weighted_row_bound
     f M H ⌊lam^(-(3:ℝ)/13)⌋₊ (zero_le_one.trans hC) hH hQ hlam hscale hf hlo hhi
-  have hmul := mul_le_mul_of_nonneg_left hrow
-    (show 0 ≤ 8*(M:ℝ)*H/
-      ((⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ)) by positivity)
+  pm_319 hmul
   exact hmul.trans (zero_r_a_times_a_row_budget (Nat.cast_nonneg M)
     (by exact_mod_cast hH) (by exact_mod_cast hQ) (by exact_mod_cast hR)
     hC hlam hdiag hpos hinv)

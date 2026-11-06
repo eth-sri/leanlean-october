@@ -9,6 +9,7 @@ actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -62,7 +63,7 @@ theorem integrableOn_dfiBesselY0Tail_integrand {x : ℝ} (hx : 0 < x) :
           (fun t ht => ne_of_gt (Real.sqrt_pos.2 (by positivity)))
     exact hcont.aestronglyMeasurable measurableSet_Ioi
   · filter_upwards with t
-    rw [Real.norm_eq_abs, abs_div, abs_of_pos (Real.exp_pos _)]
+    pm_1448 Real.norm_eq_abs abs_div abs_of_pos Real.exp_pos
     have hsqrt : 1 ≤ Real.sqrt (1 + t ^ 2) := by
       have harg : 0 ≤ 1 + t ^ 2 := by positivity
       have hsquare := Real.sq_sqrt harg

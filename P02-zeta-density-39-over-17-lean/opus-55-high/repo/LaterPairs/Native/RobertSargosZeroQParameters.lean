@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQLeading
 public import LaterPairs.Native.ThirteenthRootScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -19,15 +20,12 @@ theorem robertSargos_zero_q_curvature_scale {r lam : ℝ}
     (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
     (hr : |r| ≤ lam^(-(1:ℝ)/13)) :
     2*|r| *lam ≤ 1 := by
-  let T := lam^(-(1:ℝ)/13)
-  obtain ⟨hT,hscale⟩ := thirteenth_root_physical_scale hlam hsmall
-  have hT1 : 1 ≤ T := by dsimp [T]; linarith
+  pm_366
+  pm_1611 hT1 T
   have hp : 2 ≤ T^12 := hT.trans (le_self_pow₀ hT1 (by norm_num : 12 ≠ 0))
   have hm := mul_le_mul_of_nonneg_right hp (show 0 ≤ T*lam by positivity)
   have he : T^12*(T*lam) = 1 := by
-    calc
-      _ = T^13*lam := by ring
-      _ = 1 := hscale
+    grind
   rw [he] at hm
   have hr' : |r| ≤ T := hr
   nlinarith [mul_le_mul_of_nonneg_right hr' hlam.le]
@@ -51,11 +49,10 @@ theorem robertSargos_zero_q_slow_scale {h r C lam : ℝ}
   have hs : lam^((7:ℝ)/13) ≤ Real.sqrt lam := by
     rw [Real.sqrt_eq_rpow]
     exact Real.rpow_le_rpow_of_exponent_ge hlam hlam1 (by norm_num)
-  have hmu : lam ≤ 2*|r| *lam := by nlinarith
+  pm_6932
   have hs2 := Real.sqrt_le_sqrt hmu
   have hm := mul_le_mul_of_nonneg_left (add_le_add hh3 hhr3) (mul_nonneg hC hlam.le)
-  have hsC := mul_le_mul_of_nonneg_left hs hC
-  have hs2C := mul_le_mul_of_nonneg_left hs2 hC
+  pm_194 hsC mul_le_mul_of_nonneg_left hs hC hs2C hs2
   have he : C*lam*(lam^(-(6:ℝ)/13)+lam^(-(6:ℝ)/13)) = 2*C*lam^((7:ℝ)/13) := by
     calc
       _ = 2*C*(lam*lam^(-(6:ℝ)/13)) := by ring
@@ -67,7 +64,7 @@ theorem robertSargos_zero_q_block_length {r lam M : ℝ}
     (hlam : 0 < lam) (hlam1 : lam ≤ 1) (hr : 1 ≤ |r|)
     (hM : lam^(-(8:ℝ)/13) ≤ M) :
     (2*|r| *lam)^(-(1:ℝ)/2) ≤ M := by
-  have hmu : lam ≤ 2*|r| *lam := by nlinarith
+  pm_6932
   exact (Real.rpow_le_rpow_of_nonpos hlam hmu (by norm_num : -(1:ℝ)/2 ≤ 0)).trans
     ((Real.rpow_le_rpow_of_exponent_ge hlam hlam1 (by norm_num : -(8:ℝ)/13 ≤ -1/2)).trans hM)
 

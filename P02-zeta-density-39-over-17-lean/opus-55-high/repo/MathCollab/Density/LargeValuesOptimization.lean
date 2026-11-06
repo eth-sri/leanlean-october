@@ -1,13 +1,11 @@
 module
 public import MathCollab.Density.UniformThreshold
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Real Set
-open scoped BigOperators
+open Real
 
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density
 
 /-- Cardinality at an arbitrary admissible positive integer auxiliary scale. -/
@@ -24,8 +22,8 @@ theorem cardinality_at_length (w : ComparisonCutoff) {κ : ℝ} (d : LargeValueD
   let r : ℝ := d.W.card
   let C := comparisonConstant w
   have hb : 0 < b := d.scalar_pos hW
-  have hr : 0 < r := by dsimp [r]; exact_mod_cast Finset.card_pos.mpr hW
-  have hMr : (0 : ℝ) < M := by exact_mod_cast hM
+  have hr : 0 < r := by dsimp [r]; simp_all
+  pm_74 hMr M hM
   have hdiag := completePairEnergy_diagonal_lower M d.W
   have hcomp := (uniform_comparison w).choose_spec.2 d.T d.V d.N M d.a d.W
     d.N_pos hM hscale d.V_pos d.separated d.coefficients d.large
@@ -58,19 +56,19 @@ theorem optimal_integer_scale {κ : ℝ} (d : LargeValueData κ) (hW : d.W.Nonem
   let s := Real.sqrt d.T
   let M := ⌈b*s⌉₊
   have hb : 0 < b := d.scalar_pos hW
-  have hT : 0 < d.T := by linarith [d.T_ge_two]
+  pm_4273
   have hs : 0 < s := Real.sqrt_pos.2 hT
   have hs2 : s^2 = d.T := Real.sq_sqrt hT.le
-  have hNp : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
+  pm_74 hNp d.N d.N_pos
   have hM : 0 < M := (Nat.one_le_ceil_iff).2 (mul_pos hb hs)
-  have hMr : (0 : ℝ) < M := by exact_mod_cast hM
-  have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  pm_74 hMr M hM
+  pm_77 hM1 M hM
   have hlo : b*s ≤ M := Nat.le_ceil _
   have hhi : (M : ℝ) ≤ b*s+1 := (Nat.ceil_lt_add_one (show 0 ≤ b*s by positivity)).le
   have hbalance : (d.N : ℝ)*b*s ≤ d.T := by
-    have hi := mul_le_mul_of_nonneg_left hsmall (show 0 ≤ (d.N : ℝ)*d.T by positivity)
+    pm_7573 hi mul_le_mul_of_nonneg_left hsmall d.N d.T
     have hnT := mul_le_mul_of_nonneg_right d.scale_upper hT.le
-    have he : ((d.N : ℝ)*b*s)^2 = (d.N : ℝ)^2*b^2*d.T := by rw [mul_pow, mul_pow, hs2]
+    have he : ((d.N : ℝ)*b*s)^2 = (d.N : ℝ)^2*b^2*d.T := by grind
     have hz : 0 ≤ (d.N : ℝ)*b*s := by positivity
     dsimp [b] at hi he hz ⊢
     nlinarith

@@ -33,7 +33,7 @@ theorem modelPhase_iteratedDeriv_succ_parameter (σ : ℝ) {u : ℝ}
     filter_upwards [isOpen_Ioi.mem_nhds hu] with x hx
     have hd := (Real.hasDerivAt_rpow_const (Or.inl hx.ne') (p := -σ)).deriv
     change deriv (fun y : ℝ => y^(-σ)) x = -σ*x^(-(σ+1))
-    simpa only [show -σ-1 = -(σ+1) by ring] using hd
+    grind
   rw [iteratedDeriv_succ',he.iteratedDeriv_eq p,iteratedDeriv_const_mul_field]
 
 theorem aProcessShiftPhase_iteratedDeriv

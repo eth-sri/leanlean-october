@@ -1,11 +1,10 @@
 module
 public import AtomicRetainedCubic
 public import FiniteCubicPerturbation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 set_option maxHeartbeats 1200000
 open MeasureTheory Set Finset
 namespace Montgomery.RationalMoment
@@ -18,16 +17,8 @@ theorem finite_cubic_uniform_bound (W : Finset ℝ) {K : ℝ → ℂ} {B : ℝ}
       (norm_sum_le _ _).trans (sum_le_sum (fun _ _ =>
         (norm_sum_le _ _).trans (sum_le_sum (fun _ _ => norm_sum_le _ _))))
     _ ≤ ∑ _t ∈ W, ∑ _u ∈ W, ∑ _v ∈ W, B^3 := by
-      apply sum_le_sum
-      intro t _
-      apply sum_le_sum
-      intro u _
-      apply sum_le_sum
-      intro v _
-      simp only [norm_mul]
-      calc
-        _ ≤ B*B*B := by gcongr <;> exact hb _
-        _ = _ := by ring
+      pm_387 sum_le_sum t u v
+      pm_2717 B
     _ = _ := by simp only [sum_const,nsmul_eq_mul]; ring
 
 theorem card_le_card_sqrt (W : Finset ℝ) : (W.card:ℝ) ≤ (W.card:ℝ)*Real.sqrt (W.card:ℝ) := by
@@ -37,11 +28,13 @@ theorem card_le_card_sqrt (W : Finset ℝ) : (W.card:ℝ) ≤ (W.card:ℝ)*Real.
   have hs : 1 ≤ Real.sqrt (W.card:ℝ) := (Real.one_le_sqrt).mpr hR
   nlinarith [mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg W.card)]
 
+section
+variable (w : MathCollab.Density.ReflectionCutoff) {ε : ℝ} (hε : 0 < ε)
+include w ε hε
 /-- Full finite-set centered cubic, with fixed cutoff support [1/2,5].
 The literal additive energy, diagonal and all near-diagonal triples are
 included. Every Fourier, affine, cutoff and Poisson estimate is discharged. -/
-theorem finite_centered_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
-    {ε : ℝ} (hε : 0 < ε) :
+theorem finite_centered_cubic_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ T L t₀ : ℝ, 2 ≤ T → T^((4:ℝ)/5) ≤ L → L ≤ T →
       ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -49,36 +42,30 @@ theorem finite_centered_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
         C*T^ε*(T^2*(W.card:ℝ)*Real.sqrt (W.card:ℝ)+
           T*L*Real.sqrt (W.card:ℝ)*Real.sqrt (discreteAdditiveEnergy W:ℝ)) := by
   obtain ⟨η,C,T₀,hη,_hη1,hC,hT₀,hret⟩ := retained_atomic_cubic_estimate w hε
-  obtain ⟨A,hA,happrox⟩ := centered_atomic_cubic_approximation w hη
+  pm_69 A hA happrox centered_atomic_cubic_approximation w hη
   have hs : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ)=0 := by
-    intro x hx
-    have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+    pm_4496
     simp [hz]
-  obtain ⟨D,hD,huniform⟩ := centeredKernel_uniform_bound w.complex_smooth
-    (by norm_num : (0:ℝ)<1/2) (by norm_num : (1/2:ℝ)≤5) hs
+  pm_4237 huniform
   let B := D^3*T₀^3*(T₀+1)^2
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  pm_61 hB B
   refine ⟨5*C+4*A+B,by positivity,?_⟩
   intro T L t₀ hT hLl hLu W hW hsep
-  let R : ℝ := W.card
-  let E : ℝ := discreteAdditiveEnergy W
-  let X := T^2*R*Real.sqrt R+T*L*Real.sqrt R*Real.sqrt E
-  have hT1 : 1 ≤ T := by linarith
-  have hTp : 0 < T := by linarith
+  pm_2721
+  pm_5085 R E
+  pm_4572
   have hL1 : 1 ≤ L := (Real.one_le_rpow hT1 (by norm_num : (0:ℝ)≤4/5)).trans hLl
-  have hLp : 0 < L := by linarith
-  have hLT2 : L ≤ T^2 := hLu.trans (by nlinarith)
-  have hR : 0 ≤ R := Nat.cast_nonneg _
-  have hE : 0 ≤ E := Nat.cast_nonneg _
+  pm_1426
+  pm_2722 hR hE
   have hRcard : R ≤ T+1 := separated_interval_card hTp.le W hW hsep
   have hR2 : R^2 ≤ 4*T^2 := by
     have hh := pow_le_pow_left₀ hR (show R ≤ 2*T by linarith) 2
     nlinarith
   have hsqrt : R ≤ R*Real.sqrt R := card_le_card_sqrt W
-  have hX : 0 ≤ X := by dsimp [X]; positivity
+  pm_4556
   have hbase : T^2*R*Real.sqrt R ≤ X := by
     exact le_add_of_nonneg_right (by positivity)
-  have hTe : 1 ≤ T^ε := Real.one_le_rpow hT1 hε.le
+  pm_153 hTe T ε hT1 hε.le
   have hpowX : X ≤ T^ε*X := by nlinarith
   have hR3 : R^3 ≤ 4*X := by
     have hh := mul_le_mul_of_nonneg_right hR2 hR
@@ -131,8 +118,7 @@ theorem finite_centered_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
 /-- The literal squared-cutoff finite matrix satisfies the cubic estimate
 needed by the signed amplifier. The cutoff is the same one, without a
 change of support or plateau and without a thinning hypothesis. -/
-theorem centered_matrix_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
-    {ε : ℝ} (hε : 0 < ε) :
+theorem centered_matrix_cubic_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ T L t₀ : ℝ, 2 ≤ T → T^((4:ℝ)/5) ≤ L → L ≤ T →
       ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
@@ -144,5 +130,6 @@ theorem centered_matrix_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
   intro T L t₀ hT hLl hLu W hW hsep
   rw [finite_cubic_trace]
   exact h T L t₀ hT hLl hLu W hW hsep
+end
 
 end Montgomery.RationalMoment

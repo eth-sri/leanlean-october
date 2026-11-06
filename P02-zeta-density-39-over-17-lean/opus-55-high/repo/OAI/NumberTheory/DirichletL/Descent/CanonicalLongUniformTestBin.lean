@@ -1,19 +1,19 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongKeys
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongIntegral
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
 open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation
+open JointLogSeparation
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_marked_bin_uniform_test
@@ -46,20 +46,20 @@ theorem actual_marked_bin_uniform_test
       ∀(Q:Finset (primePool F →₀ ℕ))(labels:Finset (Ideal O))(Ψ:O →* ℂ)(m:O)
         (slots:Finset σ)(lists:σ → Finset (primePool F))(weights:σ → primePool F → ℂ)
         (Z M r ell V H₀ pi epschild A loss lossFinal:ℝ),
-        2≤Z → 2≤Z^eta → Real.exp 1≤Z^eta → 0≤M → r+3*ell+V≤Lcap → M≤Lcap →
-        0≤ell → 0≤V → -eta≤r → Real.exp Alog≤Z^eta →
-        (∀v∈Q,Z^ell≤(Ideal.absNorm (cubeIdeal F v):ℝ)) →
-        (∀v∈Q,(Ideal.absNorm (cubeIdeal F v):ℝ)≤Real.exp 1*Z^ell) →
-        r≤Lcap → ell≤Lcap → V≤Lcap → Real.exp window≤Z^eta → 0≤pi → 6*eta≤pi →
+        2≤Z → 2≤Z ^eta → Real.exp 1≤Z ^eta → 0≤M → r+3*ell+V≤Lcap → M≤Lcap →
+        0≤ell → 0≤V → -eta≤ r → Real.exp Alog≤Z ^eta →
+        (∀v∈Q,Z ^ell≤(Ideal.absNorm (cubeIdeal F v):ℝ)) →
+        (∀v∈Q,(Ideal.absNorm (cubeIdeal F v):ℝ)≤Real.exp 1*Z ^ell) →
+        r≤Lcap → ell≤Lcap → V≤Lcap → Real.exp window≤Z ^eta → 0≤pi → 6*eta≤pi →
         em*(20*(3*Lcap+16)+30)≤pi/4 → ed*(20*(3*Lcap+16)+30)≤pi/4 →
-        0≤epschild → -saving≤r+3*ell+V+48*eta+tau+pi+epschild+epsSecond →
+        0≤epschild → -saving≤ r+3*ell+V+48*eta+tau+pi+epschild+epsSecond →
         48*eta+tau+pi+epschild+epsSecond≤loss → slots.card≤K →
-        M-ell≤r+3*ell+V → 3*eta+epsFirst*(5*ell+2*r+7*eta)≤lossFinal →
-        loss+(2*Lcap+15*eta+tau)*epsFirst+epsFirst≤lossFinal → -saving≤r+3*ell+V+lossFinal →
+        M-ell≤ r+3*ell+V → 3*eta+epsFirst*(5*ell+2*r+7*eta)≤lossFinal →
+        loss+(2*Lcap+15*eta+tau)*epsFirst+epsFirst≤lossFinal → -saving≤ r+3*ell+V+lossFinal →
         (∀u,‖Ψ u‖≤1) → 0≤A → (∀I∈labels,Squarefree I) → (∀I∈labels,I≠0) →
-        (∀I∈labels,(Ideal.absNorm I:ℝ)≤Z^(V+eta)) →
+        (∀I∈labels,(Ideal.absNorm I:ℝ)≤Z ^(V+eta)) →
         (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀q∈lists i,‖weights i q‖≤1) →
-        b₀*Z^(r+3*ell)≤D →
+        b₀*Z ^(r+3*ell)≤D →
         (∀ξ:ℝ,∀k∈actualLongSourceKeys p hp hcop hg Finset.univ Q labels Ψ m (m*excludedGenerator S)
           slots lists weights om Z M r ell V H₀ ξ Lcap eta tau,
           ChildBounds p hp hcop hg Finset.univ Q k.1 k.2.1 k.2.2 true Ψ m slots lists weights ω₁₁ ω₁₂
@@ -68,9 +68,9 @@ theorem actual_marked_bin_uniform_test
           slots lists weights om Z M r ell V H₀ ξ Lcap eta tau,
           ChildBounds p hp hcop hg Finset.univ Q k.1 k.2.1 k.2.2 false Ψ m slots lists weights ω₂₁ ω₂₂
             Z M r ell V eta tau window bw epschild A K degree) →
-        Z^(-V)*rowFamilyEnergy labels (fun I z=>markedReopenedCubeBin S D Q Ψ m (idealGenerator I) z
-          test (Z^(r+3*ell)) H₀ slots lists weights) (Z^M)≤
-          C*(Ccoef*(Real.exp 1*Z^ell)^epsFirst)^2*(1+A)*Z^(r+3*ell+V+lossFinal)*
+        Z ^(-V)*rowFamilyEnergy labels (fun I z=>markedReopenedCubeBin S D Q Ψ m (idealGenerator I) z
+          test (Z ^(r+3*ell)) H₀ slots lists weights) (Z ^M)≤
+          C*(Ccoef*(Real.exp 1*Z ^ell)^epsFirst)^2*(1+A)*Z ^(r+3*ell+V+lossFinal)*
             (∫ξ:ℝ,‖reopeningCoefficient test a₀ b₀ ha₀ hs₀ hTest ξ‖*(1+|ξ|)^(InverseClippingProfiles.momentOrder (firstDegree degree)))^2 := by
   let om:=radialFromLog Vlog (Vlog.smooth ⊤) Alog hbox
   have hs:Function.support om⊆Set.Icc (Real.exp (-Alog)) (Real.exp Alog):=
@@ -79,24 +79,15 @@ theorem actual_marked_bin_uniform_test
     haf₁,hab₁,haf₂,hab₂,hw₁₁,hw₁₂,hw₂₁,hw₂₂,hs₁₁,hs₁₂,hs₂₁,hs₂₂,hbw,hbwb,hbwexp,he⟩:=
     actual_long_parent_energy om (Real.exp (-Alog)) (Real.exp Alog) (Real.exp_pos _) hs
       Lcap eta tau saving em ed hcap (Real.exp_pos _).le heta heta1 htau htau1 hem hed K
-  refine ⟨ω₁₁,ω₁₂,ω₂₁,ω₂₂,af₁,bf₁,af₂,bf₂,window,bw,
-    haf₁,hab₁,haf₂,hab₂,hw₁₁,hw₁₂,hw₂₁,hw₂₂,hs₁₁,hs₁₂,hs₂₁,hs₂₂,hbw,hbwb,hbwexp,?_⟩
-  intro epsFirst epsSecond hepsF hepsS degree
-  obtain ⟨Ccoef,C,hCcoef,hC,hparent⟩:=he epsFirst epsSecond hepsF hepsS degree
+  pm_3760
+  pm_6890 hparent
   let d:=InverseClippingProfiles.momentOrder (firstDegree degree)
-  refine ⟨Ccoef,C,hCcoef,hC,?_⟩
+  pm_119 Ccoef C hCcoef hC
   intro test hs₀ hTest
   let moment:ℝ:=∫ξ:ℝ,‖reopeningCoefficient test a₀ b₀ ha₀ hs₀ hTest ξ‖*(1+|ξ|)^d
   intro σ _ S D hbad hSp
-  let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
-  dsimp only
-  intro Q labels Ψ m slots lists weights Z M r ell V H₀ pi epschild A loss lossFinal
-    hZ hbin hbinExp hM hFcap hMcap hell hV hr hbZ hQlo hQhi hrcap hellcap hVcap hwin
-    hpi hpieta hemcost hedcost hechild hsave hloss hcard hpar hprincipal hretained htail
-    hΨ hA hsf hn hlabels hslots hweights hD hleft hright
+  pm_3769
+  pm_3768 hbin
   have hz:0<Z:=by linarith
   have hg' : ∀i:primePool F,goodLambda∉Ideal.span {poolPrimary F i}:=poolPrimary_good F hF
   have hinj:Function.Injective (fun i:primePool F=>Ideal.span {poolPrimary F i}) := by
@@ -104,11 +95,11 @@ theorem actual_marked_bin_uniform_test
     exact Subtype.ext (by simpa only [poolPrimary_span F hF] using hij)
   have hpr (i:primePool F):goodLambda^2∣poolPrimary F i-1:=
     (primaryPrime_spec i.val (poolPrimary_ne_zero F hF i)).2.2.2
-  let Gamma:=Ccoef*(Real.exp 1*Z^ell)^epsFirst
-  let E:=C*Gamma^2*(1+A)*Z^(r+3*ell+V+lossFinal)
-  have hE:0≤E:=by dsimp [E];positivity
+  let Gamma:=Ccoef*(Real.exp 1*Z ^ell)^epsFirst
+  let E:=C*Gamma^2*(1+A)*Z ^(r+3*ell+V+lossFinal)
+  pm_100 hE E
   refine (actual_long_bin_normalized_energy S D hbad hSp Q labels Ψ m test a₀ b₀ ha₀ hb₀ hs₀ hTest
-    Vlog hone Z r ell V H₀ (Z^M) E d hz hD (Real.rpow_pos_of_pos hz _) hE hQlo hQhi slots lists weights ?_).trans_eq ?_
+    Vlog hone Z r ell V H₀ (Z ^M) E d hz hD (Real.rpow_pos_of_pos hz _) hE hQlo hQhi slots lists weights ?_).trans_eq ?_
   · intro ξ
     have hbnd:=hparent (poolPrimary F) (poolPrimary_ne_zero F hF) hg' hinj
       (poolPrimary_coprime F hF) (poolPrimary_odd F hF) hpr Finset.univ Q labels Ψ m (m*excludedGenerator S)
@@ -118,30 +109,30 @@ theorem actual_marked_bin_uniform_test
       (by intro v hv;rw [cubeIdeal_primeProduct_norm F hF];exact hQhi v hv)
       hrcap hellcap hVcap hwin hpi hpieta hemcost hedcost hechild hsave hloss hcard hpar hprincipal hretained htail
       hΨ hA hsf hn hlabels hslots hweights (hleft ξ) (hright ξ)
-    have hc (I:Ideal O) := funext (actualLongCoefficient_complete S D hbad Ψ m H₀ (Z^ell) ξ I)
+    have hc (I:Ideal O) := funext (actualLongCoefficient_complete S D hbad Ψ m H₀ (Z ^ell) ξ I)
     have hrow: (fun I z=>varyingReopenedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
         (poolPrimary_coprime F hF) hg' Finset.univ Q
         (separatedCubeCoefficient (fun v=>reopenedCubeCoefficient H₀
           (rowTwist Ψ (m*excludedGenerator S) (idealGenerator I) 1) (cubeIdeal F v))
-          (fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)) (Z^ell) ξ) Ψ m (idealGenerator I)
-        (fun v T=>primeMark slots lists weights (T∪v.support)*frequencyTwist Vlog ξ (columnLog (poolPrimary F) (Z^r) T)) z)=
+          (fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)) (Z ^ell) ξ) Ψ m (idealGenerator I)
+        (fun v T=>primeMark slots lists weights (T∪v.support)*frequencyTwist Vlog ξ (columnLog (poolPrimary F) (Z ^r) T)) z)=
       (fun I z=>varyingReopenedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
         (poolPrimary_coprime F hF) hg' Finset.univ Q
         (separatedCubeCoefficient (fun v=>reopenedCubeCoefficient H₀
           (rowTwist Ψ (m*excludedGenerator S) (idealGenerator I) 1) (cubeIdeal F v))
-          (fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)) (Z^ell) ξ) Ψ m (idealGenerator I)
-        (fun v T=>primeMark slots lists weights (v.support∪T)*normTwistedSource om ξ (primeProductNorm (poolPrimary F) T/Z^r)) z) := by
+          (fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)) (Z ^ell) ξ) Ψ m (idealGenerator I)
+        (fun v T=>primeMark slots lists weights (v.support∪T)*normTwistedSource om ξ (primeProductNorm (poolPrimary F) T/Z ^r)) z) := by
       funext I z
       exact long_marked_source_eq (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
         hg' Finset.univ Q _ Ψ m (idealGenerator I) z slots lists weights Vlog Alog hbox Z r ξ hz
     rw [hrow]
     convert hbnd using 1
-    · apply congrArg (fun f => Z^(-r-2*ell-V)*rowFamilyEnergy labels f (Z^M))
+    · apply congrArg (fun f => Z ^(-r-2*ell-V)*rowFamilyEnergy labels f (Z ^M))
       funext I z
       exact congrArg (fun coeff => varyingReopenedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
         (poolPrimary_coprime F hF) hg' Finset.univ Q coeff Ψ m (idealGenerator I)
         (fun v T => primeMark slots lists weights (v.support∪T)*normTwistedSource om ξ
-          (primeProductNorm (poolPrimary F) T/Z^r)) z) (hc I).symm
+          (primeProductNorm (poolPrimary F) T/Z ^r)) z) (hc I).symm
     · dsimp [E,Gamma,d]
       try simp only [Real.norm_eq_abs]
       ring
@@ -149,6 +140,5 @@ theorem actual_marked_bin_uniform_test
 
 end SevenEighths.InverseMoment
 
-end
 
 end OAI

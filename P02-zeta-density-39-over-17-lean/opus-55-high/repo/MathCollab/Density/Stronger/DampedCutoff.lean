@@ -4,6 +4,7 @@ public import Mathlib.Analysis.Calculus.Deriv.Support
 public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import Mathlib.Topology.Order.Compact
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,19 +20,21 @@ def dampedCutoff (ψ : ℝ → ℝ) (q y : ℝ) : ℝ := ψ y * Real.exp (-q * y
 theorem dampedCutoff_contDiff {ψ : ℝ → ℝ} (hψ : ContDiff ℝ ∞ ψ) (q : ℝ) :
     ContDiff ℝ ∞ (dampedCutoff ψ q) := by
   unfold dampedCutoff
-  exact hψ.mul (Real.contDiff_exp.comp (contDiff_const.mul contDiff_id))
+  fun_prop
 
 theorem dampedCutoff_tsupport (ψ : ℝ → ℝ) (q : ℝ) :
     tsupport (dampedCutoff ψ q) ⊆ tsupport ψ := tsupport_mul_subset_left
 
+section
+variable {a q y : ℝ} (ha : 0 < a) (hq : 0 ≤ q) (hy : a ≤ y) (n : ℕ)
+include a q y ha hq hy n
 /-- Explicit domination of every parameter power by the damping. -/
-theorem damping_power_bound {a q y : ℝ} (ha : 0 < a) (hq : 0 ≤ q)
-    (hy : a ≤ y) (n : ℕ) :
+theorem damping_power_bound :
     q^n * Real.exp (-q*y) ≤ (n.factorial : ℝ) / a^n := by
-  have hf : (0 : ℝ) < n.factorial := by positivity
+  pm_117 hf n.factorial
   have hp : (q*a)^n ≤ (n.factorial : ℝ) * Real.exp (q*a) := by
     have h := (div_le_iff₀ hf).mp (Real.pow_div_factorial_le_exp (q*a) (mul_nonneg hq ha.le) n)
-    simpa only [mul_comm] using h
+    grind
   have he : Real.exp (-q*y) ≤ Real.exp (-(q*a)) :=
     Real.exp_le_exp.mpr (by nlinarith)
   apply (le_div_iff₀ (pow_pos ha n)).2
@@ -43,14 +46,14 @@ theorem damping_power_bound {a q y : ℝ} (ha : 0 < a) (hq : 0 ≤ q)
       exact mul_le_mul hp he (Real.exp_pos _).le (by positivity)
     _ = n.factorial := by rw [mul_assoc, ← Real.exp_add]; simp
 
-theorem norm_iteratedDeriv_damping_le {a q y : ℝ}
-    (ha : 0 < a) (hq : 0 ≤ q) (hy : a ≤ y) (n : ℕ) :
+theorem norm_iteratedDeriv_damping_le :
     ‖iteratedDeriv n (fun x : ℝ => Real.exp (-q*x)) y‖ ≤
       (n.factorial : ℝ) / a^n := by
   rw [iteratedDeriv_exp_const_mul, norm_mul, norm_pow,
     Real.norm_eq_abs, abs_neg, abs_of_nonneg hq, Real.norm_eq_abs,
     abs_of_pos (Real.exp_pos _)]
   exact damping_power_bound ha hq hy n
+end
 
 theorem tsupport_iteratedDeriv_subset (f : ℝ → ℝ) (n : ℕ) :
     tsupport (iteratedDeriv n f) ⊆ tsupport f := by
@@ -69,7 +72,7 @@ theorem dampedCutoff_uniform_derivatives {ψ : ℝ → ℝ} {a b : ℝ}
   have hb (i : ℕ) : ∃ B : ℝ, 0 ≤ B ∧ ∀ y ∈ Icc a b, ‖iteratedDeriv i ψ y‖ ≤ B := by
     obtain ⟨B, hB⟩ := (isCompact_Icc : IsCompact (Icc a b)).bddAbove_image
       ((hψ.continuous_iteratedDeriv i (by simp)).norm.continuousOn)
-    refine ⟨max B 0, le_max_right _ _, ?_⟩
+    pm_6166 B
     intro y hy
     exact (hB ⟨y, hy, rfl⟩).trans (le_max_left _ _)
   choose B hBpos hB using hb
@@ -88,11 +91,9 @@ theorem dampedCutoff_uniform_derivatives {ψ : ℝ → ℝ} {a b : ℝ}
       exact iteratedDeriv_fun_mul (hψ.of_le (by simp)).contDiffAt
         (he.of_le (by simp)).contDiffAt
     rw [hd]
-    apply (norm_sum_le _ _).trans
-    apply Finset.sum_le_sum
-    intro i hi
+    pm_244 Finset.sum_le_sum i hi
     have hBi := hBpos i
-    rw [norm_mul, norm_mul, Real.norm_eq_abs, abs_of_nonneg (Nat.cast_nonneg _)]
+    pm_7250
     calc
       _ ≤ ((n.choose i : ℝ) * B i) * ((n-i).factorial / a^(n-i)) := by
         exact mul_le_mul (mul_le_mul_of_nonneg_left (hB i y hy) (Nat.cast_nonneg _))

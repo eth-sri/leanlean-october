@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstFreshEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,15 +20,14 @@ theorem firstBlockOuterWeight_norm_le
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (selector : Finset ι → ℂ) (r : RayCharacter × RayCharacter) (D : Finset ι) (h : Eis) :
     ‖firstBlockOuterWeight p selector r D h‖ ≤ ‖crossCoeff r.1 r.2‖*‖selector D‖ := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
+  pm_3509
   have hm : ‖supportMobius (fun i => Ideal.span {p i}) D‖ = 1 := by
     have hs := congrArg norm (supportMobius_sq _ hprime hinj D)
     simp only [norm_mul,norm_one] at hs
     nlinarith [norm_nonneg (supportMobius (fun i => Ideal.span {p i}) D)]
   have hc : ‖rowCoprimeMask (fun i => Ideal.span {p i}) D h‖ ≤ 1 := by
     unfold rowCoprimeMask
-    split_ifs <;> norm_num
+    aesop
   simp only [firstBlockOuterWeight,norm_mul,hm,mul_one]
   exact mul_le_of_le_one_right (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hc
 
@@ -60,8 +60,8 @@ theorem first_block_old_label_energy (ε : ℝ) (hε : 0 < ε) :
         (‖crossCoeff r.1 r.2‖*‖selector D‖) *
           ∑ z∈rows,‖dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative
             (if negative then r.1 else r.2) C (fun u => ω (Real.exp u))
-            (columnLog p (primeProductNorm p D*X)) c d (-t) z‖^2 := by
-  obtain ⟨K,hK,hpush⟩ := first_fresh_energy_small_power ε hε
+            (columnLog p (primeProductNorm p D *X)) c d (-t) z‖^2 := by
+  pm_69 K hK hpush first_fresh_energy_small_power ε hε
   refine ⟨K,hK,?_⟩
   intro ι _ p hp _ hinj hcop hg F B selector v ε₁ ε₂ hv negative C ω X t hX c d
     source rows w M Y hM hY hs hmap hrows hnorm hw
@@ -80,7 +80,7 @@ theorem first_block_old_label_energy (ε : ℝ) (hε : 0 < ε) :
         (‖crossCoeff r.1 r.2‖*‖selector D‖)*
           (M*K*Y^ε*∑ z∈rows,‖dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative
             (if negative then r.1 else r.2) C (fun u => ω (Real.exp u))
-            (columnLog p (primeProductNorm p D*X)) c d (-t) z‖^2) := by
+            (columnLog p (primeProductNorm p D *X)) c d (-t) z‖^2) := by
       apply Finset.sum_le_sum
       intro r hr
       apply Finset.sum_le_sum
@@ -102,10 +102,7 @@ theorem first_block_old_label_energy (ε : ℝ) (hε : 0 < ε) :
               hM hY hs hmap hrows hnorm hw) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ = _ := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro r hr
-      apply Finset.sum_congr rfl
-      intro D hD
+      pm_3728
       ring_nf
 
 end

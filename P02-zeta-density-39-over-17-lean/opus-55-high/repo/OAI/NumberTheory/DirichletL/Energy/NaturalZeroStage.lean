@@ -3,17 +3,18 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthPhysical
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSourceControlled
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthContourBounded
 public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalZeroStage
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyBandMonotonicity
 open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyWidthSchedule
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
@@ -32,19 +33,19 @@ theorem actual_zero_stage
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκbeta:2*HeckeZeroSupremum.beta-1≤κ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:2≤bΦ)(hBmask:0≤Bmask)(_hLgoal:0≤Lgoal)
     (hMparent:0≤Mparent)(hMchild:0≤Mchild)(hMschedule:0≤Mschedule)(hBschedule:0≤Bschedule)
-    (hε:0<ε)(hrho:0<rho)(hrhoChild:rho≤Mchild)
+    (hε:0<ε)(hrho:0< rho)(hrhoChild:rho≤Mchild)
     (hdrop:Mparent-amplification ε/2≤Mchild):
     ∃d Lgrow Llow:ℝ,0<d ∧ d≤1 ∧ 0<Lgrow ∧ Lgoal≤Lgrow ∧
       Lgrow=max Lgoal (Mparent+Bmask+2*d)+1 ∧
       Llow=max Lgrow (Mparent+Bmask+rho/100) ∧
-      Llow≤max Lgoal (Mparent+Bmask+rho/100+2)+1 ∧
-    ∀Lchild:ℝ,0≤Lchild→max Mparent (2*Lgrow)≤Lchild→
+      Llow≤ max Lgoal (Mparent+Bmask+rho/100+2)+1 ∧
+    ∀Lchild:ℝ,0≤Lchild→ max Mparent (2*Lgrow)≤Lchild→
       readyBudget (max Mparent (2*Lgrow)) Bmask≤Bschedule→
     ∀degree degreeLow:ℕ,∀S Slow:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
+    ∀η₀:Character,∀Q:Ideal O,Q≤M→ internalQ Q η₀≠0→ internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀εchild C₀ C₁ Clow:ℝ,εchild≤stageLoss Mschedule Bschedule ε k→
+    ∀εchild C₀ C₁ Clow:ℝ,εchild≤ stageLoss Mschedule Bschedule ε k→
       0≤C₀→0≤C₁→0≤Clow→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b bΦ Bmask Lchild Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask Lchild Lslot lo hi
@@ -53,9 +54,8 @@ theorem actual_zero_stage
         (physicalLoss Mschedule Bschedule ε k) Z degreeLow Slow Clow→
       ZeroAt (internalQ Q η₀) a b bΦ Bmask Lgoal Mparent
         (stageLoss Mschedule Bschedule ε (k+1)) Z J U (C*(Clow+C₀+C₁+1)):=by
-  let r:=reserve Mschedule Bschedule ε
-  have hκ0:0≤κ:=by linarith
-  have hr:0<r:=(bounds Mschedule Bschedule κ ε hMschedule hBschedule hκ0 hε).2.2.2.1
+  pm_5567 Mschedule Bschedule
+  have hr:0< r:=(bounds Mschedule Bschedule κ ε hMschedule hBschedule hκ0 hε).2.2.2.1
   have hb:0≤b:=by linarith
   have hrad:0<bΦ:=by linarith
   obtain ⟨d,Lgrow,hd,hd1,hLg,hgoal,hLexact,hLupper,hsharp⟩:=
@@ -82,17 +82,16 @@ theorem actual_zero_stage
   obtain ⟨Jgrowth,Ugrowth,Cgrowth,hCg,hgrowth⟩:=hgrowth (degree+degreeLow) (S∪Slow) Jmass Smass
   obtain ⟨J,U,Csharp,hCs,hsharp⟩:=hsharp Ugrowth
   refine ⟨J,U,?_⟩
-  intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨Cmass,hCm,Zmass,hZm,hmass⟩:=hphysical η₀ Q hQM hQ0 hQt hQ72
+  pm_5372 Cmass hCm Zmass hZm hmass hphysical
   let C:=Csharp*(Cgrowth*(Cmass+2)+1)
-  refine ⟨C,by dsimp [C];positivity,?_⟩
+  pm_346 C
   filter_upwards [eventually_ge_atTop Zmass,hgrowth,hsharp] with Z hZmZ hg hs
   have hZ:1<Z:=hZm.trans_le hZmZ
   refine ⟨hZ,?_⟩
   intro εchild C₀ C₁ Clow hchild hC₀ hC₁ hClow hz hp hl
   have hmarg:=margins Mschedule Bschedule κ ε hMschedule hBschedule hκ0 hε k
   have hpLoss:0≤physicalLoss Mschedule Bschedule ε k:=hmarg.1.le
-  have hrLoss:0≤reflectedLoss Mschedule Bschedule ε k:=hpLoss.trans hmarg.2.2.2.1
+  have hrLoss:0≤ reflectedLoss Mschedule Bschedule ε k:=hpLoss.trans hmarg.2.2.2.1
   have hlength:Lgrow≤Lchild:=by linarith [le_max_right Mparent (2*Lgrow)]
   have hap:a/max 1 b≤a:=div_le_self ha.le (le_max_left _ _)
   have hzero:=zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ 2 0 _ _ _

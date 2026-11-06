@@ -29,7 +29,7 @@ lemma activeTupleDyad_bounds (tuples : Finset (σ→Ideal Eis)) (H : ℝ)
   constructor
   · exact max_le (hn p hpt).1 hh.1.le
   · have ht : (2:ℝ)^i.val/2≤divisorDyadicScale i.val := le_max_right _ _
-    linarith [hh.2]
+    grind
 
 omit [DecidableEq σ] in
 lemma activeTupleDyad_scale_le (tuples : Finset (σ→Ideal Eis)) (H : ℝ)

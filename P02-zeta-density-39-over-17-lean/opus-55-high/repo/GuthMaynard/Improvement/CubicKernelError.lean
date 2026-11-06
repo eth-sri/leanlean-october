@@ -1,40 +1,40 @@
 module
 public import GuthMaynard.Improvement.CubicKernel
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 namespace GuthMaynard.Improvement
 
+section
+variable (μ : Measure ℝ)
+include μ
 /-- Actual triple measure mass, including the zero measure. -/
-theorem tripleMeasure_mass (μ : Measure ℝ) [SFinite μ] :
+theorem tripleMeasure_mass [SFinite μ] :
     (tripleMeasure μ).real Set.univ = (μ.real Set.univ)^3 := by
   simp only [tripleMeasure,Measure.real]
   rw [← Set.univ_prod_univ,Measure.prod_prod,← Set.univ_prod_univ,Measure.prod_prod]
   rw [ENNReal.toReal_mul,ENNReal.toReal_mul]
   ring
 
-theorem kernelCubic_integrable (μ : Measure ℝ) [IsFiniteMeasure μ]
+theorem kernelCubic_integrable [IsFiniteMeasure μ]
     {K : ℝ → ℂ} {B : ℝ} (hK : Measurable K) (hB : 0 ≤ B) (hb : ∀ s, ‖K s‖ ≤ B) :
     Integrable (fun t : Triple => K (t.1-t.2.1)*K (t.2.1-t.2.2)*K (t.2.2-t.1))
       (tripleMeasure μ) := by
-  let : IsFiniteMeasure (tripleMeasure μ) := by unfold tripleMeasure; infer_instance
-  apply (integrable_const (B^3)).mono' (by fun_prop)
+  pm_4550
+  pm_7200
   filter_upwards with t
   simp only [norm_mul]
-  calc
-    _ ≤ B*B*B := mul_le_mul (mul_le_mul (hb _) (hb _) (norm_nonneg _) hB) (hb _) (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  pm_4551
 
 /-- Perturbation of the actual cubic kernel integral. The full mass cubed
 is retained; no normalized absolute error or positive-mass division occurs. -/
-theorem kernelCubic_perturbation (μ : Measure ℝ) [IsFiniteMeasure μ]
+theorem kernelCubic_perturbation [IsFiniteMeasure μ]
     {K J : ℝ → ℂ} {B e : ℝ} (hK : Measurable K) (hJ : Measurable J)
     (hB : 0 ≤ B) (he : 0 ≤ e) (hbK : ∀ s, ‖K s‖ ≤ B) (hbJ : ∀ s, ‖J s‖ ≤ B)
     (herr : ∀ s, ‖K s-J s‖ ≤ e) :
     ‖kernelCubic μ K-kernelCubic μ J‖ ≤ 3*e*B^2*(μ.real Set.univ)^3 := by
-  let : IsFiniteMeasure (tripleMeasure μ) := by unfold tripleMeasure; infer_instance
+  pm_4550
   have hki := kernelCubic_integrable μ hK hB hbK
   have hji := kernelCubic_integrable μ hJ hB hbJ
   unfold kernelCubic
@@ -68,5 +68,6 @@ theorem kernelCubic_perturbation (μ : Measure ℝ) [IsFiniteMeasure μ]
   have hh := norm_integral_le_of_norm_le_const (μ := tripleMeasure μ) (Filter.Eventually.of_forall hp)
   rw [tripleMeasure_mass] at hh
   exact hh
+end
 
 end GuthMaynard.Improvement

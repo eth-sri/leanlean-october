@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.DualShell
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ theorem cubicDualRow_zero_bound {n : Type*} [Fintype n] [DecidableEq n]
   · obtain ⟨j₀, hj₀⟩ := hu
     have ho (j : n) (hj : j ≠ j₀) : cols j ≠ 1 := by
       intro he
-      exact hj (hinj (he.trans hj₀.symm))
+      grind
     have he : cubicDualRow cols hc a W M 0 =
         (star (cubicDualCoefficient cols hc a j₀) * cubicDualCoefficient cols hc a j₀) *
           paperRadialFourier W 0 := by
@@ -34,14 +35,8 @@ theorem cubicDualRow_zero_bound {n : Type*} [Fintype n] [DecidableEq n]
       · rw [Finset.sum_eq_single j₀]
         · simp only [hj₀, cubicRow_one, one_mul, Ideal.span_singleton_zero,
             Ideal.absNorm_bot, Nat.cast_zero, mul_zero, zero_div, ite_eq_left isCoprime_one_left]
-        · intro k hk hkj
-          rw [cubicRow_zero_of_ne_one _ (hc k) (ho k hkj)]
-          simp
-        · simp
-      · intro j hj hjj
-        rw [cubicRow_zero_of_ne_one _ (hc j) (ho j hjj)]
-        simp
-      · simp
+        pm_8819 k hk hkj
+      pm_8819 j hj hjj
     rw [he, norm_mul, norm_mul, norm_star, ← pow_two]
     apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
     exact (Finset.single_le_sum (fun j hj => sq_nonneg ‖cubicDualCoefficient cols hc a j‖)

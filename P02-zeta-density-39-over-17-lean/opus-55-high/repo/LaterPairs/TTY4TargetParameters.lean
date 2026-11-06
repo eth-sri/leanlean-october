@@ -1,5 +1,6 @@
 module
 public import DashedInitialParameters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -15,7 +16,7 @@ theorem tty4_full_target_tail_budgets {σ : ℝ}
     1+(914/1739:ℝ)/(3316/8695)-(4+(2+4*(914/1739))/(3316/8695))*((3*a/4)*(σ-1/2)) ≤
       3*a*(1-σ) := by
   dsimp only
-  have hd : 0 < 107010*σ-33609 := by linarith
+  pm_493
   refine ⟨fraction_detector_threshold hd (by linarith),?_⟩
   rw [show (1:ℝ)+(914/1739)/(3316/8695)=3943/1658 by norm_num,
     show (4:ℝ)+(2+4*(914/1739))/(3316/8695)=24467/1658 by norm_num]

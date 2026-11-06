@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.FiniteSpectral
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 namespace GuthMaynard.Improvement
 
 /-- Weighted convexity for positive cubic eigenvalues. The total witness
@@ -17,8 +16,7 @@ theorem finite_weighted_positive_cube {ι : Type*} [Fintype ι]
   · rw [max_eq_right hd]
     simp only [zero_pow (by decide : 3 ≠ 0), mul_zero]
     exact Finset.sum_nonneg fun i _ => by positivity
-  have hdp : 0 < d := lt_of_not_ge hd
-  rw [max_eq_left hdp.le]
+  pm_7154
   have hlinear : k*d ≤ ∑ i, α i*max (e i) 0 :=
     hwitness.trans (Finset.sum_le_sum fun i _ =>
       mul_le_mul_of_nonneg_left (le_max_left _ _) (hα i))
@@ -32,10 +30,10 @@ theorem finite_weighted_positive_cube {ι : Type*} [Fintype ι]
       3*d^2*(∑ i, α i*max (e i) 0)-2*d^3*(∑ i, α i) := by
     simp_rw [mul_sub]
     rw [Finset.sum_sub_distrib, Finset.mul_sum, Finset.mul_sum]
-    congr 1 <;> apply Finset.sum_congr rfl <;> intro i _ <;> ring
+    pm_7728
   rw [hid] at hsum
   have hm := mul_le_mul_of_nonneg_left hmass (show 0 ≤ 2*d^3 by positivity)
-  have hl := mul_le_mul_of_nonneg_left hlinear (show 0 ≤ 3*d^2 by positivity)
+  pm_6108 hl hlinear d
   have hcube : k*d^3 ≤ ∑ i, α i*(max (e i) 0)^3 := by nlinarith
   exact hcube.trans (Finset.sum_le_sum fun i _ => by
     simpa using mul_le_mul_of_nonneg_right (hα1 i)
@@ -46,12 +44,7 @@ These hypotheses are supplied by positive G,C in an H-eigenbasis. -/
 theorem finite_diagonal_positive_trace {ι : Type*} [Fintype ι]
     (c e : ι → ℝ) (hc : ∀ i, 0 ≤ c i) (hg : ∀ i, 0 ≤ c i+e i) :
     (∑ i, (max (e i) 0)^3) ≤ |∑ i, (e i)^3|+∑ i, c i*(e i)^2 := by
-  have hp (i : ι) : (max (e i) 0)^3 ≤ (e i)^3+c i*(e i)^2 := by
-    by_cases he : 0 ≤ e i
-    · rw [max_eq_left he]
-      nlinarith [mul_nonneg (hc i) (sq_nonneg (e i))]
-    · rw [max_eq_right (le_of_not_ge he)]
-      nlinarith [mul_nonneg (hg i) (sq_nonneg (e i))]
+  pm_4541
   calc
     _ ≤ ∑ i, ((e i)^3+c i*(e i)^2) := Finset.sum_le_sum fun i _ => hp i
     _ = (∑ i, (e i)^3)+∑ i, c i*(e i)^2 := Finset.sum_add_distrib

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedProduct
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstBoundary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,28 +15,18 @@ local notation "O" => HeckeFamily.O
 
 theorem correctionTail_mono {S T : Finset (Ideal O)} (hS : CorrectionTail S) (hst : S⊆T) :
     CorrectionTail T := by
-  let inc : {P : PrimeIdeal // P.val∉T}→{P : PrimeIdeal // P.val∉S} :=
-    fun P=>⟨P.val,fun h=>P.property (hst h)⟩
-  have hi : Function.Injective inc := by
-    intro P Q h
-    exact Subtype.ext (congrArg (fun R : {P : PrimeIdeal // P.val∉S}=>R.val) h)
+  pm_3498
   constructor
-  · intro P hP
-    exact hS.norm_four P (fun h=>hP (hst h))
+  pm_6489
   · apply le_trans _ hS.small
     exact Summable.tsum_le_tsum_of_inj inc hi (fun P _=>globalPrimeDefectBound_nonneg P.val)
       (fun _=>le_rfl) (globalPrimeDefectBound_summable.subtype _) hS.summable
 
 theorem firstTail_mono {eps : ℝ} {S T : Finset (Ideal O)} (hS : FirstTail eps S) (hst : S⊆T) :
     FirstTail eps T := by
-  let inc : {P : PrimeIdeal // P.val∉T}→{P : PrimeIdeal // P.val∉S} :=
-    fun P=>⟨P.val,fun h=>P.property (hst h)⟩
-  have hi : Function.Injective inc := by
-    intro P Q h
-    exact Subtype.ext (congrArg (fun R : {P : PrimeIdeal // P.val∉S}=>R.val) h)
+  pm_3498
   refine ⟨hS.positive,?_,?_⟩
-  · intro P hP
-    exact hS.norm_four P (fun h=>hP (hst h))
+  pm_6489
   · apply le_trans _ hS.small
     exact Summable.tsum_le_tsum_of_inj inc hi (fun P _=>firstPrimeDefectBound_nonneg eps P.val)
       (fun _=>le_rfl) ((firstPrimeDefectBound_summable eps hS.positive).subtype _) hS.summable

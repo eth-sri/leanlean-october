@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorMoments
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorExponent
+public import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
 
 @[expose] public section
 
@@ -18,9 +19,7 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-lemma nonfloorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+alias nonfloorPoolOutside := OAI.SevenEighths.ProbeHighRowFamily.poolOutside
 
 end SevenEighths.ProbeHighRowFamily
 

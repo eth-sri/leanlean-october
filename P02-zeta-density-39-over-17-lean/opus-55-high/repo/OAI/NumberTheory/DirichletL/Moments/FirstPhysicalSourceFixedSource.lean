@@ -25,7 +25,10 @@ local instance firstFixedSourceDecidableEq : DecidableEq (ι⊕Fin 2):=Classical
 variable {η:Character}{C D:Ideal O}{hC:Supported C}
   {E:Finset (CommonIndex C D)}{ξ₁ ξ₂:RayCharacter}
 
-theorem FixedPair.left_column (F:FixedPair η C D hC E ξ₁ ξ₂)(s:OriginalData ι)(t:ℝ)(L:Ideal O)
+section
+variable (F:FixedPair η C D hC E ξ₁ ξ₂)
+include F
+theorem FixedPair.left_column(s:OriginalData ι)(t:ℝ)(L:Ideal O)
     (I:columns C C hC.1 s.columns):
     divisorCoefficient L (element C C hC.1 s.columns)
       (fun a=>coefficient η (fixedBadMask*idealGenerator s.R) 1 t s.beta C a*
@@ -36,7 +39,7 @@ theorem FixedPair.left_column (F:FixedPair η C D hC E ξ₁ ξ₂)(s:OriginalDa
   fixed_divisor_column s η F.left C _ ξ₁ F.left_height L I
     (column_supported C C hC.1 s.columns I) t
 
-theorem FixedPair.right_column (F:FixedPair η C D hC E ξ₁ ξ₂)(hD:Supported D)
+theorem FixedPair.right_column(hD:Supported D)
     (s:OriginalData ι)(t:ℝ)(L:Ideal O)(I:columns C D hD.1 s.columns):
     divisorCoefficient L (element C D hD.1 s.columns)
       (fun a=>coefficient η (fixedBadMask*idealGenerator s.R) 1 t s.beta D a*
@@ -46,6 +49,7 @@ theorem FixedPair.right_column (F:FixedPair η C D hC E ξ₁ ξ₂)(hD:Supporte
       (if L∣(I:Ideal O) then s.beta (D*I) else 0)*heightCoeff F.right t I:=
   fixed_divisor_column s η F.right D _ ξ₂ F.right_height L I
     (column_supported C D hD.1 s.columns I) t
+end
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 

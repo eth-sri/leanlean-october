@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRadius
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,15 +16,15 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecon
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma uniform_radius_cap (G E : Finset ι) (hEG : E⊆G)
     (Z delta eta L Y tau Lcol LY : ℝ) (hZ : 0<Z) (hL : 0≤L) (hY : 0<Y)
-    (hLc : L≤Z^Lcol) (hYi : Y⁻¹≤Z^LY) :
-    uniformSecondRadius p Z delta eta G E L Y (Z^tau)≤
-      Z^(delta+eta+2*Lcol+tau+LY) := by
+    (hLc : L≤Z ^Lcol) (hYi : Y⁻¹≤Z ^LY) :
+    uniformSecondRadius p Z delta eta G E L Y (Z ^tau)≤
+      Z ^(delta+eta+2*Lcol+tau+LY) := by
   have hr : primeProductNorm p E/primeProductNorm p G≤1 :=
     (div_le_one (primeProductNorm_pos p hp G)).mpr (primeProductNorm_mono p hp hEG)
   have hr0 : 0≤primeProductNorm p E/primeProductNorm p G := by
@@ -32,7 +33,7 @@ lemma uniform_radius_cap (G E : Finset ι) (hEG : E⊆G)
   unfold uniformSecondRadius
   rw [div_eq_mul_inv]
   calc
-    _ ≤ Z^(delta+eta)*1*(Z^Lcol)^2*Z^tau*Z^LY := by gcongr
+    _ ≤ Z ^(delta+eta)*1*(Z ^Lcol)^2*Z ^tau*Z ^LY := by gcongr
     _ = _ := by
       rw [mul_one,←Real.rpow_mul_natCast hZ.le]
       repeat rw [←Real.rpow_add hZ]
@@ -49,22 +50,22 @@ lemma bare_frequency_norm_le (a k : O) (ha : a≠0) :
 include hp in
 
 theorem supported_outer_caps
-    (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
+    (extra : CubeCoordinates ι→ Finset ι) (original : Finset (Source ι Jo))
+    (negative : Bool) (J : Finset σ) (lists : σ→ Finset ι) (pool : Finset ι)
     (Z delta eta L Y tau b X Lcol LY Lcap : ℝ)
-    (hZ : 1≤Z) (hL : 0≤L) (hY : 0<Y) (hLc : L≤Z^Lcol) (hYi : Y⁻¹≤Z^LY)
-    (hgeom : b*X≤Z^Lcap) (hphysical : delta+eta+2*Lcol+tau+LY≤Lcap) :
+    (hZ : 1≤Z) (hL : 0≤L) (hY : 0<Y) (hLc : L≤Z ^Lcol) (hYi : Y⁻¹≤Z ^LY)
+    (hgeom : b*X≤Z ^Lcap) (hphysical : delta+eta+2*Lcol+tau+LY≤Lcap) :
     ∀x∈supportedRetainedSource p extra original negative J lists pool
-      (fun G E=>uniformSecondRadius p Z delta eta G E L Y (Z^tau)) b X,
-      ∀i,outerNorms p x i≤Z^Lcap := by
+      (fun G E=>uniformSecondRadius p Z delta eta G E L Y (Z ^tau)) b X,
+      ∀i,outerNorms p x i≤Z ^Lcap := by
   intro x hx i
   have hret := supported_subset p extra original negative J lists pool _ b X hx
   have hm := (mem_unifiedSource p pool _ _ x).mp hret
-  have hg : primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤Z^Lcap :=
+  have hg : primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap≤Z ^Lcap :=
     (geometrySource_gate p _ b X x hx).trans hgeom
-  have hG : primeProductNorm p x.second.sourceCommon≤Z^Lcap :=
+  have hG : primeProductNorm p x.second.sourceCommon≤Z ^Lcap :=
     (le_mul_of_one_le_right (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg
-  have hV : primeProductNorm p x.second.overlap≤Z^Lcap :=
+  have hV : primeProductNorm p x.second.overlap≤Z ^Lcap :=
     (le_mul_of_one_le_left (primeProductNorm_pos p hp _).le (primeProductNorm_ge_one p hp _)).trans hg
   fin_cases i
   · exact hG

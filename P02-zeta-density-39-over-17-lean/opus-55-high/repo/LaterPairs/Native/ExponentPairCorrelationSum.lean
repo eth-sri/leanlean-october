@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairCorrelationNormalized
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -19,9 +20,7 @@ namespace TaoTrudgianYang2025
 
 theorem sum_shift_rpow_le {q : ℝ} (hq : 0 ≤ q) (H : ℕ) :
     ∑ r ∈ Finset.Icc 1 (H-1), (r : ℝ)^q ≤ (H : ℝ)*(H : ℝ)^q := by
-  have hc : (Finset.Icc 1 (H-1)).card ≤ H := by
-    rw [Nat.card_Icc]
-    omega
+  pm_1519
   calc
     _ ≤ ∑ _r ∈ Finset.Icc 1 (H-1), (H : ℝ)^q := by
       apply Finset.sum_le_sum
@@ -58,7 +57,7 @@ theorem sum_sourceShiftCorrelation_le
   intro F T N a L H hT hN hHN ha hb hF
   have hNpos : 0 < N := by linarith
   have hM : 0 ≤ (T/N^2)^(k+ε)*N^(l+ε) := by positivity
-  have hI : 0 ≤ N^2/T := by positivity
+  pm_7452
   calc
     _ ≤ ∑ r ∈ Finset.Icc 1 (H-1),
         C*((T/N^2)^(k+ε)*N^(l+ε)*(r : ℝ)^(k+ε)+N^2/(T*r)) := by

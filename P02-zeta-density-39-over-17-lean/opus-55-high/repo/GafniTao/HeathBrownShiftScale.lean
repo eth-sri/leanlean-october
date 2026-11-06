@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownRefinedCountChoice
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source-scale bounds for the Heath-Brown shift cutoff
@@ -13,7 +14,6 @@ counting theorem itself.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownShiftBound_cast_le
     {N k H : ℕ} {lambda : ℝ} (hlambda : 0 < lambda) (hH : 0 < H) :
@@ -27,23 +27,24 @@ theorem heathBrownShiftBound_cast_le
   have hmin : min N Q ≤ Q := min_le_right _ _
   have hminCast : ((min N Q : ℕ) : ℝ) ≤ (Q : ℝ) := by
     exact_mod_cast hmin
-  have hxnonneg : 0 ≤ x := by dsimp only [x]; positivity
+  pm_82 hxnonneg x
   have hfloor : (Q : ℝ) ≤ x := by
     dsimp only [Q]
     exact Nat.floor_le hxnonneg
-  exact hminCast.trans hfloor
+  grind
 
 theorem inv_pow_succ_le_inv_pow
     {H r : ℕ} (hH : 1 ≤ H) :
     (((H : ℝ) ^ (r + 1))⁻¹) ≤ (((H : ℝ) ^ r)⁻¹) := by
-  have hbase : (1 : ℝ) ≤ H := by exact_mod_cast hH
+  pm_77 hbase H hH
   have hpow : (H : ℝ) ^ r ≤ (H : ℝ) ^ (r + 1) :=
     pow_le_pow_right₀ hbase (Nat.le_succ r)
   exact inv_anti₀ (by positivity) hpow
 
-theorem heathBrownShiftBound_cast_le_previous_power
-    {N k H : ℕ} {lambda : ℝ}
-    (hk : 3 ≤ k) (hlambda : 0 < lambda) (hH : 1 ≤ H) :
+section
+variable {N k H : ℕ} {lambda : ℝ} (hk : 3 ≤ k) (hlambda : 0 < lambda) (hH : 1 ≤ H)
+include N k H lambda hk hlambda hH
+theorem heathBrownShiftBound_cast_le_previous_power :
     (heathBrownShiftBound N k H lambda : ℝ) ≤
       4 * ((k - 1).factorial : ℝ) *
         (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by
@@ -65,9 +66,7 @@ theorem heathBrownShiftBound_cast_le_previous_power
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by
       gcongr
 
-theorem heathBrown_shift_plus_c_le
-    {N k H : ℕ} {lambda : ℝ}
-    (hk : 3 ≤ k) (hlambda : 0 < lambda) (hH : 1 ≤ H) :
+theorem heathBrown_shift_plus_c_le :
     let D := heathBrownShiftBound N k H lambda
     let c := 8 * ((k - 2).factorial : ℝ) *
       (((H : ℝ) ^ (k - 2))⁻¹) / lambda
@@ -87,16 +86,8 @@ theorem heathBrown_shift_plus_c_le
         8 * ((k - 1).factorial : ℝ) *
           (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by
     gcongr
-  calc
-    (heathBrownShiftBound N k H lambda : ℝ) +
-        8 * ((k - 2).factorial : ℝ) *
-          (((H : ℝ) ^ (k - 2))⁻¹) / lambda ≤
-      4 * ((k - 1).factorial : ℝ) *
-          (((H : ℝ) ^ (k - 2))⁻¹) / lambda +
-        8 * ((k - 1).factorial : ℝ) *
-          (((H : ℝ) ^ (k - 2))⁻¹) / lambda := add_le_add hD hc
-    _ = 12 * ((k - 1).factorial : ℝ) *
-        (((H : ℝ) ^ (k - 2))⁻¹) / lambda := by ring
+  grind
+end
 
 theorem heathBrown_b_plus_aD_le
     {N k H : ℕ} {A lambda : ℝ}
@@ -111,8 +102,8 @@ theorem heathBrown_b_plus_aD_le
   dsimp only
   have hHpos : 0 < H := by omega
   have hpowLower : (8 : ℝ) ≤ (H : ℝ) ^ (k - 2) := by
-    have hHone : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
-    have hHcast : (8 : ℝ) ≤ H := by exact_mod_cast hH
+    pm_308 hHone H
+    pm_6347 hHcast hH
     have hpow : (H : ℝ) ≤ (H : ℝ) ^ (k - 2) := by
       simpa only [pow_one] using
         pow_le_pow_right₀ hHone (by omega : 1 ≤ k - 2)
@@ -120,8 +111,7 @@ theorem heathBrown_b_plus_aD_le
   have hpowPos : 0 < (H : ℝ) ^ (k - 2) := by positivity
   have hb : 8 * (((H : ℝ) ^ (k - 2))⁻¹) + 3 ≤ 4 := by
     have h8div : 8 / ((H : ℝ) ^ (k - 2)) ≤ 1 := by
-      rw [div_le_iff₀ hpowPos]
-      simpa only [one_mul] using hpowLower
+      pm_1447 div_le_iff₀ hpowPos one_mul hpowLower
     rw [← div_eq_mul_inv]
     linarith
   have hD := heathBrownShiftBound_cast_le
@@ -149,6 +139,5 @@ theorem heathBrown_b_plus_aD_le
   exact add_le_add hb haD
 
 
-end
 
 end GafniTao

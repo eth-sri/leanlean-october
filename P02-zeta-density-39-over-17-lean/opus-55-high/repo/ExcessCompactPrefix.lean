@@ -19,7 +19,7 @@ theorem criticalExcess_compact_prefix {B : ℝ} (hB : 0 ≤ B) :
     rw [uIcc_of_le hB] at ht
     have hb : zetaMomentCriticalNorm t ≤ M := hM ⟨t,ht,rfl⟩
     unfold criticalExcess
-    exact max_eq_right (by linarith)
+    grind
   rw [intervalIntegral.integral_congr hz]
   simp
 end Montgomery.RationalMoment.RightDetector

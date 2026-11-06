@@ -45,8 +45,8 @@ lemma radicalGenerator_ne_zero (a : Eis) (ha : a ≠ 0) :
 def actualSecondPunctureWidth (Z : ℝ) (m : Eis) (γ : OuterTriple) : ℝ :=
   Real.logb Z (‖eisEmbedding (actualSecondInheritedRadicalPuncture m γ)‖^2)
 
-include hp in
 
+include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem actual_second_row_decrease
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)

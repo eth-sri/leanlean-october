@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedSeparation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,14 +20,14 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     (Ψ : O→*ℂ) (m f z : O) (W : ℝ→ℂ)
     (a b : ℝ) (ha : 0<a) (hb : 0≤b) (hs : Function.support W⊆Set.Icc a b)
     (hW : ContDiff ℝ ∞ W) (V : 𝓢(ℝ,ℂ))
-    (hV : ∀ u,|u|≤columnWindowRadius a b→V u=1)
+    (hV : ∀ u,|u|≤ columnWindowRadius a b→ V u=1)
     (B ell X H₀ : ℝ) (hB : 0<B) (hell : 0<ell) (hX : X=B^3*ell)
     (hD : b*X≤D)
     (hn : ∀ v∈Q,B≤(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ))
     (hn' : ∀ v∈Q,(Ideal.absNorm (cubeIdeal (InitialMeanSquare.outsideSquarefreeIdeals S D) v):ℝ)≤Real.exp 1*B)
     (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (weights : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
+    (lists : σ→ Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
+    (weights : σ→ primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
@@ -39,14 +40,12 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
           (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Q
           (separatedCubeCoefficient β n B ξ) Ψ m f
           (fun v T=>primeMark slots lists weights (T∪v.support)*frequencyTwist V ξ (columnLog (poolPrimary F) ell T)) z := by
-  let F := InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  pm_3764
+  pm_3763
   let β := fun v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v)
   let n := fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
   have hXp : 0<X := hX ▸ mul_pos (pow_pos hB _) hell
-  have hupper : ∀ t,W t≠0→t≤b := fun t ht=>(hs ht).2
+  have hupper : ∀ t,W t≠0→ t≤b := fun t ht=>(hs ht).2
   dsimp only
   rw [←varying_canonical_bin_separation (poolPrimary F) (poolPrimary_ne_zero F hF)
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) W a b ha hs hW V hV

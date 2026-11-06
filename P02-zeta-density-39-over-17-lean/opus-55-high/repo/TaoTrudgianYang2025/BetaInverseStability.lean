@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreDual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,10 @@ open scoped ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem approximateModelPhase_firstDeriv_error {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
+section
+variable {σ δ : ℝ}
+include σ δ
+theorem approximateModelPhase_firstDeriv_error {P : ℕ} {F : ℝ → ℝ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     |deriv F u - u^(-σ)| ≤ δ := by
@@ -31,10 +35,9 @@ theorem approximateModelPhase_firstDeriv_error {σ δ : ℝ} {P : ℕ} {F : ℝ 
   change ‖iteratedDerivWithin 1 F phaseInterval u - modelPhase σ u‖ ≤ δ at he
   rw [iteratedDerivWithin_eq_iteratedDeriv
     uniqueDiffOn_phaseInterval hc ⟨hu.1.le,hu.2.le⟩] at he
-  simpa only [iteratedDeriv_one, modelPhase,
-    Real.norm_eq_abs] using he
+  aesop
 
-theorem approximateModelPhase_slope_gap {σ δ : ℝ} {F : ℝ → ℝ}
+theorem approximateModelPhase_slope_gap {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2)
@@ -44,7 +47,7 @@ theorem approximateModelPhase_slope_gap {σ δ : ℝ} {F : ℝ → ℝ}
     (approximateModelPhase_deriv_contDiffAt hF hx).continuousAt.continuousWithinAt
   have hd : DifferentiableOn ℝ (deriv F) (interior (Ioo (1 : ℝ) 2)) := by
     intro x hx
-    exact ((approximateModelPhase_deriv_contDiffAt hF (by simpa using hx)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).differentiableWithinAt
+    exact ((approximateModelPhase_deriv_contDiffAt hF (by simp_all)).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)).differentiableWithinAt
   have hb : ∀ x ∈ interior (Ioo (1 : ℝ) 2),
       deriv (deriv F) x ≤ -modelPhaseCurvatureLower σ := by
     intro x hx
@@ -55,12 +58,12 @@ theorem approximateModelPhase_slope_gap {σ δ : ℝ} {F : ℝ → ℝ}
     hc hd hb u hu w hw huw
   linarith
 
-theorem approximateModelPhase_slope_gap_abs {σ δ : ℝ} {F : ℝ → ℝ}
+theorem approximateModelPhase_slope_gap_abs {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2) :
     modelPhaseCurvatureLower σ * |u-w| ≤ |deriv F u - deriv F w| := by
-  have hm := (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn
+  pm_5045 hm approximateModelPhase_deriv_strictAntiOn
   rcases le_total u w with huw | hwu
   · rw [abs_of_nonpos (sub_nonpos.mpr huw),
       abs_of_nonneg (sub_nonneg.mpr (hm hu hw huw))]
@@ -70,6 +73,7 @@ theorem approximateModelPhase_slope_gap_abs {σ δ : ℝ} {F : ℝ → ℝ}
       abs_of_nonpos (sub_nonpos.mpr (hm hw hu hwu))]
     have hg := approximateModelPhase_slope_gap hσ hδ hF hw hu hwu
     nlinarith
+end
 
 theorem reciprocal_modelPhase_identity {σ v : ℝ} (hσ : 0 < σ) (hv : 0 ≤ v) :
     (v^(-σ⁻¹))^(-σ) = v := by

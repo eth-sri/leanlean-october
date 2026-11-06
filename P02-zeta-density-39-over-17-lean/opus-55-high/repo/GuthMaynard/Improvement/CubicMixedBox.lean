@@ -3,6 +3,7 @@ public import GuthMaynard.Improvement.CubicStripIntegral
 public import GuthMaynard.Improvement.MixedMaskedAffine
 public import GuthMaynard.Improvement.InverseRatioIntegral
 public import GuthMaynard.Improvement.MaskedBox
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -10,7 +11,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 def stripAffineIndex (m : ℤ × (ℤ × ℤ)) : ℤ × (ℤ × ℤ) := (-m.1,m.2.1,-m.2.2)
 def stripInverseIndex (m : ℤ × (ℤ × ℤ)) : ℤ × (ℤ × ℤ) := (-m.2.2,m.2.1,-m.1)
@@ -18,26 +19,17 @@ def InCubicBox (B K D : ℝ) (m : ℤ × (ℤ × ℤ)) : Prop :=
   B ≤ |(m.1:ℝ)| ∧ |(m.1:ℝ)| ≤ 2*B ∧ K ≤ (m.2.1:ℝ) ∧
     (m.2.1:ℝ) ≤ 2*K ∧ D ≤ |(m.2.2:ℝ)| ∧ |(m.2.2:ℝ)| ≤ 2*D
 
-theorem stripAffineIndex_injective : Function.Injective stripAffineIndex := by
-  intro m n h
-  have h1 := congrArg (fun p : ℤ × (ℤ × ℤ) => p.1) h
-  have h2 := congrArg (fun p : ℤ × (ℤ × ℤ) => p.2.1) h
-  have h3 := congrArg (fun p : ℤ × (ℤ × ℤ) => p.2.2) h
-  simp only [stripAffineIndex,neg_inj] at h1 h2 h3
-  exact Prod.ext h1 (Prod.ext h2 h3)
+theorem stripAffineIndex_injective : Function.Injective stripAffineIndex := by pm_4590 stripAffineIndex h1 h3
 
-theorem stripInverseIndex_injective : Function.Injective stripInverseIndex := by
-  intro m n h
-  have h1 := congrArg (fun p : ℤ × (ℤ × ℤ) => p.1) h
-  have h2 := congrArg (fun p : ℤ × (ℤ × ℤ) => p.2.1) h
-  have h3 := congrArg (fun p : ℤ × (ℤ × ℤ) => p.2.2) h
-  simp only [stripInverseIndex,neg_inj] at h1 h2 h3
-  exact Prod.ext h3 (Prod.ext h2 h1)
+theorem stripInverseIndex_injective : Function.Injective stripInverseIndex := by pm_4590 stripInverseIndex h3 h1
 
-theorem stripAffine_sum (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v : ℝ) :
+section
+variable (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v : ℝ)
+include S F v
+theorem stripAffine_sum :
     (∑ p ∈ S.image stripAffineIndex, gmAffineTerm F p.1 p.2.1 p.2.2 v) =
       ∑ m ∈ S, F (stripCenter m v) := by
-  rw [Finset.sum_image (fun _ _ _ _ h => stripAffineIndex_injective h)]
+  pm_555 stripAffineIndex_injective
   apply Finset.sum_congr rfl
   intro m _
   unfold gmAffineTerm stripAffineIndex stripCenter
@@ -45,16 +37,17 @@ theorem stripAffine_sum (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v 
   congr 1
   ring
 
-theorem stripInverse_sum (S : Finset (ℤ × (ℤ × ℤ))) (F : ℝ → ℝ) (v : ℝ) :
+theorem stripInverse_sum :
     (∑ p ∈ S.image stripInverseIndex, gmAffineTerm F p.1 p.2.1 p.2.2 v) =
       ∑ m ∈ S, F (-((m.2.2:ℝ)*v+(m.1:ℝ))/(m.2.1:ℝ)) := by
-  rw [Finset.sum_image (fun _ _ _ _ h => stripInverseIndex_injective h)]
+  pm_555 stripInverseIndex_injective
   apply Finset.sum_congr rfl
   intro m _
   unfold gmAffineTerm stripInverseIndex
   push_cast
   congr 1
   ring
+end
 
 theorem finite_affine_memLp (F : 𝓢(ℝ, ℝ)) (S : Finset (ℤ × (ℤ × ℤ)))
     (hS : ∀ p ∈ S, p.1 ≠ 0 ∧ p.2.1 ≠ 0) :
@@ -91,21 +84,15 @@ theorem cubic_mixed_energies (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   let S₁ := S.image stripAffineIndex
   let S₂ := S.image stripInverseIndex
   have h₁ : ∀ p ∈ S₁, InMixedAffineBox B K R 2 p := by
-    intro p hp
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hp
-    obtain ⟨h1,h2,h3,h4,h5,h6⟩ := hbox m hm
-    simp only [InMixedAffineBox,stripAffineIndex,Int.cast_neg,abs_neg]
-    exact ⟨h1,h2,h3,h4,h6.trans (by linarith)⟩
+    pm_4591
+    pm_7881 stripAffineIndex h1 h2 h6.trans
   have h₂ : ∀ p ∈ S₂, InMixedAffineBox D K R 2 p := by
-    intro p hp
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hp
-    obtain ⟨h1,h2,h3,h4,h5,h6⟩ := hbox m hm
-    simp only [InMixedAffineBox,stripInverseIndex,Int.cast_neg,abs_neg]
-    exact ⟨h5,h6,h3,h4,h2.trans (by linarith)⟩
+    pm_4591
+    pm_7881 stripInverseIndex h5 h6 h2.trans
   have hnonzero (Q : ℝ) (hQ : 1 ≤ Q) (U : Finset (ℤ × (ℤ × ℤ)))
       (hu : ∀ p ∈ U, InMixedAffineBox Q K R 2 p) : ∀ p ∈ U, p.1 ≠ 0 ∧ p.2.1 ≠ 0 := by
     intro p hp
-    obtain ⟨h1,h2,h3,h4,h5⟩ := hu p hp
+    pm_107 h1 h2 h3 h4 h5 hu p hp
     constructor
     · intro hz; simp only [hz,Int.cast_zero,abs_zero] at h1; linarith
     · intro hz; simp only [hz,Int.cast_zero] at h3; linarith
@@ -114,17 +101,11 @@ theorem cubic_mixed_energies (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   have hf' : (f : ℝ → ℝ) = F := hf
   have hfm : Measurable F := by rw [← hf']; exact f.continuous.measurable
   have hi₁ : Integrable (fun v => (∑ m ∈ S, F (stripCenter m v))^2) := by
-    have hi := (memLp_two_iff_integrable_sq (finite_affine_memLp f S₁ (hnonzero B hB S₁ h₁)).aestronglyMeasurable).mp
-      (finite_affine_memLp f S₁ (hnonzero B hB S₁ h₁))
-    simpa only [hf',S₁,stripAffine_sum] using hi
+    pm_6534 S₁ B hB h₁ stripAffine_sum
   have hi₂ : Integrable (fun v => (∑ m ∈ S, F (-((m.2.2:ℝ)*v+(m.1:ℝ))/(m.2.1:ℝ)))^2) := by
-    have hi := (memLp_two_iff_integrable_sq (finite_affine_memLp f S₂ (hnonzero D hD S₂ h₂)).aestronglyMeasurable).mp
-      (finite_affine_memLp f S₂ (hnonzero D hD S₂ h₂))
-    simpa only [hf',S₂,stripInverse_sum] using hi
-  have hb₁ := h T R K B K δ univ r S₁ hT hK hKR hB hBR hK le_rfl hRT
-    hδ hδ1 hδc hδT MeasurableSet.univ hr hr2 hr4 hs h₁
-  have hb₂ := h T R K D K δ univ r S₂ hT hK hKR hD hDR hK le_rfl hRT
-    hδ hδ1 hδc hδT MeasurableSet.univ hr hr2 hr4 hs h₂
+    pm_6534 S₂ D hD h₂ stripInverse_sum
+  pm_8791 hb₁ B S₁ hB hBR h₁
+  pm_8791 hb₂ D S₂ hD hDR h₂
   simp only [indicator_univ,Measure.restrict_univ,affineIndexIntegral,S₁,stripAffine_sum] at hb₁
   simp only [indicator_univ,Measure.restrict_univ,affineIndexIntegral,S₂,stripInverse_sum] at hb₂
   obtain ⟨hinv,hinvb⟩ := inverse_ratio_integral hi₂ (fun _ => sq_nonneg _) ha hab
@@ -162,15 +143,14 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
         C*(H/(L*K))*Real.sqrt (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b))*
           Real.sqrt (T^ε*(R^2*K^4*(∫ x, r x^2)^2+R*K^3*(∫ x, r x^4))) := by
   obtain ⟨Ca,hCa,he⟩ := cubic_mixed_energies a b c d ha hab hc hcd hε
-  obtain ⟨Ct,hCt,ht⟩ := cubic_strip_integral a b ha hab
+  pm_97 Ct hCt ht cubic_strip_integral a b ha hab
   have hb : 0 < b := ha.trans_le hab
   let P := max 1 (b^2)*Ca
   have hP : 0 < P := mul_pos (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) hCa
   refine ⟨Ct*Real.sqrt b*Real.sqrt P,by positivity,?_⟩
-  intro T R K B D L H r₀ r A₀ S hT hK hKR hB hBR hD hDR hRT hL hH hw1 hwc hwT
-    hA₀ hr₀ hmem₀ hr₀0 hr hr2 hr4 hr0 hs hbox
+  pm_4592
   have hKp : 0 < K := by linarith
-  have hδ : 0 < H/(L*K) := div_pos hH (mul_pos hL hKp)
+  pm_631 hKp
   let w := max 1 (1/a)*(H/(L*K))
   have hw : 0 < w := mul_pos (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) hδ
   let F := squareSmoothing (scaledKernel compactKernel w) r
@@ -181,26 +161,18 @@ theorem cubic_mixed_box (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     exact add_nonneg (by positivity) (mul_nonneg (by positivity) (integral_nonneg (fun _ => by positivity)))
   have hTE : 0 ≤ T^ε*W := mul_nonneg (by positivity) hW
   obtain ⟨hiX,hiY,hX,hY⟩ := he T R K B D w r S hT hK hKR hB hBR hD hDR hRT hw hw1 hwc hwT hr hr2 hr4 hs hbox
-  obtain ⟨κB,hκB,hκbound⟩ := compactKernel_bound
-  obtain ⟨hFm,hFb⟩ := squareSmoothing_bounded_measurable
-    (scaledKernel_measurable compactKernel_smooth.continuous.measurable _)
-    (scaledKernel_nonneg compactKernel_nonneg hw) (by positivity)
-    (scaledKernel_bound hw hκbound) hr hr2
+  pm_5204 κB hκB hκbound
   have hF0 : ∀ x, 0 ≤ F x := fun x => (hFb x).1
   have hFbound : ∀ x, ‖F x‖ ≤ w⁻¹*κB*(∫ y, r y^2) := by
     intro x
     rw [Real.norm_eq_abs,abs_of_nonneg (hF0 x)]
     exact (hFb x).2
   have hfirst : ∀ m ∈ S, MemLp (fun v => F (stripCenter m v)) 2 (volume.restrict (Icc a b)) := by
-    intro m _
-    apply MemLp.of_bound (C := w⁻¹*κB*(∫ y, r y^2))
-    · exact Filter.Eventually.of_forall (fun v => hFbound _)
+    pm_4593
     · have hm : Measurable (fun v => F (stripCenter m v)) := by unfold stripCenter; fun_prop
       exact hm.aestronglyMeasurable
   have hsecond : ∀ m ∈ S, MemLp (fun v => F (stripCenter m v/v)) 2 (volume.restrict (Icc a b)) := by
-    intro m _
-    apply MemLp.of_bound (C := w⁻¹*κB*(∫ y, r y^2))
-    · exact Filter.Eventually.of_forall (fun v => hFbound _)
+    pm_4593
     · have hm : Measurable (fun v => F (stripCenter m v/v)) := by unfold stripCenter; fun_prop
       exact hm.aestronglyMeasurable
   have hcommonX : (∫ v in Icc a b, (∑ m ∈ S, F (stripCenter m v))^2) ≤ P*(T^ε*W) := by

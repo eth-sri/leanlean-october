@@ -1,13 +1,12 @@
 module
 public import MathCollab.Density.BootstrapSupremum
 public import MathCollab.Density.Comparison
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Real Set
-open scoped BigOperators
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density
@@ -26,9 +25,9 @@ theorem local_comparison_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d : La
       bootstrapBound w.toReflectionCutoff d * (bootstrapScalar d.T d.N d.V)^3 *
         (localSet U H j).card * ((d.N : ℝ)^2*(M : ℝ)^2+4*(d.N : ℝ)*H) := by
   have hHp : 0 < H := by linarith
-  have hNp : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
+  pm_74 hNp d.N d.N_pos
   have hLp : 0 < L := hNp.trans_le hL
-  have hscale := reflection_recursive_scale d.N_pos (by linarith [d.T_ge_two]) hL hHp hHT hM
+  have hscale := reflection_recursive_scale d.N_pos (by grind) hL hHp hHT hM
   have hMp := (reflectionBlock_scale_bounds hLp hHp hM).1
   have hUW := localSet_subset_original hU H j
   by_cases hne : (localSet U H j).Nonempty
@@ -53,15 +52,14 @@ theorem local_comparison_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d : La
         apply mul_le_mul_of_nonneg_left _ (sq_nonneg _)
         exact hQ.trans (mul_le_mul_of_nonneg_left hdd (by positivity))
       _ = _ := by ring
-  · simp only [Finset.not_nonempty_iff_eq_empty.mp hne, completePairEnergy, Finset.sum_empty,
-      Finset.card_empty, Nat.cast_zero, mul_zero, zero_mul, add_zero, le_refl]
+  aesop
 
 theorem reflectionBlock_scaled_square {L H : ℝ} (hL : 0 < L) (hH : 0 < H)
     {M : ℕ} (hM : M ∈ reflectionBlocks L H) : (L^2/H)*(M : ℝ)^2 ≤ 16*H := by
   have hh := (le_div_iff₀ (by positivity : 0 < Real.pi*L)).1
     (reflectionBlock_scale_bounds hL hH hM).2.2
   have hpi : 1 ≤ Real.pi := by linarith [Real.pi_gt_three]
-  have hc := mul_le_mul_of_nonneg_left hpi (show 0 ≤ (M : ℝ)*L by positivity)
+  pm_7573 hc mul_le_mul_of_nonneg_left hpi M L
   have hm : (M : ℝ)*L ≤ 4*H := by nlinarith
   have hs := pow_le_pow_left₀ (show 0 ≤ (M : ℝ)*L by positivity) hm 2
   have he : (L^2/H)*(M : ℝ)^2 = ((M : ℝ)*L)^2/H := by ring
@@ -81,10 +79,9 @@ theorem localReflectionEnergy_from_supremum (w : ComparisonCutoff) {κ : ℝ} (d
   let F := 16*C*b*(d.N : ℝ)*H+B*b^3*(16*(d.N : ℝ)^2*H+4*(d.N : ℝ)*L^2)
   have hHp : 0 < H := by linarith
   have hLp : 0 < L := (by exact_mod_cast d.N_pos : (0 : ℝ) < d.N).trans_le hL
-  have hb : 0 ≤ b := bootstrapScalar_nonneg d.T d.V d.N
-  have hB : 0 ≤ B := bootstrapBound_nonneg w.toReflectionCutoff d hW
+  pm_4274
   have hC : 0 ≤ C := comparisonConstant_nonneg w
-  have hF : 0 ≤ F := by dsimp [F]; positivity
+  pm_61 hF F
   have hblock (M : ℕ) (hM : M ∈ reflectionBlocks L H) (j : ℤ) :
       (L^2/H)*completePairEnergy M (localSet U H j) ≤ F*(localSet U H j).card := by
     have hs := mul_le_mul_of_nonneg_left
@@ -124,7 +121,7 @@ theorem bootstrap_one_shell (w : ComparisonCutoff) :
           ((d.N : ℝ)^2*H+(d.N : ℝ)*L^2) + E*d.T^(-100 : ℝ) := by
   let R := (20000/Real.pi^2)*(mellinMass w.toReflectionCutoff)^2
   let C₀ := comparisonConstant w
-  have hR : 0 ≤ R := by dsimp [R]; positivity
+  pm_61 hR R
   have hC₀ : 0 ≤ C₀ := comparisonConstant_nonneg w
   obtain ⟨E, hE, hrefl⟩ := uniform_reflection_application w.toReflectionCutoff
   refine ⟨480*R*(C₀+1), E, by positivity, hE, ?_⟩

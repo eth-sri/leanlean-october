@@ -9,18 +9,19 @@ The final physical identity has no convergence or contour-identity premise.
 -/
 public import MathCollab.Density.Stronger.Atkinson.VoronoiMinusConvergence
 public import MathCollab.Density.Stronger.Atkinson.BesselTransformBridge
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set MeasureTheory Filter Topology
 open MathCollab.Density.Contour MathCollab.Density.Stronger.PointMean
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {f : ℂ → ℂ} {a b : ℝ}
+include f a b
 private theorem tendsto_rectangleIntegral'_vertical_sub
-    {f : ℂ → ℂ} {a b : ℝ}
     (hBottom : Tendsto (fun R : ℝ => HIntegral' f a b (-R)) atTop (nhds 0))
     (hTop : Tendsto (fun R : ℝ => HIntegral' f a b R) atTop (nhds 0))
     (hIntA : Integrable (fun u : ℝ => f ((a : ℂ) + (u : ℂ) * I)))
@@ -28,56 +29,9 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
     Tendsto (fun R : ℝ =>
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
-      (nhds (VerticalIntegral' f b - VerticalIntegral' f a)) := by
-  let c : ℂ := (((1 / (2 * Real.pi) : ℝ) : ℂ))
-  have hRight : Tendsto (fun R : ℝ =>
-      c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) atTop
-      (nhds (c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I))) :=
-    (intervalIntegral_tendsto_integral hIntB
-      tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hLeft : Tendsto (fun R : ℝ =>
-      c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I)) atTop
-      (nhds (c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I))) :=
-    (intervalIntegral_tendsto_integral hIntA
-      tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hEdges := (hBottom.sub hTop).add (hRight.sub hLeft)
-  have hExpanded : Tendsto (fun R : ℝ =>
-      HIntegral' f a b (-R) - HIntegral' f a b R +
-        ((c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) -
-          c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I))) atTop
-      (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
-        c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    simpa only [zero_sub, neg_zero, zero_add] using hEdges
-  have hRectangle : Tendsto (fun R : ℝ =>
-      RectangleIntegral' f
-        ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
-      (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
-        c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    refine hExpanded.congr' ?_
-    filter_upwards with R
-    rw [pintz2023_RectangleIntegral'_eq_edges]
-    dsimp only [c]
-    ring
-  have hVerticalB : VerticalIntegral' f b =
-      c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I) := by
-    unfold VerticalIntegral' VerticalIntegral
-    dsimp only [c]
-    simp [smul_eq_mul]
-    ring_nf
-    rw [Complex.I_sq]
-    ring
-  have hVerticalA : VerticalIntegral' f a =
-      c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I) := by
-    unfold VerticalIntegral' VerticalIntegral
-    dsimp only [c]
-    simp [smul_eq_mul]
-    ring_nf
-    rw [Complex.I_sq]
-    ring
-  simpa only [hVerticalB, hVerticalA] using hRectangle
+      (nhds (VerticalIntegral' f b - VerticalIntegral' f a)) := by pm_4440
 
-private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
-    {f : ℂ → ℂ} {a b : ℝ} {A : ℂ}
+private theorem verticalIntegral'_sub_eq_of_eventual_rectangle {A : ℂ}
     (hBottom : Tendsto (fun R : ℝ => HIntegral' f a b (-R)) atTop (nhds 0))
     (hTop : Tendsto (fun R : ℝ => HIntegral' f a b R) atTop (nhds 0))
     (hIntA : Integrable (fun u : ℝ => f ((a : ℂ) + (u : ℂ) * I)))
@@ -85,15 +39,13 @@ private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
     (hFinite : ∀ᶠ R : ℝ in atTop,
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I) = A) :
-    VerticalIntegral' f b - VerticalIntegral' f a = A := by
-  have hLimit := tendsto_rectangleIntegral'_vertical_sub
-    hBottom hTop hIntA hIntB
-  have hConst : Tendsto (fun _R : ℝ => A) atTop (nhds A) := tendsto_const_nhds
-  have hLimitA := hConst.congr' (hFinite.mono fun _ h => h.symm)
-  exact tendsto_nhds_unique hLimit hLimitA
+    VerticalIntegral' f b - VerticalIntegral' f a = A := by pm_4441 tendsto_rectangleIntegral'_vertical_sub
+end
 
-theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+section
+variable (q : ℕ) [NeZero q] {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+include q g hg n hn
+theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle
     (H : ℝ) :
     RectangleIntegral' (dfiVoronoiMinusIntegrand q g n)
       ((-(1/2) : ℂ)-(H:ℂ)*I) ((13/16 : ℂ)+(H:ℂ)*I) = 0 := by
@@ -107,12 +59,10 @@ theorem DFIVoronoiTestFunction.minusIntegrand_finite_rectangle (q : ℕ) [NeZero
       change z.re ∈ Set.uIcc _ _ at hzre
       norm_num at hzre
       change z.re < 1
-      linarith [hzre.2])
-  simp only [RectangleIntegral', hr, smul_zero]
+      grind)
+  simp_all
 
-theorem DFIVoronoiTestFunction.minusTransform_eq_thirteenSixteenths
-    (q : ℕ) [NeZero q] {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
-    {n : ℕ} (hn : 0<n) :
+theorem DFIVoronoiTestFunction.minusTransform_eq_thirteenSixteenths :
     dfiVoronoiMinusTransform q (mellin g) n =
       PointMean.VerticalIntegral' (dfiVoronoiMinusIntegrand q g n) (13/16) := by
   obtain ⟨htop,hbottom⟩ := hg.minusIntegrand_horizontal_limits q hn
@@ -124,6 +74,7 @@ theorem DFIVoronoiTestFunction.minusTransform_eq_thirteenSixteenths
     (A := 0) (Eventually.of_forall fun H => by
       simpa using hg.minusIntegrand_finite_rectangle q hn H)
   exact (sub_eq_zero.mp h).symm
+end
 
 /-- Canonical Mellin--Barnes minus transform equals the literal Schläfli Y₀
 transform. All line integrability and horizontal decay are discharged. -/

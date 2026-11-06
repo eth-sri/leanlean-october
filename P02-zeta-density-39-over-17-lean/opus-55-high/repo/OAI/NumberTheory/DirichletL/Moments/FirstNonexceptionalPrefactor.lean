@@ -23,7 +23,7 @@ lemma pair_conductor_root (q₁ q₂ B:ℝ)(_h₁:0≤q₁)(h₂:0≤q₂)
     (hB:0≤B)(hb₁:q₁≤B)(hb₂:q₂≤B):Real.sqrt (q₁*q₂)≤B := by
   have hh:=mul_le_mul hb₁ hb₂ h₂ hB
   have hs:=Real.sqrt_le_sqrt hh
-  simpa only [←pow_two,Real.sqrt_sq hB] using hs
+  simp_all
 
 lemma scalar_conductor_algebra (s μ K T N E r C F q q₁ q₂:ℝ)
     (_hs:0≤s)(hμ:0≤μ)(hK:0≤K)(_hT:0<T)(hN:0<N)(hE:0<E)(hr:0<r)
@@ -36,11 +36,7 @@ lemma scalar_conductor_algebra (s μ K T N E r C F q q₁ q₂:ℝ)
     _≤(μ*C*K*Real.sqrt N/(E*r))/N*(F*q*E*r^2):=
       mul_le_mul (div_le_div_of_nonneg_right hscalar hN.le) hroot
         (Real.sqrt_nonneg _) (by positivity)
-    _=μ*C*F*K*q*(r/Real.sqrt N):=by
-      have hn:Real.sqrt N≠0:=ne_of_gt (Real.sqrt_pos.mpr hN)
-      have hn2:=Real.sq_sqrt hN.le
-      field_simp
-      linear_combination μ*C*K*F*q*hn2
+    _=μ*C*F*K*q*(r/Real.sqrt N):=by grind
 
 theorem weighted_scalar_volume (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
     (K A₀ B₀ a T M:ℝ)(hK:0<K)(hA:0<A₀)(hB:0<B₀)(ha:0<a)(hT:0<T)

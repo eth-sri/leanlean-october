@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownHarmonicSum
 public import Mathlib.NumberTheory.Harmonic.Bounds
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The logarithmic loss in Heath-Brown's shift sum
@@ -13,18 +14,17 @@ This file records that replacement with its exact finite endpoint behavior.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem harmonic_cast_le_one_add_log_of_le
     {D N : ℕ} (hDN : D ≤ N) (hN : 1 ≤ N) :
     (harmonic D : ℝ) ≤ 1 + Real.log N := by
   by_cases hD0 : D = 0
   · have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-    have hlog : 0 ≤ Real.log (N : ℝ) := Real.log_nonneg hNreal
+    pm_888
     simp [hD0]
     linarith
   · have hDpos : (0 : ℝ) < D := by
-      exact_mod_cast (Nat.pos_of_ne_zero hD0)
+      positivity
     calc
       (harmonic D : ℝ) ≤ 1 + Real.log D := harmonic_le_one_add_log D
       _ ≤ 1 + Real.log N := by
@@ -40,6 +40,5 @@ theorem heathBrownShiftBound_harmonic_le
     (heathBrownShiftBound_le_N N k H lambda) hN
 
 
-end
 
 end GafniTao

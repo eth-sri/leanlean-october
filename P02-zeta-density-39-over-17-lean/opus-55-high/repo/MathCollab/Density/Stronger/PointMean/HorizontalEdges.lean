@@ -12,26 +12,23 @@ public import MathCollab.Density.Stronger.PointMean.FiniteRectangle
 public import MathCollab.Density.Stronger.PointMean.GammaKernel
 public import MathCollab.Density.AbelZetaGrowth
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set MeasureTheory Filter
 open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 open scoped Topology Interval
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem eventually_log_sq_le_rpow {q : ℝ} (hq : 0 < q) :
     ∀ᶠ X : ℝ in atTop, (Real.log X) ^ 2 ≤ X ^ q := by
   have hLittle := isLittleO_log_rpow_rpow_atTop (2 : ℝ) hq
-  filter_upwards [hLittle.eventuallyLE, eventually_ge_atTop (1 : ℝ)] with X hBound hX
-  have hLogNonneg : 0 ≤ Real.log X := Real.log_nonneg hX
-  have hXNonneg : 0 ≤ X := by linarith
+  pm_5910 X hX hXNonneg
   rw [Real.norm_eq_abs,
     abs_of_nonneg (Real.rpow_nonneg hLogNonneg 2),
     Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hXNonneg q)] at hBound
-  simpa [Real.rpow_two] using hBound
+  simp_all
 
 
 theorem eventually_const_mul_rpow_le_rpow
@@ -56,7 +53,7 @@ theorem eventually_const_mul_rpow_le_rpow
 theorem eventually_heathBrownLemmaThreeRadius_le_half_identity :
     ∀ᶠ t : ℝ in Filter.atTop,
       heathBrownLemmaThreeRadius t ≤ t / 2 := by
-  have hlog := eventually_log_sq_le_rpow (q := (1 / 2 : ℝ)) (by norm_num)
+  pm_1072 hlog eventually_log_sq_le_rpow q
   have hpow := eventually_const_mul_rpow_le_rpow
     (D := (2 : ℝ)) (a := (1 / 2 : ℝ)) (b := (1 : ℝ)) (by norm_num)
   filter_upwards [hlog, hpow, Filter.eventually_gt_atTop (0 : ℝ)] with
@@ -77,7 +74,7 @@ theorem exists_norm_Gamma_heathBrown_small_horizontal_strong_le :
     norm_Gamma_positive_strip_strong ha ha'
   refine ⟨B, by norm_num [B], ?_⟩
   intro delta x R hdelta hdeltaUpper hx hR
-  let z : ℂ := (x : ℂ) + (R : ℂ) * I
+  pm_4439 z x R
   have hz : z ≠ 0 := by
     intro hz0
     have him := congrArg Complex.im hz0
@@ -181,15 +178,9 @@ theorem exists_norm_heathBrownLemmaThree_horizontalEdge_le :
     rw [abs_of_nonneg (by linarith)]
     linarith
   have hscalar : ‖(1 / (2 * Real.pi * I) : ℂ)‖ ≤ 1 := by
-    rw [norm_div, norm_one, norm_mul, norm_mul, Complex.norm_real,
-      Complex.norm_I]
-    norm_num
-    have hpi : (1 : ℝ) ≤ Real.pi := by nlinarith [Real.pi_gt_three]
-    have hpiInv : Real.pi⁻¹ ≤ (1 : ℝ) :=
-      (inv_le_one₀ Real.pi_pos).2 hpi
-    nlinarith [mul_le_mul_of_nonneg_right hpiInv
-      (show (0 : ℝ) ≤ 1 / 2 by norm_num)]
-  have hM : 0 ≤ M := by dsimp only [M]; positivity
+    pm_4452
+    pm_6089
+  pm_82 hM M
   unfold HIntegral'
   rw [norm_smul]
   calc
@@ -245,7 +236,7 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
   filter_upwards [eventually_heathBrownLemmaThreeRadius_le_half_identity,
     hLog, Filter.eventually_ge_atTop (max 2 (100 * B))] with
       t hRadius hlog htLarge
-  have htTwo : 2 ≤ t := (le_max_left _ _).trans htLarge
+  pm_225 htTwo t le_max_left htLarge
   have hBt : 100 * B ≤ t := (le_max_right _ _).trans htLarge
   have ht : 0 < t := by linarith
   have hdelta : 0 < heathBrownLemmaThreeDelta t := by
@@ -287,11 +278,7 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
       _ ≤ B * Real.exp (-(4 / 3 : ℝ) * heathBrownLemmaThreeRadius t) *
           (10 * t) ^ (2 : ℕ) := by
         rw [abs_neg, abs_of_nonneg hHNonneg]
-        have hSize' :
-            5 * (1 + |t| + heathBrownLemmaThreeRadius t) ≤ 10 * t := by
-          simpa only [abs_of_nonneg hHNonneg] using hSize
-        exact mul_le_mul_of_nonneg_left
-          (pow_le_pow_left₀ (by positivity) hSize' 2) (by positivity)
+        pm_4453
       _ = (100 * B) * t ^ (2 : ℕ) *
           Real.exp (-(4 / 3 : ℝ) * (Real.log t ^ (2 : ℕ))) := by
         unfold heathBrownLemmaThreeRadius
@@ -311,11 +298,7 @@ theorem eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one :
       _ ≤ B * Real.exp (-(4 / 3 : ℝ) * heathBrownLemmaThreeRadius t) *
           (10 * t) ^ (2 : ℕ) := by
         rw [abs_of_nonneg hHNonneg]
-        have hSize' :
-            5 * (1 + |t| + heathBrownLemmaThreeRadius t) ≤ 10 * t := by
-          simpa only [abs_of_nonneg hHNonneg] using hSize
-        exact mul_le_mul_of_nonneg_left
-          (pow_le_pow_left₀ (by positivity) hSize' 2) (by positivity)
+        pm_4453
       _ = (100 * B) * t ^ (2 : ℕ) *
           Real.exp (-(4 / 3 : ℝ) * (Real.log t ^ (2 : ℕ))) := by
         unfold heathBrownLemmaThreeRadius

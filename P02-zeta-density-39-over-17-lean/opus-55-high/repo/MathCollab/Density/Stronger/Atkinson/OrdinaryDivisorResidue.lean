@@ -9,6 +9,7 @@ No periodic Estermann or upstream project is imported.
 public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinDecay
 public import MathCollab.Density.Stronger.PointMean.DoublePole
 public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,15 +33,16 @@ theorem ordinaryDivisorMellinIntegrand_eq_poleCleared (g : ℝ → ℂ) {s : ℂ
       ordinaryDivisorMellinNumerator g s / (s - 1) ^ 2 := by
   unfold ordinaryDivisorMellinIntegrand ordinaryDivisorMellinNumerator
   rw [riemannZeta_eq_inv_sub_mul hs]
-  field_simp [sub_ne_zero.mpr hs]
+  grind
 
-theorem DFIVoronoiTestFunction.differentiable_ordinaryDivisorMellinNumerator
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+theorem DFIVoronoiTestFunction.differentiable_ordinaryDivisorMellinNumerator :
     Differentiable ℂ (ordinaryDivisorMellinNumerator g) :=
   (differentiable_riemannZeta₁.pow 2).mul hg.differentiable_mellin
 
-theorem DFIVoronoiTestFunction.deriv_ordinaryDivisorMellinNumerator_one
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.deriv_ordinaryDivisorMellinNumerator_one :
     deriv (ordinaryDivisorMellinNumerator g) 1 =
       deriv (mellin g) 1 + 2 * (Real.eulerMascheroniConstant : ℂ) * mellin g 1 := by
   have hz : HasDerivAt riemannZeta₁ (Real.eulerMascheroniConstant : ℂ) 1 := by
@@ -48,11 +50,10 @@ theorem DFIVoronoiTestFunction.deriv_ordinaryDivisorMellinNumerator_one
   have hp := (hz.pow 2).mul (hg.differentiable_mellin 1).hasDerivAt
   change deriv (riemannZeta₁ ^ 2 * mellin g) 1 = _
   rw [hp.deriv]
-  simp only [Nat.cast_ofNat, Pi.pow_apply, riemannZeta₁_one, one_pow, mul_one, one_mul]
+  pm_316 Nat.cast_ofNat Pi.pow_apply riemannZeta₁_one one_pow mul_one one_mul
   ring
 
-theorem DFIVoronoiTestFunction.ordinaryDivisor_laurent_mainTerm
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.ordinaryDivisor_laurent_mainTerm :
     deriv (ordinaryDivisorMellinNumerator g) 1 = ordinaryDivisorVoronoiMain g := by
   rw [hg.deriv_ordinaryDivisorMellinNumerator_one, hg.mellin_hasDerivAt_one.deriv,
     mellin_log_smul_apply_one, mellin_apply_one]
@@ -71,8 +72,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_laurent_mainTerm
   filter_upwards with x
   ring
 
-theorem DFIVoronoiTestFunction.ordinaryDivisor_finiteRectangle
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {z w : ℂ}
+theorem DFIVoronoiTestFunction.ordinaryDivisor_finiteRectangle {z w : ℂ}
     (hzre : z.re ≤ w.re) (hzim : z.im ≤ w.im)
     (hp : Rectangle z w ∈ 𝓝 (1 : ℂ)) :
     RectangleIntegral' (ordinaryDivisorMellinIntegrand g) z w =
@@ -88,5 +88,6 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_finiteRectangle
   exact (PointMean.rectangleIntegral'_div_sq_eq_deriv hzre hzim hp
     hg.differentiable_ordinaryDivisorMellinNumerator.differentiableOn).trans
       hg.ordinaryDivisor_laurent_mainTerm
+end
 
 end MathCollab.Density.Stronger.Atkinson

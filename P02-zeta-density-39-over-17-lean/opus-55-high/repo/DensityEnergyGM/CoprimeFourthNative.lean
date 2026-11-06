@@ -1,10 +1,10 @@
 module
 public import DensityEnergyGM.LargeValuesEnergy
 public import DensityEnergyGM.CoprimeFourthEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 set_option maxRecDepth 4096
 noncomputable section
@@ -91,27 +91,26 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
             T ^ (1 / 2 : ℝ) * (W.card : ℝ) *
               (discreteAdditiveEnergy W : ℝ) ^ (3 / 4 : ℝ)))
             (T * (discreteAdditiveEnergy W : ℝ)) := by
-  obtain ⟨C₀, T₁, hC₀, hT₁, hFull⟩ := gmDiscreteFourthMoment_native ε hε
+  pm_4083 C₀ T₁ hC₀ hT₁ hFull gmDiscreteFourthMoment_native ε hε
   let C : ℝ := 2 * C₀ + 28672 * Real.pi
   refine ⟨C, max T₁ 2, by dsimp only [C]; positivity,
     hT₁.trans (le_max_left _ _), ?_⟩
   intro M T W hM hT hMT hSep hBase
-  have hTtwo : 2 ≤ T := (le_max_right _ _).trans hT
-  have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := by linarith
-  have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM
-  have hMzero : (0 : ℝ) ≤ M := Nat.cast_nonneg _
+  pm_225 hTtwo T le_max_right hT
+  pm_4035
+  pm_77 hMone M hM
+  pm_391 hMzero M
   have hMleT : (M : ℝ) ≤ T := by nlinarith
   have hMroot : (M : ℝ) ≤ Real.sqrt T := by
     nlinarith [Real.sq_sqrt hTpos.le, Real.sqrt_nonneg T]
-  have hCbig : 28672 * Real.pi ≤ C := by dsimp only [C]; linarith
+  pm_8666 hCbig C
   have hCfull : 2 * C₀ ≤ C := by dsimp only [C]; linarith [Real.pi_pos]
-  have hTpow : 1 ≤ T ^ ε := Real.one_le_rpow hTone hε.le
-  have hEzero : 0 ≤ (discreteAdditiveEnergy W : ℝ) := Nat.cast_nonneg _
+  pm_4168 hTpow ε hTone hε.le
+  pm_5014 hEzero discreteAdditiveEnergy W
   have hShort : nativeCoprimeFourth M W ≤ C * T ^ ε *
       (T * (discreteAdditiveEnergy W : ℝ)) := by
     have h := nativeCoprimeFourth_le_short_energy (by linarith) hM hMT W hBase
-    have hc0 : 0 ≤ C := by dsimp only [C]; positivity
+    pm_82 hc0 C
     have hcoeff : 28672 * Real.pi ≤ C * T ^ ε := by
       nlinarith [mul_nonneg hc0 (sub_nonneg.mpr hTpow)]
     calc
@@ -129,15 +128,14 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
       exact_mod_cast Finset.card_pos.mpr (Finset.nonempty_iff_ne_empty.mpr hEmpty)
     let E : ℝ := discreteAdditiveEnergy W
     have hEpos : 0 < E := by
-      have hdiag := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
+      pm_6502
       rw [native_approx_energy_eq] at hdiag
       have hdiagReal : (W.card : ℝ) ^ 2 ≤ E := by
         dsimp only [E]
         exact_mod_cast hdiag
       exact lt_of_lt_of_le (by positivity) hdiagReal
     have hEupper : E ≤ (W.card : ℝ) ^ 4 := by
-      have h := approxAddEnergy_le_card_pow_four 1 W
-      rw [native_approx_energy_eq] at h
+      pm_6377 h
       dsimp only [E]
       exact_mod_cast h
     have hQuarter : E ^ (1 / 4 : ℝ) ≤ (W.card : ℝ) := by
@@ -195,9 +193,6 @@ theorem nativeCoprimeFourth_min (ε : ℝ) (hε : 0 < ε) :
   by_cases h : (M : ℝ) * ((W.card : ℝ) ^ 4 + T ^ (1 / 2 : ℝ) *
       (W.card : ℝ) * (discreteAdditiveEnergy W : ℝ) ^ (3 / 4 : ℝ)) ≤
         T * (discreteAdditiveEnergy W : ℝ)
-  · rw [min_eq_left h]
-    exact hFirst
-  · rw [min_eq_right (le_of_not_ge h)]
-    exact hShort
+  pm_6080
 
 end Montgomery.RationalMoment

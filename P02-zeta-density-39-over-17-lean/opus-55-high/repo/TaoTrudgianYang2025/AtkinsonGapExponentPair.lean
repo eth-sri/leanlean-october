@@ -2,6 +2,7 @@ module
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonGapModelEntry
 public import TaoTrudgianYang2025.ExponentPairAllHeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,8 +20,10 @@ open scoped FourierTransform BigOperators
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
 
-theorem atkinsonGap_oscillatory_identity {M t u : ℝ}
-    (hM : 0 < M) (hu : 0 < u) (htu : u < t) (n : ℕ) :
+section
+variable {M t u : ℝ} (hM : 0 < M) (hu : 0 < u) (htu : u < t)
+include M t u hM hu htu
+theorem atkinsonGap_oscillatory_identity (n : ℕ) :
     oscillatory (atkinsonNormalizedGapPhase M t u)
       (atkinsonGapFrequency M t u/(2*Real.pi)) M n =
       unitaryPhase (atkinsonSourcePhase t n-atkinsonSourcePhase u n) := by
@@ -37,14 +40,14 @@ theorem atkinsonGap_oscillatory_identity {M t u : ℝ}
   push_cast
   field_simp
 
-theorem atkinsonGap_exponentialSum_identity {M t u : ℝ}
-    (hM : 0 < M) (hu : 0 < u) (htu : u < t) (a b : ℕ) :
+theorem atkinsonGap_exponentialSum_identity (a b : ℕ) :
     exponentialSumAt (atkinsonNormalizedGapPhase M t u)
       (atkinsonGapFrequency M t u/(2*Real.pi)) M a b =
       ∑ n ∈ Finset.Icc a b,
         unitaryPhase (atkinsonSourcePhase t n-atkinsonSourcePhase u n) := by
   unfold exponentialSumAt
   exact Finset.sum_congr rfl (fun n _ => atkinsonGap_oscillatory_identity hM hu htu n)
+end
 
 theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
     (hpair : ExponentPair k l) (hε : 0 < ε) :
@@ -57,7 +60,7 @@ theorem ExponentPair.atkinson_gap_sum_bound {k l ε : ℝ}
             2*Real.pi*M/atkinsonGapFrequency M t u) := by
   obtain ⟨δ,hδ,P,_hP,C,hC,hbound⟩ :=
     hpair.allPositiveHeight_bound (by norm_num : (0 : ℝ) < 1/2) hε
-  obtain ⟨η,hη,hmodel⟩ := atkinsonNormalizedGapPhase_approximate P hδ
+  pm_69 η hη hmodel atkinsonNormalizedGapPhase_approximate P hδ
   refine ⟨η,hη,C,hC,?_⟩
   intro M t u a b hM hu htu ht2 hsmall ha hb
   have hMp : 0 < M := zero_lt_one.trans_le hM

@@ -1,14 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondMarkedEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondWeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal sourcePrime sourceIdeal_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -66,15 +67,22 @@ theorem jLabel_span_dvd_source (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : �
   cases retained (parity (v i)) (ε₁ i) (ε₂ i) <;> simp [bit]
 
 omit [DecidableEq ι] in
-theorem secondInputCoefficient_zero_of_label_mem (Ψ : Eis →* ℂ) (m c d : Eis)
+set_option hygiene false in
+macro "pc_626" x1:ident : tactic => `(tactic| (
+  have hr := row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz
+  simp only [$x1:ident,hr,zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]))
+section
+variable (Ψ : Eis →* ℂ)
+include Ψ
+omit [DecidableEq ι] in
+theorem secondInputCoefficient_zero_of_label_mem (m c d : Eis)
     (H : Finset ι → ℂ) (S : Finset ι) (i : ι) (hi : i ∈ S) (hc : c ∈ Ideal.span {p i}) :
     secondInputCoefficient p hg Ψ m c d H S = 0 := by
   have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S c = 0 := by
-    simp only [rowCoprimeMask,ite_eq_left (show ∃ i ∈ S,c ∈ Ideal.span {p i} from ⟨i,hi,hc⟩)]
-  have hr := row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz
-  simp only [secondInputCoefficient,hr,zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
+    pm_3761
+  pc_626 secondInputCoefficient
 
-theorem secondPreColumn_zero_of_mask_label_mem (Ψ : Eis →* ℂ) (m c d e k : Eis)
+theorem secondPreColumn_zero_of_mask_label_mem (m c d e k : Eis)
     (H : Finset ι → ℂ) (S : Finset ι) (i : ι) (hi : i ∈ S)
     (hc : m*c ∈ Ideal.span {p i}) : secondPreColumn p hp hcop hg Ψ m c d e k H S = 0 := by
   rcases (inferInstance : (Ideal.span {p i}).IsPrime).mem_or_mem hc with hm|hc
@@ -82,12 +90,10 @@ theorem secondPreColumn_zero_of_mask_label_mem (Ψ : Eis →* ℂ) (m c d e k : 
       simp only [rowCoprimeMask,ite_eq_left (show ∃ i ∈ S,m ∈ Ideal.span {p i} from ⟨i,hi,hm⟩)]
     simp only [secondPreColumn,hz,mul_zero,zero_mul]
   · have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S c = 0 := by
-      simp only [rowCoprimeMask,ite_eq_left (show ∃ i ∈ S,c ∈ Ideal.span {p i} from ⟨i,hi,hc⟩)]
-    have hr := row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz
-    simp only [secondPreColumn,hr,zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
+      pm_3761
+    pc_626 secondPreColumn
 
-theorem secondSignedSourceWeight_nonzero_masks
-    (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex) (x : SecondExpansionData ι)
+theorem secondSignedSourceWeight_nonzero_masks (m c d : Eis) (z : SecondRayIndex) (x : SecondExpansionData ι)
     (hE : x.divisor ⊆ x.sourceCommon)
     (hw : secondSignedSourceWeight p hp hcop hg Ψ m c d z x ≠ 0) :
     IsCoprime (sourceIdeal p x.sourceCommon) (Ideal.span {c}) ∧
@@ -103,7 +109,7 @@ theorem secondSignedSourceWeight_nonzero_masks
     rw [Ideal.span_singleton_mul_span_singleton]
     apply sourceIdeal_coprime_of_not_mem p
     intro i hi hc
-    let e := primeSubsetGenerator (fun i => Ideal.span {p i}) x.divisor
+    pm_3818 e i x.divisor
     let r := secondExpansionQuotient p x
     have her : e*r = ∏ j ∈ x.sourceCommon,p j := by
       dsimp only [r]
@@ -117,6 +123,7 @@ theorem secondSignedSourceWeight_nonzero_masks
     dsimp only [e,r] at hz
     apply hw
     simp only [secondSignedSourceWeight,secondCommonWeight,hz,mul_zero]
+end
 
 def actualSecondSignedWeight {Jo Jn : ℕ} (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (x : MarkedSecondSource ι Jo Jn) : ℂ :=

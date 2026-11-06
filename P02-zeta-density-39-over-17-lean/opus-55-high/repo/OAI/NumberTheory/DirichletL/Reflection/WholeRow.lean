@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.ShellRows
 public import OAI.NumberTheory.DirichletL.Reflection.TruncatedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 def literalWholeRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+    (S : Ideal Eis→ PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -27,14 +28,12 @@ def literalWholeRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
 lemma sum_tsum_tsum_finite_middle {α β γ : Type*} [Fintype β]
     (L : Finset α) (f : α→β→γ→ℂ) (hf : ∀ p∈L, ∀ u, Summable (f p u)) :
     (∑ p∈L,∑' u,∑' i,f p u i)=∑' u,∑' i,∑ p∈L,f p u i := by
-  simp only [tsum_fintype]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pm_566 tsum_fintype Finset.sum_comm
   intro u hu
   exact (Summable.tsum_finsetSum (fun p hp => hf p hp u)).symm
 
 theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+    (S : Ideal Eis→ PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -48,7 +47,7 @@ theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
       (fixedRadialCoefficientScalar*s.stratumShapeFactor (c*primaryGenerator (∏ i,F.ideal i)))*
         ∑' u : Eisˣ,∑' i : ℕ×ℕ×ℕ,
           literalDyadicRow F K hK S jF Pset D s hc u i W θ X
-            (fun K => r K*shapeArgument (primaryGenerator K))
+            (fun K=> r K*shapeArgument (primaryGenerator K))
             (fun P => aw P*shapeArgument (primaryGenerator P)) := by
   let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
   let : Fintype Eisˣ := Fintype.ofFinite _

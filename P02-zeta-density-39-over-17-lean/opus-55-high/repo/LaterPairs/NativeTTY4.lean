@@ -5,6 +5,7 @@ public import LaterPairs.HeathBrownRows
 public import LaterPairs.RestrictedPeakTail
 public import TaoTrudgianYang2025.BetaHalfDuality
 public import TaoTrudgianYang2025.ExponentPairBProcess
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -28,17 +29,17 @@ private theorem taoTrudgianYang_fourthNew_half_beta
     apply hh.trans
     rw [heathBrownBetaBound_eq_max (by norm_num : 3≤(7:ℕ))]
     norm_num [heathBrownDerivativeExponent,heathBrownInverseExponent]
-    refine ⟨?_,?_,?_⟩ <;> linarith only [h7,α.coe_nonneg]
+    grind
   by_cases h6 : (α:ℝ)≤3/13
   · have hh := exponentSumGrowthExponent_le_heathBrown_of_derivative
       GafniTao.heathBrownKthDerivativeTheorem_native (by norm_num : 3≤(6:ℕ)) hpos
     apply hh.trans
     rw [heathBrownBetaBound_eq_max (by norm_num : 3≤(6:ℕ))]
     norm_num [heathBrownDerivativeExponent,heathBrownInverseExponent]
-    refine ⟨?_,?_,?_⟩ <;> linarith only [lt_of_not_ge h7,h6]
+    grind
   by_cases h5 : (α:ℝ)≤1/4
   · have hh := exponentSumGrowthExponent_le_heathBrown_firstRow h5
-    linarith only [hh,lt_of_not_ge h6]
+    grind
   by_cases hlo : (α:ℝ)≤890/3277
   · have hh := exponentSumGrowthExponent_le_heathBrown_secondRow (le_of_not_ge h5) hlo
     linarith only [hh,hlo]
@@ -47,15 +48,13 @@ private theorem taoTrudgianYang_fourthNew_half_beta
       (le_of_not_ge hlo) hhi
   have hh := CubicJointCount.exponentSumGrowthExponent_le_trudgianYang_sixthRow
     (α:=α) (by linarith only [hhalf])
-  linarith only [hh,lt_of_not_ge hhi]
+  grind
 
 /-- The fourth new analytic exponent pair, obtained from complete beta
 coverage, not from a rational triangle certificate or an assumed pair. -/
 theorem exponentPair_taoTrudgianYang_fourthNew :
     ExponentPair (89/3478) (15327/17390) := by
-  apply exponentPair_of_beta_bound_half
-    (by norm_num [InExponentPairTriangle]) (by norm_num)
-  intro α hhalf
+  pm_2072
   have hh := taoTrudgianYang_fourthNew_half_beta hhalf
   unfold exponentPairLine
   linarith only [hh]

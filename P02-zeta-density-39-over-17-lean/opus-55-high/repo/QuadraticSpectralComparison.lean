@@ -1,10 +1,9 @@
 module
 public import FiniteCutoffOperators
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open InnerProductSpace
 open scoped InnerProductSpace
 namespace Montgomery.RationalMoment
@@ -20,8 +19,7 @@ theorem finite_weighted_positive_square {ι : Type*} [Fintype ι]
   · rw [max_eq_right hd]
     simp only [zero_pow (by decide : 2 ≠ 0),mul_zero]
     exact Finset.sum_nonneg (fun i _ => sq_nonneg _)
-  have hdp : 0 < d := lt_of_not_ge hd
-  rw [max_eq_left hdp.le]
+  pm_7154
   have htangent (i : ι) : α i*(2*d*e i-d^2) ≤ α i*(e i)^2 := by
     exact mul_le_mul_of_nonneg_left (by nlinarith [sq_nonneg (e i-d)]) (hα i)
   have hsum := Finset.sum_le_sum (s:=Finset.univ) (fun i _ => htangent i)
@@ -29,10 +27,10 @@ theorem finite_weighted_positive_square {ι : Type*} [Fintype ι]
       2*d*(∑ i, α i*e i)-d^2*(∑ i, α i) := by
     simp_rw [mul_sub]
     rw [Finset.sum_sub_distrib,Finset.mul_sum,Finset.mul_sum]
-    congr 1 <;> apply Finset.sum_congr rfl <;> intro i _ <;> ring
+    pm_7728
   rw [hid] at hsum
   have hm := mul_le_mul_of_nonneg_left hmass (sq_nonneg d)
-  have hl := mul_le_mul_of_nonneg_left hwitness (show 0 ≤ 2*d by positivity)
+  pm_513 hl hwitness d
   have hs : k*d^2 ≤ ∑ i, α i*(e i)^2 := by nlinarith
   exact hs.trans (Finset.sum_le_sum (fun i _ => by
     simpa using mul_le_mul_of_nonneg_right (hα1 i) (sq_nonneg (e i))))
@@ -48,29 +46,7 @@ theorem finite_operator_positive_square (b : OrthonormalBasis ι ℂ E)
     (hv : Orthonormal ℂ v) {k a B : ℝ} (hk : (Fintype.card κ:ℝ) ≤ k)
     (hB : ‖C‖ ≤ B)
     (hw : k*a ≤ ∑ j, (inner ℂ (v j) ((H+C) (v j))).re) :
-    k*(max (a-B) 0)^2 ≤ ∑ i, (e i)^2 := by
-  have hB0 : 0 ≤ B := (norm_nonneg C).trans hB
-  have hc (j : κ) : (inner ℂ (v j) (C (v j))).re ≤ B := by
-    calc
-      _ ≤ ‖v j‖*‖C (v j)‖ := re_inner_le_norm (𝕜 := ℂ) _ _
-      _ ≤ ‖v j‖*(‖C‖*‖v j‖) := mul_le_mul_of_nonneg_left (C.le_opNorm _) (norm_nonneg _)
-      _ ≤ B := by simpa only [hv.norm_eq_one, one_mul, mul_one] using hB
-  have hcs : (∑ j, (inner ℂ (v j) (C (v j))).re) ≤ k*B := by
-    calc
-      _ ≤ ∑ _j : κ, B := Finset.sum_le_sum fun j _ => hc j
-      _ = (Fintype.card κ:ℝ)*B := by simp
-      _ ≤ k*B := mul_le_mul_of_nonneg_right hk hB0
-  have hadd : (∑ j, (inner ℂ (v j) ((H+C) (v j))).re) =
-      (∑ j, (inner ℂ (v j) (H (v j))).re)+(∑ j, (inner ℂ (v j) (C (v j))).re) := by
-    simp only [add_apply, inner_add_right, Complex.add_re, Finset.sum_add_distrib]
-  rw [hadd] at hw
-  have hwe : k*(a-B) ≤ ∑ i, finiteWitnessWeight b v i*e i := by
-    rw [← finite_eigenbasis_witness_sum b H hs e he v]
-    linarith
-  exact finite_weighted_positive_square (finiteWitnessWeight b v) e
-    (fun i => (finiteWitnessWeight_bounds b hv i).1)
-    (fun i => (finiteWitnessWeight_bounds b hv i).2)
-    (by rw [finiteWitnessWeight_sum b hv]; exact hk) hwe
+    k*(max (a-B) 0)^2 ≤ ∑ i, (e i)^2 := by pm_4602 finite_weighted_positive_square
 
 
 /-- The centered operator is Hermitian; no positivity of H is required. -/
@@ -81,12 +57,7 @@ theorem operator_finite_quadratic_comparison [FiniteDimensional ℂ E]
     (hk : (Fintype.card κ:ℝ) ≤ k) (hB : ‖C‖ ≤ B)
     (hw : k*a ≤ ∑ j, (inner ℂ (v j) (G (v j))).re) :
     k*(max (a-B) 0)^2 ≤ (∑ i, inner ℂ (d i) (((G-C)^2) (d i))).re := by
-  let H := G-C
-  have hs : H.toLinearMap.IsSymmetric := hG.isSymmetric.sub hC.isSymmetric
-  let b := hs.eigenvectorBasis rfl
-  let e := hs.eigenvalues rfl
-  have he (i : Fin (Module.finrank ℂ E)) : H (b i) = (e i:ℂ) • b i :=
-    hs.apply_eigenvectorBasis rfl i
+  pm_4542
   have hp := finite_operator_positive_square b H C hs e he v hv hk hB
     (by simpa [H] using hw)
   have htrace : (∑ i, inner ℂ (d i) ((H^2) (d i))) =

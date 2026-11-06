@@ -2,8 +2,9 @@ module
 public import GafniTao.WooleySection4Dilation
 public import GafniTao.WooleySection7Congruence
 public import GafniTao.WooleyTranslationDilation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The congruence change in Wooley Lemma 4.1
@@ -17,11 +18,9 @@ system imply congruences for that new system modulo the common depth
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleyIntegerTupleDisplacement_polynomial_C
     {I : Type*} (R : ℕ) (z : ℤ) (point : I → ℤ)
@@ -127,8 +126,7 @@ theorem wooleySection4_exists_dilated_system
         (p : ℤ) ^ B *
           wooleyIntegerTupleDisplacement R
             (fun x => (Error i).eval (dilatedPoint x)) xy := dvd_mul_right _ _
-    have hsub := dvd_sub hcomb herr
-    rw [hdisp] at hsub
+    pm_126 hsub dvd_sub hcomb herr hdisp
     simpa only [add_sub_cancel_right] using hsub
   have hdilation :
       wooleyIntegerTupleDisplacement R
@@ -142,7 +140,7 @@ theorem wooleySection4_exists_dilated_system
     exact wooleyIntegerTupleDisplacement_smul R
       ((p : ℤ) ^ (h * ((i : ℕ) + 1)))
       (fun x => (Psi i).eval (point x)) xy
-  have hi : (i : ℕ) + 1 ≤ k := i.isLt
+  pm_5223 hi i k i.isLt
   have hiB : ((i : ℕ) + 1) * h ≤ B := by
     exact (Nat.mul_le_mul_right h hi).trans hkhB
   have hcancel : (p : ℤ) ^ (B - ((i : ℕ) + 1) * h) ∣
@@ -161,6 +159,5 @@ theorem wooleySection4_exists_dilated_system
   exact (pow_dvd_pow (p : ℤ) hexp).trans hcancel
 
 
-end
 
 end GafniTao

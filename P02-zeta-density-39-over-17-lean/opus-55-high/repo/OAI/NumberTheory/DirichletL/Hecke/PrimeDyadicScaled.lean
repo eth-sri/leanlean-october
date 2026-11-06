@@ -1,11 +1,11 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicScale
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
 open scoped Classical Topology ContDiff
 open Set Complex
@@ -21,32 +21,30 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
       ∀ (j : ι) (W : ℝ → ℂ) (A B : ℝ),
       0<A → Function.support W⊆Icc A B → ContDiff ℝ ∞ W →
       ∀ (U r R σ freq V C₂ Cn : ℝ) (n : ℕ),
-      2≤U → (χ j).modulus.absNorm≤U → 0≤r → r≤R → 0≤V →
+      2≤U → (χ j).modulus.absNorm≤U → 0≤ r → r≤R → 0≤V →
       |freq|+V≤(3*i+2 : ℕ)*T → (3+(3*i+2 : ℕ)*T)^2≤U^η → 0≤C₂ → 0≤Cn →
       (∀ t : ℝ, (1+|t|)^2*‖mellin W (((a+8*e-σ : ℝ) : ℂ)+t*I)‖≤C₂) →
       (∀ x ∈ Icc (a+8*e-σ) (2-σ), ∀ t : ℝ,
         (1+|t|)^(n+2)*‖mellin W ((x : ℂ)+t*I)‖≤Cn) →
       ‖polynomial (χ j) W (U^r) σ freq‖≤
         C*C₂*U^((a-1/2+8*e)*r+κ)+C*Cn*U^(2*R+κ)/(1+V)^n := by
-  obtain ⟨B,hB,hbound⟩ := polynomial_bound_in_bin e he he'
+  pm_114 B hB hbound polynomial_bound_in_bin e he he'
   let Cb := (B*(2+η)+localBound (1/2))/κ
   have hCb : 0<Cb := div_pos
     (add_pos_of_nonneg_of_pos (mul_nonneg hB (by linarith))
       (localBound_pos (by norm_num : (0 : ℝ)<1/2))) hκ
   let E := eulerBound 2
-  have hE : 0≤E := tsum_nonneg (fun I => mul_nonneg (IdealMangoldt.value_nonneg _) (Real.rpow_nonneg (norm_pos I).le _))
+  have hE : 0≤E := tsum_nonneg (fun I=> mul_nonneg (IdealMangoldt.value_nonneg _) (Real.rpow_nonneg (norm_pos I).le _))
   let C := 1+Cb*Real.pi+4*Cb+E*Real.pi
-  have hC : 0<C := by dsimp [C]; positivity
-  refine ⟨C,hC,?_⟩
+  pm_3043
   intro ι _ χ hχ T a i hT ha ha' hmax j W A B' hA hWs hW
     U r R σ freq V C₂ Cn n hU2 hQ hr hrR hV hfreq hheight hC₂ hCn hm₂ hmn
-  let H : ℝ := (3*i+2 : ℕ)*T
-  have hH : 0≤H := by dsimp [H]; positivity
+  pm_6703
+  pm_3063 hH H
   have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one (χ j)).trans hQ
   have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
-  have hD : 1≤U^r := Real.one_le_rpow hU hr
-  have hb := hbound χ hχ T a i hT ha ha' hmax j W A B' hA hWs hW
-    (U^r) σ freq V C₂ Cn n hD hV hC₂ hCn hfreq hm₂ hmn
+  pm_242 hD U r hU hr
+  pm_5465 B' hC₂ hCn hfreq
   have hcost : binCost B (χ j) H ≤ Cb*U^κ :=
     binCost_le_power (χ j) B U H η κ hB hU2 hQ hη hκ (by rw [abs_of_nonneg hH]; exact hheight)
   have hcentral : (U^r)^(a+8*e-1/2)*binCost B (χ j) H ≤
@@ -101,6 +99,5 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
 
 end SevenEighths.HeckePrimeDyadic
 
-end
 
 end OAI

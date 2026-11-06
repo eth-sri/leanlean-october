@@ -2,6 +2,7 @@ module
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Tactic.NormNum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,7 +39,7 @@ theorem primeSlot_priority (L A B : Finset ι) (a : ι → ℂ) :
   rw [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro p hp
-  by_cases hA : p ∈ A <;> by_cases hB : p ∈ B <;> simp [hA, hB]
+  grind
 
 theorem primeMark_priority (I : Finset σ) (L : σ → Finset ι)
     (a : σ → ι → ℂ) (A B : Finset ι) :
@@ -89,7 +90,7 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
     apply Finset.card_le_card
     intro p hp
     obtain ⟨i, hi, hp⟩ := Finset.mem_biUnion.mp hp
-    exact (Finset.mem_inter.mp hp).2
+    grind
   calc
     ‖primeMark I L a A‖ = ∏ i ∈ I, ‖primeSlot (L i) (a i) A‖ := by
       exact norm_prod _ _
@@ -97,8 +98,7 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
       exact Finset.prod_le_prod₀ (fun i _ => norm_nonneg _)
         (fun i hi => primeSlot_norm_le _ _ _ (ha i hi))
     _ ≤ ∏ i ∈ I, (2 : ℝ) ^ (L i ∩ A).card := by
-      apply Finset.prod_le_prod₀ (fun i _ => Nat.cast_nonneg _)
-      intro i hi
+      pm_5766 Nat.cast_nonneg
       exact_mod_cast (Nat.le_of_lt (L i ∩ A).card.lt_two_pow_self)
     _ = (2 : ℝ) ^ (∑ i ∈ I, (L i ∩ A).card) :=
       Finset.prod_pow_eq_pow_sum _ _ _

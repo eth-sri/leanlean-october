@@ -2,14 +2,13 @@ module
 public import MathCollab.Density.Stronger.SmoothContour
 public import MathCollab.Density.Stronger.UniformMellin
 public import MathCollab.Density.DetectorEstimates
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
-open scoped BigOperators Topology ContDiff
-set_option autoImplicit false
-noncomputable section
+open MathCollab.Density.ZetaGrowth
+open scoped Topology ContDiff
 namespace MathCollab.Density.Stronger
 
 /-- Coarse actual-zeta growth on a vertical line with a fixed real gap from its pole. -/
@@ -25,17 +24,19 @@ theorem norm_riemannZeta_le_eight_mul_norm {s : ℂ}
   rw [riemannZeta_eq_abel hspos hs]
   calc
     _ ≤ ‖s/(s-1)‖ + ‖s*abelZetaRemainder s‖ := norm_sub_le _ _
-    _ = ‖s‖/‖s-1‖ + ‖s‖*‖abelZetaRemainder s‖ := by rw [norm_div,norm_mul]
+    _ = ‖s‖/‖s-1‖ + ‖s‖*‖abelZetaRemainder s‖ := by simp_all
     _ ≤ ‖s‖/(1/4)+‖s‖*4 := add_le_add
       (div_le_div_of_nonneg_left (norm_nonneg _) (by norm_num) hden)
       (mul_le_mul_of_nonneg_left hrem (norm_nonneg _))
     _ = 8*‖s‖ := by ring
 
-theorem continuous_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hs : tsupport ψ ⊆ Icc a b)
+section
+variable {ψ : ℝ → ℝ} {a b : ℝ} (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a)
+include ψ a b hψ ha
+theorem continuous_smoothDetectorKernel_line (hs : tsupport ψ ⊆ Icc a b)
     (ρ : ℂ) (X q u : ℝ) {N : ℝ} (hN : 0 < N) (hp : ρ.re+u ≠ 1) :
     Continuous (fun t : ℝ => smoothDetectorKernel ψ ρ X N q ((u : ℂ)+(t : ℂ)*I)) := by
-  let line := fun t : ℝ => (u : ℂ)+(t : ℂ)*I
+  pm_5698
   have hl : Continuous line := by dsimp [line]; fun_prop
   have hm : Continuous (mellin (fun y => (dampedCutoff ψ q y : ℂ))) :=
     (Complex.analyticOnNhd_univ_iff_differentiable.mp
@@ -64,12 +65,11 @@ theorem continuous_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
 
 /-- Absolute convergence on a fixed vertical line away from the zeta pole.
 No moment or pointwise subconvexity hypothesis is used. -/
-theorem integrable_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem integrable_smoothDetectorKernel_line (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
     (ρ : ℂ) (X u : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q)
     (hre : 1/4 ≤ ρ.re+u) (hgap : 1/4 ≤ |ρ.re+u-1|) :
     Integrable (fun t : ℝ => smoothDetectorKernel ψ ρ X N q ((u : ℂ)+(t : ℂ)*I)) := by
-  let line := fun t : ℝ => (u : ℂ)+(t : ℂ)*I
+  pm_5698
   obtain ⟨_,_,h⟩ := dampedCutoff_uniform_mellin_weighted_L1 hψ ha hb hs u u 1
   have hmass := (h u ⟨le_rfl,le_rfl⟩ q hq).1
   simp only [pow_one] at hmass
@@ -104,8 +104,7 @@ theorem integrable_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
         (norm_nonneg _) (by positivity)
     _ = _ := by dsimp [C,line]; ring
 
-theorem integrable_smoothDetectorKernel_left {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem integrable_smoothDetectorKernel_left (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
     (ρ : ℂ) (X : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q) :
     Integrable (fun t : ℝ => smoothDetectorKernel ψ ρ X N q
       (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
@@ -114,8 +113,7 @@ theorem integrable_smoothDetectorKernel_left {ψ : ℝ → ℝ} {a b : ℝ}
   · rw [show ρ.re+(1/2-ρ.re)-1 = -(1/2 : ℝ) by ring]
     norm_num
 
-theorem integrable_smoothDetectorKernel_right {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem integrable_smoothDetectorKernel_right (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
     {ρ : ℂ} (X : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q) (hβ : 3/4 ≤ ρ.re) :
     Integrable (fun t : ℝ => smoothDetectorKernel ψ ρ X N q
       (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)) := by
@@ -125,8 +123,7 @@ theorem integrable_smoothDetectorKernel_right {ψ : ℝ → ℝ} {a b : ℝ}
     linarith
 
 /-- A stripwise horizontal majorant uniform in q≥0. -/
-theorem smoothDetectorKernel_horizontal_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem smoothDetectorKernel_horizontal_bound (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
     {ρ : ℂ} (X : ℝ) {N : ℝ} (hN : 0 < N) (hβ : ρ.re ≤ 1) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ q : ℝ, 0 ≤ q → ∀ u ∈ Icc (1/2-ρ.re) (1/2 : ℝ),
       ∀ t : ℝ, |ρ.im|+1 ≤ |t| →
@@ -136,16 +133,14 @@ theorem smoothDetectorKernel_horizontal_bound {ψ : ℝ → ℝ} {a b : ℝ}
   obtain ⟨P,hP⟩ := (isCompact_Icc : IsCompact (Icc (1/2-ρ.re) (1/2 : ℝ))).bddAbove_image
     (Real.continuous_const_rpow hN.ne').continuousOn
   let D := max P 0
-  have hD : 0 ≤ D := le_max_right _ _
+  pm_4918 hD D le_max_right
   let C : ℝ := D*B*(⌊X⌋₊ : ℝ)*5*(2+|ρ.im|)
   refine ⟨C, by dsimp [C]; positivity, ?_⟩
   intro q hq u hu t ht
-  let s : ℂ := (u : ℂ)+(t : ℂ)*I
-  have hre : (ρ+s).re = ρ.re+u := by simp [s]
-  have him : (ρ+s).im = ρ.im+t := by simp [s]
+  pm_5103 s u t I
+  pm_1468 hre him
   have him' : 1 ≤ |(ρ+s).im| := by
-    rw [him]
-    have h := abs_add_le (ρ.im+t) (-ρ.im)
+    pm_7438 him
     rw [show ρ.im+t+-ρ.im=t by ring, abs_neg] at h
     linarith
   have hz := norm_riemannZeta_le_five_mul_norm (s := ρ+s) (by rw [hre]; linarith [hu.1]) him'
@@ -174,8 +169,7 @@ theorem smoothDetectorKernel_horizontal_bound {ψ : ℝ → ℝ} {a b : ℝ}
       field_simp [ht0]
 
 /-- Both horizontal edges tend to zero at infinite rectangle height. -/
-theorem tendsto_smoothDetector_horizontal_integral {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem tendsto_smoothDetector_horizontal_integral (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
     {ρ : ℂ} (X : ℝ) {N q ε : ℝ} (hN : 0 < N) (hq : 0 ≤ q)
     (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
     Tendsto (fun R : ℝ => ∫ u in (1/2-ρ.re)..(1/2 : ℝ),
@@ -201,5 +195,6 @@ theorem tendsto_smoothDetector_horizontal_integral {ψ : ℝ → ℝ} {a b : ℝ
     simpa only [he] using h
   have hmul := mul_le_mul_of_nonneg_left hlength (by positivity : 0 ≤ C/(1+R)^2)
   exact (intervalIntegral.norm_integral_le_of_norm_le_const hpoint).trans (by simpa using hmul)
+end
 
 end MathCollab.Density.Stronger

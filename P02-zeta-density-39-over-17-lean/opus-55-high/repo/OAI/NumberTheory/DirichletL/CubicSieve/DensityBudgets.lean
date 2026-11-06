@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.CoordinateLaplacian
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,80 +8,35 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic
+open ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 
 namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 open MeasureTheory
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
@@ -94,7 +50,6 @@ open ActualEisensteinCubic ConcreteTraceCRT
 end SecondPassArithmetic
 
 open MeasureTheory
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 
 section
@@ -108,7 +63,10 @@ open ConcreteTraceCRT (eisEmbedding)
 def rowFamilyEnergy (labels : Finset (Ideal ActualEisensteinCubic.O)) (P : Ideal ActualEisensteinCubic.O → ActualEisensteinCubic.O → ℂ) (K : ℝ) : ℝ :=
   (∑ I ∈ labels, nonzeroRowMajorantSum (P I) K).re
 
-theorem rowFamilyEnergy_eq_sum (labels : Finset (Ideal ActualEisensteinCubic.O)) (P : Ideal ActualEisensteinCubic.O → ActualEisensteinCubic.O → ℂ)
+section
+variable (labels : Finset (Ideal ActualEisensteinCubic.O))
+include labels
+theorem rowFamilyEnergy_eq_sum (P : Ideal ActualEisensteinCubic.O → ActualEisensteinCubic.O → ℂ)
     (K : ℝ) (hK : 0 < K) :
     rowFamilyEnergy labels P K =
       ∑ I ∈ labels, ∑ z ∈ (firstFrequencyDisk (2*K)).erase 0,
@@ -117,8 +75,7 @@ theorem rowFamilyEnergy_eq_sum (labels : Finset (Ideal ActualEisensteinCubic.O))
   simp only [nonzeroRowMajorantSum_exact_disk _ K hK, Complex.re_sum,
     Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, mul_zero, sub_zero]
 
-theorem rowFamilyEnergy_integral_polynomial
-    (labels : Finset (Ideal ActualEisensteinCubic.O)) (K : ℝ) (hK : 0 < K)
+theorem rowFamilyEnergy_integral_polynomial (K : ℝ) (hK : 0 < K)
     (b : ℝ → ℂ) (φ : Ideal ActualEisensteinCubic.O → ActualEisensteinCubic.O → ℝ → ℂ) (d : ℕ) (E : ℝ) (hE : 0 ≤ E)
     (hb : Integrable (fun t => ‖b t‖*(1+|t|)^d))
     (hφ : ∀ I z, Integrable (fun t => b t*φ I z t))
@@ -127,7 +84,7 @@ theorem rowFamilyEnergy_integral_polynomial
       E*(∫ t : ℝ, ‖b t‖*(1+|t|)^d)^2 := by
   let R := (firstFrequencyDisk (2*K)).erase 0
   let w : ActualEisensteinCubic.O → ℝ := fun z => Real.sqrt ((rowMajorant (‖eisEmbedding z‖^2/K)).re)
-  have hw (z : ActualEisensteinCubic.O) : 0 ≤ w z := Real.sqrt_nonneg _
+  pm_8600 z ActualEisensteinCubic.O w Real.sqrt_nonneg
   have hw2 (z : ActualEisensteinCubic.O) : (w z)^2 = (rowMajorant (‖eisEmbedding z‖^2/K)).re :=
     Real.sq_sqrt (rowMajorant_nonneg _)
   have hsum (P : Ideal ActualEisensteinCubic.O → ActualEisensteinCubic.O → ℂ) :
@@ -159,31 +116,28 @@ theorem rowFamilyEnergy_integral_polynomial
     filter_upwards [] with t
     dsimp only [ψ]
     ring
-  have hm := finite_integral_energy_polynomial b ψ d E hE hb hψ hψbound
+  pm_528 hm finite_integral_energy_polynomial b ψ d E hE hb hψ hψbound
   simp_rw [hi] at hm
   rwa [hsum (fun I z => ∫ t : ℝ, b t*φ I z t)] at hm
 
-theorem rowFamilyEnergy_const_mul (labels : Finset (Ideal ActualEisensteinCubic.O)) (P : Ideal ActualEisensteinCubic.O → ActualEisensteinCubic.O → ℂ)
+theorem rowFamilyEnergy_const_mul (P : Ideal ActualEisensteinCubic.O → ActualEisensteinCubic.O → ℂ)
     (K : ℝ) (hK : 0 < K) (c : ℂ) :
     rowFamilyEnergy labels (fun I z => c*P I z) K = ‖c‖^2*rowFamilyEnergy labels P K := by
   simp only [rowFamilyEnergy_eq_sum _ _ K hK, norm_mul, mul_pow, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro I hI
-  apply Finset.sum_congr rfl
-  intro z hz
+  pm_3397 I hI z hz
   ring
+end
 
 end
 section
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
-open CanonicalCubeSeparation JointLogSeparation
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -203,18 +157,16 @@ open ConcreteTraceCRT (eisEmbedding)
 end
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
-open CanonicalCubeSeparation JointLogSeparation
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)

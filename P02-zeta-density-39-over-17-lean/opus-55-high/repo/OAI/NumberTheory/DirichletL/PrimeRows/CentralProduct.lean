@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.WeightedTuple
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
 local notation "O" => HeckeFamily.O
@@ -20,9 +20,10 @@ def centralRowScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
       HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x))*
     continuedCorrection S hS η u x w z
 
-theorem calibratedTupleValue_central {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (u : FreeRow) (P : Fin K→PrimeIdeal)
+section
+variable {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow)
+include K S hS hmax η u
+theorem calibratedTupleValue_central (P : Fin K→PrimeIdeal)
     (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (a e : ℝ) (x w z : ℂ)
     (htail : FirstTail (4*e) S) (ha : (51/100:ℝ)≤a) (ha1 : a≤1)
@@ -36,8 +37,8 @@ theorem calibratedTupleValue_central {K : ℕ}
         ∏i,W i (((P i).val.absNorm:ℝ)/Y i)*((P i).val.absNorm:ℂ)^(z-1)*
           centralNormalizedSlot η u (P i) (outside_prime_supported S hS.bad (P i) (hPS i)) x w z := by
   have hrestore := continuedCorrection_restore (4*e) S hS htail (Finset.univ.image P)
-    (tupleOutside S P hPS) η u x w z (by rw [hx];linarith) (by rw [hz])
-    (by rw [hw];linarith) (by rw [hx,hw];linarith)
+    (tupleOutside S P hPS) η u x w z (by grind) (by grind)
+    (by grind) (by grind)
   rw [Finset.prod_image hP.injOn] at hrestore
   have hn : (∏i,supportedCorrection η u (P i) x w z)≠0 := by
     apply Finset.prod_ne_zero_iff.mpr
@@ -46,16 +47,14 @@ theorem calibratedTupleValue_central {K : ℕ}
       (outside_prime_supported S hS.bad (P i) (hPS i)) (hη i) a e x w z
       (hQ i) (hsmall i) ha ha1 he he1 hx hw hz).1
     rw [hz0,norm_zero] at h
-    norm_num at h
+    grind
   rw [calibratedTupleValue_factor S hS hmax η u P hP hPS W Y x w z]
   unfold centralRowScalar centralNormalizedSlot
   rw [hrestore]
   simp only [Finset.prod_mul_distrib,Finset.prod_div_distrib]
   field_simp
 
-theorem calibrated_prime_slots_separate {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (η : Character) (u : FreeRow) (T : Fin K→Finset PrimeIdeal)
+theorem calibrated_prime_slots_separate (T : Fin K→Finset PrimeIdeal)
     (hPS : ∀i P,P∈T i→P.val∉S)
     (hdis : ∀P:(∀i,T i),Function.Injective (fun i=>(P i).val))
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (a e : ℝ) (x w z : ℂ)
@@ -88,6 +87,7 @@ theorem calibrated_prime_slots_separate {K : ℕ}
       exact (Fintype.prod_sum (fun i (P:T i)=>W i ((P.val.val.absNorm:ℝ)/Y i)*
         (P.val.val.absNorm:ℂ)^(z-1)*centralNormalizedSlot η u P.val
           (outside_prime_supported S hS.bad P.val (hPS i P.val P.property)) x w z)).symm
+end
 
 end SevenEighths.ProbeHighRowFamily
 end

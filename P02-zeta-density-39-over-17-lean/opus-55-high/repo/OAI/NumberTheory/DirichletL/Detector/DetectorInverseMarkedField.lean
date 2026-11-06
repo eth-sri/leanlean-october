@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceFiberEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedUniform
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,10 +10,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology SchwartzMap ContDiff
+open scoped Classical Topology SchwartzMap ContDiff
 namespace SevenEighths.ProbeDetectorInverseMarkedField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
+open HeckeFamily HeckeDyadic InverseMoment
+open HeckeDetectorBatch
 open ProbeHighRowFamily ProbeFinalAssembly Filter
 open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
 local notation "O"=>HeckeFamily.O
@@ -28,7 +29,7 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
     1<Z ∧ ∀d:ℝ,(1/200:ℝ)≤d →
     ∀(a ε tstar T allowance:ℝ)(i:ℕ)
       (B:Batch M H (Sum Bool (RayQuotient.Characters M H)) (Fin D.N)
-        (Z^d) a ε tstar T allowance i),
+        (Z ^d) a ε tstar T allowance i),
       B.data=sourceMomentData M H hH S.S S.exclusions.prime η →
       B.profile=(fun _ x=>(S.w x:ℂ)) → B.upper=(fun _=>2) →
       B.widths=(fun s=>D.ell s/d) → (∀s,(B.external s).re=17/50) →
@@ -40,29 +41,24 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
     ∀n:ℕ,n≤2 → ∀s∈Set.Icc (0:ℝ) 1,∀t∈Set.Icc (-height) height,
       (∑u∈F.rows,‖polynomial (F.family u F.label) true
         ((HeckeDetectorRowwisePolynomial.logProfile^[n]) F.inverseProfile)
-        ((Z^d)^F.r) s t*F.physicalProduct selected u‖^2)≤
-        (C*(1+height)^J)*(Z^d)^(1+D.t) := by
+        ((Z ^d)^F.r) s t*F.physicalProduct selected u‖^2)≤
+        (C*(1+height)^J)*(Z ^d)^(1+D.t) := by
   obtain ⟨Jref,hreference⟩:=fiber_reference_energy S referenceWindow (1/18) (13/4)
     (by norm_num) (by norm_num)
     (fun x hx=>referenceWindow_support (subset_tsupport _ hx)) (referenceWindow.smooth ⊤)
     D.t D.t_pos D.N
-  obtain ⟨J,Cfourier,hCfourier,hfourier⟩:=DetectorDictionaryInverseMarkedUniform.fiber_inverse_height_uniform Jref
+  pm_3698 J Cfourier hCfourier hfourier DetectorDictionaryInverseMarkedUniform.fiber_inverse_height_uniform Jref
   refine ⟨J,?_⟩
   intro η
   let data:=sourceMomentData M H hH S.S S.exclusions.prime η
   choose C U₀ hC hU₀ hb using fun label=>hreference (data label)
-  let Csum:ℝ:=1+∑label,C label
-  have hCsum:0<Csum:=by
-    have hh:=Finset.sum_nonneg (fun label (_:label∈Finset.univ)=>(hC label).le)
-    dsimp [Csum];linarith
+  pm_468 hh
   have hClabel (label):C label≤Csum:=by
     have hh:=Finset.single_le_sum (fun label (_:label∈Finset.univ)=>(hC label).le) (Finset.mem_univ label)
     dsimp [Csum];linarith
-  have hscale:∀ᶠZ:ℝ in atTop,∀label,∀d:ℝ,(1/200:ℝ)≤d → U₀ label≤Z^d := by
-    apply Filter.eventually_all.mpr
-    intro label
-    exact HeckeDetectorDyadicGeometry.uniform_scale_threshold (1/200) (U₀ label) (by norm_num)
-  refine ⟨Cfourier*Csum,mul_pos hCfourier hCsum,?_⟩
+  have hscale:∀ᶠZ:ℝ in atTop,∀label,∀d:ℝ,(1/200:ℝ)≤d → U₀ label≤Z ^d := by
+    pm_6075
+  pm_3171 Cfourier Csum mul_pos hCfourier hCsum
   filter_upwards [eventually_gt_atTop (1:ℝ),hscale,
     deleted_large_eventually data D.ell (fun s=>(D.slots_bounds s).1),
     sourceMoment_fiber_prime_geometry_eventually M H hH S η D.t D.t_pos] with Z hZ hscale hlarge hgeom
@@ -70,8 +66,8 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
   intro d hd a ε tstar T allowance i B hdata hprofile0 hupper hwidths hz bin label left right hne
     height hheight F selected hselected hfirst hsecond n hn s hs t ht
   have hd0:0<d:=by linarith
-  have hUone:1<Z^d:=Real.one_lt_rpow hZ hd0
-  have hUp:0<Z^d:=zero_lt_one.trans hUone
+  have hUone:1<Z ^d:=Real.one_lt_rpow hZ hd0
+  have hUp:0<Z ^d:=zero_lt_one.trans hUone
   have hprofile:B.profile=(fun _=>(S.W:ℝ→ℂ)) := by
     rw [hprofile0]
     funext j x
@@ -86,16 +82,16 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
     exact (hgeom.2 d hd a ε tstar T allowance i B hdata hprofile0 hupper hwidths hz
       bin label left right hne).1 j k (fun he=>hjk (Subtype.ext he))
   have hlargeF:∀j∈selected,((DetectorDictionaryInverseRawInitialGates.deletedBase (data label)).modulus.absNorm:ℝ)<
-      (Z^d)^(F.widths j) := by
+      (Z ^d)^(F.widths j) := by
     intro j hj
     rw [hfw]
     exact hlarge.2 d hd0 label j
   have hr:0≤F.r:=Real.logb_nonneg hUone (one_le_pow₀ (by norm_num : (1:ℝ)≤2))
   have href (v:ℝ):
       (∑u∈F.rows,‖polynomial (F.family u F.label) true (childLogTest referenceWindow v)
-        ((Z^d)^F.r) 0 0*F.physicalProduct selected u‖^2)≤
-      (Csum*(Z^d)^(1+D.t))*(1+‖v‖)^(2*Jref) := by
-    have hh:=hb label (Z^d) (hscale label d hd) M H F selected hfd
+        ((Z ^d)^F.r) 0 0*F.physicalProduct selected u‖^2)≤
+      (Csum*(Z ^d)^(1+D.t))*(1+‖v‖)^(2*Jref) := by
+    have hh:=hb label (Z ^d) (hscale label d hd) M H F selected hfd
       (by simpa using Finset.card_le_univ selected) (fun j _=>hfp j) (fun j _=>hfu j)
       (fun j hj=>(F.widths_pos j (hselected hj)).le) (fun j _=>hfe j) hdis hlargeF hr hfirst hsecond v
     rw [(show 2*Jref=Jref*2 by omega),pow_mul]
@@ -103,7 +99,7 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
     apply hh.trans
     apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
     exact mul_le_mul_of_nonneg_right (hClabel label) (Real.rpow_nonneg hUp.le _)
-  have hh:=hfourier F selected hUp (Csum*(Z^d)^(1+D.t)) (by positivity) href
+  have hh:=hfourier F selected hUp (Csum*(Z ^d)^(1+D.t)) (by positivity) href
     n hn s hs height t hheight ht
   convert hh using 1 ; ring
 

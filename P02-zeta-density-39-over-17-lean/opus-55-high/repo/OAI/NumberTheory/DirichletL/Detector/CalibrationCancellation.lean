@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,16 +28,8 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   let C := calibrationForSet S hS
   have hcA : IsCoprime C.generator A := hcop.of_mul_right_left
   have hcs : IsCoprime C.generator s := hcop.of_mul_right_right
-  have hXA : C.Xi A≠0 := by
-    intro h
-    have hn := C.Xi_norm_one A hA hcA
-    rw [h, norm_zero] at hn
-    norm_num at hn
-  have hXs : C.Xi s≠0 := by
-    intro h
-    have hn := C.Xi_norm_one s hs hcs
-    rw [h, norm_zero] at hn
-    norm_num at hn
+  pm_8152 hXA A hA hcA
+  pm_8152 hXs s hs hcs
   rw [Xi_apply] at hXA hXs
   have hηA := left_ne_zero_of_mul hXA
   have hκA := right_ne_zero_of_mul hXA
@@ -47,9 +40,7 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
   have hηHstar : star (C.residueMonoid H)≠0 := star_ne_zero.mpr hηH
   have hτ : C.tau≠0 := calibrationForSet_tau_ne_zero S hS
   have hq : 0<elementNorm C.generator := by
-    unfold elementNorm
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
+    pm_4905 elementNorm Nat.pos_of_ne_zero C.generator_ne_zero
   have hroot : (Real.sqrt (elementNorm C.generator):ℂ)≠0 := by
     exact_mod_cast (Real.sqrt_pos.mpr hq).ne'
   have he := actualCongruenceCoefficient_calibration_factor S hS A s

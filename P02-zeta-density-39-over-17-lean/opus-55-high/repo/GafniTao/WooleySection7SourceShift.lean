@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyTranslatedNormalChange
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source-residue entry to Wooley equation (7.17)
@@ -14,11 +15,9 @@ original positive Fourier phases.
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleySection7PositiveDisplacementShifted_eq_intCast
     {k p a b B R S : ℕ} (phi : WooleyPolynomialSystem k)
@@ -72,30 +71,20 @@ theorem wooleySection7_exists_uniform_shifted_forcing
     hphi.exists_translated_tail_normal_change hc hpPrime.ne_zero eta
   have hkpos : 1 ≤ k := hr.trans hrk.le
   have hgamma : gamma ≤ a := by
-    have hle : gamma ≤ gamma * k := by
-      simpa only [Nat.mul_one] using Nat.mul_le_mul_left gamma hkpos
+    pm_6774 hle gamma k hkpos
     exact hle.trans hgammaK
-  let M := (k - r + 1) * b
+  pm_4916 M
   let bp := wooleySection7BPrimeNat k r a b gamma
   have hsum := wooley_section7_BPrimeNat_add hBPrime
   have hdecomp : M = gamma * k + r * (a - gamma) + bp := by
     dsimp only [M, bp]
-    have hgammaR : gamma * r + (a - gamma) * r = a * r := by
-      rw [← Nat.add_mul, Nat.add_sub_of_le hgamma]
-    have hsplit : gamma * k = gamma * (k - r) + gamma * r := by
-      have hkr : (k - r) + r = k := Nat.sub_add_cancel hrk.le
-      calc
-        gamma * k = gamma * ((k - r) + r) := by rw [hkr]
-        _ = _ := Nat.mul_add _ _ _
+    pm_2801
     rw [hsplit]
     calc
       (k - r + 1) * b = bp + r * a + (k - r) * gamma := by
         simpa only [bp] using hsum.symm
       _ = gamma * (k - r) + gamma * r + r * (a - gamma) + bp := by
-        rw [Nat.mul_comm (k - r) gamma]
-        have hgammaR' : gamma * r + r * (a - gamma) = r * a := by
-          simpa [Nat.mul_comm] using hgammaR
-        omega
+        pm_2802
   have hgammaM : gamma * k ≤ M := by omega
   have hcommon : r * (a - gamma) ≤ M - gamma * k := by omega
   obtain ⟨Psi, hPsi, huniform⟩ :=
@@ -105,8 +94,7 @@ theorem wooleySection7_exists_uniform_shifted_forcing
         (fun u => psi
           ⟨wooleySection7Node k r u,
             wooleySection7Node_succ_le hrk.le u⟩)
-  refine ⟨Psi, hPsi, ?_⟩
-  intro R S left right tuple horiginal
+  pm_8872 tuple horiginal
   let swapped : WooleySourceMixedTuple R S left right :=
     (tuple.1, (tuple.2.2, tuple.2.1))
   have hdiv : ∀ j : Fin k, (p : ℤ) ^ B ∣
@@ -214,6 +202,5 @@ theorem wooleySection7_exists_uniform_shifted_forcing
   rw [hfun]
   exact hz
 
-end
 
 end GafniTao

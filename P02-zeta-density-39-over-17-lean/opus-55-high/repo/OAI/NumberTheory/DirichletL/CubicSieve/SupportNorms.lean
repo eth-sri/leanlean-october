@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.SmoothSummands
 public import OAI.NumberTheory.DirichletL.Poisson.LatticeEnvelopes
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,73 +9,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
@@ -91,11 +49,8 @@ variable {ι : Type*} [DecidableEq ι]
 include hinj in
 theorem sourceSupportMobius_norm (E : Finset ι) :
     ‖supportMobius (fun i => Ideal.span {p i}) E‖ = 1 := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
-  have h := congrArg norm (FirstCauchyArithmetic.supportMobius_sq _ hprime hinj E)
-  simp only [norm_mul, norm_one] at h
-  nlinarith [norm_nonneg (supportMobius (fun i => Ideal.span {p i}) E)]
+  pm_3509
+  pm_754 E
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
 theorem primeSubsetGenerator_norm_eq_productNorm (E : Finset ι) :
@@ -108,7 +63,7 @@ theorem secondSourceCommonCoefficient_norm_le_one
     ‖secondSourceCommonCoefficient p hg Ψ m c d G E‖ ≤ 1 := by
   have hA := (secondInputCoefficient_norm_le p hg Ψ m c d G).trans (hΨ _)
   have hA2 : ‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) G‖ ^ 2 ≤ 1 := by
-    simpa using pow_le_pow_left₀ (norm_nonneg _) hA 2
+    simp_all
   have hN := primeProductNorm_ge_one p hp E
   have hμ := sourceSupportMobius_norm p hinj E
   change ‖(UniqueFactorizationMonoid.moebius (∏ i ∈ E, Ideal.span {p i}) : ℂ)‖ = 1 at hμ
@@ -122,9 +77,7 @@ omit [DecidableEq ι] in
 theorem secondInputCoefficient_norm_le_test
     (Ψ : O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m c d : O) (H : Finset ι → ℂ) (S : Finset ι) :
     ‖secondInputCoefficient p hg Ψ m c d H S‖ ≤ ‖H S‖ := by
-  have he : secondInputCoefficient p hg Ψ m c d H S =
-      secondInputCoefficient p hg Ψ m c d (fun _ => 1) S * H S := by
-    simp only [secondInputCoefficient, mul_one]
+  pm_5088 he S
   rw [he, norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) ((secondInputCoefficient_norm_le p hg Ψ m c d S).trans (hΨ _))
 
@@ -167,7 +120,7 @@ theorem sum_pair_indicator {α : Type*} (s : Finset α) (P : α → Prop) [Decid
       intro a ha
       by_cases h : P a
       · simp only [h, true_and, ite_true]
-      · simp only [h, false_and, ite_false, Finset.sum_const_zero]
+      pm_2997 h false_and ite_false Finset.sum_const_zero
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul, pow_two]; ring
 
 section
@@ -196,7 +149,6 @@ open RayFourExpansion (RayCharacter)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
@@ -262,13 +214,7 @@ theorem originalMiddleWindowAt_bounds (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal 
     0 ≤ originalMiddleWindowAt W S T rows left right a b M P h ∧
     originalMiddleWindowAt W S T rows left right a b M P h ≤
       originalMiddleAt W S T rows left right a b M h := by
-  classical
-  constructor
-  · unfold originalMiddleWindowAt
-    positivity
-  · unfold originalMiddleWindowAt originalMiddleAt
-    gcongr with D _ E _ i _
-    split_ifs <;> first | exact le_rfl | positivity
+  pm_6355 originalMiddleWindowAt originalMiddleAt
 
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem dualMiddleWindowAt_bounds (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
@@ -277,13 +223,7 @@ theorem dualMiddleWindowAt_bounds (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
     0 ≤ dualMiddleWindowAt W S T rows left right a b M F P h ∧
     dualMiddleWindowAt W S T rows left right a b M F P h ≤
       dualMiddleAt W S T rows left right a b M F h := by
-  classical
-  constructor
-  · unfold dualMiddleWindowAt
-    positivity
-  · unfold dualMiddleWindowAt dualMiddleAt
-    gcongr with D _ E _ i _
-    split_ifs <;> first | exact le_rfl | positivity
+  pm_6355 dualMiddleWindowAt dualMiddleAt
 
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem originalMiddleWindowAt_eq_zero (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
@@ -291,8 +231,7 @@ theorem originalMiddleWindowAt_eq_zero (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal
     (a : n → ℂ) (b : p → ℂ) (M : ℝ) (P : Ideal O → m → Prop) (h : O)
     (hP : ∀ (D : S) (E : T) i, ¬ P (D.val * E.val) i) :
     originalMiddleWindowAt W S T rows left right a b M P h = 0 := by
-  classical
-  simp only [originalMiddleWindowAt, hP, ite_false, Finset.sum_const_zero]
+  pm_8770 originalMiddleWindowAt
 
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem dualMiddleWindowAt_eq_zero (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
@@ -300,8 +239,7 @@ theorem dualMiddleWindowAt_eq_zero (W : 𝓢(ℝ, ℂ)) (S T : Finset (Ideal O))
     (a : n → ℂ) (b : p → ℂ) (M F : ℝ) (P : Ideal O → m → Prop) (h : O)
     (hP : ∀ (D : S) (E : T) i, ¬ P (D.val * E.val) i) :
     dualMiddleWindowAt W S T rows left right a b M F P h = 0 := by
-  classical
-  simp only [dualMiddleWindowAt, hP, ite_false, Finset.sum_const_zero]
+  pm_8770 dualMiddleWindowAt
 
 end CanonicalQuadraticSieve
 

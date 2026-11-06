@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthReflection
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,9 +28,8 @@ lemma actual_window_cap (Z b Bmask bΦ Mcap defect xi L Xlong:ℝ)
     (Dlong:Finset (Ideal O))(hDl:Dlong∈(CompletedGauss.primeSupport s.puncture).powerset):
     max 0 (s.width-Real.logb Z (Xlong/((∏P∈Dlong,P).absNorm:ℝ))+xi)≤L:=by
   obtain ⟨hn,hncap⟩:=divisor_norm s Dlong hDl
-  have hnp:0<((∏P∈Dlong,P).absNorm:ℝ):=zero_lt_one.trans_le hn
-  have hlogN:Real.logb Z ((∏P∈Dlong,P).absNorm:ℝ)≤Bmask:=
-    (Real.logb_le_iff_le_rpow hZ hnp).mpr hncap
+  pm_3345 hnp Dlong hn
+  pm_747 Dlong hnp hncap
   have hlow:=deleted_short_length Z b Xlong Xlong 1 hZ hb hx le_rfl le_rfl hsupport
   simp only [div_one] at hlow
   have hnon:=CenteredMomentEnergyBands.length_nonneg Z Xlong hZ
@@ -40,18 +40,18 @@ lemma actual_window_cap (Z b Bmask bΦ Mcap defect xi L Xlong:ℝ)
 theorem actual_deleted_short_mass (b:ℝ):
     ∃C:ℝ,0<C ∧ ∀(Z Bmask bΦ L:ℝ)(s:NaturalState Z Bmask bΦ)
       (W:𝓢(ℝ,ℂ)),Function.support (W:ℝ→ℂ)⊆Set.Iic b→
-      ∀t X:ℝ,0<X→X≤Z^L→
+      ∀t X:ℝ,0<X→ X≤Z ^L→
       ∀D:Finset (Ideal O),D∈(CompletedGauss.primeSupport s.puncture).powerset→
       radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W
         (X/((∏P∈D,P).absNorm:ℝ)) 0 t)
         (effectiveState s).radial.keep s.radial.profile s.radial.scale≤
         C*((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W)^2*
-          diagonalControl s.radial.profile*max 1 s.radial.scale*Z^L:=by
+          diagonalControl s.radial.profile*max 1 s.radial.scale*Z ^L:=by
   obtain ⟨C,hC,hbound⟩:=short_energy_bound b
   refine ⟨C,hC,?_⟩
   intro Z Bmask bΦ L s W hW t X hX hcap D hD
   obtain ⟨hn,_⟩:=divisor_norm s D hD
-  have hnp:0<((∏P∈D,P).absNorm:ℝ):=zero_lt_one.trans_le hn
+  pm_3345 hnp D hn
   have hh:=hbound W hW (naturalCharacter s.character) t
     (X/((∏P∈D,P).absNorm:ℝ)) s.radial.scale s.radial.profile
     (effectiveState s).radial.keep (div_pos hX hnp) s.radial.scale_pos s.radial.nonneg

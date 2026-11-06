@@ -1,5 +1,6 @@
 module
 public import RightSolidTailBudgets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -9,45 +10,21 @@ namespace Montgomery.RationalMoment
 theorem dashed_first_quadratic_window {σ : ℝ}
     (hl : 4/5 ≤ σ) (hr : σ ≤ 289/358) :
     QuadraticWindow σ (2168/(6846*σ-1893)) := by
-  have hd : 0 < 6846*σ-1893 := by linarith
-  constructor
-  · linarith
-  · linarith
-  · apply (le_div_iff₀ hd).mpr
-    linarith
-  · apply (div_lt_iff₀ hd).mpr
-    linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
+  pm_7484
+  pm_2856
 
 theorem dashed_second_quadratic_window {σ : ℝ}
     (hl : 289/358 ≤ σ) (hr : σ ≤ 163/198) :
     QuadraticWindow σ (566/(1818*σ-519)) := by
-  have hd : 0 < 1818*σ-519 := by linarith
-  constructor
-  · linarith
-  · linarith
-  · apply (le_div_iff₀ hd).mpr
-    linarith
-  · apply (div_lt_iff₀ hd).mpr
-    linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
-  · rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hd).mpr
-    linarith
+  pm_7485
+  pm_2856
 
 theorem fraction_detector_threshold {σ n d : ℝ} (hd : 0 < d)
     (hm : d/2 < 3*n*(σ-1/2)) :
     1/8 < (3*(n/d)/4)*(σ-1/2) := by
   have he : (3*(n/d)/4)*(σ-1/2)=3*n*(σ-1/2)/(4*d) := by field_simp
   rw [he]
-  apply (lt_div_iff₀ (by positivity : 0 < 4*d)).mpr
+  pm_5929 lt_div_iff₀ d
   linarith
 
 theorem dashed_first_tail_budgets {σ : ℝ}
@@ -58,10 +35,9 @@ theorem dashed_first_tail_budgets {σ : ℝ}
     1+(41/81:ℝ)/(85/189)-(4+(2+4*(41/81))/(85/189))*((3*a/4)*(σ-1/2)) ≤
       3*a*(1-σ) := by
   dsimp only
-  have hd : 0 < 6846*σ-1893 := by linarith
+  pm_7484
   refine ⟨fraction_detector_threshold hd (by linarith),?_⟩
-  rw [show (1:ℝ)+(41/81)/(85/189)=542/255 by norm_num,
-    show (4:ℝ)+(2+4*(41/81))/(85/189)=3302/255 by norm_num]
+  pm_2719
   apply tail_budgets_of_fraction hd
   · linarith
   · nlinarith
@@ -74,7 +50,7 @@ theorem dashed_second_tail_budgets {σ : ℝ}
     1+(51/100:ℝ)/(13/30)-(4+(2+4*(51/100))/(13/30))*((3*a/4)*(σ-1/2)) ≤
       3*a*(1-σ) := by
   dsimp only
-  have hd : 0 < 1818*σ-519 := by linarith
+  pm_7485
   refine ⟨fraction_detector_threshold hd (by linarith),?_⟩
   rw [show (1:ℝ)+(51/100)/(13/30)=283/130 by norm_num,
     show (4:ℝ)+(2+4*(51/100))/(13/30)=866/65 by norm_num]

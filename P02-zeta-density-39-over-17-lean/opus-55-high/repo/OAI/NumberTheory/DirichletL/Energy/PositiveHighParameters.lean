@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighSource
 public import OAI.NumberTheory.DirichletL.Energy.OriginalProfileControl
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,16 +40,15 @@ local notation "balancedSource" => balancedInput M H hH η₀ θ W hW aslot bslo
   w σ freq hσ s p ha t X₁ X₂ hX₁ hX₂
 
 lemma actual_width_le (hZ:1<Z):
-    Real.logb Z s.radial.scale+Real.logb Z (s.character.modulus.absNorm:ℝ)≤s.width:=by
-  have hn:0<(s.character.modulus.absNorm:ℝ):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.character.modulus_ne_bot)
-  have hc:Real.logb Z (s.character.modulus.absNorm:ℝ)≤s.characterWidth:=
+    Real.logb Z s.radial.scale+Real.logb Z (s.character.modulus.absNorm:ℝ)≤ s.width:=by
+  pm_3358 hn s.character.modulus.absNorm s.character.modulus_ne_bot
+  have hc:Real.logb Z (s.character.modulus.absNorm:ℝ)≤ s.characterWidth:=
     (Real.logb_le_iff_le_rpow hZ hn).mpr s.modulus_bound
   rw [s.scale_eq,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
   exact add_le_add_right hc _
 
 lemma actual_conductor_scale (hZ:1<Z):
-    s.radial.scale*(s.character.modulus.absNorm:ℝ)≤Z^s.width:=by
+    s.radial.scale*(s.character.modulus.absNorm:ℝ)≤Z ^s.width:=by
   rw [s.scale_eq,NaturalState.width,Real.rpow_add (zero_lt_one.trans hZ)]
   exact mul_le_mul_of_nonneg_left s.modulus_bound (Real.rpow_nonneg (by linarith) _)
 

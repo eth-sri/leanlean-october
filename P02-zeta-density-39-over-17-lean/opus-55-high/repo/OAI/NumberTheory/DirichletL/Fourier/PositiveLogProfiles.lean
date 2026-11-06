@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.FiniteFourier
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,50 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic
-open ActualEisensteinCubic
-open Filter
-open scoped Topology
-open ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 
 namespace TwoPassProfiles
 
@@ -93,7 +64,6 @@ namespace InitialMeanSquareProfile
 
 end InitialMeanSquareProfile
 
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
 
 namespace LocalLogFourier
@@ -104,7 +74,7 @@ noncomputable def eulerDeriv (F : ℝ → ℂ) (j : ℕ) (x : ℝ) : ℂ :=
 theorem iteratedDeriv_log_eq_euler (F : ℝ → ℂ) (R s : ℝ) (j : ℕ) :
     iteratedDeriv j (fun z : ℝ => F (R * Real.exp z)) s =
       eulerDeriv F j (R * Real.exp s) := by
-  let G : ℝ → ℂ := fun z => F (R * Real.exp z)
+  pm_3440
   have hshift : (fun t : ℝ => F ((R * Real.exp s) * Real.exp t)) =
       (fun t : ℝ => G (s + t)) := by
     funext t
@@ -133,26 +103,20 @@ noncomputable def positiveLogProfile
   have hc : HasCompactSupport (fun s => V s * F (arg s)) := hVc.mul_right
   exact hc.toSchwartzMap hH
 
-@[simp] theorem positiveLogProfile_apply
-    (V F : ℝ → ℂ) (R s : ℝ)
-    (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V)
-    (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
-    (hR : 0 < R) :
+section
+variable (V F : ℝ → ℂ) (R s : ℝ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0)) (hR : 0 < R)
+include V F R s hVc hVs hFpos hR
+@[simp] theorem positiveLogProfile_apply :
     positiveLogProfile V F R hVc hVs hFpos hR s =
       V s * F (R * Real.exp s) := rfl
 
-theorem positive_log_separation
-    (V F : ℝ → ℂ) (R s : ℝ)
-    (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V)
-    (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
-    (hR : 0 < R) :
+theorem positive_log_separation :
     V s * F (R * Real.exp s) =
       ∫ t : ℝ, Complex.exp (↑(2 * Real.pi * inner ℝ t s) * Complex.I) *
         (𝓕 (positiveLogProfile V F R hVc hVs hFpos hR)) t := by
   rw [← positiveLogProfile_apply V F R s hVc hVs hFpos hR]
   exact FourierBridge.schwartz_log_inversion _ _
+end
 
 theorem euler_derivative_scale
     (F : ℝ → ℂ) (R s m CF : ℝ) (A i : ℕ)
@@ -194,13 +158,12 @@ theorem positive_log_product_derivative_bound
       ‖iteratedFDeriv ℝ n
         (fun z : ℝ => V z * F (R * Real.exp z)) s‖ ≤
       ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * CW * CF := by
-  let G : ℝ → ℂ := fun z => F (R * Real.exp z)
+  pm_3440
   have harg : ContDiff ℝ ∞ (fun z : ℝ => R * Real.exp z) := by fun_prop
   have hG : ContDiff ℝ ∞ G := by
     dsimp [G]
-    simpa only [Function.comp_def] using
-      hFpos.comp_contDiff harg (by intro z; exact mul_pos hR (Real.exp_pos _))
-  have hprod := norm_iteratedFDeriv_mul_le hVs hG s (n := n) (by simp)
+    pm_5674
+  pm_3441
   have hS : 0 ≤ m ^ A * (1 + R) ^ A := by positivity
   calc
     m ^ A * (1 + R) ^ A *
@@ -213,10 +176,7 @@ theorem positive_log_product_derivative_bound
     _ = ∑ i ∈ Finset.range (n + 1),
       (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i V s‖ *
         ((m ^ A * (1 + R) ^ A) * ‖iteratedFDeriv ℝ (n - i) G s‖) := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro i hi
-      ring
+      pm_4886 i hi
     _ ≤ ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * CW * CF := by
       apply Finset.sum_le_sum
       intro i hi
@@ -253,16 +213,15 @@ theorem positive_log_uniform_seminorm
   let g := positiveLogProfile V F R hVc hVs hFpos hR
   let S := m ^ A * (1 + R) ^ A
   let C := ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * CW * CF
-  have hS : 0 < S := by dsimp [S]; positivity
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  pm_64 hS S
+  pm_3442
   have hLC : 0 ≤ Lwin ^ k * C := by positivity
   have hgeq : (g : ℝ → ℂ) =
       fun z => V z * F (R * Real.exp z) := by
-    funext z
-    exact positiveLogProfile_apply V F R z hVc hVs hFpos hR
+    pm_8735 hFpos
   have hpoint (s : ℝ) :
       S * (|s| ^ k * ‖iteratedDeriv n g s‖) ≤ Lwin ^ k * C := by
-    by_cases hactive : ∃ i ≤ n, ‖iteratedFDeriv ℝ i V s‖ ≠ 0
+    pm_7415 hactive
     · obtain ⟨hms, habs⟩ := hwindow s hactive
       have hraw := positive_log_product_derivative_bound
         V F R m CW CF A n hVs hFpos hR hm hm1
@@ -281,22 +240,17 @@ theorem positive_log_uniform_seminorm
           mul_le_mul_of_nonneg_right (by gcongr) hC
     · have hzero (i : ℕ) (hi : i ≤ n) :
           ‖iteratedFDeriv ℝ i V s‖ = 0 := by
-        by_contra hne
-        exact hactive ⟨i, hi, hne⟩
+        pm_8930 hactive
       have harg : ContDiff ℝ ∞ (fun z : ℝ => R * Real.exp z) := by fun_prop
       have hG : ContDiff ℝ ∞ (fun z : ℝ => F (R * Real.exp z)) := by
-        simpa only [Function.comp_def] using
-          hFpos.comp_contDiff harg (by intro z; exact mul_pos hR (Real.exp_pos _))
-      have hprod := norm_iteratedFDeriv_mul_le hVs hG s (n := n) (by simp)
+        pm_5674
+      pm_3441
       have hsumzero :
           (∑ i ∈ Finset.range (n + 1),
             (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i V s‖ *
               ‖iteratedFDeriv ℝ (n - i)
                 (fun z : ℝ => F (R * Real.exp z)) s‖) = 0 := by
-        apply Finset.sum_eq_zero
-        intro i hi
-        rw [hzero i (Nat.lt_succ_iff.mp (Finset.mem_range.mp hi))]
-        ring
+        pm_7126 hzero
       have hnormzero : ‖iteratedDeriv n g s‖ = 0 := by
         have hzero' :
             ‖iteratedFDeriv ℝ n
@@ -335,8 +289,7 @@ theorem momentConstant_nonneg (K : ℕ) (Lwin CW CF : ℝ)
   unfold momentConstant
   apply Finset.sum_nonneg
   intro n hn
-  exact mul_nonneg (by positivity)
-    (derivativeConstant_nonneg n CW CF hCW hCF)
+  pm_8268 n
 
 theorem momentConstant_dominates (K n : ℕ) (Lwin CW CF : ℝ)
     (hL : 0 ≤ Lwin) (hCW : 0 ≤ CW) (hCF : 0 ≤ CF)
@@ -350,12 +303,13 @@ theorem momentConstant_dominates (K n : ℕ) (Lwin CW CF : ℝ)
         derivativeConstant i CW CF)
     (a := n)
   · intro i hi
-    exact mul_nonneg (by positivity)
-      (derivativeConstant_nonneg i CW CF hCW hCF)
+    pm_8268 i
   · exact Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hn)
 
-theorem positive_log_source_pair
-    (V F : ℝ → ℂ) (R m Lwin CW CF C : ℝ) (A K n : ℕ)
+section
+variable (V F : ℝ → ℂ)
+include V F
+theorem positive_log_source_pair (R m Lwin CW CF C : ℝ) (A K n : ℕ)
     (hVc : HasCompactSupport V)
     (hVs : ContDiff ℝ ∞ V)
     (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
@@ -377,7 +331,7 @@ theorem positive_log_source_pair
           (positiveLogProfile V F R hVc hVs hFpos hR) +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower n)
           (positiveLogProfile V F R hVc hVs hFpos hR)) ≤ C := by
-  let p := (volume : Measure ℝ).integrablePower
+  pm_5382 volume Measure
   let D : ℝ := derivativeConstant n CW CF
   let g := positiveLogProfile V F R hVc hVs hFpos hR
   have hVderiv_n : ∀ i ≤ n, ∀ s,
@@ -415,8 +369,7 @@ theorem positive_log_source_pair
     _ = (1 + Lwin ^ p) * D := by ring
     _ ≤ C := by simpa [D, p] using hCbound n hn
 
-theorem positive_log_fourier_moment
-    (V F : ℝ → ℂ) (R m Lwin CW CF : ℝ) (A J : ℕ)
+theorem positive_log_fourier_moment (R m Lwin CW CF : ℝ) (A J : ℕ)
     (hVc : HasCompactSupport V)
     (hVs : ContDiff ℝ ∞ V)
     (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
@@ -441,9 +394,9 @@ theorem positive_log_fourier_moment
          FourierBridge.coefficientMomentBound J
           (momentConstant (J + (volume : Measure ℝ).integrablePower)
             Lwin CW CF)) := by
-  let K := J + (volume : Measure ℝ).integrablePower
+  pm_1369
   let C := momentConstant K Lwin CW CF
-  have hC : 0 ≤ C := momentConstant_nonneg K Lwin CW CF hL hCW hCF
+  pm_5893 hC C Lwin hCF
   apply FourierBridge.uniform_fourier_one_plus_moment _ J _ C (by positivity) hC
   intro n hn
   exact positive_log_source_pair V F R m Lwin CW CF C A K n
@@ -456,8 +409,7 @@ theorem positive_log_fourier_moment
       intro j hj
       simpa [C] using momentConstant_dominates K j Lwin CW CF hL hCW hCF hj)
 
-theorem positive_log_fourier_bound
-    (V F : ℝ → ℂ) (R m Lwin CW CF : ℝ) (A J : ℕ)
+theorem positive_log_fourier_bound (R m Lwin CW CF : ℝ) (A J : ℕ)
     (hVc : HasCompactSupport V)
     (hVs : ContDiff ℝ ∞ V)
     (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
@@ -482,11 +434,12 @@ theorem positive_log_fourier_bound
          FourierBridge.coefficientMomentBound J
           (momentConstant (J + (volume : Measure ℝ).integrablePower)
             Lwin CW CF))) / m ^ A := by
-  have hpow : 0 < m ^ A := pow_pos hm _
+  pm_5439 hpow m A pow_pos hm
   apply (le_div_iff₀ hpow).mpr
   have hbase := positive_log_fourier_moment V F R m Lwin CW CF A J
     hVc hVs hFpos hR hm hm1 hL hCW hCF hVderiv hwindow hEuler
   simpa [mul_assoc, mul_left_comm, mul_comm] using hbase
+end
 
 theorem coupled_positive_log_separation
     {ι : Type*} [Fintype ι]

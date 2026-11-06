@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonChild
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,13 +32,13 @@ theorem first_fresh_energy_small_power (ε : ℝ) (hε : 0 < ε) :
           (originalLabelColumn p hg B ε₁ ε₂ negative C c (ConcretePrimeRowBridge.idealGenerator x.1)) d)
         negative χ ω X t x.2‖^2) ≤
       M*K*Y^ε * ∑ z ∈ rows,‖dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative χ C
-        (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d (-t) z‖^2 := by
-  obtain ⟨K,hK,hpush⟩ := SquarefreeDivisorBound.first_element_energy_small_power ε hε
+        (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D *X)) c d (-t) z‖^2 := by
+  pm_69 K hK hpush SquarefreeDivisorBound.first_element_energy_small_power ε hε
   refine ⟨K,hK,?_⟩
   intro ι _ p hp _ hinj hcop hg F D B v ε₁ ε₂ hv negative χ C ω X t hX c d source rows w M Y hM hY hs hmap hrows hnorm hw
   apply le_trans _ (hpush source rows (dilationLabel p B v ε₁ ε₂) w
     (dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative χ C
-      (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d (-t)) M Y hM hY hs hmap hrows hnorm hw)
+      (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D *X)) c d (-t)) M Y hM hY hs hmap hrows hnorm hw)
   apply Finset.sum_le_sum
   intro x hx
   apply mul_le_mul_of_nonneg_left _ (norm_nonneg _)
@@ -55,7 +56,7 @@ theorem first_fresh_energy_small_power (ε : ℝ) (hε : 0 < ε) :
     _ ≤ ‖beforeDilationLabel (fun i => Ideal.span {p i}) hg p B v ε₁ ε₂ negative c d
         (ConcretePrimeRowBridge.idealGenerator x.1) D‖ *
         ‖dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative χ C
-          (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d (-t)
+          (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D *X)) c d (-t)
           (x.2*(ConcretePrimeRowBridge.idealGenerator x.1)^2*dilationLabel p B v ε₁ ε₂)‖ :=
       mul_le_of_le_one_left (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hr
     _ ≤ _ := mul_le_of_le_one_left (norm_nonneg _) hb

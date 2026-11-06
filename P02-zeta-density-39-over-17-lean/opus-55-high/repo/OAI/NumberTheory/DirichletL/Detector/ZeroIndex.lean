@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalEulerIdentity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
 
 def zeroIndexTerm (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) (k m : ℕ) : ℂ :=
-  (if k=0 then 1 else (χ^k) (Ideal.Quotient.mk _ (p^(6*m)))) * W^k * V^m
+  (if k=0 then 1 else (χ^k) (Ideal.Quotient.mk _ (p^(6*m)))) * W^k * V ^m
 
 omit [(Ideal.span {p}).IsMaximal] in
 lemma zeroIndex_inner_zero (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
@@ -27,16 +28,12 @@ lemma zeroIndex_inner_pos (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ)
     (k : ℕ) (hk : k≠0) :
     HasSum (fun m => zeroIndexTerm p χ W V k m) (W^k) := by
   apply (hasSum_ite_eq 0 (W^k)).congr
-  intro s
-  apply Finset.sum_congr rfl
-  intro m hm
-  dsimp only
+  pm_7092 hm
   unfold zeroIndexTerm
   rw [ite_eq_right hk, zero_index_scalar p hp χ k (6*m) hk]
   by_cases h : m=0
-  · subst m; simp
-  · have h6 : 6*m≠0 := by omega
-    simp [h, h6]
+  simp_all
+  grind
 
 def zeroIndexSeries (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (W V : ℂ) : ℂ :=
   ∑' k, ∑' m, zeroIndexTerm p χ W V k m

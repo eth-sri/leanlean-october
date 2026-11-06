@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformFamily
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -56,11 +57,10 @@ theorem inverseDetectorTest_uniform (S : Finset (ℕ×ℕ)) :
   have hCq : C q≤1+∑q : Bool×Bool×Fin 3,C q := by
     have hh := Finset.single_le_sum (fun q (_ : q∈(Finset.univ : Finset (Bool×Bool×Fin 3)))=>(hC q).le) (Finset.mem_univ q)
     linarith
-  have hdegree : degree q≤J := Finset.le_sup (Finset.mem_univ q)
+  pm_7486
   have he := hb q R hR σ hσ t
   change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (inverseDetectorTest scaled reverse n R σ t)≤_ at he
-  exact he.trans (mul_le_mul hCq (pow_le_pow_right₀ (by linarith [norm_nonneg t]) hdegree)
-    (by positivity) (by linarith))
+  pm_1025
 
 end SevenEighths.DetectorDictionaryInverseUniform
 

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonTransform
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,35 +20,22 @@ local notation "O"=>ActualEisensteinCubic.O
 theorem selected_conjugate_row_supported (F : Finset (Ideal O))
     (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
     (η : Ideal O →* ℂ) (H : Ideal O → ℂ)
-    (hcop : ∀ I ∈ F,H I≠0→IsCoprime I j) (u : O) :
+    (hcop : ∀ I ∈ F,H I≠0→ IsCoprime I j) (u : O) :
     let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i => by rw [poolPrimary_span F hF i]; infer_instance
     (∑ I ∈ F,(moebius I : ℂ)*η I*H I*star (idealRowHom u I)) =
       inputConjugateRow (poolPrimary F) (poolPrimary_good F hF) Finset.univ
         (elementCharacter η) (primaryGenerator j) 1 1
         (fun A => if (∏ i ∈ A,i.val)∈F then H (∏ i ∈ A,i.val) else 0) u := by
-  let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
-  have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) =
-      (fun i : primePool F => i.val) := funext (poolPrimary_span F hF)
-  dsimp only
-  rw [InitialMeanSquare.sum_selected_ideals F (fun I hI => (hF I hI).2.1)]
-  rw [initial_input_row (poolPrimary F) (poolPrimary_good F hF)]
-  unfold supportConjugateSum
-  apply Finset.sum_congr rfl
-  intro A hA
-  dsimp only
-  rw [elementCharacter_product]
-  simp only [he]
-  by_cases hAF : (∏ i ∈ A,i.val)∈F
+  pm_3189
+  pm_8566 initial_input_row
+  pm_3190
   · simp only [hAF,ite_true]
     by_cases hh:H (∏i∈A,i.val)=0
     · simp only [hh,mul_zero,zero_mul]
     rw [selected_mask F j hj A (hcop _ hAF hh),mul_one]
-    rw [idealRowHom_eq_idealSexticRow F hF hAF]
-    simp only [supportMobius,idealSexticRow,InitialMeanSquare.pool_support_product]
-    ring
-  · simp only [hAF,ite_false,mul_zero,zero_mul]
+    pm_6465
+  grind
 
 theorem residual_eq_large_input
     (S F : Finset (Ideal Eis)) {P j : Ideal Eis}
@@ -58,17 +46,16 @@ theorem residual_eq_large_input
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     residualNormalizedPolynomial S P j η a W Z r z G u =
-      ((Z^(-(r+z-2*G)/2):ℝ):ℂ)*inputConjugateRow
+      ((Z ^(-(r+z-2*G)/2):ℝ):ℂ)*inputConjugateRow
         (poolPrimary F) (poolPrimary_good F hF) Finset.univ
         (elementCharacter η) (primaryGenerator j) 1 1
         (fun A=>if (∏i∈A,i.val)∈columns S P j then
           a (reconstruct P j (∏i∈A,i.val))*residualOverlapWindow P j W Z z G
-            (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0) u := by
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+            (((∏i∈A,i.val).absNorm:ℝ)/Z ^(r+z-2*G)) else 0) u := by
+  pm_3196
   let H : Ideal Eis→ℂ := fun c=>if c∈columns S P j then
     a (reconstruct P j c)*residualOverlapWindow P j W Z z G
-      ((c.absNorm:ℝ)/Z^(r+z-2*G)) else 0
+      ((c.absNorm:ℝ)/Z ^(r+z-2*G)) else 0
   have hfilter : F.filter (fun c=>c∈columns S P j)=columns S P j := by
     ext c
     simp only [Finset.mem_filter]
@@ -84,13 +71,13 @@ theorem residual_eq_large_input
     unfold bareOverlapCoefficient
     ring
   unfold residualNormalizedPolynomial
-  have hcH : ∀I∈F,H I≠0→IsCoprime I j := by
+  have hcH : ∀I∈F,H I≠0→ IsCoprime I j := by
     intro I hIF hHI
     by_cases hi:I∈columns S P j
     · exact ((mem_columns hP.2.1 hj).mp hi).2.1
     · exact False.elim (hHI (by simp [H,hi]))
   rw [he,selected_conjugate_row_supported F hF j (admissible_of_dvd hP hj) η H hcH u]
-  apply congrArg (fun v:ℂ=>((Z^(-(r+z-2*G)/2):ℝ):ℂ)*v)
+  pm_3197
   congr 1
   funext A
   dsimp [H]

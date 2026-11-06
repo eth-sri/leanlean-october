@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalLedger
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,11 +18,10 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem actual_unequal_min_six (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (w : O)
-    (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0)
+    (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D *w)≠0)
     (P : CommonIndex C D) (hneq : leftExponent C D P≠rightExponent C D P) :
     6∣min (leftExponent C D P) (rightExponent C D P) := by
-  let (P : CommonIndex C D) : (Ideal.span {commonPrime C D P}).IsMaximal := by
-    rw [commonPrime_span C D hC P];infer_instance
+  pm_2866
   have hglobal : actualCorrelation (∏ P : CommonIndex C D,commonPrime C D P^leftExponent C D P)
       (∏ P : CommonIndex C D,commonPrime C D P^rightExponent C D P)
       (supported_product _ (fun P=>supported_power _ (commonPrime_supported C D hC P) _))
@@ -45,7 +45,7 @@ def fixedActiveSet (C D : Ideal O) (U : Finset (CommonIndex C D)) : Finset (Comm
 theorem fixedActiveSet_subset (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (U : Finset (CommonIndex C D)) (w : O)
-    (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0) :
+    (hne : idealCorrelation C D hC hD (commonFrequencyGenerator C D *w)≠0) :
     fixedActiveSet C D U⊆U∪nonunitPartitionSet C D U := by
   intro P hP
   have ha := (Finset.mem_filter.mp hP).2

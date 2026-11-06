@@ -1,13 +1,12 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-! Elementary mean-zero fourth-moment contraction. This is a proved ingredient
 for a possible divisor-weight proof of the rational coefficient estimate.
 The multidimensional and arithmetic assembly is not asserted here. -/
-set_option autoImplicit false
-noncomputable section
 open Finset
 open scoped ComplexConjugate
 namespace Montgomery.RationalMoment
@@ -24,7 +23,7 @@ theorem fourth_power_with_linear_term (a z : ℂ) {E : ℝ}
       Complex.add_im, Complex.mul_re, Complex.conj_re, Complex.conj_im]
     ring
   have hid4 : ‖a+z‖ ^ 4 = (‖a‖ ^ 2 + 2*(conj a*z).re + ‖z‖ ^ 2)^2 := by
-    rw [show ‖a+z‖ ^ 4 = (‖a+z‖ ^ 2)^2 by ring, hid]
+    grind
   have hE2 := (sq_le_sq₀ (sq_nonneg ‖z‖) hE0).mpr hE
   have hm := mul_le_mul_of_nonneg_left hE (sq_nonneg ‖a‖)
   nlinarith [sq_nonneg ((conj a*z).re - ‖z‖^2)]
@@ -41,7 +40,7 @@ theorem mean_zero_fourth_moment {ι : Type*} (S : Finset ι)
     calc
       _ = (∑ x ∈ S, (w x : ℂ)*(conj a*f x)).re := by
         rw [Complex.re_sum]
-        simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+        pm_93 Complex.mul_re Complex.ofReal_re Complex.ofReal_im zero_mul sub_zero
       _ = (conj a * (∑ x ∈ S, (w x : ℂ)*f x)).re := by
         congr 1
         rw [mul_sum]
@@ -70,9 +69,7 @@ theorem weighted_character_square {ι : Type*} (A : Finset ι)
     (hK : (∑ n ∈ A, (v n)⁻¹ ^ 2) ≤ K) :
     ‖∑ n ∈ A, c n*χ n‖ ^ 2 ≤ K * ∑ n ∈ A, (v n)^2*‖c n‖^2 := by
   have hn : ‖∑ n ∈ A, c n*χ n‖ ≤ ∑ n ∈ A, ‖c n‖ := by
-    apply (norm_sum_le _ _).trans
-    apply sum_le_sum
-    intro n hn
+    pm_244 sum_le_sum n hn
     rw [norm_mul]
     exact (mul_le_mul_of_nonneg_left (hχ n hn) (norm_nonneg _)).trans_eq (mul_one _)
   have hcs := sum_mul_sq_le_sq_mul_sq A (fun n => v n*‖c n‖) (fun n => (v n)⁻¹)
@@ -104,11 +101,7 @@ theorem weighted_character_fourth_moment {ι τ : Type*}
     rw [sum_comm]
     calc
       _ = ∑ n ∈ A, c n*(∑ x ∈ S, (w x : ℂ)*χ n x) := by
-        apply sum_congr rfl
-        intro n _
-        rw [mul_sum]
-        apply sum_congr rfl
-        intro x _
+        pm_150 sum_congr n mul_sum x
         ring
       _ = 0 := sum_eq_zero (fun n hn => by rw [hmean n hn, mul_zero])
   have hh := mean_zero_fourth_moment S w (fun x => ∑ n ∈ A, c n*χ n x) a hw hsum hm
@@ -129,12 +122,8 @@ theorem mixed_fourth_bound {τ : Type*} (S : Finset τ) (w : τ → ℝ)
     calc
       _ = (Real.sqrt (w x))^2*‖f x‖^2*‖g x‖^2 := by ring
       _ = _ := by rw [Real.sq_sqrt (hw x hx)]
-  have hef (x : τ) (hx : x ∈ S) : (Real.sqrt (w x)*‖f x‖^2)^2 = w x*‖f x‖^4 := by
-    rw [mul_pow, Real.sq_sqrt (hw x hx)]
-    ring
-  have heg (x : τ) (hx : x ∈ S) : (Real.sqrt (w x)*‖g x‖^2)^2 = w x*‖g x‖^4 := by
-    rw [mul_pow, Real.sq_sqrt (hw x hx)]
-    ring
+  pm_2711 hef f
+  pm_2711 heg g
   rw [sum_congr rfl he, sum_congr rfl hef, sum_congr rfl heg] at hc
   have hfg := mul_le_mul hf hg
     (sum_nonneg (fun x hx => mul_nonneg (hw x hx) (pow_nonneg (norm_nonneg _) _))) (sq_nonneg A)
@@ -171,13 +160,8 @@ theorem tensorize_fourth_bound {ι κ τ υ : Type*}
       (hχ (fun i => F i y)) (hwy y hy)
   have hexpand : (∑ y ∈ Y, wy y*(∑ i ∈ A, u i*‖F i y‖^2)^2) =
       ∑ i ∈ A, ∑ l ∈ A, u i*u l*(∑ y ∈ Y, wy y*‖F i y‖^2*‖F l y‖^2) := by
-    simp only [sq, sum_mul, mul_sum]
-    rw [sum_comm]
-    apply sum_congr rfl
-    intro i _
-    rw [sum_comm]
-    apply sum_congr rfl
-    intro l _
+    pm_210 sq sum_mul mul_sum sum_comm
+    pm_150 sum_congr i sum_comm l
     apply sum_congr rfl
     intro y _
     ring

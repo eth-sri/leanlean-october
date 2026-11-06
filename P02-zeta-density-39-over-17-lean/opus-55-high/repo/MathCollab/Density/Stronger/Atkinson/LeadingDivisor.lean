@@ -7,6 +7,7 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.KernelApproximation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,23 +35,19 @@ def zetaSquareLeadingDivisorIntegral (t : ℝ) : ℂ :=
 theorem norm_zetaSquareLeadingDivisorTerm (t : ℝ) (n : ℕ) (u : ℝ) :
     ‖zetaSquareLeadingDivisorTerm t n u‖ =
       ‖divisorDirichletTerm (3 / 2) n‖ * ‖zetaSquareLeadingRightKernel t u‖ := by
-  simp only [zetaSquareLeadingDivisorTerm, norm_mul, divisorDirichletTerm, LSeries.norm_term_eq]
-  norm_num [afeCriticalPoint]
+  pm_8022 zetaSquareLeadingDivisorTerm
 
 theorem integrable_zetaSquareLeadingDivisorTerm {t : ℝ} (ht : 4 ≤ t) (n : ℕ) :
     Integrable (zetaSquareLeadingDivisorTerm t n) := by
   unfold zetaSquareLeadingDivisorTerm
-  apply (integrable_zetaSquareLeadingRightKernel ht).bdd_mul
-    (c := ‖divisorDirichletTerm (3 / 2) n‖)
+  pm_7950 integrable_zetaSquareLeadingRightKernel ht
   · simpa using (continuous_divisorDirichletTerm_vertical (-t) 1 n).aestronglyMeasurable
-  · filter_upwards with u
-    simp only [divisorDirichletTerm, LSeries.norm_term_eq]
-    norm_num [afeCriticalPoint]
+  pm_7005
 
 theorem summable_integral_norm_zetaSquareLeadingDivisorTerm (t : ℝ) :
     Summable (fun n : ℕ => ∫ u : ℝ, ‖zetaSquareLeadingDivisorTerm t n u‖) := by
   simp_rw [norm_zetaSquareLeadingDivisorTerm, integral_const_mul]
-  exact (summable_divisorDirichletTerm (s := (3 / 2 : ℂ)) (by norm_num)).norm.mul_right _
+  pm_5697
 
 theorem hasSum_zetaSquareLeadingDivisorContribution {t : ℝ} (ht : 4 ≤ t) :
     HasSum (zetaSquareLeadingDivisorContribution t) (zetaSquareLeadingDivisorIntegral t) := by
@@ -78,7 +75,7 @@ theorem exists_norm_zetaSquareDivisorContribution_error_le :
         zetaSquareLeadingDivisorContribution t n‖ ≤ C * ‖divisorDirichletTerm (3 / 2) n‖ := by
   obtain ⟨C, hC, hbound⟩ := exists_integral_norm_zetaSquareRightKernel_error_le
   have hnorm : ‖(1 / (2 * Real.pi) : ℂ)‖ = 1 / (2 * Real.pi) := by
-    simp [Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+    simp_all
   refine ⟨C / (2 * Real.pi), by positivity, ?_⟩
   intro t ht n
   have ha := (integrable_zetaSquareDivisorTerm (-t) n).div_const (zetaSquareGammaNormalization t)
@@ -116,8 +113,8 @@ theorem exists_norm_zetaSquareDivisorIntegral_sub_leading_le :
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaSquareDivisorContribution_error_le
   have hs := (summable_divisorDirichletTerm (s := (3 / 2 : ℂ)) (by norm_num)).norm
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (3 / 2) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
-  refine ⟨1 + C * S, by positivity, ?_⟩
+  pm_4414
+  pm_7546
   intro t ht
   let e : ℕ → ℂ := fun n => zetaSquareDivisorContribution (-t) n / zetaSquareGammaNormalization t -
     zetaSquareLeadingDivisorContribution t n

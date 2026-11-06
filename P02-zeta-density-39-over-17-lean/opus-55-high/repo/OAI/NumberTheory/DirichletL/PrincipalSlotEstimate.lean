@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Complex
 
 namespace SevenEighths.PrincipalSlotEstimate
@@ -23,11 +24,12 @@ def principalReplacement (Q : ℝ) (A η s : ℂ) : ℂ :=
 def principalSlot (Q : ℝ) (A η s : ℂ) : ℂ :=
   principalReplacement Q A η s / unramifiedClosed Q A η 1 s 1 (1 / 6)
 
-theorem principal_correction_defect {Q : ℝ} {A η s : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re) :
+section
+variable {Q : ℝ} {A η s : ℂ} (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re)
+include Q A η s hQ hA hη hs
+theorem principal_correction_defect :
     ‖unramifiedClosed Q A η 1 s 1 (1 / 6) - 1‖ ≤ 1 / 2 := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ1 : 1 ≤ Q := by linarith
+  pm_3220
   have h := unramifiedClosed_second_region_bound Q A η 1 s 1 (1 / 6)
     (by linarith) hA hη (by simp) hs (by norm_num) (by norm_num)
   calc
@@ -35,54 +37,55 @@ theorem principal_correction_defect {Q : ℝ} {A η s : ℂ}
     _ ≤ 240 * Q ^ (-1 : ℝ) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num)) (by norm_num)
     _ ≤ 1 / 2 := by
-      rw [Real.rpow_neg_one, ← div_eq_mul_inv]
-      exact (div_le_iff₀ hQ0).mpr (by linarith)
+      pm_6468
 
-theorem principal_correction_lower_bound {Q : ℝ} {A η s : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re) :
+theorem principal_correction_lower_bound :
     1 / 2 ≤ ‖unramifiedClosed Q A η 1 s 1 (1 / 6)‖ := by
   have h := principal_correction_defect hQ hA hη hs
   have hn := norm_sub_norm_le (1 : ℂ) (unramifiedClosed Q A η 1 s 1 (1 / 6))
   rw [norm_one, norm_sub_rev] at hn
   linarith
 
-theorem principal_correction_ne_zero {Q : ℝ} {A η s : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re) :
+theorem principal_correction_ne_zero :
     unramifiedClosed Q A η 1 s 1 (1 / 6) ≠ 0 := by
   apply norm_pos_iff.mp
   exact (by norm_num : (0 : ℝ) < 1 / 2).trans_le
     (principal_correction_lower_bound hQ hA hη hs)
 
-theorem principal_correction_inverse_bound {Q : ℝ} {A η s : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re) :
+theorem principal_correction_inverse_bound :
     ‖(unramifiedClosed Q A η 1 s 1 (1 / 6))⁻¹‖ ≤ 2 := by
   have hl := principal_correction_lower_bound hQ hA hη hs
   rw [norm_inv, inv_eq_one_div]
   apply (div_le_iff₀ (by linarith : 0 < ‖unramifiedClosed Q A η 1 s 1 (1 / 6)‖)).mpr
   linarith
+end
 
 theorem unit_phase_inverse (η : ℂ) (hη : ‖η‖ = 1) : star η * η = 1 := by
   rw [Complex.star_def, ← Complex.normSq_eq_conj_mul_self, Complex.normSq_eq_norm_sq, hη]
   norm_num
 
-theorem principal_coord_cancellation {Q : ℝ} (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1) :
+section
+variable {Q : ℝ}
+include Q
+theorem principal_coord_cancellation (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1) :
     (star η * (Q : ℂ) ^ s) * coordD Q η 1 s = 1 := by
-  have hQ0 : (Q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hQ.ne'
+  pm_115 hQ0 Q Complex.ofReal_ne_zero.mpr hQ.ne'
   unfold coordD
   simp only [star_one, mul_one]
   calc
     _ = (star η * η) * ((Q : ℂ) ^ s * (Q : ℂ) ^ (-s)) := by ring
     _ = 1 := by rw [unit_phase_inverse η hη, ← Complex.cpow_add _ _ hQ0]; simp
 
-theorem principal_V {Q : ℝ} : coordV Q (1 / 6) = (Q : ℂ)⁻¹ := by
+theorem principal_V : coordV Q (1 / 6) = (Q : ℂ)⁻¹ := by
   norm_num [coordV, Complex.cpow_neg_one]
 
-theorem principal_W {Q : ℝ} : coordW Q 1 1 = (Q : ℂ)⁻¹ := by
+theorem principal_W : coordW Q 1 1 = (Q : ℂ)⁻¹ := by
   simp [coordW, Complex.cpow_neg_one]
 
-theorem principal_B_norm {Q : ℝ} (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1) :
+theorem principal_B_norm (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1) :
     ‖star η * (Q : ℂ) ^ s‖ = Q ^ s.re := by
   rw [norm_mul, norm_star, hη, one_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ]
+end
 
 theorem compensated_unit_error_bound (V W D P B q : ℂ) (T : ℝ)
     (_hT : 0 ≤ T) (hV : ‖V‖ ≤ 1 / 2) (hW : ‖W‖ ≤ 1)
@@ -91,33 +94,15 @@ theorem compensated_unit_error_bound (V W D P B q : ℂ) (T : ℝ)
     (hE : ‖P + D‖ ≤ 28 * T) (hBE : ‖B‖ * ‖P + D‖ ≤ 28 * T)
     (hBD : B * D = 1) (hWq : W = q) :
     ‖compensatedReplacement V W D P B q + continuedCorrection V W D P‖ ≤ 720 * T := by
-  have h1V : ‖1 - V‖ ≤ 2 := by
-    have := norm_sub_le (1 : ℂ) V
-    simp only [norm_one] at this
-    linarith
-  have h1W : ‖1 - W‖ ≤ 2 := by
-    have := norm_sub_le (1 : ℂ) W
-    simp only [norm_one] at this
-    linarith
+  pm_3222
   have h1q : ‖1 - q‖ ≤ 2 := by
-    have := norm_sub_le (1 : ℂ) q
-    simp only [norm_one] at this
-    linarith
-  have hiV := inv_one_sub_norm_le_two V hV
-  have hiD := inv_one_sub_norm_le_two D hD
-  have hfac : ‖(1 - V) * (1 - W) / (1 - D)‖ ≤ 8 := by
-    rw [div_eq_mul_inv, norm_mul, norm_mul]
-    calc
-      ‖1 - V‖ * ‖1 - W‖ * ‖(1 - D)⁻¹‖ ≤ (2 : ℝ) * 2 * 2 := by gcongr
-      _ = 8 := by norm_num
+    pm_1229 q
+  pm_3221
   have hleft : ‖(1 - q) * (V / (1 - V) - D)‖ ≤ 6 * T := by
     calc
       _ = ‖1 - q‖ * ‖V / (1 - V) - D‖ := norm_mul _ _
       _ ≤ 2 * (‖V‖ * 2 + ‖D‖) := by
-        gcongr
-        calc
-          _ ≤ ‖V / (1 - V)‖ + ‖D‖ := norm_sub_le _ _
-          _ ≤ _ := by rw [div_eq_mul_inv, norm_mul]; gcongr
+        pm_3223
       _ ≤ 6 * T := by linarith
   have hright : ‖(B + 1 - q) * (P + D)‖ ≤ 84 * T := by
     have hc : ‖B + 1 - q‖ ≤ ‖B‖ + 2 := by
@@ -140,18 +125,16 @@ theorem compensated_unit_error_bound (V W D P B q : ℂ) (T : ℝ)
       exact norm_add_le _ _
     _ ≤ 720 * T := by linarith
 
-theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re) :
+section
+variable {Q : ℝ} {A η s : ℂ} (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re)
+include Q A η s hQ hA hη hs
+theorem principal_marked_error_bounds :
     ‖principalMarked Q A η s + coordD Q η 1 s‖ ≤ 28 * Q ^ (-(7 / 8 : ℝ)) ∧
     ‖star η * (Q : ℂ) ^ s‖ * ‖principalMarked Q A η s + coordD Q η 1 s‖ ≤
       28 * Q ^ (-(7 / 8 : ℝ)) := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ1 : 1 ≤ Q := by linarith
-  have hQ4 : 4 ≤ Q := by linarith
-  have hpow (x y : ℝ) (h : x ≤ y) : Q ^ x ≤ Q ^ y :=
-    Real.rpow_le_rpow_of_exponent_le hQ1 h
-  have hV : ‖coordV Q (1 / 6)‖ = Q ^ (-1 : ℝ) := by
-    rw [coordV_norm Q hQ0]; norm_num
+  pm_3220
+  pm_3224
+  pm_3226
   have hW : ‖coordW Q 1 1‖ ≤ 1 := by
     have h := coordW_norm_le Q hQ0 (1 : ℂ) 1 (by simp)
     norm_num at h
@@ -169,8 +152,7 @@ theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
   have hB := principal_B_norm hQ0 η s hη
   have hRhalf : ‖coordR Q A s (1 / 6)‖ ≤ 1 / 2 :=
     hR.trans (rpow_le_half Q (3 - 6 * s.re) hQ4 (by linarith))
-  have hVhalf : ‖coordV Q (1 / 6)‖ ≤ 1 / 2 := by
-    rw [hV]; exact rpow_le_half Q (-1) hQ4 (by norm_num)
+  pm_3225
   have hDhalf : ‖coordD Q η 1 s‖ ≤ 1 / 2 :=
     hD.trans (rpow_le_half Q (-s.re) hQ4 (by linarith))
   have hq : ‖(Q : ℂ)⁻¹‖ ≤ 1 := by
@@ -202,22 +184,15 @@ theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
       24 * ‖coordR Q A s (1 / 6)‖ + 4 * (‖coordK Q η s 1‖ * ‖coordV Q (1 / 6)‖) := by
     apply hE.trans
     nlinarith [mul_le_mul_of_nonneg_left hW (norm_nonneg (coordR Q A s (1 / 6)))]
-  constructor
-  · linarith
-  · have h := mul_le_mul_of_nonneg_left hE' (norm_nonneg (star η * (Q : ℂ) ^ s))
-    nlinarith
+  pm_1151
 
-theorem principal_replacement_error {Q : ℝ} {A η s : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re) :
+theorem principal_replacement_error :
     ‖principalReplacement Q A η s + unramifiedClosed Q A η 1 s 1 (1 / 6)‖ ≤
       720 * Q ^ (-(7 / 8 : ℝ)) := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ1 : 1 ≤ Q := by linarith
+  pm_3220
   have hQ4 : 4 ≤ Q := by linarith
-  have hV : ‖coordV Q (1 / 6)‖ = Q ^ (-1 : ℝ) := by
-    rw [coordV_norm Q hQ0]; norm_num
-  have hVhalf : ‖coordV Q (1 / 6)‖ ≤ 1 / 2 := by
-    rw [hV]; exact rpow_le_half Q (-1) hQ4 (by norm_num)
+  pm_3226
+  pm_3225
   have hD := coordD_norm_le Q hQ0 η 1 s hη.le (by simp)
   have hDhalf := hD.trans (rpow_le_half Q (-s.re) hQ4 (by linarith))
   have hWq : coordW Q 1 1 = (Q : ℂ) ^ (-1 : ℂ) := by simp [coordW]
@@ -232,6 +207,7 @@ theorem principal_replacement_error {Q : ℝ} {A η s : ℂ}
   exact compensated_unit_error_bound _ _ _ _ _ _ _ (Real.rpow_nonneg hQ0.le _)
     hVhalf hW hDhalf hq hVT hDT hE.1 hE.2
     (principal_coord_cancellation hQ0 η s hη) hWq
+end
 
 theorem principal_slot_error {Q : ℝ} {A η s : ℂ}
     (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re) :
@@ -244,12 +220,12 @@ theorem principal_slot_error {Q : ℝ} {A η s : ℂ}
         (unramifiedClosed Q A η 1 s 1 (1 / 6))⁻¹ := by
     unfold principalSlot
     field_simp
-  rw [hid, norm_mul]
-  calc
-    _ ≤ (720 * Q ^ (-(7 / 8 : ℝ))) * 2 := mul_le_mul he hi (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  pm_3227
 
-theorem weighted_slot_error {ι : Type*} (S : Finset ι) (w : ι → ℝ) (B : ι → ℂ)
+section
+variable {ι : Type*} (S : Finset ι)
+include ι S
+theorem weighted_slot_error (w : ι → ℝ) (B : ι → ℂ)
     (δ : ℝ) (hw : ∀ i ∈ S, 0 ≤ w i) (hB : ∀ i ∈ S, ‖B i + 1‖ ≤ δ) :
     ‖(∑ i ∈ S, (w i : ℂ) * B i) + (∑ i ∈ S, w i : ℝ)‖ ≤
       δ * ∑ i ∈ S, w i := by
@@ -266,7 +242,7 @@ theorem weighted_slot_error {ι : Type*} (S : Finset ι) (w : ι → ℝ) (B : �
       simpa [mul_comm] using mul_le_mul_of_nonneg_left (hB i hi) (hw i hi)
     _ = _ := by rw [Finset.mul_sum]
 
-theorem weighted_principal_slot_error {ι : Type*} (S : Finset ι) (w Q : ι → ℝ)
+theorem weighted_principal_slot_error (w Q : ι → ℝ)
     (A η : ι → ℂ) (s : ℂ) (P : ℝ) (hP : 480 ≤ P)
     (hw : ∀ i ∈ S, 0 ≤ w i) (hQ : ∀ i ∈ S, P ≤ Q i)
     (hA : ∀ i ∈ S, ‖A i‖ ≤ 1) (hη : ∀ i ∈ S, ‖η i‖ = 1)
@@ -277,8 +253,8 @@ theorem weighted_principal_slot_error {ι : Type*} (S : Finset ι) (w Q : ι →
   apply weighted_slot_error S w _ _ hw
   intro i hi
   apply (principal_slot_error (hP.trans (hQ i hi)) (hA i hi) (hη i hi) hs).trans
-  apply mul_le_mul_of_nonneg_left _ (by norm_num)
-  exact Real.rpow_le_rpow_of_nonpos (by linarith) (hQ i hi) (by norm_num)
+  pm_1557
+end
 
 theorem product_error {κ : Type*} (S : Finset κ) (F : κ → ℂ)
     (δ : ℝ) (hδ : 0 ≤ δ) (hF : ∀ i ∈ S, ‖F i - 1‖ ≤ δ) :
@@ -321,7 +297,10 @@ theorem product_error_linear (n : ℕ) {δ : ℝ} (hδ : 0 ≤ δ) (hδ1 : δ �
 def principalScalar {κ : Type*} (S : Finset κ) (M : κ → ℝ) : ℂ :=
   (-1 : ℂ) ^ S.card * (∏ i ∈ S, M i : ℝ)
 
-theorem principalScalar_eq {κ : Type*} (S : Finset κ) (M : κ → ℝ) :
+section
+variable {κ : Type*} (S : Finset κ) (M : κ → ℝ)
+include κ S M
+theorem principalScalar_eq :
     principalScalar S M = ∏ i ∈ S, (-(M i : ℂ)) := by
   unfold principalScalar
   rw [Complex.ofReal_prod, ← Finset.prod_const, ← Finset.prod_mul_distrib]
@@ -329,8 +308,7 @@ theorem principalScalar_eq {κ : Type*} (S : Finset κ) (M : κ → ℝ) :
   intro i _
   ring
 
-theorem fixed_product_relative_error {κ : Type*} (S : Finset κ)
-    (M : κ → ℝ) (W : κ → ℂ) (δ : ℝ) (hδ : 0 ≤ δ)
+theorem fixed_product_relative_error (W : κ → ℂ) (δ : ℝ) (hδ : 0 ≤ δ)
     (hM : ∀ i ∈ S, 0 < M i)
     (hW : ∀ i ∈ S, ‖W i + (M i : ℂ)‖ ≤ δ * M i) :
     ‖(∏ i ∈ S, W i) / principalScalar S M - 1‖ ≤ (1 + δ) ^ S.card - 1 := by
@@ -344,6 +322,7 @@ theorem fixed_product_relative_error {κ : Type*} (S : Finset κ)
   rw [hid, norm_div, norm_neg, Complex.norm_real, Real.norm_eq_abs,
     abs_of_pos (hM i hi)]
   exact (div_le_iff₀ (hM i hi)).mpr (hW i hi)
+end
 
 theorem weighted_principal_product_error {κ ι : Type*} (S : Finset κ)
     (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
@@ -365,8 +344,7 @@ theorem principal_geometric_bounds {Q : ℝ} {η s : ℂ}
     (hQ : 480 ≤ Q) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re) :
     ‖coordV Q (1 / 6)‖ ≤ 1 / 2 ∧ ‖coordW Q 1 1‖ ≤ 1 / 2 ∧
       ‖coordD Q η 1 s‖ ≤ 1 / 2 := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ4 : 4 ≤ Q := by linarith
+  pm_3228
   have hV : ‖coordV Q (1 / 6)‖ ≤ 1 / 2 := by
     rw [coordV_norm Q hQ0]
     norm_num
@@ -402,69 +380,62 @@ def regionReplacement (Q : ℝ) (A η s w z : ℂ) : ℂ :=
 def regionSlot (Q : ℝ) (A η s w z : ℂ) : ℂ :=
   regionReplacement Q A η s w z / unramifiedClosed Q A η 1 s w z
 
-theorem region_correction_defect {Q : ℝ} {A η s w z : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re)
-    (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
+section
+variable {Q : ℝ} {A η s w z : ℂ} (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re) (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re)
+include Q A η s w z hQ hA hη hs hw hz
+theorem region_correction_defect :
     ‖unramifiedClosed Q A η 1 s w z - 1‖ ≤ 1 / 2 := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ1 : 1 ≤ Q := by linarith
+  pm_3220
   calc
     _ ≤ 240 * Q ^ (-(363 / 200 : ℝ)) :=
       unramifiedClosed_second_region_bound Q A η 1 s w z (by linarith) hA hη (by simp) hs hw hz
     _ ≤ 240 * Q ^ (-1 : ℝ) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num)) (by norm_num)
     _ ≤ 1 / 2 := by
-      rw [Real.rpow_neg_one, ← div_eq_mul_inv]
-      exact (div_le_iff₀ hQ0).mpr (by linarith)
+      pm_6468
 
-theorem region_correction_lower_bound {Q : ℝ} {A η s w z : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re)
-    (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
+theorem region_correction_lower_bound :
     1 / 2 ≤ ‖unramifiedClosed Q A η 1 s w z‖ := by
   have h := region_correction_defect hQ hA hη hs hw hz
   have hn := norm_sub_norm_le (1 : ℂ) (unramifiedClosed Q A η 1 s w z)
   rw [norm_one, norm_sub_rev] at hn
   linarith
 
-theorem region_correction_ne_zero {Q : ℝ} {A η s w z : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re)
-    (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
+theorem region_correction_ne_zero :
     unramifiedClosed Q A η 1 s w z ≠ 0 := by
   apply norm_pos_iff.mp
   exact (by norm_num : (0 : ℝ) < 1 / 2).trans_le
     (region_correction_lower_bound hQ hA hη hs hw hz)
 
-theorem region_correction_inverse_bound {Q : ℝ} {A η s w z : ℂ}
-    (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re)
-    (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
+theorem region_correction_inverse_bound :
     ‖(unramifiedClosed Q A η 1 s w z)⁻¹‖ ≤ 2 := by
   have hl := region_correction_lower_bound hQ hA hη hs hw hz
   rw [norm_inv, inv_eq_one_div]
   apply (div_le_iff₀ (by linarith : 0 < ‖unramifiedClosed Q A η 1 s w z‖)).mpr
   linarith
+end
 
-theorem region_geometric_bounds {Q : ℝ} {η s w z : ℂ}
+section
+variable {Q : ℝ}
+include Q
+theorem region_geometric_bounds {η s w z : ℂ}
     (hQ : 480 ≤ Q) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re)
     (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
     ‖coordV Q z‖ ≤ 1 / 2 ∧ ‖coordW Q 1 w‖ ≤ 1 / 2 ∧ ‖coordD Q η 1 s‖ ≤ 1 / 2 := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ4 : 4 ≤ Q := by linarith
+  pm_3228
   refine ⟨?_, ?_, ?_⟩
   · rw [coordV_norm Q hQ0]; exact rpow_le_half Q _ hQ4 (by linarith)
   · exact (coordW_norm_le Q hQ0 1 w (by simp)).trans (rpow_le_half Q _ hQ4 (by linarith))
   · exact (coordD_norm_le Q hQ0 η 1 s hη (by simp)).trans (rpow_le_half Q _ hQ4 (by linarith))
 
-theorem region_marked_error_bounds {Q : ℝ} {A η s w z : ℂ}
+theorem region_marked_error_bounds {A η s w z : ℂ}
     (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re)
     (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
     ‖regionMarked Q A η s w z + coordD Q η 1 s‖ ≤ 28 * Q ^ (-(7 / 8 : ℝ)) ∧
     ‖star η * (Q : ℂ) ^ s‖ * ‖regionMarked Q A η s w z + coordD Q η 1 s‖ ≤
       28 * Q ^ (-(7 / 8 : ℝ)) := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ1 : 1 ≤ Q := by linarith
-  have hQ4 : 4 ≤ Q := by linarith
-  have hpow (x y : ℝ) (h : x ≤ y) : Q ^ x ≤ Q ^ y :=
-    Real.rpow_le_rpow_of_exponent_le hQ1 h
+  pm_3220
+  pm_3224
   have hV := coordV_norm Q hQ0 z
   have hR := coordR_norm_le Q hQ0 A s z hA
   have hK := coordK_norm_le Q hQ1 η s w hη.le
@@ -472,14 +443,12 @@ theorem region_marked_error_bounds {Q : ℝ} {A η s w z : ℂ}
   have hg := region_geometric_bounds hQ hη.le hs hw hz
   have hRhalf : ‖coordR Q A s z‖ ≤ 1 / 2 :=
     hR.trans (rpow_le_half Q _ hQ4 (by linarith))
-  have hW : ‖coordW Q 1 w‖ ≤ 1 := by linarith [hg.2.1]
-  have hq : ‖(Q : ℂ)⁻¹‖ ≤ 1 := by
-    rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ0]
-    exact inv_le_one_of_one_le₀ hQ1
+  pm_6469
+  pm_1504 hq
   have hE := unramified_marked_error_bound (coordR Q A s z) (coordV Q z)
     (Q : ℂ)⁻¹ (coordK Q η s w) (coordW Q 1 w) (coordD Q η 1 s)
     hRhalf hg.1 hq hg.2.2
-  change ‖regionMarked Q A η s w z + coordD Q η 1 s‖ ≤ _ at hE
+  pm_8828 regionMarked s hE
   have hRT : ‖coordR Q A s z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := hR.trans (hpow _ _ (by linarith))
   have hKV : ‖coordK Q η s w‖ * ‖coordV Q z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     calc
@@ -502,22 +471,18 @@ theorem region_marked_error_bounds {Q : ℝ} {A η s w z : ℂ}
       24 * ‖coordR Q A s z‖ + 4 * (‖coordK Q η s w‖ * ‖coordV Q z‖) := by
     apply hE.trans
     nlinarith [mul_le_mul_of_nonneg_left hW (norm_nonneg (coordR Q A s z))]
-  constructor
-  · linarith
-  · have h := mul_le_mul_of_nonneg_left hE' (norm_nonneg (star η * (Q : ℂ) ^ s))
-    nlinarith
+  pm_1151
 
-theorem region_replacement_error {Q : ℝ} {A η s w z : ℂ}
+theorem region_replacement_error {A η s w z : ℂ}
     (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re)
     (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
     ‖regionReplacement Q A η s w z + unramifiedClosed Q A η 1 s w z‖ ≤
       720 * Q ^ (-(7 / 8 : ℝ)) := by
-  have hQ0 : 0 < Q := by linarith
-  have hQ1 : 1 ≤ Q := by linarith
+  pm_3220
   have hg := region_geometric_bounds hQ hη.le hs hw hz
   have hWq : coordW Q 1 w = (Q : ℂ) ^ (-w) := by simp [coordW]
   have hq : ‖(Q : ℂ) ^ (-w)‖ ≤ 1 := by rw [← hWq]; linarith [hg.2.1]
-  have hW : ‖coordW Q 1 w‖ ≤ 1 := by linarith [hg.2.1]
+  pm_6469
   have hVT : ‖coordV Q z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     rw [coordV_norm Q hQ0]; exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
   have hDT : ‖coordD Q η 1 s‖ ≤ Q ^ (-(7 / 8 : ℝ)) :=
@@ -528,7 +493,7 @@ theorem region_replacement_error {Q : ℝ} {A η s w z : ℂ}
     hg.1 hW hg.2.2 hq hVT hDT hE.1 hE.2
     (principal_coord_cancellation hQ0 η s hη) hWq
 
-theorem region_slot_error {Q : ℝ} {A η s w z : ℂ}
+theorem region_slot_error {A η s w z : ℂ}
     (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ = 1) (hs : 7 / 8 ≤ s.re)
     (hw : 19 / 20 ≤ w.re) (hz : 33 / 200 ≤ z.re) :
     ‖regionSlot Q A η s w z + 1‖ ≤ 1440 * Q ^ (-(7 / 8 : ℝ)) := by
@@ -540,10 +505,8 @@ theorem region_slot_error {Q : ℝ} {A η s w z : ℂ}
         (unramifiedClosed Q A η 1 s w z)⁻¹ := by
     unfold regionSlot
     field_simp
-  rw [hid, norm_mul]
-  calc
-    _ ≤ (720 * Q ^ (-(7 / 8 : ℝ))) * 2 := mul_le_mul he hi (norm_nonneg _) (by positivity)
-    _ = _ := by ring
+  pm_3227
+end
 
 @[simp] theorem region_slot_at_residue (Q : ℝ) (A η s : ℂ) :
     regionSlot Q A η s 1 (1 / 6) = principalSlot Q A η s := rfl
@@ -575,8 +538,7 @@ theorem weighted_region_slot_norm {ι : Type*} (S : Finset ι) (b Q : ι → ℝ
       have he' : ‖regionSlot (Q i) (A i) (η i) s w z‖ ≤ 1 + 1440 * P ^ (-(7 / 8 : ℝ)) := by
         apply he.trans
         apply add_le_add le_rfl
-        apply mul_le_mul_of_nonneg_left _ (by norm_num)
-        exact Real.rpow_le_rpow_of_nonpos (by linarith) (hQ i hi) (by norm_num)
+        pm_1557
       rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hb i hi),
         Complex.norm_cpow_eq_rpow_re_of_pos hQi]
       simp only [Complex.sub_re, Complex.one_re]

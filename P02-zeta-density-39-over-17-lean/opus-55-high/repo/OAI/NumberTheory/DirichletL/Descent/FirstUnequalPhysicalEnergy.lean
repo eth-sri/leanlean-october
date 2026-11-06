@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilySource
 public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -57,8 +58,7 @@ theorem actual_first_family_two_energies (hp : ∀ i,p i ≠ 0)
     W₁ W₂ ω₁ ω₂ Φ V A₁ A₂ C R K L d h s hpos hs density hDensity hsep hω₁ hω₂ hcut
   have hb := first_family_integral_of_two_energies p hg source F selector C₁ C₂ w ω₁ ω₂ A₁ A₂ C R d h s
     density J B₁ B₂ hB₁ hB₂ hWeighted hleft hright
-  have hn := congrArg norm he
-  conv_lhs at hn => rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.exp_pos _)]
+  pm_1298
   conv_rhs at hn => rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (firstRootScale_pos s hs)]
   have hexp : Real.exp ((9/2:ℝ)*L)*Real.exp (-(9/2:ℝ)*L) = 1 := by
     rw [←Real.exp_add]

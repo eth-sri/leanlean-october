@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.AllocatedBound
 public import OAI.NumberTheory.DirichletL.Energy.AllocatedProfiles
 public import OAI.NumberTheory.DirichletL.Energy.Bands
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,10 +24,9 @@ variable {α:Type*}[Fintype α][DecidableEq α]
 lemma allocatedScale_le (D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2)))(X:ℝ)(hX:0<X)
     (j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):
-    clippedScale (rawScale D a X j)/(Ideal.absNorm (∏I∈F,I):ℝ)≤max 1 X:=by
+    clippedScale (rawScale D a X j)/(Ideal.absNorm (∏I∈F,I):ℝ)≤ max 1 X:=by
   have hn:1≤(Ideal.absNorm (CenteredMomentDivisorRectangle.selectedPlain D a j):ℝ):=by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-      (CenteredMomentDivisorExtraction.selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
+    pm_1318 Nat.one_le_iff_ne_zero.mpr CenteredMomentDivisorExtraction.selectedDivisor_ne_zero D j
   have hf:1≤(Ideal.absNorm (∏I∈F,I):ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
       (Finset.prod_ne_zero_iff.mpr hF))

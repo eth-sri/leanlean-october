@@ -20,7 +20,7 @@ lemma scaleTest_continuous (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) (j : Fin 2)
     Continuous (scaleTest W j) := by
   unfold scaleTest
   split
-  · exact hW.continuous
+  fun_prop
   · exact scaleProfile_continuous W hW
 
 lemma scaleTest_support (W : ℝ→ℂ) (a b : ℝ)
@@ -28,7 +28,7 @@ lemma scaleTest_support (W : ℝ→ℂ) (a b : ℝ)
     Function.support (scaleTest W j)⊆Icc a b := by
   unfold scaleTest
   split
-  · exact hs
+  grind
   · exact scaleProfile_support W a b hs
 
 end SevenEighths.CenteredMomentScaleSupremum

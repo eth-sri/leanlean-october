@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.MobiusEulerCorrection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,76 +8,31 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
-open scoped BigOperators Classical ContDiff Topology
+open scoped Classical ContDiff Topology
 namespace CanonicalRowCompletion
 open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
@@ -87,7 +43,6 @@ open SixthPowerAverage CompactMellinBridge InitialMeanSquare
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
 namespace QuadraticAllOddCRT
 
 section
@@ -119,7 +74,7 @@ lemma character_lambda_primary (p : ActualEisensteinCubic.O) (hp : lambda^2∣p-
   have hm : Ideal.Quotient.mk (Ideal.span {lambda}) p=Ideal.Quotient.mk (Ideal.span {lambda}) (1:ActualEisensteinCubic.O) :=
     Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr
       ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans hp))
-  rw [hm,map_one,map_one]
+  grind
 
 def lambdaQuadraticRay (r : EisensteinEPrimaryPhase.Coord) : ℂ:=
   quadraticRayValue (EisensteinEPrimaryPhase.mul (residue lambda) r)/
@@ -140,7 +95,7 @@ theorem character_lambda_eq_ray (p : ActualEisensteinCubic.O) (hp : p≠0) [(Ide
   rw [character_lambda_primary p hprimary,one_mul] at h
   have hodd : EisensteinEPrimaryPhase.odd (residue p) := by
     have hn : ‖quadraticRayValue (residue p)‖=1 := by
-      let pp : Unit→ActualEisensteinCubic.O:=fun _=>p
+      let pp : Unit→ ActualEisensteinCubic.O:=fun _=>p
       have hpp : ∀i,pp i≠0:=fun _=>hp
       have hcp : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {pp i})):=by
         intro i j hij
@@ -153,7 +108,7 @@ theorem character_lambda_eq_ray (p : ActualEisensteinCubic.O) (hp : p≠0) [(Ide
   unfold lambdaQuadraticRay
   rw [←residue_mul]
   apply (eq_div_iff (mul_ne_zero lambda_quadratic_ray_ne_zero (quadraticRayValue_ne_zero_of_odd _ hodd))).mpr
-  simpa only [mul_assoc] using h.symm
+  grind
 
 end
 
@@ -177,11 +132,10 @@ lemma lambdaQuadraticTable_mul (r s : EisensteinEPrimaryPhase.Coord) :
 lemma lambdaQuadraticTable_eq_ray (r : EisensteinEPrimaryPhase.Coord)
     (hr : EisensteinEPrimaryPhase.odd r) :
     (lambdaQuadraticTable r:ℂ)=lambdaQuadraticRay r := by
-  have hcmp (a b : ZMod 4) : (a=b) ↔ (a.val=b.val) :=
-    (ZMod.val_injective 4).eq_iff.symm
+  pm_937
   have hn3 : (-3 : ZMod 4) = 1 := by decide
   rcases r with ⟨a,b⟩
-  have hcases : ∀ x : ZMod 4, x = 0 ∨ x = 1 ∨ x = 2 ∨ x = 3 := by decide
+  pm_938
   rcases hcases a with rfl | rfl | rfl | rfl <;>
     rcases hcases b with rfl | rfl | rfl | rfl <;>
     norm_num [EisensteinEPrimaryPhase.odd,ZMod.val_zero,ZMod.val_one_eq_one_mod,ZMod.val_ofNat] at hr <;>
@@ -219,7 +173,6 @@ lemma lambdaQuadraticCharacter_periodic (x y : ActualEisensteinCubic.O) (h : (4:
 
 end QuadraticAllOddCRT
 
-open scoped BigOperators Classical
 namespace CanonicalRowCompletion
 open ActualEisensteinCubic
 open CompletedGauss hiding O
@@ -240,7 +193,7 @@ lemma localRowValue_square (x : ActualEisensteinCubic.O) (P : Ideal ActualEisens
   · simp
 
 theorem idealRowHom_square (x : ActualEisensteinCubic.O) (I : Ideal ActualEisensteinCubic.O) :
-    idealRowHom x I^2=eisEmbedding (idealSymbol I x) := by
+    idealRowHom x I ^2=eisEmbedding (idealSymbol I x) := by
   have hm (s : Multiset (Ideal ActualEisensteinCubic.O)) :
       (s.map (localRowValue x)).prod^2=eisEmbedding ((s.map (fun P=>primeValue P x)).prod) := by
     induction s using Multiset.induction_on with
@@ -284,14 +237,13 @@ lemma idealRowHom_lambda_prime_cube (p : ActualEisensteinCubic.O) (hp : Prime p)
   rw [he]
   exact (lambdaQuadraticTable_eq_ray _ (ho.mpr hs'.2)).symm
 
-theorem idealRowHom_lambda_cube (y : ActualEisensteinCubic.O) (hy : lambda^2∣y-1)
-    (hs : Supported (Ideal.span {y})) :
+theorem idealRowHom_lambda_cube (y : ActualEisensteinCubic.O) (hy : lambda^2∣y-1) (hs : Supported (Ideal.span {y})) :
     idealRowHom lambda (Ideal.span {y})^3=lambdaQuadraticCharacter y := by
   have hy0 : y≠0:=by
     intro he
     apply hs.1
     simp [he]
-  obtain ⟨s,hprod,hfactors⟩:=exists_primary_prime_factorization y hy0 hy
+  pm_3529 s hprod hfactors exists_primary_prime_factorization y hy0 hy
   rw [←hprod] at hs ⊢
   clear hprod hy hy0 y
   induction s using Multiset.induction_on with
@@ -306,8 +258,7 @@ theorem idealRowHom_lambda_cube (y : ActualEisensteinCubic.O) (hy : lambda^2∣y
     rw [Multiset.prod_cons,←Ideal.span_singleton_mul_span_singleton,map_mul,mul_pow,
       idealRowHom_lambda_prime_cube p hp.1 hp.2 hsplit.1,ih hsplit.2 htail,map_mul]
 
-theorem idealRowHom_lambda_formula (y : ActualEisensteinCubic.O) (hy : lambda^2∣y-1)
-    (hs : Supported (Ideal.span {y})) :
+theorem idealRowHom_lambda_formula (y : ActualEisensteinCubic.O) (hy : lambda^2∣y-1) (hs : Supported (Ideal.span {y})) :
     idealRowHom lambda (Ideal.span {y})=
       eisEmbedding (CubicRamified.linearRay 1 0 y)^2*lambdaQuadraticCharacter y := by
   have htwo:=idealRowHom_square lambda (Ideal.span {y})
@@ -346,24 +297,24 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped Classical Topology ContDiff MatrixGroups
 
 open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
-lemma cuspRemainder_absolute_chart (a b : ℝ) (ha : 1≤a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) (M : SL(2,ActualEisensteinCubic.O)) (z : ℂ) (hz : ‖z‖≤1)
+section
+variable (a b : ℝ) (ha : 1≤a) (hab : a<b) (s : ℂ) (hs : 4< s.re)
+include a b ha hab s hs
+lemma cuspRemainder_absolute_chart (M : SL(2,ActualEisensteinCubic.O)) (z : ℂ) (hz : ‖z‖≤1)
     (v : ℝ) (hv : 1/2≤v) (hv0 : 0<v) :
     Summable (fun r : CuspCosets => ‖cuspRemainderProfile a b s
       (cosetHeight r (integralComplexMatrix M • upperPoint z v hv0))‖) ∧
     (∑'r : CuspCosets,‖cuspRemainderProfile a b s
       (cosetHeight r (integralComplexMatrix M • upperPoint z v hv0))‖)≤eisensteinRemainderBound b s := by
-  let G : ((Fin 2×Fin 2)→ℤ)→ℝ := fun n => (max 5 (2*b))^s.re*‖n‖^(-s.re)
-  let f : CuspCosets→(Fin 2×Fin 2)→ℤ := fun r => rowCoordinates (translatedCuspRow M r)
+  pm_3660
   let R : CuspCosets→ℝ := fun r => ‖cuspRemainderProfile a b s
     (cosetHeight r (integralComplexMatrix M • upperPoint z v hv0))‖
-  have hg : Summable G := (summable_integer_four_rpow s.re hs).mul_left _
-  have hi : Function.Injective f := rowCoordinates_injective.comp (translatedCuspRow_injective M)
+  pm_1293
   have hb : ∀r,R r≤G (f r) := by
     intro r
     simpa only [norm_mul,norm_inv,norm_cosetCharacter,inv_one,one_mul] using
@@ -374,22 +325,10 @@ lemma cuspRemainder_absolute_chart (a b : ℝ) (ha : 1≤a) (hab : a<b)
     Summable.tsum_le_tsum_of_inj f hi (fun _ _ => by dsimp [G]; positivity) hb hr hg
   simpa only [G,tsum_mul_left,eisensteinRemainderBound] using hsum
 
-theorem cuspRemainder_absolute_bound (a b : ℝ) (ha : 1≤a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) (w : HyperbolicSpace) :
+theorem cuspRemainder_absolute_bound (w : HyperbolicSpace) :
     Summable (fun r : CuspCosets => ‖cuspRemainderProfile a b s (cosetHeight r w)‖) ∧
-    (∑'r : CuspCosets,‖cuspRemainderProfile a b s (cosetHeight r w)‖)≤eisensteinRemainderBound b s := by
-  obtain ⟨M,z,v,hv,hMw,hz,hfloor⟩ := bianchi_reduction_height_floor w
-  have hz1 : ‖z‖≤1 := by
-    rw [Complex.normSq_eq_norm_sq] at hz
-    nlinarith [norm_nonneg z]
-  have hv1 : 1/2≤v := by
-    have hh := Real.sq_sqrt (by norm_num : (0:ℝ)≤2/3)
-    have hh0 := Real.sqrt_nonneg (2/3 : ℝ)
-    nlinarith
-  have hw : w=integralComplexMatrix M⁻¹ • upperPoint z v hv := by
-    rw [←hMw,map_inv,inv_smul_smul]
-  rw [hw]
-  exact cuspRemainder_absolute_chart a b ha hab s hs M⁻¹ z hz1 v hv1 hv
+    (∑'r : CuspCosets,‖cuspRemainderProfile a b s (cosetHeight r w)‖)≤eisensteinRemainderBound b s := by pm_3661 cuspRemainder_absolute_chart
+end
 
 lemma cuspRemainder_aux_norm (b : ℝ) (s : ℂ) (v : ℝ) (hv : 0<v) (hvb : v≤b) :
     ‖cuspRemainderProfile (b+1) (b+2) s v‖=v^s.re := by
@@ -414,24 +353,24 @@ lemma cuspRemainder_row_scaled_deriv_aux_bound (a b : ℝ) (hab : a<b) (s : ℂ)
 end
 
 open Filter
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 def weightedHeightProfile (F : ℝ→ℂ) (r : CuspCosets) (p : SpatialCoordinates) : ℂ :=
   (cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) p)
 
 lemma weightedHeightProfile_axis_differentiable (F : ℝ→ℂ)
-    (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v) (r : CuspCosets)
+    (hF : ∀v,0<v→ ContDiffAt ℝ ∞ F v) (r : CuspCosets)
     (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     DifferentiableAt ℝ (axisSlice (weightedHeightProfile F r) p j) (p j) :=
   ((rowProfile_axis_derivatives F hF (embeddedRow r) (embeddedRow_ne_zero r) p hp j).1.const_mul _).differentiableAt
 
 lemma heightPoincare_axis_termwise (F : ℝ→ℂ) (hzero : ∀v≤1,F v=0)
-    (hF : ∀v,0<v→ContDiffAt ℝ ∞ F v)
+    (hF : ∀v,0<v→ ContDiffAt ℝ ∞ F v)
     (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     Summable (fun r => deriv (axisSlice (weightedHeightProfile F r) p j) (p j)) ∧
     HasDerivAt (axisSlice (heightPoincareField F) p j)
       (∑'r,deriv (axisSlice (weightedHeightProfile F r) p j) (p j)) (p j) := by
-  obtain ⟨U,hU,hpU,S,hrows⟩ := locally_finite_high_rows p hp
+  pm_3685
   have ht : Tendsto (fun t => Function.update p j t) (𝓝 (p j)) (𝓝 p) := by
     simpa only [ContinuousAt,Function.update_eq_self] using
       ((continuous_axis_update p j).continuousAt (x := p j))
@@ -440,8 +379,7 @@ lemma heightPoincare_axis_termwise (F : ℝ→ℂ) (hzero : ∀v≤1,F v=0)
       deriv (axisSlice (weightedHeightProfile F r) p j) (p j)=0 := by
     have he : axisSlice (weightedHeightProfile F r) p j=ᶠ[𝓝 (p j)] (fun _ => 0) := by
       filter_upwards [hn] with t ht
-      change (cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) (Function.update p j t))=0
-      rw [hzero _ ((hrows _ ht).2 r hr).le,mul_zero]
+      pm_3530
     exact he.deriv_eq.trans (deriv_const _ _)
   refine ⟨summable_of_ne_finset_zero hz,?_⟩
   rw [tsum_eq_sum hz]
@@ -454,17 +392,14 @@ lemma heightPoincare_axis_termwise (F : ℝ→ℂ) (hzero : ∀v≤1,F v=0)
     ∑r∈S,weightedHeightProfile F r (Function.update p j t)
   apply tsum_eq_sum
   intro r hr
-  change (cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) (Function.update p j t))=0
-  rw [hzero _ ((hrows _ ht).2 r hr).le,mul_zero]
+  pm_3530
 
 lemma weightedRemainder_axis_deriv (a b : ℝ) (s : ℂ) (r : CuspCosets)
     (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     deriv (axisSlice (weightedHeightProfile (cuspRemainderProfile a b s) r) p j) (p j)=
       deriv (axisSlice (smoothSummand s r) p j) (p j)-
         deriv (axisSlice (weightedHeightProfile (cuspSeedProfile a b s) r) p j) (p j) := by
-  have hn : ∀ᶠt in 𝓝 (p j),0<(Function.update p j t) 2 := by
-    apply ((continuous_apply 2).comp (continuous_axis_update p j)).continuousAt.eventually_const_lt
-    simpa only [Function.comp_apply,Function.update_eq_self] using hp
+  pm_3531
   have he : axisSlice (weightedHeightProfile (cuspRemainderProfile a b s) r) p j=ᶠ[𝓝 (p j)]
       (fun t => axisSlice (smoothSummand s r) p j t-
         axisSlice (weightedHeightProfile (cuspSeedProfile a b s) r) p j t) := by
@@ -481,7 +416,7 @@ def eisensteinRemainderField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates) : �
   smoothEisenstein s p-smoothCuspSeedField a b s p
 
 theorem eisensteinRemainder_axis_termwise (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 2<s.re) (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
+    (s : ℂ) (hs : 2< s.re) (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
     Summable (fun r => deriv (axisSlice (weightedHeightProfile (cuspRemainderProfile a b s) r) p j) (p j)) ∧
     HasDerivAt (axisSlice (eisensteinRemainderField a b s) p j)
       (∑'r,deriv (axisSlice (weightedHeightProfile (cuspRemainderProfile a b s) r) p j) (p j)) (p j) := by
@@ -497,9 +432,7 @@ theorem eisensteinRemainder_axis_termwise (a b : ℝ) (ha : 1<a) (hab : a<b)
   refine ⟨(hE.1.sub hS.1).congr (fun r => (weightedRemainder_axis_deriv a b s r p hp j).symm),?_⟩
   rw [hcoeff]
   apply (hE.2.2.1.sub hS.2).congr_of_eventuallyEq
-  have hn : ∀ᶠt in 𝓝 (p j),0<(Function.update p j t) 2 := by
-    apply ((continuous_apply 2).comp (continuous_axis_update p j)).continuousAt.eventually_const_lt
-    simpa only [Function.comp_apply,Function.update_eq_self] using hp
+  pm_3531
   filter_upwards [hn] with t ht
   change smoothEisenstein s _-smoothCuspSeedField a b s _=
     smoothEisenstein s _-heightPoincareField (cuspSeedProfile a b s) _
@@ -508,7 +441,7 @@ theorem eisensteinRemainder_axis_termwise (a b : ℝ) (ha : 1<a) (hab : a<b)
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Classical Topology ContDiff Manifold
 
 namespace CubicEisenstein
 
@@ -530,14 +463,14 @@ lemma weightedRemainder_scaled_deriv_bound (a b : ℝ) (hab : a<b) (s : ℂ)
     ‖(p 2:ℂ)*((cosetCharacter r)⁻¹*deriv (axisSlice g p j) (p j))‖
       = ‖(cosetCharacter r)⁻¹*((p 2:ℂ)*deriv (axisSlice g p j) (p j))‖ := by congr 1; ring
     _ = ‖(p 2:ℂ)*deriv (axisSlice g p j) (p j)‖ := by
-      rw [norm_mul,norm_inv,norm_cosetCharacter,inv_one,one_mul]
+      pm_3681 norm_mul norm_inv norm_cosetCharacter inv_one one_mul
     _ ≤ _ := cuspRemainder_row_scaled_deriv_aux_bound a b hab s C hC0 hC _ (embeddedRow_ne_zero r) p hp j
 
 theorem eisensteinRemainder_scaled_axis_bound (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) :
+    (s : ℂ) (hs : 4< s.re) :
     ∃B : ℝ,0≤B ∧ ∀p : SpatialCoordinates,0<p 2→∀j : Fin 3,
       ‖(p 2:ℂ)*deriv (axisSlice (eisensteinRemainderField a b s) p j) (p j)‖≤B := by
-  obtain ⟨C,hC0,hC⟩ := cuspTransition_euler_bounded a b hab
+  pm_114 C hC0 hC cuspTransition_euler_bounded a b hab
   refine ⟨(‖s‖+C)*eisensteinRemainderBound (b+2) s,
     mul_nonneg (add_nonneg (norm_nonneg s) hC0) (eisensteinRemainderBound_nonneg _ _),?_⟩
   intro p hp j
@@ -559,21 +492,23 @@ theorem eisensteinRemainder_scaled_axis_bound (a b : ℝ) (ha : 1<a) (hab : a<b)
   rw [tsum_mul_left]
   exact mul_le_mul_of_nonneg_left hA.2 (add_nonneg (norm_nonneg s) hC0)
 
-def kernelEisensteinRemainder (a b : ℝ) (s : ℂ) (hs : 2<s.re) : KernelQuotient→ℂ :=
+def kernelEisensteinRemainder (a b : ℝ) (s : ℂ) (hs : 2< s.re) : KernelQuotient→ℂ :=
   fun q => kernelQuotientEisenstein s hs q-kernelQuotientSeed a b s q
 
-lemma kernelEisensteinRemainder_smooth (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 2<s.re) :
+section
+variable (a b : ℝ) (ha : 1<a) (hab : a<b) (s : ℂ) (hs : 2< s.re)
+include a b ha hab s hs
+lemma kernelEisensteinRemainder_smooth :
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ (kernelEisensteinRemainder a b s hs) :=
   (kernelQuotientEisenstein_contMDiff s hs).sub (kernelQuotientSeed_contMDiff a b s ha hab)
 
-lemma kernelEisensteinRemainder_euclidean_smooth (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 2<s.re) (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma kernelEisensteinRemainder_euclidean_smooth (p : EuclideanSpatial) (hp : 0<p 2) :
     ContDiffAt ℝ ∞ (fun q => kernelEisensteinRemainder a b s hs (kernelEuclideanProjection q)) p :=
   ((((kernelEisensteinRemainder_smooth a b ha hab s hs).comp kernelProjection_contMDiff)
     (euclideanToHyperbolic p)).comp p (euclideanToHyperbolic_contMDiffAt p hp)).contDiffAt
+end
 
-lemma kernelEisensteinRemainder_euclidean_eq (a b : ℝ) (s : ℂ) (hs : 2<s.re)
+lemma kernelEisensteinRemainder_euclidean_eq (a b : ℝ) (s : ℂ) (hs : 2< s.re)
     (p : EuclideanSpatial) (hp : 0<p 2) :
     kernelEisensteinRemainder a b s hs (kernelEuclideanProjection p)=eisensteinRemainderField a b s p.ofLp := by
   unfold kernelEisensteinRemainder kernelEuclideanProjection
@@ -585,21 +520,20 @@ lemma kernelEisensteinRemainder_euclidean_eq (a b : ℝ) (s : ℂ) (hs : 2<s.re)
   rfl
 
 theorem kernelEisensteinRemainder_scaled_fderiv_bound (a b : ℝ) (ha : 1<a) (hab : a<b)
-    (s : ℂ) (hs : 4<s.re) :
+    (s : ℂ) (hs : 4< s.re) :
     ∃B : ℝ,0≤B ∧ ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
       ‖(p 2:ℂ)*fderiv ℝ (fun q => kernelEisensteinRemainder a b s (by linarith)
         (kernelEuclideanProjection q)) p (euclideanCoordinateVector j)‖≤B := by
-  obtain ⟨B,hB,hbound⟩ := eisensteinRemainder_scaled_axis_bound a b ha hab s hs
-  refine ⟨B,hB,?_⟩
-  intro p hp j
+  pm_957 B hB hbound eisensteinRemainder_scaled_axis_bound a b ha hab s hs
+  pm_3532 B hB p hp j
   let f : EuclideanSpatial→ℂ:=fun q => kernelEisensteinRemainder a b s (by linarith) (kernelEuclideanProjection q)
-  have hf : ∀q,0<q 2→ContDiffAt ℝ ∞ f q := kernelEisensteinRemainder_euclidean_smooth a b ha hab s (by linarith)
-  have he : ∀q : SpatialCoordinates,0<q 2→f (WithLp.toLp 2 q)=eisensteinRemainderField a b s q := by
+  have hf : ∀q,0<q 2→ ContDiffAt ℝ ∞ f q := kernelEisensteinRemainder_euclidean_smooth a b ha hab s (by linarith)
+  have he : ∀q : SpatialCoordinates,0<q 2→ f (WithLp.toLp 2 q)=eisensteinRemainderField a b s q := by
     intro q hq
     exact kernelEisensteinRemainder_euclidean_eq a b s (by linarith) (WithLp.toLp 2 q) hq
   have heq := axisSlice_eventuallyEq_of_positive _ _ he p.ofLp hp j
   change ‖(p 2:ℂ)*fderiv ℝ f p (euclideanCoordinateVector j)‖≤B
-  rw [←(euclideanAxisSlice_derivatives f hf p hp j).1,heq.deriv_eq]
+  pm_7992 heq.deriv_eq
   exact hbound p.ofLp hp j
 
 end CubicEisenstein

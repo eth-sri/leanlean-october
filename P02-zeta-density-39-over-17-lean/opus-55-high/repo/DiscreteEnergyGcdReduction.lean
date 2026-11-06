@@ -1,6 +1,7 @@
 module
 public import DiscreteEnergyReproduction
 public import RationalLargeGcdEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,27 +34,19 @@ theorem discrete_energy_small_gcd_reduction {K : ℕ} (hK : 1 ≤ K)
         C*(smallGcdCubicSum N T W+T^η*N*(W.card:ℝ)^3) := by
   classical
   obtain ⟨C₀,hC₀,hrepro⟩ := discrete_additive_energy_reproducing
-  obtain ⟨C₁,hC₁,hlarge⟩ := large_gcd_cubic_at_transition hK hη
+  pm_69 C₁ hC₁ hlarge large_gcd_cubic_at_transition hK hη
   refine ⟨C₀*(1+C₁),by positivity,?_⟩
   intro T t₀ N hT hN hNT a W V hR hNR ha hV hlargeW hW hsep
-  let A := GuthMaynard.Improvement.sourceRatioIndices N
-  let P := A ×ˢ A
-  let F := fun p : ℕ × ℕ => ‖∑ t ∈ W, phase (pairRatio p) t‖^3
-  have hP : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
-      N < p.1 ∧ (p.1:ℝ) ≤ 2*N ∧ N < p.2 ∧ (p.2:ℝ) ≤ 2*N := by
-    intro p hp
-    obtain ⟨hp1,hp2⟩ := mem_product.mp hp
-    obtain ⟨hl1,hu1⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.1).mp hp1
-    obtain ⟨hl2,hu2⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.2).mp hp2
-    exact ⟨by exact_mod_cast hN.trans hl1,by exact_mod_cast hN.trans hl2,hl1,hu1,hl2,hu2⟩
+  pm_2724
+  pm_2723
   have hl := hlarge T t₀ N hT hN hNT P hP W hR hNR hW hsep
   have he : (∑ p ∈ P, F p) = smallGcdCubicSum N T W+
       ∑ p ∈ P.filter (fun p => N^2/T ≤ (pairGcd p:ℝ)), F p := by
     have hh := sum_filter_add_sum_filter_not P (fun p => (pairGcd p:ℝ) < N^2/T) F
-    simpa only [not_lt,smallGcdCubicSum,P,A,F] using hh.symm
+    pm_124 not_lt smallGcdCubicSum P A F hh.symm
   have hr := hrepro N hN a W V ha hV hlargeW hsep
   have hpair : (∑ n ∈ A, ∑ m ∈ A, ‖∑ t ∈ W, phase ((n:ℝ)/m) t‖^3) = ∑ p ∈ P, F p := by
-    simp only [P,F,sum_product,pairRatio,Rat.cast_div,Rat.cast_natCast]
+    pm_382 P F sum_product pairRatio Rat.cast_div Rat.cast_natCast
   rw [hpair,he] at hr
   have h0 : 0 ≤ smallGcdCubicSum N T W := sum_nonneg (fun _ _ => by positivity)
   have ht0 : 0 ≤ T^η*N*(W.card:ℝ)^3 := by positivity

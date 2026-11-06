@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownLemmaOneAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,8 +23,10 @@ noncomputable def heathBrownLemmaOneCoreConstant
   (1 + 2 * Real.pi) * (1 + 2 * Real.pi * (k : ℝ) ^ 2) *
     C ^ r * ((2 : ℝ) ^ (k - 1)) ^ (-r)
 
-theorem heathBrown_first_Abel_factor_le
-    {k : ℕ} {A lambda : ℝ}
+section
+variable {k : ℕ}
+include k
+theorem heathBrown_first_Abel_factor_le {A lambda : ℝ}
     (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
     1 + 2 * Real.pi *
         (A * lambda * (heathBrownHChoice k A lambda : ℝ) ^ (k - 1)) *
@@ -31,7 +34,7 @@ theorem heathBrown_first_Abel_factor_le
       1 + 2 * Real.pi := by
   have hscale := heathBrownHChoice_scale_pow_le_one
     (by omega : 1 ≤ k) hA hlambda
-  have hsucc : k - 1 + 1 = k := by omega
+  pm_2812 hsucc k
   have hpow :
       (heathBrownHChoice k A lambda : ℝ) ^ (k - 1) *
           heathBrownHChoice k A lambda =
@@ -42,14 +45,11 @@ theorem heathBrown_first_Abel_factor_le
         (A * lambda * (heathBrownHChoice k A lambda : ℝ) ^ (k - 1)) *
         heathBrownHChoice k A lambda =
       1 + 2 * Real.pi *
-        (A * lambda * (heathBrownHChoice k A lambda : ℝ) ^ k) := by
-          rw [← hpow]
-          ring
+        (A * lambda * (heathBrownHChoice k A lambda : ℝ) ^ k) := by grind
     _ ≤ 1 + 2 * Real.pi * 1 := by gcongr
     _ = 1 + 2 * Real.pi := by ring
 
-theorem heathBrown_second_Abel_factor_eq
-    {k : ℕ} {A lambda : ℝ}
+theorem heathBrown_second_Abel_factor_eq {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     1 + 2 * Real.pi *
@@ -61,11 +61,11 @@ theorem heathBrown_second_Abel_factor_eq
     exact_mod_cast hHnat.ne'
   field_simp
 
-theorem heathBrownLemmaOneCoreConstant_pos
-    {k : ℕ} {C : ℝ} (hk : 3 ≤ k) (hC : 0 < C) :
+theorem heathBrownLemmaOneCoreConstant_pos {C : ℝ} (hk : 3 ≤ k) (hC : 0 < C) :
     0 < heathBrownLemmaOneCoreConstant k C := by
   unfold heathBrownLemmaOneCoreConstant
   positivity
+end
 
 theorem heathBrownLemmaOneNormalized_le_core
     {N k : ℕ} {A lambda epsilon C : ℝ}
@@ -91,12 +91,9 @@ theorem heathBrownLemmaOneNormalized_le_core
     heathBrownLemmaOne_source_P_pos hN hA hlambda
   have hs : 0 < heathBrownCriticalMoment k := by
     unfold heathBrownCriticalMoment
-    have hprod : 2 ≤ k * (k - 1) := by
-      calc
-        2 = 2 * 1 := by omega
-        _ ≤ k * (k - 1) := Nat.mul_le_mul (by omega) (by omega)
+    pm_2795
     exact Nat.div_pos hprod (by omega)
-  have hsReal : (0 : ℝ) < heathBrownCriticalMoment k := by exact_mod_cast hs
+  pm_8415 hsReal heathBrownCriticalMoment k hs
   have hnonneg : 0 ≤
       C ^ (1 / (2 * (heathBrownCriticalMoment k : ℝ))) *
         (heathBrownLemmaTwoConstant k A *

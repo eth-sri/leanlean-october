@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,8 +38,7 @@ theorem actual_second_row_norm_sq
   change ‖eisEmbedding (primaryGenerator (sourceIdeal p x.firstDivisor)*
       primaryGenerator (sourceIdeal p x.second.divisor)*secondUnitFrequency u v x.second.frequency)‖^2 = _
   rw [sourceIdeal_gen p hp hpr,sourceIdeal_gen p hp hpr]
-  simp only [map_mul,norm_mul,mul_pow,secondUnitFrequency_norm,actualSecondMultiplier,
-    primeSubsetGenerator_norm_eq_productNorm,primeProductNorm]
+  pm_3780 map_mul norm_mul mul_pow secondUnitFrequency_norm actualSecondMultiplier primeSubsetGenerator_norm_eq_productNorm primeProductNorm
 
 include hp in
 

@@ -2,15 +2,15 @@ module
 public import OAI.NumberTheory.DirichletL.CubicSieve.B2Growth
 public import OAI.NumberTheory.DirichletL.CubicSieve.DescendantBounds
 public import OAI.NumberTheory.DirichletL.CubicDyadicDecay
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
-noncomputable section
 
 theorem HasCubicExponent.frequencyCost_bound {ξ : ℝ} (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hξ2 : ξ ≤ 2) (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1/2) :
@@ -21,14 +21,14 @@ theorem HasCubicExponent.frequencyCost_bound {ξ : ℝ} (h : HasCubicExponent ξ
           (2*C*IdealCoprimeSieveOperator.supportConstant ε hε*A) * Y^ε *
             (Y^(3*δ)*X^(-δ) * (decayConstant (1/3+δ)*(X*Y)^(2/3 : ℝ) +
               decayConstant (ξ+δ)*X^(1-ξ)*Y^(2*ξ-1))) := by
-  obtain ⟨A,hA,hb⟩ := h.full_element_bound hξ δ hδ
+  pm_114 A hA hb h.full_element_bound hξ δ hδ
   refine ⟨A,hA,?_⟩
   intro C ε hC hε X Y hX hY
   have hY0 : 0 < Y := by linarith
-  have hs := sieve_poisson_bound (fun K => elementSieveNorm K Y) A X Y δ ξ hA.le hX hY0
+  have hs := sieve_poisson_bound (fun K=> elementSieveNorm K Y) A X Y δ ξ hA.le hX hY0
     (by linarith) (by linarith) (by linarith) (by linarith)
     (fun K hK => elementSieveNorm_nonneg K Y)
-    (fun K hK => by simpa only [mul_comm Y (K^(1/3 : ℝ))] using hb K Y hK hY)
+    (fun K hK => by simpa only [mul_comm Y (K ^(1/3 : ℝ))] using hb K Y hK hY)
   have hfac : 0 ≤ 2*C*IdealCoprimeSieveOperator.supportConstant ε hε*Y^ε := by
     have hp := (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le
     positivity
@@ -54,8 +54,7 @@ theorem frequencyCost_descendant_of_bound (C ε A δ ξ M N d e : ℝ)
           (decayConstant (1/3+δ)*(M*N)^(2/3 : ℝ) +
             decayConstant (ξ+δ)*M^(1-ξ)*N^(2*ξ-1))) := by
   have hd : 1 ≤ d := he.trans hed
-  have hd0 : 0 < d := by linarith
-  have he0 : 0 < e := by linarith
+  pm_72 hd0 d he0 e
   have hp := (decayConstant_pos (1/3+δ) (by linarith) hα3).le
   have hq := (decayConstant_pos (ξ+δ) (by linarith) hβ3).le
   have henv := poisson_envelope_descendant_le M N e d δ ξ
@@ -79,21 +78,20 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
     2*M*Z + H*N^ε*(N^(3*δ)*M^(-δ)*
       (P*(M*N)^(2/3 : ℝ)+Q*M^(1-ξ)*N^(2*ξ-1))) ≤
         (2*Z+H*(P+Q))*N^(3*δ+ε)*(M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)) := by
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
+  pm_3779
   let X := (M*N)^(2/3 : ℝ)
   let Y := M^(1-ξ)*N^(2*ξ-1)
   let S := M+X+Y
   have hX : 0 ≤ X := Real.rpow_nonneg (by positivity) _
-  have hY : 0 ≤ Y := by dsimp [Y]; positivity
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  pm_61 hY Y
+  pm_3168
   have hshape : P*X+Q*Y ≤ (P+Q)*S := by
     dsimp only [S]
     nlinarith [mul_nonneg hP hM0.le, mul_nonneg hQ hM0.le, mul_nonneg hP hY, mul_nonneg hQ hX]
   have hsmall : M^(-δ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hM (by linarith)
   have hloss : 1 ≤ N^(3*δ+ε) := Real.one_le_rpow hN (by positivity)
   have hunit : 2*M*Z ≤ 2*Z*N^(3*δ+ε)*S := by
-    have hmS : M ≤ S := by dsimp [S]; linarith
+    pm_182 hmS M S
     calc
       _ = 2*Z*M := by ring
       _ ≤ 2*Z*S := mul_le_mul_of_nonneg_left hmS (by positivity)
@@ -113,7 +111,6 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
   have hh := add_le_add hunit htail
   convert hh using 1 <;> dsimp only [S,X,Y] <;> ring
 
-end
 end SevenEighths.CubicSieve
 
 end OAI

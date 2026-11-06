@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PrimePhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,14 +20,16 @@ lemma localGamma_norm_one (p : O) (hp : p ≠ 0) [(Ideal.span {p} : Ideal O).IsM
     (r : ℕ) (hr : r ≠ 0) (hr6 : r < 6) : ‖localGamma p hp hg r‖ = 1 :=
   MixedGaussConversion.norm_localGauss p hp hg hc r hr hr6
 
-lemma actualSextic_six (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) : actualSextic P hg ^ 6 = 1 :=
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : goodLambda ∉ P)
+include P hg
+lemma actualSextic_six (hc : ringChar (O ⧸ P) ≠ 2) : actualSextic P hg ^ 6 = 1 :=
   (actualSextic_pow_eq_one_iff P hg hc 6).mpr (by decide)
 
-lemma actualSextic_neg_one_sq (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) : actualSextic P hg (-1)^2 = 1 := by
+lemma actualSextic_neg_one_sq : actualSextic P hg (-1)^2 = 1 := by
   rw [← map_pow]
   norm_num
+end
 
 theorem localGamma_one_two_signal (p : O) (hp : p ≠ 0)
     [(Ideal.span {p} : Ideal O).IsMaximal]
@@ -39,18 +42,20 @@ theorem localGamma_one_two_signal (p : O) (hp : p ≠ 0)
     breveGamma1, breveGamma2, MixedGaussConversion.localG, FiniteGaussPhase.angularFactor,
     neg_div] using he
 
-lemma actualSextic_pow_six_mul_add (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) (r j : ℕ) :
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2)
+include P hg hc
+lemma actualSextic_pow_six_mul_add (r j : ℕ) :
     actualSextic P hg ^ (6*r+j) = actualSextic P hg ^ j := by
   rw [pow_add, pow_mul, actualSextic_six P hg hc, one_pow, one_mul]
 
-lemma actualSextic_fifth_inverse (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) :
+lemma actualSextic_fifth_inverse :
     actualSextic P hg ^ 5 = (actualSextic P hg)⁻¹ := by
   symm
   apply inv_eq_of_mul_eq_one_right
   rw [← pow_succ']
   exact actualSextic_six P hg hc
+end
 
 lemma primeGauss_inverse_pair (p : O) (hp : p ≠ 0)
     [(Ideal.span {p} : Ideal O).IsMaximal]

@@ -4,6 +4,7 @@ public import TaoTrudgianYang2025.HeathBrownPairLocalBound
 public import TaoTrudgianYang2025.HeathBrownPairTriangle
 public import TaoTrudgianYang2025.BetaHalfDuality
 public import TaoTrudgianYang2025.HeathBrownDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,24 +28,17 @@ theorem heathBrownBetaBound_reciprocal_scale {j : ℕ} (hj : 3 ≤ j)
     τ*heathBrownBetaBound j α =
       1+max ((τ-(j:ℝ))/((j:ℝ)*(j-1)))
         (max (-1/((j:ℝ)*(j-1))) (-2*τ/((j:ℝ)^2*(j-1)))) := by
-  have hjr : (3:ℝ) ≤ j := by exact_mod_cast hj
+  pm_5446 hjr j hj
   have h0 : (j:ℝ) ≠ 0 := by linarith
   have h1 : (j:ℝ)-1 ≠ 0 := by linarith
   have hf : τ*((1-(j:ℝ)*α)/((j:ℝ)*(j-1))) =
       (τ-(j:ℝ))/((j:ℝ)*(j-1)) := by
-    calc
-      _ = (τ-(j:ℝ)*(τ*α))/((j:ℝ)*(j-1)) := by ring
-      _ = _ := by rw [hτα]; ring
+    grind
   have hs : τ*(-α/((j:ℝ)*(j-1))) = -1/((j:ℝ)*(j-1)) := by
-    calc
-      _ = -(τ*α)/((j:ℝ)*(j-1)) := by ring
-      _ = _ := by rw [hτα]
+    grind
   have ht : τ*(-2*α/((j:ℝ)*(j-1))-2*(1-(j:ℝ)*α)/((j:ℝ)^2*(j-1))) =
       -2*τ/((j:ℝ)^2*(j-1)) := by
-    calc
-      _ = -2*(τ*α)/((j:ℝ)*(j-1))-2*(τ-(j:ℝ)*(τ*α))/((j:ℝ)^2*(j-1)) := by ring
-      _ = -2/((j:ℝ)*(j-1))-2*(τ-(j:ℝ))/((j:ℝ)^2*(j-1)) := by rw [hτα]; ring
-      _ = _ := by field_simp; ring
+    grind
   unfold heathBrownBetaBound
   rw [mul_add,hτα,mul_max_of_nonneg _ _ hτ.le,mul_max_of_nonneg _ _ hτ.le,hf,hs,ht]
 
@@ -58,19 +52,21 @@ theorem heathBrownPairSecant_target {r α τ : ℝ}
     _ = τ*heathBrownPairK r+(heathBrownPairL r-heathBrownPairK r)*(τ*α) := by ring
     _ = _ := by rw [hτα]; ring
 
-theorem exponentSumGrowthExponent_le_heathBrownPair_half {k : ℕ}
-    (hk : 3 ≤ k) {α : ℝ≥0} (hαhalf : (α:ℝ) ≤ 1/2) :
+section
+variable {k : ℕ} (hk : 3 ≤ k)
+include k hk
+theorem exponentSumGrowthExponent_le_heathBrownPair_half {α : ℝ≥0} (hαhalf : (α:ℝ) ≤ 1/2) :
     exponentSumGrowthExponent α ≤ exponentPairLine (heathBrownPairK k) (heathBrownPairL k) α := by
-  have hkr : (3:ℝ) ≤ k := by exact_mod_cast hk
-  by_cases hα : 0 < (α:ℝ)
+  pm_5446 hkr k hk
+  pm_8307
   · let τ : ℝ := 1/(α:ℝ)
-    have hτ : 0 < τ := by dsimp [τ]; positivity
+    pm_64 hτ τ
     have hτα : τ*(α:ℝ) = 1 := by dsimp [τ]; field_simp
     have hτ2 : 2 ≤ τ := by
       apply (le_div_iff₀ hα).mpr
       linarith
     obtain ⟨j,hj,hl,hu⟩ := exists_heathBrownPair_segment hτ2
-    have hjr : (3:ℝ) ≤ j := by exact_mod_cast hj
+    pm_5446 hjr j hj
     have hb := exponentSumGrowthExponent_le_iff_nonAsymptotic.mpr
       (isExponentSumBoundNonAsymptotic_heathBrown hj hα)
     have hscaled := mul_le_mul_of_nonneg_left hb hτ.le
@@ -85,11 +81,12 @@ theorem exponentSumGrowthExponent_le_heathBrownPair_half {k : ℕ}
     simpa only [exponentPairLine,NNReal.coe_zero,mul_zero,add_zero] using
       (heathBrownPairK_pos hkr).le
 
-theorem exponentPair_heathBrown {k : ℕ} (hk : 3 ≤ k) :
+theorem exponentPair_heathBrown :
     ExponentPair (2/(((k:ℝ)-1)^2*((k:ℝ)+2)))
       (1-(3*(k:ℝ)-2)/((k:ℝ)*((k:ℝ)-1)*((k:ℝ)+2))) := by
-  have hkr : (3:ℝ) ≤ k := by exact_mod_cast hk
+  pm_5446 hkr k hk
   exact exponentPair_of_beta_bound_half (heathBrownPair_inTriangle hkr)
     (heathBrownPair_slope hkr) (fun _ hα => exponentSumGrowthExponent_le_heathBrownPair_half hk hα)
+end
 
 end TaoTrudgianYang2025

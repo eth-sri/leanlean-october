@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationLiveMask
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,18 +31,18 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
     let T := finiteColumns (liveBox S B hB)
     gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q)
-      (fun I : supportedColumns Q => c I*f I) W K=
+      (fun I : supportedColumns Q => c I*f I) W K =
       gaussEnergy Finset.univ (sourceGenerator T) (sourceGenerator_supported T)
         (fun I : supportedColumns T => c I*f I) W K := by
   dsimp only
   have he (I : Ideal O) : finiteColumnCoefficient (liveBox S B hB)
-      (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I=
+      (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I =
       finiteColumnCoefficient (liveBox S B hB)
-        (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I*
+        (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I *
           (if s∣I then 1 else 0) := column_mask _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
   simp_rw [he,mul_assoc]
   exact live_gaussEnergy S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
-    X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I => (if s∣I then 1 else 0)*f I) W K
+    X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I=> (if s∣I then 1 else 0)*f I) W K
 
 theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
@@ -51,7 +52,7 @@ theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (f : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
     (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceGaussEnergy (residualPool C hC.1 (finiteColumns (Fintype.piFinset S)))
-      (fun I => if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
+      (fun I=> if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0) f W K).re≤
       ((actualAllocations S C).card:ℝ)*∑ B : actualAllocations S C,
         ‖frozenCoefficient B C R ν Wslot P‖^2*
@@ -60,27 +61,22 @@ theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
             (finiteColumnCoefficient
               (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1)
               (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)) f W K).re := by
-  let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
-  let b := fun B : actualAllocations S C => frozenCoefficient B C R ν Wslot P
+  pm_647
   let d := fun (B : actualAllocations S C) (I : supportedColumns Q) =>
     finiteColumnCoefficient (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1)
       (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I*f I
   have he (I : supportedColumns Q) :
       (if IsCoprime C (I:Ideal O) then finiteColumnCoefficient (Fintype.piFinset S)
-        (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0)*f I=
+        (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0)*f I =
       ∑ B,b B*d B I := by
-    rw [original_masked_live_column S hS hp C R s I hC.1
-      (Finset.mem_filter.mp I.property).2.1 hsc ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂,Finset.sum_mul]
-    simp only [b,d,mul_assoc]
-  have h := smoothed_allocation_energy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) b d W K hK hW
+    pm_1206 original_masked_live_column hsc
+  pm_6872 h
   have he' := funext he
-  change (gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) _ W K).re≤_
+  pm_6046
   rw [he']
   apply h.trans_eq
   rw [Fintype.card_coe]
-  apply congrArg (fun x : ℝ => ((actualAllocations S C).card:ℝ)*x)
-  apply Finset.sum_congr rfl
-  intro B hB
+  pm_241 S
   simpa only [b,d,sourceGaussEnergy] using
     congrArg (fun x : ℂ => ‖frozenCoefficient B C R ν Wslot P‖^2*x.re)
     (masked_live_gaussEnergy S hS hp B

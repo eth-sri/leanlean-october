@@ -12,7 +12,6 @@ solution when `Q ≤ M`.  This file records that literal finite injection.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -33,9 +32,7 @@ theorem fordVinogradovTupleInclude_injective
 theorem fordVinogradovPowerVector_include
     {s k Q M : ℕ} (hQM : Q ≤ M) (x : FordVinogradovTuple s Q) :
     fordVinogradovPowerVector s k M (fordVinogradovTupleInclude hQM x) =
-      fordVinogradovPowerVector s k Q x := by
-  ext j
-  simp only [fordVinogradovPowerVector, fordVinogradovTupleInclude]
+      fordVinogradovPowerVector s k Q x := by aesop
 
 theorem fordVinogradovMomentNat_mono
     (s k : ℕ) {Q M : ℕ} (hQM : Q ≤ M) :

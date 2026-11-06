@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstMixedAllowance
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadiusSaving
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,14 +20,17 @@ open CenteredMomentRankinRadical ConcreteTraceCRT ActualEisensteinCubic
 open CenteredMomentFirstMixedAllowance CenteredMomentCommonRadiusSaving
 local notation "O" => ActualEisensteinCubic.O
 
-theorem column_saving_gates (η τ : Character) (m : O)
+section
+variable (η τ : Character) (m : O)
+include η τ m
+theorem column_saving_gates
     (I J : Ideal O) (A : Finset (CommonIndex I J)) (Z : ℝ) (hZ : 1<Z)
     (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J}) :
+      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J=> P.val) A*activeConductor I J}) :
     let c := Real.logb Z ((commonPart I J).absNorm:ℝ)
     let d := Real.logb Z ((commonPart J I).absNorm:ℝ)
     let q := Real.logb Z (τ.modulus.absNorm:ℝ)
-    0≤c ∧ 0≤q ∧ 0≤extractedAllowance I J Z ∧
+    0≤ c ∧ 0≤q ∧ 0≤extractedAllowance I J Z ∧
       3*c-5*d≤6*extractedAllowance I J Z+q := by
   dsimp only
   have hq := canonical_active_log_le η τ m I J A Z hZ hmod
@@ -41,11 +45,11 @@ theorem column_saving_gates (η τ : Character) (m : O)
   · unfold extractedAllowance; positivity
   · unfold extractedAllowance; linarith [hq.2]
 
-theorem actual_main_column_saving (η τ : Character) (m : O)
+theorem actual_main_column_saving
     (I J E : Ideal O) (_hI : Supported I) (_hJ : Supported J)
     (A : Finset (CommonIndex I J)) (K X Z j sigma delta reserve : ℝ) (hZ : 1<Z)
     (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J}) :
+      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J=> P.val) A*activeConductor I J}) :
     let c := Real.logb Z ((commonPart I J).absNorm:ℝ)
     let d := Real.logb Z ((commonPart J I).absNorm:ℝ)
     let _p := Real.logb Z ((commonRadical I J).absNorm:ℝ)
@@ -55,23 +59,21 @@ theorem actual_main_column_saving (η τ : Character) (m : O)
       firstSaving c (d+K0-j) 0 (Real.logb Z (τ.modulus.absNorm:ℝ)) 0
         (extractedAllowance I J Z)
         (Real.logb Z (mainCommonRadius Z d K0 c sigma delta reserve)-j) (sigma/3) := by
-  dsimp only
-  rw [main_radius_gain _ _ _ _ _ _ _ _ hZ]
-  obtain ⟨hc,hq,hB,hallow⟩ := column_saving_gates η τ m I J A Z hZ hmod
+  pm_766 main_radius_gain
   convert main_saving_lower _ _ (nominalLog I J E K X Z-j) _ _ sigma delta reserve
     hc hq hB hallow using 1
   congr 1
   ring
 
-theorem actual_error_column_saving (η τ : Character) (m : O)
+theorem actual_error_column_saving
     (I J E : Ideal O) (_hI : Supported I) (_hJ : Supported J)
     (A : Finset (CommonIndex I J)) (K X Z j sigma delta reserve : ℝ) (hZ : 1<Z)
     (hmod : τ.modulus=η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
+      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J=> P.val) A*activeConductor I J})
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
     (p0 : O) (hp0 : p0∈CenteredMomentPrimeElements.elementPool
-      (CenteredMomentPrimePool.primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
+      (CenteredMomentPrimePool.primePool M H Sbad (1/2) 1 (Z ^(sigma/3))))
     (k : ℕ) (hk : k=1 ∨ k=6 ∨ k=7) :
     let c := Real.logb Z ((commonPart I J).absNorm:ℝ)
     let d := Real.logb Z ((commonPart J I).absNorm:ℝ)
@@ -82,15 +84,14 @@ theorem actual_error_column_saving (η τ : Character) (m : O)
       firstSaving c (d+K0-j) (errorRemoval p0 Z k)
         (Real.logb Z (τ.modulus.absNorm:ℝ)) (errorMoving p0 Z k) (extractedAllowance I J Z)
         (Real.logb Z (errorCommonRadius Z d K0 c sigma delta reserve p0 k)-j) 0 := by
-  dsimp only
-  rw [error_radius_gain _ _ _ _ _ _ _ _ hZ]
-  obtain ⟨hc,hq,hB,hallow⟩ := column_saving_gates η τ m I J A Z hZ hmod
+  pm_766 error_radius_gain
   obtain ⟨hl,hu⟩ := pool_prime_log_range M H Sbad hbad Z sigma hZ p0 hp0
   unfold errorRemoval errorMoving
   convert error_saving_lower _ _ (nominalLog I J E K X Z-j) _ _ sigma delta reserve
     (Real.logb Z (normValue p0)) hc hq hB hallow hl hu k hk using 1
   congr 1
   ring
+end
 
 end SevenEighths.CenteredMomentFirstMixedCommonRadius
 

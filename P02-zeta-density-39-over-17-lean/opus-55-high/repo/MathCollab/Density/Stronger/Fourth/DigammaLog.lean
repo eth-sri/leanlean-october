@@ -10,8 +10,9 @@ The imported DigammaSeries preserves its separate Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Fourth.DigammaSeries
 public import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # A uniform logarithmic approximation to the actual digamma function
@@ -21,21 +22,20 @@ unit interval in the right half-plane. This is the leading term of DLMF
 5.11.2, with an explicit vertical error; no Stirling estimate is assumed.
 -/
 
-set_option autoImplicit false
-noncomputable section
 
 open Complex Filter Finset MeasureTheory Set Topology
 
 namespace MathCollab.Density.Stronger.Fourth.Digamma
 
-theorem shift_ne_zero {z : ℂ} (hz : 0 < z.re) {x : ℝ} (hx : 0 ≤ x) :
+section
+variable {z : ℂ} (hz : 0 < z.re)
+include z hz
+theorem shift_ne_zero {x : ℝ} (hx : 0 ≤ x) :
     z + x ≠ 0 := by
-  intro h
-  have hre := congrArg Complex.re h
-  simp only [add_re, ofReal_re, zero_re] at hre
+  pm_5552 hre add_re ofReal_re
   linarith
 
-theorem integral_shift_inv {z : ℂ} (hz : 0 < z.re) {a b : ℝ}
+theorem integral_shift_inv {a b : ℝ}
     (ha : 0 ≤ a) (hab : a ≤ b) :
     (∫ x in a..b, (z + x)⁻¹) = Complex.log (z + b) - Complex.log (z + a) := by
   have hc : ContinuousOn (fun x : ℝ => (z + x)⁻¹) (Icc a b) :=
@@ -53,19 +53,19 @@ theorem integral_shift_inv {z : ℂ} (hz : 0 < z.re) {a b : ℝ}
   simpa using ((Complex.hasDerivAt_log hslit).comp (x : ℂ)
     ((hasDerivAt_id (x : ℂ)).const_add z)).comp_ofReal
 
-theorem norm_shift_mono {z : ℂ} (hz : 0 < z.re) {a b : ℝ}
+theorem norm_shift_mono {a b : ℝ}
     (ha : 0 ≤ a) (hab : a ≤ b) : ‖z + a‖ ≤ ‖z + b‖ := by
-  apply (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
+  pm_480 sq_le_sq₀
   simp only [Complex.sq_norm, Complex.normSq_apply, add_re, add_im, ofReal_re,
     ofReal_im, add_zero]
   nlinarith
 
 /-- One unit-interval sum--integral error, with a height-sensitive denominator. -/
-theorem norm_reciprocal_log_step_le {z : ℂ} (hz : 0 < z.re)
+theorem norm_reciprocal_log_step_le
     (hy : 0 < |z.im|) (n : ℕ) :
     ‖(z + n)⁻¹ - (Complex.log (z + (n + 1 : ℕ)) - Complex.log (z + n))‖ ≤
       2 / ((n : ℝ) + |z.im|) ^ 2 := by
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+  pm_322 hn n
   have hint : IntervalIntegrable (fun x : ℝ => (z + x)⁻¹) volume n (n + 1) := by
     apply ContinuousOn.intervalIntegrable_of_Icc (by linarith)
     exact (continuous_const.add Complex.continuous_ofReal).continuousOn.inv₀
@@ -80,7 +80,7 @@ theorem norm_reciprocal_log_step_le {z : ℂ} (hz : 0 < z.re)
     (a := (n : ℝ)) (b := (n : ℝ) + 1)
     (f := fun x : ℝ => (z + n)⁻¹ - (z + x)⁻¹)
     (C := 2 / ((n : ℝ) + |z.im|) ^ 2) ?_
-  · simpa using hbound
+  simp_all
   intro x hx
   change ‖(z + n)⁻¹ - (z + x)⁻¹‖ ≤ 2 / ((n : ℝ) + |z.im|) ^ 2
   rw [uIoc_of_le (by linarith : (n : ℝ) ≤ n + 1)] at hx
@@ -93,7 +93,7 @@ theorem norm_reciprocal_log_step_le {z : ℂ} (hz : 0 < z.re)
   simp only [Complex.ofReal_natCast] at hmono
   have hden : ((n : ℝ) + |z.im|) ^ 2 ≤ 2 * ‖z + n‖ ^ 2 := by
     rw [Complex.sq_norm, Complex.normSq_apply]
-    simp only [add_re, add_im, natCast_re, natCast_im, add_zero]
+    pm_93 add_re add_im natCast_re natCast_im add_zero
     nlinarith [sq_nonneg ((n : ℝ) - |z.im|), sq_abs z.im]
   have hdiff : (z + n)⁻¹ - (z + x)⁻¹ = ((x - n : ℝ) : ℂ) / ((z + n) * (z + x)) := by
     push_cast
@@ -104,16 +104,17 @@ theorem norm_reciprocal_log_step_le {z : ℂ} (hz : 0 < z.re)
   have hbase : 0 < (n : ℝ) + |z.im| := add_pos_of_nonneg_of_pos hn hy
   apply (div_le_div_iff₀ (mul_pos hnorm (hnorm.trans_le hmono))
     (sq_pos_of_pos hbase)).mpr
-  have hnum : x - n ≤ 1 := by linarith [hx.2]
+  have hnum : x - n ≤ 1 := by grind
   have hprod : ‖z + n‖ ^ 2 ≤ ‖z + n‖ * ‖z + x‖ := by
     nlinarith
   nlinarith [mul_le_mul_of_nonneg_right hnum (sq_nonneg ((n : ℝ) + |z.im|))]
+end
 
 theorem sum_reciprocal_sq_le {y : ℝ} (hy : 1 ≤ y) (N : ℕ) :
     (∑ n ∈ range N, 2 / ((n : ℝ) + y) ^ 2) ≤ 4 / y := by
   have hstep (n : ℕ) : 2 / ((n : ℝ) + y) ^ 2 ≤
       4 * (((n : ℝ) + y)⁻¹ - ((n : ℝ) + y + 1)⁻¹) := by
-    have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
+    pm_322 hn n
     have hp : 0 < (n : ℝ) + y := by linarith
     have hp1 : 0 < (n : ℝ) + y + 1 := by linarith
     field_simp
@@ -132,8 +133,11 @@ theorem sum_reciprocal_sq_le {y : ℝ} (hy : 1 ≤ y) (N : ℕ) :
       rw [div_eq_mul_inv]
       linarith
 
+section
+variable {z : ℂ} (hz : 0 < z.re)
+include z hz
 /-- Finite logarithmic comparison, uniform in the truncation length. -/
-theorem norm_sum_reciprocal_sub_log_le {z : ℂ} (hz : 0 < z.re)
+theorem norm_sum_reciprocal_sub_log_le
     (hy : 1 ≤ |z.im|) (N : ℕ) :
     ‖(∑ n ∈ range N, (z + n)⁻¹) -
       (Complex.log (z + N) - Complex.log z)‖ ≤ 4 / |z.im| := by
@@ -151,7 +155,7 @@ theorem norm_sum_reciprocal_sub_log_le {z : ℂ} (hz : 0 < z.re)
 
 /-- Shifting a large positive integer by a fixed right-half-plane point
 does not change its logarithm asymptotically; the principal branch is exact. -/
-theorem tendsto_log_nat_shift_sub_log {z : ℂ} (hz : 0 < z.re) :
+theorem tendsto_log_nat_shift_sub_log :
     Tendsto (fun N : ℕ => Complex.log (z + N) - (Real.log N : ℂ))
       atTop (𝓝 0) := by
   have hinv : Tendsto (fun N : ℕ => (N : ℂ)⁻¹) atTop (𝓝 0) :=
@@ -165,7 +169,7 @@ theorem tendsto_log_nat_shift_sub_log {z : ℂ} (hz : 0 < z.re) :
   apply hlog.congr'
   filter_upwards [eventually_ge_atTop (1 : ℕ)] with N hN
   have hNp : (0 : ℝ) < N := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hN)
-  have hNc : (N : ℂ) ≠ 0 := by exact_mod_cast hNp.ne'
+  pm_146 hNc N hNp.ne'
   have hfactor : z + N = (N : ℂ) * (1 + z * (N : ℂ)⁻¹) := by
     field_simp
     ring
@@ -181,7 +185,7 @@ theorem tendsto_log_nat_shift_sub_log {z : ℂ} (hz : 0 < z.re) :
 
 /-- The actual digamma function has a uniform explicit logarithmic error
 throughout the right half-plane at either sign of height. -/
-theorem norm_digamma_sub_log_le {z : ℂ} (hz : 0 < z.re)
+theorem norm_digamma_sub_log_le
     (hy : 1 ≤ |z.im|) : ‖Complex.digamma z - Complex.log z‖ ≤ 4 / |z.im| := by
   have hseries := (hasSum_digamma_of_re_pos hz).tendsto_sum_nat
   have hharmonic : Tendsto
@@ -193,9 +197,7 @@ theorem norm_digamma_sub_log_le {z : ℂ} (hz : 0 < z.re)
       (fun N : ℕ => (Real.log N : ℂ) - ∑ n ∈ range N, (z + n)⁻¹)
       atTop (𝓝 (Complex.digamma z)) := by
     have h := hseries.sub hharmonic
-    simp only [add_sub_cancel_right] at h
-    convert h using 1
-    ext N
+    pm_8592 add_sub_cancel_right
     rw [sum_sub_distrib, sum_inv_natCast_add_one]
     ring
   have herror : Tendsto
@@ -204,9 +206,7 @@ theorem norm_digamma_sub_log_le {z : ℂ} (hz : 0 < z.re)
       atTop (𝓝 (Complex.log z - Complex.digamma z)) := by
     have h := (tendsto_const_nhds (x := Complex.log z)).sub
       (hpsi.add (tendsto_log_nat_shift_sub_log hz))
-    simp only [add_zero] at h
-    convert h using 1
-    ext N
+    pm_8592 add_zero
     ring
   rw [norm_sub_rev]
   exact le_of_tendsto herror.norm (Eventually.of_forall
@@ -214,7 +214,7 @@ theorem norm_digamma_sub_log_le {z : ℂ} (hz : 0 < z.re)
 
 /-- The real part needed for the critical-line Gamma phase, retaining the
 explicit dependence on the real coordinate. -/
-theorem abs_re_digamma_sub_log_im_le {z : ℂ} (hz : 0 < z.re)
+theorem abs_re_digamma_sub_log_im_le
     (hy : 1 ≤ |z.im|) :
     |(Complex.digamma z).re - Real.log (|z.im|)| ≤ (4 + z.re) / |z.im| := by
   have hy0 : 0 < |z.im| := lt_of_lt_of_le zero_lt_one hy
@@ -243,5 +243,6 @@ theorem abs_re_digamma_sub_log_im_le {z : ℂ} (hz : 0 < z.re)
       rw [abs_of_nonneg hlog0]
       exact add_le_add hmain hlogup
     _ = _ := by rw [add_div]
+end
 
 end MathCollab.Density.Stronger.Fourth.Digamma

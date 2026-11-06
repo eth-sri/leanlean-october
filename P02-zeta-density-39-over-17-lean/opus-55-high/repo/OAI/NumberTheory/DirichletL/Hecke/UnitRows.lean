@@ -20,7 +20,7 @@ theorem supported_unit_thirty_six (n : O) (hn : Supported (Ideal.span {n})) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {(36 : O)}) n) := by
   have hs := (supported_span_iff n).mp hn
   have hneg2 : IsCoprime (-2 : O) n := negative_two_prime.irreducible.coprime_iff_not_dvd.mpr
-    (by simpa only [neg_dvd] using hs.2)
+    (by simp_all)
   have h2 : IsCoprime n (2 : O) := (hneg2.of_isCoprime_of_dvd_left ⟨-1, by ring⟩).symm
   have h9 := (ShortDraftCRT.nine_coprime_of_not_lambda_dvd n hs.1).symm
   rw [IdealCharacter.isUnit_mk_iff_isCoprime, Ideal.isCoprime_span_singleton_iff]
@@ -28,13 +28,13 @@ theorem supported_unit_thirty_six (n : O) (hn : Supported (Ideal.span {n})) :
 
 theorem unitSupplement_unit (u v : Oˣ) : unitSupplement u (v : O) = 1 := by
   have hspan : (Ideal.span {(v : O)} : Ideal O) = 1 := by
-    simpa only [Ideal.one_eq_top] using Ideal.span_singleton_eq_top.mpr v.isUnit
+    simp_all
   have hs : Supported (1 : Ideal O) := ⟨one_ne_zero, by
     intro P hP
     rw [UniqueFactorizationMonoid.normalizedFactors_one] at hP
-    exact False.elim (Multiset.notMem_zero P hP)⟩
+    grind⟩
   change (if Supported (Ideal.span {(v : O)}) then idealRowHom (u : O) (Ideal.span {(v : O)}) else 0) = 1
-  rw [hspan, ite_eq_left hs, map_one]
+  grind
 
 theorem unitSupplement_factorsModulo (u : Oˣ) :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {(36 : O)}) (unitSupplement u) :=

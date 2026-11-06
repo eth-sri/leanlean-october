@@ -1,9 +1,8 @@
 module
 public import Mathlib
 
-@[expose] public section
+public section
 open Finset
-noncomputable section
 namespace GafniTao
 theorem ford_norm_sum_sq_le_card_mul_sum_norm_sq
     {α : Type*} (B : Finset α) (V : α → ℂ) :

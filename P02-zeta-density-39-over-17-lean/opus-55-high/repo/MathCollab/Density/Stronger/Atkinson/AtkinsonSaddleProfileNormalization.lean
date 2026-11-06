@@ -10,6 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonSignedSaddleProfile
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonQuadraticKernel
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCoefficientVariation
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonResidualVariation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,11 +19,14 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinsonSaddle_quarter_power_curvature {T : ℝ} (hT : 0 < T) (b : ℝ) :
+section
+variable {T : ℝ} (hT : 0 < T)
+include T hT
+theorem atkinsonSaddle_quarter_power_curvature (b : ℝ) :
     T^(-(1/4 : ℝ)) * (zetaAtkinsonSaddle T b/T)^(-(1/4 : ℝ)) /
       Real.sqrt (2*atkinsonSaddleCurvature T b) = atkinsonCommonSaddleFactor T b := by
-  let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
-  have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
+  pm_460
+  pm_4370
   have hc : 0 < atkinsonSaddleCurvature T b := by
     linarith [one_lt_atkinsonSaddleCurvature hT b]
   have hp : T^(-(1/4 : ℝ)) * (zetaAtkinsonSaddle T b/T)^(-(1/4 : ℝ)) =
@@ -37,11 +41,9 @@ theorem atkinsonSaddle_quarter_power_curvature {T : ℝ} (hT : 0 < T) (b : ℝ) 
   change Real.sqrt (atkinsonSaddleCurvature T b) * Real.sqrt r = _ at hs
   rw [hp,Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 2)]
   change _ = 1/(Real.sqrt 2 * Real.sqrt (Real.sqrt (b^2+4*(T/(2*Real.pi)))))
-  calc
-    _ = 1/(Real.sqrt 2*(Real.sqrt (atkinsonSaddleCurvature T b)*Real.sqrt r)) := by ring
-    _ = _ := by rw [hs]
+  grind
 
-theorem atkinsonSaddleProfile_div_curvature {T : ℝ} (hT : 0 < T) (G L b : ℝ) :
+theorem atkinsonSaddleProfile_div_curvature (G L b : ℝ) :
     atkinsonSaddleProfile T G L (1/4) b /
       (Real.sqrt (2*atkinsonSaddleCurvature T b) : ℂ) =
         (atkinsonCommonSaddleFactor T b : ℂ) *
@@ -52,13 +54,7 @@ theorem atkinsonSaddleProfile_div_curvature {T : ℝ} (hT : 0 < T) (G L b : ℝ)
           (atkinsonCommonSaddleFactor T b : ℂ) := by
     exact_mod_cast atkinsonSaddle_quarter_power_curvature hT b
   unfold atkinsonSaddleProfile atkinsonPowerProfile atkinsonSaddleResidual
-  calc
-    _ = (((T^(-(1/4:ℝ)) : ℝ) : ℂ) *
-      (((zetaAtkinsonSaddle T b/T)^(-(1/4:ℝ)) : ℝ) : ℂ) /
-        (Real.sqrt (2*atkinsonSaddleCurvature T b) : ℂ)) *
-      (zetaMainMellinProfile (zetaAtkinsonSaddle T b/T) *
-        (zetaDivisorBandCutoff T G L (zetaAtkinsonSaddle T b) : ℂ)) *
-          zetaSquareReflectedGammaPhase T := by ring
-    _ = _ := by rw [he]
+  grind
+end
 
 end MathCollab.Density.Stronger.Atkinson

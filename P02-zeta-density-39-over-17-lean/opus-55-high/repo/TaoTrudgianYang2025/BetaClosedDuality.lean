@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaUniformityFull
 public import TaoTrudgianYang2025.BetaModelSumBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,9 +33,9 @@ theorem exponentSumGrowthExponent_one_le_half :
     dsimp [δ]
     exact lt_min (lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one)
       (lt_min (by norm_num) hε)
-  have hδphase : δ ≤ min (modelPhaseCurvatureLower σ) 1 := min_le_left _ _
+  pm_7967 hδphase
   have hδhalf : δ ≤ (1 : ℝ)/2 := (min_le_right _ _).trans (min_le_left _ _)
-  have hδε : δ ≤ ε := (min_le_right _ _).trans (min_le_right _ _)
+  pm_372 hδε δ ε min_le_right
   let K := modelPhaseSumConstant σ
   have hK : 0 < K := modelPhaseSumConstant_pos hσ
   let C := max 1 (2*K)
@@ -53,9 +54,7 @@ theorem exponentSumGrowthExponent_one_le_half :
   have hfinite := norm_exponentialSumAt_le_secondDerivative hσ hT hN hδphase
     h.isApproximateModelPhase h.scale_le_start h.end_le_two_mul_scale hscale
   have hsqrtpos : 0 < Real.sqrt T := Real.sqrt_pos.mpr hTpos
-  have hsqrtBound : Real.sqrt T ≤ T^((1 : ℝ)/2+ε) := by
-    rw [Real.sqrt_eq_rpow]
-    exact Real.rpow_le_rpow_of_exponent_le hT (by linarith)
+  pm_1235 hsqrtBound
   have hquotBound : N/Real.sqrt T ≤ T^((1 : ℝ)/2+ε) := by
     calc
       N/Real.sqrt T ≤ T^(1+δ)/Real.sqrt T :=

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.ExponentImprovement
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,12 +14,10 @@ theorem hasCubicExponent_four_thirds : HasCubicExponent (4/3 : ℝ) := by
   obtain ⟨ξ, hξ, hξ2, hξε, hx⟩ := SevenEighths.HeathBrownIteration.finite_improvement
     hasCubicExponent_initial (fun x hx hx2 hp => hp.improve hx hx2)
     (show 0 < ε/2 by positivity)
-  obtain ⟨C,hC,hb⟩ := hx (ε/2) (by positivity)
-  refine ⟨C,hC,?_⟩
-  intro M N hM hN
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
-  have hMN : 0 < M*N := mul_pos hM0 hN0
+  pm_657 C hC hb hx
+  pm_484 C hC M N hM hN
+  pm_3779
+  pm_474 hMN M N hM0 hN0
   have hp : 1 ≤ N^(ε/2) := Real.one_le_rpow hN (by positivity)
   have hNpow : N^ξ ≤ N^(4/3 : ℝ)*N^(ε/2) := by
     rw [← Real.rpow_add hN0]
@@ -41,9 +40,7 @@ theorem hasCubicExponent_four_thirds : HasCubicExponent (4/3 : ℝ) := by
         rw [← Real.rpow_add hMN]
         congr 1
         ring
-      calc
-        _ = C*((M*N)^(ε/2)*(M*N)^(ε/2))*(M+N^(4/3 : ℝ)+(M*N)^(2/3 : ℝ)) := by ring
-        _ = _ := by rw [he]
+      grind
 
 lemma four_thirds_le_cross (M N : ℝ) (_hM : 1 ≤ M) (hN : 1 ≤ N) (hNM : N ≤ M) :
     N^(4/3 : ℝ) ≤ (M*N)^(2/3 : ℝ) := by
@@ -58,11 +55,10 @@ lemma four_thirds_le_cross (M N : ℝ) (_hM : 1 ≤ M) (hN : 1 ≤ N) (hNM : N �
 theorem sieveNorm_sharp (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       sieveNorm M N ≤ C*(M*N)^ε*(M+N+(M*N)^(2/3 : ℝ)) := by
-  obtain ⟨C,hC,hb⟩ := hasCubicExponent_four_thirds ε hε
+  pm_69 C hC hb hasCubicExponent_four_thirds ε hε
   refine ⟨2*C,by positivity,?_⟩
   intro M N hM hN
-  have hM0 : 0 ≤ M := by linarith
-  have hN0 : 0 ≤ N := by linarith
+  pm_255 hM0 M hN0 N
   have hcross : 0 ≤ (M*N)^(2/3 : ℝ) := Real.rpow_nonneg (mul_nonneg hM0 hN0) _
   by_cases hNM : N ≤ M
   · have hh := four_thirds_le_cross M N hM hN hNM

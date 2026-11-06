@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairDifferenceError
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -43,22 +44,20 @@ theorem aProcessShiftPhase_jet_error
         (p+1 : ℕ)*modelPhaseJetCoefficient (σ+1) p)*η := by
   let v := aProcessShiftPoint η 0 u
   let w := aProcessShiftPoint η 1 u
-  let R := iteratedDeriv p (modelPhase (σ+1)) u
+  pm_5493 modelPhase
   let D := iteratedDeriv (p+1) F v-iteratedDeriv (p+1) F w
   let C := modelPhaseJetCoefficient (σ+1) (p+1)
   let J := modelPhaseJetCoefficient (σ+1) p
   let a := (1-η)^(p+1)
-  have hv : v ∈ Ioo (1 : ℝ) 2 :=
-    aProcessShiftPoint_mem_Ioo hη.le hη₁ (by norm_num) hu
-  have hw : w ∈ Ioo (1 : ℝ) 2 :=
-    aProcessShiftPoint_mem_Ioo hη.le hη₁ (by norm_num) hu
+  pm_7357 hv v
+  pm_7357 hw w
   have hdiff : w-v = η := by dsimp [v,w,aProcessShiftPoint]; ring
   have hle : v ≤ w := by linarith
   have he := modelPhase_jet_difference_error hσ hF hu hv hw hle
     (aProcessShiftPoint_distance hη.le (by norm_num) ⟨hu.1.le,hu.2.le⟩)
     (aProcessShiftPoint_distance hη.le (by norm_num) ⟨hu.1.le,hu.2.le⟩) p hp
   rw [hdiff] at he
-  have hden : 0 < σ*η := mul_pos hσ hη
+  pm_474 hden σ η hσ hη
   have hquot : |D/(σ*η)-R| ≤ δ/σ+C*η := by
     have hq := div_le_div_of_nonneg_right he hden.le
     have hleft : D/(σ*η)-R = (D-σ*η*R)/(σ*η) := by field_simp
@@ -73,9 +72,9 @@ theorem aProcessShiftPhase_jet_error
   rw [aProcessShiftPhase_iteratedDeriv hF.1 hη.le hη₁ hu σ (p+1)]
   change |a/(σ*η)*D-R| ≤ _
   calc
-    _ = |a*(D/(σ*η)-R)+(a-1)*R| := by congr 1; ring
+    _ = |a*(D/(σ*η)-R)+(a-1)*R| := by grind
     _ ≤ |a*(D/(σ*η)-R)|+|(a-1)*R| := abs_add_le _ _
-    _ = a*|D/(σ*η)-R|+|a-1| *|R| := by rw [abs_mul,abs_mul,abs_of_nonneg ha0]
+    _ = a*|D/(σ*η)-R|+|a-1| *|R| := by grind
     _ ≤ (δ/σ+C*η)+((p+1 : ℕ)*η)*J := by
       apply add_le_add
       · exact (mul_le_of_le_one_left (abs_nonneg _) ha1).trans hquot

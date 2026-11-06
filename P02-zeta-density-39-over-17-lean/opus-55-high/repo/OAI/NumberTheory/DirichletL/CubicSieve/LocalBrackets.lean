@@ -1,5 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.CrossFactorization
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,72 +9,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 open MixedCrossSeparation (columnPrimeCoprime quadraticCrossPhase)
@@ -84,41 +43,43 @@ def blockRow {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e : ι → ℕ) (u : O) : ℂ :=
   finiteSexticRow (fun i : S => Ideal.span {p i.val}) (fun i => hg i.val) (fun i => e i.val) u
 
-theorem blockRow_eq_product {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable {ι : Type*}
+include ι
+theorem blockRow_eq_product (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e : ι → ℕ) (u : O) :
     blockRow p hg S e u = ∏ i ∈ S,
       (canonicalSextic (Ideal.span {p i}) (hg i) ^ e i) (Ideal.Quotient.mk (Ideal.span {p i}) u) :=
   Finset.prod_coe_sort S (fun i =>
     (canonicalSextic (Ideal.span {p i}) (hg i) ^ e i) (Ideal.Quotient.mk (Ideal.span {p i}) u))
 
-theorem blockRow_union {ι : Type*} [DecidableEq ι]
+theorem blockRow_union [DecidableEq ι]
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S T : Finset ι) (hd : Disjoint S T)
     (e : ι → ℕ) (u : O) :
     blockRow p hg (S ∪ T) e u = blockRow p hg S e u * blockRow p hg T e u := by
   simp only [blockRow_eq_product, Finset.prod_union hd]
 
-theorem blockRow_congr {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem blockRow_congr (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e f : ι → ℕ)
     (hef : ∀ i ∈ S, e i = f i) (u : O) : blockRow p hg S e u = blockRow p hg S f u := by
   simp only [blockRow_eq_product]
-  exact Finset.prod_congr rfl (fun i hi => by rw [hef i hi])
+  simp_all
 
-theorem blockRow_one {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem blockRow_one (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (u : O) :
     blockRow p hg S (fun _ => 1) u = finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S u := by
   simp only [blockRow_eq_product, pow_one, finiteSquarefreeRow]
 
-theorem blockRow_five {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem blockRow_five (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (u : O) :
     blockRow p hg S (fun _ => 5) u = star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S u) := by
-  simp only [blockRow_eq_product, finiteSquarefreeRow, star_prod]
-  apply Finset.prod_congr rfl
+  pm_424 blockRow_eq_product finiteSquarefreeRow star_prod Finset.prod_congr
   intro i hi
   rw [MulChar.pow_apply' _ (by decide : (5 : ℕ) ≠ 0), canonicalSextic_conj_as_row_label]
   ring
 
-theorem threeBlockRow_factor {ι : Type*} [DecidableEq ι]
+theorem threeBlockRow_factor [DecidableEq ι]
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
     (N P B : Finset ι) (hNP : Disjoint N P) (hNB : Disjoint N B) (hPB : Disjoint P B)
@@ -129,8 +90,8 @@ theorem threeBlockRow_factor {ι : Type*} [DecidableEq ι]
       finiteSquarefreeRow (fun i => Ideal.span {p i}) hg P u *
       blockRow p hg (cubeActiveSupport B v ε₁ ε₂)
         (fun i => (conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)).val) u := by
-  have hNC : Disjoint N (cubeActiveSupport B v ε₁ ε₂) := hNB.mono_right (Finset.filter_subset _ _)
-  have hPC : Disjoint P (cubeActiveSupport B v ε₁ ε₂) := hPB.mono_right (Finset.filter_subset _ _)
+  pm_8840 hNC N hNB.mono_right
+  pm_8840 hPC P hPB.mono_right
   have hN : ∀ i ∈ N, threeBlockExponent N P v ε₁ ε₂ i = 5 := by
     intro i hi; simp [threeBlockExponent, hi]
   have hP : ∀ i ∈ P, threeBlockExponent N P v ε₁ ε₂ i = 1 := by
@@ -147,7 +108,7 @@ theorem threeBlockRow_factor {ι : Type*} [DecidableEq ι]
     blockRow_congr p hg P _ _ hP, blockRow_congr p hg _ _ _ hC,
     blockRow_five, blockRow_one]
 
-theorem masked_block_radial_poisson_product {ι : Type*} [DecidableEq ι]
+theorem masked_block_radial_poisson_product [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -197,6 +158,7 @@ theorem masked_block_radial_poisson_product {ι : Type*} [DecidableEq ι]
       (canonicalNormalizedGauss Q hQ (fun i => hg i.val) j *
         ∑ E ∈ M.powerset, a E * ∑' h : O, star (blockRow p hg S e h) * F E (‖eisEmbedding h‖ ^ 2)) := by ring
     _ = _ := by rw [ht]; ring
+end
 
 def cubeBaseFactor {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -268,12 +230,12 @@ namespace EisensteinSchwartzPoisson
 end EisensteinSchwartzPoisson
 end
 
-open scoped Classical BigOperators
+open scoped Classical
 open AddChar MulChar
 namespace LocalReflectionBrackets
 
 section
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 
 variable {F : Type*} [Field F] [Fintype F]
 
@@ -299,11 +261,14 @@ def phase (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ) (ε : Fˣ) : ℂ :
   else if j = 0 then -tau χ ψ 2 * (χ ^ 2)⁻¹ ε
   else tau χ (ψ.mulShift (-1)) j * tau χ ψ (j + 2) * (χ ^ (j + 2))⁻¹ ε
 
-theorem norm_tau (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ)
+section
+variable (χ : MulChar F ℂ)
+include χ
+theorem norm_tau (ψ : AddChar F ℂ) (j : ℕ)
     (hχ : χ ^ j ≠ 1) (hψ : ψ.IsPrimitive) : ‖tau χ ψ j‖ = 1 :=
   ShortDraftGauss.norm_normalized_gaussSum (χ ^ j) ψ hχ hψ
 
-theorem bracket_four_split (χ : MulChar F ℂ) (x : F) :
+theorem bracket_four_split (x : F) :
     bracket χ 4 x = -(rootCard F : ℂ)⁻¹ + (rootCard F : ℂ) * if x = 0 then 1 else 0 := by
   have hr : (rootCard F : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt rootCard_pos)
   have hsq : (rootCard F : ℂ) ^ 2 = (Fintype.card F : ℂ) := by exact_mod_cast (rootCard_sq (F := F))
@@ -311,14 +276,14 @@ theorem bracket_four_split (χ : MulChar F ℂ) (x : F) :
   rw [← hsq]
   field_simp
 
-theorem bracket_four_cube_split (χ : MulChar F ℂ) (n b : F) :
+theorem bracket_four_cube_split (n b : F) :
     bracket χ 4 (n * b ^ 3) = -(rootCard F : ℂ)⁻¹ +
       (rootCard F : ℂ) * (if n = 0 then 1 else 0) +
       (rootCard F : ℂ) * (if n ≠ 0 ∧ b = 0 then 1 else 0) := by
   rw [bracket_four_split]
   by_cases hn : n = 0 <;> by_cases hb : b = 0 <;> simp [hn, hb]
 
-theorem norm_bracket_nonexceptional (χ : MulChar F ℂ) (j : ℕ)
+theorem norm_bracket_nonexceptional (j : ℕ)
     (hj4 : j ≠ 4) (hj0 : j ≠ 0) (x : F) :
     ‖bracket χ j x‖ = if x = 0 then 0 else 1 := by
   simp only [bracket, ite_eq_right hj4, ite_eq_right hj0]
@@ -327,7 +292,7 @@ theorem norm_bracket_nonexceptional (χ : MulChar F ℂ) (j : ℕ)
   · rw [ite_eq_right hx]
     exact FiniteRayExpansion.norm_char_unit ((χ ^ (j + 2))⁻¹) (Units.mk0 x hx)
 
-theorem norm_bracket_zero (χ : MulChar F ℂ) (x : F) :
+theorem norm_bracket_zero (x : F) :
     ‖bracket χ 0 x‖ = (rootCard F)⁻¹ * if x = 0 then 0 else 1 := by
   simp only [bracket, show (0 : ℕ) ≠ 4 by decide, ↓reduceIte, norm_mul, norm_inv,
     Complex.norm_real, Real.norm_of_nonneg rootCard_pos.le]
@@ -337,12 +302,12 @@ theorem norm_bracket_zero (χ : MulChar F ℂ) (x : F) :
   · rw [ite_eq_right hx]
     exact FiniteRayExpansion.norm_char_unit ((χ ^ 2)⁻¹) (Units.mk0 x hx)
 
-theorem norm_bracket_four_nonzero (χ : MulChar F ℂ) (x : F) (hx : x ≠ 0) :
+theorem norm_bracket_four_nonzero (x : F) (hx : x ≠ 0) :
     ‖bracket χ 4 x‖ = (rootCard F)⁻¹ := by
   rw [bracket_four_split]
   simp [hx, Complex.norm_real, Real.norm_of_nonneg rootCard_pos.le]
 
-theorem norm_bracket_four_zero (χ : MulChar F ℂ) :
+theorem norm_bracket_four_zero :
     ‖bracket χ 4 (0 : F)‖ = ((Fintype.card F : ℝ) - 1) / rootCard F := by
   have hq : (1 : ℝ) ≤ Fintype.card F := by exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
   simp only [bracket, ↓reduceIte, mul_one, norm_mul, norm_inv, Complex.norm_real,
@@ -350,6 +315,7 @@ theorem norm_bracket_four_zero (χ : MulChar F ℂ) :
   have heq : (-1 + (Fintype.card F : ℂ)) = (((Fintype.card F : ℝ) - 1 : ℝ) : ℂ) := by push_cast; ring
   rw [heq, Complex.norm_real, Real.norm_of_nonneg (sub_nonneg.mpr hq)]
   ring
+end
 
 end
 
@@ -403,14 +369,12 @@ theorem canonical_phase_norm (P : Ideal O) [P.IsMaximal]
     (ψ : AddChar (O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
     (j : ℕ) (hj6 : j < 6) (ε : (O ⧸ P)ˣ) :
     ‖phase (canonicalSextic P hgood) ψ j ε‖ = 1 := by
-  let : Field (O ⧸ P) := Ideal.Quotient.field P
+  pm_4892 O P
   exact phase_norm (canonicalSextic P hgood) ψ (canonicalSextic_pow_six P hgood)
     (fun k hk0 hk6 => canonicalSextic_pow_ne_one P hgood hchar hk0 hk6) hψ j hj6 ε
 
 end LocalReflectionBrackets
 
-open scoped Classical BigOperators
-open AddChar MulChar
 namespace LocalReflectionBrackets
 
 variable {F : Type*} [Field F] [Fintype F]
@@ -424,8 +388,10 @@ open ActualEisensteinCubic
 noncomputable local instance quotientFieldNormalized (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeNormalized (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
-theorem canonical_A5_normalized (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
+section
+variable (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P)
+include P hgood
+theorem canonical_A5_normalized (hchar : ringChar (O ⧸ P) ≠ 2)
     (ψ : AddChar (O ⧸ P) ℂ) (hψ : ψ.IsPrimitive)
     (j : ℕ) (hj6 : j < 6) (σ ε : (O ⧸ P)ˣ) (x : O ⧸ P) :
     activeRow (canonicalSextic P hgood) ψ j σ ε x =
@@ -438,7 +404,7 @@ theorem canonical_A5_normalized (P : Ideal O) [P.IsMaximal]
     exact_mod_cast (rootCard_sq (F := O ⧸ P))
   by_cases hj0 : j = 0
   · subst j
-    have hh := canonical_A5_jzero_active P hgood hchar ψ hψne σ ε x
+    pm_528 hh canonical_A5_jzero_active P hgood hchar ψ hψne σ ε x
     simp only [Nat.card_eq_fintype_card] at hh
     rw [activeRow, hh]
     simp only [phase, bracket, tau, show (0 : ℕ) ≠ 4 by decide, ↓reduceIte]
@@ -446,7 +412,7 @@ theorem canonical_A5_normalized (P : Ideal O) [P.IsMaximal]
     field_simp
   by_cases hj4 : j = 4
   · subst j
-    have hh := canonical_A5_jfour P hgood hchar ψ hψne σ ε x
+    pm_528 hh canonical_A5_jfour P hgood hchar ψ hψne σ ε x
     simp only [Nat.card_eq_fintype_card] at hh
     rw [activeRow, hh]
     have hqNat : 1 ≤ Fintype.card (O ⧸ P) := Fintype.card_pos_iff.mpr ⟨0⟩
@@ -469,13 +435,13 @@ theorem canonical_A5_normalized (P : Ideal O) [P.IsMaximal]
     rw [← hsq]
     field_simp
 
-theorem canonical_bracket_four_cube_split (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (n b : O) :
+theorem canonical_bracket_four_cube_split (n b : O) :
     bracket (canonicalSextic P hgood) 4 (Ideal.Quotient.mk P (n * b ^ 3)) =
       -(rootCard (O ⧸ P) : ℂ)⁻¹ + (rootCard (O ⧸ P) : ℂ) * (if n ∈ P then 1 else 0) +
       (rootCard (O ⧸ P) : ℂ) * (if n ∉ P ∧ b ∈ P then 1 else 0) := by
   rw [map_mul, map_pow, bracket_four_cube_split]
   simp only [ne_eq, Ideal.Quotient.eq_zero_iff_mem]
+end
 
 end LocalReflectionBrackets
 

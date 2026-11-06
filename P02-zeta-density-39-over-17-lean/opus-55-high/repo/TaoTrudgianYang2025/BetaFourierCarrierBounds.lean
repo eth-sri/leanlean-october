@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedJets
 public import TaoTrudgianYang2025.AtkinsonPhaseSecondDerivatives
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,9 +31,9 @@ theorem intervalC2Bound_fourierChar_of_derivative_bounds
       ((2*Real.pi)^2*K^2+2*Real.pi*K+1) (1+|T|) := by
   let C := (2*Real.pi)^2*K^2+2*Real.pi*K+1
   have hK₀ : 0 ≤ K := by linarith
-  have hC₀ : 0 ≤ C := by dsimp [C]; positivity
+  pm_61 hC₀ C
   have hE : ContDiff ℝ 2 (atkinsonPhaseExponential (2*Real.pi*T)) := by
-    have hcast : ContDiff ℝ 2 (fun x : ℝ => (x : ℂ)) := Complex.ofRealCLM.contDiff
+    pm_5806
     unfold atkinsonPhaseExponential
     fun_prop
   have he : (fun x => (𝐞 (T*F x) : ℂ)) =
@@ -46,8 +47,7 @@ theorem intervalC2Bound_fourierChar_of_derivative_bounds
   refine ⟨hC₀,by positivity,fun x hx => hE.contDiffAt.comp x (hF x hx),?_,?_,?_⟩
   · intro x hx
     rw [(norm_atkinsonPhaseExponential_derivatives (2*Real.pi*T) (F x)).1]
-    have hh : 0 ≤ (2*Real.pi)^2*K^2+2*Real.pi*K := by positivity
-    linarith
+    pm_998
   · intro x hx
     have hd : HasDerivAt (fun y => atkinsonPhaseExponential (2*Real.pi*T) (F y))
         (deriv F x • deriv (atkinsonPhaseExponential (2*Real.pi*T)) (F x)) x :=

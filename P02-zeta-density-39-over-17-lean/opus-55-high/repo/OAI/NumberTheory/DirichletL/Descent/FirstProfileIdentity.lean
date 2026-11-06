@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FullProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,8 +36,7 @@ theorem firstPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
         Real.log (q 5)+Real.log (q 7)+Real.log (q 8)) := by
     simp [Fin.sum_univ_succ,firstKernelSlope]; ring
   unfold firstPoissonProfile firstNormProfile
-  rw [hl,hr,hk]
-  simp only [Real.exp_add,Real.exp_sub,Real.exp_log (hq _)]
+  pm_8442 hl hr hk
   rw [show R*(q 6/(q 3*q 4*q 5*q 5*q 7*q 8)) =
     R*q 6/(q 3*q 4*(q 5)^2*q 7*q 8) from by ring]
   simp only [Fin.prod_univ_succ,firstRootWindows,inverseNormWindow,inverseRootWindow,
@@ -60,10 +60,8 @@ theorem canonicalPairMode_whole_profile {ι : Type*} [DecidableEq ι]
       ![A₁,A₂,C,‖eisEmbedding d‖^2,primeProductNorm p (cubeActiveSupport B v ε₁ ε₂),
         1,‖eisEmbedding h‖^2,primeProductNorm p N,primeProductNorm p P] *
       threeGaussRowFactor p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d h := by
-  have hNC : Disjoint N (cubeActiveSupport B v ε₁ ε₂) :=
-    hNB.mono_right (Finset.filter_subset _ _)
-  have hPC : Disjoint P (cubeActiveSupport B v ε₁ ε₂) :=
-    hPB.mono_right (Finset.filter_subset _ _)
+  pm_8839 hNC N hNB.mono_right
+  pm_8839 hPC P hPB.mono_right
   have hs (S : Finset ι) : ‖eisEmbedding (∏ i ∈ S,p i)‖ =
       Real.sqrt (primeProductNorm p S) := by
     simp only [primeProductNorm,Real.sqrt_sq_eq_abs,abs_of_nonneg (norm_nonneg _)]

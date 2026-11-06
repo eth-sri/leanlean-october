@@ -3,14 +3,13 @@ public import GuthMaynard.Improvement.MixedHeightReduction
 public import GuthMaynard.Improvement.UnequalHeightTheorem
 public import GuthMaynard.Improvement.SparseAffineInput
 public import GuthMaynard.Improvement.UniformReduction
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 set_option maxHeartbeats 600000 in
 /-- The strengthened unequal-scale estimate for the source's canonical
@@ -26,31 +25,30 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
       gmAffineTransformIntegral f M₁ M₂ M₃ ≤ C*T^ε*
         ((R:ℝ)^2*(K:ℝ)^4*(∫ x, f x)^2+(R:ℝ)*(K:ℝ)^3*(∫ x, f x^2)) := by
   obtain ⟨A,hA,hP⟩ := mixed_height_reduction D hD (δ := ε/2) (by positivity)
-  obtain ⟨B,hB,hF⟩ := adaptive_sparse_affine D hD hε
+  pm_114 B hB hF adaptive_sparse_affine D hD hε
   let C := 2*A*Real.sqrt (B+1)+36992*(8:ℝ)^24
-  have hC : 0 < C := by dsimp only [C]; positivity
+  pm_4123
   refine ⟨C,hC,?_⟩
   intro T f R K M₁ M₂ M₃ hT hf hs hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
-  have hTp : 0 < T := by linarith
-  have hR : 0 < R := hK.trans_le hKR
-  have hr1 : (1:ℝ) ≤ R := by exact_mod_cast hR
-  have hk1 : (1:ℝ) ≤ K := by exact_mod_cast hK
-  have hkr : (K:ℝ) ≤ R := by exact_mod_cast hKR
+  pm_4945 hTp T hR R hK.trans_le hKR
+  pm_278 hr1 R hR
+  pm_278 hk1 K hK
+  pm_404 hkr K R hKR
   have hKT : (K:ℝ) ≤ T^4 := hkr.trans hRT
-  have h₂k : (M₂:ℝ) ≤ K := by exact_mod_cast h₂K
+  pm_404 h₂k M₂ K h₂K
   have h₂T : (M₂:ℝ) ≤ T^4 := h₂k.trans hKT
-  have hmass : 0 ≤ ∫ x, f x := integral_nonneg hf
-  have hL2 : 0 ≤ ∫ x, f x^2 := integral_nonneg (fun _ => sq_nonneg _)
-  have hpow : 1 ≤ T^ε := Real.one_le_rpow (by linarith) hε.le
+  pm_4518 hmass x f integral_nonneg hf
+  pm_4604
+  pm_549 hpow T ε hε.le
   let W := (R:ℝ)^2*(K:ℝ)^4*(∫ x, f x)^2+(R:ℝ)*(K:ℝ)^3*(∫ x, f x^2)
-  have hW : 0 ≤ W := by dsimp only [W]; positivity
+  pm_82 hW W
   by_cases hlarge : 8 ≤ T
   · have hq := hF T (ε/2) hlarge f M₃ M₂ hf hs hp h₂ h₂T
     have hF' : gmAffineJ (unequalAdaptive T (ε/2) M₂ M₃ f hTp) M₂ ≤
         ((B+1)*T^ε)*((K:ℝ)^6*(∫ x, f x)^2+(K:ℝ)^4*(Real.sqrt (∫ x, f x^2))^2) := by
       rw [Real.sq_sqrt hL2]
       exact hq.trans (by gcongr; linarith)
-    have hP' := hP T hT f R K M₁ M₂ M₃ hf hs.iterationSupported hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
+    have hP' := hP T hT f R K M₁ M₂ M₃ hf (GMAffineSupportedOn.iterationSupported hs (by norm_num) (by norm_num)) hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
     have hclosed := unequal_reduction_of_estimates
       (show 0 ≤ A*T^(ε/2) by positivity)
       (show 1 ≤ (B+1)*T^ε by nlinarith only [hB,hpow])
@@ -62,10 +60,7 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
       rw [Real.sqrt_eq_rpow,← Real.rpow_mul hTp.le]
       congr 1
       ring
-    have hpows : T^(ε/2)*T^(ε/2) = T^ε := by
-      rw [← Real.rpow_add hTp]
-      congr 1
-      ring
+    pm_5917 hpows ε hTp
     have hfinal : gmAffineTransformIntegral f M₁ M₂ M₃ ≤ 2*A*Real.sqrt (B+1)*T^ε*W := by
       apply hclosed.trans_eq
       rw [hsqrt]
@@ -77,16 +72,14 @@ theorem mixed_height_affine (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β
           ((R:ℝ)^2*(K:ℝ)^4*(∫ x, f x)^2+(R:ℝ)*(K:ℝ)^3*(∫ x, f x^2)) := by ring
         _ = _ := by rw [hpows]
     exact hfinal.trans (by
-      apply mul_le_mul_of_nonneg_right _ hW
-      apply mul_le_mul_of_nonneg_right _ (by positivity)
+      pm_8921 hW
       exact le_add_of_nonneg_right (by positivity))
   · have hT8 : T ≤ 8 := le_of_lt (lt_of_not_ge hlarge)
     have hR8 : (R:ℝ)^6 ≤ (8:ℝ)^24 := by
       calc
         _ ≤ ((8:ℝ)^4)^6 := by gcongr; exact hRT.trans (by gcongr)
         _ = _ := by norm_num
-    have hf2 : Integrable (fun x => f x^2) :=
-      (memLp_two_iff_integrable_sq f.continuous.aestronglyMeasurable).1 (f.memLp 2)
+    pm_4603
     have hcrude := gmAffineTransformIntegral_le_crude hf2
       (mem_gmAffineScaleTriples.mpr ⟨h₁,h₁R,h₂,h₂K.trans hKR,h₃,h₃R⟩)
     have hL2W : (∫ x, f x^2) ≤ W := by

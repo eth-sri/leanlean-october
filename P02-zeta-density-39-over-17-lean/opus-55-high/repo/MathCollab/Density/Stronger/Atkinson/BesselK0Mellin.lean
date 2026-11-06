@@ -6,13 +6,12 @@ See third_party/twelfth/BESSEL_MELLIN_MANIFEST.json and third_party/twelfth/LICE
 Apache-2.0 attribution. No Estermann or general-modulus source closure is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.BesselK0Convergence
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set MeasureTheory
 open scoped Topology Interval
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 /-- Fubini evaluation of the Mellin transform of the positive DFI kernel,
@@ -23,18 +22,10 @@ theorem integral_cpow_mul_dfiBesselK0_Ioi_eq_beta
         (x : ℂ) ^ (s - 1) * (dfiBesselK0 x : ℂ)) =
       ((1 / 2 : ℂ) * Complex.betaIntegral (1 / 2) (s / 2)) *
         Gamma s := by
-  let F : ℝ × ℝ → ℂ := fun p =>
-    (p.1 : ℂ) ^ (s - 1) * Complex.exp (-(p.1 * Real.cosh p.2))
-  have hjointOn : IntegrableOn F (Set.Ioi 0 ×ˢ Set.Ioi 0) :=
-    integrableOn_dfiBesselK0_mellin_joint hs
-  have hjoint : Integrable F
-      ((volume.restrict (Set.Ioi 0)).prod
-        (volume.restrict (Set.Ioi 0))) := by
-    simpa only [F, Measure.prod_restrict] using! hjointOn
-  have hswap :
-      (∫ x : ℝ in Set.Ioi 0, ∫ t : ℝ in Set.Ioi 0, F (x, t)) =
-        ∫ t : ℝ in Set.Ioi 0, ∫ x : ℝ in Set.Ioi 0, F (x, t) :=
-    integral_integral_swap hjoint
+  pm_4394
+  pm_6750
+  pm_4395
+  pm_4389
   calc
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * (dfiBesselK0 x : ℂ)) =
@@ -48,25 +39,22 @@ theorem integral_cpow_mul_dfiBesselK0_Ioi_eq_beta
     _ = ∫ t : ℝ in Set.Ioi 0, ∫ x : ℝ in Set.Ioi 0, F (x, t) := hswap
     _ = ∫ t : ℝ in Set.Ioi 0,
           ((1 / Real.cosh t : ℝ) : ℂ) ^ s * Gamma s := by
-          apply setIntegral_congr_fun measurableSet_Ioi
-          intro t _
-          dsimp [F]
+          pm_6011
           convert integral_cpow_mul_exp_neg_mul_Ioi_eq hs (Real.cosh_pos t) using 1
-          · apply setIntegral_congr_fun measurableSet_Ioi
-            intro x _
-            push_cast
-            ring_nf
-          · rw [Complex.ofReal_div, Complex.ofReal_one]
+          grind
+          simp_all
     _ = (∫ t : ℝ in Set.Ioi 0,
           ((1 / Real.cosh t : ℝ) : ℂ) ^ s) * Gamma s := by
           rw [MeasureTheory.integral_mul_const]
     _ = ((1 / 2 : ℂ) * Complex.betaIntegral (1 / 2) (s / 2)) *
           Gamma s := by rw [integral_inv_cosh_cpow_Ioi_eq]
 
+section
+variable {s : ℂ} (hs : 0 < s.re)
+include s hs
 /-- The duplication formula simplifies the beta factor to the standard
 Mellin symbol of `K₀`. -/
-theorem half_beta_mul_Gamma_eq_besselK0MellinSymbol
-    {s : ℂ} (hs : 0 < s.re) :
+theorem half_beta_mul_Gamma_eq_besselK0MellinSymbol :
     ((1 / 2 : ℂ) * Complex.betaIntegral (1 / 2) (s / 2)) * Gamma s =
       dfiBesselK0MellinSymbol s := by
   have hsHalf : 0 < (s / 2).re := by
@@ -82,7 +70,7 @@ theorem half_beta_mul_Gamma_eq_besselK0MellinSymbol
   have hden : Gamma (s / 2 + (1 / 2 : ℂ)) ≠ 0 :=
     Complex.Gamma_ne_zero_of_re_pos hdenRe
   have hden' : Gamma ((s + 1) / 2) ≠ 0 := by
-    rw [show (s + 1) / 2 = s / 2 + (1 / 2 : ℂ) by ring]
+    pm_1180
     exact hden
   have hdup :
       Gamma (s / 2) * Gamma (s / 2 + (1 / 2 : ℂ)) =
@@ -91,16 +79,11 @@ theorem half_beta_mul_Gamma_eq_besselK0MellinSymbol
     convert h using 1
     all_goals ring_nf
   have hp : (2 : ℂ) ^ (s - 2) * (2 : ℂ) ^ (1 - s) = 1 / 2 := by
-    rw [← Complex.cpow_add _ _ (by norm_num : (2 : ℂ) ≠ 0)]
+    pm_4390
     rw [show s - 2 + (1 - s) = (-1 : ℂ) by ring,
       Complex.cpow_neg_one]
     norm_num
-  have hhalf : Gamma (1 / 2 : ℂ) = (Real.sqrt Real.pi : ℂ) := by
-    rw [Complex.Gamma_one_half_eq]
-    rw [show (1 / 2 : ℂ) = ((1 / 2 : ℝ) : ℂ) by norm_num,
-      ← Complex.ofReal_cpow Real.pi_pos.le]
-    norm_cast
-    rw [Real.sqrt_eq_rpow]
+  pm_4391
   have hcore :
       (Real.sqrt Real.pi : ℂ) * Gamma (s / 2) * Gamma s =
         2 * ((2 : ℂ) ^ (s - 2) * Gamma (s / 2) ^ 2 *
@@ -127,19 +110,19 @@ theorem half_beta_mul_Gamma_eq_besselK0MellinSymbol
       s / 2 + (1 / 2 : ℂ) by ring, hhalf]
   unfold dfiBesselK0MellinSymbol
   field_simp [hden, hden']
-  rw [show (s + 1) / 2 = s / 2 + (1 / 2 : ℂ) by ring]
+  pm_1180
   simpa only [mul_assoc, mul_comm, mul_left_comm] using hcore
 
 /-- The classical Mellin transform of the Macdonald kernel on its absolute
 convergence half-plane. This is the analytic identity used in the positive
 Voronoi transform. -/
-theorem integral_cpow_mul_dfiBesselK0_Ioi_eq
-    {s : ℂ} (hs : 0 < s.re) :
+theorem integral_cpow_mul_dfiBesselK0_Ioi_eq :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * (dfiBesselK0 x : ℂ)) =
       dfiBesselK0MellinSymbol s := by
   rw [integral_cpow_mul_dfiBesselK0_Ioi_eq_beta hs,
     half_beta_mul_Gamma_eq_besselK0MellinSymbol hs]
+end
 
 /-- Mellin transform of the square-root-scaled Macdonald kernel.  This is
 the exact change of variables required when DFI's literal kernel
@@ -148,23 +131,7 @@ theorem mellin_dfiBesselK0_mul_sqrt
     {A : ℝ} (hA : 0 < A) {s : ℂ} (hs : 0 < s.re) :
     mellin (fun x : ℝ => (dfiBesselK0 (A * Real.sqrt x) : ℂ)) s =
       2 * (A : ℂ) ^ (-(2 * s)) * dfiBesselK0MellinSymbol (2 * s) := by
-  have hroot : (fun x : ℝ => (dfiBesselK0 (A * Real.sqrt x) : ℂ)) =
-      (fun x : ℝ => (dfiBesselK0 (A * x ^ (1 / 2 : ℝ)) : ℂ)) := by
-    funext x
-    rw [Real.sqrt_eq_rpow]
-  rw [hroot]
-  change mellin
-    (fun x : ℝ => (dfiBesselK0 (A * (x ^ (1 / 2 : ℝ))) : ℂ)) s = _
-  rw [mellin_comp_rpow
-    (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ)) s (1 / 2 : ℝ)]
-  norm_num
-  norm_num [div_eq_mul_inv] at ⊢
-  have hmul : s * 2 = 2 * s := by ring
-  rw [hmul]
-  have hscale := mellin_comp_mul_left
-    (fun y : ℝ => (dfiBesselK0 y : ℂ)) (2 * s) hA
-  change 2 * mellin (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ)) (2 * s) = _
-  rw [hscale]
+  pm_4392 dfiBesselK0
   have hs2 : 0 < (2 * s).re := by
     have hre : (2 * s).re = 2 * s.re := by norm_num
     rw [hre]

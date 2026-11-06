@@ -3,11 +3,9 @@ public import DensityEnergyGM.SharpCountScale
 public import TraceAlternatives.CubeCountTraceExpansion
 public import TraceAlternatives.CubeQuadraticLargeValues
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
 open Finset GuthMaynard.Improvement GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -17,25 +15,11 @@ theorem cubeTraceExpression_eq_sum (T N L R E : ℝ) :
   conv_rhs => norm_num [Fin.sum_univ_succ,cubeTraceA,cubeTraceB,cubeTraceG,cubeTraceD]
   simp only [Real.rpow_neg_one, div_eq_mul_inv]
 
-/-- Actual general-polynomial count from the proved sharp trace and full
-five-term energy. The only extra premises are explicit real exponent budgets.
-The detector length and amplitude losses are tracked as72delta. -/
-theorem cube_polynomial_count_loss {σ a δ : ℝ}
-    (hσ : 4/5 ≤ σ) (hσ1 : σ < 1) (ha : 1/2 ≤ a) (ha1 : a < 2/3)
-    (hδ : 0 < δ) (hδa : δ ≤ (1-3*a/2)/2)
-    (hm : ∀ x : ℝ, a ≤ x → ∀ j : Fin 2, ∀ i : Fin 5,
-      0 ≤ cubeTraceEnergyMargin σ a x j i) :
-    ∃ C : ℝ, 0 < C ∧ ∀ T t₀ N : ℝ, 2 ≤ T →
-      T^a ≤ N → N ≤ T^(3*a/2+δ) →
-      ∀ b : ℕ → ℂ, (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
-      ∀ W : Finset ℝ,
-      (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
-      (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
-      (∀ t ∈ W, N^σ*T^(-2*δ) ≤ ‖boundedPolynomial N b t‖) →
-      (W.card:ℝ) ≤ C*T^(3*a*(1-σ)+72*δ) := by
-  obtain ⟨A,hA,hQuad⟩ := finite_quadratic_large_value_cube_native δ hδ
+set_option hygiene false in
+macro "pf_7" x1:ident x2:term:max x3:ident x4:term:max x5:ident x6:ident x7:ident x8:ident x9:ident : tactic => `(tactic| (
+  obtain ⟨A,hA,hQuad⟩ := $x1:ident δ hδ
   obtain ⟨C,hC,hEnergy⟩ := discrete_energy_five_term_native δ hδ
-  let B := A*(1+10*(1+C))
+  let B := A*(1+($x2:term)*(1+C))
   have hB : 0 < B := by dsimp [B]; positivity
   refine ⟨1+B^4,by positivity,?_⟩
   intro T t₀ N hT hlo hhi b hb W hW hSep hLarge
@@ -71,21 +55,21 @@ theorem cube_polynomial_count_loss {σ a δ : ℝ}
   have hRp : 0 < R := hSp.trans_le hSR
   have he := hEnergy T t₀ N b W V hT hNp hTN (hNL.trans hLT) hb hVp hLarge hSep hW
   have hq := hQuad T t₀ N (T^ell) hT hN1 hNL hLs hLT b hb W V hVp.le hW hLarge hSep
-  have hTrace := cubeTraceEnergy_common_bound hT1 hC.le (Nat.cast_nonneg (discreteAdditiveEnergy W))
+  have hTrace := $x3:ident hT1 hC.le (Nat.cast_nonneg (discreteAdditiveEnergy W))
     hδ.le hδ.le hSR hEll (hm x hxa) (by
       rw [← gm_amplitude_log_identity hTp,hNx]
       exact he)
   let X := S^(1/4:ℝ)*R^(7/4:ℝ)*V^4
   have hX : 0 < X := by dsimp [X]; positivity
-  have hTrace' : (∑ j : Fin 2, N^3*T^(cubeTraceA j)*(T^ell)^(cubeTraceB j)*
-      R^(cubeTraceG j)*(discreteAdditiveEnergy W:ℝ)^(cubeTraceD j)) ≤
-      10*(1+C)*T^δ*(T^(16*δ)*X) := by
+  have hTrace' : (∑ j : Fin $x4:term, N^3*T^($x5:ident j)*(T^ell)^($x6:ident j)*
+      R^($x7:ident j)*(discreteAdditiveEnergy W:ℝ)^($x8:ident j)) ≤
+      ($x2:term)*(1+C)*T^δ*(T^(16*δ)*X) := by
     rw [← gm_amplitude_log_identity hTp,hNx] at hTrace
     exact hTrace.trans_eq (by dsimp [X,S,V,R]; ring)
   have hq' : R^2*V^4 ≤ A*T^δ*((N*T^ell)^2+
-      ∑ j : Fin 2, N^3*T^(cubeTraceA j)*(T^ell)^(cubeTraceB j)*R^(cubeTraceG j)*
-        (discreteAdditiveEnergy W:ℝ)^(cubeTraceD j)) := by
-    exact hq.trans_eq (by rw [← cubeTraceExpression_eq_sum T N (T^ell) R (discreteAdditiveEnergy W)]; ring)
+      ∑ j : Fin $x4:term, N^3*T^($x5:ident j)*(T^ell)^($x6:ident j)*R^($x7:ident j)*
+        (discreteAdditiveEnergy W:ℝ)^($x8:ident j)) := by
+    exact hq.trans_eq (by rw [← $x9:ident T N (T^ell) R (discreteAdditiveEnergy W)]; ring)
   have hS2 : S^2 ≤ S^(1/4:ℝ)*R^(7/4:ℝ) := by
     have hh := sublinear_monomial_domination hSp hSR (r := 0) (c := 1/4) (by norm_num)
     norm_num at hh
@@ -105,8 +89,8 @@ theorem cube_polynomial_count_loss {σ a δ : ℝ}
   have hRaw : R^2*V^4 ≤ B*T^(18*δ)*X := by
     calc
       _ ≤ _ := hq'
-      _ ≤ A*T^δ*(T^(16*δ)*X+10*(1+C)*T^δ*(T^(16*δ)*X)) := by gcongr
-      _ ≤ A*T^δ*((1+10*(1+C))*T^δ*(T^(16*δ)*X)) := by
+      _ ≤ A*T^δ*(T^(16*δ)*X+($x2:term)*(1+C)*T^δ*(T^(16*δ)*X)) := by gcongr
+      _ ≤ A*T^δ*((1+($x2:term)*(1+C))*T^δ*(T^(16*δ)*X)) := by
         have hh := mul_le_mul_of_nonneg_right hpδ
           (by positivity : 0 ≤ T^(16*δ)*X)
         nlinarith only [mul_le_mul_of_nonneg_left hh (by positivity : 0 ≤ A*T^δ)]
@@ -124,6 +108,22 @@ theorem cube_polynomial_count_loss {σ a δ : ℝ}
       rw [mul_assoc,← Real.rpow_add hTp]
       congr 2
       ring
-    _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+    _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)))
+/-- Actual general-polynomial count from the proved sharp trace and full
+five-term energy. The only extra premises are explicit real exponent budgets.
+The detector length and amplitude losses are tracked as72delta. -/
+theorem cube_polynomial_count_loss {σ a δ : ℝ}
+    (hσ : 4/5 ≤ σ) (hσ1 : σ < 1) (ha : 1/2 ≤ a) (ha1 : a < 2/3)
+    (hδ : 0 < δ) (hδa : δ ≤ (1-3*a/2)/2)
+    (hm : ∀ x : ℝ, a ≤ x → ∀ j : Fin 2, ∀ i : Fin 5,
+      0 ≤ cubeTraceEnergyMargin σ a x j i) :
+    ∃ C : ℝ, 0 < C ∧ ∀ T t₀ N : ℝ, 2 ≤ T →
+      T^a ≤ N → N ≤ T^(3*a/2+δ) →
+      ∀ b : ℕ → ℂ, (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
+      ∀ W : Finset ℝ,
+      (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
+      (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
+      (∀ t ∈ W, N^σ*T^(-2*δ) ≤ ‖boundedPolynomial N b t‖) →
+      (W.card:ℝ) ≤ C*T^(3*a*(1-σ)+72*δ) := by pf_7 finite_quadratic_large_value_cube_native 10 cubeTraceEnergy_common_bound 2 cubeTraceA cubeTraceB cubeTraceG cubeTraceD cubeTraceExpression_eq_sum
 
 end Montgomery.RationalMoment

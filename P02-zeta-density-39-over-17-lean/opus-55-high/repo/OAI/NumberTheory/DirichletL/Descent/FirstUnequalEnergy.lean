@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,9 +48,7 @@ theorem first_family_integral_of_two_energies (source : Finset κ) (F : Finset �
   calc
     _ ≤ ∫ z : Frequency × (Fin 9 → ℝ),(Real.sqrt B₁*Real.sqrt B₂)*(tripleHeight J z.1*coordinateHeight J z.2*‖density z‖) := by
       apply norm_integral_le_of_norm_le (hDensity.const_mul _)
-      filter_upwards with z
-      rw [norm_mul]
-      exact (mul_le_mul_of_nonneg_left (hb z) (norm_nonneg _)).trans_eq (by ring)
+      pm_520 z
     _ = _ := integral_const_mul _ _
 end
 end SevenEighths.InverseMoment

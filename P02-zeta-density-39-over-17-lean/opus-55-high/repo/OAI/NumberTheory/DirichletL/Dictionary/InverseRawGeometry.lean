@@ -12,12 +12,16 @@ open InverseMoment InverseInitialCanonicalState
 
 def capacityGap (c : ℝ) : ℝ:=c/(1+c)
 
-theorem capacityGap_pos (c : ℝ) (hc : 0<c) : 0<capacityGap c :=
+section
+variable (c : ℝ) (hc : 0<c)
+include c hc
+theorem capacityGap_pos : 0<capacityGap c :=
   div_pos hc (by linarith)
 
-theorem capacityGap_lt_one (c : ℝ) (hc : 0<c) : capacityGap c<1 := by
+theorem capacityGap_lt_one : capacityGap c<1 := by
   apply (div_lt_one (by linarith : 0<1+c)).mpr
   linarith
+end
 
 theorem raw_log_capacity (H D c : ℝ) (hH : 1<H) (hD : 1≤D) (hc : 0<c)
     (hcap : D^(1+c)≤H) :
@@ -33,14 +37,14 @@ theorem raw_log_capacity (H D c : ℝ) (hH : 1<H) (hD : 1≤D) (hc : 0<c)
     apply (le_div_iff₀ (by linarith : 0<1+c)).mpr
     rw [div_mul_eq_mul_div]
     apply (div_le_iff₀ hlogH).mpr
-    simpa only [mul_div_assoc,mul_comm,mul_left_comm,one_mul] using hh
+    grind
   have he : 1/(1+c)=1-capacityGap c := by
     unfold capacityGap
     field_simp
     ring
   have hg:=(capacityGap_pos c hc).le
   exact ⟨div_nonneg (Real.log_nonneg hD) hlogH.le,hr.trans_eq he,
-    by linarith [hr.trans_eq he],Real.rpow_logb hHp (ne_of_gt hH) hDp⟩
+    by grind,Real.rpow_logb hHp (ne_of_gt hH) hDp⟩
 
 theorem raw_fixed_reserves (c κ : ℝ) (hc : 0<c) (hκ : 0<κ) :
     ∃η τ π ε : ℝ,0<η ∧ 0<τ ∧ 0<π ∧ 0<ε ∧

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Local
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,9 +31,10 @@ def residualPrimeScalar (p c0 : Eis) [hP : (Ideal.span {p}).IsMaximal]
 
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
-theorem controlled_marked_phase [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a0 c0 mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (i : ι) :
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal] (D : ControlledStratumArithmetic p N a0 c0 mode) (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (i : ι)
+include D hp hg i
+theorem controlled_marked_phase :
     (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
       phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) 0 (D.epsilon i) =
         markedPrimeScalar (p i) c0 (hp i) (hg i)*
@@ -41,14 +43,11 @@ theorem controlled_marked_phase [∀ i, (Ideal.span {p i}).IsMaximal]
       Ideal.Quotient.mk _ (cofactor p i)*(D.sigma i : Eis ⧸ Ideal.span {p i})*
       (D.epsilon i : Eis ⧸ Ideal.span {p i}) = -1 := by
     simpa only [map_mul] using D.epsilon_value i
-  rw [marked_local_phase _ _ _ _ _ _ he]
+  pm_7909 marked_local_phase he
   change _ = _
-  simp only [markedPrimeScalar, cofactor, map_prod, Finset.prod_pow,
-    MixedCrossSeparation.crossSymbol]
+  pm_188 markedPrimeScalar cofactor map_prod Finset.prod_pow MixedCrossSeparation.crossSymbol
 
-theorem controlled_residual_phase [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a0 c0 mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (i : ι) :
+theorem controlled_residual_phase :
     (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
       phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) 1 (D.epsilon i) =
         residualPrimeScalar (p i) c0 (hp i) (hg i)*
@@ -61,8 +60,8 @@ theorem controlled_residual_phase [∀ i, (Ideal.span {p i}).IsMaximal]
       (D.epsilon i : Eis ⧸ Ideal.span {p i}) = -1 := by
     simpa only [map_mul] using D.epsilon_value i
   rw [residual_local_phase _ _ _ _ _ _ _ hs he]
-  simp only [residualPrimeScalar, cofactor, map_prod, Finset.prod_pow,
-    MixedCrossSeparation.crossSymbol]
+  pm_188 residualPrimeScalar cofactor map_prod Finset.prod_pow MixedCrossSeparation.crossSymbol
+end
 
 end
 end SevenEighths.InverseReflectedPhase

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullNorm
 public import OAI.NumberTheory.DirichletL.CubicSieve.PairPoisson
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -56,10 +57,7 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
           star (cubicRow (cols j) (rows i) * aTwist j) *
             (cubicRow (cols k) (rows i) * bTwist k) else 0 := by
       rw [Fintype.sum_prod_type]
-      apply Finset.sum_congr rfl
-      intro j hj
-      apply Finset.sum_congr rfl
-      intro k hk
+      pm_3718
       dsimp only [c, aTwist, bTwist]
       split_ifs
       · rw [logPhase_add]

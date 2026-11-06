@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.ArbitraryCuspPullback
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,76 +8,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
 
@@ -88,7 +43,7 @@ def ramifiedTraceLambda : Eis := 1+2*omega
 
 lemma ramifiedEmbedding_traceLambda : eisEmbedding ramifiedTraceLambda=eisLam := by
   change eisEmbedding (1+2*omega)=1+2*EisensteinEmbedding.omega3
-  rw [map_add,map_one,map_mul,map_ofNat,eisEmbedding_omega_actual]
+  pm_3681 map_add map_one map_mul map_ofNat eisEmbedding_omega_actual
 
 lemma primary_add_three (a r : Eis) (ha : lambda^2∣a-1) :
     lambda^2∣a+3*r-1 := by
@@ -112,7 +67,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
@@ -123,14 +78,17 @@ lemma cuspTransition_dilate (A : ℝ) (hA : A≠0) :
   congr 1
   field_simp
 
-lemma cuspTransition_dilate_deriv (A v : ℝ) (hA : A≠0) :
+section
+variable (A v : ℝ) (hA : A≠0)
+include A v hA
+lemma cuspTransition_dilate_deriv :
     deriv (cuspTransition A (2*A)) v=deriv (cuspTransition 1 2) (v/A)/A := by
   rw [cuspTransition_dilate A hA]
   have hd := (((cuspTransition_contDiff 1 2).differentiable (by simp) (v/A)).hasDerivAt).comp v
     ((hasDerivAt_id v).div_const A)
   simpa [Function.comp_def,id_eq,div_eq_mul_inv] using hd.deriv
 
-lemma cuspTransition_dilate_second (A v : ℝ) (hA : A≠0) :
+lemma cuspTransition_dilate_second :
     deriv (deriv (cuspTransition A (2*A))) v=
       deriv (deriv (cuspTransition 1 2)) (v/A)/A^2 := by
   have he : deriv (cuspTransition A (2*A))=
@@ -138,22 +96,22 @@ lemma cuspTransition_dilate_second (A v : ℝ) (hA : A≠0) :
     funext x
     exact cuspTransition_dilate_deriv A x hA
   rw [he]
-  have hc := (contDiff_infty_iff_deriv.mp (cuspTransition_contDiff 1 2)).2
+  pm_8763 hc
   have hd := (((hc.differentiable (by simp) (v/A)).hasDerivAt).comp v
     ((hasDerivAt_id v).div_const A)).div_const A
   simp only [Function.comp_def,id_eq] at hd
   convert hd.deriv using 1; field_simp
+end
 
 def cuspBaseDefectFactor (s : ℂ) (x : ℝ) : ℂ :=
   (x:ℂ)^2*(deriv (deriv (cuspTransition 1 2)) x:ℝ)+
     (2*s-1)*(x:ℂ)*(deriv (cuspTransition 1 2) x:ℝ)
 
 lemma cuspBaseDefectFactor_continuous (s : ℂ) : Continuous (cuspBaseDefectFactor s) := by
-  have h1 := (contDiff_infty_iff_deriv.mp (cuspTransition_contDiff 1 2)).2
+  pm_8763 h1
   have h2 := (contDiff_infty_iff_deriv.mp h1).2
   unfold cuspBaseDefectFactor
-  exact ((Complex.continuous_ofReal.pow 2).mul (Complex.continuous_ofReal.comp h2.continuous)).add
-    ((continuous_const.mul Complex.continuous_ofReal).mul (Complex.continuous_ofReal.comp h1.continuous))
+  fun_prop
 
 lemma cuspBaseDefectFactor_compact (s : ℂ) : HasCompactSupport (cuspBaseDefectFactor s) := by
   apply HasCompactSupport.of_support_subset_isCompact (isCompact_Icc : IsCompact (Set.Icc (1:ℝ) 2))
@@ -206,11 +164,11 @@ theorem smoothCuspSeedDefect_dilate_bound :
   exact ⟨C,hC,fun A hA w => cuspCutoffCorrection_norm_le _ _ (by positivity) (hbound A hA) w⟩
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical Topology InnerProductSpace
 
 lemma movingDefect_product_bound
     (f : KernelQuotient→ℂ) (K C : ℝ) (hK : 0≤K) (hC : 0≤C)
-    (hdec : ∀w : HyperbolicSpace, ∀r : CuspCosets,1<cosetHeight r w →
+    (hdec : ∀w : HyperbolicSpace, ∀r : CuspCosets,1< cosetHeight r w →
       ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/(cosetHeight r w)^3)
     (hbound : ∀A : ℝ,1≤A → ∀w : HyperbolicSpace,
       ‖smoothCuspSeedDefect A (2*A) (4/3) w‖≤C*A^2)
@@ -225,7 +183,7 @@ lemma movingDefect_product_bound
     · rw [hz,norm_zero,mul_zero]
       positivity
     obtain ⟨r,hr,hr'⟩ := smoothCuspSeedDefect_support A (2*A) (4/3) (by linarith) w hz
-    have hheight : 0<cosetHeight r w := hApos.trans_le hr
+    have hheight : 0< cosetHeight r w := hApos.trans_le hr
     have hf : ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/A^3 := by
       apply (hdec w r (hA.trans_le hr)).trans
       apply div_le_div_of_nonneg_left hK (pow_pos hApos 3)
@@ -238,7 +196,7 @@ lemma movingDefect_inner_bound
     (F : KernelQuotientL2) (f : KernelQuotient→ℂ)
     (hrep : F=ᵐ[integralQuotientVolume globalKubotaKernel] f)
     (K C : ℝ) (hK : 0≤K) (hC : 0≤C)
-    (hdec : ∀w : HyperbolicSpace, ∀r : CuspCosets,1<cosetHeight r w →
+    (hdec : ∀w : HyperbolicSpace, ∀r : CuspCosets,1< cosetHeight r w →
       ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/(cosetHeight r w)^3)
     (hbound : ∀A : ℝ,1≤A → ∀w : HyperbolicSpace,
       ‖smoothCuspSeedDefect A (2*A) (4/3) w‖≤C*A^2)
@@ -256,12 +214,12 @@ theorem cubicEisensteinResidue_orthogonal_of_rapid_cusp_decay
     (F : KernelQuotientL2) (hF : (F,(8/9:ℂ) • F)∈kernelEnergyLaplacian.graph)
     (f : KernelQuotient→ℂ) (hrep : F=ᵐ[integralQuotientVolume globalKubotaKernel] f)
     (K : ℝ) (hK : 0≤K)
-    (hdec : ∀w : HyperbolicSpace, ∀r : CuspCosets,1<cosetHeight r w →
+    (hdec : ∀w : HyperbolicSpace, ∀r : CuspCosets,1< cosetHeight r w →
       ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/(cosetHeight r w)^3) :
     inner ℂ F cubicEisensteinResidue=0 := by
   obtain ⟨C,hC,hbound⟩ := smoothCuspSeedDefect_dilate_bound
   let B : ℝ := (3/2)*(K*C)*(integralQuotientVolume globalKubotaKernel).real Set.univ
-  have hB : 0≤B := by dsimp [B]; positivity
+  pm_3550
   have hb (A : ℝ) (hA : 1<A) : ‖inner ℂ F cubicEisensteinResidue‖≤B/A := by
     have he : cubicEisensteinResidue=
         kernelEisensteinResidueVector A (2*A) (by linarith) (by linarith) :=
@@ -295,13 +253,13 @@ lemma coset_decay_of_cusp_chart_decay
     (hdec : ∀M : CubicKubota.levelThree, ∀z : ℂ, ∀v : ℝ, ∀hv : 0<v,1<v →
       ‖f (integralOrbitProjection globalKubotaKernel
         (complexMatrix M • upperPoint z v hv))‖≤K/v^3) :
-    ∀w : HyperbolicSpace, ∀r : CuspCosets,1<cosetHeight r w →
+    ∀w : HyperbolicSpace, ∀r : CuspCosets,1< cosetHeight r w →
       ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/(cosetHeight r w)^3 := by
   intro w r
   induction r using Quotient.inductionOn with
   | _ M =>
     intro hr
-    change 1<cosetHeight (cosetOf M) w at hr
+    change 1< cosetHeight (cosetOf M) w at hr
     change _≤K/(cosetHeight (cosetOf M) w)^3
     rw [cosetHeight_cosetOf] at hr ⊢
     obtain ⟨z,v,hv,hpt⟩ := upperPoint_surjective (complexMatrix M • w)
@@ -340,8 +298,7 @@ lemma exists_congruent_cusp_completion (A : SL(2,Eis)) (x y : Eis)
   let N : SL(2,Eis) := ⟨!![x,-v+x*t;y,u+y*t],by
     rw [Matrix.det_fin_two_of]
     linear_combination huv⟩
-  have hd : A 0 0*A 1 1-A 0 1*A 1 0=1 := by
-    simpa only [Matrix.det_fin_two] using A.property
+  pm_3250 hd A A.property
   have hr : (3:Eis)∣1+y*A 0 1-x*A 1 1 := by
     convert dvd_sub (dvd_mul_of_dvd_left hy (A 0 1))
       (dvd_mul_of_dvd_left hx (A 1 1)) using 1 ; linear_combination -hd
@@ -372,15 +329,11 @@ lemma cusp_completion_upper_factor (A N : SL(2,Eis)) (q g x y : Eis)
     (hg : g≠0) (hdet : x=g*y) :
     N.val⁻¹ * (!![1,3*q;0,x] * A.val) =
       !![g,(N.val⁻¹ * (!![1,3*q;0,x] * A.val)) 0 1;0,y] := by
-  have hNdet : N 0 0*N 1 1-N 0 1*N 1 0=1 := by
-    simpa only [Matrix.det_fin_two] using N.property
-  have hAdet : A 0 0*A 1 1-A 0 1*A 1 0=1 := by
-    simpa only [Matrix.det_fin_two] using A.property
+  pm_3250 hNdet N N.property
+  pm_3250 hAdet A A.property
   have hinv : N.val⁻¹ = !![N 1 1,-N 0 1;-N 1 0,N 0 0] := by
-    rw [Matrix.inv_def,Matrix.SpecialLinearGroup.det_coe,Ring.inverse_one,one_smul,Matrix.adjugate_fin_two]
-  apply Matrix.ext
-  intro i j
-  fin_cases i <;> fin_cases j
+    pm_3681 Matrix.inv_def Matrix.SpecialLinearGroup.det_coe Ring.inverse_one one_smul Matrix.adjugate_fin_two
+  pm_5487 Matrix.ext
   · norm_num [hinv,Matrix.mul_apply,Matrix.vecMul,dotProduct,Fin.sum_univ_two]
     rw [hx,hy]
     linear_combination g*hNdet
@@ -421,8 +374,7 @@ lemma cube_average_cusp_reduction (A : SL(2,Eis)) (p q : Eis)
         !![p^j,(N.val⁻¹*(!![1,3*q;0,p^3]*A.val)) 0 1;0,p^(3-j)] := by
   let a:=A 0 0+3*q*A 1 0
   have haC:IsCoprime a (A 1 0) := by
-    have hd : A 0 0*A 1 1-A 0 1*A 1 0=1 := by
-      simpa only [Matrix.det_fin_two] using A.property
+    pm_3250 hd A A.property
     refine ⟨A 1 1,-(A 0 1+3*q*A 1 1),?_⟩
     dsimp [a]
     linear_combination hd

@@ -8,6 +8,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonMainWeight
 public import MathCollab.Density.Stronger.Atkinson.MainReflection
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonVoronoiTerms
 public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,15 +27,10 @@ theorem zetaAtkinsonVoronoiMain_eq_reflection {T G L : ℝ}
   have he : zetaAtkinsonVoronoiMain T G L =
       ∫ x : ℝ in Icc (T / 16) T,
         ((Real.log x : ℂ) + 2 * Real.eulerMascheroniConstant) * zetaAtkinsonDivisorTest T G L x := by
-    apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
-      (fun x hx => (by positivity : 0 < T / 16).trans_le hx.1)
-    intro x hx
+    pm_4382
     have hz : zetaAtkinsonDivisorTest T G L x = 0 := by
-      by_contra hn
-      have hs : x ∈ Function.support (zetaSmoothDivisorTest T G L) := by
-        rw [← support_zetaAtkinsonDivisorTest]
-        exact hn
-      exact hx.2 (support_zetaSmoothDivisorTest_physical hT hG hL hwidth hs)
+      pm_411
+      pm_7094 hs
     rw [hz, mul_zero]
   rw [he, intervalIntegral.integral_of_le (by linarith : T / 16 ≤ T),
     ← integral_Icc_eq_integral_Ioc]
@@ -64,15 +60,10 @@ theorem exists_zetaAtkinsonVoronoiMain_log_bound {δ : ℝ} (hδ : 0 < δ) :
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaAtkinsonVoronoiMain_le
   have hev : ∀ᶠ T : ℝ in atTop, ∀ G : ℝ, T ^ δ ≤ G → G ≤ T ^ (1 / 2 - δ) →
       ‖zetaAtkinsonVoronoiMain T G (Real.log T)‖ ≤ C * G * Real.log T := by
-    filter_upwards [eventually_zetaSmoothDivisorTest_support_physical hδ,
-      eventually_zeta_source_log_window_scales hδ] with T hsupport hscale
-    intro G hlower hupper
-    obtain ⟨hG, hlog, hwidth, _⟩ := hsupport.2 G hlower
+    pm_4344
     exact hbound T G (Real.log T) hsupport.1 hscale.2.1 hG
       (hscale.2.2 G hG hupper).1 hlog hwidth
-  obtain ⟨B, hB⟩ := eventually_atTop.mp hev
-  refine ⟨C, hC, max 16 B, le_max_left _ _, ?_⟩
-  intro T G hT hlower hupper
+  pm_4343
   exact hB T ((le_max_right _ _).trans hT) G hlower hupper
 
 end MathCollab.Density.Stronger.Atkinson

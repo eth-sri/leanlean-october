@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.SeedDefects
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,73 +8,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 
@@ -84,7 +41,7 @@ include hinj
 
 theorem primeIdealProduct_emultiplicity (S : Finset ι) (v : ι → ℕ) (i : ι) :
     emultiplicity (P i) (∏ j ∈ S, P j ^ v j) = if i ∈ S then (v i : ℕ∞) else 0 := by
-  have hp (j : ι) : Prime (P j) := Ideal.prime_of_isPrime (NeZero.ne (P j)) inferInstance
+  pm_7346 hp j
   rw [Finset.emultiplicity_prod (hp i)]
   have hz (j : ι) (hji : j ≠ i) : emultiplicity (P i) (P j ^ v j) = 0 := by
     rw [emultiplicity_pow (hp i), emultiplicity_eq_zero_of_irreducible_ne
@@ -92,13 +49,9 @@ theorem primeIdealProduct_emultiplicity (S : Finset ι) (v : ι → ℕ) (i : ι
   by_cases hi : i ∈ S
   · rw [ite_eq_left hi,Finset.sum_eq_single i]
     · exact emultiplicity_pow_self_of_prime (hp i) (v i)
-    · intro j hj hji
-      exact hz j hji
-    · exact fun hn => (hn hi).elim
-  · rw [ite_eq_right hi]
-    apply Finset.sum_eq_zero
-    intro j hj
-    exact hz j (fun he => hi (he ▸ hj))
+    grind
+    grind
+  aesop
 
 theorem primeIdealProduct_exponents_eq
     (B C : Finset ι) (v w : ι → ℕ)
@@ -129,7 +82,7 @@ theorem primeProduct_span_exponents_eq {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
@@ -180,16 +133,13 @@ lemma largePrincipalWindow_le (S T : Finset (Ideal O))
     (Real.sqrt (M/(Ideal.absNorm (rows i):ℝ))/((Ideal.absNorm D:ℝ)*(Ideal.absNorm E:ℝ)))*
       ‖∑ j, ∑ k, originalTerm rows left right a b D E i j k‖)]
   unfold largePrincipalWindow
-  apply Finset.sum_le_sum
-  intro D _
-  apply Finset.sum_le_sum
-  intro E _
-  apply Finset.sum_le_sum
-  intro i _
+  pm_387 Finset.sum_le_sum D E i
   split_ifs <;> first | exact le_rfl | positivity
 
-theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExponent α)
-    (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
+section
+variable {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
+include α hexp deltaLoss hδ ε hε S T
+theorem HasSieveExponent.large_principal_window
     (D₁ D₂ B N M V : ℝ) (hD₁ : 1 ≤ D₁) (hD₂ : 1 ≤ D₂) (hB : 1 ≤ B) (hN : 1 ≤ N)
     (hM : 0 < M) (hV : 0 ≤ V) (hD₁N : D₁ ≤ N) (hD₂N : D₂ ≤ N)
     (hS : ∀ D ∈ S, D₁ ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ 2*D₁)
@@ -212,11 +162,7 @@ theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExpon
         rows left right hr hl hri hrows hleft hright a b hexp deltaLoss hδ hD₁N hD₂N V hc)
   · have hz : largePrincipalWindow S T rows left right a b M P = 0 := by
       unfold largePrincipalWindow
-      apply Finset.sum_eq_zero
-      intro D hD
-      apply Finset.sum_eq_zero
-      intro E hE
-      apply Finset.sum_eq_zero
+      pm_201 Finset.sum_eq_zero D hD E hE
       intro i _
       have hn : ¬P (D*E) i := by
         intro hp
@@ -230,12 +176,10 @@ theorem HasSieveExponent.large_principal_window {α : ℝ} (hexp : HasSieveExpon
         nlinarith
       simp only [hn, ite_false]
     rw [hz]
-    have he := divisorEnergyFactor_nonneg ε hε N a b
-    have hd := (divisorExponentConstant_pos hexp deltaLoss hδ).le
+    pm_3602
     positivity
 
-theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponent α)
-    (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (S T : Finset (Ideal O))
+theorem HasSieveExponent.large_principal_pool
     (B N M V : ℝ) (hB : 1 ≤ B) (hN : 1 ≤ N) (hM : 0 < M) (hV : 0 ≤ V)
     (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D:ℝ) ∧ (Ideal.absNorm D:ℝ) ≤ N)
     (hT : ∀ E ∈ T, 1 ≤ (Ideal.absNorm E:ℝ) ∧ (Ideal.absNorm E:ℝ) ≤ N)
@@ -252,10 +196,7 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
         (2*divisorEnergyFactor ε hε N a b*(divisorExponentConstant hexp deltaLoss hδ*(B*N)^deltaLoss)*
           (V+Real.sqrt M*B^(α-1/2))) := by
   classical
-  apply divisor_dyadic_sum_le S T N _ _
-  · have he := divisorEnergyFactor_nonneg ε hε N a b
-    have hd := (divisorExponentConstant_pos hexp deltaLoss hδ).le
-    positivity
+  pm_814
   · intro j k hj hk
     exact hexp.large_principal_window deltaLoss hδ ε hε (divisorDyadicBin S N j) (divisorDyadicBin T N k)
       (divisorDyadicScale j.val) (divisorDyadicScale k.val) B N M V
@@ -264,6 +205,7 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
       (divisorDyadicBin_bounds S N hS j) (divisorDyadicBin_bounds T N hT k)
       rows left right hr hl hri hrows hleft hright a b P
       (fun D hD E hE i hp => hP D (Finset.mem_filter.mp hD).1 E (Finset.mem_filter.mp hE).1 i hp)
+end
 
 end
 
@@ -282,14 +224,9 @@ theorem finite_principal_triangle
       Finset.sum_comm (s := (Finset.univ : Finset n)) (t := (Finset.univ : Finset D))]
     simp only [Finset.mul_sum]
   rw [he]
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro i _
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro d _
-  rw [norm_mul]
-  exact mul_le_of_le_one_left (norm_nonneg _) (hμ d)
+  pm_3002 i
+  pm_3002 d
+  pm_3010 hμ d
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -322,24 +259,19 @@ lemma largePrincipalProductAt_le_window (K S T : Finset (Ideal O))
   have hp (i : m) := originalColumnSum_divisor_rectangles K S T rows left right a b i
     hleft hright hS hT P
     (fun d i _ _ => ((Real.sqrt (M/(Ideal.absNorm (rows i):ℝ))/(Ideal.absNorm d:ℝ):ℝ):ℂ))
-  apply (Finset.sum_le_sum (fun i _ => hp i)).trans_eq
+  pm_1105
   unfold largePrincipalWindow
   rw [Finset.sum_comm]
+  pm_150 Finset.sum_congr D Finset.sum_comm E
   apply Finset.sum_congr rfl
-  intro D _
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro E _
-  apply Finset.sum_congr rfl
-  intro i _
-  by_cases hd : D*E ∈ K
+  pm_8098
   · by_cases hi : P (D*E) i
     · simp only [hd, hi, and_self, ite_true, map_mul, Nat.cast_mul]
       simp only [←Finset.sum_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (show 0 ≤ Real.sqrt (M/(Ideal.absNorm (rows i):ℝ))/
           ((Ideal.absNorm D:ℝ)*(Ideal.absNorm E:ℝ)) by positivity)]
       ring
-    · simp only [hd, hi, and_false, ite_true, ite_false]
+    pm_3429 hd hi and_false ite_true ite_false
   · simp only [hd, false_and, ite_false]
 
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
@@ -359,19 +291,12 @@ lemma principalDivisorCorrection_le_product (K : Finset (Ideal O))
     unfold principalDivisorCorrection
     apply Finset.sum_congr rfl
     intro i _
-    apply Finset.sum_congr rfl
-    intro j _
-    apply Finset.sum_congr rfl
-    intro k _
-    rw [← divisorPool_filter K (left j*right k) (mul_ne_zero (hleft j) (hright k)) (hK j k),
-      Finset.sum_filter, Finset.mul_sum]
+    pm_3782
+    pm_3778
     rw [Finset.sum_coe_sort K (fun d => (UniqueFactorizationMonoid.moebius d:ℂ)*
       (if P d i then if d ∣ left j*right k then originalTerm rows left right a b 1 1 i j k *
         ((Real.sqrt (M/(Ideal.absNorm (rows i):ℝ))/(Ideal.absNorm d:ℝ):ℝ):ℂ) else 0 else 0))]
-    apply Finset.sum_congr rfl
-    intro d _
-    by_cases hd : d ∣ left j*right k <;> by_cases hi : P d i <;>
-      simp only [hd, hi, ite_true, ite_false, mul_zero] ; ring
+    pm_3777
   rw [he]
   apply (finite_principal_triangle (fun d : K => (UniqueFactorizationMonoid.moebius d.val:ℂ))
     (fun d => QuadraticInitialBound.norm_ideal_moebius_le_one d.val) A).trans_eq
@@ -381,9 +306,7 @@ lemma principalDivisorCorrection_le_product (K : Finset (Ideal O))
   rw [Finset.sum_coe_sort K (fun d => ‖∑ j, ∑ k, if P d i then
     if d ∣ left j*right k then originalTerm rows left right a b 1 1 i j k *
       ((Real.sqrt (M/(Ideal.absNorm (rows i):ℝ))/(Ideal.absNorm d:ℝ):ℝ):ℂ) else 0 else 0‖)]
-  apply Finset.sum_congr rfl
-  intro d _
-  by_cases hd : P d i <;> simp only [hd, ite_true, ite_false, Finset.sum_const_zero, norm_zero]
+  pm_1044
 
 theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -399,15 +322,10 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
       ((columnDyadicLength N+1:ℕ):ℝ)^2 *
         (2*divisorEnergyFactor ε hε N a b*(divisorExponentConstant hexp deltaLoss hδ*(B*N)^deltaLoss)*
           (V+Real.sqrt M*B^(α-1/2))) := by
-  let S := columnDivisorPool left
-  let T := columnDivisorPool right
-  let pairCols : n × p → Ideal O := fun x => left x.1*right x.2
-  let K := columnDivisorPool pairCols
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
-  have hp0 : ∀ x, pairCols x ≠ 0 := fun x => mul_ne_zero (hl0 x.1) (hr0 x.2)
-  have hk : ∀ j k d, d ∣ left j*right k → d ∈ K :=
-    fun j k d hd => mem_columnDivisorPool_of_dvd pairCols hp0 (j,k) d hd
+  pm_5141
+  pm_1423
+  pm_3095
+  pm_1195 hp0 hl0 hr0 hk
   calc
     _ ≤ largePrincipalProductAt K rows left right a b M P :=
       principalDivisorCorrection_le_product K rows left right a b M P hl0 hr0 hk
@@ -422,7 +340,6 @@ theorem HasSieveExponent.principal_divisor_correction {α : ℝ} (hexp : HasSiev
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
@@ -448,24 +365,31 @@ def rightBit (x : CubeCoordinates ι) (i : ι) : Bool := decide (i ∈ x.rightDi
 def Admissible (x : CubeCoordinates ι) : Prop :=
   x.leftDivisor ⊆ x.support ∧ x.rightDivisor ⊆ x.support
 
-theorem support_pos (x : CubeCoordinates ι) (i : ι) (hi : i ∈ x.support) :
+section
+variable (x : CubeCoordinates ι) (i : ι)
+include x i
+theorem support_pos (hi : i ∈ x.support) :
     0 < x.leftExponent i+x.rightExponent i := by
   simp only [support,Finset.mem_union,Finsupp.mem_support_iff] at hi
   omega
 
-theorem left_off (x : CubeCoordinates ι) (i : ι) (hi : i ∉ x.support) :
+theorem left_off (hi : i ∉ x.support) :
     x.leftExponent i=0 := by
   by_contra hv
   exact hi (Finset.mem_union_left _ (Finsupp.mem_support_iff.mpr hv))
 
-theorem right_off (x : CubeCoordinates ι) (i : ι) (hi : i ∉ x.support) :
+theorem right_off (hi : i ∉ x.support) :
     x.rightExponent i=0 := by
   by_contra hv
   exact hi (Finset.mem_union_right _ (Finsupp.mem_support_iff.mpr hv))
+end
 
-theorem aLabel_left (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) :
+section
+variable (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible)
+include p x hx
+theorem aLabel_left :
     aLabel p x.support x.leftBit = ∏ i ∈ x.leftDivisor,p i := by
-  simp only [aLabel,primeProduct,leftBit,FirstPassCubeLabels.bit,decide_eq_true_eq]
+  pm_94 aLabel primeProduct leftBit FirstPassCubeLabels.bit decide_eq_true_eq
   simp_rw [apply_ite, pow_one, pow_zero]
   rw [← Finset.prod_filter]
   have he : x.support.filter (fun i => i ∈ x.leftDivisor)=x.leftDivisor := by
@@ -474,9 +398,9 @@ theorem aLabel_left (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) 
     exact and_iff_right_of_imp (fun hi => hx.1 hi)
   rw [he]
 
-theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible) :
+theorem aLabel_right :
     aLabel p x.support x.rightBit = ∏ i ∈ x.rightDivisor,p i := by
-  simp only [aLabel,primeProduct,rightBit,FirstPassCubeLabels.bit,decide_eq_true_eq]
+  pm_94 aLabel primeProduct rightBit FirstPassCubeLabels.bit decide_eq_true_eq
   simp_rw [apply_ite, pow_one, pow_zero]
   rw [← Finset.prod_filter]
   have he : x.support.filter (fun i => i ∈ x.rightDivisor)=x.rightDivisor := by
@@ -484,6 +408,7 @@ theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible)
     simp only [Finset.mem_filter]
     exact and_iff_right_of_imp (fun hi => hx.2 hi)
   rw [he]
+end
 
 end CubeCoordinates
 

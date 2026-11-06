@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Dyadic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,9 +42,7 @@ theorem finite_triple_support_reindex (T : Finset ((M × H) × C))
   · intro c hc
     have hpc := (Finset.mem_filter.mp hc).2
     exact ⟨(p, c), Finset.mem_filter.mpr ⟨hpc, rfl⟩, rfl⟩
-  · intro u hu
-    have hup := (Finset.mem_filter.mp hu).2
-    simp only [← hup, Prod.eta]
+  grind
 
 end FiniteGrid
 
@@ -57,13 +56,7 @@ theorem HybridColumnData.gridIndex_injective_on_square (t : Ideal Eis) :
   have hh : d.residualB = e.residualB := congrArg (fun u => u.1.2) hg
   have hc : d.common = e.common := congrArg Prod.snd hg
   have ht : d.square = e.square := hd.trans he.symm
-  cases d
-  cases e
-  cases hc
-  cases hm
-  cases hh
-  cases ht
-  rfl
+  pm_7532
 
 def hybridGridSupport (D : Finset HybridColumnData) :
     Finset ((Ideal Eis × Ideal Eis) × Ideal Eis) := D.image HybridColumnData.gridIndex

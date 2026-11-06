@@ -6,11 +6,12 @@ public import Mathlib.Data.Finset.Prod
 public import Mathlib.Analysis.Normed.Group.Bounded
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.SmoothExistence
 public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset Set
-open scoped BigOperators ContDiff
+open scoped ContDiff
 
 namespace GuthMaynard.NativeMoment
 
@@ -53,8 +54,8 @@ theorem exists_gmSmoothCutoff : Nonempty GMSmoothCutoff := by
     have hzero : 0 ≤ Set.indicator (Set.Icc (6 / 5 : ℝ) (9 / 5))
         (1 : ℝ → ℝ) x := by
       by_cases hx : x ∈ Set.Icc (6 / 5 : ℝ) (9 / 5)
-      · simp [Set.indicator, hx]
-      · simp [Set.indicator, hx]
+      simp_all
+      simp_all
     exact hzero.trans (hwLower x)
   · intro x
     exact (hwUpper x).trans (by
@@ -140,11 +141,14 @@ theorem card_sq_le_approxAddEnergy {η : ℝ} (hη : 0 ≤ η) (W : Finset ℝ) 
     _ ≤ (approximateAdditiveQuadruples η W).card := Finset.card_le_card hSubset
     _ = ApproxAddEnergy η W := rfl
 
-theorem gmR_one (W : Finset ℝ) : gmR W 1 = W.card := by
+section
+variable (W : Finset ℝ)
+include W
+theorem gmR_one : gmR W 1 = W.card := by
   simp [gmR]
 
 /-- The trivial pointwise estimate for the source exponential sum. -/
-theorem norm_gmR_le_card (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
+theorem norm_gmR_le_card (v : ℝ) (hv : v ≠ 0) :
     ‖gmR W v‖ ≤ W.card := by
   rw [gmR]
   calc
@@ -159,29 +163,28 @@ theorem norm_gmR_le_card (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
     _ = W.card := by simp
 
 /-- Reciprocal arguments conjugate the source exponential sum. -/
-theorem gmR_reciprocal (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
+theorem gmR_reciprocal (v : ℝ) (hv : v ≠ 0) :
     gmR W (1 / v) = star (gmR W v) := by
   rw [gmR, gmR, star_sum]
   apply Finset.sum_congr rfl
   intro t ht
-  have hvabs : 0 < |v| := abs_pos.mpr hv
+  pm_4888 hvabs v abs_pos.mpr hv
   have harg : (((|v| : ℝ) : ℂ)).arg ≠ Real.pi := by
     rw [Complex.arg_ofReal_of_nonneg hvabs.le]
     exact Real.pi_ne_zero.symm
-  have hConj :=
-    Complex.cpow_conj (((|v| : ℝ) : ℂ)) ((t : ℂ) * I) harg
-  have hInv :=
-    Complex.inv_cpow (((|v| : ℝ) : ℂ)) ((t : ℂ) * I) harg
+  pm_5960 hConj Complex.cpow_conj
+  pm_5960 hInv Complex.inv_cpow
   have hcast : (((|v|)⁻¹ : ℝ) : ℂ) = (((|v| : ℝ) : ℂ))⁻¹ := by
     norm_num
-  rw [abs_div, abs_one, one_div, hcast, hInv]
+  pm_265 abs_div abs_one one_div hcast hInv
   rw [← Complex.cpow_neg]
   simp only [map_mul, Complex.conj_ofReal, Complex.conj_I] at hConj
   convert hConj using 1
   all_goals first | rfl | ring
 
-theorem norm_gmR_reciprocal (W : Finset ℝ) (v : ℝ) (hv : v ≠ 0) :
+theorem norm_gmR_reciprocal (v : ℝ) (hv : v ≠ 0) :
     ‖gmR W (1 / v)‖ = ‖gmR W v‖ := by
   rw [gmR_reciprocal W v hv, norm_star]
+end
 
 end GuthMaynard.NativeMoment

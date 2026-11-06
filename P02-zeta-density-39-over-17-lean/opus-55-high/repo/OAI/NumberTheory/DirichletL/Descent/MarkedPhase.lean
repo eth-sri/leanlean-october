@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ReflectedDual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,9 +18,10 @@ variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool
 
 def markedActiveExponent (S : Finset ι) (j : ι → ℕ) (i : ι) : ℕ := if i ∈ S then 0 else j i
 
-theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal] (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
+include hp hg j S D
+theorem mixedActiveBracket_eq_signed
     (i : ι) (x : Eis) :
     mixedActiveBracket hp hg j S D i x = (if i ∈ S then (-1 : ℂ) else 1) *
       ((((actualSextic (Ideal.span {p i}) (hg i))⁻¹) ^ 2) (D.sigma i) *
@@ -31,11 +33,9 @@ theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
   · simp only [mixedActiveBracket, markedActiveExponent, hi,
       phase, bracket, show (0 : ℕ) ≠ 4 by decide, ↓reduceIte, inv_pow, map_mul]
     ring
-  · simp only [mixedActiveBracket, markedActiveExponent, hi, ite_false, one_mul]
+  pm_3429 mixedActiveBracket markedActiveExponent hi ite_false one_mul
 
-theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode) (x : Eis) :
+theorem mixedActiveBracket_product (x : Eis) :
     (∏ i, mixedActiveBracket hp hg j S D i x) =
       (-1 : ℂ) ^ S.card * D.bracketProduct hp hg (markedActiveExponent S j) x := by
   simp_rw [mixedActiveBracket_eq_signed]
@@ -45,6 +45,7 @@ theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
     simp
   rw [hsign]
   rfl
+end
 
 theorem mixed_model_coefficient [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a0 c0 mode)

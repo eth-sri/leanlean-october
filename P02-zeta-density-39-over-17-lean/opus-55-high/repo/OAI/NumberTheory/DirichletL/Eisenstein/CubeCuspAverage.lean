@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.CoverTrace
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,83 +8,41 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 open ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
-theorem sourceCusp_average_enlarged_affine (M : SL(2,ActualEisensteinCubic.O)) (b : ActualEisensteinCubic.O) (hb : b≠0)
+section
+variable (M : SL(2,ActualEisensteinCubic.O))
+include M
+theorem sourceCusp_average_enlarged_affine (b : ActualEisensteinCubic.O) (hb : b≠0)
     (c : ℂ) (v : ℝ) (hv : 0<v) :
     (∫z in periodDomain,cubicSourceResidualFunction
       (integralComplexMatrix M • upperPoint (3*(eisEmbedding b*z+c)) v hv))=
@@ -93,7 +52,7 @@ theorem sourceCusp_average_enlarged_affine (M : SL(2,ActualEisensteinCubic.O)) (
     (sourceCusp_scaled_continuous M v hv).measurable
     (sourceCusp_scaled_periodic M v hv) b hb c).trans (sourceCusp_average_all M v hv)
 
-theorem sourceCusp_average_complex_upper (M : SL(2,ActualEisensteinCubic.O)) (T : SL(2,ℂ))
+theorem sourceCusp_average_complex_upper (T : SL(2,ℂ))
     (hT : T 1 0=0) (b d : ActualEisensteinCubic.O) (hd : d≠0)
     (hscale : (T 0 0/T 1 1)*eisEmbedding b=eisEmbedding d)
     (v : ℝ) (hv : 0<v) :
@@ -108,6 +67,7 @@ theorem sourceCusp_average_complex_upper (M : SL(2,ActualEisensteinCubic.O)) (T 
     ring
   simp_rw [complex_upper_triangular_action T hT,hcoord]
   exact sourceCusp_average_enlarged_affine M d hd _ _ _
+end
 
 lemma sourceCuspConstant_congruent (M N : SL(2,ActualEisensteinCubic.O))
     (h : N*M⁻¹∈CubicKubota.levelThree) :
@@ -119,8 +79,7 @@ lemma sourceCuspConstant_congruent (M N : SL(2,ActualEisensteinCubic.O))
   have hg : (g₂:SL(2,ActualEisensteinCubic.O))*M=N := by
     change (N*M⁻¹)*M=N
     group
-  have hh := sourceCuspConstant_left g₂ M
-  rw [hg] at hh
+  pm_126 hh sourceCuspConstant_left g₂ M hg
   change sourceCuspConstant N=
     CubicKubota.levelTwoComplexCharacter
       ⟨(g:SL(2,ActualEisensteinCubic.O)),CubicKubota.levelThree_le_levelTwo g.property⟩*sourceCuspConstant M at hh
@@ -131,7 +90,7 @@ end CubicEisenstein
 
 section
 
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 namespace CubicEisenstein
 
 section
@@ -152,8 +111,7 @@ lemma cubeCuspTriangular_entries {A:SL(2,Eis)} {p q:Eis} (d:CubeCuspData A p q) 
     cubeCuspTriangular d hp 1 0=0 ∧
     cubeCuspTriangular d hp 1 1=(cubeDilationRoot p)⁻¹*eisEmbedding p^(3-d.exponent.val) := by
   let B:=cubeAverageMatrix p hp q*integralComplexMatrix A
-  have hz:=cubeDilationRoot_ne_zero p hp
-  have he:=cubeDilationRoot_sq p
+  pm_8068
   have hx:eisEmbedding (A 0 0)+3*eisEmbedding q*eisEmbedding (A 1 0)=
       eisEmbedding p^d.exponent.val*eisEmbedding (d.matrix 0 0):=by
     simpa only [map_add,map_mul,map_pow,map_ofNat] using congrArg eisEmbedding d.first
@@ -163,8 +121,7 @@ lemma cubeCuspTriangular_entries {A:SL(2,Eis)} {p q:Eis} (d:CubeCuspData A p q) 
   have hB0:B 0 0=(cubeDilationRoot p)⁻¹*eisEmbedding p^d.exponent.val*eisEmbedding (d.matrix 0 0):=by
     change (∑k:Fin 2,cubeAverageMatrix p hp q 0 k*integralComplexMatrix A k 0)=_
     rw [Fin.sum_univ_two]
-    simp only [cubeAverageMatrix_entries,integralComplexMatrix_apply,Matrix.of_apply,
-      Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one]
+    pm_577 cubeAverageMatrix_entries integralComplexMatrix_apply Matrix.of_apply Matrix.cons_val_zero Matrix.cons_val_one Matrix.cons_val_fin_one
     linear_combination (cubeDilationRoot p)⁻¹*hx
   have hB1:B 1 0=(cubeDilationRoot p)⁻¹*eisEmbedding p^d.exponent.val*eisEmbedding (d.matrix 1 0):=by
     change (∑k:Fin 2,cubeAverageMatrix p hp q 1 k*integralComplexMatrix A k 0)=_
@@ -176,27 +133,20 @@ lemma cubeCuspTriangular_entries {A:SL(2,Eis)} {p q:Eis} (d:CubeCuspData A p q) 
   have hinv:(integralComplexMatrix d.matrix : Matrix (Fin 2) (Fin 2) ℂ)⁻¹=
       !![eisEmbedding (d.matrix 1 1),-eisEmbedding (d.matrix 0 1);
         -eisEmbedding (d.matrix 1 0),eisEmbedding (d.matrix 0 0)] := by
-    rw [Matrix.inv_def,Matrix.SpecialLinearGroup.det_coe,Ring.inverse_one,one_smul,Matrix.adjugate_fin_two]
+    pm_3681 Matrix.inv_def Matrix.SpecialLinearGroup.det_coe Ring.inverse_one one_smul Matrix.adjugate_fin_two
     rfl
   have hT:cubeCuspTriangular d hp=(integralComplexMatrix d.matrix)⁻¹*B:=by
     dsimp [cubeCuspTriangular,B]
     group
   have hdet:eisEmbedding (d.matrix 0 0)*eisEmbedding (d.matrix 1 1)-
       eisEmbedding (d.matrix 0 1)*eisEmbedding (d.matrix 1 0)=1:=by
-    have hd:d.matrix 0 0*d.matrix 1 1-d.matrix 0 1*d.matrix 1 0=1:=by
-      simpa only [Matrix.det_fin_two] using d.matrix.property
+    pm_3583 d.matrix d.matrix.property
     simpa only [map_sub,map_mul,map_one] using congrArg eisEmbedding hd
   have h00:cubeCuspTriangular d hp 0 0=(cubeDilationRoot p)⁻¹*eisEmbedding p^d.exponent.val:=by
-    rw [hT]
-    simp only [Matrix.SpecialLinearGroup.coe_mul,Matrix.SpecialLinearGroup.coe_inv,
-      Matrix.adjugate_fin_two,Matrix.mul_apply,Fin.sum_univ_two,integralComplexMatrix_apply]
-    simp only [Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one,Matrix.of_apply,hB0,hB1]
+    pm_3606
     linear_combination (cubeDilationRoot p)⁻¹*eisEmbedding p^d.exponent.val*hdet
   have h10:cubeCuspTriangular d hp 1 0=0:=by
-    rw [hT]
-    simp only [Matrix.SpecialLinearGroup.coe_mul,Matrix.SpecialLinearGroup.coe_inv,
-      Matrix.adjugate_fin_two,Matrix.mul_apply,Fin.sum_univ_two,integralComplexMatrix_apply]
-    simp only [Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one,Matrix.of_apply,hB0,hB1]
+    pm_3606
     ring
   refine ⟨h00,h10,?_⟩
   have hd:cubeCuspTriangular d hp 0 0*cubeCuspTriangular d hp 1 1=1:=by
@@ -207,7 +157,7 @@ lemma cubeCuspTriangular_entries {A:SL(2,Eis)} {p q:Eis} (d:CubeCuspData A p q) 
   apply mul_left_cancel₀ hnon
   rw [hd]
   have hpow:eisEmbedding p^d.exponent.val*eisEmbedding p^(3-d.exponent.val)=eisEmbedding p^3:=by
-    rw [←pow_add,Nat.add_sub_of_le (by omega:d.exponent.val≤3)]
+    pm_692
   calc
     1=(cubeDilationRoot p)⁻¹^2*eisEmbedding p^3:=by rw [←he,inv_pow,inv_mul_cancel₀ (pow_ne_zero 2 hz)]
     _=_:=by rw [←hpow];ring
@@ -226,14 +176,14 @@ lemma cubeCuspTriangular_integral_scale {A:SL(2,Eis)} {p q:Eis}
   have he:eisEmbedding p≠0:=eisEmbedding_ne_zero hp
   have hz:=cubeDilationRoot_ne_zero p hp
   have hpow:eisEmbedding p^3=eisEmbedding p^d.exponent.val*eisEmbedding p^(3-d.exponent.val):=by
-    rw [←pow_add,Nat.add_sub_of_le (by omega:d.exponent.val≤3)]
+    pm_692
   rw [hpow]
   have htwo:eisEmbedding p^(2*d.exponent.val)=(eisEmbedding p^d.exponent.val)^2:=by
     rw [mul_comm 2 d.exponent.val,pow_mul]
   rw [htwo]
   field_simp
 
-private lemma cube_scale_norm_real (r:ℝ) (hr:0<r) (j:Fin 4) :
+private lemma cube_scale_norm_real (r:ℝ) (hr:0< r) (j:Fin 4) :
     (r^3)⁻¹*(r^(3-j.val))^2=r^(3-2*(j.val:ℝ)) := by
   fin_cases j <;> norm_num [Real.rpow_neg_natCast,Real.rpow_neg_one]
   all_goals field_simp
@@ -243,7 +193,7 @@ lemma cubeCuspTriangular_norm_sq {A:SL(2,Eis)} {p q:Eis}
     ‖cubeCuspTriangular d hp 1 1‖^2 =
       ‖eisEmbedding p‖^(3-2*(d.exponent.val:ℝ)) := by
   obtain ⟨_,_,h11⟩:=cubeCuspTriangular_entries d hp
-  rw [h11,norm_mul,norm_inv,norm_pow,mul_pow,inv_pow]
+  pm_502 h11 norm_mul norm_inv norm_pow mul_pow inv_pow
   have hn:‖cubeDilationRoot p‖^2=‖eisEmbedding p‖^3:=by
     rw [←norm_pow,cubeDilationRoot_sq,norm_pow]
   rw [hn]
@@ -253,7 +203,7 @@ lemma cubeCuspTriangular_height {A:SL(2,Eis)} {p q:Eis}
     (d:CubeCuspData A p q) (hp:p≠0) (v:ℝ) (hv:0<v) :
     ((v/‖cubeCuspTriangular d hp 1 1‖^2:ℝ):ℂ)^(2/3:ℂ)=
       (v:ℂ)^(2/3:ℂ)*cubeCuspHeightWeight p d.exponent := by
-  have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp)
+  pm_3607
   rw [cubeCuspTriangular_norm_sq]
   have hnon:0<‖eisEmbedding p‖^(3-2*(d.exponent.val:ℝ)):=Real.rpow_pos_of_pos hr _
   have hcast:((2/3:ℝ):ℂ)=(2/3:ℂ):=by norm_num
@@ -317,8 +267,8 @@ lemma rationalComplex_S_sq_action (w:HyperbolicSpace) :
     intro i j
     change eisEmbedding ((Int.castRingHom Eis) ((ModularGroup.S ^ 2 : SL(2,ℤ)) i j)) = _
     rw [congrFun (congrFun hS i) j]
-    fin_cases i <;> fin_cases j <;> simp [complexDiagonal]
-  obtain ⟨z,v,hv,rfl⟩:=upperPoint_surjective w
+    pm_7089 complexDiagonal
+  pm_1114
   rw [he,complexDiagonal_action]
   apply upperPoint_congr <;> norm_num
 
@@ -356,16 +306,14 @@ theorem exists_primary_cusp_shift (A:levelTwo) :
       simp [Matrix.mul_apply, Fin.sum_univ_two]
     exact (hneg ((T*A:levelTwo):SL(2,Eis))).trans (congrArg (fun x:Eis=> -x) hT)
   have hzero:complexTranslation 0=1:=by
-    apply Matrix.SpecialLinearGroup.ext
-    intro i j
-    fin_cases i <;> fin_cases j <;> simp [complexTranslation]
+    pm_3608
   have hact (w:HyperbolicSpace):integralComplexMatrix ((T*A:levelTwo):SL(2,Eis)) • w=
       complexTranslation (t.val:ℂ) • (integralComplexMatrix (A:SL(2,Eis)) • w):=by
     change integralComplexMatrix (rationalEmbedding (ModularGroup.T^t.val)*(A:SL(2,Eis))) • w=_
     rw [map_mul,mul_smul]
     change rationalComplex (ModularGroup.T^t.val) • (integralComplexMatrix (A:SL(2,Eis)) • w)=_
     fin_cases t
-    · simp only [pow_zero,map_one,one_smul,Nat.cast_zero,hzero]
+    pm_3816 pow_zero map_one one_smul Nat.cast_zero hzero
     · simp only [pow_one,rationalComplex_T_eq,Nat.cast_one]
   rcases ht with ht|ht
   · exact ⟨T*A,by rwa [hT],t,hact⟩
@@ -384,7 +332,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 lemma matrix_mul_upper_first_column (A T:SL(2,Eis)) (hT:T 1 0=0) (i:Fin 2) :
     (A*T) i 0=A i 0*T 0 0 := by
-  simp only [Matrix.SpecialLinearGroup.coe_mul,Matrix.mul_apply,Fin.sum_univ_two,hT,mul_zero,add_zero]
+  pm_382 Matrix.SpecialLinearGroup.coe_mul Matrix.mul_apply Fin.sum_univ_two hT mul_zero add_zero
 
 namespace CubeCuspData
 variable {A:SL(2,Eis)} {p q:Eis}
@@ -394,26 +342,28 @@ def right_upper (d:CubeCuspData A p q) (T:SL(2,Eis)) (hT:T 1 0=0) :
   exponent:=d.exponent
   matrix:=d.matrix*T
   first:=by
-    simp only [matrix_mul_upper_first_column _ T hT]
-    linear_combination d.first*(T 0 0)
+    pm_7710 d.first
   second:=by
-    simp only [matrix_mul_upper_first_column _ T hT]
-    linear_combination d.second*(T 0 0)
+    pm_7710 d.second
   congruent:=by
     have he:(d.matrix*T)*(A*T)⁻¹=d.matrix*A⁻¹:=by group
     rw [he]
     exact d.congruent
 
-lemma right_upper_exponent (d:CubeCuspData A p q) (T:SL(2,Eis)) (hT:T 1 0=0) :
+section
+variable (d:CubeCuspData A p q) (T:SL(2,Eis)) (hT:T 1 0=0)
+include d T hT
+lemma right_upper_exponent :
     (d.right_upper T hT).exponent=d.exponent := rfl
 
-lemma right_upper_character (d:CubeCuspData A p q) (T:SL(2,Eis)) (hT:T 1 0=0) :
+lemma right_upper_character :
     complexCharacter ⟨(d.right_upper T hT).matrix*(A*T)⁻¹,(d.right_upper T hT).congruent⟩=
       complexCharacter ⟨d.matrix*A⁻¹,d.congruent⟩ := by
   apply congrArg complexCharacter
   apply Subtype.ext
   change (d.matrix*T)*(A*T)⁻¹=d.matrix*A⁻¹
   group
+end
 
 end CubeCuspData
 end CubicKubota
@@ -424,11 +374,14 @@ namespace CubicEisenstein
 section
 
 open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma cubeAverage_continuous (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Continuous F) :
+section
+variable (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Continuous F)
+include p hp F hF
+lemma cubeAverage_continuous :
     Continuous (cubeAverage p hp F) := by
   let:Finite (Eis⧸Ideal.span {p^3}):=finite_quotient_span (pow_ne_zero 3 hp)
   let:Fintype (Eis⧸Ideal.span {p^3}):=Fintype.ofFinite _
@@ -439,7 +392,7 @@ lemma cubeAverage_continuous (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Co
   intro r hr
   exact hF.comp (continuous_const_smul _)
 
-lemma cubeAverage_cusp_integral (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF:Continuous F)
+lemma cubeAverage_cusp_integral
     (M:SL(2,Eis)) (b:Eis) (v:ℝ) (hv:0<v) :
     (∫z in periodDomain,cubeAverage p hp F
       (integralComplexMatrix M • upperPoint (3*(eisEmbedding b*z)) v hv))=
@@ -449,7 +402,7 @@ lemma cubeAverage_cusp_integral (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF
           (integralComplexMatrix M • upperPoint (3*(eisEmbedding b*z)) v hv)) := by
   let:Finite (Eis⧸Ideal.span {p^3}):=finite_quotient_span (pow_ne_zero 3 hp)
   let:Fintype (Eis⧸Ideal.span {p^3}):=Fintype.ofFinite _
-  let c:ℂ→UpperCoordinates:=fun z=>⟨(3*(eisEmbedding b*z),v),hv⟩
+  let c:ℂ→ UpperCoordinates:=fun z=>⟨(3*(eisEmbedding b*z),v),hv⟩
   have hc:Continuous c:=by
     apply Continuous.subtype_mk
     exact (continuous_const.mul (continuous_const.mul continuous_id)).prodMk continuous_const
@@ -459,17 +412,18 @@ lemma cubeAverage_cusp_integral (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (hF
     apply periodDomain_integrable_of_continuous
     have hh:=(continuous_translatedUpperCoordinates
       (cubeAverageMatrix p hp (GaussianShiftedPartition.representative (p^3) r)*integralComplexMatrix M)).comp hc
-    simpa only [Function.comp_def,c,mul_smul] using hF.comp hh
+    pm_475 Function.comp_def c mul_smul hF.comp hh
   unfold cubeAverage
   simp only [tsum_fintype]
   rw [integral_const_mul]
   congr 1
-  exact integral_finsetSum _ (fun r _=>hi r)
+  pm_8094
+end
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
+open scoped Classical Topology MatrixGroups InnerProductSpace
 
 theorem kernelSourceProjection_variationalResolvent (F : KernelQuotientL2) :
     kernelVariationalResolvent (kernelSourceProjection F)=
@@ -483,8 +437,7 @@ theorem kernelSourceProjection_variationalResolvent (F : KernelQuotientL2) :
 theorem kernelSourceProjection_operatorGraph (F G : KernelQuotientL2)
     (hFG : (F,G)∈kernelEnergyLaplacian.graph) :
     (kernelSourceProjection F,kernelSourceProjection G)∈kernelEnergyLaplacian.graph := by
-  rw [kernelEnergyLaplacian_graph,mem_kernelLaplacianGraph] at hFG ⊢
-  rw [←map_add,kernelSourceProjection_variationalResolvent,hFG]
+  pm_981 kernelSourceProjection_variationalResolvent
 
 theorem kernelSourceProjection_eigenvector (F : KernelQuotientL2)
     (eigenvalue : ℂ) (hF : (F,eigenvalue • F)∈kernelEnergyLaplacian.graph) :
@@ -499,7 +452,7 @@ theorem kernelSourceProjection_cubicEisensteinResidue_eigenvector :
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open ConcreteTraceCRT CubicKubota EisensteinCuspModThree
@@ -512,18 +465,17 @@ def sourceCuspRemainder (M : SL(2,ActualEisensteinCubic.O)) (z : ℂ) (v : ℝ) 
   cubicSourceResidualFunction (integralComplexMatrix M • upperPoint z v hv)-
     sourceCuspLeadingCoefficient M*(v:ℂ)^(2/3:ℂ)
 
-lemma sourceCuspLeadingCoefficient_decomposition (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo)
-    (j : Fin 3) (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0)
-    (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T) :
+section
+variable (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo) (j : Fin 3) (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0) (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T)
+include M G j T hT hM
+lemma sourceCuspLeadingCoefficient_decomposition :
     sourceCuspLeadingCoefficient M=
       levelTwoComplexCharacter G*sourceCuspLeadingCoefficient (cuspRepresentative j) := by
   unfold sourceCuspLeadingCoefficient
   rw [hM,sourceCuspConstant_upper_right _ T hT,sourceCuspConstant_left]
   ring
 
-lemma sourceCuspRemainder_decomposition (M : SL(2,ActualEisensteinCubic.O)) (G : levelTwo)
-    (j : Fin 3) (T : SL(2,ActualEisensteinCubic.O)) (hT : T 1 0=0)
-    (hM : M=(G:SL(2,ActualEisensteinCubic.O))*cuspRepresentative j*T)
+lemma sourceCuspRemainder_decomposition
     (z : ℂ) (v : ℝ) (hv : 0<v) :
     sourceCuspRemainder M z v hv=
       levelTwoComplexCharacter G*sourceCuspRemainder (cuspRepresentative j)
@@ -537,13 +489,14 @@ lemma sourceCuspRemainder_decomposition (M : SL(2,ActualEisensteinCubic.O)) (G :
   unfold sourceCuspRemainder
   rw [hF,sourceCuspLeadingCoefficient_decomposition M G j T hT hM]
   ring
+end
 
 theorem sourceCuspRemainder_bound_all (K a : ℝ)
     (hK : ∀j : Fin 3,∀z : ℂ,∀v : ℝ,∀hv : 0<v,a≤v→
       ‖sourceCuspRemainder (cuspRepresentative j) z v hv‖≤K/v^3)
     (M : SL(2,ActualEisensteinCubic.O)) (z : ℂ) (v : ℝ) (hv : 0<v) (hav : a≤v) :
     ‖sourceCuspRemainder M z v hv‖≤K/v^3 := by
-  obtain ⟨G,j,T,hT,_,_,hM⟩ := three_cusp_decomposition M
+  pm_3186
   rw [sourceCuspRemainder_decomposition M G j T hT hM z v hv,norm_mul,
     norm_levelTwoComplexCharacter,one_mul]
   exact hK j _ v hv hav
@@ -563,23 +516,20 @@ lemma sourceCuspRemainder_one (z : ℂ) (v : ℝ) (hv : 0<v) :
       sourceBesselCoefficients.fullFunction 0 (upperPoint z v hv) := by
   rw [sourceCuspRemainder,sourceCuspLeadingCoefficient_one,map_one,one_smul,
     cubicSourceResidualFunction_eq_bessel]
-  simp only [sourceBesselFunction,SubexponentialBesselCoefficients.fullFunction,
-    hyperbolicHeight_upperPoint,zero_mul,zero_add]
+  pm_651 sourceBesselFunction SubexponentialBesselCoefficients.fullFunction hyperbolicHeight_upperPoint zero_mul zero_add
   ring
 
 theorem sourceCuspRemainder_principal_cubic_decay (a : ℝ) (ha : 0<a) :
     ∃K : ℝ,0≤K ∧ ∀z : ℂ,∀v : ℝ,∀hv : 0<v,a≤v→
       ‖sourceCuspRemainder (1:SL(2,ActualEisensteinCubic.O)) z v hv‖≤K/v^3 := by
-  obtain ⟨K,hK,hbound⟩ := sourceBesselCoefficients.fullFunction_zero_cubic_decay a ha
-  refine ⟨K,hK,?_⟩
-  intro z v hv hav
+  pm_69 K hK hbound sourceBesselCoefficients.fullFunction_zero_cubic_decay a ha
+  pm_484 K hK z v hv hav
   rw [sourceCuspRemainder_one]
   exact hbound v hv z hav
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal InnerProductSpace
+open scoped Classical Topology MatrixGroups Pointwise ENNReal InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
 namespace CubicEisenstein
@@ -592,25 +542,28 @@ lemma integralCoverDomain_projection_measurePreserving {H K : Subgroup (SL(2,Act
   ⟨measurable_integralOrbitProjection H,integralQuotientVolume_independent H (hHK.trans hK) _
     (integralCoverDomain_isFundamentalDomain hHK hK)⟩
 
-lemma integralCoverSheet_measurePreserving (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) (q : IntegralCoverCosets H K) :
+section
+variable (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) (q : IntegralCoverCosets H K)
+include H K q
+lemma integralCoverSheet_measurePreserving :
     MeasurePreserving (fun w : HyperbolicSpace=>integralCoverRep H K q•w)
       (hyperbolicVolume.restrict (integralCoverSheet H K q))
       (hyperbolicVolume.restrict (hyperbolicFundamentalSet K)) :=
   (measurePreserving_smul (integralCoverRep H K q) hyperbolicVolume).restrict_preimage
     (hyperbolicFundamentalSet_measurable K)
 
-lemma integralCoverFiberPoint_rep_smul (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
-    (q : IntegralCoverCosets H K) (w : HyperbolicSpace) :
+lemma integralCoverFiberPoint_rep_smul (w : HyperbolicSpace) :
     integralCoverFiberPoint H K q (integralCoverRep H K q•w)=integralOrbitProjection H w := by
   rw [integralCoverFiberPoint_rep,inv_smul_smul]
+end
 
-lemma integralCoverFiber_integrable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
-    (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f)
-    (hf : Integrable f (integralQuotientVolume H)) (q : IntegralCoverCosets H K) :
+section
+variable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f) (hf : Integrable f (integralQuotientVolume H))
+include H K hHK hK f hmeas hf
+lemma integralCoverFiber_integrable (q : IntegralCoverCosets H K) :
     IntegrableOn (fun w=>f (integralCoverFiberPoint H K q w))
       (hyperbolicFundamentalSet K) hyperbolicVolume := by
-  have hD := (integralCoverDomain_projection_measurePreserving hHK hK).integrable_comp_of_integrable hf
+  pm_8309
   have hS : IntegrableOn (fun w=>f (integralOrbitProjection H w))
       (integralCoverSheet H K q) hyperbolicVolume :=
     IntegrableOn.mono_set hD (Set.subset_iUnion (integralCoverSheet H K) q)
@@ -618,21 +571,19 @@ lemma integralCoverFiber_integrable {H K : Subgroup (SL(2,ActualEisensteinCubic.
     (hmeas.comp (integralCoverFiberPoint_measurable H K q)).aestronglyMeasurable).mp
   simpa only [IntegrableOn,Function.comp_def,integralCoverFiberPoint_rep_smul] using hS
 
-theorem integralCoverTraceFunction_integrable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
-    (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f)
-    (hf : Integrable f (integralQuotientVolume H)) :
+theorem integralCoverTraceFunction_integrable :
     Integrable (integralCoverTraceFunction H K f) (integralQuotientVolume K) := by
-  let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
+  pm_4885 K
   apply ((quotient_projection_measurePreserving K).integrable_comp
     (integralCoverTraceFunction_measurable H K f hmeas).aestronglyMeasurable).mp
   change Integrable (fun w=>∑q : IntegralCoverCosets H K,f (integralCoverFiberPoint H K q w)) _
-  exact integrable_finsetSum Finset.univ (fun q _=>integralCoverFiber_integrable hHK hK f hmeas hf q)
+  pm_8698 integrable_finsetSum integralCoverFiber_integrable
+end
 
 lemma integralCoverFiber_integral (H K : Subgroup (SL(2,ActualEisensteinCubic.O)))
     (q : IntegralCoverCosets H K) (f : IntegralOrbitQuotient H→ℂ) :
-    (∫w in hyperbolicFundamentalSet K,f (integralCoverFiberPoint H K q w)∂hyperbolicVolume)=
-      ∫w in integralCoverSheet H K q,f (integralOrbitProjection H w)∂hyperbolicVolume := by
+    (∫w in hyperbolicFundamentalSet K,f (integralCoverFiberPoint H K q w)∂ hyperbolicVolume)=
+      ∫w in integralCoverSheet H K q,f (integralOrbitProjection H w)∂ hyperbolicVolume := by
   have hh := (measurePreserving_smul (integralCoverRep H K q) hyperbolicVolume).setIntegral_preimage_emb
     (measurableEmbedding_const_smul (integralCoverRep H K q))
     (fun w=>f (integralCoverFiberPoint H K q w)) (hyperbolicFundamentalSet K)
@@ -642,22 +593,22 @@ theorem integralCoverTraceFunction_integral {H K : Subgroup (SL(2,ActualEisenste
     (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K]
     (f : IntegralOrbitQuotient H→ℂ) (hmeas : Measurable f)
     (hf : Integrable f (integralQuotientVolume H)) :
-    (∫q,integralCoverTraceFunction H K f q∂integralQuotientVolume K)=
-      ∫q,f q∂integralQuotientVolume H := by
-  let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
-  have hD := (integralCoverDomain_projection_measurePreserving hHK hK).integrable_comp_of_integrable hf
+    (∫q,integralCoverTraceFunction H K f q∂ integralQuotientVolume K)=
+      ∫q,f q∂ integralQuotientVolume H := by
+  pm_4885 K
+  pm_8309
   have hS (q : IntegralCoverCosets H K) : IntegrableOn (fun w=>f (integralOrbitProjection H w))
       (integralCoverSheet H K q) hyperbolicVolume :=
     IntegrableOn.mono_set hD (Set.subset_iUnion (integralCoverSheet H K) q)
   rw [integralQuotientVolume_integral K _
     (integralCoverTraceFunction_measurable H K f hmeas).aestronglyMeasurable]
   change (∫w in hyperbolicFundamentalSet K,
-    ∑q : IntegralCoverCosets H K,f (integralCoverFiberPoint H K q w)∂hyperbolicVolume)=_
+    ∑q : IntegralCoverCosets H K,f (integralCoverFiberPoint H K q w)∂ hyperbolicVolume)=_
   rw [integral_finsetSum Finset.univ (fun q _=>integralCoverFiber_integrable hHK hK f hmeas hf q)]
   simp_rw [integralCoverFiber_integral H K]
   rw [←integral_iUnion_fintype (integralCoverSheet_measurable H K)
     (integralCoverSheet_pairwiseDisjoint H K hK) hS]
-  change (∫w in integralCoverDomain H K,f (integralOrbitProjection H w)∂hyperbolicVolume)=_
+  change (∫w in integralCoverDomain H K,f (integralOrbitProjection H w)∂ hyperbolicVolume)=_
   rw [←(integralCoverDomain_projection_measurePreserving hHK hK).map_eq]
   exact (integral_map (measurable_integralOrbitProjection H).aemeasurable hmeas.aestronglyMeasurable).symm
 

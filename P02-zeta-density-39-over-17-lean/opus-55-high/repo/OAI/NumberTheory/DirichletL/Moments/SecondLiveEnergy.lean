@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondSectorEnergy
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceMask
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,15 +28,11 @@ theorem live_divisor_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (f : Ideal O → ℂ) (keep : O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     sourceRestrictedEnergy keep (finiteColumns (liveBox S B hB))
       (finiteColumnCoefficient (liveBox S B hB) (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂))
-      (fun I => (if L∣I then 1 else 0)*f I) W K=
+      (fun I=> (if L∣I then 1 else 0)*f I) W K =
     sourceRestrictedEnergy keep (finiteColumns (liveBox S B hB))
       (finiteColumnCoefficient (liveBox S B hB) (maskedLiveProfile B C R L ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)) f W K := by
   unfold sourceRestrictedEnergy
-  congr 1
-  funext I
-  rw [maskedLiveProfile,column_mask]
-  dsimp only [liveProfile]
-  ring
+  pm_6695
 
 end SevenEighths.CenteredMomentSecondLiveEnergy
 

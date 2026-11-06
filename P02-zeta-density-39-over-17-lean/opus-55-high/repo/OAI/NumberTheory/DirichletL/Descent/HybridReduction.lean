@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Quadratic
 public import OAI.NumberTheory.DirichletL.Descent.Hybrid
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem finite_inverse_cubic_energy
@@ -45,7 +45,10 @@ theorem finite_inverse_cubic_energy
     Finset.sum_coe_sort Pset (fun P => ‖a P‖ ^ 2)] at he'
   exact he'
 
-theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem hybrid_quadratic_reduction :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
     ∀ (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
@@ -62,7 +65,7 @@ theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
       C * (K * X) ^ ε * (K + X) * Cbound *
         ∑ p ∈ pairs, ∑ c ∈ cset p.1,
           ‖∑ P ∈ Pset, coef p.2 P * inverseCubicKernel P (c * (mBad * p.1))‖ ^ 2 := by
-  obtain ⟨C, hC, hquadratic⟩ := quadratic_squarefree_product_energy_fixed_factor ε hε
+  pm_98 C hC hquadratic quadratic_squarefree_product_energy_fixed_factor ε hε
   refine ⟨C, hC, ?_⟩
   intro K X hK hX rows pairs hrows hpairs B mBad cset Pset coef beta Cbound hcount hbeta
   let F (p : Ideal Eis × Ideal Eis) (c : Ideal Eis) :=
@@ -83,7 +86,7 @@ theorem hybrid_quadratic_reduction (ε : ℝ) (hε : 0 < ε) :
       positivity
     _ = _ := by rw [← Finset.mul_sum]; simp only [F]; ring
 
-theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
+theorem cubic_product_row_bound_of_sieve :
     ∃ D : ℝ, 0 < D ∧ ∀ N : ℝ, 1 ≤ N →
     ∀ (pairs : Finset (Ideal Eis × Ideal Eis)) (Jset Pset : Finset (Ideal Eis))
       (mBad : Ideal Eis) (S : ℝ),
@@ -96,7 +99,7 @@ theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
         (∑ p ∈ pairs, ‖∑ P ∈ Pset,
           a P * inverseCubicKernel P (p.2 * (mBad * p.1))‖ ^ 2) ≤
           D * N ^ ε * S * ∑ P ∈ Pset, ‖a P‖ ^ 2 := by
-  obtain ⟨D, hD, hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power ε hε
+  pm_98 D hD hdiv IdealDivisorBound.ideal_divisor_small_power ε hε
   refine ⟨D, hD, ?_⟩
   intro N hN pairs Jset Pset mBad S hmap hJset hcubic a
   let E (J : Ideal Eis) := ‖∑ P ∈ Pset, a P * inverseCubicKernel P J‖ ^ 2
@@ -120,7 +123,7 @@ theorem cubic_product_row_bound_of_sieve (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_left (hcubic a) (by positivity)
     _ = _ := by ring
 
-theorem cubic_product_row_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem cubic_product_row_sieve_norm :
     ∃ D : ℝ, 0 < D ∧ ∀ N L : ℝ, 1 ≤ N →
     ∀ (pairs : Finset (Ideal Eis × Ideal Eis)) (Jset Pset : Finset (Ideal Eis))
       (mBad : Ideal Eis),
@@ -131,13 +134,13 @@ theorem cubic_product_row_sieve_norm (ε : ℝ) (hε : 0 < ε) :
         (∑ p ∈ pairs, ‖∑ P ∈ Pset,
           a P * inverseCubicKernel P (p.2 * (mBad * p.1))‖ ^ 2) ≤
           D * N ^ ε * CubicSieve.sieveNorm N L * ∑ P ∈ Pset, ‖a P‖ ^ 2 := by
-  obtain ⟨D, hD, hb⟩ := cubic_product_row_bound_of_sieve ε hε
+  pm_98 D hD hb cubic_product_row_bound_of_sieve ε hε
   refine ⟨D, hD, ?_⟩
   intro N L hN pairs Jset Pset mBad hmap hJ hP a
   exact hb N hN pairs Jset Pset mBad (CubicSieve.sieveNorm N L) hmap hJ
     (finite_inverse_cubic_energy Jset Pset N L hJ hP) a
 
-theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
+theorem hybrid_fixed_block_sieve_norm :
     ∃ C : ℝ, 0 < C ∧ ∀ K X N L : ℝ, 1 ≤ K → 1 ≤ X → 1 ≤ N →
     ∀ (rows : Finset (Ideal Eis)) (pairs cubicPairs : Finset (Ideal Eis × Ideal Eis))
       (Hset Jset Pset : Finset (Ideal Eis)),
@@ -160,9 +163,9 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
             (∑ P ∈ Pset, coef p.2 P * inverseCubicKernel P (c * (mBad * p.1))))‖ ^ 2) ≤
       C * (K * X * N) ^ ε * (K + X) * Cbound * (Hset.card : ℝ) *
         CubicSieve.sieveNorm N L * Ebound := by
-  obtain ⟨Cq, hCq, hquad⟩ := hybrid_quadratic_reduction ε hε
-  obtain ⟨D, hD, hcube⟩ := cubic_product_row_sieve_norm ε hε
-  refine ⟨Cq * D, mul_pos hCq hD, ?_⟩
+  pm_98 Cq hCq hquad hybrid_quadratic_reduction ε hε
+  pm_98 D hD hcube cubic_product_row_sieve_norm ε hε
+  pm_653 Cq D hCq hD
   intro K X N L hK hX hN rows pairs cubicPairs Hset Jset Pset hrows hpairs
     B mBad cset coef beta Cbound Ebound hCbound hcount hbeta hH hmc hmap hJ hP hcoef
   let E (h m c : Ideal Eis) := ‖∑ P ∈ Pset,
@@ -192,8 +195,8 @@ theorem hybrid_fixed_block_sieve_norm (ε : ℝ) (hε : 0 < ε) :
     _ = _ := by
       rw [Real.mul_rpow (show 0 ≤ K * X by positivity) (show 0 ≤ N by linarith)]
       ring
-
 end
+
 end SevenEighths.InverseMoment
 
 end OAI

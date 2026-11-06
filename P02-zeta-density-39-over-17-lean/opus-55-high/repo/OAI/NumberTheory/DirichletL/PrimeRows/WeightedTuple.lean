@@ -12,10 +12,7 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical
 local notation "O" => HeckeFamily.O
 
 theorem tupleOutside {K : ℕ} (S : Finset (Ideal O)) (P : Fin K→PrimeIdeal)
-    (hPS : ∀i,(P i).val∉S) : ∀Q∈Finset.univ.image P,Q.val∉S := by
-  intro Q hQ
-  obtain ⟨i,_,rfl⟩ := Finset.mem_image.mp hQ
-  exact hPS i
+    (hPS : ∀i,(P i).val∉S) : ∀Q∈Finset.univ.image P,Q.val∉S := by grind
 
 def calibratedTupleValue {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow)

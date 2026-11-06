@@ -8,14 +8,12 @@ Mathlib and narrow DigammaSeries dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.SquareTruncation
 public import MathCollab.Density.Stronger.Fourth.GaussianProducer
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval
-open MathCollab.Density.Stronger
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
 
@@ -46,8 +44,7 @@ theorem integral_weighted_sq_le
     dsimp [r]
     field_simp [hG.ne']
     ring
-  have h := mul_nonneg hnonneg hG.le
-  rw [halgebra] at h
+  pm_126 h mul_nonneg hnonneg hG.le halgebra
   change F^2 ≤ G*Q
   nlinarith
 
@@ -60,13 +57,9 @@ theorem exists_norm_sq_fourthPrefix_le_gaussian {c : ℝ} (hc : 0 < c) :
         ∫ u : ℝ, Real.exp (-98*u^2)*
           ‖dirichletPrefix N (zetaFourthCoeff c) (u-t)‖^2 := by
   obtain ⟨A,hA,hkernel⟩ := exists_norm_zetaFourthKernel_le hc
-  let B : ℝ := ‖(1/(2*Real.pi):ℂ)‖
-  have hB : 0 < B := by
-    apply norm_pos_iff.mpr
-    exact one_div_ne_zero (mul_ne_zero (by norm_num)
-      (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
-  let G : ℝ := Real.sqrt (Real.pi/98)
-  have hG : 0 < G := by dsimp [G]; positivity
+  pm_727
+  pm_8120
+  pm_64 hG G
   refine ⟨(B*A)^2*G,by positivity,?_⟩
   intro t ht hct N
   let p : ℝ → ℂ := fun u => dirichletPrefix N (zetaFourthCoeff c) (u-t)
@@ -83,7 +76,7 @@ theorem exists_norm_sq_fourthPrefix_le_gaussian {c : ℝ} (hc : 0 < c) :
   have hcs : (∫ u : ℝ, g u*‖p u‖)^2 ≤ G*(∫ u : ℝ, g u*‖p u‖^2) := by
     have h := integral_weighted_sq_le g (fun u => ‖p u‖)
       (fun u => (Real.exp_pos _).le) hg hgp hgp2 (hmass.symm ▸ hG)
-    simpa only [hmass] using h
+    grind
   have hpoint (u : ℝ) :
       ‖p u*zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖ ≤ (A*t^c)*(g u*‖p u‖) := by
     rw [norm_mul]

@@ -26,8 +26,10 @@ def sectorFrequency (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Idea
         ((supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩) j
       else 0)*((β (C*I)*heightCoeff η t I)*star (β (D*J)*heightCoeff η t J))*F j I J
 
-theorem sectorFrequency_zero_of_common (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+include η t S β C D hC hD
+theorem sectorFrequency_zero_of_common
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (F : O→Ideal O→Ideal O→ℂ) (j : O) (hj : idealCorrelation C D hC hD j=0) :
     sectorFrequency η t S β C D hC hD F j=0 := by
@@ -35,8 +37,7 @@ theorem sectorFrequency_zero_of_common (η : Character) (t : ℝ)
   simpa only [Finset.sum_singleton,one_mul,hj,zero_mul,mul_zero,Finset.sum_const_zero,
     sectorFrequency] using he
 
-theorem sectorFrequency_common_support (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem sectorFrequency_common_support
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (F : O→Ideal O→Ideal O→ℂ) (j : O)
     (hj : sectorFrequency η t S β C D hC hD F j≠0) : commonFrequencyGenerator C D∣j := by
@@ -44,8 +45,7 @@ theorem sectorFrequency_common_support (η : Character) (t : ℝ)
   exact hj (sectorFrequency_zero_of_common η t S β C D hC hD hCD F j
     (idealCorrelation_zero_outside_common C D hC hD hCD j hn))
 
-theorem sectorFrequency_tsum_common (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem sectorFrequency_tsum_common
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (F : O→Ideal O→Ideal O→ℂ) :
     (∑' j : O,sectorFrequency η t S β C D hC hD F j)=
@@ -57,8 +57,7 @@ theorem sectorFrequency_tsum_common (η : Character) (t : ℝ)
   obtain ⟨w,hw⟩ := sectorFrequency_common_support η t S β C D hC hD hCD F j hj
   exact ⟨w,hw.symm⟩
 
-theorem sectorFrequency_tsum_partition (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem sectorFrequency_tsum_partition
     (F : O→Ideal O→Ideal O→ℂ)
     (hs : Summable (fun w : O=>sectorFrequency η t S β C D hC hD F (commonFrequencyGenerator C D*w))) :
     (∑' w : O,sectorFrequency η t S β C D hC hD F (commonFrequencyGenerator C D*w))=
@@ -73,8 +72,7 @@ theorem sectorFrequency_tsum_partition (η : Character) (t : ℝ)
         sectorFrequency η t S β C D hC hD F (commonFrequencyGenerator C D*w) else 0 := tsum_congr he
     _ = _ := Summable.tsum_finsetSum (fun U _=>hs.indicator {w | canonicalPartition C D U w})
 
-theorem sectorFrequency_partition_nonunit (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem sectorFrequency_partition_nonunit
     (U : Finset (CommonIndex C D)) (F : O→Ideal O→Ideal O→ℂ) :
     (∑' w : O,if canonicalPartition C D U w then
       sectorFrequency η t S β C D hC hD F (commonFrequencyGenerator C D*w) else 0)=
@@ -92,6 +90,7 @@ theorem sectorFrequency_partition_nonunit (η : Character) (t : ℝ)
     exact ⟨h,hh.symm⟩
   have he := (mul_right_injective₀ (nonunitFrequencyGenerator_ne_zero C D hC U)).tsum_eq hs
   simpa only [f,mul_assoc] using he.symm
+end
 
 end SevenEighths.CenteredMomentSecondSectorFrequency
 

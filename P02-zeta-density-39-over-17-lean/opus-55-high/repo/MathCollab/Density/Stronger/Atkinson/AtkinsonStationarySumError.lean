@@ -6,6 +6,7 @@ See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundati
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSourceBand
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteSourceError
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,12 +23,12 @@ theorem exists_atkinsonLeadingSum_sub_stationary_bound {δ ε : ℝ}
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) → T^(1/4 : ℝ) ≤ G →
       ‖atkinsonLeadingSum T G (Real.log T)-atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
         C*(G+T^(1/4+ε)) := by
-  obtain ⟨A,hA,B,hB,hfinite⟩ := exists_atkinsonStationary_finite_power_error hδ hε
+  pm_107 A hA B hB hfinite exists_atkinsonStationary_finite_power_error hδ hε
   obtain ⟨D,hD,E,_,htail⟩ := exists_atkinsonLeading_source_band_bound hδ
   refine ⟨A+D,by positivity,max B E,hB.trans (le_max_left _ _),?_⟩
   intro T G hT hlower hupper hquarter
   have hT0 : 0 < T := by linarith [hB.trans ((le_max_left B E).trans hT)]
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+  pm_650 hG G Real.rpow_pos_of_pos hT0 δ hlower
   have hf := hfinite T G ((le_max_left _ _).trans hT) hlower hupper hquarter
   have ht := htail T G ((le_max_right _ _).trans hT) hlower hupper
     (atkinsonSourceCutoff T G (Real.log T)) (atkinsonSourceCutoff_lower _ _ _)
@@ -40,7 +41,7 @@ theorem exists_atkinsonLeadingSum_sub_stationary_above_fourthRoot {δ κ : ℝ}
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) → T^(1/4+κ) ≤ G →
       ‖atkinsonLeadingSum T G (Real.log T)-atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤
         C*G := by
-  obtain ⟨C,hC,B,hB,hbound⟩ := exists_atkinsonLeadingSum_sub_stationary_bound hδ hκ
+  pm_107 C hC B hB hbound exists_atkinsonLeadingSum_sub_stationary_bound hδ hκ
   refine ⟨2*C,by positivity,B,hB,?_⟩
   intro T G hT hlower hupper hquarter
   have hT1 : 1 ≤ T := by linarith

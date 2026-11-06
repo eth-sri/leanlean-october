@@ -9,13 +9,12 @@ public import MathCollab.Density.Stronger.Fourth.PrefixMean
 public import MathCollab.Density.Stronger.CriticalMoment
 public import MathCollab.Density.Stronger.DyadicMoment
 public import Mathlib.MeasureTheory.Integral.Prod
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set Finset MeasureTheory Filter
-open scoped BigOperators Interval ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+open scoped Interval ComplexConjugate
 namespace MathCollab.Density.Stronger.Fourth
 
 theorem exists_integral_sq_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
@@ -24,8 +23,7 @@ theorem exists_integral_sq_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
       (∫ t : ℝ in H..2*H,
         ‖dirichletPrefix (2^M) (zetaFourthCoeff c) (u-t)‖^2) ≤
           D*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^ε := by
-  obtain ⟨C,hC,hcoeff⟩ := exists_sum_sq_zetaFourthCoeff_dyadic_le hε
-  refine ⟨2*C,by linarith,?_⟩
+  pm_5117 hcoeff exists_sum_sq_zetaFourthCoeff_dyadic_le hε
   intro c hc M H hH u
   let L : ℝ := C*((2:ℝ)^M)^ε
   have hpow : 1 ≤ ((2:ℝ)^M)^ε :=
@@ -41,22 +39,23 @@ theorem exists_integral_sq_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
     have hsize : 2*((2^j:ℕ):ℝ) ≤ (2:ℝ)^M := by
       norm_cast
       rw [← pow_succ']
-      exact pow_le_pow_right₀ (by decide : (1:ℕ) ≤ 2) hjM
+      pm_7010
     apply (hcoeff c hc (2^j) (by positivity)).trans
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (by positivity) hsize hε.le) (by linarith)
   calc
     _ ≤ 2*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*L :=
       integral_norm_sq_dirichletPrefix_reflected_le M (zetaFourthCoeff c) u hH hone hmass
-    _ = _ := by dsimp [L]; ring
+    _ = _ := by grind
 
-theorem integrable_gaussian_dirichletPrefix_prod
-    {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
+section
+variable {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ)
+include b hb N a A B
+theorem integrable_gaussian_dirichletPrefix_prod :
     Integrable (fun z : ℝ × ℝ =>
       Real.exp (-b*z.2^2)*‖dirichletPrefix N a (z.2-z.1)‖^2)
       ((volume.restrict (uIoc A B)).prod volume) := by
-  let C : ℝ := ∑ n ∈ Finset.Ioc 0 N, ‖a n‖
-  have hC : 0 ≤ C := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  pm_4460
   have hc : Integrable (fun _ : ℝ => C^2) (volume.restrict (uIoc A B)) := by
     change Integrable (fun _ : ℝ => C^2)
       (volume.restrict (Ioc (min A B) (max A B)))
@@ -77,15 +76,13 @@ theorem integrable_gaussian_dirichletPrefix_prod
         (Real.exp_pos _).le
     _ = _ := mul_comm _ _
 
-theorem intervalIntegrable_gaussianPrefixMean
-    {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
+theorem intervalIntegrable_gaussianPrefixMean :
     IntervalIntegrable (fun t : ℝ =>
       ∫ u : ℝ, Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^2) volume A B := by
   rw [intervalIntegrable_iff]
   exact (integrable_gaussian_dirichletPrefix_prod hb N a A B).integral_prod_left
 
-theorem integral_gaussianPrefixMean_swap
-    {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
+theorem integral_gaussianPrefixMean_swap :
     (∫ t : ℝ in A..B, ∫ u : ℝ,
       Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^2) =
         ∫ u : ℝ, Real.exp (-b*u^2)*
@@ -93,6 +90,7 @@ theorem integral_gaussianPrefixMean_swap
   rw [intervalIntegral_integral_swap
     (integrable_gaussian_dirichletPrefix_prod hb N a A B)]
   simp_rw [intervalIntegral.integral_const_mul]
+end
 
 theorem exists_integral_gaussian_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ c : ℝ, 0 ≤ c → ∀ M : ℕ, ∀ H : ℝ, 0 ≤ H →
@@ -100,8 +98,8 @@ theorem exists_integral_gaussian_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
         Real.exp (-98*u^2)*‖dirichletPrefix (2^M) (zetaFourthCoeff c) (u-t)‖^2) ≤
           D*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^ε := by
   obtain ⟨C,hC,hmean⟩ := exists_integral_sq_fourthPolynomial_le hε
-  let G : ℝ := Real.sqrt (Real.pi/98)
-  have hG : 0 < G := by dsimp [G]; positivity
+  pm_8120
+  pm_64 hG G
   refine ⟨C*G,mul_pos hC hG,?_⟩
   intro c hc M H hH
   rw [integral_gaussianPrefixMean_swap (by norm_num : (0:ℝ)<98)]
@@ -143,15 +141,12 @@ theorem exists_fourth_dyadic_budget {q : ℝ} (hq : 0 < q) (hq1 : q ≤ 1) :
         (H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q ≤ D*H^(1+7*q) := by
   obtain ⟨A,hA,hcount⟩ := MathCollab.Density.Stronger.exists_dyadic_count_sq_le_rpow hq
   let B : ℝ := 2*(5*Real.pi+1)
-  have hB : 0 < B := by dsimp [B]; positivity
+  pm_64 hB B
   refine ⟨A*(1+2*B)*(2:ℝ)^(4*q),by positivity,?_⟩
   intro H hH M hN
   have hH0 : 0 < H := by linarith
-  have hNp : 0 < (2:ℝ)^M := by positivity
-  have hHH : H ≤ H^(1+q) := by
-    calc
-      H = H^(1:ℝ) := (Real.rpow_one H).symm
-      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hH (by linarith)
+  pm_5930 hNp M
+  pm_5129 hHH q hH
   have hlength : H+B*(2:ℝ)^M ≤ (1+2*B)*H^(1+q) := by
     have h := mul_le_mul_of_nonneg_left hN hB.le
     nlinarith

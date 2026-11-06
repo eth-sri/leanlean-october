@@ -1,8 +1,9 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedSharpSource
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Uniform polynomial budgets for the actual sharp-source logarithms
@@ -12,13 +13,10 @@ from the original model envelope. These estimates keep their physical
 N,T dependence and include floor/ceiling and empty-log conventions.
 -/
 
-noncomputable section
 
-open Set Expdb
-open scoped BigOperators
+open Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 theorem modelPhaseCore_natAbs_bounds
     {σ δ T N : ℝ} (hσ : 0 ≤ σ) (hδ : 0 ≤ δ) (hδ₁ : δ ≤ 1)
@@ -28,24 +26,21 @@ theorem modelPhaseCore_natAbs_bounds
   have hNpos : 0 < N := zero_lt_one.trans_le hN
   have hK : 0 ≤ T/N := div_nonneg hT hNpos.le
   have hK₁ : T/N ≤ T := div_le_self hT hN
-  have hp : 0 ≤ (2 : ℝ)^(-σ) := Real.rpow_nonneg (by norm_num) _
-  have hp₁ : (2 : ℝ)^(-σ) ≤ 1 :=
-    Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by linarith)
-  have ha₀ : -(T/N) ≤ (T/N)*((2 : ℝ)^(-σ)-δ) := by
-    have h := mul_le_mul_of_nonneg_left (show (-1 : ℝ) ≤ (2 : ℝ)^(-σ)-δ by linarith) hK
-    nlinarith
+  pm_534 hp
+  pm_1628 hp₁
+  pm_1615 ha₀ hK
   have ha₁ : (T/N)*((2 : ℝ)^(-σ)-δ) ≤ T/N := by
     have h := mul_le_mul_of_nonneg_left (show (2 : ℝ)^(-σ)-δ ≤ 1 by linarith) hK
-    simpa only [mul_one] using h
+    grind
   have hb₀ : 0 ≤ (T/N)*(1+δ) := by positivity
   have hb₁ : (T/N)*(1+δ) ≤ 2*T := by nlinarith
-  have hfa := Int.floor_le ((T/N)*((2 : ℝ)^(-σ)-δ))
-  have hfa' := Int.lt_floor_add_one ((T/N)*((2 : ℝ)^(-σ)-δ))
+  pm_1616 hfa Int.floor_le
+  pm_1616 hfa' Int.lt_floor_add_one
   have hcb := Int.le_ceil ((T/N)*(1+δ))
   have hcb' := Int.ceil_lt_add_one ((T/N)*(1+δ))
   simp only [Nat.cast_natAbs,Int.cast_abs]
   unfold modelPhaseCoreLower modelPhaseCoreUpper
-  constructor <;> apply abs_le.mpr <;> constructor <;> linarith
+  grind
 
 theorem modelPhaseSharpRadius_le_polynomial
     {σ δ T N C : ℝ} (hσ : 0 ≤ σ) (hδ : 0 ≤ δ) (hδ₁ : δ ≤ 1)
@@ -61,10 +56,9 @@ theorem modelPhaseSharpRadius_le_polynomial
   have hm := mul_le_mul_of_nonneg_left (show T ≤ T+1 by linarith)
     (show 0 ≤ C*(T+1)^2 by positivity)
   have hXupper : C*T*(1+T)^2/N ≤ C*(T+1)^3 := by nlinarith
-  have hp : T+1 ≤ (T+1)^3 := by
-    nlinarith [sq_nonneg T,mul_nonneg hT (sq_nonneg T)]
+  pm_1631
   push_cast
-  nlinarith [hc.1,hc.2]
+  grind
 
 theorem log_nat_le_polynomial_budget
     {n : ℕ} {K T : ℝ} (hK : 1 ≤ K) (hT : 0 ≤ T)
@@ -105,8 +99,7 @@ theorem modelPhaseSharpFarLengths_le_polynomial
   have heB : (((R : ℤ)-B).toNat : ℝ) = (R : ℝ)-(B : ℝ) := by
     exact_mod_cast Int.toNat_of_nonneg hzB
   rw [heA,heB]
-  have hp : T+1 ≤ (T+1)^3 := by
-    nlinarith [sq_nonneg T,mul_nonneg hT (sq_nonneg T)]
+  pm_1631
   have hcA : (A.natAbs : ℝ) ≤ T+1 := hc.1
   have hcB : (B.natAbs : ℝ) ≤ 2*T+1 := hc.2
   constructor <;> nlinarith
@@ -127,10 +120,7 @@ theorem modelPhaseBufferedInnerLengths_le
       ((B-U).toNat : ℝ) ≤ 3*(T/N)+3 ∧
       ((Q-P-1).toNat : ℝ) ≤ 3*(T/N)+3 := by
   intro A B L U P Q
-  have hi := modelPhaseBufferedSupport_inside_core hσ hδ hF hT hN hη hl hr hflat
-  have he := modelPhaseBufferedBand_endpoints hσ hδ hF hT hN hη hl hr hflat
-  have hAL : A ≤ L := hi.1
-  have hUB : U ≤ B := hi.2
+  pm_599 hF
   have hLP : L ≤ P := he.1
   have hPU : P ≤ U := he.2.1
   have hLQ : L ≤ Q := he.2.2.1
@@ -139,21 +129,14 @@ theorem modelPhaseBufferedInnerLengths_le
     (hδ.trans (min_le_right _ _)) hT.le hN
   have hleft : (Finset.Ico A L).card ≤ (Finset.Icc A B).card := by
     apply Finset.card_le_card
-    intro q hq
-    simp only [Finset.mem_Ico,Finset.mem_Icc] at hq ⊢
-    omega
+    pm_622 Finset.mem_Ico
   have hright : (Finset.Ioc U B).card ≤ (Finset.Icc A B).card := by
     apply Finset.card_le_card
-    intro q hq
-    simp only [Finset.mem_Ioc,Finset.mem_Icc] at hq ⊢
-    omega
+    pm_622 Finset.mem_Ioc
   have hmid : (Finset.Ioo P Q).card ≤ (Finset.Icc A B).card := by
     apply Finset.card_le_card
-    intro q hq
-    simp only [Finset.mem_Ioo,Finset.mem_Icc] at hq ⊢
-    omega
-  rw [Int.card_Ico] at hleft
-  rw [Int.card_Ioc] at hright
+    pm_622 Finset.mem_Ioo
+  pm_4303 Int.card_Ico hleft Int.card_Ioc hright
   rw [Int.card_Ioo] at hmid
   exact ⟨(Nat.cast_le.mpr hleft).trans hc,(Nat.cast_le.mpr hright).trans hc,
     (Nat.cast_le.mpr hmid).trans hc⟩
@@ -162,8 +145,7 @@ theorem three_scale_le_polynomial_budget {C T N : ℝ}
     (hC : 0 ≤ C) (hT : 0 ≤ T) (hN : 1 ≤ N) :
     3*(T/N)+3 ≤ (C+6)*(T+1)^3 := by
   have hd := div_le_self hT hN
-  have hp : T+1 ≤ (T+1)^3 := by
-    nlinarith [sq_nonneg T,mul_nonneg hT (sq_nonneg T)]
+  pm_1631
   have hc := mul_nonneg hC (pow_nonneg (show 0 ≤ T+1 by linarith) 3)
   nlinarith
 

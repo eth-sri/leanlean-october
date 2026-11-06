@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,12 +24,11 @@ theorem derivative_increment_bounds
     (hhi : ∀ x ∈ Icc a b, F' x ≤ Λ) :
     μ*(b-a) ≤ F b-F a ∧ F b-F a ≤ Λ*(b-a) := by
   rcases hab.eq_or_lt with he | hlt
-  · subst b
-    simp
+  grind
   · obtain ⟨x,hx,he⟩ := exists_hasDerivAt_eq_slope F F' hlt
       (fun y hy => (hF y hy).continuousAt.continuousWithinAt)
       (fun y hy => hF y ⟨hy.1.le,hy.2.le⟩)
-    have hpos : 0 < b-a := sub_pos.mpr hlt
+    pm_5221 hpos b a hlt
     have hlow := hlo x ⟨hx.1.le,hx.2.le⟩
     have hupp := hhi x ⟨hx.1.le,hx.2.le⟩
     rw [he] at hlow hupp

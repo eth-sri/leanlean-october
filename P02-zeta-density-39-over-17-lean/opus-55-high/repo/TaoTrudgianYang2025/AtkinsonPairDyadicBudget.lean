@@ -1,18 +1,19 @@
 module
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonPairPowerAlgebra
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-! Removal of actual phase sums and divisor energies from the dyadic budget. -/
 
-noncomputable section
-open RiemannZeta.GuthMaynard
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
-theorem ExponentPair.atkinson_pair_nominal_gram {k l ε : ℝ}
-    (hpair : ExponentPair k l) (hε : 0 < ε) :
+section
+variable {k l ε : ℝ} (hpair : ExponentPair k l) (hε : 0 < ε)
+include k l ε hpair hε
+theorem ExponentPair.atkinson_pair_nominal_gram :
     ∃ η : ℝ, 0 < η ∧ ∃ C : ℝ, 1 ≤ C ∧
       ∀ (H G L : ℝ) (M : ℕ) (W : Finset ℝ),
         1 ≤ H → 0 < G → 0 < L → L ≤ H → 0 < M → (M : ℝ) ≤ H →
@@ -21,20 +22,18 @@ theorem ExponentPair.atkinson_pair_nominal_gram {k l ε : ℝ}
         (M : ℝ)^(1/2:ℝ)*
           (∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGramMax M M t u) ≤
           H^(2*ε)*atkinsonPairPowerTerm C k l H G L M W.card := by
-  obtain ⟨η,hη,C,hC,hgram⟩ := hpair.atkinson_pair_gram_double_sum hε
+  pm_231 η hη C hC hgram hpair.atkinson_pair_gram_double_sum hε
   refine ⟨η,hη,C,hC,?_⟩
   intro H G L M W hH hG hL hLH hM hMH hsep hrange hdiam hsmall
   have hH0 : 0 < H := by linarith
-  have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  pm_77 hM1 M hM
   have hb := hgram H G L M W hH0 hG hM hsep hrange hdiam hsmall
   let X := (L/Real.sqrt (H*(M : ℝ)))^k*(M : ℝ)^l
   let B := (2*C*Real.sqrt (H*(M : ℝ))/G)*(W.card : ℝ)*
     (harmonic (Nat.ceil (L/G)) : ℝ)
-  have hE : 1 ≤ H^(2*ε) := Real.one_le_rpow hH (by positivity)
+  pm_6320 hE H ε hH
   have hB : 0 ≤ B := by
-    have hh : (0 : ℝ) ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
-      simpa only [harmonic_zero,Rat.cast_zero] using
-        atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
+    pm_1605
     dsimp [B]
     positivity
   have hdiag : 0 ≤ (W.card : ℝ)*(M : ℝ) := by positivity
@@ -58,8 +57,7 @@ theorem ExponentPair.atkinson_pair_nominal_gram {k l ε : ℝ}
       dsimp [X,B]
       rw [atkinson_pair_power_term_eq hH0 hM hL.le]
 
-theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
-    (hpair : ExponentPair k l) (hε : 0 < ε) :
+theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget :
     ∃ η : ℝ, 0 < η ∧ ∃ C : ℝ, 1 ≤ C ∧ ∃ D : ℝ, 0 < D ∧
       ∀ (H G L : ℝ) (N : ℕ) (W : Finset ℝ),
         1 ≤ H → 0 < G → 0 < L → L ≤ H → (N : ℝ) ≤ H →
@@ -67,16 +65,14 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
         (∀ t ∈ W, ∀ u ∈ W, |u-t| ≤ L) → Real.pi*(N : ℝ)/(2*H) < η →
         atkinsonDyadicGramBudget N W ≤
           D*H^(3*ε)*atkinsonPairPowerBudget C k l H G L N W.card := by
-  obtain ⟨η,hη,C,hC,hgram⟩ := hpair.atkinson_pair_nominal_gram hε
+  pm_231 η hη C hC hgram hpair.atkinson_pair_nominal_gram hε
   obtain ⟨D,hD,henergy⟩ := exists_atkinsonBlockCoefficientEnergy_le hε
-  refine ⟨η,hη,C,hC,D,hD,?_⟩
+  pm_211 η hη C hC D hD
   intro H G L N W hH hG hL hLH hNH hsep hrange hdiam hsmall
   have hH0 : 0 < H := by linarith
-  have hp : 0 ≤ l+1/2-k/2 := by
-    rcases hpair.inTriangle with ⟨_,hk,hl,_,_⟩
-    linarith
+  pm_1345 hpair.inTriangle
   have heps : H^ε*H^(2*ε) = H^(3*ε) := by
-    rw [← Real.rpow_add hH0]; congr 1; ring
+    pm_4975 Real.rpow_add hH0
   unfold atkinsonDyadicGramBudget atkinsonPairPowerBudget
   have hs : (∑ j ∈ Finset.range (Nat.clog 2 N),
       (((2^j:ℕ):ℝ)^(-(1/4:ℝ)))^2*atkinsonBlockCoefficientEnergy (2^j) (2^j)*
@@ -87,9 +83,9 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
     intro j hj
     let M : ℕ := 2^j
     have hM : 0 < M := pow_pos (by norm_num) _
-    have hM0 : (0 : ℝ) < M := by exact_mod_cast hM
+    pm_74 hM0 M hM
     have hMN : M ≤ N := (truncatedDyadic_start_lt (Finset.mem_range.mp hj)).le
-    have hMNR : (M : ℝ) ≤ N := by exact_mod_cast hMN
+    pm_106 hMNR M N hMN
     have hMH : (M : ℝ) ≤ H := hMNR.trans hNH
     have hms : Real.pi*(M : ℝ)/(2*H) < η :=
       (div_le_div_of_nonneg_right
@@ -133,5 +129,6 @@ theorem ExponentPair.atkinson_dyadic_gram_le_pair_budget {k l ε : ℝ}
   have hb := mul_le_mul_of_nonneg_left hs
     (Nat.cast_nonneg (Nat.clog 2 N) : (0 : ℝ) ≤ _)
   exact hb.trans_eq (by simp only [Finset.sum_const,Finset.card_range,nsmul_eq_mul]; ring)
+end
 
 end TaoTrudgianYang2025

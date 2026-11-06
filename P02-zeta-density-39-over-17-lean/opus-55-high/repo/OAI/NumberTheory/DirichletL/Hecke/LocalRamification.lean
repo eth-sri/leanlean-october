@@ -13,7 +13,10 @@ open CenteredMomentCorrelation CenteredMomentCanonical
 open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 
-theorem primePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]
+section
+variable (P : Ideal O) [P.IsMaximal]
+include P
+theorem primePowerCharacter_eq_one_iff
     {c : ℕ} (hc : 1 ≤ c) (χ : MulChar (O ⧸ P) ℂ) :
     primePowerCharacter P hc χ = 1 ↔ χ = 1 := by
   constructor
@@ -29,18 +32,19 @@ theorem primePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]
       exact u.isUnit
     have heq := congrArg (fun f : MulChar (O ⧸ P^c) ℂ => f x) h
     rw [primePowerCharacter_apply, hx, MulChar.one_apply hux] at heq
-    simpa only [MulChar.one_apply u.isUnit] using heq
+    simp_all
   · rintro rfl
     apply MulChar.ext
     intro u
     rw [primePowerCharacter_apply, MulChar.one_apply u.isUnit,
       MulChar.one_apply (u.isUnit.map (primePowerReduction P hc))]
 
-theorem canonicalPrimePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]
+theorem canonicalPrimePowerCharacter_eq_one_iff
     (hg : goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
     {c : ℕ} (hc : 1 ≤ c) : canonicalPrimePowerCharacter P hg hc = 1 ↔ 6 ∣ c := by
   rw [canonicalPrimePowerCharacter, primePowerCharacter_eq_one_iff,
     ← orderOf_dvd_iff_pow_eq_one, actualSextic_order_six P hg hchar]
+end
 
 end SevenEighths.HeckeLocalRamification
 

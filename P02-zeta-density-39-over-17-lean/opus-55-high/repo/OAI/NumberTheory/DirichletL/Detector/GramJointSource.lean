@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramJoint
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,12 +16,15 @@ local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι]
 
-theorem jointExtension_source (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+include S hS
+theorem jointExtension_source (σ : RayRing)
     (C k : O) (hC : Supported (Ideal.span {C}))
     (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
     (hpr : λ₀^2∣r-1) (hk : k=u.val*λ₀^a*(2:O)^b*r)
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
-    (hc : ∀i,1≤c i) (hcop : Pairwise (Function.onFun IsCoprime P))
+    (P : ι→ Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
+    (hc : ∀i,1≤ c i) (hcop : Pairwise (Function.onFun IsCoprime P))
     (he : Ideal.span {C}=∏i,P i^c i)
     [Fintype (O⧸∏i,P i^c i)] [∀i,Fintype (O⧸P i^c i)]
     (n₁ n₂ : O) (h₁ : Supported (Ideal.span {n₁})) (h₂ : Supported (Ideal.span {n₂}))
@@ -33,18 +37,18 @@ theorem jointExtension_source (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : 
     actualCommon_eq_globalExtension C hC P hg c hc hcop he n₁ n₂ k hn,
     ←numeratorExtension_primary u a b r k n₁ hr hpr hk h₁ hp₁,
     ←numeratorExtension_neg_primary u a b r k n₂ hr hpr hk h₂ hp₂]
-  simp only [jointExtension,jointFixed,numeratorExtension,MonoidHom.mul_apply,
-    movingNumeratorRow,MonoidHom.coe_mk,OneHom.coe_mk,star_mul]
+  pm_3650 jointExtension jointFixed numeratorExtension MonoidHom.mul_apply movingNumeratorRow MonoidHom.coe_mk OneHom.coe_mk star_mul
   ring
 
-lemma lowGramCoefficient_eq_primary (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+lemma lowGramCoefficient_eq_primary
     (hbad : fixedBadPrimes⊆S) (σ : RayRing) (s : {I : Id // Supported I}) :
-    lowGramCoefficient (calibrationForSet S hS) σ s=
+    lowGramCoefficient (calibrationForSet S hS) σ s =
       primaryCoefficient S hS σ (primaryGenerator s.val) := by
   have hp : λ₀^2∣primaryGenerator s.val-1 := (primaryGenerator_spec s.val
     (supported_primaryGenerator_ne_zero s.val s.property)).2
   rw [primaryCoefficient,ite_eq_left hp]
   exact lowGramCoefficient_eq_extension S hS hbad σ s
+end
 
 end SevenEighths.ProbeGramCommon
 end

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerGeometry InverseInitialProfile ConcreteTraceCRT
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
-  (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -28,25 +29,20 @@ theorem physicalBlock_coprimeSource
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
     (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(H:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ) :
-    physicalBlock p hp hcop hg (pointSource pool S) (w∘erasePoint) Ψ j H W₁ W₂ Φ Z D m =
-    physicalBlock p hp hcop hg (pointSource pool (coprimeSource p S)) (w∘erasePoint)
+    physicalBlock p hp hcop hg (pointSource pool S) (w∘ erasePoint) Ψ j H W₁ W₂ Φ Z D m =
+    physicalBlock p hp hcop hg (pointSource pool (coprimeSource p S)) (w∘ erasePoint)
       Ψ j H W₁ W₂ Φ Z D m := by
   unfold physicalBlock
   rw [pointSource_sum,pointSource_sum,coprimeSource,Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro x hx
   by_cases hc:IsCoprime (sourceIdeal p x.overlap) (sourceIdeal p x.common)
-  · rw [ite_eq_left hc]
+  grind
   · rw [ite_eq_right hc]
-    apply Finset.sum_eq_zero
-    intro N hN
-    apply Finset.sum_eq_zero
-    intro M hM
-    apply Finset.sum_eq_zero
+    pm_201 Finset.sum_eq_zero N hN M hM
     intro ρ hρ
     have hxpoint : sourcePoint x N M∈pointSource pool S := by
-      apply Finset.mem_biUnion.mpr
-      refine ⟨x,hx,?_⟩
+      pm_6001
       apply Finset.mem_image.mpr
       exact ⟨(N,M),Finset.mem_product.mpr ⟨hN,hM⟩,rfl⟩
     have hv := pointSource_valid pool S hdiv hf _ hxpoint
@@ -54,7 +50,7 @@ theorem physicalBlock_coprimeSource
     have hz : outerCoefficient p hp hcop hg Ψ j (sourcePoint x N M) ρ=0 := by
       by_contra hn
       exact hc (outerCoefficient_nonzero_coprime p hp hcop hg Ψ j (sourcePoint x N M) ρ hn)
-    simp only [hz,zero_mul,mul_zero]
+    grind
 
 include hcop in
 theorem retained_child_squarefree

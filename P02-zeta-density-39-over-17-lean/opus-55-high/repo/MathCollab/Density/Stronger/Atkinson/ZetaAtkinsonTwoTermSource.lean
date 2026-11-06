@@ -7,6 +7,7 @@ Mathlib/PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonMinusSource
 public import MathCollab.Density.Stronger.Atkinson.ZetaNeumannSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,10 @@ open Complex Filter MeasureTheory
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem exists_zetaAtkinsonBesselMinus_twoTerm_log_bound {δ : ℝ} (hδ : 0 < δ) :
+section
+variable {δ : ℝ} (hδ : 0 < δ)
+include δ hδ
+theorem exists_zetaAtkinsonBesselMinus_twoTerm_log_bound :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 16 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T ^ δ ≤ G → G ≤ T ^ (1 / 2 - δ) →
       ‖zetaAtkinsonBesselMinus T G (Real.log T) -
@@ -36,35 +40,26 @@ theorem exists_zetaAtkinsonBesselMinus_twoTerm_log_bound {δ : ℝ} (hδ : 0 < �
   have hev : ∀ᶠ T : ℝ in atTop, ∀ G : ℝ, T ^ δ ≤ G → G ≤ T ^ (1 / 2 - δ) →
       ‖zetaAtkinsonBesselMinus T G (Real.log T) -
         zetaAtkinsonTwoTermSum T G (Real.log T)‖ ≤ C * G * Real.log T := by
-    filter_upwards [eventually_zetaSmoothDivisorTest_support_physical hδ,
-      eventually_zeta_source_log_window_scales hδ] with T hsupport hscale
-    intro G hlower hupper
-    obtain ⟨hG, hlog, hwidth, _⟩ := hsupport.2 G hlower
+    pm_4344
     apply (hbound T G (Real.log T) hsupport.1 hG
       (hscale.2.2 G hG hupper).1 hlog hwidth).trans
     exact le_mul_of_one_le_right (mul_nonneg hC.le hG.le) hscale.2.1
-  obtain ⟨B, hB⟩ := eventually_atTop.mp hev
-  refine ⟨C, hC, max 16 B, le_max_left _ _, ?_⟩
-  intro T G hT hlower hupper
-  exact hB T ((le_max_right _ _).trans hT) G hlower hupper
+  pm_4343
+  grind
 
-theorem exists_zetaSquareLocalMean_le_atkinson_twoTerm {δ : ℝ} (hδ : 0 < δ) :
+theorem exists_zetaSquareLocalMean_le_atkinson_twoTerm :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 16 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T ^ δ ≤ G → G ≤ T ^ (1 / 2 - δ) →
       (∫ t in T - G..T + G, zetaMomentCriticalNorm t ^ 2) ≤
         2 * Real.exp 1 * (zetaAtkinsonTwoTermSum T G (Real.log T)).re +
           C * G * Real.log T := by
-  obtain ⟨C, hC, B, hB, hsource⟩ := exists_zetaSquareLocalMean_le_atkinson_minus hδ
+  pm_206 C hC B hB hsource exists_zetaSquareLocalMean_le_atkinson_minus hδ
   obtain ⟨D, hD, B₁, _, herror⟩ := exists_zetaAtkinsonBesselMinus_twoTerm_log_bound hδ
-  refine ⟨C + 2 * Real.exp 1 * D, by positivity, max B B₁, hB.trans (le_max_left _ _), ?_⟩
-  intro T G hT hlower hupper
-  have hm := hsource T G ((le_max_left _ _).trans hT) hlower hupper
-  have he := herror T G ((le_max_right _ _).trans hT) hlower hupper
-  have hr := (Complex.re_le_norm
-    (zetaAtkinsonBesselMinus T G (Real.log T) -
-      zetaAtkinsonTwoTermSum T G (Real.log T))).trans he
-  simp only [Complex.sub_re] at hr
-  have hscaled := mul_le_mul_of_nonneg_left hr (by positivity : 0 ≤ 2 * Real.exp 1)
+  pm_4362
+  pm_6117 he herror le_max_right
+  pm_5347 zetaAtkinsonBesselMinus zetaAtkinsonTwoTermSum
+  pm_4360 hscaled hr
   nlinarith
+end
 
 end MathCollab.Density.Stronger.Atkinson

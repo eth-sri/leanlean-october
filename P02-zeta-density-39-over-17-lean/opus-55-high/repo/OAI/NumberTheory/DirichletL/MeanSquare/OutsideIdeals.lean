@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.InputEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -81,20 +82,21 @@ open FirstPassCubeLabels (primeProductNorm columnLog)
 def outsideSquarefreeIdeals (S : Finset (Ideal O)) (D : ℕ) : Finset (Ideal O) :=
   (outsideIdealsUpTo S D).filter Squarefree
 
-theorem outsideSquarefree_admissible (S : Finset (Ideal O)) (D : ℕ)
+section
+variable (S : Finset (Ideal O)) (D : ℕ)
+include S D
+theorem outsideSquarefree_admissible
     (hbad : fixedBadPrimes ⊆ S) : ∀ I ∈ outsideSquarefreeIdeals S D, Admissible I := by
-  intro I hI
-  obtain ⟨ho,hs⟩ := Finset.mem_filter.mp hI
+  pm_161 I hI ho hs Finset.mem_filter.mp
   have hn := outsideIdealsUpTo_ne_bot S D I ho
   refine ⟨hn,hs,?_⟩
   intro P hP
   obtain ⟨hp,hd⟩ := (UniqueFactorizationMonoid.mem_normalizedFactors_iff hn).mp hP
-  let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
-  apply (prime_good_iff_not_bad P).mpr
+  pm_3439
   intro hPb
   exact (mem_outsideIdealsUpTo.mp ho).2.2 P (hbad hPb) hd
 
-theorem outside_pool_product_not_dvd (S : Finset (Ideal O)) (D : ℕ)
+theorem outside_pool_product_not_dvd
     (hSp : ∀ P ∈ S, Prime P) (T : Finset (primePool (outsideSquarefreeIdeals S D))) :
     ∀ P ∈ S, ¬ P ∣ ∏ i ∈ T,i.val := by
   intro P hPS hdiv
@@ -106,7 +108,7 @@ theorem outside_pool_product_not_dvd (S : Finset (Ideal O)) (D : ℕ)
   have hd : i.val ∣ I := (UniqueFactorizationMonoid.mem_normalizedFactors_iff hn).mp hiI |>.2
   exact (mem_outsideIdealsUpTo.mp ho).2.2 P hPS (hPi.trans hd)
 
-theorem selectedIdealTest_outside (S : Finset (Ideal O)) (D : ℕ)
+theorem selectedIdealTest_outside
     (hbad : fixedBadPrimes ⊆ S) (hSp : ∀ P ∈ S, Prime P)
     (W : ℝ → ℂ) (b Z : ℝ) (hZ : 0 < Z)
     (hs : ∀ t, W t ≠ 0 → t ≤ b) (hD : b*Z ≤ D)
@@ -127,6 +129,7 @@ theorem selectedIdealTest_outside (S : Finset (Ideal O)) (D : ℕ)
     refine ⟨mem_outsideIdealsUpTo.mpr ⟨?_,?_,outside_pool_product_not_dvd S D hSp T⟩,ha.2.1⟩
     · exact Nat.one_le_iff_ne_zero.mpr (fun hz => ha.1 (Ideal.absNorm_eq_zero_iff.mp hz))
     · exact_mod_cast ((div_le_iff₀ hZ).mp (hs _ hw)).trans hD
+end
 
 end InitialMeanSquare
 

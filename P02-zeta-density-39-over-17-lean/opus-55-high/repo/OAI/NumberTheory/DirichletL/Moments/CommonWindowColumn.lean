@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWholeWindow
 public import OAI.NumberTheory.DirichletL.Moments.CommonPairedSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonHeightEnvelope
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ def coefficient (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
 def windowColumn (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
     (η:Character)(t θ X:ℝ)(V:ℝ→ℂ)(z:O):ℂ:=
   rowPolynomial Finset.univ (sourceGenerator (columns s C hC))
-    (fun I=>coefficient s C hC R seed L I*heightCoeff η t I*
+    (fun I=>coefficient s C hC R seed L I*heightCoeff η t I *
       columnPhase V (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X)) θ) z
 
 omit [DecidableEq ι] in
@@ -46,7 +47,7 @@ theorem coefficient_polynomial (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:
       normalizedColumn (withHeight s η t) C hC R seed L z:=by
   unfold normalizedColumn sourceColumn
   dsimp only [withHeight,Input.pools,columns]
-  simp only [coefficient,mul_assoc,rowPolynomial_factor,Input.pools,columns]
+  pm_94 coefficient mul_assoc rowPolynomial_factor Input.pools columns
   rfl
 
 theorem sourceGenerator_span (S:Finset (Ideal O))(I:supportedColumns S):

@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Coefficient
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss LocalReflectionBrackets
+open scoped Classical
+open CubicEisenstein CompletedGauss LocalReflectionBrackets
 open InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -15,8 +16,10 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 noncomputable local instance independentFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
 omit [Fintype ι] in
-theorem ramifiedBlock_norm [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem ramifiedBlock_norm
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) :
     ‖ramifiedBlock hg j S u m‖ = 1 := by
   unfold ramifiedBlock
@@ -25,7 +28,7 @@ theorem ramifiedBlock_norm [∀ i, (Ideal.span {p i}).IsMaximal]
   intro i hi
   exact unitArgumentFactor_norm _ _ _ (unit_ramified_quotient_ne_zero _ (hg i) u m)
 
-theorem sourceRowPhase_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem sourceRowPhase_norm_le_one
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
@@ -33,11 +36,9 @@ theorem sourceRowPhase_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (j : ι → ℕ) (R F : Finset ι) (hd : Disjoint R F) (u : Eisˣ) (m : ℕ) :
     ‖sourceRowPhase s hp hg j R F u m‖ ≤ 1 := by
-  rw [sourceRowPhase,norm_mul,norm_mul,residualWithFrozen_norm D hp hg hchar hcop R F hd,
-    ramifiedBlock_norm,one_mul,one_mul]
-  exact frozenArgument_norm_le_one hg j F _
+  pm_6125 sourceRowPhase residualWithFrozen_norm R
 
-theorem sourceSlotPhase_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem sourceSlotPhase_norm_le_one
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
@@ -45,9 +46,8 @@ theorem sourceSlotPhase_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (j : ι → ℕ) (S F : Finset ι) (hd : Disjoint S F) (u : Eisˣ) (m : ℕ) :
     ‖sourceSlotPhase s hp hg j S F u m‖ ≤ 1 := by
-  rw [sourceSlotPhase,norm_mul,norm_mul,markedWithFrozen_norm D hp hg hchar hcop S F hd,
-    ramifiedBlock_norm,one_mul,one_mul]
-  exact frozenArgument_norm_le_one hg j F _
+  pm_6125 sourceSlotPhase markedWithFrozen_norm S
+end
 
 omit [Fintype ι] in
 theorem frozenArgument_congr [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -56,29 +56,25 @@ theorem frozenArgument_congr [∀ i, (Ideal.span {p i}).IsMaximal]
   unfold frozenArgument
   apply Finset.prod_congr rfl
   intro i hi
-  rw [hj i hi]
+  grind
 
 omit [Fintype ι] in
 theorem frozenCore_congr [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis)
     (j j' : ι → ℕ) (F : Finset ι) (hj : ∀ i ∈ F, j i = j' i) :
     frozenCore hp hg c j F = frozenCore hp hg c j' F := by
-  unfold frozenCore
-  apply Finset.prod_congr rfl
-  intro i hi
-  rw [hj i hi]
+  pm_8266 frozenCore
 
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
 omit [Fintype ι] in
-theorem ramifiedBlock_congr [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem ramifiedBlock_congr
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j j' : ι → ℕ) (F : Finset ι)
     (hj : ∀ i ∈ F, j i = j' i) (u : Eisˣ) (m : ℕ) :
     ramifiedBlock hg j F u m = ramifiedBlock hg j' F u m := by
-  unfold ramifiedBlock
-  apply Finset.prod_congr rfl
-  intro i hi
-  rw [hj i hi]
+  pm_8266 ramifiedBlock
 
-theorem marked_phases_eq [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem marked_phases_eq
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
@@ -88,14 +84,14 @@ theorem marked_phases_eq [∀ i, (Ideal.span {p i}).IsMaximal]
     sourceFrozenPhase D s hp hg (markedActiveExponent S j) F u m = sourceFrozenPhase D s hp hg j F u m := by
   have hj : ∀ i ∈ F, markedActiveExponent S j i = j i := by
     intro i hi
-    have hn : i ∉ S := fun hs => Finset.disjoint_left.mp hd hs hi
+    pm_3040 hn S hs hd
     simp only [markedActiveExponent,hn,ite_false]
   simp only [sourceRowPhase,sourceSlotPhase,sourceFrozenPhase,
     frozenArgument_congr hg _ _ F hj,frozenCore_congr hp hg c _ _ F hj,
     ramifiedBlock_congr hg _ _ F hj]
   simp
 
-theorem marked_sourceColumn_eq [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem marked_sourceColumn_eq
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S F : Finset ι) (hd : Disjoint S F)
@@ -106,10 +102,10 @@ theorem marked_sourceColumn_eq [∀ i, (Ideal.span {p i}).IsMaximal]
   congr 1
   apply Finset.prod_congr rfl
   intro i hi
-  have hn : i ∉ S := fun hs => Finset.disjoint_left.mp hd hs hi
+  pm_3040 hn S hs hd
   simp only [markedActiveExponent,hn,ite_false]
 
-theorem mixed_coefficient_hybrid_original_exponents [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem mixed_coefficient_hybrid_original_exponents
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i ≠ 0) (hc : c ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
@@ -136,6 +132,7 @@ theorem mixed_coefficient_hybrid_original_exponents [∀ i, (Ideal.span {p i}).I
   obtain ⟨hr,hs,hf⟩ := marked_phases_eq D s hp hg j R S F hd u m
   rw [hr,hs,hf,marked_sourceColumn_eq D s hc hg j S F hd u m n b] at he
   exact he
+end
 
 end
 end SevenEighths.InverseReflectedPhase

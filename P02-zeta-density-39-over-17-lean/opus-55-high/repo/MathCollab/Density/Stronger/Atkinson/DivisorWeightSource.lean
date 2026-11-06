@@ -7,6 +7,7 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.DivisorWeightReflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,32 +22,38 @@ namespace MathCollab.Density.Stronger.Atkinson
 def zetaDivisorWeightArgument (t : ℝ) (n : ℕ) : ℂ :=
   (Real.log (n : ℝ) : ℂ) - zetaGammaLeadingLog t
 
-theorem zetaDivisorWeightArgument_re (t : ℝ) (n : ℕ) :
+section
+variable (t : ℝ) (n : ℕ)
+include t n
+theorem zetaDivisorWeightArgument_re :
     (zetaDivisorWeightArgument t n).re = Real.log (n : ℝ) - Real.log (t / (2 * Real.pi)) := by
   simp only [zetaDivisorWeightArgument, zetaGammaLeadingLog, sub_re, ofReal_re,
     mul_re, ofReal_im, I_re, I_im, zero_mul, mul_zero, sub_zero]
 
-theorem zetaDivisorWeightArgument_im (t : ℝ) (n : ℕ) :
+theorem zetaDivisorWeightArgument_im :
     (zetaDivisorWeightArgument t n).im = Real.pi / 2 := by
   simp only [zetaDivisorWeightArgument, zetaGammaLeadingLog, sub_im, ofReal_im,
     mul_im, ofReal_re, I_re, I_im, zero_mul, mul_one, add_zero, zero_sub, neg_neg]
+end
 
 theorem divisorDirichletTerm_add_eq_mul_exp (s w : ℂ) (n : ℕ) :
     divisorDirichletTerm (s + w) n =
       divisorDirichletTerm s n * Complex.exp (-((Real.log (n : ℝ) : ℂ)) * w) := by
   by_cases hn : n = 0
-  · subst n
-    simp [divisorDirichletTerm, LSeries.term]
-  have hne : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hn
+  aesop
+  pm_115 hne n Nat.cast_ne_zero.mpr hn
   have hlog : Complex.log (n : ℂ) = (Real.log (n : ℝ) : ℂ) := by
-    rw [← Complex.ofReal_natCast, ← Complex.ofReal_log (Nat.cast_nonneg n)]
+    simp_all
   rw [divisorDirichletTerm_eq_divisorWeight_mul_cpow,
     divisorDirichletTerm_eq_divisorWeight_mul_cpow, neg_add,
     Complex.cpow_add _ _ hne, Complex.cpow_def_of_ne_zero hne (-w), hlog]
   rw [show ((Real.log (n : ℝ) : ℂ)) * -w = -((Real.log (n : ℝ) : ℂ)) * w by ring]
   ring
 
-theorem zetaSquareLeadingDivisorTerm_eq_weightKernel (t : ℝ) (n : ℕ) (u : ℝ) :
+section
+variable (t : ℝ) (n : ℕ)
+include t n
+theorem zetaSquareLeadingDivisorTerm_eq_weightKernel (u : ℝ) :
     zetaSquareLeadingDivisorTerm t n u =
       (divisorDirichletTerm (afeCriticalPoint (-t)) n * zetaSquareReflectedGammaPhase t) *
         zetaDivisorWeightKernel (zetaDivisorWeightArgument t n) (1 + (u : ℂ) * I) := by
@@ -60,13 +67,14 @@ theorem zetaSquareLeadingDivisorTerm_eq_weightKernel (t : ℝ) (n : ℕ) (u : �
         (1 + (u : ℂ) * I) * zetaGammaLeadingLog t by ring, Complex.exp_add]
   ring
 
-theorem zetaSquareLeadingDivisorContribution_eq_weight (t : ℝ) (n : ℕ) :
+theorem zetaSquareLeadingDivisorContribution_eq_weight :
     zetaSquareLeadingDivisorContribution t n =
       divisorDirichletTerm (afeCriticalPoint (-t)) n * zetaSquareReflectedGammaPhase t *
         zetaDivisorWeight (zetaDivisorWeightArgument t n) := by
   unfold zetaSquareLeadingDivisorContribution zetaDivisorWeight
   simp_rw [zetaSquareLeadingDivisorTerm_eq_weightKernel, integral_const_mul]
   ring
+end
 
 theorem exp_neg_zetaDivisorWeightArgument_re {t : ℝ} (ht : 0 < t)
     {n : ℕ} (hn : 0 < n) :
@@ -81,10 +89,8 @@ theorem exists_norm_source_zetaDivisorWeight_min_le :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ, 0 < t → ∀ n : ℕ, 0 < n →
       ‖zetaDivisorWeight (zetaDivisorWeightArgument t n)‖ ≤
         C * min 1 (t / (2 * Real.pi * (n : ℝ))) := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_zetaDivisorWeight_min_le
-    (B := Real.pi / 2) (by positivity)
-  refine ⟨C, hC, ?_⟩
-  intro t ht n hn
+  pm_1336 hbound exists_norm_zetaDivisorWeight_min_le
+  pm_486 C hC t ht n hn
   have h := hbound (zetaDivisorWeightArgument t n)
     (by rw [zetaDivisorWeightArgument_im, abs_of_pos (by positivity)])
   rwa [exp_neg_zetaDivisorWeightArgument_re ht hn] at h

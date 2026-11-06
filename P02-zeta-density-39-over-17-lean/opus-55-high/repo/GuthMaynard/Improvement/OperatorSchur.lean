@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.OperatorDensityVector
 public import GuthMaynard.Improvement.LogMask
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory InnerProductSpace Set
 open scoped InnerProductSpace FourierTransform Topology
 namespace GuthMaynard.Improvement
@@ -65,12 +64,12 @@ theorem operator_positive_norm_of_quadratic {E : Type*} [NormedAddCommGroup E]
   rw [he, abs_of_nonneg (div_nonneg hn hf2.le)]
   exact (div_le_iff₀ hf2).mpr (hb f)
 
+section
+variable {μ : ℝ → ℝ} [IsFiniteMeasure (timeMeasure μ)] (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) {B : ℝ} (hB : 0 ≤ B) (hb : ∀ t, μ t ≤ B) {a : ℝ → ℝ} (ha : Measurable a) (hi : Integrable a) (ha0 : ∀ x, 0 ≤ a x)
+include μ hm h0 B hB hb a ha hi ha0
 /-- Actual Schur bound: the constant uses only the weighted fixed cutoff,
 not the total density mass or its support length. -/
-theorem operator_continuous_schur {μ : ℝ → ℝ} [IsFiniteMeasure (timeMeasure μ)]
-    (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) {B : ℝ}
-    (hB : 0 ≤ B) (hb : ∀ t, μ t ≤ B)
-    {a : ℝ → ℝ} (ha : Measurable a) (hi : Integrable a) (ha0 : ∀ x, 0 ≤ a x)
+theorem operator_continuous_schur
     {W L : ℝ} (hW : 0 ≤ W) (hL : 0 ≤ L)
     (haw : ∀ x, 0 < x → x*a x ≤ W) (haz : ∀ x, x ≤ 0 → a x=0) :
     ‖operatorContinuous (timeMeasure μ) a L‖ ≤ (2*Real.pi*W)*L*B := by
@@ -89,10 +88,7 @@ theorem operator_continuous_schur {μ : ℝ → ℝ} [IsFiniteMeasure (timeMeasu
     _ = _ := by ring
 
 /-- Fixed compact nonnegative cutoff gives the manuscript's uniform L B correction bound. -/
-theorem operator_continuous_compact_schur {μ : ℝ → ℝ}
-    [IsFiniteMeasure (timeMeasure μ)] (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
-    {B : ℝ} (hB : 0 ≤ B) (hb : ∀ t, μ t ≤ B)
-    {a : ℝ → ℝ} (ha : Measurable a) (hi : Integrable a) (ha0 : ∀ x, 0 ≤ a x)
+theorem operator_continuous_compact_schur
     {l u A L : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hA : 0 ≤ A) (hL : 0 ≤ L)
     (haA : ∀ x, a x ≤ A) (hs : ∀ x, x ∉ Icc l u → a x=0) :
     ‖operatorContinuous (timeMeasure μ) a L‖ ≤ (2*Real.pi*u*A)*L*B := by
@@ -105,6 +101,7 @@ theorem operator_continuous_compact_schur {μ : ℝ → ℝ}
     · rw [hs x hxI, mul_zero]
       positivity
   · exact hs x (fun hxI => by linarith [hxI.1])
+end
 
 /-- For a fixed continuous nonnegative compact cutoff the Schur constant is chosen
 before every density, density bound, and scale. Ordinary L1 supplies finite time measure. -/
@@ -116,9 +113,8 @@ theorem operator_fixed_cutoff_schur {a : ℝ → ℝ} (ha : Continuous a)
       ∀ L : ℝ, 0 ≤ L →
         let := timeMeasure_finite hiμ
         ‖operatorContinuous (timeMeasure μ) a L‖ ≤ D*L*B := by
-  obtain ⟨A,hA⟩ := isCompact_Icc.exists_bound_of_continuousOn ha.continuousOn
-  let W := max 0 A
-  have hW : 0 ≤ W := le_max_left _ _
+  pm_8601 A hA ha.continuousOn W
+  pm_4918 hW W le_max_left
   have haW (x : ℝ) : a x ≤ W := by
     by_cases hx : x ∈ Icc l u
     · exact (le_abs_self _).trans ((hA x hx).trans (le_max_right _ _))

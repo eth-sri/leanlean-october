@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.SectorCover
 public import OAI.NumberTheory.DirichletL.Reflection.WholeRow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,18 +14,11 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
-lemma sum_subtype_dite {α : Type*} [Fintype α] (p : α→Prop) (f : ∀ x,p x→ℂ) :
-    (∑ x : {x // p x},f x.val x.property)=∑ x,if h:p x then f x h else 0 := by
-  have hh := Fintype.sum_subtype_add_sum_subtype p (fun x => if h:p x then f x h else 0)
-  have hz : (∑ x : {x // ¬p x},if h:p x.val then f x.val h else 0)=0 := by
-    apply Finset.sum_eq_zero
-    intro x hx
-    exact dite_eq_right x.property
-  rw [hz,add_zero] at hh
-  simpa only [Subtype.property,dite_eq_left] using hh
+lemma sum_subtype_dite {α : Type*} [Fintype α] (p : α→ Prop) (f : ∀ x,p x→ℂ) :
+    (∑ x : {x // p x},f x.val x.property)=∑ x,if h:p x then f x h else 0 := by pm_3292
 
 def literalPairEntry (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
+    (S : Ideal Eis→ PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -37,7 +31,7 @@ def literalPairEntry (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
   else 0 else 0 else 0
 
 lemma literalWholeRow_eq_pairs (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
+    (S : Ideal Eis→ PrimeFamily σ) (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -56,7 +50,7 @@ lemma literalWholeRow_eq_pairs (F : PrimeFamily φ) (rows Pset : Finset (Ideal E
   simp only [literalPairEntry,dite_eq_left K.property,dite_eq_left P.property,f]
 
 lemma literalPairEntry_restrict (F : PrimeFamily φ) (rows Pset rows' Pset' : Finset (Ideal Eis))
-    (hrow : rows'⊆rows) (hP : Pset'⊆Pset) (S : Ideal Eis→PrimeFamily σ)
+    (hrow : rows'⊆rows) (hP : Pset'⊆Pset) (S : Ideal Eis→ PrimeFamily σ)
     (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode)
@@ -69,7 +63,7 @@ lemma literalPairEntry_restrict (F : PrimeFamily φ) (rows Pset rows' Pset' : Fi
   simp only [literalPairEntry,dite_eq_left hK,dite_eq_left hp,dite_eq_left (hrow hK),dite_eq_left (hP hp)]
   by_cases hcop : IsCoprime K P
   · simp only [dite_eq_left hcop,hE]
-  · simp only [dite_eq_right hcop]
+  grind
 end
 end SevenEighths.InverseReflectedPhase
 

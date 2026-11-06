@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalShift
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalSplit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ local instance : MeasurableSpace FreeRow := ⊤
 local instance : MeasurableSingletonClass FreeRow := ⟨fun _=>trivial⟩
 
 def shiftedRowInner {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
+    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→ PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z l : ℝ) (q : ℝ×ℝ) : ℂ :=
   ∫t : ℝ,continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z
     ((3:ℂ)+q.1*I) ((l:ℂ)+t*I) ((2:ℂ)+q.2*I)
@@ -25,7 +26,7 @@ def shiftedRowInner {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
 theorem rowIntegral_w_shift {K : ℕ}
     (eps : ℝ) (heps : 0<eps) (heps' : eps≤5/2)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
+    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→ PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -35,10 +36,10 @@ theorem rowIntegral_w_shift {K : ℕ}
       (fun i=>CompletedGauss.primaryGenerator (P i).val) W0 W1 X Y Z u=
       ((1/(2*Real.pi):ℝ):ℂ)^3*
         ∫q : ℝ×ℝ,shiftedRowInner S hS hmax P hPS η u W0 W1 X Y Z l q ∂(volume.prod volume) := by
-  let p : Fin K→O := fun i=>CompletedGauss.primaryGenerator (P i).val
+  let p : Fin K→ O := fun i=>CompletedGauss.primaryGenerator (P i).val
   have hp : ∀i,p i≠0 := fun i=>(supported_primeGenerator_prime (P i)
     (outside_prime_supported S hS.bad (P i) (hPS i))).ne_zero
-  let e : FreeRow→NonzeroFrequency := fun u=>⟨u.val,u.property.1⟩
+  let e : FreeRow→ NonzeroFrequency := fun u=>⟨u.val,u.property.1⟩
   have he : Function.Injective e := fun a b h=>Subtype.ext (congrArg (fun v : NonzeroFrequency=>v.val) h)
   have hF := compensatedRows_counting_product_integrable e he η S (calibrationForSet S hmax) p hp
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ

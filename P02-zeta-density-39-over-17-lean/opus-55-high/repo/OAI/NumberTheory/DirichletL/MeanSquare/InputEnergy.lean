@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.DirichletForm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -78,18 +79,18 @@ namespace InitialMeanSquare
 open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
-theorem poolProduct_admissible (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
-    (S : Finset (primePool F)) : Admissible (∏ i ∈ S,i.val) := by
-  have hp (i : primePool F) : Prime i.val :=
-    Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
+section
+variable (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I) (S : Finset (primePool F))
+include F hF S
+theorem poolProduct_admissible : Admissible (∏ i ∈ S,i.val) := by
+  pm_6265
   have hn : (∏ i ∈ S,i.val) ≠ (0 : Ideal O) :=
     Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
   refine ⟨hn, ?_, ?_⟩
   · apply Finset.squarefree_prod_of_pairwise_isCoprime
     · intro i hi j hj hij
       exact (Ideal.isCoprime_of_isMaximal (fun he => hij (Subtype.ext he))).isRelPrime
-    · intro i hi
-      exact (hp i).squarefree
+    pm_8346
   · intro P hP
     obtain ⟨hprime, hdiv⟩ := (UniqueFactorizationMonoid.mem_normalizedFactors_iff hn).mp hP
     obtain ⟨i, hi, hPi⟩ := (hprime.dvd_finsetProd_iff (fun i : primePool F => i.val)).mp hdiv
@@ -97,14 +98,14 @@ theorem poolProduct_admissible (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissi
     rw [he]
     exact ⟨poolGood F hF i, poolOdd F hF i⟩
 
-theorem poolPrimary_norm (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
-    (S : Finset (primePool F)) :
+theorem poolPrimary_norm :
     primeProductNorm (poolPrimary F) S = (Ideal.absNorm (∏ i ∈ S,i.val) : ℝ) := by
   rw [primeProductNorm, eisEmbedding_norm_sq_eq_absNorm_span, FiniteGaussPhase.span_finset_prod]
   congr 2
   apply Finset.prod_congr rfl
   intro i hi
   exact poolPrimary_span F hF i
+end
 
 end InitialMeanSquare
 

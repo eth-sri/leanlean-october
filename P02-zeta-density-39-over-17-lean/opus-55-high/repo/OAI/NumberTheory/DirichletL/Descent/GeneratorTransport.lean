@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Canonical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,21 +17,24 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-theorem secondChildColumn_label_transfer (Ψ : Eis →* ℂ) (m a f k : Eis)
+section
+variable (Ψ : Eis →* ℂ)
+include Ψ
+theorem secondChildColumn_label_transfer (m a f k : Eis)
     (H : Finset ι → ℂ) (S : Finset ι) :
     secondChildColumn p hp hcop hg Ψ m (a*f) k H S =
       secondChildColumn p hp hcop hg Ψ m f (a^4*k) H S := by
-  simp only [secondChildColumn, finiteSquarefreeRow, map_mul, map_pow,
-    Finset.prod_mul_distrib, Finset.prod_pow, mul_pow]
+  pm_544 secondChildColumn finiteSquarefreeRow map_mul map_pow Finset.prod_mul_distrib Finset.prod_pow mul_pow
   ring
 
-theorem secondChildColumn_generator_unit (Ψ : Eis →* ℂ) (u : Eisˣ) (m f d k : Eis)
+theorem secondChildColumn_generator_unit (u : Eisˣ) (m f d k : Eis)
     (H : Finset ι → ℂ) (S : Finset ι) :
     secondChildColumn p hp hcop hg Ψ m ((u:Eis)*f) ((u:Eis)*d*k) H S =
       secondChildColumn p hp hcop hg Ψ m f (d*((u:Eis)^5*k)) H S := by
   rw [secondChildColumn_label_transfer]
   congr 1
   ring
+end
 
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_label_transfer (F : Finset ι) (Ψ : Eis →* ℂ)

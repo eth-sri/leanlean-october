@@ -4,6 +4,7 @@ public import GuthMaynard.AffineSource.Foundation
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -29,10 +30,9 @@ theorem exists_primitive_divisor_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (n : ℕ) (K : ℝ), 0 < n → 0 ≤ K →
       (n.divisors.card:ℝ)+K/(n:ℝ)^2*(∑ g ∈ n.divisors, (g:ℝ)) ≤
         C*(n:ℝ)^ε*(1+K/n) := by
-  obtain ⟨C,hC,hdiv⟩ := RiemannZeta.GuthMaynard.divisorCountBound_native ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hdiv RiemannZeta.GuthMaynard.divisorCountBound_native ε hε
   intro n K hn hK
-  have hnr : (0:ℝ) < n := by exact_mod_cast hn
+  pm_4473 hnr n hn
   calc
     _ ≤ (n.divisors.card:ℝ)+K/(n:ℝ)^2*((n:ℝ)*(n.divisors.card:ℝ)) :=
       add_le_add le_rfl (mul_le_mul_of_nonneg_left (sum_divisors_cast_le_mul_card n)

@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.SourceCutoffConvolution
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
@@ -28,21 +28,20 @@ theorem source_density_regular {β : ℝ → ℝ} (hβm : Measurable β)
   have hA : MeasurableSet {t | ‖D t‖ ≤ U} := measurableSet_le hDm.norm measurable_const
   have hfm : Measurable (fun t => β t*‖D t‖^2) := hβm.mul (hDm.norm.pow_const 2)
   have hfull0 : ∀ t, 0 ≤ β t*‖D t‖^2 := fun t => mul_nonneg (hβ0 t) (sq_nonneg _)
-  have hb0 : 0 ≤ B := (norm_nonneg (D 0)).trans (hDb 0)
+  pm_6321 hb0 B D hDb
   have hp : ∀ t, β t*‖D t‖^2 ≤ β t*B^2 := by
     intro t
     exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (norm_nonneg _) (hDb t) 2) (hβ0 t)
   have hfi : Integrable (fun t => β t*‖D t‖^2) := by
     apply (hβi.mul_const (B^2)).mono' hfm.aestronglyMeasurable
-    filter_upwards [] with t
-    simpa only [Real.norm_eq_abs,abs_of_nonneg (hfull0 t)] using hp t
+    pm_8461 t hfull0
   have hm : Measurable (sourceTruncatedDensity β D U) := hfm.indicator hA
   have h0 : ∀ t, 0 ≤ sourceTruncatedDensity β D U t := by
     intro t
-    exact indicator_nonneg (fun x _ => hfull0 x) t
+    pm_8065
   have hμb : ∀ t, sourceTruncatedDensity β D U t ≤ β t*B^2 := by
     intro t
-    by_cases ht : t ∈ {t | ‖D t‖ ≤ U}
+    pm_7011
     · simpa [sourceTruncatedDensity,ht] using hp t
     · simp only [sourceTruncatedDensity,indicator_of_notMem ht]
       exact mul_nonneg (hβ0 t) (sq_nonneg B)
@@ -56,7 +55,7 @@ theorem source_density_regular {β : ℝ → ℝ} (hβm : Measurable β)
       _ ≤ β t*B^4 := mul_le_mul_of_nonneg_right (by nlinarith [hβ0 t,hβ1 t]) (by positivity)
   refine ⟨hm,h0,hfi.indicator hA,hμ2,hfi.indicator hA.compl,?_,?_⟩
   · intro t
-    exact indicator_nonneg (fun x _ => hfull0 x) t
+    pm_8065
   · intro t
     by_cases ht : t ∈ {t | ‖D t‖ ≤ U} <;> simp [sourceTruncatedDensity,sourceRemovedDensity,ht]
 
@@ -72,7 +71,7 @@ theorem source_tail_scalar_absorption {A K Q Λ : ℝ}
     (hA : 0 ≤ A) (hQ : 0 ≤ Q) (hΛ : 0 < Λ) (hthreshold : 2*K ≤ Λ)
     (hbudget : A ≤ K*(A/Λ)+Q*Real.sqrt A) : A ≤ 4*Q^2 := by
   have hk : K*(A/Λ) ≤ A/2 := by
-    apply (le_div_iff₀ (by norm_num : (0:ℝ)<2)).mpr
+    pm_467 le_div_iff₀
     have hh := mul_le_mul_of_nonneg_right hthreshold (div_nonneg hA hΛ.le)
     have hc : Λ*(A/Λ)=A := by field_simp
     rw [hc] at hh
@@ -130,16 +129,14 @@ theorem source_tail_of_sampling {χ : ℝ → ℝ} (hχd : ContDiff ℝ ∞ χ)
     apply (hρi.mul_const (A/Λ)).mono' ((Complex.ofRealCLM.integrable_comp hρi).aestronglyMeasurable.mul hgm)
     filter_upwards [] with t
     change ‖(ρ t:ℂ)*g t‖ ≤ ρ t*(A/Λ)
-    simp only [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hρ0' t)]
-    exact mul_le_mul_of_nonneg_left (sourceFourierSignal_bound hμi hμ2 hΛ t) (hρ0 t)
+    pm_835
   have hρbound : ‖∫ t, (ρ t:ℂ)*g t‖ ≤ (∫ t, ρ t)*(A/Λ) := by
     calc
       _ ≤ ∫ t, ‖(ρ t:ℂ)*g t‖ := norm_integral_le_integral_norm _
       _ ≤ ∫ t, ρ t*(A/Λ) := by
         apply integral_mono hρgi.norm (hρi.mul_const _)
         intro t
-        simp only [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hρ0' t)]
-        exact mul_le_mul_of_nonneg_left (sourceFourierSignal_bound hμi hμ2 hΛ t) (hρ0 t)
+        pm_835
       _ = _ := integral_mul_const _ _
   have hsplit : (∫ t, (‖D t‖^2:ℂ)*((β t:ℂ)*g t)) =
       (A:ℂ)+(∫ t, (ρ t:ℂ)*g t) := by

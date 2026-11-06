@@ -1,8 +1,8 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Filter
 namespace GuthMaynard.Improvement
@@ -16,15 +16,13 @@ theorem cubic_smoothing_width_bounds {T η L K R q : ℝ}
     0 < cubicSmoothingWidth q T η L K ∧
     (cubicSmoothingWidth q T η L K)⁻¹ ≤ T ∧
     cubicSmoothingWidth q T η L K ≤ q*T^(η-(4:ℝ)/5) := by
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLlow
-  have hKp : 0 < K := by linarith
-  have hqp : 0 < q := by linarith
-  have hH : 0 < T^η := Real.rpow_pos_of_pos hTp _
+  pm_438 hTp hLp L hLlow
+  pm_72 hKp K hqp q
+  pm_1364
   have hLK : L*K ≤ T^(1+η) := by
     have hh := (le_div_iff₀ hLp).mp (hKR.trans hRU)
     nlinarith
-  have hid : T^(1+η) = T*T^η := by rw [Real.rpow_add hTp,Real.rpow_one]
+  pm_1183
   have hbase : T^((4:ℝ)/5) ≤ L*K := by nlinarith
   refine ⟨by unfold cubicSmoothingWidth; positivity,?_,?_⟩
   · unfold cubicSmoothingWidth

@@ -1,19 +1,20 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.DyadReassembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
 variable {N a c : Eis} {mode : Bool}
 variable (G : PrimeFamily φ) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
-    (tuples : Finset (σ→Ideal Eis)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
+    (tuples : Finset (σ→ Ideal Eis)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
     (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i) (Hrow Hslot : ℝ)
 
 abbrev CellCompletion (i : Fin (columnDyadicLength Hrow+1)) (j : Fin (columnDyadicLength Hslot+1)) :=
@@ -27,7 +28,7 @@ variable (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (
 
 def cellPhysicalTerm (i : Fin (columnDyadicLength Hrow+1)) (j : Fin (columnDyadicLength Hslot+1))
     (D : CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j)
-    (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ)
+    (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→ Ideal Eis)→ℂ)
     (K : divisorDyadicBin rows Hrow i) (p : activeTupleDyad tuples Hslot j) : ℂ :=
     if hp:IsCoprime K.val (slotTupleProduct p.val) then
       r K.val*aw p.val*mixedReflectedValue (D K p hp) s
@@ -41,20 +42,20 @@ theorem physical_dyad_selection_energy (E : ℝ→ℝ) (hE : ∀ θ,0≤E θ)
     (he : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
       (divisorDyadicBin rows Hrow i).Nonempty → (activeTupleDyad tuples Hslot j).Nonempty →
       ∃ D : CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j,
-      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
+      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→ Ideal Eis)→ℂ),
         (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
         (∑ K : divisorDyadicBin rows Hrow i,‖∑ p : activeTupleDyad tuples Hslot j,
           cellPhysicalTerm G rows hrows tuples hmax hgood Hrow Hslot s hc jF W X i j D θ r aw K p‖^2)≤E θ) :
     ∃ D : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
       CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j,
-      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
+      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→ Ideal Eis)→ℂ),
         (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
         (∑ K : rows,‖∑ p : tuples,
           dyadicPhysicalTerm G rows hrows tuples hmax hgood Hrow Hslot D s hc jF W θ X r aw K p‖^2)≤
           (columnDyadicLength Hrow+1:ℝ)*(columnDyadicLength Hslot+1:ℝ)^2*E θ := by
   have hall : ∀ i : Fin (columnDyadicLength Hrow+1),∀ j : Fin (columnDyadicLength Hslot+1),
       ∃ D : CellCompletion (N:=N) (a:=a) (c:=c) (mode:=mode) G rows hrows tuples hmax hgood Hrow Hslot i j,
-      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
+      ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→ Ideal Eis)→ℂ),
         (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
         (∑ K : divisorDyadicBin rows Hrow i,‖∑ p : activeTupleDyad tuples Hslot j,
           cellPhysicalTerm G rows hrows tuples hmax hgood Hrow Hslot s hc jF W X i j D θ r aw K p‖^2)≤E θ := by
@@ -86,8 +87,7 @@ theorem physical_dyad_selection_energy (E : ℝ→ℝ) (hE : ∀ θ,0≤E θ)
         exact (hi ⟨K.val,K.property⟩).elim
       rw [hzero]
       exact hE θ
-  choose D hD using hall
-  refine ⟨D,?_⟩
+  pm_5622
   intro θ r aw hr haw
   apply dyadic_physical_energy G rows hrows tuples hmax hgood Hrow Hslot D s hc jF W θ X r aw (E θ)
   intro i j
@@ -97,9 +97,7 @@ theorem physical_dyad_selection_energy (E : ℝ→ℝ) (hE : ∀ θ,0≤E θ)
         ⟨p.val,activeTupleDyad_subset tuples Hslot j p.property⟩‖^2)=
       ∑ K : divisorDyadicBin rows Hrow i,‖∑ p : activeTupleDyad tuples Hslot j,
         cellPhysicalTerm G rows hrows tuples hmax hgood Hrow Hslot s hc jF W X i j (D i j) θ r aw K p‖^2 := by
-    apply Finset.sum_congr rfl
-    intro K hK
-    apply congrArg (fun z : ℂ => ‖z‖^2)
+    pm_471
     apply Finset.sum_congr rfl
     intro p hp
     exact dyadicPhysicalTerm_at G rows hrows tuples hmax hgood Hrow Hslot D s hc jF W θ X r aw i j K p

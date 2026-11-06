@@ -2,62 +2,67 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.FirstChildBound
 public import OAI.NumberTheory.DirichletL.Moments.FirstSectorTransform
 public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSourceRow CenteredMomentRowNorm
+open HeckeFamily CanonicalQuadraticSieve
+open CenteredMomentSourceRow
 open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
+open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
+open CenteredMomentSupportedCorrelation CenteredMomentActive
 open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
+open CenteredMomentFirstAssembly CenteredMomentGaussEnergy
+open CenteredMomentSmooth IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
-def columns (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
+def columns (C D:Ideal O)(hD:D ≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
   (residualPool D hD (supportedColumns S)).filter (fun I=>IsCoprime C I)
 
-lemma column_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))
+lemma column_supported (C D:Ideal O)(hD:D ≠0)(S:Finset (Ideal O))
     (a:columns C D hD S):Supported (a:Ideal O):=
   residualPool_supported D hD S ⟨a.val,(Finset.mem_filter.mp a.property).1⟩
 
-def element (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):O:=
+def element (C D:Ideal O)(hD:D ≠0)(S:Finset (Ideal O))(a:columns C D hD S):O:=
   CompletedGauss.primaryGenerator a
 
-lemma element_span (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+section
+variable (C D:Ideal O) (hD:D ≠0) (S:Finset (Ideal O)) (a:columns C D hD S)
+include C D hD S a
+lemma element_span:
     Ideal.span {element C D hD S a}=a:=primary_span_supported a (column_supported C D hD S a)
 
-lemma element_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_supported:
     Supported (Ideal.span {element C D hD S a}):=by
   rw [element_span];exact column_supported C D hD S a
 
-lemma element_primary (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_primary:
     goodLambda^2∣element C D hD S a-1:=
   (CompletedGauss.primaryGenerator_spec a (supported_primaryGenerator_ne_zero a
     (column_supported C D hD S a))).2
+end
 
-lemma active_span_dvd (C D:Ideal O)(hC:C≠0)(hD:D≠0)
+lemma active_span_dvd (C D:Ideal O)(hC:C≠0)(hD:D ≠0)
     (hCD:primeSupport C=primeSupport D):Ideal.span {activeConductor C D}∣C:=by
   have hh:=activeConductor_span_dvd C D
   rw [(fixed_common_parts C D hC hD hCD).1] at hh
   exact hh
 
-lemma element_coprime_active (C D B:Ideal O)(hC:C≠0)(hD:D≠0)(hB:B≠0)
+lemma element_coprime_active (C D B:Ideal O)(hC:C≠0)(hD:D ≠0)(hB:B≠0)
     (hCD:primeSupport C=primeSupport D)(S:Finset (Ideal O))(a:columns C B hB S):
     IsCoprime (element C B hB S a) (activeConductor C D):=by
   rw [←Ideal.isCoprime_span_singleton_iff,element_span]
   exact (Finset.mem_filter.mp a.property).2.symm.of_isCoprime_of_dvd_right (active_span_dvd C D hC hD hCD)
 
 def coefficient (η:Character)(m A:O)(t:ℝ)(c:Ideal O→ℂ)(D:Ideal O)
-    (I:Ideal O):ℂ:=c (D*I)*CenteredMomentHeckeExpansion.rowWeight η m A 1 t I
+    (I:Ideal O):ℂ:=c (D *I)*CenteredMomentHeckeExpansion.rowWeight η m A 1 t I
 
 def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D)):ℂ:=
   (UniqueFactorizationMonoid.moebius (∏P∈E,P.val):ℂ)
@@ -65,7 +70,7 @@ def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D)):ℂ:=
 def block (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
     (rows:Finset O)(W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)(K K₀ H₀ A₀ B₀:ℝ):ℂ:=
-  let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
+  let e:=primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E
   let k:=K/‖eisEmbedding e‖^2
   let r:=activeConductor C D
   inactiveWeight C D E * ∑h∈rows,
@@ -88,7 +93,7 @@ def block (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
       else 0
 
 def scalar (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))(K A₀ B₀:ℝ):ℂ:=
-  let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
+  let e:=primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E
   let k:=K/‖eisEmbedding e‖^2
   inactiveWeight C D E * ((k:ℂ)*canonicalNormalizedGauss (activePrime C D)
     (activeCoprime C D) (activeGood C D hC) (activeExponent C D)/
@@ -99,7 +104,7 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
     (E:Finset (CommonIndex C D))(rows:Finset O)(hrows:∀h∈rows,h≠0)
     (W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)(K K₀ H₀ A₀ B₀:ℝ)
     (hK:0<K)(hK₀:0<K₀)(hH₀:0<H₀)(hA₀:0<A₀)(hB₀:0<B₀):
-    let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
+    let e:=primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E
     let k:=K/‖eisEmbedding e‖^2
     let r:=activeConductor C D
     let ρ:=finiteSexticRow (activePrime C D) (activeGood C D hC) (activeExponent C D)
@@ -116,18 +121,13 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
             (Real.log (‖eisEmbedding (element C C hC.1 S a)‖^2/A₀))
             (Real.log (‖eisEmbedding (element C D hD.1 S b)‖^2/B₀)):=by
   dsimp only
-  have he:primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E≠0:=
+  have he:primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E≠0:=
     supported_element_ne_zero _ (subsetGenerator_supported C D hC E)
-  have hk:0<K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2:=
+  have hk:0<K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E)‖^2:=
     div_pos hK (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero he)))
-  unfold block scalar
-  simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
+  pm_7907 block scalar
   intro h hh
-  apply Finset.sum_congr rfl
-  intro a ha
-  apply Finset.sum_congr rfl
-  intro b hb
+  pm_3445
   have hcop:IsCoprime (element C C hC.1 S a) (element C D hD.1 S b)↔
       IsCoprime (a:Ideal O) (b:Ideal O):=by
     rw [←Ideal.isCoprime_span_singleton_iff,element_span,element_span]
@@ -136,7 +136,7 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
     have hh:=dilated_frequency_whole_kernel (activePrime C D) (activeCoprime C D)
       (activeGood C D hC) (fun P=>common_odd C D hC P.val) (activeExponent C D)
       (netExponent_ne_zero _ _ _) (fun P=>netExponent_lt_six _ _)
-      (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)
+      (primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E)
       (element C C hC.1 S a) (element C D hD.1 S b)
       (element_supported C C hC.1 S a) (element_supported C D hD.1 S b)
       ((hcop.mpr hab).mul_right (element_coprime_active C D C hC.1 hD.1 hC.1 hCD S a))
@@ -147,10 +147,10 @@ theorem block_eq_whole (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal 
     calc
       _=inactiveWeight C D E*(coefficient η m A t c C a*star (coefficient η m A t c D b))*
         (dilatedFrequency (activePrime C D) (activeCoprime C D) (activeGood C D hC)
-          (activeExponent C D) (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)
+          (activeExponent C D) (primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E)
           (element C C hC.1 S a) (element C D hD.1 S b)
           (element_supported C C hC.1 S a) (element_supported C D hD.1 S b)
-          (K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2) h *
+          (K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E)‖^2) h *
         windows V _ _ _ _ K₀ H₀ A₀ B₀ * EisensteinSchwartzPoisson.paperRadialFourier W _):=by
           dsimp [dilatedFrequency,activeFunction,activeConductor];ring
       _=_:=by rw [hh];dsimp only [activeConductor];ring

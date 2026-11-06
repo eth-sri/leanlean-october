@@ -15,7 +15,6 @@ monomial means are recovered definitionally below.
 -/
 
 open Finset Polynomial
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -39,7 +38,7 @@ theorem wooleyMonomialPolynomialSystem_spaced
     (wooleyMonomialPolynomialSystem k).Spaced p c := by
   refine ⟨0, ?_⟩
   intro j
-  simp [wooleyMonomialPolynomialSystem]
+  aesop
 
 /-- The exact polynomial phase from (3.3), evaluated on the finite grid
 used in (3.5). -/

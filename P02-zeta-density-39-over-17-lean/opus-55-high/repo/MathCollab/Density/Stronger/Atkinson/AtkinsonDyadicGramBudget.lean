@@ -8,6 +8,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCoefficientEnergy
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -45,19 +46,14 @@ theorem sum_atkinsonUndampedDyadicPhaseBound_sq_le_budget (N : ℕ) (W : Finset 
   let w : ℕ → ℝ := fun j => ((2^j:ℕ):ℝ)^(-(1/4:ℝ))
   have he : (∑ t ∈ W, atkinsonUndampedDyadicPhaseBound t N) =
       ∑ j ∈ Finset.range (Nat.clog 2 N), w j*S j := by
-    unfold atkinsonUndampedDyadicPhaseBound
-    rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro j _
+    pm_5313 atkinsonUndampedDyadicPhaseBound Finset.sum_comm j
     exact (Finset.mul_sum _ _ _).symm
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq (Finset.range (Nat.clog 2 N))
     (fun _ => (1:ℝ)) (fun j => w j*S j)
-  simp only [one_mul,one_pow,Finset.sum_const,Finset.card_range,nsmul_eq_mul,mul_one] at hcs
+  pm_1189 one_mul one_pow Finset.sum_const Finset.card_range nsmul_eq_mul mul_one hcs
   rw [he]
   apply hcs.trans
-  apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
-  apply Finset.sum_le_sum
-  intro j _
+  pm_7337 mul_le_mul_of_nonneg_left Nat.cast_nonneg
   rw [mul_pow]
   apply (mul_le_mul_of_nonneg_left (sum_atkinsonPhaseBlockMax_sq_le_gramMax (2^j) (2^j) W)
     (sq_nonneg (w j))).trans_eq

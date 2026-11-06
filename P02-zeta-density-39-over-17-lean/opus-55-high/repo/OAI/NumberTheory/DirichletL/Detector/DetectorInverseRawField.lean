@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawReference
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawUniform
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
 public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentData
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,21 +20,20 @@ open ProbeHighRowFamily ProbeFinalAssembly
 
 private theorem raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
     (hAB:A≤B)(h:RawMoment data W c κ A):RawMoment data W c κ B:=by
-  intro H D hH hD hcap rows hrows
-  apply (h H D hH hD hcap rows hrows).trans
+  pm_5370 H D hH hD hcap
   gcongr
 
-theorem fixed_raw_profiles (c κ:ℝ)(hc:0<c)(hκ:0<κ):
+theorem fixed_raw_profiles (c κ:ℝ)(hc:0< c)(hκ:0<κ):
     ∃J:ℕ,∀data:RowData,∃C:ℝ,0<C ∧
       ∀reverse:Bool,∀n:ℕ,n≤2→∀U:ℝ,0<U→∀tstar r:ℝ,
-      ∀s∈Set.Icc (0:ℝ) 1,∀height t:ℝ,0≤height→t∈Set.Icc (-height) height→
+      ∀s∈Set.Icc (0:ℝ) 1,∀height t:ℝ,0≤height→ t∈Set.Icc (-height) height→
       let W:=twistProfile (logTest (orientedProfile reverse (inverseTest U tstar r)) n) s t;
       RawMoment data W c κ (C*(1+height)^J) ∧
       RawMoment data (scaleProfile W) c κ (C*(1+height)^J):=by
   obtain ⟨J,hreference⟩:=DetectorDictionaryInverseRawReference.raw_reference_moment
     referenceWindow (1/18) (13/4) c κ (by norm_num) (by norm_num)
     (fun x hx=>referenceWindow_support (subset_tsupport _ hx)) hc hκ
-  obtain ⟨K,C,hC,hfamily⟩:=DetectorDictionaryInverseRawUniform.raw_pair_height_uniform J
+  pm_3698 K C hC hfamily DetectorDictionaryInverseRawUniform.raw_pair_height_uniform J
   refine ⟨K,?_⟩
   intro data
   obtain ⟨A,hA,href⟩:=hreference data
@@ -66,15 +66,13 @@ theorem source_batch_inverse_raw
   choose CB hCB hb using (fun label=>hB (data label))
   choose CH hCH hh using (fun label=>hHraw (data label))
   let C:ℝ:=1+(∑label,CB label)+(∑label,CH label)
-  have hsumB:0≤∑label,CB label:=Finset.sum_nonneg (fun j _=>(hCB j).le)
-  have hsumH:0≤∑label,CH label:=Finset.sum_nonneg (fun j _=>(hCH j).le)
-  have hC:0<C:=by dsimp [C];linarith
+  pm_5053 hsumB CB hCB
+  pm_5053 hsumH CH hCH
+  pm_466 hC C
   have hCBound (label):CB label≤C:=by
-    have he:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hCB j).le) (Finset.mem_univ label)
-    dsimp [C];linarith
+    pm_342 he hCB label C
   have hCHound (label):CH label≤C:=by
-    have he:=Finset.single_le_sum (fun j (_:j∈Finset.univ)=>(hCH j).le) (Finset.mem_univ label)
-    dsimp [C];linarith
+    pm_342 he hCH label C
   refine ⟨C,hC,?_⟩
   intro Slot U a ε tstar T allowance i hU B hdata bin label left right hne height hheight n hn s hs t ht F W
   have hd:F.rowData=data label:=by
@@ -87,15 +85,13 @@ theorem source_batch_inverse_raw
     have hconstant:CB label*(1+height)^JB≤C*(1+height)^(JB+JH):=
       mul_le_mul (hCBound label) (pow_le_pow_right₀ hbase (Nat.le_add_right _ _))
         (by positivity) hC.le
-    rw [hd]
-    exact ⟨raw_mono _ _ _ _ _ _ hconstant hpair.1,raw_mono _ _ _ _ _ _ hconstant hpair.2⟩
+    pm_1046
   · simp only [hbranch,ite_false]
     have hpair:=hh label F.reverse n hn U hU tstar F.r s hs height t hheight ht
     have hconstant:CH label*(1+height)^JH≤C*(1+height)^(JB+JH):=
       mul_le_mul (hCHound label) (pow_le_pow_right₀ hbase (Nat.le_add_left _ _))
         (by positivity) hC.le
-    rw [hd]
-    exact ⟨raw_mono _ _ _ _ _ _ hconstant hpair.1,raw_mono _ _ _ _ _ _ hconstant hpair.2⟩
+    pm_1046
 
 end SevenEighths.ProbeDetectorInverseRawField
 

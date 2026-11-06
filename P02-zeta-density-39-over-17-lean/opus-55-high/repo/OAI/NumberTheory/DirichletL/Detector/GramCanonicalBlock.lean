@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramClassification
 public import OAI.NumberTheory.DirichletL.Detector.GramLatticeWindow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,11 +34,8 @@ theorem canonical_nonexceptional_block (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
           min 1 (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val*
             Ideal.absNorm (Ideal.span {k.val})/N)^A) := by
   obtain ⟨J,H,hsource⟩ := literal_nonexceptional_source A B hA a₀ b₀ ha₀ hab
-  refine ⟨J,H,?_⟩
-  intro W hs hW
-  obtain ⟨K,hK,hsource⟩ := hsource W hs hW
-  refine ⟨K,hK,?_⟩
-  intro S hS σ C k hk d U v T N hT hN
+  pm_3532 J H W hs hW
+  pm_5471 hsource T hT
   obtain ⟨p,hp,hout,he⟩ := nonexceptional_prime S hS C k hk
   let : p.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
   have hg := outside_exceptional_good S hS C p hp hout

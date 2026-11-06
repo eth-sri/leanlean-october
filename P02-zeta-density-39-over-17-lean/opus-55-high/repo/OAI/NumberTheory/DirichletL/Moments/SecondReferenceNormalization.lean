@@ -46,11 +46,7 @@ lemma physicalFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q 
   fin_cases j
   · dsimp [physicalFactors]
     have hh:=paired_rescale q qref E₁ E₂ hq hr
-    calc
-      _=Cmain*Z^(2*δ+ε)*(q*Real.sqrt ((qref/q*E₁)*(qref/q*E₂)))*
-        CenteredMomentSecondWindowBudget.heightEnvelope t^(J₁+J₂)*
-        CenteredMomentSecondWindowBudget.profileMoment J₁*CenteredMomentSecondWindowBudget.profileMoment J₂:=by ring
-      _=_:=by rw [hh];ring
+    grind
   all_goals rfl
 
 lemma seededFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q qref E₁ E₂ r

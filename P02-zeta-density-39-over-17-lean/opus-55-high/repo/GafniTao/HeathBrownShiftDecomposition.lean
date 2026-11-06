@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownShiftFibers
 public import Mathlib.Data.Finset.Sigma
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ so no symmetry or multiplicity is silently discarded.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -51,8 +51,10 @@ theorem heathBrownDistanceToInteger_neg (x : ℝ) :
     heathBrownDistanceToInteger_eq_unitAddCircle_norm]
   simp
 
-theorem heathBrownPairCountTwo_subset_three_parts
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+section
+variable {N k H K : ℕ} {f : ℝ → ℝ}
+include N k H K f
+theorem heathBrownPairCountTwo_subset_three_parts :
     heathBrownPairCountTwo N k H K f ⊆
       heathBrownPairCountTwoDiagonal N k H K f ∪
         (heathBrownPairCountTwoPositive N k H K f ∪
@@ -63,8 +65,7 @@ theorem heathBrownPairCountTwo_subset_three_parts
   · simp [heathBrownPairCountTwoDiagonal, hp, heq]
   · simp [heathBrownPairCountTwoPositive, hp, hgt]
 
-theorem heathBrownPairCountTwoDiagonal_card_le
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+theorem heathBrownPairCountTwoDiagonal_card_le :
     (heathBrownPairCountTwoDiagonal N k H K f).card ≤ N := by
   classical
   let s := heathBrownPairCountTwoDiagonal N k H K f
@@ -89,17 +90,15 @@ theorem heathBrownPairCountTwoDiagonal_card_le
     _ ≤ (Finset.Icc 1 N).card := Finset.card_le_card himage
     _ ≤ N := by simp [Nat.card_Icc]
 
-theorem heathBrownPairCountTwoPositive_subset_shiftImage
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+theorem heathBrownPairCountTwoPositive_subset_shiftImage :
     heathBrownPairCountTwoPositive N k H K f ⊆
       (heathBrownAllPositiveShiftFibers N k H K f).image
         heathBrownPairOfPositiveShift := by
   classical
   intro p hp
-  have hpCount := (Finset.mem_filter.mp hp).1
-  have hlt := (Finset.mem_filter.mp hp).2
+  pm_317 hpCount Finset.mem_filter.mp hp hlt
   let d := p.1 - p.2
-  have hd : 1 ≤ d := by dsimp [d]; omega
+  pm_6557 hd d
   have hdN : d ≤ N := by
     exact le_trans (Nat.sub_le _ _) (mem_heathBrownPairCountTwo.mp hpCount).2.1
   have hpFiber : p.2 ∈ heathBrownPositiveShiftFiber N k H K f d := by
@@ -116,17 +115,15 @@ theorem heathBrownPairCountTwoPositive_subset_shiftImage
     · simp [heathBrownPairOfPositiveShift, d, Nat.add_sub_of_le hlt.le]
     · rfl
 
-theorem heathBrownPairCountTwoNegative_subset_shiftImage
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+theorem heathBrownPairCountTwoNegative_subset_shiftImage :
     heathBrownPairCountTwoNegative N k H K f ⊆
       (heathBrownAllPositiveShiftFibers N k H K f).image
         heathBrownPairOfNegativeShift := by
   classical
   intro p hp
-  have hpCount := (Finset.mem_filter.mp hp).1
-  have hlt := (Finset.mem_filter.mp hp).2
+  pm_317 hpCount Finset.mem_filter.mp hp hlt
   let d := p.2 - p.1
-  have hd : 1 ≤ d := by dsimp [d]; omega
+  pm_6557 hd d
   have hdN : d ≤ N := by
     exact le_trans (Nat.sub_le _ _) (mem_heathBrownPairCountTwo.mp hpCount).2.2.2.1
   have hswap : (p.2, p.1) ∈ heathBrownPairCountTwo N k H K f := by
@@ -161,16 +158,18 @@ theorem heathBrownPairCountTwoNegative_subset_shiftImage
   · apply Prod.ext
     · rfl
     · simp [heathBrownPairOfNegativeShift, d, Nat.add_sub_of_le hlt.le]
+end
 
-theorem heathBrownAllPositiveShiftFibers_card
-    (N k H K : ℕ) (f : ℝ → ℝ) :
+section
+variable (N k H K : ℕ) (f : ℝ → ℝ)
+include N k H K f
+theorem heathBrownAllPositiveShiftFibers_card :
     (heathBrownAllPositiveShiftFibers N k H K f).card =
       ∑ d ∈ Finset.Icc 1 N,
         (heathBrownPositiveShiftFiber N k H K f d).card := by
   simp [heathBrownAllPositiveShiftFibers]
 
-theorem heathBrownPairCountTwo_card_le_shift_sum
-    (N k H K : ℕ) (f : ℝ → ℝ) :
+theorem heathBrownPairCountTwo_card_le_shift_sum :
     (heathBrownPairCountTwo N k H K f).card ≤
       N + 2 * ∑ d ∈ Finset.Icc 1 N,
         (heathBrownPositiveShiftFiber N k H K f d).card := by
@@ -180,16 +179,8 @@ theorem heathBrownPairCountTwo_card_le_shift_sum
   let nset := heathBrownPairCountTwoNegative N k H K f
   let fibers := heathBrownAllPositiveShiftFibers N k H K f
   have hdiag : dset.card ≤ N := heathBrownPairCountTwoDiagonal_card_le
-  have hpos : pset.card ≤ fibers.card := by
-    calc
-      pset.card ≤ (fibers.image heathBrownPairOfPositiveShift).card :=
-        Finset.card_le_card heathBrownPairCountTwoPositive_subset_shiftImage
-      _ ≤ fibers.card := Finset.card_image_le
-  have hneg : nset.card ≤ fibers.card := by
-    calc
-      nset.card ≤ (fibers.image heathBrownPairOfNegativeShift).card :=
-        Finset.card_le_card heathBrownPairCountTwoNegative_subset_shiftImage
-      _ ≤ fibers.card := Finset.card_image_le
+  pm_8808 hpos pset.card heathBrownPairOfPositiveShift heathBrownPairCountTwoPositive_subset_shiftImage
+  pm_8808 hneg nset.card heathBrownPairOfNegativeShift heathBrownPairCountTwoNegative_subset_shiftImage
   calc
     (heathBrownPairCountTwo N k H K f).card ≤
         (dset ∪ (pset ∪ nset)).card :=
@@ -206,6 +197,7 @@ theorem heathBrownPairCountTwo_card_le_shift_sum
         (heathBrownPositiveShiftFiber N k H K f d).card := by
       rw [heathBrownAllPositiveShiftFibers_card]
       omega
+end
 
 
 end

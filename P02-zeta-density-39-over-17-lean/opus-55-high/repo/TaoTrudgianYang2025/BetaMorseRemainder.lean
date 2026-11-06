@@ -24,8 +24,10 @@ def modelPhaseMorseRemainder (χ F : ℝ → ℝ) (T v : ℝ) : ℂ :=
   modelPhaseMorseWeightedIntegral χ F T v -
     (modelPhaseMorseAmplitude χ F v 0/Real.sqrt T : ℂ)*(𝐞 (-(1 : ℝ)/8) : ℂ)
 
+section
+variable {χ F : ℝ → ℝ} {σ δ T N r : ℝ}
+include χ F σ δ T N r
 theorem modelPhaseMorseLeadingTerm_scale
-    {χ F : ℝ → ℝ} {σ δ T N r : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N)
@@ -42,7 +44,6 @@ theorem modelPhaseMorseLeadingTerm_scale
   ring
 
 theorem modelPhaseFourierMode_sub_main_eq_morseRemainder
-    {χ F : ℝ → ℝ} {σ δ T N r : ℝ}
     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
@@ -58,7 +59,6 @@ theorem modelPhaseFourierMode_sub_main_eq_morseRemainder
   ring
 
 theorem norm_modelPhaseFourierMode_sub_main
-    {χ F : ℝ → ℝ} {σ δ T N r : ℝ}
     (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
@@ -69,6 +69,7 @@ theorem norm_modelPhaseFourierMode_sub_main
       N*‖modelPhaseMorseRemainder χ F T (r*N/T)‖ := by
   rw [modelPhaseFourierMode_sub_main_eq_morseRemainder hs hσ hδ hF hT hN hv,
     norm_mul,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hN,Circle.norm_coe,mul_one]
+end
 
 end TaoTrudgianYang2025
 

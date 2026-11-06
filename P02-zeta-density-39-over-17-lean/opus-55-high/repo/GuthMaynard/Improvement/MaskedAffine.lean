@@ -1,14 +1,13 @@
 module
 public import GuthMaynard.Improvement.StrengthenedAffine
 public import GuthMaynard.Improvement.SparseAffineInput
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Smoothness and compact support for arbitrary integrable compact inputs;
 no regularity of a measurable mask boundary is required. -/
@@ -30,8 +29,7 @@ theorem compact_smoothed_general_schwartz {g : ℝ → ℝ} {a b δ : ℝ}
     exact hc.contDiff_convolution_right (ContinuousLinearMap.mul ℝ ℝ) hg.locallyIntegrable hd
   have hsc : HasCompactSupport (smooth (scaledKernel compactKernel δ) g) := by
     apply HasCompactSupport.intro (isCompact_Icc : IsCompact (Icc (a-2*δ) (b+2*δ)))
-    intro x hx
-    exact smooth_support_interval (fun t ht => scaled_compactKernel_zero hδ ht) hs hx
+    pm_6756
   exact ⟨hsc.toSchwartzMap hsd,rfl⟩
 
 /-- Fixed Fourier constants precede every height, width, and measurable input.
@@ -55,7 +53,7 @@ theorem compact_smoothed_full_input (a b : ℝ) (hab : a ≤ b) :
     (scaledKernel_nonneg compactKernel_nonneg hδ) hg0 0).trans (hsup 0)
   intro β hβ n ξ hξ
   have hh := h n δ hδ hδ1 g hg hg0 hs (sourceSup f) hsup ξ
-  have ht : 1 ≤ T^β := Real.one_le_rpow (by linarith) hβ.le
+  pm_549 ht T β hβ.le
   have hpow : δ⁻¹^n ≤ T^n := pow_le_pow_left₀ (by positivity) hδT n
   have hξp : 0 < |ξ|^n := pow_pos (abs_pos.mpr hξ) n
   have hnum : |ξ|^n * ‖𝓕 (fun x => (smooth (scaledKernel compactKernel δ) g x : ℂ)) ξ‖ ≤

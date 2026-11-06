@@ -1,17 +1,16 @@
 module
 public import GuthMaynard.Improvement.CompactKernel
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+public section
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
 /-- Exact positive plateau of the constructed mass-one kernel. -/
 theorem compactKernel_plateau {x : ℝ} (hx : |x| ≤ 1) :
     compactKernel x = (∫ y, kernelBump y)⁻¹ := by
   have hh : x ∈ Metric.closedBall (0 : ℝ) kernelBump.rIn := by
-    simpa [kernelBump, Metric.mem_closedBall, Real.dist_eq] using hx
+    aesop
   change kernelBump x / (∫ y, kernelBump y) = _
   rw [kernelBump.one_of_mem_closedBall hh, one_div]
 
@@ -26,7 +25,7 @@ theorem compact_masked_transverse (a b : ℝ) (ha : 0 < a) :
           (squareSmoothing (scaledKernel compactKernel (max 1 (1/a)*δ)) (A.indicator r) z *
            squareSmoothing (scaledKernel compactKernel (max 1 (1/a)*δ)) (A.indicator r) (z/v)) := by
   let q := max 1 (1/a)
-  have hq : 0 < q := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  pm_457 hq q zero_lt_one
   have hi : 0 < ∫ y, kernelBump y := kernelBump.integral_pos
   refine ⟨q*(∫ y, kernelBump y),mul_pos hq hi,?_⟩
   intro δ v z A r hδ hav hvb hA hr hr2 hr0

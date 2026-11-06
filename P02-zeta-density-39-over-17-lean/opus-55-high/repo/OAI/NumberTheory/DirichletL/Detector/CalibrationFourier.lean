@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.Calibration
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,8 +35,7 @@ theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
     calibrationGauss (calibrationFromPrimes P hcop) h =
       ((calibrationFromPrimes P hcop).residueMonoid h)⁻¹ *
         calibrationGauss (calibrationFromPrimes P hcop) 1 := by
-  let b := finitePrimeModulus P
-  have hb : b ≠ 0 := finitePrimeModulus_ne_zero P
+  pm_6564 b hb
   let : Finite (O ⧸ Ideal.span {b}) := ConcreteTraceCRT.finite_quotient_span hb
   let : Fintype (O ⧸ Ideal.span {b}) := Fintype.ofFinite _
   let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
@@ -52,9 +52,12 @@ theorem calibrationFromPrimes_gauss {ι : Type*} [Fintype ι]
     (∏ i, localCalibration (P i) (e (Ideal.Quotient.mk (Ideal.span {b}) h) i))⁻¹ *
       ∑' d : O ⧸ Ideal.span {b}, (∏ i, localCalibration (P i) (e d i)) *
         ψ (Ideal.Quotient.mk (Ideal.span {b}) 1 * d)
-  simpa only [tsum_fintype, map_one, one_mul] using ht
+  simp_all
 
-theorem calibrationForSet_gauss (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+include S hS
+theorem calibrationForSet_gauss
     (h : O) :
     calibrationGauss (calibrationForSet S hS) h =
       star ((calibrationForSet S hS).residueMonoid h) *
@@ -67,13 +70,13 @@ theorem calibrationForSet_gauss (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMa
     exact (MulChar.star_apply' C.residue (Ideal.Quotient.mk _ h)).trans
       (MulChar.inv_apply_eq_inv' _ _)
   have he : calibrationGauss C h = (C.residueMonoid h)⁻¹ * calibrationGauss C 1 := by
-    let (P : S) : P.val.IsMaximal := hS P.val P.property
+    pm_1372
     unfold C calibrationForSet
     apply calibrationFromPrimes_gauss
   rw [he, calibrationGauss_one, ← hc]
   ring
 
-theorem calibrationForSet_residue_sixth (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+theorem calibrationForSet_residue_sixth
     (a : O) (ha : IsCoprime (calibrationForSet S hS).generator a) :
     (calibrationForSet S hS).residueMonoid a ^ 6 = 1 := by
   let C := calibrationForSet S hS
@@ -81,7 +84,8 @@ theorem calibrationForSet_residue_sixth (S : Finset (Ideal O)) (hS : ∀ P ∈ S
   have h6 := congrArg (fun χ : MulChar (O ⧸ Ideal.span {C.generator}) ℂ =>
     χ (Ideal.Quotient.mk _ a)) (calibrationForSet_pow_six S hS)
   change C.residue (Ideal.Quotient.mk _ a) ^ 6 = 1
-  simpa only [MulChar.pow_apply' _ (by decide : (6 : ℕ) ≠ 0), MulChar.one_apply hu] using h6
+  pm_5980 h6
+end
 
 end SevenEighths.ProbePhysical
 end

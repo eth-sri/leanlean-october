@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.CompactDescent
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,14 +28,10 @@ lemma cubicSmoothedCoprime_restrict {n : Type*} [Fintype n]
     cubicSmoothedCoprime cols a W M =
       cubicSmoothedCoprime (fun j : {j // p j} => cols j.val) (fun j => a j.val) W M := by
   unfold cubicSmoothedCoprime
-  rw [finite_sum_restrict p _ (by
-    intro j hj
-    simp [ha j hj])]
+  rw [finite_sum_restrict p _ (by simp_all)]
   apply Finset.sum_congr rfl
   intro j hj
-  exact finite_sum_restrict p _ (by
-    intro k hk
-    simp [ha k hk])
+  exact finite_sum_restrict p _ (by grind)
 
 def quotientColumn {n : Type*} (D : Ideal O) (cols : n → Ideal O)
     (j : {j // D ∣ cols j}) : Ideal O := idealQuotient D (cols j.val)
@@ -43,24 +40,26 @@ def quotientCoefficient {n : Type*} (D : Ideal O) (cols : n → Ideal O)
     (a : n → ℂ) (d : O) (j : {j // D ∣ cols j}) : ℂ :=
   cubicRow (quotientColumn D cols j) d * a j.val
 
-lemma quotientColumn_injective {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+section
+variable {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+include n D cols
+lemma quotientColumn_injective
     (hc : Function.Injective cols) : Function.Injective (quotientColumn D cols) := by
   intro j k he
   exact Subtype.ext (hc (idealQuotient_injective_on D j.property k.property he))
 
-lemma quotientColumn_admissible {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+lemma quotientColumn_admissible
     (hc : ∀ j, Admissible (cols j)) (j : {j // D ∣ cols j}) :
     Admissible (quotientColumn D cols j) := cubic_admissible_quotient (hc j.val) j.property
 
-lemma cubic_quotient_in_shell {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+lemma cubic_quotient_in_shell
     (hc : ∀ j, Admissible (cols j)) (N : ℝ)
     (hcols : ∀ j, N/2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (j : {j // D ∣ cols j}) :
     (N / (Ideal.absNorm D : ℝ))/2 ≤ (Ideal.absNorm (quotientColumn D cols j) : ℝ) ∧
       (Ideal.absNorm (quotientColumn D cols j) : ℝ) ≤ N / (Ideal.absNorm D : ℝ) := by
   have hD0 : D ≠ 0 := ne_zero_of_dvd_ne_zero (primaryGenerator_ne_zero_ideal _ (hc j.val).2) j.property
-  have hDN : 0 < (Ideal.absNorm D : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD0)
+  pm_318 hDN D hD0
   have he : (Ideal.absNorm (quotientColumn D cols j) : ℝ) * (Ideal.absNorm D : ℝ) =
       (Ideal.absNorm (cols j.val) : ℝ) := by
     rw [mul_comm, ← Nat.cast_mul, ← map_mul, quotientColumn, idealQuotient_mul j.property]
@@ -70,9 +69,12 @@ lemma cubic_quotient_in_shell {n : Type*} (D : Ideal O) (cols : n → Ideal O)
     rw [he]
     exact (hcols j.val).1
   convert hh using 1; ring
+end
 
-lemma compact_descendant_restrict {n : Type*} [Fintype n]
-    (D : Ideal O) (cols : n → Ideal O) (a : n → ℂ) (d : O)
+section
+variable {n : Type*} [Fintype n] (D : Ideal O) (cols : n → Ideal O) (a : n → ℂ) (d : O)
+include n D cols a d
+lemma compact_descendant_restrict
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) :
     cubicSmoothedCoprime (fun j => totalQuotient D (cols j))
       (descendedCoefficient D cols a d) W M =
@@ -89,8 +91,7 @@ lemma compact_descendant_restrict {n : Type*} [Fintype n]
     simp only [descendedCoefficient, totalQuotient, ite_eq_left j.property, quotientCoefficient, quotientColumn]
   rw [hc, ha]
 
-lemma quotientCoefficient_energy {n : Type*} [Fintype n]
-    (D : Ideal O) (cols : n → Ideal O) (a : n → ℂ) (d : O) :
+lemma quotientCoefficient_energy :
     (∑ j : {j // D ∣ cols j}, ‖quotientCoefficient D cols a d j‖^2) =
       ∑ j, ‖descendedCoefficient D cols a d j‖^2 := by
   rw [finite_sum_restrict (fun j => D ∣ cols j) _ (by
@@ -99,6 +100,7 @@ lemma quotientCoefficient_energy {n : Type*} [Fintype n]
   apply Finset.sum_congr rfl
   intro j hj
   simp only [quotientCoefficient, quotientColumn, descendedCoefficient, totalQuotient, ite_eq_left j.property]
+end
 
 end
 end SevenEighths.CubicSieve

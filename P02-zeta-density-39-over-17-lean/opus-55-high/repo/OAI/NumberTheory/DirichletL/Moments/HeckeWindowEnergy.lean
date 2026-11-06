@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,12 +25,12 @@ theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
   have hnorm (t : ℝ) : ‖(w t:ℂ)‖=w t := by
     rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (hw t)]
   have he (k : κ) (t : ℝ) : ((w t:ℂ)*b t)*(φ k t/(w t:ℂ))=b t*φ k t := by
-    field_simp [hn t]
+    grind
   have hh := CompletedGauss.finite_integral_energy_bound
     (fun t => (w t:ℂ)*b t) (fun k t => φ k t/(w t:ℂ)) E hE
     (by simpa only [norm_mul,hnorm] using hb)
     (fun k => by simpa only [he] using hφ k) (fun t => by
-      simp only [norm_div,hnorm,div_pow,← Finset.sum_div]
+      pm_1444 norm_div hnorm div_pow Finset.sum_div
       exact (div_le_iff₀ (sq_pos_of_pos (hw t))).mpr (hbound t))
   simpa only [he,norm_mul,hnorm] using hh
 
@@ -41,11 +42,8 @@ theorem gauss_column_integrable {α : Type*} (S : Finset α) (a : α → O)
       gaussPolynomial S a ha (fun i => β i*heightCoeff τ (t+2*Real.pi*(w-θ)) (Ideal.span {a i})) z) := by
   have hi (i : α) := ((height_column_integrable V hVc hVs τ _ (ha i).1 t θ X hX).const_mul (β i)).mul_const
     (gaussRow (a i) (ha i) z)
-  convert integrable_finsetSum S (fun i _ => hi i) using 1
-  funext w
-  simp only [gaussPolynomial,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i hi
+  pm_6954
+  pm_3526 gaussPolynomial Finset.mul_sum Finset.sum_congr i hi
   ring
 
 def heightCost (t θ : ℝ) : ℝ := (1+‖t‖+2*Real.pi*‖θ‖)*(1+2*Real.pi)

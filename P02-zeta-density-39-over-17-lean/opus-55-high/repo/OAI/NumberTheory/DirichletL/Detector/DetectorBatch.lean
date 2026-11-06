@@ -22,8 +22,8 @@ theorem retainedProjection_mem (R : Finset FreeRow) (u0 : FreeRow) (h0 : u0∈R)
     retainedProjection R u0 u∈R := by
   unfold retainedProjection
   split_ifs with hu
-  · exact hu
-  · exact h0
+  grind
+  grind
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -65,7 +65,10 @@ def retainedSourceBatch {Slot : Type*}
   widths_mesh := hwmesh
   supply := hsupply
 
-lemma physical_slot_widths {N : ℕ} (ell : Fin N→ℝ) (d dmin mesh : ℝ)
+section
+variable {N : ℕ} (ell : Fin N→ℝ)
+include N ell
+lemma physical_slot_widths (d dmin mesh : ℝ)
     (hdmin : 0<dmin) (hd : dmin≤d) (hdtop : d≤37/42)
     (hell : ∀j,0<ell j) (hsmall : ∀j,ell j≤dmin*mesh)
     (hsum : ∑j,ell j=1/6) :
@@ -85,11 +88,12 @@ lemma physical_slot_widths {N : ℕ} (ell : Fin N→ℝ) (d dmin mesh : ℝ)
     apply (le_div_iff₀ hd0).mpr
     nlinarith
 
-lemma physical_slot_scale {N : ℕ} (ell : Fin N→ℝ) (Z d : ℝ) (hZ : 0<Z) (hd : d≠0) (j : Fin N) :
+lemma physical_slot_scale (Z d : ℝ) (hZ : 0<Z) (hd : d≠0) (j : Fin N) :
     (Z^d)^(ell j/d)=Z^(ell j) := by
   rw [←Real.rpow_mul hZ.le]
   congr 1
   field_simp
+end
 end SevenEighths.ProbeHighRowFamily
 
 end

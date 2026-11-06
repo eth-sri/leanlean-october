@@ -6,6 +6,7 @@ public import LaterPairs.Native.RobertSargosNonzeroShiftError
 public import LaterPairs.Native.RobertSargosNonzeroShiftedBound
 public import LaterPairs.Native.RobertSargosPhysicalCommonShiftBudget
 public import LaterPairs.Native.RobertSargosPhysicalNonzeroATimesA
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -36,8 +37,7 @@ theorem robertSargos_physical_nonzero_shifted_triple
             ∑ m ∈ robertSargosCommonMInterval M H Q Q,
               ‖robertSargosNonzeroShiftedTriple f H Q Q r m‖) := by
   dsimp only
-  let Q := ⌊lam^(-(3:ℝ)/13)⌋₊
-  let R := ⌊lam^(-(1:ℝ)/13)⌋₊
+  pm_1667
   obtain ⟨_,hQ,hR,_,_⟩ :=
     robertSargos_physical_a_times_a_ranges M H hlam hsmall hM hHmin hHmax
   have hs := robertSargos_physical_nonzero_a_times_a f M H hC hlam hsmall hM hHmin hHmax hf hlo hhi
@@ -48,8 +48,8 @@ theorem robertSargos_physical_nonzero_shifted_triple
   have hcancel : (8*(M:ℝ)*H/((Q:ℝ)*R))*
       ((H:ℝ)*(4*(H:ℝ)+4*Q+2*Q)*Q*R) =
       8*(M:ℝ)*(H:ℝ)^2*(4*(H:ℝ)+6*Q) := by
-    have hq0 : (Q:ℝ) ≠ 0 := by dsimp only [Q]; exact_mod_cast hQ.ne'
-    have hr0 : (R:ℝ) ≠ 0 := by dsimp only [R]; exact_mod_cast hR.ne'
+    pm_8825 hq0 Q hQ.ne'
+    pm_8825 hr0 R hR.ne'
     field_simp
     ring
   have halg (B : ℝ) : (8*(M:ℝ)*H/((Q:ℝ)*R))*((Q:ℝ)⁻¹*B) =
@@ -58,12 +58,7 @@ theorem robertSargos_physical_nonzero_shifted_triple
     ring
   rw [mul_add,hcancel,halg] at he
   have hb := robertSargos_physical_common_shift_budget M H hlam hsmall hM hHmax
-  have hCp : 0 ≤ C := zero_le_one.trans hC
-  have hfactor : 1 ≤ 1+2*Real.pi*C := by
-    have hp : 0 ≤ 2*Real.pi*C := by positivity
-    linarith
-  have hCF : C ≤ C*(1+2*Real.pi*C) := by
-    simpa only [mul_one] using mul_le_mul_of_nonneg_left hfactor hCp
+  pm_2548
   have h1M := mul_le_mul_of_nonneg_right (hC.trans hCF) (sq_nonneg (M:ℝ))
   dsimp only [Q,R] at he
   nlinarith

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Decomposition
 public import OAI.NumberTheory.DirichletL.Descent.Hybrid
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,17 +22,9 @@ def supportedHybridRow (S : Finset (Ideal Eis × Ideal Eis)) (Pset : Finset (Ide
 theorem supportedHybridRow_product (nset bset Pset : Finset (Ideal Eis))
     (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) :
     supportedHybridRow (nset ×ˢ bset) Pset a beta k = hybridRow Pset nset bset a beta k := by
-  simp only [supportedHybridRow, hybridRow, hybridInner, Finset.sum_product,
-    Finset.mul_sum]
-  conv_lhs =>
-    arg 2
-    ext n
-    rw [Finset.sum_comm]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro P hP
-  apply Finset.sum_congr rfl
-  intro n hn
+  pm_188 supportedHybridRow hybridRow hybridInner Finset.sum_product Finset.mul_sum
+  pm_5503 n
+  pm_3397 P hP n hn
   apply Finset.sum_congr rfl
   intro b hb
   ring

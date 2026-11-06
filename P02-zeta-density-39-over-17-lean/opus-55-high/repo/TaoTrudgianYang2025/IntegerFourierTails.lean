@@ -2,8 +2,9 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.ZetaFourthTailPower
 public import Mathlib.Topology.Algebra.InfiniteSum.NatInt
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Quantitative two-sided integer inverse-square tails
@@ -12,59 +13,48 @@ The frequency cutoff is a positive natural number. Both signs are
 counted, and the actual omitted series is bounded, not just declared summable.
 -/
 
-noncomputable section
 
 open Set
-open scoped BigOperators
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Fourth
 
 theorem tsum_nat_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
     (∑' n : ℕ, if R < n then 1/(n : ℝ)^2 else 0) ≤ 1/(R : ℝ) := by
-  let f : ℕ → ℝ := fun n => if R < n then 1/(n : ℝ)^2 else 0
+  pm_1000
   have hs : Summable f := by
-    have hi := (Real.summable_one_div_nat_pow.mpr
-      (by norm_num : 1 < (2 : ℕ))).indicator {n | R < n}
-    apply hi.congr
-    intro n
-    by_cases hn : R < n <;> simp [f,hn]
+    pm_1645
+    aesop
   have hsum : ∑ n ∈ Finset.range (R+1), f n = 0 := by
     apply Finset.sum_eq_zero
     intro n hn
     have hn' := Finset.mem_range.mp hn
-    simp only [f,ite_eq_right (by omega : ¬ R < n)]
+    grind
   have he := hs.sum_add_tsum_nat_add (R+1)
   rw [hsum,zero_add] at he
   have hshift : (fun j : ℕ => f (j+(R+1))) =
       fun j : ℕ => 1/((j+R+1 : ℕ) : ℝ)^2 := by
     funext j
-    simp only [f,ite_eq_left (by omega : R < j+(R+1)),Nat.add_assoc]
+    grind
   rw [hshift] at he
   change (∑' n, f n) ≤ _
   rw [← he]
   have ht := tsum_nat_rpow_tail_le (p := -2) (by norm_num) hR
   have hr (n : ℕ) : (n : ℝ)^(-2 : ℝ) = 1/(n : ℝ)^2 := by
-    rw [Real.rpow_neg (Nat.cast_nonneg n),Real.rpow_two,one_div]
+    simp_all
   simpa only [hr,show (-2 : ℝ)+1 = -1 by norm_num,
     show -(-2 : ℝ)-1 = 1 by norm_num,div_one,Real.rpow_neg_one,one_div] using ht
 
 theorem tsum_int_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
     (∑' q : ℤ, if R < q.natAbs then 1/(q : ℝ)^2 else 0) ≤ 2/(R : ℝ) := by
   let g : ℤ → ℝ := fun q => if R < q.natAbs then 1/(q : ℝ)^2 else 0
-  let f : ℕ → ℝ := fun n => if R < n then 1/(n : ℝ)^2 else 0
+  pm_1000
   have hg : Summable g := by
-    have hi := (Real.summable_one_div_int_pow.mpr
-      (by norm_num : 1 < (2 : ℕ))).indicator {q | R < q.natAbs}
-    apply hi.congr
-    intro q
-    by_cases hq : R < q.natAbs <;> simp [g,hq]
+    pm_1646
+    aesop
   have hf : Summable f := by
-    have hi := (Real.summable_one_div_nat_pow.mpr
-      (by norm_num : 1 < (2 : ℕ))).indicator {n | R < n}
-    apply hi.congr
-    intro n
-    by_cases hn : R < n <;> simp [f,hn]
+    pm_1645
+    pm_8421 hn n f
   have hp : (fun n : ℕ => g n) = f := by
     funext n
     simp only [g,f,Int.natAbs_natCast,Int.cast_natCast]
@@ -87,9 +77,7 @@ theorem tsum_int_inverse_square_tail_le {R : ℕ} (hR : 0 < R) :
   rw [tsum_of_nat_of_neg_add_one hpSum hnSum,hp,hm,hshift]
   have hb := tsum_nat_inverse_square_tail_le hR
   change (∑' n, f n) ≤ 1/(R : ℝ) at hb
-  calc
-    _ ≤ 1/(R : ℝ)+1/(R : ℝ) := add_le_add hb hb
-    _ = _ := by ring
+  grind
 
 theorem norm_integer_far_tail_le_of_inverse_square
     {f : ℤ → ℂ} {K : ℝ} (hK : 0 ≤ K)
@@ -98,14 +86,9 @@ theorem norm_integer_far_tail_le_of_inverse_square
     {R : ℕ} (hR : 0 < R) :
     ‖∑' q : ℤ, if R < q.natAbs then f q else 0‖ ≤ 2*K/(R : ℝ) := by
   have hs : Summable (fun q : ℤ => if R < q.natAbs then ‖f q‖ else 0) := by
-    apply (hf.indicator {q | R < q.natAbs}).congr
-    intro q
-    by_cases hq : R < q.natAbs <;> simp [hq]
+    pm_1127
   have hg : Summable (fun q : ℤ => if R < q.natAbs then 1/(q : ℝ)^2 else 0) := by
-    have hi := (Real.summable_one_div_int_pow.mpr
-      (by norm_num : 1 < (2 : ℕ))).indicator {q | R < q.natAbs}
-    apply hi.congr
-    intro q
+    pm_1646
     by_cases hq : R < q.natAbs <;> simp [hq]
   have hnorm : (fun q : ℤ => ‖if R < q.natAbs then f q else 0‖) =
       fun q => if R < q.natAbs then ‖f q‖ else 0 := by
@@ -136,9 +119,7 @@ theorem tsum_int_eq_sum_Icc_add_far {f : ℤ → ℂ}
     intro q
     by_cases hq : q.natAbs ≤ R <;> simp [hq]
   have ht : Summable (fun q : ℤ => if R < q.natAbs then f q else 0) := by
-    apply (hf.indicator {q | R < q.natAbs}).congr
-    intro q
-    by_cases hq : R < q.natAbs <;> simp [hq]
+    pm_1127
   have he : (∑' q : ℤ, f q) =
       (∑' q : ℤ, if q.natAbs ≤ R then f q else 0) +
         ∑' q : ℤ, if R < q.natAbs then f q else 0 := by
@@ -150,12 +131,7 @@ theorem tsum_int_eq_sum_Icc_add_far {f : ℤ → ℂ}
     · simp only [ite_eq_right hq,ite_eq_left (Nat.lt_of_not_ge hq),zero_add]
   rw [he]
   congr 1
-  rw [tsum_eq_sum (s := Finset.Icc (-(R : ℤ)) (R : ℤ))]
-  · apply Finset.sum_congr rfl
-    intro q hq
-    rw [ite_eq_left]
-    have hh := Finset.mem_Icc.mp hq
-    omega
+  pm_5549 R q hq hh
   · intro q hq
     rw [ite_eq_right]
     intro h

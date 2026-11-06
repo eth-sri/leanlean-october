@@ -2,13 +2,13 @@ module
 public import OAI.NumberTheory.DirichletL.ThetaProduct
 public import Mathlib.Logic.Equiv.Fin.Basic
 public import Mathlib.Tactic.FieldSimp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 open MeasureTheory
 namespace SevenEighths.EisensteinTheta
 open ThetaProduct
@@ -74,9 +74,6 @@ theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
   rw [hFC.tsum_prod, tsum_fintype]
   exact (Finset.sum_congr rfl (fun e _ => (hsum e).tsum_eq)).symm
 
-@[simp] theorem parityPair_k (a b L : ℝ) (hL : 0 < L) (e : Fin 2) :
-    (parityPair a b L hL e).k = 1 := rectangularPair_k _ _ _ _ _ _
-
 def cosetConstant (a b L : ℝ) (hL : 0 < L) : ℂ :=
   ∑ e : Fin 2, (parityPair a b L hL e).f₀
 
@@ -88,26 +85,20 @@ theorem parityPair_f₀ (a b L : ℝ) (hL : 0 < L) (e : Fin 2) :
 theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
     (ha₀ : 0 ≤ a) (haL : a < L) (hb₀ : 0 ≤ b) (hbL : b < L) :
     cosetConstant a b L hL = if a = 0 ∧ b = 0 then 1 else 0 := by
-  have htwo : 0 < 2 * L := by positivity
+  pm_4895 htwo L
   have hy1 : yShift b L 1 ∈ Set.Ico (0 : ℝ) 1 := by
-    simp only [yShift, Fin.val_one, Nat.cast_one, mul_one, Set.mem_Ico]
-    constructor
-    · positivity
-    · apply (div_lt_one htwo).2
-      linarith
+    pm_93 yShift Fin.val_one Nat.cast_one mul_one Set.mem_Ico
+    pm_8074
   have hy1pos : 0 < yShift b L 1 := by
     simp only [yShift, Fin.val_one, Nat.cast_one, mul_one]
-    exact div_pos (by linarith) htwo
+    positivity
   have hy1ne : (yShift b L 1 : UnitAddCircle) ≠ 0 := by
     intro h
     have := (AddCircle.coe_eq_zero_iff_of_mem_Ico hy1).mp h
     linarith
   have hy0 : yShift b L 0 ∈ Set.Ico (0 : ℝ) 1 := by
-    simp only [yShift, Fin.val_zero, Nat.cast_zero, mul_zero, add_zero, Set.mem_Ico]
-    constructor
-    · positivity
-    · apply (div_lt_one htwo).2
-      linarith
+    pm_316 yShift Fin.val_zero Nat.cast_zero mul_zero add_zero Set.mem_Ico
+    pm_8074
   have hy0iff : (yShift b L 0 : UnitAddCircle) = 0 ↔ b = 0 := by
     rw [AddCircle.coe_eq_zero_iff_of_mem_Ico hy0]
     simp [yShift, div_eq_zero_iff, hL.ne']
@@ -117,7 +108,7 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
   · subst b
     rw [ite_eq_left (hy0iff.mpr rfl), mul_one]
     have hx : xShift a 0 L 0 = a / L := by
-      simp only [xShift, sub_zero, Fin.val_zero, Nat.cast_zero, mul_zero]
+      pm_93 xShift sub_zero Fin.val_zero Nat.cast_zero mul_zero
       field_simp
     have hxmem : a / L ∈ Set.Ico (0 : ℝ) 1 :=
       ⟨div_nonneg ha₀ hL.le, (div_lt_one hL).2 haL⟩
@@ -125,7 +116,7 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
       rw [hx, AddCircle.coe_eq_zero_iff_of_mem_Ico hxmem]
       simp [div_eq_zero_iff, hL.ne']
     simp only [hxiff, and_true]
-  · rw [ite_eq_right (fun h => hb (hy0iff.mp h)), mul_zero, ite_eq_right (fun h => hb h.2)]
+  grind
 
 end SevenEighths.EisensteinTheta
 

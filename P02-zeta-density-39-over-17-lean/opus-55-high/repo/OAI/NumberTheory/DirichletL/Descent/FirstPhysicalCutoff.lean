@@ -16,19 +16,23 @@ def firstPhysicalMultiplier {ι : Type*} (p : ι→O) (S : Finset ι)
     (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool) (f : Ideal O) : O :=
   (ConcretePrimeRowBridge.idealGenerator f)^2 * dilationLabel p S (fun i=>v₁ i+v₂ i) ε₁ ε₂
 
-lemma firstPhysicalMultiplier_ne_zero {ι : Type*} (p : ι→O) (hp : ∀ i,p i≠0)
+section
+variable {ι : Type*} (p : ι→O)
+include ι p
+lemma firstPhysicalMultiplier_ne_zero (hp : ∀ i,p i≠0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (S : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool) (f : Ideal O) (hf : f≠0) :
     firstPhysicalMultiplier p S v₁ v₂ ε₁ ε₂ f≠0 :=
   mul_ne_zero (pow_ne_zero _ (ConcretePrimeRowBridge.idealGenerator_ne_zero f hf))
     (primeProduct_ne_zero p hp _ _)
 
-lemma firstPhysicalMultiplier_row {ι : Type*} (p : ι→O) (S : Finset ι)
+lemma firstPhysicalMultiplier_row (S : Finset ι)
     (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool) (f : Ideal O) (h : O) :
     firstPhysicalMultiplier p S v₁ v₂ ε₁ ε₂ f*h =
       DescentWeightedCauchy.firstElementRowMap (dilationLabel p S (fun i=>v₁ i+v₂ i) ε₁ ε₂) (f,h) := by
   unfold firstPhysicalMultiplier DescentWeightedCauchy.firstElementRowMap
   ring
+end
 
 theorem first_physical_cutoff_raw_tail {ι : Type*} [DecidableEq ι]
     (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]

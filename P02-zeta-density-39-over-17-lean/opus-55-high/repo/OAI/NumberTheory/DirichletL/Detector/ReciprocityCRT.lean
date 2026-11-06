@@ -54,12 +54,7 @@ theorem reciprocityCoefficient_product (A B s r : O)
   unfold reciprocityCoefficient
   rw [bareCongruenceCoefficient_product_reduced A B s r (supportedElement_ne_zero A hA)
     (supportedElement_ne_zero B hB) hs hr hcop H, hratio]
-  calc
-    _ = (reciprocitySign (A*B) (s*r) * reciprocitySign A r * reciprocitySign B s) *
-        (idealRowHom B (Ideal.span {A}) * idealRowHom A (Ideal.span {B})) *
-        bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H *
-        bareCongruenceCoefficient B r (supportedElement_ne_zero B hB) H := by ring
-    _ = _ := by rw [hsign]; ring
+  grind
 
 end SevenEighths.ProbePhysical
 end

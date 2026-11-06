@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowCommonBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,9 +14,9 @@ local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
 lemma compensatedPhysicalProbe_window_scale {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+    (W0 W1 : ℝ→ℂ) (slots : Fin K→ Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (X Y Z : ℝ) (c : ℂ) :
-    compensatedPhysicalProbe η C W0 W1 slots (fun i x=>c*W i x) Yp X Y Z=
+    compensatedPhysicalProbe η C W0 W1 slots (fun i x=>c*W i x) Yp X Y Z =
       c^K*compensatedPhysicalProbe η C W0 W1 slots W Yp X Y Z := by
   unfold compensatedPhysicalProbe
   simp_rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin,mul_assoc]
@@ -34,11 +35,11 @@ theorem original_ray_compensatedPhysicalProbe_low_loss
     (hWB0 : ∀x,‖W0 x‖≤B0) (hWB1 : ∀x,‖W1 x‖≤B1) :
     ∀η : HeckeFamily.Character,∃C : ℝ,0<C ∧ ∀ᶠZ : ℝ in Filter.atTop,
       ‖compensatedPhysicalProbe η (calibrationForSet S hmax) W0 W1
-        (fun i=>canonicalSlotSupport (ProbeRaySlots.pool R S a b (Z^(ell i)))) W (fun i=>Z^(ell i))
-        (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z‖≤C*Z^(3/16+loss) := by
+        (fun i=>canonicalSlotSupport (ProbeRaySlots.pool R S a b (Z ^(ell i)))) W (fun i=>Z ^(ell i))
+        (Z ^(17/48:ℝ)) (Z ^(23/48:ℝ)) Z‖≤C*Z ^(3/16+loss) := by
   let D := max 1 B
   have hD : 0<D := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hDc : (D:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hD.ne'
+  pm_3058 hDc D hD.ne'
   let Wn := fun i x=>W i x/(D:ℂ)
   have hWn : ∀i,Function.support (Wn i)⊆Set.Icc a b := by
     intro i x hx
@@ -55,23 +56,23 @@ theorem original_ray_compensatedPhysicalProbe_low_loss
     dsimp [Wn]
     field_simp
   let ε := min (loss/512) (1/2)
-  have he : 0<ε := by dsimp [ε];positivity
+  pm_3693 he ε
   have he1 : ε<1 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
   have heloss : 256*ε≤loss := by have hh := min_le_left (loss/512) (1/2:ℝ);dsimp only [ε];linarith
   intro η
   obtain ⟨C,hC,hbound⟩ := original_ray_compensatedPhysicalProbe_low η S hS hmax ell hell hinj hsum R
     a b ε ha hab he he1 Wn hWn hn W0 W1 a0 b0 a1 b1 B0 B1 ha0 ha1 hab1 hB0 hB1
     hW0 hW1 hW0s hW1s hWB0 hWB1
-  refine ⟨D^K*C,by positivity,?_⟩
-  filter_upwards [hbound,Filter.eventually_ge_atTop (1:ℝ)] with Z hb hZ
+  refine ⟨D ^K*C,by positivity,?_⟩
+  pm_550 hbound Filter.eventually_ge_atTop hb hZ
   have heq := compensatedPhysicalProbe_window_scale η (calibrationForSet S hmax) W0 W1
-    (fun i=>canonicalSlotSupport (ProbeRaySlots.pool R S a b (Z^(ell i)))) Wn (fun i=>Z^(ell i))
-    (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z (D:ℂ)
+    (fun i=>canonicalSlotSupport (ProbeRaySlots.pool R S a b (Z ^(ell i)))) Wn (fun i=>Z ^(ell i))
+    (Z ^(17/48:ℝ)) (Z ^(23/48:ℝ)) Z (D:ℂ)
   rw [hscale] at heq
   rw [heq,norm_mul,norm_pow,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hD]
   calc
-    _≤D^K*(C*Z^(3/16+256*ε)) := mul_le_mul_of_nonneg_left hb (by positivity)
-    _≤D^K*(C*Z^(3/16+loss)) := by gcongr
+    _≤D ^K*(C*Z ^(3/16+256*ε)) := mul_le_mul_of_nonneg_left hb (by positivity)
+    _≤D ^K*(C*Z ^(3/16+loss)) := by gcongr
     _=_ := by ring
 
 end SevenEighths.ProbePhysical

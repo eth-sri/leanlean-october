@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowRay
 public import OAI.NumberTheory.DirichletL.Detector.GaussianPartition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,37 +15,40 @@ local notation "O" => ActualEisensteinCubic.O
 def lowOuterCutoff (a b x : ℝ) : ℂ :=
   (Real.smoothTransition (2*x/a-1):ℂ)*(Real.smoothTransition (2-x/b):ℂ)
 
-lemma lowOuterCutoff_small (a b : ℝ) (ha : 0<a) (x : ℝ) (hx : x≤a/2) :
+section
+variable (a b : ℝ)
+include a b
+lemma lowOuterCutoff_small (ha : 0<a) (x : ℝ) (hx : x≤a/2) :
     lowOuterCutoff a b x=0 := by
   have h : 2*x/a-1≤0 := by
     have hh : 2*x/a≤1 := (div_le_iff₀ ha).mpr (by linarith)
     linarith
   simp only [lowOuterCutoff,Real.smoothTransition.zero_of_nonpos h,Complex.ofReal_zero,zero_mul]
 
-lemma lowOuterCutoff_large (a b : ℝ) (hb : 0<b) (x : ℝ) (hx : 2*b≤x) :
+lemma lowOuterCutoff_large (hb : 0<b) (x : ℝ) (hx : 2*b≤x) :
     lowOuterCutoff a b x=0 := by
   have h : 2-x/b≤0 := by
     have hh : 2≤x/b := (le_div_iff₀ hb).mpr hx
     linarith
   simp only [lowOuterCutoff,Real.smoothTransition.zero_of_nonpos h,Complex.ofReal_zero,mul_zero]
 
-lemma lowOuterCutoff_one (a b : ℝ) (ha : 0<a) (hb : 0<b) (x : ℝ) (hlo : a≤x) (hhi : x≤b) :
+lemma lowOuterCutoff_one (ha : 0<a) (hb : 0<b) (x : ℝ) (hlo : a≤x) (hhi : x≤b) :
     lowOuterCutoff a b x=1 := by
   have hl : 1≤2*x/a-1 := by
     have hh : 2≤2*x/a := (le_div_iff₀ ha).mpr (by linarith)
     linarith
   have hr : 1≤2-x/b := by
-    have hh : x/b≤1 := (div_le_iff₀ hb).mpr (by simpa using hhi)
+    have hh : x/b≤1 := (div_le_iff₀ hb).mpr (by grind)
     linarith
   simp only [lowOuterCutoff,Real.smoothTransition.one_of_one_le hl,
     Real.smoothTransition.one_of_one_le hr,Complex.ofReal_one,mul_one]
 
-lemma lowOuterCutoff_smooth (a b : ℝ) : ContDiff ℝ ∞ (lowOuterCutoff a b) := by
+lemma lowOuterCutoff_smooth : ContDiff ℝ ∞ (lowOuterCutoff a b) := by
   unfold lowOuterCutoff
   exact (Complex.ofRealCLM.contDiff.comp (Real.smoothTransition.contDiff.comp (by fun_prop))).mul
     (Complex.ofRealCLM.contDiff.comp (Real.smoothTransition.contDiff.comp (by fun_prop)))
 
-lemma lowOuterCutoff_support (a b : ℝ) (ha : 0<a) (hb : 0<b) :
+lemma lowOuterCutoff_support (ha : 0<a) (hb : 0<b) :
     Function.support (lowOuterCutoff a b)⊆Set.Icc (a/2) (2*b) := by
   intro x hx
   constructor
@@ -53,9 +57,10 @@ lemma lowOuterCutoff_support (a b : ℝ) (ha : 0<a) (hb : 0<b) :
   · by_contra hh
     exact hx (lowOuterCutoff_large a b hb x (le_of_lt (lt_of_not_ge hh)))
 
-lemma lowOuterCutoff_compact (a b : ℝ) (ha : 0<a) (hb : 0<b) :
+lemma lowOuterCutoff_compact (ha : 0<a) (hb : 0<b) :
     HasCompactSupport (lowOuterCutoff a b) :=
   HasCompactSupport.of_support_subset_isCompact isCompact_Icc (lowOuterCutoff_support a b ha hb)
+end
 
 lemma physical_ratio_factor (B q X Y m : ℝ) (hq : 0<q) (hY : 0<Y) :
     m/(B*X*Y)=(q/Y)*(m/(B*q*X)) := by
@@ -91,8 +96,7 @@ theorem physicalRowWeight_insert_cutoff (C : CalibrationData) (W0 W1 : ℝ→ℂ
     fun h=>hz (physicalRowWeight_inner_zero C W0 W1 X Y r h)
   have h1 : W1 ((Ideal.absNorm r.1.val:ℝ)/Y)≠0 :=
     fun h=>hz (physicalRowWeight_outer_zero C W0 W1 X Y r h)
-  have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
+  pm_3843
   rw [physical_window_cutoff_one W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     (elementNorm C.generator) (Ideal.absNorm r.1.val) X Y (elementNorm r.2) hq hY h0 h1,one_mul]
 

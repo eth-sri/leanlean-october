@@ -1,6 +1,7 @@
 module
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexFirstDerivative
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -66,7 +67,7 @@ theorem hasDerivAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
     HasDerivAt (atkinsonNormalizedGapPhase M t u)
       (atkinsonGapSlopeProfile (Real.pi*M/(2*u)) (t/u) x) x := by
   have ht := hu.trans htu
-  have hMx : 0 < M*x := mul_pos hM hx
+  pm_474 hMx M x hM hx
   have hd := ((hasDerivAt_atkinsonIndexPhaseDifference ht hu hMx).comp x
     ((hasDerivAt_id x).const_mul M)).div_const (atkinsonGapFrequency M t u)
   simp only [mul_one] at hd
@@ -78,7 +79,7 @@ theorem hasDerivAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
     atkinsonIndexRealSlope_scaled hM ht hu hx,
     atkinsonIndexRealSlope_scaled hM hu hu hx]
   rw [div_self hu.ne']
-  have hS : 0 < Real.sqrt (2*Real.pi*u/M) := by positivity
+  pm_976 hS
   have hX : 0 < Real.sqrt x := Real.sqrt_pos.mpr hx
   have hSum : 0 < Real.sqrt (t/u+(Real.pi*M/(2*u))*x)+
       Real.sqrt (1+(Real.pi*M/(2*u))*x) := by positivity
@@ -86,7 +87,7 @@ theorem hasDerivAt_atkinsonNormalizedGapPhase {M t u x : ℝ}
   unfold atkinsonGapFrequency atkinsonGapSlopeProfile
   have hsq := Real.sq_sqrt hx.le
   field_simp [hM.ne',hu.ne',hx.ne',hS.ne',hX.ne',hSum.ne',hGap,Real.pi_ne_zero]
-  nlinarith [hsq]
+  grind
 
 theorem contDiffAt_atkinsonGapSlopeProfile
     {q r x : ℝ} (hr : 0 < r) (hx : 0 < x)

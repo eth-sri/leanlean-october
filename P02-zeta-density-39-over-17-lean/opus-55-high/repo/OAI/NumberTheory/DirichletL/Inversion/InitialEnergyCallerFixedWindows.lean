@@ -1,18 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindows
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialEnergyCallerFixedWindows
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
+open InverseInitialArithmetic InverseInitialPhysicalMeasure
+open InverseInitialEnergyCallerSource
+open InverseInitialEnergyCallerWindows InverseInitialProfile
 open InverseSecondChildWindows InverseSecondProfileUniform
 local notation "Eis"=>ActualEisensteinCubic.O
 
@@ -27,8 +26,8 @@ theorem log_source_support (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   have hu := Real.log_le_log (Real.exp_pos x) hh.2
   rw [Real.log_exp] at hl hu
   constructor
-  · linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
-  · linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
+  grind
+  grind
 
 theorem exists_actual_initial_windows
     (W₁ W₂:ℝ→ℂ)(a b bcap:ℝ)(ha:0<a)(hcap:1≤bcap)
@@ -40,15 +39,15 @@ theorem exists_actual_initial_windows
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       (∀i,0≤M i) ∧ (∀i,HasCompactSupport (V i:ℝ→ℂ)) ∧
       (∀i,Function.support (V i)⊆Set.Icc (-M i) (M i)) ∧
-      ∀{ι:Type*}[DecidableEq ι](p:ι→Eis)(_hp:∀i,p i≠0)
+      ∀{ι:Type*}[DecidableEq ι](p:ι→ Eis)(_hp:∀i,p i≠0)
       [∀i,(Ideal.span {p i}).IsMaximal]
       (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
       (_hdiv:∀x∈S,x.divisor⊆x.common)(_hf:∀x∈S,x.frequency≠0)
       (ψ:Fin 4→ℝ→ℂ)(_hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
-      (Z D B v θ H c₁ c₂ θ₁ θ₂:ℝ),0<Z→1≤c₁→c₁≤bcap→1≤c₂→c₂≤bcap→
+      (Z D B v θ H c₁ c₂ θ₁ θ₂:ℝ),0<Z→1≤ c₁→ c₁≤bcap→1≤ c₂→ c₂≤bcap→
       BlockSupport p (pointSource pool (windowSource p S ψ Z D B v θ H))
         W₁ W₂ wFresh wFresh (fun i=>V i) Z D B v θ H c₁ c₂ θ₁ θ₂ := by
-  let m:=|Real.log a|+|Real.log b|
+  pm_8619 m a b
   obtain ⟨wFresh,V,M,af,bf,haf,hab,hwc,hws,hM,hVc,hVs,hw,hcut⟩ :=
     fixed_windows m bcap lo hi (fun _=>0) (by dsimp [m];positivity) hcap hlo hhi (by simp)
   refine ⟨wFresh,V,M,af,bf,haf,hab,hwc,hws,hM,hVc,hVs,?_⟩
@@ -61,7 +60,7 @@ theorem exists_actual_initial_windows
     pointSource_valid pool _ (fun x hx=>hdiv x (Finset.mem_filter.mp hx).1)
       (fun x hx=>hf x (Finset.mem_filter.mp hx).1)
   have hpos (x:Point ι)(hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H)) :
-      ∀i,0<relativeNorm (coordinates p x) Z D B v θ H i :=
+      ∀i,0< relativeNorm (coordinates p x) Z D B v θ H i :=
     relativeNorm_pos _ (coordinates_pos p hp x (hvalid x hx)) hZ D B v θ H
   have hblock (x:Point ι)(hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H)) :
       ∀i:Fin 4,relativeNorm (coordinates p x) Z D B v θ H (outerIndex i)∈Set.Icc (lo i) (hi i) :=
@@ -102,6 +101,5 @@ theorem exists_actual_initial_windows
 
 end SevenEighths.InverseInitialEnergyCallerFixedWindows
 
-end
 
 end OAI

@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosKernelBasic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -32,8 +33,10 @@ theorem sargosSincKernel_eq_sin {w ξ : ℝ} (hw : w ≠ 0) (hξ : ξ ≠ 0) :
     Real.sinc_of_ne_zero (mul_ne_zero (mul_ne_zero Real.pi_ne_zero hξ) hw)]
   field_simp
 
-theorem sargos_integral_symmetric_tent_character
-    {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
+section
+variable {w : ℝ} (hw : 0 < w) (ξ : ℝ)
+include w hw ξ
+theorem sargos_integral_symmetric_tent_character :
     (∫ x in -w..w,
         ((1 - |x| / w : ℝ) : ℂ) *
           fordAdditiveCharacter (-(ξ * x))) =
@@ -41,42 +44,22 @@ theorem sargos_integral_symmetric_tent_character
           (1 - x / w) * Real.cos (2 * Real.pi * ξ * x) : ℝ) : ℂ) := by
   let f : ℝ → ℂ := fun x =>
     ((1 - |x| / w : ℝ) : ℂ) * fordAdditiveCharacter (-(ξ * x))
-  have hchar : Continuous fordAdditiveCharacter := by
-    unfold fordAdditiveCharacter
-    fun_prop
-  have hfcont : Continuous f := by
-    dsimp [f]
-    fun_prop
-  have hf : ∀ a b : ℝ, IntervalIntegrable f MeasureTheory.volume a b := by
-    intro a b
-    exact hfcont.intervalIntegrable a b
-  rw [← intervalIntegral.integral_add_adjacent_intervals
-    (hf (-w) 0) (hf 0 w)]
+  pm_2788
   have hneg :
       (∫ x in (0 : ℝ)..w, f (-x)) = ∫ x in -w..0, f x := by
-    rw [intervalIntegral.integral_comp_neg, neg_zero]
+    simp_all
   have hfneg : IntervalIntegrable (fun x : ℝ => f (-x))
       MeasureTheory.volume 0 w := by
     have hc : Continuous (fun x : ℝ => f (-x)) := hfcont.comp continuous_neg
     exact hc.intervalIntegrable 0 w
-  rw [← hneg, ← intervalIntegral.integral_add
-    hfneg (hf 0 w)]
+  pm_7199
   calc
     (∫ x in (0 : ℝ)..w, f (-x) + f x) =
         ∫ x in (0 : ℝ)..w,
           ((2 * ((1 - x / w) * Real.cos (2 * Real.pi * ξ * x)) : ℝ) : ℂ) := by
-      apply intervalIntegral.integral_congr
-      intro x hx
-      have hx0 : 0 ≤ x := by
-        rcases Set.mem_uIcc.mp hx with h | h
-        · exact h.1
-        · linarith
-      simp only [f, abs_neg, abs_of_nonneg hx0]
+      pm_2789
       rw [show -(ξ * -x) = ξ * x by ring]
-      rw [← mul_add]
-      rw [fordAdditiveCharacter_pair_eq_cos]
-      push_cast
-      ring_nf
+      pm_8061
     _ = ((∫ x in (0 : ℝ)..w,
           2 * ((1 - x / w) * Real.cos (2 * Real.pi * ξ * x)) : ℝ) : ℂ) :=
       intervalIntegral.integral_ofReal
@@ -85,8 +68,7 @@ theorem sargos_integral_symmetric_tent_character
       rw [intervalIntegral.integral_const_mul]
 
 
-theorem sargos_integral_symmetric_tent_character_eq_kernel
-    {w : ℝ} (hw : 0 < w) (ξ : ℝ) :
+theorem sargos_integral_symmetric_tent_character_eq_kernel :
     (∫ x in -w..w,
         ((1-|x|/w : ℝ) : ℂ)*fordAdditiveCharacter (-(ξ*x))) =
       (sargosSincKernel w ξ : ℂ) := by
@@ -117,5 +99,6 @@ theorem sargos_integral_symmetric_tent_character_eq_kernel
       nlinarith [Real.sin_sq_add_cos_sq (Real.pi*ξ*w)]
     rw [htrig]
     field_simp [Real.pi_ne_zero,hw.ne',hξ]
+end
 
 end TaoTrudgianYang2025

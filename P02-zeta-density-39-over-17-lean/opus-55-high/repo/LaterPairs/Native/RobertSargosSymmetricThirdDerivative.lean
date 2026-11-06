@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.FiniteSmoothThirdDerivative
 public import LaterPairs.Native.RobertSargosCubicPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -44,7 +45,7 @@ theorem robertSargos_symmetric_third_curvature
     (fun y hy => hasDerivAt_iteratedDeriv_finite (by norm_num : 3 < 4) (hf y (hin y hy)))
     (fun y hy => hlo y (hin y hy)) (fun y hy => hhi y (hin y hy))
   rw [show (x+h)-(x-h) = 2*h by ring] at hb
-  simpa only [robertSargosSymmetricDifference,mul_assoc,mul_comm,mul_left_comm] using hb
+  pm_89 robertSargosSymmetricDifference mul_assoc mul_comm mul_left_comm hb
 
 theorem robertSargos_symmetric_third_derivative_prefix
     (f : ℝ → ℝ) (A : ℝ) (N : ℕ) {a b h C lam : ℝ}
@@ -63,9 +64,7 @@ theorem robertSargos_symmetric_third_derivative_prefix
   have hj (j : ℕ) (hj : j < 4) (x : ℝ) (hx : x ∈ Icc A (A+N)) :=
     hasDerivAt_robertSargos_symmetric_jet hj (hf (x+h) (hin x hx).2)
       (hf (x-h) (hin x hx).1)
-  have hc (x : ℝ) (hx : x ∈ Icc A (A+N)) :=
-    robertSargos_symmetric_third_curvature hh.le
-      (hin x hx).1.1 (hin x hx).2.2 hf hlo hhi
+  pm_7572 x hx A N hh.le
   exact continuous_third_derivative_bound
     (fun x => robertSargosSymmetricDifference f x h)
     (fun x => robertSargosSymmetricDifference (iteratedDeriv 1 f) x h)

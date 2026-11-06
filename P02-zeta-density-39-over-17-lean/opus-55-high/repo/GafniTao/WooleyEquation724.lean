@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyEquation723
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # From local equation (7.23) to aggregate equation (7.24)
@@ -12,11 +13,9 @@ by the proved one-sided refinement identity.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooley_equation_7_24_of_local
     {k p B s r a b nu bPrime : ℕ}
@@ -120,14 +119,11 @@ theorem wooley_equation_7_24_of_local
                   wooleySourcePolynomialMixedResidueMoment
                     phi s r p B bPrime b gamma xiPrime eta)]
           simp_rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro xi hxi
-          apply Finset.sum_congr rfl
-          intro eta heta
+          pm_2833
           apply Finset.sum_congr rfl
           intro xiPrime hxiPrime
           ring
-    have hinv : 0 ≤ (wooleySourceMassSq gamma)⁻¹ ^ 2 := sq_nonneg _
+    pm_1474 wooleySourceMassSq
     calc
       (wooleySourceMassSq gamma)⁻¹ ^ 2 * _ ≤
           (wooleySourceMassSq gamma)⁻¹ ^ 2 * (D * _) :=
@@ -135,6 +131,5 @@ theorem wooley_equation_7_24_of_local
       _ = D * ((wooleySourceMassSq gamma)⁻¹ ^ 2 * _) := by ring
 
 
-end
 
 end GafniTao

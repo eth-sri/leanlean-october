@@ -1,7 +1,7 @@
 module
 public import GafniTao.HeathBrownCellPairCount
 
-@[expose] public section
+public section
 
 /-!
 # Source-normalized first and second moments of `nu`
@@ -10,15 +10,16 @@ These are the two displayed coefficient-torus estimates in Heath-Brown's
 Lemma 1, with the finite source interval retained exactly.
 -/
 
-open Finset Set MeasureTheory
-open scoped BigOperators ENNReal
+open Finset MeasureTheory
+open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
 
-theorem integral_heathBrownNu_exact
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
+section
+variable (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ)
+include N k H hH f
+theorem integral_heathBrownNu_exact :
     ∫ α, heathBrownNu N k H f α ∂(heathBrownCoefficientMeasure k) =
       ((N - H : ℕ) : ℝ) *
         ((2 : ℝ) ^ (k - 1) *
@@ -27,8 +28,7 @@ theorem integral_heathBrownNu_exact
   unfold heathBrownCoefficientMeasure
   rw [measureReal_heathBrownCoefficientCell_exact hH]
 
-theorem integral_heathBrownNu_sq_source_bound
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
+theorem integral_heathBrownNu_sq_source_bound :
     ∫ α, (heathBrownNu N k H f α) ^ 2
         ∂(heathBrownCoefficientMeasure k) ≤
       ((heathBrownPairCount N k H f).card : ℝ) *
@@ -38,8 +38,8 @@ theorem integral_heathBrownNu_sq_source_bound
   unfold heathBrownCoefficientMeasure at h ⊢
   rw [measureReal_heathBrownCoefficientCell_exact hH] at h
   exact h
-
-
 end
+
+
 
 end GafniTao

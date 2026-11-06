@@ -7,14 +7,13 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.DivisorWeightMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open MathCollab.Density.Stronger.Fourth
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -40,12 +39,11 @@ theorem norm_zetaSquareDivisor_freezing_error (T x : ℝ) (n : ℕ) :
           zetaDivisorWeight (zetaDivisorWeightArgument T n)‖ := by
   rw [zetaSquareLeadingDivisorContribution_eq_weight]
   unfold zetaSquareFrozenDivisorContribution
-  rw [← mul_sub, norm_mul, norm_mul, norm_zetaSquareReflectedGammaPhase, mul_one]
+  pm_7513
 
 theorem min_self_inv_le_min_one (a : ℝ) : min a a⁻¹ ≤ min 1 a := by
   by_cases ha : a ≤ 1
-  · rw [min_eq_right ha]
-    exact min_le_left _ _
+  grind
   · rw [min_eq_left (le_of_not_ge ha)]
     apply (min_le_right _ _).trans
     simpa only [one_div, inv_one] using one_div_le_one_div_of_le zero_lt_one (le_of_not_ge ha)
@@ -55,12 +53,10 @@ theorem exists_norm_zetaSquareDivisor_freezing_error_le :
       ‖zetaSquareLeadingDivisorContribution (T + x) n - zetaSquareFrozenDivisorContribution T x n‖ ≤
         (C * (|x| / T)) * (‖divisorDirichletTerm (afeCriticalPoint (-(T + x))) n‖ *
           min 1 (T / (2 * Real.pi * (n : ℝ)))) := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_source_zetaDivisorWeight_height_sub_le
-  refine ⟨C, hC, ?_⟩
+  pm_157 C hC hbound exists_norm_source_zetaDivisorWeight_height_sub_le
   intro T hT x hx n
   rw [norm_zetaSquareDivisor_freezing_error]
-  by_cases hn : n = 0
-  · simp [hn, divisorDirichletTerm, LSeries.term]
+  pm_4346
   have hm : min (T / (2 * Real.pi * (n : ℝ))) ((2 * Real.pi * (n : ℝ)) / T) ≤
       min 1 (T / (2 * Real.pi * (n : ℝ))) := by
     simpa only [inv_div] using min_self_inv_le_min_one (T / (2 * Real.pi * (n : ℝ)))
@@ -72,19 +68,22 @@ theorem exists_norm_zetaSquareDivisor_freezing_error_le :
         (C * (|x| / T) * min 1 (T / (2 * Real.pi * (n : ℝ)))) := by gcongr
     _ = _ := by ring
 
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
 /-- The complete leading source is approximated by its frozen-weight
 series. The phase and Dirichlet oscillation are still at `T+x`, and the
 error has the inverse square-root height gain needed for local averaging. -/
-theorem exists_norm_zetaSquareLeadingDivisor_sub_frozen_le (ε : ℝ) (hε : 0 < ε) :
+theorem exists_norm_zetaSquareLeadingDivisor_sub_frozen_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 8 ≤ T → ∀ x : ℝ, |x| ≤ T / 2 →
       ‖zetaSquareLeadingDivisorIntegral (T + x) - zetaSquareFrozenDivisorIntegral T x‖ ≤
         C * |x| * T ^ (-1 / 2 + ε) := by
   obtain ⟨C, hC, hpoint⟩ := exists_norm_zetaSquareDivisor_freezing_error_le
-  obtain ⟨D, hD, hmass⟩ := exists_tsum_divisorCritical_min_height_le ε hε
+  pm_98 D hD hmass exists_tsum_divisorCritical_min_height_le ε hε
   refine ⟨C * D, by positivity, ?_⟩
   intro T hT x hx
   have hT0 : 0 < T := by linarith
-  have hTx : 4 ≤ T + x := by have := neg_abs_le x; linarith
+  pm_6751
   let e := fun n : ℕ => zetaSquareLeadingDivisorContribution (T + x) n -
     zetaSquareFrozenDivisorContribution T x n
   let m := fun n : ℕ => ‖divisorDirichletTerm (afeCriticalPoint (-(T + x))) n‖ *
@@ -117,17 +116,18 @@ theorem exists_norm_zetaSquareLeadingDivisor_sub_frozen_le (ε : ℝ) (hε : 0 <
 /-- The preceding weight freeze also consumes the already proved actual
 reflected source remainder. This is still a complete series, not yet a
 shortened Atkinson sum. -/
-theorem exists_norm_zetaSquareSource_sub_frozen_le (ε : ℝ) (hε : 0 < ε) :
+theorem exists_norm_zetaSquareSource_sub_frozen_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 8 ≤ T → ∀ x : ℝ, |x| ≤ T / 2 →
       ‖zetaSquareDivisorIntegral (-(T + x)) / zetaSquareGammaNormalization (T + x) -
         zetaSquareFrozenDivisorIntegral T x‖ ≤ C * (1 + |x| * T ^ (-1 / 2 + ε)) := by
   obtain ⟨C, hC, hsource⟩ := exists_norm_zetaSquareDivisorIntegral_sub_leading_le
-  obtain ⟨D, hD, hfreeze⟩ := exists_norm_zetaSquareLeadingDivisor_sub_frozen_le ε hε
+  pm_98 D hD hfreeze exists_norm_zetaSquareLeadingDivisor_sub_frozen_le ε hε
   refine ⟨C + D, by positivity, ?_⟩
   intro T hT x hx
-  have hTx : 4 ≤ T + x := by have := neg_abs_le x; linarith
+  pm_6751
   apply (norm_sub_le_norm_sub_add_norm_sub _ (zetaSquareLeadingDivisorIntegral (T + x)) _).trans
   apply (add_le_add (hsource (T + x) hTx) (hfreeze T hT x hx)).trans
   nlinarith [mul_nonneg (abs_nonneg x) (Real.rpow_nonneg (by linarith : 0 ≤ T) (-1 / 2 + ε))]
+end
 
 end MathCollab.Density.Stronger.Atkinson

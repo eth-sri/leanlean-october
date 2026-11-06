@@ -1,5 +1,6 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,8 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
     (hm : m ≤ r / K) :
     ∃ k : ℕ, K ≤ k ∧ k ≤ ⌈1 / δ⌉₊ ∧ 1 - r ≤ (k : ℝ) * m ∧
       (k : ℝ) * m ≤ r := by
-  have hKr : (1 : ℝ) ≤ K := by exact_mod_cast hK
-  have hKpos : (0 : ℝ) < K := by linarith
+  pm_77 hKr K hK
+  pm_389 hKpos K
   have hmpos : 0 < m := hδ.trans_le hδm
   have hden : (0 : ℝ) < 2 * K + 1 := by positivity
   have hrbudget : (K : ℝ) + 1 ≤ r * (2 * K + 1) := (div_le_iff₀ hden).mp hr
@@ -35,7 +36,7 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
   have hKk : K ≤ k := Nat.le_floor ((le_div_iff₀ hmpos).mpr (by
     have hh := (le_div_iff₀ hKpos).mp hm
     nlinarith))
-  have hkR : (K : ℝ) ≤ k := by exact_mod_cast hKk
+  pm_106 hkR K k hKk
   have hkpos : (0 : ℝ) < k := hKpos.trans_le hkR
   have hfloor : (k : ℝ) * m ≤ r := (le_div_iff₀ hmpos).mp
     (Nat.floor_le (by positivity : 0 ≤ r / m))
@@ -53,6 +54,6 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
     have hh : (k : ℝ) ≤ (⌈1 / δ⌉₊ : ℝ) :=
       ((le_div_iff₀ hδ).mpr hkδ).trans (Nat.le_ceil (1 / δ))
     exact_mod_cast hh
-  exact ⟨k, hKk, hbound, hlower, hfloor⟩
+  grind
 
 end Montgomery.RationalMoment

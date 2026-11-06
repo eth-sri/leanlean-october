@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussianCoupled
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ def gaussianSlotPoint {ι : Type*} (x : ℝ) (q : ι→ℝ) : Option ι→ℝ
 
 lemma gaussianSlot_argument {ι : Type*} [Fintype ι] (x : ℝ) (hx : 0<x) (q : ι→ℝ) (hq : ∀i,0<q i) :
     Real.exp (∑i : Option ι,gaussianSlotSlope i*gaussianSlotPoint x q i)=x/(∏i,q i) := by
-  simp only [Fintype.sum_option,gaussianSlotSlope,gaussianSlotPoint,one_mul,neg_one_mul]
+  pm_94 Fintype.sum_option gaussianSlotSlope gaussianSlotPoint one_mul neg_one_mul
   rw [Real.exp_add,Real.exp_sum,Real.exp_log hx]
   simp_rw [Real.exp_neg,Real.exp_log (hq _)]
   rw [Finset.prod_inv_distrib]
@@ -37,22 +38,22 @@ lemma logPhase_neg_argument (t y : ℝ) : logPhase t (-y)=logPhase (-t) y := by
 lemma gaussianFixedWindow_Vstar_twist (t x : ℝ) (hx : 0<x) :
     Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x=
       gaussianAnnulus x*logPhase t (Real.log x) := by
-  have hs : (Real.sqrt x:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hx).ne'
+  pm_3642 hs x hx
   unfold Vstar CompletedHeight.normTwistedSource gaussianFixedWindow
   field_simp
 
 lemma gaussianAnnulus_log_support (y : ℝ) (hy : gaussianAnnulus (Real.exp y)≠0) :
     |y|≤|Real.log (1/2)|+|Real.log 2|+1 := by
   have hlo : (1/2:ℝ)<Real.exp y := by
-    by_contra h; exact hy (gaussianAnnulus_small _ (le_of_not_gt h))
+    pm_8581 gaussianAnnulus_small
   have hhi : Real.exp y<2 := by
-    by_contra h; exact hy (gaussianAnnulus_large _ (le_of_not_gt h))
+    pm_8581 gaussianAnnulus_large
   have hl : Real.log (1/2)≤y := by simpa using Real.log_le_log (by norm_num : (0:ℝ)<1/2) hlo.le
   have hh : y≤Real.log 2 := by simpa using Real.log_le_log (Real.exp_pos y) hhi.le
   rw [abs_le]
   constructor
-  · have := neg_abs_le (Real.log (1/2)); have := abs_nonneg (Real.log 2); linarith
-  · have := le_abs_self (Real.log 2); have := abs_nonneg (Real.log (1/2)); linarith
+  grind
+  grind
 
 theorem gaussian_selected_slot_family {ι : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (M : ι→ℝ) (hM : ∀i,0≤M i)

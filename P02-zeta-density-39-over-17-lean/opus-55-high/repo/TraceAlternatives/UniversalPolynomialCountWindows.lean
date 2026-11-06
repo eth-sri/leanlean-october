@@ -1,6 +1,7 @@
 module
 public import TraceAlternatives.UniversalPolynomialCount
 public import TraceAlternatives.UniversalCountTargetWindows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,34 +23,30 @@ structure UniversalCountWindow (σ a : ℝ) : Prop where
 
 theorem universalCountWindow_row4 {σ : ℝ} (hlo : 7873/9370 ≤ σ) (hhi : σ ≤ 2018/2375) :
     UniversalCountWindow σ (1261710/(4342380*σ-1396527)) := by
-  have hd : 0 < 4342380*σ-1396527 := by linarith
-  have hσ : 4/5 ≤ σ := by linarith
+  pm_365
+  pm_4911
   have ha : 1/2 ≤ 1261710/(4342380*σ-1396527) := by
     apply (le_div_iff₀ hd).mpr
     linarith
-  refine ⟨hσ,by linarith,ha,?_,?_,?_⟩
-  · apply (div_lt_iff₀ hd).mpr
-    linarith
+  pm_1401
   · intro x hxa j i
     have hh := universalTraceEnergyMargin_row4 hlo hhi (le_refl (1261710/(4342380*σ-1396527)))
       (show 1261710/(4342380*σ-1396527) ≤ 3*(1261710/(4342380*σ-1396527))/2 by linarith) j i
-    exact hh.trans (universalTraceEnergyMargin_mono_length (by linarith : 7873/9370 ≤ σ) hxa j i)
+    pm_6244
   · exact fun x hx => universalLowMargin_row4 hlo hhi hx
 
 theorem universalCountWindow_row5 {σ : ℝ} (hlo : 2018/2375 ≤ σ) (hhi : σ ≤ 1959705/2298302) :
     UniversalCountWindow σ (3066/(10848*σ-3645)) := by
-  have hd : 0 < 10848*σ-3645 := by linarith
-  have hσ : 4/5 ≤ σ := by linarith
+  pm_2732
+  pm_4911
   have ha : 1/2 ≤ 3066/(10848*σ-3645) := by
     apply (le_div_iff₀ hd).mpr
     linarith
-  refine ⟨hσ,by linarith,ha,?_,?_,?_⟩
-  · apply (div_lt_iff₀ hd).mpr
-    linarith
+  pm_1401
   · intro x hxa j i
     have hh := universalTraceEnergyMargin_row5 hlo hhi (le_refl (3066/(10848*σ-3645)))
       (show 3066/(10848*σ-3645) ≤ 3*(3066/(10848*σ-3645))/2 by linarith) j i
-    exact hh.trans (universalTraceEnergyMargin_mono_length (by linarith : 7873/9370 ≤ σ) hxa j i)
+    pm_6244
   · exact fun x hx => universalLowMargin_row5 hlo hhi hx
 
 /-- The full perturbed short-polynomial window, with all analytic inputs

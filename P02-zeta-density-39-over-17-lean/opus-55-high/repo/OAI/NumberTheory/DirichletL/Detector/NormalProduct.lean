@@ -12,25 +12,30 @@ noncomputable section
 open scoped BigOperators
 namespace SevenEighths.ProbeEuler
 
-lemma factor_ne_zero_of_defect (a : ℂ) (ha : ‖a-1‖ ≤ 1/2) : a ≠ 0 := by
+section
+variable (a : ℂ) (ha : ‖a-1‖ ≤ 1/2)
+include a ha
+lemma factor_ne_zero_of_defect : a ≠ 0 := by
   intro h
   rw [h] at ha
   norm_num at ha
 
-lemma norm_log_le_defect (a : ℂ) (ha : ‖a-1‖ ≤ 1/2) :
+lemma norm_log_le_defect :
     ‖Complex.log a‖ ≤ (3/2:ℝ)*‖a-1‖ := by
   simpa only [add_sub_cancel] using Complex.norm_log_one_add_half_le_self ha
+end
 
-lemma log_summable_of_defect {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
-    (hb : Summable b) (hF : ∀ i, ‖F i-1‖ ≤ b i) (hhalf : ∀ i, b i ≤ 1/2) :
+section
+variable {ι : Type*} (F : ι → ℂ) (b : ι → ℝ) (hb : Summable b) (hF : ∀ i, ‖F i-1‖ ≤ b i) (hhalf : ∀ i, b i ≤ 1/2)
+include ι F b hb hF hhalf
+lemma log_summable_of_defect :
     Summable (fun i => ‖Complex.log (F i)‖) := by
   apply (hb.mul_left (3/2)).of_nonneg_of_le (fun _ => norm_nonneg _)
   intro i
   exact (norm_log_le_defect _ ((hF i).trans (hhalf i))).trans
     (mul_le_mul_of_nonneg_left (hF i) (by norm_num))
 
-lemma product_eq_exp_log {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
-    (hb : Summable b) (hF : ∀ i, ‖F i-1‖ ≤ b i) (hhalf : ∀ i, b i ≤ 1/2) :
+lemma product_eq_exp_log :
     (∏' i, F i) = Complex.exp (∑' i, Complex.log (F i)) := by
   apply HasProd.tprod_eq
   apply ((log_summable_of_defect F b hb hF hhalf).of_norm.hasSum.cexp).congr
@@ -39,8 +44,7 @@ lemma product_eq_exp_log {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
   intro i hi
   exact Complex.exp_log (factor_ne_zero_of_defect _ ((hF i).trans (hhalf i)))
 
-lemma norm_log_sum_le {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
-    (hb : Summable b) (hF : ∀ i, ‖F i-1‖ ≤ b i) (hhalf : ∀ i, b i ≤ 1/2) :
+lemma norm_log_sum_le :
     ‖∑' i, Complex.log (F i)‖ ≤ (3/2:ℝ) * ∑' i, b i := by
   have hs := log_summable_of_defect F b hb hF hhalf
   calc
@@ -50,13 +54,13 @@ lemma norm_log_sum_le {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
         (mul_le_mul_of_nonneg_left (hF i) (by norm_num))) hs (hb.mul_left _)
     _ = _ := tsum_mul_left
 
-theorem product_defect_le {ι : Type*} (F : ι → ℂ) (b : ι → ℝ)
-    (hb : Summable b) (hF : ∀ i, ‖F i-1‖ ≤ b i) (hhalf : ∀ i, b i ≤ 1/2)
+theorem product_defect_le
     (hsmall : (∑' i, b i) ≤ 1/6) : ‖(∏' i, F i)-1‖ ≤ 1/2 := by
   have hlog := norm_log_sum_le F b hb hF hhalf
   have hlog1 : ‖∑' i, Complex.log (F i)‖ ≤ 1 := by linarith
   rw [product_eq_exp_log F b hb hF hhalf]
   exact (Complex.norm_exp_sub_one_le hlog1).trans (by linarith)
+end
 
 theorem normalProduct_analytic {ι : Type*} (F : ι → ℂ → ℂ) (b : ι → ℝ)
     (U : Set ℂ) (hU : IsOpen U) (hb : Summable b)

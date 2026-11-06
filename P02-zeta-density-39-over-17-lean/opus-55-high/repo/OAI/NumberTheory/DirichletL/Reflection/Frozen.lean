@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Static
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CompletedGauss
 open LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -18,22 +19,19 @@ lemma scalar_phase_power (a b : ℂ) (ha : a ≠ 0) (j : ℕ) :
   symm
   calc
     _ = (a^j*(a⁻¹)^j)*(a⁻¹)^2*(b⁻¹)^(j+2) := by rw [mul_pow,pow_add]; ring
-    _ = _ := by rw [← mul_pow,mul_inv_cancel₀ ha,one_pow,one_mul]
+    _ = _ := by simp_all
 
-theorem general_local_phase {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (A B z : F)
+section
+variable {F : Type*} [Field F] [Fintype F] (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ)
+include F χ ψ σ ε
+theorem general_local_phase (A B z : F)
     (hsigma : (σ : F) = A*z) (he : B*z*(σ : F)*(ε : F) = -1)
     (j : ℕ) (hj0 : j ≠ 0) (hj4 : j ≠ 4) :
     ((χ⁻¹)^2) σ * phase χ ψ j ε =
       (tau χ (ψ.mulShift (-1)) j*tau χ ψ (j+2)) *
         (χ (-1))⁻¹^(j+2)*(χ A)^j*(χ B)^(j+2)*(χ z)^(2*j+2) := by
-  have hs : χ (σ : F) ≠ 0 := MulChar.apply_ne_zero_iff.mpr σ.isUnit
-  have he' : χ (ε : F) ≠ 0 := MulChar.apply_ne_zero_iff.mpr ε.isUnit
-  have hn : χ (-1) ≠ 0 := MulChar.apply_ne_zero_iff.mpr isUnit_neg_one
-  have hh := congrArg χ he
-  simp only [map_mul] at hh
-  have hi := scalar_inverse_pair (χ σ) (χ ε) (χ B*χ z) (χ (-1)) hs he' hn hh
-  have hsig : χ (σ : F) = χ A*χ z := by rw [hsigma,map_mul]
+  pm_3297
+  pm_1412
   simp only [phase,hj4,hj0,↓reduceIte,MulChar.pow_apply_coe,MulChar.inv_apply_eq_inv']
   calc
     _ = (tau χ (ψ.mulShift (-1)) j*tau χ ψ (j+2))*((χ σ)⁻¹^2*(χ ε)⁻¹^(j+2)) := by ring
@@ -42,8 +40,7 @@ theorem general_local_phase {F : Type*} [Field F] [Fintype F]
       simp only [mul_pow,pow_add,show 2*j=j+j by omega]
       ring
 
-theorem exceptional_local_phase {F : Type*} [Field F] [Fintype F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (A z : F)
+theorem exceptional_local_phase (A z : F)
     (hsigma : (σ : F) = A*z) :
     ((χ⁻¹)^2) σ * phase χ ψ 4 ε =
       (tau χ (ψ.mulShift (-1)) 4*(χ A)⁻¹^2)*(χ z)⁻¹^2 := by
@@ -51,6 +48,7 @@ theorem exceptional_local_phase {F : Type*} [Field F] [Fintype F]
     ]
   simp only [MulChar.pow_apply' _ (by decide : (2:ℕ) ≠ 0),MulChar.inv_apply_eq_inv']
   ring
+end
 
 noncomputable local instance frozenField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance frozenFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
@@ -88,14 +86,14 @@ theorem controlled_frozen_phase [∀ i, (Ideal.span {p i}).IsMaximal]
     simpa only [map_mul] using D.epsilon_value i
   by_cases hj4 : j=4
   · subst j
-    rw [exceptional_local_phase _ _ _ _ _ _ hs]
+    pm_7909 exceptional_local_phase hs
     simp only [frozenPrimeScalar,frozenCofactorCharacter,↓reduceIte,MonoidHom.comp_apply,
       RingHom.toMonoidHom_eq_coe,MulChar.coe_toMonoidHom,
       MulChar.pow_apply' _ (by decide : (2:ℕ) ≠ 0),MulChar.inv_apply_eq_inv']
     rfl
   · by_cases hj0 : j=0
     · subst j
-      rw [marked_local_phase _ _ _ _ _ _ he]
+      pm_7909 marked_local_phase he
       simp [frozenPrimeScalar,frozenCofactorCharacter,markedPrimeScalar,
         MulChar.pow_apply' _ (by decide : (2:ℕ) ≠ 0)]
     · rw [general_local_phase _ _ _ _ _ _ _ hs he j hj0 hj4]

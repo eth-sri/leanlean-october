@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.Primitive
 public import OAI.NumberTheory.DirichletL.Hecke.Strip
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology BigOperators
+open scoped Classical Topology
 open Set MeasureTheory
 namespace SevenEighths.HeckeStripActual
 open HeckeFamily HeckePrimitive
@@ -17,7 +18,7 @@ variable (c : O) [NeZero c]
 
 private instance : Fintype (O ⧸ Ideal.span {c}) := by
   letI : Finite (O ⧸ Ideal.span {c}) := Ring.HasFiniteQuotients.finiteQuotient
-    (by simpa only [ne_eq, Ideal.span_singleton_eq_bot] using NeZero.ne c)
+    (by aesop)
   exact Fintype.ofFinite _
 
 def conductor : ℝ := Ideal.absNorm (Ideal.span {c})
@@ -25,8 +26,7 @@ def conductor : ℝ := Ideal.absNorm (Ideal.span {c})
 theorem conductor_ge_one : 1 ≤ conductor c := by
   unfold conductor
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (show Ideal.absNorm (Ideal.span {c}) ≠ 0 by
-    rw [ne_eq, Ideal.absNorm_eq_zero_iff, Ideal.span_singleton_eq_bot]
-    exact NeZero.ne c)
+    aesop)
 
 theorem completionScale_eq_inv :
     HeckeStrip.completionScale (conductor c) = (Real.pi * scale c)⁻¹ := by
@@ -61,10 +61,7 @@ theorem LFunction_norm_le (η : Character) {σ : ℝ} (hσ : 1 < σ)
   have hs1 := hσ.trans_le hs
   rw [LFunction_eq_series η hs1, IdealEuler.series]
   have hsum := IdealEuler.weighted_summable_norm (idealCoeff η) (idealCoeff_norm_le_one η) s hs1
-  apply (norm_tsum_le_tsum_norm hsum).trans
-  apply Summable.tsum_le_tsum _ hsum
-    (CubicEisenstein.fullIdealWeight_summable_norm (σ : ℂ) (by simpa using hσ))
-  intro I
+  pm_1280
   change ‖idealCoeff η I * CubicEisenstein.fullIdealWeight s I‖ ≤ _
   rw [norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η I)).trans
@@ -79,11 +76,12 @@ theorem pair_strong (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   · apply HeckeCharacterAnalytic.coefficients_zero_of_nonprincipal
       (character c χ⁻¹ (inverse_unit_trivial c χ hu))
     change χ⁻¹ ≠ 1
-    simpa only [ne_eq, inv_eq_one] using hχ
+    simp_all
 
-theorem LFunction_eq_uncompleted (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ ≠ 1) (s : ℂ) :
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1) (hp : FiniteFourier.IsPrimitiveOnIdeals χ)
+include χ hu hp
+theorem LFunction_eq_uncompleted (hχ : χ ≠ 1) (s : ℂ) :
     LFunction (character c χ hu) s =
       (HeckeStrip.completionScale (conductor c) : ℂ)^(-s) * (Complex.Gamma s)⁻¹ *
         completedL c χ hu hp s := by
@@ -98,29 +96,25 @@ theorem LFunction_eq_uncompleted (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       Complex.differentiable_one_div_Gamma).mul hΛ
   have he : LFunction (character c χ hu) = fun z : ℂ => (a : ℂ)^(-z) *
       (Complex.Gamma z)⁻¹ * completedL c χ hu hp z := by
-    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr hL).eq_of_eventuallyEq
-      (Complex.analyticOnNhd_univ_iff_differentiable.mpr hR) (z₀ := (2 : ℂ))
-    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
-    have h0 : z ≠ 0 := by intro h; norm_num [h] at hz
-    have h1 : z ≠ 1 := by intro h; norm_num [h] at hz
+    pm_519 hL hR
+    pm_3124
+    pm_3137
     have hΓ : Complex.Gamma z ≠ 0 := Complex.Gamma_ne_zero_of_re_pos (by linarith)
     rw [completedL_eq_standard c χ hu hp h0 h1 hΓ]
-    have haz : (a : ℂ)^z ≠ 0 := (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [ha.ne'])
+    pm_6147 z ha.ne'
     change LFunction (character c χ hu) z = (a : ℂ)^(-z) * (Complex.Gamma z)⁻¹ *
       ((a : ℂ)^z * Complex.Gamma z * LFunction (character c χ hu) z)
     rw [Complex.cpow_neg]
     field_simp
-  exact congr_fun he s
+  grind
 
-theorem functional_equation_left (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (hs : s.re = -(1/10)) :
+theorem functional_equation_left {s : ℂ} (hs : s.re = -(1/10)) :
     LFunction (character c χ hu) s = TraceCharacter.normalizedGauss c χ *
       (HeckeStrip.completionScale (conductor c) : ℂ)^(1-2*s) *
       (Complex.Gamma (1-s) / Complex.Gamma s) *
         LFunction (character c χ⁻¹ (inverse_unit_trivial c χ hu)) (1-s) := by
-  have h0 : s ≠ 0 := by intro h; simp [h] at hs
-  have h1 : s ≠ 1 := by intro h; norm_num [h] at hs
+  pm_3256 h0 s h hs
+  pm_3117 h1 s hs
   have hs0 : 1-s ≠ 0 := sub_ne_zero.mpr (Ne.symm h1)
   have hs1 : 1-s ≠ 1 := by intro h; apply h0; linear_combination -h
   have hΓdual : Complex.Gamma (1-s) ≠ 0 := Complex.Gamma_ne_zero_of_re_pos (by simp [hs]; norm_num)
@@ -135,11 +129,9 @@ theorem functional_equation_left (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   let a := HeckeStrip.completionScale (conductor c)
   have ha : (a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr
     (HeckeStrip.completionScale_pos _ (lt_of_lt_of_le zero_lt_one (conductor_ge_one c))).ne'
-  have haz : (a : ℂ)^s ≠ 0 := (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [ha])
+  pm_6147 s ha
   have hpow : (a : ℂ)^(1-s) = (a : ℂ)^s * (a : ℂ)^(1-2*s) := by
-    rw [← Complex.cpow_add _ _ ha]
-    congr 1
-    ring
+    pm_8925 ha
   apply mul_left_cancel₀ (mul_ne_zero haz hΓ)
   calc
     _ = TraceCharacter.normalizedGauss c χ * ((a : ℂ)^(1-s) * Complex.Gamma (1-s) *
@@ -151,9 +143,7 @@ theorem functional_equation_left (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       rw [hpow]
       field_simp
 
-theorem LFunction_exp_growth (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ ≠ 1) :
+theorem LFunction_exp_growth (hχ : χ ≠ 1) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧ ∀ z ∈ HeckeStrip.strip,
       ‖LFunction (character c χ hu) z‖ ≤ A * Real.exp (B * |z.im|) := by
   let f : ℝ → ℂ := fun t => (pair c χ hu hp).f t / 6
@@ -172,9 +162,7 @@ theorem LFunction_exp_growth (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     rw [mellin_div_const, (hP.hasMellin z).2]
   simpa only [heq] using h
 
-theorem uniform_strip_bound (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ ≠ 1)
+theorem uniform_strip_bound (hχ : χ ≠ 1)
     (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
     ‖LFunction (character c χ hu) z‖ ≤
       36 * ((1 + HeckeStrip.leftConstant) * HeckeReciprocalBound.bound (11/10)) *
@@ -188,10 +176,9 @@ theorem uniform_strip_bound (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (LFunction_entire_nonprincipal (character c χ hu) hχ).diffContOnCl
     (LFunction_exp_growth c χ hu hp hχ) (fun _ hs => functional_equation_left c χ hu hp hs)
     _ _ z hz
-  · intro s hs
-    exact LFunction_norm_le _ (by norm_num : (1 : ℝ) < 11/10) hs.ge
-  · intro s hs
-    exact LFunction_norm_le _ (by norm_num : (1 : ℝ) < 11/10) hs.ge
+  pm_1552
+  pm_1552
+end
 
 end SevenEighths.HeckeStripActual
 

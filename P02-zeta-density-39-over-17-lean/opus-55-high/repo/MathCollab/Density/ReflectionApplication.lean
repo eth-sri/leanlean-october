@@ -1,14 +1,12 @@
 module
 public import MathCollab.Density.Packing
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Real Set
-open scoped BigOperators
+open Real
 
-set_option autoImplicit false
 
-noncomputable section
 namespace MathCollab.Density
 
 theorem localSet_localDiameter_le {H : ℝ} (hH : 1 ≤ H) (U : Finset ℝ) (j : ℤ) :
@@ -25,14 +23,14 @@ theorem reflection_recursive_scale {N : ℕ} {T L H : ℝ}
     (hN : 0 < N) (_hT : 0 ≤ T) (hNL : (N : ℝ) ≤ L) (hH : 0 < H) (hHT : H ≤ T)
     {M : ℕ} (hM : M ∈ reflectionBlocks L H) :
     (N : ℝ) ≤ (N : ℝ)*M ∧ (N : ℝ)*M ≤ 8*(T+1) := by
-  have hNp : (0 : ℝ) < N := by exact_mod_cast hN
+  pm_74 hNp N hN
   have hL : 0 < L := hNp.trans_le hNL
   obtain ⟨hMp, _, hMhi⟩ := reflectionBlock_scale_bounds hL hH hM
-  have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hMp
+  pm_77 hM1 M hMp
   refine ⟨by nlinarith, ?_⟩
   have hh := (le_div_iff₀ (by positivity : 0 < Real.pi*L)).1 hMhi
   have hi : (N : ℝ)*M*Real.pi ≤ 4*T := by
-    have hc := mul_le_mul_of_nonneg_right hNL (show 0 ≤ (M : ℝ)*Real.pi by positivity)
+    pm_7573 hc mul_le_mul_of_nonneg_right hNL M Real.pi
     nlinarith
   have hpi : 1 ≤ Real.pi := by linarith [Real.pi_gt_three]
   have hnm : 0 ≤ (N : ℝ)*M := by positivity
@@ -47,23 +45,20 @@ theorem reflection_scale_error_power {T L : ℝ} (hT : 2 ≤ T)
   have he : (T^(1/3 : ℝ))^(-318 : ℝ) = T^(-106 : ℝ) := by
     rw [← Real.rpow_mul hTp.le]
     norm_num
-  exact hh.trans_eq he
+  grind
 
 theorem reflection_error_specialization {T L r : ℝ} (hT : 2 ≤ T)
     (hL : T^(1/3 : ℝ) ≤ L) (hr : 0 ≤ r) (hrT : r ≤ T+1) :
     r^2*L^(-318 : ℝ) ≤ (9/4)*T^(-104 : ℝ) ∧
       r*L^(-318 : ℝ) ≤ (3/2)*T^(-105 : ℝ) := by
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hL
+  pm_438 hTp hLp L hL
   have hr' : r ≤ (3/2)*T := by linarith
   have hp := reflection_scale_error_power hT hL
   have he₂ : T^2*T^(-106 : ℝ) = T^(-104 : ℝ) := by
     rw [← Real.rpow_natCast, ← Real.rpow_add hTp]
     norm_num
   have he₁ : T*T^(-106 : ℝ) = T^(-105 : ℝ) := by
-    conv_lhs => lhs; rw [← Real.rpow_one T]
-    rw [← Real.rpow_add hTp]
-    norm_num
+    pm_5399 T hTp
   constructor
   · calc
       _ ≤ ((3/2)*T)^2*T^(-106 : ℝ) :=
@@ -87,8 +82,7 @@ theorem uniform_reflection_application (w : ReflectionCutoff) :
   obtain ⟨K, hK, hbound⟩ := uniform_reflection w (A := 160) (by norm_num)
   refine ⟨9*K^2, by positivity, ?_⟩
   intro T L H U hT hL hH hsep hdiam
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hL
+  pm_438 hTp hLp L hL
   have hc : (U.card : ℝ) ≤ T+1 := by
     have hh := separated_card_le_localDiameter hsep
     dsimp [localDiameter] at hh

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.PaddedPassage
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,85 +10,43 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 def kernelLiftedCutoff (χ : PositiveChartCutoff) (w : HyperbolicSpace) : ℝ :=
   χ.func (hyperbolicEuclideanCoordinates w)
 
-lemma kernelLiftedCutoff_continuous (χ : PositiveChartCutoff) : Continuous (kernelLiftedCutoff χ) :=
+section
+variable (χ : PositiveChartCutoff)
+include χ
+lemma kernelLiftedCutoff_continuous : Continuous (kernelLiftedCutoff χ) :=
   χ.smooth.continuous.comp hyperbolicEuclideanCoordinates_continuous
 
-lemma kernelLiftedCutoff_compact (χ : PositiveChartCutoff) : HasCompactSupport (kernelLiftedCutoff χ) := by
+lemma kernelLiftedCutoff_compact : HasCompactSupport (kernelLiftedCutoff χ) := by
   apply HasCompactSupport.of_support_subset_isCompact
     (χ.compact.image_of_continuousOn (fun p hp =>
       (euclideanToHyperbolic_contMDiffAt p (χ.positive hp)).continuousAt.continuousWithinAt))
@@ -95,13 +54,13 @@ lemma kernelLiftedCutoff_compact (χ : PositiveChartCutoff) : HasCompactSupport 
   refine ⟨hyperbolicEuclideanCoordinates w,?_,euclideanToHyperbolic_coordinates w⟩
   exact subset_tsupport χ.func hw
 
-lemma kernelLiftedCutoff_bounded (χ : PositiveChartCutoff) :
+lemma kernelLiftedCutoff_bounded :
     ∃C : ℝ,∀w,‖kernelLiftedCutoff χ w‖≤C := by
   obtain ⟨w,hw⟩ := (kernelLiftedCutoff_continuous χ).norm.exists_forall_ge_of_hasCompactSupport
     (kernelLiftedCutoff_compact χ).norm
-  exact ⟨_,hw⟩
+  aesop
 
-lemma kernelCutoffGradient_memLp (χ : PositiveChartCutoff) (g : KernelGradientL2) :
+lemma kernelCutoffGradient_memLp (g : KernelGradientL2) :
     MemLp (fun w => kernelLiftedCutoff χ w • g w) 2 KernelFundamentalVolume := by
   obtain ⟨C,hC⟩ := kernelLiftedCutoff_bounded χ
   have hm : AEStronglyMeasurable (fun w => kernelLiftedCutoff χ w • g w) KernelFundamentalVolume :=
@@ -110,6 +69,7 @@ lemma kernelCutoffGradient_memLp (χ : PositiveChartCutoff) (g : KernelGradientL
   change ‖kernelLiftedCutoff χ w • g w‖≤C*‖g w‖
   rw [norm_smul]
   exact mul_le_mul_of_nonneg_right (hC w) (norm_nonneg (g w))
+end
 
 def kernelCutoffGradient (χ : PositiveChartCutoff) (g : KernelGradientL2) : KernelGradientL2 :=
   (kernelCutoffGradient_memLp χ g).toLp (fun w => kernelLiftedCutoff χ w • g w)
@@ -125,12 +85,12 @@ def kernelCutoffGradientLinear (χ : PositiveChartCutoff) : KernelGradientL2 →
     filter_upwards [kernelCutoffGradient_coe χ (g+h),kernelCutoffGradient_coe χ g,
       kernelCutoffGradient_coe χ h,Lp.coeFn_add g h,
       Lp.coeFn_add (kernelCutoffGradient χ g) (kernelCutoffGradient χ h)] with w hgh hg hh ha ha'
-    simp only [hgh,ha',ha,Pi.add_apply,hg,hh,smul_add]
+    pm_545 hgh ha' ha Pi.add_apply hg hh smul_add
   map_smul' c g := by
     apply Lp.ext
     filter_upwards [kernelCutoffGradient_coe χ (c•g),kernelCutoffGradient_coe χ g,
       Lp.coeFn_smul c g,Lp.coeFn_smul c (kernelCutoffGradient χ g)] with w hcg hg ha ha'
-    simp only [RingHom.id_apply,hcg,ha',ha,Pi.smul_apply,hg]
+    pm_382 RingHom.id_apply hcg ha' ha Pi.smul_apply hg
     exact smul_comm _ _ _
 
 lemma kernelCutoffGradient_bound (χ : PositiveChartCutoff) :
@@ -156,7 +116,7 @@ lemma kernelCutoffGradient_norm_sq (χ : PositiveChartCutoff) (g : KernelGradien
     _ = _ := by
       apply integral_congr_ae
       filter_upwards [kernelCutoffGradient_coe χ g] with w hw
-      rw [hw,real_inner_self_eq_norm_sq,norm_smul,mul_pow,Real.norm_eq_abs,sq_abs]
+      pm_502 hw real_inner_self_eq_norm_sq norm_smul mul_pow Real.norm_eq_abs sq_abs
 
 lemma kernelCutoffGradient_core_norm_sq (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
     ‖kernelCutoffGradientCLM χ (kernelGradientToL2 f)‖^2=
@@ -189,18 +149,16 @@ lemma kernelLocalizedField_reverse_energy (χ : PositiveChartCutoff) (f : kernel
       (fderiv ℝ (kernelLocalizedField χ f) p (EuclideanSpace.basisFun (Fin 3) ℝ j))
       (- (fderiv ℝ χ.func p (EuclideanSpace.basisFun (Fin 3) ℝ j) • kernelTestField f p))
     rw [←sub_eq_add_neg,←he'] at hb
-    simpa only [norm_smul,norm_neg,mul_pow,Real.norm_eq_abs,sq_abs,mul_assoc] using hb
-  have hc := hyperbolicEuclideanCoordinates_toHyperbolic p hp
-  have hv : hyperbolicHeight (euclideanToHyperbolic p)=p 2 := congrArg (fun q : EuclideanSpatial => q 2) hc
-  rw [kernelTestEnergyDensity_eq_partials,hv]
-  simp only [kernelTestPartial,hc]
-  have hh := mul_le_mul_of_nonneg_left hsum (sq_nonneg (p 2))
+    pm_436 norm_smul norm_neg mul_pow Real.norm_eq_abs sq_abs mul_assoc hb
+  pm_3678
+  pm_326 kernelTestEnergyDensity_eq_partials hv kernelTestPartial hc
+  pm_7824
   unfold kernelLocalizedDensity
   nlinarith [mul_nonneg (sq_nonneg (p 2)) (sq_nonneg ‖kernelLocalizedField χ f p‖)]
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff ENNReal
+open scoped Classical Topology ContDiff ENNReal
 
 lemma kernelLocalizedDensity_nonneg (χ : PositiveChartCutoff) (f : kernelSmoothTests)
     (p : EuclideanSpatial) : 0≤kernelLocalizedDensity χ f p := by
@@ -211,8 +169,7 @@ lemma hyperbolicVolume_le_densityBound (S : Set EuclideanSpatial) (hS : Measurab
     (hpos : S⊆euclideanUpperHalf) (H : ℝ)
     (hH : ∀p∈S,((p 2)^3)⁻¹≤H) :
     hyperbolicEuclideanVolume.restrict S≤ENNReal.ofReal H • volume.restrict S := by
-  rw [hyperbolicEuclideanVolume,MeasureTheory.restrict_withDensity hS,
-    Measure.restrict_restrict hS,Set.inter_eq_left.mpr hpos]
+  pm_7529
   have hh : hyperbolicDensity≤ᵐ[volume.restrict S] (fun _ => ENNReal.ofReal H) := by
     filter_upwards [ae_restrict_mem hS] with p hp
     exact ENNReal.ofReal_le_ofReal (hH p hp)
@@ -255,22 +212,24 @@ private lemma integrable_sq_mul_of_compact (a b : HyperbolicSpace → ℝ)
     hc.comp_left (g := fun x : ℝ => x^2) (by simp)
   exact ((ha.pow 2).mul hb).integrable_of_hasCompactSupport hs.mul_right
 
-lemma kernelLiftedCutoffEnergy_integrable (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+section
+variable (χ : PositiveChartCutoff)
+include χ
+lemma kernelLiftedCutoffEnergy_integrable (f : kernelSmoothTests) :
     Integrable (fun w => (kernelLiftedCutoff χ w)^2*kernelTestEnergyDensity f w) hyperbolicVolume :=
   integrable_sq_mul_of_compact (kernelLiftedCutoff χ) (kernelTestEnergyDensity f)
     (kernelLiftedCutoff_continuous χ) (kernelTestEnergyDensity_continuous f)
     (kernelLiftedCutoff_compact χ)
 
-lemma kernelLiftedCutoffEnergy_integral (χ : PositiveChartCutoff) (f : kernelSmoothTests) :
+lemma kernelLiftedCutoffEnergy_integral (f : kernelSmoothTests) :
     (∫w,(kernelLiftedCutoff χ w)^2*kernelTestEnergyDensity f w∂hyperbolicVolume)=
       ∫p,(χ.func p)^2*kernelTestEnergyDensity f (euclideanToHyperbolic p)∂hyperbolicEuclideanVolume := by
   rw [hyperbolicVolume,integral_map euclideanToHyperbolic_measurable.aemeasurable
     (kernelLiftedCutoffEnergy_integrable χ f).aestronglyMeasurable]
   apply integral_congr_ae
-  filter_upwards [hyperbolicEuclideanVolume_ae_positive] with p hp
-  simp only [kernelLiftedCutoff,hyperbolicEuclideanCoordinates_toHyperbolic p hp]
+  pm_1478 kernelLiftedCutoff
 
-lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
+lemma kernelCutoffGradient_core_estimate
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func))
     (B D H : ℝ) (_hB : 0≤B) (hD : 0≤D) (hH : 0≤H)
     (hheight : ∀p∈tsupport χ.func,p 2≤B)
@@ -279,9 +238,8 @@ lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
     (hdensity : ∀p∈tsupport χ.func,((p 2)^3)⁻¹≤H)
     (f : kernelSmoothTests) :
     ‖kernelCutoffGradientCLM χ (kernelGradientToL2 f)‖^2≤
-      2*B^2*(H*‖kernelLocalizedH1 χ f‖^2+D*‖kernelSmoothTestsToL2 f‖^2) := by
-  let S := tsupport χ.func
-  have hS : MeasurableSet S := χ.compact.measurableSet
+      2*B^2*(H*‖kernelLocalizedH1 χ f‖^2+D *‖kernelSmoothTestsToL2 f‖^2) := by
+  pm_1367
   have hpos : S⊆euclideanUpperHalf := χ.positive
   have hmeasure := hyperbolicVolume_le_densityBound S hS hpos H hdensity
   have hloc : IntegrableOn (kernelLocalizedDensity χ f) S hyperbolicEuclideanVolume :=
@@ -296,8 +254,7 @@ lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
     have heq : (fun p => (kernelLiftedCutoff χ (euclideanToHyperbolic p))^2*
         kernelTestEnergyDensity f (euclideanToHyperbolic p))=ᵐ[hyperbolicEuclideanVolume]
         fun p => (χ.func p)^2*kernelTestEnergyDensity f (euclideanToHyperbolic p) := by
-      filter_upwards [hyperbolicEuclideanVolume_ae_positive] with p hp
-      simp only [kernelLiftedCutoff,hyperbolicEuclideanCoordinates_toHyperbolic p hp]
+      pm_1478 kernelLiftedCutoff
     exact (hh.congr heq).integrableOn
   have hlocBound : (∫p in S,kernelLocalizedDensity χ f p∂hyperbolicEuclideanVolume)≤
       H*‖kernelLocalizedH1 χ f‖^2 := by
@@ -317,11 +274,9 @@ lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
         (Eventually.of_forall (fun w => mul_nonneg (sq_nonneg _) (kernelTestEnergyDensity_nonneg f w)))
     _ = ∫p in S,(χ.func p)^2*kernelTestEnergyDensity f (euclideanToHyperbolic p)∂hyperbolicEuclideanVolume := by
       rw [kernelLiftedCutoffEnergy_integral]
-      apply (setIntegral_eq_integral_of_forall_compl_eq_zero _).symm
-      intro p hp
-      have hz := (notMem_tsupport_iff_eventuallyEq.mp hp).self_of_nhds
+      pm_6495
       simp only [hz,Pi.zero_apply,zero_pow (by decide : 2≠0),zero_mul]
-    _ ≤ ∫p in S,(2*B^2*kernelLocalizedDensity χ f p+2*B^2*D*‖kernelTestField f p‖^2)
+    _ ≤ ∫p in S,(2*B^2*kernelLocalizedDensity χ f p+2*B^2*D *‖kernelTestField f p‖^2)
         ∂hyperbolicEuclideanVolume := by
       apply setIntegral_mono_on hweight ((hloc.const_mul _).add (hmass.const_mul _)) hS
       intro p hp
@@ -329,46 +284,35 @@ lemma kernelCutoffGradient_core_estimate (χ : PositiveChartCutoff)
       simp only [Pi.add_apply]
       gcongr
       · exact kernelLocalizedDensity_nonneg _ _ _
-      · exact (hpos hp).le
-      · exact hheight p hp
-      · exact (hpos hp).le
-      · exact hheight p hp
+      pm_7786
+      pm_7786
       · exact hderiv p hp
     _ = 2*B^2*((∫p in S,kernelLocalizedDensity χ f p∂hyperbolicEuclideanVolume)+
-        D*(∫p in S,‖kernelTestField f p‖^2∂hyperbolicEuclideanVolume)) := by
+        D *(∫p in S,‖kernelTestField f p‖^2∂hyperbolicEuclideanVolume)) := by
       rw [integral_add (hloc.const_mul _) (hmass.const_mul _),integral_const_mul,integral_const_mul]
       ring
     _ ≤ _ := by
       gcongr
       exact kernelLocalMass_le S hS hpos hinj f
 
-lemma kernelCutoffGradient_core_bounded (χ : PositiveChartCutoff)
+lemma kernelCutoffGradient_core_bounded
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) :
     ∃C : ℝ,0≤C ∧ ∀f : kernelSmoothTests,
       ‖kernelCutoffGradientCLM χ (kernelGradientToL2 f)‖^2≤
         C*(‖kernelLocalizedH1 χ f‖^2+‖kernelSmoothTestsToL2 f‖^2) := by
-  have hgrad : Continuous (fun p : EuclideanSpatial =>
-      ∑j : Fin 3,‖fderiv ℝ χ.func p (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2) := by
-    apply continuous_finsetSum
-    intro j hj
-    exact (((χ.smooth.continuous_fderiv (by simp)).clm_apply continuous_const).norm.pow 2)
+  pm_3785
   have hrho : ContinuousOn (fun p : EuclideanSpatial => ((p 2)^3)⁻¹) (tsupport χ.func) :=
     (by fun_prop : Continuous (fun p : EuclideanSpatial => (p 2)^3)).continuousOn.inv₀
       (fun p hp => pow_ne_zero _ (ne_of_gt (χ.positive hp)))
-  obtain ⟨d,hd⟩ := χ.compact.bddAbove_image hgrad.continuousOn
-  obtain ⟨r,hr⟩ := χ.compact.bddAbove_image hrho
-  obtain ⟨b,hb⟩ := χ.compact.bddAbove_image (f := fun p : EuclideanSpatial => p 2) (by fun_prop)
-  let D := max 0 d
-  let H := max 0 r
+  pm_464 d hd χ.compact.bddAbove_image hgrad.continuousOn r hr hrho
+  pm_3786
+  pm_5307 D d H r
   let B := max 0 b
-  have hD : 0≤D := le_max_left _ _
-  have hH : 0≤H := le_max_left _ _
+  pm_4933 hD D le_max_left hH H
   have hB : 0≤B := le_max_left _ _
   have hheight : ∀p∈tsupport χ.func,p 2≤B := fun p hp =>
     (hb ⟨p,hp,rfl⟩).trans (le_max_right _ _)
-  have hderiv : ∀p∈tsupport χ.func,
-      (∑j : Fin 3,‖fderiv ℝ χ.func p (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2)≤D := fun p hp =>
-    (hd ⟨p,hp,rfl⟩).trans (le_max_right _ _)
+  pm_3787 hderiv
   have hdensity : ∀p∈tsupport χ.func,((p 2)^3)⁻¹≤H := fun p hp =>
     (hr ⟨p,hp,rfl⟩).trans (le_max_right _ _)
   refine ⟨2*B^2*(H+D),by positivity,fun f => ?_⟩
@@ -378,10 +322,10 @@ lemma kernelCutoffGradient_core_bounded (χ : PositiveChartCutoff)
   nlinarith [mul_nonneg hH (sq_nonneg ‖kernelSmoothTestsToL2 f‖),
     mul_nonneg hD (sq_nonneg ‖kernelLocalizedH1 χ f‖)]
 
-lemma kernelEnergyCutoffGradient_eq_zero (χ : PositiveChartCutoff)
+lemma kernelEnergyCutoffGradient_eq_zero
     (hinj : Set.InjOn kernelEuclideanProjection (tsupport χ.func)) (u : KernelEnergyGraph)
     (hu : kernelEnergyMass u=0) : kernelCutoffGradientCLM χ (kernelEnergyGradient u)=0 := by
-  obtain ⟨C,hC,hbound⟩ := kernelCutoffGradient_core_bounded χ hinj
+  pm_69 C hC hbound kernelCutoffGradient_core_bounded χ hinj
   have hh : ‖kernelCutoffGradientCLM χ (kernelEnergyGradient u)‖^2≤
       C*(‖kernelEnergyLocalize χ u‖^2+‖kernelEnergyMass u‖^2) :=
     kernelEnergyGraphCore_dense.induction_on u (isClosed_le (by fun_prop) (by fun_prop))
@@ -390,6 +334,7 @@ lemma kernelEnergyCutoffGradient_eq_zero (χ : PositiveChartCutoff)
   rw [kernelEnergyLocalize_eq_zero_of_mass_zero χ hinj u hu,hu] at hh
   have hz : ‖kernelCutoffGradientCLM χ (kernelEnergyGradient u)‖=0 := by simpa using hh
   exact norm_eq_zero.mp hz
+end
 
 lemma kernelCutoffGradient_faithful (g : KernelGradientL2)
     (hg : ∀χ : PositiveChartCutoff,
@@ -406,7 +351,7 @@ lemma kernelCutoffGradient_faithful (g : KernelGradientL2)
     change χ.func (hyperbolicEuclideanCoordinates w)≠0
     rw [hχ]
     norm_num
-  obtain ⟨r,hr,hcov⟩ := isLindelof_univ.elim_countable_subcover U hU hcover
+  pm_114 r hr hcov isLindelof_univ.elim_countable_subcover U hU hcover
   let : Countable r := hr.to_subtype
   have heach (χ : Cutoff) : ∀ᵐw∂KernelFundamentalVolume,kernelLiftedCutoff χ.1 w • g w=0 := by
     have hzero := hg χ.1 χ.2
@@ -433,14 +378,11 @@ theorem kernelEnergyMass_eq_zero (u : KernelEnergyGraph) (hu : kernelEnergyMass 
     kernelCutoffGradient_faithful _ (fun χ hinj => kernelEnergyCutoffGradient_eq_zero χ hinj u hu)
   apply norm_eq_zero.mp
   have hn := kernelEnergyGraph_norm_sq u
-  simp only [hu,hgrad,norm_zero,zero_pow (by decide : 2≠0),add_zero] at hn
+  pm_8817 hu hgrad add_zero hn
   nlinarith [norm_nonneg u]
 
 theorem kernelEnergyMass_injective : Function.Injective kernelEnergyMass := by
-  intro u v huv
-  apply sub_eq_zero.mp
-  apply kernelEnergyMass_eq_zero
-  rw [map_sub,huv,sub_self]
+  pm_7696 kernelEnergyMass_eq_zero
 
 def kernelWeakGradient : KernelQuotientL2 →ₗ.[ℂ] KernelGradientL2 := kernelInitialGradient.closure
 
@@ -448,7 +390,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff InnerProductSpace
+open scoped Classical Topology ContDiff InnerProductSpace
 
 lemma kernelEnergyGraph_inner (u v : KernelEnergyGraph) :
     inner ℂ u v=inner ℂ (kernelEnergyMass u) (kernelEnergyMass v)+
@@ -496,8 +438,7 @@ lemma kernelVariationalResolvent_injective : Function.Injective kernelVariationa
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical Topology InnerProductSpace
 
 def kernelLaplacianEquation : (KernelQuotientL2 × KernelQuotientL2) →L[ℂ] KernelQuotientL2 :=
   kernelVariationalResolvent.comp ((ContinuousLinearMap.fst ℂ KernelQuotientL2 KernelQuotientL2)+

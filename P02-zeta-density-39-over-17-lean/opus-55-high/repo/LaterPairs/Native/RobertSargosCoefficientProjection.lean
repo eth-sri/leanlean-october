@@ -15,8 +15,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
+section
+variable (S : Finset RobertSargosPoint) {R H Q δ : ℝ}
+include S R H Q δ
 theorem robertSargos_coefficient_image_card_le_box
-    (S : Finset RobertSargosPoint) {R H Q δ : ℝ}
     (hR : 0 ≤ R) (hH : 0 ≤ H)
     (hmem : ∀ p ∈ S, RobertSargosPrimitiveSystem R H Q δ p) :
     ((S.image robertSargosCoefficientKey).card:ℝ) ≤ (2*R+1)*(H+1)^2 := by
@@ -31,12 +33,9 @@ theorem robertSargos_coefficient_image_card_le_box
     (fun z hz => by
       obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hz
       exact (hmem p hp).h₂_support)
-  calc
-    _ ≤ (R-(-R)+1)*(2*H-H+1)*(2*H-H+1) := hb
-    _ = _ := by ring
+  grind
 
 theorem robertSargos_coefficient_image_card_le
-    (S : Finset RobertSargosPoint) {R H Q δ : ℝ}
     (hR : 1 ≤ R) (hH : 1 ≤ H)
     (hmem : ∀ p ∈ S, RobertSargosPrimitiveSystem R H Q δ p) :
     ((S.image robertSargosCoefficientKey).card:ℝ) ≤ 12*R*H^2 := by
@@ -46,6 +45,7 @@ theorem robertSargos_coefficient_image_card_le
     _ ≤ (2*R+1)*(H+1)^2 := hb
     _ ≤ (3*R)*(2*H)^2 := mul_le_mul (by linarith) hsq (sq_nonneg _) (by linarith)
     _ = _ := by ring
+end
 
 end TaoTrudgianYang2025
 

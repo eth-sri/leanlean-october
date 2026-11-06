@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,22 +14,23 @@ lemma logSource_support (Ω V T : ℝ → ℂ) (A B C : ℝ) :
     tsupport (logSourceFun Ω V T A B C) ⊆ tsupport Ω :=
   tsupport_mul_subset_left.trans (tsupport_mul_subset_left.trans tsupport_mul_subset_left)
 
-theorem logSource_window_derivatives (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
-    (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
-    (L : ℝ) (hL : 0 ≤ L) (K : ℕ) :
+section
+variable (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ) (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω) (L : ℝ) (hL : 0 ≤ L)
+include Ω V T hΩc hΩ L hL
+theorem logSource_window_derivatives (K : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ A B D : ℝ, 0 ≤ A → 0 ≤ B → 0 ≤ D →
       ∀ j ≤ K, ∀ y : ℝ, |y| ≤ L →
       ‖iteratedFDeriv ℝ j (logSourceFun Ω V T A B D) y‖ ≤ C := by
-  obtain ⟨CΩ,hCΩ,hbΩ⟩ := hΩc.exists_bound_iteratedFDeriv hΩ K
-  obtain ⟨CV,hCV,hbV⟩ := scaled_schwartz_derivatives V L hL K
-  obtain ⟨CT,hCT,hbT⟩ := scaled_schwartz_derivatives T L hL K
-  obtain ⟨CE,hCE,hbE⟩ := scaled_expNeg_derivatives L hL K
+  pm_69 CΩ hCΩ hbΩ hΩc.exists_bound_iteratedFDeriv hΩ K
+  pm_97 CV hCV hbV scaled_schwartz_derivatives V L hL K
+  pm_97 CT hCT hbT scaled_schwartz_derivatives T L hL K
+  pm_114 CE hCE hbE scaled_expNeg_derivatives L hL K
   let P := (2 : ℝ)^K
   refine ⟨P*(P*(P*CΩ*(1+CV))*CE)*CT,by dsimp [P]; positivity,?_⟩
   intro A B D hA hB hD j hj y hy
-  let v : ℝ → ℂ := fun z => V (A*Real.exp z)
-  let e : ℝ → ℂ := fun z => expNeg (B*Real.exp z)
-  let t : ℝ → ℂ := fun z => T (D*Real.exp z)
+  pm_6111 v V A
+  pm_6111 e expNeg B
+  pm_6111 t T D
   have hv : ContDiff ℝ ∞ v := (V.smooth ⊤).comp (by fun_prop)
   have he : ContDiff ℝ ∞ e := expNeg_smooth.comp (by fun_prop)
   have ht : ContDiff ℝ ∞ t := (T.smooth ⊤).comp (by fun_prop)
@@ -46,9 +48,7 @@ theorem logSource_window_derivatives (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ �
   exact product_derivative_bound _ t ((hΩ.mul hcv).mul he) ht _ CT
     (by dsimp [P]; positivity) hCT K j hj y hsecond (fun q hq => hbT D hD q hq y hy)
 
-theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
-    (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
-    (L : ℝ) (hL : 0 ≤ L) (hwindow : tsupport Ω ⊆ Set.Icc (-L) L) (K : ℕ) :
+theorem logSource_uniform_seminorm (hwindow : tsupport Ω ⊆ Set.Icc (-L) L) (K : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ A B D : ℝ, 0 ≤ A → 0 ≤ B → 0 ≤ D →
       ∀ k j : ℕ, j ≤ K →
       SchwartzMap.seminorm ℝ k j (logSource Ω V T hΩc hΩ (V.smooth ⊤) (T.smooth ⊤) A B D)
@@ -56,7 +56,7 @@ theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ
   obtain ⟨C,hC,hb⟩ := logSource_window_derivatives Ω V T hΩc hΩ L hL K
   refine ⟨C,hC,?_⟩
   intro A B D hA hB hD k j hj
-  apply SchwartzMap.seminorm_le_bound' ℝ k j _ (by positivity)
+  pm_7088 j
   intro y
   change ‖y‖^k*‖iteratedDeriv j (logSourceFun Ω V T A B D) y‖ ≤ L^k*C
   rw [← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
@@ -67,6 +67,7 @@ theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ
   have hy : |y| ≤ L := abs_le.mpr (hwindow hys)
   exact mul_le_mul (by simpa [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg y) hy k)
     (hb A B D hA hB hD j hj y hy) (norm_nonneg _) (pow_nonneg hL k)
+end
 
 end
 end SevenEighths.HeckeDetectorProfiles

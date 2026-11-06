@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralProduct
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedBin
 public import OAI.NumberTheory.DirichletL.PrimeRows.DiskControl
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,15 +33,15 @@ lemma centralRowScalar_split (S : Finset (Ideal O)) (hS : SourceExclusions S)
 theorem centralRemainingScalar_bound (e eps : ℝ)
     (he : 0<e) (he' : e<1/1000) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀(S : Finset (Ideal O)) (hS : SourceExclusions S),FirstTail (4*e) S →
-      ∀(η : Character) (u : FreeRow) {ι : Type*} [Fintype ι] (ψ : ι→Character)
+      ∀(η : Character) (u : FreeRow) {ι : Type*} [Fintype ι] (ψ : ι→ Character)
       (B a H : ℝ) (i : ℕ),2<B → 51/100≤a → a≤1 → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
       ∀x w z : ℂ,x.re=a+16*e → w.re=1-a-6*e → z.re=17/50 → |x.im|≤H →
       ‖centralRemainingScalar S hS η u x w z‖≤C*
         ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps*
         (presentationComplexity ((targetRow η u).excludePrimes S hS.prime) H)^eps := by
-  obtain ⟨Ch,hCh,hh⟩ := continuedCorrection_first_subpower eps heps
-  obtain ⟨Cr,hCr,hr⟩ := buffered_rectangle_reciprocal_bound e eps he he' heps
+  pm_69 Ch hCh hh continuedCorrection_first_subpower eps heps
+  pm_3547 Cr hCr hr buffered_rectangle_reciprocal_bound e eps he he' heps
   let L : ℝ := HeckeReciprocalBound.bound 2
   have hL : 0≤L := by dsimp [L,HeckeReciprocalBound.bound];positivity
   refine ⟨(L+1)*Cr*Ch,by positivity,?_⟩

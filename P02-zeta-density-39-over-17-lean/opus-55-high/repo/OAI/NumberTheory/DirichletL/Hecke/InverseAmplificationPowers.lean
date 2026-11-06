@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,9 +12,7 @@ namespace SevenEighths.HeckeInverseAmplification
 theorem amplified_norm_power (U A b p : ℝ) (hU : 0<U) :
     U*(b*(A*U^p))^6=(b*A)^6*U^(1+6*p) := by
   have h6 : (U^p)^6=U^(6*p) := by
-    rw [←Real.rpow_natCast,←Real.rpow_mul hU.le]
-    congr 1
-    norm_num
+    pm_1217 hU.le
     ring
   calc
     _ = (b*A)^6*(U^(1 : ℝ)*U^(6*p)) := by
@@ -34,7 +33,7 @@ theorem amplified_energy_power (U A b p r κ : ℝ) (hU : 0<U) :
         ((U^(1+6*p)*U^((1+6*p+r)*κ))/U^p) := by ring
     _ = ((b*A)^6*((b*A)^6)^κ/A)*U^((1+6*p)+(1+6*p+r)*κ-p) := by
       rw [←Real.rpow_add hU,←Real.rpow_sub hU]
-    _ = _ := by congr 2; ring
+    _ = _ := by grind
 
 theorem fixed_multiplier_lower (U A p : ℝ) (hU : 1≤U) (hA : 0≤A) (hp : 0≤p) :
     A≤A*U^p := by

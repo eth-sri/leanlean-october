@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedPhysical
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyToSecond
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -52,7 +53,7 @@ theorem retained_physical_row_support (b : CubeCoordinates ι) (x : Ideal O×O) 
 
 theorem retained_cube_energy_to_second (ε : ℝ) (hε : 0<ε) :
     ∃ K : ℝ,0<K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -79,7 +80,7 @@ theorem retained_cube_energy_to_second (ε : ℝ) (hε : 0<ε) :
           ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative Ψ m D core‖ *
           (firstFreshSecondPoisson p hp hg hinj F D b.support (fun i=>b.leftExponent i+b.rightExponent i)
             b.leftBit b.rightBit negative (if negative then r.1 else r.2) Ψ m Hshift ω X (∏i∈C,p i) d core t Y).re) := by
-  obtain ⟨K,hK,hstep⟩ := first_family_original_to_second ε hε
+  pm_69 K hK hstep first_family_original_to_second ε hε
   refine ⟨K,hK,?_⟩
   intro ι _ p hp _ hinj hcop hg hc hpr F b C Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂ d a source Γ Y hΓ hY
     hs hn ha hcut negative H selector ω X t hX Ψ m Hshift w

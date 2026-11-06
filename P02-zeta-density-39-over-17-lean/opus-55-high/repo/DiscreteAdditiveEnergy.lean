@@ -1,5 +1,6 @@
 module
 public import SmallGcdCubicEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ theorem discrete_energy_absorb {E A B V : ℝ} (hE : 0 ≤ E) (hV : 0 < V)
     ring
   have hy : 2*A*Real.sqrt E*V^2 ≤ E*V^4+A^2 := by
     have hh := sq_nonneg (V^2*Real.sqrt E-A)
-    nlinarith [he]
+    grind
   have hh := mul_le_mul_of_nonneg_right h (sq_nonneg V)
   have hb : E*V^4 ≤ A^2+2*B*V^2 := by nlinarith
   calc
@@ -38,13 +39,12 @@ theorem discrete_additive_energy_two_term {K : ℕ} (hK : 1 ≤ K)
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (discreteAdditiveEnergy W:ℝ) ≤
         C*T^η*(N^4*(W.card:ℝ)/V^4+N*(W.card:ℝ)^3/V^2) := by
-  obtain ⟨C₀,hC₀,hreduction⟩ := discrete_energy_small_gcd_reduction hK hη
+  pm_69 C₀ hC₀ hreduction discrete_energy_small_gcd_reduction hK hη
   obtain ⟨C₁,hC₁,hsmall⟩ := small_gcd_cubic_sum
   refine ⟨(C₀*C₁)^2+2*C₀,by positivity,?_⟩
-  intro T t₀ N hT hN hNT a W V hR hNR ha hV hlarge hW hsep
-  have hTp : 0 < T := by linarith
+  pm_7049 hNR hlarge hTp
   have hr := hreduction T t₀ N hT hN hNT a W V hR hNR ha hV.le hlarge hW hsep
-  have hs := hsmall T t₀ N hT hN W hW hsep
+  pm_528 hs hsmall T t₀ N hT hN W hW hsep
   have hh : (discreteAdditiveEnergy W:ℝ)*V^2 ≤
       (C₀*C₁*N^2*Real.sqrt (W.card:ℝ))*Real.sqrt (discreteAdditiveEnergy W:ℝ)+
         C₀*T^η*N*(W.card:ℝ)^3 := by
@@ -55,7 +55,7 @@ theorem discrete_additive_energy_two_term {K : ℕ} (hK : 1 ≤ K)
     rw [mul_pow,mul_pow,Real.sq_sqrt (Nat.cast_nonneg W.card)]
     ring
   rw [hid] at hb
-  have hpow : 1 ≤ T^η := Real.one_le_rpow hT.le hη.le
+  pm_153 hpow T η hT.le hη.le
   calc
     _ ≤ (C₀*C₁)^2*N^4*(W.card:ℝ)/V^4+2*(C₀*T^η*N*(W.card:ℝ)^3)/V^2 := hb
     _ ≤ (C₀*C₁)^2*T^η*N^4*(W.card:ℝ)/V^4+2*(C₀*T^η*N*(W.card:ℝ)^3)/V^2 := by

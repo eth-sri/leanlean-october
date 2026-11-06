@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationFamily
 public import OAI.NumberTheory.DirichletL.Moments.SourceSmoothedAllocation
 public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,27 +28,27 @@ theorem amplification_family_energy (η : Character) (m p : O) (k : ℕ)
     (Q : Finset (Ideal O)) (C : Ideal O) (hC : C≠0) (β : Ideal O → ℂ) (t : ℝ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
     (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
-    (sourceGaussEnergy Q (fun I => β (C*I)*rowWeight η m 1 1 t (C*I))
-      (fun I => residualCharacter p k (primaryGenerator I)) W K).re≤
+    (sourceGaussEnergy Q (fun I=> β (C*I)*rowWeight η m 1 1 t (C*I))
+      (fun I=> residualCharacter p k (primaryGenerator I)) W K).re≤
       16*∑ χ : RayCharacter,
-        (sourceGaussEnergy Q (fun I => β (C*I)) (heightCoeff (τ χ) t) W K).re := by
+        (sourceGaussEnergy Q (fun I=> β (C*I)) (heightCoeff (τ χ) t) W K).re := by
   let b : RayCharacter → ℂ := fun χ => rowWeight η m 1 1 t C*phaseCoeff (amplificationPhase p k) χ
-  let d : RayCharacter → supportedColumns Q → ℂ := fun χ I => β (C*I)*heightCoeff (τ χ) t I
+  let d : RayCharacter → supportedColumns Q → ℂ := fun χ I=> β (C*I)*heightCoeff (τ χ) t I
   have he (I : supportedColumns Q) :
       (β (C*I)*rowWeight η m 1 1 t (C*I))*residualCharacter p k (primaryGenerator I)=
         ∑ χ,b χ*d χ I := by
     rw [original_column_family η m p k τ hτ C I (Finset.mem_filter.mp I.property).2 β t,Finset.mul_sum]
-    simp only [b,d,mul_assoc]
+    grind
   have hb (χ : RayCharacter) : ‖b χ‖≤1 := by
     dsimp only [b]
     rw [norm_mul]
     exact (mul_le_of_le_one_left (norm_nonneg _)
       (CenteredMomentFirstTailAggregate.rowWeight_norm_le_one η m 1 1 t C hC)).trans
       (phaseCoeff_norm_le _ 1 (fun u => amplificationPhase_norm p k u) χ)
-  have hd (χ : RayCharacter) : 0≤(sourceGaussEnergy Q (fun I => β (C*I)) (heightCoeff (τ χ) t) W K).re :=
+  have hd (χ : RayCharacter) : 0≤(sourceGaussEnergy Q (fun I=> β (C*I)) (heightCoeff (τ χ) t) W K).re :=
     sourceGaussEnergy_nonneg _ _ _ W K hK hW
-  have hh := smoothed_allocation_energy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) b d W K hK hW
-  change (gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) _ W K).re≤_
+  pm_6872 hh
+  pm_6046
   rw [funext he]
   apply hh.trans
   apply mul_le_mul

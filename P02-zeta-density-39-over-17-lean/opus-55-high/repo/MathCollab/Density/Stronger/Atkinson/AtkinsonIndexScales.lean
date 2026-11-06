@@ -7,6 +7,7 @@ See ../../../../../third_party/twelfth/ATKINSON_PREFIX_MANIFEST.json
 and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,6 @@ hidden.
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- Literal lower slope used in the dyadic curvature estimate. -/
@@ -54,20 +54,20 @@ def atkinsonIndexBoxCurvatureLower (u A B : ℝ) : ℝ :=
 def atkinsonIndexBoxCurvatureUpper (u A B : ℝ) : ℝ :=
   Real.pi / (A ^ (2 : ℕ) * atkinsonIndexSlopeLower u B)
 
-theorem atkinsonIndexSlopeLower_pos
-    {u x : ℝ} (hu : 0 < u) (hx : 0 < x) :
+section
+variable {u x : ℝ} (hu : 0 < u) (hx : 0 < x)
+include u x hu hx
+theorem atkinsonIndexSlopeLower_pos :
     0 < atkinsonIndexSlopeLower u x := by
   unfold atkinsonIndexSlopeLower
-  exact Real.sqrt_pos.2 (div_pos (mul_pos (mul_pos (by norm_num) Real.pi_pos) hu) hx)
+  positivity
 
-theorem atkinsonIndexSlopeUpper_pos
-    {u x : ℝ} (hu : 0 < u) (hx : 0 < x) :
+theorem atkinsonIndexSlopeUpper_pos :
     0 < atkinsonIndexSlopeUpper u x := by
   unfold atkinsonIndexSlopeUpper
   apply Real.sqrt_pos.2
-  exact div_pos
-    (mul_pos (add_pos (mul_pos (by norm_num) Real.pi_pos)
-      (sq_pos_of_pos Real.pi_pos)) (mul_pos (by norm_num) hu)) hx
+  positivity
+end
 
 /-- Lower radical comparison on the source dyadic box. -/
 theorem atkinsonIndexSlopeLower_le
@@ -114,7 +114,7 @@ theorem atkinsonIndexSlopeLower_anti
       atkinsonIndexSlopeLower u x := by
   unfold atkinsonIndexSlopeLower
   apply Real.sqrt_le_sqrt
-  have hnum : 0 ≤ 2 * Real.pi * u := by positivity
+  pm_530 hnum Real.pi u
   exact div_le_div_of_nonneg_left hnum hx hxB
 
 /-- Uniformize the pointwise curvature bounds on a closed index box. -/
@@ -174,12 +174,7 @@ theorem atkinsonIndexCurvatureDerivative_bounds
   have hspos := atkinsonIndexRealSlope_pos hc hx
   have hslow := atkinsonIndexSlopeLower_le hx huc
   have hsup := atkinsonIndexSlope_le_upper hu hx hxu hcu
-  have hsquare :
-      (atkinsonIndexRealSlope c x) ^ 2 =
-        2 * Real.pi * c / x + Real.pi ^ (2 : ℕ) := by
-    unfold atkinsonIndexRealSlope
-    rw [Real.sq_sqrt]
-    positivity
+  pm_1227 c
   have hhalf :
       (atkinsonIndexRealSlope c x) ^ 2 / 2 ≤
         Real.pi * c / x + Real.pi ^ (2 : ℕ) := by
@@ -218,8 +213,7 @@ theorem atkinsonIndexCurvatureDerivative_bounds
     refine hrecip.trans ?_
     have hmul := mul_le_mul_of_nonneg_left hhalf
       (div_nonneg Real.pi_nonneg (sq_nonneg x))
-    have hpow : 0 < (atkinsonIndexRealSlope c x) ^ (3 : ℕ) := by
-      positivity
+    pm_6086
     calc
       Real.pi / (2 * x ^ (2 : ℕ) * atkinsonIndexRealSlope c x) =
           (Real.pi / x ^ (2 : ℕ)) *
@@ -232,8 +226,7 @@ theorem atkinsonIndexCurvatureDerivative_bounds
         exact div_le_div_of_nonneg_right hmul hpow.le
   · have hmul := mul_le_mul_of_nonneg_left hwhole
       (div_nonneg Real.pi_nonneg (sq_nonneg x))
-    have hpow : 0 < (atkinsonIndexRealSlope c x) ^ (3 : ℕ) := by
-      positivity
+    pm_6086
     have hfirst :
         (Real.pi / x ^ (2 : ℕ)) *
             (Real.pi * c / x + Real.pi ^ (2 : ℕ)) /

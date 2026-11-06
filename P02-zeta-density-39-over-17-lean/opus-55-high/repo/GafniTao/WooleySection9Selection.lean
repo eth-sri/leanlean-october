@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleySection9Arithmetic
 public import Mathlib.Analysis.MeanInequalities
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,6 @@ an unspecified maximum.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -33,19 +33,21 @@ theorem wooleyGradeRange_card (r : ℕ) :
     (wooleyGradeRange r).card = r := by
   simp [wooleyGradeRange]
 
-theorem wooleyGradeRange_nonempty {r : ℕ} (hr : 1 ≤ r) :
+section
+variable {r : ℕ} (hr : 1 ≤ r)
+include r hr
+theorem wooleyGradeRange_nonempty :
     (wooleyGradeRange r).Nonempty := by
   refine ⟨1, ?_⟩
   simp only [wooleyGradeRange, mem_Icc, le_refl, true_and]
   exact hr
 
 /-- Equal-weight AM--GM on the source grade interval. -/
-theorem wooley_grade_geometric_le_average
-    {r : ℕ} (hr : 1 ≤ r) (Y : ℕ → ℝ)
+theorem wooley_grade_geometric_le_average (Y : ℕ → ℝ)
     (hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j) :
     ∏ j ∈ wooleyGradeRange r, (Y j) ^ (1 / (r : ℝ)) ≤
       (1 / (r : ℝ)) * ∑ j ∈ wooleyGradeRange r, Y j := by
-  have hrR : (0 : ℝ) < r := by exact_mod_cast (show 0 < r by omega)
+  pm_2847 hrR r
   have hweights :
       ∑ _j ∈ wooleyGradeRange r, (1 / (r : ℝ)) = 1 := by
     rw [sum_const, wooleyGradeRange_card, nsmul_eq_mul]
@@ -57,8 +59,7 @@ theorem wooley_grade_geometric_le_average
   simpa only [one_div, Finset.mul_sum] using hamgm
 
 /-- Some actual grade dominates the equal-weight geometric mean. -/
-theorem exists_wooley_grade_ge_geometric
-    {r : ℕ} (hr : 1 ≤ r) (Y : ℕ → ℝ)
+theorem exists_wooley_grade_ge_geometric (Y : ℕ → ℝ)
     (hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j) :
     ∃ j ∈ wooleyGradeRange r,
       ∏ i ∈ wooleyGradeRange r, (Y i) ^ (1 / (r : ℝ)) ≤ Y j := by
@@ -69,15 +70,16 @@ theorem exists_wooley_grade_ge_geometric
         ∑ j ∈ wooleyGradeRange r, Y j := by
     rw [sum_const, wooleyGradeRange_card, nsmul_eq_mul]
     dsimp [S]
-    have hrR : (r : ℝ) ≠ 0 := by positivity
+    pm_392 hrR r
     field_simp
     exact le_rfl
   obtain ⟨j, hj, hjdom⟩ :=
     Finset.exists_le_of_sum_le (wooleyGradeRange_nonempty hr) hsum
   refine ⟨j, hj, havg.trans ?_⟩
-  have hrR : (0 : ℝ) < r := by exact_mod_cast (show 0 < r by omega)
+  pm_91 hrR r
   dsimp [S] at hjdom ⊢
-  simpa only [one_div, inv_mul_eq_div] using hjdom
+  grind
+end
 
 /-- Source form of the elementary inequality used in Lemma 9.2, with
 `Y_j = X_j ^ rho_j`. -/
@@ -91,7 +93,7 @@ theorem exists_wooley_grade_for_weighted_product
   let Y : ℕ → ℝ := fun j => (X j) ^ wooleyRho k j
   have hY : ∀ j ∈ wooleyGradeRange r, 0 ≤ Y j :=
     fun j _ => Real.rpow_nonneg (hX j ‹_›) _
-  obtain ⟨j, hj, hgeom⟩ := exists_wooley_grade_ge_geometric hr Y hY
+  pm_837 j hj hgeom exists_wooley_grade_ge_geometric hr Y hY
   refine ⟨j, hj, ?_⟩
   rw [show (X j) ^ wooleyRho k j = Y j by rfl]
   calc
@@ -119,15 +121,15 @@ theorem wooley_section9_decay_exponent
     (((r + 1) * k ^ 2 * nu : ℕ) : ℝ) -
         (b : ℝ) * ((1 - 1 / (k : ℝ)) * Lambda / (r : ℝ)) ≤
       -(b : ℝ) * Lambda / (2 * (k : ℝ)) := by
-  have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hrR : (1 : ℝ) ≤ r := by exact_mod_cast hr
+  pm_2797
+  pm_77 hrR r hr
   have hkOne : 1 ≤ k := by omega
   have hrkR : (r : ℝ) ≤ (k : ℝ) - 1 := by
     calc
       (r : ℝ) ≤ ((k - 1 : ℕ) : ℝ) := by exact_mod_cast hrk
       _ = (k : ℝ) - 1 := by rw [Nat.cast_sub hkOne]; norm_num
-  have hkpos : (0 : ℝ) < k := by positivity
-  have hrpos : (0 : ℝ) < r := by positivity
+  pm_117 hkpos k
+  pm_117 hrpos r
   have hweight :
       1 / (k : ℝ) ≤ (1 - 1 / (k : ℝ)) / (r : ℝ) := by
     rw [div_le_div_iff₀ hkpos hrpos]
@@ -166,7 +168,7 @@ theorem wooley_section9_loss_absorption
         (p : ℝ) ^
           (-(b : ℝ) * ((1 - 1 / (k : ℝ)) * Lambda / (r : ℝ))) ≤
       (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) := by
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
+  pm_2786
   rw [← Real.rpow_add hpR]
   apply Real.rpow_le_rpow_of_exponent_le
     (by exact_mod_cast (show 1 ≤ p by omega))

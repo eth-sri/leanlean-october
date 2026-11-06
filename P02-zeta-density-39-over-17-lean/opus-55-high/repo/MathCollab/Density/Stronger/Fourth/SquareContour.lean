@@ -10,6 +10,7 @@ No global-order, Hadamard, Architect, or upstream project module is imported.
 public import MathCollab.Density.Stronger.Fourth.SquareGrowth
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,6 @@ open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -29,7 +29,7 @@ theorem norm_hughesYoungAuxiliaryZero_le_polynomial
   have hbase : ‖1 - 4 * w ^ 2‖ ≤ 1 + 4 * R ^ 2 := by
     calc
       ‖1 - 4 * w ^ 2‖ ≤ ‖(1 : ℂ)‖ + ‖4 * w ^ 2‖ := norm_sub_le _ _
-      _ = 1 + 4 * ‖w‖ ^ 2 := by simp [norm_pow]
+      _ = 1 + 4 * ‖w‖ ^ 2 := by simp_all
       _ ≤ 1 + 4 * R ^ 2 := by nlinarith
   have hbaseCoarse : 1 + 4 * R ^ 2 ≤ 5 * R ^ 2 := by
     nlinarith [sq_nonneg R]
@@ -58,7 +58,7 @@ theorem exists_zetaSquareNumerator_strip_gaussian (t c : ℝ) (hc : 0 ≤ c) :
   refine ⟨Real.exp (100*c^2)*625*C^2*A^14/‖zetaSquarePoleNormalization t‖,
     by positivity, ?_⟩
   intro x u hx
-  let w : ℂ := (x : ℂ)+(u : ℂ)*I
+  pm_5103 w x u I
   let R : ℝ := A*(1+|u|)
   have hR : 1 ≤ R := one_le_mul_of_one_le_of_one_le hA (by linarith [abs_nonneg u])
   have hwn : ‖w‖ ≤ R := by
@@ -171,26 +171,29 @@ theorem norm_zetaSquareContour_le_of_lower
 /-- Absolute integrability of the full actual-zeta contour on any positive vertical line. -/
 theorem integrable_zetaSquareContour_vertical (t : ℝ) {c : ℝ} (hc : 0 < c) :
     Integrable (fun u : ℝ => zetaSquareContourIntegrand t ((c : ℂ)+(u : ℂ)*I)) := by
-  obtain ⟨K,hK,hbound⟩ := exists_zetaSquareNumerator_strip_gaussian t c hc.le
+  pm_114 K hK hbound exists_zetaSquareNumerator_strip_gaussian t c hc.le
   apply (integrable_gaussianPolynomial.const_mul (K/c)).mono'
     (continuous_zetaSquareContour_vertical t hc.ne').aestronglyMeasurable
   filter_upwards with u
   apply norm_zetaSquareContour_le_of_lower hK.le hc
     (hbound c u (by rw [abs_of_pos hc]))
-  have h := Complex.abs_re_le_norm ((c : ℂ)+(u : ℂ)*I)
+  pm_8844 Complex.abs_re_le_norm c u
   simpa [abs_of_pos hc] using h
 
+section
+variable (t c : ℝ) (hc : 0 ≤ c)
+include t c hc
 /-- Both sides of the symmetric rectangle have a uniform decaying horizontal majorant. -/
-theorem tendsto_hIntegral_zetaSquare_top_zero (t c : ℝ) (hc : 0 ≤ c) :
+theorem tendsto_hIntegral_zetaSquare_top_zero :
     Tendsto (fun H : ℝ => HIntegral (zetaSquareContourIntegrand t) (-c) c H)
       atTop (𝓝 0) := by
-  obtain ⟨K,hK,hbound⟩ := exists_zetaSquareNumerator_strip_gaussian t c hc
+  pm_114 K hK hbound exists_zetaSquareNumerator_strip_gaussian t c hc
   rw [tendsto_zero_iff_norm_tendsto_zero]
   apply squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _)
     (show ∀ᶠ H : ℝ in atTop,
       ‖HIntegral (zetaSquareContourIntegrand t) (-c) c H‖ ≤
         (K*gaussianPolynomial H)*|c-(-c)| by
-      filter_upwards [eventually_ge_atTop (1 : ℝ)] with H hH
+      pm_359 H hH
       unfold HIntegral
       apply intervalIntegral.norm_integral_le_of_norm_le_const
       intro x hx
@@ -198,19 +201,20 @@ theorem tendsto_hIntegral_zetaSquare_top_zero (t c : ℝ) (hc : 0 ≤ c) :
         have h := Set.uIoc_subset_uIcc hx
         rwa [uIcc_of_le (by linarith : -c ≤ c)] at h
       have hden : 1 ≤ ‖(x : ℂ)+(H : ℂ)*I‖ := by
-        have h := Complex.abs_im_le_norm ((x : ℂ)+(H : ℂ)*I)
+        pm_8844 Complex.abs_im_le_norm x H
         have hH0 : 0 ≤ H := by linarith
         simpa [abs_of_nonneg hH0] using hH.trans (by simpa [abs_of_nonneg hH0] using h)
       simpa using norm_zetaSquareContour_le_of_lower hK.le zero_lt_one
         (hbound x H (abs_le.mpr hx')) hden)
   simpa using (tendsto_gaussianPolynomial_zero.const_mul K).mul_const |c-(-c)|
 
-theorem tendsto_hIntegral'_zetaSquare_top_zero (t c : ℝ) (hc : 0 ≤ c) :
+theorem tendsto_hIntegral'_zetaSquare_top_zero :
     Tendsto (fun H : ℝ => HIntegral' (zetaSquareContourIntegrand t) (-c) c H)
       atTop (𝓝 0) := by
   unfold HIntegral'
   simpa using (tendsto_hIntegral_zetaSquare_top_zero t c hc).const_smul
     (1/(2*Real.pi*I))
+end
 
 /-- The reflected vertical contours converge to the literal completed zeta square. -/
 theorem zetaSquareAFE_vertical_limit (t : ℝ) {c : ℝ} (hc : 0 < c) :
@@ -227,7 +231,7 @@ theorem zetaSquareAFE_vertical_limit (t : ℝ) {c : ℝ} (hc : 0 < c) :
       atTop (𝓝 F) := by
     simpa using (tendsto_const_nhds.add ht).add hmt
   apply htarget.congr'
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with H hH
+  pm_414 eventually_gt_atTop H hH
   have hfinite := zetaSquareAFE_truncated_native t hc hH
   change F = _ at hfinite
   linear_combination hfinite
@@ -235,7 +239,10 @@ theorem zetaSquareAFE_vertical_limit (t : ℝ) {c : ℝ} (hc : 0 < c) :
 def zetaSquareVerticalIntegral (t c : ℝ) : ℂ :=
   (1/(2*Real.pi) : ℂ)*∫ u : ℝ, zetaSquareContourIntegrand t ((c : ℂ)+(u : ℂ)*I)
 
-theorem tendsto_zetaSquare_vertical_integral (t : ℝ) {c : ℝ} (hc : 0 < c) :
+section
+variable (t : ℝ) {c : ℝ} (hc : 0 < c)
+include t c hc
+theorem tendsto_zetaSquare_vertical_integral :
     Tendsto (fun H : ℝ => VIntegral' (zetaSquareContourIntegrand t) c (-H) H)
       atTop (𝓝 (zetaSquareVerticalIntegral t c)) := by
   unfold zetaSquareVerticalIntegral
@@ -249,11 +256,12 @@ theorem tendsto_zetaSquare_vertical_integral (t : ℝ) {c : ℝ} (hc : 0 < c) :
   rfl
 
 /-- Exact infinite-height actual-zeta identity; no contour limit is assumed. -/
-theorem completedZeta_square_eq_vertical_integrals (t : ℝ) {c : ℝ} (hc : 0 < c) :
+theorem completedZeta_square_eq_vertical_integrals :
     completedRiemannZeta (afeCriticalPoint t)^2 =
       zetaSquareVerticalIntegral t c + zetaSquareVerticalIntegral (-t) c := by
   exact tendsto_nhds_unique (zetaSquareAFE_vertical_limit t hc)
     ((tendsto_zetaSquare_vertical_integral t hc).add
       (tendsto_zetaSquare_vertical_integral (-t) hc))
+end
 
 end MathCollab.Density.Stronger.Fourth

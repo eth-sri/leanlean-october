@@ -1,5 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SquareParts
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,79 +9,34 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic ShortDraftLatticeCount
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
 open ActualEisensteinCubic
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstPassCubeLabels (primeProductNorm)
@@ -104,16 +61,13 @@ theorem secondFrequencyKernel_eq_kernelPair (F : Finset ι)
         (secondSourcePairKernel p e k H₁ H₂ W Y) := by
   unfold secondFrequencyKernel secondKernelPair
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro S hS
-  apply Finset.sum_congr rfl
-  intro T hT
+  pm_3397 S hS T hT
   by_cases hd : Disjoint S T
   · simp only [ite_eq_left hd, secondSourcePairKernel]
     rw [secondGaussTerm_test_factors, Finset.prod_union hd, map_mul, norm_mul,
       Complex.ofReal_mul, FirstPassCubeLabels.primeProductNorm_union p S T hd]
     ring
-  · simp [hd]
+  grind
 
 theorem secondFrequencyKernel_eq_child_sectors
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -203,20 +157,12 @@ theorem truncatedSecondSource_eq_child_sectors
             (secondSourcePairKernel p (primeSubsetGenerator (fun i => Ideal.span {p i}) E.val) k
               (fun U => H (G ∪ U)) (fun U => H (G ∪ U)) W Y) := by
   unfold truncatedSecondSource
-  apply Finset.sum_congr rfl
-  intro G hG
-  apply Finset.sum_congr rfl
-  intro E hE
+  pm_3397 G hG E hE
   simp_rw [secondFrequencyKernel_eq_child_sectors p hp hg hinj hcop hc hpr]
-  simp only [Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pm_3006
   intro z hz
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro V hV
-  apply Finset.sum_congr rfl
-  intro k hk
+  pm_3397 V hV k hk
   ring
 
 end
@@ -238,29 +184,30 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-theorem rowCoprimeMask_eq_of_span_eq {ι : Type*} (P : ι → Ideal O)
-    (S : Finset ι) {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
+section
+variable {ι : Type*} (P : ι → Ideal O) (S : Finset ι)
+include ι P S
+theorem rowCoprimeMask_eq_of_span_eq {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
     rowCoprimeMask P S a = rowCoprimeMask P S b := by
   have hm (i : ι) : a ∈ P i ↔ b ∈ P i := by
     rw [← Ideal.span_singleton_le_iff_mem, ← Ideal.span_singleton_le_iff_mem, hab]
   simp only [rowCoprimeMask, hm]
 
-theorem rowCoprimeMask_mul_eq_of_span_eq {ι : Type*} (P : ι → Ideal O)
-    (S : Finset ι) (m : O) {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
+theorem rowCoprimeMask_mul_eq_of_span_eq (m : O) {a b : O} (hab : Ideal.span {a} = Ideal.span {b}) :
     rowCoprimeMask P S (m*a) = rowCoprimeMask P S (m*b) := by
   apply rowCoprimeMask_eq_of_span_eq P S
   rw [← Ideal.span_singleton_mul_span_singleton, ← Ideal.span_singleton_mul_span_singleton, hab]
+end
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassIntegration
 open ActualEisensteinCubic FirstPassCubeLabels
 open SecondPassArithmetic (SecondSupportData)
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
 section
@@ -277,10 +224,9 @@ end
 section
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap FourierTransform
 open ActualEisensteinCubic
 open FirstPassCubeLabels (b0Label)
-open JointLogSeparation
 
 end
 
@@ -290,9 +236,8 @@ open SecondPassIntegration (conjugateProfile)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace UnrestrictedIdealReindex
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
 open PrimaryIdealUnitReindex CanonicalQuadraticSieve
 
@@ -311,8 +256,7 @@ theorem unitIdealToElement_bijective : Function.Bijective unitIdealToElement := 
   · intro p q hpq
     have he : p.1.val * idealGenerator p.2.val = q.1.val * idealGenerator q.2.val := congrArg Subtype.val hpq
     have hi : p.2 = q.2 := by
-      apply Subtype.ext
-      simpa only [span_unit_generator] using congrArg (fun z : O => Ideal.span {z}) he
+      pm_1334 span_unit_generator he
     have hu : p.1 = q.1 := by
       apply Units.ext
       rw [hi] at he
@@ -322,15 +266,15 @@ theorem unitIdealToElement_bijective : Function.Bijective unitIdealToElement := 
     let I : NonzeroIdeal := ⟨Ideal.span {z.val}, Ideal.span_singleton_eq_bot.not.mpr z.property⟩
     have ha : Associated (idealGenerator I.val) z.val :=
       Ideal.span_singleton_eq_span_singleton.mp (span_idealGenerator I.val)
-    obtain ⟨u, hu⟩ := ha
-    refine ⟨(u, I), Subtype.ext ?_⟩
-    change u.val * idealGenerator I.val = z.val
-    simpa only [mul_comm] using hu
+    pm_1092 idealGenerator
 
 def unitIdealEquiv : Oˣ × NonzeroIdeal ≃ NonzeroElement :=
   Equiv.ofBijective unitIdealToElement unitIdealToElement_bijective
 
-theorem tsum_nonzero_unit_invariant (f : O → ℂ) (hf : Summable f)
+section
+variable (f : O → ℂ) (hf : Summable f)
+include f hf
+theorem tsum_nonzero_unit_invariant
     (hu : ∀ (u : Oˣ) (z : O), f (u.val * z) = f z) :
     (∑' z : NonzeroElement, f z.val) = (6 : ℂ) * ∑' I : NonzeroIdeal, f (idealGenerator I.val) := by
   let : Finite Oˣ := finite_units
@@ -341,12 +285,12 @@ theorem tsum_nonzero_unit_invariant (f : O → ℂ) (hf : Summable f)
   have hs : Summable (fun p : Oˣ × NonzeroIdeal => f (p.1.val * idealGenerator p.2.val)) :=
     unitIdealEquiv.summable_iff.mpr (hf.subtype _)
   rw [he, hs.tsum_prod]
-  simp only [hu, tsum_fintype, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  pm_93 hu tsum_fintype Finset.sum_const Finset.card_univ nsmul_eq_mul
   have hc : Fintype.card Oˣ = 6 := by simpa only [Nat.card_eq_fintype_card] using card_units_eq_six
   rw [hc]
   norm_num
 
-theorem tsum_unit_invariant_of_zero (f : O → ℂ) (hf : Summable f) (h0 : f 0 = 0)
+theorem tsum_unit_invariant_of_zero (h0 : f 0 = 0)
     (hu : ∀ (u : Oˣ) (z : O), f (u.val * z) = f z) :
     (∑' z : O, f z) = (6 : ℂ) * ∑' I : NonzeroIdeal, f (idealGenerator I.val) := by
   have he : (∑' z : NonzeroElement, f z.val) = ∑' z : O, f z := by
@@ -355,6 +299,7 @@ theorem tsum_unit_invariant_of_zero (f : O → ℂ) (hf : Summable f) (h0 : f 0 
     exact fun hz0 => hz (hz0 ▸ h0)
   rw [← he]
   exact tsum_nonzero_unit_invariant f hf hu
+end
 
 end UnrestrictedIdealReindex
 

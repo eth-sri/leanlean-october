@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosPlanarRegularity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -22,8 +23,10 @@ open MeasureTheory Set
 
 namespace TaoTrudgianYang2025
 
-theorem sargosPlanarNormSq_window_le_weighted {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) {δ lambda c d α γ : ℝ}
+section
+variable {ι : Type*} (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ)
+include ι S z u v
+theorem sargosPlanarNormSq_window_le_weighted {δ lambda c d α γ : ℝ}
     (hδ : 0 < δ) (hlambda : 0 < lambda)
     (hα : α ∈ Icc c (c+δ)) (hγ : γ ∈ Icc d (d+lambda)) :
     ‖sargosPlanarSum S z u v α γ‖^2 ≤
@@ -33,17 +36,16 @@ theorem sargosPlanarNormSq_window_le_weighted {ι : Type*} (S : Finset ι)
   have hC : 0 < 16*δ*lambda := by positivity
   have h := (div_le_iff₀ hC).mp hk
   have hm := mul_le_mul_of_nonneg_right h (sq_nonneg ‖sargosPlanarSum S z u v α γ‖)
-  simpa only [sargosWeightedPlanarIntegrand,one_mul,mul_assoc,mul_left_comm,mul_comm] using hm
+  pm_124 sargosWeightedPlanarIntegrand one_mul mul_assoc mul_left_comm mul_comm hm
 
-theorem sargosPlanarNormSq_window_inner_le_weighted {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) {δ lambda c d α : ℝ}
+theorem sargosPlanarNormSq_window_inner_le_weighted {δ lambda c d α : ℝ}
     (hδ : 0 < δ) (hlambda : 0 < lambda) (hα : α ∈ Icc c (c+δ)) :
     (∫ γ in Icc d (d+lambda), ‖sargosPlanarSum S z u v α γ‖^2) ≤
       (16*δ*lambda)*∫ γ : ℝ, sargosWeightedPlanarIntegrand S z u v
         (1/δ) (1/lambda) (c+δ/2) (d+lambda/2) α γ := by
   have hi := integrable_sargosWeightedPlanarIntegrand_inner S z u v
     (one_div_pos.mpr hlambda) (1/δ) (c+δ/2) (d+lambda/2) α
-  have hC : 0 ≤ 16*δ*lambda := by positivity
+  pm_7453
   have hn (γ : ℝ) : 0 ≤ sargosWeightedPlanarIntegrand S z u v
       (1/δ) (1/lambda) (c+δ/2) (d+lambda/2) α γ :=
     sargosWeightedPlanarIntegrand_nonneg S z u v
@@ -61,8 +63,7 @@ theorem sargosPlanarNormSq_window_inner_le_weighted {ι : Type*} (S : Finset ι)
         (Filter.Eventually.of_forall (fun γ => mul_nonneg hC (hn γ)))
     _ = _ := integral_const_mul _ _
 
-theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
+theorem sargosPlanar_window_le_nearPairs (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
     {δ lambda : ℝ} (hδ : 0 < δ) (hlambda : 0 < lambda) (c d : ℝ) :
     (∫ α in Icc c (c+δ), ∫ γ in Icc d (d+lambda),
       ‖sargosPlanarSum S z u v α γ‖^2) ≤
@@ -71,7 +72,7 @@ theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
   have hB : 0 < 1/lambda := one_div_pos.mpr hlambda
   have hi := integrable_sargosWeightedPlanarIntegrand_outer S z u v hA hB
     (c+δ/2) (d+lambda/2)
-  have hC : 0 ≤ 16*δ*lambda := by positivity
+  pm_7453
   have hn (α : ℝ) : 0 ≤ ∫ γ : ℝ, sargosWeightedPlanarIntegrand S z u v
       (1/δ) (1/lambda) (c+δ/2) (d+lambda/2) α γ := by
     apply integral_nonneg
@@ -92,5 +93,6 @@ theorem sargosPlanar_window_le_nearPairs {ι : Type*} (S : Finset ι)
         (1/δ) (1/lambda) (c+δ/2) (d+lambda/2) α γ) := integral_const_mul _ _
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (sargosWeightedPlanarIntegral_le_nearPairs S z u v hz hA hB (c+δ/2) (d+lambda/2)) hC
+end
 
 end TaoTrudgianYang2025

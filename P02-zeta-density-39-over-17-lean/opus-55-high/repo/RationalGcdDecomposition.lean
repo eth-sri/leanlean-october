@@ -1,12 +1,12 @@
 module
 public import RationalMomentDuality
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 /-! Exact gcd decomposition, including multiplicities. No analytic estimate is
 assumed in the identities. The final bound states its reduced-pair input explicitly. -/
-set_option autoImplicit false
 noncomputable section
 open Finset
 
@@ -42,7 +42,7 @@ theorem reduce_ratio {p : ℕ × ℕ} (hp : 0 < p.1) :
   have ha' : ((reducePair p).1 : ℚ) * pairGcd p = p.1 := by exact_mod_cast ha
   have hb' : ((reducePair p).2 : ℚ) * pairGcd p = p.2 := by exact_mod_cast hb
   unfold pairRatio
-  rw [← ha', ← hb', mul_div_mul_right _ _ hd]
+  grind
 
 /-- Positive reduced pairs give distinct rational frequencies. -/
 theorem pair_ratio_injective {p q : ℕ × ℕ}
@@ -51,9 +51,9 @@ theorem pair_ratio_injective {p q : ℕ × ℕ}
     (he : pairRatio p = pairRatio q) : p = q := by
   have hh := Rat.div_int_inj (a := (p.1 : ℤ)) (b := (p.2 : ℤ))
     (c := (q.1 : ℤ)) (d := (q.2 : ℤ)) (by exact_mod_cast hp)
-    (by exact_mod_cast hq) (by simpa using hcp) (by simpa using hcq)
-    (by simpa [pairRatio] using he)
-  exact Prod.ext (by exact_mod_cast hh.1) (by exact_mod_cast hh.2)
+    (by exact_mod_cast hq) (by grind) (by grind)
+    (by aesop)
+  grind
 
 theorem reduced_energy_eq_rational_energy (Q : Finset (ℕ × ℕ))
     (hQ : ∀ p ∈ Q, 0 < p.2 ∧ Nat.Coprime p.1 p.2) (W : Finset ℝ) :
@@ -64,22 +64,24 @@ theorem reduced_energy_eq_rational_energy (Q : Finset (ℕ × ℕ))
   intro p hp q hq he
   exact pair_ratio_injective (hQ p hp).1 (hQ q hq).1 (hQ p hp).2 (hQ q hq).2 he
 
+section
+variable (P : Finset (ℕ × ℕ))
+include P
 /-- Reduction is injective within a fixed gcd class, not on all pairs. -/
-theorem reduce_injective_on_fiber (P : Finset (ℕ × ℕ)) (d : ℕ) :
+theorem reduce_injective_on_fiber (d : ℕ) :
     Set.InjOn reducePair (gcdFiber P d) := by
   intro p hp q hq he
-  have hp' := (mem_filter.mp hp).2
-  have hq' := (mem_filter.mp hq).2
+  pm_547 hp' mem_filter.mp hp hq' hq
   obtain ⟨ha, hb⟩ := reduce_reconstruct p
   obtain ⟨hc, hd⟩ := reduce_reconstruct q
   rw [hp'] at ha hb
   rw [hq'] at hc hd
   rw [he] at ha hb
-  exact Prod.ext (ha.symm.trans hc) (hb.symm.trans hd)
+  grind
 
 /-- Exact regrouping of an arbitrary function of the rational number.
 Repeated fractions in different gcd classes retain their multiplicity. -/
-theorem sum_by_gcd (P : Finset (ℕ × ℕ))
+theorem sum_by_gcd
     (hP : ∀ p ∈ P, 0 < p.1) (f : ℚ → ℝ) :
     (∑ p ∈ P, f (pairRatio p)) =
       ∑ d ∈ gcdValues P, ∑ q ∈ reducedFiber P d, f (pairRatio q) := by
@@ -93,6 +95,7 @@ theorem sum_by_gcd (P : Finset (ℕ × ℕ))
   apply sum_congr rfl
   intro p hp
   rw [reduce_ratio (hP p (mem_filter.mp hp).1)]
+end
 
 theorem reduced_fiber_bounds {P : Finset (ℕ × ℕ)} {M : ℝ}
     (hP : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -105,23 +108,21 @@ theorem reduced_fiber_bounds {P : Finset (ℕ × ℕ)} {M : ℝ}
   obtain ⟨hp, hd⟩ := mem_filter.mp hp
   obtain ⟨ha, hb, hma, ham, hmb, hbm⟩ := hP p hp
   have hdpos : 0 < d := hd ▸ Nat.gcd_pos_of_pos_left p.2 ha
-  have hdreal : (0 : ℝ) < d := by exact_mod_cast hdpos
+  pm_74 hdreal d hdpos
   obtain ⟨hqa, hqb, hc⟩ := reduce_positive_coprime ⟨ha, hb⟩
   obtain ⟨he, hf⟩ := reduce_reconstruct p
   rw [hd] at he hf
   have he' : ((reducePair p).1 : ℝ) * d = p.1 := by exact_mod_cast he
   have hf' : ((reducePair p).2 : ℝ) * d = p.2 := by exact_mod_cast hf
   refine ⟨hdpos, hqa, hqb, hc, ?_, ?_, ?_, ?_⟩
-  · exact (div_lt_iff₀ hdreal).mpr (by linarith)
-  · rw [← mul_div_assoc]
-    exact (le_div_iff₀ hdreal).mpr (by linarith)
-  · exact (div_lt_iff₀ hdreal).mpr (by linarith)
-  · rw [← mul_div_assoc]
-    exact (le_div_iff₀ hdreal).mpr (by linarith)
+  pm_919
+  pm_919
 
+section
+variable (P : Finset (ℕ × ℕ)) (hP : ∀ p ∈ P, 0 < p.1) (W : Finset ℝ)
+include P hP W
 /-- Actual sums of squared rational phase sums, with exact gcd multiplicities. -/
-theorem pair_energy_by_gcd (P : Finset (ℕ × ℕ))
-    (hP : ∀ p ∈ P, 0 < p.1) (W : Finset ℝ) :
+theorem pair_energy_by_gcd :
     (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 2) =
       ∑ d ∈ gcdValues P,
         ∑ q ∈ reducedFiber P d, ‖∑ t ∈ W, phase (pairRatio q) t‖ ^ 2 :=
@@ -129,8 +130,7 @@ theorem pair_energy_by_gcd (P : Finset (ℕ × ℕ))
 
 /-- A height-linear estimate for each reduced class gives the exact harmonic
 gcd loss. The premise is a reduced-pair estimate, explicitly left open here. -/
-theorem pair_energy_le_harmonic (P : Finset (ℕ × ℕ))
-    (hP : ∀ p ∈ P, 0 < p.1) (W : Finset ℝ) {B M : ℝ}
+theorem pair_energy_le_harmonic {B M : ℝ}
     (hblock : ∀ d ∈ gcdValues P,
       (∑ q ∈ reducedFiber P d, ‖∑ t ∈ W, phase (pairRatio q) t‖ ^ 2) ≤ B * (M / d)) :
     (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 2) ≤
@@ -139,6 +139,7 @@ theorem pair_energy_le_harmonic (P : Finset (ℕ × ℕ))
   apply sum_le_sum
   intro d hd
   simpa [div_eq_mul_inv, mul_assoc] using hblock d hd
+end
 
 /-- The full gcd sum has a logarithmic cost, including the fraction one.
 This is conditional only on the displayed bound for each reduced class. -/
@@ -150,17 +151,14 @@ theorem pair_energy_le_log (P : Finset (ℕ × ℕ)) {N : ℕ}
     (∑ p ∈ P, ‖∑ t ∈ W, phase (pairRatio p) t‖ ^ 2) ≤
       B * M * (1 + Real.log N) := by
   have hsub : gcdValues P ⊆ Finset.Icc 1 N := by
-    intro d hd
-    obtain ⟨p, hp, rfl⟩ := mem_image.mp hd
-    exact mem_Icc.mpr ⟨Nat.gcd_pos_of_pos_left _ (hP p hp).1,
-      (Nat.gcd_le_left _ (hP p hp).1).trans (hP p hp).2⟩
+    pm_136 d hd p hp mem_image.mp
+    pm_1497 mem_Icc.mpr
   have hsum : (∑ d ∈ gcdValues P, (d : ℝ)⁻¹) ≤ 1 + Real.log N := by
     calc
       _ ≤ ∑ d ∈ Finset.Icc 1 N, (d : ℝ)⁻¹ :=
         sum_le_sum_of_subset_of_nonneg hsub (fun d _ _ => by positivity)
       _ ≤ _ := by
-        simpa only [harmonic_eq_sum_Icc, Rat.cast_sum, Rat.cast_inv, Rat.cast_natCast]
-          using harmonic_le_one_add_log N
+        pm_7202
   exact (pair_energy_le_harmonic P (fun p hp => (hP p hp).1) W hblock).trans
     (mul_le_mul_of_nonneg_left hsum (mul_nonneg hB hM))
 

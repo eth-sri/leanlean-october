@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,8 +9,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 open SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialKernelBridge
 open SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialProfile
@@ -24,7 +25,7 @@ theorem canonicalColumn_marked_sum
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x : Point ι) (hE : x.divisor⊆x.common)
     (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (Z D B v : ℝ) :
     (∑ N∈(F\x.overlap).powerset,
       canonicalColumn p hp hcop hg hpr Ψ j (primeMark slots lists a) x h
@@ -33,10 +34,9 @@ theorem canonicalColumn_marked_sum
         finiteCanonicalMarkedRow p hp hcop hg F Ψ (j*quotient p x)
           (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
           (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:Eis)^5*h))
-          (slots\J) lists a W (Z^(columnCenter D B v)) := by
+          (slots\J) lists a W (Z ^(columnCenter D B v)) := by
   have hgen (A : Finset ι) : primaryGenerator (sourceIdeal p A)≠0 := by
-    rw [sourceIdeal_gen p hp hpr A]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
+    pm_980 A
   have hd : Ideal.span {primaryGenerator (sourceIdeal p x.divisor)}=sourceIdeal p x.divisor :=
     (primaryGenerator_spec _ (hgen _)).1
   have ht : Ideal.span {quotient p x}=sourceIdeal p (x.common\x.divisor) :=
@@ -50,7 +50,7 @@ theorem canonicalColumn_marked_sum
     simpa only [Units.val_one,one_mul] using hu.symm
   subst u
   have he := hsplit F Ψ j ((unitSector p hp hpr x:Eis)^5*h) slots lists a W
-    (Z^(columnCenter D B v))
+    (Z ^(columnCenter D B v))
   simp only [Units.val_one,one_pow,one_mul] at he
   convert he using 1
   · apply Finset.sum_congr rfl
@@ -87,9 +87,7 @@ theorem sourcePoint_unitSector
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x : Source (ι:=ι) 0) (N M : Finset ι) :
     unitSector p hp hpr (sourcePoint x N M)=unitSector p hp hpr (sourcePoint x ∅ ∅) := by
-  have hgen : primaryGenerator (sourceIdeal p x.divisor)≠0 := by
-    rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
+  pm_1503 x.divisor
   apply Units.val_injective
   apply mul_right_cancel₀ hgen
   exact (unitSector_spec p hp hpr (sourcePoint x N M)).symm.trans
@@ -97,7 +95,7 @@ theorem sourcePoint_unitSector
 
 def markedModeColumn (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis) (x : Source (ι:=ι) 0)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (Z D B v : ℝ) : ℂ :=
   ∑ J∈slots.powerset,primeMark J lists a (x.common∪x.overlap)*
     finiteCanonicalMarkedRow p hp hcop hg F Ψ
@@ -105,13 +103,13 @@ def markedModeColumn (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
       (primaryGenerator (sourceIdeal p x.divisor)*
         ((unitSector p hp hpr (sourcePoint x ∅ ∅):Eis)^5*h))
-      (slots\J) lists a W (Z^(columnCenter D B v))
+      (slots\J) lists a W (Z ^(columnCenter D B v))
 
 theorem canonicalPairMode_rectangle
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x : Source (ι:=ι) 0) (hE : x.divisor⊆x.common)
     (F : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ) (ρ : SecondRayIndex)
     (z : JointLogSeparation.Frequency × (Fin 6→ℝ)) :
     let height := profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2
@@ -144,7 +142,7 @@ theorem canonicalPairMode_rectangle
       (profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2) Z D B v θ H]
     simp only [canonicalColumn]
     simp only [sourcePoint_unitSector p hp hpr x N M]
-    simp only [outerCoefficient,sourcePoint,divisor,quotient,x₀]
+    pm_94 outerCoefficient sourcePoint divisor quotient x₀
   simp_rw [hpoint,←Finset.mul_sum]
   rw [←Finset.sum_mul,←Finset.mul_sum,←star_sum]
   have hleft := canonicalColumn_marked_sum p hp hcop hg hpr x₀ hE F (secondRayMinus Ψ ρ) j x.frequency
@@ -152,8 +150,7 @@ theorem canonicalPairMode_rectangle
   have hright := canonicalColumn_marked_sum p hp hcop hg hpr x₀ hE F (secondRayPlus Ψ ρ) j (-x.frequency)
       slots lists a (childLogTest ω₂ ((profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2) 5)) Z D B v
   dsimp only [x₀,sourcePoint] at hleft hright ⊢
-  rw [hleft,hright]
-  simp only [markedModeColumn,sourcePoint]
+  pm_326 hleft hright markedModeColumn sourcePoint
   ring
 
 end SevenEighths.InverseInitialEnergyCallerModes

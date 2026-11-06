@@ -1,5 +1,6 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,16 +36,16 @@ theorem wooley_iteration_final_bounds_contradict
     (hLength : 16 * (s : ℝ) * (k : ℝ) / Lambda ≤ (N : ℝ))
     (hFinal : (N : ℝ) * Lambda / (2 * (k : ℝ)) ≤ 4 * (s : ℝ)) :
     False := by
-  have hkReal : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  pm_2847 hkReal k
   have hLambdaMul :
       16 * (s : ℝ) * (k : ℝ) ≤ (N : ℝ) * Lambda := by
     rw [div_le_iff₀ hLambda] at hLength
-    simpa [mul_assoc] using hLength
+    grind
   have hFinalMul :
       (N : ℝ) * Lambda ≤ 8 * (s : ℝ) * (k : ℝ) := by
     rw [div_le_iff₀ (by positivity : (0 : ℝ) < 2 * (k : ℝ))] at hFinal
     nlinarith
-  have hsReal : (0 : ℝ) < s := by exact_mod_cast (show 0 < s by omega)
+  pm_2847 hsReal s
   nlinarith
 
 theorem wooley_iteration_length_final_bound_impossible
@@ -71,20 +72,22 @@ theorem wooleyRho_pos
   unfold wooleyRho
   positivity
 
-theorem wooley_nextB_lower
-    {k r b : ℕ} (hr : 1 ≤ r) :
+section
+variable {k r b : ℕ} (hr : 1 ≤ r)
+include k r b hr
+theorem wooley_nextB_lower :
     (k - r + 1) * b ≤ r * wooleyNextB k r b := by
-  exact le_smul_ceilDiv (by omega : 0 < r)
+  pm_5996
 
-theorem wooley_nextB_le_k_mul
-    {k r b : ℕ} (hr : 1 ≤ r) (hrk : r ≤ k) :
+theorem wooley_nextB_le_k_mul (hrk : r ≤ k) :
     wooleyNextB k r b ≤ k * b := by
   rw [wooleyNextB, ceilDiv_le_iff_le_mul (by omega : 0 < r)]
-  have hkr : k - r + 1 ≤ k := by omega
+  pm_5243 hkr r
   have hb : (k - r + 1) * b ≤ k * b :=
     Nat.mul_le_mul_right b hkr
   exact hb.trans (by
     simpa only [one_mul] using Nat.mul_le_mul_right (k * b) hr)
+end
 
 end
 

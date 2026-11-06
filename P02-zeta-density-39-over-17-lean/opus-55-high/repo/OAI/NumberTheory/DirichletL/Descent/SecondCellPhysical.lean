@@ -18,15 +18,19 @@ local notation "O" => ActualEisensteinCubic.O
 def secondCellColumnExponent (Z X:ℝ) (d:BlockIndex):ℝ :=
   Real.logb Z (X/(scales d 0*scales d 2))
 
-theorem second_cell_column_scale (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X) :
+section
+variable (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
+include Z X d hZ hX
+theorem second_cell_column_scale :
     Z^(secondCellColumnExponent Z X d)=X/(scales d 0*scales d 2) := by
   exact Real.rpow_logb (by linarith) (ne_of_gt hZ)
     (div_pos hX (mul_pos (dyadScale_pos _) (dyadScale_pos _)))
 
-theorem second_cell_physical_scale (Z X:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X) :
+theorem second_cell_physical_scale :
     scales d 0*scales d 2*Z^(secondCellColumnExponent Z X d)=X := by
   rw [second_cell_column_scale Z X d hZ hX]
   field_simp [scales,ne_of_gt (dyadScale_pos (d 0)),ne_of_gt (dyadScale_pos (d 2))]
+end
 
 theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
     (hb:1≤b) (hsource:scales d 0*scales d 2≤b*X) :
@@ -38,7 +42,7 @@ theorem second_cell_clipping_ratio (Z X b:ℝ) (d:BlockIndex) (hZ:1<Z) (hX:0<X)
   constructor
   · exact Real.one_le_rpow hZ.le (sub_nonneg.mpr (le_max_right _ _))
   · by_cases hN:0≤N
-    · rw [max_eq_right hN,sub_self,Real.rpow_zero];exact hb
+    aesop
     · have hN':N≤0:=le_of_not_ge hN
       rw [max_eq_left hN',zero_sub,Real.rpow_neg hz.le,hn,inv_div]
       exact (div_le_iff₀ hX).mpr hsource

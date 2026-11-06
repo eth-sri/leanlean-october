@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.ThetaRegularity
 public import Mathlib.Analysis.Complex.PhragmenLindelof
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -46,7 +47,7 @@ theorem gamma_ratio_left_bound (t : ℝ) :
     exact hf.trans (pow_le_pow_left₀ (by positivity) hs2 2)
   change ‖Complex.Gamma (1 - s) / Complex.Gamma s‖ ≤ _
   rw [heq, norm_mul]
-  exact (mul_le_mul hf' hb (norm_nonneg _) (sq_nonneg _)).trans_eq (mul_comm _ _)
+  pm_6626 hb
 
 theorem gamma_ratio_left_bound_of_re (z : ℂ) (hz : z.re = -(1 / 10)) :
     ‖Complex.Gamma (1 - z) / Complex.Gamma z‖ ≤ gammaConstant * (3 + |z.im|) ^ 2 := by
@@ -57,11 +58,14 @@ theorem gamma_ratio_left_bound_of_re (z : ℂ) (hz : z.re = -(1 / 10)) :
 
 def completionScale (Q : ℝ) : ℝ := Real.sqrt (3 * Q) / (2 * Real.pi)
 
-theorem completionScale_pos (Q : ℝ) (hQ : 0 < Q) : 0 < completionScale Q := by
+section
+variable (Q : ℝ) (hQ : 0 < Q)
+include Q hQ
+theorem completionScale_pos : 0 < completionScale Q := by
   unfold completionScale
   positivity
 
-theorem completionScale_left_power (Q : ℝ) (hQ : 0 < Q) :
+theorem completionScale_left_power :
     completionScale Q ^ (6 / 5 : ℝ) =
       (Real.sqrt 3 / (2 * Real.pi)) ^ (6 / 5 : ℝ) * Q ^ (3 / 5 : ℝ) := by
   have he : completionScale Q = (Real.sqrt 3 / (2 * Real.pi)) * Real.sqrt Q := by
@@ -72,6 +76,7 @@ theorem completionScale_left_power (Q : ℝ) (hQ : 0 < Q) :
   congr 1
   rw [Real.sqrt_eq_rpow Q, ← Real.rpow_mul hQ.le]
   norm_num
+end
 
 def leftConstant : ℝ :=
   (Real.sqrt 3 / (2 * Real.pi)) ^ (6 / 5 : ℝ) * gammaConstant
@@ -133,40 +138,47 @@ theorem closure_strip_subset : closure strip ⊆ closedStrip :=
   closure_minimal (fun _ hz => ⟨hz.1.le, hz.2.le⟩)
     (isClosed_Icc.preimage Complex.continuous_re)
 
-theorem shift_norm_lower (z : ℂ) (hz : z ∈ closedStrip) : 1 ≤ ‖z + 2‖ := by
+section
+variable (z : ℂ) (hz : z ∈ closedStrip)
+include z hz
+theorem shift_norm_lower : 1 ≤ ‖z + 2‖ := by
   have h := Complex.re_le_norm (z + 2)
   norm_num at h
   linarith [hz.1]
 
-theorem shift_ne_zero (z : ℂ) (hz : z ∈ closedStrip) : z + 2 ≠ 0 := by
+theorem shift_ne_zero : z + 2 ≠ 0 := by
   have h := shift_norm_lower z hz
   intro hzero
   rw [hzero, norm_zero] at h
   norm_num at h
 
-theorem height_le_shift_norm (z : ℂ) (hz : z ∈ closedStrip) :
+theorem height_le_shift_norm :
     3 + |z.im| ≤ 3 * ‖z + 2‖ := by
   have hr := Complex.re_le_norm (z + 2)
   have hi := Complex.abs_im_le_norm (z + 2)
   norm_num at hr hi
   linarith [hz.1]
 
-theorem shift_norm_le_height (z : ℂ) (hz : z ∈ closedStrip) :
+theorem shift_norm_le_height :
     ‖z + 2‖ ≤ 2 * (3 + |z.im|) := by
   have hr : 0 ≤ z.re + 2 := by linarith [hz.1]
   have h := Complex.norm_le_abs_re_add_abs_im (z + 2)
   norm_num [abs_of_nonneg hr] at h
   linarith [hz.2, abs_nonneg z.im]
+end
 
 def normalized (Q : ℝ) (L : ℂ → ℂ) (z : ℂ) : ℂ :=
   L z / (((Q ^ (3 / 5 : ℝ) : ℝ) : ℂ) * (z + 2) ^ 2)
 
-theorem norm_normalized (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ) (z : ℂ) :
+section
+variable (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ)
+include Q hQ L
+theorem norm_normalized (z : ℂ) :
     ‖normalized Q L z‖ = ‖L z‖ / (Q ^ (3 / 5 : ℝ) * ‖z + 2‖ ^ 2) := by
   simp [normalized, norm_pow,
     Real.norm_eq_abs, abs_of_pos (Real.rpow_pos_of_pos hQ _)]
 
-theorem normalized_diffContOnCl (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ)
+theorem normalized_diffContOnCl
     (hL : DiffContOnCl ℂ L strip) : DiffContOnCl ℂ (normalized Q L) strip := by
   have hqn : ((Q ^ (3 / 5 : ℝ) : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast (Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)).ne'
@@ -178,13 +190,13 @@ theorem normalized_diffContOnCl (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ)
   · intro z hz
     exact mul_ne_zero hqn (pow_ne_zero _ (shift_ne_zero z (closure_strip_subset hz)))
 
-theorem normalized_exp_bound (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ)
+theorem normalized_exp_bound
     (hgrowth : ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ z ∈ strip, ‖L z‖ ≤ A * Real.exp (B * |z.im|)) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ z ∈ strip, ‖normalized Q L z‖ ≤ A * Real.exp (B * |z.im|) := by
   obtain ⟨A, B, hA, hB, hg⟩ := hgrowth
-  have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
+  pm_1366
   refine ⟨A / Q ^ (3 / 5 : ℝ), B, div_nonneg hA hq.le, hB, ?_⟩
   intro z hz
   have hn := shift_norm_lower z ⟨hz.1.le, hz.2.le⟩
@@ -196,13 +208,16 @@ theorem normalized_exp_bound (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ)
     _ ≤ (A * Real.exp (B * |z.im|)) / Q ^ (3 / 5 : ℝ) :=
       div_le_div_of_nonneg_right (hg z hz) hq.le
     _ = _ := by ring
+end
 
-theorem normalized_boundary_bound (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
-    (L : ℂ → ℂ) (z : ℂ) (hz : z ∈ closedStrip)
+section
+variable (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C) (L : ℂ → ℂ)
+include Q C hQ hC L
+theorem normalized_boundary_bound (z : ℂ) (hz : z ∈ closedStrip)
     (hL : ‖L z‖ ≤ C * Q ^ (3 / 5 : ℝ) * (3 + |z.im|) ^ 2) :
     ‖normalized Q L z‖ ≤ 9 * C := by
-  have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
-  have hn : 0 < ‖z + 2‖ := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
+  pm_1366
+  pm_7125 hn
   have hh := height_le_shift_norm z hz
   have hh2 : (3 + |z.im|) ^ 2 ≤ 9 * ‖z + 2‖ ^ 2 := by
     nlinarith [abs_nonneg z.im, norm_nonneg (z + 2)]
@@ -212,8 +227,7 @@ theorem normalized_boundary_bound (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
   have h := mul_le_mul_of_nonneg_left hh2 (mul_nonneg hC hq.le)
   nlinarith
 
-theorem uniform_strip_bound_of_edges (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
-    (L : ℂ → ℂ) (hL : DiffContOnCl ℂ L strip)
+theorem uniform_strip_bound_of_edges (hL : DiffContOnCl ℂ L strip)
     (hgrowth : ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧
       ∀ z ∈ strip, ‖L z‖ ≤ A * Real.exp (B * |z.im|))
     (hleft : ∀ z : ℂ, z.re = -(1 / 10) →
@@ -231,8 +245,8 @@ theorem uniform_strip_bound_of_edges (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
     · intro w hw
       apply normalized_boundary_bound Q C hQ hC L w
         (show w ∈ closedStrip from ⟨by rw [hw]; norm_num, by rw [hw]⟩) (hright w hw)
-  have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
-  have hnz : 0 < ‖z + 2‖ := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
+  pm_1366
+  pm_7125 hnz
   rw [norm_normalized Q hQ] at hn
   have hb := (div_le_iff₀ (mul_pos hq (sq_pos_of_pos hnz))).mp hn
   have hh := shift_norm_le_height z hz
@@ -240,6 +254,7 @@ theorem uniform_strip_bound_of_edges (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
     nlinarith [norm_nonneg (z + 2), abs_nonneg z.im]
   have h := mul_le_mul_of_nonneg_left hh2 (mul_nonneg (by positivity : 0 ≤ 9 * C) hq.le)
   nlinarith
+end
 
 theorem uniform_strip_bound (Q C : ℝ) (hQ : 1 ≤ Q) (hC : 0 ≤ C)
     (L : ℂ → ℂ) (hL : DiffContOnCl ℂ L strip)
@@ -284,7 +299,10 @@ theorem uniform_strip_bound_of_functional_equation
     apply (hright w hw).trans
     nlinarith
 
-theorem uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (F : ℂ → ℂ)
+section
+variable (a : ℝ) (ha : 0 < a)
+include a ha
+theorem uncompleted_exp_bound (F : ℂ → ℂ)
     (hF : ∃ C : ℝ, 0 ≤ C ∧ ∀ z ∈ closedStrip, ‖F z‖ ≤ C) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧ ∀ z ∈ strip,
       ‖(a : ℂ) ^ (-z) * (Complex.Gamma z)⁻¹ * F z‖ ≤
@@ -295,8 +313,7 @@ theorem uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (F : ℂ → ℂ)
   let S : ℝ := a ^ (-(11 / 10) : ℝ) + a ^ (1 / 10 : ℝ)
   have hS : 0 ≤ S := add_nonneg (Real.rpow_nonneg ha.le _) (Real.rpow_nonneg ha.le _)
   refine ⟨S * G * C, Real.pi, by positivity, Real.pi_pos.le, ?_⟩
-  intro z hz
-  have hzc : z ∈ closedStrip := ⟨hz.1.le, hz.2.le⟩
+  pm_7991 closedStrip
   have haBound : ‖(a : ℂ) ^ (-z)‖ ≤ S := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos ha, Complex.neg_re]
     exact VerticalContourShift.rpow_between_endpoints a (-(11 / 10)) (1 / 10) (-z.re)
@@ -307,7 +324,7 @@ theorem uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (F : ℂ → ℂ)
     (hF z hzc) (norm_nonneg _) (mul_nonneg hS (mul_nonneg hG.le (Real.exp_nonneg _)))
   nlinarith
 
-theorem mellin_uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (f : ℝ → ℂ)
+theorem mellin_uncompleted_exp_bound (f : ℝ → ℂ)
     (hleft : MellinConvergent f (-(1 / 10) : ℂ))
     (hright : MellinConvergent f (11 / 10 : ℂ)) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧ ∀ z ∈ strip,
@@ -317,6 +334,7 @@ theorem mellin_uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (f : ℝ → ℂ)
   obtain ⟨C, hC, hb⟩ := VerticalContourShift.mellin_uniform_strip_bound f
     (-(1 / 10)) (11 / 10) (by simpa using hleft) (by simpa using hright)
   exact ⟨C, hC, fun z hz => hb z hz.1 hz.2⟩
+end
 
 end SevenEighths.HeckeStrip
 end

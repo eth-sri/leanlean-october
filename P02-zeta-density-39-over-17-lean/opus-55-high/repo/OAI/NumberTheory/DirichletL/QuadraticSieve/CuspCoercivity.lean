@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.PrincipalDensity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,77 +8,36 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic ShortDraftLatticeCount
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
 
-theorem unrestrictedPrincipalDensity_twisted_squarefree {n : Type} [Fintype n] [DecidableEq n]
+section
+variable {n : Type} [Fintype n]
+include n
+theorem unrestrictedPrincipalDensity_twisted_squarefree [DecidableEq n]
     (cols : n → Ideal O) (a : n → ℂ) (q : Ideal O) (M K : ℝ) (hM : 0 ≤ M)
     (hcols : ∀ j, Admissible (cols j)) :
     unrestrictedPrincipalDensity (fun I : squarefreeIdealRange K => I.val) cols cols
@@ -87,36 +47,26 @@ theorem unrestrictedPrincipalDensity_twisted_squarefree {n : Type} [Fintype n] [
         (fun I J => normalizedPairPartial I J K*normalizedIdealPair I J q) := by
   rw [unrestrictedPrincipalDensity_squarefree _ _ _ _ (by positivity),Real.sqrt_div hM]
   simp only [densityPairSum,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro j _
-  apply Finset.sum_congr rfl
-  intro k _
-  by_cases hc : IsCoprime (cols j) (cols k)
+  pm_3782
+  pm_2996
   · simp only [hc,ite_true,star_mul,canonical_quadraticRow_star _ (hcols j),
       normalizedIdealPair,unrestrictedPairCharacter,Complex.ofReal_div]
     ring
-  · simp only [hc,ite_false,mul_zero]
+  grind
 
-theorem densityPairSum_weighted_sum {n : Type} [Fintype n]
+theorem densityPairSum_weighted_sum
     (cols : n → Ideal O) (a : n → ℂ) {ι : Type*} (S : Finset ι) (c : ι → ℂ)
     (P : Ideal O → Ideal O → ℂ) (Q : ι → Ideal O → Ideal O → ℂ) :
     (∑ q ∈ S, c q*densityPairSum cols a (fun I J => P I J*Q q I J)) =
       densityPairSum cols a (fun I J => P I J*∑ q ∈ S, c q*Q q I J) := by
   simp only [densityPairSum,Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro j _
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro k _
-  by_cases hc : IsCoprime (cols j) (cols k)
-  · simp only [hc,ite_true]
-    apply Finset.sum_congr rfl
-    intro q hq
-    ring
-  · simp only [hc,ite_false,mul_zero,Finset.sum_const_zero]
+  pm_3815
+  pm_2996
+  grind
+  simp_all
 
-theorem summed_dual_density {n : Type} [Fintype n] [DecidableEq n]
+theorem summed_dual_density [DecidableEq n]
     (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (M K : ℝ) (hM : 0 ≤ M)
     (hcols : ∀ j, Admissible (cols j)) :
     (∑ q ∈ idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*
@@ -129,15 +79,12 @@ theorem summed_dual_density {n : Type} [Fintype n] [DecidableEq n]
   calc
     _ = (Real.sqrt M : ℂ)*∑ q ∈ idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*
         densityPairSum cols a (fun I J => normalizedPairPartial I J K*normalizedIdealPair I J q) := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro q hq
-      ring
+      pm_4886 q hq
     _ = _ := by
       rw [densityPairSum_weighted_sum]
       rfl
 
-theorem actual_source_dual_density_cancellation {n : Type} [Fintype n] [DecidableEq n]
+theorem actual_source_dual_density_cancellation [DecidableEq n]
     (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (hG : G ≠ 0)
     (M K : ℝ) (hM : 0 ≤ M) (hcols : ∀ j, Admissible (cols j))
     (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
@@ -156,27 +103,25 @@ theorem actual_source_dual_density_cancellation {n : Type} [Fintype n] [Decidabl
     (fun I J => normalizedPairPartial I J K*normalizedPairDivisors I J G) -
     primePoolDensity G*densityPairSum cols a (fun I J => normalizedPairCoprimePartial I J G K))
   ring
+end
 
 end CanonicalQuadraticSieve
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical Topology InnerProductSpace
 
 namespace CubicEisenstein
 
 section
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace ENNReal
-
-def cuspBaseArea : Measure (ℝ×ℝ) := volume.restrict cuspRectangle
-instance cuspBaseArea_sFinite : SFinite cuspBaseArea := by unfold cuspBaseArea; infer_instance
+open scoped Classical Topology InnerProductSpace ENNReal
 
 end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+open scoped Classical Topology ENNReal
 
 lemma cusp_height_volume (a : ℝ) (ha : 0<a) :
     (∫⁻v in Set.Ioi a,ENNReal.ofReal ((v^3)⁻¹))=ENNReal.ofReal (1/(2*a^2)) := by
@@ -199,11 +144,11 @@ lemma cusp_height_volume (a : ℝ) (ha : 0<a) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace ENNReal ContDiff
+open scoped Classical Topology InnerProductSpace ENNReal ContDiff
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
 open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex IdealMobiusDivisorSum
@@ -212,8 +157,7 @@ theorem commonMaskIdeal_primeSupport (D : Ideal O) :
     IdealMobiusDivisorSum.primeSupport (commonMaskIdeal D) = gcdMaskPrimes D := by
   have hp : ∀ P ∈ (gcdMaskPrimes D).val, Prime P := by
     intro P hP
-    let : P.IsMaximal := gcdMaskPrimes_maximal D ⟨P,hP⟩
-    exact Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
+    pm_6261
   have hf : UniqueFactorizationMonoid.normalizedFactors (commonMaskIdeal D) = (gcdMaskPrimes D).val := by
     simpa [commonMaskIdeal] using UniqueFactorizationMonoid.normalizedFactors_prod_of_prime hp
   rw [IdealMobiusDivisorSum.primeSupport,hf,Finset.val_toFinset]
@@ -241,15 +185,15 @@ def maskedPairIdealDualKernel (G I J : Ideal O) (W : ℝ → ℂ) (M : ℝ) : �
       ∑' B : NonzeroIdeal, unrestrictedPairCharacter I J B.val*paperRadialFourier W
         ((M/((Ideal.absNorm q:ℝ)*(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)))*(Ideal.absNorm B.val:ℝ))
 
-theorem originalPairIdealDualKernel_eq_divisors
-    (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hDI : D ∣ I) (hDJ : D ∣ J) (W : ℝ → ℂ) (M : ℝ) :
+section
+variable (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hDI : D ∣ I) (hDJ : D ∣ J)
+include D I J hI hJ hDI hDJ
+theorem originalPairIdealDualKernel_eq_divisors (W : ℝ → ℂ) (M : ℝ) :
     originalPairIdealDualKernel D I J W M =
       maskedPairIdealDualKernel (commonMaskIdeal D) (idealQuotient D I) (idealQuotient D J) W M := by
   let Q := idealQuotient D I
   let T := idealQuotient D J
-  have hQ : Admissible Q := admissible_idealQuotient hI hDI
-  have hT : Admissible T := admissible_idealQuotient hJ hDJ
+  pm_6263
   have hn := primaryProduct_norm Q T hQ hT
   have hnonneg : 0 ≤ (Ideal.absNorm Q:ℝ)*(Ideal.absNorm T:ℝ) := by positivity
   unfold originalPairIdealDualKernel maskedPairIdealDualKernel
@@ -268,14 +212,13 @@ theorem originalPairIdealDualKernel_eq_divisors
   congr 2
   ring
 
-theorem originalPairDualKernel_eq_divisors
-    (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hDI : D ∣ I) (hDJ : D ∣ J) (hIJ : I ≠ J) (hray : columnRay I=columnRay J)
+theorem originalPairDualKernel_eq_divisors (hIJ : I ≠ J) (hray : columnRay I=columnRay J)
     (W : 𝓢(ℝ,ℂ)) (M : ℝ) (hM : 0<M) :
     originalPairDualKernel D I J W M =
       maskedPairIdealDualKernel (commonMaskIdeal D) (idealQuotient D I) (idealQuotient D J) W M := by
   rw [originalPairDualKernel_eq_ideal D I J hI hJ hDI hDJ hIJ hray W M hM]
   exact originalPairIdealDualKernel_eq_divisors D I J hI hJ hDI hDJ W M
+end
 
 end CanonicalQuadraticSieve
 

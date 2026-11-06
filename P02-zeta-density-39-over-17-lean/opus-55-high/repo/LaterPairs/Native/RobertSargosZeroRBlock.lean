@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCorrelationBoundary
 public import LaterPairs.Native.RobertSargosZeroRSignedBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -27,7 +28,7 @@ theorem robertSargos_zero_r_trimmed_correlation_bound
     ‖robertSargosTrimmedCorrelation f M H q 0‖ ≤
       (H:ℝ)*(1+12*(C*M*Real.sqrt (4*(H:ℝ)*|(q:ℝ)| *lam)+
         2/Real.sqrt (2*(H:ℝ)*|(q:ℝ)| *lam))) := by
-  have hHr : (0:ℝ) < H := by exact_mod_cast hH
+  pm_4473 hHr H hH
   have hqp : 0 < |(q:ℝ)| := abs_pos.mpr (by exact_mod_cast hq)
   have hc (h : ℤ) (hh : h ∈ robertSargosHOverlap H 0) :
       ‖robertSargosZeroRSource f M h q‖ ≤
@@ -37,7 +38,7 @@ theorem robertSargos_zero_r_trimmed_correlation_bound
     have hii := Finset.mem_Ico.mp hi
     have hHh : (H:ℝ) ≤ h := by exact_mod_cast hii.1
     have hhH : (h:ℝ) < 2*H := by exact_mod_cast hii.2
-    have hhr : (0:ℝ) < h := hHr.trans_le hHh
+    pm_4474 hhr h hHr.trans_le hHh
     have hloScale : 2*(H:ℝ)*|(q:ℝ)| *lam ≤ 2*(h:ℝ)*|(q:ℝ)| *lam := by
       nlinarith [mul_pos hqp hlam]
     have hhiScale : 2*(h:ℝ)*|(q:ℝ)| *lam ≤ 4*(H:ℝ)*|(q:ℝ)| *lam := by

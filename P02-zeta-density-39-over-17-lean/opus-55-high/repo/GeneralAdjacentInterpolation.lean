@@ -1,11 +1,10 @@
 module
 public import GeneralAdjacentCover
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1800000
-noncomputable section
 namespace Montgomery.RationalMoment
 
 /-- Geometric interpolation of two adjacent literal moment powers. -/
@@ -15,7 +14,7 @@ theorem adjacent_log_interpolation {U T H R : ℝ} {j : ℕ}
     (h₂ : U^(j+1) ≤ 2*H^(2*(j+1))*R^(2*j+1)) :
     Real.log U ≤ Real.log 2+Real.log H+Real.log T/(2*(j:ℝ))+
       (2-(2*(j:ℝ)+1)/(2*j*(j+1)))*Real.log R := by
-  have hjr : (1:ℝ) ≤ j := by exact_mod_cast hj
+  pm_278 hjr j hj
   have hjp : (0:ℝ) < j := by linarith
   have hj1 : 0 < (j:ℝ)+1 := by linarith
   have hl₁ := Real.log_le_log (pow_pos hU j) h₁
@@ -32,8 +31,8 @@ theorem adjacent_log_interpolation {U T H R : ℝ} {j : ℕ}
   have hc : (2*(j:ℝ)+1)/(2*j*(j+1)) ≤ 1 := by
     apply (div_le_one (by positivity : 0 < 2*(j:ℝ)*(j+1))).mpr
     nlinarith [sq_nonneg ((j:ℝ)-1)]
-  have hh := mul_le_mul_of_nonneg_right hc (Real.log_nonneg (by norm_num : (1:ℝ) ≤ 2))
-  linarith only [hb,hh]
+  pm_8640 hh mul_le_mul_of_nonneg_right hc
+  grind
 
 /-- An adjacent pair at any order j>=K gives the K-envelope, including
 the linear-in-height term when the logarithmic remainder is negative. -/
@@ -44,8 +43,8 @@ theorem adjacent_pair_envelope {U T H R : ℝ} {K j : ℕ}
     (h₂ : U^(j+1) ≤ 2*H^(2*(j+1))*R^(2*j+1)) :
     U ≤ 2*(H*R^2+H*T^(1/(2*(K:ℝ)))*
       R^(2-(2*(K:ℝ)+1)/(2*K*(K+1)))) := by
-  have hkp : (0:ℝ) < K := by exact_mod_cast (show 0 < K by omega)
-  have hkj : (K:ℝ) ≤ j := by exact_mod_cast hKj
+  pm_2710
+  pm_404 hkj K j hKj
   have hrp : 0 < R := by linarith
   have hl := adjacent_log_interpolation (hK.trans hKj) hU hT hH hrp h₁ h₂
   have hc := adjacent_log_remainder hkp hkj (Real.log_nonneg hR) (t:=Real.log T)
@@ -55,8 +54,7 @@ theorem adjacent_pair_envelope {U T H R : ℝ} {K j : ℕ}
   by_cases hd : 0 ≤ d
   · rw [max_eq_right hd] at hc
     have hu : U ≤ 2*H*T^(1/(2*(K:ℝ)))*R^(2-(2*(K:ℝ)+1)/(2*K*(K+1))) := by
-      apply (Real.log_le_log_iff hU (by positivity)).mp
-      simp (disch := positivity) only [Real.log_mul,Real.log_rpow]
+      pm_6182 Real.log_rpow
       dsimp [d] at hc
       calc
         Real.log U ≤ Real.log 2+Real.log H+2*Real.log R+
@@ -70,8 +68,7 @@ theorem adjacent_pair_envelope {U T H R : ℝ} {K j : ℕ}
       linarith)
   · rw [max_eq_left (le_of_not_ge hd)] at hc
     have hu : U ≤ 2*H*R^2 := by
-      apply (Real.log_le_log_iff hU (by positivity)).mp
-      simp (disch := positivity) only [Real.log_mul,Real.log_pow]
+      pm_6182 Real.log_pow
       norm_num only [Nat.cast_ofNat]
       nlinarith only [hl,hc]
     exact hu.trans (by
@@ -82,8 +79,8 @@ theorem adjacent_high_moment {U H R : ℝ} {K : ℕ}
     (hK : 1 ≤ K) (hU : 0 < U) (hH : 0 < H) (hR : 0 < R)
     (hm : U^K ≤ 2*H^(2*K)*R^(2*K-1)) :
     U ≤ 2*H^2*R^(2-1/(K:ℝ)) := by
-  have hkp : (0:ℝ) < K := by exact_mod_cast (show 0 < K by omega)
-  have hk1 : (1:ℝ) ≤ K := by exact_mod_cast hK
+  pm_2710
+  pm_278 hk1 K hK
   have hl := Real.log_le_log (pow_pos hU K) hm
   simp (disch := positivity) only [Real.log_mul,Real.log_pow] at hl
   push_cast [Nat.cast_sub (show 1 ≤ 2*K by omega)] at hl

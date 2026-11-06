@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceRemaining
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,33 +8,34 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
+open HeckeFamily InverseInitialConjugateEnergy
 open UniqueFactorizationMonoid CanonicalRowCompletion CanonicalQuadraticSieve
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
-def assignedMass (L:ι→Finset (Ideal O))(J:Finset ι)(x:Assigned L J)
-    (coeff:ι→Ideal O→ℂ)(Z G:ℝ) : ℝ :=
-  ‖∏i:↥J,coeff i.val (x i).val‖*Z^(-G)
+def assignedMass (L:ι→ Finset (Ideal O))(J:Finset ι)(x:Assigned L J)
+    (coeff:ι→ Ideal O→ℂ)(Z G:ℝ) : ℝ :=
+  ‖∏i:↥J,coeff i.val (x i).val‖*Z ^(-G)
 
-def assignedTerm (S:Finset (Ideal O))(L:ι→Finset (Ideal O))(J:Finset ι)
-    (x:Assigned L J)(coeff:ι→Ideal O→ℂ)(η:Ideal O→*ℂ)
+def assignedTerm (S:Finset (Ideal O))(L:ι→ Finset (Ideal O))(J:Finset ι)
+    (x:Assigned L J)(coeff:ι→ Ideal O→ℂ)(η:Ideal O→*ℂ)
     (W:ℝ→ℂ)(Z r z G:ℝ)(u:O) : ℂ :=
   (∏i:↥J,coeff i.val (x i).val)*(moebius (assignedIdeal L J x):ℂ)*
-    (Z^(-G):ℝ)*η (assignedIdeal L J x)^2*(idealRowHom u (assignedIdeal L J x))^2*
+    (Z ^(-G):ℝ)*η (assignedIdeal L J x)^2*(idealRowHom u (assignedIdeal L J x))^2*
     star (remainingResidual S L J x coeff η (fun _=>1) W Z r z G u)
 
 omit [Fintype ι] [DecidableEq ι] in
-theorem assignedMass_nonneg (L:ι→Finset (Ideal O))(J:Finset ι)(x:Assigned L J)
-    (coeff:ι→Ideal O→ℂ)(Z G:ℝ)(hZ:0<Z) : 0≤assignedMass L J x coeff Z G :=
+theorem assignedMass_nonneg (L:ι→ Finset (Ideal O))(J:Finset ι)(x:Assigned L J)
+    (coeff:ι→ Ideal O→ℂ)(Z G:ℝ)(hZ:0<Z) : 0≤assignedMass L J x coeff Z G :=
   mul_nonneg (norm_nonneg _) (Real.rpow_nonneg hZ.le _)
 
-theorem assignedTerm_norm_le (S:Finset (Ideal O))(L:ι→Finset (Ideal O))
-    (hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
-    (J:Finset ι)(x:Assigned L J)(coeff:ι→Ideal O→ℂ)(η:Ideal O→*ℂ)
+section
+variable (S:Finset (Ideal O)) (L:ι→ Finset (Ideal O)) (hprime:∀i,∀P∈L i,Prime P) (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
+include S L hprime hdis
+theorem assignedTerm_norm_le
+    (J:Finset ι)(x:Assigned L J)(coeff:ι→ Ideal O→ℂ)(η:Ideal O→*ℂ)
     (hj:Admissible (assignedIdeal L J x))(hη:‖η (assignedIdeal L J x)‖≤1)
     (W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)(u:O) :
     ‖assignedTerm S L J x coeff η W Z r z G u‖≤
@@ -57,10 +59,8 @@ theorem assignedTerm_norm_le (S:Finset (Ideal O))(L:ι→Finset (Ideal O))
       gcongr
     _=_:=by ring
 
-theorem assignedTerm_energy_le (S:Finset (Ideal O))(L:ι→Finset (Ideal O))
-    (hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
-    (J:Finset ι)(x:Assigned L J)(coeff:ι→Ideal O→ℂ)(η:Ideal O→*ℂ)
+theorem assignedTerm_energy_le
+    (J:Finset ι)(x:Assigned L J)(coeff:ι→ Ideal O→ℂ)(η:Ideal O→*ℂ)
     (hj:Admissible (assignedIdeal L J x))(hη:‖η (assignedIdeal L J x)‖≤1)
     (W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)(rows:Finset O)(w:O→ℝ)(hw:∀u,0≤w u) :
     (∑u∈rows,w u*‖assignedTerm S L J x coeff η W Z r z G u‖^2)≤
@@ -74,29 +74,25 @@ theorem assignedTerm_energy_le (S:Finset (Ideal O))(L:ι→Finset (Ideal O))
     (hw u)
   convert hh using 1 ; ring
 
-theorem assigned_family_energy (S:Finset (Ideal O))(L:ι→Finset (Ideal O))
-    (hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
-    (J:Finset ι)(coeff:ι→Ideal O→ℂ)(η:Ideal O→*ℂ)
+theorem assigned_family_energy
+    (J:Finset ι)(coeff:ι→ Ideal O→ℂ)(η:Ideal O→*ℂ)
     (hj:∀x:Assigned L J,Admissible (assignedIdeal L J x))
     (hη:∀x:Assigned L J,‖η (assignedIdeal L J x)‖≤1)
     (W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)(rows:Finset O)(w:O→ℝ)(hw:∀u,0≤w u) :
     (∑u∈rows,w u*‖∑x:Assigned L J,assignedTerm S L J x coeff η W Z r z G u‖^2)≤
-      (∑x:Assigned L J,assignedMass L J x coeff Z G*
+      (∑x:Assigned L J,assignedMass L J x coeff Z G *
         Real.sqrt (∑u∈rows,w u*‖remainingPolynomial S L J x coeff η W Z r z G u‖^2))^2 := by
   refine (finite_weighted_triangle Finset.univ rows w hw
     (fun x u=>assignedTerm S L J x coeff η W Z r z G u)).trans ?_
-  apply pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>Real.sqrt_nonneg _))
+  pm_7520
   apply Finset.sum_le_sum
   intro x hx
   have hh:=Real.sqrt_le_sqrt (assignedTerm_energy_le S L hprime hdis J x coeff η
     (hj x) (hη x) W Z r z G hZ rows w hw)
   rwa [Real.sqrt_mul (sq_nonneg _),Real.sqrt_sq (assignedMass_nonneg L J x coeff Z G hZ)] at hh
 
-theorem original_energy_of_remaining (S:Finset (Ideal O))(L:ι→Finset (Ideal O))
-    (hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
-    (coeff:ι→Ideal O→ℂ)(η:Ideal O→*ℂ)
+theorem original_energy_of_remaining
+    (coeff:ι→ Ideal O→ℂ)(η:Ideal O→*ℂ)
     (hj:∀J:Finset ι,∀x:Assigned L J,Admissible (assignedIdeal L J x))
     (hη:∀J:Finset ι,∀x:Assigned L J,‖η (assignedIdeal L J x)‖≤1)
     (W:ℝ→ℂ)(Z r z:ℝ)(G:Finset ι→ℝ)(hZ:0<Z)
@@ -139,9 +135,10 @@ theorem original_energy_of_remaining (S:Finset (Ideal O))(L:ι→Finset (Ideal O
   calc
     _≤(∑J∈Finset.univ.powerset,
         (∑x:Assigned L J,assignedMass L J x coeff Z (G J))*Real.sqrt E)^2 := by
-      apply pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>Real.sqrt_nonneg _))
+      pm_7520
       exact Finset.sum_le_sum (fun J _=>hroot J)
     _=_:=by rw [←Finset.sum_mul,mul_pow,Real.sq_sqrt hE]
+end
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 

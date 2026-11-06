@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveDivisorGrowth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -17,8 +18,8 @@ namespace TaoTrudgianYang2025
 
 theorem harmonic_le_rpow_loss (ε : ℝ) (hε : 0 < ε) {N : ℕ} (hN : 1 ≤ N) :
     (harmonic N:ℝ) ≤ (1+1/ε)*(N:ℝ)^ε := by
-  have hN1 : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hone : 1 ≤ (N:ℝ)^ε := Real.one_le_rpow hN1 hε.le
+  pm_1666
+  pm_5110 hone N hN1
   calc
     _ ≤ 1+Real.log N := harmonic_le_one_add_log N
     _ ≤ (N:ℝ)^ε+(N:ℝ)^ε/ε :=
@@ -35,7 +36,7 @@ theorem sum_positive_displacement_weight_le_harmonic
       intro n hn
       exact mul_le_mul_of_nonneg_right
         (Real.rpow_le_rpow (Nat.cast_nonneg n)
-          (by exact_mod_cast (Finset.mem_Icc.mp hn).2) hη) (by positivity)
+          (by simp_all) hη) (by positivity)
     _ = (N:ℝ)^η*((N:ℝ)+A*(∑ n ∈ Finset.Icc 1 N, (n:ℝ)⁻¹)) := by
       rw [← Finset.mul_sum]
       congr 1
@@ -49,7 +50,7 @@ theorem sum_positive_displacement_weight_le
     (∑ n ∈ Finset.Icc 1 N, (n:ℝ)^(ε/2)*(1+A/n)) ≤
       (1+2/ε)*(N:ℝ)^ε*((N:ℝ)+A) := by
   have hη : 0 < ε/2 := by linarith
-  have hN1 : (1:ℝ) ≤ N := by exact_mod_cast hN
+  pm_1666
   have hNp : (0:ℝ) < N := by linarith
   have hpow : 1 ≤ (N:ℝ)^(ε/2) := Real.one_le_rpow hN1 hη.le
   have hconst : 1 ≤ 1+2/ε := by linarith [div_pos (by norm_num : (0:ℝ) < 2) hε]

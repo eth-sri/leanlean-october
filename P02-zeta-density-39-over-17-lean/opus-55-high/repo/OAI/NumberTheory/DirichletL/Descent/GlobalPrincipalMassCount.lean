@@ -1,19 +1,19 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMass
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
+open InverseFirstPriorityParents InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
-lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→ O) (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (S : Finset (Finset ι)) (U : ℝ) (hU : 0<U) (hS : ∀A∈S,primeProductNorm p A≤U) :
@@ -22,21 +22,18 @@ lemma support_family_card {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,
   · have hh := DescentFiberCost.finite_ideal_count_real (S.image (sourceIdeal p)) U h1
       (by intro I hI;obtain ⟨A,hA,rfl⟩ := Finset.mem_image.mp hI;exact sourceIdeal_ne_zero p hp A)
       (by
-        intro I hI
-        obtain ⟨A,hA,rfl⟩ := Finset.mem_image.mp hI
+        pm_67 I hI A hA Finset.mem_image.mp
         simpa only [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span,primeProductNorm] using hS A hA)
     simpa only [Finset.card_image_of_injective S (sourceIdeal_injective p hinj)] using hh
 
   · have he : S=∅ := by
-      apply Finset.eq_empty_iff_forall_notMem.mpr
-      intro A hA
-      exact h1 ((primeProductNorm_ge_one p hp A).trans (hS A hA))
+      pm_7361 h1 hS
     rw [he]
     simp only [Finset.card_empty, Nat.cast_zero]
     positivity
 
 theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(B H V T : ℝ),
@@ -48,8 +45,8 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     (∀x∈S,primeProductNorm p x.firstCommon≤V) →
     (∀x∈S,primeProductNorm p x.quotientSupport≤T) →
     (S.card:ℝ)≤C*B^(1+eps)*H*V*T*(B^2*V*T)^eps := by
-  obtain ⟨Cf,hCf,hfiber⟩ := core_fiber_small_power Jmax eps heps
-  obtain ⟨Cb,hCb,hcube⟩ := cube_coordinates_parity_count eps heps
+  pm_114 Cf hCf hfiber core_fiber_small_power Jmax eps heps
+  pm_69 Cb hCb hcube cube_coordinates_parity_count eps heps
   refine ⟨Cf*Cb*128^2,by positivity,?_⟩
   intro ι _ p hp _ hinj Jo hJo S B H V T hB hH hV hT hS hleft hright hactive hcommon hquot
   let Q := S.image core
@@ -61,15 +58,11 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     (by intro b hb;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hb;exact hleft x hx)
     (by intro b hb;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hb;exact hright x hx)
     (by intro b hb;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hb;exact hactive x hx)
-  have hccount : (cs.card:ℝ)≤128*V := support_family_card p hp hinj cs V hV
-    (by intro A hA;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hA;exact hcommon x hx)
-  have htcount : (ts.card:ℝ)≤128*T := support_family_card p hp hinj ts T hT
-    (by intro A hA;obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hA;exact hquot x hx)
+  pm_6102 hccount cs.card V cs hV hcommon
+  pm_6102 htcount ts.card T ts hT hquot
   have hsub : Q⊆bs×ˢ(cs×ˢts) := by
-    intro q hq
-    obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hq
-    exact Finset.mem_product.mpr ⟨Finset.mem_image_of_mem _ hx,
-      Finset.mem_product.mpr ⟨Finset.mem_image_of_mem _ hx,Finset.mem_image_of_mem _ hx⟩⟩
+    pm_67 q hq x hx Finset.mem_image.mp
+    pm_7664 hx
   have hQcard : (Q.card:ℝ)≤(Cb*B^(1+eps)*H)*(128*V)*(128*T) := by
     have hh : (Q.card:ℝ)≤(bs.card:ℝ)*((cs.card:ℝ)*(ts.card:ℝ)) := by
       exact_mod_cast (Finset.card_le_card hsub).trans_eq (by simp only [Finset.card_product])
@@ -102,6 +95,5 @@ theorem original_source_card (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     _ = _ := by ring
 
 end SevenEighths.InverseMomentGlobalPrincipalMass
-end
 
 end OAI

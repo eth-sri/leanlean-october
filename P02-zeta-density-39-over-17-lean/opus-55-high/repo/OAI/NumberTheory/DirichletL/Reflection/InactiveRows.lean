@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.SlotCoefficients
 public import OAI.NumberTheory.DirichletL.Reflection.SlotMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,8 +14,8 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-def inactiveRowSet (rows : Finset (Ideal Eis)) (L : σ→Finset (Ideal Eis)) (T : Finset σ)
-    (F : φ→Ideal Eis) (b : ∀ i : {i // i∉T},L i.val) : Finset (Ideal Eis) :=
+def inactiveRowSet (rows : Finset (Ideal Eis)) (L : σ→ Finset (Ideal Eis)) (T : Finset σ)
+    (F : φ→ Ideal Eis) (b : ∀ i : {i // i∉T},L i.val) : Finset (Ideal Eis) :=
   rows.filter fun K => IsCoprime K (∏ i : {i // i∉T},(b i).val) ∧ ∀ j i,(b i).val≠F j
 
 lemma subtype_zero_extension_energy {κ : Type*} [DecidableEq κ]
@@ -25,15 +26,15 @@ lemma subtype_zero_extension_energy {κ : Type*} [DecidableEq κ]
     symm
     apply Finset.sum_subset hs
     intro k hk hks
-    simp only [dite_eq_right hks,norm_zero,zero_pow (by decide : (2:ℕ)≠0)]
+    simp_all
   rw [he,←Finset.sum_coe_sort small]
   apply Finset.sum_congr rfl
   intro k hk
-  rw [dite_eq_left k.property]
+  grind
 
 theorem original_inactive_restricted_energy
-    (rows : Finset (Ideal Eis)) (L : σ→Finset (Ideal Eis)) (T : Finset σ)
-    (F : φ→Ideal Eis) (H : σ→ℝ)
+    (rows : Finset (Ideal Eis)) (L : σ→ Finset (Ideal Eis)) (T : Finset σ)
+    (F : φ→ Ideal Eis) (H : σ→ℝ)
     (hzero : ∀ i,∀ P∈L i,P≠0) (hH : ∀ i,∀ P∈L i,(Ideal.absNorm P:ℝ)≤H i)
     (w : ∀ i,L i→ℂ) (hw : ∀ i P,‖w i P‖≤1)
     (f : ∀ b : ∀ i : {i // i∉T},L i.val,inactiveRowSet rows L T F b→ℂ)
@@ -43,8 +44,7 @@ theorem original_inactive_restricted_energy
       ((∏ i : {i // i∉T},(Ideal.absNorm (b i).val:ℂ)⁻¹)*(∏ i : {i // i∉T},w i.val (b i)))*
         (if hk:k∈inactiveRowSet rows L T F b then f b ⟨k,hk⟩ else 0)‖^2)≤
     (∏ i : {i // i∉T},256*(columnDyadicLength (H i.val)+1:ℝ))^2*E := by
-  let wt := fun b : ∀ i : {i // i∉T},L i.val =>
-    (∏ i : {i // i∉T},(Ideal.absNorm (b i).val:ℂ)⁻¹)*(∏ i : {i // i∉T},w i.val (b i))
+  pm_3291
   let g := fun (b : ∀ i : {i // i∉T},L i.val) k =>
     if hk:k∈inactiveRowSet rows L T F b then f b ⟨k,hk⟩ else 0
   have hg (b) : (∑ k∈rows,‖g b k‖^2)≤E := by

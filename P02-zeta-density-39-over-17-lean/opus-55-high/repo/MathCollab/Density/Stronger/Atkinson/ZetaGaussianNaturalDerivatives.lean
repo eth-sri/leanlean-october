@@ -8,6 +8,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.ZetaQuadraticGaussianSecondDerivative
 public import MathCollab.Density.Stronger.Atkinson.SecondDerivativeComposition
 public import MathCollab.Density.Stronger.Atkinson.DivisorTestSmooth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,7 +32,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 
 theorem sq_mul_gaussian_eighth_le (x : ℝ) : x ^ 2 * Real.exp (-x ^ 2 / 8) ≤ 8 := by
   have h := Real.add_one_le_exp (x ^ 2 / 8)
-  have hm := mul_le_mul_of_nonneg_right h (Real.exp_pos (-x ^ 2 / 8)).le
+  pm_8514 hm h
   have he : Real.exp (x ^ 2 / 8) * Real.exp (-x ^ 2 / 8) = 1 := by
     rw [← Real.exp_add, show x ^ 2 / 8 + -x ^ 2 / 8 = 0 by ring, Real.exp_zero]
   rw [he] at hm
@@ -41,24 +42,23 @@ theorem abs_mul_gaussian_eighth_le (x : ℝ) : |x| * Real.exp (-x ^ 2 / 8) ≤ 9
   have hs := sq_mul_gaussian_eighth_le x
   have he : Real.exp (-x ^ 2 / 8) ≤ 1 := Real.exp_le_one_iff.mpr (by nlinarith [sq_nonneg x])
   have hx : |x| ≤ 1 + x ^ 2 := by nlinarith [sq_abs x, sq_nonneg (|x| - 1)]
-  have h := mul_le_mul_of_nonneg_right hx (Real.exp_pos (-x ^ 2 / 8)).le
+  pm_8514 h hx
   nlinarith
 
-theorem norm_deriv_zetaGaussianQuadraticIntegral_le_natural {T G : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ) :
+section
+variable {T G : ℝ} (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ)
+include T G hT hG hGT v
+theorem norm_deriv_zetaGaussianQuadraticIntegral_le_natural :
     ‖deriv (zetaGaussianQuadraticIntegral T G) v‖ ≤ 5 * Real.sqrt Real.pi * G ^ 2 := by
   apply (norm_deriv_zetaGaussianQuadraticIntegral_le hT hG hGT v).trans
   calc
     _ = (Real.sqrt Real.pi * G ^ 2 / 2) *
-        (|G * v| * Real.exp (-(G * v) ^ 2 / 8)) := by
-      rw [abs_mul, abs_of_pos hG]
-      ring
+        (|G * v| * Real.exp (-(G * v) ^ 2 / 8)) := by grind
     _ ≤ (Real.sqrt Real.pi * G ^ 2 / 2) * 9 :=
       mul_le_mul_of_nonneg_left (abs_mul_gaussian_eighth_le (G * v)) (by positivity)
     _ ≤ _ := by nlinarith [Real.sqrt_nonneg Real.pi, sq_nonneg G]
 
-theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le_natural {T G : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ) :
+theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le_natural :
     ‖iteratedDeriv 2 (zetaGaussianQuadraticIntegral T G) v‖ ≤
       3 * Real.sqrt Real.pi * G ^ 3 := by
   have hs := sq_mul_gaussian_eighth_le (G * v)
@@ -73,6 +73,7 @@ theorem norm_iteratedDeriv_two_zetaGaussianQuadraticIntegral_le_natural {T G : �
           Real.exp (-(G * v) ^ 2 / 8) / 2) := by ring
     _ ≤ (Real.sqrt Real.pi * G ^ 3) * 3 := mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by ring
+end
 
 theorem exists_intervalC2Bound_quadraticGaussian_profile_natural {v : ℝ → ℝ} {a b : ℝ}
     (hv : ∀ u ∈ Icc a b, ContDiffAt ℝ 2 v u) :
@@ -80,7 +81,7 @@ theorem exists_intervalC2Bound_quadraticGaussian_profile_natural {v : ℝ → �
       IntervalC2Bound (fun u => zetaGaussianQuadraticIntegral T G (v u)) a b (C * G) G := by
   obtain ⟨M, hM, hprofile⟩ := exists_real_profile_derivative_bound hv
   let A : ℝ := 1 + 5 * M + 3 * M ^ 2
-  have hA : 0 < A := by dsimp [A]; positivity
+  pm_4462
   have hA0 : 1 ≤ A := by dsimp [A]; nlinarith
   have hA1 : 5 * M ≤ A := by dsimp [A]; nlinarith
   have hA2 : 3 * M ^ 2 + 5 * M ≤ A := by dsimp [A]; linarith

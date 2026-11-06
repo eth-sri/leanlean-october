@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerIntervalCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -25,18 +26,9 @@ theorem integer_box_triples_card_le
   let X := S.image (fun p => p.1)
   let Y := S.image (fun p => p.2.1)
   let Z := S.image (fun p => p.2.2)
-  have hX : (X.card:ℝ) ≤ b₁-a₁+1 :=
-    integer_card_le_interval_length_add_one X h₁ (fun x hx' => by
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hx'
-      exact hx p hp)
-  have hY : (Y.card:ℝ) ≤ b₂-a₂+1 :=
-    integer_card_le_interval_length_add_one Y h₂ (fun y hy' => by
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hy'
-      exact hy p hp)
-  have hZ : (Z.card:ℝ) ≤ b₃-a₃+1 :=
-    integer_card_le_interval_length_add_one Z h₃ (fun z hz' => by
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hz'
-      exact hz p hp)
+  pm_1061 hX X.card b₁ a₁ X h₁ x hx' hx
+  pm_1061 hY Y.card b₂ a₂ Y h₂ y hy' hy
+  pm_1061 hZ Z.card b₃ a₃ Z h₃ z hz' hz
   have hsub : S ⊆ X ×ˢ (Y ×ˢ Z) := by
     intro p hp
     exact Finset.mem_product.mpr ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,

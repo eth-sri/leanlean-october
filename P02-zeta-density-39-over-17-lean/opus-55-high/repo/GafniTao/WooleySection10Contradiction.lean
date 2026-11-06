@@ -2,8 +2,9 @@ module
 public import GafniTao.WooleySection10Initial
 public import GafniTao.WooleySection10Terminal
 public import GafniTao.WooleyIterationArithmetic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The final numerical comparison in Wooley Section 10
@@ -15,7 +16,6 @@ are exposed until the single scale-absorption hypothesis used in the source.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The lower/iterated/terminal estimates force equation (10.10). -/
 theorem wooley_section10_force_final_bound
@@ -39,10 +39,10 @@ theorem wooley_section10_force_final_bound
     (hHepsilon : (H : ℝ) * epsilon ≤ theta)
     (hconstants : C0 * D ^ N * max 1 Cterm ≤ (p : ℝ) ^ theta) :
     (N : ℝ) * Lambda / (2 * (k : ℝ)) ≤ 4 * (s : ℝ) := by
-  have hpR : (1 : ℝ) < p := by exact_mod_cast hp
+  pm_5451 hpR p hp
   have hpPos : (0 : ℝ) < p := lt_trans (by norm_num) hpR
   have hbase : (1 : ℝ) ≤ p := hpR.le
-  have hHepsilon0 : 0 ≤ (H : ℝ) * epsilon := by positivity
+  pm_1194 hHepsilon0 H epsilon
   have hCtermPow : Cterm ^ R ≤ max 1 Cterm := by
     rcases le_total Cterm 1 with hle | hle
     · exact (Real.rpow_le_one hCterm hle hR).trans (le_max_left 1 Cterm)
@@ -75,7 +75,7 @@ theorem wooley_section10_force_final_bound
         (p : ℝ) ^
           (-((N : ℝ) * theta) * Lambda / (2 * (k : ℝ))) := by
     apply Real.rpow_le_rpow_of_exponent_le hbase
-    have hkR : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+    pm_91 hkR k
     have := mul_le_mul_of_nonneg_right hE hLambda.le
     have hdenK : 0 < (2 : ℝ) * k := mul_pos (by norm_num) hkR
     rw [div_le_div_iff₀ hdenK hdenK]
@@ -155,7 +155,7 @@ theorem wooley_section10_force_final_bound
         rw [hthetaPow, ← Real.rpow_add hpPos, ← Real.rpow_add hpPos]
         congr 1
         ring
-  have hthetaR : (0 : ℝ) < theta := by exact_mod_cast htheta
+  pm_74 hthetaR theta htheta
   have hraw :
       (N : ℝ) * theta * Lambda / (2 * (k : ℝ)) ≤
         ((s : ℝ) + 3) * theta := by
@@ -167,9 +167,8 @@ theorem wooley_section10_force_final_bound
           (theta : ℝ) * ((s : ℝ) + 3) := by
       convert hraw using 1 <;> ring
     exact le_of_mul_le_mul_left hfactored hthetaR
-  have hsR : (1 : ℝ) ≤ s := by exact_mod_cast hs
+  pm_77 hsR s hs
   linarith
 
-end
 
 end GafniTao

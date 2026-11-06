@@ -1,20 +1,23 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.SumMeasure
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
 
-theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem bounded_column_hybrid_energy_extracted_type_uniform :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} [Fintype φ], ∀ X Y B L : ℝ, 1 ≤ X → 1 ≤ L →
     ∀ (F : PrimeFamily φ), Pairwise (Function.onFun IsCoprime F.ideal) →
     ∀ (jF : φ → ℕ) (e : φ → Fin 3) (A : Ideal Eis → Ideal Eis → ℂ),
@@ -31,7 +34,7 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
         (frozenBranchColumn F jF e A) K‖^2) ≤
       (frozenBranchScale F jF e)^2*
         (C*(X*Yq*Bq*L)^ε*(X+Yq*Bq)*Bq*(Yq+L+(Yq*L)^(2/3:ℝ))) := by
-  obtain ⟨C,hC,he⟩ := hybridRow_energy ε hε
+  pm_69 C hC he hybridRow_energy ε hε
   refine ⟨C,hC,?_⟩
   intro φ _ X Y B L hX hL F hF jF e A hA rows nset bset Pset aP hrows hn hb hP ha
   let D1 := frozenExtracted F jF e 1
@@ -81,7 +84,7 @@ theorem bounded_column_hybrid_energy_extracted_type_uniform (ε : ℝ) (hε : 0 
     _ ≤ ((frozenBranchScale F jF e)^2*1)*_ := by gcongr
     _ = _ := by rw [mul_one]
 
-theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0 < ε) :
+theorem actual_weighted_reflected_branch_energy_type_uniform :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -127,13 +130,13 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
     exact (mul_le_of_le_one_left (norm_nonneg _)
       (two_block_phase_bounds F (S P) jF s hc hN hbase hac (hScop P hP) (hSN P hP) (hSchar P hP) u m).2).trans
       (haw P hP)
-  have hcol := actualCuspWeightedColumn_norm_le_one G0 D0 s hc u m w hw
+  pm_528 hcol actualCuspWeightedColumn_norm_le_one G0 D0 s hc u m w hw
   apply le_trans (Finset.sum_le_sum (fun K hK => ?_))
     (he X Y B L hX hL F hF jF e (fun n b => actualCuspColumn D0 s hc u m n b*w n b) hcol
       rows nset bset Pset (fun P => actualSlotPhase F (S P) jF s u m*aw P) hrows hn hb hP hslot)
   have hphase : ‖(-1:ℂ)^(Fintype.card σ)*actualFrozenPhase F jF D0.fixedFactor s u m*
       actualRowPhaseExtension F jF s u m K*r K‖ ≤ 1 := by
-    simp only [norm_mul,norm_pow,norm_neg,norm_one,one_pow,one_mul]
+    pm_382 norm_mul norm_pow norm_neg norm_one one_pow one_mul
     exact (mul_le_of_le_one_left (norm_nonneg _)
       ((mul_le_of_le_one_left (norm_nonneg _) hfrozen).trans (hrow K hK))).trans (hr K hK)
   have hphase0 := norm_nonneg ((-1:ℂ)^(Fintype.card σ)*actualFrozenPhase F jF D0.fixedFactor s u m*
@@ -141,9 +144,9 @@ theorem actual_weighted_reflected_branch_energy_type_uniform (ε : ℝ) (hε : 0
   have hs : ‖(-1:ℂ)^(Fintype.card σ)*actualFrozenPhase F jF D0.fixedFactor s u m*
       actualRowPhaseExtension F jF s u m K*r K‖^2 ≤ 1 := by nlinarith
   rw [weightedReflectedBranchHybridRow,norm_mul,mul_pow]
-  exact (mul_le_mul_of_nonneg_right hs (sq_nonneg _)).trans_eq (one_mul _)
-
+  pm_5506 hs
 end
+
 end SevenEighths.InverseReflectedPhase
 
 end OAI

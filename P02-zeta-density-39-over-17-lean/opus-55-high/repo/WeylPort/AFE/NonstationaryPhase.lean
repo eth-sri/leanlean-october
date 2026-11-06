@@ -2,8 +2,9 @@ module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.ExponentialTails
 public import WeylPort.Analytic.NonstationaryFoundation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 -- Lean 4.34 elaborator compatibility.
 set_option backward.isDefEq.respectTransparency false
@@ -39,8 +40,11 @@ theorem deriv_frequency_shift {f : ℝ → ℝ} {x : ℝ}
     deriv (fun u => f u - ν * u) x = deriv f x - ν := by
   simpa using (hf.hasDerivAt.fun_sub ((hasDerivAt_id x).const_mul ν)).deriv
 
+section
+variable {a b ν : ℝ}
+include a b ν
 /-- Above the initial slope, every shifted phase derivative is strictly negative. -/
-theorem frequency_shift_deriv_neg {a b ν : ℝ} {f : ℝ → ℝ}
+theorem frequency_shift_deriv_neg {f : ℝ → ℝ}
     (hf : ∀ x ∈ Set.Icc a b, DifferentiableAt ℝ f x)
     (hanti : AntitoneOn (deriv f) (Set.Icc a b)) (hν : deriv f a < ν)
     {x : ℝ} (hx : x ∈ Set.Icc a b) :
@@ -50,7 +54,7 @@ theorem frequency_shift_deriv_neg {a b ν : ℝ} {f : ℝ → ℝ}
   linarith
 
 /-- The decreasing absolute-amplitude hypothesis supplies the negative-tail quotient test. -/
-theorem negative_frequency_quotient_antitone {a b ν : ℝ} {f h : ℝ → ℝ}
+theorem negative_frequency_quotient_antitone {f h : ℝ → ℝ}
     (hf : ∀ x ∈ Set.Icc a b, DifferentiableAt ℝ f x)
     (hfanti : AntitoneOn (deriv f) (Set.Icc a b))
     (hhanti : AntitoneOn (fun x => |h x|) (Set.Icc a b)) (hν : deriv f a < ν) :
@@ -68,7 +72,7 @@ theorem negative_frequency_quotient_antitone {a b ν : ℝ} {f h : ℝ → ℝ}
   exact div_le_div₀ (abs_nonneg _) (hhanti hx hy hxy) hxpos (by linarith [hfanti hx hy hxy])
 
 /-- The actual negative-frequency integral has the sharp first-derivative constant. -/
-theorem negative_frequency_integral_bound {a b ν : ℝ} (hab : a < b) (f h : ℝ → ℝ)
+theorem negative_frequency_integral_bound (hab : a < b) (f h : ℝ → ℝ)
     (hf : ContDiffOn ℝ 1 f (Set.Icc a b))
     (hfd : ∀ x ∈ Set.Icc a b, DifferentiableAt ℝ f x)
     (hfc : ContinuousOn (deriv f) (Set.Icc a b))
@@ -87,9 +91,7 @@ theorem negative_frequency_integral_bound {a b ν : ℝ} (hab : a < b) (f h : �
       have ht := hneg hx
       rw [deriv_frequency_shift (hfd x hx)] at ht
       exact ht.ne
-    apply (hhc.div hdcont hnz).congr
-    intro x hx
-    dsimp only [Pi.div_apply]
+    pm_6906
     rw [deriv_frequency_shift (hfd x hx)]
   have ht := nonstationary_interval_bound hab (fun x => f x - ν * x) h
     (hf.sub (contDiffOn_const.mul contDiffOn_id)) (fun x hx => (hneg hx).ne) hc
@@ -97,19 +99,22 @@ theorem negative_frequency_integral_bound {a b ν : ℝ} (hab : a < b) (f h : �
   rw [abs_div, abs_of_neg (hneg (Set.left_mem_Icc.mpr hab.le)),
     deriv_frequency_shift (hfd a (Set.left_mem_Icc.mpr hab.le)), neg_sub] at ht
   simpa only [div_div, mul_comm] using ht
+end
 
+section
+variable {s : Set ℝ}
+include s
 /-- The accepted first positive-frequency quotient controls every larger positive frequency. -/
-theorem positive_frequency_quotient_antitone {s : Set ℝ} {p h : ℝ → ℝ} {ν : ℝ}
+theorem positive_frequency_quotient_antitone {p h : ℝ → ℝ} {ν : ℝ}
     (hp : ∀ x ∈ s, 0 ≤ p x) (hpa : AntitoneOn p s)
     (hh : AntitoneOn (fun x => |h x| / (1 + p x)) s) (hν : 1 ≤ ν) :
     AntitoneOn (fun x => |h x| / (ν + p x)) s := by
   intro x hx y hy hxy
   dsimp only
-  have hpx := hp x hx
-  have hpy := hp y hy
+  pm_268 hpx hp x hx hpy y hy
   have hpxy := hpa hx hy hxy
   have hratio : (1 + p y) / (ν + p y) ≤ (1 + p x) / (ν + p x) := by
-    apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+    pm_23
     nlinarith [mul_nonneg (by linarith : 0 ≤ ν - 1) (sub_nonneg.mpr hpxy)]
   have he (u : ℝ) (hu : u ∈ s) :
       |h u| / (ν + p u) = (|h u| / (1 + p u)) * ((1 + p u) / (ν + p u)) := by
@@ -120,24 +125,22 @@ theorem positive_frequency_quotient_antitone {s : Set ℝ} {p h : ℝ → ℝ} {
   exact mul_le_mul (hh hx hy hxy) hratio (by positivity) (by positivity)
 
 /-- A nonnegative decreasing weight times the slope satisfies the accepted quotient condition. -/
-theorem weighted_slope_quotient_antitone {s : Set ℝ} {g p : ℝ → ℝ}
+theorem weighted_slope_quotient_antitone {g p : ℝ → ℝ}
     (hg : ∀ x ∈ s, 0 ≤ g x) (hp : ∀ x ∈ s, 0 ≤ p x)
     (hga : AntitoneOn g s) (hpa : AntitoneOn p s) :
     AntitoneOn (fun x => |g x * p x| / (1 + p x)) s := by
   intro x hx y hy hxy
   dsimp only
-  have hgx := hg x hx
-  have hgy := hg y hy
-  have hpx := hp x hx
-  have hpy := hp y hy
+  pm_268 hgx hg x hx hgy y hy
+  pm_268 hpx hp x hx hpy y hy
   rw [abs_of_nonneg (mul_nonneg hgy hpy), abs_of_nonneg (mul_nonneg hgx hpx),
     mul_div_assoc, mul_div_assoc]
   apply mul_le_mul (hga hx hy hxy) _ (by positivity) hgx
-  apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+  pm_23
   nlinarith [hpa hx hy hxy]
 
 /-- The same weighted slope has decreasing absolute value for the negative-frequency tail. -/
-theorem weighted_slope_abs_antitone {s : Set ℝ} {g p : ℝ → ℝ}
+theorem weighted_slope_abs_antitone {g p : ℝ → ℝ}
     (hg : ∀ x ∈ s, 0 ≤ g x) (hp : ∀ x ∈ s, 0 ≤ p x)
     (hga : AntitoneOn g s) (hpa : AntitoneOn p s) :
     AntitoneOn (fun x => |g x * p x|) s := by
@@ -146,6 +149,7 @@ theorem weighted_slope_abs_antitone {s : Set ℝ} {g p : ℝ → ℝ}
   rw [abs_of_nonneg (mul_nonneg (hg y hy) (hp y hy)),
     abs_of_nonneg (mul_nonneg (hg x hx) (hp x hx))]
   exact mul_le_mul (hga hx hy hxy) (hpa hx hy hxy) (hp y hy) (hg x hx)
+end
 
 /-- The actual positive-frequency integral uses the owner-accepted quotient condition. -/
 theorem positive_frequency_integral_bound {a b ν : ℝ} (hab : a < b) (f h : ℝ → ℝ)
@@ -173,9 +177,7 @@ theorem positive_frequency_integral_bound {a b ν : ℝ} (hab : a < b) (f h : �
       have ht := hpos x hx
       rw [hd x hx] at ht
       exact ht.ne'
-    apply (hhc.div hdcont hnz).congr
-    intro x hx
-    dsimp only [Pi.div_apply]
+    pm_6906
     rw [hd x hx]
   have ha : AntitoneOn (fun x => |h x / deriv (fun u => f u + ν * u) x|) (Set.Icc a b) := by
     intro x hx y hy hxy
@@ -227,14 +229,11 @@ theorem intervalIntegrable_amplitude_phase {a b : ℝ} (hab : a ≤ b) {h φ : �
   exact (Complex.continuous_ofReal.comp_continuousOn hh).mul
     ((continuousOn_const.mul (Complex.continuous_ofReal.comp_continuousOn hφ)).cexp)
 
+section
+variable {a b ν : ℝ} (hab : a < b) (f g : ℝ → ℝ) (hfd : ∀ x ∈ Set.Icc a b, DifferentiableAt ℝ f x) (hfc : ContinuousOn (deriv f) (Set.Icc a b)) (hfp : ∀ x ∈ Set.Icc a b, 0 ≤ deriv f x) (hfa : AntitoneOn (deriv f) (Set.Icc a b)) (hgc : ContinuousOn g (Set.Icc a b)) (hgdc : ContinuousOn (deriv g) (Set.Icc a b)) (hgp : ∀ x ∈ Set.Icc a b, 0 ≤ g x) (hga : AntitoneOn g (Set.Icc a b))
+include a b ν hab f g hfd hfc hfp hfa hgc hgdc hgp hga
 /-- The complete differentiated amplitude in the upper-frequency tail, with the source constant. -/
-theorem negative_derivative_amplitude_integral_bound {a b ν : ℝ} (hab : a < b) (f g : ℝ → ℝ)
-    (hfd : ∀ x ∈ Set.Icc a b, DifferentiableAt ℝ f x)
-    (hfc : ContinuousOn (deriv f) (Set.Icc a b))
-    (hfp : ∀ x ∈ Set.Icc a b, 0 ≤ deriv f x)
-    (hfa : AntitoneOn (deriv f) (Set.Icc a b))
-    (hgc : ContinuousOn g (Set.Icc a b)) (hgdc : ContinuousOn (deriv g) (Set.Icc a b))
-    (hgp : ∀ x ∈ Set.Icc a b, 0 ≤ g x) (hga : AntitoneOn g (Set.Icc a b))
+theorem negative_derivative_amplitude_integral_bound
     (hgda : AntitoneOn (fun x => |deriv g x|) (Set.Icc a b)) (hν : deriv f a < ν) :
     ‖∫ x in a..b, (((deriv g x : ℝ) : ℂ) + 2 * Real.pi * Complex.I * ((g x * deriv f x : ℝ) : ℂ)) *
       Complex.exp (2 * Real.pi * Complex.I * ((f x - ν * x : ℝ) : ℂ))‖ ≤
@@ -251,23 +250,10 @@ theorem negative_derivative_amplitude_integral_bound {a b ν : ℝ} (hab : a < b
   have h1 := negative_frequency_integral_bound hab f (deriv g) hf hfd hfc hfa hgdc hgda hν
   have h2 := negative_frequency_integral_bound hab f (fun x => g x * deriv f x) hf hfd hfc hfa
     (hgc.mul hfc) (weighted_slope_abs_antitone hgp hfp hga hfa) hν
-  have hnorm : ‖(2 * Real.pi * Complex.I : ℂ)‖ = 2 * Real.pi := by
-    simp
-  rw [hnorm] at hi
-  have ha : a ∈ Set.Icc a b := Set.left_mem_Icc.mpr hab.le
-  rw [abs_of_nonneg (mul_nonneg (hgp a ha) (hfp a ha))] at h2
-  have hb := hi.trans (add_le_add h1 (mul_le_mul_of_nonneg_left h2 (by positivity)))
-  convert hb using 1
-  ring
+  pm_24
 
 /-- The complete differentiated amplitude in the lower-frequency tail uses the accepted repair. -/
-theorem positive_derivative_amplitude_integral_bound {a b ν : ℝ} (hab : a < b) (f g : ℝ → ℝ)
-    (hfd : ∀ x ∈ Set.Icc a b, DifferentiableAt ℝ f x)
-    (hfc : ContinuousOn (deriv f) (Set.Icc a b))
-    (hfp : ∀ x ∈ Set.Icc a b, 0 ≤ deriv f x)
-    (hfa : AntitoneOn (deriv f) (Set.Icc a b))
-    (hgc : ContinuousOn g (Set.Icc a b)) (hgdc : ContinuousOn (deriv g) (Set.Icc a b))
-    (hgp : ∀ x ∈ Set.Icc a b, 0 ≤ g x) (hga : AntitoneOn g (Set.Icc a b))
+theorem positive_derivative_amplitude_integral_bound
     (hgdq : AntitoneOn (fun x => |deriv g x| / (1 + deriv f x)) (Set.Icc a b)) (hν : 1 ≤ ν) :
     ‖∫ x in a..b, (((deriv g x : ℝ) : ℂ) + 2 * Real.pi * Complex.I * ((g x * deriv f x : ℝ) : ℂ)) *
       Complex.exp (2 * Real.pi * Complex.I * ((f x + ν * x : ℝ) : ℂ))‖ ≤
@@ -284,13 +270,7 @@ theorem positive_derivative_amplitude_integral_bound {a b ν : ℝ} (hab : a < b
   have h1 := positive_frequency_integral_bound hab f (deriv g) hf hfd hfc hfp hfa hgdc hgdq hν
   have h2 := positive_frequency_integral_bound hab f (fun x => g x * deriv f x) hf hfd hfc hfp hfa
     (hgc.mul hfc) (weighted_slope_quotient_antitone hgp hfp hga hfa) hν
-  have hnorm : ‖(2 * Real.pi * Complex.I : ℂ)‖ = 2 * Real.pi := by
-    simp
-  rw [hnorm] at hi
-  have ha : a ∈ Set.Icc a b := Set.left_mem_Icc.mpr hab.le
-  rw [abs_of_nonneg (mul_nonneg (hgp a ha) (hfp a ha))] at h2
-  have hb := hi.trans (add_le_add h1 (mul_le_mul_of_nonneg_left h2 (by positivity)))
-  convert hb using 1
-  ring
+  pm_24
+end
 
 end DhimanKadiriQuesadaHerrera2026

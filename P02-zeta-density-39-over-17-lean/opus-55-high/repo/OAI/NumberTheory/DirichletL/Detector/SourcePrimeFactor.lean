@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SourcePrime
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -68,14 +69,7 @@ theorem bareSourceCoefficient_weighted_prime (η : HeckeFamily.Character) (p : O
     sourcePrincipalTerm p hp hg (targetMonoid η p) (actualACube η p) x w z e l k m := by
   rw [bareSourceCoefficient_prime_formula η p hp hg hchar hprimary hs e l k (6*m) he hI]
   unfold sourcePrincipalTerm sourceWeightedScalar
-  simp only [zpow_neg,zpow_natCast,←inv_pow,Complex.ofReal_natCast]
-  have hpdiag := source_signed_phase
-    (actualACube η p*star (localGamma p hp.ne_zero hg 3))
-    (actualSextic (Ideal.span {p}) hg (-1)) (actualSextic_neg_one_sq _ hg) e l k
-  simp only [localCubePhase] at hpdiag
-  have ha : actualACube η p=
-      star (FiniteGaussPhase.angularFactor p)^3*(targetMonoid η p)^3 := rfl
-  rw [ha] at hpdiag ⊢
+  pm_3910
   calc
     _ = ((-1:ℂ)^e*((localGamma p hp.ne_zero hg 1)⁻¹)^e*(targetMonoid η p)^e) *
       ((star (FiniteGaussPhase.angularFactor p)^3*(targetMonoid η p)^3*

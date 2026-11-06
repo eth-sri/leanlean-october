@@ -3,9 +3,9 @@ public import GuthMaynard.Improvement.DirichletMeanValue
 public import GuthMaynard.Improvement.SourceRatioAssembly
 public import GuthMaynard.Improvement.DivisorMultiplicity
 public import MathCollab.Density.DivisorGrowth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -24,7 +24,7 @@ theorem dirichlet_product_pair_bounds {N : ℝ} (hN : 0 ≤ N) {X : ℕ}
     {p : ℕ × ℕ} (hp : p ∈ dirichletProductPairs N X) :
     0 < p.1*p.2 ∧ p.1*p.2 ≤ ⌊2*N⌋₊*X ∧ ((p.1*p.2:ℕ):ℝ) ≤ 2*N*X := by
   obtain ⟨hn,hm⟩ := Finset.mem_product.mp hp
-  have hn' := (sourceRatioIndices_mem hN p.1).mp hn
+  pm_8401
   have hm' := Finset.mem_Icc.mp hm
   have hn0 : 0 < p.1 := by exact_mod_cast hN.trans_lt hn'.1
   refine ⟨Nat.mul_pos hn0 hm'.1,Nat.mul_le_mul (Nat.le_floor hn'.2) hm'.2,?_⟩
@@ -49,7 +49,7 @@ theorem dirichlet_product_energy_raw {N : ℝ} (hN : 0 ≤ N) (X : ℕ)
     (∑ k ∈ K, ‖dirichletProductCoefficient N X a b k‖^2) ≤
       ((((dirichletProductPairs N X).image (fun p => p.1*p.2)).sup (fun k => k.divisors.card):ℕ):ℝ)*
         ∑ p ∈ dirichletProductPairs N X, ‖a p.1*b p.2‖^2 := by
-  let D := ((dirichletProductPairs N X).image (fun p => p.1*p.2)).sup (fun k => k.divisors.card)
+  pm_1055
   have hcard (k : ℕ) : (dirichletProductFiber N X k).card ≤ D := by
     by_cases hh : (dirichletProductFiber N X k).Nonempty
     · obtain ⟨p,hp⟩ := hh
@@ -81,7 +81,7 @@ theorem dirichlet_product_energy_subpower {η : ℝ} (hη : 0 < η) :
   obtain ⟨C,hC,hd⟩ := MathCollab.Density.divisor_card_subpower hη
   refine ⟨C,by linarith,?_⟩
   intro N hN X a b K ha hb
-  let D := ((dirichletProductPairs N X).image (fun p => p.1*p.2)).sup (fun k => k.divisors.card)
+  pm_1055
   have hD : (D:ℝ) ≤ C*(1+2*N*X)^η := by
     by_cases he : ((dirichletProductPairs N X).image (fun p => p.1*p.2)).Nonempty
     · obtain ⟨k,hk,hke⟩ := Finset.exists_mem_eq_sup _ he (fun k => k.divisors.card)
@@ -92,22 +92,20 @@ theorem dirichlet_product_energy_subpower {η : ℝ} (hη : 0 < η) :
       exact (hd _ hsize.1).trans (mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow (by positivity) (by linarith [hsize.2.2]) hη.le) (by linarith))
     · have hempty := Finset.not_nonempty_iff_eq_empty.mp he
-      simp only [D,hempty,Finset.sup_empty,bot_eq_zero,Nat.cast_zero]
+      pm_94 D hempty Finset.sup_empty bot_eq_zero Nat.cast_zero
       positivity
   have hpair : (∑ p ∈ dirichletProductPairs N X, ‖a p.1*b p.2‖^2) ≤
       ((sourceRatioIndices N).card:ℝ)*X := by
     calc
       _ ≤ ∑ _p ∈ dirichletProductPairs N X, (1:ℝ) := by
         apply sum_le_sum
-        intro p hp
-        obtain ⟨hn,hm⟩ := mem_product.mp hp
+        pm_161 p hp hn hm mem_product.mp
         rw [norm_mul]
         have hh : ‖a p.1‖*‖b p.2‖ ≤ 1 := by nlinarith [ha p.1 hn,hb p.2 hm,norm_nonneg (a p.1),norm_nonneg (b p.2)]
         nlinarith [mul_nonneg (norm_nonneg (a p.1)) (norm_nonneg (b p.2))]
       _ = _ := by simp [dirichletProductPairs]
   have hsource : ((sourceRatioIndices N).card:ℝ) ≤ N+1 := by
-    have hf : ⌊N⌋₊ ≤ ⌊2*N⌋₊ := Nat.floor_mono (by linarith)
-    rw [sourceRatioIndices,Nat.card_Ioc,Nat.cast_sub hf]
+    pm_5741 hf sourceRatioIndices
     linarith [Nat.floor_le (by positivity : 0 ≤ 2*N),Nat.lt_floor_add_one N]
   calc
     _ ≤ (D:ℝ)*(∑ p ∈ dirichletProductPairs N X, ‖a p.1*b p.2‖^2) := dirichlet_product_energy_raw hN X a b K
@@ -147,17 +145,12 @@ theorem dirichlet_product_polynomial {N : ℝ} (hN : 0 ≤ N) (X : ℕ)
     apply sum_congr rfl
     intro k _
     rw [sum_mul]
-    apply sum_congr rfl
-    intro p hp
-    rw [(mem_filter.mp hp).2]
+    pm_275 sum_congr p hp mem_filter.mp
   rw [he]
   unfold finiteDirichletPolynomial
   rw [sum_mul]
   simp only [dirichletProductPairs,P,sum_product,mul_sum]
-  apply sum_congr rfl
-  intro n hn
-  apply sum_congr rfl
-  intro m hm
+  pm_90 sum_congr n hn m hm
   have hn0 : 0 < n := by exact_mod_cast hN.trans_lt ((sourceRatioIndices_mem hN n).mp hn).1
   have hm0 : 0 < m := (mem_Icc.mp hm).1
   rw [← dirichlet_phase_product hn0 hm0]

@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.ExponentPair
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ theorem exponentSumGrowthExponent_le_exponentPairLine
     (hα : (α : ℝ) < 1) :
     exponentSumGrowthExponent α ≤ exponentPairLine k l α := by
   rw [exponentSumGrowthExponent_le_iff]
-  intro N T F a b hN hT hTunbounded hNT hF hab
+  pm_2747
   have htriangle := hkl.inTriangle
   have hdiffNonneg : 0 ≤ l - k := by
     dsimp [InExponentPairTriangle] at htriangle
@@ -54,9 +55,7 @@ theorem exponentSumGrowthExponent_le_exponentPairLine
     calc
       N i ≤ T i ^ ((α : ℝ) + margin) := hi.2
       _ ≤ T i ^ (1 : ℝ) :=
-        Real.rpow_le_rpow_of_exponent_le (hT i) (by
-          dsimp [margin]
-          linarith)
+        Real.rpow_le_rpow_of_exponent_le (hT i) (by grind)
       _ = T i := Real.rpow_one _
   apply (isPowerBounded_iff_forall_pos
     (exponentialSum F T N a b) T (exponentPairLine k l α)
@@ -72,9 +71,9 @@ theorem exponentSumGrowthExponent_le_exponentPairLine
     hkl.estimate N T F a b hN hNleT hTunbounded hF hab η hη
   refine hpair.trans (Asymptotics.IsBigO.of_bound 1 ?_)
   filter_upwards [hbetween] with i hiN
-  have hTpos : 0 < T i := zero_lt_one.trans_le (hT i)
+  pm_5104 hTpos T hT
   have hTnonneg : 0 ≤ T i := hTpos.le
-  have hNpos : 0 < N i := zero_lt_one.trans_le (hN i)
+  pm_5104 hNpos N hN
   have hNnonneg : 0 ≤ N i := hNpos.le
   have hratioNonneg : 0 ≤ T i / N i := div_nonneg hTnonneg hNnonneg
   have hrearrange :

@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.GramLatticeDecay
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProductSpace
+open scoped Classical FourierTransform SchwartzMap RealInnerProductSpace
 
 namespace ProbeGramAnnularLattice
 open ProbeGramLatticeDecay ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
@@ -39,7 +40,7 @@ theorem physical_sample_eq_zero (a b : ℝ) (ha : 0 < a) (hb : 0 < b)
   rw [scaled_embedding_norm_sq m.1 N hN.le, div_le_iff₀ hN] at hu
   have hs : b*N < 1 := by
     have hh := mul_lt_mul_of_pos_left hsmall hb
-    simpa only [mul_inv_cancel₀ hb.ne'] using hh
+    grind
   linarith
 
 def cauchyWeight (m : O) : ℝ := ((1+‖eisEmbedding m‖^2)^2)⁻¹
@@ -51,8 +52,10 @@ theorem cauchyWeight_summable : Summable cauchyWeight := by
 theorem cauchyWeight_mass_le : (∑' m : O, cauchyWeight m) ≤ 4*(1+Real.pi)^2 := by
   simpa only [cauchyWeight, one_mul] using scaled_eisenstein_cauchy_small 1 zero_lt_one le_rfl
 
-theorem physical_subunit_majorant (W : 𝓢(Joint, ℂ))
-    (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1) (m : O × O) :
+section
+variable (W : 𝓢(Joint, ℂ)) (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1)
+include W N hN hN1
+theorem physical_subunit_majorant (m : O × O) :
     ‖W (physicalPoint N m)‖ ≤ (2:ℝ)^8 * sourceControl (Finset.Iic (8,0)) W *
       (cauchyWeight m.1 * cauchyWeight m.2) := by
   have hn (m : O) : ‖eisEmbedding m‖^2 ≤ ‖eisEmbedding m / (Real.sqrt N : ℂ)‖^2 := by
@@ -68,10 +71,9 @@ theorem physical_subunit_majorant (W : 𝓢(Joint, ℂ))
       (eisEmbedding m.2 / (Real.sqrt N : ℂ)))
   dsimp only [cauchyWeight]
   rw [← mul_inv, ← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-  simpa only [mul_comm] using hp
+  grind
 
-theorem physical_subunit_bound (W : 𝓢(Joint, ℂ))
-    (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1) :
+theorem physical_subunit_bound :
     (∑' m : O × O, ‖W (physicalPoint N m)‖) ≤
       ((2:ℝ)^8*(4*(1+Real.pi)^2)^2) * sourceControl (Finset.Iic (8,0)) W := by
   have hg := cauchyWeight_summable
@@ -85,10 +87,11 @@ theorem physical_subunit_bound (W : 𝓢(Joint, ℂ))
     _ = ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*(∑' m : O, cauchyWeight m)^2 := by
       rw [tsum_mul_left, ← hg.tsum_mul_tsum hg hp, pow_two]
     _ ≤ ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*(4*(1+Real.pi)^2)^2 := by
-      apply mul_le_mul_of_nonneg_left _ (mul_nonneg (by positivity) (sourceControl_nonneg _ _))
+      pm_6989
       exact pow_le_pow_left₀ (tsum_nonneg (fun _ => by unfold cauchyWeight; positivity))
         cauchyWeight_mass_le 2
     _ = _ := by ring
+end
 
 theorem annular_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -96,7 +99,7 @@ theorem annular_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
         (∑' m : O × O, ‖W (physicalPoint N m)‖) ≤ C * sourceControl S W * N^2 := by
   obtain ⟨S₀,C₀,hC₀,h₀⟩ := physical_lattice_bound
   let K : ℝ := (2:ℝ)^8*(4*(1+Real.pi)^2)^2
-  have hK : 0 < K := by dsimp [K]; positivity
+  pm_64 hK K
   have hb : 0 < b := ha.trans hab
   refine ⟨S₀ ∪ Finset.Iic (8,0),C₀ + K*b^2,by positivity,?_⟩
   intro W hW N hN
@@ -138,9 +141,7 @@ theorem weighted_summable (W : 𝓢(Joint, ℂ)) (d : O × O → ℂ) (B : ℝ)
     Summable (fun m : O × O => d m * W (physicalPoint N m)) := by
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ ((physical_summable W N hN).mul_left B)
-  intro m
-  rw [norm_mul]
-  exact mul_le_mul_of_nonneg_right (hd m) (norm_nonneg _)
+  pm_1479 hd
 
 theorem annular_weighted_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -149,7 +150,7 @@ theorem annular_weighted_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
       ∀ (N : ℝ), 0 < N →
         Summable (fun m : O × O => d m * W (physicalPoint N m)) ∧
         ‖∑' m : O × O, d m * W (physicalPoint N m)‖ ≤ C * sourceControl S W * B * N^2 := by
-  obtain ⟨S,C,hC,hbound⟩ := annular_lattice_bound a b ha hab
+  pm_732 S C hC hbound annular_lattice_bound a b ha hab
   refine ⟨S,C,hC,?_⟩
   intro W hW d B hB hd N hN
   refine ⟨weighted_summable W d B hd N hN,?_⟩
@@ -158,9 +159,7 @@ theorem annular_weighted_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
       apply (norm_tsum_le_tsum_norm ((weighted_summable W d B hd N hN).norm)).trans
       apply ((weighted_summable W d B hd N hN).norm).tsum_le_tsum _
         ((physical_summable W N hN).mul_left B)
-      intro m
-      rw [norm_mul]
-      exact mul_le_mul_of_nonneg_right (hd m) (norm_nonneg _)
+      pm_1479 hd
     _ = B * ∑' m : O × O, ‖W (physicalPoint N m)‖ := tsum_mul_left
     _ ≤ B * (C * sourceControl S W * N^2) := mul_le_mul_of_nonneg_left (hbound W hW N hN) hB
     _ = _ := by ring

@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.PhaseSlopePartition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,9 +40,7 @@ theorem norm_fourierCharIntegral_le_of_curvature_threshold
   have hcost : 1/(lam*Real.pi) ≤ 2/(lam*Real.pi)+2*lam/m := by
     have hp : 0 ≤ 1/(lam*Real.pi) := by positivity
     have hq : 0 ≤ 2*lam/m := by positivity
-    calc
-      _ ≤ 1/(lam*Real.pi)+1/(lam*Real.pi)+2*lam/m := by linarith
-      _ = _ := by ring
+    grind
   by_cases hb : lam ≤ deriv φ b
   · apply (norm_fourierCharIntegral_le_of_slope_gap hab hlam hφ hmono
       (Or.inl (fun x hx => hb.trans (hmono hx ⟨hab,le_rfl⟩ hx.2)))).trans hcost
@@ -57,24 +56,16 @@ theorem norm_fourierCharIntegral_le_of_curvature_threshold
     (show c ∈ Icc a b from ⟨hac,hcb⟩)
     (show d ∈ Icc a b from ⟨had,hdb⟩) hcd hcl hdl
   have hleft : ‖∫ x in a..c, (𝐞 (φ x) : ℂ)‖ ≤ 1/(lam*Real.pi) := by
-    rcases hc with rfl | hc
-    · simp only [intervalIntegral.integral_same,norm_zero]
-      positivity
+    pm_8229 hc
     · have hs : Icc a c ⊆ Icc a b := fun x hx => ⟨hx.1,hx.2.trans hcb⟩
-      apply norm_fourierCharIntegral_le_of_slope_gap hac hlam
-        (fun x hx => hφ x (hs hx))
-        (fun x hx y hy hxy => hmono (hs hx) (hs hy) hxy)
+      pm_867 hac
       exact Or.inl (fun x hx => by
         rw [← hc]
         exact hmono (hs hx) ⟨hac,hcb⟩ hx.2)
   have hright : ‖∫ x in d..b, (𝐞 (φ x) : ℂ)‖ ≤ 1/(lam*Real.pi) := by
-    rcases hd with rfl | hd
-    · simp only [intervalIntegral.integral_same,norm_zero]
-      positivity
+    pm_8229 hd
     · have hs : Icc d b ⊆ Icc a b := fun x hx => ⟨had.trans hx.1,hx.2⟩
-      apply norm_fourierCharIntegral_le_of_slope_gap hdb hlam
-        (fun x hx => hφ x (hs hx))
-        (fun x hx y hy hxy => hmono (hs hx) (hs hy) hxy)
+      pm_867 hdb
       exact Or.inr (fun x hx => by
         rw [← hd]
         exact hmono ⟨had,hdb⟩ (hs hx) hx.1)
@@ -82,7 +73,7 @@ theorem norm_fourierCharIntegral_le_of_curvature_threshold
     have h := intervalIntegral.norm_integral_le_of_norm_le_const
       (a := c) (b := d) (C := 1) (f := fun x => (𝐞 (φ x) : ℂ))
       (fun x _ => by simp)
-    simpa only [one_mul,abs_of_nonneg (sub_nonneg.mpr hcd)] using h
+    pm_5756 hcd
   have hi {u v : ℝ} (hu : a ≤ u) (huv : u ≤ v) (hv : v ≤ b) :
       IntervalIntegrable (fun x => (𝐞 (φ x) : ℂ)) volume u v := by
     apply ContinuousOn.intervalIntegrable

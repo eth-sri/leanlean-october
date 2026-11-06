@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
@@ -19,10 +19,10 @@ theorem no_slot_endpoint
     (a b B : ℝ) (ha : 0<a) (hab : a≤b) (hB : 0<B)
     (hφs : Function.support φ⊆Ioo a b) (hφB : ∀ y, φ y≤B)
     (R ε : ℝ) (hR : 0≤R) (hε : 0<ε) :
-    ∃ c κ K : ℝ, 0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K ∧ ∀ᶠ U : ℝ in atTop,
+    ∃ c κ K : ℝ, 0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (r : ℝ) (data : RowData) (rows : Finset FreeRow) (W : ℝ→ℂ)
         (wa wb C : ℝ),
-      0≤r → r≤R → 0≤C →
+      0≤ r → r≤R → 0≤C →
       0<wa → 0≤wb → Function.support W⊆Icc wa wb → ContDiff ℝ ∞ W →
       (∀ u∈rows, ((Ideal.span {u.val}).absNorm : ℝ)≤U) →
       RawMoment data W c κ C → RawMoment data (scaleProfile W) c κ C →
@@ -34,7 +34,7 @@ theorem no_slot_endpoint
   obtain ⟨x0,hx0⟩ := eventually_atTop.mp havg
   let A := max 1 (max x0 (1/b))
   have hb : 0<b := ha.trans_le hab
-  have hA : 1≤A := le_max_left _ _
+  pm_4909 hA A
   have hAp : 0<A := zero_lt_one.trans_le hA
   have hAx0 : x0≤A := (le_max_left _ _).trans (le_max_right _ _)
   have hbA : 1≤b*A := by
@@ -45,16 +45,15 @@ theorem no_slot_endpoint
     hA hbA (by positivity) (by positivity)
   let F := (b*A)^6*((b*A)^6)^κ/A
   let K := (4/d)*F*Klog
-  have hF : 0≤F := by dsimp [F]; positivity
-  have hK : 0≤K := by dsimp [K]; positivity
-  refine ⟨c,κ,K,hc,hc1,hκ,hK,?_⟩
-  filter_upwards [hlog,eventually_ge_atTop (1 : ℝ)] with U hlog hU
+  pm_3063 hF F
+  pm_3063 hK K
+  pm_1469 hlog
   intro r data rows W wa wb C hr hrR hC hwa hwb hWs hW hrows hraw0 hraw1
   let p := amplificationPower c r
   let x := A*U^p
   let D := U^r
   let V := b*x
-  let N := U*V^6
+  let N := U*V ^6
   have hUp : 0<U := zero_lt_one.trans_le hU
   have hp : 0≤p := amplificationPower_nonneg c r
   have hpR : p≤R/3 := amplificationPower_upper c r R hc1 hr hrR
@@ -66,7 +65,7 @@ theorem no_slot_endpoint
   have hD : 1≤D := Real.one_le_rpow hU hr
   have hDp : 0<D := zero_lt_one.trans_le hD
   have hN : 1≤N := one_le_mul_of_one_le_of_one_le hU (one_le_pow₀ hV)
-  have hDN : D^(1+c)≤N := amplified_norm_dominates U A b c r hU hbA
+  have hDN : D ^(1+c)≤N := amplified_norm_dominates U A b c r hU hbA
   have hxb : x*b=V := mul_comm x b
   have hav := hx0 x (hAx0.trans hxA) data rows W wa wb D U
     (C*N*(N*D)^κ) hwa hwb hWs hW hDp hrows
@@ -96,6 +95,5 @@ theorem no_slot_endpoint
 
 end SevenEighths.HeckeInverseAmplification
 
-end
 
 end OAI

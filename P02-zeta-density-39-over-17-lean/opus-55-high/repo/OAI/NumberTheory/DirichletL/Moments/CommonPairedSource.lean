@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonLinearNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,10 @@ variable {ι κ:Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq �
 def normalizedColumn (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)(z:O):ℂ:=
   (Real.sqrt (volume s.toData):ℂ)⁻¹*sourceColumn s C hC R seed L z
 
-theorem norm_column (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
+section
+variable (s:Input ι)
+include s
+theorem norm_column(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
     (hseed:seed∣C)(z:O):
     ‖normalizedColumn s C hC R seed L z‖≤
       ∑B:actualAllocations s.pools C,‖commonScalar s C R B‖*
@@ -30,7 +34,7 @@ theorem norm_column (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
     (Finset.univ:Finset (actualAllocations s.pools C))
     (fun B=>commonScalar s C R B*maskedAmplitude (commonData s C R B) L z)
 
-theorem paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem paired_columns(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (R seed L:Ideal O)(hsC:seed∣C)(hsD:seed∣D)(rows:Finset O):
     (∑z∈rows,‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)≤
       ∑B:actualAllocations s.pools C,∑E:actualAllocations v.pools D,
@@ -52,15 +56,12 @@ theorem paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:
       rw [Finset.sum_comm]
       simp_rw [Finset.sum_comm (s:=rows) (t:=Finset.univ)]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro B hB
-      apply Finset.sum_congr rfl
-      intro E hE
+      pm_3397 B hB E hE
       apply Finset.sum_congr rfl
       intro z hz
       ring
 
-theorem whole_paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem whole_paired_columns(v:Input κ)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (R seed:Ideal O)(hsC:seed∣C)(hsD:seed∣D)(Ds:Finset (Ideal O))(rows:Finset O):
     (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
       ‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)≤
@@ -78,18 +79,14 @@ theorem whole_paired_columns (s:Input ι)(v:Input κ)(C D:Ideal O)(hC:Supported 
       Finset.sum_le_sum (fun L hL=>mul_le_mul_of_nonneg_left
         (paired_columns s v C D hC hD R seed L hsC hsD rows) (norm_nonneg _))
     _=_:=by
-      simp only [Finset.mul_sum]
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
+      pm_3006
       intro B hB
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro E hE
-      apply Finset.sum_congr rfl
-      intro L hL
+      pm_3397 E hE L hL
       apply Finset.sum_congr rfl
       intro z hz
       ring
+end
 
 end SevenEighths.CenteredMomentCommonPairedSource
 

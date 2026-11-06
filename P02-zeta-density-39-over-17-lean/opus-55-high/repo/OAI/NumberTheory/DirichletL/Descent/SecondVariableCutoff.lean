@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -60,10 +61,7 @@ theorem truncated_second_attached_variable [Fintype κ]
     pool Ψ (secondParentPuncture p m parent) (secondParentLabel p parent) (secondParentDivisor p parent)
     (fun U => primeMark slots lists a U*W (primeProductNorm p U/X)) Φ Y (secondVariableCutoff p parent R) label]
   congr 1
-  apply Finset.sum_congr rfl
-  intro z hz
-  apply Finset.sum_congr rfl
-  intro residual hresidual
+  pm_3397 z hz residual hresidual
   apply Finset.sum_congr rfl
   intro j hj
   exact secondExpansionSource_attached p hp hcop hg hinj hpr parent _

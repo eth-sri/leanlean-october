@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ZeroMode
 public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
 public import OAI.NumberTheory.DirichletL.Moments.Tail
 public import OAI.NumberTheory.DirichletL.Moments.Extraction
+public import OAI.NumberTheory.DirichletL.Detector.IdealUnit
 
 @[expose] public section
 
@@ -18,10 +19,7 @@ open CenteredExceptionalCount CenteredMomentRectangle CenteredMomentExtraction
 open UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
-lemma supported_one_ideal : Supported (1 : Ideal O) := by
-  refine ⟨one_ne_zero, ?_⟩
-  intro P hP
-  simp only [normalizedFactors_one, Multiset.notMem_zero] at hP
+export OAI.SevenEighths.ProbePhysical (supported_one_ideal)
 
 lemma supported_one_element : Supported (Ideal.span {(1 : O)}) := by
   simpa only [Ideal.span_singleton_one, Ideal.one_eq_top] using supported_one_ideal

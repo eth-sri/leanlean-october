@@ -15,7 +15,6 @@ the integral linear changes of equations used before (4.6) and (7.7).
 -/
 
 open Finset Polynomial
-open scoped BigOperators
 
 namespace GafniTao
 

@@ -2,10 +2,11 @@ module
 public import Mathlib.Analysis.Calculus.Deriv.Support
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Deriv
 public import Mathlib.Order.Filter.ZeroAndBoundedAtFilter
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Complex MeasureTheory Filter Topology BoundedContinuousFunction SchwartzMap  BigOperators
+open Real Complex MeasureTheory Filter Topology BoundedContinuousFunction SchwartzMap
 open scoped ContDiff
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {n : ℕ}
@@ -112,7 +113,7 @@ lemma tendsto_scale (f : CS n E) (x : ℝ) : Tendsto (fun R => f.scale R x) atTo
 lemma bounded : ∃ C, ∀ v, ‖f v‖ ≤ C := by
   obtain ⟨x, hx⟩ :=
     (continuous_norm.comp f.continuous).exists_forall_ge_of_hasCompactSupport f.h2.norm
-  exact ⟨_, hx⟩
+  aesop
 
 end CS
 
@@ -246,8 +247,8 @@ theorem W21_approximation (f : W21) (g : trunc) :
   -- Properties of h
   have ch {R} : Continuous (fun v => (h R v : ℂ)) :=
     continuous_ofReal.comp <| continuous_const.sub (CS.continuous _)
-  have ch' {R} : Continuous (fun v => (h' R v : ℂ)) := continuous_ofReal.comp (CS.continuous _)
-  have ch'' {R} : Continuous (fun v => (h'' R v : ℂ)) := continuous_ofReal.comp (CS.continuous _)
+  pm_6372 ch' h'
+  pm_6372 ch'' h''
   have dh R v : HasDerivAt (h R) (h' R v) v := by
     convert CS.hasDerivAt_scale (g : CS 2 ℝ) R v |>.const_sub 1 using 1
     simp [h', CS.deriv_scale', show g.deriv.toFun = deriv g.toFun from rfl]
@@ -269,7 +270,7 @@ theorem W21_approximation (f : W21) (g : trunc) :
 
   · let F R v := ‖h R v * f v‖
     have eh v : ∀ᶠ R in atTop, h R v = 0 := by
-      filter_upwards [(vR v).eventually g.zero, eventually_ne_atTop 0] with R hR hR'
+      pm_7726 g.zero
       simp [h, hR, CS.scale, hR', funscale, mul_comm R⁻¹]
     have e1 : ∀ᶠ (n : ℝ) in atTop, AEStronglyMeasurable (F n) volume := by
       apply Eventually.of_forall ; intro R
@@ -292,10 +293,8 @@ theorem W21_approximation (f : W21) (g : trunc) :
         have df' v : HasDerivAt f' (f'' v) v := f'.hasDerivAt v
         have l3 v : HasDerivAt (fun v => h R v * f v) (h' R v * f v + h R v * f' v) v :=
           (dh R v).ofReal_comp.mul (df v)
-        have l5 : HasDerivAt (fun v => h' R v * f v) (h'' R v * f v + h' R v * f' v) v :=
-          (dh' R v).ofReal_comp.mul (df v)
-        have l7 : HasDerivAt (fun v => h R v * f' v) (h' R v * f' v + h R v * f'' v) v :=
-          (dh R v).ofReal_comp.mul (df' v)
+        pm_7568 l5 h' f h'' f' dh' df
+        pm_7568 l7 h f' h' f'' dh df'
         have d1 : deriv (fun v => h R v * f v) = fun v => h' R v * f v + h R v * f' v :=
           funext (fun v => (l3 v).deriv)
         rw [d1] ; convert (l5.add l7).deriv using 1 ; ring
@@ -345,26 +344,20 @@ theorem W21_approximation (f : W21) (g : trunc) :
       (((f.hf.norm).const_mul _).add ((f.hf'.norm).const_mul _)).add f.hf''.norm
     have e4 : ∀ᵐ (a : ℝ), Tendsto (fun n ↦ F n a) atTop (𝓝 0) := by
       apply Eventually.of_forall ; intro v
-      have evg' : g' =ᶠ[𝓝 0] 0 := by
-        have he := g.zero.deriv
-        simpa [g', CS.deriv, deriv_const'] using he
-      have evg'' : g'' =ᶠ[𝓝 0] 0 := by
-        have he := evg'.deriv
-        simpa [g'', CS.deriv, deriv_const'] using he
+      pm_7048 evg' g' g.zero.deriv
+      pm_7048 evg'' g'' evg'.deriv
       refine tendsto_norm_zero.comp <| (ZeroAtFilter.add ?_ ?_).add ?_
       · have eh'' v : ∀ᶠ R in atTop, h'' R v = 0 := by
-          filter_upwards [(vR v).eventually evg'', eventually_ne_atTop 0] with R hR hR'
+          pm_7726 evg''
           simp only [CS.deriv_scale, CS.deriv_smul, CS.neg_apply, CS.smul_apply, smul_eq_mul,
             neg_eq_zero, mul_eq_zero, inv_eq_zero, hR', false_or, h'']
           simp only [CS.scale, hR', ↓reduceDIte, funscale, smul_eq_mul, mul_comm R⁻¹]
           exact hR
-        apply tendsto_nhds_of_eventually_eq
-        filter_upwards [eh'' v] with R hR ; simp [hR]
+        pm_8027 eh''
       · have eh' v : ∀ᶠ R in atTop, h' R v = 0 := by
           filter_upwards [(vR v).eventually evg'] with R hR
           simp [g'] at hR
           simp [h', CS.deriv_scale', mul_comm R⁻¹, hR]
-        apply tendsto_nhds_of_eventually_eq
-        filter_upwards [eh' v] with R hR ; simp [hR]
+        pm_8027 eh'
       · simpa [h, ZeroAtFilter] using ((g.tendsto_scale v).const_sub 1).ofReal.mul tendsto_const_nhds
     simpa [F] using tendsto_integral_filter_of_dominated_convergence bound e1 e2 e3 e4

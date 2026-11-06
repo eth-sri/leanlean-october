@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedFrequencyGap
 public import Mathlib.NumberTheory.Harmonic.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,11 +21,10 @@ open scoped BigOperators
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
+section
+variable {F : ℝ → ℝ} {σ δ T N l r η : ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2)
+include F σ δ T N l r η hσ hδ hF hT hN hη hl hr
 theorem sum_norm_bufferedModes_right_le_harmonic
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2)
     (Q : ℤ) (hQ : (T/N)*(1+δ) ≤ (Q : ℝ)) (L : ℕ) :
     (∑ n ∈ Finset.range L,
       ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -39,15 +39,9 @@ theorem sum_norm_bufferedModes_right_le_harmonic
       convert h using 1
       ring
     _ = _ := by
-      rw [← Finset.mul_sum]
-      congr 1
-      simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
+      pm_337
 
 theorem sum_norm_bufferedModes_left_le_harmonic
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2)
     (Q : ℤ) (hQ : (Q : ℝ) ≤ (T/N)*((2 : ℝ)^(-σ)-δ)) (L : ℕ) :
     (∑ n ∈ Finset.range L,
       ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -62,15 +56,9 @@ theorem sum_norm_bufferedModes_left_le_harmonic
       convert h using 1
       ring
     _ = _ := by
-      rw [← Finset.mul_sum]
-      congr 1
-      simp only [harmonic,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
+      pm_337
 
 theorem norm_bufferedModes_exterior_blocks_le_log
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2)
     (Lminus Lplus : ℕ) :
     ‖(∑ n ∈ Finset.range Lminus,
       modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N
@@ -83,14 +71,7 @@ theorem norm_bufferedModes_exterior_blocks_le_log
     ⌊(T/N)*((2 : ℝ)^(-σ)-δ)⌋ (Int.floor_le _) Lminus
   have hp := sum_norm_bufferedModes_right_le_harmonic hσ hδ hF hT hN hη hl hr
     ⌈(T/N)*(1+δ)⌉ (Int.le_ceil _) Lplus
-  calc
-    _ ≤ (4/Real.pi)*(harmonic Lminus : ℝ)+(4/Real.pi)*(harmonic Lplus : ℝ) :=
-      (norm_add_le _ _).trans (add_le_add
-        ((norm_sum_le _ _).trans hm) ((norm_sum_le _ _).trans hp))
-    _ ≤ (4/Real.pi)*(1+Real.log (Lminus : ℝ))+
-        (4/Real.pi)*(1+Real.log (Lplus : ℝ)) :=
-      add_le_add (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Lminus) (by positivity))
-        (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Lplus) (by positivity))
-    _ = _ := by ring
+  pm_130
+end
 
 end TaoTrudgianYang2025

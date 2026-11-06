@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GreenIntegrals
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,75 +8,32 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic
+open ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 end CubicEisenstein
 
@@ -84,8 +42,7 @@ namespace CanonicalQuadraticSieve
 theorem symmetric_truncation_scales (X₀ X T : ℝ) (hX₀ : 0 < X₀)
     (hlo : X₀/2 ≤ X) (hhi : X ≤ 2*X₀) (hT : 4 ≤ T) :
     0 < X ∧ 0 < X₀/T ∧ X₀/T ≤ X ∧ X ≤ T*X₀ ∧ 0 ≤ T^4 := by
-  have hT0 : 0 < T := by linarith
-  have hX : 0 < X := by linarith
+  pm_72 hT0 T hX X
   refine ⟨hX,div_pos hX₀ hT0,?_,?_,by positivity⟩
   · apply (div_le_iff₀ hT0).mpr
     nlinarith
@@ -96,10 +53,9 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
     ((X₀/T)/X)^(m+3) + 1/(1+(T*X₀)/X)^(m+3) +
       (X/(X₀/T))/((min 1 (X/(T*X₀)))^2*(1+X*T^4/(T*X₀))^(m+3)) ≤
       (2 : ℝ)^(m+10)/T^m := by
-  have hT0 : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
+  pm_34 hT0 T hT1
   have hX : 0 < X := by linarith
-  have hY : 0 < X₀/T := div_pos hX₀ hT0
+  pm_6528 hY X₀ T hX₀ hT0
   have hratio : (X₀/T)/X ≤ 2/T := by
     apply (div_le_iff₀ hX).mpr
     calc
@@ -146,7 +102,7 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
         div_le_div₀ (by positivity) hnum (by positivity) hden
       _ = _ := by rw [pow_add]; field_simp; ring
   have hc : 2*(2 : ℝ)^(m+3)+8 ≤ (2 : ℝ)^(m+10) := by
-    have hm : 1 ≤ (2 : ℝ)^m := one_le_pow₀ (by norm_num)
+    pm_5252 hm m
     rw [pow_add,pow_add]
     norm_num
     nlinarith
@@ -157,7 +113,7 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
@@ -216,10 +172,7 @@ def secondLogIndex (D : Finset ι) (x : SecondExpansionData ι) : SecondLogIndex
     normLogBin (‖eisEmbedding (actualSecondRow p D x.divisor x.frequency)‖^2))
 
 lemma element_norm_ge_one (a : O) (ha : a ≠ 0) : 1 ≤ ‖eisEmbedding a‖^2 := by
-  rw [eisEmbedding_norm_sq_eq_absNorm_span]
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (show Ideal.absNorm (Ideal.span {a}) ≠ 0 by
-    rw [ne_eq, Ideal.absNorm_eq_zero_iff, Ideal.span_singleton_eq_bot]
-    exact ha)
+  pm_5580 a ha
 
 end
 section

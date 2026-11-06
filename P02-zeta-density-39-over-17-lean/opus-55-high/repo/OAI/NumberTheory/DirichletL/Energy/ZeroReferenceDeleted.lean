@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceReflection
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceGeometry
 public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,11 +31,11 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → s.width≤Mcap → xi≤ s.width/6 →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
-      ∀t X₁ X₂:ℝ,0<X₁ →0<X₂ →s.width/4≤Real.logb Z (X₁*X₂) →
+      ∀t X₁ X₂:ℝ,0<X₁ →0<X₂ → s.width/4≤Real.logb Z (X₁*X₂) →
       ∀D₁∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀D₂∈(CompletedGauss.primeSupport s.puncture).powerset,
       radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W₁
@@ -43,25 +44,20 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
           (comparisonSecond Z s.width X₁ X₂/((∏I∈D₂,I).absNorm:ℝ)) 0 t)
         (effectiveState s).radial.keep s.radial.profile s.radial.scale ≤
         K*diagonalControl s.radial.profile*
-          ((independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S)^2*Z^(s.width+ε) +
-        (C*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^epsilon *
+          ((independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S)^2*Z ^(s.width+ε) +
+        (C*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z ^s.width))^epsilon *
           (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*
           (1+2*(L*Real.log Z))*
           (K*diagonalControl s.radial.profile*Dchild*(sourceControl T W₁)^2*
-            (1+|t|)^(2*n)*Z^(s.width+ε)) +
-        D*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*epsilon)*
-          (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*Z^(-2*saving)*
+            (1+|t|)^(2*n)*Z ^(s.width+ε)) +
+        D *(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z ^s.width))^(2*epsilon)*
+          (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*Z ^(-2*saving)*
           ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁)^2*
-            diagonalControl s.radial.profile*max 1 s.radial.scale*Z^(s.width/4)):=by
-  obtain ⟨Ce,hCe,he⟩:=short_energy_bound b
-  obtain ⟨n,T,Dchild,hDc,nlong,Slong,C,D,hC,hD,href⟩:=reference_from_low
-    a b bΦ epsilon xi saving (Mcap+Bmask) ha hlo hhi hbΦ hepsilon hxi B hB S
-  refine ⟨n,T,Dchild,hDc,nlong,Slong,C,D*Ce,hC,mul_pos hD hCe,?_⟩
-  filter_upwards [href] with Z hZ
-  refine ⟨hZ.1,?_⟩
+            diagonalControl s.radial.profile*max 1 s.radial.scale*Z ^(s.width/4)):=by
+  pm_191
+  pm_168 href
   intro ε Q degree K hK hlow s hQ hs hxiM W₁ W₂ hs₁ hs₂ t X₁ X₂ hX₁ hX₂ hlarge D₁ hD₁ D₂ hD₂
-  let short:=s.width/4-Real.logb Z ((∏I∈D₁,I).absNorm:ℝ)
-  let along:=Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏I∈D₂,I).absNorm:ℝ)
+  pm_339
   have hg:=actual_deleted_gates s hZ.1 hBmask Mcap L X₁ X₂ xi hs hL
     hX₁ hX₂ hxi.le hxiM hlarge D₁ D₂ hD₁ hD₂
   dsimp only at hg
@@ -72,7 +68,7 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
   have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
   rcases hg.2.2.2.2.2.2.2 with hd|hr
   · have hdirect:=independent_from_low a b bΦ Bmask L Mcap ε Z Q degree S K hlow hBmask ha
-      s hQ hs W₁ W₂ hs₁ hs₂ t t (Z^short) (Z^along)
+      s hQ hs W₁ W₂ hs₁ hs₂ t t (Z ^short) (Z ^along)
       (Real.rpow_pos_of_pos hZpos _) (Real.rpow_pos_of_pos hZpos _)
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hg.2.2.2.1)
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hd.1) hd.2
@@ -81,12 +77,12 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
       W₂ W₁ hs₂ hs₁ t along short hg.2.2.2.2.2.1 hg.2.2.2.2.2.2.1 hg.2.2.2.1 hr.2
     dsimp only at hh
     have he₁:=he W₁ (fun x hx=>(hs₁ hx).2) (fun z=>naturalCharacter s.character z)
-      t (Z^short) s.radial.scale s.radial.profile (effectiveState s).radial.keep
+      t (Z ^short) s.radial.scale s.radial.profile (effectiveState s).radial.keep
       (Real.rpow_pos_of_pos hZpos _) s.radial.scale_pos s.radial.nonneg
-    have hswap:(fun z=>polynomial (naturalCharacter s.character z) false W₁ (Z^short) 0 t *
-        polynomial (naturalCharacter s.character z) false W₂ (Z^along) 0 t)=
-      (fun z=>polynomial (naturalCharacter s.character z) false W₂ (Z^along) 0 t *
-        polynomial (naturalCharacter s.character z) false W₁ (Z^short) 0 t):=by funext z;ring
+    have hswap:(fun z=>polynomial (naturalCharacter s.character z) false W₁ (Z ^short) 0 t *
+        polynomial (naturalCharacter s.character z) false W₂ (Z ^along) 0 t)=
+      (fun z=>polynomial (naturalCharacter s.character z) false W₂ (Z ^along) 0 t *
+        polynomial (naturalCharacter s.character z) false W₁ (Z ^short) 0 t):=by funext z;ring
     rw [hswap]
     apply hh.trans
     apply le_trans _ (le_add_of_nonneg_left (by positivity))
@@ -94,10 +90,10 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     · gcongr
       exact hg.2.2.2.2.2.2.1
     · calc
-        _≤D*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*epsilon)*
-          (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*Z^(-2*saving)*
+        _≤D*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z ^s.width))^(2*epsilon)*
+          (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*Z ^(-2*saving)*
           (Ce*((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁)^2*
-            diagonalControl s.radial.profile*max 1 s.radial.scale*Z^(s.width/4)):=by
+            diagonalControl s.radial.profile*max 1 s.radial.scale*Z ^(s.width/4)):=by
           gcongr
           exact he₁.trans (by
             gcongr

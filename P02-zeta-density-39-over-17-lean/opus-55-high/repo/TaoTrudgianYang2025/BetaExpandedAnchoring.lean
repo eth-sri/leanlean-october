@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedAllOrders
 public import TaoTrudgianYang2025.BetaLegendreCorrection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,10 @@ open scoped BigOperators ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem modelPhaseLegendreDual_expanded_anchored_bound
-    {σ : ℝ} (hσ : 0 < σ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+theorem modelPhaseLegendreDual_expanded_anchored_bound :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (F : ℝ → ℝ) (δ : ℝ),
       δ ≤ min (modelPhaseCurvatureLower σ) 1 →
       δ ≤ min ((2 : ℝ)^(-σ)/2) 1 →
@@ -33,7 +36,7 @@ theorem modelPhaseLegendreDual_expanded_anchored_bound
   refine ⟨2*A+1,by linarith,?_⟩
   intro F δ hδ hpos hF v hv w hw
   have hd := approximateModelPhase_tolerance_nonneg hF
-  have hlo : 0 < (2 : ℝ)^(-σ)/2 := by positivity
+  pm_1630
   have hconv : Convex ℝ (modelPhaseSlopeRange F) := by
     rw [modelPhaseSlopeRange_eq_endpoint_Ioo hσ hδ hF]
     exact convex_Ioo _ _
@@ -58,8 +61,7 @@ theorem modelPhaseLegendreDual_expanded_anchored_bound
   exact h'.trans ((mul_le_mul_of_nonneg_left hdist
     (mul_nonneg (zero_le_one.trans hA) hd)).trans (by nlinarith))
 
-theorem anchoredLegendreError_expanded_finite_uniformity
-    {σ : ℝ} (hσ : 0 < σ) (Q : ℕ) :
+theorem anchoredLegendreError_expanded_finite_uniformity (Q : ℕ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (F : ℝ → ℝ) (δ : ℝ),
       δ ≤ min (modelPhaseCurvatureLower σ) 1 →
       δ ≤ min ((2 : ℝ)^(-σ)/2) 1 →
@@ -69,7 +71,7 @@ theorem anchoredLegendreError_expanded_finite_uniformity
   obtain ⟨A,hA,hvalue⟩ := modelPhaseLegendreDual_expanded_anchored_bound hσ
   choose B hB hderiv using fun n => modelPhaseLegendreDual_expanded_allOrder_uniformity hσ n
   let S := ∑ n ∈ Finset.range (Q+1), B n
-  have hS : 0 ≤ S := Finset.sum_nonneg fun n _ => zero_le_one.trans (hB n)
+  pm_8659 n hB
   refine ⟨A+S,by linarith,?_⟩
   intro F δ hδ hpos hF w hw v hv n hn
   have hd := approximateModelPhase_tolerance_nonneg hF
@@ -92,5 +94,6 @@ theorem anchoredLegendreError_expanded_finite_uniformity
         (fun k _ => zero_le_one.trans (hB k)) (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hnQ))
       exact (hderiv n F δ hδ hpos hsmall v hv).trans
         (mul_le_mul_of_nonneg_right (by linarith) hd)
+end
 
 end TaoTrudgianYang2025

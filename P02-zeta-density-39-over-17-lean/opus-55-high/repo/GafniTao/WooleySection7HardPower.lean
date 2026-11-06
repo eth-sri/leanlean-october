@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection7HardArithmetic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The power ledger in the hard branch of Wooley Lemma 7.1
@@ -14,7 +15,6 @@ absorbed here.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- A single loss independent of the valuation class.  This is the form
 needed before summing (7.23) over all separated residue pairs. -/
@@ -43,7 +43,7 @@ theorem wooley_section7_hard_power_loss_zero
   have hk : 2 ≤ k := by omega
   have hkSq : (4 : ℝ) ≤ (k : ℝ) ^ 2 := by
     nlinarith [show (2 : ℝ) ≤ k by exact_mod_cast hk]
-  have hnuPos : (0 : ℝ) < nu := by exact_mod_cast (show 0 < nu by omega)
+  pm_2847 hnuPos nu
   have hexp :
       (bp0 : ℝ) * epsilon ^ 2 + (R : ℝ) * (d : ℝ) <
         ((k ^ 2 * nu : ℕ) : ℝ) := by
@@ -67,6 +67,5 @@ theorem wooley_section7_hard_power_loss_zero
     _ ≤ (p : ℝ) ^ ((k ^ 2 * nu : ℕ) : ℝ) := hpow
     _ = (p : ℝ) ^ (k ^ 2 * nu) := Real.rpow_natCast _ _
 
-end
 
 end GafniTao

@@ -1,13 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalKernel
 public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalKernel
 open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss
@@ -22,7 +22,7 @@ theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
     (hV : ∀i y,V i y≠0→|y|≤M i) (A J : ℕ) :
     ∃C:ℝ,0≤C ∧ ∀R:ℝ,0<R →
       ∀{α β:Type*}(Ls:Finset (Ideal O))(rows:Finset O)(S:Finset α)(T:Finset β)
-        (a:α→O)(b:β→O)(c:Ideal O→α→ℂ)(d:Ideal O→β→ℂ)
+        (a:α→ O)(b:β→ O)(c:Ideal O→α→ℂ)(d:Ideal O→β→ℂ)
         (u:α→ℝ)(v:β→ℝ)(ρ x:O→ℝ)(η:O→ℂ),
       (∀z∈rows,‖η z‖≤1) → (∀z∈rows,‖V 0 (ρ z)‖≤1) →
       (∀z∈rows,‖V 1 (x z)‖≤1) → ∀E:ℝ,0≤E →
@@ -50,10 +50,7 @@ theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
         (V 2) u t=(UniqueFactorizationMonoid.moebius L:ℂ)*
           rowPolynomial S a (fun i=>c L i*columnPhase (V 2) (u i) t) z := by
     rw [←leftColumn_eq_rowPolynomial]
-    unfold leftColumn
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i hi
+    pm_3809 leftColumn Finset.mul_sum i hi
     ring
   have hp:∀t:ℝ,(∑k∈Ls×ˢrows,
       ‖leftColumn S (fun i=>(UniqueFactorizationMonoid.moebius k.1:ℂ)*(c k.1 i*idealRowHom k.2 (Ideal.span {a i}))) (V 2) u t‖*
@@ -66,21 +63,15 @@ theorem whole_kernel_divisor_pair (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ)
   apply hout.trans_eq'
   congr 2
   simp only [Finset.sum_product,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro L hL
-  apply Finset.sum_congr rfl
-  intro z hz
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_3397 L hL z hz
+  pm_3622
   ring
 
 private theorem weighted_norm_sum {α:Type*} (S:Finset α)(a f:α→ℂ)
-    (r:ℝ)(hr:0≤r)(B:α→ℝ)(hB:∀i∈S,r*‖f i‖≤B i):
+    (r:ℝ)(hr:0≤ r)(B:α→ℝ)(hB:∀i∈S,r*‖f i‖≤B i):
     r*‖∑i∈S,a i*f i‖≤∑i∈S,‖a i‖*B i:=by
   calc
-    _≤r*∑i∈S,‖a i*f i‖:=mul_le_mul_of_nonneg_left (norm_sum_le _ _) hr
+    _≤ r*∑i∈S,‖a i*f i‖:=mul_le_mul_of_nonneg_left (norm_sum_le _ _) hr
     _=∑i∈S,‖a i‖*(r*‖f i‖):=by simp only [Finset.mul_sum,norm_mul];congr 1;funext i;ring
     _≤_:=Finset.sum_le_sum (fun i hi=>mul_le_mul_of_nonneg_left (hB i hi) (norm_nonneg _))
 
@@ -88,14 +79,14 @@ theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
     (M:Fin 4→ℝ)(hM:∀i,0≤M i)(hV:∀i y,V i y≠0→|y|≤M i)(A J:ℕ):
     ∃C:ℝ,0≤C ∧ ∀R:ℝ,0<R →
       ∀{α β:Type*}(rows:Finset O)(S:Finset α)(T:Finset β)
-        (D E A₀:O)(a:α→O)(b:β→O)
+        (D E A₀:O)(a:α→ O)(b:β→ O)
         (hD:Supported (Ideal.span {D}))(hE:Supported (Ideal.span {E}))
         (ha:∀i,Supported (Ideal.span {a i}))(hb:∀j,Supported (Ideal.span {b j})),
-      (ConcretePrimeRowBridge.goodLambda^2∣D-1) →
+      (ConcretePrimeRowBridge.goodLambda^2∣D -1) →
       (ConcretePrimeRowBridge.goodLambda^2∣E-1) →
       (∀i,ConcretePrimeRowBridge.goodLambda^2∣a i-1) →
       (∀j,ConcretePrimeRowBridge.goodLambda^2∣b j-1) →
-      (∀i,IsCoprime (D*E) (a i)) → (∀j,IsCoprime (D*E) (b j)) →
+      (∀i,IsCoprime (D *E) (a i)) → (∀j,IsCoprime (D *E) (b j)) →
       ∀(q:O→ℂ)(c:α→ℂ)(d:β→ℂ)(u:α→ℝ)(v:β→ℝ)(ρ x:O→ℝ),
       (∀z∈rows,‖q z*actualCorrelation D E hD hE (A₀*z)‖≤1) →
       (∀z∈rows,‖V 0 (ρ z)‖≤1) → (∀z∈rows,‖V 1 (x z)‖≤1) →
@@ -108,15 +99,15 @@ theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
             ‖rowPolynomial T b (fun j=>divisorCoefficient L b (movingCoefficient A₀ b d) (ξ⁻¹) j*
               star (columnPhase (V 3) (v j) t)) (-z)‖)≤E0*(1+‖t‖)^J) →
       (1+R)^A*‖∑z∈rows,q z*∑i∈S,∑j∈T,
-        (if IsCoprime (a i) (b j) then actualCorrelation (D*a i) (E*b j)
+        (if IsCoprime (a i) (b j) then actualCorrelation (D *a i) (E*b j)
           (supported_mul_elements _ _ hD (ha i)) (supported_mul_elements _ _ hE (hb j)) (A₀*z)
           else 0)*(c i*star (d j))*wholeKernel W V R (ρ z) (x z) (u i) (v j)‖≤C*E0:=by
   obtain ⟨C,hC,hbound⟩:=whole_kernel_divisor_pair W V M hM hV A J
-  refine ⟨256*C,mul_nonneg (by norm_num) hC,?_⟩
+  pm_688
   intro R hR α β rows S T D E A₀ a b hD hE ha hb hpD hpE hpa hpb hcopA hcopB
     q c d u v ρ x hq hV₀ hV₁ E0 hE0 hpair
   rw [actual_scaled_row_children rows S T D E A₀ a b hD hE ha hb hpD hpE hpa hpb hcopA hcopB]
-  let f:RayCharacter→RayCharacter→ℂ:=fun χ ξ=>
+  let f:RayCharacter→ RayCharacter→ℂ:=fun χ ξ=>
     ∑L∈divisorPool T (fun j=>Ideal.span {b j}),(UniqueFactorizationMonoid.moebius L:ℂ)*
       ∑z∈rows,(q z*actualCorrelation D E hD hE (A₀*z))*∑i∈S,∑j∈T,
         ((divisorCoefficient L a (movingCoefficient A₀ a c) χ i*idealRowHom z (Ideal.span {a i}))*
@@ -136,24 +127,16 @@ theorem whole_kernel_actual_second_pair (W : 𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)
               star (divisorCoefficient L b (movingCoefficient A₀ b d) (ξ⁻¹) j*idealRowHom (-z) (Ideal.span {b j})))*
                 wholeKernel W V R (ρ z) (x z) (u i) (v j))=
         ∑χ:RayCharacter,∑ξ:RayCharacter,pairCoeff (phaseTable D E) χ ξ*f χ ξ:=by
-    simp only [Finset.mul_sum]
-    rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
+    pm_3006
     intro χ hχ
     rw [Finset.sum_comm]
     apply Finset.sum_congr rfl
     intro ξ hξ
-    unfold f
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro L hL
+    pm_3809 f Finset.mul_sum L hL
     simp only [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro z hz
-    apply Finset.sum_congr rfl
-    intro i hi
-    apply Finset.sum_congr rfl
-    intro j hj
+    pm_3622
     ring
   rw [heq]
   calc
@@ -192,7 +175,7 @@ theorem exceptional_rows_pair (η:Character)(χ₀ χ ξ:RayCharacter)(Q:Ideal O
       η χ₀ (ξ⁻¹) Q hQ m A z hmLam hm2 (hrows z hz)
 
 theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
-    ∃B:ℝ,0≤B ∧ ∀r:ℝ,0<r →
+    ∃B:ℝ,0≤B ∧ ∀r:ℝ,0< r →
       ∀(η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
         (C D:Ideal O)(hC:Supported C)(hD:Supported D),
       primeSupport C=primeSupport D →
@@ -200,9 +183,9 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
         (ρ x:O→ℝ)(u:sectorPool C hC.1 S→ℝ)(v:sectorPool D hD.1 S→ℝ)
         (Q:Ideal O)(m:O)(χ₀:RayCharacter),
       Q≤Ideal.span {(72:O)} → ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
-      let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
+      let A:=commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U
       let c:=fun I:sectorPool C hC.1 S=>β (C*I)*heightCoeff η t I
-      let d:=fun I:sectorPool D hD.1 S=>β (D*I)*heightCoeff η t I
+      let d:=fun I:sectorPool D hD.1 S=>β (D *I)*heightCoeff η t I
       (∀z∈rows,FixedInducingRow (childCharacter η χ₀) Q m A z) →
       ∀E:ℝ,0≤E →
       (∀χ ξ:RayCharacter,
@@ -221,22 +204,20 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
       (1+r)^decay*‖∑z∈rows,retainedScalar C D U R z*
         ∑I:sectorPool C hC.1 S,∑J:sectorPool D hD.1 S,
           (if IsCoprime (I:Ideal O) (J:Ideal O) then
-            idealCorrelation (C*I) (D*J)
+            idealCorrelation (C*I) (D *J)
               ((supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩)
               ((supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩) (A*z) else 0)*
             (c I*star (d J))*wholeKernel W (fun _=>logAnnulus) r (ρ z) (x z) (u I) (v J)‖≤B*E:=by
   obtain ⟨B,hB,hbound⟩:=whole_kernel_actual_second_pair W (fun _=>logAnnulus)
     (fun _=>Real.log 4) (fun _=>Real.log_nonneg (by norm_num))
     (fun _ x hx=>CenteredMomentSecondIdealBlockBound.logAnnulus_enclosure x hx) decay J
-  refine ⟨B,hB,?_⟩
-  intro r hr η t S β C D hC hD hCD U R rows ρ x u v Q m χ₀ hQ hmLam hm2
-  dsimp only
+  pm_2988
   intro hrows E hE hpair
   have hcopD (I:sectorPool D hD.1 S):
       IsCoprime (primaryGenerator C*primaryGenerator D) (sectorElement D hD.1 S I):=by
     simpa only [mul_comm] using sectorElement_coprime D C hD hC hCD.symm S I
   have he:=hbound r hr rows Finset.univ Finset.univ (primaryGenerator C) (primaryGenerator D)
-    (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)
+    (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U)
     (sectorElement C hC.1 S) (sectorElement D hD.1 S)
     ((supported_span_primaryGenerator_iff C).mpr hC) ((supported_span_primaryGenerator_iff D).mpr hD)
     (sectorElement_supported C hC.1 S) (sectorElement_supported D hD.1 S)
@@ -245,7 +226,7 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
     (sectorElement_primary C hC.1 S) (sectorElement_primary D hD.1 S)
     (sectorElement_coprime C D hC hD hCD S) hcopD
     (retainedScalar C D U R) (fun I=>β (C*I)*heightCoeff η t I)
-    (fun I=>β (D*I)*heightCoeff η t I) u v ρ x
+    (fun I=>β (D *I)*heightCoeff η t I) u v ρ x
     (fun z _=>actual_retained_scalar_norm C D hC hD hCD U R z)
     (fun z _=>logAnnulus_norm _) (fun z _=>logAnnulus_norm _) E hE
   have hh:∀χ ξ:RayCharacter,∀w:ℝ,
@@ -253,12 +234,12 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
         ‖(UniqueFactorizationMonoid.moebius L:ℂ)‖*∑z∈rows,
         ‖rowPolynomial Finset.univ (sectorElement C hC.1 S)
           (fun I=>divisorCoefficient L (sectorElement C hC.1 S)
-            (movingCoefficient (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)
+            (movingCoefficient (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U)
               (sectorElement C hC.1 S) (fun I=>β (C*I)*heightCoeff η t I)) χ I*columnPhase logAnnulus (u I) w) z‖*
         ‖rowPolynomial Finset.univ (sectorElement D hD.1 S)
           (fun I=>divisorCoefficient L (sectorElement D hD.1 S)
-            (movingCoefficient (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)
-              (sectorElement D hD.1 S) (fun I=>β (D*I)*heightCoeff η t I)) (ξ⁻¹) I*
+            (movingCoefficient (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U)
+              (sectorElement D hD.1 S) (fun I=>β (D *I)*heightCoeff η t I)) (ξ⁻¹) I *
               star (columnPhase logAnnulus (v I) w)) (-z)‖)≤E*(1+‖w‖)^J:=by
     intro χ ξ w
     have hg:=exceptional_rows_pair η χ₀ χ ξ Q hQ m _ hmLam hm2 rows hrows
@@ -271,10 +252,9 @@ theorem actual_exceptional_block_bound (W:𝓢(ℝ,ℂ))(decay J:ℕ):
   have hcop' (I:sectorPool C hC.1 S)(J:sectorPool D hD.1 S):
       IsCoprime (primaryGenerator (I:Ideal O)) (primaryGenerator (J:Ideal O)) ↔
         IsCoprime (I:Ideal O) (J:Ideal O):=hcop I J
-  simpa only [sectorElement_span,idealCorrelation,primaryGenerator_mul,sectorElement,hcop'] using he'
+  pm_124 sectorElement_span idealCorrelation primaryGenerator_mul sectorElement hcop' he'
 
 end SevenEighths.CenteredMomentSecondExceptionalKernel
 
-end
 
 end OAI

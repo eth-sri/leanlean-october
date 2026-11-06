@@ -1,18 +1,21 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension
+open scoped Classical
+open ActualEisensteinCubic FirstCauchyArithmetic CoprimeMobiusExtension
 open RayFourExpansion MixedCrossSeparation
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
+section
+variable {ι : Type*} [DecidableEq ι]
+include ι
+theorem first_coprime_coupled_reindex
     (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
     (hprime : ∀ i, Prime (P i)) (hinj : Function.Injective P)
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ P i) (B : Finset ι)
@@ -33,14 +36,9 @@ theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
   rw [mul_assoc]
   congr 1
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro U hU
-  apply Finset.sum_congr rfl
-  intro V hV
-  have hdU : Disjoint D U := Finset.disjoint_of_subset_right
-    (Finset.mem_powerset.mp hU) disjoint_sdiff_self_right
-  have hdV : Disjoint D V := Finset.disjoint_of_subset_right
-    (Finset.mem_powerset.mp hV) disjoint_sdiff_self_right
+  pm_3811
+  pm_3810 hdU D U hU
+  pm_3810 hdV D V hV
   have hmu (S T : Finset ι) (hd : Disjoint S T) :
       supportMobius P (S ∪ T) = supportMobius P S * supportMobius P T := by
     simp only [supportMobius,prime_product_moebius P hprime hinj,
@@ -60,7 +58,7 @@ theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
           (supportMobius P V * C₂ (D ∪ V) * star (finiteSquarefreeRow P hg V h))) := by ring
     _ = _ := by rw [hm,hz]; ring
 
-theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
+theorem first_quadratic_coupled_reindex
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
@@ -82,7 +80,7 @@ theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
   have hcop : Pairwise (Function.onFun IsCoprime P) := by
     intro i j hij
     exact Ideal.isCoprime_of_isMaximal (hinj.ne hij)
-  have hprime (i : ι) : Prime (P i) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
+  pm_7346 hprime i
   let T := fun (r : RayCharacter × RayCharacter) (S V : Finset ι) => if Disjoint S V then
     H S V * star (supportMobius P S * (star (supportRay p r.1 S)*C₁ S) * star (finiteSquarefreeRow P hg S h)) *
       (supportMobius P V * (supportRay p r.2 V*C₂ V) * star (finiteSquarefreeRow P hg V h)) else 0
@@ -94,10 +92,7 @@ theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
     by_cases hd : Disjoint S V
     · rw [ite_eq_left hd,quadraticCrossPhase_character_expansion p hp hcop hg hc S V hd]
       simp only [Fintype.sum_prod_type,T,ite_eq_left hd,Finset.sum_mul,Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro χ hχ
-      apply Finset.sum_congr rfl
-      intro η hη
+      pm_3397 χ hχ η hη
       simp only [supportRay,star_mul,star_star]
       ring
     · simp [T,hd]
@@ -122,8 +117,8 @@ theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
       intro r hr
       congr 1
       exact first_coprime_coupled_reindex P hprime hinj hg B _ _ H h
-
 end
+
 end SevenEighths.InverseMoment
 
 end OAI

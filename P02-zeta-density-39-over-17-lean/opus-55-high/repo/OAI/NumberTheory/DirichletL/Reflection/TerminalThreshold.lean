@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.AnnularNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,11 +13,14 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
 
-lemma frozenExtracted_eq_ideal (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3) (v : Fin 3) :
+section
+variable (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→ Fin 3)
+include F jF e
+lemma frozenExtracted_eq_ideal (v : Fin 3) :
     frozenExtracted F jF e v = reflectionExtractedDivisor F.ideal jF e v := by
   simp only [frozenExtracted,PrimeFamily.generator_span]
 
-theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
+theorem actual_kernel_terminal_threshold
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (m : ℕ) (Z T QK QP Qn Qb kn kb : ℝ)
     (hT : 0<T) (hK : 0<QK) (hP : 0<QP) (hn : 0<Qn) (hb : 0<Qb)
@@ -28,7 +32,7 @@ theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e
     InverseTerminalWidths.terminalDualWidth Z (Real.logb Z QK) (Real.logb Z QP) (Real.logb Z T)
       F.ideal jF e +
     Real.logb Z (27*(sourceCuspScale s.index)^2*(Ideal.absNorm (Ideal.span {c}):ℝ)^2*kn*kb^3) := by
-  have hr : 0<ramifiedScale 1 completedRamifiedStep m := ramifiedScale_pos _ _
+  have hr : 0< ramifiedScale 1 completedRamifiedStep m := ramifiedScale_pos _ _
     (by norm_num) (lt_trans zero_lt_one completedRamifiedStep_gt_one) _
   have htau := sourceCuspScale_pos s.index
   have hp (I : Ideal Eis) (hI : I≠0) : (0:ℝ)<Ideal.absNorm I := by
@@ -40,7 +44,7 @@ theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e
       T/(27*(sourceCuspScale s.index)^2*
         ((Ideal.absNorm (Ideal.span {c}):ℝ)*(Ideal.absNorm (∏ i,F.ideal i):ℝ))^2)*
       (ramifiedScale 1 completedRamifiedStep m)^3 := by
-    simp only [actualKernelCoefficient,fixedKernelCoefficient,map_one,Nat.cast_one,one_pow,mul_one,map_mul,Nat.cast_mul]
+    pm_403 actualKernelCoefficient fixedKernelCoefficient map_one Nat.cast_one one_pow mul_one map_mul Nat.cast_mul
   rw [hcc,annular_kernel_threshold Z T (sourceCuspScale s.index)
     ((Ideal.absNorm (Ideal.span {c}):ℝ)*(Ideal.absNorm (∏ i,F.ideal i):ℝ))
     _ QK QP Qn Qb kn kb _ _ hT htau (mul_pos hcn hfn) hr hK hP hn hb hkn hkb (hd 1) (hd 2)]
@@ -51,6 +55,7 @@ theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e
   simp (disch := positivity) only [Real.logb_div,Real.logb_mul,Real.logb_pow]
   norm_num only [Nat.cast_ofNat]
   ring
+end
 
 end
 end SevenEighths.InverseReflectedPhase

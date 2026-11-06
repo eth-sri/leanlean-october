@@ -6,10 +6,9 @@ public import GuthMaynard.Improvement.ShortDetectorLocalMass
 public import MathCollab.Density.MollifierBound
 public import AdjacentMomentEnvelope
 public import MathCollab.Density.Stronger.Fourth.FourthMoment
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set MathCollab.Density MathCollab.Density.Stronger
 open scoped Interval
 namespace GuthMaynard.Improvement
@@ -21,28 +20,22 @@ theorem shortTwistedNorm_fourth_half_loss_le {H : ℝ} (hH : 0 ≤ H) (t : ℝ) 
     (s:=(1/2:ℂ)+(t:ℂ)*Complex.I) (by positivity) (by norm_num)
   have hp : shortTwistedNorm H t ≤ zetaMomentCriticalNorm t*
       (2*Real.sqrt (2*H^((1:ℝ)/100))) := by
-    unfold shortTwistedNorm zetaMomentCriticalNorm
-    rw [norm_mul]
-    simpa only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using
-      mul_le_mul_of_nonneg_left hm (norm_nonneg (riemannZeta ((1/2:ℂ)+(t:ℂ)*Complex.I)))
-  have hh := pow_le_pow_left₀ (show 0 ≤ shortTwistedNorm H t by unfold shortTwistedNorm; positivity) hp 4
+    pm_7
+  pm_6013
   have he : (2*Real.sqrt (2*H^((1:ℝ)/100)))^4=64*H^((1:ℝ)/50) := by
     have hs := Real.sq_sqrt (show 0 ≤ 2*H^((1:ℝ)/100) by positivity)
     calc
       _ = 16*(Real.sqrt (2*H^((1:ℝ)/100))^2)^2 := by ring
-      _ = 16*(2*H^((1:ℝ)/100))^2 := by rw [hs]
+      _ = 16*(2*H^((1:ℝ)/100))^2 := by grind
       _ = 64*(H^((1:ℝ)/100))^2 := by ring
       _ = _ := by rw [Montgomery.RationalMoment.adjacent_rpow_nat hH]; norm_num
   rw [mul_pow,he] at hh
-  nlinarith only [hh]
+  grind
 
-/-- Constants precede height; the norm and integration interval are literal. -/
-theorem half_loss_short_moment {ε : ℝ} (hε : 0 < ε) :
-    ∃ C H0 : ℝ, 0 < C ∧ 2 ≤ H0 ∧ ∀ H : ℝ, H0 ≤ H →
-      (∫ t in Icc (H/2) (3*H), (shortTwistedNorm H t)^4) ≤
-        C*H^(1+(1:ℝ)/50+ε) := by
+set_option hygiene false in
+macro "pf_20" x1:term:max x2:term:max x3:term:max x4:ident : tactic => `(tactic| (
   obtain ⟨B,Hb,hB,hb⟩ := Fourth.zeta_fourth_dyadic ε hε
-  refine ⟨192*(B+1)*2^(1+ε),max 2 (2*Hb),by positivity,le_max_left _ _,?_⟩
+  refine ⟨($x1:term)*(B+1)*2^(1+ε),max 2 (2*Hb),by positivity,le_max_left _ _,?_⟩
   intro H hH
   have hH2 : 2 ≤ H := (le_max_left _ _).trans hH
   have hHb : 2*Hb ≤ H := (le_max_right _ _).trans hH
@@ -75,19 +68,24 @@ theorem half_loss_short_moment {ε : ℝ} (hε : 0 < ε) :
     exact (intervalIntegral.integral_mono_interval le_rfl (by linarith) (by linarith)
       (Filter.Eventually.of_forall hf0) (hc.intervalIntegrable (μ := volume) (a := H/2) (b := 4*H))).trans hs
   calc
-    _ ≤ ∫ t in Icc (H/2) (3*H),64*H^((1:ℝ)/50)*f t := by
+    _ ≤ ∫ t in Icc (H/2) (3*H),($x2:term)*H^((1:ℝ)/$x3:term)*f t := by
       apply integral_mono ((shortTwistedNorm_continuous H).pow 4).integrableOn_Icc
         (hc.const_mul _).integrableOn_Icc
-      exact fun t => shortTwistedNorm_fourth_half_loss_le hpos.le t
-    _ = (64*H^((1:ℝ)/50))*(∫ t in Icc (H/2) (3*H),f t) := integral_const_mul _ _
-    _ ≤ (64*H^((1:ℝ)/50))*(3*(B+1)*(2*H)^(1+ε)) :=
+      exact fun t => $x4:ident hpos.le t
+    _ = (($x2:term)*H^((1:ℝ)/$x3:term))*(∫ t in Icc (H/2) (3*H),f t) := integral_const_mul _ _
+    _ ≤ (($x2:term)*H^((1:ℝ)/$x3:term))*(3*(B+1)*(2*H)^(1+ε)) :=
       mul_le_mul_of_nonneg_left hi (by positivity)
     _ = _ := by
       rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hpos.le]
-      have he : H^((1:ℝ)/50)*H^(1+ε)=H^(1+1/50+ε) := by
+      have he : H^((1:ℝ)/$x3:term)*H^(1+ε)=H^(1+1/$x3:term+ε) := by
         rw [← Real.rpow_add hpos]; congr 1; ring
       calc
-        _ = (192*(B+1)*2^(1+ε))*(H^((1:ℝ)/50)*H^(1+ε)) := by ring
-        _ = _ := by rw [he]
+        _ = (($x1:term)*(B+1)*2^(1+ε))*(H^((1:ℝ)/$x3:term)*H^(1+ε)) := by ring
+        _ = _ := by rw [he]))
+/-- Constants precede height; the norm and integration interval are literal. -/
+theorem half_loss_short_moment {ε : ℝ} (hε : 0 < ε) :
+    ∃ C H0 : ℝ, 0 < C ∧ 2 ≤ H0 ∧ ∀ H : ℝ, H0 ≤ H →
+      (∫ t in Icc (H/2) (3*H), (shortTwistedNorm H t)^4) ≤
+        C*H^(1+(1:ℝ)/50+ε) := by pf_20 192 64 50 shortTwistedNorm_fourth_half_loss_le
 
 end GuthMaynard.Improvement

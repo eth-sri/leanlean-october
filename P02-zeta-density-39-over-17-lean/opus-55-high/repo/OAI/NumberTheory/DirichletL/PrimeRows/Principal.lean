@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Character
 public import OAI.NumberTheory.DirichletL.Hecke.RowNonprincipal
 public import OAI.NumberTheory.DirichletL.Hecke.UnitRows
 public import OAI.NumberTheory.DirichletL.UnitSexticWitness
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -54,9 +55,9 @@ theorem rawRow_principal_supported_isUnit (u : FreeRow)
   let r : O := (v:O)*u.val
   have hspan : (Ideal.span {r}:Ideal O)=Ideal.span {u.val} :=
     Ideal.span_singleton_mul_left_unit v.isUnit u.val
-  have hr : Supported (Ideal.span {r}) := hspan.symm ▸ hu
+  pm_5454 hr r hu
   have hx : (1:O)^4*u.val=(v⁻¹:Oˣ).val*λ₀^0*(2:O)^0*r := by
-    simp [r]
+    aesop
   have hempty : normalizedFactors (Ideal.span {r})=0 := by
     apply Multiset.eq_zero_iff_forall_notMem.mpr
     intro P hP
@@ -68,11 +69,11 @@ theorem rawRow_principal_supported_isUnit (u : FreeRow)
       (dvd_mul_left _ _) (dvd_mul_right _ _) v⁻¹ 0 0 r hr hv hx (rawRow_elementCoeff u) hp P hP hcop
     have hlt : (normalizedFactors (Ideal.span {r})).count P<6 := by
       rw [hspan]
-      exact u.property.2 P
+      aesop
     exact Nat.not_dvd_of_pos_of_lt (Multiset.count_pos.mpr hP) hlt hd
   have hone : (Ideal.span {u.val}:Ideal O)=1 := by
     rw [←hspan,←Ideal.prod_normalizedFactors_eq_self hr.1,hempty,Multiset.prod_zero]
-  exact Ideal.span_singleton_eq_top.mp (by simpa only [Ideal.one_eq_top] using hone)
+  simp_all
 
 lemma idealCoeff_principal_eq_one (χ : Character) (hχ : χ.residue=1)
     (I : Ideal O) (hI : idealCoeff χ I≠0) : idealCoeff χ I=1 := by
@@ -84,8 +85,10 @@ lemma idealCoeff_principal_eq_one (χ : Character) (hχ : χ.residue=1)
   · have hu := MulChar.apply_ne_zero_iff.mp hI
     rw [hχ,MulChar.one_apply hu]
 
-theorem rowCharacter_unit_nonprincipal (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (u : FreeRow)
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (u : FreeRow)
+include S hS hbad u
+theorem rowCharacter_unit_nonprincipal
     (v : Oˣ) (hu : u.val=(v:O)) (hv : v≠1) :
     (rowCharacter S hS u).residue≠1 := by
   obtain ⟨P,hmax,hPS,hN,hg,hodd,hval0,hval1⟩ := UnitSexticWitness.exists_unit_witness v hv S 0
@@ -100,8 +103,7 @@ theorem rowCharacter_unit_nonprincipal (S : Finset (Ideal O)) (hS : ∀P∈S,Pri
   have hv0 : idealCoeff (rowCharacter S hS u) P≠0 := he ▸ hval0
   exact hval1 (he.symm.trans (idealCoeff_principal_eq_one _ hp P hv0))
 
-theorem rowCharacter_principal_supported_eq_one (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (u : FreeRow)
+theorem rowCharacter_principal_supported_eq_one
     (hu : Supported (Ideal.span {u.val})) (hp : (rowCharacter S hS u).residue=1) : u.val=1 := by
   obtain ⟨v,hv⟩ := rawRow_principal_supported_isUnit u hu ((rowCharacter_principal_iff S hS u).mp hp)
   by_contra hn
@@ -110,6 +112,7 @@ theorem rowCharacter_principal_supported_eq_one (S : Finset (Ideal O)) (hS : ∀
     subst v
     exact hn hv.symm
   exact rowCharacter_unit_nonprincipal S hS hbad u v hv.symm hv1 hp
+end
 
 end SevenEighths.ProbeHighRowFamily
 

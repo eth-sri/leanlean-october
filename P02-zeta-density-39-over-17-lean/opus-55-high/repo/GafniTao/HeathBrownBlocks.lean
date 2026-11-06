@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownKernelFourier
 public import GafniTao.HeathBrownBlockParameter
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ indices in a common block have source distance at most `1 + N / K`.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -46,10 +46,10 @@ theorem mem_heathBrownBlock {N K i n : ℕ} :
       1 ≤ n ∧ n ≤ N ∧ heathBrownBlockIndex N K n = i := by
   simp [heathBrownBlock, and_assoc]
 
-theorem heathBrownBlock_pair_distance
-    {N K i m n : ℕ}
-    (hm : m ∈ heathBrownBlock N K i)
-    (hn : n ∈ heathBrownBlock N K i) :
+section
+variable {N K i m n : ℕ} (hm : m ∈ heathBrownBlock N K i) (hn : n ∈ heathBrownBlock N K i)
+include N K i m n hm hn
+theorem heathBrownBlock_pair_distance :
     Nat.dist m n ≤ heathBrownBlockLength N K := by
   rw [mem_heathBrownBlock] at hm hn
   let L := heathBrownBlockLength N K
@@ -63,31 +63,25 @@ theorem heathBrownBlock_pair_distance
   have hnLower : L * q ≤ n - 1 := by
     rw [← hqN]
     exact Nat.mul_div_le (n - 1) L
-  have hmUpper : m - 1 < (q + 1) * L := by
-    rw [← Nat.div_lt_iff_lt_mul hL]
-    simp [q]
-  have hnUpper : n - 1 < (q + 1) * L := by
-    rw [← Nat.div_lt_iff_lt_mul hL]
-    simp [hqN]
-  have hmUpper' : m - 1 < L * q + L := by
-    simpa [Nat.add_mul, Nat.mul_add, Nat.mul_comm] using hmUpper
-  have hnUpper' : n - 1 < L * q + L := by
-    simpa [Nat.add_mul, Nat.mul_add, Nat.mul_comm] using hnUpper
+  pm_6831 hmUpper m
+  pm_6831 hnUpper n
+  pm_8876 hmUpper' m
+  pm_8876 hnUpper' n
   rcases le_total m n with hmn | hnm
   · rw [Nat.dist_eq_sub_of_le hmn]
     omega
   · rw [Nat.dist_eq_sub_of_le_right hnm]
     omega
 
-theorem heathBrownBlock_pair_source_distance
-    {N K i m n : ℕ}
-    (hm : m ∈ heathBrownBlock N K i)
-    (hn : n ∈ heathBrownBlock N K i) :
+theorem heathBrownBlock_pair_source_distance :
     Nat.dist m n ≤ 1 + N / K := by
   exact heathBrownBlock_pair_distance hm hn
+end
 
+section
+variable {M : Type*} [AddCommMonoid M]
+include M
 theorem heathBrown_sum_over_blocks
-    {M : Type*} [AddCommMonoid M]
     {N K : ℕ} (hK : 0 < K) (F : ℕ → M) :
     ∑ i ∈ Finset.range K, (∑ n ∈ Finset.Icc 1 N,
         if heathBrownBlockIndex N K n = i then F n else 0) =
@@ -101,7 +95,6 @@ theorem heathBrown_sum_over_blocks
   simp [Finset.sum_ite_eq, hi]
 
 theorem heathBrown_block_sum_eq
-    {M : Type*} [AddCommMonoid M]
     {N K i : ℕ} (F : ℕ → M) :
     (∑ n ∈ Finset.Icc 1 N,
         if heathBrownBlockIndex N K n = i then F n else 0) =
@@ -109,6 +102,7 @@ theorem heathBrown_block_sum_eq
   classical
   rw [← Finset.sum_filter]
   rfl
+end
 
 
 end

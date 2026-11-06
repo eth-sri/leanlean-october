@@ -3,27 +3,26 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthPhysicalReindex
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalHighPhysical
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthPhysical
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSecondHeightFamily
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyZeroGrowthPhysicalReindex CenteredMomentSourceInputReindex
+open CenteredMomentEnergyBands
+open CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyZeroGrowthPhysicalReindex
 open CenteredMomentEnergyZeroBalancedAdmission CenteredMomentEnergyZeroBalancedDictionary
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
 open CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission
 open CenteredMomentEnergyCanonicalHighPhysical CenteredMomentEnergyZeroGrowthSource
 open CenteredMomentEnergyStageMargins CenteredMomentNaturalFixedRaySource
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceReduction
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
@@ -44,10 +43,10 @@ theorem actual_growth_physical
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (Ψ:𝓢(ℝ,ℂ))(degree:ℕ)(S:Finset (ℕ×ℕ)):
     ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
+    ∀η₀:Character,∀Q:Ideal O,Q≤M→ internalQ Q η₀≠0→ internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z→
-    ∀(k:ℕ)(εchild C₀ C₁ rho:ℝ),εchild≤stageLoss Mschedule Bschedule ε k→
+    ∀(k:ℕ)(εchild C₀ C₁ rho:ℝ),εchild≤ stageLoss Mschedule Bschedule ε k→
       0≤C₀→0≤C₁→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 Lchild Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 Lchild Lslot lo hi
@@ -60,7 +59,7 @@ theorem actual_growth_physical
   have hA:0≤A:=hMparent.trans (le_max_left _ _)
   obtain ⟨hsigma,hsigma1,hr,hxiSigma,hxi1,hes,hes1,hem,hmesh,hmeshEta,heta0,heta,hSaving,hSeed⟩:=
     parameter_gates Mschedule A Bschedule κ ε hMschedule hA hBschedule hκ hε
-  have hκsmall:(1/6:ℝ)≤κ:=by linarith
+  pm_6967
   have ha2:0<a^2:=sq_pos_of_pos ha
   obtain ⟨U,J,hphysical⟩:=actual_high_physical (α:=α) M H hH
     Wslot aslot bslot Mchild Lslot (r/4) lo hi κ a b 1
@@ -81,25 +80,24 @@ theorem actual_growth_physical
         (max 1 b*max 1 b)] with Z hZ hz
     exact ⟨hZ,(Real.logb_le_iff_le_rpow hZ (mul_pos
       (zero_lt_one.trans_le (le_max_left _ _)) (zero_lt_one.trans_le (le_max_left _ _)))).mpr hz⟩
-  refine ⟨U,J,?_⟩
-  intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨C,hC,Zbase,hZbase,hphysical⟩:=hphysical η₀ Q hQM hQ0 hQt hQ72
+  pm_3332
+  pm_7298 C hC Zbase hZbase hphysical
   obtain ⟨Znum,hZnum⟩:=Filter.eventually_atTop.mp (hfit.and hclip)
-  refine ⟨C,hC,max Zbase Znum,hZbase.trans_le (le_max_left _ _),?_⟩
+  pm_1071 Zbase Znum hZbase.trans_le
   intro Z hZZ k εchild C₀ C₁ rho hchild hC₀ hC₁ hzero hpos
-  have hZbaseLe:Zbase≤Z:=(le_max_left _ _).trans hZZ
+  pm_2885 hZbaseLe Zbase le_max_left hZZ
   have hn:=hZnum Z ((le_max_right _ _).trans hZZ)
   have hZ:1<Z:=hn.1.1
   intro s hQ hsLower hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ hlarge
   dsimp only
   intro hfour
   let src:=emptyBalanced s p ha t X₁ X₂ hX₁ hX₂ α
-  let θ:(∅:Finset α)→RayQuotient.Characters M H:=fun i=>isEmptyElim i
+  let θ:(∅:Finset α)→ RayQuotient.Characters M H:=fun i=>isEmptyElim i
   have hmatch:CenteredMomentAllocatedRayDictionary.Matches M H hH src η₀ θ
       (fun _=>0) (fun _=>0) (fun _=>0) Wslot bslot Z:=by
     constructor <;> intro i <;> exact isEmptyElim i
   have hupper:=four_upper_scales s p ha t X₁ X₂ hX₁ hX₂ Mparent Lgoal hZ hLgoal hs hc₁ hc₂
-  have hu:Z^A≤Z^Lchild:=Real.rpow_le_rpow_of_exponent_le hZ.le hcap
+  have hu:Z ^A≤Z ^Lchild:=Real.rpow_le_rpow_of_exponent_le hZ.le hcap
   have hgate:=declared_capacity s p ha t X₁ X₂ hX₁ hX₂ hZ
   have hdecl:=declared_capacity_upper s X₁ X₂ Mparent Lgoal hZ hLgoal hs hc₁ hc₂
   have hK:=CenteredMomentEnergyNaturalSourceAdmission.radial_admission s

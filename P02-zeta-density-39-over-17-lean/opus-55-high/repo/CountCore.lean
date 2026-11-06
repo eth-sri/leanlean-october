@@ -4,10 +4,10 @@ public import Mathlib.NumberTheory.LSeries.ZetaZeros
 public import Mathlib.Topology.Algebra.InfiniteSum.ENNReal
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
-set_option autoImplicit false
 noncomputable section
-open scoped BigOperators ENNReal
+open scoped ENNReal
 
 @[expose] public section
 
@@ -54,9 +54,7 @@ theorem exact_zero_set_exists (σ T : ℝ) : ∃ F : Finset ℂ,
     rw [Metric.mem_closedBall, dist_zero_right]
     calc
       ‖ρ‖ ≤ |ρ.re| + |ρ.im| := Complex.norm_le_abs_re_add_abs_im ρ
-      _ ≤ 1 + |T| := by
-        rw [abs_of_pos hρ.2.1]
-        linarith [hρ.2.2.1, hρ.2.2.2.2, le_abs_self T]
+      _ ≤ 1 + |T| := by grind
   exact ⟨hfin.toFinset, fun ρ => Set.Finite.mem_toFinset hfin⟩
 
 /-- Transfer a real-valued full enumeration bound without changing any
@@ -68,8 +66,7 @@ theorem bound_of_literal {σ p ε : ℝ}
       ((∑ ρ ∈ F, analyticOrderNatAt riemannZeta ρ : ℕ) : ℝ) ≤ C * T ^ (p + ε)) :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
       zeroCount σ T ≤ ENNReal.ofReal (C * T ^ (p + ε)) := by
-  obtain ⟨C, hC, hb⟩ := h
-  refine ⟨C, hC, ?_⟩
+  pm_157 C hC hb h
   intro T hT
   obtain ⟨F, hF⟩ := exact_zero_set_exists σ T
   rw [zeroCount_eq_finset σ T F hF, ← ENNReal.ofReal_natCast]

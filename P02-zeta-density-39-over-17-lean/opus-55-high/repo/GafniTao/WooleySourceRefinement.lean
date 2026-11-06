@@ -3,8 +3,9 @@ public import GafniTao.WooleySection7Reverse
 public import GafniTao.WooleySection7HardArithmetic
 public import GafniTao.WooleyWeightedComplexHolder
 public import GafniTao.WooleyResidueRefinement
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source-sequence residue refinement
@@ -16,11 +17,9 @@ proved directly on `gamma.support`.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleySource_sum_refined_residue_mass
     {p a b : ℕ} [NeZero p] (hab : a ≤ b)
@@ -39,24 +38,11 @@ theorem wooleySource_sum_refined_residue_mass
           if ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a)) z = xi then
             (if (n : ZMod (p ^ b)) = z then ‖gamma n‖ ^ 2 else 0)
           else 0 := by
-    by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi <;> simp only [hz, ite_true, ite_false, Finset.sum_const_zero]
-  simp_rw [hdistribute]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [Fintype.sum_eq_single (n : ZMod (p ^ b))]
-  · have hcast :
-        ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))
-            (n : ZMod (p ^ b)) = (n : ZMod (p ^ a)) :=
-      ZMod.cast_intCast (pow_dvd_pow p hab) n
-    rw [hcast]
-    by_cases hxi : (n : ZMod (p ^ a)) = xi <;> simp [hxi]
-  · intro z hzne
-    by_cases hzxi : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi
-    · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
-    · rw [ite_eq_right hzxi]
+    pm_2808
+  pm_224 hdistribute Finset.sum_comm n hn
+  pm_7204
+  simp_all
+  grind
 
 theorem wooleySource_sum_refined_polynomialResidueSum
     {k p a b qB : ℕ} [NeZero p] [NeZero qB]
@@ -79,47 +65,32 @@ theorem wooleySource_sum_refined_polynomialResidueSum
             (if (n : ZMod (p ^ b)) = z then
               gamma n * wooleySourcePolynomialPhase phi alpha n else 0)
           else 0 := by
-    by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi <;> simp only [hz, ite_true, ite_false, Finset.sum_const_zero]
-  simp_rw [hdistribute]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [Fintype.sum_eq_single (n : ZMod (p ^ b))]
+    pm_2808
+  pm_224 hdistribute Finset.sum_comm n hn
+  pm_7204
   · have hcast :
         ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))
             (n : ZMod (p ^ b)) = (n : ZMod (p ^ a)) :=
       ZMod.cast_intCast (pow_dvd_pow p hab) n
     rw [hcast]
     by_cases hxi : (n : ZMod (p ^ a)) = xi <;> simp [hxi]
-  · intro z hzne
-    by_cases hzxi : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi
-    · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
-    · rw [ite_eq_right hzxi]
+  grind
 
+section
+variable {k qH qB : ℕ} [NeZero qB] (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence) (alpha : Fin k → ZMod qB) (xi : ZMod qH)
+include k qH qB phi gamma alpha xi
 theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
-    {k qH qB : ℕ} [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
-    (alpha : Fin k → ZMod qB) (xi : ZMod qH)
     (hmass : wooleySourceResidueMassSq gamma qH xi = 0) :
     wooleySourcePolynomialResidueSum phi gamma alpha xi = 0 := by
   have hterm : ∀ n ∈ gamma.support.filter
       (fun n : ℤ => (n : ZMod qH) = xi), ‖gamma n‖ ^ 2 = 0 := by
-    apply (Finset.sum_eq_zero_iff_of_nonneg
-      (fun _ _ => sq_nonneg _)).mp
+    pm_7483
     simpa [wooleySourceResidueMassSq] using hmass
   unfold wooleySourcePolynomialResidueSum
-  apply Finset.sum_eq_zero
-  intro n hn
-  have hnzero : ‖gamma n‖ = 0 := (sq_eq_zero_iff).mp (hterm n hn)
-  rw [norm_eq_zero] at hnzero
+  pm_2835
   simp [hnzero]
 
-theorem wooleySource_sqrt_mass_mul_normalizedResidueSum
-    {k qH qB : ℕ} [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (gamma : WooleySourceSequence)
-    (alpha : Fin k → ZMod qB) (xi : ZMod qH) :
+theorem wooleySource_sqrt_mass_mul_normalizedResidueSum :
     (Real.sqrt (wooleySourceResidueMassSq gamma qH xi) : ℂ) *
         wooleySourceNormalizedPolynomialResidueSum phi gamma alpha xi =
       wooleySourcePolynomialResidueSum phi gamma alpha xi := by
@@ -132,6 +103,7 @@ theorem wooleySource_sqrt_mass_mul_normalizedResidueSum
         (Ne.symm hmass)
     simp [wooleySourceNormalizedPolynomialResidueSum, hmass,
       Real.sqrt_ne_zero'.mpr hmassPos]
+end
 
 theorem wooleySource_refined_normalized_residue_decomposition
     {k p a b qB : ℕ} [NeZero p] [NeZero qB]
@@ -173,9 +145,7 @@ theorem wooleySourcePolynomial_lemma_6_2
       dsimp [R]
       exact Finset.sum_nonneg fun z hz => mul_nonneg
         (wooleySourceResidueMassSq_nonneg gamma (p ^ b) z) (by positivity)
-    dsimp [M] at hMzero
-    rw [hMzero, zero_mul]
-    exact mul_nonneg (by positivity) hR
+    pm_6041
   · have hMpos : 0 < M := lt_of_le_of_ne
       (wooleySourceResidueMassSq_nonneg gamma (p ^ a) xi)
       (Ne.symm hMzero)
@@ -192,15 +162,8 @@ theorem wooleySourcePolynomial_lemma_6_2
             ‖wooleySourceNormalizedPolynomialResidueSum
                 phi gamma alpha xi‖ ^ (2 * w) ≤
           (p ^ (b - a) : ℝ) ^ w * M ^ (w - 1) * R := by
-      rw [← hdecomp] at hholder
-      simpa only [M, R, wooleyResidueRefinementFiber_card hab xi,
-        wooleySource_sum_refined_residue_mass hab gamma xi,
-        norm_mul, Complex.norm_real, Real.norm_eq_abs,
-        abs_of_nonneg (Real.sqrt_nonneg _), mul_pow, pow_mul,
-        Real.sq_sqrt hMpos.le, Nat.cast_pow] using hholder
-    have hpow : M ^ w = M ^ (w - 1) * M := by
-      conv_lhs => rw [← Nat.sub_add_cancel hw, pow_add, pow_one]
-    have hfactorPos : 0 < M ^ (w - 1) := pow_pos hMpos _
+      pm_2855 wooleySource_sum_refined_residue_mass
+    pm_2854
     have hfactored :
         M ^ (w - 1) *
             (M * ‖wooleySourceNormalizedPolynomialResidueSum
@@ -246,6 +209,5 @@ theorem wooley_equation_7_22_native
       nlinarith) gamma alpha kappa
 
 
-end
 
 end GafniTao

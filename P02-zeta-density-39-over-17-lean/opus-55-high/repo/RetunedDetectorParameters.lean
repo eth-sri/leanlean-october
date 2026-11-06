@@ -1,6 +1,7 @@
 module
 public import QuadraticWindow
 public import MathCollab.Density.Stronger.InitialDetector
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,11 +16,15 @@ def smoothingExponent (a : ℝ) : ℝ := 3*a/2
 
 def detectorY (a T : ℝ) : ℝ := T^(smoothingExponent a)
 
-theorem smoothingExponent_pos {σ a : ℝ} (hw : QuadraticWindow σ a) :
+section
+variable {σ a : ℝ} (hw : QuadraticWindow σ a)
+include σ a hw
+theorem smoothingExponent_pos :
     0 < smoothingExponent a := by unfold smoothingExponent; linarith [hw.a_low]
 
-theorem smoothingExponent_lt_one {σ a : ℝ} (hw : QuadraticWindow σ a) :
+theorem smoothingExponent_lt_one :
     smoothingExponent a < 1 := by unfold smoothingExponent; linarith [hw.a_high]
+end
 
 /-- The initial all-zero contour detector works at the retuned upper length
 3a/2. The right-hand polynomial parameter conditions supply its real saving. -/
@@ -29,19 +34,10 @@ theorem detector_error_scale {σ a δ T β η : ℝ}
     Real.sqrt (detectorX δ T)*(detectorY a T)^(1/2-β)*T^(1/6+η) ≤
       T^(-1/48+η) := by
   have hTp : 0 < T := by linarith
-  have ha : 0 < a := by linarith [hw.a_low]
-  have hm := mul_nonneg ha.le (show 0 ≤ 9*σ-7 by linarith only [hs])
+  pm_2755
+  have hm := mul_nonneg ha.le (show 0 ≤ 9*σ-7 by grind)
   have hsprod : 1/4 ≤ (3*a/2)*(σ-1/2) := by nlinarith only [hw.first,hm]
-  have hmono := mul_le_mul_of_nonneg_left hβ (show 0 ≤ 3*a/2 by positivity)
-  have hproduct : 1/4 ≤ smoothingExponent a*(β-1/2) := by
-    unfold smoothingExponent
-    nlinarith only [hsprod,hmono]
-  have hsqrt : Real.sqrt (detectorX δ T)=T^(δ/2) := by
-    rw [detectorX,Real.sqrt_eq_rpow,← Real.rpow_mul hTp.le]
-    congr 1
-    ring
-  rw [hsqrt,detectorY,← Real.rpow_mul hTp.le,← Real.rpow_add hTp,← Real.rpow_add hTp]
-  apply Real.rpow_le_rpow_of_exponent_le hT
-  nlinarith only [hproduct,hδ]
+  pm_2756
+  pm_2757 detectorX
 
 end Montgomery.RationalMoment.RightDetector

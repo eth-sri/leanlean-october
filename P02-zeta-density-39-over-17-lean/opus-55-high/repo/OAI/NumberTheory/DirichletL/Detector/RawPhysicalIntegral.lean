@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.InitialProduct
 public import OAI.NumberTheory.DirichletL.Detector.RawMellinTerm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -43,8 +44,7 @@ theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
     Integrable (fun p : SourceRawIndex S×HeightSpace=>originalRawOnLines η S hS D W0 W1 X Y Z p.1 p.2)
       ((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure) := by
   let mask := fun H : NonzeroFrequency=>star ((calibrationForSet S hS).residueMonoid H.val)
-  have hm (H : NonzeroFrequency) : ‖mask H‖≤1 := by
-    simpa only [mask,norm_star] using (calibrationForSet S hS).residueMonoid_norm_le_one H.val
+  pm_3924
   let T := fun p : HeightSpace=>sourceMellinWeight W0 W1 X Y Z
     ((3:ℂ)+p.1.1*Complex.I) ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
   have hT : Integrable T heightMeasure := sourceMellinWeight_initial_integrable W0 W1 a0 b0 a1 b1
@@ -65,7 +65,7 @@ theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
   have he : (4:ℂ)+p.2.1.1*Complex.I+1-((2:ℂ)+p.2.1.2*Complex.I)=
       3+((p.2.1.1-p.2.1.2:ℝ):ℂ)*Complex.I := by push_cast;ring
   have hsh : sourceHeightShear.symm p.2=((p.2.1.1-p.2.1.2,p.2.1.2),p.2.2) := rfl
-  simp only [he,initialHighOnLines,T,hsh,sourceRawEmbedding,mask,id_eq,Complex.ofReal_ofNat]
+  pm_403 he initialHighOnLines T hsh sourceRawEmbedding mask id_eq Complex.ofReal_ofNat
   ring
 
 end SevenEighths.ProbePhysical

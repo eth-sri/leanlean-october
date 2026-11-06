@@ -5,6 +5,7 @@ public import Mathlib.Data.Finset.Basic
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroDetector
 public import GuthMaynard.NativeSource.GuthMaynard.Separated
 public import GuthMaynard.NativeSource.GuthMaynard.MeanValueProof
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,7 +33,7 @@ theorem halasz_montgomery_lemma_of_mean_value
   rcases hMeanValue with ⟨C, hC, hMeanValue⟩
   refine ⟨C, hC, ?_⟩
   intro N T V W a hN hT hV hSep hTar hBound
-  have h_mean := hMeanValue N T W a hN hT hSep hTar
+  pm_528 h_mean hMeanValue N T W a hN hT hSep hTar
   have h_bound_sq : ∀ t ∈ W, V^2 ≤ ‖∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-(t : ℂ) * I)‖^2 := by
     intro t ht
     have ht_bound := hBound t ht
@@ -56,7 +57,7 @@ theorem halasz_montgomery_lemma_of_mean_value
     rw [← Real.rpow_two, ← Real.rpow_add hV]
     norm_num
   rw [mul_assoc, h_V2_cancel, mul_one] at h_final
-  simpa only [mul_assoc, mul_left_comm, mul_comm] using h_final
+  grind
 
 /-- The Halász–Montgomery large-value counting estimate with its Montgomery
 mean-value premise discharged by the project theorem. -/

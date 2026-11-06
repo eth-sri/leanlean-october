@@ -11,6 +11,8 @@ public import Mathlib.Analysis.Complex.Convex
 public import Mathlib.Analysis.Complex.RemovableSingularity
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import GuthMaynard.NativeSource.GuthMaynardExternal.PNT.Rectangle
+public import MathCollab.Density.RectangleResidue
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -40,10 +42,7 @@ noncomputable def RectangleIntegral (f : ℂ → E) (z w : ℂ) : E :=
 
 /- A LowerUIntegral is the integral of a function over a |-| shape. -/
 
-/-- A function is `HolomorphicOn` a set if it is complex
-  differentiable on that set. -/
-abbrev HolomorphicOn (f : ℂ → E) (s : Set ℂ) : Prop :=
-    DifferentiableOn ℂ f s
+export MathCollab.Density.Contour (HolomorphicOn)
 
 /-- The `RectangleBorderIntegrable` definition used by the source-facing construction in `ResidueCalcOnRectangles`. -/
 def RectangleBorderIntegrable (f : ℂ → E) (z w : ℂ) : Prop :=
@@ -54,14 +53,7 @@ def RectangleBorderIntegrable (f : ℂ → E) (z w : ℂ) : Prop :=
 
 theorem RectangleBorderIntegrable.add {f g : ℂ → E}
     (hf : RectangleBorderIntegrable f z w) (hg : RectangleBorderIntegrable g z w) :
-    RectangleIntegral (f + g) z w = RectangleIntegral f z w + RectangleIntegral g z w := by
-  dsimp [RectangleIntegral, HIntegral, VIntegral]
-  have h₁ := intervalIntegral.integral_add hf.1 hg.1
-  have h₂ := intervalIntegral.integral_add hf.2.1 hg.2.1
-  have h₃ := intervalIntegral.integral_add hf.2.2.1 hg.2.2.1
-  have h₄ := intervalIntegral.integral_add hf.2.2.2 hg.2.2.2
-  rw [h₁, h₂, h₃, h₄]
-  module
+    RectangleIntegral (f + g) z w = RectangleIntegral f z w + RectangleIntegral g z w := by pm_4295
 
 theorem RectangleIntegral.const_smul (f : ℂ → E) (z w c : ℂ) :
     RectangleIntegral (fun s => c • f s) z w = c • RectangleIntegral f z w := by
@@ -87,7 +79,7 @@ def HasSimplePolesOn (f : ℂ → ℂ) (s : Set ℂ) : Prop :=
 lemma HasSimplePolesOn.mono {f : ℂ → ℂ} {s t : Set ℂ}
     (h : HasSimplePolesOn f t) (hst : s ⊆ t) : HasSimplePolesOn f s := by
   intro z hz
-  exact h z (hst hz)
+  aesop
 
 -- If two functions `f g : ℂ → ℂ` agree on a `codiscreteWithin R` full set, and `φ : ℝ → ℂ` is
 -- an analytic non-constant path mapping `[a,b]` into `R`, then `∫ f(φ x) dx = ∫ g(φ x) dx`.

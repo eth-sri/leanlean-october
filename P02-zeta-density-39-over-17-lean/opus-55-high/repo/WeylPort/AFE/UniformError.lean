@@ -4,6 +4,7 @@ public import WeylPort.AFE.UniformCoefficients
 public import WeylPort.GapSum
 public import WeylPort.Reflection
 public import WeylPort.CutoffSelection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,29 +24,24 @@ theorem afeSecondLeftError_critical_uniform {x y : ℝ}
     (hx : 1 ≤ x) (hy : 1 ≤ y) (hyx : y ≤ x)
     (hgap : 1/2 ≤ (⌊y⌋₊:ℝ)+1-y) :
     afeSecondLeftError (1/2) (x*y) x ≤ criticalPoissonConstant := by
-  have hx0 : 0 < x := by linarith
-  have hy0 : 0 < y := by linarith
+  pm_26
   have hc0 : 0 ≤ x*y := by positivity
-  have hcancel : x*y/x = y := by field_simp
+  pm_7451
   have hgaphi : (⌊y⌋₊:ℝ)+1-y ≤ 1 := by linarith [Nat.floor_le hy0.le]
   have hplus := plus_coefficients_uniform hy
   have hminus := minus_coefficients_uniform hy hgap hgaphi
   have hsq : minusSquareBound ⌊y⌋₊ y + plusSquareBound y ≤ 9/y := by
-    calc
-      _ ≤ 7/y+2/y := add_le_add hminus.1 hplus.1
-      _ = _ := by ring
+    grind
   have hcube : minusCubeBound ⌊y⌋₊ y + plusCubeBound y ≤ 17/y := by
-    calc
-      _ ≤ 15/y+2/y := add_le_add hminus.2 hplus.2
-      _ = _ := by ring
+    grind
   let K := 1+2*Real.pi
-  let H := secondH (afePhase (x*y)) (afeWeight (1/2)) x
-  let H1 := secondH1 (afePhase (x*y)) (afeWeight (1/2)) x
-  have hK : 0 < K := by dsimp [K]; positivity
+  pm_7354 H secondH
+  pm_7354 H1 secondH1
+  pm_64 hK K
   have hH0 : 0 ≤ H := secondH_nonneg _ _ _
   have hH10 : 0 ≤ H1 := secondH1_nonneg _ _ _
   have hw0 : 0 ≤ x^(-(1/2:ℝ)) := Real.rpow_nonneg hx0.le _
-  have hw1 : x^(-(1/2:ℝ)) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (by norm_num)
+  pm_5780 hw1
   have hH : H/y ≤ K := by
     dsimp [H]
     rw [secondH_afe (by norm_num) hc0 hx0, Real.rpow_sub_one hx0.ne']
@@ -75,7 +71,7 @@ theorem afeSecondLeftError_critical_uniform {x y : ℝ}
   have hHx : (H*((x*y)/x^2))/y ≤ K := by
     have he : (H*((x*y)/x^2))/y = (H/y)*(y/x) := by field_simp
     rw [he]
-    have hr : y/x ≤ 1 := (div_le_one hx0).mpr hyx
+    pm_5442 hr y x hx0 hyx
     calc
       _ ≤ K*1 := mul_le_mul hH hr (by positivity) hK.le
       _ = K := mul_one K
@@ -100,19 +96,21 @@ theorem afeSecondLeftError_critical_uniform {x y : ℝ}
   unfold afeSecondLeftError criticalPoissonConstant
   simp only [hcancel, afeWeight]
   change _ ≤ (Real.log 2+1)/(2*Real.pi) + K/(4*Real.pi^2)*(Real.pi/2+Real.log 2) + (2*K)/(4*Real.pi^3)*9 + K/(4*Real.pi^3)*17
-  exact add_le_add (add_le_add (add_le_add hb1 hb2) hb3) hb4
+  grind
 
+section
+variable {x y t : ℝ} (hx : 1 ≤ x) (hy : 1 ≤ y)
+include x y t hx hy
 /-- The pole and lower-integral boundary factors are uniformly small. -/
-theorem critical_boundary_factors {x y t : ℝ} (hx : 1 ≤ x) (hy : 1 ≤ y)
+theorem critical_boundary_factors
     (hscale : 2*Real.pi*x*y = t) (N : ℕ) (hN : (N:ℝ) ≤ y) :
     (x/t)*x^(-(1/2:ℝ)) ≤ 1 ∧
     x^(1-(1/2:ℝ))/t ≤ 1 ∧
     (2*Real.pi*x^(2-(1/2:ℝ))/t^2)*(((N:ℝ)+1)/2) ≤ 1 := by
-  have hx0 : 0 < x := by linarith
-  have hy0 : 0 < y := by linarith
+  pm_26
   have hp : 0 < Real.pi := Real.pi_pos
-  have hden : 1 ≤ 2*Real.pi*y := by nlinarith [Real.pi_gt_three]
-  have hw : x^(-(1/2:ℝ)) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hx (by norm_num)
+  pm_8667 hden y
+  pm_5780 hw
   have hw0 : 0 ≤ x^(-(1/2:ℝ)) := by positivity
   have hi : 1/(2*Real.pi*y) ≤ 1 := (div_le_one (by positivity)).mpr hden
   have hbound : x^(-(1/2:ℝ))/(2*Real.pi*y) ≤ 1 :=
@@ -138,14 +136,12 @@ theorem critical_boundary_factors {x y t : ℝ} (hx : 1 ≤ x) (hy : 1 ≤ y)
   exact (mul_le_mul hw hr (by positivity) (by norm_num : (0:ℝ) ≤ 1)).trans (by norm_num)
 
 /-- The lower oscillatory integral sum has a constant bound with only the first cutoff half-integral. -/
-theorem norm_critical_lower_integrals_uniform {x y t : ℝ}
-    (hx : 1 ≤ x) (hy : 1 ≤ y) (hyx : y ≤ x) (ht : 0 ≤ t)
+theorem norm_critical_lower_integrals_uniform (hyx : y ≤ x) (ht : 0 ≤ t)
     (hscale : 2*Real.pi*x*y = t) (k : ℤ) (hxk : x = (k:ℝ)+1/2)
     (hgap : (⌊y⌋₊:ℝ)+1/8 ≤ y) :
     ‖∑ m ∈ Finset.Icc 1 ⌊y⌋₊,
       weightedIntegral ((1/2:ℂ)+(t:ℂ)*Complex.I) 0 x (m:ℝ)‖ ≤ 2+24/Real.pi := by
-  have hx0 : 0 < x := by linarith
-  have hy0 : 0 < y := by linarith
+  pm_26
   have hN : (⌊y⌋₊:ℝ) ≤ y := Nat.floor_le hy0.le
   have hb := critical_boundary_factors hx hy hscale ⌊y⌋₊ hN
   have hi := norm_sum_lower_integral_le_arithmetic (σ := (1/2:ℝ))
@@ -161,6 +157,7 @@ theorem norm_critical_lower_integrals_uniform {x y t : ℝ}
       _ ≤ (8/Real.pi)*3 := by gcongr; exact weighted_log_cutoff_le hx hy hyx
       _ = _ := by ring
   linarith [hb.2.1, hb.2.2]
+end
 
 noncomputable def criticalAFEConstant : ℝ :=
   criticalPoissonConstant + 3 + 24/Real.pi + 1/(1-Real.exp (-Real.pi))
@@ -175,11 +172,10 @@ theorem norm_critical_afe_uniform {x y t : ℝ}
     (hgaplo : (⌊y⌋₊:ℝ)+1/8 ≤ y) (hgaphi : y ≤ (⌊y⌋₊:ℝ)+1/2)
     (henv : Real.exp (-Real.pi*t)*(t^2+1) ≤ 1) :
     ‖afeRemainder (criticalPoint t) x y‖ ≤ criticalAFEConstant := by
-  have hx0 : 0 < x := by linarith
-  have hy0 : 0 < y := by linarith
+  pm_26
   have ht0 : 0 < t := by linarith
   have hc : t/(2*Real.pi) = x*y := by rw [← hscale]; field_simp
-  have hcancel : x*y/x = y := by field_simp
+  pm_7451
   have hσ : (1/2:ℝ) ∈ Set.Ioo 0 1 := by norm_num
   have hgap : 1/2 ≤ (⌊y⌋₊:ℝ)+1-y := by linarith
   let s := criticalPoint t
@@ -193,11 +189,11 @@ theorem norm_critical_afe_uniform {x y t : ℝ}
       (by simpa only [hc,hcancel] using hgap)
     simp only [hc,hcancel] at h
     have hh := h.trans (afeSecondLeftError_critical_uniform hx hy hyx hgap)
-    simpa only [B,F,s,criticalPoint,Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using hh
+    pm_314 B F s criticalPoint Complex.ofReal_div Complex.ofReal_one Complex.ofReal_ofNat hh
   have hb : ‖B‖ ≤ 1 := by
     have h := norm_afe_pole_le (sigma := (1/2:ℝ)) ht0 hx0
     have hh := h.trans (critical_boundary_factors hx hy hscale ⌊y⌋₊ (Nat.floor_le hy0.le)).1
-    simpa only [B,s,criticalPoint,Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using hh
+    pm_436 B s criticalPoint Complex.ofReal_div Complex.ofReal_one Complex.ofReal_ofNat hh
   have hl : ‖L‖ ≤ 2+24/Real.pi := by
     exact norm_critical_lower_integrals_uniform hx hy hyx ht0.le hscale k hxk hgaplo
   have he : F = F0-L := by
@@ -210,7 +206,7 @@ theorem norm_critical_afe_uniform {x y t : ℝ}
       weightedIntegralTail_eq_sub (t := t) hσ hm0 x
   have hyT : y ≤ t := by
     rw [← hscale]
-    have hp : 1 ≤ 2*Real.pi*x := by nlinarith [Real.pi_gt_three]
+    pm_8667 hp x
     nlinarith
   have hpoly : y^(1/2:ℝ)*Real.log y+1 ≤ t^2+1 := by
     have hs : y^(1/2:ℝ) ≤ y := by
@@ -234,7 +230,7 @@ theorem norm_critical_afe_uniform {x y t : ℝ}
     exact (mul_le_mul_of_nonneg_left hpoly (Real.exp_nonneg _)).trans henv
   have htail : ‖F-Q‖ ≤ 1/(1-Real.exp (-Real.pi))+(2+24/Real.pi) := by
     rw [he,sub_right_comm]
-    exact (norm_sub_le _ _).trans (add_le_add hg hl)
+    pm_243 norm_sub_le hg hl
   have hid : afeRemainder s x y =
       (riemannZeta s-sharpZetaSum s x-B-F)+B+(F-Q) := by
     dsimp only [afeRemainder,Q,sharpZetaSum,zetaTerm]
@@ -258,8 +254,7 @@ theorem eventually_actual_zeta_short_afe :
   refine ⟨A,M,hA,hM,?_,hfy⟩
   apply norm_critical_afe_uniform hx hy (hyR'.trans hxR) (by nlinarith [Real.pi_gt_three]) hscale (A:ℤ)
   · simp
-  · simpa only [hfy] using hlo
-  · simpa only [hfy] using hhi
+  pm_1067 hfy hlo hhi
   · exact he
 
 end WeylPort

@@ -34,6 +34,6 @@ theorem coprime_fourth_insert_product_le {A : Finset ℕ} {e : ℕ}
   change (∑ n ∈ insert e A, ∑ m ∈ insert e A, H n m) ≤
     (∑ n ∈ A, ∑ m ∈ A, H n m) + (2 * (A.card : ℝ) + 1) * (W.card : ℝ) ^ 4
   simp only [Finset.sum_insert heA, Finset.sum_add_distrib]
-  linarith [hH e e]
+  grind
 
 end Montgomery.RationalMoment

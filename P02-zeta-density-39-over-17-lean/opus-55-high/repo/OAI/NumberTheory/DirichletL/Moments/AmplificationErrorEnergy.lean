@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceError
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorPool
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ def localErrorCost (p : O) (n : ℕ) : ℝ :=
 
 theorem localErrorCost_nonneg (p : O) (n : ℕ) : 0≤localErrorCost p n := by
   unfold localErrorCost
-  split_ifs <;> positivity
+  positivity
 
 theorem localErrorCost_exact (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
@@ -52,14 +53,10 @@ theorem finite_original_error_energy (S : Finset (Ideal O)) (c : Ideal O → ℂ
           (fun I => c ((Ideal.span {p})^(n+1)*I))
           (fun I => residualCharacter p (n+1) (primaryGenerator I)) W K).re /
           (T/(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1))) := by
-  let Q := residualColumns S p hp (n+1)
-  let T' := T/(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1)
+  pm_987 S
   let d : supportedColumns Q → ℂ := fun I =>
     c ((Ideal.span {p})^(n+1)*I)*residualCharacter p (n+1) (primaryGenerator I)
-  have ht : 0<T' := by
-    apply div_pos hT
-    apply pow_pos
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
+  pm_6043
   have he : (∑ h∈rows,‖amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => (Real.sqrt T:ℂ)⁻¹*c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h‖^2)=

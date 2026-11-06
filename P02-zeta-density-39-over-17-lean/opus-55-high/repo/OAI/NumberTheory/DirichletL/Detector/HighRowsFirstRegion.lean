@@ -8,11 +8,8 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 
-theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps : ℝ)
-    (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
-    (heps : 0<eps) (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
-    (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
-    ‖unramifiedClosed Q A eta v x w z-1‖≤240*Q^(-1-min eps (1/50:ℝ)) := by
+set_option hygiene false in
+macro "pf_12" x1:term:max x2:term:max x3:term:max x4:term:max x5:term:max x6:term:max x7:term:max x8:term:max x9:term:max : tactic => `(tactic| (
   have hQ0 : 0<Q := by linarith
   have hQ1 : 1≤Q := by linarith
   let V := coordV Q z
@@ -20,19 +17,19 @@ theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps
   let W := coordW Q v w
   let D := coordD Q eta v x
   let K := coordK Q eta x w
-  let L := Q^(1/100:ℝ)
-  let E := Q^(-(109/100:ℝ))
+  let L := Q^($x1:term/$x2:term :ℝ)
+  let E := Q^(-($x3:term/$x4:term :ℝ))
   let T := Q^(-1-min eps (1/50:ℝ))
   have hL1 : 1≤L := Real.one_le_rpow hQ1 (by norm_num)
   have hT : 0≤T := Real.rpow_nonneg hQ0.le _
-  have hV : ‖V‖≤Q^(-(51/25:ℝ)) := by
+  have hV : ‖V‖≤Q^(-($x5:term/$x6:term :ℝ)) := by
     rw [show V=coordV Q z from rfl,coordV_norm Q hQ0]
     exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
-  have hR : ‖R‖≤Q^(-(11/10:ℝ)) :=
+  have hR : ‖R‖≤Q^(-($x7:term/$x8:term :ℝ)) :=
     (coordR_norm_le Q hQ0 A x z hA).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hW : ‖W‖≤L :=
     (coordW_norm_le Q hQ0 v w hv).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
-  have hD : ‖D‖≤Q^(-(51/100:ℝ)) :=
+  have hD : ‖D‖≤Q^(-($x9:term/$x2:term :ℝ)) :=
     (coordD_norm_le Q hQ0 eta v x heta hv).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hK : ‖K‖≤Q^(-eps) :=
     (coordK_norm_le Q hQ1 eta x w heta).trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
@@ -79,7 +76,12 @@ theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps
       _ ≤ T := hDW
   have hh := ProbeLocal.continuedCorrection_defect_bound V W D P hVh hDh
   change ‖ProbeLocal.continuedCorrection V W D P-1‖≤240*T
-  nlinarith
+  nlinarith))
+theorem unramifiedClosed_first_region_bound (Q : ℝ) (A eta v x w z : ℂ) (eps : ℝ)
+    (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
+    (heps : 0<eps) (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
+    (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
+    ‖unramifiedClosed Q A eta v x w z-1‖≤240*Q^(-1-min eps (1/50:ℝ)) := by pf_12 1 100 109 100 51 25 11 10 51
 
 end SevenEighths.ProbeEuler
 end

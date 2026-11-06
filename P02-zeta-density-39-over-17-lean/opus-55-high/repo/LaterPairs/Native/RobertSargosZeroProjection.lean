@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerQuadrupleCount
 public import LaterPairs.Native.RobertSargosSevenSystem
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -38,10 +39,8 @@ theorem robertSargos_zero_image_card_le
     (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q) (hN : 1 ≤ N)
     (hmem : ∀ p ∈ S, RobertSargosSevenSystem R H Q N δ p) :
     ((S.image robertSargosZeroKey).card:ℝ) ≤ 30*R*H*Q*N := by
-  have hR0 : 0 ≤ R := by linarith
-  have hH0 : 0 ≤ H := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
-  have hN0 : 0 ≤ N := by linarith
+  pm_255 hR0 R hH0 H
+  pm_255 hQ0 Q hN0 N
   have hb := integer_box_quadruples_card_le (S.image robertSargosZeroKey)
     (a₁ := -R) (b₁ := R) (a₂ := H) (b₂ := 2*H)
     (a₃ := -(2*Q)) (b₃ := 2*Q) (a₄ := 1) (b₄ := N)

@@ -8,6 +8,7 @@ Mathlib dependencies retain their Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonLeadingSeriesAlgebra
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSharpTruncation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,7 @@ theorem exists_norm_tsum_zetaAtkinsonTwoTerm_sub_leading_le :
         ‖(∑' n : ℕ, zetaAtkinsonTwoTerm T G L n) - atkinsonLeadingSum T G L‖ ≤ C * G := by
   obtain ⟨C, hC, hbound⟩ :=
     exists_norm_tsum_zetaAtkinsonTwoTerm_sub_leading_le_of_summable
-  refine ⟨C, hC, ?_⟩
-  intro T G L hT hG hGT hL hwidth
+  pm_4383
   exact hbound T G L hT (by linarith) hGT (by linarith) hwidth
     (summable_atkinsonLeadingTerm_of_band hT hG hGT hL hwidth)
 

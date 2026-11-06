@@ -48,7 +48,7 @@ theorem segmentTaylorAverage_second
   have hd : ∀ t ∈ uIcc (0 : ℝ) 1,
       HasDerivAt p ((x-a)^2*((1-t)*deriv (deriv F) (a+t*(x-a)))) t := by
     intro t ht
-    have ht' : t ∈ Icc (0 : ℝ) 1 := by simpa only [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] using ht
+    have ht' : t ∈ Icc (0 : ℝ) 1 := by simp_all
     have hc := hF _ (affineSegment_mem_Ioo ha hx ht')
     have h₁ := hc.differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0)
     have h₂ := (hc.derivWithin (by simp)).differentiableAt
@@ -74,7 +74,6 @@ theorem segmentTaylorAverage_second
   have h := intervalIntegral.integral_eq_sub_of_hasDerivAt hd hint
   rw [intervalIntegral.integral_const_mul,
     ← segmentTaylorAverage_zero_eq_intervalIntegral] at h
-  simpa only [p,one_mul,zero_mul,sub_zero,sub_self,zero_add,add_zero,
-    add_sub_cancel,sub_add_cancel,sub_add_eq_sub_sub] using h
+  grind
 
 end TaoTrudgianYang2025

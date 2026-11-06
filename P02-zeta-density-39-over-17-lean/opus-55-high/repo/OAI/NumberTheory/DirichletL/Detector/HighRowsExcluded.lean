@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsEuler
 public import OAI.NumberTheory.DirichletL.Detector.HighExcludedLocal
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,7 +32,7 @@ theorem excludedIdealHighSeries_row_hasProd (S : Finset Id) (hS : ∀P∈S,Prime
     have hh : bareIdealHighSummand η u x w z a.1.1 a.1.2 a.2.1 a.2.2≠0 :=
       (mul_ne_zero_iff.mp ha).2
     have hs := bareIdealHighSummand_support η u x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
-    exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩
+    pm_8385
   · exact (markedIdealHighSummand_summable S 1 η u x w z hx hw hz).norm
 
 end SevenEighths.ProbePhysical

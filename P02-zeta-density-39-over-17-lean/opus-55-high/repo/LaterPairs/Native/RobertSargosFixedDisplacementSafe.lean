@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleSignedCount
 public import LaterPairs.Native.RobertSargosConicOrientation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -27,28 +28,14 @@ theorem robertSargos_fixed_displacement_safe_card_le
       |robertSargosReduced p.2.2 q₁ q₂ p.1 p.2.1 d| ≤ δ*H*Q^2) :
     (S.card:ℝ) ≤ (d.natAbs.divisors.card:ℝ)+
       8*H^2*δ/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := by
-  have hc : Int.gcd (Int.gcd q₁ (-q₂) : ℤ) d = 1 := by
-    rw [Int.gcd_neg,Int.gcd_assoc,Int.gcd_comm q₂ d,← Int.gcd_assoc,Int.gcd_comm q₁ d]
-    exact hcoeff
-  have hp : ∀ p ∈ S, Int.gcd (Int.gcd p.1 p.2.1 : ℤ) p.2.2 = 1 := by
-    intro p hp
-    rw [Int.gcd_assoc,Int.gcd_comm p.2.1 p.2.2,← Int.gcd_assoc,Int.gcd_comm p.1 p.2.2]
-    exact hprim p hp
+  pm_2525
   let A := (q₂:ℝ)*(q₂-d)/((q₁:ℝ)*(q₁+d))
   have hratio : ∀ p ∈ S, A-δ ≤ (p.1:ℝ)/p.2.1 ∧ (p.1:ℝ)/p.2.1 ≤ A+δ := by
-    intro p hp
-    have hl : (p.2.2:ℝ)*d+(p.1:ℝ)*q₁-(p.2.1:ℝ)*q₂ = 0 := by
-      have hli := hline p hp
-      have hh : p.2.2*d+p.1*q₁-p.2.1*q₂ = 0 := by nlinarith only [hli]
-      exact_mod_cast hh
+    pm_2526
     have hb := robertSargos_coefficient_conic_ratio_gap hH hQ hδ
       (hh₂ p hp).1 hq₁ hsafe hl (hnear p hp)
-    change |(p.1:ℝ)/p.2.1-A| ≤ δ at hb
-    rcases abs_le.mp hb with ⟨hlow,hupp⟩
-    constructor <;> linarith
-  have hb := primitive_linear_triple_card_le_abs_modulus S hc hd hH
-    (by linarith : A-δ ≤ A+δ) (fun p hp => hh₂ p hp) hp
-    (fun p hp => by have hl := hline p hp; nlinarith only [hl]) hratio
+    pm_400 δ
+  pm_2527 δ
   calc
     _ ≤ (d.natAbs.divisors.card:ℝ)+
       4*H^2*((A+δ)-(A-δ))/(d.natAbs:ℝ)^2*(∑ g ∈ d.natAbs.divisors, (g:ℝ)) := hb

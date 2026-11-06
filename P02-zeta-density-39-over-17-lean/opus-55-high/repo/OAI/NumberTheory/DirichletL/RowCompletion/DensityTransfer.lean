@@ -153,18 +153,17 @@ theorem quadratic_ray_cross (a b : ActualEisensteinCubic.O) (ha : a≠0) (hb : b
   have hp : ∀i,p i≠0:=by
     intro i
     cases i
-    · exact hb
-    · exact ha
-  let (i : Bool) : (Ideal.span {p i}).IsMaximal := by
-    cases i <;> dsimp [p] <;> infer_instance
+    grind
+    grind
+  let (i : Bool) : (Ideal.span {p i}).IsMaximal := by grind
   have hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})) := by
     intro i j hij
     cases i <;> cases j <;> simp_all [p,Function.onFun,isCoprime_comm]
   have hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2 := by
     intro i
     cases i
-    · exact hcb
-    · exact hca
+    aesop
+    aesop
   have h:=quadraticGamma_product p hp hcop hc
   simp only [quadraticGammaO_eq_rayValue] at h
   have ht : cofactor p true=b:=by

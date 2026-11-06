@@ -32,7 +32,7 @@ lemma zeroGrowth_of_zeroAt (Q : Ideal O) (a b bΦ Bmask L M ε Z : ℝ)
   intro s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
   apply (h s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂).trans
   have he : s.width + ε ≤ max s.width (length Z X₁ + length Z X₂) + ε := by
-    linarith [le_max_left s.width (length Z X₁ + length Z X₂)]
+    grind
   apply mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_le s.base_ge_one he)
   exact mul_nonneg (mul_nonneg (mul_nonneg hC

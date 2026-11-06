@@ -21,7 +21,7 @@ theorem markedCompletedT_monoid (Ψ φ : Eis →* ℂ) (W : ℝ → ℂ) (X : �
   change summand Ψ W X I J * φ (primaryGenerator (I * J ^ 3)) = _
   rw [summand_mul_fixed_twist, primaryGenerator_mul,
     show primaryGenerator (J ^ 3) = primaryGenerator J ^ 3 from map_pow primaryGeneratorHom J 3]
-  exact mul_comm _ _
+  grind
 
 theorem whole_prime_mark_eq_mask_complement (p : Eis) (hp : Prime p)
     (A : Ideal Eis) (hA : primaryGenerator A ≠ 0) :
@@ -36,7 +36,7 @@ theorem whole_prime_mark_eq_mask_complement (p : Eis) (hp : Prime p)
   change (if Ideal.span {p} ∣ A then (1 : ℂ) else 0) =
     1 - (if IsCoprime p (primaryGenerator A) then 1 else 0)
   rw [hp.coprime_iff_not_dvd]
-  by_cases h : p ∣ primaryGenerator A <;> simp [hd, h]
+  grind
 
 theorem markedCompletedT_prime_product_twists {ι : Type*}
     (S : Finset ι) (p : ι → Eis) (hp : ∀ i ∈ S, Prime (p i))

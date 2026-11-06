@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.ReciprocityCRT
 public import OAI.NumberTheory.DirichletL.Detector.CubicGaussCRT
 public import OAI.NumberTheory.DirichletL.Detector.CompletedCRTPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -57,14 +58,12 @@ theorem correctedFiniteCoefficient_product (I J : Ideal O)
   have hAs := supported_completed c n hc hn
   have hBs := supported_completed d m hd hm
   have hAB : IsCoprime A B := hcop.of_mul_left_left.of_mul_right_left
-  have hnA : n∣A := by refine ⟨c*n^2,?_⟩; dsimp only [A]; ring
-  have hmB : m∣B := by refine ⟨d*m^2,?_⟩; dsimp only [B]; ring
+  pm_8607 hnA n A c
+  pm_8607 hmB m B d
   have hcA : c∣A := dvd_mul_right c (n^3)
   have hdB : d∣B := dvd_mul_right d (m^3)
-  have hcd : IsCoprime c d := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hdB
-  have hcm : IsCoprime c m := (hAB.of_isCoprime_of_dvd_left hcA).of_isCoprime_of_dvd_right hmB
-  have hnd : IsCoprime n d := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hdB
-  have hnm : IsCoprime n m := (hAB.of_isCoprime_of_dvd_left hnA).of_isCoprime_of_dvd_right hmB
+  pm_8608 hcd c hcA hcm
+  pm_8608 hnd n hnA hnm
   have hphase := completed_cubic_cross_cancel c n d m hc hn hd hm hpc hpn hpd hpm hcd hcm hnd hnm
   change sexticPair A B * sexticPair c d^2 * star (reciprocitySign A B)=1 at hphase
   change gaussTwo (I*J) hIJ.2 * star (G (A*B)) *
@@ -79,11 +78,7 @@ theorem correctedFiniteCoefficient_product (I J : Ideal O)
   change (sexticPair c d^2 * gaussTwo I hI.2 * gaussTwo J hJ.2) *
     (star (reciprocitySign A B)*(star (G B)*star (G A))) *
     (sexticPair A B * reciprocityCoefficient A s _ H * reciprocityCoefficient B r _ H) = _
-  calc
-    _ = (sexticPair A B * sexticPair c d^2 * star (reciprocitySign A B)) *
-      ((gaussTwo I hI.2 * star (G A) * reciprocityCoefficient A s _ H) *
-       (gaussTwo J hJ.2 * star (G B) * reciprocityCoefficient B r _ H)) := by ring
-    _ = _ := by rw [hphase,one_mul]
+  grind
 
 end SevenEighths.ProbePhysical
 end

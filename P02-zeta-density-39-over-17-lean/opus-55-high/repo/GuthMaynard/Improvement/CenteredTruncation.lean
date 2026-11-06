@@ -1,9 +1,9 @@
 module
 public import GuthMaynard.Improvement.CenteredPoisson
 public import GuthMaynard.Improvement.LogPoissonBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
@@ -17,11 +17,11 @@ theorem mem_poissonModes (U : ℝ) (m : ℤ) :
   constructor
   · rintro ⟨h0,ha,hb⟩
     have hn : -(m:ℝ) ≤ U := by
-      have hz : -m ≤ ⌊U⌋ := by omega
+      pm_8785 m
       simpa using Int.le_floor.mp hz
     exact ⟨h0,by linarith,Int.le_floor.mp hb⟩
   · rintro ⟨h0,ha,hb⟩
-    have hn : -m ≤ ⌊U⌋ := Int.le_floor.mpr (by push_cast; linarith)
+    have hn : -m ≤ ⌊U⌋ := Int.le_floor.mpr (by grind)
     exact ⟨h0,by omega,Int.le_floor.mpr hb⟩
 
 /-- Exact pointwise partition into the finite nonzero modes and the actual
@@ -42,8 +42,11 @@ theorem poisson_mode_partition (f : ℝ → ℂ) {L U : ℝ}
     · simp [mem_poissonModes,hm,hu,not_lt.mpr hu]
     · simp [mem_poissonModes,hm,hu,lt_of_not_ge hu]
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+include a ha
 /-- Exact finite truncation error for the literal centered kernel. -/
-theorem centeredKernel_truncation {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+theorem centeredKernel_truncation
     {l u L U : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hL : 0 < L) (hU : 0 ≤ U)
     (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
     centeredKernel a l u L s -
@@ -67,7 +70,7 @@ theorem centeredKernel_truncation {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
 
 /-- Uniform approximation of the actual centered finite kernel by its
 finite nonzero Fourier modes, with no Poisson identity premise. -/
-theorem centeredKernel_truncation_negligible {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+theorem centeredKernel_truncation_negligible
     {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
     {η c : ℝ} (hη : 0 < η) (hc : 0 ≤ c) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ T L s : ℝ,
@@ -75,13 +78,13 @@ theorem centeredKernel_truncation_negligible {a : ℝ → ℂ} (ha : ContDiff �
       ‖centeredKernel a l u L s -
         (L:ℂ)*(∑ m ∈ poissonModes (T^(1+η)/L), 𝓕 (logModulated a s) (L*(m:ℝ)))‖ ≤
         C*T^(-200:ℝ) := by
-  obtain ⟨C,hC,h⟩ := log_poisson_negligible ha hl hlu hs hη hc
+  pm_957 C hC h log_poisson_negligible ha hl hlu hs hη hc
   refine ⟨C,hC,?_⟩
   intro T L s hT hL hLT hst
-  have hLp : 0 < L := by linarith
-  have hTp : 0 < T := by linarith
+  pm_72 hLp L hTp T
   rw [centeredKernel_truncation ha hl hlu hLp (by positivity) hs s]
   rw [mul_div_cancel₀ _ hLp.ne']
   exact (h T L s 0 hT hL hLT hst).2
+end
 
 end GuthMaynard.Improvement

@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedCore
 public import TaoTrudgianYang2025.BetaBufferedStationary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,13 +34,11 @@ theorem modelPhaseCore_card_le
         (modelPhaseCoreUpper δ T N : ℝ)+1-(modelPhaseCoreLower σ δ T N : ℝ) := by
     exact_mod_cast hc
   rw [he]
-  have ha := Int.lt_floor_add_one ((T/N)*((2 : ℝ)^(-σ)-δ))
+  pm_1616 ha Int.lt_floor_add_one
   have hb := Int.ceil_lt_add_one ((T/N)*(1+δ))
-  have hs : 0 ≤ (2 : ℝ)^(-σ) := Real.rpow_nonneg (by norm_num) _
+  pm_534 hs
   have hTN : 0 ≤ T/N := div_nonneg hT hN.le
-  have hlo : -(T/N) ≤ (T/N)*((2 : ℝ)^(-σ)-δ) := by
-    have h := mul_le_mul_of_nonneg_left (show (-1 : ℝ) ≤ (2 : ℝ)^(-σ)-δ by linarith) hTN
-    nlinarith
+  pm_1615 hlo hTN
   have hhi : (T/N)*(1+δ) ≤ 2*(T/N) := by
     have h := mul_le_mul_of_nonneg_left (show 1+δ ≤ (2 : ℝ) by linarith) hTN
     nlinarith

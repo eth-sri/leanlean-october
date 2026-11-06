@@ -8,6 +8,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerAmplitude
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonAmplitudeIntegral
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -52,7 +53,7 @@ theorem atkinsonPowerIntegrand_sq {T y : ℝ} (hT : 0 < T) (hy : 0 < y)
   push_cast at hc
   unfold atkinsonPowerIntegrand
   simp only [real_smul, Complex.ofReal_mul, Complex.ofReal_ofNat]
-  linear_combination (2 * (y : ℂ) * (((y ^ 2) ^ (-α) : ℝ) : ℂ)) * hc
+  grind
 
 theorem atkinsonPowerIntegral_eq_root {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) (α b : ℝ) :
@@ -60,36 +61,26 @@ theorem atkinsonPowerIntegral_eq_root {T G L : ℝ}
       2 * ∫ y in Real.sqrt (T / 16)..Real.sqrt T,
         atkinsonPowerWeight T G L α (y ^ 2) * atkinsonRootKernel T b y := by
   have hab : Real.sqrt (T / 16) ≤ Real.sqrt T := Real.sqrt_le_sqrt (by linarith)
-  have ha : 0 < Real.sqrt (T / 16) := Real.sqrt_pos.2 (by positivity)
+  pm_6512
   have he : atkinsonPowerIntegral T G L α b =
       ∫ x in (T / 16)..T, atkinsonPowerIntegrand T G L α b x := by
     unfold atkinsonPowerIntegral
     rw [intervalIntegral.integral_of_le (by linarith : T / 16 ≤ T),
       ← integral_Icc_eq_integral_Ioc]
-    apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
-      (fun x hx => (by positivity : 0 < T / 16).trans_le hx.1)
-    intro x hx
+    pm_4382
     have hz : zetaAtkinsonDivisorTest T G L x = 0 := by
-      by_contra hn
-      have hs : x ∈ Function.support (zetaSmoothDivisorTest T G L) := by
-        rw [← support_zetaAtkinsonDivisorTest]
-        exact hn
-      exact hx.2 (support_zetaSmoothDivisorTest_physical hT hG hL hwidth hs)
+      pm_411
+      pm_7094 hs
     simp [atkinsonPowerIntegrand, hz]
   have hc := intervalIntegral.integral_deriv_smul_comp_of_deriv_nonneg
     (g := atkinsonPowerIntegrand T G L α b) (f := fun y : ℝ => y ^ 2)
     (f' := fun y : ℝ => 2 * y) (a := Real.sqrt (T / 16)) (b := Real.sqrt T)
     (by fun_prop) (fun y _ => by simpa using! (hasDerivAt_id y).pow 2)
     (fun y hy => by
-      rw [min_eq_left hab, max_eq_right hab] at hy
-      have := ha.trans hy.1
+      pm_7272
       positivity)
   rw [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] at hc
-  rw [he, ← hc, ← intervalIntegral.integral_const_mul]
-  apply intervalIntegral.integral_congr
-  intro y hy
-  rw [uIcc_of_le hab] at hy
-  exact atkinsonPowerIntegrand_sq hT (ha.trans_le hy.1) G L α b
+  pm_4341
 
 theorem exists_norm_atkinsonPowerIntegral_le (α : ℝ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L b : ℝ, 0 < T → 0 < G → G ^ 2 ≤ 2 * T →
@@ -98,15 +89,10 @@ theorem exists_norm_atkinsonPowerIntegral_le (α : ℝ) :
   obtain ⟨C, hC, hweight⟩ := exists_intervalC1Bound_atkinsonPowerWeight α
   refine ⟨16 * C, by positivity, ?_⟩
   intro T G L b hT hG hGT hL hwidth
-  have hab : Real.sqrt (T / 16) ≤ Real.sqrt T := Real.sqrt_le_sqrt (by linarith)
-  have ha : 0 < Real.sqrt (T / 16) := Real.sqrt_pos.2 (by positivity)
-  have hf : IntervalC1Bound (atkinsonPowerWeight T G L α)
-      ((Real.sqrt (T / 16)) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by
-    simpa only [Real.sq_sqrt (by positivity : 0 ≤ T / 16), Real.sq_sqrt hT.le] using
-      hweight T G L hT hG hGT hL
+  pm_4342
   have h := (hf.comp_sq ha.le hab).atkinsonRoot hT b ha hab
   rw [atkinsonPowerIntegral_eq_root hT hG hL hwidth α b, norm_mul, norm_ofNat]
-  have hfin := mul_le_mul_of_nonneg_left h (by norm_num : (0 : ℝ) ≤ 2)
+  pm_4290 hfin mul_le_mul_of_nonneg_left h
   convert hfin using 1
   ring
 

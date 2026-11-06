@@ -1,6 +1,7 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,11 +19,7 @@ theorem bounded_power_exponent {a d x : ℝ}
     ∃ k : ℕ, 1 ≤ k ∧ k ≤ ⌈a/d⌉₊ ∧ a ≤ (k : ℝ)*x ∧ (k : ℝ)*x ≤ 3*a/2 := by
   have hxpos : 0 < x := hd.trans_le hdx
   refine ⟨⌈a/x⌉₊, ?_, ?_, ?_, ?_⟩
-  · have hc := Nat.le_ceil (a/x)
-    by_contra h
-    have hz : ⌈a/x⌉₊ = 0 := by omega
-    rw [hz, Nat.cast_zero] at hc
-    exact (not_le_of_gt (div_pos ha hxpos)) hc
+  simp_all
   · exact Nat.ceil_mono (div_le_div_of_nonneg_left ha.le hd hdx)
   · exact (div_le_iff₀ hxpos).mp (Nat.le_ceil (a/x))
   · by_cases hsmall : x ≤ a/2
@@ -31,7 +28,7 @@ theorem bounded_power_exponent {a d x : ℝ}
       have he : (a/x+1)*x = a+x := by field_simp
       rw [he] at hm
       linarith
-    · have hc : ⌈a/x⌉₊ ≤ 2 := Nat.ceil_le.mpr ((div_le_iff₀ hxpos).mpr (by norm_num; linarith))
+    · have hc : ⌈a/x⌉₊ ≤ 2 := Nat.ceil_le.mpr ((div_le_iff₀ hxpos).mpr (by grind))
       have hcR : (⌈a/x⌉₊ : ℝ) ≤ 2 := by exact_mod_cast hc
       nlinarith
 
@@ -43,7 +40,7 @@ theorem bounded_power_scale {T M a d : ℝ}
     ∃ k : ℕ, 1 ≤ k ∧ k ≤ ⌈a/d⌉₊ ∧ T^a ≤ M^k ∧ M^k ≤ T^(3*a/2) := by
   have hTpos : 0 < T := by linarith
   have hlogT : 0 < Real.log T := Real.log_pos hT
-  have hMpos : 0 < M := (Real.rpow_pos_of_pos hTpos d).trans_le hlo
+  pm_650 hMpos M Real.rpow_pos_of_pos hTpos d hlo
   let x := Real.log M / Real.log T
   have hxlo : d ≤ x := by
     apply (le_div_iff₀ hlogT).mpr
@@ -57,14 +54,10 @@ theorem bounded_power_scale {T M a d : ℝ}
   refine ⟨k, hk, hkK, ?_, ?_⟩
   · apply (Real.log_le_log_iff (Real.rpow_pos_of_pos hTpos a) (pow_pos hMpos k)).mp
     rw [Real.log_rpow hTpos, Real.log_pow]
-    have hh := mul_le_mul_of_nonneg_right hlow hlogT.le
-    dsimp [x] at hh
-    simpa only [mul_assoc, div_mul_cancel₀ _ hlogT.ne'] using hh
+    pm_5988 hlow
   · apply (Real.log_le_log_iff (pow_pos hMpos k) (Real.rpow_pos_of_pos hTpos _)).mp
     rw [Real.log_pow, Real.log_rpow hTpos]
-    have hh := mul_le_mul_of_nonneg_right hupp hlogT.le
-    dsimp [x] at hh
-    simpa only [mul_assoc, div_mul_cancel₀ _ hlogT.ne'] using hh
+    pm_5988 hupp
 
 /-- The manuscript's harmless factor 1/4 is absorbed before all short scales
 vary. In particular, the exponent bound is uniform in M and T. -/
@@ -91,7 +84,7 @@ theorem bounded_power_piece_scales {T M a c : ℝ} {k K ℓ : ℕ}
     (hM : 0 ≤ M) (hkK : k ≤ K) (hℓ : ℓ < k)
     (hlo : T^a ≤ M^k) (hhi : M^k ≤ T^c) :
     T^a ≤ (2 : ℝ)^ℓ*M^k ∧ (2 : ℝ)^ℓ*M^k ≤ (2 : ℝ)^K*T^c := by
-  have htwo : (1 : ℝ) ≤ 2^ℓ := one_le_pow₀ (by norm_num)
+  pm_6295
   have hpow : 0 ≤ M^k := pow_nonneg hM k
   have htwoK : (2 : ℝ)^ℓ ≤ 2^K :=
     pow_le_pow_right₀ (by norm_num) (by omega)

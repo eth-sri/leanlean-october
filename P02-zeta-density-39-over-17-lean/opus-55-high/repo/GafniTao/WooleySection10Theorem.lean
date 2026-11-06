@@ -2,8 +2,9 @@ module
 public import GafniTao.WooleySection10SeparatedHierarchy
 public import GafniTao.WooleySection9Admissible
 public import GafniTao.WooleyExponent
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Completion of Wooley's Section 10 contradiction
@@ -16,7 +17,6 @@ critical exponent is respected.
 
 namespace GafniTao
 
-noncomputable section
 
 set_option maxHeartbeats 4000000 in
 /-- Assuming Corollary 3.2 in every smaller positive degree, the critical
@@ -48,17 +48,11 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
   let tau : ℝ := min tauA tauC
   have htauA0 : 0 < tauA := hepsilonA.trans hepsilonATau
   have htau : 0 < tau := by dsimp [tau]; exact lt_min htauA0 htauC
-  have htauA : tau ≤ tauA := by dsimp [tau]; exact min_le_left _ _
-  have htauC' : tau ≤ tauC := by dsimp [tau]; exact min_le_right _ _
+  pm_5311 htauA tau tauA min_le_left
+  pm_5311 htauC' tau tauC min_le_right
   let epsilonCap : ℝ := min epsilonA tau
-  let epsilon : ℝ := epsilonCap / 2
-  have hepsilonCap : 0 < epsilonCap := by dsimp [epsilonCap]; positivity
-  have hepsilon : 0 < epsilon := by dsimp [epsilon]; linarith
-  have hepsilonLtCap : epsilon < epsilonCap := by dsimp [epsilon]; linarith
-  have hepsilonA' : epsilon ≤ epsilonA :=
-    hepsilonLtCap.le.trans (by dsimp [epsilonCap]; exact min_le_left _ _)
-  have hepsilonTau : epsilon < tau :=
-    hepsilonLtCap.trans_le (by dsimp [epsilonCap]; exact min_le_right _ _)
+  pm_2819
+  pm_1205 hepsilonA' epsilonA
   have hepsilonEta : epsilon ≤ eta := hepsilonA'.trans hepsilonAEta
   have htauDelta : tau < delta := htauA.trans_lt htauADelta
   have hmu : 0 < mu := htau.trans (htauDelta.trans hdeltaMu)
@@ -77,9 +71,9 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
     wooleySourcePolynomial_lemma_7_1_uniform_global hpPrime hkp hlower
       tau epsilon htau hepsilon
   have hdeltaHalf : delta ≤ 1 / 2 := by
-    have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
+    pm_2797
     have hdelta0 : 0 ≤ delta := (htau.trans htauDelta).le
-    nlinarith [sq_nonneg ((k : ℝ) - 2)]
+    pm_8551 k
   obtain ⟨Bupper, hupper⟩ :=
     wooleySourcePolynomial_lemma_4_1_coefficientOne_half
       hpPrime (by omega) hkp hepsilon (by linarith) htauDelta hdeltaHalf
@@ -88,7 +82,7 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
   obtain ⟨Hlarge, hHlarge⟩ :=
     wooley_initial_twoLoss_absorption_eventually
       (p := p) (s := s) hpPrime.one_lt (by linarith : 0 < eta + epsilon)
-  let C0 : ℝ := 2 * 2 ^ (s - 1)
+  pm_5501 C0
   let D : ℝ := Csection ^ ((2 * k : ℕ) : ℝ)
   let Ctotal : ℝ := C0 * D ^ N
   obtain ⟨Hconstant, hHconstant⟩ :=
@@ -141,10 +135,8 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
   have hphi : phi.InPhiTau p B tau := hphiC.mono htauC'
   obtain ⟨c, hspaced, hcscale⟩ := hphi
   have htauB : (1 : ℝ) ≤ tau * (B : ℝ) := by
-    have hBtauReal : (Btau : ℝ) ≤ B := by exact_mod_cast hBtau'
-    have hquot : 1 / tau ≤ (B : ℝ) := hBtau.trans hBtauReal
-    rw [div_le_iff₀ htau] at hquot
-    simpa only [one_mul, mul_comm] using hquot
+    pm_106 hBtauReal Btau B hBtau'
+    pm_6328 hquot hBtau.trans hBtauReal
   have hc : 1 ≤ c := by
     have hcR : (1 : ℝ) ≤ c := htauB.trans hcscale
     exact_mod_cast hcR
@@ -195,8 +187,7 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
   have hscale : 0 < wooleySourceNormalizationScale phi p B H
       (wooleyTriangular k) Lambda gamma := by
     let U := wooleySourcePolynomialMean (wooleyTriangular k) (p ^ B) phi gamma
-    let Z := wooleySourcePolynomialConditionedMean
-      (wooleyTriangular k) (p ^ B) (p ^ H) phi gamma
+    pm_7637 Z H
     have hleft0 : 0 ≤ (p : ℝ) ^ ((H : ℝ) * (Lambda - eta)) * Z := by
       exact mul_nonneg (Real.rpow_nonneg (by positivity) _)
         (wooleySourcePolynomialConditionedMean_nonneg phi
@@ -225,8 +216,8 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
     have hLamNu : 4 * eta * (H : ℝ) ≤ Lambda * (nu : ℝ) := by
       rw [div_le_iff₀ hLambda] at hfour
       simpa only [mul_assoc, mul_comm, mul_left_comm] using hfour
-    have hH0 : (0 : ℝ) ≤ H := by positivity
-    have hnu0 : (0 : ℝ) ≤ nu := by positivity
+    pm_96 hH0 H
+    pm_96 hnu0 nu
     nlinarith
   have hnodes := wooley_section10_nodes_of_globalHierarchy
     (B := B) hk hLambda htau.le (by rfl : H = B ⌈/⌉ k) hglobalNow'
@@ -242,12 +233,12 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
   have hD : 1 ≤ D := by
     dsimp [D]
     exact Real.one_le_rpow hCsection (by positivity)
-  have hC0 : 0 < C0 := by dsimp [C0]; positivity
+  pm_64 hC0 C0
   have hconstants : C0 * D ^
         (wooleyIterationLength (wooleyTriangular k) k Lambda) * max 1 (1 : ℝ) ≤
       (p : ℝ) ^ thetaNat := by
     have hcst := hHconstant H hHconstant'
-    simpa only [Ctotal, N, s, max_self, mul_one] using hcst
+    pm_383 Ctotal N s max_self mul_one hcst
   have hterminal : ∀ r a b : ℕ, 1 ≤ r → r ≤ k - 1 →
       max a b ≤ k ^ (2 * wooleyIterationLength
           (wooleyTriangular k) k Lambda + 1) * thetaNat →
@@ -258,11 +249,9 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
             wooleyNormalizationExponent k r) := by
     intro r a b hr hrk hab
     have haCap : a ≤ k ^ (2 * N + 1) * thetaNat := by
-      have := (le_max_left a b).trans hab
-      simpa only [N, s] using this
+      pm_7116 le_max_left
     have hbCap : b ≤ k ^ (2 * N + 1) * thetaNat := by
-      have := (le_max_right a b).trans hab
-      simpa only [N, s] using this
+      pm_7116 le_max_right
     have haH : a ≤ H := haCap.trans hphysical.2
     have hbH : b ≤ H := hbCap.trans hphysical.2
     have ht := wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
@@ -279,6 +268,5 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
       (by simpa only [D, N, s] using hchain) hterminal hHeta hHepsilon hconstants
 
 
-end
 
 end GafniTao

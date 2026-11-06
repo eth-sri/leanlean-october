@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.GammaDetectorExpansion
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeDetectorLower
 open HeckeFamily HeckeDetectorTail HeckeDetectorFinite HeckeDetectorPartition
@@ -30,7 +30,10 @@ lemma unit_term_lower (U : ℝ) (hU : 2 ≤ U) :
   simp only [neg_div] at hh ⊢
   linarith
 
-theorem terminal_uniform_lower (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ' : θ < 3/4) :
+section
+variable (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ' : θ < 3/4)
+include R θ hR hθ hθ'
+theorem terminal_uniform_lower :
     ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U →
       ∀ (χ : Character), χ.residue ≠ 1 → ∀ (V T : ℝ → ℂ),
       (∀ x : ℝ, ‖V x‖ ≤ 1) → (∀ x : ℝ, ‖T x‖ ≤ 1) →
@@ -45,9 +48,8 @@ theorem terminal_uniform_lower (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ
   obtain ⟨UT,hUT⟩ := terminalRemainder_uniform_small 1 1 (1/8) (by norm_num) (by norm_num) (by norm_num)
   refine ⟨max 2 (max UG UT),?_⟩
   intro U hU χ hχ V T hVb hTb hVone hVzero hTone D hD hDU hQ ρ hρ hzero hheight
-  have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
-  have hU1 : 1 ≤ U := by linarith
-  have hUp : 0 < U := by linarith
+  pm_225 hU2 U le_max_left hU
+  pm_178 hU1 U hUp
   have hg := hUG U ((le_max_left UG UT).trans ((le_max_right 2 _).trans hU)) hU1
     χ hχ V hVb D (by linarith) hDU hQ ρ hρ hzero hheight
   have ht := hUT U ((le_max_right UG UT).trans ((le_max_right 2 _).trans hU)) hU1
@@ -71,7 +73,7 @@ theorem terminal_uniform_lower (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ
   have hu := unit_term_lower U hU2
   linarith
 
-theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) (hθ' : θ < 3/4) :
+theorem exists_dyadic_zero_witness :
     ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U →
       ∀ (χ : Character), χ.residue ≠ 1 → ∀ (V T : ℝ → ℂ),
       (∀ x : ℝ, ‖V x‖ ≤ 1) → (∀ x : ℝ, ‖T x‖ ≤ 1) →
@@ -85,12 +87,12 @@ theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) 
       ∃ j ∈ Finset.range (length (⌈2*U^21⌉₊ : ℝ)+1),
         ∃ k ∈ Finset.range (length (⌈2*U^21⌉₊ : ℝ)+1),
           (1/2 : ℝ) ≤ 625*(Real.logb 2 U)^2*‖dyadicBlock χ V T D (U^20) (U^21) ρ j k‖ ∧
-          (2 : ℝ)^j < 4*D ∧ D/8 < (2 : ℝ)^j*(2 : ℝ)^k ∧
+          (2 : ℝ)^j < 4*D ∧ D /8 < (2 : ℝ)^j*(2 : ℝ)^k ∧
           (2 : ℝ)^j*(2 : ℝ)^k < 8*U^21 := by
   obtain ⟨U₁,hU₁⟩ := terminal_uniform_lower R θ hR hθ hθ'
   refine ⟨max 2 U₁,?_⟩
   intro U hU χ hχ V T hVb hTb hVone hVzero hTone hTzero D hD hDU hQ ρ hρ hzero hheight
-  have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
+  pm_225 hU2 U le_max_left hU
   have hUpos : 0 < U := by linarith
   have ht := hU₁ U ((le_max_right _ _).trans hU) χ hχ V T hVb hTb hVone hVzero hTone D hD hDU hQ ρ hρ hzero hheight
   obtain ⟨j,hj,k,hk,hb⟩ := exists_dyadic_block χ V T D (U^20) (U^21)
@@ -103,9 +105,9 @@ theorem exists_dyadic_zero_witness (R θ : ℝ) (hR : 0 ≤ R) (hθ : 0 ≤ θ) 
     (by linarith) (by positivity) hTzero hVone hVzero ρ j k hbn⟩
   exact hb.trans (mul_le_mul_of_nonneg_right
     (HeckeDetectorBudget.source_pair_count_bound U hU2) (norm_nonneg _))
+end
 
 end SevenEighths.HeckeDetectorLower
 
-end
 
 end OAI

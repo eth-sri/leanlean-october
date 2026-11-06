@@ -15,11 +15,14 @@ local notation "Id" => Ideal O
 def lowGramRemainders (F : Finset O) : Finset Id :=
   F.image (fun z=>sixthRemainder (Ideal.span {z}))
 
-lemma lowGramRemainders_nonzero (F : Finset O) (R : Id) (hR : R∈lowGramRemainders F) : R≠0 := by
+section
+variable (F : Finset O)
+include F
+lemma lowGramRemainders_nonzero (R : Id) (hR : R∈lowGramRemainders F) : R≠0 := by
   obtain ⟨z,hz,rfl⟩ := Finset.mem_image.mp hR
   exact sixthRemainder_ne_zero _
 
-theorem lowGramRemainders_card (F : Finset O) (G : Id)
+theorem lowGramRemainders_card (G : Id)
     (hres : ∀z∈F,∀P∉primeSupport G,valuation (Ideal.span {z}) P%6=0) :
     (lowGramRemainders F).card≤6^(primeSupport G).card := by
   have hlt (R : lowGramRemainders F) (P : Id) : valuation R.val P<6 := by
@@ -37,11 +40,11 @@ theorem lowGramRemainders_card (F : Finset O) (G : Id)
     · exact congrArg Fin.val (congrFun he ⟨P,hp⟩)
     · obtain ⟨r,hr,her⟩ := Finset.mem_image.mp R.property
       obtain ⟨t,ht,het⟩ := Finset.mem_image.mp T.property
-      rw [←her,←het,sixthRemainder_valuation,sixthRemainder_valuation,hres r hr P hp,hres t ht P hp]
+      aesop
   have hh := Fintype.card_le_of_injective code hinj
-  simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_fin] using hh
+  simp_all
 
-theorem lowGramExceptional_raw_count (F : Finset O) (G : Id) (H : ℝ) (hH : 0≤H)
+theorem lowGramExceptional_raw_count (G : Id) (H : ℝ) (hH : 0≤H)
     (hF : ∀z∈F,z≠0)
     (hres : ∀z∈F,∀P∉primeSupport G,valuation (Ideal.span {z}) P%6=0)
     (hN : ∀z∈F,(Ideal.absNorm (Ideal.span {z}):ℝ)≤H) :
@@ -61,6 +64,7 @@ theorem lowGramExceptional_raw_count (F : Finset O) (G : Id) (H : ℝ) (hH : 0�
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact_mod_cast lowGramRemainders_card F G hres
     _ = _ := by ring
+end
 
 theorem lowGramExceptional_count (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀G : Id,G≠0→∀F : Finset O,∀H : ℝ,0≤H→

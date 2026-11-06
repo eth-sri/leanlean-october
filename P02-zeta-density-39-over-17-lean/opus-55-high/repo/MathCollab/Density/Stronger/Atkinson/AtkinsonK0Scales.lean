@@ -6,6 +6,7 @@ See third_party/twelfth/ATKINSON_MAIN_PLUS_MANIFEST.json and third_party/twelfth
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonK0Series
 public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem besselK0_source_power_absorb {C T A : ℝ} {k : ℕ}
       ring
     _ ≤ T * T ^ (-A - 1) := mul_le_mul hCT hp (Real.rpow_nonneg hT0.le _) hT0.le
     _ = T ^ (1 + (-A - 1)) := by rw [Real.rpow_add hT0, Real.rpow_one]
-    _ = _ := by congr 1; ring
+    _ = _ := by simp_all
 
 theorem exists_zetaAtkinsonBesselPlus_powerSaving {δ : ℝ} (hδ : 0 < δ) (A : ℝ) :
     ∃ T₀ : ℝ, 16 ≤ T₀ ∧ ∀ T G : ℝ, T₀ ≤ T →
@@ -36,8 +37,8 @@ theorem exists_zetaAtkinsonBesselPlus_powerSaving {δ : ℝ} (hδ : 0 < δ) (A :
       ‖zetaAtkinsonBesselPlus T G (Real.log T)‖ ≤ G * T ^ (-A) := by
   obtain ⟨m, hm⟩ := exists_nat_gt (A + 2)
   let k : ℕ := max 2 m
-  have hk : 2 ≤ k := le_max_left _ _
-  have hkA : A + 2 ≤ (k : ℝ) := hm.le.trans (by exact_mod_cast le_max_right 2 m)
+  pm_6551 hk k
+  have hkA : A + 2 ≤ (k : ℝ) := hm.le.trans (by aesop)
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaAtkinsonBesselPlus_le hk
   have hev : ∀ᶠ T : ℝ in atTop, ∀ G : ℝ, T ^ δ ≤ G → G ≤ T ^ (1 / 2 - δ) →
       ‖zetaAtkinsonBesselPlus T G (Real.log T)‖ ≤ G * T ^ (-A) := by
@@ -47,13 +48,13 @@ theorem exists_zetaAtkinsonBesselPlus_powerSaving {δ : ℝ} (hδ : 0 < δ) (A :
     obtain ⟨hG, hlog, hwidth, _⟩ := hsupport.2 G hlower
     have hb := hbound T G (Real.log T) hsupport.1 hG (hscale.2.2 G hG hupper).1 hlog hwidth
     have hp := mul_le_mul_of_nonneg_left
-      (besselK0_source_power_absorb (by linarith [hsupport.1]) hTC hkA) hG.le
+      (besselK0_source_power_absorb (by grind) hTC hkA) hG.le
     apply hb.trans
     convert hp using 1
     ring
   obtain ⟨T₁, hT₁⟩ := eventually_atTop.mp hev
   refine ⟨max 16 T₁, le_max_left _ _, ?_⟩
   intro T G hT hlower hupper
-  exact hT₁ T ((le_max_right _ _).trans hT) G hlower hupper
+  grind
 
 end MathCollab.Density.Stronger.Atkinson

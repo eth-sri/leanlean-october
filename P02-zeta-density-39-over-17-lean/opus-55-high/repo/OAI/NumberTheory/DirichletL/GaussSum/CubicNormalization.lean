@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinEmbedding
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,15 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -51,21 +49,23 @@ noncomputable def breveGamma2 (P : Ideal O) [P.IsMaximal]
       ConcreteBreveE.breveE_period_coordinates p hp) /
       (‖eisEmbedding p‖ : ℂ)
 
-theorem canonicalSextic_pow_two (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
+section
+variable (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P)
+include P hgood
+theorem canonicalSextic_pow_two :
     canonicalSextic P hgood ^ 2 =
       (cubicChar P hgood).ringHomComp eisEmbedding := by
   change ((sexticChar P hgood).ringHomComp eisEmbedding) ^ 2 = _
   rw [MulChar.ringHomComp_pow, (sexticChar_powers P hgood).1]
 
-theorem breveGamma2_cube (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
+theorem breveGamma2_cube (p : O) (hP : P = Ideal.span {p})
     (hp : p ≠ 0) (hprimary : lambda ^ 2 ∣ p - 1) :
     (breveGamma2 P hgood p hP hp) ^ 3 =
       -(eisEmbedding p) / (‖eisEmbedding p‖ : ℂ) := by
   unfold breveGamma2
   rw [canonicalSextic_pow_two]
   exact cubicGauss_normalized_cube_breveE P hgood p hP hp hprimary
+end
 
 end ActualEisensteinCubic
 
@@ -73,8 +73,10 @@ namespace ShortDraftLocal
 
 open AddChar MulChar
 
-theorem general_inversion_gauss {F : Type*} [Field F] [Fintype F] [DecidableEq F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ) (a : F) :
+section
+variable {F : Type*} [Field F] [Fintype F] [DecidableEq F] (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ)
+include F χ ψ j
+theorem general_inversion_gauss (a : F) :
     (∑ h : Fˣ, (((χ ^ j)⁻¹ * (χ⁻¹) ^ 2) h) *
       ψ (a * ((h⁻¹ : Fˣ) : F))) =
       gaussSum (χ ^ (j + 2)) (ψ.mulShift a) := by
@@ -98,8 +100,6 @@ theorem general_inversion_gauss {F : Type*} [Field F] [Fintype F] [DecidableEq F
       simp only [AddChar.mulShift_apply]
 
 theorem sextic_fourier_theta_row_general
-    {F : Type*} [Field F] [Fintype F] [DecidableEq F]
-    (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ)
     (hχj : χ ^ j ≠ 1) (hχj2 : χ ^ (j + 2) ≠ 1)
     (σ : Fˣ) (ε x : F) :
     (Fintype.card F : ℂ)⁻¹ *
@@ -131,6 +131,7 @@ theorem sextic_fourier_theta_row_general
   rw [hsum, general_inversion_gauss χ ψ j (ε * x),
     gaussSum_mulShift_any (χ ^ (j + 2)) ψ hχj2 (ε * x), map_mul]
   ring
+end
 
 end ShortDraftLocal
 
@@ -156,8 +157,7 @@ theorem canonical_A5_nonexceptional (P : Ideal O) [P.IsMaximal]
         gaussSum (χ ^ j) (ψ.mulShift (-1)) *
         gaussSum (χ ^ (j + 2)) ψ * (χ ^ (j + 2))⁻¹ ε) *
       (χ ^ (j + 2))⁻¹ x := by
-  let : Field (O ⧸ P) := Ideal.Quotient.field P
-  let : Fintype (O ⧸ P) := Fintype.ofFinite _
+  pb_137
   let χ := canonicalSextic P hgood
   have hχj : χ ^ j ≠ 1 :=
     canonicalSextic_pow_ne_one P hgood hchar hj0 hj6
@@ -202,25 +202,14 @@ theorem schwartz_fourier_one_plus_integrable
   have hIJ : Integrable
       (fun t : ℝ => ‖t‖ ^ J * ‖b t‖) volume :=
     b.integrable_pow_mul volume J
-  have hR : Integrable
-      (fun t : ℝ => (2 : ℝ) ^ J *
-        (‖b t‖ + ‖t‖ ^ J * ‖b t‖)) volume :=
-    (hI0.add hIJ).const_mul _
+  pm_3174 hR
   have hpoint (t : ℝ) :
       (1 + ‖t‖) ^ J * ‖b t‖ ≤
         (2 : ℝ) ^ J * (‖b t‖ + ‖t‖ ^ J * ‖b t‖) := by
     have hp := add_pow_le (show (0 : ℝ) ≤ 1 by norm_num)
       (norm_nonneg t) J
-    have htwo : (2 : ℝ) ^ (J - 1) ≤ (2 : ℝ) ^ J :=
-      pow_le_pow_right₀ (by norm_num) (Nat.sub_le J 1)
-    calc
-      (1 + ‖t‖) ^ J * ‖b t‖ ≤
-          (2 : ℝ) ^ (J - 1) * (1 ^ J + ‖t‖ ^ J) * ‖b t‖ :=
-        mul_le_mul_of_nonneg_right hp (norm_nonneg _)
-      _ ≤ (2 : ℝ) ^ J * (1 ^ J + ‖t‖ ^ J) * ‖b t‖ := by
-        gcongr
-      _ = (2 : ℝ) ^ J * (‖b t‖ + ‖t‖ ^ J * ‖b t‖) := by
-        simp; ring
+    pm_3172
+    pm_3173 hp
   have hcont : Continuous
       (fun t : ℝ => (1 + ‖t‖) ^ J * ‖b t‖) := by
     fun_prop
@@ -241,14 +230,10 @@ private def affineDouble (hchar : ringChar F ≠ 2) : F ≃ F where
   invFun t := (t + 1) / 2
   left_inv := by
     intro x
-    have h2 : (2 : F) ≠ 0 := Ring.two_ne_zero hchar
-    field_simp
-    ring
+    pm_6971
   right_inv := by
     intro t
-    have h2 : (2 : F) ≠ 0 := Ring.two_ne_zero hchar
-    field_simp
-    ring
+    pm_6971
 
 private def oneSub : F ≃ F where
   toFun y := 1 - y
@@ -256,7 +241,10 @@ private def oneSub : F ≃ F where
   left_inv := by intro y; ring
   right_inv := by intro y; ring
 
-private theorem square_fiber (χ : MulChar F ℂ)
+section
+variable (χ : MulChar F ℂ)
+include χ
+private theorem square_fiber
     (hchar : ringChar F ≠ 2) :
     (∑ t : F, χ (1 - t ^ 2)) =
       ∑ y : F, ((quadraticChar F y : ℂ) + 1) * χ (1 - y) := by
@@ -267,17 +255,14 @@ private theorem square_fiber (χ : MulChar F ℂ)
       (g := fun t : F => t ^ 2) (f := fun t : F => χ (1 - t ^ 2))]
     apply Finset.sum_congr rfl
     intro y _
-    rw [Finset.sum_congr rfl (fun t ht => by
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and] at ht
-      rw [ht])]
-    simp
+    pm_6130 t ht
   rw [hfiber]
   apply Finset.sum_congr rfl
   intro y _
   congr 1
   exact_mod_cast quadraticChar_card_sqrts hchar y
 
-theorem jacobi_quadratic (χ : MulChar F ℂ)
+theorem jacobi_quadratic
     (hchar : ringChar F ≠ 2) (hχ : χ ≠ 1) :
     jacobiSum χ ((quadraticChar F).ringHomComp (Int.castRingHom ℂ)) =
       χ (4 : F) * jacobiSum χ χ := by
@@ -291,8 +276,7 @@ theorem jacobi_quadratic (χ : MulChar F ℂ)
   have hsq : (∑ t : F, χ (1 - t ^ 2)) = jacobiSum χ q := by
     rw [hfiber]
     simp_rw [add_mul]
-    rw [Finset.sum_add_distrib]
-    simp only [one_mul, hsum0, add_zero]
+    pm_3514 Finset.sum_add_distrib one_mul hsum0 add_zero
     exact jacobiSum_comm q χ
   have hchange : (∑ t : F, χ (1 - t ^ 2)) =
       ∑ x : F, χ (4 * x * (1 - x)) := by
@@ -313,7 +297,7 @@ theorem jacobi_quadratic (χ : MulChar F ℂ)
       simp only [ map_mul]
       ring
 
-theorem gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem gauss_sextic_relation (ψ : AddChar F ℂ)
     (hchar : ringChar F ≠ 2) (hψ : ψ.IsPrimitive)
     (hχ1 : χ ≠ 1) (hχ2 : χ ^ 2 ≠ 1) (hχ4 : χ ^ 4 ≠ 1)
     (hχ3 : χ ^ 3 = (quadraticChar F).ringHomComp (Int.castRingHom ℂ))
@@ -379,7 +363,7 @@ theorem gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
     _ = (χ (4 : F) * g4 * g1) * g2 := by ring
     _ = g3 * g2 ^ 2 := by rw [← hbasic']; ring
 
-theorem normalized_gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
+theorem normalized_gauss_sextic_relation (ψ : AddChar F ℂ)
     (hchar : ringChar F ≠ 2) (hψ : ψ.IsPrimitive)
     (hχ1 : χ ≠ 1) (hχ2 : χ ^ 2 ≠ 1) (hχ4 : χ ^ 4 ≠ 1)
     (hχ3 : χ ^ 3 = (quadraticChar F).ringHomComp (Int.castRingHom ℂ))
@@ -391,6 +375,7 @@ theorem normalized_gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F �
   rw [← hs] at hraw
   field_simp
   linear_combination (gaussSum (χ ^ 2) ψ) * hraw
+end
 
 end JacobiQuadratic
 

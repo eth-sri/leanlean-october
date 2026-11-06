@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Rankin
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentRankinCount
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentRankin
 local notation "O" => ActualEisensteinCubic.O
@@ -14,7 +15,10 @@ local notation "O" => ActualEisensteinCubic.O
 def powerCode (R : Finset (Ideal O)) (I : Ideal O) (P : R) : ℕ :=
   (normalizedFactors I).count (P:Ideal O)-1
 
-theorem powerCode_reconstruct (R : Finset (Ideal O)) (I : Ideal O) (hI : I ≠ 0)
+section
+variable (R : Finset (Ideal O))
+include R
+theorem powerCode_reconstruct (I : Ideal O) (hI : I ≠ 0)
     (hR : primeSupport I=R) :
     I=∏ P : R,(P:Ideal O)^(powerCode R I P+1) := by
   have he (P : R) : powerCode R I P+1=(normalizedFactors I).count (P:Ideal O) := by
@@ -32,41 +36,43 @@ theorem powerCode_reconstruct (R : Finset (Ideal O)) (I : Ideal O) (hI : I ≠ 0
       rw [← hR]
       rfl
 
-theorem powerCode_injOn (R : Finset (Ideal O)) (S : Finset (Ideal O))
+theorem powerCode_injOn (S : Finset (Ideal O))
     (hS : ∀ I ∈ S,I ≠ 0) (hR : ∀ I ∈ S,primeSupport I=R) :
     Set.InjOn (powerCode R) S := by
   intro I hI J hJ he
   rw [powerCode_reconstruct R I (hS I hI) (hR I hI),powerCode_reconstruct R J (hS J hJ) (hR J hJ),he]
 
-theorem ideal_mass_eq (R : Finset (Ideal O)) (I : Ideal O) (hI : I ≠ 0)
+theorem ideal_mass_eq (I : Ideal O) (hI : I ≠ 0)
     (hR : primeSupport I=R) (δ : ℝ) :
     (Ideal.absNorm I:ℝ)^(-δ)=
       ∏ P : R,((Ideal.absNorm (P:Ideal O):ℝ)^(powerCode R I P+1))^(-δ) := by
   have he := congrArg (fun J : Ideal O => (Ideal.absNorm J:ℝ)^(-δ))
     (powerCode_reconstruct R I hI hR)
-  simp only [map_prod,map_pow,Nat.cast_prod,Nat.cast_pow] at he
+  pm_423 map_prod map_pow Nat.cast_prod Nat.cast_pow he
   rw [he]
   exact (Real.finsetProd_rpow _ _ (fun _ _ => pow_nonneg (Nat.cast_nonneg _) _) _).symm
+end
 
-theorem fixed_support_mass (δ : ℝ) (hδ : 0 < δ) :
+section
+variable (δ : ℝ) (hδ : 0 < δ)
+include δ hδ
+theorem fixed_support_mass :
     ∃ C : ℝ, 0 < C ∧ ∀ (R S : Finset (Ideal O)),
       (∀ P ∈ R,Prime P) → (∀ I ∈ S,I ≠ 0) → (∀ I ∈ S,primeSupport I=R) →
       (∑ I ∈ S,(Ideal.absNorm I:ℝ)^(-δ)) ≤ C := by
-  obtain ⟨C,hC,hprod⟩ := uniform_primeMass_product δ hδ
-  refine ⟨C,hC,?_⟩
-  intro R S hR hS hsupport
-  let K : ℕ := S.sup (fun I => Finset.univ.sup (powerCode R I))+1
+  pm_69 C hC hprod uniform_primeMass_product δ hδ
+  pm_1188 C hC R S hR hS hsupport
+  let K : ℕ := S.sup (fun I=> Finset.univ.sup (powerCode R I))+1
   let mass : (R → ℕ) → ℝ := fun v => ∏ P : R,((Ideal.absNorm (P:Ideal O):ℝ)^(v P+1))^(-δ)
   have hm (v : R → ℕ) : 0 ≤ mass v := Finset.prod_nonneg
     (fun _ _ => Real.rpow_nonneg (pow_nonneg (Nat.cast_nonneg _) _) _)
   have hsub : S.image (powerCode R) ⊆ Fintype.piFinset (fun _P : R => Finset.range K) := by
-    intro v hv
-    obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hv
+    pm_67 v hv I hI Finset.mem_image.mp
     apply Fintype.mem_piFinset.mpr
     intro P
     apply Finset.mem_range.mpr
     exact Nat.lt_succ_of_le ((Finset.le_sup (f := powerCode R I) (Finset.mem_univ P)).trans
-      (Finset.le_sup (f := fun I => Finset.univ.sup (powerCode R I)) hI))
+      (Finset.le_sup (f := fun I=> Finset.univ.sup (powerCode R I)) hI))
   calc
     _ = ∑ v ∈ S.image (powerCode R),mass v := by
       rw [Finset.sum_image (powerCode_injOn R S hS hsupport)]
@@ -86,12 +92,12 @@ theorem fixed_support_mass (δ : ℝ) (hδ : 0 < δ) :
       rw [he]
       exact hprod R hR
 
-theorem fixed_support_count (δ : ℝ) (hδ : 0 < δ) :
+theorem fixed_support_count :
     ∃ C : ℝ, 0 < C ∧ ∀ (R S : Finset (Ideal O)),
       (∀ P ∈ R,Prime P) → (∀ I ∈ S,I ≠ 0) → (∀ I ∈ S,primeSupport I=R) →
       ∀ X : ℝ,0 < X → (∀ I ∈ S,(Ideal.absNorm I:ℝ) ≤ X) →
       (S.card:ℝ) ≤ C*X^δ := by
-  obtain ⟨C,hC,hmass⟩ := fixed_support_mass δ hδ
+  pm_69 C hC hmass fixed_support_mass δ hδ
   refine ⟨C,hC,?_⟩
   intro R S hR hS hs X hX hN
   have hterm (I : Ideal O) (hI : I ∈ S) : (1:ℝ) ≤ X^δ*(Ideal.absNorm I:ℝ)^(-δ) := by
@@ -106,6 +112,7 @@ theorem fixed_support_count (δ : ℝ) (hδ : 0 < δ) :
     _ = X^δ*∑ I ∈ S,(Ideal.absNorm I:ℝ)^(-δ) := (Finset.mul_sum _ _ _).symm
     _ ≤ X^δ*C := mul_le_mul_of_nonneg_left (hmass R S hR hS hs) (Real.rpow_nonneg hX.le _)
     _ = _ := mul_comm _ _
+end
 
 end SevenEighths.CenteredMomentRankinCount
 

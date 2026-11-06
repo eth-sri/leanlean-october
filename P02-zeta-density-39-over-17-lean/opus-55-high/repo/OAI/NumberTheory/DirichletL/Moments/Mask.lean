@@ -1,13 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Moments.Basic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open scoped ContDiff
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentMask
@@ -23,11 +23,7 @@ theorem ideal_coprime_mobius (I R : Ideal O) (hR : R ≠ 0) :
     apply hR
     apply le_antisymm _ bot_le
     exact le_sup_left.trans_eq hz
-  have hdiv : (idealDivisors R).filter (fun D => D ∣ I) = idealDivisors G := by
-    ext D
-    simp only [Finset.mem_filter, mem_idealDivisors hR, mem_idealDivisors hG,
-      Ideal.dvd_iff_le, G, sup_le_iff]
-  rw [← Finset.sum_filter, hdiv, sum_moebius_divisors G hG]
+  pm_5000 R D I hR
   simp only [Ideal.isCoprime_iff_sup_eq, G, sup_comm]
 
 theorem tsum_ideal_divisible (D : Ideal O) (hD : D ≠ 0) (f : Ideal O → ℂ) :
@@ -63,9 +59,7 @@ theorem masked_ideal_sum_eq (R : Ideal O) (hR : R ≠ 0)
       Summable (fun I : Ideal O => (moebius D : ℂ) * (if D ∣ I then f I else 0)) := by
     have h := (hf.indicator {I : Ideal O | D ∣ I}).mul_left (moebius D : ℂ)
     simpa only [Set.indicator_apply, Set.mem_ofPred_eq] using h
-  simp_rw [hterm]
-  rw [Summable.tsum_finsetSum (fun D _ => hsum D)]
-  apply Finset.sum_congr rfl
+  pm_7096 D
   intro D hD
   rw [tsum_mul_left, tsum_ideal_divisible D (ne_zero_of_dvd_ne_zero hR
     ((mem_idealDivisors hR).mp hD))]
@@ -92,7 +86,7 @@ theorem masked_plain_ideal_sum (R : Ideal O) (hR : R ≠ 0)
   rw [masked_ideal_sum_eq R hR _ (annular_ideal_sum_summable χ W b X hX hs)]
   apply Finset.sum_congr rfl
   intro D hD
-  have hD0 : D ≠ 0 := ne_zero_of_dvd_ne_zero hR ((mem_idealDivisors hR).mp hD)
+  pm_6456
   have hnD : (Ideal.absNorm D : ℝ) ≠ 0 := by
     exact_mod_cast (show Ideal.absNorm D ≠ 0 by
       intro hz
@@ -116,9 +110,8 @@ theorem polynomial_mask_divisor_bound (ε B : ℝ) (hε : 0 < ε) (hB : 0 ≤ B)
   let δ := ε / (B + 1)
   have hden : 0 < B + 1 := by linarith
   have hδ : 0 < δ := div_pos hε hden
-  obtain ⟨C, hC, hcount⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
-  refine ⟨C, hC, ?_⟩
-  intro Z hZ R hR hnorm
+  pm_98 C hC hcount IdealDivisorBound.ideal_divisor_small_power δ hδ
+  pm_435 C hC Z hZ R hR hnorm
   have hexp : B * δ ≤ ε := by
     dsimp only [δ]
     rw [← mul_div_assoc]
@@ -133,6 +126,5 @@ theorem polynomial_mask_divisor_bound (ε B : ℝ) (hε : 0 < ε) (hB : 0 ≤ B)
       (Real.rpow_le_rpow_of_exponent_le hZ hexp) hC.le
 
 end SevenEighths.CenteredMomentMask
-end
 
 end OAI

@@ -1,12 +1,12 @@
 module
 public import MathCollab.Density.DetectorConvolution
 public import MathCollab.Density.DetectorPowerScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Set Filter
-open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
+open scoped Topology ComplexConjugate
 noncomputable section
 namespace MathCollab.Density
 
@@ -41,9 +41,7 @@ theorem norm_detectingPolynomial_eq_cpow_sum {N : ℕ} (hN : 0 < N)
       ‖∑ n ∈ Finset.Ioc N (2*N), a n*(n : ℂ)^(-(Complex.I*(t : ℂ)))‖ := by
   have he : detectingPolynomial N a (-t) =
       (∑ n ∈ Finset.Ioc N (2*N), a n*(n : ℂ)^(-(Complex.I*(t : ℂ))))*dirichletPhase N t := by
-    rw [detectingPolynomial, Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro n hn
+    pm_266 detectingPolynomial Finset.sum_mul Finset.sum_congr n hn
     have hnpos : (0 : ℝ) < n := by exact_mod_cast (lt_trans hN (Finset.mem_Ioc.mp hn).1)
     rw [dirichletPhase_div hnpos (by exact_mod_cast hN), neg_neg]
     have hc := cpow_neg_eq_real_phase hnpos (Complex.I*(t : ℂ))
@@ -57,15 +55,7 @@ theorem norm_detectingPolynomial_eq_cpow_sum {N : ℕ} (hN : 0 < N)
 
 theorem detectorBlockCoefficients_LSeries (T : ℝ) (N j : ℕ) (s : ℂ) :
     LSeries (detectorBlockCoefficients T N j) s =
-      ∑ n ∈ Finset.Ioc N (2*N), detectorTaylorCoefficient T N j n*(n : ℂ)^(-s) := by
-  rw [LSeries, tsum_eq_sum (s := Finset.Ioc N (2*N))]
-  · apply Finset.sum_congr rfl
-    intro n hn
-    rw [LSeries.term_def₀ (detectorBlockCoefficients T N j).map_zero,
-      detectorBlockCoefficients_apply, ite_eq_left hn]
-  · intro n hn
-    rw [LSeries.term_def₀ (detectorBlockCoefficients T N j).map_zero,
-      detectorBlockCoefficients_apply, ite_eq_right hn, zero_mul]
+      ∑ n ∈ Finset.Ioc N (2*N), detectorTaylorCoefficient T N j n*(n : ℂ)^(-s) := by pm_4267 detectorBlockCoefficients detectorBlockCoefficients_apply
 
 theorem norm_detectorTaylorPolynomial_LSeries {N : ℕ} (hN : 0 < N)
     (T t : ℝ) (j : ℕ) :
@@ -90,48 +80,29 @@ theorem detectorBlockCoefficients_pow_LSeries_sum {N k : ℕ} (hN : 0 < N)
     (hk : 0 < k) (T : ℝ) (j : ℕ) (s : ℂ) :
     LSeries (fun n => ((detectorBlockCoefficients T N j)^k) n) s =
       ∑ n ∈ Finset.Ioc (N^k) ((2*N)^k),
-        ((detectorBlockCoefficients T N j)^k) n*(n : ℂ)^(-s) := by
-  rw [LSeries, tsum_eq_sum (s := Finset.Ioc (N^k) ((2*N)^k))]
-  · apply Finset.sum_congr rfl
-    intro n _
-    rw [LSeries.term_def₀ ((detectorBlockCoefficients T N j)^k).map_zero]
-  · intro n hn
-    rw [LSeries.term_def₀ ((detectorBlockCoefficients T N j)^k).map_zero]
-    have hz : ((detectorBlockCoefficients T N j)^k) n = 0 := by
-      by_contra hh
-      have hu := (detectorBlockCoefficients_pow_support T N j k n hh).2
-      have hl : N^k < n := by
-        obtain ⟨l, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hk.ne'
-        exact detectorBlockCoefficients_pow_lower hN T j l n hh
-      exact hn (Finset.mem_Ioc.mpr ⟨hl, hu⟩)
-    rw [hz, zero_mul]
+        ((detectorBlockCoefficients T N j)^k) n*(n : ℂ)^(-s) := by pm_4268 detectorBlockCoefficients detectorBlockCoefficients_pow_support detectorBlockCoefficients_pow_lower
 
-/-- A powered component is detected on one of its k fixed dyadic pieces,
-with exactly the pigeonhole loss k and at the same ordinate t. -/
-theorem exists_poweredDetector_piece {N k : ℕ} (hN : 0 < N) (hk : 0 < k)
-    (T t : ℝ) (j : ℕ) :
-    ∃ ℓ ∈ Finset.range k,
-      ‖detectorTaylorPolynomial T N j t‖^k/(k : ℝ) ≤
-        ‖detectingPolynomial (2^ℓ*N^k) (poweredDetectorCoefficient T N j k) t‖ := by
-  let f := fun n : ℕ => ((detectorBlockCoefficients T N j)^k) n*
+set_option hygiene false in
+macro "pf_54" x1:ident x2:ident x3:ident x4:ident x5:ident x6:ident : tactic => `(tactic| (
+  let f := fun n : ℕ => (($x1:ident T N j)^k) n*
     (n : ℂ)^(-(Complex.I*(t : ℂ)))
-  have he : ‖detectorTaylorPolynomial T N j t‖^k =
+  have he : ‖$x2:ident T N j t‖^k =
       ‖∑ ℓ ∈ Finset.range k, ∑ n ∈ Finset.Ioc (2^ℓ*N^k) (2*(2^ℓ*N^k)), f n‖ := by
-    rw [norm_detectorTaylorPolynomial_LSeries hN, ← norm_pow,
-      ← detectorBlockCoefficients_LSeries_pow,
-      detectorBlockCoefficients_pow_LSeries_sum hN hk, sum_scaled_dyadic_Ioc, mul_pow]
-  have hn (ℓ : ℕ) : ‖detectingPolynomial (2^ℓ*N^k) (poweredDetectorCoefficient T N j k) t‖ =
+    rw [$x3:ident hN, ← norm_pow,
+      ← $x4:ident,
+      $x5:ident hN hk, sum_scaled_dyadic_Ioc, mul_pow]
+  have hn (ℓ : ℕ) : ‖detectingPolynomial (2^ℓ*N^k) ($x6:ident T N j k) t‖ =
       ‖∑ n ∈ Finset.Ioc (2^ℓ*N^k) (2*(2^ℓ*N^k)), f n‖ := by
-    change ‖detectingPolynomial _ (fun n => conj (((detectorBlockCoefficients T N j)^k) n)) t‖ = _
+    change ‖detectingPolynomial _ (fun n => conj ((($x1:ident T N j)^k) n)) t‖ = _
     rw [norm_detectingPolynomial_conj,
       norm_detectingPolynomial_eq_cpow_sum (by positivity)]
   by_contra h
   push Not at h
   have hs : (∑ ℓ ∈ Finset.range k,
       ‖∑ n ∈ Finset.Ioc (2^ℓ*N^k) (2*(2^ℓ*N^k)), f n‖) <
-      ‖detectorTaylorPolynomial T N j t‖^k := by
+      ‖$x2:ident T N j t‖^k := by
     calc
-      _ < ∑ _ℓ ∈ Finset.range k, ‖detectorTaylorPolynomial T N j t‖^k/(k : ℝ) := by
+      _ < ∑ _ℓ ∈ Finset.range k, ‖$x2:ident T N j t‖^k/(k : ℝ) := by
         apply Finset.sum_lt_sum_of_nonempty ⟨0, Finset.mem_range.mpr hk⟩
         intro ℓ hℓ
         rw [← hn]
@@ -140,6 +111,13 @@ theorem exists_poweredDetector_piece {N k : ℕ} (hN : 0 < N) (hk : 0 < k)
   have hb := norm_sum_le (Finset.range k)
     (fun ℓ => ∑ n ∈ Finset.Ioc (2^ℓ*N^k) (2*(2^ℓ*N^k)), f n)
   rw [← he] at hb
-  linarith
+  linarith))
+/-- A powered component is detected on one of its k fixed dyadic pieces,
+with exactly the pigeonhole loss k and at the same ordinate t. -/
+theorem exists_poweredDetector_piece {N k : ℕ} (hN : 0 < N) (hk : 0 < k)
+    (T t : ℝ) (j : ℕ) :
+    ∃ ℓ ∈ Finset.range k,
+      ‖detectorTaylorPolynomial T N j t‖^k/(k : ℝ) ≤
+        ‖detectingPolynomial (2^ℓ*N^k) (poweredDetectorCoefficient T N j k) t‖ := by pf_54 detectorBlockCoefficients detectorTaylorPolynomial norm_detectorTaylorPolynomial_LSeries detectorBlockCoefficients_LSeries_pow detectorBlockCoefficients_pow_LSeries_sum poweredDetectorCoefficient
 
 end MathCollab.Density

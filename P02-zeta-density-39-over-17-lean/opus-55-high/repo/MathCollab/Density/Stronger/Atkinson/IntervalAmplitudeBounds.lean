@@ -6,6 +6,7 @@ Narrow extraction only; see third_party/twelfth/ATKINSON_STATIONARY_MANIFEST.jso
 The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -49,7 +50,7 @@ theorem IntervalC1Bound.mono {f : ℝ → ℂ} {a b M N : ℝ}
 theorem intervalC1Bound_const (c : ℂ) (a b : ℝ) :
     IntervalC1Bound (fun _ : ℝ => c) a b ‖c‖ := by
   refine ⟨norm_nonneg _, fun _ _ => contDiffAt_const, fun _ _ => le_rfl, ?_⟩
-  simp only [deriv_const, norm_zero, intervalIntegral.integral_zero, norm_nonneg]
+  simp_all
 
 theorem IntervalC1Bound.mul {f g : ℝ → ℂ} {a b M N : ℝ}
     (hf : IntervalC1Bound f a b M) (hg : IntervalC1Bound g a b N) (hab : a ≤ b) :
@@ -63,12 +64,10 @@ theorem IntervalC1Bound.mul {f g : ℝ → ℂ} {a b M N : ℝ}
   have hdi : IntervalIntegrable (deriv (fun x => f x * g x)) volume a b := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hab]
-    intro x hx
-    exact ((hs x hx).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
-  refine ⟨by positivity [hf.nonneg, hg.nonneg], hs, ?_, ?_⟩
+    pm_4373
+  pm_7719 hg.nonneg
   · intro x hx
-    rw [norm_mul]
-    have h := mul_le_mul (hf.norm_le x hx) (hg.norm_le x hx) (norm_nonneg _) hf.nonneg
+    pm_7347 x hx
     nlinarith [mul_nonneg hf.nonneg hg.nonneg]
   · calc
       _ ≤ ∫ x in a..b, ‖deriv f x‖ * N + M * ‖deriv g x‖ := by
@@ -77,8 +76,7 @@ theorem IntervalC1Bound.mul {f g : ℝ → ℂ} {a b M N : ℝ}
             ((hg.derivative_integrable hab).norm.const_mul M))
         intro x hx
         rw [hd x hx]
-        apply (norm_add_le _ _).trans
-        rw [norm_mul, norm_mul]
+        pm_4372
         exact add_le_add
           (mul_le_mul_of_nonneg_left (hg.norm_le x hx) (norm_nonneg _))
           (mul_le_mul_of_nonneg_right (hf.norm_le x hx) (norm_nonneg _))
@@ -91,70 +89,40 @@ theorem IntervalC1Bound.mul {f g : ℝ → ℂ} {a b M N : ℝ}
         (mul_le_mul_of_nonneg_left hg.variation_le hf.nonneg)
       _ = _ := by ring
 
-theorem intervalC1Bound_ofReal_of_deriv_nonneg {f : ℝ → ℝ} {a b M : ℝ}
-    (hab : a ≤ b) (hM : 0 ≤ M)
-    (hf : ∀ x ∈ Icc a b, ContDiffAt ℝ 1 f x)
-    (hbound : ∀ x ∈ Icc a b, 0 ≤ f x ∧ f x ≤ M)
+section
+variable {f : ℝ → ℝ} {a b M : ℝ} (hab : a ≤ b) (hM : 0 ≤ M) (hf : ∀ x ∈ Icc a b, ContDiffAt ℝ 1 f x) (hbound : ∀ x ∈ Icc a b, 0 ≤ f x ∧ f x ≤ M)
+include f a b M hab hM hf hbound
+theorem intervalC1Bound_ofReal_of_deriv_nonneg
     (hd : ∀ x ∈ Icc a b, 0 ≤ deriv f x) :
     IntervalC1Bound (fun x => (f x : ℂ)) a b M := by
-  have hfd (x : ℝ) (hx : x ∈ Icc a b) :=
-    ((hf x hx).differentiableAt (by norm_num)).hasDerivAt
-  have hcast (x : ℝ) (hx : x ∈ Icc a b) :
-      deriv (fun y => (f y : ℂ)) x = ((deriv f x : ℝ) : ℂ) := (hfd x hx).ofReal_comp.deriv
-  have hfi : IntervalIntegrable (deriv f) volume a b := by
-    apply ContinuousOn.intervalIntegrable
-    rw [uIcc_of_le hab]
-    intro x hx
-    exact ((hf x hx).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
-  refine ⟨hM, fun x hx => Complex.ofRealCLM.contDiff.contDiffAt.comp x (hf x hx), ?_, ?_⟩
-  · intro x hx
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hbound x hx).1]
-    exact (hbound x hx).2
+  pm_4374
   · have heq : (∫ x in a..b, ‖deriv (fun y => (f y : ℂ)) x‖) =
         ∫ x in a..b, deriv f x := by
-      apply intervalIntegral.integral_congr
-      intro x hx
-      rw [uIcc_of_le hab] at hx
+      pm_445 intervalIntegral.integral_congr x hx uIcc_of_le hab
       change ‖deriv (fun y : ℝ => (f y : ℂ)) x‖ = deriv f x
-      rw [hcast x hx, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hd x hx)]
+      pm_7442 abs_of_nonneg
     rw [heq]
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt (fun x hx => by
       rw [uIcc_of_le hab] at hx
       exact hfd x hx) hfi]
     linarith [(hbound a ⟨le_rfl, hab⟩).1, (hbound b ⟨hab, le_rfl⟩).2]
 
-theorem intervalC1Bound_ofReal_of_deriv_nonpos {f : ℝ → ℝ} {a b M : ℝ}
-    (hab : a ≤ b) (hM : 0 ≤ M)
-    (hf : ∀ x ∈ Icc a b, ContDiffAt ℝ 1 f x)
-    (hbound : ∀ x ∈ Icc a b, 0 ≤ f x ∧ f x ≤ M)
+theorem intervalC1Bound_ofReal_of_deriv_nonpos
     (hd : ∀ x ∈ Icc a b, deriv f x ≤ 0) :
     IntervalC1Bound (fun x => (f x : ℂ)) a b M := by
-  have hfd (x : ℝ) (hx : x ∈ Icc a b) :=
-    ((hf x hx).differentiableAt (by norm_num)).hasDerivAt
-  have hcast (x : ℝ) (hx : x ∈ Icc a b) :
-      deriv (fun y => (f y : ℂ)) x = ((deriv f x : ℝ) : ℂ) := (hfd x hx).ofReal_comp.deriv
-  have hfi : IntervalIntegrable (deriv f) volume a b := by
-    apply ContinuousOn.intervalIntegrable
-    rw [uIcc_of_le hab]
-    intro x hx
-    exact ((hf x hx).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
-  refine ⟨hM, fun x hx => Complex.ofRealCLM.contDiff.contDiffAt.comp x (hf x hx), ?_, ?_⟩
-  · intro x hx
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hbound x hx).1]
-    exact (hbound x hx).2
+  pm_4374
   · have heq : (∫ x in a..b, ‖deriv (fun y => (f y : ℂ)) x‖) =
         ∫ x in a..b, -deriv f x := by
-      apply intervalIntegral.integral_congr
-      intro x hx
-      rw [uIcc_of_le hab] at hx
+      pm_445 intervalIntegral.integral_congr x hx uIcc_of_le hab
       change ‖deriv (fun y : ℝ => (f y : ℂ)) x‖ = -deriv f x
-      rw [hcast x hx, Complex.norm_real, Real.norm_eq_abs, abs_of_nonpos (hd x hx)]
+      pm_7442 abs_of_nonpos
     rw [heq]
     rw [intervalIntegral.integral_neg,
       intervalIntegral.integral_eq_sub_of_hasDerivAt (fun x hx => by
         rw [uIcc_of_le hab] at hx
         exact hfd x hx) hfi]
     linarith [(hbound b ⟨hab, le_rfl⟩).1, (hbound a ⟨le_rfl, hab⟩).2]
+end
 
 
 theorem IntervalC1Bound.join {f : ℝ → ℂ} {a b c M N : ℝ}

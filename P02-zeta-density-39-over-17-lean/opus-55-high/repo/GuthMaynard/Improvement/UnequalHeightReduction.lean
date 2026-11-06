@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- The actual adaptive smoothing occurring in the unequal two-Poisson reduction. -/
 def unequalAdaptive (T δ : ℝ) (K R : ℕ) (f : 𝓢(ℝ, ℝ)) (hT : 0 < T) : 𝓢(ℝ, ℝ) :=

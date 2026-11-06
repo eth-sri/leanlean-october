@@ -29,11 +29,11 @@ theorem zetaGaussianWeight_local_lower {T G t : ℝ} (hG : 0 < G)
     (ht : t ∈ Icc (T - G) (T + G)) : 1 ≤ Real.exp 1 * zetaGaussianWeight T G t := by
   have habs : |(t - T) / G| ≤ 1 := by
     rw [abs_div, abs_of_pos hG, div_le_one hG]
-    exact abs_le.mpr ⟨by linarith [ht.1], by linarith [ht.2]⟩
+    grind
   have hsq : ((t - T) / G) ^ 2 ≤ 1 := (sq_le_one_iff_abs_le_one _).mpr habs
   unfold zetaGaussianWeight
   rw [← Real.exp_add]
-  exact Real.one_le_exp_iff.mpr (by linarith)
+  simp_all
 
 def zetaSquareGaussianWindow (T G L : ℝ) : ℝ :=
   ∫ t in T - G * L..T + G * L, zetaGaussianWeight T G t * zetaMomentCriticalNorm t ^ 2

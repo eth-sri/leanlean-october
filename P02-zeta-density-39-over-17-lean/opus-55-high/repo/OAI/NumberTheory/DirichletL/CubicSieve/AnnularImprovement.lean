@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.CostGrowth
 public import OAI.NumberTheory.DirichletL.CubicSieve.ColumnShells
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
         (∑ z ∈ R, ‖∑ j, cubicRow (cols j) z*a j‖^2) ≤
           K*N^(6*θ)*(M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1))*∑ j, ‖a j‖^2 := by
   obtain ⟨C,hC,hcf⟩ := cubic_common_factor_frequency_bound
-  obtain ⟨A,hA,hfb⟩ := h.frequencyCost_bound hξ hξ2 θ hθ hθsmall
+  pm_3547 A hA hfb h.frequencyCost_bound hξ hξ2 θ hθ hθsmall
   let Z := ‖paperRadialFourier rowMajorant 0‖
   let P := decayConstant (1/3+θ)
   let Q := decayConstant (ξ+θ)
@@ -34,30 +35,27 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   let V := 1+2*Z+H*(P+Q)
   let Dv := DivisorBlockCauchy.divisorConstant θ hθ
   have hZ : 0 ≤ Z := norm_nonneg _
-  have hP : 0 ≤ P := (decayConstant_pos _ (by linarith) (by linarith)).le
-  have hQ : 0 ≤ Q := (decayConstant_pos _ (by linarith) (by linarith)).le
+  pm_7653 hP P
+  pm_7653 hQ Q
   have hH : 0 ≤ H := by
     dsimp [H]
     have hs := (IdealCoprimeSieveOperator.supportConstant_pos θ hθ).le
     positivity
-  have hV : 0 < V := by dsimp [V]; positivity
+  pm_64 hV V
   have hDv : 0 < Dv := DivisorBlockCauchy.divisorConstant_pos θ hθ
   refine ⟨V*Dv^2, by positivity, ?_⟩
   intro n _ _ M N hM hN cols hinj hc hcols a R hR
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
-  let S := M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)
-  have hS : 0 ≤ S := by dsimp [S]; positivity
+  pm_3779
+  pm_3800
+  pm_3168
   let U := V*N^(4*θ)*S
-  have hU : 0 ≤ U := by dsimp [U]; positivity
+  pm_61 hU U
   have hcost (D : Ideal O) (hD : D ∈ gcdPool cols) (E : Ideal O) (hE : E ∈ idealDivisors D) :
       frequencyCost C θ hθ (M/(Ideal.absNorm E : ℝ)) (N/(Ideal.absNorm D : ℝ)) ≤ U := by
-    have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
+    pm_3790
     have hD0 := gcdPool_ne_zero cols hc0 D hD
-    have hDE := (mem_idealDivisors hD0).mp hE
-    have hE0 : E ≠ 0 := ne_zero_of_dvd_ne_zero hD0 hDE
-    have he1 : 1 ≤ (Ideal.absNorm E : ℝ) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hE0)
+    pm_7097 hDE
+    pm_8835 he1 E hE0
     have hed : (Ideal.absNorm E : ℝ) ≤ (Ideal.absNorm D : ℝ) := by
       exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD0))
         (map_dvd Ideal.absNorm hDE)

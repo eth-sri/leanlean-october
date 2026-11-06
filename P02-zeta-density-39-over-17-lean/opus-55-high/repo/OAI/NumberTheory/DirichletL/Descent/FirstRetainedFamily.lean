@@ -32,15 +32,13 @@ theorem sum_firstRetainedSource {A : Type*} [AddCommMonoid A]
       (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit f) Y,H (f,h) := by
   unfold firstRetainedSource
   rw [Finset.sum_biUnion]
-  · apply Finset.sum_congr rfl
-    intro f hf
-    exact Finset.sum_image (fun h hh k hk he=>congrArg Prod.snd he)
+  simp_all
   · intro f hf g hg hfg
     apply Finset.disjoint_left.mpr
     intro x hx hy
     obtain ⟨h,hh,rfl⟩ := Finset.mem_image.mp hx
     obtain ⟨k,hk,he⟩ := Finset.mem_image.mp hy
-    exact hfg (congrArg Prod.fst he).symm
+    grind
 
 variable (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))

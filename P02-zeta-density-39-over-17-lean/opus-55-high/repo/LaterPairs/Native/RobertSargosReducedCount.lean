@@ -5,6 +5,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosGcdProjection
 public import LaterPairs.Native.RobertSargosGcdSums
 public import LaterPairs.Native.RobertSargosWeightedGcdFibers
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -16,27 +17,24 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
-theorem RobertSargosReducedSystem.frequency_gcd_le {R H Q δ : ℝ}
-    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) (hQ : 0 < Q) :
+section
+variable {R H Q δ : ℝ} {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) (hQ : 0 < Q)
+include R H Q δ p h hQ
+theorem RobertSargosReducedSystem.frequency_gcd_le :
     (robertSargosFrequencyGcd p:ℝ) ≤ 2*Q := by
-  have hqn : p.q₁ ≠ 0 := by
-    have hr : (p.q₁:ℝ) ≠ 0 := abs_pos.mp (lt_of_lt_of_le hQ h.q₁_support.1)
-    exact_mod_cast hr
+  pm_6134 hqn hr
   have hd : (robertSargosFrequencyGcd p:ℤ) ∣ p.q₁ :=
     (integerTripleGcd_dvd p.d p.q₁ p.q₂).2.1
   have hc : robertSargosFrequencyGcd p ≤ p.q₁.natAbs := by
     apply Nat.le_of_dvd (Int.natAbs_pos.mpr hqn)
     simpa only [Int.natAbs_natCast] using Int.natAbs_dvd_natAbs.mpr hd
   have hcR : (robertSargosFrequencyGcd p:ℝ) ≤ p.q₁.natAbs := by exact_mod_cast hc
-  have he : (p.q₁.natAbs:ℝ) = |(p.q₁:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.q₁)
+  pm_8832 he p.q₁.natAbs p.q₁
   exact hcR.trans (he.trans_le h.q₁_support.2)
 
 
 
-theorem RobertSargosReducedSystem.gcd_key_mem {R H Q δ : ℝ}
-    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) (hQ : 0 < Q) :
+theorem RobertSargosReducedSystem.gcd_key_mem :
     robertSargosGcdKey p ∈ (Finset.Icc 1 ⌊R⌋₊) ×ˢ (Finset.Icc 1 ⌊2*Q⌋₊) := by
   have hR : 0 ≤ R := (abs_nonneg (p.r:ℝ)).trans h.r_bound
   apply Finset.mem_product.mpr
@@ -45,6 +43,7 @@ theorem RobertSargosReducedSystem.gcd_key_mem {R H Q δ : ℝ}
       (Nat.le_floor_iff hR).mpr h.coefficient_gcd_le⟩
   · exact Finset.mem_Icc.mpr ⟨h.frequency_gcd_pos,
       (Nat.le_floor_iff (by positivity : 0 ≤ 2*Q)).mpr (h.frequency_gcd_le hQ)⟩
+end
 
 
 
@@ -58,18 +57,16 @@ theorem exists_robertSargos_reduced_count (ε : ℝ) (hε : 0 < ε) :
   obtain ⟨Cf,hCf,hfiber⟩ := exists_robertSargos_weighted_gcd_fiber_count (ε/2) hη
   obtain ⟨Ch,hCh,hharmonic⟩ := exists_robertSargos_gcd_harmonic_bound (ε/2) hη
   refine ⟨Cf*Ch,by positivity,?_⟩
-  intro S R H Q δ hR hH hQ hδ hRH hmem
+  pm_1677
   have hQp : 0 < Q := by linarith
-  have hB : 0 < R*H*Q := by positivity
+  pm_655 hB R H Q
   let F : Finset (ℕ × ℕ) := (Finset.Icc 1 ⌊R⌋₊) ×ˢ (Finset.Icc 1 ⌊2*Q⌋₊)
   let M : ℝ := Cf*(R*H*Q)^(1+ε/2)*(1+δ*Q)
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  pm_2825
   have hmaps : Set.MapsTo robertSargosGcdKey S F := by
     intro p hp
     exact (hmem p hp).gcd_key_mem hQp
-  have hcardR : (S.card:ℝ) =
-      ∑ z ∈ F, ((S.filter (fun p => robertSargosGcdKey p = z)).card:ℝ) := by
-    exact_mod_cast Finset.card_eq_sum_card_fiberwise hmaps
+  pm_132 F robertSargosGcdKey
   have hf : ∀ z ∈ F, ((S.filter (fun p => robertSargosGcdKey p = z)).card:ℝ) ≤
       M*((1:ℝ)/((z.1:ℝ)*(z.2:ℝ))) := by
     intro z hz

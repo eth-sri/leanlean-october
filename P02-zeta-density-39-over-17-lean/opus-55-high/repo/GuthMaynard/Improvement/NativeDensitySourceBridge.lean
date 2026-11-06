@@ -2,12 +2,11 @@ module
 public import GuthMaynard.Improvement.NativeDensityConventionBridge
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroCount
 public import GuthMaynard.NativeSource.GuthMaynard.Asymptotics
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MathCollab.Density
-set_option autoImplicit false
-noncomputable section
 namespace GuthMaynard.Improvement
 
 /-- Literal shared native count equals the audited actual count, including
@@ -17,8 +16,7 @@ theorem native_N_eq_zetaDensityCount {σ : ℝ} (hσ : 0 < σ) (T : ℝ) :
   unfold NativeMoment.N NativeMoment.zeroCountRect NativeMoment.analyticVanishingOrder
   apply native_rectangle_sum_eq_zetaDensityCount hσ
   intro ρ
-  simp only [NativeMoment.zerosInRect, Set.Finite.mem_toFinset, Set.mem_inter_iff,
-    NativeMoment.ZeroRectangle, Set.mem_ofPred_eq]
+  pm_503 NativeMoment.zerosInRect Set.Finite.mem_toFinset Set.mem_inter_iff NativeMoment.ZeroRectangle Set.mem_ofPred_eq
   tauto
 
 /-- Exact native epsilon-asymptotic estimate transfers to the actual all-height

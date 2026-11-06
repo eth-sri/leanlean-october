@@ -16,7 +16,6 @@ is proved against those analytic objects in BetaInverseJets.
 noncomputable section
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 inductive InversePhaseExpression where
   | scalar : ℝ → InversePhaseExpression
@@ -65,7 +64,10 @@ def inversePhaseSensitivity : InversePhaseExpression → ℝ → ℝ
   | .mul e f, B => inversePhaseMagnitude e B * inversePhaseSensitivity f B +
       inversePhaseSensitivity e B * inversePhaseMagnitude f B
 
-theorem inversePhaseMagnitude_nonneg (e : InversePhaseExpression) {B : ℝ} (hB : 0 ≤ B) :
+section
+variable (e : InversePhaseExpression) {B : ℝ}
+include e B
+theorem inversePhaseMagnitude_nonneg (hB : 0 ≤ B) :
     0 ≤ inversePhaseMagnitude e B := by
   induction e with
   | scalar c => exact abs_nonneg c
@@ -73,7 +75,7 @@ theorem inversePhaseMagnitude_nonneg (e : InversePhaseExpression) {B : ℝ} (hB 
   | add e f he hf => exact add_nonneg he hf
   | mul e f he hf => exact mul_nonneg he hf
 
-theorem inversePhaseSensitivity_nonneg (e : InversePhaseExpression) {B : ℝ} (hB : 0 ≤ B) :
+theorem inversePhaseSensitivity_nonneg (hB : 0 ≤ B) :
     0 ≤ inversePhaseSensitivity e B := by
   induction e with
   | scalar c => exact le_rfl
@@ -83,7 +85,7 @@ theorem inversePhaseSensitivity_nonneg (e : InversePhaseExpression) {B : ℝ} (h
       exact add_nonneg (mul_nonneg (inversePhaseMagnitude_nonneg e hB) hf)
         (mul_nonneg he (inversePhaseMagnitude_nonneg f hB))
 
-theorem inversePhaseEval_abs_le (e : InversePhaseExpression) {B : ℝ} {x : ℕ → ℝ}
+theorem inversePhaseEval_abs_le {x : ℕ → ℝ}
     (hx : ∀ j ≤ inversePhaseOrder e, |x j| ≤ B) :
     |inversePhaseEval e x| ≤ inversePhaseMagnitude e B := by
   induction e with
@@ -99,6 +101,7 @@ theorem inversePhaseEval_abs_le (e : InversePhaseExpression) {B : ℝ} {x : ℕ 
         (hf fun j hj => hx j (hj.trans (le_max_right _ _)))
         (abs_nonneg _) ((abs_nonneg _).trans
           (he fun j hj => hx j (hj.trans (le_max_left _ _))))
+end
 
 theorem inversePhaseEval_difference_le (e : InversePhaseExpression)
     {B ε : ℝ} {x y : ℕ → ℝ} (hB : 0 ≤ B)

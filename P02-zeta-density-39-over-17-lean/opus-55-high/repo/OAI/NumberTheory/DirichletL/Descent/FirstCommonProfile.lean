@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstNominal
 public import OAI.NumberTheory.DirichletL.Descent.FirstCoupledReindex
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -19,22 +20,20 @@ theorem firstNormProfile_common_support (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ
   have hroot : Real.sqrt (T*X₁)*Real.sqrt (T*X₂) =
       T*Real.sqrt X₁*Real.sqrt X₂ := by
     rw [Real.sqrt_mul hT,Real.sqrt_mul hT]
-    calc
-      _ = (Real.sqrt T)^2*Real.sqrt X₁*Real.sqrt X₂ := by ring
-      _ = _ := by rw [Real.sq_sqrt hT]
+    grind
   unfold firstNormProfile
   simp only [Finset.prod_const_one,one_mul,Matrix.cons_val_zero,
     Fin.isValue,]
   change W₁ (A₁*C*1*(T*X₁))*W₂ (A₂*C*1*(T*X₂))*
-      EisensteinSchwartzPoisson.paperRadialFourier Φ (K*H/(D*R*1^2*(T*X₁)*(T*X₂))) /
+      EisensteinSchwartzPoisson.paperRadialFourier Φ (K*H/(D *R*1^2*(T*X₁)*(T*X₂))) /
         ((D:ℂ)*(Real.sqrt R:ℂ)*(1:ℂ)*(Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ)) =
     W₁ (A₁*C*T*X₁)*W₂ (A₂*C*T*X₂)*
-      EisensteinSchwartzPoisson.paperRadialFourier Φ (K*H/(D*R*T^2*X₁*X₂)) /
+      EisensteinSchwartzPoisson.paperRadialFourier Φ (K*H/(D *R*T^2*X₁*X₂)) /
         ((D:ℂ)*(Real.sqrt R:ℂ)*(T:ℂ)*(Real.sqrt X₁:ℂ)*(Real.sqrt X₂:ℂ))
   simp only [mul_one,one_pow]
   rw [show A₁*C*(T*X₁) = A₁*C*T*X₁ from by ring,
     show A₂*C*(T*X₂) = A₂*C*T*X₂ from by ring,
-    show K*H/(D*R*(T*X₁)*(T*X₂)) = K*H/(D*R*T^2*X₁*X₂) from by ring]
+    show K*H/(D *R*(T*X₁)*(T*X₂)) = K*H/(D *R*T^2*X₁*X₂) from by ring]
   have hc : (Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ) =
       (T:ℂ)*(Real.sqrt X₁:ℂ)*(Real.sqrt X₂:ℂ) := by exact_mod_cast hroot
   rw [show (D:ℂ)*(Real.sqrt R:ℂ)*(Real.sqrt (T*X₁):ℂ)*(Real.sqrt (T*X₂):ℂ) =
@@ -84,10 +83,7 @@ theorem actual_first_gauss_coupled_reindex
         (cubePlusCoefficient p hp hcop hg B v ε₁ ε₂ C₂ d) H h := by
   rw [firstCoupledRayColumns, ← first_quadratic_coupled_reindex p hp hinj hg hc]
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro N hN
-  apply Finset.sum_congr rfl
-  intro P hP
+  pm_3397 N hN P hP
   by_cases hd : Disjoint N P
   · simp only [hd,ite_true]
     rw [threeGaussRowFactor_eq_ray_columns p hp hcop hg hc hpr N P B hd

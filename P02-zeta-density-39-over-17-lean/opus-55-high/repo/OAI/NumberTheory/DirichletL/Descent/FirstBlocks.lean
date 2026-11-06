@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,7 +34,10 @@ def firstBlockedSeparatedRow (F : Finset ι) (selector : Finset ι → ℂ)
       star (firstCommonColumn p hg F D C₁ true r.1 ω₁ (s 7) (H 7) h) *
       firstCommonColumn p hg F D C₂ false r.2 ω₂ (s 8) (H 8) h
 
-theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → ℂ) (C₁ C₂ : Finset ι → ℂ)
+section
+variable (F : Finset ι) (selector : Finset ι → ℂ) (C₁ C₂ : Finset ι → ℂ)
+include F selector C₁ C₂
+theorem first_block_modes_eq_columns
     (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : ℝ) (d h : Eis) (s : Fin 9 → ℝ)
     (z : Frequency × (Fin 9 → ℝ)) :
     (∑ j ∈ firstCommonIndices F,(selector j.2.1 * firstCommonWeight p hg C₁ C₂ h j) *
@@ -41,12 +45,8 @@ theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → �
       pureProfileMode firstLeftSlope firstRightSlope firstKernelSlope
         (firstRelativeLog (firstCommonNorms p A₁ A₂ C R d h j) s) z.1 z.2) =
     firstBlockedSeparatedRow p hg F selector C₁ C₂ ω₁ ω₂ A₁ A₂ C R d h s z := by
-  simp only [firstCommonIndices,Finset.sum_product,Finset.sum_sigma,
-    firstCommonWeight,firstBlockedSeparatedRow,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro r hr
-  apply Finset.sum_congr rfl
-  intro D hD
+  pm_577 firstCommonIndices Finset.sum_product Finset.sum_sigma firstCommonWeight firstBlockedSeparatedRow Finset.mul_sum
+  pm_3728
   let H := profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2
   calc
     _ = crossCoeff r.1 r.2 *
@@ -58,10 +58,7 @@ theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → �
             logPhase (H 7) (Real.log (primeProductNorm p U/s 7)) *
             logPhase (H 8) (Real.log (primeProductNorm p V/s 8))) := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro U hU
-      apply Finset.sum_congr rfl
-      intro V hV
+      pm_3811
       rw [first_common_source_mode]
       dsimp only [H]
       ring
@@ -70,8 +67,7 @@ theorem first_block_modes_eq_columns (F : Finset ι) (selector : Finset ι → �
       dsimp only [H]
       ring
 
-theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι → ℂ)
-    (C₁ C₂ : Finset ι → ℂ) (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
+theorem first_block_normalized_density (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (A₁ A₂ C R K : ℝ) (d h : Eis) (s : Fin 9 → ℝ)
     (density : Frequency × (Fin 9 → ℝ) → ℂ) (hDensity : Integrable density)
     (normalization : ℂ)
@@ -89,9 +85,7 @@ theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι →
       firstBlockedSeparatedRow p hg F selector C₁ C₂ ω₁ ω₂ A₁ A₂ C R d h s z := by
   simp_rw [← first_block_modes_eq_columns]
   rw [← density_finite_sum _ density hDensity]
-  simp only [firstBlockedPhysicalRows,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_3526 firstBlockedPhysicalRows Finset.mul_sum Finset.sum_congr j hj
   by_cases hz : selector j.2.1 * firstCommonWeight p hg C₁ C₂ h j = 0
   · simp only [hz,zero_mul,mul_zero]
   · calc
@@ -99,6 +93,7 @@ theorem first_block_normalized_density (F : Finset ι) (selector : Finset ι →
           (normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1) K
             (firstCommonNorms p A₁ A₂ C R d h j)) := by ring
       _ = _ := by rw [he j hj hz]; ring
+end
 
 end
 end SevenEighths.InverseMoment

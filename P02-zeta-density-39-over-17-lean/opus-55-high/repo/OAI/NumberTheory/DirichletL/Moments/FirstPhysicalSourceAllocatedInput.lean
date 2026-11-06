@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceFixedEnergy
 public import OAI.NumberTheory.DirichletL.Moments.FirstAllocationGaussEnergy
 public import OAI.NumberTheory.DirichletL.Moments.FirstMaskedInput
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,27 +30,30 @@ lemma commonEnergy_real (D : OriginalData ι) (C : Ideal O) (hC : Supported C)
     (sourceGenerator (CenteredMomentFirstSectors.residualPool C hC.1 D.columns))
     (sourceGenerator_supported _) _ W K hK).tsum_eq.symm
 
-lemma original_rawVolume (s : Input ι) (R seed : Ideal O) :
+section
+variable (s : Input ι)
+include s
+lemma original_rawVolume (R seed : Ideal O) :
     CenteredMomentFirstAllocationGaussEnergy.rawVolume (original s R seed)=volume s := by
   simp [CenteredMomentFirstAllocationGaussEnergy.rawVolume,original,volume]
 
-lemma allocated_input_columns (s : Input ι) (C R seed L : Ideal O)
+lemma allocated_input_columns (C R seed L : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
     (allocatedData (original s R seed) C L B).columns=
       (original (child s C R B τ t) (R*C) L).columns ∧
     (allocatedData (original s R seed) C L B).beta=
       (original (child s C R B τ t) (R*C) L).beta := by
   have hh := child_columns s C R L B τ t
-  simpa only [OriginalData.columns,OriginalData.beta,allocated_pools,allocated_profile,original] using hh
+  pm_124 OriginalData.columns OriginalData.beta allocated_pools allocated_profile original hh
 
-lemma allocated_input_volume (s : Input ι) (C R seed L : Ideal O)
+lemma allocated_input_volume (C R seed L : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
     CenteredMomentFirstAllocationGaussEnergy.rawVolume (allocatedData (original s R seed) C L B)=
       volume (child s C R B τ t) := by
   simp only [CenteredMomentFirstAllocationGaussEnergy.rawVolume,allocatedData,original,
     volume,child,commonData,one_mul,div_mul_div_comm]
 
-lemma allocated_input_energy (s : Input ι) (C R seed L : Ideal O)
+lemma allocated_input_energy (C R seed L : Ideal O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     CenteredMomentFirstAllocationGaussEnergy.allocatedEnergy (original s R seed) C L B τ t W K /
       CenteredMomentFirstAllocationGaussEnergy.rawVolume (allocatedData (original s R seed) C L B)=
@@ -58,6 +62,7 @@ lemma allocated_input_energy (s : Input ι) (C R seed L : Ideal O)
   unfold CenteredMomentFirstAllocationGaussEnergy.allocatedEnergy
   rw [hc,hb,allocated_input_volume s C R seed L B τ t]
   rfl
+end
 
 end SevenEighths.CenteredMomentFirstPhysicalSource
 

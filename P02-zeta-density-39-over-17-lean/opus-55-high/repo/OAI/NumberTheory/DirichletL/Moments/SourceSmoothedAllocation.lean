@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SourceAllocationEnergy
 public import OAI.NumberTheory.DirichletL.Moments.SmoothedWindowEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,7 @@ theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
       (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*(gaussEnergy S a ha (d B) W K).re := by
   have hs := gaussEnergy_hasSum_re S a ha (fun i => ∑ B,b B*d B i) W K hK
   rw [← hs.tsum_eq]
-  apply Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hW z))
-  intro rows
+  pm_979 hW
   calc
     _ ≤ ∑ z∈rows,(Fintype.card γ:ℝ)*∑ B,‖b B‖^2*
         (‖gaussPolynomial S a ha (d B) z‖^2*(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) := by
@@ -36,15 +36,12 @@ theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
         (CubicEisenstein.norm_sum_sq_le_card Finset.univ
           (fun B => b B*gaussPolynomial S a ha (d B) z)) (hW z)
       rw [gaussPolynomial_allocation]
-      simpa only [Finset.card_univ,norm_mul,mul_pow,Finset.sum_mul,mul_assoc] using h
+      pm_124 Finset.card_univ norm_mul mul_pow Finset.sum_mul mul_assoc h
     _ = (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*
         ∑ z∈rows,‖gaussPolynomial S a ha (d B) z‖^2*(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re := by
-      rw [← Finset.mul_sum,Finset.sum_comm]
-      simp only [Finset.mul_sum]
+      pm_539
     _ ≤ _ := by
-      apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
-      apply Finset.sum_le_sum
-      intro B hB
+      pm_2870
       exact mul_le_mul_of_nonneg_left
         (finite_weighted_le_gaussEnergy S a ha (d B) W K hK hW rows) (sq_nonneg _)
 

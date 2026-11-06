@@ -8,14 +8,11 @@ The imported DigammaSeries retains its separate Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.GammaShiftAmplitude
 public import MathCollab.Density.Stronger.Fourth.SquareKernelFar
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
-noncomputable section
+open Complex MeasureTheory
 namespace MathCollab.Density.Stronger.Fourth
 
 theorem zetaGammaShiftError_le_quadratic
@@ -52,7 +49,10 @@ theorem exp_zetaGammaLeadingLog_vertical_le
       congr 2
       ring
 
-theorem exists_norm_zetaFourthKernel_near_le {c : ℝ} (hc : 0 < c) :
+section
+variable {c : ℝ} (hc : 0 < c)
+include c hc
+theorem exists_norm_zetaFourthKernel_near_le :
     ∃ K : ℝ, 0 < K ∧ ∀ t u : ℝ,
       4 ≤ t → 4*c ≤ t → |u| ≤ t/4 →
       ‖zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖ ≤
@@ -61,18 +61,17 @@ theorem exists_norm_zetaFourthKernel_near_le {c : ℝ} (hc : 0 < c) :
   let A : ℝ := 101*c^2+17*c/4
   let Q : ℝ := 8*(1+c)+(8+D)^2/4
   let K : ℝ := (5625/c)*Real.exp A*Real.exp Q
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  pm_345 K
   intro t u ht hct hu
   have ht0 : 0 < t := by linarith
-  let w : ℂ := (c:ℂ)+(u:ℂ)*I
+  pm_4461
   let R : ℝ := 1+c+|u|
   let E : ℝ := 17*c/4+c^2+u^2+17*|u|/4
-  have hw : ‖w‖ ≤ c+|u| := norm_vertical_shift_le hc.le u
+  pm_7724 hc.le
   have hwsmall : ‖w‖ ≤ t/2 := hw.trans (by linarith)
   have hwre : 0 ≤ w.re := by dsimp [w]; norm_num; exact hc.le
-  have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
-  have haux : ‖hughesYoungAuxiliaryZero w‖ ≤ 625*R^8 :=
-    norm_hughesYoungAuxiliaryZero_le_polynomial hR (hw.trans (by dsimp [R]; linarith))
+  pm_4464
+  pm_834
   have hpole := norm_zetaSquarePoleShift_le ht0 hwsmall
   have herr : zetaGammaShiftError t w ≤ E :=
     zetaGammaShiftError_le_quadratic ht hc.le u hw
@@ -100,11 +99,7 @@ theorem exists_norm_zetaFourthKernel_near_le {c : ℝ} (hc : 0 < c) :
     rw [← Real.exp_add]
     congr 1
     ring
-  rw [norm_zetaFourthKernel_vertical]
-  change Real.exp (100*c^2-100*u^2)*‖hughesYoungAuxiliaryZero w‖*
-    ‖zetaSquarePoleShift t w‖*
-    ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
-      Complex.Gammaℝ (afeCriticalPoint (-t)))^2‖/‖w‖ ≤ _
+  pm_4463
   calc
     _ ≤ Real.exp (100*c^2-100*u^2)*(625*R^8)*9*
         (Real.exp E*(t^c*Real.exp (Real.pi*|u|/2)))/c := by
@@ -119,20 +114,19 @@ theorem exists_norm_zetaFourthKernel_near_le {c : ℝ} (hc : 0 < c) :
     _ = K*t^c*(Real.exp (u^2)*Real.exp (-99*u^2)) := by dsimp [K]; ring
     _ = _ := by rw [hg]
 
-theorem exists_norm_zetaFourthKernel_le {c : ℝ} (hc : 0 < c) :
+theorem exists_norm_zetaFourthKernel_le :
     ∃ K : ℝ, 0 < K ∧ ∀ t u : ℝ,
       4 ≤ t → 4*c ≤ t →
       ‖zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖ ≤
         K*t^c*Real.exp (-98*u^2) := by
-  obtain ⟨A,hA,hnear⟩ := exists_norm_zetaFourthKernel_near_le hc
-  obtain ⟨B,hB,hfar⟩ := exists_norm_zetaFourthKernel_far_le hc
+  pm_313 A hA hnear exists_norm_zetaFourthKernel_near_le hc B hB hfar exists_norm_zetaFourthKernel_far_le
   refine ⟨A+B,by positivity,?_⟩
   intro t u ht hct
   have ht0 : 0 < t := by linarith
   by_cases hu : |u| ≤ t/4
   · exact (hnear t u ht hct hu).trans (by gcongr; linarith)
   · have htu : t ≤ 4*|u| := by linarith [lt_of_not_ge hu]
-    have hp : 1 ≤ t^c := Real.one_le_rpow (by linarith) hc.le
+    pm_549 hp t c hc.le
     calc
       _ ≤ B*Real.exp (-99*u^2) := hfar t u ht0.le htu
       _ ≤ B*Real.exp (-98*u^2) := by
@@ -140,13 +134,13 @@ theorem exists_norm_zetaFourthKernel_le {c : ℝ} (hc : 0 < c) :
         nlinarith [sq_nonneg u]
       _ ≤ B*t^c*Real.exp (-98*u^2) := by gcongr; nlinarith
       _ ≤ (A+B)*t^c*Real.exp (-98*u^2) := by gcongr; linarith
+end
 
 theorem integrable_zetaFourthKernel_vertical {t c : ℝ}
     (hc : 0 < c) (ht : 4 ≤ t) (hct : 4*c ≤ t) :
     Integrable (fun u : ℝ => zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)) := by
   obtain ⟨K,_,hK⟩ := exists_norm_zetaFourthKernel_le hc
-  have hg : Integrable (fun u : ℝ => K*t^c*Real.exp (-98*u^2)) :=
-    (integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 98)).const_mul (K*t^c)
+  pm_4475
   exact hg.mono' (continuous_zetaFourthKernel_vertical t hc).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun u => hK t u ht hct))
 
@@ -155,11 +149,9 @@ theorem exists_integral_norm_zetaFourthKernel_le {c : ℝ} (hc : 0 < c) :
       4 ≤ t → 4*c ≤ t →
       (∫ u : ℝ, ‖zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)‖) ≤
         K*t^c*Real.sqrt (Real.pi/98) := by
-  obtain ⟨K,hK,hbound⟩ := exists_norm_zetaFourthKernel_le hc
-  refine ⟨K,hK,?_⟩
+  pm_102 K hK hbound exists_norm_zetaFourthKernel_le hc
   intro t ht hct
-  have hg : Integrable (fun u : ℝ => K*t^c*Real.exp (-98*u^2)) :=
-    (integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 98)).const_mul (K*t^c)
+  pm_4475
   calc
     _ ≤ ∫ u : ℝ, K*t^c*Real.exp (-98*u^2) :=
       integral_mono (integrable_zetaFourthKernel_vertical hc ht hct).norm hg

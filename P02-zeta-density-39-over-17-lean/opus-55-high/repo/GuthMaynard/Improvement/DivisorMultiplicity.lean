@@ -1,8 +1,7 @@
 module
 public import Mathlib
 
-@[expose] public section
-set_option autoImplicit false
+public section
 namespace GuthMaynard.Improvement
 
 /-- Exact multiplicity bound for a nonzero product. A subpower upper bound
@@ -17,9 +16,9 @@ theorem product_fiber_card_le_divisors (P : Finset (ℕ × ℕ)) {n : ℕ}
       intro hz
       have he := hP p hp
       simp [hz] at he
-      exact hn he.symm
+      grind
     apply Prod.ext heq
     apply Nat.eq_of_mul_eq_mul_left (Nat.pos_of_ne_zero hp0)
-    rw [hP p hp, heq, hP q hq]
+    grind
 
 end GuthMaynard.Improvement

@@ -11,7 +11,6 @@ positive volume and averaging factor.  The resulting bound is still literal:
 no fixed `k`, `A`, or epsilon factor is hidden in asymptotic notation.
 -/
 
-open Set
 open scoped ENNReal
 
 namespace GafniTao
@@ -51,9 +50,7 @@ noncomputable def heathBrownLemmaOneRawBound
 theorem heathBrown_cellVolume_pos
     {k H : ℕ} (hH : 1 ≤ H) :
     0 < ENNReal.ofReal
-      ((2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹)) := by
-  rw [ENNReal.ofReal_pos]
-  positivity
+      ((2 : ℝ) ^ (k - 1) * (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹)) := by positivity
 
 theorem heathBrown_cellVolume_ne_top (k H : ℕ) :
     ENNReal.ofReal

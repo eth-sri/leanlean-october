@@ -1,9 +1,9 @@
 module
 public import DensityEnergyGM.SharpEnergyReduction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 noncomputable section
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
@@ -40,16 +40,10 @@ theorem sharp_cubic_profile_expansion {T R E : ℝ}
     norm_num
   have hOtherA : (T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ)) ^ (1 / 10 : ℝ) =
       T ^ (1 / 20 : ℝ) * R ^ (1 / 10 : ℝ) * E ^ (3 / 40 : ℝ) := by
-    rw [Real.mul_rpow (by positivity) (by positivity : 0 ≤ E ^ (3 / 4 : ℝ)),
-      Real.mul_rpow (by positivity) hR.le, ← Real.rpow_mul hTpos.le,
-      ← Real.rpow_mul hE.le]
-    norm_num
+    pm_4087
   have hOtherB : (T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ)) ^ (2 / 5 : ℝ) =
       T ^ (1 / 5 : ℝ) * R ^ (2 / 5 : ℝ) * E ^ (3 / 10 : ℝ) := by
-    rw [Real.mul_rpow (by positivity) (by positivity : 0 ≤ E ^ (3 / 4 : ℝ)),
-      Real.mul_rpow (by positivity) hR.le, ← Real.rpow_mul hTpos.le,
-      ← Real.rpow_mul hE.le]
-    norm_num
+    pm_4087
   have hKa : K ^ (1 / 10 : ℝ) ≤ R ^ (2 / 5 : ℝ) +
       T ^ (1 / 20 : ℝ) * R ^ (1 / 10 : ℝ) * E ^ (3 / 40 : ℝ) := by
     have h := Real.rpow_add_le_add_rpow (by positivity : 0 ≤ R ^ 4)
@@ -65,27 +59,27 @@ theorem sharp_cubic_profile_expansion {T R E : ℝ}
     rw [hR4b, hOtherB] at h
     exact h
   have hE34 : E ^ (3 / 4 : ℝ) = E ^ (1 / 4 : ℝ) * E ^ (1 / 2 : ℝ) := by
-    rw [← Real.rpow_add hE]; congr 1; norm_num
+    pm_4900 hE
   have hR9 : R ^ (9 / 10 : ℝ) = R ^ (1 / 2 : ℝ) * R ^ (2 / 5 : ℝ) := by
-    rw [← Real.rpow_add hR]; congr 1; norm_num
+    pm_4900 hR
   have hE21a : E ^ (21 / 40 : ℝ) = E ^ (1 / 8 : ℝ) * E ^ (2 / 5 : ℝ) := by
-    rw [← Real.rpow_add hE]; congr 1; norm_num
+    pm_4900 hE
   have hT9 : T ^ (9 / 20 : ℝ) = T ^ (2 / 5 : ℝ) * T ^ (1 / 20 : ℝ) := by
-    rw [← Real.rpow_add hTpos]; congr 1; norm_num
+    pm_4900 hTpos
   have hR3 : R ^ (3 / 5 : ℝ) = R ^ (1 / 2 : ℝ) * R ^ (1 / 10 : ℝ) := by
-    rw [← Real.rpow_add hR]; congr 1; norm_num
+    pm_4900 hR
   have hE3 : E ^ (3 / 5 : ℝ) = E ^ (1 / 8 : ℝ) * E ^ (2 / 5 : ℝ) * E ^ (3 / 40 : ℝ) := by
-    rw [← Real.rpow_add hE, ← Real.rpow_add hE]; congr 1; norm_num
+    pm_5415 hE
   have hT9q : T ^ (9 / 40 : ℝ) = T ^ (1 / 8 : ℝ) * T ^ (1 / 10 : ℝ) := by
-    rw [← Real.rpow_add hTpos]; congr 1; norm_num
+    pm_4900 hTpos
   have hR21 : R ^ (21 / 10 : ℝ) = R ^ (1 / 2 : ℝ) * R ^ (8 / 5 : ℝ) := by
-    rw [← Real.rpow_add hR]; congr 1; norm_num
+    pm_4900 hR
   have hE9q : E ^ (9 / 40 : ℝ) = E ^ (1 / 8 : ℝ) * E ^ (1 / 10 : ℝ) := by
-    rw [← Real.rpow_add hE]; congr 1; norm_num
+    pm_4900 hE
   have hT17 : T ^ (17 / 40 : ℝ) = T ^ (1 / 8 : ℝ) * T ^ (1 / 10 : ℝ) * T ^ (1 / 5 : ℝ) := by
-    rw [← Real.rpow_add hTpos, ← Real.rpow_add hTpos]; congr 1; norm_num
+    pm_5415 hTpos
   have hE21b : E ^ (21 / 40 : ℝ) = E ^ (1 / 8 : ℝ) * E ^ (1 / 10 : ℝ) * E ^ (3 / 10 : ℝ) := by
-    rw [← Real.rpow_add hE, ← Real.rpow_add hE]; congr 1; norm_num
+    pm_5415 hE
   have hA : E ^ (1 / 4 : ℝ) * (T * E) ^ (1 / 2 : ℝ) = T ^ (1 / 2 : ℝ) * E ^ (3 / 4 : ℝ) := by
     rw [Real.mul_rpow hTpos.le hE.le, hE34]; ring
   have hB1 : B * R ^ (2 / 5 : ℝ) = T ^ (2 / 5 : ℝ) * R ^ (9 / 10 : ℝ) * E ^ (21 / 40 : ℝ) := by
@@ -93,16 +87,13 @@ theorem sharp_cubic_profile_expansion {T R E : ℝ}
     rw [Real.mul_rpow hTpos.le hE.le, hR9, hE21a]; ring
   have hB2 : B * (T ^ (1 / 20 : ℝ) * R ^ (1 / 10 : ℝ) * E ^ (3 / 40 : ℝ)) =
       T ^ (9 / 20 : ℝ) * R ^ (3 / 5 : ℝ) * E ^ (3 / 5 : ℝ) := by
-    dsimp only [B]
-    rw [Real.mul_rpow hTpos.le hE.le, hT9, hR3, hE3]; ring
+    pm_6323 B hT9 hR3 hE3
   have hC1 : C * R ^ (8 / 5 : ℝ) = T ^ (9 / 40 : ℝ) * R ^ (21 / 10 : ℝ) * E ^ (9 / 40 : ℝ) := by
-    dsimp only [C]
-    rw [Real.mul_rpow hTpos.le hE.le, hT9q, hR21, hE9q]; ring
+    pm_6323 C hT9q hR21 hE9q
   have hC2 : C * (T ^ (1 / 5 : ℝ) * R ^ (2 / 5 : ℝ) * E ^ (3 / 10 : ℝ)) =
       T ^ (17 / 40 : ℝ) * R ^ (9 / 10 : ℝ) * E ^ (21 / 40 : ℝ) := by
-    dsimp only [C]
-    rw [Real.mul_rpow hTpos.le hE.le, hT17, hR9, hE21b]; ring
-  have hBbound := mul_le_mul_of_nonneg_left hKa (show 0 ≤ B by dsimp only [B]; positivity)
+    pm_6323 C hT17 hR9 hE21b
+  have hBbound := mul_le_mul_of_nonneg_left hKa (show 0 ≤ B by positivity)
   have hCbound := mul_le_mul_of_nonneg_left hKb (show 0 ≤ C by dsimp only [C]; positivity)
   rw [mul_add, hB1, hB2] at hBbound
   rw [mul_add, hC1, hC2] at hCbound
@@ -120,8 +111,7 @@ theorem sharpCubicProfile_le_expanded {T : ℝ} (hT : 1 ≤ T) (W : Finset ℝ) 
   by_cases hW : W.Nonempty
   · have hR : (0 : ℝ) < W.card := by exact_mod_cast Finset.card_pos.mpr hW
     have hE : (0 : ℝ) < discreteAdditiveEnergy W := by
-      have h := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
-      rw [native_approx_energy_eq] at h
+      pm_3946
       have hd : (W.card : ℝ) ^ 2 ≤ (discreteAdditiveEnergy W : ℝ) := by exact_mod_cast h
       nlinarith
     exact sharp_cubic_profile_expansion hT hR hE
@@ -146,10 +136,9 @@ theorem discrete_energy_sublinear_native (ε : ℝ) (hε : 0 < ε) :
             N * T ^ (9 / 20 : ℝ) * R ^ (3 / 5 : ℝ) * E ^ (3 / 5 : ℝ) +
             N * T ^ (9 / 40 : ℝ) * R ^ (21 / 10 : ℝ) * E ^ (9 / 40 : ℝ) +
             2 * N * T ^ (17 / 40 : ℝ) * R ^ (9 / 10 : ℝ) * E ^ (21 / 40 : ℝ)) := by
-  obtain ⟨C, T₀, hC, hT₀, h⟩ := discrete_energy_sharp_profile_native ε hε
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
-  intro T N a W V hT hN hTN hNT ha hV hValues hSep hBase
-  have hTtwo : 2 ≤ T := hT₀.trans hT
+  pm_4083 C T₀ hC hT₀ h discrete_energy_sharp_profile_native ε hε
+  pm_4084
+  pm_4039
   have hProfile := sharpCubicProfile_le_expanded (by linarith : 1 ≤ T) W
   have hActual := h T N a W V hT hN hTN hNT ha hV hValues hSep hBase
   apply hActual.trans

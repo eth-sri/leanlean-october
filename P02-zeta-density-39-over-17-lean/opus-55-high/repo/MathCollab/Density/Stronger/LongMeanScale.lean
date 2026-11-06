@@ -21,12 +21,10 @@ theorem weightedCriticalMean_detecting_scale {A : ℕ} {C X N T β γ : ℝ}
   have hh := mul_le_mul_of_nonneg_right hmean (Real.rpow_nonneg hN.le (β-1/2))
   have he : (C*Real.sqrt X*N^(1/2-β)*weightedCriticalMean A γ)*N^(β-1/2) =
       C*Real.sqrt X*weightedCriticalMean A γ := by
-    calc
-      _ = C*Real.sqrt X*weightedCriticalMean A γ*(N^(1/2-β)*N^(β-1/2)) := by ring
-      _ = _ := by rw [hp,mul_one]
+    grind
   rw [he] at hh
   have hd : N^(β-1/2)/(48*Real.log T) ≤ C*Real.sqrt X*weightedCriticalMean A γ := by
-    simpa only [one_div,inv_mul_eq_div] using hh
+    grind
   have hh' := (div_le_iff₀ (by positivity : 0 < 48*Real.log T)).mp hd
   convert hh' using 1
   ring

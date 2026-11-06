@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaMorseCriticalPoint
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Calculus.ContDiff.Deriv
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,6 @@ open Set Filter MeasureTheory
 open scoped ContDiff Topology
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 def segmentTaylorAverage (f : ℝ → ℝ) (a : ℝ) (k : ℕ) (x : ℝ) : ℝ :=
   ∫ t in Icc (0 : ℝ) 1, (1-t)*t^k*iteratedDeriv k f (a+t*(x-a))
@@ -28,34 +28,26 @@ def segmentTaylorAverage (f : ℝ → ℝ) (a : ℝ) (k : ℕ) (x : ℝ) : ℝ :
 theorem affineSegment_mem_Icc {b c a x t : ℝ}
     (ha : a ∈ Icc b c) (hx : x ∈ Icc b c) (ht : t ∈ Icc (0 : ℝ) 1) :
     a+t*(x-a) ∈ Icc b c := by
-  simpa only [smul_eq_mul] using
-    (convex_Icc b c).add_smul_mem ha (by simpa using hx) ht
+  pm_7102 convex_Icc
 
 theorem affineSegment_mem_Ioo {b c a x t : ℝ}
     (ha : a ∈ Ioo b c) (hx : x ∈ Ioo b c) (ht : t ∈ Icc (0 : ℝ) 1) :
     a+t*(x-a) ∈ Ioo b c := by
-  simpa only [smul_eq_mul] using
-    (convex_Ioo b c).add_smul_mem ha (by simpa using hx) ht
+  pm_7102 convex_Ioo
 
-theorem segmentTaylorAverage_integrable
-    {f : ℝ → ℝ} {l r a x : ℝ}
-    (hf : ∀ u ∈ Ioo l r, ContDiffAt ℝ ∞ f u)
-    (ha : a ∈ Ioo l r) (hx : x ∈ Ioo l r) (k : ℕ) :
+section
+variable {f : ℝ → ℝ} {l r a x : ℝ} (hf : ∀ u ∈ Ioo l r, ContDiffAt ℝ ∞ f u) (ha : a ∈ Ioo l r) (hx : x ∈ Ioo l r) (k : ℕ)
+include f l r a x hf ha hx k
+theorem segmentTaylorAverage_integrable :
     IntegrableOn (fun t : ℝ => (1-t)*t^k*iteratedDeriv k f (a+t*(x-a)))
       (Icc (0 : ℝ) 1) := by
   apply ContinuousOn.integrableOn_Icc
   intro t ht
   have hc := (contDiffAt_iteratedDeriv_infty
     (hf _ (affineSegment_mem_Ioo ha hx ht)) k).continuousAt
-  exact ((continuousWithinAt_const.sub continuousWithinAt_id).mul
-    (continuousWithinAt_id.pow k)).mul
-      (hc.comp_continuousWithinAt (f := fun t : ℝ => a+t*(x-a)) (by
-        fun_prop : ContinuousWithinAt (fun t : ℝ => a+t*(x-a)) (Icc (0 : ℝ) 1) t))
+  fun_prop
 
-theorem segmentTaylorAverage_hasDerivAt
-    {f : ℝ → ℝ} {l r a x : ℝ}
-    (hf : ∀ u ∈ Ioo l r, ContDiffAt ℝ ∞ f u)
-    (ha : a ∈ Ioo l r) (hx : x ∈ Ioo l r) (k : ℕ) :
+theorem segmentTaylorAverage_hasDerivAt :
     HasDerivAt (segmentTaylorAverage f a k)
       (segmentTaylorAverage f a (k+1) x) x := by
   obtain ⟨b,hlb,hb⟩ := exists_between (lt_min ha.1 hx.1)
@@ -107,6 +99,7 @@ theorem segmentTaylorAverage_hasDerivAt
     (segmentTaylorAverage_integrable hf ha hx k)
     (segmentTaylorAverage_integrable hf ha hx (k+1)).aestronglyMeasurable
     hbound (integrable_const M) hdiff).2
+end
 
 theorem segmentTaylorAverage_contDiffOn
     {f : ℝ → ℝ} {l r a : ℝ}

@@ -2,20 +2,22 @@ module
 public import MathCollab.Density.DivisorGrowth
 public import MathCollab.Density.BootstrapAbsorption
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Real Set Filter
-open scoped BigOperators Topology
+open scoped Topology
 
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density
 
-theorem LargeValueData.scalar_square_le {κ : ℝ} (d : LargeValueData κ) :
+section
+variable {κ : ℝ}
+include κ
+theorem LargeValueData.scalar_square_le (d : LargeValueData κ) :
     (d.N : ℝ)*(bootstrapScalar d.T d.N d.V)^2 ≤
       (divisorMaximum d.T : ℝ)^2*(d.N : ℝ)^(-4*κ) := by
-  have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
+  pm_4269
   have hV := d.V_pos
   have hp : (d.N : ℝ)^3*(d.N : ℝ)^(4*κ) ≤ d.V^4 := by
     have he : (d.N : ℝ)^3*(d.N : ℝ)^(4*κ) = ((d.N : ℝ)^(3/4+κ))^4 := by
@@ -34,14 +36,14 @@ theorem LargeValueData.scalar_square_le {κ : ℝ} (d : LargeValueData κ) :
     _ = _ := by rw [show -4*κ = -(4*κ) by ring, Real.rpow_neg hN.le]; ring
 
 /-- eta=kappa/6 is chosen before every configuration. -/
-theorem uniform_scalar_decay {κ : ℝ} (hκ : 0 < κ) :
+theorem uniform_scalar_decay (hκ : 0 < κ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ d : LargeValueData κ,
       (d.N : ℝ)*(bootstrapScalar d.T d.N d.V)^2 ≤ C*d.T^(-κ) := by
   obtain ⟨C, hC, hd⟩ := divisorMaximum_subpower (show 0 < κ/6 by positivity)
   refine ⟨C^2, by nlinarith, ?_⟩
   intro d
-  have hT : 0 < d.T := by linarith [d.T_ge_two]
-  have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
+  pm_4273
+  pm_4269
   have hp : (d.N : ℝ)^(-4*κ) ≤ d.T^(-4*κ/3) := by
     have hh := Real.rpow_le_rpow_of_nonpos (Real.rpow_pos_of_pos hT _) d.scale_lower
       (show -4*κ ≤ 0 by linarith)
@@ -49,7 +51,7 @@ theorem uniform_scalar_decay {κ : ℝ} (hκ : 0 < κ) :
       rw [← Real.rpow_mul hT.le]
       congr 1
       ring
-    exact hh.trans_eq he
+    grind
   have hdelta := pow_le_pow_left₀ (Nat.cast_nonneg (divisorMaximum d.T)) (hd d.T d.T_ge_two) 2
   calc
     _ ≤ (divisorMaximum d.T : ℝ)^2*(d.N : ℝ)^(-4*κ) := d.scalar_square_le
@@ -61,19 +63,19 @@ theorem uniform_scalar_decay {κ : ℝ} (hκ : 0 < κ) :
       congr 1
       ring
 
-theorem tendsto_power_log_two_mul {κ : ℝ} (hκ : 0 < κ) :
+theorem tendsto_power_log_two_mul (hκ : 0 < κ) :
     Tendsto (fun T : ℝ => T^(-κ)*Real.log (2*T)) atTop (𝓝 0) := by
   have hp := tendsto_rpow_neg_atTop hκ
   have hl := (isLittleO_log_rpow_atTop hκ).tendsto_div_nhds_zero
   have hh := (hp.mul_const (Real.log 2)).add hl
   simp only [zero_mul, zero_add] at hh
   apply hh.congr'
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with T hT
+  pm_414 eventually_gt_atTop T hT
   rw [Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hT.ne', Real.rpow_neg hT.le]
   ring
 
 /-- The threshold is chosen before T,N,V,a,W,t0, not separately for each configuration. -/
-theorem uniform_absorption_threshold {κ : ℝ} (hκ : 0 < κ) (A : ℝ) (hA : 0 ≤ A) :
+theorem uniform_absorption_threshold (hκ : 0 < κ) (A : ℝ) (hA : 0 ≤ A) :
     ∃ T₀ : ℝ, 2 ≤ T₀ ∧ ∀ d : LargeValueData κ, T₀ ≤ d.T →
       A*(d.N : ℝ)*(bootstrapScalar d.T d.N d.V)^2*Real.log (2*d.T) ≤ 1/2 ∧
       (d.N : ℝ)*(bootstrapScalar d.T d.N d.V)^2 ≤ 1 := by
@@ -94,6 +96,7 @@ theorem uniform_absorption_threshold {κ : ℝ} (hκ : 0 < κ) (A : ℝ) (hA : 0
     have hi := (hT₂ d.T ht₂).le
     nlinarith
   · exact (hc d).trans (hT₁ d.T ht₁).le
+end
 
 /-- The kernel constant and large-T threshold are uniform in every original configuration. -/
 theorem uniform_absorbed_kernel (w : ComparisonCutoff) {κ : ℝ} (hκ : 0 < κ) :
@@ -102,8 +105,8 @@ theorem uniform_absorbed_kernel (w : ComparisonCutoff) {κ : ℝ} (hκ : 0 < κ)
       ∀ (U : Finset ℝ) (L : ℝ), U ⊆ d.W → (d.N : ℝ) ≤ L → L ≤ 8*(d.T+1) →
         kernelEnergy w.toReflectionCutoff L U ≤ C*bootstrapScalar d.T d.N d.V*U.card*
           (L^2+(d.N : ℝ)*localDiameter U) := by
-  obtain ⟨C₀, C₁, hC₀, hC₁, hbound⟩ := bootstrap_absorbed w
-  obtain ⟨T₀, hT₀, hsmall⟩ := uniform_absorption_threshold hκ C₁ hC₁
+  pm_206 C₀ C₁ hC₀ hC₁ hbound bootstrap_absorbed w
+  pm_837 T₀ hT₀ hsmall uniform_absorption_threshold hκ C₁ hC₁
   refine ⟨2*C₀, T₀, by positivity, hT₀, ?_⟩
   intro d hW hT
   obtain ⟨hs, hs'⟩ := hsmall d hT

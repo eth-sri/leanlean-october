@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosKernelFourier
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -19,20 +20,20 @@ theorem sargos_sinc_lower {x : ℝ} (hx : |x| ≤ Real.pi/2) :
     1/2 ≤ Real.sinc x := by
   by_cases hz : x = 0
   · norm_num [hz]
-  have habs : 0 < |x| := abs_pos.mpr hz
+  pm_4888 habs x abs_pos.mpr hz
   have hsin := Real.mul_le_sin (abs_nonneg x) hx
   have hsinc : 2/Real.pi ≤ Real.sinc |x| := by
     rw [Real.sinc_of_ne_zero (ne_of_gt habs)]
     exact (le_div_iff₀ habs).mpr hsin
   have he : Real.sinc |x| = Real.sinc x := by
     by_cases hpos : 0 ≤ x
-    · rw [abs_of_nonneg hpos]
+    grind
     · rw [abs_of_neg (lt_of_not_ge hpos),Real.sinc_neg]
   rw [he] at hsinc
   have hhalf : (1/2 : ℝ) ≤ 2/Real.pi := by
     apply (le_div_iff₀ Real.pi_pos).mpr
     linarith [Real.pi_le_four]
-  exact hhalf.trans hsinc
+  grind
 
 theorem sargosSincKernel_lower {w x : ℝ} (hw : 0 < w)
     (hx : w*|x| ≤ 1/2) : w/4 ≤ sargosSincKernel w x := by
@@ -56,8 +57,7 @@ theorem sargos_window_scale_control {δ c x : ℝ} (hδ : 0 < δ)
     (hx : x ∈ Set.Icc c (c+δ)) :
     (1/δ)*|x-(c+δ/2)| ≤ 1/2 := by
   have habs : |x-(c+δ/2)| ≤ δ/2 := by
-    apply abs_le.mpr
-    constructor <;> linarith [hx.1,hx.2]
+    pm_8312
   rw [one_div,inv_mul_eq_div]
   apply (div_le_iff₀ hδ).mpr
   linarith

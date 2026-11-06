@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailSource
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailGeometry
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerWeights InverseInitialProfile InverseInitialKernelBridge InverseInitialRayAttachment
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -47,7 +48,7 @@ theorem originalCoefficient_marked_bound
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (Ψ : O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1) (j : O)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (hdis : (slots:Set σ).PairwiseDisjoint lists)
     (ha : ∀i∈slots,∀k∈lists i,‖a i k‖≤1)
     (x : Point ι) (ρ : SecondRayIndex) (L : ℝ) (hL : 1≤L)
@@ -73,10 +74,7 @@ theorem originalCoefficient_marked_bound
     (fun n=>(secondRayPlus_norm_le Ψ ρ n).trans (hΨ n)) j (∏i∈x.common,p i)
     (divisor p x) (-x.frequency) (fun A=>primeMark slots lists a (x.common∪A))
     (x.overlap∪x.right)).trans (hmark x.right hright)
-  have hb := initialBeta_norm_le_one p Ψ hΨ j x.common
-  have hm := QuadraticInitialBound.norm_ideal_moebius_le_one (sourceIdeal p x.divisor)
-  have hv : ‖supportMobius (fun i=>Ideal.span {p i}) x.overlap‖≤1 :=
-    QuadraticInitialBound.norm_ideal_moebius_le_one _
+  pm_5128 hb hm hv
   simp only [originalCoefficient,norm_mul,norm_star]
   calc
     _ ≤ 1*1*1*‖secondRayCoefficient ρ‖*(128*L)*(128*L) := by gcongr

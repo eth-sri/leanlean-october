@@ -99,22 +99,7 @@ noncomputable def extendByZeroₗ : Lp E p (μ.restrict s) →ₗ[ℝ] Lp E p μ
             simp [hf, hg]
         _ = (extendByZeroFun (μ := μ) (p := p) (s := s) hs f +
               extendByZeroFun (μ := μ) (p := p) (s := s) hs g) x := hadd'
-    · have hadd' :
-          extendByZeroFun (μ := μ) (p := p) (s := s) hs f x +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g x =
-            (extendByZeroFun (μ := μ) (p := p) (s := s) hs f +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g) x := by
-        simpa [Pi.add_apply] using hadd.symm
-      calc
-        extendByZeroFun (μ := μ) (p := p) (s := s) hs (f + g) x
-            = s.indicator (fun x : α => (f + g) x) x := hfg
-        _ = 0 := by simp [Set.indicator_of_notMem, hx]
-        _ = extendByZeroFun (μ := μ) (p := p) (s := s) hs f x +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g x := by
-            -- both summands are zero off `s`
-            simp [Set.indicator_of_notMem, hx, hf, hg]
-        _ = (extendByZeroFun (μ := μ) (p := p) (s := s) hs f +
-              extendByZeroFun (μ := μ) (p := p) (s := s) hs g) x := hadd'
+    simp_all
   map_smul' c f := by
     classical
     refine Lp.ext ?_

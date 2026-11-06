@@ -34,7 +34,10 @@ def liveProfile (B : Tuple ι) (C R : Ideal O)
     (fun i => Wslot i.val) (fun i => P i.val) W₁ W₂ X₁ X₂ Y₁ Y₂
     (B₁*B (Sum.inr 0)) (B₂*B (Sum.inr 1)) 1
 
-theorem residual_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+section
+variable (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+include S
+theorem residual_source_column
     (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
     (B : Tuple ι) (hB : ∀ i,B i≠0) (C R s a : Ideal O)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C) (hsC : s∣C)
@@ -71,7 +74,7 @@ theorem residual_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       intro v hv
       split_ifs <;> simp)
 
-theorem original_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem original_source_column
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
     (C R s a : Ideal O) (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a) (hsC : s∣C)
     (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
@@ -96,6 +99,7 @@ theorem original_source_column (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂
   simp only [finiteColumnCoefficient, Finset.sum_filter] at h
   exact h
+end
 
 end SevenEighths.CenteredMomentSourceLiveColumn
 

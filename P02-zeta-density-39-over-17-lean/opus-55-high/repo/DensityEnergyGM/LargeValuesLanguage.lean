@@ -2,11 +2,11 @@ module
 public import Mathlib.Combinatorics.Additive.Energy
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesDefinitions
 public import GuthMaynard.NativeSource.GuthMaynard.Separated
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Finset
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -28,15 +28,14 @@ the large-values energy argument. -/
 noncomputable def gmTranslate (c : ℝ) (W : Finset ℝ) : Finset ℝ :=
   W.image (fun x => x + c)
 
-theorem mapAdditiveQuadruple_translate_mem (η c : ℝ) (W : Finset ℝ)
-    (q : (ℝ × ℝ) × (ℝ × ℝ))
+section
+variable (η c : ℝ) (W : Finset ℝ) (q : (ℝ × ℝ) × (ℝ × ℝ))
+include η c W q
+theorem mapAdditiveQuadruple_translate_mem
     (hq : q ∈ approximateAdditiveQuadruples η W) :
     mapAdditiveQuadruple (fun x => x + c) q ∈
       approximateAdditiveQuadruples η (gmTranslate c W) := by
-  simp only [approximateAdditiveQuadruples, Finset.mem_filter,
-    Finset.mem_product] at hq ⊢
-  rcases hq with ⟨⟨⟨h1, h2⟩, h3, h4⟩, hd⟩
-  refine ⟨⟨⟨?_, ?_⟩, ?_, ?_⟩, ?_⟩
+  pm_4145
   · exact Finset.mem_image.mpr ⟨q.1.1, h1, rfl⟩
   · exact Finset.mem_image.mpr ⟨q.1.2, h2, rfl⟩
   · exact Finset.mem_image.mpr ⟨q.2.1, h3, rfl⟩
@@ -51,24 +50,20 @@ theorem mapAdditiveQuadruple_translate_mem (η c : ℝ) (W : Finset ℝ)
         ring]
     exact hd
 
-theorem mapAdditiveQuadruple_untranslate_mem (η c : ℝ) (W : Finset ℝ)
-    (q : (ℝ × ℝ) × (ℝ × ℝ))
+theorem mapAdditiveQuadruple_untranslate_mem
     (hq : q ∈ approximateAdditiveQuadruples η (gmTranslate c W)) :
     mapAdditiveQuadruple (fun x => x - c) q ∈
       approximateAdditiveQuadruples η W := by
-  simp only [approximateAdditiveQuadruples, Finset.mem_filter,
-    Finset.mem_product] at hq ⊢
-  rcases hq with ⟨⟨⟨h1, h2⟩, h3, h4⟩, hd⟩
-  refine ⟨⟨⟨?_, ?_⟩, ?_, ?_⟩, ?_⟩
+  pm_4145
   · rcases Finset.mem_image.mp h1 with ⟨x, hx, hxeq⟩
     have : q.1.1 - c = x := by linarith
-    simpa [mapAdditiveQuadruple, this] using hx
+    aesop
   · rcases Finset.mem_image.mp h2 with ⟨x, hx, hxeq⟩
     have : q.1.2 - c = x := by linarith
-    simpa [mapAdditiveQuadruple, this] using hx
+    aesop
   · rcases Finset.mem_image.mp h3 with ⟨x, hx, hxeq⟩
     have : q.2.1 - c = x := by linarith
-    simpa [mapAdditiveQuadruple, this] using hx
+    aesop
   · rcases Finset.mem_image.mp h4 with ⟨x, hx, hxeq⟩
     have : q.2.2 - c = x := by linarith
     simpa [mapAdditiveQuadruple, this] using hx
@@ -81,6 +76,7 @@ theorem mapAdditiveQuadruple_untranslate_mem (η c : ℝ) (W : Finset ℝ)
         simp only [mapAdditiveQuadruple]
         ring]
     exact hd
+end
 
 /-- Approximate additive energy is translation invariant. -/
 theorem approxAddEnergy_translate (η c : ℝ) (W : Finset ℝ) :
@@ -90,22 +86,12 @@ theorem approxAddEnergy_translate (η c : ℝ) (W : Finset ℝ) :
     apply Finset.card_le_card_of_injOn
       (mapAdditiveQuadruple fun x => x - c)
     · exact mapAdditiveQuadruple_untranslate_mem η c W
-    · intro q hq q' hq' heq
-      rcases q with ⟨⟨a,b⟩,⟨d,e⟩⟩
-      rcases q' with ⟨⟨a',b'⟩,⟨d',e'⟩⟩
-      simp only [mapAdditiveQuadruple, Prod.mk.injEq] at heq ⊢
-      exact ⟨⟨by linarith [heq.1.1], by linarith [heq.1.2]⟩,
-        by linarith [heq.2.1], by linarith [heq.2.2]⟩
+    pm_4146
   · unfold ApproxAddEnergy
     apply Finset.card_le_card_of_injOn
       (mapAdditiveQuadruple fun x => x + c)
     · exact mapAdditiveQuadruple_translate_mem η c W
-    · intro q hq q' hq' heq
-      rcases q with ⟨⟨a,b⟩,⟨d,e⟩⟩
-      rcases q' with ⟨⟨a',b'⟩,⟨d',e'⟩⟩
-      simp only [mapAdditiveQuadruple, Prod.mk.injEq] at heq ⊢
-      exact ⟨⟨by linarith [heq.1.1], by linarith [heq.1.2]⟩,
-        by linarith [heq.2.1], by linarith [heq.2.2]⟩
+    pm_4146
 
 /-- Image of the ordinate set under the integer floor map. -/
 noncomputable def floorImage (W : Finset ℝ) : Finset ℤ :=

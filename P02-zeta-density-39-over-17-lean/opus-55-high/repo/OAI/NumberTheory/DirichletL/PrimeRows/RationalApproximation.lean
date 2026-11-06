@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Poisson.OscillatoryGaussian
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,15 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
@@ -26,7 +24,7 @@ namespace RationalQuant
 
 end RationalQuant
 
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
+open ActualEisensteinCubic ShortDraftLatticeCount
 
 namespace RationalPrimeExtraction
 
@@ -62,8 +60,8 @@ theorem quadratic_phase_abs_le (a b k l : ℝ) :
     nlinarith [sq_nonneg (k + l)]
   have hcross : 2 * |k| * |l| ≤ k ^ 2 + l ^ 2 := by
     nlinarith [sq_nonneg (|k| - |l|), sq_abs k, sq_abs l]
-  have hk : k ^ 2 ≤ 2 * Q := by nlinarith [hsum, sq_nonneg l]
-  have hl : l ^ 2 ≤ 2 * Q := by nlinarith [hsum, sq_nonneg k]
+  pm_8838 hk k l
+  pm_8838 hl l k
   have hkl : 2 * |k| * |l| ≤ 2 * Q := hcross.trans hsum
   have h1 := mul_le_mul_of_nonneg_left hk (abs_nonneg (a - b))
   have h2 := mul_le_mul_of_nonneg_left hkl (abs_nonneg a)
@@ -73,17 +71,10 @@ theorem quadratic_phase_abs_le (a b k l : ℝ) :
         |a - b| * k ^ 2 + 2 * |a| * |k| * |l| + |b| * l ^ 2 := by
     calc
       |(a - b) * k ^ 2 + 2 * a * k * l + b * l ^ 2| ≤
-          |(a - b) * k ^ 2| + |2 * a * k * l| + |b * l ^ 2| := by
-        calc
-          _ ≤ |(a - b) * k ^ 2 + 2 * a * k * l| + |b * l ^ 2| := abs_add_le _ _
-          _ ≤ _ := by
-            have hh := abs_add_le ((a - b) * k ^ 2) (2 * a * k * l)
-            linarith
-      _ = _ := by
-        simp [abs_mul,  abs_of_nonneg (sq_nonneg k),
-          abs_of_nonneg (sq_nonneg l)]
+          |(a - b) * k ^ 2| + |2 * a * k * l| + |b * l ^ 2| := by grind
+      _ = _ := by simp_all
   unfold phaseBoundConstant
-  nlinarith [htri, h1, h2, h3, hQ]
+  grind
 
 end OscSpecial
 
@@ -122,10 +113,7 @@ open EisensteinEmbedding ConcreteTraceCRT Complex
 
 private theorem breveE_period_div_lam_O (z : O) :
     ShortDraftTrace.breveE (eisEmbedding z / eisLam) = 1 := by
-  let a := (ActualEisensteinCoordinates.coords z).1
-  let b := (ActualEisensteinCoordinates.coords z).2
-  have hz : z = ActualEisensteinCoordinates.eval a b :=
-    (ActualEisensteinCoordinates.eval_coords z).symm
+  pm_3251
   rw [hz, eisEmbedding_eval]
   exact ConcreteBreveE.breveE_period_coordinates a b
 
@@ -155,7 +143,7 @@ theorem fixedDualPhase_eq_of_mod_two (c y z : O)
     fixedDualPhase c y = fixedDualPhase c z := by
   have hsub : y-z ∈ Ideal.span {(2 : O)} :=
     (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp h
-  obtain ⟨w, hw⟩ := (Ideal.mem_span_singleton).mp hsub
+  pm_8756 hsub
   have hy : y = z + 2*w := by
     calc
       y = z+(y-z) := by ring
@@ -172,9 +160,7 @@ theorem fixedDualPhase_weighted_partition (c : O) (W : O → ℂ)
         fixedDualPhase c (GaussianShiftedPartition.representative 2 r) *
           ∑' w : O,
             W (GaussianShiftedPartition.representative 2 r + 2*w) := by
-  let h2 : (2 : O) ≠ 0 := by norm_num
-  let : Finite (O ⧸ Ideal.span {(2 : O)}) := finite_quotient_span h2
-  let : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
+  pm_3500
   rw [GaussianAbelPartition.tsum_by_finite_fibers
     (Ideal.Quotient.mk (Ideal.span {(2 : O)})) _ hsum]
   apply Finset.sum_congr rfl
@@ -208,7 +194,10 @@ open Filter
 noncomputable def dualScale (η a b : ℝ) : ℝ :=
   η * q a b / (4 * r η a b)
 
-theorem dualScale_tendsto (a b : ℝ) (hq : 0 < q a b) :
+section
+variable (a b : ℝ) (hq : 0 < q a b)
+include a b hq
+theorem dualScale_tendsto :
     Tendsto (fun η : ℝ => dualScale η a b)
       (𝓝[>] (0 : ℝ)) (𝓝[>] (0 : ℝ)) := by
   have hnum : ContinuousAt (fun η : ℝ => η * q a b) 0 := by fun_prop
@@ -227,12 +216,10 @@ theorem dualScale_tendsto (a b : ℝ) (hq : 0 < q a b) :
   · exact hlim
   · filter_upwards [self_mem_nhdsWithin] with η hη
     change 0 < η at hη
-    have hr : 0 < r η a b := by
-      unfold r
-      positivity
+    pm_6563 hr r
     exact div_pos (mul_pos hη hq) (mul_pos (by norm_num) hr)
 
-theorem abel_mass_dual_scale (a b : ℝ) (hq : 0 < q a b)
+theorem abel_mass_dual_scale
     (F : ℝ → ℂ) (L : ℂ)
     (hF : Tendsto (fun t : ℝ => (t : ℂ) * F t)
       (𝓝[>] (0 : ℝ)) (𝓝 L)) :
@@ -254,17 +241,15 @@ theorem abel_mass_dual_scale (a b : ℝ) (hq : 0 < q a b)
       (η : ℂ) * F (dualScale η a b) =
         ((4 * r η a b / q a b : ℝ) : ℂ) *
           (((dualScale η a b : ℝ) : ℂ) * F (dualScale η a b)) := by
-    filter_upwards [self_mem_nhdsWithin] with η hη
-    change 0 < η at hη
-    have hrpos : 0 < r η a b := by
-      unfold r
-      positivity
-    have hqC : (q a b : ℂ) ≠ 0 := by exact_mod_cast hq.ne'
-    have hrC : (r η a b : ℂ) ≠ 0 := by exact_mod_cast hrpos.ne'
+    pm_1111
+    pm_6563 hrpos r
+    pm_5566 hqC hq.ne'
+    pm_6112 hrC r hrpos.ne'
     dsimp [dualScale]
     push_cast
     field_simp [hqC, hrC]
   exact hprod.congr' (heq.mono fun η h => h.symm)
+end
 
 end OscSpecial
 

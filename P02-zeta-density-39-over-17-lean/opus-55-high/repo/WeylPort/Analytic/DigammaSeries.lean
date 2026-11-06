@@ -21,6 +21,7 @@ public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 public import Mathlib.NumberTheory.Harmonic.Bounds
 public import Mathlib.Topology.Algebra.InfiniteSum.Real
 public import Mathlib.Topology.Algebra.IsUniformGroup.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -58,30 +59,34 @@ namespace Complex
 
 /-! ## Elementary helper lemmas -/
 
+section
+variable (n : ℕ)
+include n
 /-- The norm of `(n : ℂ) + 1` is `n + 1`. -/
-lemma norm_natCast_add_one (n : ℕ) : ‖((n : ℂ) + 1)‖ = (n : ℝ) + 1 := by
-  rw [show ((n : ℂ) + 1) = ((n + 1 : ℕ) : ℂ) by push_cast; ring, norm_natCast]
+lemma norm_natCast_add_one : ‖((n : ℂ) + 1)‖ = (n : ℝ) + 1 := by
+  rw [show ((n : ℂ) + 1) = ((n + 1 : ℕ) : ℂ) by grind, norm_natCast]
   push_cast
   ring
 
 /-- The partial sums of the series `∑ 1 / (m + 1)` are the harmonic numbers. -/
-lemma sum_inv_natCast_add_one (n : ℕ) :
+lemma sum_inv_natCast_add_one :
     ∑ m ∈ Finset.range n, ((m : ℂ) + 1)⁻¹ = ((harmonic n : ℚ) : ℂ) := by
   rw [harmonic]
   push_cast
   rfl
 
 /-- The partial sums of the series `∑ 1 / (m + 1)` are the harmonic numbers, real version. -/
-lemma sum_inv_natCast_add_one_real (n : ℕ) :
+lemma sum_inv_natCast_add_one_real :
     ∑ m ∈ Finset.range n, ((m : ℝ) + 1)⁻¹ = ((harmonic n : ℚ) : ℝ) := by
   rw [harmonic]
   push_cast
   rfl
+end
 
 /-- The summand of the digamma series, in closed form. -/
 lemma inv_add_one_sub_inv_eq {z : ℂ} {m : ℕ} (hzm : z + m ≠ 0) :
     ((m : ℂ) + 1)⁻¹ - (z + m)⁻¹ = (z - 1) * (((m : ℂ) + 1) * (z + m))⁻¹ := by
-  have hm : ((m : ℂ) + 1) ≠ 0 := Nat.cast_add_one_ne_zero m
+  pm_8658 hm m
   field_simp
   ring
 
@@ -90,17 +95,17 @@ right half-plane. -/
 lemma norm_inv_add_one_sub_inv_le {a R : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {z : ℂ}
     (hza : a ≤ z.re) (hzR : ‖z‖ ≤ R) (m : ℕ) :
     ‖((m : ℂ) + 1)⁻¹ - (z + m)⁻¹‖ ≤ (R + 1) / (a * ((m : ℝ) + 1) ^ 2) := by
-  have hm0 : (0 : ℝ) ≤ m := Nat.cast_nonneg m
+  pm_322 hm0 m
   have hR0 : (0 : ℝ) ≤ R := le_trans (norm_nonneg z) hzR
   have hrepos : 0 < (z + m).re := by
     rw [add_re, natCast_re]
     linarith
-  have hzm : z + m ≠ 0 := fun h => by simp [h] at hrepos
+  have hzm : z + m ≠ 0 := fun h => by simp_all
   have hnorm_zm : a * ((m : ℝ) + 1) ≤ ‖z + m‖ := by
     have h1 : (z + m).re ≤ ‖z + m‖ := re_le_norm _
     rw [add_re, natCast_re] at h1
     nlinarith
-  have hz1 : ‖z - 1‖ ≤ R + 1 := le_trans (norm_sub_le z 1) (by rw [norm_one]; linarith)
+  have hz1 : ‖z - 1‖ ≤ R + 1 := le_trans (norm_sub_le z 1) (by simp_all)
   rw [inv_add_one_sub_inv_eq hzm, norm_mul, norm_inv, norm_mul, norm_natCast_add_one,
     ← div_eq_mul_inv]
   calc ‖z - 1‖ / (((m : ℝ) + 1) * ‖z + m‖)
@@ -112,7 +117,7 @@ lemma norm_inv_add_one_sub_inv_le {a R : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) {z : 
 lemma summable_one_div_natCast_add_one_sq :
     Summable (fun m : ℕ => 1 / ((m : ℝ) + 1) ^ 2) := by
   have h := Real.summable_one_div_nat_pow.mpr (one_lt_two : (1 : ℕ) < 2)
-  exact ((summable_nat_add_iff 1).mpr h).congr fun n => by push_cast; ring
+  exact ((summable_nat_add_iff 1).mpr h).congr fun n => by grind
 
 /-- A summable telescoping series whose terms tend to zero sums to its first term. -/
 lemma hasSum_sub_succ_of_tendsto_zero {E : Type*} [AddCommGroup E] [TopologicalSpace E]
@@ -136,19 +141,22 @@ to `digamma z`. -/
 noncomputable def logGammaSeq (z : ℂ) (n : ℕ) : ℂ :=
   z * (Real.log n : ℂ) + (Real.log (n !) : ℂ) - ∑ m ∈ Finset.range (n + 1), log (z + m)
 
+section
+variable {z : ℂ} (hz : 0 < z.re)
+include z hz
 /-- The increment of `logGammaSeq` in closed form. -/
-lemma logGammaSeq_succ_sub {z : ℂ} (hz : 0 < z.re) (n : ℕ) :
+lemma logGammaSeq_succ_sub (n : ℕ) :
     logGammaSeq z (n + 1) - logGammaSeq z n
       = z * ((Real.log ((n : ℝ) + 1) - Real.log n : ℝ) : ℂ) - log (1 + z / ((n : ℂ) + 1)) := by
   have hn1 : (0 : ℝ) < (n : ℝ) + 1 := by positivity
-  have hnC : ((n : ℂ) + 1) ≠ 0 := Nat.cast_add_one_ne_zero n
+  pm_8658 hnC n
   have hx : 1 + z / ((n : ℂ) + 1) ≠ 0 := by
     intro h
     have hzval : z = -((n : ℂ) + 1) := by
       field_simp at h
       linear_combination h
     rw [hzval] at hz
-    simp only [neg_re, add_re, natCast_re, one_re] at hz
+    pm_298 neg_re add_re natCast_re one_re hz
     have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
     linarith
   have hfacC : (Real.log ((n + 1)!) : ℂ)
@@ -173,13 +181,13 @@ lemma logGammaSeq_succ_sub {z : ℂ} (hz : 0 < z.re) (n : ℕ) :
   ring
 
 /-- For `0 < z.re`, the sequence `logGammaSeq z` is Cauchy. -/
-lemma cauchySeq_logGammaSeq {z : ℂ} (hz : 0 < z.re) : CauchySeq (logGammaSeq z) := by
+lemma cauchySeq_logGammaSeq : CauchySeq (logGammaSeq z) := by
   apply cauchySeq_of_summable_dist
   apply Summable.of_norm_bounded_eventually_nat
     (g := fun n => (2 * ‖z‖ + ‖z‖ ^ 2) * (1 / ((n : ℝ) + 1) ^ 2))
     (summable_one_div_natCast_add_one_sq.mul_left _)
   filter_upwards [eventually_ge_atTop 1, eventually_ge_atTop ⌈2 * ‖z‖⌉₊] with n hn1 hn2
-  have hnR : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn1
+  pm_357 hnR n hn1
   have hn2R : 2 * ‖z‖ ≤ (n : ℝ) := le_trans (Nat.le_ceil _) (by exact_mod_cast hn2)
   have hw : ‖z / ((n : ℂ) + 1)‖ = ‖z‖ / ((n : ℝ) + 1) := by
     rw [norm_div, norm_natCast_add_one]
@@ -195,7 +203,7 @@ lemma cauchySeq_logGammaSeq {z : ℂ} (hz : 0 < z.re) : CauchySeq (logGammaSeq z
     push_cast
     ring
   rw [key]
-  have hn0 : (0 : ℝ) < n := by linarith
+  pm_389 hn0 n
   have hlog_est : |Real.log ((n : ℝ) + 1) - Real.log n - ((n : ℝ) + 1)⁻¹|
       ≤ 2 * (1 / ((n : ℝ) + 1) ^ 2) := by
     have hdiv : Real.log ((n : ℝ) + 1) - Real.log n = Real.log (((n : ℝ) + 1) / n) :=
@@ -253,14 +261,13 @@ lemma cauchySeq_logGammaSeq {z : ℂ} (hz : 0 < z.re) : CauchySeq (logGammaSeq z
     _ = (2 * ‖z‖ + ‖z‖ ^ 2) * (1 / ((n : ℝ) + 1) ^ 2) := by ring
 
 /-- On the right half-plane, `exp (logGammaSeq z n) = GammaSeq z n` for `n ≠ 0`. -/
-lemma exp_logGammaSeq {z : ℂ} (hz : 0 < z.re) {n : ℕ} (hn : n ≠ 0) :
+lemma exp_logGammaSeq {n : ℕ} (hn : n ≠ 0) :
     exp (logGammaSeq z n) = GammaSeq z n := by
   have hne : ∀ m : ℕ, z + (m : ℂ) ≠ 0 := by
     intro m h
     have hpos : 0 < (z + (m : ℂ)).re := by
       rw [add_re, natCast_re]
-      have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-      linarith
+      pm_1210 m
     simp [h] at hpos
   unfold logGammaSeq GammaSeq
   rw [exp_sub, exp_add, exp_sum]
@@ -269,6 +276,7 @@ lemma exp_logGammaSeq {z : ℂ} (hz : 0 < z.re) {n : ℕ} (hn : n ≠ 0) :
     · rw [natCast_log, cpow_def_of_ne_zero (Nat.cast_ne_zero.mpr hn), mul_comm z (log (n : ℂ))]
     · rw [natCast_log, exp_log (by exact_mod_cast n.factorial_ne_zero)]
   · exact Finset.prod_congr rfl fun m _ => exp_log (hne m)
+end
 
 /-! ## The series on the right half-plane -/
 
@@ -354,8 +362,7 @@ lemma hasSum_digamma_of_re_pos {z₀ : ℂ} (hz₀ : 0 < z₀.re) :
         rw [mem_slitPlane_iff]
         left
         rw [add_re, natCast_re]
-        have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-        linarith
+        pm_1210 m
       have hinner : HasDerivAt (fun w : ℂ => w + (m : ℂ)) 1 x := (hasDerivAt_id x).add_const _
       simpa only [Function.comp_def, mul_one] using (hasDerivAt_log hmem).comp x hinner
     simpa only [logGammaSeq] using h1.fun_sub h2
@@ -389,8 +396,7 @@ lemma hasSum_digamma_of_re_pos {z₀ : ℂ} (hz₀ : 0 < z₀.re) :
     intro m h
     rw [h] at hz₀
     simp only [neg_re, natCast_re] at hz₀
-    have : (0 : ℝ) ≤ m := Nat.cast_nonneg m
-    linarith
+    pm_1210 m
   have hdig : digamma z₀ = -(Real.eulerMascheroniConstant : ℂ)
       + ∑' m : ℕ, (((m : ℂ) + 1)⁻¹ - (z₀ + m)⁻¹) := by
     rw [digamma_def, logDeriv_apply, hGd.deriv, mul_div_cancel_left₀ _ (Gamma_ne_zero hne)]

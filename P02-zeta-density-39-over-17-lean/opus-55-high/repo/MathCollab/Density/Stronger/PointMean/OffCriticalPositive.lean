@@ -10,11 +10,11 @@ weighted integrability are proved imports, not analytic hypotheses.
 public import MathCollab.Density.Stronger.PointMean.MellinShift
 public import MathCollab.Density.Stronger.PointMean.MellinBounds
 public import MathCollab.Density.Stronger.PointMean.ExponentialMoments
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex Set MeasureTheory
-set_option autoImplicit false
+open Complex MeasureTheory
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
@@ -34,8 +34,10 @@ noncomputable def heathBrownStrongMellinCriticalMoment
   ∫ u : ℝ, Real.exp (-(4 / 3 : ℝ) * |u|) / (delta + |u|) *
     zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)
 
-theorem integrable_heathBrownStrongMellinCriticalMoment
-    {delta t : ℝ} (hdelta : 0 < delta) :
+section
+variable {delta t : ℝ} (hdelta : 0 < delta)
+include delta t hdelta
+theorem integrable_heathBrownStrongMellinCriticalMoment :
     Integrable (fun u : ℝ =>
       Real.exp (-(4 / 3 : ℝ) * |u|) / (delta + |u|) *
         zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)) := by
@@ -50,7 +52,7 @@ theorem integrable_heathBrownStrongMellinCriticalMoment
         · fun_prop
         · intro u hu
           exact (by positivity : 0 < delta + |u|).ne' hu
-      · exact (continuous_zetaMomentCriticalNorm.pow 2).comp (by fun_prop)
+      pm_5038
     exact hcont.aestronglyMeasurable
   · filter_upwards with u
     have hexp : Real.exp (-(4 / 3 : ℝ) * |u|) ≤ Real.exp (-|u|) := by
@@ -62,11 +64,11 @@ theorem integrable_heathBrownStrongMellinCriticalMoment
     rw [Real.norm_eq_abs, abs_of_nonneg hstrong]
     gcongr
 
-theorem heathBrownStrongMellinCriticalMoment_nonneg
-    {delta t : ℝ} (hdelta : 0 < delta) :
+theorem heathBrownStrongMellinCriticalMoment_nonneg :
     0 ≤ heathBrownStrongMellinCriticalMoment delta t := by
   unfold heathBrownStrongMellinCriticalMoment
   exact integral_nonneg fun u => by positivity
+end
 
 theorem exists_norm_heathBrown_leftMellinIntegrand_strong_le :
     ∃ C : ℝ, 0 < C ∧ ∀ (delta t u : ℝ),
@@ -78,9 +80,8 @@ theorem exists_norm_heathBrown_leftMellinIntegrand_strong_le :
           zetaMomentCriticalNorm (t + u) ^ (2 : ℕ)) := by
   obtain ⟨C, hC, hKernel⟩ :=
     exists_heathBrown_Gamma_shift_kernel_strong_bound
-  refine ⟨C, hC, ?_⟩
-  intro delta t u hdelta hdeltaUpper
-  have hdenom : 0 < delta + |u| := by positivity
+  pm_435 C hC delta t u hdelta hdeltaUpper
+  pm_425 hdenom delta u
   have hGamma :
       ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (u : ℂ) * I)‖ ≤
         C * Real.exp (-(4 / 3 : ℝ) * |u|) / (delta + |u|) := by
@@ -122,7 +123,7 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
         (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)) I_ne_zero
   refine ⟨C, mul_pos hD hB, ?_⟩
   intro delta t hdelta hdeltaUpper
-  let s : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  pm_4438
   let f : ℝ → ℂ := fun u =>
     heathBrownZetaSquareMellinIntegrand s
       (((-delta : ℝ) : ℂ) + (u : ℂ) * I)
@@ -147,9 +148,7 @@ theorem exists_norm_heathBrown_leftVertical_strong_le :
         intro u
         simpa only [f, g, s] using hPoint delta t u hdelta hdeltaUpper
       _ = B * ∫ u : ℝ, g u := integral_const_mul B g
-  unfold VerticalIntegral' VerticalIntegral
-  rw [norm_smul, norm_smul]
-  simp only [norm_I, one_mul]
+  pm_8709 VerticalIntegral' VerticalIntegral
   calc
     ‖(1 / (2 * Real.pi * I) : ℂ)‖ * ‖∫ u : ℝ, f u‖ ≤
         D * ∫ u : ℝ, ‖f u‖ := by
@@ -177,10 +176,9 @@ theorem exists_heathBrown_offCritical_plus_strong_le :
   let S : ℝ := heathBrownSmoothedDivisorMajorant
   let C : ℝ := S + R + V + 1
   have hS : 0 ≤ S := heathBrownSmoothedDivisorMajorant_nonneg
-  have hC : 0 < C := by dsimp only [C]; linarith
-  refine ⟨C, hC, ?_⟩
-  intro delta t hdelta hdeltaUpper ht
-  let s : ℂ := ((1 / 2 + delta : ℝ) : ℂ) + (t : ℂ) * I
+  pm_6999
+  pm_435 C hC delta t hdelta hdeltaUpper ht
+  pm_4438
   let m : ℝ := heathBrownStrongMellinCriticalMoment delta t
   have hsRe : s.re = 1 / 2 + delta := by simp [s]
   have hEq := heathBrown_zetaSquare_eq_smoothed_sub_residue_sub_leftVertical

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Cancellation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,9 +31,7 @@ theorem norm_tsum_ideal_ball (f : Ideal O → ℂ) (H M : ℝ)
   by_cases hS : S.Nonempty
   · obtain ⟨I, hI⟩ := hS
     have hI0 : I ≠ ⊥ := by intro h; exact (hmem I).mp hI (h ▸ hzero)
-    have hn : 1 ≤ (Ideal.absNorm I : ℝ) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-        (fun hz => hI0 (Ideal.absNorm_eq_zero_iff.mp hz))
+    pm_1457 hn I hI0
     have hH1 : 1 ≤ H := hn.trans (hsupport I ((hmem I).mp hI))
     have hcount := DescentFiberCost.finite_ideal_count_real S H hH1
       (fun J hJ hz => (hmem J).mp hJ (hz ▸ hzero))
@@ -57,8 +56,7 @@ theorem norm_linear_coefficient_le (S : ℝ → ℂ) (v : ℂ) (C E : ℝ) (hE :
   have heq : X * (‖v‖ - C) = E + 1 := div_mul_cancel₀ _ hδ.ne'
   have h := norm_le_norm_sub_add ((X : ℂ) * v) (S X)
   rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg hX.le, norm_sub_rev] at h
-  have ha := habsolute X hX
-  have hb := herror X hX
+  pm_111 ha habsolute X hX hb herror
   nlinarith
 
 end SevenEighths.CenteredMomentCounting

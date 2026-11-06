@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorSlots
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentDivisorRectangle
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorTensor
 open CenteredMomentHeckeExpansion CenteredMomentMask CenteredMomentRectangle HeckeFamily

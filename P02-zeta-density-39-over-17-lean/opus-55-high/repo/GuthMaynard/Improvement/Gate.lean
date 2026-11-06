@@ -1,7 +1,7 @@
 module
 public import Mathlib
 
-@[expose] public section
+public section
 
 /-!
 Small validated components of the candidate Guth–Maynard improvement.
@@ -10,7 +10,6 @@ In particular the finite Cauchy–Schwarz result does not stand for its Lebesgue
 integral analogue, Poisson summation, or the measurable-mask smoothing step.
 -/
 
-set_option autoImplicit false
 
 namespace GuthMaynard.Improvement
 

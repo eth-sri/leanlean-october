@@ -38,7 +38,7 @@ theorem sum_range_prefix_mask {α : Type*} [AddCommMonoid α]
       apply Finset.sum_subset (Finset.range_mono hj)
       intro i _ hi
       simp only [Finset.mem_range] at hi
-      simp [hi]
+      grind
     _ = _ := Finset.sum_congr rfl (fun i hi => ite_eq_left (Finset.mem_range.mp hi))
 
 def atkinsonPositivePhaseTerm (T : ℝ) (n : ℕ) : ℂ :=
@@ -68,7 +68,7 @@ theorem norm_atkinsonAlternatingCoefficient (n : ℕ) :
 theorem atkinsonPhaseTerm_eq_coefficient_vector (T : ℝ) (n : ℕ) :
     atkinsonPositivePhaseTerm T n = atkinsonAlternatingCoefficient n*atkinsonPhaseVector T n := by
   unfold atkinsonPositivePhaseTerm atkinsonAlternatingCoefficient atkinsonPhaseVector unitaryPhase
-  rw [mul_comm I]
+  grind
 
 theorem atkinsonPhaseBlockSum_eq_masked (T : ℝ) (m : ℕ) {j N : ℕ} (hj : j ≤ N) :
     atkinsonPhaseBlockSum T m j =
@@ -101,15 +101,18 @@ theorem atkinsonMaskedPhaseVector_gram (m N : ℕ) {j k : ℕ}
   rw [sum_range_prefix_mask _ hjk,
     atkinsonPrefixGram_eq_vector]
 
-theorem atkinsonPrefixGram_self (m j : ℕ) (t : ℝ) :
+section
+variable (m j : ℕ)
+include m j
+theorem atkinsonPrefixGram_self (t : ℝ) :
     atkinsonPrefixGram m j t t = (j:ℂ) := by
   simp [atkinsonPrefixGram,unitaryPhase]
 
-theorem norm_atkinsonPrefixGram_self (m j : ℕ) (t : ℝ) :
+theorem norm_atkinsonPrefixGram_self (t : ℝ) :
     ‖atkinsonPrefixGram m j t t‖ = (j:ℝ) := by
   rw [atkinsonPrefixGram_self,Complex.norm_natCast]
 
-theorem atkinsonPrefixGram_swap (m j : ℕ) (t u : ℝ) :
+theorem atkinsonPrefixGram_swap (t u : ℝ) :
     atkinsonPrefixGram m j u t = conj (atkinsonPrefixGram m j t u) := by
   simp_rw [atkinsonPrefixGram_eq_vector]
   rw [map_sum]
@@ -117,11 +120,12 @@ theorem atkinsonPrefixGram_swap (m j : ℕ) (t u : ℝ) :
   intro i _
   simp only [map_mul,Complex.conj_conj]
   ring
+end
 
 theorem atkinsonBlockCoefficientEnergy_nonneg (m N : ℕ) :
     0 ≤ atkinsonBlockCoefficientEnergy m N := by
   apply Finset.sum_nonneg
   intro i _
-  exact sq_nonneg _
+  simp_all
 
 end MathCollab.Density.Stronger.Atkinson

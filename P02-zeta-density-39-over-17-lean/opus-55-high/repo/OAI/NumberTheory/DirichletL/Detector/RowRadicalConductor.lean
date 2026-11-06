@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.Conductor
 public import OAI.NumberTheory.DirichletL.Hecke.LocalRamification
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeRowRadicalConductor
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
 open UniqueFactorizationMonoid
@@ -17,8 +18,7 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 theorem idealRowHom_congr_radical (I : Ideal O) (x y : O)
     (hxy : x-y ∈ I.radical) : idealRowHom x I = idealRowHom y I := by
   by_cases hI : I = 0
-  · subst I
-    simp only [map_zero]
+  grind
   change (if I=0 then 0 else _) = (if I=0 then 0 else _)
   rw [ite_eq_right hI, ite_eq_right hI]
   congr 1
@@ -62,27 +62,32 @@ theorem actualPeriodicRow_radical_periodic (Ψ : O →* ℂ) (Q : Ideal O)
     numeratorBadTwist_periodic u a b r hr x y h72,
     movingNumeratorRow_radical_periodic r hr x y hrxy]
 
-theorem rowTwist_radical_periodic (η : Character) (m f z : O)
+section
+variable (η : Character)
+include η
+theorem rowTwist_radical_periodic (m f z : O)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
     (hpr : λ₀ ^ 2 ∣ r-1) (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r) :
     CanonicalCoefficientClass.FactorsModulo
       (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * (Ideal.span {r}).radical)
       (rowTwist (elementHom η) m f z) := by
-  refine periodic_of_primary _ ?_ _ (actualPeriodicRow (elementHom η) m u a b r hr)
-    (actualPeriodicRow_radical_periodic _ _ (elementHom_periodic η) _ _ _ _ _ hr)
-    (rowTwist_unit_mul η m f z) ?_ ?_
-  · have hd3 : λ₀ ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
-    have hd72 : λ₀ ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
-    exact (Ideal.mul_le_left.trans Ideal.mul_le_right).trans
-      ((Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hd72))
-  · intro n hn
-    apply rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2
-    intro hs
-    exact ((supported_span_iff n).mp hs).1 hn
-  · exact rowTwist_eq_actualPeriodicRow_primary _ _ _ _ hmLam hm2 u a b r hr hpr hx
+        refine periodic_of_primary _ ?_ _
+          (actualPeriodicRow (elementHom η) m u a b r hr)
+          (actualPeriodicRow_radical_periodic _ _ (elementHom_periodic η) _ _ _ _ _ hr)
+          (rowTwist_unit_mul η m f z) ?_ ?_
+        · have hd3 : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
+          have hd72 : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
+          exact (Ideal.mul_le_left.trans Ideal.mul_le_right).trans
+            ((Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hd72))
+        · intro n hn
+          apply rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2
+          intro hs
+          exact ((supported_span_iff n).mp hs).1 hn
+        · exact rowTwist_eq_actualPeriodicRow_primary
+            _ _ _ _ hmLam hm2 u a b r hr hpr hx
 
-theorem rowTwist_nonzero_radical_unit (η : Character) (m f z n : O)
+theorem rowTwist_nonzero_radical_unit (m f z n : O)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O)
     (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r)
@@ -95,7 +100,7 @@ theorem rowTwist_nonzero_radical_unit (η : Character) (m f z n : O)
     Ideal.mul_mono_right (Ideal.span {r}).le_radical
   exact hu.map (Ideal.Quotient.factor hle)
 
-theorem exists_row_character_radical (η : Character) (m f z : O)
+theorem exists_row_character_radical (m f z : O)
     (hm : m ≠ 0) (hf : f ≠ 0) (hz : z ≠ 0)
     (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
     ∃ χ : Character,
@@ -131,13 +136,14 @@ theorem exists_row_character_radical (η : Character) (m f z : O)
     · rfl
     · exact Eq.symm (not_not.mp (fun h => hn
         (rowTwist_nonzero_radical_unit η m f z n hmLam hm2 u a b r hx h)))
+end
 
 theorem periodic_sup (G : O →* ℂ) (I J : Ideal O)
     (hI : CanonicalCoefficientClass.FactorsModulo I G)
     (hJ : CanonicalCoefficientClass.FactorsModulo J G) :
     CanonicalCoefficientClass.FactorsModulo (I ⊔ J) G := by
   intro x y hxy
-  obtain ⟨a, ha, b, hb, hab⟩ := Submodule.mem_sup.mp hxy
+  pm_206 a ha b hb hab Submodule.mem_sup.mp hxy
   calc
     G x = G (x-a) := hI _ _ (by convert ha using 1; ring)
     _ = G y := hJ _ _ (by convert hb using 1; linear_combination -hab)
@@ -169,7 +175,7 @@ theorem primitive_of_equal_elements (χ θ : Character)
         have hu : IsUnit (Ideal.Quotient.mk χ.modulus n) := MulChar.apply_ne_zero_iff.mp hne
         exact hn (hu.map (Ideal.Quotient.factor (show χ.modulus ≤ M from le_sup_left)))
       exact hz.symm
-  obtain ⟨ψ, hψ, hp, hn, hmask⟩ := exists_primitive_character ρ
+  pm_206 ψ hψ hp hn hmask exists_primitive_character ρ
   refine ⟨ψ, le_sup_left.trans hψ, hp, ?_, ?_⟩
   · let : Finite (O ⧸ θ.modulus) := Ring.HasFiniteQuotients.finiteQuotient θ.modulus_ne_bot
     exact hn.trans (FiniteConductor.absNorm_le_of_le (show θ.modulus ≤ M from le_sup_right))
@@ -177,9 +183,7 @@ theorem primitive_of_equal_elements (χ θ : Character)
     by_cases hI : I = 0
     · subst I
       simp only [map_zero, ite_self]
-    let n := ConcretePrimeRowBridge.idealGenerator I
-    have hn0 : n ≠ 0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
-    have hs : Ideal.span {n} = I := ConcretePrimeRowBridge.span_idealGenerator I
+    pm_5100 ConcretePrimeRowBridge.idealGenerator hn0 ConcretePrimeRowBridge.idealGenerator_ne_zero hs ConcretePrimeRowBridge.span_idealGenerator
     have hre : idealCoeff ρ I = idealCoeff χ I := by
       rw [← hs, idealCoeff_span _ hn0, idealCoeff_span _ hn0, hr]
     by_cases hc : IsCoprime I χ.modulus
@@ -216,10 +220,8 @@ theorem equal_elements_excludePrimes (χ θ : Character)
     (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (n : O) :
     elementCoeff (χ.excludePrimes S hS) n = elementCoeff (θ.excludePrimes S hS) n := by
   have hc : IsCoprime (Ideal.span {n}) χ.modulus ↔ IsCoprime (Ideal.span {n}) θ.modulus := by
-    have huχ : elementCoeff χ n ≠ 0 ↔ IsCoprime (Ideal.span {n}) χ.modulus :=
-      MulChar.apply_ne_zero_iff.trans (IdealCharacter.isUnit_mk_iff_isCoprime _ _)
-    have huθ : elementCoeff θ n ≠ 0 ↔ IsCoprime (Ideal.span {n}) θ.modulus :=
-      MulChar.apply_ne_zero_iff.trans (IdealCharacter.isUnit_mk_iff_isCoprime _ _)
+    pm_7611 huχ χ χ.modulus
+    pm_7611 huθ θ θ.modulus
     rw [he n] at huχ
     exact huχ.symm.trans huθ
   simp only [Character.excludePrimes, elementCoeff_refineModulus,
@@ -301,8 +303,10 @@ theorem radical_norm_selected_deficit {ι : Type*} [Fintype ι]
             ((∏ i, P i) * (∏ i, P i ^ (e i-1))) * B := by ring
         _ = I := by rw [hprod, ← hB]
 
-theorem rowCharacter_primitive_selected_deficit (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : HeckeInverseAmplification.FreeRow) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
+include S hS
+theorem rowCharacter_primitive_selected_deficit (u : HeckeInverseAmplification.FreeRow) :
     ∃ ψ : Character, (ProbeHighRowFamily.rowCharacter S hS u).modulus ≤ ψ.modulus ∧
       FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       (∀ I : Ideal O, idealCoeff (ProbeHighRowFamily.rowCharacter S hS u) I =
@@ -314,7 +318,7 @@ theorem rowCharacter_primitive_selected_deficit (S : Finset (Ideal O))
           ψ.modulus.absNorm * ∏ i, (P i).absNorm ^ (e i-1) ≤
             fixedConductorConstant S * (Ideal.span {u.val} : Ideal O).absNorm := by
   obtain ⟨ψ, hle, hp, hn, hm⟩ := rowCharacter_primitive_radical S hS u
-  refine ⟨ψ, hle, hp, hm, ?_⟩
+  pm_505 ψ hle hp hm
   intro k P hP hdis e he hdiv
   have hb := radical_norm_selected_deficit (Ideal.span {u.val})
     (Ideal.span_singleton_eq_bot.not.mpr u.property.1) P hP hdis e
@@ -324,8 +328,7 @@ theorem rowCharacter_primitive_selected_deficit (S : Finset (Ideal O))
         ∏ i, (P i).absNorm ^ (e i-1) := Nat.mul_le_mul_right _ hn
     _ ≤ _ := by simpa only [mul_assoc] using Nat.mul_le_mul_left (fixedConductorConstant S) hb
 
-theorem fixedConductorConstant_pos (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) : 0 < fixedConductorConstant S := by
+theorem fixedConductorConstant_pos : 0 < fixedConductorConstant S := by
   have hnorm (I : Ideal O) (hI : I ≠ 0) : 0 < I.absNorm :=
     Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   unfold fixedConductorConstant ProbeHighRowFamily.conductorConstant
@@ -333,6 +336,7 @@ theorem fixedConductorConstant_pos (S : Finset (Ideal O))
     (hnorm _ (Ideal.span_singleton_eq_bot.not.mpr ProbeHighRowFamily.rowMaskElement_ne_zero))
     (hnorm _ (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))))
     (hnorm _ (Finset.prod_ne_zero_iff.mpr (fun P hP => (hS P hP).ne_zero)))
+end
 
 end SevenEighths.ProbeRowRadicalConductor
 

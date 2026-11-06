@@ -16,38 +16,42 @@ def redundantSet (M C : Ideal O) : Finset (Ideal O) := primeSupport M\primeSuppo
 
 def redundantIdeal (M C : Ideal O) : Ideal O := ∏P∈redundantSet M C,P
 
-lemma redundantSet_prime (M C : Ideal O) : ∀P∈redundantSet M C,Prime P :=
+section
+variable (M C : Ideal O)
+include M C
+lemma redundantSet_prime : ∀P∈redundantSet M C,Prime P :=
   fun _ h=>support_prime (Finset.mem_sdiff.mp h).1
 
-lemma redundantSet_subset (M C : Ideal O) : redundantSet M C⊆primeSupport M :=
+lemma redundantSet_subset : redundantSet M C⊆primeSupport M :=
   Finset.sdiff_subset
 
-lemma redundantIdeal_squarefree (M C : Ideal O) : Squarefree (redundantIdeal M C) :=
+lemma redundantIdeal_squarefree : Squarefree (redundantIdeal M C) :=
   squarefree_support_product (redundantSet_subset M C)
 
-lemma redundantIdeal_ne_zero (M C : Ideal O) : redundantIdeal M C≠0 :=
+lemma redundantIdeal_ne_zero : redundantIdeal M C≠0 :=
   support_product_ne_zero (redundantSet_subset M C)
 
-lemma redundantIdeal_support (M C : Ideal O) : primeSupport (redundantIdeal M C)=redundantSet M C := by
+lemma redundantIdeal_support : primeSupport (redundantIdeal M C)=redundantSet M C := by
   unfold primeSupport redundantIdeal
   rw [factors_support_product (redundantSet_subset M C)]
-  exact Finset.val_toFinset _
+  grind
 
-lemma redundantIdeal_coprime (M C : Ideal O) (hC : C≠0) : IsCoprime (redundantIdeal M C) C := by
+lemma redundantIdeal_coprime (hC : C≠0) : IsCoprime (redundantIdeal M C) C := by
   apply (IdealCoprimeSieveOperator.primeSupport_disjoint_iff (redundantIdeal_ne_zero M C) hC).mp
   rw [redundantIdeal_support]
   exact Finset.disjoint_left.mpr (fun P hp hc=>(Finset.mem_sdiff.mp hp).2 hc)
 
-lemma primitive_redundant_dvd (M C : Ideal O) (hM : M≠0) (hC : C≠0) (hCM : C∣M) :
+lemma primitive_redundant_dvd (hM : M≠0) (hC : C≠0) (hCM : C∣M) :
     C*redundantIdeal M C∣M := by
   exact (redundantIdeal_coprime M C hC).symm.mul_dvd hCM
     (support_product_dvd hM (redundantSet_subset M C))
 
-lemma primitive_redundant_norm (M C : Ideal O) (hM : M≠0) (hC : C≠0) (hCM : C∣M) :
+lemma primitive_redundant_norm (hM : M≠0) (hC : C≠0) (hCM : C∣M) :
     C.absNorm*(redundantIdeal M C).absNorm≤M.absNorm := by
   have h := Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hM))
     (map_dvd Ideal.absNorm (primitive_redundant_dvd M C hM hC hCM))
-  simpa only [map_mul] using h
+  grind
+end
 
 lemma coprime_support_iff (I M : Ideal O) (hM : M≠0) :
     IsCoprime I M ↔ ∀P∈primeSupport M,IsCoprime I P := by

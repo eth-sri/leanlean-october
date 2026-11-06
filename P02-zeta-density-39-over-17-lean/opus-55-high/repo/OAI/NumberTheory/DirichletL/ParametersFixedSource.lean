@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.ParametersHighData
 public import OAI.NumberTheory.DirichletL.ParametersProbeWindows
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstTail
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -44,7 +45,7 @@ theorem exists_fixed_probe_window : ∃ (w : ℝ→ℝ) (W : SchwartzMap ℝ ℂ
     (∀x,0≤w x ∧ w x≤1) ∧ w≠0 ∧ (∀x,W x=(w x:ℂ)) ∧ W≠0 ∧
     Function.support W⊆Set.Icc 1 2 ∧
     (∀x,(W x).im=0) ∧ (∀x,0≤(W x).re) := by
-  obtain ⟨w,W,hw,hc,hs,hb,hv,hn,he,hWn,hWs,hr,hp⟩ := exists_probe_window
+  pm_7039 hb hv hp exists_probe_window
   refine ⟨w,W,hw,hc,hs,?_,hb,hn,he,hWn,hWs,hr,hp⟩
   have hcl : tsupport w⊆Set.Icc 1 2 :=
     closure_minimal (hs.trans Set.Ioo_subset_Icc_self) isClosed_Icc

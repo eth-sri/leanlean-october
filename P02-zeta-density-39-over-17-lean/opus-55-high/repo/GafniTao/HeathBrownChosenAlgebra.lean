@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownRefinedScaleBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,17 +28,19 @@ noncomputable def heathBrownChosenTotalConstant (k : ℕ) (A : ℝ) : ℝ :=
   4 * heathBrownChosenFirstConstant k A +
     heathBrownChosenFirstConstant k A * heathBrownChosenSecondConstant k A
 
-theorem heathBrownChosenFirstConstant_nonneg
-    (k : ℕ) {A : ℝ} (hA : 0 ≤ A) :
+section
+variable (k : ℕ) {A : ℝ} (hA : 0 ≤ A)
+include k A hA
+theorem heathBrownChosenFirstConstant_nonneg :
     0 ≤ heathBrownChosenFirstConstant k A := by
   unfold heathBrownChosenFirstConstant
   positivity
 
-theorem heathBrownChosenSecondConstant_nonneg
-    (k : ℕ) {A : ℝ} (hA : 0 ≤ A) :
+theorem heathBrownChosenSecondConstant_nonneg :
     0 ≤ heathBrownChosenSecondConstant k A := by
   unfold heathBrownChosenSecondConstant
   positivity
+end
 
 theorem heathBrownChosenFirstFactor_eq
     {k : ℕ} {A lambda : ℝ}
@@ -47,7 +50,7 @@ theorem heathBrownChosenFirstFactor_eq
           (A * lambda) ^ (((k - 2 : ℕ) : ℝ) / k)) =
       heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ))) := by
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
+  pm_300 hk0 k
   have heq : (-1 : ℝ) + ((k - 2 : ℕ) : ℝ) / k =
       -(2 / (k : ℝ)) := by
     rw [Nat.cast_sub (by omega : 2 ≤ k)]
@@ -74,27 +77,26 @@ theorem heathBrownChosenFirstFactor_eq
     _ = heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ))) := by rw [heq]
 
-theorem heathBrownChosenSecondFactor_eq
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+section
+variable {k N : ℕ} {A lambda : ℝ} (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
+include k N A lambda hk hA hlambda
+theorem heathBrownChosenSecondFactor_eq :
     4 * A * (k - 1 : ℕ) * N *
         ((2 : ℝ) ^ (k - 1) *
           (A * lambda) ^ (((k - 1 : ℕ) : ℝ) / k)) =
       heathBrownChosenSecondConstant k A * N *
         lambda ^ (1 - 1 / (k : ℝ)) := by
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
+  pm_2806
   have heq : ((k - 1 : ℕ) : ℝ) / k =
       1 - 1 / (k : ℝ) := by
-    rw [Nat.cast_sub (by omega : 1 ≤ k)]
+    pm_567 Nat.cast_sub k
     push_cast
     field_simp
   unfold heathBrownChosenSecondConstant
   rw [Real.mul_rpow hA.le hlambda.le, heq]
   ring
 
-theorem heathBrownChosenShiftFactor_eq_source
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+theorem heathBrownChosenShiftFactor_eq_source :
     heathBrownChosenShiftFactor N k A lambda =
       (heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ)))) *
@@ -105,23 +107,21 @@ theorem heathBrownChosenShiftFactor_eq_source
     heathBrownChosenSecondFactor_eq hk hA hlambda]
 
 theorem heathBrownChosenShiftFactor_le_source_sum
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hlambdaOne : lambda ≤ 1) :
     heathBrownChosenShiftFactor N k A lambda ≤
       heathBrownChosenTotalConstant k A *
         (lambda ^ (-(2 / (k : ℝ))) + N) := by
   let C₁ := heathBrownChosenFirstConstant k A
   let C₂ := heathBrownChosenSecondConstant k A
-  let L := lambda ^ (-(2 / (k : ℝ)))
+  pm_7405 L
   let q := lambda ^ (1 - 3 / (k : ℝ))
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
+  pm_2806
   have hC₁ : 0 ≤ C₁ := heathBrownChosenFirstConstant_nonneg k hA.le
   have hC₂ : 0 ≤ C₂ := heathBrownChosenSecondConstant_nonneg k hA.le
-  have hL : 0 ≤ L := by dsimp only [L]; positivity
+  pm_82 hL L
   have hexp : 0 ≤ 1 - 3 / (k : ℝ) := by
-    have hkReal : (3 : ℝ) ≤ k := by exact_mod_cast hk
-    rw [sub_nonneg, div_le_one (by positivity : (0 : ℝ) < k)]
+    pm_5012 hkReal k hk
+    pm_1455 sub_nonneg div_le_one k
     exact hkReal
   have hq : q ≤ 1 := by
     dsimp only [q]
@@ -165,6 +165,7 @@ theorem heathBrownChosenShiftFactor_le_source_sum
           heathBrownChosenTotalConstant k A * N :=
       add_le_add hterm₁ (hterm₂a.trans hterm₂b)
     _ = heathBrownChosenTotalConstant k A * (L + N) := by ring
+end
 
 
 end

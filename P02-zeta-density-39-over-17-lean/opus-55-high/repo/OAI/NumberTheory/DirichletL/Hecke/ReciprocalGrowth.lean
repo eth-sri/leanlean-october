@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicActual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,8 +18,8 @@ theorem reciprocal_subpower (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
     ∃ D : ℝ, 0<D ∧ ∀ (χ : Character) (s : ℂ),
       HeckeZeroSupremum.beta+8*e ≤ s.re →
-      ‖HeckeReciprocal.reciprocal χ s‖ ≤ D*(presentationComplexity χ s.im)^ε := by
-  obtain ⟨Dp,hDp,hpbound⟩ := HeckeLogarithmicActual.primitive_reciprocal_subpower e ε he he' hε
+      ‖HeckeReciprocal.reciprocal χ s‖ ≤ D *(presentationComplexity χ s.im)^ε := by
+  pm_3547 Dp hDp hpbound HeckeLogarithmicActual.primitive_reciprocal_subpower e ε he he' hε
   obtain ⟨Cd,hCd,hreduce⟩ := HeckeDeletionReciprocal.exists_primitive_reciprocal_reduction
     (HeckeZeroSupremum.beta+8*e) ε (by linarith [HeckeZeroSupremum.half_le_beta]) hε
   refine ⟨Cd*Dp, mul_pos hCd hDp, ?_⟩
@@ -26,7 +27,7 @@ theorem reciprocal_subpower (e ε : ℝ)
   obtain ⟨ψ,hp,hn,_,hr⟩ := hreduce χ
   have hc : complexity ψ s.im ≤ complexity χ s.im := by
     unfold complexity
-    have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
+    pm_106 hn' ψ.modulus.absNorm χ.modulus.absNorm hn
     gcongr
   have hc0 : 0 ≤ complexity ψ s.im :=
     (Real.exp_pos 1).le.trans (complexity_ge_exp ψ s.im)
@@ -53,9 +54,9 @@ theorem polynomial_reciprocal_bound (χ : Character) (a : ℝ)
     have hh := min_le_right (1/2000 : ℝ) ((a-HeckeZeroSupremum.beta)/16)
     change e ≤ (a-HeckeZeroSupremum.beta)/16 at hh
     linarith
-  obtain ⟨C,hC,hbound⟩ := reciprocal_subpower e 1 he he' (by norm_num)
+  pm_5101 C hC hbound reciprocal_subpower
   let K : ℝ := C*((radical χ.modulus).absNorm : ℝ)*(2*(χ.modulus.absNorm : ℝ))
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+  pm_61 hK K
   refine ⟨18*K, by positivity, ?_⟩
   intro s hs
   have h := hbound χ s (hmargin.trans hs)

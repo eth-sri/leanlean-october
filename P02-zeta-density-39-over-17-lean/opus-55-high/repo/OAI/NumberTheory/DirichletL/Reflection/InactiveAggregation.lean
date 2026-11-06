@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalTransport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,10 +14,9 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 theorem original_pool_choice_count (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ (R Q Q₀ : Ideal Eis), R≠0 → Q≠0 →
-      (Fintype.card (FreeReflection.pool R Q Q₀→Fin 6):ℝ)^2≤C*(Ideal.absNorm (R*Q):ℝ)^ε := by
-  obtain ⟨C,hC,hbound⟩ := completed_branch_count_small_power ε hε
-  refine ⟨C,hC,?_⟩
-  intro R Q Q₀ hR hQ
+      (Fintype.card (FreeReflection.pool R Q Q₀→ Fin 6):ℝ)^2≤C*(Ideal.absNorm (R*Q):ℝ)^ε := by
+  pm_69 C hC hbound completed_branch_count_small_power ε hε
+  pm_1188 C hC R Q Q₀ hR hQ
   let (P : FreeReflection.pool R Q Q₀) : P.val.IsMaximal := FreeReflection.pool_maximal R Q Q₀ P
   have hh := hbound (R*Q) (mul_ne_zero hR hQ) (fun P : FreeReflection.pool R Q Q₀ => P.val)
     Subtype.val_injective (FreeReflection.pool_divides R Q Q₀ hR hQ)

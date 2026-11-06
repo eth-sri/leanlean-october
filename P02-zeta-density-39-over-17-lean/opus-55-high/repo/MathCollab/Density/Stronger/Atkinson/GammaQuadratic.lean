@@ -10,11 +10,11 @@ No upstream project or Architect module is imported.
 public import MathCollab.Density.Stronger.Atkinson.GammaPhase
 public import MathCollab.Density.Stronger.Atkinson.QuadraticGaussian
 public import Mathlib.Analysis.SpecialFunctions.Log.Deriv
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -74,8 +74,7 @@ theorem abs_zetaSquareGammaFrequency_linear_error_le {T r x : ℝ}
   have hlog := abs_log_shift_sub_linear_le hT0 hxT
   have hlogdiff : Real.log ((T + x) / (2 * Real.pi)) - Real.log (T / (2 * Real.pi)) =
       Real.log (T + x) - Real.log T := by
-    rw [Real.log_div ht0.ne' (mul_ne_zero two_ne_zero Real.pi_ne_zero),
-      Real.log_div hT0.ne' (mul_ne_zero two_ne_zero Real.pi_ne_zero)]
+    pm_8225 ht0.ne' hT0.ne'
     ring
   have heq : zetaSquareGammaFrequency (T + x) + Real.log (T / (2 * Real.pi)) + x / T =
       (zetaSquareGammaFrequency (T + x) + Real.log ((T + x) / (2 * Real.pi))) -
@@ -172,9 +171,8 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
       2 * r ^ 2 * (18 / T + 2 * r ^ 2 / T ^ 2) := by
   let C : ℝ := 18 / T + 2 * r ^ 2 / T ^ 2
   have hT0 : 0 < T := by linarith
-  have hC : 0 ≤ C := by dsimp [C]; positivity
-  have hphase : Continuous zetaSquareReflectedGammaPhase :=
-    continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
+  pm_61 hC C
+  pm_1233 hphase
   have hleft : Continuous (fun x : ℝ => zetaSquareReflectedGammaPhase (T + x) *
       Complex.exp (I * (v : ℂ) * x) * ((Real.exp (-(x / G) ^ 2) : ℝ) : ℂ)) := by
     fun_prop (disch := assumption)
@@ -211,7 +209,7 @@ theorem norm_integral_zetaSquareGammaPhase_sub_quadratic_le {T r G : ℝ}
   rw [uIoc_of_le (by linarith : -r ≤ r)] at hx
   have hxr : |x| ≤ r := abs_le.mpr ⟨hx.1.le, hx.2⟩
   have hp := norm_zetaSquareReflectedGammaPhase_sub_quadratic_le hT hr hxr
-  have he : ‖Complex.exp (I * (v : ℂ) * (x : ℂ))‖ = 1 := by simp [Complex.norm_exp]
+  pm_5300 he
   have hw : ‖((Real.exp (-(x / G) ^ 2) : ℝ) : ℂ)‖ ≤ 1 := by
     rw [Complex.norm_real, Real.norm_of_nonneg (Real.exp_pos _).le]
     exact Real.exp_le_one_iff.mpr (neg_nonpos.mpr (sq_nonneg _))

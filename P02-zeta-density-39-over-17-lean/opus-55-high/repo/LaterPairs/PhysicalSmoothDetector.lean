@@ -3,6 +3,7 @@ public import LaterPairs.PhysicalInitialDetector
 public import RetunedSmoothDetector
 public import RetunedInitialDetector
 public import MathCollab.Density.Stronger.SmoothDetector
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,26 +25,16 @@ theorem smoothDetector_eventually_large {σ a δ : ℝ}
         detectorX δ T/2 < (2 : ℝ)^j ∧
         (1/(24*Real.log T) : ℝ) ≤
           ‖smoothDetectorBlock ρ (detectorX δ T) (detectorY a T) j‖ := by
-  filter_upwards [eventually_ge_atTop (4 : ℝ),
-    Real.tendsto_log_atTop.eventually_ge_atTop 16,
-    log_sq_eventually_le_height, detectorTail_eventually_large_physical hw hδ hδ']
-    with T hT hlog hlogSq hdetect
+  pm_6358 detectorTail_eventually_large_physical hw
   intro ρ hβ hβ' hγ hγ' hzero
-  have hTpos : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
-  have hX : 0 ≤ detectorX δ T := Real.rpow_nonneg hTpos.le _
+  pm_34 hTpos T hT1
+  pm_7330 hX hTpos.le
   have hXT : detectorX δ T ≤ T := by
     simpa only [detectorX, Real.rpow_one] using
       Real.rpow_le_rpow_of_exponent_le hT1 (show δ ≤ 1 by linarith)
-  have hY : 1 ≤ detectorY a T := Real.one_le_rpow hT1 (smoothingExponent_pos_physical hw).le
-  have hYT : detectorY a T ≤ T := by
-    simpa only [detectorY, Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT1 (smoothingExponent_lt_one_physical hw).le
-  have hR : 1 ≤ detectorY a T*(Real.log T)^2 := by nlinarith
+  pm_5148 hY a hT1 smoothingExponent_pos_physical hw hYT smoothingExponent_lt_one_physical
   have hRT : detectorY a T*(Real.log T)^2 ≤ T^2 := by
-    calc
-      _ ≤ T*T := mul_le_mul hYT hlogSq (sq_nonneg _) hTpos.le
-      _ = _ := by ring
+    pm_6770 T hYT hlogSq sq_nonneg hTpos.le
   have htail := smoothDetectorBlock_scale_tail_le_two_rpow hT1 hlog hX hXT hY hYT
     (show 0 ≤ ρ.re by linarith [hw.sigma_low])
   have hsmall : 2*T^(-2 : ℝ) ≤ (1/4 : ℝ) := by
@@ -64,7 +55,7 @@ theorem smoothDetector_eventually_large {σ a δ : ℝ}
   calc
     (1/(24*Real.log T) : ℝ) ≤
         (1/2)/(2*(smoothScaleIndices (detectorY a T*(Real.log T)^2)).card) := by
-      apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+      pm_23
       linarith
     _ ≤ _ := hheight
 

@@ -8,6 +8,7 @@ No upstream project or Architect module is imported.
 public import Mathlib.MeasureTheory.Integral.Layercake
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,24 +30,18 @@ theorem integral_const_div_max {A M C : ℝ}
   have hlo : (∫ t in 0..A, C/max A t) = C := by
     calc
       _ = ∫ _t in 0..A, C/A := by
-        apply intervalIntegral.integral_congr
-        intro t ht
-        rw [Set.uIcc_of_le hA.le] at ht
+        pm_445 intervalIntegral.integral_congr t ht Set.uIcc_of_le hA.le
         dsimp only
-        rw [max_eq_left ht.2]
+        grind
       _ = C := by simp; field_simp
   have hhi : (∫ t in A..M, C/max A t) = C*Real.log (M/A) := by
     calc
       _ = ∫ t in A..M, C*(1/t) := by
-        apply intervalIntegral.integral_congr
-        intro t ht
-        rw [Set.uIcc_of_le hAM] at ht
+        pm_445 intervalIntegral.integral_congr t ht Set.uIcc_of_le hAM
         dsimp only
         rw [max_eq_right ht.1]
         ring
-      _ = C*Real.log (M/A) := by
-        rw [intervalIntegral.integral_const_mul,
-          integral_one_div_of_pos hA (hA.trans_le hAM)]
+      _ = C*Real.log (M/A) := by simp_all
   rw [← intervalIntegral.integral_add_adjacent_intervals
     (hcont.intervalIntegrable 0 A) (hcont.intervalIntegrable A M),hlo,hhi]
   ring

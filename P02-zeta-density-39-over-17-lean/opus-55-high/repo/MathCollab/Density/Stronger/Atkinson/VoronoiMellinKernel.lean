@@ -9,6 +9,7 @@ No upstream project or Architect module is imported.
 public import MathCollab.Density.Stronger.Atkinson.VoronoiInverseWeights
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,10 @@ noncomputable def dfiVoronoiMellinKernel
     (σ : ℝ) (g : ℝ → ℂ) (u : ℝ) : ℂ :=
   (Real.exp (-σ * u) : ℂ) * g (Real.exp (-u))
 
-theorem DFIVoronoiTestFunction.contDiff_mellinKernel
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ)
+include g hg σ
+theorem DFIVoronoiTestFunction.contDiff_mellinKernel :
     ContDiff ℝ ∞ (dfiVoronoiMellinKernel σ g) := by
   have hWeight : ContDiff ℝ ∞ (fun u : ℝ => (Real.exp (-σ * u) : ℂ)) := by
     have hInner : ContDiff ℝ ∞ (fun u : ℝ => -σ * u) :=
@@ -36,13 +39,10 @@ theorem DFIVoronoiTestFunction.contDiff_mellinKernel
     fun_prop
   exact hWeight.mul (hg.smooth.comp hArg)
 
-theorem DFIVoronoiTestFunction.hasCompactSupport_mellinKernel
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
+theorem DFIVoronoiTestFunction.hasCompactSupport_mellinKernel :
     HasCompactSupport (dfiVoronoiMellinKernel σ g) := by
   have hUpperPos : 0 < hg.upper := hg.lower_pos.trans_le hg.lower_le_upper
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (-Real.log hg.upper) (-Real.log hg.lower)))
-  intro u hu
+  pm_6843 hg.upper hg.lower
   have hgZero : g (Real.exp (-u)) = 0 := by
     by_contra hne
     have hs := hg.support_subset hne
@@ -60,6 +60,7 @@ theorem DFIVoronoiTestFunction.hasCompactSupport_mellinKernel
         exact hs.1
       linarith
   simp [dfiVoronoiMellinKernel, hgZero]
+end
 
 /-- The DFI logarithmic Mellin kernel as a Schwartz function. -/
 noncomputable def dfiVoronoiMellinKernelSchwartz
@@ -67,14 +68,15 @@ noncomputable def dfiVoronoiMellinKernelSchwartz
   (hg.hasCompactSupport_mellinKernel σ).toSchwartzMap
     (hg.contDiff_mellinKernel σ)
 
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ u : ℝ)
+include g hg σ u
 @[simp]
-theorem DFIVoronoiTestFunction.mellinKernelSchwartz_apply
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ u : ℝ) :
+theorem DFIVoronoiTestFunction.mellinKernelSchwartz_apply :
     dfiVoronoiMellinKernelSchwartz hg σ u =
       dfiVoronoiMellinKernel σ g u := rfl
 
-theorem DFIVoronoiTestFunction.mellin_eq_fourier_mellinKernel
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ u : ℝ) :
+theorem DFIVoronoiTestFunction.mellin_eq_fourier_mellinKernel :
     mellin g ((σ : ℂ) + (u : ℂ) * I) =
       𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)
         (u / (2 * Real.pi)) := by
@@ -85,38 +87,42 @@ theorem DFIVoronoiTestFunction.mellin_eq_fourier_mellinKernel
   apply congrArg (fun f : ℝ → ℂ => 𝓕 f (u / (2 * Real.pi)))
   funext v
   simp [dfiVoronoiMellinKernel]
+end
 
+set_option hygiene false in
+macro "pb_2616" : tactic => `(tactic| (
+  let F : 𝓢(ℝ, ℂ) := 𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)))
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ)
+include g hg σ
 /-- A compactly supported smooth DFI test function has an integrable Mellin
 transform on every complete vertical line.  This is the exact analytic
 hypothesis needed by Mathlib's Mellin inversion theorem. -/
-theorem DFIVoronoiTestFunction.verticalIntegrable_mellin
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
+theorem DFIVoronoiTestFunction.verticalIntegrable_mellin :
     VerticalIntegrable (mellin g) σ := by
   rw [VerticalIntegrable]
-  let F : 𝓢(ℝ, ℂ) := 𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)
-  have hFourier : Integrable (F : ℝ → ℂ) := F.integrable
+  pb_2616
+  pm_5906 hFourier Integrable F.integrable
   have hScaled : Integrable
       (fun u : ℝ =>
         𝓕 (dfiVoronoiMellinKernelSchwartz hg σ) (u / (2 * Real.pi))) := by
-    simpa [F, div_eq_mul_inv] using
-      hFourier.comp_mul_right' (show (2 * Real.pi)⁻¹ ≠ 0 by positivity)
+    pm_1588
   apply hScaled.congr
   filter_upwards with u
   exact (hg.mellin_eq_fourier_mellinKernel σ u).symm
 
 /-- Quadratic polynomial growth is integrable against the Mellin transform
 of a DFI test function on every vertical line. -/
-theorem DFIVoronoiTestFunction.integrable_sqWeight_norm_mellin
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) :
+theorem DFIVoronoiTestFunction.integrable_sqWeight_norm_mellin :
     Integrable (fun u : ℝ =>
       (1 + |u|) ^ 2 * ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖) := by
-  let F : 𝓢(ℝ, ℂ) := 𝓕 (dfiVoronoiMellinKernelSchwartz hg σ)
+  pb_2616
   let c : ℝ := 2 * Real.pi
-  have hc : 0 < c := by dsimp [c]; positivity
+  pm_64 hc c
   have hcOne : 1 ≤ c := by
     dsimp [c]
     nlinarith [Real.pi_gt_three]
-  have h0 : Integrable (fun ξ : ℝ => ‖F ξ‖) := F.integrable.norm
+  pm_7434 h0
   have h1 : Integrable (fun ξ : ℝ => |ξ| * ‖F ξ‖) := by
     simpa [Real.norm_eq_abs] using F.integrable_pow_mul volume 1
   have h2 : Integrable (fun ξ : ℝ => |ξ| ^ 2 * ‖F ξ‖) := by
@@ -157,6 +163,7 @@ theorem DFIVoronoiTestFunction.integrable_sqWeight_norm_mellin
   rw [hg.mellin_eq_fourier_mellinKernel σ u]
   simpa [F, c, mul_assoc] using
     mul_le_mul_of_nonneg_right hSq (norm_nonneg (F (u / c)))
+end
 
 
 end MathCollab.Density.Stronger.Atkinson

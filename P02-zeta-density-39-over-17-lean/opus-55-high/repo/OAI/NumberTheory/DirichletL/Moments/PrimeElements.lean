@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.PrimePool
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,22 +38,21 @@ theorem primaryPrime_data (P : Ideal O) (hp : Prime P) (hbad : P ∉ fixedBadPri
   · apply (Ideal.span_singleton_prime hn).mp
     rw [hs.1]
     infer_instance
-  · rwa [hs.1]
-  · rw [hs.1]
-    exact hg.1
-  · rw [hs.1]
-    exact hg.2
+  grind
+  aesop
+  grind
 
-theorem elementPool_card (P : Finset (Ideal O))
-    (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes) :
+section
+variable (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes)
+include P hp hbad
+theorem elementPool_card :
     (elementPool P).card = P.card := by
   apply Finset.card_image_of_injOn
   intro Q hQ R hR he
   rw [← (primaryPrime_data Q (hp Q hQ) (hbad Q hQ)).2.1,
     ← (primaryPrime_data R (hp R hR) (hbad R hR)).2.1,he]
 
-theorem elementPool_data (P : Finset (Ideal O))
-    (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes)
+theorem elementPool_data
     (p : O) (hpm : p ∈ elementPool P) :
     Prime p ∧ Ideal.span {p} ∈ P ∧
     ConcretePrimeRowBridge.goodLambda^2 ∣ p-1 ∧
@@ -62,6 +62,7 @@ theorem elementPool_data (P : Finset (Ideal O))
   obtain ⟨Q,hQ,rfl⟩ := Finset.mem_image.mp hpm
   obtain ⟨hpr,hspan,hprim,hs,hg,hc⟩ := primaryPrime_data Q (hp Q hQ) (hbad Q hQ)
   exact ⟨hpr,hspan.symm ▸ hQ,hprim,hs,hg,hc⟩
+end
 
 theorem primePool_data (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (S : Finset (Ideal O)) (hS : fixedBadPrimes ⊆ S) (a b x : ℝ)
@@ -71,13 +72,13 @@ theorem primePool_data (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
   exact ⟨((PNT.AnnularPrimeMass.mem_annularPrimeIdeals _ _ _ _ _).mp hQ).2.1,
     fun hbad => hQS (hS hbad)⟩
 
-theorem elementPool_eligible (P : Finset (Ideal O))
-    (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes)
-    (R : Ideal O) :
+section
+variable (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes) (R : Ideal O)
+include P hp hbad R
+theorem elementPool_eligible :
     (elementPool P).filter (fun p => ¬Ideal.span {p} ∣ R) =
       elementPool (eligiblePool P R) := by
-  ext p
-  simp only [elementPool,eligiblePool,Finset.mem_filter,Finset.mem_image]
+  pm_187 p elementPool eligiblePool Finset.mem_filter Finset.mem_image
   constructor
   · rintro ⟨⟨Q,hQ,rfl⟩,hnot⟩
     refine ⟨Q,⟨hQ,?_⟩,rfl⟩
@@ -86,16 +87,15 @@ theorem elementPool_eligible (P : Finset (Ideal O))
     refine ⟨⟨Q,hQ,rfl⟩,?_⟩
     rwa [(primaryPrime_data Q (hp Q hQ) (hbad Q hQ)).2.1]
 
-theorem eligible_element_card_half (P : Finset (Ideal O))
-    (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes)
-    (R : Ideal O) (hR : R ≠ 0) (Z ell B : ℝ) (hZ : 1 < Z) (hell : 0 < ell)
-    (hlower : ∀ Q ∈ P, Z^ell ≤ (Ideal.absNorm Q : ℝ))
-    (hupper : (Ideal.absNorm R : ℝ) ≤ Z^B) (hsize : 2*(B/ell) ≤ P.card) :
+theorem eligible_element_card_half (hR : R ≠ 0) (Z ell B : ℝ) (hZ : 1 < Z) (hell : 0 < ell)
+    (hlower : ∀ Q ∈ P, Z ^ell ≤ (Ideal.absNorm Q : ℝ))
+    (hupper : (Ideal.absNorm R : ℝ) ≤ Z ^B) (hsize : 2*(B/ell) ≤ P.card) :
     (P.card : ℝ)/2 ≤ ((elementPool P).filter (fun p => ¬Ideal.span {p} ∣ R)).card := by
   rw [elementPool_eligible P hp hbad R,elementPool_card (eligiblePool P R)
     (fun Q hQ => hp Q (Finset.mem_filter.mp hQ).1)
     (fun Q hQ => hbad Q (Finset.mem_filter.mp hQ).1)]
   exact eligiblePool_half P hp R hR Z ell B hZ hell hlower hupper hsize
+end
 
 end SevenEighths.CenteredMomentPrimeElements
 

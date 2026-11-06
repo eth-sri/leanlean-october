@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownSourceAverage
 public import GafniTao.FordLemma51Fibers
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ norm of the associated exponential sum.
 -/
 
 open Complex Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -66,25 +66,24 @@ noncomputable def heathBrownReducedTaylorPolynomialSum
   ∑ h ∈ Finset.Icc 1 Q,
     heathBrownPhase (heathBrownReducedTaylorPolynomial k f n h)
 
-theorem heathBrownTaylorPolynomialSum_eq_phase_mul_reduced
-    {k : ℕ} (hk : 1 ≤ k) (Q : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+section
+variable {k : ℕ} (hk : 1 ≤ k) (Q : ℕ) (f : ℝ → ℝ) (n : ℝ)
+include k hk Q f n
+theorem heathBrownTaylorPolynomialSum_eq_phase_mul_reduced :
     heathBrownTaylorPolynomialSum k Q f n =
       heathBrownPhase (f n) *
         heathBrownReducedTaylorPolynomialSum k Q f n := by
-  unfold heathBrownTaylorPolynomialSum heathBrownReducedTaylorPolynomialSum
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro h hh
+  pm_315 heathBrownTaylorPolynomialSum heathBrownReducedTaylorPolynomialSum Finset.mul_sum Finset.sum_congr h hh
   rw [← heathBrownPhase_add,
     ← heathBrownTaylorPolynomial_eq_constant_add_reduced hk]
 
 /-- Removing the constant Taylor coefficient preserves the exact norm. -/
-theorem norm_heathBrownTaylorPolynomialSum_eq_reduced
-    {k : ℕ} (hk : 1 ≤ k) (Q : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+theorem norm_heathBrownTaylorPolynomialSum_eq_reduced :
     ‖heathBrownTaylorPolynomialSum k Q f n‖ =
       ‖heathBrownReducedTaylorPolynomialSum k Q f n‖ := by
   rw [heathBrownTaylorPolynomialSum_eq_phase_mul_reduced hk, norm_mul,
     norm_heathBrownPhase, one_mul]
+end
 
 end
 

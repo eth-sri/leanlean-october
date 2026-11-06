@@ -1,9 +1,9 @@
 module
 public import ThirdWindow
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 namespace Montgomery.RationalMoment
 
@@ -11,9 +11,9 @@ namespace Montgomery.RationalMoment
 theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤ (3/4:ℝ)) :
     ThirdWindow s (85/(153*s+7)) (255*(1-s)/(153*s+7)) ((408*s-248)/((153*s+7)*(2*s-1))) := by
   have hD : 0 < 153*s+7 := by linarith
-  have hE : 0 < 2*s-1 := by linarith
+  pm_5241 hE s
   have hDn : 7+s*153 ≠ 0 := by linarith
-  have hEn : -1+s*2 ≠ 0 := by linarith
+  pm_879
   have hPn : ((-7:ℝ) + (-139:ℝ)*s + (306:ℝ)*s^2) ≠ 0 := by nlinarith only [mul_pos hD hE]
   ring_nf at hDn hEn hPn
   have hb0 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (1:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ))*x := by
@@ -32,10 +32,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (1:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ))*((408*s-248)/((153*s+7)*(2*s-1))) = ((241:ℝ) + (-547:ℝ)*s + (306:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (241:ℝ) + (-547:ℝ)*s + (306:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (1468800/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (2530620/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (1076814/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4499
       have hh : 0 ≤ (1:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ))*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb1 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (1/6:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((0:ℝ))*x := by
@@ -54,10 +51,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (1/6:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((0:ℝ))*((408*s-248)/((153*s+7)*(2*s-1))) = ((-7/6:ℝ) + (-139/6:ℝ)*s + (51:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (-7/6:ℝ) + (-139/6:ℝ)*s + (51:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (3574080/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (7371642/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (3800061/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4501
       have hh : 0 ≤ (1/6:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((0:ℝ))*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb2 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (-1:ℝ)+(3/2:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*x := by
@@ -76,10 +70,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-1:ℝ)+(3/2:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((1233/2:ℝ) + (-3667/2:ℝ)*s + (1377:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (1233/2:ℝ) + (-3667/2:ℝ)*s + (1377:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (5042880/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (10944702/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (5969295/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4502
       have hh : 0 ≤ (-1:ℝ)+(3/2:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb3 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-2:ℝ) + (2:ℝ)*s)*x := by
@@ -91,17 +82,13 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
       have hpoly : 0 ≤ (85:ℝ) + (-85:ℝ)*s := by
         have h₀ : 0 ≤ (8323200/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         have h₁ : 0 ≤ (16282260/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (7959060/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4503
       have hh : 0 ≤ (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-2:ℝ) + (2:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
       have hid : (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-2:ℝ) + (2:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((241:ℝ) + (-547:ℝ)*s + (306:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (241:ℝ) + (-547:ℝ)*s + (306:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (1468800/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (2530620/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (1076814/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4499
       have hh : 0 ≤ (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-2:ℝ) + (2:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb4 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ) + (2:ℝ)*s)*x := by
@@ -111,19 +98,15 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ) + (2:ℝ)*s)*(85/(153*s+7)) = ((985/6:ℝ) + (-425/2:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (985/6:ℝ) + (-425/2:ℝ)*s := by
-        have h₀ : 0 ≤ (2705040/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4508
         have h₁ : 0 ≤ (4499730/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (1794690/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4504
       have hh : 0 ≤ (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ) + (2:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
       have hid : (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ) + (2:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((-7/6:ℝ) + (-139/6:ℝ)*s + (51:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (-7/6:ℝ) + (-139/6:ℝ)*s + (51:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (3574080/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (7371642/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (3800061/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4501
       have hh : 0 ≤ (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ) + (2:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb5 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (-2:ℝ)+(5/2:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (8:ℝ)*s)*x := by
@@ -135,17 +118,13 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
       have hpoly : 0 ≤ (397/2:ℝ) + (-527/2:ℝ)*s := by
         have h₀ : 0 ≤ (208080/7:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         have h₁ : 0 ≤ (36414:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (46818/7:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4505
       have hh : 0 ≤ (-2:ℝ)+(5/2:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (8:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
       have hid : (-2:ℝ)+(5/2:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (8:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((1233/2:ℝ) + (-3667/2:ℝ)*s + (1377:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (1233/2:ℝ) + (-3667/2:ℝ)*s + (1377:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (5042880/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (10944702/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (5969295/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4502
       have hh : 0 ≤ (-2:ℝ)+(5/2:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (8:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb6 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (6:ℝ)*s)*x := by
@@ -155,19 +134,17 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (6:ℝ)*s)*(85/(153*s+7)) = ((-170:ℝ) + (255:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-170:ℝ) + (255:ℝ)*s := by
-        have h₀ : 0 ≤ (6866640/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4509
         have h₁ : 0 ≤ (14825700/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (7959060/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4503
       have hh : 0 ≤ (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (6:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
       have hid : (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (6:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((985:ℝ) + (-2763:ℝ)*s + (1938:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (985:ℝ) + (-2763:ℝ)*s + (1938:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (554880/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4510
         have h₁ : 0 ≤ (1536732/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (1076814/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4500
       have hh : 0 ≤ (0:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (6:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb7 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*x := by
@@ -177,16 +154,15 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*(85/(153*s+7)) = ((-545/6:ℝ) + (255/2:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-545/6:ℝ) + (255/2:ℝ)*s := by
-        have h₀ : 0 ≤ (1248480/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4511
         have h₁ : 0 ≤ (3043170/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (1794690/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4504
       have hh : 0 ≤ (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
       have hid : (-5/6:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((4457/6:ℝ) + (-13435/6:ℝ)*s + (1683:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (4457/6:ℝ) + (-13435/6:ℝ)*s + (1683:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (2660160/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4512
         have h₁ : 0 ≤ (6377754/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (3800061/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         nlinarith only [h₀,h₁,h₂]
@@ -199,16 +175,15 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-2:ℝ)+(5/2:ℝ)*(255*(1-s)/(153*s+7))+((-8:ℝ) + (12:ℝ)*s)*(85/(153*s+7)) = ((-113/2:ℝ) + (153/2:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-113/2:ℝ) + (153/2:ℝ)*s := by
-        have h₀ : 0 ≤ (0:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4514
         have h₁ : 0 ≤ (46818/7:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (46818/7:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4505
       have hh : 0 ≤ (-2:ℝ)+(5/2:ℝ)*(255*(1-s)/(153*s+7))+((-8:ℝ) + (12:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
       have hid : (-2:ℝ)+(5/2:ℝ)*(255*(1-s)/(153*s+7))+((-8:ℝ) + (12:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((2721/2:ℝ) + (-8099/2:ℝ)*s + (3009:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (2721/2:ℝ) + (-8099/2:ℝ)*s + (3009:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (4128960/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4513
         have h₁ : 0 ≤ (9950814/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (5969295/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         nlinarith only [h₀,h₁,h₂]
@@ -221,7 +196,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-1/8:ℝ)+(49/40:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (6:ℝ)*s)*(85/(153*s+7)) = ((-227/2:ℝ) + (357/2:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-227/2:ℝ) + (357/2:ℝ)*s := by
-        have h₀ : 0 ≤ (6866640/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4509
         have h₁ : 0 ≤ (14497974/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (7631334/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         nlinarith only [h₀,h₁,h₂]
@@ -230,7 +205,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-1/8:ℝ)+(49/40:ℝ)*(255*(1-s)/(153*s+7))+((-5:ℝ) + (6:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((1857/2:ℝ) + (-5147/2:ℝ)*s + (1785:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (1857/2:ℝ) + (-5147/2:ℝ)*s + (1785:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (554880/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4510
         have h₁ : 0 ≤ (1380366/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (912951/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         nlinarith only [h₀,h₁,h₂]
@@ -243,7 +218,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-23/24:ℝ)+(49/40:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*(85/(153*s+7)) = ((-103/3:ℝ) + (51:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-103/3:ℝ) + (51:ℝ)*s := by
-        have h₀ : 0 ≤ (1248480/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4511
         have h₁ : 0 ≤ (2715444/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (1466964/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         nlinarith only [h₀,h₁,h₂]
@@ -252,7 +227,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-23/24:ℝ)+(49/40:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((2059/3:ℝ) + (-6149/3:ℝ)*s + (1530:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (2059/3:ℝ) + (-6149/3:ℝ)*s + (1530:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (2660160/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4512
         have h₁ : 0 ≤ (6221388/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (3636198/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         nlinarith only [h₀,h₁,h₂]
@@ -271,10 +246,9 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-17/8:ℝ)+(109/40:ℝ)*(255*(1-s)/(153*s+7))+((-8:ℝ) + (12:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) = ((1304:ℝ) + (-3860:ℝ)*s + (2856:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (1304:ℝ) + (-3860:ℝ)*s + (2856:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (4128960/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4513
         have h₁ : 0 ≤ (9794448/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (5805432/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4506
       have hh : 0 ≤ (-17/8:ℝ)+(109/40:ℝ)*(255*(1-s)/(153*s+7))+((-8:ℝ) + (12:ℝ)*s)*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
   have hb12 (x : ℝ) (hx : (85/(153*s+7)) ≤ x) (hx' : x ≤ ((408*s-248)/((153*s+7)*(2*s-1)))) : 0 ≤ (-2:ℝ)+(4:ℝ)*(255*(1-s)/(153*s+7))+((-12:ℝ) + (16:ℝ)*s)*x := by
@@ -286,8 +260,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
       have hpoly : 0 ≤ (-14:ℝ) + (34:ℝ)*s := by
         have h₀ : 0 ≤ (4161600/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         have h₁ : 0 ≤ (8468856/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (4307256/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4507
       have hh : 0 ≤ (-2:ℝ)+(4:ℝ)*(255*(1-s)/(153*s+7))+((-12:ℝ) + (16:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
@@ -306,10 +279,9 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-2:ℝ)+(2:ℝ)*(255*(1-s)/(153*s+7))+((-9:ℝ) + (14:ℝ)*s)*(85/(153*s+7)) = ((-269:ℝ) + (374:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-269:ℝ) + (374:ℝ)*s := by
-        have h₀ : 0 ≤ (2705040/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4508
         have h₁ : 0 ≤ (7012296/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (4307256/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4507
       have hh : 0 ≤ (-2:ℝ)+(2:ℝ)*(255*(1-s)/(153*s+7))+((-9:ℝ) + (14:ℝ)*s)*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       nlinarith only [hh]
     ·
@@ -372,7 +344,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     ·
       have hid : (-1:ℝ)+(5/4:ℝ)*(255*(1-s)/(153*s+7))+((-4:ℝ) + (6:ℝ)*s)*(85/(153*s+7)) = ((-113/4:ℝ) + (153/4:ℝ)*s)/(153*s+7) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-113/4:ℝ) + (153/4:ℝ)*s := by
-        have h₀ : 0 ≤ (0:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4514
         have h₁ : 0 ≤ (23409/7:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (23409/7:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         nlinarith only [h₀,h₁,h₂]
@@ -415,8 +387,7 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
       have hpoly : 0 ≤ (503/2:ℝ) + (-663/2:ℝ)*s := by
         have h₀ : 0 ≤ (2496960/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         have h₁ : 0 ≤ (3573774/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (1076814/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4500
       have hh : 0 ≤ (-1/2:ℝ)+(1:ℝ)*(255*(1-s)/(153*s+7))+((0:ℝ))*(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     alpha_low := by
@@ -424,17 +395,13 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
       have hpoly : 0 ≤ (-163:ℝ) + (238:ℝ)*s := by
         have h₀ : 0 ≤ (4785840/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         have h₁ : 0 ≤ (10591272/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (5805432/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4506
       have hh : 0 ≤ ((408*s-248)/((153*s+7)*(2*s-1)))-(85/(153*s+7)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     alpha_high := by
       have hid : (1:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ))*((408*s-248)/((153*s+7)*(2*s-1))) = ((241:ℝ) + (-547:ℝ)*s + (306:ℝ)*s^2)/((153*s+7)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (241:ℝ) + (-547:ℝ)*s + (306:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (1468800/49:ℝ)*((3/4:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (2530620/49:ℝ)*((s-(113/153:ℝ))*((3/4:ℝ)-s)) := mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (1076814/49:ℝ)*(s-(113/153:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4499
       have hh : 0 ≤ (1:ℝ)+(0:ℝ)*(255*(1-s)/(153*s+7))+((-1:ℝ))*((408*s-248)/((153*s+7)*(2*s-1))) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     typeII := by
@@ -449,36 +416,16 @@ theorem third_window_parameters (s : ℝ) (hl : (113/153:ℝ) ≤ s) (hr : s ≤
     budgets := by
       intro x hx hx'
       dsimp only
-      have h0 := hb0 x hx hx'
-      have h1 := hb1 x hx hx'
-      have h2 := hb2 x hx hx'
-      have h3 := hb3 x hx hx'
-      have h4 := hb4 x hx hx'
-      have h5 := hb5 x hx hx'
-      have h6 := hb6 x hx hx'
-      have h7 := hb7 x hx hx'
-      have h8 := hb8 x hx hx'
-      have h9 := hb9 x hx hx'
-      have h10 := hb10 x hx hx'
-      have h11 := hb11 x hx hx'
-      have h12 := hb12 x hx hx'
-      have h13 := hb13 x hx hx'
-      have h14 := hb14 x hx hx'
+      pm_4883 h0 hb0 h1 hb1 h2 hb2 h3 hb3 h4 hb4
+      pm_4883 h5 hb5 h6 hb6 h7 hb7 h8 hb8 h9 hb9
+      pm_4883 h10 hb10 h11 hb11 h12 hb12 h13 hb13 h14 hb14
       have h15 := hb15 x hx hx'
       have h16 := hb16 x hx hx'
-      refine ⟨?_,?_,?_,?_,?_,?_,?_,?_,?_⟩
-      · unfold thirdAmplifierExponent
-        apply max_le (by nlinarith only [h0])
-        exact max_le (by nlinarith only [h1]) (by nlinarith only [h2])
-      · unfold thirdAmplifierExponent
-        apply max_le (by nlinarith only [h3])
-        exact max_le (by nlinarith only [h4]) (by nlinarith only [h5])
-      · unfold thirdAmplifierExponent
-        apply max_le (by nlinarith only [h6])
-        exact max_le (by nlinarith only [h7]) (by nlinarith only [h8])
-      · unfold thirdAmplifierExponent
-        apply max_le (by nlinarith only [h9])
-        exact max_le (by nlinarith only [h10]) (by nlinarith only [h11])
+      pm_469
+      pm_4515 h0 h1 h2
+      pm_4515 h3 h4 h5
+      pm_4515 h6 h7 h8
+      pm_4515 h9 h10 h11
       · nlinarith only [h12]
       · nlinarith only [h13]
       · nlinarith only [h14]

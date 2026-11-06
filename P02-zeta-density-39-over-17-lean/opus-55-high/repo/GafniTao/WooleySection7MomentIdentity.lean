@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleyNormalFormChange
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ inner mean by an unrelated variable.
 -/
 
 open Finset
-open scoped BigOperators ComplexConjugate
+open scoped ComplexConjugate
 
 namespace GafniTao
 
@@ -85,35 +86,12 @@ theorem wooleySourceRawMixedComplexAverage_eq_tuple
     wooley_weighted_sum_abs_pow_expand,
     Finset.sum_mul_sum]
   conv_rhs => rw [Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro leftXY hleftXY
-  apply Finset.sum_congr rfl
-  intro rightXY hrightXY
+  pm_90 Finset.sum_congr leftXY hleftXY rightXY hrightXY
   rw [wooleySource_support_tuple_pair_character,
     wooleySource_support_tuple_pair_character]
   simp only [wooleySourceMixedTupleCoefficient,
     wooleyEquation717OriginalDisplacement]
-  have hphase :
-      (∏ j, ZMod.stdAddChar
-          (alpha j * wooleySourceTuplePolynomialDisplacement
-            leftPhi q R left leftXY j)) *
-        (∏ j, ZMod.stdAddChar
-          (alpha j * wooleySourceTuplePolynomialDisplacement
-            rightPhi q S right rightXY j)) =
-      ∏ j, ZMod.stdAddChar
-        (alpha j *
-          (wooleySourceTuplePolynomialDisplacement
-              leftPhi q R left leftXY j +
-            wooleySourceTuplePolynomialDisplacement
-              rightPhi q S right rightXY j)) := by
-    rw [← Finset.prod_mul_distrib]
-    apply Finset.prod_congr rfl
-    intro j hj
-    rw [← AddChar.map_add_eq_mul]
-    congr 1
-    ring
-  rw [← hphase]
-  ring
+  pm_2831
 
 /-- The raw auxiliary sum in (7.16), with the `alpha`-dependent coefficient
 twist and the lower system both explicit. -/
@@ -185,10 +163,7 @@ theorem wooleySourceInsertedComplexAverage_eq_tuple
   unfold wooleySourceInsertedComplexAverage
   apply congrArg
     ((((((q ^ k : ℕ) : ℂ))⁻¹) * ((((qPrime ^ r : ℕ) : ℂ))⁻¹)) * ·)
-  apply Finset.sum_congr rfl
-  intro alpha halpha
-  apply Finset.sum_congr rfl
-  intro beta hbeta
+  pm_90 Finset.sum_congr alpha halpha beta hbeta
   unfold wooleySection7AuxiliaryRawSum
   unfold wooleySourcePolynomialSum
   rw [wooleySource_sum_eq_support_subtype left
@@ -200,10 +175,7 @@ theorem wooleySourceInsertedComplexAverage_eq_tuple
     wooley_weighted_sum_abs_pow_expand,
     Finset.sum_mul_sum]
   conv_rhs => rw [Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro leftXY hleftXY
-  apply Finset.sum_congr rfl
-  intro rightXY hrightXY
+  pm_90 Finset.sum_congr leftXY hleftXY rightXY hrightXY
   rw [wooleyTuplePhase_mul,
     wooleySource_support_tuple_pair_character,
     wooleySource_support_tuple_pair_character,
@@ -211,27 +183,7 @@ theorem wooleySourceInsertedComplexAverage_eq_tuple
   simp only [wooleySourceMixedTupleCoefficient,
     wooleyEquation717OriginalDisplacement,
     wooleyEquation717InsertedDisplacement]
-  have hphase :
-      (∏ j, ZMod.stdAddChar
-          (alpha j * wooleySourceTuplePolynomialDisplacement
-            leftPhi q R left leftXY j)) *
-        (∏ j, ZMod.stdAddChar
-          (alpha j * wooleySourceTuplePolynomialDisplacement
-            rightPhi q S right rightXY j)) =
-      ∏ j, ZMod.stdAddChar
-        (alpha j *
-          (wooleySourceTuplePolynomialDisplacement
-              leftPhi q R left leftXY j +
-            wooleySourceTuplePolynomialDisplacement
-              rightPhi q S right rightXY j)) := by
-    rw [← Finset.prod_mul_distrib]
-    apply Finset.prod_congr rfl
-    intro j hj
-    rw [← AddChar.map_add_eq_mul]
-    congr 1
-    ring
-  rw [← hphase]
-  ring
+  pm_2831
 
 /-- Real raw mixed average represented by the complex tuple expansion. -/
 def wooleySourceRawMixedRealAverage {k : ℕ}
@@ -355,10 +307,7 @@ theorem wooleySourceNormalizedMixedRealAverage_eq_mass_mul_raw
             ∑ alpha : Fin k → ZMod q,
               ‖wooleySourcePolynomialSum leftPhi left alpha‖ ^ (2 * R) *
                 ‖wooleySourcePolynomialSum rightPhi right alpha‖ ^ (2 * S) := by
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro alpha halpha
-    ring
+    pm_4886 alpha halpha
   rw [hsum]
   ring
 

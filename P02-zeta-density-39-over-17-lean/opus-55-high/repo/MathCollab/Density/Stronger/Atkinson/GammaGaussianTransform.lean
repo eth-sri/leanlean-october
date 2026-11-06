@@ -8,11 +8,11 @@ Only the listed proof slices are retained. Mathlib retains Apache-2.0 attributio
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.GammaQuadratic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -38,13 +38,8 @@ theorem physical_gaussian_tail_le {G r : ℝ} (hG : 0 < G) (hr : 0 ≤ r) :
     _ ≤ ∫ x in (Ioc (-r) r)ᶜ, Real.exp (-(r / G) ^ 2 / 2) * K x := by
       apply integral_mono_ae (integrable_physical_gaussian hG.ne').integrableOn
         (hK.const_mul _).integrableOn
-      filter_upwards [ae_restrict_mem measurableSet_Ioc.compl] with x hx
-      have hrx : r ≤ |x| := by
-        simp only [mem_compl_iff, mem_Ioc, not_and_or, not_lt, not_le] at hx
-        rcases hx with hx | hx
-        · exact (show r ≤ -x by linarith).trans (neg_le_abs x)
-        · exact hx.le.trans (le_abs_self x)
-      have hs : r ^ 2 ≤ x ^ 2 := by nlinarith [sq_abs x]
+      pm_426 hrx r
+      pm_8516 hs r
       dsimp only [K]
       rw [← Real.exp_add]
       apply Real.exp_le_exp.mpr
@@ -85,8 +80,7 @@ theorem norm_zetaSquareGammaGaussianIntegrand (T G v x : ℝ) :
 
 theorem integrable_zetaSquareGammaGaussianIntegrand (T v : ℝ) {G : ℝ} (hG : G ≠ 0) :
     Integrable (zetaSquareGammaGaussianIntegrand T G v) := by
-  have hc : Continuous zetaSquareReflectedGammaPhase :=
-    continuous_iff_continuousAt.mpr (fun t => (hasDerivAt_zetaSquareReflectedGammaPhase t).continuousAt)
+  pm_1233 hc
   have hf : Continuous (zetaSquareGammaGaussianIntegrand T G v) := by
     unfold zetaSquareGammaGaussianIntegrand
     fun_prop (disch := assumption)
@@ -98,7 +92,7 @@ private theorem norm_quadratic_gaussian_integrand (T v x : ℝ) {G : ℝ} (hG : 
       Complex.exp (-zetaGaussianQuadraticCoefficient T G * (x : ℂ) ^ 2)‖ =
       Real.exp (-(x / G) ^ 2) := by
   rw [norm_mul]
-  have hunit : ‖Complex.exp (I * (v : ℂ) * (x : ℂ))‖ = 1 := by simp [Complex.norm_exp]
+  pm_5300 hunit
   rw [hunit, one_mul, Complex.norm_exp]
   congr 1
   simp only [Complex.mul_re, Complex.neg_re, Complex.neg_im, ← Complex.ofReal_pow,

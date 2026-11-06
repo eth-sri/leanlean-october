@@ -1,13 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open InverseInitialProfile
@@ -20,7 +20,7 @@ private theorem finite_sum_le_tsum_subtype (F : Finset O) (P : O → Prop)
   let f : F → {h // P h} := fun h => ⟨h.val, hF h.val h.property⟩
   have hf : Function.Injective f := by
     intro x y h
-    exact Subtype.ext (congrArg (fun z : {h // P h} => z.val) h)
+    grind
   rw [← Finset.sum_coe_sort F]
   have ht : Summable (fun h : F => b h.val) := (hasSum_fintype _).summable
   simpa only [tsum_fintype] using
@@ -35,8 +35,7 @@ theorem finite_radial_tail (A : ℕ) :
     ‖∑h∈F,a h*paperRadialFourier Φ (K*‖eisEmbedding h‖^2)‖ ≤
       Γ*(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ)/
         ((min 1 K)^2*(1+T)^A) := by
-  obtain ⟨s,C,hC,hbound⟩ := paperRadialFourier_lattice_tail A
-  refine ⟨s,C,hC,?_⟩
+  pm_3085 s C hC hbound paperRadialFourier_lattice_tail A
   intro Φ K T Γ hK hT hΓ F a hF ha
   have hsum := finite_sum_le_tsum_subtype F
     (fun h => T ≤ K * ‖eisEmbedding h‖^2) hF
@@ -60,10 +59,10 @@ theorem finite_radial_tail (A : ℕ) :
 theorem physicalKernel_frequency (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
     (Z D m C d v n₁ n₂ : ℝ) (h : O) :
     physicalKernel W₁ W₂ Φ Z D m ![C,d,v,‖eisEmbedding h‖^2,n₁,n₂] =
-      ((Z^(-D)*Z^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
-      W₁ (C*v*n₁/Z^D)*W₂ (C*v*n₂/Z^D)*
-      paperRadialFourier Φ ((Z^m/(d*v^2*n₁*n₂))*‖eisEmbedding h‖^2) := by
-  simp [physicalKernel, div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm]
+      ((Z ^(-D)*Z ^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
+      W₁ (C*v*n₁/Z ^D)*W₂ (C*v*n₂/Z ^D)*
+      paperRadialFourier Φ ((Z ^m/(d*v^2*n₁*n₂))*‖eisEmbedding h‖^2) := by
+  pm_564 physicalKernel div_eq_mul_inv mul_assoc mul_left_comm mul_comm
 
 theorem physical_frequency_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
@@ -71,21 +70,20 @@ theorem physical_frequency_tail (A : ℕ) :
       (Z D m C d v n₁ n₂ T Γ : ℝ),
     0<Z → 0<d → 0<v → 0<n₁ → 0<n₂ → 0≤T → 0≤Γ →
     ∀ (F : Finset O) (a : O→ℂ),
-    (∀h∈F,T≤(Z^m/(d*v^2*n₁*n₂))*‖eisEmbedding h‖^2) →
+    (∀h∈F,T≤(Z ^m/(d*v^2*n₁*n₂))*‖eisEmbedding h‖^2) →
     (∀h∈F,‖a h‖≤Γ) →
     ‖∑h∈F,a h*physicalKernel W₁ W₂ Φ Z D m
       ![C,d,v,‖eisEmbedding h‖^2,n₁,n₂]‖ ≤
-      Γ*‖((Z^(-D)*Z^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
-        W₁ (C*v*n₁/Z^D)*W₂ (C*v*n₂/Z^D)‖ *
+      Γ*‖((Z ^(-D)*Z ^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
+        W₁ (C*v*n₁/Z ^D)*W₂ (C*v*n₂/Z ^D)‖ *
       (C₀*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ)/
-        ((min 1 (Z^m/(d*v^2*n₁*n₂)))^2*(1+T)^A) := by
-  obtain ⟨s,C₀,hC₀,hbound⟩ := finite_radial_tail A
-  refine ⟨s,C₀,hC₀,?_⟩
+        ((min 1 (Z ^m/(d*v^2*n₁*n₂)))^2*(1+T)^A) := by
+  pm_3085 s C₀ hC₀ hbound finite_radial_tail A
   intro W₁ W₂ Φ Z D m C d v n₁ n₂ T Γ hZ hd hv hn₁ hn₂ hT hΓ F a hF ha
-  let b : ℂ := ((Z^(-D)*Z^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
-        W₁ (C*v*n₁/Z^D)*W₂ (C*v*n₂/Z^D)
+  let b : ℂ := ((Z ^(-D)*Z ^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
+        W₁ (C*v*n₁/Z ^D)*W₂ (C*v*n₂/Z ^D)
   simp_rw [physicalKernel_frequency,←mul_assoc]
-  simpa only [b,←mul_assoc] using hbound Φ (Z^m/(d*v^2*n₁*n₂)) T (Γ*‖b‖) (by positivity) hT
+  simpa only [b,←mul_assoc] using hbound Φ (Z ^m/(d*v^2*n₁*n₂)) T (Γ*‖b‖) (by positivity) hT
     (by positivity) F (fun h=>a h*b) hF (by
       intro h hh
       exact (norm_mul _ _).trans_le (mul_le_mul_of_nonneg_right (ha h hh) (norm_nonneg _)))
@@ -95,12 +93,11 @@ theorem correlated_scale_lower (Y C d v n₁ n₂ L : ℝ)
     (hn₁ : 0<n₁) (hn₂ : 0<n₂) (hL : 0<L)
     (h₁ : C*v*n₁≤L) (h₂ : C*v*n₂≤L) :
     Y*C^2/(d*L^2) ≤ Y/(d*v^2*n₁*n₂) := by
-  apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+  pm_856 div_le_div_iff₀
   have hh := mul_le_mul h₁ h₂ (by positivity) hL.le
   nlinarith [mul_le_mul_of_nonneg_left hh (show 0≤Y*d by positivity)]
 
 end SevenEighths.InverseInitialHighFrequencyTail
 
-end
 
 end OAI

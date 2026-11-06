@@ -1,6 +1,7 @@
 module
 public import TraceAlternatives.UniversalQuadraticLevelCount
 public import TraceAlternatives.NativeNormalizedPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ theorem universal_native_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
         (W.card:ℝ) ≤ C*T^ε*((N:ℝ)^2*V^(-2:ℝ)+
           (N:ℝ)^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)+
           (N:ℝ)^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ)) := by
-  obtain ⟨C,D,hC,hD,hCount⟩ := universal_quadratic_level_count ε hε
+  pm_107 C D hC hD hCount universal_quadratic_level_count ε hε
   refine ⟨C,D,hC,hD,?_⟩
   intro N T V a W hN hT hNT hV hCut ha hSep hBase hLarge
   apply hCount T 0 N V hT (by exact_mod_cast hN) hNT hV hCut

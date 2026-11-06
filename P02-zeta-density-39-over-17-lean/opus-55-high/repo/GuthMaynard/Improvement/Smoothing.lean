@@ -4,7 +4,6 @@ public import GuthMaynard.Improvement.MeasureGate
 @[expose] public section
 
 /-! Mass-preserving positive smoothing and its L2 contraction. -/
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Filter
 open scoped Convolution
@@ -18,23 +17,26 @@ theorem smooth_eq_convolution (κ g : ℝ → ℝ) :
   funext x
   simp only [smooth, convolution_mul, mul_comm]
 
-theorem smooth_integrable {κ g : ℝ → ℝ} (hκ : Integrable κ) (hg : Integrable g) :
+section
+variable {κ g : ℝ → ℝ}
+include κ g
+theorem smooth_integrable (hκ : Integrable κ) (hg : Integrable g) :
     Integrable (smooth κ g) := by
   rw [smooth_eq_convolution]
   exact hg.integrable_convolution (ContinuousLinearMap.mul ℝ ℝ) hκ
 
-theorem smooth_mass {κ g : ℝ → ℝ} (hκ : Integrable κ) (hg : Integrable g)
+theorem smooth_mass (hκ : Integrable κ) (hg : Integrable g)
     (hmass : ∫ x, κ x = 1) : (∫ x, smooth κ g x) = ∫ x, g x := by
   rw [smooth_eq_convolution, integral_convolution (ContinuousLinearMap.mul ℝ ℝ) hg hκ]
-  simp [hmass]
+  simp_all
 
-theorem smooth_nonneg {κ g : ℝ → ℝ} (hκ : ∀ x, 0 ≤ κ x) (hg : ∀ x, 0 ≤ g x)
+theorem smooth_nonneg (hκ : ∀ x, 0 ≤ κ x) (hg : ∀ x, 0 ≤ g x)
     (x : ℝ) : 0 ≤ smooth κ g x := integral_nonneg (fun y => mul_nonneg (hκ _) (hg y))
 
 /-- Jensen/Cauchy–Schwarz for the actual positive mass-one convolution.
 Both product integrals are proved to exist from the bounded kernel and
 the L1 and L2 hypotheses on g. -/
-theorem smooth_square_le {κ g : ℝ → ℝ} {B : ℝ}
+theorem smooth_square_le {B : ℝ}
     (hκm : Measurable κ) (hκi : Integrable κ) (hκ0 : ∀ x, 0 ≤ κ x)
     (hκB : ∀ x, ‖κ x‖ ≤ B) (hmass : ∫ x, κ x = 1)
     (hgm : Measurable g) (hg2 : Integrable (fun x => g x ^ 2))
@@ -47,7 +49,7 @@ theorem smooth_square_le {κ g : ℝ → ℝ} {B : ℝ}
     hg2.bdd_mul hkxm.aestronglyMeasurable (Eventually.of_forall (fun y => hκB (x-y)))
   have hs1 : MemLp (fun y => Real.sqrt (κ (x - y))) 2 volume := by
     apply (memLp_two_iff_integrable_sq hkxm.sqrt.aestronglyMeasurable).2
-    simpa only [Real.sq_sqrt (hκ0 _)] using hkxi
+    simp_all
   have hs2 : MemLp (fun y => Real.sqrt (κ (x - y)) * g y) 2 volume := by
     apply (memLp_two_iff_integrable_sq (hkxm.sqrt.mul hgm).aestronglyMeasurable).2
     simpa only [Pi.mul_apply, mul_pow, Real.sq_sqrt (hκ0 _)] using hprod2
@@ -66,7 +68,7 @@ theorem smooth_square_le {κ g : ℝ → ℝ} {B : ℝ}
   have hsq := Real.sq_sqrt h02
   nlinarith [Real.sqrt_nonneg (smooth κ (fun y => g y ^ 2) x)]
 
-theorem smooth_square_integrable {κ g : ℝ → ℝ} {B : ℝ}
+theorem smooth_square_integrable {B : ℝ}
     (hκm : Measurable κ) (hκi : Integrable κ) (hκ0 : ∀ x, 0 ≤ κ x)
     (hκB : ∀ x, ‖κ x‖ ≤ B) (hmass : ∫ x, κ x = 1)
     (hgm : Measurable g) (hgi : Integrable g) (hg2 : Integrable (fun x => g x ^ 2))
@@ -79,7 +81,7 @@ theorem smooth_square_integrable {κ g : ℝ → ℝ} {B : ℝ}
 
 /-- L2 squared contraction with constant exactly one. The constant is uniform
 in all kernel scales and measurable masks satisfying the stated hypotheses. -/
-theorem smooth_l2_contraction {κ g : ℝ → ℝ} {B : ℝ}
+theorem smooth_l2_contraction {B : ℝ}
     (hκm : Measurable κ) (hκi : Integrable κ) (hκ0 : ∀ x, 0 ≤ κ x)
     (hκB : ∀ x, ‖κ x‖ ≤ B) (hmass : ∫ x, κ x = 1)
     (hgm : Measurable g) (hgi : Integrable g) (hg2 : Integrable (fun x => g x ^ 2))
@@ -90,5 +92,6 @@ theorem smooth_l2_contraction {κ g : ℝ → ℝ} {B : ℝ}
         (smooth_integrable hκi hg2)
         (smooth_square_le hκm hκi hκ0 hκB hmass hgm hg2 hg0)
     _ = ∫ x, g x ^ 2 := smooth_mass hκi hg2 hmass
+end
 
 end GuthMaynard.Improvement

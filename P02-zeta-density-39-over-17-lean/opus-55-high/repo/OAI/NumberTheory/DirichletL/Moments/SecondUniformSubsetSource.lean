@@ -51,7 +51,7 @@ lemma moment_mono {j k : ℕ} (h : j≤k) : profileMoment j≤profileMoment k :=
   apply integral_mono (columnDensity_moments _ logAnnulus_compact logAnnulus_smooth j)
     (columnDensity_moments _ logAnnulus_compact logAnnulus_smooth k)
   intro x
-  exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by linarith [norm_nonneg x]) h) (norm_nonneg _)
+  exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by simp_all) h) (norm_nonneg _)
 
 omit [DecidableEq ι] in
 lemma factor_mono {wlo whi : ℝ} {S T : Finset (ℕ×ℕ)} (hST : S⊆T)
@@ -65,7 +65,7 @@ lemma factor_mono {wlo whi : ℝ} {S T : Finset (ℕ×ℕ)} (hST : S⊆T)
   have hmn:=profileMoment_nonneg j
   have hmn':=profileMoment_nonneg k
   have hπ : (1:ℝ)≤1+2*Real.pi := by linarith [Real.pi_pos]
-  have ht : (1:ℝ)≤1+‖s.t‖ := by linarith [norm_nonneg s.t]
+  have ht : (1:ℝ)≤1+‖s.t‖ := by simp_all
   have h4 : 4*j≤4*k := Nat.mul_le_mul_left _ hjk
   have h2 : 2*j≤2*k := Nat.mul_le_mul_left _ hjk
   have hπpow:=pow_le_pow_right₀ hπ h4

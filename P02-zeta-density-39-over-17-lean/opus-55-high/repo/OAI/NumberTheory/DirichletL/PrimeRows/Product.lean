@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.Ramified
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,13 +27,13 @@ theorem unramifiedFactor_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)
   split_ifs
   · simpa using globalPrimeDefectBound_nonneg P
   · apply unramifiedClosed_open_region_bound
-    · exact_mod_cast hP
+    simp_all
     · exact actualAPhase_norm_le_one η _
     · exact idealCoeff_norm_le_one η _
     · exact idealRowHom_norm u.val _
     · exact hx
     · exact hw
-    · exact hz
+    grind
 
 theorem unramifiedProduct_multipliable (S : Finset (Ideal O)) (hS : CorrectionTail S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
@@ -42,12 +43,7 @@ theorem unramifiedProduct_multipliable (S : Finset (Ideal O)) (hS : CorrectionTa
   let B := fun P : {P : PrimeIdeal // P.val∉S} => globalPrimeDefectBound P.val
   have hB (P) : ‖F P-1‖≤B P :=
     unramifiedFactor_defect η u P.val (hS.norm_four P.val P.property) x w z hx hw hz
-  refine ⟨Complex.exp (∑' P,Complex.log (F P)),?_⟩
-  apply ((log_summable_of_defect F B hS.summable hB hS.half).of_norm.hasSum.cexp).congr
-  intro T
-  apply Finset.prod_congr rfl
-  intro P hP
-  exact Complex.exp_log (factor_ne_zero_of_defect _ ((hB P).trans (hS.half P)))
+  pm_3892
 
 end SevenEighths.ProbeHighRowFamily
 

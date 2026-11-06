@@ -1,8 +1,8 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -16,7 +16,7 @@ theorem primitive_ratio_cross_unique {a b c d : ℕ}
   have hac' : a=c := Nat.dvd_antisymm hac hca
   refine ⟨hac',?_⟩
   apply Nat.eq_of_mul_eq_mul_left ha
-  simpa only [← hac'] using he.symm
+  grind
 
 /-- Every positive point on a primitive rational ray has a unique integral
 scale. This is the actual source of ratio multiplicities. -/
@@ -26,14 +26,9 @@ theorem primitive_ratio_fiber_scale {a b n m : ℕ} (ha : 0 < a)
   have han : a ∣ n := hab.dvd_of_dvd_mul_right ⟨m,he⟩
   obtain ⟨k,hk⟩ := han
   refine ⟨k,?_,hk,?_⟩
-  · by_contra h
-    have hk0 : k=0 := by omega
-    simp [hk0] at hk
-    omega
+  grind
   · apply Nat.eq_of_mul_eq_mul_left ha
-    calc
-      a*m = n*b := he.symm
-      _ = a*(b*k) := by rw [hk]; ring
+    grind
 
 def reducedRatioFiber (X a b : ℕ) : Finset (ℕ × ℕ) :=
   ((Icc 1 X) ×ˢ (Icc 1 X)).filter (fun p => p.1*b=a*p.2)
@@ -45,32 +40,29 @@ theorem reducedRatioFiber_card {X a b : ℕ} (ha : 0 < a) (_hb : 0 < b)
     (reducedRatioFiber X a b).card ≤ X/(max a b) := by
   have hmap : ∀ p ∈ reducedRatioFiber X a b,
       p.1/a ∈ Icc 1 (X/(max a b)) := by
-    intro p hp
-    obtain ⟨hp,hcross⟩ := mem_filter.mp hp
+    pm_4584 p hp hcross
     obtain ⟨hn,hm⟩ := mem_product.mp hp
     have hpn := (mem_Icc.mp hn).1
     obtain ⟨k,hk,hnk,hmk⟩ := primitive_ratio_fiber_scale ha (by omega : 0 < p.1) hab hcross
-    have hdiv : p.1/a=k := by rw [hnk,Nat.mul_div_cancel_left _ ha]
+    have hdiv : p.1/a=k := by simp_all
     rw [hdiv,mem_Icc]
     refine ⟨hk,?_⟩
     apply (Nat.le_div_iff_mul_le (lt_of_lt_of_le ha (le_max_left _ _))).mpr
     by_cases hh : a ≤ b
-    · rw [max_eq_right hh,mul_comm]
-      simpa only [← hmk] using (mem_Icc.mp hm).2
-    · rw [max_eq_left (by omega),mul_comm]
-      simpa only [← hnk] using (mem_Icc.mp hn).2
+    grind
+    grind
   have hinj : Set.InjOn (fun p : ℕ × ℕ => p.1/a) (reducedRatioFiber X a b : Set (ℕ × ℕ)) := by
     intro p hp q hq he
     obtain ⟨hp,hpc⟩ := mem_filter.mp hp
     obtain ⟨hq,hqc⟩ := mem_filter.mp hq
     obtain ⟨kp,hkp,hpn,hpm⟩ := primitive_ratio_fiber_scale ha
-      (by have := (mem_Icc.mp (mem_product.mp hp).1).1; omega) hab hpc
+      (by grind) hab hpc
     obtain ⟨kq,hkq,hqn,hqm⟩ := primitive_ratio_fiber_scale ha
-      (by have := (mem_Icc.mp (mem_product.mp hq).1).1; omega) hab hqc
-    have hk : kp=kq := by simpa [hpn,hqn,Nat.mul_div_cancel_left _ ha] using he
-    exact Prod.ext (by rw [hpn,hqn,hk]) (by rw [hpm,hqm,hk])
+      (by grind) hab hqc
+    have hk : kp=kq := by simp_all
+    grind
   have hc := card_le_card_of_injOn (fun p : ℕ × ℕ => p.1/a) hmap hinj
-  simpa using hc
+  simp_all
 
 /-- A one-unit gap between positive cross-products gives logarithmic
 spacing at the reciprocal square height, without a ratio-band premise. -/
@@ -82,7 +74,7 @@ theorem log_cross_gap {p q Y : ℝ} (hq : 0 < q) (hgap : q+1 ≤ p)
   have hgap' : p⁻¹ ≤ 1-q/p := by
     have hh : 1 ≤ p-q := by linarith
     have hd : 1/p ≤ (p-q)/p := (div_le_div_iff_of_pos_right hp).mpr hh
-    simpa only [one_div,sub_div,div_self hp.ne'] using hd
+    grind
   calc
     (Y^2)⁻¹ ≤ p⁻¹ := by simpa only [one_div] using one_div_le_one_div_of_le hp hpY
     _ ≤ _ := hgap'.trans (by linarith)
@@ -106,8 +98,8 @@ theorem primitive_log_ratio_separated {a b c d : ℕ} {Y : ℝ}
     ring
   rw [heq]
   have hY : 0 ≤ Y := (show 0 ≤ (a:ℝ) by positivity).trans haY
-  have hadY : (a:ℝ)*d ≤ Y^2 := by nlinarith [mul_le_mul haY hdY (by positivity : 0 ≤ (d:ℝ)) hY]
-  have hcbY : (c:ℝ)*b ≤ Y^2 := by nlinarith [mul_le_mul hcY hbY (by positivity : 0 ≤ (b:ℝ)) hY]
+  pm_7027 hadY a d haY hdY
+  pm_7027 hcbY c b hcY hbY
   rcases lt_or_gt_of_ne hcross with h | h
   · have hg : (a:ℝ)*d+1 ≤ (c:ℝ)*b := by exact_mod_cast (show a*d+1 ≤ c*b by omega)
     have hh := log_cross_gap (by positivity : 0 < (a:ℝ)*d) hg hcbY
@@ -115,14 +107,16 @@ theorem primitive_log_ratio_separated {a b c d : ℕ} {Y : ℝ}
   · have hg : (c:ℝ)*b+1 ≤ (a:ℝ)*d := by exact_mod_cast (show c*b+1 ≤ a*d by omega)
     exact (log_cross_gap (by positivity : 0 < (c:ℝ)*b) hg hadY).trans (le_abs_self _)
 
+section
+variable (S : Finset (ℕ × ℕ))
+include S
 /-- Even without primitivity, at most 2q positive pairs have height q. -/
-theorem positive_height_shell_card (S : Finset (ℕ × ℕ))
+theorem positive_height_shell_card
     (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2) (q : ℕ) :
     (S.filter (fun p => max p.1 p.2=q)).card ≤ 2*q := by
   have hsub : S.filter (fun p => max p.1 p.2=q) ⊆
       ({q} ×ˢ Icc 1 q) ∪ (Icc 1 q ×ˢ {q}) := by
-    intro p hp
-    obtain ⟨hp,hpq⟩ := mem_filter.mp hp
+    pm_4584 p hp hpq
     obtain ⟨hp1,hp2⟩ := hpos p hp
     have hp1q : p.1 ≤ q := (le_max_left _ _).trans_eq hpq
     have hp2q : p.2 ≤ q := (le_max_right _ _).trans_eq hpq
@@ -134,7 +128,7 @@ theorem positive_height_shell_card (S : Finset (ℕ × ℕ))
 
 /-- The actual squared ratio-weight budget follows just from the integral
 ray multiplicity upper bound; no coprime counting asymptotic is needed. -/
-theorem positive_ratio_square_weight (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ}
+theorem positive_ratio_square_weight {Y : ℕ} {X : ℝ}
     (hX : 0 ≤ X) (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2)
     (hY : ∀ p ∈ S, max p.1 p.2 ≤ Y) (w : ℕ × ℕ → ℝ)
     (hw0 : ∀ p ∈ S, 0 ≤ w p)
@@ -148,12 +142,11 @@ theorem positive_ratio_square_weight (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : �
     _ ≤ ∑ q ∈ Icc 1 Y, 2*X^2/(q:ℝ) := by
       apply sum_le_sum
       intro q hq
-      have hqpos : (0:ℝ) < q := by exact_mod_cast (mem_Icc.mp hq).1
+      pm_5253 hqpos mem_Icc.mp
       calc
         _ ≤ ∑ p ∈ S.filter (fun p => max p.1 p.2=q), (X/(q:ℝ))^2 := by
           apply sum_le_sum
-          intro p hp
-          obtain ⟨hp,he⟩ := mem_filter.mp hp
+          pm_4584 p hp he
           exact (sq_le_sq₀ (hw0 p hp) (div_nonneg hX hqpos.le)).mpr (by simpa only [he] using hw p hp)
         _ = ((S.filter (fun p => max p.1 p.2=q)).card:ℝ)*(X/(q:ℝ))^2 := by simp
         _ ≤ (2*(q:ℝ))*(X/(q:ℝ))^2 := by
@@ -163,13 +156,10 @@ theorem positive_ratio_square_weight (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : �
     _ = _ := by
       rw [harmonic_eq_sum_Icc]
       push_cast
-      rw [mul_sum]
-      apply sum_congr rfl
-      intro q _
-      simp only [div_eq_mul_inv]
+      pm_8413 q div_eq_mul_inv
 
 /-- Explicit logarithmic form of the square multiplicity budget. -/
-theorem positive_ratio_square_weight_log (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ}
+theorem positive_ratio_square_weight_log {Y : ℕ} {X : ℝ}
     (hX : 0 ≤ X) (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2)
     (hY : ∀ p ∈ S, max p.1 p.2 ≤ Y) (w : ℕ × ℕ → ℝ)
     (hw0 : ∀ p ∈ S, 0 ≤ w p)
@@ -177,5 +167,6 @@ theorem positive_ratio_square_weight_log (S : Finset (ℕ × ℕ)) {Y : ℕ} {X 
     (∑ p ∈ S, (w p)^2) ≤ 2*X^2*(1+Real.log Y) :=
   (positive_ratio_square_weight S hX hpos hY w hw0 hw).trans
     (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Y) (by positivity))
+end
 
 end GuthMaynard.Improvement

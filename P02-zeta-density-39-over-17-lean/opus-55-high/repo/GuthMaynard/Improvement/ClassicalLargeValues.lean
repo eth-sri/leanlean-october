@@ -3,9 +3,9 @@ public import GuthMaynard.Improvement.SeparatedSecondMoment
 public import GuthMaynard.Improvement.RealIntegerSource
 public import GuthMaynard.Improvement.ReflectionNearRow
 public import MathCollab.Density.LargeValues
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 namespace GuthMaynard.Improvement
@@ -31,11 +31,11 @@ theorem classical_old_budget {M N T V : ℝ} (hM : 0 ≤ M) (hMN : M ≤ N)
     M^2/(V/2)^2+M^3*Real.sqrt T/(V/2)^4 ≤ 20*classicalLargeValueBudget N T V := by
   have hN : 0 ≤ N := hM.trans hMN
   have hA : 0 ≤ N^2/V^2 := by positivity
-  have hB : 0 ≤ T*N^4/V^6 := by positivity
+  pm_5225 hB T N V
   have hc := classical_cross_budget hN hT hV
   calc
     _ ≤ N^2/(V/2)^2+N^3*Real.sqrt T/(V/2)^4 := by gcongr
-    _ = 4*(N^2/V^2)+16*(N^3*Real.sqrt T/V^4) := by field_simp; ring
+    _ = 4*(N^2/V^2)+16*(N^3*Real.sqrt T/V^4) := by grind
     _ ≤ _ := by unfold classicalLargeValueBudget at *; nlinarith
 
 /-- For N>=8, the stronger interval range N<=T<=N² meets the audited integer scale condition. -/
@@ -51,7 +51,7 @@ theorem classical_floor_scale {N T : ℝ} (hN : 8 ≤ N) (hNT : N ≤ T) (hTN : 
   have he : ((⌊N⌋₊:ℝ)^3)^(1/3:ℝ)=(⌊N⌋₊:ℝ) := by
     rw [← Real.rpow_natCast,← Real.rpow_mul hm0]
     norm_num
-  exact ⟨he ▸ hh,hhi.trans hNT⟩
+  grind
 
 /-- Logarithmic loss absorbed by a fixed positive power. -/
 theorem classical_log_budget {N δ : ℝ} (hN : 1 ≤ N) (hδ : 0 < δ) :
@@ -59,8 +59,8 @@ theorem classical_log_budget {N δ : ℝ} (hN : 1 ≤ N) (hδ : 0 < δ) :
   have hn : 0 < N := by linarith
   rw [Real.log_mul (by norm_num) hn.ne']
   have hlog := Real.log_le_rpow_div hn.le hδ
-  have hpow : 1 ≤ N^δ := Real.one_le_rpow hN hδ.le
-  have hm := mul_le_mul_of_nonneg_left hpow (Real.log_nonneg (by norm_num : (1:ℝ) ≤ 2))
+  pm_153 hpow N δ hN hδ.le
+  pm_8640 hm mul_le_mul_of_nonneg_left hpow
   have he : N^δ/δ=(1/δ)*N^δ := by ring
   rw [he] at hlog
   nlinarith
@@ -75,13 +75,11 @@ theorem classical_low_scalar {ε N T V R : ℝ} (hε : 0 < ε) (hN : 2 ≤ N)
   have hv4 : V^4 ≤ 16^4*N^(3+ε/2:ℝ) := by
     have hh := pow_le_pow_left₀ hV.le hlow 4
     have he : (N^(3/4+ε/8:ℝ))^4=N^(3+ε/2:ℝ) := by
-      rw [← Real.rpow_natCast,← Real.rpow_mul hN0.le]
-      congr 1
-      norm_num
+      pm_6156 hN0.le
       ring
     simpa only [mul_pow,he] using hh
   have hlog := classical_log_budget (show 1 ≤ N by linarith) (show 0 < ε/2 by linarith)
-  have hlog0 : 0 ≤ Real.log (2*N) := Real.log_nonneg (by linarith)
+  pm_233 hlog0 N
   have hpow : N^(3+ε/2:ℝ)*N^(ε/2:ℝ)*N=N^ε*N^4 := by
     rw [← Real.rpow_add hN0,show (3+ε/2)+(ε/2)=ε+3 by ring,Real.rpow_add hN0,
       Real.rpow_ofNat]
@@ -114,12 +112,11 @@ theorem classical_large_values {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨C₁,hC₁,hold⟩ := MathCollab.Density.large_values
     (κ := ε/8) (ε := ε/2) (by positivity) (by positivity)
   let C₀ := 204*16^4*(Real.log 2+1/(ε/2))
-  have hC₀ : 0 < C₀ := by dsimp [C₀]; positivity
+  pm_64 hC₀ C₀
   refine ⟨C₀+20*C₁,by positivity,?_⟩
   intro N T V t₀ hN hNT hTN hV a W ha hW hsep hlarge
-  have hN0 : 0 < N := by linarith
-  have hT : 0 ≤ T := by linarith
-  have hb : 0 ≤ classicalLargeValueBudget N T V := by unfold classicalLargeValueBudget; positivity
+  pm_254 hN0 N hT T
+  pm_5538 hb classicalLargeValueBudget N T V
   change (W.card:ℝ) ≤ (C₀+20*C₁)*N^ε*classicalLargeValueBudget N T V
   by_cases hne : W.Nonempty
   · by_cases hlow : V ≤ 16*N^(3/4+ε/8:ℝ)

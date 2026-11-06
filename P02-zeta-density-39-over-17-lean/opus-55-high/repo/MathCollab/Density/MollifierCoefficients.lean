@@ -21,27 +21,34 @@ def zetaMollifier (X : ℝ) (s : ℂ) : ℂ :=
 def mollifierCoefficient (X : ℝ) (n : ℕ) : ℤ :=
   ∑ d ∈ n.divisors with d ≤ ⌊X⌋₊, ArithmeticFunction.moebius d
 
-theorem mollifierCoefficient_eq_full {X : ℝ} {n : ℕ} (hn : (n : ℝ) ≤ X) :
+section
+variable {X : ℝ}
+include X
+theorem mollifierCoefficient_eq_full {n : ℕ} (hn : (n : ℝ) ≤ X) :
     mollifierCoefficient X n = ∑ d ∈ n.divisors, ArithmeticFunction.moebius d := by
   unfold mollifierCoefficient
   rw [Finset.filter_eq_self.mpr]
   intro d hd
   exact (Nat.divisor_le hd).trans (Nat.le_floor hn)
 
-theorem mollifierCoefficient_one {X : ℝ} (hX : 1 ≤ X) :
+theorem mollifierCoefficient_one (hX : 1 ≤ X) :
     mollifierCoefficient X 1 = 1 := by
-  rw [mollifierCoefficient_eq_full (by simpa using hX)]
+  rw [mollifierCoefficient_eq_full (by grind)]
   simp
 
-theorem mollifierCoefficient_vanishes {X : ℝ} {n : ℕ} (hn : 2 ≤ n) (hnX : (n : ℝ) ≤ X) :
+theorem mollifierCoefficient_vanishes {n : ℕ} (hn : 2 ≤ n) (hnX : (n : ℝ) ≤ X) :
     mollifierCoefficient X n = 0 := by
   rw [mollifierCoefficient_eq_full hnX]
   have he := congrArg (fun f : ArithmeticFunction ℤ => f n)
     ArithmeticFunction.coe_zeta_mul_moebius
   simpa only [ArithmeticFunction.coe_zeta_mul_apply, ArithmeticFunction.one_apply,
     ite_eq_right (show n ≠ 1 by omega)] using he
+end
 
-theorem mollifierCoefficient_abs_le (X : ℝ) (n : ℕ) :
+section
+variable (X : ℝ) (n : ℕ)
+include X n
+theorem mollifierCoefficient_abs_le :
     |mollifierCoefficient X n| ≤ (n.divisors.card : ℤ) := by
   unfold mollifierCoefficient
   calc
@@ -50,12 +57,13 @@ theorem mollifierCoefficient_abs_le (X : ℝ) (n : ℕ) :
     _ ≤ ∑ _d ∈ n.divisors with _d ≤ ⌊X⌋₊, (1 : ℤ) :=
       Finset.sum_le_sum fun _ _ => ArithmeticFunction.abs_moebius_le_one
     _ = ((n.divisors.filter (fun d => d ≤ ⌊X⌋₊)).card : ℤ) := by simp
-    _ ≤ (n.divisors.card : ℤ) := by exact_mod_cast Finset.card_filter_le n.divisors _
+    _ ≤ (n.divisors.card : ℤ) := by grind
 
-theorem mollifierCoefficient_norm_le (X : ℝ) (n : ℕ) :
+theorem mollifierCoefficient_norm_le :
     ‖(mollifierCoefficient X n : ℂ)‖ ≤ (n.divisors.card : ℝ) := by
   have h := mollifierCoefficient_abs_le X n
   rw [Complex.norm_intCast]
   exact_mod_cast h
+end
 
 end MathCollab.Density

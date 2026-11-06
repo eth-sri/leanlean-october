@@ -2,6 +2,7 @@ module
 public import GafniTao.WooleySourceBoxing
 public import GafniTao.WooleyPolynomialBasic
 public import GafniTao.WooleyNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -49,10 +50,7 @@ theorem wooleySourcePolynomial_equation_3_10
         wooleySourcePolynomialConditionedMean
           (wooleyTriangular k) (p ^ B) (p ^ (B ⌈/⌉ k)) phi gamma := by
   have hs : 1 ≤ wooleyTriangular k := by
-    unfold wooleyTriangular
-    have hkpos : 0 < k := by omega
-    have htwo : 2 ≤ k * (k + 1) := by nlinarith
-    omega
+    pm_2832
   rw [wooleySourcePolynomialMean_eq_boxed,
     wooleySourcePolynomialConditionedMean_eq_boxed]
   exact wooleyPolynomial_equation_3_10
@@ -60,28 +58,27 @@ theorem wooleySourcePolynomial_equation_3_10
       (wooleyBoxedPolynomialSystem phi gamma)
         (wooleySourceBoxCoefficients gamma) hs
 
+section
+variable {k p : ℕ} [NeZero p]
+include k p
 /-- Equation (3.10) makes the set of uniform exponents nonempty. -/
-theorem wooley_uniformExponentBound_trivial
-    {k p : ℕ} [NeZero p] (hk : 1 ≤ k) :
+theorem wooley_uniformExponentBound_trivial (hk : 1 ≤ k) :
     WooleyUniformExponentBoundAt k p (wooleyTriangular k : ℝ) := by
   intro tau htau
   refine ⟨1, by norm_num, 0, ?_⟩
   intro B phi gamma hB hphi hgamma
   have h310 := wooleySourcePolynomial_equation_3_10
     (k := k) (p := p) (B := B) phi gamma hk
-  simpa only [one_mul, Real.rpow_natCast] using h310
+  simp_all
 
 /-- Uniform exponent bounds are upward closed. -/
-theorem WooleyUniformExponentBoundAt.mono
-    {k p : ℕ} [NeZero p] {Lambda Lambda' : ℝ}
+theorem WooleyUniformExponentBoundAt.mono {Lambda Lambda' : ℝ}
     (h : WooleyUniformExponentBoundAt k p Lambda)
     (hLambda : Lambda ≤ Lambda') :
     WooleyUniformExponentBoundAt k p Lambda' := by
   intro tau htau
   obtain ⟨C, hC, B0, hbound⟩ := h tau htau
-  refine ⟨C, hC, B0, ?_⟩
-  intro B phi gamma hB hphi hgamma
-  have hold := hbound B phi gamma hB hphi hgamma
+  pm_922
   have hp : 1 ≤ p := Nat.one_le_iff_ne_zero.mpr (NeZero.ne p)
   have hbase : (1 : ℝ) ≤ ((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) := by
     exact_mod_cast (Nat.one_le_pow (B ⌈/⌉ k) p hp)
@@ -97,6 +94,7 @@ theorem WooleyUniformExponentBoundAt.mono
     simpa only [mul_assoc] using
       mul_le_mul_of_nonneg_left
         (mul_le_mul_of_nonneg_right hpow hmean0) hC.le)
+end
 
 /-- The set used to define the nonnegative critical exponent. -/
 def wooleyUniformExponentSet (k p : ℕ) [NeZero p] : Set ℝ :=
@@ -120,16 +118,17 @@ theorem wooleyUniformExponentSet_bddBelow
   intro Lambda hLambda
   exact hLambda.1
 
-theorem wooleyCriticalExponent_nonneg
-    {k p : ℕ} [NeZero p] (hk : 1 ≤ k) :
+section
+variable {k p : ℕ} [NeZero p] (hk : 1 ≤ k)
+include k p hk
+theorem wooleyCriticalExponent_nonneg :
     0 ≤ wooleyCriticalExponent k p := by
   unfold wooleyCriticalExponent
   apply le_csInf (wooleyUniformExponentSet_nonempty hk)
   intro Lambda hLambda
   exact hLambda.1
 
-theorem wooleyCriticalExponent_le_triangular
-    {k p : ℕ} [NeZero p] (hk : 1 ≤ k) :
+theorem wooleyCriticalExponent_le_triangular :
     wooleyCriticalExponent k p ≤ (wooleyTriangular k : ℝ) := by
   unfold wooleyCriticalExponent
   exact csInf_le (wooleyUniformExponentSet_bddBelow k p)
@@ -138,7 +137,6 @@ theorem wooleyCriticalExponent_le_triangular
 /-- Every exponent strictly above the critical exponent supplies the
 literal uniform eventual estimate. -/
 theorem wooley_uniformExponentBound_above_critical
-    {k p : ℕ} [NeZero p] (hk : 1 ≤ k)
     {Lambda : ℝ} (hLambda : wooleyCriticalExponent k p < Lambda) :
     WooleyUniformExponentBoundAt k p Lambda := by
   have hsetNonempty := wooleyUniformExponentSet_nonempty (k := k) (p := p) hk
@@ -146,6 +144,7 @@ theorem wooley_uniformExponentBound_above_critical
   obtain ⟨x, hx, hxlt⟩ :=
     (csInf_lt_iff hsetBdd hsetNonempty).mp hLambda
   exact hx.2.mono hxlt.le
+end
 
 /-- Below the critical exponent, a fixed constant and starting scale can
 always be defeated by an actual source system and coefficient sequence. -/
@@ -165,8 +164,7 @@ theorem WooleyPolynomialSystem.InPhiTau.mono
     {k p B : ℕ} {phi : WooleyPolynomialSystem k} {tau tau' : ℝ}
     (hphi : phi.InPhiTau p B tau) (htau' : tau' ≤ tau) :
     phi.InPhiTau p B tau' := by
-  obtain ⟨c, hc, hscale⟩ := hphi
-  refine ⟨c, hc, ?_⟩
+  pm_157 c hc hscale hphi
   exact (mul_le_mul_of_nonneg_right htau' (Nat.cast_nonneg B)).trans hscale
 
 /-- Operational source form of equations (6.2)--(6.3): if the critical
@@ -195,8 +193,7 @@ theorem wooley_arbitrarilyLarge_counterexamples
   have hnot := wooley_counterexample_below_critical hnonneg hbelow
   unfold WooleyUniformExponentBoundAt at hnot
   push Not at hnot
-  obtain ⟨tau, htau, hfail⟩ := hnot
-  refine ⟨tau, htau, ?_⟩
+  pm_157 tau htau hfail hnot
   intro C hC B0
   obtain ⟨B, phi, gamma, hB, hphi, hgamma, hstrict⟩ :=
     hfail C hC B0

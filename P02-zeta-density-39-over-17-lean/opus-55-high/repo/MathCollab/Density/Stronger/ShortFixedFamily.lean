@@ -3,12 +3,12 @@ public import MathCollab.Density.Stronger.SmoothDetector
 public import MathCollab.Density.Stronger.SmoothShortBlock
 public import MathCollab.Density.Stronger.FiniteConvolution
 public import MathCollab.Density.Stronger.PowerScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex Set Filter
-open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
+open Complex Filter
+open scoped Topology ComplexConjugate
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -44,12 +44,10 @@ theorem smoothHalfScale_bounds {j : ℤ} (hj : 0 < j) {e : ℕ} (he : e < 2) :
   have hz := smoothHalfScale_zero_eq hj
   have h1 := smoothHalfScale_one_eq j
   have hp : (0 : ℝ) < smoothHalfScale j 0 := by exact_mod_cast smoothHalfScale_pos j 0
-  have hh : e = 0 ∨ e = 1 := by omega
+  pm_7057 hh e
   rcases hh with rfl | rfl
-  · constructor <;> linarith
-  · rw [h1]
-    push_cast
-    constructor <;> linarith
+  grind
+  simp_all
 
 /-- The actual original smooth block yields a beta-independent Taylor member.
 The original smooth scale 2^j is kept in the coefficient, including e=0. -/
@@ -78,7 +76,7 @@ theorem exists_smoothBlock_Taylor_member {ρ : ℂ} {X Y T D : ℝ} {j : ℤ}
   obtain ⟨e, he, rfl⟩ := he
   have hhalf : 1/(2*D) ≤
       ‖genericBlock ρ (smoothShortCoefficient X Y ((2 : ℝ)^j)) (smoothHalfScale j e)‖ := by
-    have hh := div_le_div_of_nonneg_right hblock (by norm_num : (0 : ℝ) ≤ 2)
+    pm_4290 hh div_le_div_of_nonneg_right hblock
     exact (show 1/(2*D) = (1/D)/2 by ring).trans_le (hh.trans hb)
   obtain ⟨r, hr, hb⟩ := exists_smoothShortTaylor_component X ((2 : ℝ)^j) hY hT
     (smoothHalfScale_pos j e) ((smoothHalfScale_bounds hj (Finset.mem_range.mp he)).2.trans hN)
@@ -115,11 +113,11 @@ theorem smoothTaylorArithmetic_LSeries (X Y : ℝ) (j : ℤ) (e r : ℕ) (s : �
   rw [LSeries, tsum_eq_sum (s := Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e))]
   · apply Finset.sum_congr rfl
     intro n hn
-    rw [LSeries.term_def₀ (smoothTaylorArithmetic X Y j e r).map_zero]
+    pm_7552
     change (if n ∈ Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e) then _ else 0) * _ = _
     rw [ite_eq_left hn]
   · intro n hn
-    rw [LSeries.term_def₀ (smoothTaylorArithmetic X Y j e r).map_zero]
+    pm_7552
     change (if n ∈ Finset.Ioc (smoothHalfScale j e) (2*smoothHalfScale j e) then _ else 0) * _ = 0
     rw [ite_eq_right hn, zero_mul]
 

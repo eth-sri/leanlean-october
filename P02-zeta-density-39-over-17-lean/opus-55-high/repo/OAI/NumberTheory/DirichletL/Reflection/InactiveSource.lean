@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveRows
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedTuples
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,8 +14,10 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-lemma supported_inactive_sum_eq (rows : Finset (Ideal Eis))
-    (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→Ideal Eis)
+section
+variable (rows : Finset (Ideal Eis)) (L : σ→ Finset (Ideal Eis)) (T : Finset σ) (F : φ→ Ideal Eis)
+include rows L T F
+lemma supported_inactive_sum_eq
     (K : rows) (w : ∀ i,L i→ℂ)
     (f : supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val→ℂ) :
     (∑ b : supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val,
@@ -24,8 +27,7 @@ lemma supported_inactive_sum_eq (rows : Finset (Ideal Eis))
         (if hk:K.val∈inactiveRowSet rows L T F b then f ⟨b,(Finset.mem_filter.mp hk).2⟩ else 0) := by
   let ok := fun b : ∀ i : {i // i∉T},L i.val =>
     IsCoprime K.val (∏ i : {i // i∉T},(b i).val) ∧ ∀ j i,(b i).val≠F j
-  let wt := fun b : ∀ i : {i // i∉T},L i.val =>
-    (∏ i : {i // i∉T},(Ideal.absNorm (b i).val:ℂ)⁻¹)*(∏ i : {i // i∉T},w i.val (b i))
+  pm_3291
   have he := sum_subtype_dite_decidable ok (fun b hb => wt b*f ⟨b,hb⟩)
   change (∑ b : supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val,wt b.val*f b)=_
   calc
@@ -39,8 +41,7 @@ lemma supported_inactive_sum_eq (rows : Finset (Ideal Eis))
       · have hk : K.val∉inactiveRowSet rows L T F b := fun h => hc (Finset.mem_filter.mp h).2
         simp only [dite_eq_right hc,dite_eq_right hk,mul_zero]
 
-theorem supported_inactive_source_energy (rows : Finset (Ideal Eis))
-    (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→Ideal Eis) (H : σ→ℝ)
+theorem supported_inactive_source_energy (H : σ→ℝ)
     (hzero : ∀ i,∀ P∈L i,P≠0) (hH : ∀ i,∀ P∈L i,(Ideal.absNorm P:ℝ)≤H i)
     (w : ∀ i,L i→ℂ) (hw : ∀ i P,‖w i P‖≤1)
     (f : ∀ K : rows,supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val→ℂ)
@@ -64,6 +65,7 @@ theorem supported_inactive_source_energy (rows : Finset (Ideal Eis))
     intro K hK
     rw [supported_inactive_sum_eq rows L T F K w (f K)]
   exact hh.trans_le he
+end
 end
 end SevenEighths.InverseReflectedPhase
 

@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Grid
 public import OAI.NumberTheory.DirichletL.Descent.DivisorExtraction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -37,25 +38,24 @@ theorem sum_quotientGridSupport {A : Type*} [AddCommMonoid A]
     (∑ u ∈ T, if r ∣ u.2 then f u else 0) =
       ∑ u ∈ quotientGridSupport r T, f (u.1, r * u.2) := by
   rw [← Finset.sum_filter, quotientGridSupport, Finset.sum_image]
-  · apply Finset.sum_congr rfl
-    intro u hu
-    rw [idealQuotient_mul (Finset.mem_filter.mp hu).2]
+  pm_8851 u hu
   · intro u hu v hv he
     apply Prod.ext
     · simpa only using congrArg Prod.fst he
     · exact idealQuotient_injective_on r (Finset.mem_filter.mp hu).2
         (Finset.mem_filter.mp hv).2 (congrArg Prod.snd he)
 
-theorem quotientGridSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
-    (D : Finset HybridColumnData) (p : Ideal Eis × Ideal Eis) (c : Ideal Eis)
+section
+variable (r : Ideal Eis) (hr : r ≠ 0) (D : Finset HybridColumnData)
+include r hr D
+theorem quotientGridSupport_origin (p : Ideal Eis × Ideal Eis) (c : Ideal Eis)
     (hu : (p, c) ∈ quotientGridSupport r (hybridGridSupport D)) :
     ∃ d ∈ D, (d.residualN, d.residualB) = p ∧ d.common = r * c := by
   have hm := (mem_quotientGridSupport r hr (hybridGridSupport D) p c).mp hu
   obtain ⟨d, hd, he⟩ := Finset.mem_image.mp hm
   exact ⟨d, hd, congrArg Prod.fst he, congrArg Prod.snd he⟩
 
-theorem quotientGridCommonSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
-    (D : Finset HybridColumnData) (m c : Ideal Eis)
+theorem quotientGridCommonSupport_origin (m c : Ideal Eis)
     (hc : c ∈ gridCommonSupport (quotientGridSupport r (hybridGridSupport D)) m) :
     ∃ d ∈ D, d.residualN = m ∧ d.common = r * c := by
   obtain ⟨u, hu, he⟩ := Finset.mem_image.mp hc
@@ -63,6 +63,7 @@ theorem quotientGridCommonSupport_origin (r : Ideal Eis) (hr : r ≠ 0)
   obtain ⟨d, hd, hp, hdc⟩ := quotientGridSupport_origin r hr D u.1 u.2 huQ
   refine ⟨d, hd, (congrArg Prod.fst hp).trans hum, ?_⟩
   simpa only [he] using hdc
+end
 
 def extractedGridCoefficient (T : Grid) (R t : Ideal Eis)
     (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ) (c m h : Ideal Eis) : ℂ :=
@@ -87,19 +88,16 @@ def gridDivisorHybridBlock (T : Grid) (Pset : Finset (Ideal Eis))
         (if IsCoprime P (u.1.2 * t) then 1 else 0)
     else 0 else 0
 
-theorem gridDivisorHybridBlock_eq_zero_of_quotientGrid_empty
-    (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k R r : Ideal Eis) (hQ : quotientGridSupport r T = ∅) :
+section
+variable (T : Grid) (Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ) (t k R r : Ideal Eis)
+include T Pset a beta t k R r
+theorem gridDivisorHybridBlock_eq_zero_of_quotientGrid_empty (hQ : quotientGridSupport r T = ∅) :
     gridDivisorHybridBlock T Pset a beta t k R r = 0 := by
   unfold gridDivisorHybridBlock
   rw [sum_quotientGridSupport, hQ]
   exact Finset.sum_empty
 
-theorem gridDivisorHybridBlock_extract
-    (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
-    (t k R r : Ideal Eis) (hR : R ≠ 0) (hr : r ≠ 0)
+theorem gridDivisorHybridBlock_extract (hR : R ≠ 0) (hr : r ≠ 0)
     (hk : Admissible ((R * r) * k))
     (hP : ∀ P ∈ Pset, CubicSieve.Admissible P) :
     gridDivisorHybridBlock T Pset a beta t ((R * r) * k) R r =
@@ -134,10 +132,7 @@ theorem gridDivisorHybridBlock_extract
   simp_rw [hinner]
   rw [finite_triple_support_reindex]
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p hp
-  apply Finset.sum_congr rfl
-  intro c hc
+  pm_3397 p hp c hc
   by_cases hu : (p, c) ∈ quotientGridSupport r T
   · have huc := (mem_quotientGridSupport r hr T p c).mp hu
     simp only [hu, ite_true]
@@ -157,6 +152,7 @@ theorem gridDivisorHybridBlock_extract
       _ = _ := by rw [hid]; ring
   · have huc : (p, r * c) ∉ T := (mem_quotientGridSupport r hr T p c).not.mp hu
     simp [hu, hybridColumnCoefficient, extractedGridCoefficient, huc]
+end
 
 end
 end SevenEighths.InverseMoment

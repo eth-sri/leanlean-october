@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -59,10 +60,7 @@ theorem actual_first_physical_common
     _ = (K:ℂ) * (∑ N ∈ F.powerset, ∑ P ∈ F.powerset, if Disjoint N P then
         H N P*threeGaussRowFactor p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d h else 0) := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro N hN
-      apply Finset.sum_congr rfl
-      intro P hP
+      pm_3397 N hN P hP
       by_cases hd : Disjoint N P
       · simp only [hd,ite_true]
         simpa only [H,R,mul_assoc] using canonicalPairMode_whole_profile p hp hcop hg
@@ -81,14 +79,9 @@ theorem actual_first_physical_common
       intro D hD
       apply congrArg (fun z : ℂ => supportMobius (fun i => Ideal.span {p i}) D *
         rowCoprimeMask (fun i => Ideal.span {p i}) D h*z)
-      apply Finset.sum_congr rfl
-      intro U hU
-      apply Finset.sum_congr rfl
-      intro V hV
-      have hDU : Disjoint D U := Finset.disjoint_of_subset_right
-        (Finset.mem_powerset.mp hU) disjoint_sdiff_self_right
-      have hDV : Disjoint D V := Finset.disjoint_of_subset_right
-        (Finset.mem_powerset.mp hV) disjoint_sdiff_self_right
+      pm_3811
+      pm_3810 hDU D U hU
+      pm_3810 hDV D V hV
       dsimp only [H]
       rw [firstNormProfile_actual_common p hp D U V hDU hDV]
       simp only [firstCommonCoefficient,R,mul_assoc]

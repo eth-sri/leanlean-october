@@ -30,7 +30,10 @@ def zetaFrozenDivisorQuadraticSum (T G : ℝ) : ℂ :=
   ∑' n : ℕ, zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
     zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi)))
 
-theorem divisorDirichletTerm_height_shift (T x : ℝ) (n : ℕ) :
+section
+variable (T x : ℝ) (n : ℕ)
+include T x n
+theorem divisorDirichletTerm_height_shift :
     divisorDirichletTerm (afeCriticalPoint (-(T + x))) n =
       divisorDirichletTerm (afeCriticalPoint (-T)) n *
         Complex.exp (I * (Real.log (n : ℝ) : ℂ) * x) := by
@@ -42,12 +45,13 @@ theorem divisorDirichletTerm_height_shift (T x : ℝ) (n : ℕ) :
   congr 2
   ring
 
-theorem zetaSquareFrozenDivisorContribution_eq_phase (T x : ℝ) (n : ℕ) :
+theorem zetaSquareFrozenDivisorContribution_eq_phase :
     zetaSquareFrozenDivisorContribution T x n = zetaFrozenDivisorCoefficient T n *
       zetaSquareReflectedGammaPhase (T + x) * Complex.exp (I * (Real.log (n : ℝ) : ℂ) * x) := by
   unfold zetaSquareFrozenDivisorContribution zetaFrozenDivisorCoefficient
   rw [divisorDirichletTerm_height_shift]
   ring
+end
 
 theorem zetaSquareFrozenDivisorContribution_mul_gaussian (T G x : ℝ) (n : ℕ) :
     zetaSquareFrozenDivisorContribution T x n * (Real.exp (-(x / G) ^ 2) : ℂ) =
@@ -75,9 +79,12 @@ theorem summable_integral_norm_zetaFrozenDivisorGaussianTerm {T : ℝ} (hT : 0 <
     norm_zetaSquareGammaGaussianIntegrand, integral_const_mul]
   exact (summable_norm_zetaFrozenDivisorCoefficient hT).mul_right _
 
+section
+variable {T G : ℝ} (hT : 0 < T)
+include T G hT
 /-- Actual Gaussian averaging of the complete frozen source, not a
 formal exchange or a independently supplied transformed series. -/
-theorem hasSum_zetaFrozenDivisorGaussianMean {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0) :
+theorem hasSum_zetaFrozenDivisorGaussianMean (hG : G ≠ 0) :
     HasSum (fun n : ℕ => zetaFrozenDivisorCoefficient T n *
       zetaSquareGammaGaussianTransform T G (Real.log (n : ℝ)))
       (zetaFrozenDivisorGaussianMean T G) := by
@@ -89,14 +96,14 @@ theorem hasSum_zetaFrozenDivisorGaussianMean {T G : ℝ} (hT : 0 < T) (hG : G �
   simp_rw [zetaSquareFrozenDivisorContribution_mul_gaussian, integral_const_mul] at h
   exact h
 
-theorem norm_zetaGaussianQuadraticIntegral_le_mass {T G : ℝ} (hT : 0 < T)
+theorem norm_zetaGaussianQuadraticIntegral_le_mass
     (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) (v : ℝ) :
     ‖zetaGaussianQuadraticIntegral T G v‖ ≤ Real.sqrt Real.pi * G := by
   apply (norm_zetaGaussianQuadraticIntegral_le hT hG hGT v).trans
   exact mul_le_of_le_one_right (by positivity)
     (Real.exp_le_one_iff.mpr (by nlinarith [sq_nonneg (G * v)]))
 
-theorem summable_zetaFrozenDivisorQuadraticTerm {T G : ℝ} (hT : 0 < T)
+theorem summable_zetaFrozenDivisorQuadraticTerm
     (hG : 0 < G) (hGT : G ^ 2 ≤ 2 * T) :
     Summable (fun n : ℕ => zetaFrozenDivisorCoefficient T n * zetaSquareReflectedGammaPhase T *
       zetaGaussianQuadraticIntegral T G (Real.log (n : ℝ) - Real.log (T / (2 * Real.pi)))) := by
@@ -108,6 +115,7 @@ theorem summable_zetaFrozenDivisorQuadraticTerm {T G : ℝ} (hT : 0 < T)
     exact mul_le_mul_of_nonneg_left (norm_zetaGaussianQuadraticIntegral_le_mass hT hG hGT _)
       (norm_nonneg _)
   · exact (summable_norm_zetaFrozenDivisorCoefficient hT).mul_right _
+end
 
 /-- Uniform phase-replacement error for the actual, absolutely convergent
 divisor transform. No arithmetic cancellation is claimed by this bound. -/

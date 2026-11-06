@@ -2,6 +2,7 @@ module
 public import GuthMaynard.NativeSource.GuthMaynard.Asymptotics
 public import GuthMaynard.NativeSource.GuthMaynard.Separated
 public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -50,7 +51,7 @@ theorem guthMaynardLargeValues_neg
     (hLargeValues : GuthMaynardLargeValues) : GuthMaynardLargeValuesNeg := by
   intro ε hε
   obtain ⟨C, T₀, hC, hT₀, hLarge⟩ := hLargeValues ε hε
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_505 C T₀ hC hT₀
   intro N V T b W hN hT hV hb hSeparated hInterval hValues
   apply hLarge N V T (conjugateCoeffs b) W hN hT hV
   · intro n

@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaStationaryDeficit
 public import Mathlib.Analysis.Calculus.Deriv.Slope
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,8 +24,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 theorem modelPhaseMorseCoordinate_at_inverse (F : ℝ → ℝ) (v : ℝ) :
     modelPhaseMorseCoordinate F v (modelPhaseInverseSlope F v) = 0 := by
-  simp only [modelPhaseMorseCoordinate,lt_self_iff_false,ite_false,
-    modelPhaseStationaryDeficit_at_inverse,mul_zero,Real.sqrt_zero]
+  pm_577 modelPhaseMorseCoordinate lt_self_iff_false ite_false modelPhaseStationaryDeficit_at_inverse mul_zero Real.sqrt_zero
 
 theorem modelPhaseStationaryDeficit_ratio_tendsto
     {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ}
@@ -33,8 +33,7 @@ theorem modelPhaseStationaryDeficit_ratio_tendsto
     Tendsto (fun u : ℝ => 2*modelPhaseStationaryDeficit F v u /
       (u-modelPhaseInverseSlope F v)^2)
       (𝓝[≠] modelPhaseInverseSlope F v) (𝓝 (modelPhaseCurvatureAt F v)) := by
-  let u₀ := modelPhaseInverseSlope F v
-  have hu₀ : u₀ ∈ Ioo (1 : ℝ) 2 := modelPhaseInverseSlope_mem hv
+  pm_1638
   have hs : ContDiffOn ℝ 2 F (Ioo (1 : ℝ) 2) := by
     intro x hx
     exact ((approximateModelPhase_contDiffAt hF hx).of_le
@@ -88,10 +87,10 @@ theorem modelPhaseMorseCoordinate_slope (F : ℝ → ℝ) (v u : ℝ) :
   · rw [abs_of_nonneg (sub_nonneg.mpr (le_of_not_gt h))]
     ring
 
-theorem modelPhaseMorseCoordinate_hasDerivAt_inverse
-    {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ}
-    (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+section
+variable {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ} (hF : IsApproximateModelPhaseFunction F σ P δ) (hv : v ∈ modelPhaseSlopeRange F)
+include F σ δ v P hF hv
+theorem modelPhaseMorseCoordinate_hasDerivAt_inverse :
     HasDerivAt (modelPhaseMorseCoordinate F v) (Real.sqrt (modelPhaseCurvatureAt F v))
       (modelPhaseInverseSlope F v) := by
   apply hasDerivAt_iff_tendsto_slope.mpr
@@ -99,13 +98,11 @@ theorem modelPhaseMorseCoordinate_hasDerivAt_inverse
     (modelPhaseStationaryDeficit_ratio_tendsto hF hv)
   exact h.congr' (Eventually.of_forall (fun u => (modelPhaseMorseCoordinate_slope F v u).symm))
 
-theorem modelPhaseMorseCoordinate_reciprocal_derivative_amplitude
-    {F : ℝ → ℝ} {σ δ v : ℝ} {P : ℕ}
-    (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+theorem modelPhaseMorseCoordinate_reciprocal_derivative_amplitude :
     (deriv (modelPhaseMorseCoordinate F v) (modelPhaseInverseSlope F v))⁻¹ =
       modelPhaseStationaryAmplitude F v := by
   rw [(modelPhaseMorseCoordinate_hasDerivAt_inverse hF hv).deriv]
   rfl
+end
 
 end TaoTrudgianYang2025

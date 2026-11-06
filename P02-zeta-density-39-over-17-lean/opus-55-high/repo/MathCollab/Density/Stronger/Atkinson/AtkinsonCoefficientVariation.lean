@@ -9,6 +9,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,12 +25,15 @@ theorem atkinsonCommonSaddleFactor_neg (T b : ℝ) :
     atkinsonCommonSaddleFactor T (-b) = atkinsonCommonSaddleFactor T b := by
   simp only [atkinsonCommonSaddleFactor, neg_sq]
 
-theorem atkinsonCommonSaddleFactor_pos {T : ℝ} (hT : 0 < T) (b : ℝ) :
+section
+variable {T : ℝ} (hT : 0 < T) (b : ℝ)
+include T hT b
+theorem atkinsonCommonSaddleFactor_pos :
     0 < atkinsonCommonSaddleFactor T b := by
   unfold atkinsonCommonSaddleFactor
   positivity
 
-theorem atkinsonCommonSaddleFactor_eq_rpow {T : ℝ} (hT : 0 < T) (b : ℝ) :
+theorem atkinsonCommonSaddleFactor_eq_rpow :
     atkinsonCommonSaddleFactor T b =
       (1/Real.sqrt 2) * (b^2+4*(T/(2*Real.pi)))^(-(1/4 : ℝ)) := by
   have hD : 0 ≤ b^2+4*(T/(2*Real.pi)) := by positivity
@@ -39,11 +43,15 @@ theorem atkinsonCommonSaddleFactor_eq_rpow {T : ℝ} (hT : 0 < T) (b : ℝ) :
     norm_num
   rw [atkinsonCommonSaddleFactor,hs,Real.rpow_neg hD]
   ring
+end
 
 def atkinsonFourthRootCoefficient (T : ℝ) (n : ℕ) : ℝ :=
   (n:ℝ)^(-(1/4:ℝ))*atkinsonCommonSaddleFactor T (Real.sqrt n)
 
-theorem atkinsonFourthRootCoefficient_eq {T : ℝ} (hT : 0 < T) (n : ℕ) :
+section
+variable {T : ℝ} (hT : 0 < T)
+include T hT
+theorem atkinsonFourthRootCoefficient_eq (n : ℕ) :
     atkinsonFourthRootCoefficient T n =
       (1/Real.sqrt 2)*(n:ℝ)^(-(1/4:ℝ))*
         ((n:ℝ)+2*T/Real.pi)^(-(1/4:ℝ)) := by
@@ -51,7 +59,7 @@ theorem atkinsonFourthRootCoefficient_eq {T : ℝ} (hT : 0 < T) (n : ℕ) :
     Real.sq_sqrt (Nat.cast_nonneg n),show 4*(T/(2*Real.pi)) = 2*T/Real.pi by ring]
   ring
 
-theorem atkinsonCommonSaddleFactor_le_height {T : ℝ} (hT : 0 < T) (b : ℝ) :
+theorem atkinsonCommonSaddleFactor_le_height (b : ℝ) :
     atkinsonCommonSaddleFactor T b ≤
       ((1/Real.sqrt 2)*(2/Real.pi)^(-(1/4:ℝ)))*T^(-(1/4:ℝ)) := by
   have hbase : 0 < (2/Real.pi)*T := by positivity
@@ -65,12 +73,12 @@ theorem atkinsonCommonSaddleFactor_le_height {T : ℝ} (hT : 0 < T) (b : ℝ) :
   rw [Real.mul_rpow (by positivity) hT.le]
   ring
 
-theorem atkinsonFourthRootCoefficient_nonneg {T : ℝ} (hT : 0 < T) (n : ℕ) :
+theorem atkinsonFourthRootCoefficient_nonneg (n : ℕ) :
     0 ≤ atkinsonFourthRootCoefficient T n :=
   mul_nonneg (Real.rpow_nonneg (Nat.cast_nonneg n) _)
     (atkinsonCommonSaddleFactor_pos hT _).le
 
-theorem atkinsonFourthRootCoefficient_le_height {T : ℝ} (hT : 0 < T) (n : ℕ) :
+theorem atkinsonFourthRootCoefficient_le_height (n : ℕ) :
     atkinsonFourthRootCoefficient T n ≤
       ((1/Real.sqrt 2)*(2/Real.pi)^(-(1/4:ℝ)))*
         T^(-(1/4:ℝ))*(n:ℝ)^(-(1/4:ℝ)) := by
@@ -78,11 +86,11 @@ theorem atkinsonFourthRootCoefficient_le_height {T : ℝ} (hT : 0 < T) (n : ℕ)
     (Real.rpow_nonneg (Nat.cast_nonneg n) _)).trans_eq
   ring
 
-theorem atkinsonFourthRootCoefficient_antitone {T : ℝ} (hT : 0 < T) :
+theorem atkinsonFourthRootCoefficient_antitone :
     AntitoneOn (atkinsonFourthRootCoefficient T) (Ici 1) := by
   intro m hm n hn hmn
   have hm0 : (0:ℝ) < m := Nat.cast_pos.mpr (lt_of_lt_of_le Nat.zero_lt_one hm)
-  have hmnR : (m:ℝ) ≤ n := by exact_mod_cast hmn
+  pm_404 hmnR m n hmn
   have hp := Real.rpow_le_rpow_of_nonpos hm0 hmnR (by norm_num : -(1/4:ℝ) ≤ 0)
   have hq := Real.rpow_le_rpow_of_nonpos (by positivity : 0 < (m:ℝ)+2*T/Real.pi)
     (add_le_add hmnR (le_rfl : 2*T/Real.pi ≤ 2*T/Real.pi)) (by norm_num : -(1/4:ℝ) ≤ 0)
@@ -90,18 +98,19 @@ theorem atkinsonFourthRootCoefficient_antitone {T : ℝ} (hT : 0 < T) :
   exact mul_le_mul (mul_le_mul_of_nonneg_left hp (by positivity)) hq
     (Real.rpow_nonneg (by positivity) _) (by positivity)
 
-theorem finiteVariationBound_fourthRootCoefficient {T : ℝ} (hT : 0 < T)
+theorem finiteVariationBound_fourthRootCoefficient
     {m : ℕ} (hm : 0 < m) (N : ℕ) :
     FiniteVariationBound (fun i => (atkinsonFourthRootCoefficient T (m+i) : ℂ)) N
       (((1/Real.sqrt 2)*(2/Real.pi)^(-(1/4:ℝ)))*T^(-(1/4:ℝ))*(m:ℝ)^(-(1/4:ℝ))) := by
   have hanti : Antitone (fun i : ℕ => atkinsonFourthRootCoefficient T (m+i)) := by
     intro i j hij
-    apply atkinsonFourthRootCoefficient_antitone hT (by simp only [mem_Ici]; omega)
-      (by simp only [mem_Ici]; omega)
+    apply atkinsonFourthRootCoefficient_antitone hT (by grind)
+      (by grind)
     omega
   have h := finiteVariationBound_of_antitone (atkinsonFourthRootCoefficient_nonneg hT m)
     (hanti.antitoneOn (Iic N)) (fun i _ => ⟨atkinsonFourthRootCoefficient_nonneg hT _,by
       simpa only [Nat.add_zero] using hanti (Nat.zero_le i)⟩)
   exact h.mono (atkinsonFourthRootCoefficient_le_height hT m)
+end
 
 end MathCollab.Density.Stronger.Atkinson

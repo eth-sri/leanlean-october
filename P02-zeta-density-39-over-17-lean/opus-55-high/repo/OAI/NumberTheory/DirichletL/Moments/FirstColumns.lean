@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.FirstNormalization
 public import OAI.NumberTheory.DirichletL.Moments.FixedRay
 public import OAI.NumberTheory.DirichletL.Moments.ChildAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,26 +30,23 @@ theorem first_phase_columns (e r a b : O) (ρ : O → ℂ)
     (idealRowHom e (Ideal.span {a})*star (idealRowHom e (Ideal.span {b}))*ρ e)*
       (idealRowHom (b*r) (Ideal.span {a})*star (idealRowHom (a*r) (Ideal.span {b}))*ρ (a*b)) =
       ρ e*sexticReciprocityPhase a b*leftCoefficient e r ρ a*star (rightCoefficient e r ρ b) := by
-  let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero a ha)
-  let : Fintype (CenteredMomentCommonSupport.Residue a) := Fintype.ofFinite _
-  let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero b hb)
-  let : Fintype (CenteredMomentCommonSupport.Residue b) := Fintype.ofFinite _
+  pm_511 ConcreteTraceCRT.finite_quotient_span supported_element_ne_zero a ha CenteredMomentCommonSupport.Residue
+  pm_511 ConcreteTraceCRT.finite_quotient_span supported_element_ne_zero b hb CenteredMomentCommonSupport.Residue
   have hp := supported_opposite_phase b a hb ha hpb hpa hab.symm
   rw [sexticReciprocityPhase_symm b a] at hp
   calc
     _ = ρ e*(idealRowHom b (Ideal.span {a})*star (idealRowHom a (Ideal.span {b})))*
         leftCoefficient e r ρ a*star (rightCoefficient e r ρ b) := by
-      simp only [leftCoefficient,rightCoefficient,idealRowHom_argument_mul,hρ,star_mul,star_star]
+      pm_382 leftCoefficient rightCoefficient idealRowHom_argument_mul hρ star_mul star_star
       ring
-    _ = _ := by rw [hp]
+    _ = _ := by grind
 
 def firstPhaseTable (r s : RayRing) : ℂ :=
   (QuadraticAllOddCRT.quadraticRaySign (QuadraticGaussRay.residueQuotientFour r)
     (QuadraticGaussRay.residueQuotientFour s):ℂ)
 
 theorem firstPhaseTable_mk (a b : O) :
-    firstPhaseTable (Ideal.Quotient.mk _ a) (Ideal.Quotient.mk _ b)=sexticReciprocityPhase a b := by
-  simp only [firstPhaseTable,QuadraticGaussRay.residueQuotientFour_mk,sexticReciprocityPhase]
+    firstPhaseTable (Ideal.Quotient.mk _ a) (Ideal.Quotient.mk _ b)=sexticReciprocityPhase a b := by aesop
 
 theorem firstPhaseTable_expansion (a b : O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b})) :
@@ -76,10 +74,7 @@ theorem firstExtension_separated (e r a b : O) (ρ : O → ℂ)
   unfold firstExtension
   rw [firstPhaseTable_expansion a b ha hb]
   simp only [Finset.mul_sum,Finset.sum_mul,star_mul,CenteredMomentChildAssembly.rayCharacter_inverse_star]
-  apply Finset.sum_congr rfl
-  intro χ hχ
-  apply Finset.sum_congr rfl
-  intro ξ hξ
+  pm_3397 χ hχ ξ hξ
   ring
 
 end SevenEighths.CenteredMomentFirstColumns

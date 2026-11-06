@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BProcessBaseline
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 noncomputable section
@@ -11,7 +12,10 @@ namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 def atkinsonPhaseExponential (T v : ℝ) : ℂ := Complex.exp ((T * v : ℝ) * I)
 
-theorem hasDerivAt_atkinsonPhaseExponential (T v : ℝ) :
+section
+variable (T v : ℝ)
+include T v
+theorem hasDerivAt_atkinsonPhaseExponential :
     HasDerivAt (atkinsonPhaseExponential T)
       ((T : ℂ) * I * atkinsonPhaseExponential T v) v := by
   have h := ((((hasDerivAt_id v).const_mul T).ofReal_comp).mul_const I).cexp
@@ -20,18 +24,17 @@ theorem hasDerivAt_atkinsonPhaseExponential (T v : ℝ) :
   · simp only [atkinsonPhaseExponential, Complex.ofReal_mul, mul_one, id_eq]
     ring
 
-theorem iteratedDeriv_two_atkinsonPhaseExponential (T v : ℝ) :
+theorem iteratedDeriv_two_atkinsonPhaseExponential :
     iteratedDeriv 2 (atkinsonPhaseExponential T) v =
       ((T : ℂ) * I) ^ 2 * atkinsonPhaseExponential T v := by
   have he : deriv (atkinsonPhaseExponential T) =
       fun w => (T : ℂ) * I * atkinsonPhaseExponential T w :=
     funext (fun w => (hasDerivAt_atkinsonPhaseExponential T w).deriv)
   have h := (hasDerivAt_atkinsonPhaseExponential T v).const_mul ((T : ℂ) * I)
-  rw [iteratedDeriv_succ, iteratedDeriv_one, he]
-  convert h.deriv using 1
+  pm_7329 he h.deriv
   ring
 
-theorem norm_atkinsonPhaseExponential_derivatives (T v : ℝ) :
+theorem norm_atkinsonPhaseExponential_derivatives :
     ‖atkinsonPhaseExponential T v‖ = 1 ∧
     ‖deriv (atkinsonPhaseExponential T) v‖ = |T| ∧
     ‖iteratedDeriv 2 (atkinsonPhaseExponential T) v‖ = T ^ 2 := by
@@ -39,9 +42,9 @@ theorem norm_atkinsonPhaseExponential_derivatives (T v : ℝ) :
     simp [atkinsonPhaseExponential, Complex.norm_exp, Complex.mul_re]
   refine ⟨hn, ?_, ?_⟩
   · rw [(hasDerivAt_atkinsonPhaseExponential T v).deriv]
-    simp only [norm_mul, hn, Complex.norm_I, Complex.norm_real, Real.norm_eq_abs, mul_one]
+    simp_all
   · rw [iteratedDeriv_two_atkinsonPhaseExponential]
-    simp only [norm_mul, norm_pow, hn, Complex.norm_I, Complex.norm_real,
-      Real.norm_eq_abs, mul_one, sq_abs]
+    simp_all
+end
 
 end TaoTrudgianYang2025

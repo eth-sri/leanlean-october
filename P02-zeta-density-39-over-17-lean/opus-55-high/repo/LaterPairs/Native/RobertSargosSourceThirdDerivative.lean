@@ -5,6 +5,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerClosedIntervalPrefix
 public import LaterPairs.Native.RobertSargosSourceCenteredPhase
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -29,7 +30,7 @@ theorem robertSargos_source_centered_third_derivative_bound
     ‖robertSargosSourceCenteredPhase f M h‖ ≤
       1+20*C*((M:ℝ)*(2*(h:ℝ)*lam)^((1:ℝ)/6)+
         Real.sqrt M*(2*(h:ℝ)*lam)^(-(1:ℝ)/6)) := by
-  have hhr : (0:ℝ) < h := by exact_mod_cast hh
+  pm_4473 hhr h hh
   by_cases hab : h+1 ≤ (M:ℤ)-h
   · let L := ((M:ℤ)-h-(h+1)).toNat
     have hLint : (L:ℤ) = (M:ℤ)-h-(h+1) :=
@@ -54,7 +55,7 @@ theorem robertSargos_source_centered_third_derivative_bound
         fordAdditiveCharacter (robertSargosSymmetricDifference f (↑(h+1+(n:ℤ))) h)‖ ≤
         20*C*((M:ℝ)*(2*(h:ℝ)*lam)^((1:ℝ)/6)+
           Real.sqrt M*(2*(h:ℝ)*lam)^(-(1:ℝ)/6)) := by
-      simpa only [Int.cast_add,Int.cast_one,Int.cast_natCast] using hp.trans hmono
+      pm_475 Int.cast_add Int.cast_one Int.cast_natCast hp.trans hmono
     have he : ‖fordAdditiveCharacter
         (robertSargosSymmetricDifference f (((M:ℤ)-h:ℤ):ℝ) h)‖ = 1 := by
       simp [fordAdditiveCharacter,Complex.norm_exp]

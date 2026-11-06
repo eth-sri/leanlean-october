@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.SlotCoefficients
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalMask
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hpow : rowPowerfulPart R=rowPowerfulPart I)
     (hmask : rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
 
-variable (L : σ→Finset (Ideal Eis))
+variable (L : σ→ Finset (Ideal Eis))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
@@ -59,11 +60,7 @@ theorem original_supported_slot_sum (T : Finset σ)
         H ((originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm (b,a)) := by
   rw [←(originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).symm.sum_comp]
   rw [Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro b hb
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro a ha
+  pm_3170 b hb Finset.mul_sum a ha
   rw [originalSlotSplit_symm_val,slot_choice_inactive_weight,Equiv.apply_symm_apply,slot_coefficient_split]
   ring
 end

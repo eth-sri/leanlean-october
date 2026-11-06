@@ -8,13 +8,13 @@ Mathlib dependencies retain their Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.SquareKernelFar
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Topology
+open MathCollab.Density.Stronger.Fourth
 open scoped Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -26,24 +26,22 @@ theorem exists_zetaSquareRightKernel_uniform_gaussian_bound :
   have hG : 0 < G := mul_pos (Real.rpow_pos_of_pos Real.pi_pos _)
     (Real.Gamma_pos_of_pos (by norm_num))
   let C : ℝ := 10000 * G ^ 2
-  refine ⟨C, (by dsimp [C]; positivity), ?_⟩
+  refine ⟨C, (by aesop), ?_⟩
   intro t u
   have hden := zetaSquarePoleNormalization_norm_lower t
-  let w : ℂ := 1 + (u : ℂ) * I
+  pm_4472
   let s := afeCriticalPoint t + w
   let R : ℝ := 3 + |t| + |u|
-  have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg t, abs_nonneg u]
+  have hR : 1 ≤ R := by dsimp [R]; grind
   have hwupper : ‖w‖ ≤ 1 + |u| := by
-    simpa [w, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
+    pm_6203 w
   have hwlower : 1 ≤ ‖w‖ := by
     simpa [w] using Complex.abs_re_le_norm w
-  have hwR : ‖w‖ ≤ R := hwupper.trans (by dsimp [R]; linarith [abs_nonneg t])
+  have hwR : ‖w‖ ≤ R := hwupper.trans (by grind)
   have hcrit (v : ℝ) : ‖afeCriticalPoint v‖ ≤ 1 / 2 + |v| := by
     simpa [afeCriticalPoint, Real.norm_eq_abs] using
       norm_add_le ((1 / 2 : ℝ) : ℂ) ((v : ℂ) * I)
-  have hsR : ‖s‖ ≤ R := (norm_add_le _ _).trans (by
-    dsimp [R]
-    linarith [hcrit t])
+  have hsR : ‖s‖ ≤ R := (norm_add_le _ _).trans (by grind)
   have hsubR : ‖1 - s‖ ≤ R := by
     have heq : 1 - s = afeCriticalPoint (-t) - w := by
       dsimp [s]
@@ -65,11 +63,7 @@ theorem exists_zetaSquareRightKernel_uniform_gaussian_bound :
   have hgamma : ‖Complex.Gammaℝ s‖ ≤ G := by
     simpa only [hsre, G] using norm_GammaR_le_realGamma_re
       (show 0 < s.re by rw [hsre]; norm_num)
-  have hexp : ‖Complex.exp (100 * w ^ 2)‖ = Real.exp (100 - 100 * u ^ 2) := by
-    rw [Complex.norm_exp]
-    congr 1
-    norm_num [w, pow_two, Complex.mul_re, Complex.mul_im]
-    ring
+  pm_434
   change ‖Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w *
     (s * (1 - s)) ^ 2 * Complex.Gammaℝ s ^ 2 / zetaSquarePoleNormalization t / w‖ ≤ _
   simp only [norm_div, norm_mul, norm_pow, hexp]
@@ -98,7 +92,7 @@ theorem integrable_zetaSquareRightKernel (t : ℝ) : Integrable (zetaSquareRight
         rw [Real.exp_sub, div_eq_mul_inv, ← Real.exp_neg,
           show -(100*u^2) = -100*u^2 by ring]
         have hg : Real.exp (-100*u^2)*Real.exp (u^2) = Real.exp (-99*u^2) := by
-          rw [← Real.exp_add]; congr 1; ring
+          pm_6012
         calc
           _ = (C*Real.exp 100*D)*(Real.exp (-100*u^2)*Real.exp (u^2)) := by ring
           _ = _ := by rw [hg]
@@ -134,32 +128,32 @@ def zetaSquareDivisorTerm (t : ℝ) (n : ℕ) (u : ℝ) : ℂ :=
   divisorDirichletTerm (afeCriticalPoint t + (1 + (u : ℂ) * I)) n *
     zetaSquareRightKernel t u
 
-theorem norm_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) (u : ℝ) :
+section
+variable (t : ℝ) (n : ℕ)
+include t n
+theorem norm_zetaSquareDivisorTerm (u : ℝ) :
     ‖zetaSquareDivisorTerm t n u‖ =
       ‖divisorDirichletTerm (3 / 2) n‖ * ‖zetaSquareRightKernel t u‖ := by
-  simp only [zetaSquareDivisorTerm, norm_mul, divisorDirichletTerm, LSeries.norm_term_eq]
-  norm_num [afeCriticalPoint]
+  pm_8022 zetaSquareDivisorTerm
 
-theorem integrable_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) :
+theorem integrable_zetaSquareDivisorTerm :
     Integrable (zetaSquareDivisorTerm t n) := by
   unfold zetaSquareDivisorTerm
-  apply (integrable_zetaSquareRightKernel t).bdd_mul
-    (c := ‖divisorDirichletTerm (3 / 2) n‖)
+  pm_7950 integrable_zetaSquareRightKernel t
   · simpa using (continuous_divisorDirichletTerm_vertical t 1 n).aestronglyMeasurable
-  · filter_upwards with u
-    simp only [divisorDirichletTerm, LSeries.norm_term_eq]
-    norm_num [afeCriticalPoint]
+  pm_7005
 
-theorem integral_norm_zetaSquareDivisorTerm (t : ℝ) (n : ℕ) :
+theorem integral_norm_zetaSquareDivisorTerm :
     (∫ u : ℝ, ‖zetaSquareDivisorTerm t n u‖) =
       ‖divisorDirichletTerm (3 / 2) n‖ * ∫ u : ℝ, ‖zetaSquareRightKernel t u‖ := by
   simp_rw [norm_zetaSquareDivisorTerm]
   exact integral_const_mul _ _
+end
 
 theorem summable_integral_norm_zetaSquareDivisorTerm (t : ℝ) :
     Summable (fun n : ℕ => ∫ u : ℝ, ‖zetaSquareDivisorTerm t n u‖) := by
   simp_rw [integral_norm_zetaSquareDivisorTerm]
-  exact (summable_divisorDirichletTerm (s := (3 / 2 : ℂ)) (by norm_num)).norm.mul_right _
+  pm_5697
 
 theorem tsum_zetaSquareDivisorTerm (t u : ℝ) :
     (∑' n : ℕ, zetaSquareDivisorTerm t n u) =

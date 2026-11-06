@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.RayFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,8 +11,11 @@ open scoped Classical BigOperators
 namespace SevenEighths.HeckePrincipalResidue
 open HeckeFamily HeckeCharacterAnalytic HeckeCoordinates
 
-theorem coefficients_sum_positive (χ : Character) (hχ : χ.residue=1) :
-    ∃ c : ℝ, 0<c ∧ (∑ a, coefficients χ a)=(c : ℂ) := by
+section
+variable (χ : Character) (hχ : χ.residue=1)
+include χ hχ
+theorem coefficients_sum_positive :
+    ∃ c : ℝ, 0< c ∧ (∑ a, coefficients χ a)=(c : ℂ) := by
   let : Finite (O ⧸ χ.modulus) :=
     Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   let : Fintype (O ⧸ χ.modulus) := Fintype.ofFinite _
@@ -33,11 +37,11 @@ theorem coefficients_sum_positive (χ : Character) (hχ : χ.residue=1) :
   refine ⟨(Nat.card (coordinateQuotientHom χ).ker : ℝ) * Fintype.card (O ⧸ χ.modulus)ˣ, ?_, ?_⟩
   · exact mul_pos (Nat.cast_pos.mpr (Nat.card_pos (α := (coordinateQuotientHom χ).ker)))
       (Nat.cast_pos.mpr (Fintype.card_pos (α := (O ⧸ χ.modulus)ˣ)))
-  · simpa only [Complex.ofReal_mul, Complex.ofReal_natCast] using heq
+  simp_all
 
-theorem principal_residue_positive (χ : Character) (hχ : χ.residue=1) :
+theorem principal_residue_positive :
     ∃ R : ℝ, 0<R ∧ HeckeOrigin.poleRemoved χ 1=(R : ℂ) := by
-  obtain ⟨c,hc,he⟩ := coefficients_sum_positive χ hχ
+  pm_69 c hc he coefficients_sum_positive χ hχ
   have hN : (0 : ℝ)<χ.period := Nat.cast_pos.mpr (NeZero.pos χ.period)
   let d : ℝ := (((χ.period : ℝ)^2)^(-(1/2 : ℝ))) *
     ((3*(χ.period : ℝ)^2)^(-(1/2 : ℝ)))
@@ -46,8 +50,8 @@ theorem principal_residue_positive (χ : Character) (hχ : χ.residue=1) :
   refine ⟨Real.pi*(2*d*c)/6, by positivity, ?_⟩
   rw [HeckeOrigin.poleRemoved_one, HeckeReciprocal.regularizedL_at_one,
     HeckeTheta.pair_g₀, he]
-  simp only [HeckeTheta.dualScalar, d, Complex.ofReal_div, Complex.ofReal_mul,
-    Complex.ofReal_ofNat]
+  pm_188 HeckeTheta.dualScalar d Complex.ofReal_div Complex.ofReal_mul Complex.ofReal_ofNat
+end
 
 theorem fixed_principal_residue_positive (M : Ideal O) [NeZero M] :
     ∃ R : ℝ, 0<R ∧ HeckeOrigin.poleRemoved (HeckeRayFamily.character M 1) 1=(R : ℂ) :=

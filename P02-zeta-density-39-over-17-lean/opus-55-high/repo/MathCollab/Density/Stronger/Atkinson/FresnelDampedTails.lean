@@ -54,7 +54,7 @@ theorem intervalC1Bound_gaussian_damping {ε a b : ℝ}
       (Real.exp (-ε * x ^ 2) * (-2 * ε * x)) x := by
     convert (((hasDerivAt_id x).pow 2).const_mul (-ε)).exp using 1 <;> dsimp [id]
     ring
-  apply intervalC1Bound_ofReal_of_deriv_nonpos hab (by norm_num) (by intros; fun_prop)
+  apply intervalC1Bound_ofReal_of_deriv_nonpos hab (by norm_num) (by fun_prop)
   · intro x _
     refine ⟨(Real.exp_pos _).le, Real.exp_le_one_iff.mpr ?_⟩
     nlinarith [mul_nonneg hε (sq_nonneg x)]

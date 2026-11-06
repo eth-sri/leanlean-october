@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalSplitReflection
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalChoicePhysical
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+open scoped Classical ContDiff
+open CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -18,7 +18,7 @@ variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hcop : IsCoprime (Q*Ideal.span {(72:Eis)}) (rowResidualPart I (Ideal.span {m}*F)))
     (hpow : rowPowerfulPart R=rowPowerfulPart I)
     (hmask : rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
-variable (L : σ→Finset (Ideal Eis))
+variable (L : σ→ Finset (Ideal Eis))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
@@ -84,10 +84,7 @@ theorem actual_marked_active_reflection
   apply Finset.sum_congr rfl
   intro A hA
   apply congrArg (fun z : ℂ => frozenInactiveWeight R F (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)}) A*z)
-  apply Finset.sum_congr rfl
-  intro T hT
-  apply Finset.sum_congr rfl
-  intro b hb
+  pm_3397 T hT b hb
   apply congrArg (fun z : ℂ =>
     ((∏ i : {i // i∉T},(Ideal.absNorm (b.val i).val:ℂ)⁻¹)*(∏ i : {i // i∉T},w i.val (b.val i)))*z)
   apply Finset.sum_congr rfl
@@ -105,7 +102,6 @@ theorem actual_marked_active_reflection
       (G h).shape (G h).denominator_ne_zero (fun b : A => completedLocalExponent R F b.val.val) W X)
     ((originalSlotSplit D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T).apply_symm_apply (b,a)))
 
-end
 end SevenEighths.InverseReflectedPhase
 
 end OAI

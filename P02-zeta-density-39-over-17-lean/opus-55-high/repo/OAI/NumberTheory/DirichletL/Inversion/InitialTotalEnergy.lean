@@ -2,21 +2,20 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialFiniteEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalLimit
 public import OAI.NumberTheory.DirichletL.Inversion.InitialZeroModeBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalEnergy
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open InverseMoment InverseInitialProfile
+open InverseInitialQuotientGeometry
+open InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
 open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
@@ -25,11 +24,11 @@ theorem original_input_bound
     (hs:Function.support W⊆Set.Icc a₀ b₀)
     (hW:ContDiff ℝ ∞ W)(Φ:𝓢(ℝ,ℂ))
     (B₀:ℝ)(hB₀:0≤B₀)(hb:∀x,‖W x‖≤B₀)
-    (cap gap eps π η τ loss:ℝ)(hcap:0≤cap)(hgap:0<gap)(heps:0<eps)(hπ:0<π)
+    (cap gap eps π η τ loss:ℝ)(hcap:0≤ cap)(hgap:0<gap)(heps:0<eps)(hπ:0<π)
     (hη:0<η)(hηone:η≤1)(hηsmall:η≤gap/50)(hτ:0<τ)(hτsmall:τ≤gap/50)(hloss:0<loss)(K:ℕ):
     ∃degree:ℕ,∃Btree:ℝ,1≤Btree ∧
     ∀q:ℕ,q≠0→∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
-    ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
+    ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z ^(cap+1)≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) Dpool (reflectionExcludedPrimes_bad q);
     letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
@@ -37,30 +36,30 @@ theorem original_input_bound
     let _hp:=poolPrimary_ne_zero F hF;
     let _hcop:=poolPrimary_coprime F hF;
     let hg:=poolPrimary_good F hF;
-    ∀{σ:Type}[DecidableEq σ](all assigned:Finset σ),assigned⊆all→all.card≤K→
-    ∀(lists:σ→Finset (primePool F))(Hslot:σ→ℝ)(coeff:σ→primePool F→ℂ),
+    ∀{σ:Type}[DecidableEq σ](all assigned:Finset σ),assigned⊆all→ all.card≤K→
+    ∀(lists:σ→ Finset (primePool F))(Hslot:σ→ℝ)(coeff:σ→ primePool F→ℂ),
       (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
-      (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
-    ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
-      (∏i∈assigned,bl i)≤Z^η→
-      (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
-      D=r+assignedCenter all z-2*assignedCenter assigned z→
-      r+2*assignedCenter all z≤m-2*gap→
+      (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z ^(z i))≠0)→
+    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→ FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀(D m r:ℝ),0≤ m→ m≤ cap→-cap≤D→
+      (∏i∈assigned,bl i)≤Z ^η→
+      (∏i∈all\assigned,Hslot i)≤Z ^(assignedCenter (all\assigned) z+η)→
+      D =r+assignedCenter all z-2*assignedCenter assigned z→
+      r+2*assignedCenter all z≤ m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
-      r+assignedCenter all z+7*η≤cap→
-    ∀(c θ:ℝ),1≤c→c≤bcap→
-      ‖∑'u:O,Φ (‖eisEmbedding u‖^2/Z^m)*
-        (‖((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
+      r+assignedCenter all z+7*η≤ cap→
+    ∀(c θ:ℝ),1≤ c→c≤bcap→
+      ‖∑'u:O,Φ (‖eisEmbedding u‖^2/Z ^m)*
+        (‖((Z ^(-D /2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
           (assignedElement assigned qelem) 1 1
           (initialTest p (primeMark (all\assigned) lists coeff)
             (clippedSource W c θ) Z D) u‖^2:ℝ)‖≤
-        C*Z^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*degree)) := by
+        C*Z ^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*degree)) := by
   have hsstar:Function.support (fun x=>star (W x))⊆Set.Icc a₀ b₀:=by
     intro x hx
     apply hs
@@ -72,18 +71,13 @@ theorem original_input_bound
     cap gap eps π η τ loss hcap hgap heps hπ hη hηone hηsmall hτ hτsmall hloss K
   obtain ⟨Cz,hCz,hzero⟩:=InverseInitialZeroMode.physical_marked_zero_bound
     loss cap (max 1 b₀) B₀ hloss hcap (by positivity) hB₀ Φ
-  refine ⟨J,Btree,hBtree,?_⟩
-  intro q hq
-  obtain ⟨Cf,Z₀,hCf,hZ₀,hfinite⟩:=hfinite q hq
+  pm_253 J Btree hBtree q hq
+  pm_3744 Cf Z₀ hCf hZ₀ hfinite
   refine ⟨Cf+Cz,Z₀,by linarith,hZ₀,?_⟩
-  intro Z hZ Dpool hD F hFa
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hFa i];infer_instance
-  intro p hp hcop hg σ dec all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
-    qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod
-    D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent c θ hc hbc
-  have hZp:1<Z:=hZ₀.trans_le hZ
-  have hDcap:D≤cap:=by
-    have hg:0≤assignedCenter assigned z:=Finset.sum_nonneg (fun i hi=>hz i (hassigned hi))
+  pm_3210
+  pm_1319 c θ hc hbc
+  have hDcap:D ≤ cap:=by
+    pm_3198
     rw [hDeq];linarith
   have hconj:(fun x=>star (clippedSource W c θ x))=clippedSource (fun x=>star (W x)) c (-θ):=
     funext (clippedSource_conjugate W c θ)
@@ -92,7 +86,7 @@ theorem original_input_bound
     (InverseInitialRayAttachment.poolPrimary_primary F hFa) Finset.univ Ψ
     (assignedElement assigned qelem) (primeMark (all\assigned) lists coeff)
     (clippedSource W c θ) Φ Z D m
-    (Cf*Z^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)))
+    (Cf*Z ^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)))
     (by linarith : 0<Z) (by
       intro freqT hzero
       rw [hconj]
@@ -118,9 +112,9 @@ theorem original_input_bound
     (clippedSource W c θ) Φ Z D m (by linarith)]
   apply (norm_add_le _ _).trans
   have hh:1≤(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)):=one_le_pow₀ (by linarith [norm_nonneg θ])
-  have hz1:Cz*Z^(m+loss)≤Cz*Z^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)):=by
+  have hz1:Cz*Z ^(m+loss)≤Cz*Z ^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)):=by
     calc
-      _≤Cz*Z^(m+15*η+π+eps+loss):=mul_le_mul_of_nonneg_left
+      _≤Cz*Z ^(m+15*η+π+eps+loss):=mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hZp.le (by linarith)) hCz.le
       _≤_:=le_mul_of_one_le_right (by positivity) hh
   change ‖physicalFrequency _ _ _ _ _ _ _ _ _ _ _ _ _ 0‖+_≤_
@@ -128,6 +122,5 @@ theorem original_input_bound
 
 end SevenEighths.InverseInitialTotalEnergy
 
-end
 
 end OAI

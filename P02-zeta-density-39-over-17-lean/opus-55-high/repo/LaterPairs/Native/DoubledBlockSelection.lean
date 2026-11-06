@@ -34,6 +34,6 @@ theorem exists_doubled_block_weighted (a : ℕ → ℂ) (H : ℕ) (hH : 2 ≤ H)
     (hL.trans (Nat.le_pow_clog (by norm_num) H)) A
     ‖∑ j ∈ Finset.range k, a (k+j)‖ hA (norm_nonneg _) ha
   intro l hl hlH
-  exact hmax l (Finset.mem_Icc.mpr ⟨by omega,by omega⟩)
+  grind
 
 end TaoTrudgianYang2025

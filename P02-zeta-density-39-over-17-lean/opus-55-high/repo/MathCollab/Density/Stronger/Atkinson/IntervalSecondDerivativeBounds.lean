@@ -9,12 +9,12 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 public import Mathlib.Analysis.Calculus.MeanValue
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Set
 open scoped ContDiff
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -31,7 +31,7 @@ theorem intervalC2Bound_const (c : ℂ) (a b : ℝ) {R : ℝ} (hR : 0 ≤ R) :
   refine ⟨norm_nonneg _, hR, fun _ _ => contDiffAt_const, fun _ _ => le_rfl, ?_, ?_⟩
   · intro x hx
     simp only [deriv_const, norm_zero]
-    exact mul_nonneg (norm_nonneg _) hR
+    positivity
   · intro x hx
     simp only [iteratedDeriv_const, show (2 : ℕ) ≠ 0 by norm_num, ite_false, norm_zero]
     positivity
@@ -58,9 +58,9 @@ theorem iteratedDeriv_two_mul {f g : ℝ → ℂ} {x : ℝ}
 theorem IntervalC2Bound.mul {f g : ℝ → ℂ} {a b M N R : ℝ}
     (hf : IntervalC2Bound f a b M R) (hg : IntervalC2Bound g a b N R) :
     IntervalC2Bound (fun x => f x * g x) a b (4 * M * N) R := by
-  have hMN : 0 ≤ M * N := mul_nonneg hf.nonneg hg.nonneg
-  have hMR : 0 ≤ M * R := mul_nonneg hf.nonneg hf.scale_nonneg
-  have hNR : 0 ≤ N * R := mul_nonneg hg.nonneg hf.scale_nonneg
+  pm_5094 hMN M N hf.nonneg hg.nonneg
+  pm_5094 hMR M R hf.nonneg hf.scale_nonneg
+  pm_5094 hNR N R hg.nonneg hf.scale_nonneg
   refine ⟨by nlinarith, hf.scale_nonneg, fun x hx => (hf.smooth x hx).mul (hg.smooth x hx),
     ?_, ?_, ?_⟩
   · intro x hx
@@ -79,8 +79,7 @@ theorem IntervalC2Bound.mul {f g : ℝ → ℂ} {a b M N R : ℝ}
       _ ≤ _ := by nlinarith [mul_nonneg hMN hf.scale_nonneg]
   · intro x hx
     rw [iteratedDeriv_two_mul (hf.smooth x hx) (hg.smooth x hx)]
-    apply (norm_add_le _ _).trans
-    apply (add_le_add (norm_add_le _ _) le_rfl).trans
+    pm_4364
     simp only [norm_mul, norm_ofNat]
     calc
       _ ≤ M * (N * R ^ 2) + 2 * (M * R) * (N * R) + (M * R ^ 2) * N := by
@@ -110,10 +109,10 @@ theorem exists_intervalC2Bound_fixed {f : ℝ → ℂ} {a b : ℝ}
   obtain ⟨B, hB⟩ := isCompact_Icc.exists_bound_of_continuousOn h1
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn h2
   let M : ℝ := 1 + |A| + |B| + |C|
-  have hM : 0 < M := by dsimp [M]; positivity
-  have hAM : A ≤ M := by dsimp [M]; linarith [le_abs_self A, abs_nonneg B, abs_nonneg C]
-  have hBM : B ≤ M := by dsimp [M]; linarith [le_abs_self B, abs_nonneg A, abs_nonneg C]
-  have hCM : C ≤ M := by dsimp [M]; linarith [le_abs_self C, abs_nonneg A, abs_nonneg B]
+  pm_4365
+  pm_5190 hAM A B C
+  pm_5190 hBM B A C
+  pm_5190 hCM C A B
   refine ⟨M, hM, hM.le, by norm_num, hf, fun x hx => (hA x hx).trans hAM, ?_, ?_⟩
   · intro x hx
     simpa only [mul_one] using (hB x hx).trans hBM

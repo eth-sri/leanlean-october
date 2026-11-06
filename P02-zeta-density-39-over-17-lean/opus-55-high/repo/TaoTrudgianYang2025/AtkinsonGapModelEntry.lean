@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.AtkinsonGapModelJets
 public import TaoTrudgianYang2025.ModelEndpointEntry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem atkinsonNormalizedGapPhase_approximate (P : ℕ) {ε : ℝ} (hε : 0 < �
       0 < M → 0 < u → u < t → t ≤ 2*u →
       Real.pi*M/(2*u) < δ →
       IsApproximateModelPhaseFunction (atkinsonNormalizedGapPhase M t u) (1/2) P ε := by
-  obtain ⟨δ,hδ,hjets⟩ := atkinsonGapSlopeProfile_uniform_finite_jets P hε
+  pm_69 δ hδ hjets atkinsonGapSlopeProfile_uniform_finite_jets P hε
   refine ⟨δ,hδ,?_⟩
   intro M t u hM hu htu ht2 hq
   have hr : t/u ∈ Icc (1 : ℝ) 2 := by
@@ -42,7 +43,7 @@ theorem atkinsonNormalizedGapPhase_approximate (P : ℕ) {ε : ℝ} (hε : 0 < �
     exact (contDiffAt_atkinsonNormalizedGapPhase hM hu htu
       (zero_lt_one.trans_le hx.1)).contDiffWithinAt
   · intro x hx p hp
-    have hx0 : 0 < x := by linarith [hx.1]
+    pm_1211 hx0
     have he : deriv (atkinsonNormalizedGapPhase M t u) =ᶠ[𝓝 x]
         atkinsonGapSlopeProfile (Real.pi*M/(2*u)) (t/u) := by
       filter_upwards [eventually_gt_nhds hx0] with y hy

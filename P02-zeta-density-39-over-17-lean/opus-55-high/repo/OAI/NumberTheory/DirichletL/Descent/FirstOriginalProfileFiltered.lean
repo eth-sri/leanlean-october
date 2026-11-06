@@ -1,18 +1,18 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileUniform
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
-noncomputable section
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels
+open JointLogSeparation MeasureTheory
 local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+open InverseMomentFirstProfileUniform
 theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 9 → ℝ) (m₁ m₂ bcap : ℝ)
@@ -27,16 +27,16 @@ theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (_hc : ∀ i,ringChar (Eis⧸Ideal.span {p i})≠2)
     (_hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (F : Finset ι) (outer:Finset κ) (b : κ→SecondPassArithmetic.CubeCoordinates ι) (common : κ→Finset ι)
-    (Ψ₁ Ψ₂ : Eis→*ℂ) (mleft mright : Eis) (dd:κ→Eis) (H₁ H₂ selector : κ→Finset ι→ℂ)
-    (labels : κ→Finset (Ideal Eis)) (a : κ→Ideal Eis×Eis→ℂ) (Γ Y : ℝ)
+    (F : Finset ι) (outer:Finset κ) (b : κ→ SecondPassArithmetic.CubeCoordinates ι) (common : κ→ Finset ι)
+    (Ψ₁ Ψ₂ : Eis→*ℂ) (mleft mright : Eis) (dd:κ→ Eis) (H₁ H₂ selector : κ→ Finset ι→ℂ)
+    (labels : κ→ Finset (Ideal Eis)) (a : κ→ Ideal Eis×Eis→ℂ) (Γ Y : ℝ)
     (_hΨ₁ : ∀ u,‖Ψ₁ u‖≤1) (_hΨ₂ : ∀ u,‖Ψ₂ u‖≤1)
     (_hΓ : 0≤Γ) (_hY : 0<Y)
     (_hlabels : ∀k∈outer,∀ f∈labels k,Squarefree f) (_hn : ∀k∈outer,∀ f∈labels k,f≠0)
     (_ha : ∀k∈outer,∀ x∈firstRetainedSource p (labels k) (b k) Y,‖a k x‖≤Γ)
     (ω₁ ω₂ : ℝ → ℂ) (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ : ℝ)
     (A₁ A₂ C R : (Σ _ : κ,Ideal Eis×Eis) → ℝ) (K L : ℝ) (_hK : 0<K) (s : Fin 9→ℝ)
-    (_hs : ∀ i,0<s i)
+    (_hs : ∀ i,0< s i)
     (selected : Finset (Σ _ : κ,Ideal Eis×Eis))
     (_hselected : selected⊆firstGlobalRetainedSource p outer labels b Y),
     let source := selected
@@ -72,10 +72,9 @@ theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
         ((Γ*Kpush*Y^ε*(Real.sqrt B₁*Real.sqrt B₂))*(Cprofile*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /
           (1+K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8))^Aker)) := by
-  obtain ⟨Cprofile,hCprofile,hprofile⟩ := actual_first_moving_family_two_energies_uniform
-    U₀ g₁ g₂ Φ M₀ B₀ m₁ m₂ bcap hM hB₀ hU hg₁ hg₂ Aker J
-  obtain ⟨Kpush,hKpush,hpush⟩ := first_global_retained_push_uniform ε hε
-  refine ⟨Cprofile,Kpush,hCprofile,hKpush,?_⟩
+  pm_506 Cprofile hCprofile hprofile actual_first_moving_family_two_energies_uniform
+  pm_69 Kpush hKpush hpush first_global_retained_push_uniform ε hε
+  pm_119 Cprofile Kpush hCprofile hKpush
   intro ι κ _ _ p hp _ hg hinj hcop hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd H₁ H₂ selector labels a Γ Y
     hΨ₁ hΨ₂ hΓ hY hlabels hn ha ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂ A₁ A₂ C R K L hK s hs selected hselected
     source C₁ C₂ w hpos hρ hc₁ hc₂ hc₁b hc₂b hL hω₁ hω₂ hcut B₁ B₂ hB₁ hB₂ hleft hright
@@ -99,11 +98,8 @@ theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
         firstFamilyEnergy p hg (firstGlobalRetainedSource p outer labels b Y) F
         (fun x=>selector x.1) C₁ w true ω₁ (s 7)
         (profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2 7) (fun x=>x.2.2) := by
-      unfold firstFamilyEnergy
-      exact Finset.sum_le_sum_of_subset_of_nonneg hselected (fun x hx hn=>
-        mul_nonneg (norm_nonneg _) (firstBlockEnergy_nonneg p hg _ _ _ _ _ _ _ _))
-    apply (hm1.trans he).trans
-    simpa only [mul_assoc,ite_true,ite_false,Bool.false_eq_true] using mul_le_mul_of_nonneg_left (hleft z) hweight
+      pm_3751
+    pm_6590 hm1.trans hleft
   · intro z
     have he := hpush p hp hinj hcop hg hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd
       labels a Γ Y hΨ₁ hΨ₂ hΓ hY hlabels hn ha false H₂ selector ω₂ (s 8)
@@ -114,13 +110,9 @@ theorem actual_first_original_subset_two_energies (ε : ℝ) (hε : 0<ε)
         firstFamilyEnergy p hg (firstGlobalRetainedSource p outer labels b Y) F
         (fun x=>selector x.1) C₂ w false ω₂ (s 8)
         (profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2 8) (fun x=>x.2.2) := by
-      unfold firstFamilyEnergy
-      exact Finset.sum_le_sum_of_subset_of_nonneg hselected (fun x hx hn=>
-        mul_nonneg (norm_nonneg _) (firstBlockEnergy_nonneg p hg _ _ _ _ _ _ _ _))
-    apply (hm2.trans he).trans
-    simpa only [mul_assoc,ite_true,ite_false,Bool.false_eq_true] using mul_le_mul_of_nonneg_left (hright z) hweight
+      pm_3751
+    pm_6590 hm2.trans hright
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

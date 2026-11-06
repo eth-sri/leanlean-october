@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosSymmetricAveraging
 public import LaterPairs.Native.TriangularShiftBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -20,7 +21,10 @@ def robertSargosCenteredCorrelation (a : ℤ → ℂ) (M : ℕ) (h : ℤ) : ℝ 
   ∑ m ∈ Finset.Ico (0:ℤ) M,
     ⟪sargosPaddedSequence a M (m+h),sargosPaddedSequence a M (m-h)⟫_ℝ
 
-theorem robertSargos_centered_correlation_neg (a : ℤ → ℂ) (M : ℕ) (h : ℤ) :
+section
+variable (a : ℤ → ℂ)
+include a
+theorem robertSargos_centered_correlation_neg (M : ℕ) (h : ℤ) :
     robertSargosCenteredCorrelation a M (-h) = robertSargosCenteredCorrelation a M h := by
   unfold robertSargosCenteredCorrelation
   simp only [sub_neg_eq_add,← sub_eq_add_neg]
@@ -28,16 +32,15 @@ theorem robertSargos_centered_correlation_neg (a : ℤ → ℂ) (M : ℕ) (h : �
   intro m _
   exact real_inner_comm _ _
 
-theorem robertSargos_centered_correlation_zero (a : ℤ → ℂ) (M : ℕ) :
+theorem robertSargos_centered_correlation_zero (M : ℕ) :
     robertSargosCenteredCorrelation a M 0 =
       ∑ m ∈ Finset.Ico (0:ℤ) M, ‖a m‖^2 := by
   unfold robertSargosCenteredCorrelation
-  simp only [add_zero,sub_zero,real_inner_self_eq_norm_sq]
-  apply Finset.sum_congr rfl
+  pm_335 add_zero sub_zero real_inner_self_eq_norm_sq
   intro m hm
   rw [sargosPaddedSequence_eq a M hm]
 
-theorem robertSargos_even_gram_term (a : ℤ → ℂ) (M H s t : ℕ)
+theorem robertSargos_even_gram_term (M H s t : ℕ)
     (hs : s < H) (ht : t < H) :
     (∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M,
       ⟪sargosPaddedSequence a M (n+2*s),sargosPaddedSequence a M (n+2*t)⟫_ℝ) =
@@ -55,15 +58,11 @@ theorem robertSargos_even_gram_term (a : ℤ → ℂ) (M H s t : ℕ)
       constructor
       · by_contra hn'
         simp only [F,sargosPaddedSequence,ite_eq_right hn',inner_zero_left] at hn
-        exact hn rfl
-      · by_contra hn'
-        simp only [F,sargosPaddedSequence,ite_eq_right hn',inner_zero_right] at hn
-        exact hn rfl
+        grind
+      pm_7921 hn' sargosPaddedSequence
     change n+(s:ℤ)+t ∈ Finset.Ico (0:ℤ) M
-    simp only [Finset.mem_Ico] at hsupp ⊢
-    constructor <;> omega
-  change (∑ n ∈ B, F n) = _
-  rw [← hfilt]
+    pm_5911 Finset.mem_Ico hsupp
+  pm_7666 n
   unfold robertSargosCenteredCorrelation
   apply Finset.sum_bij (fun n _ => n+(s:ℤ)+t)
   · intro n hn
@@ -82,11 +81,9 @@ theorem robertSargos_even_gram_term (a : ℤ → ℂ) (M H s t : ℕ)
         have he : m-(s:ℤ)-t+s+t = m := by omega
         simpa only [he] using hm
     · omega
-  · intro n _
-    dsimp only [F]
-    congr 2 <;> omega
+  grind
 
-theorem robertSargos_even_gram (a : ℤ → ℂ) (M H : ℕ) :
+theorem robertSargos_even_gram (M H : ℕ) :
     (∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M,
       ‖∑ s ∈ Finset.range H, sargosPaddedSequence a M (n+2*s)‖^2) =
       ∑ h ∈ Finset.Ioo (-(H:ℤ)) H,
@@ -95,24 +92,15 @@ theorem robertSargos_even_gram (a : ℤ → ℂ) (M H : ℕ) :
     _ = ∑ s ∈ Finset.range H, ∑ t ∈ Finset.range H,
         ∑ n ∈ Finset.Ico (-(2*(H:ℤ))) M,
           ⟪sargosPaddedSequence a M (n+2*s),sargosPaddedSequence a M (n+2*t)⟫_ℝ := by
-      simp only [← real_inner_self_eq_norm_sq,sum_inner,inner_sum]
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro s _
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro t _
-      apply Finset.sum_congr rfl
+      pm_1655
       intro n _
       exact real_inner_comm _ _
     _ = ∑ s ∈ Finset.range H, ∑ t ∈ Finset.range H,
         robertSargosCenteredCorrelation a M ((s:ℤ)-t) := by
-      apply Finset.sum_congr rfl
-      intro s hs
-      apply Finset.sum_congr rfl
-      intro t ht
+      pm_90 Finset.sum_congr s hs t ht
       exact robertSargos_even_gram_term a M H s t
         (Finset.mem_range.mp hs) (Finset.mem_range.mp ht)
     _ = _ := sum_signed_shift_differences H (robertSargosCenteredCorrelation a M)
+end
 
 end TaoTrudgianYang2025

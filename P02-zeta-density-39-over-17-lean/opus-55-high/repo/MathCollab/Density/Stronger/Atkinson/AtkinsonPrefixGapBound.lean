@@ -7,6 +7,7 @@ See ../../../../../third_party/twelfth/ATKINSON_PREFIX_MANIFEST.json
 and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixCancellation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,7 +42,7 @@ theorem atkinsonPrefixGramMax_le_length (M N : ℕ) (t u : ℝ) :
   apply Finset.sup'_le
   intro j hj
   exact (norm_atkinsonPrefixGram_le_length M j t u).trans
-    (by exact_mod_cast Nat.le_of_lt_succ (Finset.mem_range.mp hj))
+    (by simp_all)
 
 def atkinsonOrderedPrefixGapMajorant (M N : ℕ) (t u : ℝ) : ℝ :=
   min (N:ℝ)
@@ -64,7 +65,7 @@ theorem atkinsonPrefixGramMax_le_orderedGap {M N : ℕ} {t u : ℝ}
   apply le_min hl
   split_ifs with hsmall
   · exact le_min hb (atkinsonPrefixGramMax_le_firstDerivative hu htu hM hblock htUpper hsmall)
-  · exact hb
+  grind
 
 theorem atkinsonPrefixGapMajorant_self (M N : ℕ) (t : ℝ) :
     atkinsonPrefixGapMajorant M N t t = (N:ℝ) := by
@@ -78,8 +79,7 @@ theorem atkinsonPrefixGramMax_le_gap {M N : ℕ} {t u : ℝ}
   · subst u
     rw [atkinsonPrefixGramMax_self,atkinsonPrefixGapMajorant_self]
   · unfold atkinsonPrefixGapMajorant
-    rw [ite_eq_right he]
-    rcases lt_or_gt_of_ne he with htu | hut
+    pm_6777 he htu hut
     · simp only [max_eq_right htu.le,min_eq_left htu.le] at hu hblock htUpper ⊢
       rw [atkinsonPrefixGramMax_swap M N u t]
       exact atkinsonPrefixGramMax_le_orderedGap hu htu hM hblock htUpper

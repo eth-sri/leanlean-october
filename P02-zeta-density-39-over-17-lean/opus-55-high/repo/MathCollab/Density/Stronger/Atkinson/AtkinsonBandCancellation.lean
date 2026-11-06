@@ -5,6 +5,7 @@ Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3
 See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonRootBand
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,7 +38,7 @@ theorem atkinsonRootSlope_outside_band {T G L b y : ℝ}
     unfold atkinsonRootSlope
     ring
   rw [hp, hn]
-  constructor <;> linarith [h.1, h.2]
+  grind
 
 theorem norm_atkinsonRootKernel_integral_outside_band {T G L b c : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
@@ -47,7 +48,7 @@ theorem norm_atkinsonRootKernel_integral_outside_band {T G L b c : ℝ}
       ‖∫ y in atkinsonRootBandLower T G L..c, atkinsonRootKernel T (-b) y‖ ≤
         1 / (b * Real.pi) := by
   have ha := atkinsonRootBandLower_pos hT G L
-  have hb0 : 0 < b := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hb
+  pm_1200 hb0 b hb
   have hmem (y : ℝ) (hy : y ∈ Icc (atkinsonRootBandLower T G L) c) :
       y ∈ Icc (atkinsonRootBandLower T G L) (atkinsonRootBandUpper T G L) :=
     ⟨hy.1, hy.2.trans hc.2⟩
@@ -56,10 +57,7 @@ theorem norm_atkinsonRootKernel_integral_outside_band {T G L b c : ℝ}
     (hasDerivAt_atkinsonRootPhase T u (ha.trans_le hy.1)).deriv
   have hmono (u : ℝ) : AntitoneOn (deriv (atkinsonRootPhase T u))
       (Icc (atkinsonRootBandLower T G L) c) := by
-    intro x hx y hy hxy
-    rw [hd u x hx, hd u y hy]
-    exact (atkinsonRootSlope_strictAnti hT.le u).antitoneOn
-      (ha.trans_le hx.1) (ha.trans_le hy.1) hxy
+    pm_543
   constructor
   · exact norm_phaseIntegral_le_of_positive_slope hc.1 hb0
       (fun y hy => contDiffAt_atkinsonRootPhase T b (ha.trans_le hy.1))

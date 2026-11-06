@@ -13,7 +13,6 @@ normalization identities are proved exactly, including the zero-mass branch.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -31,16 +30,6 @@ def wooleySection7Coefficient {k : ℕ}
   let translated := wooleyAffinePolynomialSystem phi (p ^ a) xi
   wooleySourceTwist pullback
     (fun y => wooleySourcePolynomialPhase translated alpha y)
-
-@[simp] theorem wooleySection7Coefficient_apply
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (gamma : WooleySourceSequence) (p a : ℕ) (hp : 0 < p) (xi : ℤ)
-    {q : ℕ} [NeZero q] (alpha : Fin k → ZMod q) (y : ℤ) :
-    wooleySection7Coefficient phi gamma p a hp xi alpha y =
-      gamma ((p ^ a : ℕ) * y + xi) *
-        wooleySourcePolynomialPhase phi alpha
-          ((p ^ a : ℕ) * y + xi) := by
-  simp [wooleySection7Coefficient, wooleySourcePolynomialPhase_affine]
 
 /-- Admissibility is preserved by the Section 7 coefficient construction. -/
 theorem WooleySourceSequence.Admissible.section7Coefficient

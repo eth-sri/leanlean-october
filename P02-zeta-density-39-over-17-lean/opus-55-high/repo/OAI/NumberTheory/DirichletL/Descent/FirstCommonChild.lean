@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,26 +25,24 @@ theorem firstCommonColumn_eq_rayIdealRow
     (if negative then star (supportRay p χ D) else supportRay p χ D) *
     rayIdealRow p hg F
       (fun S => C S * if negative then
-        star (ω (Real.exp (columnLog p (primeProductNorm p D*X) S)) *
-          logPhase t (columnLog p (primeProductNorm p D*X) S)) else
-        ω (Real.exp (columnLog p (primeProductNorm p D*X) S)) *
-          logPhase t (columnLog p (primeProductNorm p D*X) S)) negative χ D h := by
+        star (ω (Real.exp (columnLog p (primeProductNorm p D *X) S)) *
+          logPhase t (columnLog p (primeProductNorm p D *X) S)) else
+        ω (Real.exp (columnLog p (primeProductNorm p D *X) S)) *
+          logPhase t (columnLog p (primeProductNorm p D *X) S)) negative χ D h := by
   rw [rayIdealRow_eq_supportRow p hinj hg F D
     (fun S => C S * if negative then
-      star (ω (Real.exp (columnLog p (primeProductNorm p D*X) S)) *
-        logPhase t (columnLog p (primeProductNorm p D*X) S)) else
-      ω (Real.exp (columnLog p (primeProductNorm p D*X) S)) *
-        logPhase t (columnLog p (primeProductNorm p D*X) S)) negative χ h]
-  simp only [firstCommonColumn,supportConjugateSum,Finset.mul_sum]
-  apply Finset.sum_congr rfl
+      star (ω (Real.exp (columnLog p (primeProductNorm p D *X) S)) *
+        logPhase t (columnLog p (primeProductNorm p D *X) S)) else
+      ω (Real.exp (columnLog p (primeProductNorm p D *X) S)) *
+        logPhase t (columnLog p (primeProductNorm p D *X) S)) negative χ h]
+  pm_335 firstCommonColumn supportConjugateSum Finset.mul_sum
   intro U hU
-  have hdU : Disjoint D U := Finset.disjoint_of_subset_right
-    (Finset.mem_powerset.mp hU) disjoint_sdiff_self_right
-  have hy : columnLog p (primeProductNorm p D*X) (D∪U) =
+  pm_3810 hdU D U hU
+  have hy : columnLog p (primeProductNorm p D *X) (D∪U) =
       Real.log (primeProductNorm p U/X) := by
     unfold columnLog
     rw [primeProductNorm_union p D U hdU,mul_div_mul_left _ _ (primeProductNorm_pos p hp D).ne']
-  have hR : supportRay p χ (D∪U) = supportRay p χ D*supportRay p χ U := by
+  have hR : supportRay p χ (D∪U) = supportRay p χ D *supportRay p χ U := by
     rw [supportRay,Finset.prod_union hdU,rayCharacter_mul]
     rfl
   rw [hy,Real.exp_log (div_pos (primeProductNorm_pos p hp U) hX),hR]
@@ -83,12 +82,12 @@ theorem firstCommonColumn_original_labels
     (if negative then star (supportRay p χ D) else supportRay p χ D) *
       (beforeDilationLabel (fun i => Ideal.span {p i}) hg p B v ε₁ ε₂ negative c d f D *
         dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative χ C
-          (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d (-t)
+          (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D *X)) c d (-t)
           (h*f^2*dilationLabel p B v ε₁ ε₂)) := by
   rw [firstCommonColumn_eq_rayIdealRow p hp hg hinj F D _ negative χ ω X t hX h,
     firstBareCubeCoefficient_window p hp hg hcop B v ε₁ ε₂ negative
       (originalLabelColumn p hg B ε₁ ε₂ negative C c f)
-      (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) t d,
+      (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D *X)) t d,
     rayIdealRow_cube_labels p hp hinj hcop hg F D B v ε₁ ε₂ hv]
   rfl
 

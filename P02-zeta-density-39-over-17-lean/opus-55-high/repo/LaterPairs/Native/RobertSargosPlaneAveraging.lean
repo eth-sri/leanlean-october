@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairWeylSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,7 +24,10 @@ def robertSargosPaddedPlane (a : ℤ → ℤ → ℂ) (M H : ℕ) (m h : ℤ) : 
     if h ∈ Finset.Ico (0:ℤ) H then a m h else 0
   else 0
 
-theorem robertSargos_plane_shift_sum (a : ℤ → ℤ → ℂ) (M H Q R q r : ℕ)
+section
+variable (a : ℤ → ℤ → ℂ)
+include a
+theorem robertSargos_plane_shift_sum (M H Q R q r : ℕ)
     (hq : q < Q) (hr : r < R) :
     (∑ m ∈ Finset.Ico (-(Q:ℤ)) M, ∑ h ∈ Finset.Ico (-(R:ℤ)) H,
       robertSargosPaddedPlane a M H (m+q) (h+r)) =
@@ -38,14 +42,14 @@ theorem robertSargos_plane_shift_sum (a : ℤ → ℤ → ℂ) (M H Q R q r : �
   simp only [hi]
   exact sum_paddedShift_eq (fun n => ∑ h ∈ Finset.Ico (0:ℤ) H, a n h) M Q q hq
 
-theorem robertSargos_plane_averaging (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
+theorem robertSargos_plane_averaging (M H Q R : ℕ) :
     ((Q*R:ℕ):ℝ)^2*
       ‖∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a m h‖^2 ≤
       (((M+Q)*(H+R):ℕ):ℝ)*
         ∑ x ∈ Finset.Ico (-(Q:ℤ)) M ×ˢ Finset.Ico (-(R:ℤ)) H,
           ‖∑ t ∈ Finset.range Q ×ˢ Finset.range R,
             robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)‖^2 := by
-  let A := Finset.Ico (-(Q:ℤ)) (M:ℤ) ×ˢ Finset.Ico (-(R:ℤ)) (H:ℤ)
+  pm_1085 A
   let T := Finset.range Q ×ˢ Finset.range R
   let U : ℤ × ℤ → ℂ := fun x =>
     ∑ t ∈ T, robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)
@@ -63,18 +67,14 @@ theorem robertSargos_plane_averaging (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
         exact robertSargos_plane_shift_sum a M H Q R t.1 t.2
           (Finset.mem_range.mp ht'.1) (Finset.mem_range.mp ht'.2)
       _ = _ := by simp [T]
-  have hcm : ((Finset.Ico (-(Q:ℤ)) (M:ℤ)).card:ℝ) = ((M+Q:ℕ):ℝ) := by
-    norm_num [Int.card_Ico]
-    norm_cast
-  have hch : ((Finset.Ico (-(R:ℤ)) (H:ℤ)).card:ℝ) = ((H+R:ℕ):ℝ) := by
-    norm_num [Int.card_Ico]
-    norm_cast
+  pm_5084 hcm Q M
+  pm_5084 hch R H
   have hc : (A.card:ℝ) = (((M+Q)*(H+R):ℕ):ℝ) := by
     dsimp only [A]
     rw [Finset.card_product,Nat.cast_mul,hcm,hch,Nat.cast_mul]
   have ht := norm_sum_sq_le_card_mul_sum_norm_sq A U
-  rw [hs,hc,RCLike.norm_nsmul ℂ,nsmul_eq_mul] at ht
-  simpa only [mul_pow] using ht
+  pm_5808
+end
 
 theorem robertSargos_plane_gram (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
     (∑ x ∈ Finset.Ico (-(Q:ℤ)) M ×ˢ Finset.Ico (-(R:ℤ)) H,
@@ -85,14 +85,7 @@ theorem robertSargos_plane_gram (a : ℤ → ℤ → ℂ) (M H Q R : ℕ) :
           ∑ x ∈ Finset.Ico (-(Q:ℤ)) M ×ˢ Finset.Ico (-(R:ℤ)) H,
             ⟪robertSargosPaddedPlane a M H (x.1+s.1) (x.2+s.2),
               robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)⟫_ℝ := by
-  simp only [← real_inner_self_eq_norm_sq,sum_inner,inner_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro s _
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro t _
-  apply Finset.sum_congr rfl
+  pm_1655
   intro x _
   exact real_inner_comm _ _
 

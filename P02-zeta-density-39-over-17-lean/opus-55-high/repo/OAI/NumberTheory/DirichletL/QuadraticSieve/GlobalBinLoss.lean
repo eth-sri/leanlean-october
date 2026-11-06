@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicVolume
 public import OAI.NumberTheory.DirichletL.CubicSieve.UniformTransfer
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,71 +9,28 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace CanonicalQuadraticSieve
 
@@ -107,35 +65,34 @@ theorem poisson_nine_terms_box
     lk*(2*uh*d*ln^2*f*e*(4*N/T+a) + 2*d*ln^2*lat*du*f*e*(N+2*T*a) +
       32768*cs*eS) + uh*d^2*cp*b ≤ 262144*U^8*S := by
   let budget : List ℝ := [d,lk,ln,f,e,vh,vz,dv,uh,du,lat,cd,cs,ct,cp]
-  have hp (xs : List ℝ) (hx : ∀x∈xs, x∈budget) (hn : xs.length≤8) : xs.prod≤U^8 :=
-    list_prod_budget xs budget U hU hbudget hx hn
+  pm_5321 budget U hU hbudget
   have hc1 : d*lk*vh*ln^2*f*e≤U^8 := by
-    have hh := hp [d,lk,vh,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3098 d lk vh
+    pm_3097
   have hc2 : d*lk*vz*ln^2*f*e≤U^8 := by
-    have hh := hp [d,lk,vz,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3098 d lk vz
+    pm_3097
   have hc3 : d*lk*ln^2*lat*dv*f*e≤U^8 := by
-    have hh := hp [d,lk,ln,ln,lat,dv,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_1201 d lk dv
+    pm_3097
   have hc4 : d*lk*cd≤U^8 := by
     have hh := hp [d,lk,cd] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    pm_89 List.prod_cons List.prod_nil mul_one mul_assoc hh
   have hc5 : d*ct≤U^8 := by
-    have hh := hp [d,ct] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    pm_5134 d ct
+    pm_89 List.prod_cons List.prod_nil mul_one mul_assoc hh
   have hc6 : lk*uh*d*ln^2*f*e≤U^8 := by
-    have hh := hp [lk,uh,d,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3098 lk uh d
+    pm_3097
   have hc7 : lk*d*ln^2*lat*du*f*e≤U^8 := by
-    have hh := hp [lk,d,ln,ln,lat,du,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_1201 lk d du
+    pm_3097
   have hc8 : lk*cs≤U^8 := by
-    have hh := hp [lk,cs] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    pm_5134 lk cs
+    pm_89 List.prod_cons List.prod_nil mul_one mul_assoc hh
   have hc9 : uh*d^2*cp≤U^8 := by
     have hh := hp [uh,d,d,cp] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3097
   have haS : a≤S := (by nlinarith only [ha, hT] : a≤T*a).trans hTa
   have hdiv : N/T≤N := div_le_self hN hT
   have h1 : M+a≤2*S := by linarith only [hMS, haS]
@@ -145,12 +102,12 @@ theorem poisson_nine_terms_box
   have h7 : N+2*T*a≤3*S := by nlinarith only [hNS, hTa]
   have hU8 : 0≤U^8 := by positivity
   have ht1 := mul_le_mul hc1 h1 (by positivity : 0≤M+a) hU8
-  have ht2 := mul_le_mul hc2 h2 (by positivity : 0≤M+2*T*a) hU8
-  have ht3 := mul_le_mul hc3 h3 (by positivity : 0≤M+2*T*a) hU8
+  pm_5548 ht2 hc2 h2 M
+  pm_5548 ht3 hc3 h3 M
   have ht4 := mul_le_mul hc4 hED.2 hED.1 hU8
   have ht5 := mul_le_mul hc5 htail.2 htail.1 hU8
   have ht6 := mul_le_mul hc6 h6 (by positivity : 0≤4*N/T+a) hU8
-  have ht7 := mul_le_mul hc7 h7 (by positivity : 0≤N+2*T*a) hU8
+  pm_5548 ht7 hc7 h7 N
   have ht8 := mul_le_mul hc8 hES.2 hES.1 hU8
   have ht9 := mul_le_mul hc9 hb.2 hb.1 hU8
   nlinarith only [ht1, ht2, ht3, ht4, ht5, ht6, ht7, ht8, ht9, mul_nonneg hU8 hS]
@@ -183,7 +140,7 @@ theorem poissonComparisonMajorant_unit_box
     (hK : 0≤K) (hN : 0<N) (hM : 0≤M) (hT : 1≤T) (hU : 1≤U) (hS : 0≤S)
     (hbudget : ∀x∈poissonUnitBudget sD sS sT CD CS CT CP hexp deltaLoss hδ ε hε G K N W, 0≤x ∧ x≤U)
     (hMS : M≤S) (hNS : N≤S) (hmid : T*Real.sqrt M*(2*K)^(α-1/2)≤S)
-    (hpr : Real.sqrt (M/K)*N+Real.sqrt M*K^(α-1/2)≤S)
+    (hpr : Real.sqrt (M/K)*N+Real.sqrt M*K ^(α-1/2)≤S)
     (hED : K*M/T^l≤S) (hES : K*N/T^l≤S)
     (htail : M/((min 1 (M/((Ideal.absNorm G:ℝ)*N*N)))^2*
       (1+(M/((Ideal.absNorm G:ℝ)*N*N))*K)^A)≤S) :
@@ -204,7 +161,7 @@ theorem poissonComparisonMajorant_unit_box
     (CT*sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)
     (supportConstant ε hε*N^ε*CP*(K*N)^deltaLoss)
     M N T (Real.sqrt M*(2*K)^(α-1/2))
-    (Real.sqrt (M/K)*N+Real.sqrt M*K^(α-1/2))
+    (Real.sqrt (M/K)*N+Real.sqrt M*K ^(α-1/2))
     (K*M/T^l) (K*N/T^l)
     (M/((min 1 (M/((Ideal.absNorm G:ℝ)*N*N)))^2*(1+(M/((Ideal.absNorm G:ℝ)*N*N))*K)^A))
     U S hU hS hbudget hM hN.le hT (by positivity) hMS hNS
@@ -213,14 +170,12 @@ theorem poissonComparisonMajorant_unit_box
   convert hh using 1
   unfold poissonComparisonMajorant retainedDualMajorant sourcePrincipalMajorant
     smallPrincipalMajorant dualMiddleMajorant
-  simp only [divisorEnergyFactor_diagonal,Fintype.sum_unique,norm_one,one_pow,
-    mul_one,one_mul,div_one]
+  pm_437 divisorEnergyFactor_diagonal Fintype.sum_unique norm_one one_pow mul_one one_mul div_one
   field_simp
   ; ring
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 
 section
@@ -234,7 +189,7 @@ variable {ι : Type*} [DecidableEq ι]
 end
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
@@ -245,7 +200,7 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped Classical Topology MatrixGroups Matrix
 
 namespace CubicEisenstein
 
@@ -266,10 +221,7 @@ lemma matrixGram_right_unitary (g k : SL(2,ℂ)) (hk : k∈compactSubgroup) :
 
 def hyperbolicGram : HyperbolicSpace → Matrix (Fin 2) (Fin 2) ℂ :=
   Quotient.lift matrixGram (by
-    intro g h hgh
-    have hk : g⁻¹*h∈compactSubgroup := QuotientGroup.leftRel_apply.mp hgh
-    have hh : h=g*(g⁻¹*h) := by group
-    rw [hh]
+    pm_3099
     exact (matrixGram_right_unitary g (g⁻¹*h) hk).symm)
 
 lemma hyperbolicGram_continuous : Continuous hyperbolicGram := by
@@ -311,8 +263,7 @@ def complexMatrixRow (g : SL(2,ℂ)) (i : Fin 2) : Fin 2 → ℂ := fun j => g i
 lemma complexMatrixRow_mul (g h : SL(2,ℂ)) (i : Fin 2) :
     complexMatrixRow (g*h) i=rowOperator h (complexMatrixRow g i) := by
   funext j
-  simp only [complexMatrixRow,rowOperator_apply,Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.mul_apply,Matrix.vecMul,dotProduct]
+  pm_577 complexMatrixRow rowOperator_apply Matrix.SpecialLinearGroup.coe_mul Matrix.mul_apply Matrix.vecMul dotProduct
 
 def matrixFrobenius (g : SL(2,ℂ)) : ℝ :=
   rowEnergy (complexMatrixRow g 0)+rowEnergy (complexMatrixRow g 1)
@@ -323,15 +274,11 @@ lemma matrixFrobenius_right_unitary (g k : SL(2,ℂ)) (hk : k∈compactSubgroup)
 
 def hyperbolicFrobenius : HyperbolicSpace → ℝ :=
   Quotient.lift matrixFrobenius (by
-    intro g h hgh
-    have hk : g⁻¹*h∈compactSubgroup := QuotientGroup.leftRel_apply.mp hgh
-    have hh : h=g*(g⁻¹*h) := by group
-    rw [hh]
+    pm_3099
     exact (matrixFrobenius_right_unitary g (g⁻¹*h) hk).symm)
 
 lemma matrixFrobenius_continuous : Continuous matrixFrobenius := by
-  have he (i j : Fin 2) : Continuous (fun g : SL(2,ℂ) => g i j) :=
-    (continuous_apply j).comp ((continuous_apply i).comp continuous_complexSL_coe)
+  pm_3100
   unfold matrixFrobenius rowEnergy complexMatrixRow
   exact ((he 0 0).norm.pow 2 |>.add ((he 0 1).norm.pow 2)).add
     ((he 1 0).norm.pow 2 |>.add ((he 1 1).norm.pow 2))

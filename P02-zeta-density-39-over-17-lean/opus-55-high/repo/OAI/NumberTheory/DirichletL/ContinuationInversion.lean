@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Continuation
 public import Mathlib.Analysis.MellinInversion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,7 +38,7 @@ theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
     rw [show (σ : ℂ) - 1 = ((σ - 1 : ℝ) : ℂ) by push_cast; rfl,
       ← Complex.ofReal_cpow (Real.exp_pos (-u)).le]
     norm_cast
-    rw [Real.rpow_def_of_pos (Real.exp_pos (-u)), Real.log_exp, ← Real.exp_add]
+    pm_6698
     congr 1
     ring
   simpa only [Function.comp_apply, integrableOn_univ, heq] using hf
@@ -62,13 +63,12 @@ theorem mellin_mellinInv_eq (σ : ℝ) (F : ℂ → ℂ) (f : ℝ → ℂ)
     rw [← mul_assoc, ← Complex.ofReal_neg,
       ← Complex.ofReal_cpow (Real.exp_pos (-u)).le]
     have hc : Real.exp (-σ * u) * Real.exp (-u) ^ (-σ) = 1 := by
-      rw [Real.rpow_def_of_pos (Real.exp_pos (-u)), Real.log_exp, ← Real.exp_add]
+      pm_6698
       rw [show -σ * u + -u * -σ = 0 by ring, Real.exp_zero]
     rw [← Complex.ofReal_mul, hc, Complex.ofReal_one, one_mul]
   have hfourier : Integrable (𝓕 A) := by
     have hn := hg.comp_neg
-    rw [hginv] at hn
-    simpa only [Real.fourierInv_eq_fourier_neg, neg_neg] using hn
+    pm_354 hginv hn Real.fourierInv_eq_fourier_neg neg_neg
   rw [mellin_eq_fourier]
   have hre : ((σ : ℂ) + 2 * Real.pi * y * Complex.I).re = σ := by simp
   have him : ((σ : ℂ) + 2 * Real.pi * y * Complex.I).im / (2 * Real.pi) = y := by
@@ -102,12 +102,8 @@ theorem signalMellin_eq_on_line (f : ℝ → ℂ) (A : ℂ → ℂ) (c d : ℝ)
     convert hf using 1; push_cast; ring
   have harg (y : ℝ) : -(((-d : ℝ) : ℂ) + 2 * Real.pi * y * Complex.I) =
       (d : ℂ) - 2 * Real.pi * y * Complex.I := by push_cast; ring
-  have hA' : Integrable
-      (fun y : ℝ => A (-(((-d : ℝ) : ℂ) + 2 * Real.pi * y * Complex.I))) := by
-    simpa only [harg] using hA
-  have hcont' : Continuous
-      (fun y : ℝ => A (-(((-d : ℝ) : ℂ) + 2 * Real.pi * y * Complex.I))) := by
-    simpa only [harg] using hcont
+  pm_5019 hA' Integrable hA
+  pm_5019 hcont' Continuous hcont
   have hid := mellin_mellinInv_eq (-d) (fun s => A (-s))
     (normalizedSignal f c) hf' hA' hcont' hrep y
   rw [harg] at hid

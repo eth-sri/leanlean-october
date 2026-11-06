@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,7 +22,7 @@ def smallDyadicIndices (L : ℝ) : Finset ℕ :=
   · intro hn
     refine ⟨?_,hn⟩
     by_contra h
-    have hp := pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (not_lt.mp h)
+    pm_8648 hp not_lt.mp h
     exact not_lt_of_ge (hp.trans hn) (Nat.find_spec (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))
 
 def smallDyadicRows (L : ℝ) (n : ℕ) : Finset FreeRow := (dyadicRows 1 n).filter (fun u=>rowNorm u<L)
@@ -29,11 +30,14 @@ def smallDyadicRows (L : ℝ) (n : ℕ) : Finset FreeRow := (dyadicRows 1 n).fil
 @[simp] lemma mem_smallDyadicRows {L : ℝ} {n : ℕ} {u : FreeRow} :
     u∈smallDyadicRows L n ↔ u∈dyadicRows 1 n ∧ rowNorm u<L := Finset.mem_filter
 
-lemma smallDyadicRows_disjoint (L : ℝ) : Pairwise (fun m n=>Disjoint (smallDyadicRows L m) (smallDyadicRows L n)) := by
+section
+variable (L : ℝ)
+include L
+lemma smallDyadicRows_disjoint : Pairwise (fun m n=>Disjoint (smallDyadicRows L m) (smallDyadicRows L n)) := by
   intro m n hmn
   exact (dyadicRows_disjoint 1 (by norm_num) hmn).mono (Finset.filter_subset _ _) (Finset.filter_subset _ _)
 
-lemma small_rows_biUnion (L : ℝ) :
+lemma small_rows_biUnion :
     (smallDyadicIndices L).biUnion (smallDyadicRows L)=rowBand 1 L := by
   ext u
   constructor
@@ -46,14 +50,14 @@ lemma small_rows_biUnion (L : ℝ) :
     have hh := mem_rowBand.mp hu
     obtain ⟨n,hn⟩ := exists_dyadicRows 1 (by norm_num) u hh.1 hh.2.1
     refine Finset.mem_biUnion.mpr ⟨n,?_,mem_smallDyadicRows.mpr ⟨hn,hh.2.2⟩⟩
-    rw [mem_smallDyadicIndices]
-    have hlo := (mem_dyadicRows.mp hn).2.1
-    simpa only [one_mul] using hlo.trans hh.2.2.le
+    pm_7813
+    grind
 
-lemma sum_small_dyadicRows (L : ℝ) (f : FreeRow→ℂ) :
+lemma sum_small_dyadicRows (f : FreeRow→ℂ) :
     (∑u∈rowBand 1 L,f u)=∑n∈smallDyadicIndices L,∑u∈smallDyadicRows L n,f u := by
   rw [←small_rows_biUnion L]
   exact Finset.sum_biUnion (fun m hm n hn hmn=>smallDyadicRows_disjoint L hmn)
+end
 
 end SevenEighths.ProbeHighRowFamily
 

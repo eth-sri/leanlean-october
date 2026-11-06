@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection7ConditionedExpansion
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The local hard-branch estimate through equation (7.21)
@@ -14,11 +15,9 @@ input that the induction hypothesis supplies.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooley_equations_7_18_to_7_21_local_bound
     {k r p c a b B nu s : ℕ}
@@ -89,7 +88,7 @@ theorem wooley_equations_7_18_to_7_21_local_bound
   let right := wooleyAffinePullback gamma (p ^ b)
     (pow_pos hpPrime.pos b) (eta.val : ℤ)
   let : NeZero qPrime := ⟨pow_ne_zero _ hpPrime.ne_zero⟩
-  let : NeZero (p ^ H) := ⟨pow_ne_zero _ hpPrime.ne_zero⟩
+  pm_7205
   obtain ⟨Psi, hPsi, horiginal, hreverse⟩ :=
     wooley_equation_7_21_native
       (s := s) (H := H) hpPrime hc hr hrk hkp hMB
@@ -172,9 +171,7 @@ theorem wooley_equations_7_18_to_7_21_local_bound
       apply congrArg (fun x : ℝ => C * loss * x)
       apply Finset.sum_congr rfl
       intro zeta hzeta
-      have hzetaInt :
-          ((((zeta.val : ℕ) : ℤ) : ZMod (p ^ H))) = zeta := by
-        simpa only [Int.cast_natCast] using ZMod.natCast_zmod_val zeta
+      pm_2820
       have hetaInt :
           ((((eta.val : ℕ) : ℤ) : ZMod (p ^ b))) = eta := by
         simpa only [Int.cast_natCast] using ZMod.natCast_zmod_val eta
@@ -192,6 +189,5 @@ theorem wooley_equations_7_18_to_7_21_local_bound
       · rw [hmass, hreverse zeta hkappa, hetaInt]
   
 
-end
 
 end GafniTao

@@ -1,19 +1,19 @@
 module
 public import RationalCoefficientEnergy
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
 theorem cyclic_probability_mass {N d : ℕ} [NeZero N] :
-    (∑ _x : Fin d → ZMod N, ∏ _j : Fin d, (N : ℝ)⁻¹) = 1 := by
-  rw [← Fintype.prod_sum (fun (_ : Fin d) (_ : ZMod N) => (N : ℝ)⁻¹)]
-  simp [ZMod.card, NeZero.ne N]
+    (∑ _x : Fin d → ZMod N, ∏ _j : Fin d, (N : ℝ)⁻¹) = 1 := by simp_all
 
-theorem rational_coefficient_energy_one (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < r)
+section
+variable (A : Finset ℚ)
+include A
+theorem rational_coefficient_energy_one (hA : ∀ r ∈ A, 0 < r)
     (c : ℚ → ℂ) : rationalCoefficientEnergy A 1 c = ∑ r ∈ A, ‖c r‖^2 := by
   obtain ⟨d, p, N, hN, _, hP, _, hdiff⟩ := finite_rational_prime_model (A ∪ rationalProducts A 1)
   let : NeZero N := ⟨hN.ne'⟩
@@ -24,9 +24,9 @@ theorem rational_coefficient_energy_one (A : Finset ℚ) (hA : ∀ r ∈ A, 0 < 
     (fun r hr => hP r (mem_union_left _ hr))
     (fun q hq r hr => hdiff q (mem_union_left _ hq) r (mem_union_left _ hr)) c
   norm_num only [show 2*1 = 2 by omega] at hm
-  exact hm.symm.trans hs
+  grind
 
-theorem rational_coefficient_energy_double (A : Finset ℚ) (k : ℕ)
+theorem rational_coefficient_energy_double (k : ℕ)
     (hA : ∀ r ∈ A, 0 < r) (c : ℚ → ℂ) :
     rationalCoefficientEnergy A (2*k) c =
       rationalCoefficientEnergy (rationalProducts A k) 2 (rationalPowerCoefficient A k c) := by
@@ -42,26 +42,18 @@ theorem rational_coefficient_energy_double (A : Finset ℚ) (k : ℕ)
     (fun q hq r hr => hdiff q (mem_union_right _ hq) r (mem_union_right _ hr))
     (rationalPowerCoefficient A k c)
   rw [← hm, ← hs]
-  apply sum_congr rfl
-  intro x _
-  rw [← rational_cyclic_power_expansion p A c k hA x, norm_pow, ← pow_mul]
-  congr 2
-  omega
+  pm_1143
 
 /-- A lower moment is bounded by one plus a higher moment in a probability
 model. This elementary inequality avoids a separate interpolation theorem. -/
-theorem rational_coefficient_energy_le_one_add (A : Finset ℚ) (k m : ℕ)
+theorem rational_coefficient_energy_le_one_add (k m : ℕ)
     (hkm : k ≤ m) (hA : ∀ r ∈ A, 0 < r) (c : ℚ → ℂ) :
     rationalCoefficientEnergy A k c ≤ 1 + rationalCoefficientEnergy A m c := by
   obtain ⟨d, p, N, hN, _, hP, _, hdiff⟩ :=
     finite_rational_prime_model (rationalProducts A k ∪ rationalProducts A m)
   let : NeZero N := ⟨hN.ne'⟩
-  have hk := rational_cyclic_moment_identity (N := N) p A k hA
-    (fun q hq => hP q (mem_union_left _ hq))
-    (fun q hq r hr => hdiff q (mem_union_left _ hq) r (mem_union_left _ hr)) c
-  have hm := rational_cyclic_moment_identity (N := N) p A m hA
-    (fun q hq => hP q (mem_union_right _ hq))
-    (fun q hq r hr => hdiff q (mem_union_right _ hq) r (mem_union_right _ hr)) c
+  pm_4993 hk k mem_union_left
+  pm_4993 hm m mem_union_right
   rw [← hk, ← hm]
   have hpow (z : ℂ) : ‖z‖^(2*k) ≤ 1+‖z‖^(2*m) := by
     by_cases hz : ‖z‖ ≤ 1
@@ -76,17 +68,18 @@ theorem rational_coefficient_energy_le_one_add (A : Finset ℚ) (k m : ℕ)
     _ = _ := by
       simp only [mul_add, mul_one, sum_add_distrib, cyclic_probability_mass]
 
-theorem rational_power_coefficient_smul (A : Finset ℚ) (k : ℕ) (c : ℚ → ℂ) (a : ℂ)
+theorem rational_power_coefficient_smul (k : ℕ) (c : ℚ → ℂ) (a : ℂ)
     (r : ℚ) :
     rationalPowerCoefficient A k (fun x => a*c x) r = a^k*rationalPowerCoefficient A k c r := by
   unfold rationalPowerCoefficient
   simp only [prod_mul_distrib, prod_const, card_univ, Fintype.card_fin, ← mul_sum]
 
-theorem rational_coefficient_energy_smul (A : Finset ℚ) (k : ℕ) (c : ℚ → ℂ) (a : ℂ) :
+theorem rational_coefficient_energy_smul (k : ℕ) (c : ℚ → ℂ) (a : ℂ) :
     rationalCoefficientEnergy A k (fun x => a*c x) = ‖a‖^(2*k)*rationalCoefficientEnergy A k c := by
   unfold rationalCoefficientEnergy
   simp only [rational_power_coefficient_smul A k c a, norm_mul, norm_pow, mul_pow, ← mul_sum]
   rw [← pow_mul, Nat.mul_comm k 2]
+end
 
 theorem rational_mul_numerator_le {r s : ℚ} (hr : r ≠ 0) (hs : s ≠ 0) :
     (r*s).num.natAbs ≤ r.num.natAbs*s.num.natAbs := by
@@ -113,8 +106,7 @@ theorem rational_product_height (A : Finset ℚ) (k : ℕ) {H : ℝ}
     (hA : ∀ r ∈ A, 0 < r ∧ (r.num.natAbs : ℝ) ≤ H ∧ (r.den : ℝ) ≤ H) :
     ∀ q ∈ rationalProducts A k,
       0 < q ∧ (q.num.natAbs : ℝ) ≤ H^k ∧ (q.den : ℝ) ≤ H^k := by
-  intro q hq
-  obtain ⟨v, hv, rfl⟩ := mem_image.mp hq
+  pm_136 q hq v hv mem_image.mp
   have hvA (j : Fin k) := hA (v j) (Fintype.mem_piFinset.mp hv j)
   refine ⟨prod_pos (fun j _ => (hvA j).1), ?_, ?_⟩
   · calc

@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownKernelEnergy
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Block Cauchy inequality for the Heath-Brown energy
@@ -13,14 +14,14 @@ pointwise inequality.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
-theorem heathBrownFourierAtom_sum_eq_block_sums
-    {N K : ℕ} (hK : 0 < K) (g₁ g₂ : ℕ → ℝ) (rs : ℤ × ℤ) :
+section
+variable {N K : ℕ}
+include N K
+theorem heathBrownFourierAtom_sum_eq_block_sums (hK : 0 < K) (g₁ g₂ : ℕ → ℝ) (rs : ℤ × ℤ) :
     (∑ n ∈ Finset.Icc 1 N, heathBrownFourierAtom g₁ g₂ rs n) =
       ∑ i ∈ Finset.range K, ∑ n ∈ heathBrownBlock N K i,
         heathBrownFourierAtom g₁ g₂ rs n := by
@@ -38,8 +39,7 @@ theorem heathBrownFourierAtom_sum_eq_block_sums
         heathBrownFourierAtom g₁ g₂ rs n :=
       heathBrown_sum_over_blocks hK _
 
-theorem heathBrownFrequencyEnergy_le_block_energies
-    {N K : ℕ} (hK : 0 < K)
+theorem heathBrownFrequencyEnergy_le_block_energies (hK : 0 < K)
     {B C : ℝ} (hB : 0 ≤ B) (hC : 0 ≤ C)
     (g₁ g₂ : ℕ → ℝ) (rs : ℤ × ℤ) :
     heathBrownFrequencyEnergy B C g₁ g₂ (Finset.Icc 1 N) rs ≤
@@ -59,8 +59,7 @@ theorem heathBrownFrequencyEnergy_le_block_energies
   calc
     heathBrownFrequencyEnergy B C g₁ g₂ (Finset.Icc 1 N) rs =
         c * ‖∑ i ∈ Finset.range K, V i‖ ^ 2 := by
-      simp only [heathBrownFrequencyEnergy, c, V]
-      rw [hsplit]
+      pm_210 heathBrownFrequencyEnergy c V hsplit
     _ ≤ c * ((K : ℝ) * ∑ i ∈ Finset.range K, ‖V i‖ ^ 2) :=
       mul_le_mul_of_nonneg_left hcs hc
     _ = (K : ℝ) * ∑ i ∈ Finset.range K,
@@ -74,7 +73,6 @@ theorem heathBrownFrequencyEnergy_le_block_energies
       rw [Finset.mul_sum]
 
 theorem hasSum_heathBrownBlockFrequencyEnergy
-    {N K : ℕ}
     {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
     (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
     (g₁ g₂ : ℕ → ℝ) :
@@ -93,8 +91,7 @@ theorem hasSum_heathBrownBlockFrequencyEnergy
       hB hBHalf hC hCHalf g₁ g₂ (heathBrownBlock N K i))
 
 /-- Exact source block-energy inequality before the kernel support is used. -/
-theorem heathBrown_full_kernel_sum_le_blocks
-    {N K : ℕ} (hK : 0 < K)
+theorem heathBrown_full_kernel_sum_le_blocks (hK : 0 < K)
     {B C : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2)
     (hC : 0 < C) (hCHalf : C ≤ 1 / 2)
     (g₁ g₂ : ℕ → ℝ) :
@@ -134,8 +131,8 @@ theorem heathBrown_full_kernel_sum_le_blocks
   have htsum := hfull.summable.tsum_le_tsum hpoint hscaled.summable
   rw [hfull.tsum_eq, hscaled.tsum_eq] at htsum
   exact htsum
-
-
 end
+
+
 
 end GafniTao

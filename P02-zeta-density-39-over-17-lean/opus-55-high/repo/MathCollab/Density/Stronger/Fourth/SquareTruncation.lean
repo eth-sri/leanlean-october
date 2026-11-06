@@ -8,13 +8,12 @@ Mathlib and narrow DigammaSeries dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.SquareLineShift
 public import Mathlib.Analysis.PSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
+open Complex Filter MeasureTheory Topology
 open scoped Interval
-open MathCollab.Density.Stronger
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -30,12 +29,9 @@ theorem exists_norm_zetaFourthContribution_le {c : ℝ} (hc : 0 < c) :
       ‖zetaFourthContribution t c n‖ ≤
         K*t^c*((n.divisors.card:ℝ)*(n:ℝ)^(-(1/2+c))) := by
   obtain ⟨A,hA,hbound⟩ := exists_integral_norm_zetaFourthKernel_le hc
-  let B : ℝ := ‖(1/(2*Real.pi):ℂ)‖
-  have hB : 0 < B := by
-    apply norm_pos_iff.mpr
-    exact one_div_ne_zero (mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))
+  pm_727
   let K : ℝ := B*A*Real.sqrt (Real.pi/98)
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  refine ⟨K,by aesop,?_⟩
   intro t ht hct n
   calc
     ‖zetaFourthContribution t c n‖
@@ -57,11 +53,7 @@ theorem summable_fourth_divisorWeight {c : ℝ} (hc : 3/2 < c) :
     Real.summable_nat_rpow.mpr (by linarith)
   apply Summable.of_nonneg_of_le (fun _ => by positivity) ?_ hp
   intro n
-  by_cases hn : n = 0
-  · subst n
-    simp only [Nat.divisors_zero,Finset.card_empty,Nat.cast_zero,zero_mul]
-    positivity
-  have hn0 : (0:ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+  pm_4476
   calc
     _ ≤ (n:ℝ)*(n:ℝ)^(-(1/2+c)) :=
       mul_le_mul_of_nonneg_right (by exact_mod_cast Nat.card_divisors_le_self n)
@@ -90,19 +82,21 @@ theorem zetaFourthPrefix_eq_integral {t c : ℝ} (ht : 0 ≤ t) (hc : 0 < c)
   filter_upwards [] with u
   simp only [zetaFourthTerm,Finset.sum_mul]
 
-theorem zetaFourthPrefix_line_eq {t a b : ℝ} (ht : 0 ≤ t)
-    (ha : 0 < a) (hb : 0 < b) (S : Finset ℕ) :
+section
+variable {t a b : ℝ} (ht : 0 ≤ t) (ha : 0 < a) (hb : 0 < b) (S : Finset ℕ)
+include t a b ht ha hb S
+theorem zetaFourthPrefix_line_eq :
     zetaFourthPrefix t a S = zetaFourthPrefix t b S := by
   apply Finset.sum_congr rfl
   intro n _
   exact zetaFourthContribution_line_eq ha hb ht n
 
-theorem zetaFourthRightPiece_eq_prefix_add_tail {t a b : ℝ} (ht : 0 ≤ t)
-    (ha : 0 < a) (hb : 0 < b) (S : Finset ℕ) :
+theorem zetaFourthRightPiece_eq_prefix_add_tail :
     zetaFourthRightPiece t = zetaFourthPrefix t a S + zetaFourthTail t b S := by
   rw [zetaFourthPrefix_line_eq ht ha hb S,zetaFourthPrefix,zetaFourthTail,
     (hasSum_zetaFourthContribution ht hb).summable.sum_add_tsum_subtype_compl S,
     (hasSum_zetaFourthContribution ht hb).tsum_eq]
+end
 
 theorem summable_norm_zetaFourthTail {t c : ℝ} (ht : 0 ≤ t) (hc : 0 < c)
     (S : Finset ℕ) :
@@ -115,8 +109,7 @@ theorem exists_norm_zetaFourthTail_le {c : ℝ} (hc : 3/2 < c) :
         ∑' n : {n : ℕ // n ∉ S},
           ((n:ℕ).divisors.card:ℝ)*((n:ℕ):ℝ)^(-(1/2+c)) := by
   have hc0 : 0 < c := by linarith
-  obtain ⟨K,hK,hbound⟩ := exists_norm_zetaFourthContribution_le hc0
-  refine ⟨K,hK,?_⟩
+  pm_102 K hK hbound exists_norm_zetaFourthContribution_le hc0
   intro t ht hct S
   have ht0 : 0 ≤ t := by linarith
   have hs := (summable_fourth_divisorWeight hc).subtype (fun n => n ∉ S)

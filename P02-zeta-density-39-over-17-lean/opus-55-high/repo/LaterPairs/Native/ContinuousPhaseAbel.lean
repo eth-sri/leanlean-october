@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosSlowAbel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -30,10 +31,7 @@ theorem norm_weighted_range_of_prefix_bound
       · exact (mul_le_mul_of_nonneg_left (hp N le_rfl) (norm_nonneg _)).trans
           (by simpa using mul_le_mul_of_nonneg_right hw hB)
       · apply Finset.sum_le_sum
-        intro j hj
-        exact mul_le_mul_of_nonneg_left (hp (j+1) (by
-          have := Finset.mem_range.mp hj
-          omega)) (norm_nonneg _)
+        pm_7882 j hj hp
     _ = (1+∑ j ∈ Finset.range (N-1), ‖w (j+1)-w j‖)*B := by
       rw [← Finset.sum_mul]
       ring
@@ -52,15 +50,15 @@ theorem continuous_character_range_variation
     have hjN : (j:ℝ)+1 ≤ N := by
       exact_mod_cast (show j+1 ≤ N by have := Finset.mem_range.mp hj; omega)
     have hx : A+j ∈ Icc A (A+N) := by
-      constructor <;> linarith [Nat.cast_nonneg (α := ℝ) j]
+      pm_2523
     have hy : A+(j+1) ∈ Icc A (A+N) := by
-      constructor <;> linarith [Nat.cast_nonneg (α := ℝ) j]
+      pm_2523
     have hs := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
       (fun x hx => (hu x hx).hasDerivWithinAt)
       (fun x hx => by simpa only [Real.norm_eq_abs] using hd x hx)
       (convex_Icc A (A+N)) hx hy
-    have hsub : A+(j+1)-(A+j) = 1 := by ring
-    simp only [Real.norm_eq_abs,hsub,abs_one,mul_one] at hs
+    pm_6393 hsub
+    pm_423 Real.norm_eq_abs hsub abs_one mul_one hs
     exact (sargos_character_sub_norm_le _ _).trans
       ((mul_le_mul_of_nonneg_left hs (by positivity)).trans_eq (by ring))
   calc

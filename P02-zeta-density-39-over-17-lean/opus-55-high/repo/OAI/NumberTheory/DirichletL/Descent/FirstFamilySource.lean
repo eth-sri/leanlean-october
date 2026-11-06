@@ -1,15 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstBalancedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels
+open JointLogSeparation MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
@@ -56,9 +57,7 @@ theorem first_family_density_sum (source : Finset κ) (F : Finset ι)
       (A₁ x) (A₂ x) (C x) (R x) (d x) (h x) s density hDensity).const_mul (w x))]
   apply integral_congr_ae
   filter_upwards with z
-  simp only [firstFamilySeparatedRow,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_3526 firstFamilySeparatedRow Finset.mul_sum Finset.sum_congr x hx
   ring
 
 def firstFamilyPhysicalRows (source : Finset κ) (F : Finset ι)
@@ -102,9 +101,7 @@ theorem actual_first_balanced_family (hp : ∀ i,p i ≠ 0)
     (d x) (h x) (hpos x hx).2.2.2.2.1 (hpos x hx).2.2.2.2.2 s hs density hDensity hsep
     (hω₁ x hx) (hω₂ x hx) (hcut x hx)
   rw [←first_family_density_sum p hg source F selector C₁ C₂ w ω₁ ω₂ A₁ A₂ C R d h s density hDensity]
-  simp only [firstFamilyPhysicalRows,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_3526 firstFamilyPhysicalRows Finset.mul_sum Finset.sum_congr x hx
   calc
     _ = w x*((Real.exp (-(9/2:ℝ)*L):ℂ)*firstBlockedPhysicalRows p hg F (selector x) (C₁ x) (C₂ x)
       (fun y => W₁ (y/(s 0*s 2*s 5*s 7))) (fun y => W₂ (y/(s 1*s 2*s 5*s 8)))

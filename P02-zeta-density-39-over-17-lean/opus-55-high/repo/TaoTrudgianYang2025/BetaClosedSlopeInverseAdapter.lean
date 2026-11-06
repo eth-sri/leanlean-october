@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSlopeInverse
 public import TaoTrudgianYang2025.BetaClosedSlope
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -11,20 +12,21 @@ open Set Filter Expdb
 open scoped Topology ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-theorem modelPhaseClosedSlope_drop {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ)
+include σ δ F hσ hδ hF
+theorem modelPhaseClosedSlope_drop
     {u v : ℝ} (hu : u ∈ Icc (1 : ℝ) 2) (hv : v ∈ Icc (1 : ℝ) 2)
     (huv : u ≤ v) :
     modelPhaseCurvatureLower σ*(v-u) ≤ modelPhaseClosedSlope F u-modelPhaseClosedSlope F v := by
   have hd : DifferentiableOn ℝ (modelPhaseClosedSlope F) (interior (Icc (1 : ℝ) 2)) := by
     intro x hx
-    have hx' : x ∈ Ioo (1 : ℝ) 2 := by simpa only [interior_Icc] using hx
+    pm_5928 hx' x
     exact (((approximateModelPhase_deriv_contDiffAt hF hx').differentiableAt (by simp)).congr_of_eventuallyEq (modelPhaseClosedSlope_eventuallyEq_deriv hx')).differentiableWithinAt
   have hb : ∀ x ∈ interior (Icc (1 : ℝ) 2),
       deriv (modelPhaseClosedSlope F) x ≤ -modelPhaseCurvatureLower σ := by
     intro x hx
-    have hx' : x ∈ Ioo (1 : ℝ) 2 := by simpa only [interior_Icc] using hx
+    pm_5928 hx' x
     rw [(modelPhaseClosedSlope_eventuallyEq_deriv hx').deriv_eq]
     have h := (approximateModelPhase_curvature_deriv_bounds hσ hδ hF hx').1
     linarith
@@ -32,18 +34,14 @@ theorem modelPhaseClosedSlope_drop {σ δ : ℝ} {F : ℝ → ℝ}
     (modelPhaseClosedSlope_continuousOn hF) hd hb u hu v hv huv
   linarith
 
-theorem modelPhaseClosedSlope_strictAntiOn {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ) :
+theorem modelPhaseClosedSlope_strictAntiOn :
     StrictAntiOn (modelPhaseClosedSlope F) (Icc (1 : ℝ) 2) := by
   intro u hu v hv huv
   have hd := modelPhaseClosedSlope_drop hσ hδ hF hu hv huv.le
   have hp := mul_pos (modelPhaseCurvatureLower_pos hσ) (sub_pos.mpr huv)
   linarith
 
-theorem modelPhaseSlopeRange_eq_endpoint_Ioo {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ) :
+theorem modelPhaseSlopeRange_eq_endpoint_Ioo :
     modelPhaseSlopeRange F = Ioo (modelPhaseClosedSlope F 2) (modelPhaseClosedSlope F 1) := by
   have hm := modelPhaseClosedSlope_strictAntiOn hσ hδ hF
   ext v
@@ -57,15 +55,14 @@ theorem modelPhaseSlopeRange_eq_endpoint_Ioo {σ δ : ℝ} {F : ℝ → ℝ}
       (modelPhaseClosedSlope_continuousOn hF) hv
     exact ⟨u,hu,(modelPhaseClosedSlope_eq_deriv hu).symm.trans he⟩
 
-theorem modelPhaseClosedSlope_deriv_bounds {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
+theorem modelPhaseClosedSlope_deriv_bounds
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseClosedSlope F 2 ≤ deriv F u ∧ deriv F u ≤ modelPhaseClosedSlope F 1 := by
-  have hm := (modelPhaseClosedSlope_strictAntiOn hσ hδ hF).antitoneOn
+  pm_5045 hm modelPhaseClosedSlope_strictAntiOn
   rw [← modelPhaseClosedSlope_eq_deriv hu]
   exact ⟨hm ⟨hu.1.le,hu.2.le⟩ (by norm_num) hu.2.le,
     hm (by norm_num) ⟨hu.1.le,hu.2.le⟩ hu.1.le⟩
+end
 
 
 end TaoTrudgianYang2025

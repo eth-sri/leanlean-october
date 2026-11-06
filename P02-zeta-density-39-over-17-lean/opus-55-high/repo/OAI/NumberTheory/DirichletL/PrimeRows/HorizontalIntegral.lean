@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoinDecay
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,15 +15,15 @@ local notation "O" => HeckeFamily.O
 
 lemma continuedRow_horizontal_measurable {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
+    (P : Fin K→ PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ) (ha1 : 0<a1)
     (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (tx υ r : ℝ) (hr : 0<r) :
+    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (tx υ r : ℝ) (hr : 0< r) :
     Measurable (fun p : ℝ × (ℝ × ℝ)=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z
       p.1 υ r ((tx,p.2.1),p.2.2)) := by
   have hR : Continuous (fun t : ℝ=>mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) ((r:ℂ)+t*I)) :=
     (ProbeRadialMellin.radial_mellin_differentiable W0).continuousOn.comp_continuous
-      (by fun_prop) (by intro t;simpa using hr)
+      (by fun_prop) (by simp_all)
   have hW := (CubicReflectionKernel.compact_source_mellin_differentiable W1 a1 b1 ha1 hW1 (W1.smooth ⊤)).continuous
   have hcoords : Continuous (fun p : ℝ × (ℝ × ℝ)=>(((p.1:ℂ)+tx*I,(υ:ℂ)+p.2.2*I),(r:ℂ)+p.2.1*I)) := by fun_prop
   have hscale := (sourceScale_continuous X Y Z hX hY hZ).comp hcoords
@@ -55,15 +56,15 @@ lemma continuedRow_horizontal_measurable {K : ℕ}
       apply measurable_const_cpow
       · exact Complex.ofReal_ne_zero.mpr (elementNorm_pos _ u.property.1).ne'
       · fun_prop
-  · exact hphysical.const_mul _
+  fun_prop
 
-lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr : l≤r) (_hC : 0≤C)
+lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr : l≤ r) (_hC : 0≤C)
     (hm : Measurable (Function.uncurry F))
     (hi : ∀v∈Ioc l r,Integrable (F v) (volume.prod volume))
-    (hb : ∀v∈Ioc l r,(∫q : ℝ×ℝ,‖F v q‖ ∂volume.prod volume)≤C) :
+    (hb : ∀v∈Ioc l r,(∫q : ℝ×ℝ,‖F v q‖ ∂ volume.prod volume)≤C) :
     Integrable (fun q : ℝ×ℝ=>∫v : ℝ in l..r,F v q) (volume.prod volume) ∧
-      (∫q : ℝ×ℝ,‖∫v : ℝ in l..r,F v q‖ ∂volume.prod volume)≤(r-l)*C := by
-  let μ : Measure ℝ := volume.restrict (Ioc l r)
+      (∫q : ℝ×ℝ,‖∫v : ℝ in l..r,F v q‖ ∂ volume.prod volume)≤(r-l)*C := by
+  pm_8615 Ioc l r
   let ν : Measure (ℝ×ℝ) := volume.prod volume
   have hm' : AEStronglyMeasurable (Function.uncurry F) (μ.prod ν) := hm.aestronglyMeasurable
   have hnorm : Integrable (fun v=>∫q,‖F v q‖ ∂ν) μ := by

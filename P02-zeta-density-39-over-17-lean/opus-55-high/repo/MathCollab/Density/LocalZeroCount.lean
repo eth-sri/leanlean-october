@@ -7,24 +7,17 @@ replaced by the existing actual-zero set; only rectangle membership is used.
 public import MathCollab.Density.ZetaJensenInputs
 public import MathCollab.Density.ZeroSeparation
 
-@[expose] public section
+public section
 
-open Complex Filter Set MeasureTheory
-open scoped Topology BigOperators
+open Complex Filter MeasureTheory
+open scoped Topology
 open MathCollab.Density.ZetaGrowth
 
-set_option autoImplicit false
 
-noncomputable section
 namespace MathCollab.Density
 
-theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
-    (hσLower : 7 / 10 ≤ σ) (hT : 8 ≤ T) :
-    ((∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter
-        (fun ρ => (z : ℝ) ≤ ρ.im ∧ ρ.im < (z : ℝ) + 1),
-        zetaMultiplicity ρ : ℕ) : ℝ) ≤
-      Real.log ((100 * T ^ (3 : ℝ)) / (0.6 : ℝ)) /
-        Real.log ((7/4 : ℝ) / (3/2 : ℝ)) := by
+set_option hygiene false in
+macro "pf_5" x1:term:max x2:term:max : tactic => `(tactic| (
   let S := (zetaZeroFinset σ T (2*T)).filter
     (fun ρ => (z : ℝ) ≤ ρ.im ∧ ρ.im < (z : ℝ) + 1)
   by_cases hSEmpty : S = ∅
@@ -96,7 +89,7 @@ theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
         obtain ⟨hz, hs, hlo, hhi⟩ := mem_zetaZeroFinset.mp hρData.1
         exact ⟨⟨hs, hz.2.2.le, hlo, hhi⟩, hz.1⟩
       rw [Metric.mem_closedBall, dist_eq_norm]
-      have hreLower : -(13/10 : ℝ) ≤ (ρ - c).re := by
+      have hreLower : -($x1:term/$x2:term : ℝ) ≤ (ρ - c).re := by
         norm_num [c]
         linarith [hσLower, hρRect.1.1]
       have hreUpper : (ρ - c).re ≤ 0 := by
@@ -110,7 +103,7 @@ theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
         linarith [hρData.2.2]
       rw [mul_self_le_mul_self_iff (norm_nonneg _) (by norm_num)]
       rw [Complex.norm_mul_self_eq_normSq, normSq_apply]
-      nlinarith [sq_nonneg ((ρ - c).re + 13/10), sq_nonneg ((ρ - c).im + 1/2),
+      nlinarith [sq_nonneg ((ρ - c).re + $x1:term/$x2:term), sq_nonneg ((ρ - c).im + 1/2),
         sq_nonneg ((ρ - c).im - 1/2)]
     let V : Set ℂ := Metric.closedBall c (3/2 : ℝ)
     have hVCompact : IsCompact V := isCompact_closedBall c (3/2 : ℝ)
@@ -153,14 +146,17 @@ theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
         (100 * T ^ (3 : ℕ)) / (0.6 : ℝ) :=
       div_le_div_of_nonneg_left hMPos.le (by norm_num) hcLower
     exact Real.log_le_log
-      (div_pos hMPos (by simpa [c] using hcNormPos)) (by simpa [c] using hRatioLe)
+      (div_pos hMPos (by simpa [c] using hcNormPos)) (by simpa [c] using hRatioLe)))
+theorem zeta_unit_bin_sum_le_jensen (σ T : ℝ) (z : ℤ)
+    (hσLower : 7 / 10 ≤ σ) (hT : 8 ≤ T) :
+    ((∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter
+        (fun ρ => (z : ℝ) ≤ ρ.im ∧ ρ.im < (z : ℝ) + 1),
+        zetaMultiplicity ρ : ℕ) : ℝ) ≤
+      Real.log ((100 * T ^ (3 : ℝ)) / (0.6 : ℝ)) /
+        Real.log ((7/4 : ℝ) / (3/2 : ℝ)) := by pf_5 13 10
 
-/-- A single logarithmic multiplicity constant for every actual zero bin.
-Both the large-height Jensen estimate and the bounded-height range are proved. -/
-theorem zeta_local_multiplicity_bound :
-    ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ, 3/4 ≤ σ → 2 ≤ T → ∀ k : ℤ,
-      (∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter (fun ρ => ordinateBin ρ = k),
-        (zetaMultiplicity ρ : ℝ)) ≤ C*Real.log (2*T) := by
+set_option hygiene false in
+macro "pf_22" x1:term:max x2:term:max x3:ident : tactic => `(tactic| (
   classical
   let D : ℝ := Real.log ((7/4 : ℝ)/(3/2 : ℝ))
   let K : ℝ := 100/D
@@ -168,7 +164,7 @@ theorem zeta_local_multiplicity_bound :
   have hD : 0 < D := by dsimp [D]; apply Real.log_pos; norm_num
   have hK : 0 < K := div_pos (by norm_num) hD
   have hT₀ : 8 ≤ T₀ := le_max_right _ _
-  have hlarge : ∀ σ T : ℝ, 3/4 ≤ σ → T₀ ≤ T → ∀ k : ℤ,
+  have hlarge : ∀ σ T : ℝ, $x1:term/$x2:term ≤ σ → T₀ ≤ T → ∀ k : ℤ,
       (∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter (fun ρ => ordinateBin ρ = k),
         (zetaMultiplicity ρ : ℝ)) ≤ K*Real.log (2*T) := by
     intro σ T hσ hT k
@@ -177,7 +173,7 @@ theorem zeta_local_multiplicity_bound :
     have hTpos : 0 < T := by linarith
     have hlog : 2 ≤ Real.log T := by
       simpa using Real.log_le_log (Real.exp_pos 2) hTexp
-    have hraw := zeta_unit_bin_sum_le_jensen σ T k (by linarith) hT8
+    have hraw := $x3:ident σ T k (by linarith) hT8
     have hnum : Real.log ((100*T^(3 : ℝ))/(0.6 : ℝ)) ≤ 100*Real.log T := by
       have hconst := Real.log_le_sub_one_of_pos (show (0 : ℝ) < 500/3 by norm_num)
       calc
@@ -198,7 +194,7 @@ theorem zeta_local_multiplicity_bound :
       _ = K*Real.log T := by dsimp [K]; ring
       _ ≤ K*Real.log (2*T) := mul_le_mul_of_nonneg_left
         (Real.log_le_log hTpos (by linarith)) hK.le
-  let Q : ℝ := zetaDensityCount (3/4) (2*T₀)
+  let Q : ℝ := zetaDensityCount ($x1:term/$x2:term) (2*T₀)
   have hQ : 0 ≤ Q := Nat.cast_nonneg _
   have hlog4 : 0 < Real.log 4 := Real.log_pos (by norm_num)
   refine ⟨K+Q/Real.log 4+1, by positivity, ?_⟩
@@ -213,7 +209,7 @@ theorem zeta_local_multiplicity_bound :
         have hq := div_nonneg hQ hlog4.le
         linarith) hlognonneg)
   · have hTupper : T ≤ T₀ := (not_le.mp hlargeT).le
-    have hcount : zetaSlabCount σ T (2*T) ≤ zetaDensityCount (3/4) (2*T₀) :=
+    have hcount : zetaSlabCount σ T (2*T) ≤ zetaDensityCount ($x1:term/$x2:term) (2*T₀) :=
       zetaSlabCount_mono hσ (by linarith) (by linarith)
     have hfilter :
         (∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter (fun ρ => ordinateBin ρ = k),
@@ -229,6 +225,12 @@ theorem zeta_local_multiplicity_bound :
       _ = (Q/Real.log 4)*Real.log 4 := (div_mul_cancel₀ Q hlog4.ne').symm
       _ ≤ (Q/Real.log 4)*Real.log (2*T) :=
         mul_le_mul_of_nonneg_left hloglow (div_nonneg hQ hlog4.le)
-      _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) hlognonneg
+      _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) hlognonneg))
+/-- A single logarithmic multiplicity constant for every actual zero bin.
+Both the large-height Jensen estimate and the bounded-height range are proved. -/
+theorem zeta_local_multiplicity_bound :
+    ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ, 3/4 ≤ σ → 2 ≤ T → ∀ k : ℤ,
+      (∑ ρ ∈ (zetaZeroFinset σ T (2*T)).filter (fun ρ => ordinateBin ρ = k),
+        (zetaMultiplicity ρ : ℝ)) ≤ C*Real.log (2*T) := by pf_22 3 4 zeta_unit_bin_sum_le_jensen
 
 end MathCollab.Density

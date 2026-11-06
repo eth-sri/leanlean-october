@@ -1,5 +1,6 @@
 module
 public import RationalHigherMoments
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,10 +12,10 @@ namespace Montgomery.RationalMoment
 theorem numerator_bound_of_log {r : ℚ} (hr : 0 < r)
     (hlog : |Real.log (r : ℝ)| ≤ 1) :
     (r.num.natAbs : ℝ) ≤ Real.exp 1*(r.den : ℝ) := by
-  have hrR : (0 : ℝ) < r := by exact_mod_cast hr
+  pm_74 hrR r hr
   have hrat : (r.num.natAbs : ℝ)/(r.den : ℝ) = (r : ℝ) := by
     have hh := positiveRatPair_ratio hr
-    change (r.num.natAbs : ℚ)/(r.den : ℚ) = r at hh
+    pm_7868 r.num.natAbs r.den r hh
     simpa only [Rat.cast_div, Rat.cast_natCast] using congrArg (fun q : ℚ => (q : ℝ)) hh
   have hval : (r : ℝ) ≤ Real.exp 1 := by
     rw [← Real.exp_log hrR]
@@ -22,10 +23,13 @@ theorem numerator_bound_of_log {r : ℚ} (hr : 0 < r)
   rw [← hrat] at hval
   exact (div_le_iff₀ (by exact_mod_cast r.pos : (0 : ℝ) < r.den)).mp hval
 
+section
+variable {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η)
+include k hk η hη
 /-- Complete finite-height rational moment theorem. The coefficient-energy
 estimate is proved internally, and the constant is uniform in all data after
 the fixed moment order and loss. -/
-theorem rational_higher_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem rational_higher_moment :
     ∃ C : ℝ, 0 < C ∧ ∀ (H : ℕ), 1 ≤ H → ∀ (T t₀ : ℝ), 0 ≤ T →
       ∀ (A : Finset ℚ) (c : ℚ → ℂ),
       (∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ 1) →
@@ -33,15 +37,15 @@ theorem rational_higher_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∑ t ∈ W, ‖∑ r ∈ A, c r*phase r t‖^(2*k)) ≤
         C*(T+(H : ℝ)^(2*k))*(H : ℝ)^η*(∑ r ∈ A, ‖c r‖^2)^k := by
-  obtain ⟨C, hC, htransfer⟩ := rational_moment_transfer_subpower hk (show 0 < η/2 by positivity)
+  pm_8439 htransfer rational_moment_transfer_subpower hk
   obtain ⟨D, hD, hcoeff⟩ := rational_coefficient_energy_subpower hk (η/2) (by positivity)
   refine ⟨C*D*(Real.exp 1)^(η/2), by positivity, ?_⟩
   intro H hH T t₀ hT A c hA W hW hsep
-  have hHR : (1 : ℝ) ≤ H := by exact_mod_cast hH
-  have hHpos : (0 : ℝ) < H := by linarith
+  pm_77 hHR H hH
+  pm_389 hHpos H
   have he1 : 1 ≤ Real.exp 1 := Real.one_le_exp_iff.mpr (by norm_num)
   have hheight : 1 ≤ Real.exp 1*(H : ℝ) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr he1) (sub_nonneg.mpr hHR)]
+    pm_385 mul_nonneg sub_nonneg.mpr he1 hHR
   have hheights : ∀ r ∈ A, 0 < r ∧ (r.num.natAbs : ℝ) ≤ Real.exp 1*(H : ℝ) ∧
       (r.den : ℝ) ≤ Real.exp 1*(H : ℝ) := by
     intro r hr
@@ -70,7 +74,7 @@ theorem rational_higher_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η
 
 /-- Unconditional dual bound for the literal sum over rational frequencies.
 No higher-moment estimate is assumed as a premise. -/
-theorem rational_dual_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) :
+theorem rational_dual_moment :
     ∃ C : ℝ, 0 < C ∧ ∀ (H : ℕ), 1 ≤ H → ∀ (T t₀ : ℝ), 0 ≤ T →
       ∀ (A : Finset ℚ),
       (∀ r ∈ A, 0 < r ∧ r.den ≤ H ∧ |Real.log (r : ℝ)| ≤ 1) →
@@ -78,11 +82,11 @@ theorem rational_dual_moment {k : ℕ} (hk : 1 ≤ k) {η : ℝ} (hη : 0 < η) 
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       rationalEnergy A W ^ k ≤
         (W.card : ℝ)^(2*k-1)*(C*(T+(H : ℝ)^(2*k))*(H : ℝ)^η) := by
-  obtain ⟨C, hC, hm⟩ := rational_higher_moment hk hη
-  refine ⟨C, hC, ?_⟩
+  pm_4289 C hC hm rational_higher_moment hk hη
   intro H hH T t₀ hT A hA W hW hsep
   apply rational_energy_pow_le A W hk (by positivity)
   intro c
   exact hm H hH T t₀ hT A c hA W hW hsep
+end
 
 end Montgomery.RationalMoment

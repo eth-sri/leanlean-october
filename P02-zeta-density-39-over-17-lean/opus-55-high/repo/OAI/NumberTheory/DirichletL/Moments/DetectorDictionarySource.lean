@@ -31,8 +31,8 @@ lemma source_product_le_rowMask (S : Finset (Ideal O))
     rw [Finset.prod_pair hne]
     unfold rowMaskElement
     rw [←Ideal.span_singleton_mul_span_singleton]
-    exact mul_comm _ _
-  rwa [he] at hd
+    grind
+  grind
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

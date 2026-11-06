@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsRegion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,7 +31,7 @@ lemma primeGauss_actual_norm (p : O) (hp : p≠0) [(Ideal.span {p}:Ideal O).IsMa
       Real.sqrt (Ideal.absNorm (Ideal.span {p}):ℝ) := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
-  have hn := localGamma_norm_one p hp hg hc 1 (by decide) (by decide)
+  pm_7430 hc
   rw [localGamma,ProbePhase.normalizedTraceGauss_eq_normalizedGauss] at hn
   simp only [pow_one,ProbeGauss.normalizedGauss,norm_div,Complex.norm_real,
     Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)] at hn
@@ -39,9 +40,7 @@ lemma primeGauss_actual_norm (p : O) (hp : p≠0) [(Ideal.span {p}:Ideal O).IsMa
       (Ideal.span_singleton_eq_bot.not.mpr hp))
   have hcard : (Fintype.card (O ⧸ Ideal.span {p}):ℝ)=Ideal.absNorm (Ideal.span {p}) := by
     rw [←Nat.card_eq_fintype_card];rfl
-  rw [hcard] at hn
-  have hn' := (div_eq_one_iff_eq (Real.sqrt_pos.mpr hQ).ne').mp hn
-  simpa only [primeGauss,tsum_fintype,gaussSum,map_one,one_mul] using hn'
+  pm_3909
 
 lemma gaussValuationTable_norm_le (Q : ℝ) (hQ : 1≤Q) (G : ℂ) (hG : ‖G‖≤Q)
     (r n j : ℕ) : ‖gaussValuationTable (Q:ℂ) G r n j‖≤2*Q^(n+1) := by
@@ -75,8 +74,7 @@ lemma positiveScalar_norm_le (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).Is
   have hP : Prime (Ideal.span {p}:Ideal O) := Ideal.prime_span_singleton_iff.mpr hp
   have hQ : (1:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     have hh := SmoothMobiusCorrection.prime_norm_two_le ⟨_,hP⟩
-    change 2≤Ideal.absNorm (Ideal.span {p}) at hh
-    exact_mod_cast (by omega : 1≤Ideal.absNorm (Ideal.span {p}))
+    pm_943
   have ht (r j : ℕ) := gaussValuationTable_norm_le (Ideal.absNorm (Ideal.span {p}):ℝ) hQ
     (primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg^r) 1)
     (primeGauss_norm_le p hp.ne_zero _ _) r n j

@@ -6,6 +6,7 @@ See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundati
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSharpTruncation
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -43,8 +44,8 @@ theorem exists_atkinsonLeading_source_band_bound {δ : ℝ} (hδ : 0 < δ) :
       T hsupport hscale hlog
     intro G hlower hupper N hN
     obtain ⟨hG0, hlog0, hwidth, _⟩ := hsupport.2 G hlower
-    have hT : 1 ≤ T := by linarith [hsupport.1]
-    have hG : 1 ≤ G := (Real.one_le_rpow hT hδ.le).trans hlower
+    pm_7852
+    pm_5447 hG hT hlower
     have hGT := (hscale.2.2 G hG0 hupper).1
     apply (hbound T G (Real.log T) hT hG hGT hscale.2.1 hwidth N hN).trans
     have h := mul_le_mul_of_nonneg_left

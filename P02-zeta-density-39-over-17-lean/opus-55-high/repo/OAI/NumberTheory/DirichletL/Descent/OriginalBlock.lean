@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.HybridReduction
 public import OAI.NumberTheory.DirichletL.Descent.Quotients
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
@@ -38,7 +38,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
                 hybridCubicCoefficient R r p.2 t a P * inverseCubicKernel P (c * p.1))))‖ ^ 2) ≤
       C * (K * X * N) ^ ε * (K + X) * A * H /
         (Ideal.absNorm R : ℝ) * CubicSieve.sieveNorm N (2 * L) := by
-  obtain ⟨C, hC, hblock⟩ := hybrid_fixed_block_sieve_norm ε hε
+  pm_98 C hC hblock hybrid_fixed_block_sieve_norm ε hε
   refine ⟨C * (128 * 128 * 256), by positivity, ?_⟩
   intro K X N L A H hK hX hN hA hH R r t hR hr rows nset Pset pairs cset a beta
     hrows hn hP ha hpairs hhs hcs hbeta
@@ -66,8 +66,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
   have hmap : ∀ u ∈ mc, u.2 * (1 * u.1) ∈ quotientSupport r nset := by
     intro u hu
     obtain ⟨m, hm, cu⟩ := Finset.mem_biUnion.mp hu
-    obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hm
-    obtain ⟨c, hc, rfl⟩ := Finset.mem_image.mp cu
+    pm_384 p hp Finset.mem_image.mp hm c hc cu
     apply (mem_quotientSupport r (c * (1 * p.1)) hr nset).mpr
     simpa only [one_mul, mul_assoc] using (hcs p hp c hc).2.2
   have he := hblock K X N (2 * L) hK hX hN
@@ -90,8 +89,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
   simp only [one_mul] at he
   have hsqrt : ‖(Real.sqrt (Ideal.absNorm R : ℝ) : ℂ)⁻¹‖ ^ 2 =
       (Ideal.absNorm R : ℝ)⁻¹ := by
-    rw [norm_inv, inv_pow, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (Real.sqrt_nonneg _), Real.sq_sqrt (Nat.cast_nonneg _)]
+    pm_7081 norm_inv inv_pow
   simp_rw [norm_mul, mul_pow, hsqrt]
   rw [← Finset.mul_sum]
   apply (mul_le_mul_of_nonneg_left he (inv_nonneg.mpr (Nat.cast_nonneg _))).trans
@@ -103,7 +101,6 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
       exact sq_nonneg _
     _ = _ := by ring
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

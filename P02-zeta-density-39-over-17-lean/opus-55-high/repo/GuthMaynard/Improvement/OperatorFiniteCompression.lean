@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.OperatorTraceConvergence
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Filter Set
 open scoped InnerProductSpace Topology
@@ -25,23 +24,26 @@ instance operatorFiniteSpace_finiteDimensional (w : Finset E) (s : Finset ι) :
 def operatorFiniteProjection (w : Finset E) (s : Finset ι) : E →L[ℂ] E :=
   (operatorFiniteSpace b w s).starProjection
 
-theorem operator_finite_projection_norm (w : Finset E) (s : Finset ι) :
+section
+variable (w : Finset E)
+include w
+theorem operator_finite_projection_norm (s : Finset ι) :
     ‖operatorFiniteProjection b w s‖ ≤ 1 :=
   (operatorFiniteSpace b w s).starProjection_norm_le
 
-theorem operator_finite_projection_idempotent (w : Finset E) (s : Finset ι) :
+theorem operator_finite_projection_idempotent (s : Finset ι) :
     operatorFiniteProjection b w s * operatorFiniteProjection b w s =
       operatorFiniteProjection b w s :=
   (operatorFiniteSpace b w s).isIdempotentElem_starProjection
 
-theorem operator_finite_space_monotone (w : Finset E) : Monotone (operatorFiniteSpace b w) := by
+theorem operator_finite_space_monotone : Monotone (operatorFiniteSpace b w) := by
   classical
   intro s t hst
   apply Submodule.span_mono
-  exact Finset.coe_subset.mpr (Finset.union_subset_union_right (Finset.image_subset_image hst))
+  grind
 
 /-- These actual finite projections converge strongly, preserving every witness vector. -/
-theorem operator_finite_projection_tendsto (w : Finset E) (v : E) :
+theorem operator_finite_projection_tendsto (v : E) :
     Tendsto (fun s : Finset ι => operatorFiniteProjection b w s v) atTop (𝓝 v) := by
   classical
   apply Submodule.starProjection_tendsto_self (operatorFiniteSpace b w)
@@ -51,14 +53,17 @@ theorem operator_finite_projection_tendsto (w : Finset E) (v : E) :
   apply iSup_mono
   intro s
   apply Submodule.span_mono
-  exact Finset.coe_subset.mpr Finset.subset_union_right
+  grind
+end
 
 variable [CompleteSpace E]
 
+section
+variable [Countable ι] {α : Type*} [MeasurableSpace α] (ν : Measure α) (w : Finset E)
+include α ν w
 /-- Genuine nuclear trace limit on the constructed finite spaces; the fixed finite witness
 is arbitrary and no spectral conclusion or limit is assumed. -/
-theorem operator_finite_compressed_trace_tendsto [Countable ι]
-    {α : Type*} [MeasurableSpace α] (ν : Measure α) (w : Finset E) (H : E →L[ℂ] E)
+theorem operator_finite_compressed_trace_tendsto (H : E →L[ℂ] E)
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
     Tendsto (fun s : Finset ι => operatorDiagonalTrace b
@@ -70,8 +75,7 @@ theorem operator_finite_compressed_trace_tendsto [Countable ι]
     (operator_finite_projection_tendsto b w) hx hy hxy
 
 /-- Actual cubic trace convergence, with the witness included at every finite stage. -/
-theorem operator_finite_cubic_trace_tendsto [Countable ι]
-    {α : Type*} [MeasurableSpace α] (ν : Measure α) (w : Finset E)
+theorem operator_finite_cubic_trace_tendsto
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
     Tendsto (fun s : Finset ι => operatorDiagonalTrace b
@@ -81,8 +85,7 @@ theorem operator_finite_cubic_trace_tendsto [Countable ι]
     operator_finite_compressed_trace_tendsto b ν w (operatorIntegral ν x y) hx hy hxy
 
 /-- The mixed trace converges as well; no monotonicity of compressed mixed traces is asserted. -/
-theorem operator_finite_mixed_trace_tendsto [Countable ι]
-    {α : Type*} [MeasurableSpace α] (ν : Measure α) (w : Finset E) (H : E →L[ℂ] E)
+theorem operator_finite_mixed_trace_tendsto (H : E →L[ℂ] E)
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
     Tendsto (fun s : Finset ι => operatorDiagonalTrace b
@@ -97,5 +100,6 @@ theorem operator_finite_mixed_trace_tendsto [Countable ι]
         (operatorIntegral_comp_integrable ν (H^2) hx hy hxy)]
   rw [← he]
   exact operator_finite_compressed_trace_tendsto b ν w H hx hy hxy
+end
 
 end GuthMaynard.Improvement

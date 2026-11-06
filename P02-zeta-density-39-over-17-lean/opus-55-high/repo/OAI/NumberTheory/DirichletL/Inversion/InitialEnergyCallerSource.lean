@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerModes
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,9 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory JointLogSeparation
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open SecondPassArithmetic
 open SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
 open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure
 open SevenEighths.InverseInitialEnergyCallerModes
@@ -26,9 +27,7 @@ def erasePoint (x : Point ι) : Source (ι:=ι) 0 where
 omit [DecidableEq ι] in
 @[simp] theorem erase_sourcePoint (x : Source (ι:=ι) 0) (N M : Finset ι) :
     erasePoint (sourcePoint x N M)=x := by
-  apply Source.ext <;> try rfl
-  funext i
-  exact Fin.elim0 i
+  pm_5488 Source.ext
 
 omit [DecidableEq ι] in
 theorem point_pair_injective (x : Source (ι:=ι) 0) :
@@ -51,7 +50,7 @@ theorem rectangles_disjoint (F : Finset ι) {x y : Source (ι:=ι) 0} (hne : x�
   obtain ⟨b,hb,heb⟩ := Finset.mem_image.mp hz₂
   have he := congrArg erasePoint (hea.trans heb.symm)
   simp only [erase_sourcePoint] at he
-  exact hne he
+  grind
 
 theorem pointSource_sum {A : Type*} [AddCommMonoid A]
     (F : Finset ι) (S : Finset (Source (ι:=ι) 0)) (f : Point ι→A) :
@@ -72,19 +71,19 @@ theorem pointSource_valid (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
   have hd (U : Finset ι) (hU : U∈(F\x.overlap).powerset) : Disjoint x.overlap U := by
     apply Finset.disjoint_left.mpr
     intro i hi hiU
-    exact (Finset.mem_sdiff.mp (Finset.mem_powerset.mp hU hiU)).2 hi
+    grind
   exact ⟨hdiv x hx,hd N (Finset.mem_product.mp hNM).1,
     hd M (Finset.mem_product.mp hNM).2,hfreq x hx⟩
 
 variable {σ : Type*} [DecidableEq σ]
-  (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0)
+  (p : ι→ ActualEisensteinCubic.O) (hp : ∀ i,p i≠0)
   [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def rowMode (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
     (x : Source (ι:=ι) 0) (ρ : SecondRayIndex)
     (z : JointLogSeparation.Frequency × (Fin 6→ℝ)) : ℂ :=
@@ -96,22 +95,21 @@ def rowMode (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     markedModeColumn p hp hcop hg hpr F (secondRayPlus Ψ ρ) j (-x.frequency) x
       slots lists a (childLogTest ω₂ (height 5)) Z D B v)
 
+section
+variable (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+include hpr
 theorem canonicalBlock_rows
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
     (hE : ∀ x∈S,x.divisor⊆x.common) (w : Source (ι:=ι) 0→ℂ)
     (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
     (z : JointLogSeparation.Frequency × (Fin 6→ℝ)) :
     canonicalBlock p hp hcop hg hpr (pointSource F S) (w ∘ erasePoint) Ψ j
       (primeMark slots lists a) ω₁ ω₂ Z D B v θ H z =
       ∑ x∈S,∑ ρ : SecondRayIndex,w x*rowMode p hp hcop hg hpr F Ψ j
         slots lists a ω₁ ω₂ Z D B v θ H x ρ z := by
-  unfold canonicalBlock
-  rw [pointSource_sum]
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_3809 canonicalBlock pointSource_sum x hx
   simp only [Function.comp_apply,erase_sourcePoint]
   calc
     _ = ∑ N∈(F\x.overlap).powerset,∑ ρ : SecondRayIndex,∑ M∈(F\x.overlap).powerset,
@@ -132,7 +130,6 @@ theorem canonicalBlock_rows
       rfl
 
 theorem physicalBlock_rectangular_common_measure
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (V : Fin 6→ℝ→ℂ)
     (g : Fin 6→𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (Z D B v m θ H η c₁ c₂ θ₁ θ₂ : ℝ)
@@ -140,11 +137,11 @@ theorem physicalBlock_rectangular_common_measure
     (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
     (hE : ∀ x∈S,x.divisor⊆x.common) (hf : ∀ x∈S,x.frequency≠0)
     (w : Source (ι:=ι) 0→ℂ) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ) (ω₁ ω₂ : ℝ→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ) (ω₁ ω₂ : ℝ→ℂ)
     (hsupport : BlockSupport p (pointSource F S) W₁ W₂ ω₁ ω₂ V Z D B v θ H c₁ c₂ θ₁ θ₂) :
     physicalBlock p hp hcop hg (pointSource F S) (w ∘ erasePoint) Ψ j (primeMark slots lists a)
       (clippedSource W₁ c₁ θ₁) (clippedSource W₂ c₂ θ₂) Φ Z D m =
-    (Z^(prefactorCenter m D B θ+3*η):ℝ)*
+    (Z ^(prefactorCenter m D B θ+3*η):ℝ)*
       ∫ z : Frequency × (Fin 6→ℝ),familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) z *
         (∑ x∈S,∑ ρ : SecondRayIndex,w x*rowMode p hp hcop hg hpr F Ψ j
           slots lists a ω₁ ω₂ Z D B v θ H x ρ z) := by
@@ -156,6 +153,7 @@ theorem physicalBlock_rectangular_common_measure
   apply integral_congr_ae
   filter_upwards with z
   rw [canonicalBlock_rows p hp hcop hg hpr F S hE w Ψ j slots lists a ω₁ ω₂ Z D B v θ H z]
+end
 
 end SevenEighths.InverseInitialEnergyCallerSource
 

@@ -32,7 +32,7 @@ theorem sector_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   rw [sectorPool,Finset.sum_filter,supported_residualPool C hC S]
   apply Finset.sum_congr rfl
   intro I hI
-  split_ifs <;> simp
+  grind
 
 end SevenEighths.CenteredMomentSecondSectorEnergy
 

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationProfiles
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseMarked
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,10 +38,10 @@ theorem no_slot_rowwise_endpoint
     (a b B : ℝ) (ha : 0<a) (hab : a≤b) (hB : 0<B)
     (hφs : Function.support φ⊆Ioo a b) (hφB : ∀ y, φ y≤B)
     (R ε : ℝ) (hR : 0≤R) (hε : 0<ε) :
-    ∃ c κ K : ℝ, 0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K ∧ ∀ᶠ U : ℝ in atTop,
+    ∃ c κ K : ℝ, 0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (r : ℝ) (data : RowData) (rows : Finset FreeRow) (W : ℝ→ℂ)
         (wa wb C T : ℝ) (σ freq : FreeRow→ℝ),
-      0≤r → r≤R → 0≤C → 0≤T →
+      0≤ r → r≤R → 0≤C → 0≤T →
       0<wa → 0≤wb → Function.support W⊆Icc wa wb → ContDiff ℝ ∞ W →
       (∀ u∈rows, ((Ideal.span {u.val}).absNorm : ℝ)≤U) →
       (∀ u∈rows, σ u∈Icc 0 1) → (∀ u∈rows, freq u∈Icc (-T) T) →
@@ -51,11 +52,10 @@ theorem no_slot_rowwise_endpoint
         12*(1+T)*(C*K*U^(sourceExponent r+ε)) := by
   obtain ⟨c,κ,K,hc,hc1,hκ,hK,he⟩ := no_slot_endpoint M H hH S φ hφ hφc hφp hφ0 hφne
     a b B ha hab hB hφs hφB R ε hR hε
-  refine ⟨c,κ,K,hc,hc1,hκ,hK,?_⟩
-  filter_upwards [he,eventually_ge_atTop (1 : ℝ)] with U he hU
+  pm_1469 he
   intro r data rows W wa wb C T σ freq hr hrR hC hT hwa hwb hWs hW hrows hσ hf hraw
   have hUp : 0<U := zero_lt_one.trans_le hU
-  have hD : 0<U^r := Real.rpow_pos_of_pos hUp _
+  pm_3773 hD U r hUp
   have henergy (n : ℕ) (hn : n≤2) (s : ℝ) (hs : s∈Icc (0 : ℝ) 1)
       (t : ℝ) (ht : t∈Icc (-T) T) :
       ∑ u∈rows, ‖polynomial (data.character ⟨u.val,u.property.1⟩) true (logTest W n) (U^r) s t‖^2≤

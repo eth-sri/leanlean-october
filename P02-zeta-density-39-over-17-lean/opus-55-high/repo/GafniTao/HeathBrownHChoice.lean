@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownRefinedCountBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,19 +20,19 @@ noncomputable def heathBrownHChoice
     (k : ℕ) (A lambda : ℝ) : ℕ :=
   ⌊(A * lambda) ^ (-(1 / (k : ℝ)))⌋₊
 
+section
+variable {k : ℕ} {A lambda : ℝ}
+include k A lambda
 theorem heathBrownHChoice_rpow_one_le
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     1 ≤ (A * lambda) ^ (-(1 / (k : ℝ))) := by
   apply Real.one_le_rpow_of_pos_of_le_one_of_nonpos
   · positivity
   · linarith
-  · have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
-    exact neg_nonpos.mpr (by positivity)
+  simp_all
 
 theorem heathBrownHChoice_pos
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     0 < heathBrownHChoice k A lambda := by
@@ -40,15 +41,13 @@ theorem heathBrownHChoice_pos
     (heathBrownHChoice_rpow_one_le hk hA hlambda hsmall)
 
 theorem heathBrownHChoice_cast_le_rpow
-    {k : ℕ} {A lambda : ℝ}
     (hA : 0 < A) (hlambda : 0 < lambda) :
     (heathBrownHChoice k A lambda : ℝ) ≤
       (A * lambda) ^ (-(1 / (k : ℝ))) := by
   unfold heathBrownHChoice
   exact Nat.floor_le (Real.rpow_nonneg (mul_pos hA hlambda).le _)
 
-theorem heathBrownHChoice_rpow_lt_cast_add_one
-    {k : ℕ} {A lambda : ℝ} :
+theorem heathBrownHChoice_rpow_lt_cast_add_one :
     (A * lambda) ^ (-(1 / (k : ℝ))) <
       (heathBrownHChoice k A lambda : ℝ) + 1 := by
   unfold heathBrownHChoice
@@ -56,7 +55,6 @@ theorem heathBrownHChoice_rpow_lt_cast_add_one
     Nat.lt_floor_add_one ((A * lambda) ^ (-(1 / (k : ℝ))))
 
 theorem heathBrownHChoice_rpow_le_two_mul
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     (A * lambda) ^ (-(1 / (k : ℝ))) ≤
@@ -69,18 +67,15 @@ theorem heathBrownHChoice_rpow_le_two_mul
   linarith
 
 theorem heathBrownHChoice_rpow_pow_k
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
     ((A * lambda) ^ (-(1 / (k : ℝ)))) ^ k =
       (A * lambda)⁻¹ := by
-  have hp : 0 < A * lambda := mul_pos hA hlambda
-  have hkReal : (k : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hk)
+  pm_5290 hkReal
   rw [← Real.rpow_natCast, ← Real.rpow_mul hp.le]
   rw [show -(1 / (k : ℝ)) * k = (-1 : ℝ) by field_simp,
     Real.rpow_neg_one]
 
 theorem heathBrownHChoice_scale_pow_le_one
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
     A * lambda * (heathBrownHChoice k A lambda : ℝ) ^ k ≤ 1 := by
   have hp : 0 < A * lambda := mul_pos hA hlambda
@@ -93,17 +88,19 @@ theorem heathBrownHChoice_scale_pow_le_one
         A * lambda * (A * lambda)⁻¹ :=
       mul_le_mul_of_nonneg_left hpow hp.le
     _ = 1 := mul_inv_cancel₀ hp.ne'
+end
 
+section
+variable {k r : ℕ} {A lambda : ℝ} (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
+include k r A lambda hk hA hlambda
 /-- The floor costs at most a factor two in every inverse integral power.
 This is the exact device used to replace powers of the natural `H` by powers
 of the real source scale before absorbing constants depending on `k`. -/
 theorem heathBrownHChoice_inv_pow_le
-    {k r : ℕ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     (((heathBrownHChoice k A lambda : ℝ) ^ r)⁻¹) ≤
       (((A * lambda) ^ (-(1 / (k : ℝ))) / 2) ^ (-(r : ℝ))) := by
-  let q := (A * lambda) ^ (-(1 / (k : ℝ)))
+  pm_2850
   let H := heathBrownHChoice k A lambda
   have hqpos : 0 < q := by
     dsimp only [q]
@@ -120,14 +117,11 @@ theorem heathBrownHChoice_inv_pow_le
   rw [Real.rpow_neg hHpos.le, Real.rpow_natCast] at hmono
   simpa only [q, H] using hmono
 
-theorem heathBrownHChoice_half_rpow_neg_eq
-    {k r : ℕ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+theorem heathBrownHChoice_half_rpow_neg_eq :
     (((A * lambda) ^ (-(1 / (k : ℝ))) / 2) ^ (-(r : ℝ))) =
       (2 : ℝ) ^ r *
         (A * lambda) ^ ((r : ℝ) / k) := by
-  have hp : 0 < A * lambda := mul_pos hA hlambda
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hk)
+  pm_5290 hk0
   have hq : 0 ≤ (A * lambda) ^ (-(1 / (k : ℝ))) :=
     Real.rpow_nonneg hp.le _
   rw [div_eq_mul_inv, Real.mul_rpow hq (by positivity)]
@@ -139,8 +133,6 @@ theorem heathBrownHChoice_half_rpow_neg_eq
   ring
 
 theorem heathBrownHChoice_inv_pow_le_source
-    {k r : ℕ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     (((heathBrownHChoice k A lambda : ℝ) ^ r)⁻¹) ≤
       (2 : ℝ) ^ r * (A * lambda) ^ ((r : ℝ) / k) := by
@@ -150,13 +142,14 @@ theorem heathBrownHChoice_inv_pow_le_source
       heathBrownHChoice_inv_pow_le hk hA hlambda hsmall
     _ = (2 : ℝ) ^ r * (A * lambda) ^ ((r : ℝ) / k) :=
       heathBrownHChoice_half_rpow_neg_eq hk hA hlambda
+end
 
 theorem heathBrown_width_le_half_of_eight_le
     {k H : ℕ} (hk : 3 ≤ k) (hH : 8 ≤ H) :
     4 * (((H : ℝ) ^ (k - 2))⁻¹) ≤ 1 / 2 ∧
       4 * (((H : ℝ) ^ (k - 1))⁻¹) ≤ 1 / 2 := by
-  have hHone : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
-  have hHeight : (8 : ℝ) ≤ H := by exact_mod_cast hH
+  pm_308 hHone H
+  pm_6347 hHeight hH
   have bound (r : ℕ) (hr : 1 ≤ r) :
       4 * (((H : ℝ) ^ r)⁻¹) ≤ 1 / 2 := by
     have hpow : (H : ℝ) ≤ (H : ℝ) ^ r := by

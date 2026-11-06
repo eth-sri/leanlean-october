@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ShiftDifferenceWeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -24,18 +25,11 @@ theorem sum_double_shift_differences (Q R : ℕ) (f : ℤ → ℤ → ℝ) :
     _ = ∑ s ∈ Finset.range Q, ∑ t ∈ Finset.range Q,
         ∑ v ∈ Finset.range R, ∑ u ∈ Finset.range R, f ((s:ℤ)-t) ((v:ℤ)-u) := by
       simp only [Finset.sum_product]
-      apply Finset.sum_congr rfl
-      intro s _
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro t _
+      pm_150 Finset.sum_congr s Finset.sum_comm t
       rw [Finset.sum_comm]
     _ = ∑ s ∈ Finset.range Q, ∑ t ∈ Finset.range Q,
         ∑ r ∈ Finset.Ioo (-(R:ℤ)) R, ((R-r.natAbs:ℕ):ℝ)*f ((s:ℤ)-t) r := by
-      apply Finset.sum_congr rfl
-      intro s _
-      apply Finset.sum_congr rfl
-      intro t _
+      pm_156 Finset.sum_congr s t
       exact sum_signed_shift_differences R (f ((s:ℤ)-t))
     _ = ∑ q ∈ Finset.Ioo (-(Q:ℤ)) Q, ((Q-q.natAbs:ℕ):ℝ)*
         (∑ r ∈ Finset.Ioo (-(R:ℤ)) R, ((R-r.natAbs:ℕ):ℝ)*f q r) :=
@@ -48,13 +42,10 @@ theorem signed_shift_weight_real {N : ℕ} {q : ℤ}
     (hq : q ∈ Finset.Ioo (-(N:ℤ)) N) :
     ((N-q.natAbs:ℕ):ℝ) = (N:ℝ)-|(q:ℝ)| := by
   have hqn : q.natAbs ≤ N := by
-    have ht := Finset.mem_Ioo.mp hq
-    have ha : |q| ≤ (N:ℤ) := abs_le.mpr ⟨by omega,by omega⟩
+    pm_1001
     rw [← Int.natCast_natAbs] at ha
     exact_mod_cast ha
-  have habs : (q.natAbs:ℝ) = |(q:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs q)
+  pm_5060 habs q.natAbs q
   rw [Nat.cast_sub hqn,habs]
 
 end TaoTrudgianYang2025

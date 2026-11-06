@@ -7,19 +7,19 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Topology
 open scoped Interval ComplexConjugate ContDiff
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 
-theorem source_log_monomial_le_one {T G δ : ℝ} (hT : 1 ≤ T)
+section
+variable {T G δ : ℝ} (hT : 1 ≤ T)
+include T G δ hT
+theorem source_log_monomial_le_one
     (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
     (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) {k : ℕ} (hk : k ≤ 4) :
     G * (Real.log T) ^ k * T ^ (-1 / 2 + δ / 4) ≤ 1 := by
@@ -32,7 +32,7 @@ theorem source_log_monomial_le_one {T G δ : ℝ} (hT : 1 ≤ T)
     _ ≤ T ^ (0 : ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
     _ = _ := Real.rpow_zero T
 
-theorem source_scaled_window_square_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
+theorem source_scaled_window_square_le (hG : 0 ≤ G)
     (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
     (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
     T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 2 / T ≤ G := by
@@ -46,7 +46,7 @@ theorem source_scaled_window_square_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
   convert h using 1
   ring
 
-theorem source_window_square_le_height {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
+theorem source_window_square_le_height (hG : 0 ≤ G)
     (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
     (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) : (G * Real.log T) ^ 2 ≤ T := by
   have hT0 : 0 < T := by linarith
@@ -56,7 +56,7 @@ theorem source_window_square_le_height {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
   have hprod := mul_le_mul_of_nonneg_right hGpow hT0.le
   nlinarith [Real.rpow_pos_of_pos hT0 (1 / 2 + δ / 4)]
 
-theorem source_scaled_window_fourth_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
+theorem source_scaled_window_fourth_le (hG : 0 ≤ G)
     (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
     (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
     T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 4 / T ^ 2 ≤ G := by
@@ -70,17 +70,15 @@ theorem source_scaled_window_fourth_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤
       hratio (by positivity) hG
     _ = _ := mul_one G
 
-theorem source_scaled_quadratic_phase_error_le {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
+theorem source_scaled_quadratic_phase_error_le (hG : 0 ≤ G)
     (hδ : 0 < δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) (hlog : 1 ≤ Real.log T)
     (hlog4 : (Real.log T) ^ 4 ≤ T ^ (δ / 2)) :
     T ^ (1 / 2 + δ / 4) *
       (4 * (G * Real.log T) ^ 2 * (18 / T + 2 * (G * Real.log T) ^ 2 / T ^ 2)) ≤ 80 * G := by
   have h2 := source_scaled_window_square_le hT hG hδ hwidth hlog hlog4
   have h4 := source_scaled_window_fourth_le hT hG hδ hwidth hlog hlog4
-  calc
-    _ = 72 * (T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 2 / T) +
-        8 * (T ^ (1 / 2 + δ / 4) * (G * Real.log T) ^ 4 / T ^ 2) := by ring
-    _ ≤ _ := by linarith
+  grind
+end
 
 /-- On every sub-square-root width, the actual Gaussian zeta window is
 the complete quadratic divisor source up to `Oδ(G log T)`. -/
@@ -103,8 +101,7 @@ theorem exists_zetaSquareGaussianWindow_log_error {δ : ℝ} (hδ : 0 < δ) :
     have hT := hscale.1
     have hlog := hscale.2.1
     obtain ⟨hGT, hrT, _⟩ := hscale.2.2 G hG hwidth
-    have hT1 : 1 ≤ T := by linarith
-    have hT0 : 0 < T := by linarith
+    pm_178 hT1 T hT0
     simp only [one_mul] at hlog4
     let M : ℝ := ∑' n : ℕ, ‖zetaFrozenDivisorCoefficient T n‖
     have hM : M ≤ D * T ^ (1 / 2 + δ / 4) := by
@@ -148,7 +145,6 @@ theorem exists_zetaSquareGaussianWindow_log_error {δ : ℝ} (hδ : 0 < δ) :
     nlinarith
   obtain ⟨T₁, hT₁⟩ := eventually_atTop.mp hev
   refine ⟨2 * C + 80 * D + 1, by positivity, max 8 T₁, le_max_left _ _, ?_⟩
-  intro T G hT hG hwidth
-  exact hT₁ T ((le_max_right _ _).trans hT) G hG hwidth
+  pm_4363
 
 end MathCollab.Density.Stronger.Atkinson

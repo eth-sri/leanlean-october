@@ -3,6 +3,7 @@ public import WeylPort.AFE.HarmonicDigamma
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Analysis.SpecialFunctions.Exp
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,8 +19,8 @@ theorem digamma_gap_bounds {δ : ℝ} (hδ : 1/2 ≤ δ) (hδ1 : δ ≤ 1) :
   have hl := Real.one_sub_inv_le_log_of_pos hδ0
   have hb := DhimanKadiriQuesadaHerrera2026.real_digamma_bounds hδ0
   have hu : Real.log δ ≤ 0 := Real.log_nonpos hδ0.le hδ1
-  have hp : 0 ≤ 1 / (2 * δ) := by positivity
-  constructor <;> simp only [one_div] at * <;> linarith
+  pm_8854 hp δ
+  grind
 
 /-- The logarithm in the lower-integral error is uniformly absorbed by its weight. -/
 theorem weighted_log_cutoff_le {x y : ℝ} (hx : 1 ≤ x) (hy : 1 ≤ y) (hyx : y ≤ x) :
@@ -46,6 +47,6 @@ theorem eventually_gamma_envelope_le_one :
   have he : Real.exp (-Real.pi * t) ≤ Real.exp (-t) := by
     apply Real.exp_le_exp.mpr
     nlinarith [Real.pi_gt_three]
-  exact (mul_le_mul_of_nonneg_right he (by positivity)).trans (by simpa only [mul_comm] using hlimt.le)
+  exact (mul_le_mul_of_nonneg_right he (by positivity)).trans (by grind)
 
 end WeylPort

@@ -1,16 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.ZeroMeanBridge
 public import OAI.NumberTheory.DirichletL.Moments.SourceMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSupportedZeroEnergy
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve IdealMobiusDivisorSum
 open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentZeroMode
 open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentFirstLocalization
 open CenteredMomentZeroMeanBridge EisensteinSchwartzPoisson HeckeFamily
@@ -21,15 +22,15 @@ theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported 
     (hc : ∀ I∈S, ¬p I → c I=0) :
     idealZeroEnergy S hS c K =
       idealZeroEnergy (S.filter p) (fun I h => hS I (Finset.mem_filter.mp h).1) c K := by
-  let e : S.filter p → S := fun I => ⟨I.val,(Finset.mem_filter.mp I.property).1⟩
+  let e : S.filter p → S := fun I=> ⟨I.val,(Finset.mem_filter.mp I.property).1⟩
   let ep : (S.filter p) × (S.filter p) → S × S := fun q => (e q.1,e q.2)
   have he : Function.Injective e := by
     intro I J h
     apply Subtype.ext
-    exact congrArg (fun x : S => x.val) h
+    grind
   have hep : Function.Injective ep := by
     intro q r h
-    exact Prod.ext (he (congrArg Prod.fst h)) (he (congrArg Prod.snd h))
+    grind
   let f : S × S → ℂ := fun q => (c q.1.val * star (c q.2.val)) *
     (((K / ‖eisEmbedding (idealColumn S q.1 * idealColumn S q.2)‖^2 : ℝ) : ℂ) *
       CenteredMomentRowNorm.pairFourier (idealColumn S q.1) (idealColumn S q.2)
@@ -45,10 +46,10 @@ theorem idealZeroEnergy_filter (S : Finset (Ideal O)) (hS : ∀ I∈S,Supported 
     exact ⟨(⟨q.1.val,Finset.mem_filter.mpr ⟨q.1.property,hi⟩⟩,
       ⟨q.2.val,Finset.mem_filter.mpr ⟨q.2.property,hj⟩⟩),rfl⟩
   have ht := hep.tsum_eq hs
-  simpa only [tsum_fintype,Fintype.sum_prod_type,f,ep,e,idealZeroEnergy,idealColumn] using ht.symm
+  pm_314 tsum_fintype Fintype.sum_prod_type f ep e idealZeroEnergy idealColumn ht.symm
 
 def activeColumns (S : Finset (Ideal O)) (c : Ideal O → ℂ) : Finset (Ideal O) :=
-  (supportedColumns S).filter (fun I => c I≠0)
+  (supportedColumns S).filter (fun I=> c I≠0)
 
 lemma activeColumns_supported (S : Finset (Ideal O)) (c : Ideal O → ℂ)
     (I : Ideal O) (hI : I∈activeColumns S c) : Supported I :=
@@ -58,22 +59,23 @@ theorem zeroEnergy_eq_active_original (η : Character) (m A : O) (t : ℝ)
     (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     zeroEnergy η m A t S c W K =
       idealZeroEnergy (activeColumns S c) (activeColumns_supported S c)
-        (fun I => c I*rowWeight η m A 1 t I) K * paperRadialFourier W 0 := by
+        (fun I=> c I*rowWeight η m A 1 t I) K * paperRadialFourier W 0 := by
   rw [zeroEnergy_eq_original]
   congr 1
   exact idealZeroEnergy_filter (supportedColumns S) (fun I h => (Finset.mem_filter.mp h).2)
-    (fun I => c I*rowWeight η m A 1 t I) K (fun I => c I≠0)
+    (fun I=> c I*rowWeight η m A 1 t I) K (fun I=> c I≠0)
     (fun I _ h => by simp only [not_not] at h; rw [h,zero_mul])
 
-theorem finiteColumnCoefficient_witness {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (β : Tuple ι → ℂ) (I : Ideal O)
+section
+variable {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
+include ι S
+theorem finiteColumnCoefficient_witness (β : Tuple ι → ℂ) (I : Ideal O)
     (hI : finiteColumnCoefficient S β I≠0) :
     ∃ v∈S, β v≠0 ∧ finiteTupleProduct v=I := by
   obtain ⟨v,hv,hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hI
   exact ⟨v,(Finset.mem_filter.mp hv).1,hne,(Finset.mem_filter.mp hv).2⟩
 
-theorem finite_tuple_fiber_card {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (I : Ideal O) (hI : I≠0) :
+theorem finite_tuple_fiber_card (I : Ideal O) (hI : I≠0) :
     (S.filter (fun v => finiteTupleProduct v=I)).card ≤
       (idealDivisors I).card^(Fintype.card ι+2) := by
   let T := S.filter (fun v => finiteTupleProduct v=I)
@@ -84,13 +86,11 @@ theorem finite_tuple_fiber_card {ι : Type*} [Fintype ι]
   have hf : Function.Injective f := by
     intro v w he
     apply Subtype.ext
-    funext i
-    exact congrArg Subtype.val (congrFun he i)
+    pm_5459 i he
   simpa only [Fintype.card_coe,Fintype.card_fun,Fintype.card_sum,Fintype.card_fin,T]
     using Fintype.card_le_of_injective f hf
 
-theorem finiteColumnCoefficient_norm_le {ι : Type*} [Fintype ι]
-    (S : Finset (Tuple ι)) (β : Tuple ι → ℂ) (B : ℝ) (hB : 0≤B)
+theorem finiteColumnCoefficient_norm_le (β : Tuple ι → ℂ) (B : ℝ) (hB : 0≤B)
     (hβ : ∀ v∈S, finiteTupleProduct v≠0 → ‖β v‖≤B) (I : Ideal O) (hI : I≠0) :
     ‖finiteColumnCoefficient S β I‖ ≤ B*((idealDivisors I).card:ℝ)^(Fintype.card ι+2) := by
   calc
@@ -103,6 +103,7 @@ theorem finiteColumnCoefficient_norm_le {ι : Type*} [Fintype ι]
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_left _ hB
       exact_mod_cast finite_tuple_fiber_card S I hI
+end
 
 theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {ι : Type*} [Fintype ι], Fintype.card ι≤N →
@@ -115,11 +116,11 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       ‖zeroEnergy η m A t (finiteColumns S) (finiteColumnCoefficient S β) W K‖ ≤
         C*K*B^2*‖paperRadialFourier W 0‖*X^(1+ε) := by
   let δ := ε/(4*(N+2:ℕ))
-  have hδ : 0<δ := by dsimp [δ]; positivity
+  pm_128 hδ δ
   have hn : (N+2:ℝ)≠0 := by positivity
   have hδn : δ*(N+2:ℕ)=ε/4 := by dsimp [δ]; push_cast; field_simp
-  obtain ⟨D,hD,hd⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
-  obtain ⟨C,hC,hc⟩ := ideal_zero_energy_bound (ε/2) (by positivity)
+  pm_69 D hD hd IdealDivisorBound.ideal_divisor_small_power δ hδ
+  pm_657 C hC hc ideal_zero_energy_bound
   refine ⟨C*((1+D)^(N+2))^2,by positivity,?_⟩
   intro ι _ hi η m A t S β W X K B hX hK hB hβ hN
   let c := finiteColumnCoefficient S β
@@ -129,14 +130,14 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
   have hNX (I : Ideal O) (hI : I∈Q) : (Ideal.absNorm I:ℝ)≤X :=
     hN I (Finset.mem_filter.mp hI).1 (Finset.mem_filter.mp hI).2
   have hbase : 1≤(1+D)*X^δ := by
-    have hxδ : 1≤X^δ := Real.one_le_rpow hX hδ.le
+    pm_242 hxδ X δ hX hδ.le
     nlinarith
   have hcoeff (I : Ideal O) (hI : I∈Q) :
       ‖c I*rowWeight η m A 1 t I‖ ≤ B*((1+D)^(N+2)*X^(ε/4)) := by
     have hI0 := (hQ I hI).1
     have hdI : ((idealDivisors I).card:ℝ) ≤ (1+D)*X^δ := by
       apply (hd I hI0).trans
-      apply mul_le_mul (by linarith : D≤1+D)
+      apply mul_le_mul (by linarith : D ≤1+D)
         (Real.rpow_le_rpow (Nat.cast_nonneg _) (hNX I hI) hδ.le) (by positivity) (by positivity)
     have hp : ((1+D)*X^δ)^(N+2) = (1+D)^(N+2)*X^(ε/4) := by
       rw [mul_pow,←Real.rpow_mul_natCast hX0.le,hδn]
@@ -151,13 +152,12 @@ theorem active_tuple_zero_energy_bound (N : ℕ) (ε : ℝ) (hε : 0<ε) :
       _ ≤ B*((1+D)*X^δ)^(N+2) :=
         mul_le_mul_of_nonneg_left (pow_le_pow_right₀ hbase (by omega)) hB
       _ = _ := by rw [hp]
-  have hb := hc Q hQ (fun I => c I*rowWeight η m A 1 t I)
+  have hb := hc Q hQ (fun I=> c I*rowWeight η m A 1 t I)
     X K (B*((1+D)^(N+2)*X^(ε/4))) hX hK (by positivity) hNX hcoeff
   rw [zeroEnergy_eq_active_original,norm_mul]
   apply (mul_le_mul_of_nonneg_right hb (norm_nonneg _)).trans_eq
   have hxpow : (X^(ε/4))^2*X^(1+ε/2)=X^(1+ε) := by
-    rw [←Real.rpow_mul_natCast hX0.le,←Real.rpow_add hX0]
-    congr 1
+    pm_654 Real.rpow_mul_natCast hX0.le Real.rpow_add hX0
     ring
   calc
     _ = C*((1+D)^(N+2))^2*K*B^2*‖paperRadialFourier W 0‖*

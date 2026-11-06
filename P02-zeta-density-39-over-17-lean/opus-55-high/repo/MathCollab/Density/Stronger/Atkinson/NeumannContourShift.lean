@@ -8,6 +8,7 @@ The literal classical Bessel kernel, principal half-power branches and
 actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannContourKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -40,19 +41,20 @@ theorem norm_neumannContourKernel_horizontal_integral_le {x b H : ℝ}
   rw [sub_zero, abs_of_nonneg hb] at h
   exact h.trans (by nlinarith [Real.exp_pos (-x * H)])
 
-theorem tendsto_neumannContourKernel_horizontal_integral {x b : ℝ}
-    (hx : 0 < x) (hb : 0 ≤ b) (hb1 : b ≤ 1) :
+section
+variable {x b : ℝ} (hx : 0 < x) (hb : 0 ≤ b)
+include x b hx hb
+theorem tendsto_neumannContourKernel_horizontal_integral (hb1 : b ≤ 1) :
     Tendsto (fun H : ℝ =>
       ∫ u in (0 : ℝ)..b, neumannContourKernel x ((u : ℂ) + H * I)) atTop (𝓝 0) := by
   have hlin : Tendsto (fun H : ℝ => -x * H) atTop atBot :=
     tendsto_id.const_mul_atTop_of_neg (neg_neg_of_pos hx)
   have hexp := Real.tendsto_exp_atBot.comp hlin
   apply squeeze_zero_norm' _ hexp
-  filter_upwards [eventually_ge_atTop (1 : ℝ)] with H hH
+  pm_359 H hH
   exact norm_neumannContourKernel_horizontal_integral_le hb hb1 hH
 
-theorem neumannContourKernel_infinite_rectangle {x b : ℝ}
-    (hx : 0 < x) (hb : 0 ≤ b) (hb1 : b < 1) :
+theorem neumannContourKernel_infinite_rectangle (hb1 : b < 1) :
     (∫ u in (0 : ℝ)..b, neumannContourKernel x u) =
       I * neumannVerticalIntegral x 0 - I * neumannVerticalIntegral x b := by
   have hl := intervalIntegral_tendsto_integral_Ioi (0 : ℝ)
@@ -75,5 +77,6 @@ theorem neumannContourKernel_infinite_rectangle {x b : ℝ}
     exact tendsto_nhds_unique ht (by simpa only [id_eq, Complex.ofReal_zero, heq] using
       (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℂ)) atTop (𝓝 0)))
   linear_combination hz
+end
 
 end MathCollab.Density.Stronger.Atkinson

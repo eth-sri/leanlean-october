@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.FiniteConductor
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 public import Mathlib.RingTheory.Ideal.Norm.AbsNorm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,15 +25,9 @@ theorem quotient_card_le_of_le {I J : Ideal R} [Finite (R ⧸ J)] (hJI : J ≤ I
 
 theorem quotient_inf_card_le_mul (I J : Ideal R) [Finite (R ⧸ I)] [Finite (R ⧸ J)] :
     Nat.card (R ⧸ I ⊓ J) ≤ Nat.card (R ⧸ I) * Nat.card (R ⧸ J) := by
-  let f : R ⧸ I ⊓ J →+* (R ⧸ I) × (R ⧸ J) :=
-    (Ideal.Quotient.factor inf_le_left).prod (Ideal.Quotient.factor inf_le_right)
+  pm_5217 R
   have hf : Function.Injective f := by
-    apply (injective_iff_map_eq_zero f).mpr
-    intro x hx
-    obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective x
-    apply Ideal.Quotient.eq_zero_iff_mem.mpr
-    exact ⟨Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.fst hx),
-      Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.snd hx)⟩
+    pm_3159
   simpa only [Nat.card_prod] using Nat.card_le_card_of_injective f hf
 
 noncomputable def quotientComapEquiv (M : Ideal R) (I : Ideal (R ⧸ M)) :
@@ -51,11 +46,14 @@ section FiniteRing
 
 variable {R : Type*} [CommRing R] [Finite R]
 
-theorem primitive_of_maximal_descent (χ : MulChar R ℂ) (I : Ideal R)
+section
+variable (χ : MulChar R ℂ)
+include χ
+theorem primitive_of_maximal_descent (I : Ideal R)
     (φ : MulChar (R ⧸ I) ℂ)
     (hφ : φ.toUnitHom.comp (quotientUnits I) = χ.toUnitHom)
     (hI : Maximal (FactorsThroughIdeal χ) I) : IsPrimitiveOnIdeals φ := by
-  let : Finite (R ⧸ I) := Finite.of_surjective _ (Ideal.Quotient.mk_surjective (I := I))
+  pm_6053
   apply (primitiveOnIdeals_iff_no_descent φ).mpr
   intro J hJ hdesc
   let K : Ideal R := J.comap (Ideal.Quotient.mk I)
@@ -80,7 +78,7 @@ theorem primitive_of_maximal_descent (χ : MulChar R ℂ) (I : Ideal R)
   obtain ⟨r, rfl⟩ := Ideal.Quotient.mk_surjective x
   exact Ideal.Quotient.eq_zero_iff_mem.mpr (hKI hx)
 
-theorem exists_primitive_quotient_above (χ : MulChar R ℂ) (J : Ideal R)
+theorem exists_primitive_quotient_above (J : Ideal R)
     (hJ : FactorsThroughIdeal χ J) :
     ∃ (I : Ideal R) (φ : MulChar (R ⧸ I) ℂ),
       J ≤ I ∧ φ.toUnitHom.comp (quotientUnits I) = χ.toUnitHom ∧
@@ -91,8 +89,7 @@ theorem exists_primitive_quotient_above (χ : MulChar R ℂ) (J : Ideal R)
   obtain ⟨φ, hφ⟩ := hI.1
   exact ⟨I, φ, hJI, hφ, primitive_of_maximal_descent χ I φ hφ hI, hI⟩
 
-theorem exists_primitive_quotient_above_with_bound_and_mask
-    (χ : MulChar R ℂ) (J : Ideal R) (hJ : FactorsThroughIdeal χ J) :
+theorem exists_primitive_quotient_above_with_bound_and_mask (J : Ideal R) (hJ : FactorsThroughIdeal χ J) :
     ∃ (I : Ideal R) (φ : MulChar (R ⧸ I) ℂ),
       J ≤ I ∧ φ.toUnitHom.comp (quotientUnits I) = χ.toUnitHom ∧
       IsPrimitiveOnIdeals φ ∧ Maximal (FactorsThroughIdeal χ) I ∧
@@ -102,6 +99,7 @@ theorem exists_primitive_quotient_above_with_bound_and_mask
   obtain ⟨I, φ, hJI, hφ, hprimitive, hmaximal⟩ := exists_primitive_quotient_above χ J hJ
   exact ⟨I, φ, hJI, hφ, hprimitive, hmaximal, quotient_card_le_of_le hJI,
     factorization_with_source_mask χ I φ hφ⟩
+end
 
 end FiniteRing
 

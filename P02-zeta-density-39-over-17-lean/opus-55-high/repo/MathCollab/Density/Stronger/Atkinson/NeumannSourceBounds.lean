@@ -9,6 +9,7 @@ actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannTwoTermExpansion
 public import MathCollab.Density.Stronger.Atkinson.BesselY0Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,13 +38,13 @@ theorem measurable_dfiBesselY0 : Measurable dfiBesselY0 := by
     · fun_prop
     · fun_prop
     · intro p
-      exact ne_of_gt (Real.sqrt_pos.2 (by positivity))
+      positivity
   have hos : Measurable dfiBesselY0Osc := by
     have h := Complex.measurable_im.comp
       (ho.integral_prod_right' (ν := volume.restrict (Ioc (0 : ℝ) (Real.pi / 2)))).measurable
     unfold dfiBesselY0Osc
     simp only [intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2)]
-    simpa only [Function.comp_def] using! h
+    aesop
   have hts : Measurable dfiBesselY0Tail :=
     (ht.integral_prod_right' (ν := volume.restrict (Ioi (0 : ℝ)))).measurable
   exact measurable_const.mul (hos.sub hts)
@@ -52,35 +53,26 @@ theorem measurable_neumannTwoTerm : Measurable neumannTwoTerm := by
   unfold neumannTwoTerm
   fun_prop
 
-theorem neumann_source_argument_bounds {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+section
+variable {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x) {n : ℕ} (hn : 0 < n)
+include T x hT hx n hn
+theorem neumann_source_argument_bounds :
     T * n ≤ (4 * Real.pi * Real.sqrt (x * n)) ^ 2 ∧
       1 ≤ 4 * Real.pi * Real.sqrt (x * n) := by
-  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
-  have hn0 : (0 : ℝ) < n := by positivity
-  have hx1 : 1 ≤ x := by linarith
-  have hsq : (4 * Real.pi * Real.sqrt (x * n)) ^ 2 = 16 * Real.pi ^ 2 * (x * n) := by
-    rw [mul_pow, Real.sq_sqrt (by positivity)]
-    ring
-  have hb : T * n ≤ (4 * Real.pi * Real.sqrt (x * n)) ^ 2 := by
-    rw [hsq]
-    have hxT : T ≤ 16 * x := by linarith
-    have hpi : 1 ≤ Real.pi ^ 2 := by nlinarith [Real.pi_gt_three]
-    nlinarith [mul_le_mul_of_nonneg_right hxT hn0.le,
-      mul_nonneg (sub_nonneg.mpr hpi) (show 0 ≤ x * n by positivity)]
+  pm_77 hn1 n hn
+  pm_117 hn0 n
+  pm_135 hb
   refine ⟨hb, ?_⟩
-  have hy0 : 0 ≤ 4 * Real.pi * Real.sqrt (x * n) := by positivity
-  nlinarith [mul_le_mul_of_nonneg_left hn1 (show 0 ≤ T by linarith)]
+  pm_610
 
-theorem abs_neumann_source_remainder_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+theorem abs_neumann_source_remainder_le :
     |dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n)) -
       neumannTwoTerm (4 * Real.pi * Real.sqrt (x * n))| ≤
         neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) * (n : ℝ) ^ (-(5 / 4 : ℝ)) := by
   obtain ⟨hbase, hy1⟩ := neumann_source_argument_bounds hT hx hn
   have hT0 : 0 < T := by linarith
-  have hn0 : (0 : ℝ) < n := by positivity
-  have hy0 : 0 < 4 * Real.pi * Real.sqrt (x * n) := by linarith
+  pm_117 hn0 n
+  pm_6298
   apply (abs_dfiBesselY0_sub_neumannTwoTerm_le hy0).trans
   have hp := Real.rpow_le_rpow_of_nonpos (mul_pos hT0 hn0) hbase
     (by norm_num : -(5 / 4 : ℝ) ≤ 0)
@@ -90,15 +82,15 @@ theorem abs_neumann_source_remainder_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16
     norm_num
   rw [he, Real.mul_rpow hT0.le hn0.le] at hp
   have h := mul_le_mul_of_nonneg_left hp neumannTwoTermErrorConstant_pos.le
-  simpa only [mul_assoc] using h
+  grind
 
-theorem abs_dfiBesselY0_source_le_seven {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+theorem abs_dfiBesselY0_source_le_seven :
     |dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n))| ≤ 7 := by
   have hy := (neumann_source_argument_bounds hT hx hn).2
-  have hy0 : 0 < 4 * Real.pi * Real.sqrt (x * n) := by linarith
+  pm_6298
   exact (abs_dfiBesselY0_le_seven_div_sqrt hy0).trans
     (div_le_self (by norm_num) (Real.one_le_sqrt.2 hy))
+end
 
 theorem neumann_source_height_absorb {T : ℝ} (hT : 1 ≤ T) :
     T * T ^ (-(5 / 4 : ℝ)) ≤ 1 := by

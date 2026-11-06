@@ -9,13 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidReserve
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalUniformReference
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidAdmission
 public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalMainGaussian
 open HeckeFamily ConcreteTraceCRT
@@ -84,34 +85,34 @@ theorem actual_main_gaussian_from_bands
     ∀η₀:Character,∀Q:Ideal O,Q≤M →
       internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
     ∃Kc:ℝ,0<Kc ∧ ∃Z₀:ℝ,1<Z₀ ∧
-    ∀θ:α→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
+    ∀θ:α→ RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
     ∀εchild:ℝ,∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
-    ∀(w σ freq:α→ℝ)(height mesh:ℝ),0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) →
+    ∀(w σ freq:α→ℝ)(height mesh:ℝ),0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) →
     (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
     (∀i,src.lo i=lows i) → (∀i,src.hi i=highs i) →
-    Fintype.card α≤N → lower≤src.lower → src.upper≤upper →
-    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
+    Fintype.card α≤N → lower≤ src.lower → src.upper≤upper →
+    0≤ src.b₁ → 0≤ src.b₂ → src.b₁≤ max 1 b → src.b₂≤ max 1 b →
     ∀(C D R0:Ideal O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
     ∀(E:Finset (CommonIndex C D))(B:actualAllocations src.pools C)(τ:Character)(t:ℝ),
     frozenCoefficient B.val C R0 src.ν src.W src.P≠0 →
     τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D} →
-    ∀K sigma delta reserve cost asource:ℝ,0<K → 0≤sigma → 1≤cost → 0<asource →
-    0≤delta → 0≤reserve → a0≤asource →
+      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E*activeConductor C D} →
+    ∀K sigma delta reserve cost asource:ℝ,0<K → 0≤ sigma → 1≤ cost → 0<asource →
+    0≤delta → 0≤ reserve → a0≤asource →
     let input:=child src C R0 B τ t
     let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (Real.logb Z (firstNominalScale C D
-        (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume src)))
+        (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E}) K (volume src)))
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve
     Ready input (R0*C) Kmain Z ξ Bcap →
-    ∀seed:Ideal O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z^Bseed →
+    ∀seed:Ideal O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z ^Bseed →
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
-    src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
+    src.X₁≤Z ^L → src.X₂≤Z ^L → src.Y₁≤Z ^L → src.Y₂≤Z ^L →
     ∀Mdecl θclip:ℝ,0≤θclip →
     length Z src.X₁+length Z src.X₂+6*κ*(∑i,w i)≤Mdecl →
     Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ)≤Mdecl →
@@ -120,7 +121,7 @@ theorem actual_main_gaussian_from_bands
     ∀Scols:Finset (Ideal O),∀β:Ideal O→ℂ,
     Scols=finiteColumns (Fintype.piFinset input.pools) →
     β=coefficient input (R0*C) seed →
-    ∃family:(q:ActiveLabel Scols β)→Finset (CommonIndex q.val.1 q.val.2)→RayCharacter→Character,
+    ∃family:(q:ActiveLabel Scols β)→ Finset (CommonIndex q.val.1 q.val.2)→ RayCharacter→ Character,
       (∀q U,Family input.η q.val.1 q.val.2
         (commonLabels_supported (activeSource Scols β) _ _ q.property).1
         (commonLabels_supported (activeSource Scols β) _ _ q.property).2 U (family q U)) ∧
@@ -137,7 +138,7 @@ theorem actual_main_gaussian_from_bands
         CenteredMomentFirstAmplificationChoice.ballProfile Kmain (fun i=>(dyad i:ℤ))≠0 →
       ∀χ:RayCharacter,Real.logb Z (dyadicScale (dyad 1))+
         Real.logb Z ((family q U χ).modulus.absNorm:ℝ)≤Mcap) →
-    ∀r:ℝ,Z^r≤ input.X₁ → Z^r≤ input.X₂ → Z^r≤ input.Y₁ → Z^r≤ input.Y₂ →
+    ∀r:ℝ,Z ^r≤ input.X₁ → Z ^r≤ input.X₂ → Z ^r≤ input.Y₁ → Z ^r≤ input.Y₂ →
     let Echild:=CenteredMomentEnergyChildEnvelopeFitting.coefficient Cc C₀ C₁ p T height (dc+degree+4*n) Z
       ((Bcap+Bcap)*εmask+(εchild+εremove+
         (sigma/3+(Mdecl-(Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ))+
@@ -149,80 +150,49 @@ theorem actual_main_gaussian_from_bands
           (cost*(τ.modulus.absNorm:ℝ)) Echild Echild r (∏i,input.lo i) a (seed.absNorm:ℝ)
           (dc+degree+4*n) (dc+degree+4*n) Sf CenteredMomentFirstAmplificationChoice.ballProfile) j*
         (volume input)^(powers εsrc j))*mass input^2 :=by
-  obtain ⟨n,T,dc,Cc,hCc,hmain⟩:=
-    CenteredMomentEnergyCanonicalMainUniform.actual_main_uniform_child (α:=α) M H hH
-      Wslot aslot bslot Mcap Lslot εremove lo hi κ a b Mslot εmask hMslot hεmask haPlain L hL
-      degree S ha hWs hW hMcap hLs hε hκsmall hbeta hκ
-      N lower upper a0 Bcap Bcap θsource hlower ha0 hθsource
-  obtain ⟨J,Sp,Sf,hSp,Cm,Ce,Cd,Ct,hCm,hCe,hCd,hCt,hgauss⟩:=
-    actual_subsets_seeded_gaussian_power a b haPlain hbPlain lows highs hhighs
-      CenteredMomentFirstAmplificationChoice.ballProfile (dc+degree+4*n) (dc+degree+4*n)
-      N upper (max 1 b) (max 1 b) hupper (le_max_left _ _) (le_max_left _ _)
-      εsrc δsrc θsrc Bcap Bseed ξ saving hεsrc hδsrc hθsrc hBcap hξ
+  pm_122 CenteredMomentEnergyCanonicalMainUniform.actual_main_uniform_child actual_subsets_seeded_gaussian_power
   refine ⟨n,T,dc,Cc,hCc,J,Sp,Sf,hSp,Cm,Ce,Cd,Ct,hCm,hCe,hCd,hCt,?_⟩
   intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨Zm,hZm,hm⟩:=hmain η₀
-  obtain ⟨Kc,hKc,hevent⟩:=hgauss (internalQ Q η₀) hQ0 hQt hQ72
-  obtain ⟨Zg,hZg⟩:=Filter.eventually_atTop.1 hevent
-  refine ⟨Kc,hKc,max Zm Zg,lt_of_lt_of_le hZm (le_max_left _ _),?_⟩
+  pm_297
   intro θ Z hZ εchild C₀ C₁ hC₀ hC₁ hzero hpos w σ freq height mesh hmesh hw hwm hwL
     hσlo hσhi hheight hfreq src hmatch hhi hMs hloSrc hhiSrc hcard hlowerSrc hupperSrc
     hb1 hb2 hb1max hb2max C D R0 hC hD hCD E B τ t hB hmod
     K sigma delta reserve cost asource hK hsigma hcost hasource hdelta hreserve haSource
-  dsimp only
-  intro hready seed hseed hseed0 hseedcap p hp₁ hp₂ hX₁ hX₂ hY₁ hY₂ Mdecl θclip hθclip
-    hcap hMdecl hclip hsourceLower Scols β hScols hβ
-  let input:=child src C R0 B τ t
-  let Km:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
-    (Real.logb Z (firstNominalScale C D
-      (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume src)))
-    (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve
-  have hZmZ:Zm≤Z:=(le_max_left _ _).trans hZ
+  pm_5530 hsourceLower
+  pm_3380 Km
+  pm_2885 hZmZ Zm le_max_left hZ
   have hgZ:=hZg Z ((le_max_right _ _).trans hZ)
   have hz:1<Z:=hgZ.1
   have hP:∀i,1≤ input.P i:=by
     intro i
-    change 1≤src.P i.val
+    change 1≤ src.P i.val
     rw [hmatch.scale]
     exact Real.one_le_rpow hz.le (hw i.val)
-  have hcardInput:Fintype.card (CenteredMomentCommonProfile.liveIndices B.val)≤N:=
-    (child_card B.val).trans hcard
+  pm_7575 hcardInput B.val child_card hcard
   have hlowerBeta (I:Ideal O)(hne:coefficient input (R0*C) seed I≠0):
       asource*volume input≤(I.absNorm:ℝ):=by
     apply (mul_le_mul_of_nonneg_right hsourceLower (volume_pos input).le).trans
     apply CenteredMomentSecondInputCapacitySource.actual_lower_support N lower a hlower haPlain
       input hcardInput hlowerSrc ?_ ?_ (R0*C) seed I hne
     · intro x hx
-      change src.W₁ x≠0 at hx
-      rw [←hp₁] at hx
+      pm_5122 src.W₁ hp₁
       exact (p.support 0 hx).1
     · intro x hx
-      change src.W₂ x≠0 at hx
-      rw [←hp₂] at hx
+      pm_5122 src.W₂ hp₂
       exact (p.support 1 hx).1
   have hsource:=hgZ.2 (CenteredMomentCommonProfile.liveIndices B.val) input p
     (fun i=>hloSrc i.val) (fun i=>hhiSrc i.val) hP hp₁.symm hp₂.symm (mass src)
     hupperSrc hcardInput hb1 hb2 hb1max hb2max (child_mass src C R0 B τ t)
     (R0*C) seed hready.puncture_ne hseed hseed0 hseedcap hready.source_nonneg hready.source_cap
     hready.conductor_cap hready.puncture_cap
-  change Scols=finiteColumns (Fintype.piFinset input.pools) at hScols
+  pm_8365
   change β=coefficient input (R0*C) seed at hβ
-  dsimp only at hsource
-  subst Scols β
-  obtain ⟨family,hfamily,hbound⟩:=hsource
-  refine ⟨family,hfamily,?_⟩
-  intro χ₀ m hm0 hml hm2 hwidth r hr1 hr2 hr3 hr4
+  pm_499
   let Ec:=CenteredMomentEnergyChildEnvelopeFitting.coefficient Cc C₀ C₁ p T height (dc+degree+4*n) Z
       ((Bcap+Bcap)*εmask+(εchild+εremove+
         (sigma/3+(Mdecl-(Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ))+
           delta+reserve+θsource)/6+θclip/3)+κ*mesh))
-  have hEc:0≤Ec:=CenteredMomentEnergyChildEnvelopeFitting.coefficient_nonneg
-    Cc C₀ C₁ p T height (dc+degree+4*n) Z _ hCc.le hC₀ hC₁ hheight (zero_le_one.trans hz.le)
-  have hpzero (j:Fin 2):p.profile j 0=0:=by
-    by_contra hn
-    exact (not_le_of_gt haPlain) ((p.support j hn).1)
-  have hz1:input.W₁ 0=0:=by change src.W₁ 0=0;rw [←hp₁];exact hpzero 0
-  have hz2:input.W₂ 0=0:=by change src.W₂ 0=0;rw [←hp₂];exact hpzero 1
+  pm_140
   apply hbound χ₀ m hm0 hml hm2 Km (nominal input Km) hready.scale_pos hready.volume_cap
     hready.nominal_cap (le_refl _) hready.frequency_pos hready.frequency_cap
     (cost*(τ.modulus.absNorm:ℝ))

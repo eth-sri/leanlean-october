@@ -3,6 +3,7 @@ public import RationalFiniteHeight
 public import IntegerFourthMoment
 public import MathCollab.Density.DivisorGrowth
 public import Mathlib.NumberTheory.Padics.PadicVal.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -43,10 +44,10 @@ theorem rationalExponent_injective {r s : ℚ} (hr : 0 < r) (hs : 0 < s)
     omega
   have hpR := positiveRatPair_ratio hr
   have hpS := positiveRatPair_ratio hs
-  change (r.num.natAbs : ℚ)/(r.den : ℚ) = r at hpR
-  change (s.num.natAbs : ℚ)/(s.den : ℚ) = s at hpS
+  pm_7868 r.num.natAbs r.den r hpR
+  pm_7868 s.num.natAbs s.den s hpS
   rw [← hpR, ← hpS]
-  apply (div_eq_div_iff (by positivity) (by positivity)).mpr
+  pm_856 div_eq_div_iff
   exact_mod_cast hc
 
 theorem rationalExponent_zero_outside {r : ℚ} {p : ℕ}
@@ -63,21 +64,20 @@ theorem rationalExponent_zero_outside {r : ℚ} {p : ℕ}
 theorem integerFourthWeight_le (n : ℤ) :
     integerFourthWeight n ≤ ((n.natAbs : ℝ)+1)^6 := by
   by_cases hn : n = 0
-  · simp [hn, integerFourthWeight]
-  have he : (1 : ℝ) ≤ n.natAbs := by exact_mod_cast Int.natAbs_pos.mpr hn
+  aesop
+  pm_7032 he n.natAbs Int.natAbs_pos.mpr
   have hn2 : (n : ℝ)^2 = (n.natAbs : ℝ)^2 := by
     have heq : (n.natAbs : ℝ) = |(n : ℝ)| := by
-      rw [← Int.cast_natCast, Int.natCast_natAbs, Int.cast_abs]
-    rw [heq, sq_abs]
+      simp_all
+    grind
   rw [integerFourthWeight, ite_eq_right hn, hn2]
   have h1 : (n.natAbs : ℝ)^2 ≤ ((n.natAbs : ℝ)+1)^2 :=
     pow_le_pow_left₀ (by positivity) (by linarith) 2
   have h2 : (16 : ℝ) ≤ ((n.natAbs : ℝ)+1)^4 := by
     have hh := pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) (by linarith : (2 : ℝ) ≤ n.natAbs+1) 4
-    exact (by norm_num : (16 : ℝ) = 2^4).le.trans hh
+    grind
   have hh := mul_le_mul h2 h1 (sq_nonneg _) (by positivity)
-  nlinarith [show (((n.natAbs : ℝ)+1)^4)*(((n.natAbs : ℝ)+1)^2) =
-    ((n.natAbs : ℝ)+1)^6 by ring]
+  grind
 
 theorem rationalExponent_weight_le (r : ℚ) (p : ℕ) :
     integerFourthWeight (rationalExponent r p) ≤

@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSharpCutoff
 public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,28 +35,26 @@ theorem modelPhaseFourierMode_eq_normalized
     funext x
     unfold modelPhaseFrequencyPhase
     have ha : T*F (x/N)-(r*N)*(x/N)=T*F (x/N)-r*x := by field_simp
-    rw [ha]
+    grind
   unfold modelPhaseFourierMode modelPhaseNormalizedMode
   rw [← he,Measure.integral_comp_div
     (fun u : ℝ => (χ u : ℂ)*(𝐞 (T*F u-(r*N)*u) : ℂ)) N,abs_of_pos hN]
 
-theorem summable_modelPhaseFourierMode
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
-    (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ) :
+section
+variable {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ} (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ)
+include χ F σ δ N P hχ hs hF hN T
+theorem summable_modelPhaseFourierMode :
     Summable (fun r : ℤ => modelPhaseFourierMode χ F T N r) := by
   let f := modelPhaseWeightedSchwartz hχ hs hF hN T
   have hdecay := (𝓕 f).isBigO_cocompact_rpow (-(2 : ℝ))
   have hsum := summable_of_isBigO
     (Real.summable_abs_int_rpow (by norm_num : (1 : ℝ) < 2))
     (hdecay.comp_tendsto Int.tendsto_coe_cofinite)
-  simpa only [f,Function.comp_def,Real.norm_eq_abs,modelPhaseWeightedSchwartz_fourier] using hsum
+  pm_89 f Function.comp_def Real.norm_eq_abs modelPhaseWeightedSchwartz_fourier hsum
 
-theorem summable_norm_modelPhaseFourierMode
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
-    (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T : ℝ) :
+theorem summable_norm_modelPhaseFourierMode :
     Summable (fun r : ℤ => ‖modelPhaseFourierMode χ F T N r‖) :=
   (summable_modelPhaseFourierMode hχ hs hF hN T).norm
+end
 
 end TaoTrudgianYang2025

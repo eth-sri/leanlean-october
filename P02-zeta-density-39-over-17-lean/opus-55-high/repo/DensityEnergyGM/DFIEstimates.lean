@@ -5,7 +5,7 @@ public import Mathlib.Analysis.Fourier.Inversion
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import DensityEnergyGM.DFIEquation12
 
-@[expose] public section
+public section
 
 open Set Filter Function MeasureTheory
 open scoped BigOperators ContDiff FourierTransform Interval Topology

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 public import OAI.NumberTheory.DirichletL.Descent.Fibers
 public import OAI.NumberTheory.DirichletL.CubicSieve.Ideal
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,8 +12,7 @@ namespace SevenEighths.InverseMoment
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid IdealMobiusDivisorSum
+open scoped Classical
 
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -49,13 +49,11 @@ theorem dyadic_normalized_coefficient_energy
     apply DescentFiberCost.finite_ideal_count_real S (2 * L) (by linarith)
     · intro P hP hz
       have hn := hP0 P hP
-      simp [hz] at hn
-    · intro P hP
-      exact (hS P hP).2
+      simp_all
+    grind
   have hterm (P : Ideal Eis) (hP : P ∈ S) :
       ‖a P / (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ)‖ ^ 2 ≤ 1 / L := by
-    rw [norm_div, div_pow, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (Real.sqrt_nonneg _), Real.sq_sqrt (Nat.cast_nonneg _)]
+    pm_7081 norm_div div_pow
     calc
       _ ≤ 1 / (Ideal.absNorm P : ℝ) :=
         div_le_div_of_nonneg_right
@@ -82,8 +80,7 @@ theorem hybridCubicCoefficient_energy
 
 theorem inverseCubicKernel_mul_left (R P n : Ideal Eis) :
     inverseCubicKernel (R * P) n = inverseCubicKernel R n * inverseCubicKernel P n := by
-  simp only [inverseCubicKernel, CubicJacobiGlobal.idealSymbol_mul, map_mul, star_mul]
-  ring
+  pm_3523 inverseCubicKernel CubicJacobiGlobal.idealSymbol_mul map_mul star_mul
 
 theorem inverseCubicKernel_mul_right (P n m : Ideal Eis)
     (hP : CompletedGauss.primaryGenerator P ≠ 0) :

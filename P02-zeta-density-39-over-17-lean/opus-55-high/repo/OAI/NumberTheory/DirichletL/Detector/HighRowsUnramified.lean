@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsActual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,14 +26,7 @@ lemma rowMarkedSeries_unramified (eta a X W V rho : ℂ) :
     rowMarkedSeries p hp hg eta a X W V rho 0=
       principalMarkedSeries p hp hg (eta/rho) (a/rho^3) X (rho*W) V := by
   unfold rowMarkedSeries principalMarkedSeries rowInner principalInner
-  apply Finset.sum_congr rfl
-  intro e he
-  apply tsum_congr
-  intro l
-  apply tsum_congr
-  intro k
-  apply tsum_congr
-  intro m
+  pm_3827
   exact rowMarkedTerm_unramified p hp hg eta a X W V rho e.val l k m
 
 include hc in
@@ -54,6 +48,8 @@ lemma rowClosedMarked_unramified (eta a X W V rho : ℂ) (hρ : rho^6=1)
 
 include hc in
 
+include hc in
+
 theorem sourceRowSeries_unramified_euler (eta a rho x w z : ℂ) (hρ : rho^6=1)
     (hV : ‖coordV (Ideal.absNorm (Ideal.span {p})) z‖<1)
     (hR : ‖coordR (Ideal.absNorm (Ideal.span {p})) (a^2) x z‖<1)
@@ -64,18 +60,14 @@ theorem sourceRowSeries_unramified_euler (eta a rho x w z : ℂ) (hρ : rho^6=1)
       (1-coordD Q eta rho x)/((1-coordV Q z)*(1-coordW Q rho w))*
         unramifiedClosed Q (a^2) eta rho x w z := by
   dsimp only
-  have hQ : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
-  have hr := evenRatio_eq_coordR (Ideal.absNorm (Ideal.span {p}):ℝ) hQ a x z
-  simp only [Complex.ofReal_natCast] at hr
+  pm_3830
+  pm_5043 hr evenRatio_eq_coordR a z
   have hr' : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)) (coordV (Ideal.absNorm (Ideal.span {p})) z)‖<1 := by
     rw [hr]; exact hR
   rw [sourceRowSeries_eq_closed p hp hg hc eta a rho x w z hρ hV hr' hW 0 (by decide)]
   rw [rowClosedMarked_unramified p hp hg hc _ _ _ _ _ _ hρ hV hr',hr]
-  have hk := coordK_eq_geometric (Ideal.absNorm (Ideal.span {p}):ℝ) hQ eta x w
-  simp only [Complex.ofReal_natCast] at hk
+  pm_5043 hk coordK_eq_geometric eta w
   rw [←hk]
   have hinv : rho⁻¹=star rho := Complex.inv_eq_conj (Complex.norm_eq_one_of_pow_eq_one hρ (by decide))
   have hv := one_sub_ne_zero_of_norm_lt_one _ hV

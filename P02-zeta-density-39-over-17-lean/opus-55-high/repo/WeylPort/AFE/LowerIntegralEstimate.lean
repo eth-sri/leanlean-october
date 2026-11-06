@@ -1,8 +1,9 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.WeightedIntegralPhase
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 -- Lean 4.34 elaborator compatibility.
 set_option backward.isDefEq.respectTransparency false
@@ -17,7 +18,6 @@ terms. The remaining weighted integrals use the proved physical-scale bound.
 namespace DhimanKadiriQuesadaHerrera2026
 
 open Complex
-open scoped BigOperators
 
 /-- The imaginary part controls both actual denominators in integration by parts. -/
 theorem abs_height_le_norm_real_sub (a σ t : ℝ) :
@@ -50,18 +50,20 @@ theorem sum_weightedIntegral_parts_twice {s : ℂ} (hs : s.re < 1)
   rw [weightedIntegral_parts_twice_half_integer hs hx k hxk m]
   ring
 
+section
+variable {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0)
+include σ t x hx ht
 /-- The first exact boundary coefficient has its physical-height majorant. -/
-theorem norm_lower_boundary_one_le {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0) :
+theorem norm_lower_boundary_one_le :
     ‖(x : ℂ) ^ (1 - ((σ : ℂ) + (t : ℂ) * I)) /
       (1 - ((σ : ℂ) + (t : ℂ) * I))‖ ≤ x ^ (1 - σ) / |t| := by
   rw [norm_div, norm_cpow_eq_rpow_re_of_pos hx]
-  have hr : (1 - ((σ : ℂ) + (t : ℂ) * I)).re = 1 - σ := by simp
-  rw [hr]
+  pm_5726 hr σ I
   apply div_le_div_of_nonneg_left (Real.rpow_nonneg hx.le _) (abs_pos.mpr ht)
   simpa only [ofReal_one] using abs_height_le_norm_real_sub 1 σ t
 
 /-- The second exact boundary coefficient has its squared-height majorant. -/
-theorem norm_lower_boundary_two_le {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0) :
+theorem norm_lower_boundary_two_le :
     ‖((2 * (Real.pi : ℂ) * I) * (x : ℂ) ^ (2 - ((σ : ℂ) + (t : ℂ) * I))) /
       ((1 - ((σ : ℂ) + (t : ℂ) * I)) * (2 - ((σ : ℂ) + (t : ℂ) * I)))‖ ≤
       (2 * Real.pi * x ^ (2 - σ)) / |t| ^ 2 := by
@@ -69,8 +71,8 @@ theorem norm_lower_boundary_two_le {σ t x : ℝ} (hx : 0 < x) (ht : t ≠ 0) :
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos, norm_cpow_eq_rpow_re_of_pos hx]
   have hr : (2 - ((σ : ℂ) + (t : ℂ) * I)).re = 2 - σ := by simp
   rw [hr]
-  exact div_le_div_of_nonneg_left (by positivity) (sq_pos_of_pos (abs_pos.mpr ht))
-    (height_sq_le_norm_boundary_denominator σ t)
+  pm_6208
+end
 
 /-- The exact twice-integrated remainder coefficient has its squared-height majorant. -/
 theorem norm_lower_remainder_coefficient_le {σ t : ℝ} (ht : t ≠ 0) :
@@ -79,8 +81,7 @@ theorem norm_lower_remainder_coefficient_le {σ t : ℝ} (ht : t ≠ 0) :
       (4 * Real.pi ^ 2) / |t| ^ 2 := by
   rw [norm_div, norm_mul, norm_pow, norm_ofNat, Complex.norm_real,
     Real.norm_eq_abs, abs_of_pos Real.pi_pos]
-  exact div_le_div_of_nonneg_left (by positivity) (sq_pos_of_pos (abs_pos.mpr ht))
-    (height_sq_le_norm_boundary_denominator σ t)
+  pm_6208
 
 /-- The twice-integrated remainder sum is bounded using the linked source scale. -/
 theorem norm_lower_remainder_sum_le {σ t x y : ℝ} (hσ : σ ≤ 2)
@@ -92,15 +93,13 @@ theorem norm_lower_remainder_sum_le {σ t x y : ℝ} (hσ : σ ≤ 2)
         weightedIntegral (((σ : ℂ) + (t : ℂ) * I) - 2) 0 x (m : ℝ))‖ ≤
       (x ^ (-σ) / Real.pi) * ∑ m ∈ Finset.Icc 1 N, (m : ℝ) ^ 2 / (y ^ 2 * (y - m)) := by
   have ht : t ≠ 0 := by
-    have hp : 0 < |t| := by rw [← hscale]; positivity
+    pm_6423
     exact (abs_pos.mp hp)
   have hp : x ^ (2 - σ) = x ^ 2 * x ^ (-σ) := by
     rw [← Real.rpow_natCast x 2, ← Real.rpow_add hx]
     congr 1
   rw [Finset.mul_sum]
-  apply (norm_sum_le _ _).trans
-  rw [Finset.mul_sum]
-  apply Finset.sum_le_sum
+  pm_492
   intro m hm
   have hmy : (m : ℝ) < y := (Nat.cast_le.mpr (Finset.mem_Icc.mp hm).2).trans_lt hNy
   rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast]
@@ -123,7 +122,7 @@ theorem norm_sum_lower_integral_le_arithmetic {σ t x y : ℝ} (hσ : σ < 1)
       x ^ (1 - σ) / |t| + (2 * Real.pi * x ^ (2 - σ) / |t| ^ 2) * (((N : ℝ) + 1) / 2) +
         (x ^ (-σ) / Real.pi) * ∑ m ∈ Finset.Icc 1 N, (m : ℝ) ^ 2 / (y ^ 2 * (y - m)) := by
   have ht : t ≠ 0 := by
-    have hp : 0 < |t| := by rw [← hscale]; positivity
+    pm_6423
     exact abs_pos.mp hp
   have hs : ((σ : ℂ) + (t : ℂ) * I).re < 1 := by simpa using hσ
   rw [sum_weightedIntegral_parts_twice hs hx k hxk N]

@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownShiftDecomposition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ nonempty positive-shift fiber into Heath-Brown's literal range
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -54,8 +54,7 @@ theorem heathBrownPositiveShiftFiber_shift_le
   have hdReal : (d : ℝ) ≤
       4 * ((k - 1).factorial : ℝ) /
         (lambda * (H : ℝ) ^ (k - 1)) := by
-    simpa only [Nat.cast_add, add_sub_cancel_left, abs_of_nonneg,
-      Nat.cast_nonneg] using hsep
+    grind
   have hfloor : d ≤ ⌊4 * ((k - 1).factorial : ℝ) /
       (lambda * (H : ℝ) ^ (k - 1))⌋₊ := by
     exact Nat.le_floor hdReal
@@ -77,9 +76,7 @@ theorem heathBrownPositiveShiftFiber_eq_empty_of_shiftBound_lt
     (hd : heathBrownShiftBound N k H lambda < d) :
     heathBrownPositiveShiftFiber N k H
       (heathBrownBlockParameter A lambda N) f d = ∅ := by
-  apply Finset.not_nonempty_iff_eq_empty.mp
-  intro hne
-  obtain ⟨n, hn⟩ := hne
+  pm_7777
   exact (not_le_of_gt hd) (heathBrownPositiveShiftFiber_shift_le
     hk hA hlambda hsmall hg hgd hkBounds hn)
 

@@ -7,6 +7,7 @@ third_party/twelfth/LICENSE-MIT-0.
 Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalizedPowers
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,7 +40,7 @@ theorem atkinson_localized_gap_term_eq {H : ℝ} {M : ℕ}
     (M:ℝ)^(1/2+η)*((R:ℝ)*atkinsonNearRowBound H G M+
       (R:ℝ)^2*(2000*Real.sqrt ((M:ℝ)*L/Real.sqrt (H*(M:ℝ))))) =
         atkinsonPowerGapTerm η H G L M R := by
-  have hM0 : (0:ℝ) < M := by exact_mod_cast hM
+  pm_4473 hM0 M hM
   unfold atkinsonNearRowBound atkinsonPowerGapTerm
   calc
     _ = (R:ℝ)*((M:ℝ)^(1/2+η)*(M:ℝ))+
@@ -54,8 +55,8 @@ theorem atkinson_localized_gap_term_eq {H : ℝ} {M : ℕ}
 theorem atkinsonPowerGapTerm_mono_index {H G η L : ℝ} {M N : ℕ} (R : ℕ)
     (hH : 0 < H) (hG : 0 < G) (hη : 0 ≤ η) (hM : 0 < M) (hMN : M ≤ N) :
     atkinsonPowerGapTerm η H G L M R ≤ atkinsonPowerGapTerm η H G L N R := by
-  have hM0 : (0:ℝ) < M := by exact_mod_cast hM
-  have hMN0 : (M:ℝ) ≤ N := by exact_mod_cast hMN
+  pm_4473 hM0 M hM
+  pm_404 hMN0 M N hMN
   have hd := Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (3/2:ℝ)+η by linarith)
   have hn := Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (1:ℝ)+η by linarith)
   have hf := Real.rpow_le_rpow hM0.le hMN0 (show 0 ≤ (3/4:ℝ)+η by linarith)
@@ -64,9 +65,8 @@ theorem atkinsonPowerGapTerm_mono_index {H G η L : ℝ} {M N : ℕ} (R : ℕ)
       (Real.sqrt_le_sqrt (mul_le_mul_of_nonneg_left hMN0 hH.le)) hG.le)
   have hh := atkinson_harmonic_mono hceil
   have hh0 : (0:ℝ) ≤ (harmonic (Nat.ceil (Real.sqrt (H*(M:ℝ))/G)):ℝ) := by
-    simpa only [harmonic_zero,Rat.cast_zero] using atkinson_harmonic_mono
-      (Nat.zero_le (Nat.ceil (Real.sqrt (H*(M:ℝ))/G)))
-  have h1 := mul_le_mul_of_nonneg_left hd (Nat.cast_nonneg R : (0:ℝ) ≤ _)
+    pm_5301 M
+  pm_8513 h1 hd
   have h2 := mul_le_mul
     (mul_le_mul_of_nonneg_left hn (by positivity : 0 ≤ 120*(R:ℝ)*Real.sqrt H/G))
     hh hh0 (by positivity)
@@ -87,7 +87,7 @@ theorem atkinsonLocalizedGapBudget_le_power {H G η L : ℝ} (N R : ℕ)
     rw [atkinson_localized_gap_term_eq hH (pow_pos (by norm_num) _)]
     exact atkinsonPowerGapTerm_mono_index R hH hG hη (pow_pos (by norm_num) _)
       (Nat.pow_lt_of_lt_clog (Finset.mem_range.mp hj)).le
-  have hm := mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg (Nat.clog 2 N) : (0:ℝ) ≤ _)
+  pm_6414 hs
   exact hm.trans_eq (by simp; ring)
 
 end MathCollab.Density.Stronger.Atkinson

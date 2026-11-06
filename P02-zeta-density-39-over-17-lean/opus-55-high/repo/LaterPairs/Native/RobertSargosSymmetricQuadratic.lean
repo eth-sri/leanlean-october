@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.FiniteSmoothTaylor
 public import LaterPairs.Native.RobertSargosCubicPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -20,24 +21,20 @@ namespace TaoTrudgianYang2025
 theorem robertSargos_quadratic_polynomial (f : ℝ → ℝ) (x h : ℝ) :
     finiteTaylorPolynomial f 2 x (x+h) =
       f x+deriv f x*h+iteratedDeriv 2 f x*h^2/2 := by
-  norm_num [finiteTaylorPolynomial,taylor_within_apply,Finset.sum_range_succ,
-    iteratedDerivWithin_univ,iteratedDeriv_zero,iteratedDeriv_one,smul_eq_mul]
+  pm_6666
   ring_nf
 
+section
+variable {f : ℝ → ℝ} {a b x h B : ℝ} (hh : 0 ≤ h) (ha : a ≤ x-h) (hb : x+h ≤ b)
+include f a b x h B hh ha hb
 theorem abs_symmetric_linear_remainder_le
-    {f : ℝ → ℝ} {a b x h B : ℝ} (hh : 0 ≤ h)
-    (ha : a ≤ x-h) (hb : x+h ≤ b)
     (hf : ∀ y ∈ Icc a b, ContDiffAt ℝ 3 f y)
     (hd : ∀ y ∈ Icc a b, |iteratedDeriv 3 f y| ≤ B) :
     |robertSargosSymmetricDifference f x h-2*h*deriv f x| ≤ B*h^3/3 := by
   have hp : uIcc x (x+h) ⊆ Icc a b := by
-    intro y hy
-    rw [uIcc_of_le (by linarith)] at hy
-    exact ⟨by linarith [hy.1],by linarith [hy.2]⟩
+    pm_8244 uIcc_of_le
   have hm : uIcc x (x-h) ⊆ Icc a b := by
-    intro y hy
-    rw [uIcc_of_ge (by linarith)] at hy
-    exact ⟨by linarith [hy.1],by linarith [hy.2]⟩
+    pm_8244 uIcc_of_ge
   have hplus := abs_finiteTaylorPolynomial_remainder_le_finite
     (f := f) (a := x) (x := x+h) (M := B) 2
     (fun y hy => hf y (hp hy)) (fun y hy => hd y (hp hy))
@@ -62,8 +59,6 @@ theorem abs_symmetric_linear_remainder_le
   linarith
 
 theorem abs_symmetric_first_jet_remainder_le
-    {f : ℝ → ℝ} {a b x h B : ℝ} (hh : 0 ≤ h)
-    (ha : a ≤ x-h) (hb : x+h ≤ b)
     (hf : ∀ y ∈ Icc a b, ContDiffAt ℝ 4 f y)
     (hd : ∀ y ∈ Icc a b, |iteratedDeriv 4 f y| ≤ B) :
     |robertSargosSymmetricDifference (iteratedDeriv 1 f) x h -
@@ -76,5 +71,6 @@ theorem abs_symmetric_first_jet_remainder_le
     rw [iteratedDeriv_real_comp_order]
     exact hd y hy
   simpa only [← iteratedDeriv_succ] using abs_symmetric_linear_remainder_le hh ha hb hg hgd
+end
 
 end TaoTrudgianYang2025

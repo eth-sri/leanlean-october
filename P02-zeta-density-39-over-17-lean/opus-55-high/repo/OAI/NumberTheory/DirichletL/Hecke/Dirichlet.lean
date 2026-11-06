@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -74,16 +75,19 @@ variable [NeZero q]
 def character (χ : DirichletCharacter ℂ q) : Character :=
   Character.ofResidue (modulus q) modulus_ne_bot (residue χ) (residue_unit_trivial χ)
 
-@[simp] theorem elementCoeff_character (χ : DirichletCharacter ℂ q) (z : O) :
+section
+variable (χ : DirichletCharacter ℂ q)
+include χ
+@[simp] theorem elementCoeff_character (z : O) :
     elementCoeff (character χ) z = χ (Ideal.absNorm (Ideal.span {z})) := rfl
 
-theorem idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal O) (hI : I ≠ 0) :
+theorem idealCoeff_character (I : Ideal O) (hI : I ≠ 0) :
     idealCoeff (character χ) I = χ (Ideal.absNorm I) := by
   rw [← ConcretePrimeRowBridge.span_idealGenerator I]
   rw [idealCoeff_span _ (ConcretePrimeRowBridge.idealGenerator_ne_zero I hI),
     elementCoeff_character, ConcretePrimeRowBridge.span_idealGenerator]
 
-theorem moebius_idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal O) :
+theorem moebius_idealCoeff_character (I : Ideal O) :
     (UniqueFactorizationMonoid.moebius I : ℂ) * idealCoeff (character χ) I =
       ShortDraftHeckeBridge.baseChangeWeight χ I := by
   by_cases hI : I = 0
@@ -94,7 +98,7 @@ theorem moebius_idealCoeff_character (χ : DirichletCharacter ℂ q) (I : Ideal 
   · rw [idealCoeff_character χ I hI]
     rfl
 
-theorem inverseSeries_eq_pairInverse_LSeries (χ : DirichletCharacter ℂ q)
+theorem inverseSeries_eq_pairInverse_LSeries
     {s : ℂ} (hs : 1 < s.re) :
     IdealEuler.inverseSeries (idealCoeff (character χ)) s =
       LSeries (ShortDraftHeckeBridge.pairInverseCoeff χ (ShortDraftHeckeBridge.baseChangeChar χ)) s := by
@@ -112,7 +116,7 @@ theorem inverseSeries_eq_pairInverse_LSeries (χ : DirichletCharacter ℂ q)
     (ShortDraftHeckeBridge.baseChangeChar χ) _
     (ShortDraftHeckeBridge.normFiberCoeff_baseChange_eq_pairInverseCoeff χ) s
 
-theorem LFunction_eq_dirichlet_product_right (χ : DirichletCharacter ℂ q)
+theorem LFunction_eq_dirichlet_product_right
     {s : ℂ} (hs : 1 < s.re) :
     LFunction (character χ) s = χ.LFunction s *
       (ShortDraftHeckeBridge.baseChangeChar χ).LFunction s := by
@@ -128,7 +132,7 @@ theorem LFunction_eq_dirichlet_product_right (χ : DirichletCharacter ℂ q)
   apply mul_left_cancel₀ hne
   rw [hH, mul_comm, hD]
 
-theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
+theorem LFunction_eq_dirichlet_product
     {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
     LFunction (character χ) s = χ.LFunction s *
       (ShortDraftHeckeBridge.baseChangeChar χ).LFunction s := by
@@ -157,29 +161,30 @@ theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
   · filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds
       (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
     exact LFunction_eq_dirichlet_product_right χ hz
+end
 
+section
+variable (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re → (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
+include hH
 theorem dirichlet_seven_eighths_of_hecke
-    (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
-      (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
     (χ : DirichletCharacter ℂ q) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
     (hexc : ¬ (χ = 1 ∧ s = 1)) : χ.LFunction s ≠ 0 := by
   by_cases hge : 1 ≤ s.re
   · exact χ.LFunction_ne_zero_of_one_le_re (not_and_or.mp hexc) hge
   have hs1 : s ≠ 1 := by intro h; simp [h] at hge
-  have hs0 : s ≠ 0 := by intro h; norm_num [h] at hs
+  pm_3116 hs0 s hs
   have h := hH (character χ) s hs (Or.inl hs1)
   rw [LFunction_eq_dirichlet_product χ hs0 hs1] at h
   exact (mul_ne_zero_iff.mp h).1
 
 theorem zeta_seven_eighths_of_hecke
-    (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
-      (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
     (s : ℂ) (hs : (7/8 : ℝ) < s.re) : riemannZeta s ≠ 0 := by
   by_cases h1 : s = 1
   · simpa [h1] using riemannZeta_one_ne_zero
   have h := dirichlet_seven_eighths_of_hecke hH (1 : DirichletCharacter ℂ 1) s hs
     (by simp [h1])
   simpa only [DirichletCharacter.LFunction_modOne_eq] using h
+end
 
 end SevenEighths.HeckeDirichlet
 

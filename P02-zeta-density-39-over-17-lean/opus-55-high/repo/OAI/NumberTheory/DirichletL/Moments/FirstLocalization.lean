@@ -1,20 +1,21 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstTailAggregate
 public import OAI.NumberTheory.DirichletL.Moments.FirstEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstLocalization
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open ActualEisensteinCubic EisensteinSchwartzPoisson
 open CenteredMomentFirstDiscardedEnergy CenteredMomentSectorLocalization CenteredMomentFirstScale
-open CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentFirstTailAggregate
-open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion CenteredMomentFirstEnergy
+open CenteredMomentCanonicalFirst CenteredMomentFirstReduced
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow
+open CanonicalQuadraticSieve HeckeFamily CenteredMomentHeckeExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem weighted_fourier_summable (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
@@ -30,12 +31,10 @@ theorem weighted_fourier_summable (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
     ((mul_le_of_le_one_left (norm_nonneg _) (hw h)).trans (hc h)) (norm_nonneg _)
 
 theorem retained_complex_norm (R q : ℝ) : ‖(retainedWeight R q:ℂ)‖≤1 := by
-  rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (retainedWeight_nonneg R q)]
-  exact (retainedWeight_bounds R q).2
+  pm_7640 retainedWeight_nonneg retainedWeight_bounds
 
 theorem discarded_complex_norm (R q : ℝ) : ‖(discardedWeight R q:ℂ)‖≤1 := by
-  rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (discardedWeight_nonneg R q)]
-  exact (discardedWeight_bounds R q).2
+  pm_7640 discardedWeight_nonneg discardedWeight_bounds
 
 theorem lattice_fourier_split (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
     (c : O → ℂ) (B : ℝ) (hc : ∀ h,‖c h‖≤B) (R : ℝ) :
@@ -45,10 +44,8 @@ theorem lattice_fourier_split (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
         (∑' h : O,(discardedWeight R (normValue h):ℂ)*c h*paperRadialFourier W (k*normValue h)) := by
   have hs := weighted_fourier_summable W k hk c (fun _ => 1) B hc (by simp)
   simp only [one_mul] at hs
-  have hr := weighted_fourier_summable W k hk c (fun h => (retainedWeight R (normValue h):ℂ)) B hc
-    (fun h => retained_complex_norm R _)
-  have hd := weighted_fourier_summable W k hk c (fun h => (discardedWeight R (normValue h):ℂ)) B hc
-    (fun h => discarded_complex_norm R _)
+  pm_5561 hr retainedWeight retained_complex_norm
+  pm_5561 hd discardedWeight discarded_complex_norm
   rw [hs.tsum_eq_add_tsum_ite 0]
   have hzero : normValue (0:O)=0 := by simp [normValue]
   simp only [hzero,mul_zero]
@@ -65,17 +62,17 @@ theorem lattice_fourier_split (W : 𝓢(ℝ,ℂ)) (k : ℝ) (hk : 0<k)
     have hp : 0<normValue h := norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr hh)
     have he : (retainedWeight R (normValue h):ℂ)+(discardedWeight R (normValue h):ℂ)=1 := by
       exact_mod_cast retained_add_discarded R (normValue h) hp
-    rw [← add_mul,← add_mul,he,one_mul]
+    grind
 
 def canonicalRetainedTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
-  let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
+  let e := primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E
   let a := residualGenerator I J
   let b := residualGenerator J I
   let r := activeConductor I J
   let k := K/normValue e
   (UniqueFactorizationMonoid.moebius (∏ P∈E,P.val):ℂ)*
-    tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e*
+    tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e *
     (((k/normValue (a*(b*r)):ℝ):ℂ)*∑' h : O,
       (retainedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
         tripleFourier a b r (supported_element_ne_zero _ (residualGenerator_supported I J hI))
@@ -85,13 +82,13 @@ def canonicalRetainedTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
 
 def canonicalZeroTerm (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
-  let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
+  let e := primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E
   let a := residualGenerator I J
   let b := residualGenerator J I
   let r := activeConductor I J
   let k := K/normValue e
   (UniqueFactorizationMonoid.moebius (∏ P∈E,P.val):ℂ)*
-    tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e*
+    tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e *
     (((k/normValue (a*(b*r)):ℝ):ℂ)*
       (tripleFourier a b r (supported_element_ne_zero _ (residualGenerator_supported I J hI))
         (supported_element_ne_zero _ (residualGenerator_supported J I hJ)) (finitePrimeModulus_ne_zero _)

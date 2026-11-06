@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.NaturalReflection
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicBridge
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,7 +22,7 @@ lemma polynomial_twisted_source (χ : Character) (W : ℝ→ℂ) (X t : ℝ) (hX
   apply tsum_congr
   intro I
   have hm := HeckeDetectorDyadicBridge.norm_phase (I.val.absNorm:ℝ) X (HeckeDyadic.norm_pos I) hX 0 t
-  simp only [neg_zero,Complex.cpow_zero,one_mul,Complex.zero_re,Complex.zero_im,sub_zero] at hm
+  pm_1189 neg_zero Complex.cpow_zero one_mul Complex.zero_re Complex.zero_im sub_zero hm
   unfold HeckeDyadic.summand HeckeDyadic.coefficient
   simp only [Bool.false_eq_true,ite_false,HeckeDyadic.shift,Complex.ofReal_zero,zero_mul,sub_zero,
     neg_zero,Complex.cpow_zero,mul_one,CompletedHeight.normTwistedSource]

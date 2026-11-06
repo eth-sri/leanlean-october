@@ -3,10 +3,8 @@ public import GuthMaynard.Improvement.GlobalDensityConditional
 public import GuthMaynard.Improvement.NativeDensitySourceBridge
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointDensity
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 namespace GuthMaynard.Improvement
 
 /-- Actual Ingham estimate on the complementary lower strip. The native

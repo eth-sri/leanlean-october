@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralError
 public import OAI.NumberTheory.DirichletL.PrimeRows.UniformJoins
 public import OAI.NumberTheory.DirichletL.PrimeRows.UniformTail
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,15 +24,14 @@ theorem uniform_original_row_central_error (K : ℕ)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (N : ℕ) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
-      ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
-      ∀ψ : ι→Character,∀X Y Z : ℝ,0<X → 0<Y → 1≤Z → ∀a B H : ℝ,∀i : ℕ,
+      ∀(P : Fin K→ PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,
+      ∀ψ : ι→ Character,∀X Y Z : ℝ,0<X → 0<Y → 1≤Z → ∀a B H : ℝ,∀i : ℕ,
       (51/100:ℝ)≤a → a≤1 → 2<B → 0≤H → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
       ‖rowIntegral η S (calibrationForSet S hmax) (fun j=>CompletedGauss.primaryGenerator (P j).val) W0 W1 X Y Z u-
         centralRowIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H‖≤
-        C*contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z^(2+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N := by
-  obtain ⟨Cj,hCj,hjoin0⟩ := uniform_buffered_horizontal_join_decay (ι:=ι) K e he he' S hS hmax hfirst
-    W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N (17/50) le_rfl (by norm_num)
+        C*contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z ^(2+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N := by
+  pm_3499 Cj hCj hjoin0 uniform_buffered_horizontal_join_decay
   obtain ⟨Ct,hCt,htail0⟩ := uniform_original_x_height_tail K S hS hmax (hfirst.mono_parameter (by linarith))
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N (17/50) le_rfl (by norm_num)
   let n : ℂ := ((1/(2*Real.pi):ℝ):ℂ)^3
@@ -42,10 +42,10 @@ theorem uniform_original_row_central_error (K : ℕ)
   have hcost := contourArithmeticCost_nonneg η u P
   have hZ0 : 0<Z := by linarith
   let k := fun σ p=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ (1-a-6*e) (17/50) p
-  let E : Set HeightSpace := {t | |t.1.1|≤H}
-  let J := fun tx : ℝ=>∫q : ℝ×ℝ,(∫v : ℝ in (a+16*e)..2,k v ((tx,q.1),q.2)) ∂volume.prod volume
-  let tail := ∫p : HeightSpace in Eᶜ,k 2 p ∂heightMeasure
-  let A : ℝ := contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z^(2+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N
+  pm_7232
+  let J := fun tx : ℝ=>∫q : ℝ×ℝ,(∫v : ℝ in (a+16*e)..2,k v ((tx,q.1),q.2)) ∂ volume.prod volume
+  let tail := ∫p : HeightSpace in Eᶜ,k 2 p ∂ heightMeasure
+  let A : ℝ := contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z ^(2+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N
   have hA : 0≤A := by dsimp [A];exact div_nonneg (by positivity) (pow_nonneg (height_pos _).le _)
   have hj (tx : ℝ) (htx : |tx|=H) : ‖J tx‖≤Cj*A := by
     apply (norm_integral_le_integral_norm _).trans

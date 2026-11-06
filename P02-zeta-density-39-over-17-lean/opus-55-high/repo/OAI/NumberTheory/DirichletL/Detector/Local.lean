@@ -3,6 +3,7 @@ public import Mathlib.Analysis.Complex.Norm
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.LinearCombination
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -58,13 +59,12 @@ theorem continued_normalized_cancellation (V W D Pstar B q vInv : ℂ)
           (B + vInv - q) * (Pstar + D)) := by
   unfold compensatedReplacement continuedCorrection
   field_simp
-  linear_combination -(1 - V) * (1 - W) * hBD + (1 - V) * hvW
+  grind
 
 theorem continued_ramified_compensation (V Pstar B q : ℂ) :
     compensatedReplacement V 0 0 Pstar B q =
       B * (1 - V) * Pstar - q * continuedCorrection V 0 0 Pstar := by
-  simp only [compensatedReplacement, continuedCorrection, mul_zero, sub_zero,
-    mul_one, div_one]
+  pm_204 compensatedReplacement continuedCorrection mul_zero sub_zero mul_one div_one
   ring
 
 end

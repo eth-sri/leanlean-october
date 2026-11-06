@@ -31,7 +31,7 @@ theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.C
   have ht : ∀Q∈Finset.univ.image P,Q.val∉S := by
     intro Q hQ
     obtain ⟨i,_,rfl⟩ := Finset.mem_image.mp hQ
-    exact hPS i
+    grind
   rw [spectralCompensatedHigh_continued S hS (Finset.univ.image P) ht η x w z _ _ hx hw hz,
     Finset.prod_image hP.injOn]
 

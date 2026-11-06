@@ -1,18 +1,19 @@
 module
 public import GuthMaynard.Improvement.SourceFourierCutoff
 public import GuthMaynard.Improvement.SecondKernelError
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped FourierTransform Convolution ContDiff SchwartzMap
 namespace GuthMaynard.Improvement
 
+section
+variable {χ f : ℝ → ℂ} (hχ : Integrable χ) (hf : Integrable f)
+include χ f hχ hf
 /-- Multiplication by an ordinary integrable function and a literal inverse
 L1 Fourier integral has the expected convolution transform, pointwise. -/
-theorem source_cutoff_fourier_convolution {χ f : ℝ → ℂ}
-    (hχ : Integrable χ) (hf : Integrable f) (ξ : ℝ) :
+theorem source_cutoff_fourier_convolution (ξ : ℝ) :
     𝓕 (fun t => χ t * 𝓕⁻ f t) ξ = ∫ η, f η * 𝓕 χ (ξ-η) := by
   let q : ℝ → ℂ := fun t => phase (-ξ*t)*χ t
   have hq : Integrable q := by
@@ -21,7 +22,7 @@ theorem source_cutoff_fourier_convolution {χ f : ℝ → ℂ}
     filter_upwards [] with t
     simp [phase_norm]
   have hn : Integrable (fun η => f (-η)) := by
-    simpa using hf.comp_mul_left' (by norm_num : (-1:ℝ) ≠ 0)
+    pm_1484 hf.comp_mul_left'
   have hpair : (∫ η, 𝓕 q η * f (-η)) = ∫ t, q t * 𝓕⁻ f t := by
     simpa [Real.fourierInv_eq_fourier_comp_neg,Real.fourier_eq,
       VectorFourier.fourierIntegral,real_inner_comm] using
@@ -45,15 +46,14 @@ theorem source_cutoff_fourier_convolution {χ f : ℝ → ℂ}
       dsimp [q]
       ring
     _ = ∫ η, 𝓕 q η * f (-η) := hpair.symm
-    _ = ∫ η, 𝓕 χ (ξ+η) * f (-η) := by simp_rw [hshift]
+    _ = ∫ η, 𝓕 χ (ξ+η) * f (-η) := by grind
     _ = ∫ η, 𝓕 χ (ξ-η) * f η := by
       simpa [sub_eq_add_neg] using
         Measure.integral_comp_mul_left (fun η => 𝓕 χ (ξ-η)*f η) (-1)
     _ = _ := by apply integral_congr_ae; filter_upwards [] with η; ring
 
 /-- L1 norm bound for the actual cutoff convolution. -/
-theorem source_cutoff_fourier_l1 {χ f : ℝ → ℂ}
-    (hχ : Integrable χ) (hf : Integrable f) (hFχ : Integrable (𝓕 χ)) :
+theorem source_cutoff_fourier_l1 (hFχ : Integrable (𝓕 χ)) :
     Integrable (𝓕 (fun t => χ t * 𝓕⁻ f t)) ∧
       (∫ ξ, ‖𝓕 (fun t => χ t * 𝓕⁻ f t) ξ‖) ≤
         (∫ ξ, ‖𝓕 χ ξ‖) * (∫ η, ‖f η‖) := by
@@ -71,6 +71,7 @@ theorem source_cutoff_fourier_l1 {χ f : ℝ → ℂ}
       simpa [convolution_def,norm_mul] using
         norm_integral_le_integral_norm (fun η => f η * 𝓕 χ (ξ-η))
     _ = _ := by rw [integral_convolution _ hf.norm hFχ.norm]; simp [mul_comm]
+end
 
 /-- Spatial cutoff of the actual exceptional signal: L1, L2 contraction,
 and exact retained frequency mass in both Fourier estimates. -/

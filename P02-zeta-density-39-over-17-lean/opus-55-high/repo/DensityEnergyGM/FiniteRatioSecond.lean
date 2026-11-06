@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.RatioMomentSharp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,10 +28,7 @@ theorem finiteRatioSecond_eq_difference (A : Finset ℕ) (W : Finset ℝ)
     simpa only [Complex.ofReal_one, one_mul] using
       heathBrownDifferenceMoment_ofReal_eq_kernel_sum A W (fun _ => (1 : ℝ))
   rw [h]
-  apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro m hm
+  pm_4079
   exact (heathBrownMajorantKernel_eq_norm_gmR_ratio W n m (hA n hn) (hA m hm)).symm
 
 theorem finiteRatioSecond_insert_le {A : Finset ℕ} {e : ℕ}

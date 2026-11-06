@@ -1,2 +1,2 @@
 module
-public import GuthMaynard.AffineSource.LargeValuesAffineHeight
+public import DensityEnergyGM.LargeValuesAffineHeight

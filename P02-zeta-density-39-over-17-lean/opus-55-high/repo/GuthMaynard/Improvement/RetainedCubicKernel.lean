@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.CubicKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 namespace GuthMaynard.Improvement
@@ -27,7 +27,7 @@ theorem retainedAmplitude_bound {a : ℝ → ℂ} {B : ℝ} (_hB : 0 ≤ B)
   calc
     _ ≤ |L| *(∑ m ∈ S, ‖a x*phase (-L*(m:ℝ)*x)‖) :=
       mul_le_mul_of_nonneg_left (norm_sum_le _ _) (abs_nonneg _)
-    _ ≤ |L| *(∑ _m ∈ S, B) := by gcongr; simp only [norm_mul,phase_norm,mul_one]; exact hb x
+    _ ≤ |L| *(∑ _m ∈ S, B) := by gcongr; simp only [norm_mul,phase_norm,mul_one]; grind
     _ = _ := by simp [mul_assoc]
 
 /-- This is literally the finite sum of the retained Poisson integrals,
@@ -37,13 +37,12 @@ theorem retainedPoissonKernel_expanded (ν : Measure ℝ) [IsFiniteMeasure ν]
     (L : ℝ) (S : Finset ℤ) (s : ℝ) :
     retainedPoissonKernel ν a L S s = (L:ℂ)*∑ m ∈ S,
       ∫ x, a x*phase (s*mellinFrequency x-L*(m:ℝ)*x) ∂ν := by
-  have hp := phase_measurable
-  have hf : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
+  pm_5232 hp phase_measurable hf
   have hi : ∀ m ∈ S, Integrable (fun x => a x*phase (s*mellinFrequency x-L*(m:ℝ)*x)) ν := by
     intro m _
     apply (integrable_const B).mono' (by fun_prop)
     filter_upwards with x
-    simpa only [norm_mul,phase_norm,mul_one] using hb x
+    pm_475 norm_mul phase_norm mul_one hb x
   have hid : ∀ x, retainedAmplitude a L S x*phase (s*mellinFrequency x) =
       (L:ℂ)*∑ m ∈ S, a x*phase (s*mellinFrequency x-L*(m:ℝ)*x) := by
     intro x
@@ -90,10 +89,7 @@ theorem retainedAmplitude_product (a : ℝ → ℂ) (L : ℝ) (S : Finset ℤ) (
       congr 1
       rw [Finset.sum_mul_sum,Finset.sum_mul]
       simp_rw [Finset.sum_mul_sum]
-      apply Finset.sum_congr rfl
-      intro m₁ _
-      apply Finset.sum_congr rfl
-      intro m₂ _
+      pm_156 Finset.sum_congr m₁ m₂
       apply Finset.sum_congr rfl
       intro m₃ _
       have hp : phase (-L*(m₁:ℝ)*x.1)*phase (-L*(m₂:ℝ)*x.2.1)*phase (-L*(m₃:ℝ)*x.2.2) =

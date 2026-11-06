@@ -1,11 +1,10 @@
 module
 public import GuthMaynard.Improvement.ShortDetectorOrdinateTail
 public import MathCollab.Density.Packing
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
-open Complex MeasureTheory Set Filter MathCollab.Density
+public section
+open Complex MeasureTheory Set Filter
 open scoped Topology
 namespace GuthMaynard.Improvement
 
@@ -15,22 +14,19 @@ theorem short_gamma_decay :
       ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖ ≤ K/(1+|t|)^2 := by
   refine ⟨576*Real.exp 1,by positivity,?_⟩
   intro β t hβ hβ'
-  have ha : 0 < β-1/2 := by linarith
-  have hg := short_detector_gamma_bound ha (show β-1/2 ≤ 1/2 by linarith) t
-  rw [show -(β-1/2)=1/2-β by ring] at hg
-  have hc : 12/(β-1/2) ≤ 96 := (div_le_iff₀ ha).mpr (by linarith)
+  pm_4569 β hg
   have hgamma : ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖ ≤ 96*(1+|t|)*Real.exp (-|t|) :=
     hg.trans (by gcongr)
   have hp := Real.pow_div_factorial_le_exp (1+|t|) (show 0 ≤ 1+|t| by positivity) 3
   norm_num at hp
   have hp' : (1+|t|)^3 ≤ 6*Real.exp (1+|t|) := by linarith
   have he : Real.exp (1+|t|)*Real.exp (-|t|) = Real.exp 1 := by
-    rw [← Real.exp_add]; congr 1; ring
+    pm_6012
   have hprod : (1+|t|)^3*Real.exp (-|t|) ≤ 6*Real.exp 1 := by
     calc
       _ ≤ (6*Real.exp (1+|t|))*Real.exp (-|t|) := mul_le_mul_of_nonneg_right hp' (Real.exp_pos _).le
-      _ = _ := by rw [mul_assoc,he]
-  apply (le_div_iff₀ (by positivity : 0 < (1+|t|)^2)).mpr
+      _ = _ := by grind
+  pm_569 t
   calc
     _ ≤ (96*(1+|t|)*Real.exp (-|t|))*(1+|t|)^2 := mul_le_mul_of_nonneg_right hgamma (by positivity)
     _ = 96*((1+|t|)^3*Real.exp (-|t|)) := by ring
@@ -65,10 +61,9 @@ theorem short_gamma_window_holder :
         shortTwistedNorm H (u+t))^4 ≤ G^3*
       (∫ t in Icc (-R) R, ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖*
         (shortTwistedNorm H (u+t))^4) := by
-  obtain ⟨G,hG,hmass⟩ := short_uniform_detector_gamma_mass
-  refine ⟨G,hG,?_⟩
+  pm_155 G hG hmass short_uniform_detector_gamma_mass
   intro β H u R hβ hβ'
-  let g := fun t : ℝ => ‖Complex.Gamma (((1/2-β:ℝ):ℂ)+(t:ℂ)*I)‖
+  pm_994 β
   have hg : Continuous g := (short_continuous_Gamma_detector_strip (by linarith) (by linarith)).norm
   have hf : Continuous (fun t => shortTwistedNorm H (u+t)) := (shortTwistedNorm_continuous H).comp (by fun_prop)
   have hh := short_window_fourth_holder (fun t => norm_nonneg _) hg hf (-R) R

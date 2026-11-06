@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Projections
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,8 +42,7 @@ theorem actualMixedCoefficient_factor (F : PrimeFamily φ) (K : Ideal Eis) (hK :
       quadraticRow K (primaryGenerator (n*b))*inverseCubicKernel (∏ i, S.ideal i) n*
       (if IsCoprime (∏ i, S.ideal i) b then 1 else 0)*
       (if IsCoprime K (∏ i, S.ideal i) then 1 else 0) := by
-  classical
-  let : DecidableEq (φ ⊕ (PrimeIndex K ⊕ σ)) := Classical.decEq _
+  pm_3316
   obtain ⟨hRS,hF,hu⟩ := reflected_indices_partition φ (PrimeIndex K) σ
   have hF' : Disjoint (residualIndices φ (PrimeIndex K) σ ∪ slotIndices φ (PrimeIndex K) σ)
       (frozenIndices φ (PrimeIndex K) σ) := by

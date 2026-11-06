@@ -1,14 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullExtraction
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
+open scoped Classical
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem extracted_parts_ne_zero (I : Ideal O) (hI : I ≠ 0) :
@@ -36,19 +36,13 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
       (96 * 128 ^ 2 : ℝ) * H *
         min (Y * sieveNorm X N) (X * sieveNorm Y N) * ∑ j, ‖coef j‖ ^ 2 := by
   have ha : ∀ I ∈ firstImage R, Admissible I ∧ (Ideal.absNorm I : ℝ) ≤ X := by
-    intro I hI
-    obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
-    exact ⟨goodPart_admissible _, (goodPart_norm_le _ (firstPart_squarefree _)).trans (hfirst z hz)⟩
+    pm_136 I hI z hz Finset.mem_image.mp
+    pm_7652 firstPart_squarefree hfirst
   have hb : ∀ I ∈ secondImage R, Admissible I ∧ (Ideal.absNorm I : ℝ) ≤ Y := by
-    intro I hI
-    obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
-    exact ⟨goodPart_admissible _, (goodPart_norm_le _ (secondPart_squarefree _)).trans (hsecond z hz)⟩
-  have hca : ((firstImage R).card : ℝ) ≤ 128 * X :=
-    DescentFiberCost.finite_ideal_count_real _ X hX
-      (fun I hI => primaryGenerator_ne_zero_ideal I (ha I hI).1.2) (fun I hI => (ha I hI).2)
-  have hcb : ((secondImage R).card : ℝ) ≤ 128 * Y :=
-    DescentFiberCost.finite_ideal_count_real _ Y hY
-      (fun I hI => primaryGenerator_ne_zero_ideal I (hb I hI).1.2) (fun I hI => (hb I hI).2)
+    pm_136 I hI z hz Finset.mem_image.mp
+    pm_7652 secondPart_squarefree hsecond
+  pm_5226 hca firstImage X hX ha
+  pm_5226 hcb secondImage Y hY hb
   have hcc : ((cubeImage R).card : ℝ) ≤ 128 * H := by
     apply DescentFiberCost.finite_ideal_count_real _ H hH
     · intro I hI
@@ -57,10 +51,8 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
     · intro I hI
       obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
       exact hcube z hz
-  have hna := family_squared_norm_le (fun I : firstImage R => I.val) cols
-    Subtype.val_injective hinj X N (fun I => ha I.val I.property) hcols
-  have hnb := family_squared_norm_le (fun I : secondImage R => I.val) cols
-    Subtype.val_injective hinj Y N (fun I => hb I.val I.property) hcols
+  pm_7880 hna firstImage X ha
+  pm_7880 hnb secondImage Y hb
   have hmin : min ((secondImage R).card * squaredNorm
       (fun (i : firstImage R) j => idealKernel (cols j) i.val))
       ((firstImage R).card * squaredNorm
@@ -68,12 +60,8 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
       128 * min (Y * sieveNorm X N) (X * sieveNorm Y N) := by
     rw [mul_min_of_nonneg _ _ (by norm_num : (0 : ℝ) ≤ 128)]
     apply min_le_min
-    · calc
-        _ ≤ (128 * Y) * sieveNorm X N := mul_le_mul hcb hna (squaredNorm_nonneg _) (by positivity)
-        _ = _ := by ring
-    · calc
-        _ ≤ (128 * X) * sieveNorm Y N := mul_le_mul hca hnb (squaredNorm_nonneg _) (by positivity)
-        _ = _ := by ring
+    pm_6788 Y X hcb hna
+    pm_6788 X Y hca hnb
   have hn : 0 ≤ min ((secondImage R).card * squaredNorm
       (fun (i : firstImage R) j => idealKernel (cols j) i.val))
       ((firstImage R).card * squaredNorm
@@ -146,7 +134,6 @@ theorem full_element_dyadic_block_bound {n : Type*} [Fintype n] [DecidableEq n]
   rw [hm]
   ring
 
-end
 end SevenEighths.CubicSieve
 
 end OAI

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.DivisorTargets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,73 +8,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField UniqueFactorizationMonoid
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
@@ -107,31 +65,29 @@ open EisensteinSchwartzPoisson (paperRadialFourier)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
 open ActualEisensteinCubic LocalReflectionBrackets
 
-theorem bracket_one_eq_quadratic (P : Ideal O) [P.IsMaximal]
-    (hg : lambda∉P) (z : O) :
+section
+variable (P : Ideal O) [P.IsMaximal] (hg : lambda∉P)
+include P hg
+theorem bracket_one_eq_quadratic (z : O) :
     bracket (actualSextic P hg) 1 (Ideal.Quotient.mk P z)=
       (actualSextic P hg (Ideal.Quotient.mk P z))^3 := by
   simp only [bracket,show (1:ℕ)≠4 by decide,show (1:ℕ)≠0 by decide,↓reduceIte]
   rw [show (1:ℕ)+2=3 by rfl,MulChar.inv_apply_eq_inv',MulChar.pow_apply' _ (by decide : (3:ℕ)≠0)]
   by_cases hz : z∈P
   · have he : Ideal.Quotient.mk P z=0 := Ideal.Quotient.eq_zero_iff_mem.mpr hz
-    simp [he]
+    simp_all
   · have h6 := canonicalSextic_sixth_power_mask P hg z
-    change actualSextic P hg (Ideal.Quotient.mk P (z^6))=_ at h6
+    pm_5397 z h6
     simp only [map_pow,ite_eq_right hz] at h6
     apply inv_eq_of_mul_eq_one_right
-    calc
-      _ = (actualSextic P hg (Ideal.Quotient.mk P z))^6 := by ring
-      _ = 1 := h6
+    grind
 
-theorem quadratic_value_cube (P : Ideal O) [P.IsMaximal]
-    (hg : lambda∉P) (b : O) :
+theorem quadratic_value_cube (b : O) :
     (actualSextic P hg (Ideal.Quotient.mk P (b^3)))^3=
       (actualSextic P hg (Ideal.Quotient.mk P b))^3 := by
   simp only [map_pow]
@@ -139,15 +95,14 @@ theorem quadratic_value_cube (P : Ideal O) [P.IsMaximal]
   · have he : Ideal.Quotient.mk P b=0 := Ideal.Quotient.eq_zero_iff_mem.mpr hb
     simp [he]
   · have h6 := canonicalSextic_sixth_power_mask P hg b
-    change actualSextic P hg (Ideal.Quotient.mk P (b^6))=_ at h6
+    pm_5397 b h6
     simp only [map_pow,ite_eq_right hb] at h6
     calc
       _ = (actualSextic P hg (Ideal.Quotient.mk P b))^3 *
           (actualSextic P hg (Ideal.Quotient.mk P b))^6 := by ring
       _ = _ := by rw [h6,mul_one]
 
-theorem residual_bracket_cube (P : Ideal O) [P.IsMaximal]
-    (hg : lambda∉P) (z n b : O) :
+theorem residual_bracket_cube (z n b : O) :
     bracket (actualSextic P hg) 1 (Ideal.Quotient.mk P (z*n*b^3))=
       (actualSextic P hg (Ideal.Quotient.mk P z))^3 *
       (actualSextic P hg (Ideal.Quotient.mk P (n*b)))^3 := by
@@ -155,6 +110,7 @@ theorem residual_bracket_cube (P : Ideal O) [P.IsMaximal]
   simp only [map_mul,mul_pow]
   rw [quadratic_value_cube]
   ring
+end
 
 end
 
@@ -219,7 +175,6 @@ theorem nonresidual_gain_product_dvd {ι : Type*} [Fintype ι]
     · rw [nonresidualGain,ite_eq_right hi]
       exact dvd_mul_of_dvd_right ((hp.dvd_mul.mp (hpool i)).resolve_left hi) _
 
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 def completedLocalExponent (I F P : Ideal O) : ℕ :=
   ((normalizedFactors I).count P+4*(if P∣F then 1 else 0))%6
@@ -249,9 +204,7 @@ theorem reflectionConductorCost_eq_prod {ι : Type*} [Fintype ι]
     exact_mod_cast (fun hz => hP i (Ideal.absNorm_eq_zero_iff.mp hz))
   simp only [reflectionConductorCost,reflectionExtractedDivisor,map_prod,Nat.cast_prod,
     ←Finset.prod_pow,←Finset.prod_mul_distrib,←Finset.prod_div_distrib]
-  apply Finset.prod_congr rfl
-  intro i _
-  by_cases hj4 : j i=4
+  pm_7510
   · rw [hj4]
     generalize he : e i=v
     fin_cases v <;> simp [reflectionExtractedPrime,reflectionLocalCost] <;> field_simp
@@ -260,12 +213,15 @@ theorem reflectionConductorCost_eq_prod {ι : Type*} [Fintype ι]
       field_simp
     · simp [reflectionExtractedPrime,reflectionLocalCost,hj4,hj0]
 
-theorem reflectionLocalCost_nonneg (q : ℝ) (hq : 0≤q) (j : ℕ) (e : Fin 3) :
-    0≤reflectionLocalCost q j e := by
+section
+variable (q : ℝ)
+include q
+theorem reflectionLocalCost_nonneg (hq : 0≤q) (j : ℕ) (e : Fin 3) :
+    0≤ reflectionLocalCost q j e := by
   unfold reflectionLocalCost
   split_ifs <;> positivity
 
-theorem reflectionLocalCost_le_square (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 3) :
+theorem reflectionLocalCost_le_square (hq : 1≤q) (j : ℕ) (e : Fin 3) :
     reflectionLocalCost q j e≤q^2 := by
   have hq0 : 0<q := by linarith
   have hq2 : 1≤q^2 := one_le_pow₀ hq
@@ -276,7 +232,7 @@ theorem reflectionLocalCost_le_square (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 
   · nlinarith
   · rfl
 
-theorem reflectionLocalCost_le_single (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 3)
+theorem reflectionLocalCost_le_single (hq : 1≤q) (j : ℕ) (e : Fin 3)
     (hj : j=0 ∨ j=4) : reflectionLocalCost q j e≤q := by
   have hq0 : 0<q := by linarith
   rcases hj with rfl|rfl
@@ -285,8 +241,12 @@ theorem reflectionLocalCost_le_single (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 
     split_ifs
     · exact ((div_le_one (by positivity)).mpr (one_le_pow₀ hq)).trans hq
     · rfl
+end
 
-theorem completedLocalExponent_of_not_dvd (I F P : Ideal O) (hI : I≠0) (_hP : Prime P)
+section
+variable (I F P : Ideal O) (hI : I≠0)
+include I F P hI
+theorem completedLocalExponent_of_not_dvd (_hP : Prime P)
     (hn : ¬P∣I) : completedLocalExponent I F P=0 ∨ completedLocalExponent I F P=4 := by
   have hm : P∉normalizedFactors I := by
     intro h
@@ -294,23 +254,24 @@ theorem completedLocalExponent_of_not_dvd (I F P : Ideal O) (hI : I≠0) (_hP : 
   simp only [completedLocalExponent,Multiset.count_eq_zero.mpr hm,zero_add]
   split_ifs <;> norm_num
 
-theorem reflectionLocalCost_le_gain (I F P : Ideal O) (hI : I≠0) (hP : Prime P) (e : Fin 3) :
-    reflectionLocalCost (Ideal.absNorm P:ℝ) (completedLocalExponent I F P) e≤
+theorem reflectionLocalCost_le_gain (hP : Prime P) (e : Fin 3) :
+    reflectionLocalCost (Ideal.absNorm P:ℝ) (completedLocalExponent I F P) e ≤
       (Ideal.absNorm (nonresidualGain I P):ℝ) := by
   have hq : 1≤(Ideal.absNorm P:ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hP.ne_zero (Ideal.absNorm_eq_zero_iff.mp hz))
+    pm_3073 Nat.one_le_iff_ne_zero.mpr hz hP.ne_zero
   by_cases hd : P∣I
   · rw [nonresidualGain,ite_eq_left hd,map_pow,Nat.cast_pow]
     exact reflectionLocalCost_le_square _ hq _ _
   · rw [nonresidualGain,ite_eq_right hd]
     exact reflectionLocalCost_le_single _ hq _ _ (completedLocalExponent_of_not_dvd I F P hI hP hd)
+end
 
 theorem reflectionConductorCost_bound {ι : Type*} [Fintype ι]
     (I F Q : Ideal O) (hI : I≠0) (hQ : Q≠0)
     (P : ι→Ideal O) [∀i,(P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀i,P i∣I*Q) (hres : ∀i,¬P i∣rowResidualPart I Q) (e : ι→Fin 3) :
-    reflectionConductorCost P (fun i => completedLocalExponent I F (P i)) e≤
+    reflectionConductorCost P (fun i => completedLocalExponent I F (P i)) e ≤
       (Ideal.absNorm (rowPowerfulPart I):ℝ)*(Ideal.absNorm (rowMaskPart I Q):ℝ)^2*(Ideal.absNorm Q:ℝ) := by
   rw [reflectionConductorCost_eq_prod P (fun i => NeZero.ne (P i))]
   have hfirst : (∏i,reflectionLocalCost (Ideal.absNorm (P i):ℝ) (completedLocalExponent I F (P i)) (e i))≤
@@ -329,7 +290,7 @@ theorem reflectionConductorCost_bound {ι : Type*} [Fintype ι]
   have hb := Nat.le_of_dvd hN (map_dvd Ideal.absNorm hd)
   have hr : (Ideal.absNorm (∏i,nonresidualGain I (P i)):ℝ)≤
       (Ideal.absNorm (rowPowerfulPart I*(rowMaskPart I Q)^2*Q):ℝ) := by exact_mod_cast hb
-  simpa only [map_mul,map_pow,Nat.cast_mul,Nat.cast_pow] using hr
+  pm_89 map_mul map_pow Nat.cast_mul Nat.cast_pow hr
 
 end CompletedGauss
 

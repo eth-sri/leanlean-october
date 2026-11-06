@@ -8,6 +8,7 @@ The literal classical Bessel kernel, principal half-power branches and
 actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannLaplaceRemainder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,11 +48,7 @@ theorem neumannTwoTerm_eq_ray_approximation (x : ℝ) :
 
 theorem abs_dfiBesselY0_sub_neumannTwoTerm_le {x : ℝ} (hx : 0 < x) :
     |dfiBesselY0 x - neumannTwoTerm x| ≤ neumannTwoTermErrorConstant * x ^ (-(5 / 2 : ℝ)) := by
-  have hcoef : ‖Complex.exp (I * (x : ℂ)) * neumannRayCoefficient‖ ≤ 1 := by
-    rw [norm_mul]
-    have he : ‖Complex.exp (I * (x : ℂ))‖ = 1 := by simp [Complex.norm_exp, mul_re]
-    rw [he, one_mul]
-    exact norm_neumannRayCoefficient_le_one
+  pm_334
   have hp : ‖Complex.exp (I * (x : ℂ)) * neumannRayCoefficient *
       (neumannLaplaceIntegral x - neumannLaplaceApproximation x)‖ ≤
         (9 / 128 : ℝ) * Real.sqrt Real.pi * x ^ (-(5 / 2 : ℝ)) := by

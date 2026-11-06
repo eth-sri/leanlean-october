@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleSignedCount
 public import LaterPairs.Native.RobertSargosRatioGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -28,14 +29,12 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
       |robertSargosReduced r p.2.1 p.1 h₁ h₂ p.2.2| ≤ δ*H*Q^2) :
     (S.card:ℝ) ≤ (r.natAbs.divisors.card:ℝ)+
       32*δ*Q^2/(H*|(r:ℝ)|)*(∑ g ∈ r.natAbs.divisors, (g:ℝ)) := by
-  have hrn : (r:ℝ) ≠ 0 := by exact_mod_cast hr
+  pm_1663 hrn r hr
   have hrp : 0 < |(r:ℝ)| := abs_pos.mpr hrn
-  have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs r)
+  pm_1662
   let A := Real.sqrt ((h₁:ℝ)*(h₁-r)/((h₂:ℝ)*(h₂-r)))
   let e := 4*δ*|(r:ℝ)|/H
-  have he : 0 ≤ e := by dsimp [e]; positivity
+  pm_61 he e
   have hratio : ∀ p ∈ S,
       A-e ≤ (p.1:ℝ)/p.2.1 ∧ (p.1:ℝ)/p.2.1 ≤ A+e := by
     intro p hp
@@ -48,9 +47,7 @@ theorem robertSargos_primitive_positive_q_fixed_coeff_card_le
       (by simpa only [abs_of_pos hp₁] using hq₁ p hp)
       (by simpa only [abs_of_pos hp₂] using hq₂ p hp)
       (mul_pos hp₁ hp₂) hl (hnear p hp)
-    change |(p.1:ℝ)/p.2.1-A| ≤ e at hb
-    rcases abs_le.mp hb with ⟨hlow,hupp⟩
-    constructor <;> linarith
+    pm_400 e
   have hb := primitive_linear_triple_card_le_abs_modulus S hcoeff hr hQ (by linarith : A-e ≤ A+e)
     (fun p hp => hq₁ p hp) hprim
     (fun p hp => by have hl := hline p hp; nlinarith only [hl]) hratio

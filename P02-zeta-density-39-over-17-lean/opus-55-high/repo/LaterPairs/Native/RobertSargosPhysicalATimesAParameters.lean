@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQFloorBudgets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -39,21 +40,16 @@ theorem robertSargos_physical_endpoint_budget (M H : ℕ) {lam : ℝ}
     (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
     (hM : lam^(-(8:ℝ)/13) ≤ M) (hHmax : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2) :
     16*(M:ℝ)*(H:ℝ)^2*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ 4*(M:ℝ)^2 := by
-  let T := lam^(-(1:ℝ)/13)
-  have hT : 2 ≤ T := (thirteenth_root_physical_scale hlam hsmall).1
+  pm_2290
   have hT1 : 1 ≤ T := by linarith
-  have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
-  have h8 : T^8 = lam^(-(8:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 8
-  have hHM : (H:ℝ) ≤ T^2/2 := by rwa [h2]
-  have hMM : T^8 ≤ (M:ℝ) := by rwa [h8]
+  pm_291
+  pm_1669
+  pm_375 hHM
+  pm_7111 hMM
   have hR : (⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ T := Nat.floor_le (by positivity)
-  have hH2 : (H:ℝ)^2 ≤ T^4/4 := by
-    have hs := mul_self_le_mul_self (Nat.cast_nonneg H) hHM
-    nlinarith
+  pm_785
   have h5 : T^5 ≤ (M:ℝ) := by
-    have h3 : 1 ≤ T^3 := one_le_pow₀ hT1
+    pm_7304 h3 T hT1
     nlinarith [mul_le_mul_of_nonneg_left h3 (show 0 ≤ T^5 by positivity)]
   have hprod := mul_le_mul hH2 hR (Nat.cast_nonneg _) (show 0 ≤ T^4/4 by positivity)
   have hHR : (H:ℝ)^2*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ) ≤ (M:ℝ)/4 := by nlinarith

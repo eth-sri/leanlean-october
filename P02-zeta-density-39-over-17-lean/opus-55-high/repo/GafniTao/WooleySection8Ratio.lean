@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection8Normalized
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Wooley equation (8.5): the conditioned-mean ratio
@@ -14,11 +15,12 @@ literal normalization scale is positive, and the loss
 
 namespace GafniTao
 
-noncomputable section
 
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k)
+include k phi
 /-- The exact ratio estimate used between Wooley (8.7) and (8.5). -/
 theorem wooleySourcePolynomial_equation_8_7_ratio
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
     (p B H b s nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Lambda epsilon : ℝ) (gamma : WooleySourceSequence)
     (hp : 2 ≤ p) (hbH : b ≤ H)
@@ -35,7 +37,7 @@ theorem wooleySourcePolynomial_equation_8_7_ratio
           s (p ^ B) (p ^ b) phi gamma /
         wooleySourceNormalizationScale phi p B H s Lambda gamma ≤
       (p : ℝ) ^ ((s : ℝ) * (nu : ℝ) - Lambda * (b : ℝ)) := by
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
+  pm_117 hpR p
   have hUH : 0 ≤ wooleySourcePolynomialConditionedMean
       s (p ^ B) (p ^ H) phi gamma :=
     wooleySourcePolynomialConditionedMean_nonneg phi s (p ^ B) (p ^ H) gamma
@@ -51,7 +53,7 @@ theorem wooleySourcePolynomial_equation_8_7_ratio
           (((s : ℝ) * (nu : ℝ) - Lambda * (b : ℝ)) +
             Lambda * (H : ℝ)) :=
     Real.rpow_le_rpow_of_exponent_le
-      (by exact_mod_cast (show 1 ≤ p by omega)) hexp
+      (by aesop) hexp
   rw [div_le_iff₀ hscale]
   unfold wooleySourceNormalizationScale
   calc
@@ -77,7 +79,6 @@ theorem wooleySourcePolynomial_equation_8_7_ratio
 epsilon-loss comparison consumed in the same theorem.  The exact multiplier
 `D` from Lemma 7.1 remains visible for the later uniform-constant ledger. -/
 theorem wooleySourcePolynomial_equation_8_5
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
     (p B H a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Lambda epsilon D : ℝ) (hk : 2 ≤ k) (hp : 2 ≤ p)
     (hbH : b ≤ H) (hnub : nu ≤ b) (hnukb : nu ≤ k * b)
@@ -115,8 +116,8 @@ theorem wooleySourcePolynomial_equation_8_5
   exact wooleySourcePolynomial_equation_8_7_ratio
     phi p B H b (wooleyTriangular k) nu Lambda epsilon gamma
       hp hbH hscale hupper hloss
-
-
 end
+
+
 
 end GafniTao

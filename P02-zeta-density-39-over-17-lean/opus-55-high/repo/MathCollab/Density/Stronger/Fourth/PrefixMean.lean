@@ -8,12 +8,12 @@ No upstream project or Architect module is imported.
 public import MathCollab.Density.Stronger.Fourth.MeanValueCore
 public import MathCollab.Density.Stronger.Fourth.Coefficients
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Set Finset MeasureTheory Filter
-open scoped BigOperators Interval ComplexConjugate
-set_option autoImplicit false
+open scoped Interval ComplexConjugate
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -25,11 +25,14 @@ theorem norm_sum_mul_sq_le {ι : Type*} [DecidableEq ι]
   calc
     ‖∑ i ∈ s, a i * b i‖ ^ 2 ≤ (∑ i ∈ s, ‖a i‖ * ‖b i‖) ^ 2 := by
       gcongr
-      exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun i hi => by rw [norm_mul])
+      exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun i hi => by simp_all)
     _ ≤ (∑ i ∈ s, ‖a i‖ ^ 2) * (∑ i ∈ s, ‖b i‖ ^ 2) :=
       sum_mul_sq_le_sq_mul_sq s (fun i => ‖a i‖) (fun i => ‖b i‖)
 
-theorem dirichletTime_shift (N : ℕ) (a : ℕ → ℂ) (v t : ℝ) :
+section
+variable (N : ℕ) (a : ℕ → ℂ)
+include N a
+theorem dirichletTime_shift (v t : ℝ) :
     dirichletTime N a (t+v) = dirichletTime N (endpointTwist v a) t := by
   unfold dirichletTime
   apply Finset.sum_congr rfl
@@ -40,8 +43,7 @@ theorem dirichletTime_shift (N : ℕ) (a : ℕ → ℂ) (v t : ℝ) :
   push_cast
   ring
 
-theorem integral_norm_sq_dirichletTime_interval_le
-    (N : ℕ) (a : ℕ → ℂ) {A B : ℝ} (hN : 0 < N) (hAB : A ≤ B) :
+theorem integral_norm_sq_dirichletTime_interval_le {A B : ℝ} (hN : 0 < N) (hAB : A ≤ B) :
     (∫ t : ℝ in A..B, ‖dirichletTime N a t‖^2) ≤
       (B-A+2*(5*Real.pi+1)*(N:ℝ)) *
         ∑ n ∈ Finset.Ioc N (2*N), ‖a n‖^2 := by
@@ -55,6 +57,7 @@ theorem integral_norm_sq_dirichletTime_interval_le
     simpa only [dirichletTime_shift,zero_add,sub_add_cancel] using ht.symm
   rw [heq]
   simpa only [norm_endpointTwist] using h
+end
 
 def dirichletPrefix (N : ℕ) (a : ℕ → ℂ) (t : ℝ) : ℂ :=
   ∑ n ∈ Finset.Ioc 0 N, a n*Complex.exp (-(I*(t:ℂ)*(Real.log n:ℂ)))
@@ -83,12 +86,15 @@ theorem dirichletPrefix_pow_two (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     rw [pow_succ, Nat.mul_comm (2^M) 2,dirichletPrefix_double,ih,
       Finset.sum_range_succ,add_assoc]
 
-theorem norm_dirichletPrefix_pow_two_sq_le (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+variable (M : ℕ) (a : ℕ → ℂ)
+include M a
+theorem norm_dirichletPrefix_pow_two_sq_le (t : ℝ) :
     ‖dirichletPrefix (2^M) a t‖^2 ≤
       2*((M:ℝ)+1)*(‖a 1‖^2+∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2) := by
   let S : ℂ := ∑ j ∈ Finset.range M, dirichletTime (2^j) a t
   let Q : ℝ := ∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2
-  have hQ : 0 ≤ Q := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+  pm_4459 hQ Q sq_nonneg
   have hS : ‖S‖^2 ≤ (M:ℝ)*Q := by
     simpa [S,Q] using norm_sum_mul_sq_le (Finset.range M)
       (fun _ => (1:ℂ)) (fun j => dirichletTime (2^j) a t)
@@ -98,8 +104,7 @@ theorem norm_dirichletPrefix_pow_two_sq_le (M : ℕ) (a : ℕ → ℂ) (t : ℝ)
   have hM : 0 ≤ (M:ℝ) := Nat.cast_nonneg M
   nlinarith [sq_nonneg (‖a 1‖-‖S‖),mul_nonneg hM (sq_nonneg ‖a 1‖)]
 
-theorem integral_norm_sq_dirichletPrefix_le_blocks
-    (M : ℕ) (a : ℕ → ℂ) {A B : ℝ} (hAB : A ≤ B) :
+theorem integral_norm_sq_dirichletPrefix_le_blocks {A B : ℝ} (hAB : A ≤ B) :
     (∫ t : ℝ in A..B, ‖dirichletPrefix (2^M) a t‖^2) ≤
       2*((M:ℝ)+1)*((B-A)*‖a 1‖^2+
         ∑ j ∈ Finset.range M, ∫ t : ℝ in A..B, ‖dirichletTime (2^j) a t‖^2) := by
@@ -128,8 +133,7 @@ theorem integral_norm_sq_dirichletPrefix_le_blocks
         intervalIntegral.integral_finsetSum (fun j _ => hi j)]
       rfl
 
-theorem integral_norm_sq_dirichletPrefix_le
-    (M : ℕ) (a : ℕ → ℂ) {A B L : ℝ} (hAB : A ≤ B)
+theorem integral_norm_sq_dirichletPrefix_le {A B L : ℝ} (hAB : A ≤ B)
     (hone : ‖a 1‖^2 ≤ L)
     (hcoeff : ∀ j ∈ Finset.range M,
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
@@ -148,7 +152,7 @@ theorem integral_norm_sq_dirichletPrefix_le
     have hjM : j ≤ M := (Finset.mem_range.mp hj).le
     have hp : ((2^j:ℕ):ℝ) ≤ (2:ℝ)^M := by
       norm_cast
-      exact pow_le_pow_right₀ (by decide : (1:ℕ) ≤ 2) hjM
+      pm_7010
     apply (integral_norm_sq_dirichletTime_interval_le (2^j) a
       (by positivity) hAB).trans
     dsimp [E]
@@ -169,8 +173,7 @@ theorem integral_norm_sq_dirichletPrefix_le
       nlinarith
     _ = _ := by dsimp [E]; ring
 
-theorem integral_norm_sq_dirichletPrefix_reflected_le
-    (M : ℕ) (a : ℕ → ℂ) (u : ℝ) {H L : ℝ} (hH : 0 ≤ H)
+theorem integral_norm_sq_dirichletPrefix_reflected_le (u : ℝ) {H L : ℝ} (hH : 0 ≤ H)
     (hone : ‖a 1‖^2 ≤ L)
     (hcoeff : ∀ j ∈ Finset.range M,
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
@@ -182,6 +185,7 @@ theorem integral_norm_sq_dirichletPrefix_reflected_le
     (show u-2*H ≤ u-H by linarith) hone hcoeff
   have heq : u-H-(u-2*H) = H := by ring
   simpa only [heq] using h
+end
 
 theorem fourth_divisorTerm_eq_coeff_phase (t c u : ℝ) (n : ℕ) :
     divisorDirichletTerm (afeCriticalPoint (-t)+((c:ℂ)+(u:ℂ)*I)) n =
@@ -189,7 +193,7 @@ theorem fourth_divisorTerm_eq_coeff_phase (t c u : ℝ) (n : ℕ) :
   by_cases hn : n = 0
   · subst n
     simp [divisorDirichletTerm,zetaFourthCoeff_zero]
-  have hnC : (n:ℂ) ≠ 0 := by exact_mod_cast hn
+  pm_356 hnC n hn
   rw [zetaFourthCoeff,divisorDirichletTerm_eq_divisorWeight_mul_cpow,
     divisorDirichletTerm_eq_divisorWeight_mul_cpow,
     Complex.cpow_def_of_ne_zero hnC,Complex.cpow_def_of_ne_zero hnC,
@@ -211,18 +215,19 @@ theorem sum_fourth_divisorTerm_eq_prefix (t c u : ℝ) (N : ℕ) :
       symm
       apply Finset.sum_subset
       · intro n hn
-        simp only [Finset.mem_Ioc,Finset.mem_range] at *
-        omega
+        pm_8400
       · intro n hn hnot
         have hn0 : n = 0 := by
-          simp only [Finset.mem_Ioc,Finset.mem_range] at *
-          omega
+          pm_8400
         subst n
         simp [divisorDirichletTerm]
     _ = _ := by
       simp only [fourth_divisorTerm_eq_coeff_phase,dirichletPrefix,Complex.ofReal_sub]
 
-theorem norm_dirichletPrefix_le (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+variable (N : ℕ) (a : ℕ → ℂ) (t : ℝ)
+include N a t
+theorem norm_dirichletPrefix_le :
     ‖dirichletPrefix N a t‖ ≤ ∑ n ∈ Finset.Ioc 0 N, ‖a n‖ := by
   unfold dirichletPrefix
   apply norm_sum_le_of_le
@@ -234,15 +239,15 @@ theorem norm_dirichletPrefix_le (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     neg_zero,Real.exp_zero,mul_one]
   exact le_rfl
 
-theorem continuous_dirichletPrefix_reflected (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+theorem continuous_dirichletPrefix_reflected :
     Continuous (fun u : ℝ => dirichletPrefix N a (u-t)) :=
   (continuous_dirichletPrefix N a).comp (by fun_prop)
+end
 
 theorem integrable_gaussian_dirichletPrefix_norm_pow
     {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (t : ℝ) (k : ℕ) :
     Integrable (fun u : ℝ => Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^k) := by
-  let C : ℝ := ∑ n ∈ Finset.Ioc 0 N, ‖a n‖
-  have hC : 0 ≤ C := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  pm_4460
   have hcont : Continuous (fun u : ℝ =>
       Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^k) :=
     (by fun_prop : Continuous (fun u : ℝ => Real.exp (-b*u^2))).mul

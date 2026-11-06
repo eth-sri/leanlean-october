@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorPlainFiberCount
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorCoefficientTransfer
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRowwise
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,8 +23,8 @@ theorem no_slot_inverse_count
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
     (R εm : ℝ) (hR : 0≤R) (hεm : 0<εm) :
-    ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
-      ∀ {Label : Type*} (rows : Finset FreeRow) (χ : FreeRow→Label→Character)
+    ∃ c κ K₀ : ℝ,0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
+      ∀ {Label : Type*} (rows : Finset FreeRow) (χ : FreeRow→ Label→ Character)
         (a ε tstar T allowance : ℝ) (i : ℕ), 1<U → 1/2≤a →
       ∀ (witness : ∀ u,Witness (χ u) U a ε tstar T allowance i)
         (label : Label) (J K : Fin (dyadicLength U)),
@@ -33,7 +34,7 @@ theorem no_slot_inverse_count
       ∀ (data : RowData) (reverse : Bool) (C height : ℝ),0≤C → 0≤height →
       2*Real.pi*allowance+(3*i : ℕ)*T≤height →
       (∀ u∈rows,((Ideal.span {u.val}).absNorm : ℝ)≤U) →
-      (∀ u∈rows,∀ I : Ideal O,idealCoeff (χ u label) I=
+      (∀ u∈rows,∀ I : Ideal O,idealCoeff (χ u label) I =
         if reverse then starRingEnd ℂ (idealCoeff (data.character ⟨u.val,u.property.1⟩) I)
         else idealCoeff (data.character ⟨u.val,u.property.1⟩) I) →
       (∀ n : ℕ,n≤2 → ∀ s∈Icc (0 : ℝ) 1,∀ t∈Icc (-height) height,
@@ -45,14 +46,14 @@ theorem no_slot_inverse_count
           (2*a-1)*Real.logb U ((2 : ℝ)^J.val)+2*ε+εm) := by
   obtain ⟨c,κ,K₀,hc,hc1,hκ,hK,he⟩ := no_slot_rowwise_endpoint M H hH S φ hφ hφc hφp hφ0 hφne
     a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB R εm hR hεm
-  refine ⟨c,κ,K₀,hc,hc1,hκ,hK,?_⟩
+  pm_3149
   filter_upwards [he] with U he
   intro Label rows χ a ε tstar T allowance i hU ha witness label J K hlabel hJ hK hr hrR
     data reverse C height hC hheight hfreq hrows hcoeff hraw
-  let r := Real.logb U ((2 : ℝ)^J.val)
+  pm_439 r J.val
   let V := orientedProfile reverse (inverseTest U tstar r)
   have hUp : 0<U := zero_lt_one.trans hU
-  have hD : 0<U^r := Real.rpow_pos_of_pos hUp _
+  pm_3773 hD U r hUp
   have hbase := HeckeDetectorDyadicActual.inverse_profile_support (U^tstar) (U^r)
   have hs : Function.support V⊆Icc (1/4 : ℝ) (9/4) := by
     cases reverse
@@ -60,9 +61,7 @@ theorem no_slot_inverse_count
     · simpa only [V,orientedProfile,Bool.true_eq,ite_true,conjugate_profile_support,inverseTest] using hbase
   have hb := HeckeDetectorDyadicActual.inverse_profile_smooth (U^tstar) (U^r)
   have hV : ContDiff ℝ ∞ V := by
-    cases reverse
-    · exact hb
-    · exact conjugate_profile_smooth _ hb
+    pm_5569 hb
   have hsp := HeckeDetectorFiberSpikes.fiber_spikes rows χ U a ε tstar T allowance i hU
     (by linarith) witness label J K hlabel hJ hK
   have hσ (u : FreeRow) (hu : u∈rows) : (witness u).zero.re∈Icc (0 : ℝ) 1 := (hsp u hu).1

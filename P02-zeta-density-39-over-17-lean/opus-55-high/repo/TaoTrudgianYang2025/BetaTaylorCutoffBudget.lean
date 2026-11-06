@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorPolynomialRemainder
 public import TaoTrudgianYang2025.BetaBufferedJets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,13 +31,12 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
     (hb : ∀ y ∈ uIcc a x, |iteratedDeriv (Q+1) f y| ≤ M) :
     |iteratedDeriv n (fun y => χ y*(f y-finiteTaylorPolynomial f Q a y)) x| ≤
       (2 : ℝ)^n*A*M*h^(Q+1-n) := by
-  have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
+  pm_1620
   have hA : 0 ≤ A := by
     have hz := hχb 0 (Nat.zero_le n)
     simp only [pow_zero,mul_one] at hz
-    exact (abs_nonneg _).trans hz
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
-    ENat.natCast_le_of_coe_top_le_withTop le_rfl n
+    grind
+  pb_1292
   have hR : ContDiffAt ℝ n (fun y => f y-finiteTaylorPolynomial f Q a y) x :=
     ((hf x right_mem_uIcc).sub (finiteTaylorPolynomial_contDiff f Q a).contDiffAt).of_le hN
   rw [iteratedDeriv_fun_mul hχ hR]
@@ -69,7 +69,6 @@ theorem abs_iteratedDeriv_cutoff_taylor_remainder_le
         _ = (n.choose i : ℝ)*(A*M*((h⁻¹)^i*h^(Q+1-(n-i)))) := by ring
         _ = _ := by rw [hcancel]
     _ = (2 : ℝ)^n*A*M*h^(Q+1-n) := by
-      rw [← Finset.sum_mul,← Nat.cast_sum,Nat.sum_range_choose,Nat.cast_pow,Nat.cast_ofNat]
-      ring
+      pm_6907
 
 end TaoTrudgianYang2025

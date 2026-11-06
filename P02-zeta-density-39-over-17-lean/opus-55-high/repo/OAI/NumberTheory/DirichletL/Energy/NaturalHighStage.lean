@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Energy.PositiveHighPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveBalancedAdmission
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighSourceBound
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,19 +36,19 @@ theorem actual_high_stage
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
     (hbslot:0≤bslot)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
     (Mglobal A B Bmask Mparent Mchild Lgoal Lslot rho κ ε:ℝ)(k:ℕ)
-    (hrho:0<rho)(hMg:0≤Mglobal)(hA:0≤A)(hB:0≤B)(hBm:0≤Bmask)
+    (hrho:0< rho)(hMg:0≤Mglobal)(hA:0≤A)(hB:0≤B)(hBm:0≤Bmask)
     (hMp:0≤Mparent)(hMc:0≤Mchild)(hL:0≤Lgoal)(hLs:0≤Lslot)
     (hMA:Mparent≤A)(hready:readyBudget A Bmask≤B)
     (hκ:(3/4:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
     (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(hε:0<ε)
-    (hslot:Lslot≤mesh Mglobal B κ ε)
+    (hslot:Lslot≤ mesh Mglobal B κ ε)
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(lowDegree:ℕ)(Slow:Finset (ℕ×ℕ)):
     ∃U:Finset (ℕ×ℕ),∃J:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
+    ∀η₀:Character,∀Q:Ideal O,Q≤M→ internalQ Q η₀≠0→ internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀εchild C₀ C₁ Clow:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→0≤Clow→
+    ∀εchild C₀ C₁ Clow:ℝ,εchild≤ stageLoss Mglobal B ε k→0≤C₀→0≤C₁→0≤Clow→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 (max Lgoal Mparent)
         Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 (max Lgoal Mparent)
@@ -57,12 +58,11 @@ theorem actual_high_stage
         lowDegree Slow Clow→
       PositiveHighAt (α:=α) M H hH W bslot a b bΦ Bmask Lgoal Lslot lo hi rho Mparent
         (reflectedLoss Mglobal B ε k) κ Z η₀ Q J U (C*(C₀+C₁+Clow+1)) := by
-  let r:=reserve Mglobal B ε
-  have hκ0:0≤κ:=by linarith
+  pm_5567 Mglobal B
   have hb:0≤b:=zero_le_one.trans hhi
-  have hr:0<r:=(bounds Mglobal B κ ε hMg hB hκ0 hε).2.2.2.1
-  have hr4:0<r/4:=by positivity
-  have hs:0<amplification ε:=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
+  have hr:0< r:=(bounds Mglobal B κ ε hMg hB hκ0 hε).2.2.2.1
+  have hr4:0< r/4:=by positivity
+  pm_5843
   obtain ⟨Ψ,hΨs,hΨn,hstage⟩:=actual_high_stage_from_physical (α:=α) M H hH
     W hW.continuous aslot bslot lo hi a b bΦ rho r Mparent Bmask (r/4) (r/4)
     (2*amplification ε+1) haslot hWs hbslot ha hlo hhi hbΦ hrho hr hMp hBm hr4 hr4
@@ -71,8 +71,7 @@ theorem actual_high_stage
     Mglobal A B Bmask Mparent Mchild Lgoal Lslot rho κ ε k hMg hA hB hBm hMp hMc hL hLs
     hMA hready hκ hbeta hκbeta hε hslot hdrop Ψ degree S
   obtain ⟨J,U,Cf,hCf,hstageZ⟩:=hstage lowDegree Slow Jp Up
-  refine ⟨U,J,?_⟩
-  intro η₀ Q hQM hQ0 hQt hQ72
+  pm_3332
   obtain ⟨Cp,hCp,hphysZ⟩:=hphysical η₀ Q hQM hQ0 hQt hQ72
   refine ⟨Cf*(Cp+1),by positivity,?_⟩
   filter_upwards [hstageZ,hphysZ] with Z hstageNow hphysicalNow

@@ -25,18 +25,19 @@ def partitionLabels (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ) :
   (commonShell S β Y).biUnion (fun p=>(IdealMobiusDivisorSum.primeSupport (commonRadical p.1 p.2)).powerset.image
     (fun U=>(p,U)))
 
-theorem mem_partitionLabels (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ)
+section
+variable (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+include S β
+theorem mem_partitionLabels (Y : ℝ)
     (p : (Ideal O×Ideal O)×Finset (Ideal O)) :
     p∈partitionLabels S β Y ↔ p.1∈commonShell S β Y ∧
       p.2⊆IdealMobiusDivisorSum.primeSupport (commonRadical p.1.1 p.1.2) := by
   simp only [partitionLabels,Finset.mem_biUnion,Finset.mem_image,Finset.mem_powerset]
   constructor
-  · rintro ⟨q,hq,U,hU,rfl⟩
-    exact ⟨hq,hU⟩
-  · rintro ⟨hp,hU⟩
-    exact ⟨p.1,hp,p.2,hU,rfl⟩
+  grind
+  grind
 
-theorem active_common_data (S : Finset (Ideal O)) (β : Ideal O→ℂ) (s : Ideal O)
+theorem active_common_data (s : Ideal O)
     (hs : Squarefree s) (hmask : ∀I∈S,β I≠0 → s∣I) (Y : ℝ)
     (p : Ideal O×Ideal O) (hp : p∈commonShell S β Y) :
     p.1≠0 ∧ p.2≠0 ∧ CompletedGauss.primeSupport p.1=CompletedGauss.primeSupport p.2 ∧
@@ -53,6 +54,7 @@ theorem active_common_data (S : Finset (Ideal O)) (β : Ideal O→ℂ) (s : Idea
     have hr : commonRadical I J=commonRadical J I := by unfold commonRadical;rw [Finset.inter_comm]
     rw [hr] at hsR
     exact hsR.trans (commonRadical_dvd_commonPart J I)
+end
 
 end SevenEighths.CenteredMomentSecondActiveCount
 

@@ -12,6 +12,7 @@ public import LaterPairs.Native.SargosQuarticPhase
 public import LaterPairs.Native.SargosQuarticPoisson
 public import LaterPairs.Native.SargosSlowAbel
 public import LaterPairs.Native.SargosSlowCharacter
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -36,11 +37,7 @@ theorem sargos_integer_Ioc_sum_split {A : Type*} [AddCommMonoid A]
     ext n
     simp only [Finset.mem_Ioc,Finset.mem_union]
     omega
-  have hd : Disjoint (Finset.Ioc a b) (Finset.Ioc b c) := by
-    apply Finset.disjoint_left.mpr
-    intro n hn hm
-    simp only [Finset.mem_Ioc] at hn hm
-    omega
+  pm_1678
   rw [hu,Finset.sum_union hd]
 
 end TaoTrudgianYang2025

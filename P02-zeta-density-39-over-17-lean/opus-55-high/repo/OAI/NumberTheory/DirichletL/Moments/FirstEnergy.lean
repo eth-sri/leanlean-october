@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CanonicalFirst
 public import OAI.NumberTheory.DirichletL.Moments.SourceRow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,10 +27,7 @@ theorem finiteHeckeEnergy_reduced_poisson (η : Character) (m A : O) (t : ℝ)
     rowEnergy_expand Finset.univ (sourceGenerator S)
       (fun I : supportedColumns S => c I*rowWeight η m A 1 t I)
       (sourceGenerator_supported S) W K hK]
-  apply Finset.sum_congr rfl
-  intro I hI
-  apply Finset.sum_congr rfl
-  intro J hJ
+  pm_2981
   rw [sourceGenerator,sourceGenerator,
     primary_span_supported I (Finset.mem_filter.mp I.property).2,
     primary_span_supported J (Finset.mem_filter.mp J.property).2,

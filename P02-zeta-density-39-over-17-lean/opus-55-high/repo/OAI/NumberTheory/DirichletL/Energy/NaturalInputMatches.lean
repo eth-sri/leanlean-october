@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedRayDictionary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,10 @@ local notation "O" => HeckeFamily.O
 def profile (W : ℝ → ℂ) (σ freq y : ℝ) : ℂ :=
   W y * (y : ℂ)^(-HeckeDyadic.shift σ freq)
 
-lemma profile_support (W : ℝ → ℂ) (a b : ℝ)
+section
+variable (W : ℝ → ℂ)
+include W
+lemma profile_support (a b : ℝ)
     (hWs : Function.support W ⊆ Set.Icc a b) (σ freq : ℝ) :
     Function.support (profile W σ freq) ⊆ Set.Icc a b := by
   intro y hy
@@ -27,46 +31,47 @@ lemma profile_support (W : ℝ → ℂ) (a b : ℝ)
   intro hz
   exact hy (by simp only [profile, hz, zero_mul])
 
-lemma profile_norm (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
+lemma profile_norm (a b : ℝ) (ha : 0 < a)
     (hWs : Function.support W ⊆ Set.Icc a b) (σ freq y : ℝ) :
     ‖profile W σ freq y‖ = ‖W y‖ * y^(-σ) := by
   by_cases hz : W y = 0
-  · simp only [profile, hz, zero_mul, norm_zero]
+  pm_2997 profile hz zero_mul norm_zero
   · have hy : 0 < y := ha.trans_le (hWs hz).1
     simp only [profile, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hy,
       Complex.neg_re, HeckeDyadic.shift_re]
 
-theorem exists_profile_bound (W : ℝ → ℂ) (hW : Continuous W)
+theorem exists_profile_bound (hW : Continuous W)
     (a b lo hi : ℝ) (ha : 0 < a)
     (hWs : Function.support W ⊆ Set.Icc a b) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ σ ∈ Set.Icc lo hi, ∀ freq y : ℝ,
       ‖profile W σ freq y‖ ≤ C := by
   obtain ⟨C, hC, hb⟩ := fixed_profile_norm_bound W hW a b lo hi ha
-  refine ⟨max 1 C, le_max_left _ _, ?_⟩
+  pm_8755 C
   intro σ hσ freq y
   by_cases hz : W y = 0
   · simpa only [profile, hz, zero_mul, norm_zero] using
       (zero_le_one.trans (le_max_left 1 C))
   · rw [profile_norm W a b ha hWs]
     exact (hb σ hσ y (hWs hz)).trans (le_max_right _ _)
+end
 
 def profileBound (W : ℝ → ℂ) (hW : Continuous W)
     (a b lo hi : ℝ) (ha : 0 < a)
     (hWs : Function.support W ⊆ Set.Icc a b) : ℝ :=
   (exists_profile_bound W hW a b lo hi ha hWs).choose
 
-lemma profileBound_ge_one (W : ℝ → ℂ) (hW : Continuous W)
-    (a b lo hi : ℝ) (ha : 0 < a)
-    (hWs : Function.support W ⊆ Set.Icc a b) :
+section
+variable (W : ℝ → ℂ) (hW : Continuous W) (a b lo hi : ℝ) (ha : 0 < a) (hWs : Function.support W ⊆ Set.Icc a b)
+include W hW a b lo hi ha hWs
+lemma profileBound_ge_one :
     1 ≤ profileBound W hW a b lo hi ha hWs :=
   (exists_profile_bound W hW a b lo hi ha hWs).choose_spec.1
 
-lemma norm_profile_le (W : ℝ → ℂ) (hW : Continuous W)
-    (a b lo hi : ℝ) (ha : 0 < a)
-    (hWs : Function.support W ⊆ Set.Icc a b)
+lemma norm_profile_le
     (σ : ℝ) (hσ : σ ∈ Set.Icc lo hi) (freq y : ℝ) :
     ‖profile W σ freq y‖ ≤ profileBound W hW a b lo hi ha hWs :=
   (exists_profile_bound W hW a b lo hi ha hWs).choose_spec.2 σ hσ freq y
+end
 
 section Input
 variable {ι : Type*} [Fintype ι]
@@ -85,10 +90,10 @@ variable (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) (hsame : Y₁ * Y₂ = X₁ * X�
 
 def input : Input ι :=
   CenteredMomentEnergyOriginalSource.naturalInput state p ha
-    (fun i => primePool Q H bslot (Z^(w i)))
+    (fun i => primePool Q H bslot (Z ^(w i)))
     (fun _ _ hI => (Finset.mem_filter.mp hI).2.1)
     (fun i => relativeCharacter Q H hH η₀ (θ i))
-    (fun i => profile W (σ i) (freq i)) (fun i => Z^(w i))
+    (fun i => profile W (σ i) (freq i)) (fun i => Z ^(w i))
     (fun _ => profileBound W hW aslot bslot lo hi haslot hWs)
     (fun _ => Real.rpow_pos_of_pos (zero_lt_one.trans_le state.base_ge_one) _)
     (fun _ => profileBound_ge_one W hW aslot bslot lo hi haslot hWs)

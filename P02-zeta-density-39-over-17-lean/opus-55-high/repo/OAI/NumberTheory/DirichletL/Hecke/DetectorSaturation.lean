@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorNormalized
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicActual
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorSaturation
@@ -19,22 +19,20 @@ lemma logarithmic_cost_eventually (C ε : ℝ) (hε : 0<ε) :
   have hbound : ∀ᶠ U : ℝ in atTop,
       C^2*((Real.logb 2 U)^2/U^(ε/2))^2≤1 := by
     have hh : Tendsto (fun U : ℝ => C^2*((Real.logb 2 U)^2/U^(ε/2))^2)
-        atTop (𝓝 0) := by simpa using ht'
+        atTop (𝓝 0) := by grind
     exact (tendsto_order.mp hh).2 1 (by norm_num) |>.mono (fun _ h => h.le)
   filter_upwards [hbound,eventually_gt_atTop (0 : ℝ)] with U hb hU
   have he : (U^(ε/2))^2=U^ε := by
-    rw [← Real.rpow_natCast,← Real.rpow_mul hU.le]
-    congr 1
-    norm_num
+    pm_6156 hU.le
   rw [div_pow, he] at hb
   have hh := (div_le_iff₀ (Real.rpow_pos_of_pos hU ε)).mp
-    (show C^2*((Real.logb 2 U)^2)^2/U^ε≤1 by simpa only [mul_div_assoc] using hb)
-  simpa only [one_mul,mul_one,mul_pow] using hh
+    (show C^2*((Real.logb 2 U)^2)^2/U^ε≤1 by grind)
+  grind
 
 lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
-    (hU : 1<U) (hr : 0≤r) (hm : 0≤m) (hσ : a≤σ)
+    (hU : 1<U) (hr : 0≤ r) (hm : 0≤ m) (hσ : a≤σ)
     (_hK : 0≤K) (_hA : 0≤A) (_hB : 0≤B)
-    (hcost : K^2≤U^ε)
+    (hcost : K ^2≤U^ε)
     (hprod : 1≤K*(U^r)^(1/2-σ)*(U^m)^(1/2-σ)*(A*B)) :
     U^((2*a-1)*(r+m)-ε)≤A^2*B^2 := by
   have hUp : 0<U := by linarith
@@ -45,15 +43,13 @@ lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
   have hp : 1≤K*U^((1/2-σ)*(r+m))*(A*B) := by
     calc
       1 ≤ K*(U^r)^(1/2-σ)*(U^m)^(1/2-σ)*(A*B) := hprod
-      _ = _ := by rw [←hcentral]; ring
+      _ = _ := by grind
   have hsq : 1≤(K*U^((1/2-σ)*(r+m))*(A*B))^2 := by nlinarith
   have he : (U^((1/2-σ)*(r+m)))^2=U^((1-2*σ)*(r+m)) := by
-    rw [←Real.rpow_natCast,←Real.rpow_mul hUp.le]
-    congr 1
-    ring
+    pm_3776 Real.rpow_natCast Real.rpow_mul hUp.le
   rw [mul_pow,mul_pow,he,mul_pow] at hsq
   let q := (2*a-1)*(r+m)-ε
-  let L := K^2*U^((1-2*σ)*(r+m))
+  let L := K ^2*U^((1-2*σ)*(r+m))
   have hLq : L*U^q≤1 := by
     calc
       _ ≤ U^ε*U^((1-2*σ)*(r+m))*U^q := by
@@ -77,24 +73,24 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
     (hR : 0≤R) (hdmax : 0≤dmax) (hτ : 0<τ) (hε : 0<ε)
     (he : 0<e) (he' : e<1/1000) (hκ : 0<κ) (hκ' : κ≤1) (hη : 0≤η)
     (hbudget : 12*e*(R+2)+8*κ+2*η≤ε/2) (hClower : 0≤Clower) :
-    ∃ U₀ : ℝ, ∀ Z d : ℝ, 1≤Z → 0≤d → d≤dmax → 2<Z^τ →
-      U₀≤Z^d → 1<Z^d →
-      ∀ {ι : Type*} [Fintype ι] (χ : ι→Character)
+    ∃ U₀ : ℝ, ∀ Z d : ℝ, 1≤Z → 0≤d → d≤dmax → 2<Z ^τ →
+      U₀≤Z ^d → 1<Z ^d →
+      ∀ {ι : Type*} [Fintype ι] (χ : ι→ Character)
         (hχ : ∀ j, (χ j).residue≠1) (a : ℝ) (i : ℕ),
         51/100≤a → a≤1 →
-        HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z^τ))<a+2*e →
+        HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*(Z ^τ))<a+2*e →
         ∀ j : ι, ∀ Dstar r m σ freq : ℝ,
-        (χ j).modulus.absNorm≤Z^d → 0<Dstar →
-        0≤r → r≤R → 0≤m → m≤R → (Z^d)^r≤4*Dstar →
-        a≤σ → σ≤1 → |freq|+(Z^τ)/2≤(3*i+2 : ℕ)*(Z^τ) →
-        (3+(3*i+2 : ℕ)*(Z^τ))^4≤(Z^d)^η →
+        (χ j).modulus.absNorm≤Z ^d → 0<Dstar →
+        0≤ r → r≤R → 0≤ m → m≤R → (Z ^d)^r≤4*Dstar →
+        a≤σ → σ≤1 → |freq|+(Z ^τ)/2≤(3*i+2 : ℕ)*(Z ^τ) →
+        (3+(3*i+2 : ℕ)*(Z ^τ))^4≤(Z ^d)^η →
         let M := polynomial (χ j) true
-          (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar ((Z^d)^r))
-          ((Z^d)^r) σ freq
-        let S := polynomial (χ j) false positiveAnnular ((Z^d)^m) σ freq
-        1≤Clower*(Real.logb 2 (Z^d))^2*((Z^d)^r)^(1/2-σ)*((Z^d)^m)^(1/2-σ)*(‖M‖*‖S‖) →
-        m≤1/2+75*ε ∧ (Z^d)^((2*a-1)*r-2*ε)≤‖M‖^2 ∧
-          (Z^d)^((2*a-1)*m-2*ε)≤‖S‖^2 := by
+          (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar ((Z ^d)^r))
+          ((Z ^d)^r) σ freq
+        let S := polynomial (χ j) false positiveAnnular ((Z ^d)^m) σ freq
+        1≤Clower*(Real.logb 2 (Z ^d))^2*((Z ^d)^r)^(1/2-σ)*((Z ^d)^m)^(1/2-σ)*(‖M‖*‖S‖) →
+        m≤1/2+75*ε ∧ (Z ^d)^((2*a-1)*r-2*ε)≤‖M‖^2 ∧
+          (Z ^d)^((2*a-1)*m-2*ε)≤‖S‖^2 := by
   obtain ⟨Cu,hCu,hupper⟩ := simultaneous_upper R dmax τ (ε/2) e κ η
     hR hdmax hτ (by linarith) he he' hκ hκ' hη hbudget
   have hev := (logarithmic_cost_eventually Clower ε hε).and
@@ -104,22 +100,21 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
   intro Z d hZ hd hd' hT hlarge hU ι _ χ hχ a i ha ha' hmax j Dstar r m σ freq
     hQ hDs hr hrR hm hmR hratio hσ hσ' hfreq hheight M S hprod
   have hσlo : 51/100≤σ := ha.trans hσ
-  obtain ⟨hcost,hconst⟩ := hU₀ (Z^d) hlarge
+  obtain ⟨hcost,hconst⟩ := hU₀ (Z ^d) hlarge
   obtain ⟨hMu,hSu⟩ := hupper Z d hZ hd hd' hT χ hχ a i ha ha' hmax j Dstar r m σ freq
     hQ hDs hr hrR hm hmR hratio hσlo hσ' hfreq hheight
-  have hp := normalized_product_lower (Z^d) r m σ a ε
-    (Clower*(Real.logb 2 (Z^d))^2) ‖M‖ ‖S‖ hU hr hm hσ
+  have hp := normalized_product_lower (Z ^d) r m σ a ε
+    (Clower*(Real.logb 2 (Z ^d))^2) ‖M‖ ‖S‖ hU hr hm hσ
     (mul_nonneg hClower (sq_nonneg _)) (norm_nonneg _) (norm_nonneg _) hcost hprod
-  have hbound (x : ℝ) : Cu*(Z^d)^(x+ε/2)≤(Z^d)^(x+ε) := by
+  have hbound (x : ℝ) : Cu*(Z ^d)^(x+ε/2)≤(Z ^d)^(x+ε) := by
     calc
-      _ ≤ (Z^d)^(ε/2)*(Z^d)^(x+ε/2) :=
+      _ ≤ (Z ^d)^(ε/2)*(Z ^d)^(x+ε/2) :=
         mul_le_mul_of_nonneg_right hconst (Real.rpow_nonneg (by linarith) _)
-      _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z^d)]; congr 1; ring
+      _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z ^d)]; congr 1; ring
   exact Detector.simultaneous_saturation hU (by linarith) hε.le (sq_nonneg _) (sq_nonneg _)
     hp (hMu.trans (hbound _)) (hSu.trans (hbound _))
 
 end SevenEighths.HeckeDetectorSaturation
 
-end
 
 end OAI

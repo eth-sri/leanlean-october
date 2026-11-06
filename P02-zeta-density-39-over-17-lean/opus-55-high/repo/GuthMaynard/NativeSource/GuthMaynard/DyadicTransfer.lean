@@ -1,11 +1,11 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.ExponentArithmetic
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Filter Asymptotics
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -41,7 +41,7 @@ lemma dyadicHeightIndex_spec (T : ℝ) (hT : 1 ≤ T) :
         rw [Real.rpow_add (by norm_num : (0 : ℝ) < 2), hRpowLogb, Real.rpow_one]
         ring
   refine ⟨hCover, hUpper, ?_⟩
-  simpa [Real.logb] using hUpperExp
+  aesop
 
 /-- An epsilon-power bound on every positive dyadic slab implies the same
 bound for the full symmetric zero count. The proof includes the fixed
@@ -54,14 +54,14 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
     EpsilonPowerBound (fun T => (N σ T : ℝ)) (fun T => T ^ a) := by
   intro ε hε
   let q := ε / 3
-  have hq : 0 < q := by dsimp [q]; linarith
+  pm_358 hq q
   obtain ⟨C, hC⟩ := (hSlab q hq).bound
   rw [eventually_atTop] at hC
   obtain ⟨X₀, hC⟩ := hC
   let X := max 1 X₀
   let J := dyadicHeightIndex X
   let B : ℝ := zeroCountRect σ 1 0 (((2 : ℕ) ^ J : ℕ) : ℝ)
-  have hXOne : 1 ≤ X := le_max_left _ _
+  pm_4884 hXOne X
   have hX₀ : X₀ ≤ X := le_max_right _ _
   have hJCover : X ≤ (((2 : ℕ) ^ J : ℕ) : ℝ) :=
     (dyadicHeightIndex_spec X hXOne).1
@@ -101,14 +101,13 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
   have hLogOne : 1 ≤ Real.log T := by
     have := Real.log_le_log (Real.exp_pos 1) hTExp
     simpa using this
-  have hLogTwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_4778
   have hmBound : (m : ℝ) ≤ (1 / Real.log 2 + 1) * Real.log T := by
     calc
       (m : ℝ) ≤ Real.log T / Real.log 2 + 1 := hmLog.le
       _ ≤ Real.log T / Real.log 2 + Real.log T := by linarith
       _ = (1 / Real.log 2 + 1) * Real.log T := by ring
-  have hLogPower : Real.log T ≤ T ^ q / q :=
-    Real.log_le_rpow_div hTpos.le hq
+  pm_8602 hLogPower q hTpos.le hq
   have hmPower : (m : ℝ) ≤ ((1 / Real.log 2 + 1) / q) * T ^ q := by
     calc
       (m : ℝ) ≤ (1 / Real.log 2 + 1) * Real.log T := hmBound
@@ -254,6 +253,6 @@ theorem dyadicToGlobalZeroCount (σ a : ℝ) (ha : 0 ≤ a)
         have hScaled := mul_le_mul_of_nonneg_left hProductBound
           (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hFactorNonneg)
         nlinarith [hBTarget, hScaled]
-  exact hGlobal.trans hMain
+  grind
 
 end GuthMaynard.NativeMoment

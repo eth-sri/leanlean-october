@@ -1,8 +1,8 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ContDiff SchwartzMap
@@ -19,12 +19,15 @@ theorem family_product_deriv_continuous {P : Type*} [TopologicalSpace P]
     funext z
     exact iteratedDeriv_fun_mul ((hf z.1).of_le (by simp)).contDiffAt ((hg z.1).of_le (by simp)).contDiffAt
   rw [hid]
-  exact continuous_finsetSum _ (fun i _ => (continuous_const.mul (hfc i)).mul (hgc (n-i)))
+  fun_prop
 
 def radialAmplitude (a : ℝ → ℂ) (v y r : ℝ) : ℂ :=
   a (v*r)*a (y*r)*((r:ℂ)^2*a r)
 
-theorem radialAmplitude_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) (v y : ℝ) :
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
+include a ha
+theorem radialAmplitude_smooth (v y : ℝ) :
     ContDiff ℝ ∞ (radialAmplitude a v y) := by
   have hc : ContDiff ℝ ∞ (fun r : ℝ => (r:ℂ)) := Complex.ofRealCLM.contDiff
   unfold radialAmplitude
@@ -32,7 +35,7 @@ theorem radialAmplitude_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) (v y 
 
 /-- The actual cutoff r^2*a(rv)*a(ry)*a(r) has jointly continuous radial
 derivatives, before any compact ratio parameters are selected. -/
-theorem radialAmplitude_deriv_continuous {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) (n : ℕ) :
+theorem radialAmplitude_deriv_continuous (n : ℕ) :
     Continuous (fun z : (ℝ × ℝ) × ℝ => iteratedDeriv n (radialAmplitude a z.1.1 z.1.2) z.2) := by
   let f : (ℝ × ℝ) → ℝ → ℂ := fun p r => a (p.1*r)
   let g : (ℝ × ℝ) → ℝ → ℂ := fun p r => a (p.2*r)
@@ -40,28 +43,27 @@ theorem radialAmplitude_deriv_continuous {a : ℝ → ℂ} (ha : ContDiff ℝ �
   have hf : ∀ p, ContDiff ℝ ∞ (f p) := by intro p; dsimp [f]; fun_prop
   have hg : ∀ p, ContDiff ℝ ∞ (g p) := by intro p; dsimp [g]; fun_prop
   have hc : ContDiff ℝ ∞ (fun r : ℝ => (r:ℂ)) := Complex.ofRealCLM.contDiff
-  have hb : ∀ p, ContDiff ℝ ∞ (b p) := by intro p; exact hc.pow 2 |>.mul ha
+  have hb : ∀ p, ContDiff ℝ ∞ (b p) := by intro p; fun_prop
   have hfc : ∀ n : ℕ, Continuous (fun z : (ℝ × ℝ) × ℝ => iteratedDeriv n (f z.1) z.2) := by
     intro n
     have hid : (fun z : (ℝ × ℝ) × ℝ => iteratedDeriv n (f z.1) z.2) =
         (fun z => z.1.1^n • iteratedDeriv n a (z.1.1*z.2)) := by
       funext z
       exact congrFun (iteratedDeriv_comp_const_smul (ha.of_le (by simp)) z.1.1) z.2
-    rw [hid]
-    exact (continuous_fst.fst.pow n).smul ((ha.continuous_iteratedDeriv n (by simp)).comp (continuous_fst.fst.mul continuous_snd))
+    pm_6370 continuous_fst.fst.pow continuous_fst.fst.mul
   have hgc : ∀ n : ℕ, Continuous (fun z : (ℝ × ℝ) × ℝ => iteratedDeriv n (g z.1) z.2) := by
     intro n
     have hid : (fun z : (ℝ × ℝ) × ℝ => iteratedDeriv n (g z.1) z.2) =
         (fun z => z.1.2^n • iteratedDeriv n a (z.1.2*z.2)) := by
       funext z
       exact congrFun (iteratedDeriv_comp_const_smul (ha.of_le (by simp)) z.1.2) z.2
-    rw [hid]
-    exact (continuous_fst.snd.pow n).smul ((ha.continuous_iteratedDeriv n (by simp)).comp (continuous_fst.snd.mul continuous_snd))
+    pm_6370 continuous_fst.snd.pow continuous_fst.snd.mul
   have hbc : ∀ n : ℕ, Continuous (fun z : (ℝ × ℝ) × ℝ => iteratedDeriv n (b z.1) z.2) := by
     intro n
     exact ((hb (0,0)).continuous_iteratedDeriv n (by simp)).comp continuous_snd
   exact family_product_deriv_continuous (fun p r => f p r*g p r) b
     (fun p => (hf p).mul (hg p)) hb (family_product_deriv_continuous f g hf hg hfc hgc) hbc n
+end
 
 /-- Every derivative vanishes off the same fixed closed support interval. -/
 theorem iteratedDeriv_zero_off_interval {f : ℝ → ℂ} {l u : ℝ}
@@ -82,7 +84,7 @@ theorem radialAmplitude_uniform_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
       ‖iteratedDeriv n (radialAmplitude a v y) r‖ ≤ C := by
   obtain ⟨C,hC⟩ := ((isCompact_Icc.prod isCompact_Icc).prod isCompact_Icc).exists_bound_of_continuousOn
     (radialAmplitude_deriv_continuous ha n).continuousOn
-  refine ⟨max 1 C,lt_of_lt_of_le zero_lt_one (le_max_left _ _),?_⟩
+  pm_4545
   intro v hv y hy r
   by_cases hr : r ∈ Icc l u
   · exact (hC ((v,y),r) ⟨⟨hv,hy⟩,hr⟩).trans (le_max_right _ _)

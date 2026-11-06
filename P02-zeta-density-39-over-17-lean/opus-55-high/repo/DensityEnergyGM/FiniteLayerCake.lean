@@ -2,16 +2,19 @@ module
 public import Mathlib.MeasureTheory.Integral.Layercake
 public import Mathlib.MeasureTheory.Integral.Bochner.SumMeasure
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
+section
+variable {ι : Type*} [Fintype ι]
+include ι
 /-- Finite layer cake with the closed upper level set. The integral starts
 at zero, where including the boundary changes no mass. -/
-theorem finite_layer_cake {ι : Type*} [Fintype ι] (f : ι → ℝ) {B : ℝ}
+theorem finite_layer_cake (f : ι → ℝ) {B : ℝ}
     (hf0 : ∀ i, 0 ≤ f i) (hfB : ∀ i, f i ≤ B) :
     (∑ i, f i) = ∫ u in Set.Ioc 0 B,
       (((Finset.univ.filter fun i => u ≤ f i).card) : ℝ) := by
@@ -28,12 +31,12 @@ theorem finite_layer_cake {ι : Type*} [Fintype ι] (f : ι → ℝ) {B : ℝ}
   have hset : {i : ι | u ≤ f i} =
       (Finset.univ.filter fun i => u ≤ f i : Finset ι) := by
     ext i
-    simp only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and, Set.mem_ofPred_eq]
+    grind
   rw [Measure.real, hset, Measure.count_apply_finset, ENNReal.toReal_natCast]
 
 /-- Natural occupancy weights are expanded into a finite family of copies,
 so the weighted layer cake is the literal finite integral identity. -/
-theorem finite_weighted_layer_cake {ι : Type*} [Fintype ι]
+theorem finite_weighted_layer_cake
     (r : ι → ℕ) (f : ι → ℝ) {B : ℝ}
     (hf0 : ∀ i, 0 ≤ f i) (hfB : ∀ i, f i ≤ B) :
     (∑ i, (r i : ℝ) * f i) = ∫ u in Set.Ioc 0 B,
@@ -42,8 +45,7 @@ theorem finite_weighted_layer_cake {ι : Type*} [Fintype ι]
   have h := finite_layer_cake (fun p : (Σ i, Fin (r i)) => f p.1)
     (fun p => hf0 p.1) (fun p => hfB p.1)
   have hsum : (∑ p : (Σ i, Fin (r i)), f p.1) = ∑ i, (r i : ℝ) * f i := by
-    rw [Fintype.sum_sigma]
-    simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+    pm_214 Fintype.sum_sigma Finset.sum_const Finset.card_univ Fintype.card_fin nsmul_eq_mul
   rw [hsum] at h
   refine h.trans ?_
   apply integral_congr_ae
@@ -51,8 +53,7 @@ theorem finite_weighted_layer_cake {ι : Type*} [Fintype ι]
   calc
     (((Finset.univ.filter fun p : (Σ i, Fin (r i)) => u ≤ f p.1).card) : ℝ) =
         ∑ p : (Σ i, Fin (r i)), if u ≤ f p.1 then (1 : ℝ) else 0 := by
-      simp only [Finset.card_eq_sum_ones, Nat.cast_sum, Finset.sum_filter,
-        Nat.cast_ite, Nat.cast_one, Nat.cast_zero]
+      pm_232 Finset.card_eq_sum_ones Nat.cast_sum Finset.sum_filter Nat.cast_ite Nat.cast_one Nat.cast_zero
     _ = ∑ i, ∑ _j : Fin (r i), if u ≤ f i then (1 : ℝ) else 0 := by
       rw [Fintype.sum_sigma]
     _ = ∑ i, if u ≤ f i then (r i : ℝ) else 0 := by
@@ -62,5 +63,6 @@ theorem finite_weighted_layer_cake {ι : Type*} [Fintype ι]
         Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_one, mul_zero]
     _ = ∑ i ∈ (Finset.univ.filter fun i => u ≤ f i), (r i : ℝ) := by
       rw [Finset.sum_filter]
+end
 
 end Montgomery.RationalMoment

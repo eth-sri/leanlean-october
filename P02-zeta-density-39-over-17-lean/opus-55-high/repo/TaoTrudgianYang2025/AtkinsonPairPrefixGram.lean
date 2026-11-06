@@ -4,6 +4,7 @@ public import TaoTrudgianYang2025.AtkinsonGapPhysicalScale
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixMax
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonWeightedGram
 public import GuthMaynard.SecondDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,12 +26,11 @@ theorem ExponentPair.atkinson_physical_gap_sum_bound {k l ε : ℝ}
           unitaryPhase (atkinsonSourcePhase t n-atkinsonSourcePhase u n)‖ ≤
           C*(((t-u)/Real.sqrt (H*M))^(k+ε)*M^(l+ε)+
             Real.sqrt (H*M)/(t-u)) := by
-  obtain ⟨η,hη,C,hC,hbound⟩ := hpair.atkinson_gap_sum_bound hε
+  pm_231 η hη C hC hbound hpair.atkinson_gap_sum_bound hε
   refine ⟨η,hη,12*C,by linarith,?_⟩
   intro H M t u a b hH hM hu hu2 htu ht2 hsmall ha hb
-  have hMp : 0 < M := zero_lt_one.trans_le hM
-  have hup : 0 < u := hH.trans_le hu
-  have hgap : 0 < t-u := sub_pos.mpr htu
+  pm_4278 hMp M zero_lt_one.trans_le hM hup u hH.trans_le hu
+  pm_5221 hgap t u htu
   have htU : t ≤ 2*u := by linarith
   have hq : Real.pi*M/(2*u) < η :=
     (div_le_div_of_nonneg_left (by positivity) (by positivity : 0 < 2*H)
@@ -70,7 +70,7 @@ theorem ExponentPair.atkinson_prefixGramMax_bound {k l ε : ℝ}
         atkinsonPrefixGramMax M M t u ≤
           C*((|t-u|/Real.sqrt (H*(M : ℝ)))^(k+ε)*(M : ℝ)^(l+ε)+
             Real.sqrt (H*(M : ℝ))/|t-u|) := by
-  obtain ⟨η,hη,C,hC,hbound⟩ := hpair.atkinson_physical_gap_sum_bound hε
+  pm_231 η hη C hC hbound hpair.atkinson_physical_gap_sum_bound hε
   have ordered : ∀ (H t u : ℝ) (M : ℕ), 0 < H → 0 < M →
       H ≤ u → u ≤ 2*H → u < t → t ≤ 2*H →
       Real.pi*(M : ℝ)/(2*H) < η →
@@ -78,7 +78,7 @@ theorem ExponentPair.atkinson_prefixGramMax_bound {k l ε : ℝ}
         C*(((t-u)/Real.sqrt (H*(M : ℝ)))^(k+ε)*(M : ℝ)^(l+ε)+
           Real.sqrt (H*(M : ℝ))/(t-u)) := by
     intro H t u M hH hM hu hu2 htu ht2 hsmall
-    have hM1 : (1 : ℝ) ≤ M := by exact_mod_cast hM
+    pm_77 hM1 M hM
     unfold atkinsonPrefixGramMax
     apply Finset.sup'_le
     intro j hj

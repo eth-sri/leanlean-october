@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection9Admissible
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The analytic two-step composition in Wooley Lemma 9.3
@@ -13,7 +14,6 @@ of the two Lemma-9.2 bounds, with both formerly implicit constants retained.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- Substitution of one monograde estimate into another. -/
 theorem wooley_monograde_two_step_compose
@@ -25,8 +25,8 @@ theorem wooley_monograde_two_step_compose
     P ≤ C₁ * C₂ ^ rho₁ * R ^ (rho₁ * rho₂) *
       tail₂ ^ rho₁ * tail₁ := by
   have hsecondPow := Real.rpow_le_rpow hQ hsecond hrho₁
-  have hRpow : 0 ≤ R ^ rho₂ := Real.rpow_nonneg hR _
-  have hmiddle : 0 ≤ C₁ * tail₁ := mul_nonneg hC₁ htail₁
+  pm_1446 hRpow R rho₂ hR
+  pm_5094 hmiddle C₁ tail₁ hC₁ htail₁
   calc
     P ≤ C₁ * Q ^ rho₁ * tail₁ := hfirst
     _ ≤ C₁ * (C₂ * R ^ rho₂ * tail₂) ^ rho₁ * tail₁ := by
@@ -45,8 +45,8 @@ theorem wooley_second_decay_rpow_le_one
     (hp : 2 ≤ p) (hk : 1 ≤ k) (hLambda : 0 ≤ Lambda)
     (hrho : 0 ≤ rho) :
     ((p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ)))) ^ rho ≤ 1 := by
-  have hpOne : (1 : ℝ) ≤ p := by exact_mod_cast (show 1 ≤ p by omega)
-  have hkR : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  pm_478 hpOne p
+  pm_91 hkR k
   have hexp : -(b : ℝ) * Lambda / (2 * (k : ℝ)) ≤ 0 := by
     have hnum : -(b : ℝ) * Lambda ≤ 0 :=
       mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (Nat.cast_nonneg _)) hLambda
@@ -73,7 +73,7 @@ theorem wooley_source_two_step_compose
     P ≤ C₁ * C₂ ^ wooleyRho k r₁ *
       R ^ wooleyTwoStepWeight k r₁ r₂ *
       (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) := by
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
+  pm_2786
   have hrho₁ : 0 ≤ wooleyRho k r₁ := (wooleyRho_pos hr₁).le
   have hfull := wooley_monograde_two_step_compose
     hQ hR hC₁ hC₂ (Real.rpow_nonneg hpR.le _) (Real.rpow_nonneg hpR.le _)
@@ -99,6 +99,5 @@ theorem wooley_source_two_step_compose
       simp only [wooleyTwoStepWeight, mul_one]
 
 
-end
 
 end GafniTao

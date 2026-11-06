@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRecursive
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -46,9 +47,7 @@ theorem attachSecondExpansion_injective {Jo : ℕ} (parent : SecondParentSource 
 omit [DecidableEq ι] in
 theorem attachSecondExpansion_recover {Jo : ℕ} (x : MarkedSecondSource ι Jo 0) :
     attachSecondExpansion (secondParentOf x) x.second = x := by
-  apply MarkedSecondSource.ext <;> try rfl
-  funext i
-  exact Fin.elim0 i
+  pm_5488 MarkedSecondSource.ext
 
 variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -67,20 +66,22 @@ def secondParentPuncture {Jo : ℕ} (m : Eis) (parent : SecondParentSource ι Jo
     b0Label p parent.cube.support (fun i => parent.cube.leftExponent i+parent.cube.rightExponent i)
       parent.cube.leftBit parent.cube.rightBit*secondParentDivisor p parent
 
+section
+variable {Jo : ℕ} (parent : SecondParentSource ι Jo) (x : SecondExpansionData ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+include Jo parent x Ψ m z
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-theorem attached_inherited_profile {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) :
+theorem attached_inherited_profile :
     secondInheritedProfile p (attachSecondExpansion parent x) Ψ m z =
       expansionProfileData p Ψ (secondParentPuncture p m parent)
         (secondParentLabel p parent) (secondParentDivisor p parent) z ∅ ∅ x := rfl
 
-theorem attached_signed_weight {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) :
+theorem attached_signed_weight :
     actualSecondSignedWeight p hp hcop hg Ψ
       (m*ConcretePrimeRowBridge.idealGenerator (attachSecondExpansion parent x).quotient) z
       (attachSecondExpansion parent x) =
     secondSignedSourceWeight p hp hcop hg Ψ (secondParentPuncture p m parent)
       (secondParentLabel p parent) (secondParentDivisor p parent) z x := rfl
+end
 
 theorem secondExpansionSource_attached
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
@@ -102,13 +103,11 @@ theorem secondExpansionSource_attached
   have he := secondExpansionSource_signed_profile p hp hcop hg hinj hpr pool Ψ
     (secondParentPuncture p m parent) (secondParentLabel p parent) (secondParentDivisor p parent)
     z source hE ∅ ∅ slots₁ slots₂ lists₁ lists₂ a₁ a₂ W₁ W₂ Φ X Y
-  simp only [Finset.empty_union] at he
-  rw [he]
-  congr 1
+  pm_8542 Finset.empty_union
   rw [Finset.sum_image (fun x hx y hy h => attachSecondExpansion_injective parent h)]
   apply Finset.sum_congr rfl
   intro x hx
-  rw [attached_inherited_profile,attached_signed_weight]
+  aesop
 
 end
 end SevenEighths.InverseMoment

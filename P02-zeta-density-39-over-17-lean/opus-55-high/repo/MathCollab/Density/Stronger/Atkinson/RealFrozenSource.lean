@@ -7,6 +7,7 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.DivisorWeightFreezing
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem exists_abs_zetaSquareNorm_sub_frozen_le (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 8 ≤ T → ∀ x : ℝ, |x| ≤ T / 2 →
       |zetaMomentCriticalNorm (T + x) ^ 2 - 2 * (zetaSquareFrozenDivisorIntegral T x).re| ≤
         C * (1 + |x| * T ^ (-1 / 2 + ε)) := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_zetaSquareSource_sub_frozen_le ε hε
+  pm_98 C hC hbound exists_norm_zetaSquareSource_sub_frozen_le ε hε
   refine ⟨2 * C, by positivity, ?_⟩
   intro T hT x hx
   rw [zetaSquareNorm_eq_reflected_source, ← mul_sub, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)]

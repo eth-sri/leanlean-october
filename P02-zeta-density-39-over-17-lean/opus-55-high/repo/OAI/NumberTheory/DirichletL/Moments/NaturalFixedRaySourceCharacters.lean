@@ -23,14 +23,18 @@ variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 def relativeCharacter (η₀ : Character) (θ : RayQuotient.Characters M H) : Character :=
   (HeckeRayQuotient.character M H hH θ).product η₀.inverse
 
-lemma relativeCharacter_ideal (η₀ : Character) (θ : RayQuotient.Characters M H) (I : Ideal O) :
+section
+variable (η₀ : Character) (θ : RayQuotient.Characters M H)
+include η₀ θ
+lemma relativeCharacter_ideal (I : Ideal O) :
     idealCoeff (relativeCharacter M H hH η₀ θ) I=
       idealCoeff (HeckeRayQuotient.character M H hH θ) I*idealCoeff η₀.inverse I :=
   idealCoeff_product _ _ _
 
-lemma relativeCharacter_fixedQ (η₀ : Character) (θ : RayQuotient.Characters M H)
+lemma relativeCharacter_fixedQ
     (Q : Ideal O) (hQM : Q≤M) (hQη : Q≤η₀.modulus) :
     Q≤(relativeCharacter M H hH η₀ θ).modulus := le_inf hQM hQη
+end
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource
 

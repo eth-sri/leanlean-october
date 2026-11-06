@@ -1,6 +1,7 @@
 module
 public import SignedAmplifiedMoment
 public import GuthMaynard.Improvement.CenteredCubicApprox
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,7 +34,7 @@ theorem finite_cubic_trace (w : MathCollab.Density.ReflectionCutoff) (L : ℝ) (
     Matrix.trace (cutoffCenteredMatrix w L W^3) =
       finiteCubic W (MathCollab.Density.hKernel (reflectionSquare w) L) := by
   rw [pow_succ,pow_two]
-  simp only [Matrix.trace,Matrix.diag,Matrix.mul_apply,sum_mul,cutoff_centered_entry]
+  pm_94 Matrix.trace Matrix.diag Matrix.mul_apply sum_mul cutoff_centered_entry
   conv_lhs =>
     arg 2
     ext t
@@ -57,7 +58,7 @@ theorem finite_cubic_trace (w : MathCollab.Density.ReflectionCutoff) (L : ℝ) (
 
 theorem finite_time_mass (W : Finset ℝ) : (finiteTimeMeasure W).real univ = (W.card:ℝ) := by
   have hh := finite_time_integral W (fun _ => (1:ℝ))
-  simpa only [integral_const,smul_eq_mul,mul_one,Finset.sum_const,nsmul_eq_mul] using hh
+  simp_all
 
 /-- The atomic cubic is the literal ordered triple sum, including all
 repeated indices. No diagonal or short difference is removed. -/
@@ -67,12 +68,9 @@ theorem finite_cubic_integral (W : Finset ℝ) {K : ℝ → ℂ} (hK : Measurabl
   have hi := kernelCubic_integrable (finiteTimeMeasure W) hK hB hb
   have hip (t : ℝ) : Integrable (fun p : ℝ × ℝ => K (t-p.1)*K (p.1-p.2)*K (p.2-t))
       ((finiteTimeMeasure W).prod (finiteTimeMeasure W)) := by
-    apply (integrable_const (B^3)).mono' (by fun_prop)
+    pm_7200
     filter_upwards with p
-    simp only [norm_mul]
-    calc
-      _ ≤ B*B*B := by gcongr <;> exact hb _
-      _ = _ := by ring
+    pm_2717 B
   rw [kernelCubic,tripleMeasure,integral_prod _ hi]
   simp_rw [integral_prod _ (hip _),finite_time_integral]
   rfl

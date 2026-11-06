@@ -44,10 +44,6 @@ Used as an integrable majorant when averaging `log⁺ (1 / |1 - t|)` on dyadic i
 
 /-! ### A coarse dyadic-interval bound for the singularity average -/
 
-/-- The one-dimensional logarithmic singularity used in the Cartan/dyadic averaging argument. -/
-noncomputable def φ (t : ℝ) : ℝ :=
-  log⁺ (1 / |1 - t|)
-
 /-!
 ### Bridge lemma: from the 1D singularity `φ` to a complex lower bound
 

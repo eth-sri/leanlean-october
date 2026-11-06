@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniform
 public import OAI.NumberTheory.DirichletL.Moments.Lattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,8 +20,7 @@ def realInterpolatedLog (W : ℝ→ℂ) (p : ℝ×ℝ) (x : ℝ) : ℂ :=
 lemma realInterpolatedLog_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (Function.uncurry (realInterpolatedLog W)) := by
   unfold realInterpolatedLog Function.uncurry
-  exact (by fun_prop : ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ=>Real.exp (-p.1.1*p.2))).smul
-    (hW.comp (by fun_prop))
+  fun_prop
 
 lemma realInterpolatedLog_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) (p : ℝ×ℝ) :
@@ -29,7 +29,7 @@ lemma realInterpolatedLog_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   have hw : W (Real.exp x)≠0 := by intro hw;exact hx (by simp [realInterpolatedLog,hw])
   have hlo : Real.log a≤x := by simpa only [Real.log_exp] using Real.log_le_log ha (hs hw).1
   have hhi : x≤Real.log b := by simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos x) (hs hw).2
-  constructor <;> linarith [neg_abs_le (Real.log a),le_abs_self (Real.log b),abs_nonneg (Real.log a),abs_nonneg (Real.log b)]
+  grind
 
 def realInterpolatedLogSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (p : ℝ×ℝ) : 𝓢(ℝ,ℂ) :=
@@ -41,8 +41,7 @@ lemma realInterpolatedLogSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     realInterpolatedLogSchwartz W a b ha hs hW p x=realInterpolatedLog W p x := by
   rw [realInterpolatedLogSchwartz,CubicReflectionKernel.logSchwartz_apply]
   unfold twistProfile realInterpolatedLog
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (Real.exp_pos x).ne'),
-    ←Complex.ofReal_log (Real.exp_pos x).le,Real.log_exp]
+  pm_6378 x
   simp only [HeckeDyadic.shift,Complex.ofReal_zero,zero_mul,sub_zero]
   change W (Real.exp x)*Complex.exp ((x:ℂ)*-(p.1:ℂ))=
     ((Real.exp (-p.1*x):ℝ):ℂ)*W (Real.exp x)

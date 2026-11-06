@@ -1,6 +1,8 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.ActiveConductor
 public import OAI.NumberTheory.DirichletL.GaussSum.CubicTrace
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,69 +10,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 
 namespace MixedGaussConversion
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase
 
 def localGauss (p : O) (hp : p ≠ 0) [ (Ideal.span {p}).IsMaximal]
@@ -85,36 +47,35 @@ def localG (p : O) (hp : p ≠ 0) [ (Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) : ℂ :=
   breveLocalG (Ideal.span {p}) hg p rfl hp
 
-theorem norm_localGauss (p : O) (hp : p ≠ 0) [ (Ideal.span {p}).IsMaximal]
+section
+variable (p : O)
+include p
+theorem norm_localGauss (hp : p ≠ 0) [ (Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (j : ℕ) (hj0 : j ≠ 0) (hj6 : j < 6) : ‖localGauss p hp hg j‖ = 1 := by
   let q : Unit → O := fun _ => p
-  have hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {q i})) := by
-    intro i k hik
-    exact (hik (Subsingleton.elim i k)).elim
+  pm_7322 q k hik
   have h := norm_canonicalProductGauss q (fun _ => hp) hcop (fun _ => hg)
     (fun _ => hchar) (fun _ => j) (fun _ => hj0) (fun _ => hj6)
   rw [canonicalProductGauss_constant_power q (fun _ => hp) hcop (fun _ => hg) j hj0] at h
-  simpa only [q, Fintype.prod_unique, Finset.univ_unique, Finset.erase_singleton,
-    Finset.prod_empty, Finset.prod_singleton, one_pow, one_mul, localGauss] using h
+  aesop
 
-theorem canonicalSextic_fifth_eq_inverse (p : O) [(Ideal.span {p}).IsMaximal]
+theorem canonicalSextic_fifth_eq_inverse [(Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) :
     canonicalSextic (Ideal.span {p}) hg ^ 5 = (canonicalSextic (Ideal.span {p}) hg)⁻¹ := by
   apply DFunLike.ext
-  intro x
-  obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective x
+  pm_5264 a
   rw [MulChar.pow_apply' _ (by decide : (5 : ℕ) ≠ 0), ← MulChar.star_apply',
     canonicalSextic_conj_as_row_label]
   ring
 
-theorem localGauss_five_eq (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
+theorem localGauss_five_eq (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) :
     localGauss p hp hg 5 = breveGammaMinus1 (Ideal.span {p}) hg p rfl hp := by
   rw [localGauss, canonicalSextic_fifth_eq_inverse]
   rfl
 
-theorem local_sign_conversion (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
+theorem local_sign_conversion (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (hprimary : lambda ^ 2 ∣ p - 1) :
     (-localGauss p hp hg 1) * star (localG p hp hg) = star (localCoefficient p hp hg) ∧
@@ -130,12 +91,13 @@ theorem local_sign_conversion (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal
       mul_comm] using h.2.2.1
   · rw [localGauss_five_eq]
     exact h.2.1
+end
 
 theorem norm_localG (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (hprimary : lambda ^ 2 ∣ p - 1) : ‖localG p hp hg‖ = 1 := by
   have h := congrArg norm (local_sign_conversion p hp hg hchar hprimary).1
-  simp only [norm_mul, norm_neg, norm_star, localCoefficient] at h
+  pm_298 norm_mul norm_neg norm_star localCoefficient h
   rw [norm_localGauss p hp hg hchar 1 (by decide) (by decide), one_mul,
     norm_angularFactor p hp,
     norm_localGauss p hp hg hchar 2 (by decide) (by decide), one_mul] at h
@@ -194,8 +156,6 @@ theorem moebius_mixed_gauss_conversion {ι : Type*} [Fintype ι]
 
 end MixedGaussConversion
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-
 namespace GaussGeneratorTransport
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
 open MixedGaussConversion
@@ -207,16 +167,14 @@ theorem pair_moebius_eq_active
       (UniqueFactorizationMonoid.moebius (∏ i ∈ T, Ideal.span {p i}) : ℂ) =
       (UniqueFactorizationMonoid.moebius
         (Ideal.span {∏ i : activeSupport S T, p i.val}) : ℂ) := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
-  have hcop := activePrimes_pairwise_isCoprime (fun i => Ideal.span {p i}) hinj S T
+  pm_3509
+  pm_5889 hcop activePrimes_pairwise_isCoprime hinj S T
   rw [prime_product_moebius (fun i => Ideal.span {p i}) hprime hinj S,
     prime_product_moebius (fun i => Ideal.span {p i}) hprime hinj T,
     product_moebius_eq_sign (fun i : activeSupport S T => p i.val) hcop, ← pow_add]
   have hd : Disjoint (S \ T) (T \ S) := by
     apply Finset.disjoint_left.mpr
-    intro i hi hj
-    exact (Finset.mem_sdiff.mp hi).2 (Finset.mem_sdiff.mp hj).1
+    pm_6962
   have ha : Fintype.card (activeSupport S T) = (S \ T).card + (T \ S).card := by
     rw [Fintype.card_coe, activeSupport, Finset.card_union_of_disjoint hd]
   have hs := Finset.card_sdiff_add_card_inter S T
@@ -240,8 +198,6 @@ def activeConvertedGauss
 
 end GaussGeneratorTransport
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-
 namespace ConcretePrimeRowBridge
 open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
 
@@ -258,11 +214,13 @@ noncomputable def conjugateIdealRowSum
 end ConcretePrimeRowBridge
 
 open MeasureTheory Set
-open scoped BigOperators
 
 namespace EisensteinSchwartzPoisson
 
-theorem scaled_cauchy_antitone (b : ℝ) :
+section
+variable (b : ℝ)
+include b
+theorem scaled_cauchy_antitone :
     AntitoneOn (fun x : ℝ => (1 + (b * x) ^ 2)⁻¹) (Ici 0) := by
   intro x hx y hy hxy
   change 0 ≤ x at hx
@@ -271,31 +229,30 @@ theorem scaled_cauchy_antitone (b : ℝ) :
   nlinarith [sq_nonneg b, sq_nonneg (y - x),
     mul_nonneg (sq_nonneg b) (show 0 ≤ y ^ 2 - x ^ 2 by nlinarith)]
 
-theorem scaled_cauchy_nat_bound (b : ℝ) (hb : 0 < b) :
+theorem scaled_cauchy_nat_bound (hb : 0 < b) :
     (∑' n : ℕ, (1 + (b * (n : ℝ)) ^ 2)⁻¹) ≤ 1 + Real.pi / (2 * b) := by
   have hi := (integrable_inv_one_add_mul_sq hb.ne').integrableOn (s := Ioi 0)
   have ht := (scaled_cauchy_antitone b).tsum_le_integral hi
     (fun t ht => by positivity)
   have he : (∫ x : ℝ in Ioi 0, (1 + (b * x) ^ 2)⁻¹) = Real.pi / (2 * b) := by
     rw [integral_comp_mul_left_Ioi (fun x : ℝ => (1 + x ^ 2)⁻¹) 0 hb]
-    simp only [mul_zero, integral_Ioi_inv_one_add_sq, Real.arctan_zero, sub_zero,
-      smul_eq_mul]
+    pm_188 mul_zero integral_Ioi_inv_one_add_sq Real.arctan_zero sub_zero smul_eq_mul
     ring
   simpa [he] using ht
 
-theorem summable_scaled_cauchy_nat (b : ℝ) (hb : 0 < b) :
+theorem summable_scaled_cauchy_nat (hb : 0 < b) :
     Summable (fun n : ℕ => (1 + (b * (n : ℝ)) ^ 2)⁻¹) := by
   exact (scaled_cauchy_antitone b).summable_of_integrableOn_Ioi_zero
     (integrable_inv_one_add_mul_sq hb.ne').integrableOn (fun _ _ => by positivity)
 
-theorem summable_scaled_cauchy_int (b : ℝ) (hb : 0 < b) :
+theorem summable_scaled_cauchy_int (hb : 0 < b) :
     Summable (fun n : ℤ => (1 + (b * (n : ℝ)) ^ 2)⁻¹) := by
   rw [summable_int_iff_summable_nat_and_neg]
   constructor
   · simpa using summable_scaled_cauchy_nat b hb
   · simpa [mul_neg] using summable_scaled_cauchy_nat b hb
 
-theorem scaled_cauchy_int_bound (b : ℝ) (hb : 0 < b) :
+theorem scaled_cauchy_int_bound (hb : 0 < b) :
     (∑' n : ℤ, (1 + (b * (n : ℝ)) ^ 2)⁻¹) ≤ 1 + Real.pi / b := by
   have hs := summable_scaled_cauchy_nat b hb
   have hs1 := (summable_nat_add_iff 1).mpr hs
@@ -321,16 +278,16 @@ theorem scaled_cauchy_int_bound (b : ℝ) (hb : 0 < b) :
   have hh : Real.pi / (2 * b) = (Real.pi / b) / 2 := by ring
   rw [hh] at this
   linarith
+end
 
 open ConcreteTraceCRT ActualEisensteinCubic
 
-theorem scaled_eisenstein_cauchy_summable (K : ℝ) (hK : 0 < K) :
+section
+variable (K : ℝ) (hK : 0 < K)
+include K hK
+theorem scaled_eisenstein_cauchy_summable :
     Summable (fun h : O => ((1 + K * ‖eisEmbedding h‖ ^ 2) ^ 2)⁻¹) := by
-  let b := Real.sqrt K
-  have hb : 0 < b := Real.sqrt_pos.mpr hK
-  have hbsq : b ^ 2 = K := Real.sq_sqrt hK.le
-  have hs := summable_scaled_cauchy_int b hb
-  have hp := hs.mul_of_nonneg hs (fun _ => by positivity) (fun _ => by positivity)
+  pm_3436
   apply (latticeCoordEquiv.symm.summable_iff).mp
   change Summable (fun p : ℤ × ℤ =>
     ((1 + K * ‖eisEmbedding (latticeCoordEquiv.symm p)‖ ^ 2) ^ 2)⁻¹)
@@ -338,20 +295,12 @@ theorem scaled_eisenstein_cauchy_summable (K : ℝ) (hK : 0 < K) :
   intro p
   apply inverse_square_le_cauchy_product (b * (p.1 : ℝ)) (b * (p.2 : ℝ))
     (K * ‖eisEmbedding (latticeCoordEquiv.symm p)‖ ^ 2) (by positivity)
-  change ((b * (p.1 : ℝ)) ^ 2 + (b * (p.2 : ℝ)) ^ 2) / 2 ≤
-    K * ‖eisEmbedding (ActualEisensteinCoordinates.eval p.1 p.2)‖ ^ 2
-  rw [eisEmbedding_eval_norm_sq]
-  push_cast
-  nlinarith [mul_nonneg hK.le (sq_nonneg ((p.1 : ℝ) - (p.2 : ℝ)))]
+  pm_3435
 
-theorem scaled_eisenstein_cauchy_bound (K : ℝ) (hK : 0 < K) :
+theorem scaled_eisenstein_cauchy_bound :
     (∑' h : O, ((1 + K * ‖eisEmbedding h‖ ^ 2) ^ 2)⁻¹) ≤
       4 * (1 + Real.pi / Real.sqrt K) ^ 2 := by
-  let b := Real.sqrt K
-  have hb : 0 < b := Real.sqrt_pos.mpr hK
-  have hbsq : b ^ 2 = K := Real.sq_sqrt hK.le
-  have hs := summable_scaled_cauchy_int b hb
-  have hp := hs.mul_of_nonneg hs (fun _ => by positivity) (fun _ => by positivity)
+  pm_3436
   have he : (∑' h : O, ((1 + K * ‖eisEmbedding h‖ ^ 2) ^ 2)⁻¹) =
       ∑' p : ℤ × ℤ, ((1 + K * ‖eisEmbedding (latticeCoordEquiv.symm p)‖ ^ 2) ^ 2)⁻¹ :=
     (latticeCoordEquiv.symm.tsum_eq _).symm
@@ -363,18 +312,14 @@ theorem scaled_eisenstein_cauchy_bound (K : ℝ) (hK : 0 < K) :
         (scaled_eisenstein_cauchy_summable K hK)).tsum_le_tsum _ (hp.mul_left 4)
       intro p
       apply inverse_square_le_cauchy_product _ _ _ (by positivity)
-      change ((b * (p.1 : ℝ)) ^ 2 + (b * (p.2 : ℝ)) ^ 2) / 2 ≤
-        K * ‖eisEmbedding (ActualEisensteinCoordinates.eval p.1 p.2)‖ ^ 2
-      rw [eisEmbedding_eval_norm_sq]
-      push_cast
-      nlinarith [mul_nonneg hK.le (sq_nonneg ((p.1 : ℝ) - (p.2 : ℝ)))]
+      pm_3435
     _ = 4 * (∑' n : ℤ, (1 + (b * (n : ℝ)) ^ 2)⁻¹) ^ 2 := by
       rw [tsum_mul_left, ← hs.tsum_mul_tsum hs hp, pow_two]
     _ ≤ 4 * (1 + Real.pi / b) ^ 2 := by
       gcongr
       exact scaled_cauchy_int_bound b hb
 
-theorem scaled_eisenstein_cauchy_small (K : ℝ) (hK : 0 < K) (hK1 : K ≤ 1) :
+theorem scaled_eisenstein_cauchy_small (hK1 : K ≤ 1) :
     K * (∑' h : O, ((1 + K * ‖eisEmbedding h‖ ^ 2) ^ 2)⁻¹) ≤
       4 * (1 + Real.pi) ^ 2 := by
   have hs := scaled_eisenstein_cauchy_bound K hK
@@ -388,18 +333,15 @@ theorem scaled_eisenstein_cauchy_small (K : ℝ) (hK : 0 < K) (hK1 : K ≤ 1) :
       nth_rw 1 [← hsq]
       field_simp
     _ ≤ _ := by gcongr
+end
 
 theorem one_le_eisenstein_norm_sq (h : O) (hh : h ≠ 0) :
     1 ≤ ‖eisEmbedding h‖ ^ 2 := by
-  rw [eisEmbedding_norm_sq_eq_absNorm_span]
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (show Ideal.absNorm (Ideal.span {h}) ≠ 0 by
-    rw [ne_eq, Ideal.absNorm_eq_zero_iff, Ideal.span_singleton_eq_bot]
-    exact hh)
+  pm_5580 h hh
 
 theorem cauchy_large_scale_pointwise (K q : ℝ) (hK : 1 ≤ K) (hq : 1 ≤ q) :
     K * ((1 + K * q) ^ 2)⁻¹ ≤ 4 * ((1 + q) ^ 2)⁻¹ := by
-  have hKp : 0 < K := by linarith
-  have hqp : 0 < q := by linarith
+  pm_72 hKp K hqp q
   have h1 : K * (1 + q) ≤ 2 * (1 + K * q) := by nlinarith
   have h2 := pow_le_pow_left₀ (by positivity : 0 ≤ K * (1 + q)) h1 2
   have h3 : K * (1 + q) ^ 2 ≤ K ^ 2 * (1 + q) ^ 2 := by
@@ -416,8 +358,7 @@ theorem lattice_profile_nonzero_scaled_bound
       (4 * (1 + Real.pi) ^ 2 + 4 * eisensteinCauchyMass) * B := by
   have hm (h : O) : ‖F (K * ‖eisEmbedding h‖ ^ 2)‖ ≤
       B * ((1 + K * ‖eisEmbedding h‖ ^ 2) ^ 2)⁻¹ := by
-    rw [← div_eq_mul_inv]
-    apply (le_div_iff₀ (by positivity)).mpr
+    pm_3437
     simpa only [mul_comm] using hF (K * ‖eisEmbedding h‖ ^ 2) (by positivity)
   have hs := scaled_eisenstein_cauchy_summable K hK
   have hf : Summable (fun h : O => ‖F (K * ‖eisEmbedding h‖ ^ 2)‖) :=
@@ -464,7 +405,7 @@ theorem paperRadialFourier_nonzero_lattice_uniform :
         K * (∑' h : {h : O // h ≠ 0},
           ‖paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖) ≤
             C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
-  obtain ⟨s, C, hC, hb⟩ := paperRadialFourier_source_weighted_bound 2
+  pm_7504
   refine ⟨s, (4 * (1 + Real.pi) ^ 2 + 4 * eisensteinCauchyMass) * C, ?_, ?_⟩
   · have := eisensteinCauchyMass_nonneg
     have := Real.pi_pos

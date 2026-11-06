@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairCorrelationSum
 public import LaterPairs.Native.ExponentPairSourceWeyl
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -40,7 +41,7 @@ theorem weyl_correlation_sum_majorant
       _ ≤ _ := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         have h₁ := mul_le_mul_of_nonneg_left hLN hH.le
-        have h₂ := mul_le_mul_of_nonneg_left hsum' (show 0 ≤ 2*H by positivity)
+        pm_513 h₂ hsum' H
         nlinarith
   have hCB : 1 ≤ C*B := by nlinarith
   have hnonneg := mul_nonneg (show 0 ≤ H*N^2 by positivity)
@@ -70,7 +71,7 @@ theorem source_exponentialSum_differencing_bound
   intro F T N a L H hN hNT hH hHN ha hb hF
   have hNpos : 0 < N := by linarith
   have hT := hNpos.trans_le hNT
-  have hHpos : 0 < (H : ℝ) := by exact_mod_cast (show 0 < H by omega)
+  pm_5654
   have hHN' : (H : ℝ) ≤ N := hHN.trans (by nlinarith)
   have hL : (L : ℝ)+1 ≤ 2*N := by
     push_cast at hb
@@ -81,7 +82,7 @@ theorem source_exponentialSum_differencing_bound
   have hsum : (∑ r ∈ Finset.Icc 1 (H-1), ‖sourceShiftCorrelation F T N a L r‖) ≤
       B*((H : ℝ)*((T/N^2)^(k+ε)*N^(l+ε)*(H : ℝ)^(k+ε))+
         (N^2/T)*(1+Real.log N)) := by
-    have hI : 0 ≤ N^2/T := by positivity
+    pm_7452
     have hh := mul_le_mul_of_nonneg_left
       (add_le_add_left (mul_le_mul_of_nonneg_left hlog hI)
         ((T/N^2)^(k+ε)*N^(l+ε)*(H : ℝ)*(H : ℝ)^(k+ε))) (zero_le_one.trans hB)

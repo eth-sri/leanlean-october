@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.PrimePowerGaussSums
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,78 +10,33 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 open Finset AddChar MulChar EisensteinEmbedding
 
 def cubicBesselDensityDeriv (x t : ℝ) : ℝ := -(x/(2*t))*cubicBesselDensity x t
@@ -88,10 +44,9 @@ def cubicBesselDensityDeriv (x t : ℝ) : ℝ := -(x/(2*t))*cubicBesselDensity x
 lemma cubicBesselDensity_hasDerivAt (x t : ℝ) :
     HasDerivAt (fun y : ℝ => cubicBesselDensity y t) (cubicBesselDensityDeriv x t) x := by
   have he := ((((hasDerivAt_id x).pow 2).div_const (4*t)).const_sub (-t)).exp.const_mul (t^(-(2:ℝ)/3))
-  simp only [Pi.pow_apply,id_eq,Nat.cast_ofNat,mul_one] at he
+  pm_423 Pi.pow_apply id_eq Nat.cast_ofNat mul_one he
   convert he using 1
-  · funext y
-    rfl
+  aesop
   · unfold cubicBesselDensityDeriv cubicBesselDensity
     ring
 
@@ -160,26 +115,18 @@ lemma cubicBesselDensityDeriv_integrable (x : ℝ) (hx : 0<x) :
 lemma cubicBesselIntegral_hasDerivAt (x : ℝ) (hx : 0<x) :
     HasDerivAt (fun y : ℝ => ∫t in Set.Ioi (0:ℝ),cubicBesselDensity y t)
       (∫t in Set.Ioi (0:ℝ),cubicBesselDensityDeriv x t) x := by
-  let delta := x/2
-  have hdelta : 0<delta := half_pos hx
+  pm_6976
   have hU : Set.Ioi delta∈𝓝 x := isOpen_Ioi.mem_nhds (by
     change delta<x
     dsimp [delta]
     linarith)
-  have hbound : ∀ᵐt ∂volume.restrict (Set.Ioi (0:ℝ)),∀y∈Set.Ioi delta,
+  have hbound : ∀ᵐt ∂ volume.restrict (Set.Ioi (0:ℝ)),∀y∈Set.Ioi delta,
       ‖cubicBesselDensityDeriv y t‖≤(4/delta)*(t^(-(2:ℝ)/3)*Real.exp (-t/2)) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
     have htp : 0<t := ht
     intro y hy
     have hyp : 0<y := hdelta.trans hy
-    calc
-      _ ≤ (4/delta)*Real.exp (-y/2)*(t^(-(2:ℝ)/3)*Real.exp (-t/2)) :=
-        cubicBesselDensityDeriv_bound delta y t hdelta hy.le ht
-      _ ≤ _ := by
-        have he : Real.exp (-y/2)≤1 := Real.exp_le_one_iff.mpr (by linarith)
-        calc
-          _ ≤ (4/delta)*1*(t^(-(2:ℝ)/3)*Real.exp (-t/2)) := by gcongr
-          _ = _ := by ring
+    pm_3630
   have h := hasDerivAt_integral_of_dominated_loc_of_deriv_le
     («μ» := volume.restrict (Set.Ioi (0:ℝ)))
     (F := cubicBesselDensity) (F' := cubicBesselDensityDeriv)
@@ -216,17 +163,13 @@ lemma schlafliBesselK_cubic_hasDerivAt (x : ℝ) (hx : 0<x) :
 lemma cubicBesselDerivativeMajorant_integral :
     (∫t in Set.Ioi (0:ℝ),t^(-(2:ℝ)/3)*Real.exp (-t/2))=
       (2:ℝ)^(1/3:ℝ)*Real.Gamma (1/3) := by
-  have hh := Real.integral_rpow_mul_exp_neg_mul_Ioi
-    (a := (1/3:ℝ)) (r := (1/2:ℝ)) (by norm_num) (by norm_num)
-  convert hh using 1 <;> norm_num ; congr 2 ; funext t ; ring_nf
+  pm_3673
 
 lemma cubicBesselIntegral_norm_bound (x : ℝ) :
     ‖∫t in Set.Ioi (0:ℝ),cubicBesselDensity x t‖≤
       Real.exp (-x/2)*((2:ℝ)^(1/3:ℝ)*Real.Gamma (1/3)) := by
   have hpos : 0≤∫t in Set.Ioi (0:ℝ),cubicBesselDensity x t := by
-    apply integral_nonneg_of_ae
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    exact cubicBesselDensity_nonneg x t ht.le
+    pm_6912
   rw [Real.norm_of_nonneg hpos]
   exact cubicBesselIntegral_upper x
 
@@ -248,15 +191,14 @@ def cubicBesselDerivativeUpper (delta : ℝ) : ℝ :=
       ((2:ℝ)^(1/3:ℝ)*Real.Gamma (1/3))
 
 lemma cubicBesselDerivativeUpper_nonneg (delta : ℝ) (hdelta : 0<delta) :
-    0≤cubicBesselDerivativeUpper delta := by
+    0≤ cubicBesselDerivativeUpper delta := by
   unfold cubicBesselDerivativeUpper
   positivity
 
 lemma schlafliBesselK_cubic_derivative_bound (delta x : ℝ) (hdelta : 0<delta) (hx : delta≤x) :
-    ‖schlafliBesselK_cubic_derivative x‖≤cubicBesselDerivativeUpper delta*Real.exp (-x/2) := by
+    ‖schlafliBesselK_cubic_derivative x‖≤ cubicBesselDerivativeUpper delta*Real.exp (-x/2) := by
   have hxp : 0<x := hdelta.trans_le hx
-  have hp1 : (x/2)^(-(1:ℝ)/3)≤(delta/2)^(-(1:ℝ)/3) :=
-    Real.rpow_le_rpow_of_nonpos (by positivity) (by linarith) (by norm_num)
+  pm_3689 hp1 delta
   have hp4 : (x/2)^(-(4:ℝ)/3)≤(delta/2)^(-(4:ℝ)/3) :=
     Real.rpow_le_rpow_of_nonpos (by positivity) (by linarith) (by norm_num)
   rw [schlafliBesselK_cubic_derivative,Complex.norm_real,cubicBesselRealDeriv]
@@ -284,17 +226,19 @@ end
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma primeCubicGauss_add_three (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+section
+variable (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+include p hp hprimary
+lemma primeCubicGauss_add_three
     (e:ℕ) (h:Eis):primeCubicGauss p hp hprimary (e+3) h=primeCubicGauss p hp hprimary e h:=by
   unfold primeCubicGauss
   rw [pow_add,primeCubicMulChar_cube,mul_one]
 
-lemma cubicUnitGaussSum_prime_cube_shift_pos (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (n:ℕ) (h:Eis):
+lemma cubicUnitGaussSum_prime_cube_shift_pos (n:ℕ) (h:Eis):
     cubicUnitGaussSum (h*p^3) (p^(n+4))=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^3*cubicUnitGaussSum h (p^(n+1)):=by
   by_cases hd:p^n∣h
@@ -316,8 +260,7 @@ lemma cubicUnitGaussSum_prime_cube_shift_pos (p:Eis) (hp:Prime p)
       exact hd ((mul_dvd_mul_iff_left (pow_ne_zero 3 hp.ne_zero)).mp hd'')
     rw [hhigh,hlow,mul_zero]
 
-lemma cubicUnitGaussSum_prime_cube_shift (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (k:ℕ) (h:Eis):
+lemma cubicUnitGaussSum_prime_cube_shift (k:ℕ) (h:Eis):
     cubicUnitGaussSum (h*p^3) (p^(k+3))=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^3*cubicUnitGaussSum h (p^k)-
         if k=0 then (Ideal.absNorm (Ideal.span {p}):ℂ)^2 else 0:=by
@@ -332,13 +275,16 @@ lemma cubicUnitGaussSum_prime_cube_shift (p:Eis) (hp:Prime p)
   | succ n=>
     simpa only [show n+1+3=n+4 by omega,Nat.succ_ne_zero,ite_false,sub_zero] using
       cubicUnitGaussSum_prime_cube_shift_pos p hp hprimary n h
+end
 
 private def primeExpansionTerm (p:Eis) (s:ℂ) (h:Eis) (k:ℕ):ℂ:=
   ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^k*cubicUnitGaussSum h (p^k)*
     unramifiedPrimeDeletedSeries p s (h*p^k)
 
-private lemma primeExpansionTerm_cube_shift (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (s:ℂ) (h:Eis) (k:ℕ):
+section
+variable (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (s:ℂ)
+include p hp hprimary s
+private lemma primeExpansionTerm_cube_shift (h:Eis) (k:ℕ):
     primeExpansionTerm p s (h*p^3) (k+3)=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^3*((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^3*
         primeExpansionTerm p s h k-
@@ -357,8 +303,7 @@ private lemma primeExpansionTerm_cube_shift (p:Eis) (hp:Prime p)
     ring
   · ring
 
-theorem unramifiedCubicGaussSeries_cube_step (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (s:ℂ) (hs:2<s.re) (h:Eis) (hph:¬p∣h) (a:ℕ):
+theorem unramifiedCubicGaussSeries_cube_step (hs:2< s.re) (h:Eis) (hph:¬p∣h) (a:ℕ):
     unramifiedCubicGaussSeries s (h*p^(a+3))=
       (1-(Ideal.absNorm (Ideal.span {p}):ℂ)^2*((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^3)*
         unramifiedPrimeDeletedSeries p s (h*p^a)+
@@ -397,27 +342,28 @@ theorem unramifiedCubicGaussSeries_cube_step (p:Eis) (hp:Prime p)
     simp
   rw [htail,←harg] at he
   exact he.trans (by ring)
+end
 
 end
 
 section
 
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 open Filter Set
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem unramifiedGaussResidue_of_initial_relation (h0 h1 h2:Eis) (A B:ℂ→ℂ)
-    (hA:AnalyticOnNhd ℂ A {s:ℂ|1<s.re ∧ 0<s.im})
-    (hB:AnalyticOnNhd ℂ B {s:ℂ|1<s.re ∧ 0<s.im})
+    (hA:AnalyticOnNhd ℂ A {s:ℂ|1< s.re ∧ 0< s.im})
+    (hB:AnalyticOnNhd ℂ B {s:ℂ|1< s.re ∧ 0< s.im})
     (hAc:ContinuousAt A (4/3:ℂ)) (hBc:ContinuousAt B (4/3:ℂ))
-    (hrel:∀s:ℂ,4<s.re→0<s.im→unramifiedCubicGaussSeries s h0=
+    (hrel:∀s:ℂ,4< s.re→0< s.im→ unramifiedCubicGaussSeries s h0=
       A s*unramifiedCubicGaussSeries s h1+B s*unramifiedCubicGaussSeries s h2):
     unramifiedGaussResidue h0=A (4/3)*unramifiedGaussResidue h1+
       B (4/3)*unramifiedGaussResidue h2:=by
   let T (h:Eis):ℂ→ℂ:=translatedCuspFamily (3*h) oppositeSource 2 3 (by norm_num) (by norm_num)
   let H (h:Eis):ℂ→ℂ:=fun s=>cuspWhittakerHeightFactor s (3*h)
-  let D:Set ℂ:={s|1<s.re ∧ 0<s.im}
+  let D:Set ℂ:={s|1< s.re ∧ 0< s.im}
   let f:ℂ→ℂ:=fun s=>T h0 s*H h1 s*H h2 s
   let g:ℂ→ℂ:=fun s=>A s*T h1 s*H h0 s*H h2 s+B s*T h2 s*H h0 s*H h1 s
   have hT (h:Eis):AnalyticOnNhd ℂ (T h) D:=fun s hs=>
@@ -429,11 +375,9 @@ theorem unramifiedGaussResidue_of_initial_relation (h0 h1 h2:Eis) (A B:ℂ→ℂ
   have hg:AnalyticOnNhd ℂ g D:=fun s hs=>
     (((hA s hs).mul (hT h1 s hs)).mul (hH h0 s hs)).mul (hH h2 s hs) |>.add
       ((((hB s hs).mul (hT h2 s hs)).mul (hH h0 s hs)).mul (hH h1 s hs))
-  have hconvex:Convex ℝ D:=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
+  pm_1242 D
   have hstart:(5+Complex.I:ℂ)∈D:=by norm_num [D]
-  have hopen:IsOpen {s:ℂ|4<s.re ∧ 0<s.im}:=
+  have hopen:IsOpen {s:ℂ|4< s.re ∧ 0< s.im}:=
     (isOpen_lt continuous_const Complex.continuous_re).inter
       (isOpen_lt continuous_const Complex.continuous_im)
   have hev:f=ᶠ[𝓝 (5+Complex.I:ℂ)]g:=by
@@ -458,8 +402,7 @@ theorem unramifiedGaussResidue_of_initial_relation (h0 h1 h2:Eis) (A B:ℂ→ℂ
   have hcross:R h0*H h1 (4/3)*H h2 (4/3)=
       A (4/3)*R h1*H h0 (4/3)*H h2 (4/3)+B (4/3)*R h2*H h0 (4/3)*H h1 (4/3):=by
     apply tendsto_nhds_unique_of_eventuallyEq hl hr
-    filter_upwards [self_mem_nhdsWithin] with t ht
-    change 0<t at ht
+    pm_3637
     have htD:(4/3:ℂ)+(t:ℂ)*Complex.I∈D:=by
       constructor
       · norm_num
@@ -468,20 +411,23 @@ theorem unramifiedGaussResidue_of_initial_relation (h0 h1 h2:Eis) (A B:ℂ→ℂ
     dsimp only [Function.comp_def,f,g] at *
     linear_combination (((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*hc
   change R h0/H h0 (4/3)=A (4/3)*(R h1/H h1 (4/3))+B (4/3)*(R h2/H h2 (4/3))
-  have h0ne:H h0 (4/3)≠0:=cuspWhittakerHeightFactor_center_ne_zero (3*h0)
-  have h1ne:H h1 (4/3)≠0:=cuspWhittakerHeightFactor_center_ne_zero (3*h1)
-  have h2ne:H h2 (4/3)≠0:=cuspWhittakerHeightFactor_center_ne_zero (3*h2)
+  pm_5207 h0ne h0
+  pm_5207 h1ne h1
+  pm_5207 h2ne h2
   field_simp [h0ne,h1ne,h2ne]
   linear_combination hcross
 
-lemma gaussPrimeWeight_analytic (p:Eis) (hp:Prime p) (s:ℂ):
+section
+variable (p:Eis) (hp:Prime p)
+include p hp
+lemma gaussPrimeWeight_analytic (s:ℂ):
     AnalyticAt ℂ (fun z:ℂ=>(Ideal.absNorm (Ideal.span {p}):ℂ)^(-z)) s:=by
   apply Complex.analyticAt_iff_eventually_differentiableAt.mpr
   exact Eventually.of_forall fun z=>(differentiableAt_id.neg).const_cpow (Or.inl
     (Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))))
 
-lemma gaussPrimeWeight_center (p:Eis) (hp:Prime p):
+lemma gaussPrimeWeight_center:
     (Ideal.absNorm (Ideal.span {p}):ℂ)^3*
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ)))^3=
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹:=by
@@ -489,6 +435,7 @@ lemma gaussPrimeWeight_center (p:Eis) (hp:Prime p):
     (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
   rw [←Complex.cpow_nat_mul,←Complex.cpow_natCast _ 3,←Complex.cpow_add _ _ hQ]
   convert Complex.cpow_neg_one (Ideal.absNorm (Ideal.span {p}):ℂ) using 1 ;congr 1 ;norm_num
+end
 
 theorem unramifiedGaussResidue_prime_recurrence (p:Eis) (hp:Prime p)
     (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h):
@@ -496,11 +443,9 @@ theorem unramifiedGaussResidue_prime_recurrence (p:Eis) (hp:Prime p)
       (1+(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹)*unramifiedGaussResidue h-
       (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ))*primeCubicGauss p hp hprimary 1 h*
         unramifiedGaussResidue (h*p):=by
-  let A:ℂ→ℂ:=fun s=>1+(Ideal.absNorm (Ideal.span {p}):ℂ)^3*
-    ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^3
+  pm_3631
   let B:ℂ→ℂ:=fun s=>-((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s)*primeCubicGauss p hp hprimary 1 h)
-  have hA (s:ℂ):AnalyticAt ℂ A s:=analyticAt_const.add
-    (analyticAt_const.mul ((gaussPrimeWeight_analytic p hp s).pow 3))
+  pm_940
   have hB (s:ℂ):AnalyticAt ℂ B s:=((gaussPrimeWeight_analytic p hp s).mul analyticAt_const).neg
   have he:=unramifiedGaussResidue_of_initial_relation (h*p^3) h (h*p) A B
     (fun s _=>hA s) (fun s _=>hB s) (hA _).continuousAt (hB _).continuousAt
@@ -508,40 +453,40 @@ theorem unramifiedGaussResidue_prime_recurrence (p:Eis) (hp:Prime p)
       have hh:=unramifiedCubicGaussSeries_prime_recurrence p hp hprimary s (by linarith) h hph
       simpa only [A,B,neg_mul,sub_eq_add_neg] using hh)
   dsimp only [A,B] at he
-  rw [gaussPrimeWeight_center p hp] at he
-  simpa only [neg_mul,sub_eq_add_neg] using he
+  pm_8501 neg_mul sub_eq_add_neg
 
 end
 
 section
 
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ComplexConjugate
+open scoped Classical Topology ComplexConjugate
 
 def inverseCuspPath (c d : ℂ) (v : ℝ) (direction : ℂ) (t : ℝ) : ℂ×ℝ :=
   (-d/c-(t:ℂ)*star direction/(c^2*((v^2+t^2*‖direction‖^2:ℝ):ℂ)),
     v/(‖c‖^2*(v^2+t^2*‖direction‖^2)))
 
-lemma inverseCuspPath_zero (c d : ℂ) (v : ℝ) (direction : ℂ)
-    (hc : c≠0) (hv : 0<v) :
+section
+variable (c d : ℂ) (v : ℝ) (direction : ℂ) (hc : c≠0) (hv : 0<v)
+include c d v direction hc hv
+lemma inverseCuspPath_zero :
     inverseCuspPath c d v direction 0=(-d/c,1/(‖c‖^2*v)) := by
   unfold inverseCuspPath
   simp only [Complex.ofReal_zero,zero_pow (by decide : 2≠0),zero_mul,add_zero,zero_div,sub_zero]
   congr 1
   field_simp [norm_ne_zero_iff.mpr hc,hv.ne']
 
-theorem inverseCuspPath_hasDerivAt (c d : ℂ) (v : ℝ) (direction : ℂ)
-    (hc : c≠0) (hv : 0<v) :
+theorem inverseCuspPath_hasDerivAt :
     HasDerivAt (inverseCuspPath c d v direction)
       (-(star direction)/(c^2*(v:ℂ)^2),0) 0 := by
   have hn : ‖c‖≠0 := norm_ne_zero_iff.mpr hc
-  have hvc : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hv.ne'
+  pm_3058 hvc v hv.ne'
   have hden : HasDerivAt (fun t : ℝ=>v^2+t^2*‖direction‖^2) 0 0 := by
     convert (((hasDerivAt_id (0:ℝ)).pow 2).mul_const (‖direction‖^2)).const_add (v^2) using 1 <;> norm_num
   have hnum : HasDerivAt (fun t : ℝ=>(t:ℂ)*star direction) (star direction) 0 := by
@@ -563,14 +508,14 @@ theorem inverseCuspPath_hasDerivAt (c d : ℂ) (v : ℝ) (direction : ℂ)
     convert (hasDerivAt_const (0:ℝ) v).div hdenR hrz using 1 ; simp
   exact hz.prodMk hvd
 
-theorem inverseCuspPath_comp_hasDerivAt (c d : ℂ) (v : ℝ) (direction : ℂ)
-    (hc : c≠0) (hv : 0<v) (F : ℂ×ℝ→ℂ) (A : (ℂ×ℝ)→L[ℝ]ℂ)
+theorem inverseCuspPath_comp_hasDerivAt (F : ℂ×ℝ→ℂ) (A : (ℂ×ℝ)→L[ℝ]ℂ)
     (hF : HasFDerivAt F A (-d/c,1/(‖c‖^2*v))) :
     HasDerivAt (fun t=>F (inverseCuspPath c d v direction t))
       (A (-(star direction)/(c^2*(v:ℂ)^2),0)) 0 := by
   have hf : HasFDerivAt F A (inverseCuspPath c d v direction 0) := by
     rwa [inverseCuspPath_zero c d v direction hc hv]
   exact hf.comp_hasDerivAt 0 (inverseCuspPath_hasDerivAt c d v direction hc hv)
+end
 
 end CubicEisenstein
 

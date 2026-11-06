@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.ExponentPairLowFrequencySlope
 public import TaoTrudgianYang2025.BetaFiniteSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,25 +29,25 @@ theorem norm_modelPhaseCore_le_firstDerivative
     ‖∑ n ∈ Finset.range (L+1), oscillatory F T N (A+n)‖ ≤
       (2/(2 : ℝ)^(-σ))*(N/T) := by
   let d := Real.pi*(2 : ℝ)^(-σ)*T/N
-  have hq : 0 < (2 : ℝ)^(-σ) := Real.rpow_pos_of_pos (by norm_num) _
+  pm_6175 hq
   have hq₁ : (2 : ℝ)^(-σ) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (neg_nonpos.mpr hσ.le)
-  have hd : 0 < d := by dsimp [d]; positivity
+  pm_64 hd d
   have hTN : T/N ≤ 1/4 := (div_le_iff₀ hN).mpr (by linarith)
   have hdpi : d ≤ Real.pi := by
     have hprod := mul_le_mul_of_nonneg_right hq₁ (show 0 ≤ T/N by positivity)
     have hprod' : (2 : ℝ)^(-σ)*(T/N) ≤ 1 := by nlinarith
     have hh := mul_le_mul_of_nonneg_left hprod' Real.pi_pos.le
     dsimp [d]
-    convert hh using 1 <;> ring
+    grind
   have hfour : 4*Real.pi*T/N ≤ Real.pi := by
-    have hh := mul_le_mul_of_nonneg_left hTN (show 0 ≤ 4*Real.pi by positivity)
-    convert hh using 1 <;> ring
+    pm_1652 hh hTN Real.pi
+    grind
   have hb := kusminLandau_interval (fun n => betaModelSample F T N A n) 0 L (-1) d hd
     (fun n hn => by
       have hh := betaModelSample_firstDifference_bounds hσ hT hN hslope hF
         hstart hend n hn
-      simp only [Nat.zero_add,Nat.cast_add,Nat.cast_one,Int.cast_neg,Int.cast_one]
+      pm_94 Nat.zero_add Nat.cast_add Nat.cast_one Int.cast_neg Int.cast_one
       have hlo : -(4*Real.pi*T/N) ≤
           betaModelSample F T N A (n+1)-betaModelSample F T N A n := by
         convert hh.1 using 1
@@ -55,7 +56,7 @@ theorem norm_modelPhaseCore_le_firstDerivative
     (fun n hn => by
       have hh := betaModelSample_firstDifference_bounds hσ hT hN hslope hF
         hstart hend n hn
-      simp only [Nat.zero_add,Nat.cast_add,Nat.cast_one,Int.cast_neg,Int.cast_one]
+      pm_94 Nat.zero_add Nat.cast_add Nat.cast_one Int.cast_neg Int.cast_one
       have hhi : betaModelSample F T N A (n+1)-betaModelSample F T N A n ≤ -d := by
         dsimp [d]
         convert hh.2 using 1
@@ -79,6 +80,6 @@ theorem norm_modelPhaseCore_le_firstDerivative
   have hconst : 2*Real.pi/d = (2/(2 : ℝ)^(-σ))*(N/T) := by
     dsimp [d]
     field_simp
-  exact hb.trans_eq hconst
+  grind
 
 end TaoTrudgianYang2025

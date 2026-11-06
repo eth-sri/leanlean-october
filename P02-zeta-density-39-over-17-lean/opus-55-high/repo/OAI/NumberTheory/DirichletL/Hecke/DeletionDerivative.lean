@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,8 +18,7 @@ theorem factor_deriv {N : ℝ} (hN : 0 < N) (a s : ℂ) :
   have h' : HasDerivAt (EulerFactors.factor N a)
       (a*(N : ℂ)^(-s)*Complex.log (N : ℂ)) s := by
     convert h using 1
-    · funext z
-      rfl
+    aesop
     · dsimp
       ring
   exact h'.deriv
@@ -27,7 +27,7 @@ theorem factor_logDeriv_norm {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
     {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
     ‖logDeriv (EulerFactors.factor N a) s‖ ≤ localBound σ * Real.log N := by
   have hn0 : 0 < N := by linarith
-  have hl : 0 ≤ Real.log N := Real.log_nonneg (by linarith)
+  pm_301 hl N
   have ht := term_bound hσ hN ha hs
   have hδ : (2 : ℝ)^(-σ) ≤ 1 :=
     (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)).le
@@ -45,7 +45,7 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
       localBound σ * Real.log ((radical M).absNorm : ℝ) := by
   have hp0 (P : SmoothMobiusCorrection.PrimeIdeal) : 0 < (P.val.absNorm : ℝ) := by
     have h := SmoothMobiusCorrection.prime_norm_two_le P
-    exact_mod_cast (by omega : 0 < P.val.absNorm)
+    positivity
   have hp2 (P : SmoothMobiusCorrection.PrimeIdeal) : 2 ≤ (P.val.absNorm : ℝ) := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P
   have he : logDeriv (HeckeFiniteDeletion.factors M ψ) s =

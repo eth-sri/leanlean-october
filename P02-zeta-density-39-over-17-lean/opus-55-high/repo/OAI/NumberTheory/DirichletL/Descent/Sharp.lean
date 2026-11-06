@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.HybridBound
 public import OAI.NumberTheory.DirichletL.CubicSieve.Sharp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,24 +13,25 @@ open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem hybrid_sharp_cubic_factor :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
       (K * N * B) ^ (ε / 2) * CubicSieve.sieveNorm N (2 * L) ≤
         C * (K * N * B * L) ^ ε * (N + L + (N * L) ^ (2 / 3 : ℝ)) := by
-  obtain ⟨C, hC, hb⟩ := CubicSieve.sieveNorm_sharp (ε / 2) (by positivity)
+  pm_299 C hC hb CubicSieve.sieveNorm_sharp
   refine ⟨2 * C * (2 : ℝ) ^ (ε / 2), by positivity, ?_⟩
   intro K N B L hK hN hB hL
-  have hK0 : 0 < K := by linarith
-  have hN0 : 0 < N := by linarith
-  have hB0 : 0 < B := by linarith
-  have hL0 : 0 < L := by linarith
+  pm_72 hK0 K hN0 N
+  pm_72 hB0 B hL0 L
   let Q := K * N * B * L
-  have hQ0 : 0 < Q := by dsimp only [Q]; positivity
+  pm_116 hQ0 Q
   have hKNB : K * N * B ≤ Q := le_mul_of_one_le_right (by positivity) hL
   have hNL : N * L ≤ Q := by
     have hKB : 1 ≤ K * B := one_le_mul_of_one_le_of_one_le hK hB
     have hh := le_mul_of_one_le_left (by positivity : 0 ≤ N * L) hKB
-    convert hh using 1 ; dsimp only [Q] ; ring
+    pm_7339 hh Q
   have hdouble (t : ℝ) : (N * (2 * L)) ^ t = (2 : ℝ) ^ t * (N * L) ^ t := by
     rw [show N * (2 * L) = 2 * (N * L) by ring, Real.mul_rpow (by norm_num) (by positivity)]
   have h23 : (2 : ℝ) ^ (2 / 3 : ℝ) ≤ 2 := by
@@ -62,7 +64,7 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
       ring
     _ ≤ _ := by gcongr
 
-theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
+theorem hybridRow_energy :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
     ∀ (rows nset bset Pset : Finset (Ideal Eis))
       (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ),
@@ -74,14 +76,15 @@ theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
       (∀ P ∈ Pset, ‖a P‖ ≤ 1) → (∀ n ∈ nset, ∀ b ∈ bset, ‖beta n b‖ ≤ 1) →
       (∑ k ∈ rows, ‖hybridRow Pset nset bset a beta k‖ ^ 2) ≤
       C * (K * N * B * L) ^ ε * (K + N * B) * B * (N + L + (N * L) ^ (2 / 3 : ℝ)) := by
-  obtain ⟨C0, hC0, he⟩ := hybridRow_energy_sieve_norm (ε / 2) (by positivity)
-  obtain ⟨C1, hC1, hc⟩ := hybrid_sharp_cubic_factor ε hε
-  refine ⟨C0 * C1, mul_pos hC0 hC1, ?_⟩
+  pm_299 C0 hC0 he hybridRow_energy_sieve_norm
+  pm_98 C1 hC1 hc hybrid_sharp_cubic_factor ε hε
+  pm_653 C0 C1 hC0 hC1
   intro K N B L hK hN hB hL rows nset bset Pset a beta hrows hn hb hP ha hbeta
   apply (he K N B L hK hN hB rows nset bset Pset a beta hrows hn hb hP ha hbeta).trans
   have hh := mul_le_mul_of_nonneg_left (hc K N B L hK hN hB hL)
     (show 0 ≤ C0 * (K + N * B) * B by positivity)
   convert hh using 1 <;> ring
+end
 
 end
 end SevenEighths.InverseMoment

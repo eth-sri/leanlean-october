@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedEuler
 public import OAI.NumberTheory.DirichletL.Detector.HighExcludedLocal
 public import OAI.NumberTheory.DirichletL.Detector.HighEulerRational
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,16 +19,16 @@ def idealRowMarkedLocalFactor (η : HeckeFamily.Character) (u : O) (P : PrimeIde
   ∑e : Fin 2,∑'l,∑'k,∑'m,
     completedValuationMark P ((e.val,l),(k,m))*rowHighPrimeTerm η u x w z P ((e.val,l),(k,m))
 
-lemma markedRowPrimeTerm_summable_norm (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+section
+variable (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re)
+include η u P x w z hx hw hz
+lemma markedRowPrimeTerm_summable_norm :
     Summable (fun b : HighValuation=>‖completedValuationMark P b*rowHighPrimeTerm η u x w z P b‖) := by
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ (rowHighPrimeTerm_summable_norm η u x w z hx hw hz P)
   intro b
-  rw [norm_mul]
-  exact mul_le_of_le_one_left (norm_nonneg _) (completedValuationMark_norm P b)
+  pm_514 completedValuationMark_norm P b
 
-lemma markedRowPrimeTerm_tsum (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+lemma markedRowPrimeTerm_tsum :
     (∑'b : HighValuation,completedValuationMark P b*rowHighPrimeTerm η u x w z P b)=
       idealRowMarkedLocalFactor η u P x w z := by
   have hs := (markedRowPrimeTerm_summable_norm η u P x w z hx hw hz).of_norm
@@ -37,10 +38,11 @@ lemma markedRowPrimeTerm_tsum (η : HeckeFamily.Character) (u : O) (P : PrimeIde
     (hs.prod_factor (e,l)).tsum_prod
   simp_rw [he]
   rw [tsum_eq_sum (s:=Finset.range 2) (fun e he=>by
-    have hh : 2≤e := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
+    pm_3866
     simp only [rowHighPrimeTerm_zero_of_two_le η u x w z P e _ _ _ hh,mul_zero,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl
+end
 
 lemma selectedRowLocal_outside (S : Finset Id) (hS : ∀P∈S,Prime P) (T : Finset PrimeIdeal)
     (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)

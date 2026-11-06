@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicActual
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalGrowth
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,30 +23,11 @@ theorem original_disk_control (e ε : ℝ)
       ∀ z ∈ closedBall ((2 : ℂ)+t*Complex.I) (2-a-6*e),
         ‖LFunction χ z‖ + ‖HeckeReciprocal.reciprocal χ z‖ ≤
           C*(presentationComplexity χ t)^ε := by
-  obtain ⟨Dp,B,hDp,_,hprimitive⟩ := HeckeLogarithmicActual.disk_control e ε he he' hε
-  obtain ⟨Cd,hCd,hdelete⟩ := factors_radical_subpower_bound (1/2) ε (by norm_num) hε
-  refine ⟨Dp*Cd,mul_pos hDp hCd,?_⟩
-  intro χ hχ a t ha ha' hzero z hz
-  obtain ⟨ψ,_,hp,hn,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
-  have hregular : regular ψ = LFunction ψ := regular_eq_nonprincipal ψ hψ
-  have hzeroψ : ∀ w ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), regular ψ w ≠ 0 := by
-    intro w hw
-    rw [hregular]
-    have hwp : 0 < w.re := by
-      have hr := LogarithmicControl.disk_re_gt hw
-      linarith
-    intro hh
-    apply hzero w hw
-    rw [LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hwp, hh, zero_mul]
-  have hbound := (hprimitive ψ hp a t ha ha' hzeroψ).1 z hz
+  pm_3111
+  pm_3109
+  pm_6702
   rw [hregular] at hbound
-  have hz2 : z ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e) :=
-    closedBall_subset_ball (by linarith) hz
-  have hzre : (1/2 : ℝ) ≤ z.re := by
-    have hr := LogarithmicControl.disk_re_gt hz2
-    linarith
-  have hzpos : 0 < z.re := by linarith
+  pm_3110
   have hdel := hdelete χ.modulus ψ z hzre
   have hL : LFunction χ z = LFunction ψ z*factors χ.modulus ψ z :=
     LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hzpos
@@ -53,17 +35,7 @@ theorem original_disk_control (e ε : ℝ)
       (LFunction ψ z)⁻¹*(factors χ.modulus ψ z)⁻¹ := by
     rw [HeckeDeletionReciprocal.reciprocal_eq_of_mask χ ψ hmask hzpos]
     simp only [HeckeReciprocal.reciprocal, ite_eq_right hψ]
-  have hdel1 : ‖factors χ.modulus ψ z‖ ≤ Cd*((radical χ.modulus).absNorm : ℝ)^ε := by
-    linarith [norm_nonneg ((factors χ.modulus ψ z)⁻¹)]
-  have hdel2 : ‖(factors χ.modulus ψ z)⁻¹‖ ≤ Cd*((radical χ.modulus).absNorm : ℝ)^ε := by
-    linarith [norm_nonneg (factors χ.modulus ψ z)]
-  have hQ : complexity ψ t ≤ complexity χ t := by
-    unfold complexity
-    have hn' : (ψ.modulus.absNorm : ℝ) ≤ χ.modulus.absNorm := by exact_mod_cast hn
-    gcongr
-  have hc0 : 0 ≤ complexity ψ t := (Real.exp_pos 1).le.trans (complexity_ge_exp ψ t)
-  have hr0 : 0 ≤ ((radical χ.modulus).absNorm : ℝ) := by positivity
-  rw [hL,hR,norm_mul,norm_mul]
+  pm_3108
   calc
     _ ≤ (‖LFunction ψ z‖+‖(LFunction ψ z)⁻¹‖)*
         (Cd*((radical χ.modulus).absNorm : ℝ)^ε) := by
@@ -89,12 +61,9 @@ theorem buffered_original_control (e ε : ℝ)
       ∀ z ∈ closedBall ((2 : ℂ)+t*Complex.I) (2-a-6*e),
         ‖LFunction (χ j) z‖+‖HeckeReciprocal.reciprocal (χ j) z‖ ≤
           C*(presentationComplexity (χ j) t)^ε := by
-  obtain ⟨C,hC,hbound⟩ := original_disk_control e ε he he' hε
+  pm_3547 C hC hbound original_disk_control e ε he he' hε
   refine ⟨C,hC,?_⟩
-  intro ι _ χ hχ T a i hT ha ha' hmax j t ht z hz
-  exact hbound (χ j) (hχ j) a t (by linarith) ha'
-    (fun w hw => HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
-      hmax j t ht (ball_subset_closedBall hw)) z hz
+  pm_3112
 
 end SevenEighths.HeckeDyadicControl
 

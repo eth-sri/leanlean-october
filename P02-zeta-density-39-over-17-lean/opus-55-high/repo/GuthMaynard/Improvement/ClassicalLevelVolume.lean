@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.SeparatedLevelVolume
 public import GuthMaynard.Improvement.ClassicalLargeValues
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -50,8 +49,7 @@ theorem boundedPolynomial_classical_level_volume {ε : ℝ} (hε : 0 < ε) :
       ∀ a : ℕ → ℂ, (∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1) → ∀ k : ℕ,
       volume.real ({t | V < ‖boundedPolynomial N a t‖} ∩ Icc s (s+k*T)) ≤
         k*C*N^ε*(N^2/V^2+T*N^4/V^6) := by
-  obtain ⟨C,hC,h⟩ := classical_large_values hε
-  refine ⟨2*C,by positivity,?_⟩
+  pm_416 h classical_large_values
   intro N T V s hN hNT hTN hV a ha k
   have hT : 0 ≤ T := by linarith
   have hs (u : ℝ) : volume.real

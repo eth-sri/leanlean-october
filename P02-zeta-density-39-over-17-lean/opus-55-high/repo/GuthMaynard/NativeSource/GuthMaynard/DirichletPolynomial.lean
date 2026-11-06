@@ -6,6 +6,7 @@ public import Mathlib.Data.Finset.Interval
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Basic.Real.Basic
 public import GuthMaynard.NativeSource.FiniteDirichletPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -46,14 +47,9 @@ theorem norm_sourceDirichletPoly_conjugateCoeffs
     rw [star_mul, star_star,
       mul_comm (star ((n : ℂ) ^ ((t : ℂ) * I))) (a n)]
     congr 1
-    have hnPos : 0 < n := by
-      rw [dyadicInterval, Finset.mem_Ioc] at hn
-      omega
-    have hnArg : ((n : ℂ)).arg ≠ Real.pi := by
-      change ((((n : ℝ) : ℂ)).arg ≠ Real.pi)
-      rw [Complex.arg_ofReal_of_nonneg (by positivity : (0 : ℝ) ≤ n)]
-      exact Real.pi_ne_zero.symm
-    have hnCast : (n : ℂ) = ((n : ℝ) : ℂ) := by norm_num
+    pm_4835
+    pm_4834
+    pm_4836
     rw [hnCast]
     have hConj := Complex.cpow_conj (((n : ℝ) : ℂ)) ((t : ℂ) * I) hnArg
     simp only [map_mul, Complex.conj_ofReal, Complex.conj_I] at hConj
@@ -78,10 +74,8 @@ theorem dirichletPoly_translate (N : ℕ) (a : ℕ → ℂ) (c t : ℝ) :
   unfold dirichletPoly
   apply Finset.sum_congr rfl
   intro n hn
-  have hnPos : 0 < n := by
-    rw [dyadicInterval, Finset.mem_Ioc] at hn
-    omega
-  have hnNe : (n : ℂ) ≠ 0 := by exact_mod_cast hnPos.ne'
+  pm_4835
+  pm_4837
   rw [phaseShiftCoeffs, ite_eq_right hnPos.ne']
   rw [mul_assoc, ← Complex.cpow_add _ _ hnNe]
   congr 2
@@ -92,8 +86,8 @@ theorem dirichletPoly_translate (N : ℕ) (a : ℕ → ℂ) (c t : ℝ) :
 theorem norm_phaseShiftCoeffs (c : ℝ) (a : ℕ → ℂ) (n : ℕ) :
     ‖phaseShiftCoeffs c a n‖ = ‖a n‖ := by
   by_cases hn : n = 0
-  · simp [phaseShiftCoeffs, hn]
-  · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+  aesop
+  · have hnPos : (0 : ℝ) < n := by positivity
     rw [phaseShiftCoeffs, ite_eq_right hn, norm_mul]
     change ‖a n‖ * ‖((n : ℝ) : ℂ) ^ (-c * I)‖ = ‖a n‖
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hnPos]

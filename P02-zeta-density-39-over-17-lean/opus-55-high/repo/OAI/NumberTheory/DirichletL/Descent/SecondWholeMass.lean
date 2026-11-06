@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,9 +23,8 @@ theorem assigned_second_triples_subset {Jo : ℕ} (u v : Eisˣ)
     (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) :
     actualSecondTriples p u v (assignedSecondSource source J₁ J₂ L₁ L₂) ⊆
       actualSecondTriples p 1 1 source := by
-  intro γ hγ
-  obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hγ
-  obtain ⟨y,hy,q₁,hq₁,q₂,hq₂,rfl⟩ := (mem_assignedSecondSource source J₁ J₂ L₁ L₂ x).mp hx
+  pm_67 γ hγ x hx Finset.mem_image.mp
+  pm_813
   exact Finset.mem_image.mpr ⟨y,hy,rfl⟩
 
 end

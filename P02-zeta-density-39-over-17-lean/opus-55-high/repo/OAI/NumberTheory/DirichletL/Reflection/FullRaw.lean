@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.RawCoefficient
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,9 +42,10 @@ def literalRawSeries (G : PrimeFamily ι)
   rawDualKernelTerm (Vstar W) (literalRawScale G s X) 1 completedRamifiedStep
     (literalRawCoefficient G D s hc j S t.1) t.2
 
-lemma literalRawSeries_support (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+section
+variable (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+include G D s hc
+lemma literalRawSeries_support
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     Function.support (literalRawSeries G D s hc j S W X)⊆Set.range thetaRawIndex := by
   intro t ht
@@ -52,9 +54,7 @@ lemma literalRawSeries_support (G : PrimeFamily ι)
     exact ht (by simp only [literalRawSeries,rawDualKernelTerm,literalRawCoefficient,ite_eq_right hn,zero_mul])
   exact ⟨(t.1,t.2.1,⟨t.2.2.1.val,hp.1,hp.2.1⟩,⟨t.2.2.2.val,hp.2.2⟩),rfl⟩
 
-theorem mixedReflectedValue_eq_fullRaw (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+theorem mixedReflectedValue_eq_fullRaw
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue D s G.generator_ne_zero hc G.generator_good j S W X=
       fixedRadialCoefficientScalar*s.stratumShapeFactor (c*∏ i,G.generator i)*
@@ -73,9 +73,7 @@ theorem mixedReflectedValue_eq_fullRaw (G : PrimeFamily ι)
   simp only [ramifiedScale, one_mul]
   ring
 
-theorem literalRawSeries_summable_norm (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+theorem literalRawSeries_summable_norm
     (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
     (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
@@ -83,7 +81,7 @@ theorem literalRawSeries_summable_norm (G : PrimeFamily ι)
     Summable (fun t : Eisˣ×RawTailIndex => ‖literalRawSeries G D s hc j S W X t‖) := by
   let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
   let : Fintype Eisˣ := Fintype.ofFinite _
-  apply (summable_prod_of_nonneg (fun _ => norm_nonneg _)).mpr
+  pm_7793
   refine ⟨?_,(hasSum_fintype _).summable⟩
   intro u
   exact rawDualKernelTerm_summable_norm (Vstar W) lo hi hlo (Vstar_support W lo hi hWs)
@@ -91,6 +89,7 @@ theorem literalRawSeries_summable_norm (G : PrimeFamily ι)
     (Ideal.absNorm (∏ i,G.ideal i):ℝ) (literalRawScale_pos G s hc X hX) (by norm_num)
     completedRamifiedStep_gt_one (Nat.cast_nonneg _) (literalRawCoefficient G D s hc j S u)
     (literalRawCoefficient_norm G D s hc hN hbase hchar j hj S u)
+end
 end
 end SevenEighths.InverseReflectedPhase
 

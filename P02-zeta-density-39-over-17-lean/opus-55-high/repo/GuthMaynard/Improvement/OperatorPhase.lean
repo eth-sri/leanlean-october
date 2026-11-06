@@ -1,9 +1,9 @@
 module
 public import GuthMaynard.Improvement.CubicTimeMeasure
 public import GuthMaynard.Improvement.OperatorTrace
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped ComplexConjugate FourierTransform
@@ -26,14 +26,13 @@ theorem operator_phase_coe (ν : Measure ℝ) [IsFiniteMeasure ν] (ξ : ℝ) :
 
 theorem operator_phase_conj (s : ℝ) : conj (phase s) = phase (-s) := by
   unfold phase
-  rw [← Complex.exp_conj]
-  congr 1
-  simp only [map_mul,Complex.conj_ofReal,Complex.conj_I]
-  push_cast
-  ring
+  pm_4587
 
+section
+variable (ν : Measure ℝ) [IsFiniteMeasure ν]
+include ν
 /-- Orientation agrees with mathlib's conjugate-linear first slot. -/
-theorem operator_phase_pairing (ν : Measure ℝ) [IsFiniteMeasure ν] (ξ ζ : ℝ) :
+theorem operator_phase_pairing (ξ ζ : ℝ) :
     inner ℂ (operatorPhase ν ξ) (operatorPhase ν ζ) = measureFourier ν (ξ-ζ) := by
   rw [L2.inner_def]
   unfold measureFourier
@@ -43,7 +42,7 @@ theorem operator_phase_pairing (ν : Measure ℝ) [IsFiniteMeasure ν] (ξ ζ : 
   congr 1
   ring
 
-theorem operator_phase_norm_sq (ν : Measure ℝ) [IsFiniteMeasure ν] (ξ : ℝ) :
+theorem operator_phase_norm_sq (ξ : ℝ) :
     ‖operatorPhase ν ξ‖^2 = ν.real univ := by
   have hh := operator_phase_pairing ν ξ ξ
   rw [inner_self_eq_norm_sq_to_K,sub_self] at hh
@@ -51,7 +50,7 @@ theorem operator_phase_norm_sq (ν : Measure ℝ) [IsFiniteMeasure ν] (ξ : ℝ
   exact_mod_cast hh
 
 /-- Parameter continuity of the literal scalar pairing, from domination by one. -/
-theorem operator_measureFourier_continuous (ν : Measure ℝ) [IsFiniteMeasure ν] :
+theorem operator_measureFourier_continuous :
     Continuous (measureFourier ν) := by
   apply continuous_of_dominated (bound := fun _ => 1)
   · intro ξ
@@ -59,12 +58,12 @@ theorem operator_measureFourier_continuous (ν : Measure ℝ) [IsFiniteMeasure �
   · intro ξ
     filter_upwards with t
     exact (phase_norm _).le
-  · exact integrable_const _
+  simp_all
   · filter_upwards with t
     unfold phase
     fun_prop
 
-theorem operator_phase_continuous (ν : Measure ℝ) [IsFiniteMeasure ν] :
+theorem operator_phase_continuous :
     Continuous (operatorPhase ν) := by
   apply continuous_iff_continuousAt.mpr
   intro ζ
@@ -81,5 +80,6 @@ theorem operator_phase_continuous (ν : Measure ℝ) [IsFiniteMeasure ν] :
       (operator_measureFourier_continuous ν).comp (continuous_id.sub continuous_const)
     fun_prop
   simpa only [← hid ζ,dist_self] using hc.tendsto ζ
+end
 
 end GuthMaynard.Improvement

@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -29,15 +30,13 @@ theorem primitive_linear_triple_card_le_abs_modulus
   · have hcn : (c.natAbs:ℤ) = -c := by rw [Int.natCast_natAbs,abs_of_neg hneg]
     have hp : Int.gcd (Int.gcd (-a) (-b) : ℤ) c.natAbs = 1 := by
       simpa only [hcn,Int.neg_gcd,Int.gcd_neg] using hcoeff
-    apply primitive_linear_triple_card_le S hp hcN hV hαβ hden hprim _ hratio
-    intro p hp
+    pm_7189
     rw [hcn]
     have hl := hline p hp
     nlinarith only [hl]
   · have hcn : (c.natAbs:ℤ) = c := by rw [Int.natCast_natAbs,abs_of_pos hpos]
     have hp : Int.gcd (Int.gcd a b : ℤ) c.natAbs = 1 := by rwa [hcn]
-    apply primitive_linear_triple_card_le S hp hcN hV hαβ hden hprim _ hratio
-    intro p hp
+    pm_7189
     simpa only [hcn] using hline p hp
 
 end TaoTrudgianYang2025

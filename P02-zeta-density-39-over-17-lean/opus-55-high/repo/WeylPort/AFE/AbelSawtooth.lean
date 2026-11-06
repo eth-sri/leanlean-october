@@ -4,13 +4,13 @@ public import WeylPort.AFE.FiniteExponentialSums
 public import Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 public import Mathlib.Analysis.Normed.Group.Tannery
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 -- Lean 4.34 elaborator compatibility.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
-
 
 /-!
 # A bounded Abel approximation to the actual sawtooth
@@ -77,7 +77,7 @@ theorem one_sub_positivePhase_mem_slitPlane {x : ℝ} (hx : ∀ k : ℤ, x ≠ (
   rw [Complex.mem_slitPlane_iff]
   by_cases him : (1 - positivePhase x).im = 0
   · exact Or.inl (lt_of_le_of_ne' hre (fun h => hne (Complex.ext h him)))
-  · exact Or.inr him
+  grind
 
 /-- The exact phase factorization fixes the logarithm branch on the unit interval. -/
 theorem one_sub_positivePhase_factor (x : ℝ) :
@@ -86,12 +86,12 @@ theorem one_sub_positivePhase_factor (x : ℝ) :
   apply Complex.ext
   · simp only [positivePhase, Complex.sub_re, Complex.one_re, Complex.exp_ofReal_mul_I_re,
       Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
-    rw [show 2 * Real.pi * x = 2 * (Real.pi * x) by ring]
+    pm_6014
     simp [Real.cos_sub, Real.cos_two_mul]
     nlinarith [Real.sin_sq_add_cos_sq (Real.pi * x)]
   · simp only [positivePhase, Complex.sub_im, Complex.one_im, Complex.exp_ofReal_mul_I_im,
       Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul, add_zero]
-    rw [show 2 * Real.pi * x = 2 * (Real.pi * x) by ring]
+    pm_6014
     simp [Real.sin_sub, Real.sin_two_mul]
 
 /-- The source sawtooth sign follows from the principal argument, not a formal series swap. -/
@@ -99,11 +99,10 @@ theorem arg_one_sub_positivePhase {x : ℝ} (hx : 0 < x) (hx1 : x < 1) :
     Complex.arg (1 - positivePhase x) = Real.pi * x - Real.pi / 2 := by
   have hs : 0 < Real.sin (Real.pi * x) :=
     Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos hx) (by nlinarith [Real.pi_pos])
-  have hθ : Real.pi * x - Real.pi / 2 ∈ Set.Ioc (-Real.pi) Real.pi := by
-    constructor <;> nlinarith [Real.pi_pos]
+  pm_1124
   rw [one_sub_positivePhase_factor, Complex.arg_real_mul _ (by positivity)]
   exact (Complex.arg_exp_mul_I _).trans
-    ((toIocMod_eq_self Real.two_pi_pos).mpr (by simpa [two_mul] using hθ))
+    ((toIocMod_eq_self Real.two_pi_pos).mpr (by grind))
 
 /-- The limiting kernel is precisely the positive sawtooth at every noninteger point. -/
 theorem abelSawtooth_one {x : ℝ} (hx : ∀ k : ℤ, x ≠ (k : ℝ)) :
@@ -112,8 +111,8 @@ theorem abelSawtooth_one {x : ℝ} (hx : ∀ k : ℤ, x ≠ (k : ℝ)) :
     have hn : Int.fract x ≠ 0 := by
       intro h
       obtain ⟨k, hk⟩ := Int.fract_eq_zero_iff.mp h
-      exact hx k hk.symm
-    exact lt_of_le_of_ne (Int.fract_nonneg x) hn.symm
+      grind
+    positivity
   unfold abelSawtooth
   simp only [Complex.ofReal_one, one_mul, Complex.log_im]
   rw [positivePhase_fract, arg_one_sub_positivePhase hfract (Int.fract_lt_one x)]
@@ -135,26 +134,28 @@ theorem tendsto_abelSawtooth {r : ℕ → ℝ} (hr : Tendsto r atTop (𝓝 1))
   have hl := ((Complex.continuous_im.tendsto _).comp
     (ht.clog (one_sub_positivePhase_mem_slitPlane hx))).div_const Real.pi
   rw [← abelSawtooth_one hx]
-  simpa only [abelSawtooth, Complex.ofReal_one, one_mul, Function.comp_def] using hl
+  pm_99 abelSawtooth Complex.ofReal_one one_mul Function.comp_def hl
 
 /-- The actual phase is continuous on the whole real line. -/
 theorem continuous_positivePhase : Continuous positivePhase := by
   unfold positivePhase
   fun_prop
 
+section
+variable {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1)
+include r hr0 hr1
 /-- Inside the unit disk, every logarithm argument lies in the open right half-plane. -/
-theorem radial_phase_mem_slitPlane {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) (x : ℝ) :
+theorem radial_phase_mem_slitPlane (x : ℝ) :
     1 - (r : ℂ) * positivePhase x ∈ Complex.slitPlane := by
   apply Complex.mem_slitPlane_iff.mpr
   left
   have hre : (positivePhase x).re ≤ 1 := by
     simpa only [norm_positivePhase] using Complex.re_le_norm (positivePhase x)
-  simp only [Complex.sub_re, Complex.one_re, Complex.mul_re, Complex.ofReal_re,
-    Complex.ofReal_im, zero_mul, sub_zero]
+  pm_544 Complex.sub_re Complex.one_re Complex.mul_re Complex.ofReal_re Complex.ofReal_im zero_mul sub_zero
   nlinarith [mul_nonneg hr0 (sub_nonneg.mpr hre)]
 
 /-- Every damped kernel is continuous, including at integer points. -/
-theorem continuous_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
+theorem continuous_abelSawtooth :
     Continuous (abelSawtooth r) := by
   unfold abelSawtooth
   exact (Complex.continuous_im.comp
@@ -162,7 +163,7 @@ theorem continuous_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
       (radial_phase_mem_slitPlane hr0 hr1))).div_const Real.pi
 
 /-- The damped logarithm has its actual absolutely convergent Fourier expansion. -/
-theorem hasSum_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) (x : ℝ) :
+theorem hasSum_abelSawtooth (x : ℝ) :
     HasSum (fun n : ℕ => -(((r : ℂ) * positivePhase x) ^ n / (n : ℂ)).im / Real.pi)
       (abelSawtooth r x) := by
   have hz : ‖(r : ℂ) * positivePhase x‖ < 1 := by
@@ -171,6 +172,7 @@ theorem hasSum_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) (x : ℝ) :
     exact hr1
   have h := (Complex.hasSum_im (Complex.hasSum_taylorSeries_neg_log hz)).neg.div_const Real.pi
   simpa only [Complex.neg_im, neg_neg, abelSawtooth] using h
+end
 
 /-- Integer points form a null set for every atomless measure on the real line. -/
 theorem ae_noninteger (μ : Measure ℝ) [NullSingletonClass μ] :
@@ -191,10 +193,9 @@ theorem tendsto_integral_mul_abelSawtooth {μ : Measure ℝ} [NullSingletonClass
   · intro n
     filter_upwards with x
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-    exact mul_le_of_le_one_right (norm_nonneg _) (abs_abelSawtooth_le _ _)
+    pm_4925 mul_le_of_le_one_right abs_abelSawtooth_le
   · filter_upwards [ae_noninteger μ] with x hx
     exact (tendsto_abelSawtooth hr hx).ofReal.const_mul (h x)
-
 
 /-- The paired positive and negative Fourier modes of the positive sawtooth. -/
 noncomputable def sawtoothMode (n : ℕ) (x : ℝ) : ℂ :=
@@ -236,7 +237,7 @@ theorem norm_sawtoothMode_le (n : ℕ) (x : ℝ) : ‖sawtoothMode n x‖ ≤ 1 
   by_cases hn : n = 0
   · simp [sawtoothMode, hn]
     positivity
-  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn
+  pm_7032 hn1 n Nat.one_le_iff_ne_zero.mpr
   have hden : 0 < 2 * Real.pi * n := by positivity
   rw [sawtoothMode, norm_div, norm_mul, norm_mul, norm_mul]
   simp only [Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos,
@@ -250,16 +251,16 @@ theorem norm_sawtoothMode_le (n : ℕ) (x : ℝ) : ‖sawtoothMode n x‖ ≤ 1 
       field_simp
       linarith
 
-
+section
+variable {μ : Measure ℝ} {h : ℝ → ℂ} (hh : Integrable h μ)
+include μ h hh
 /-- Multiplying an integrable amplitude by a Fourier coefficient preserves integrability. -/
-theorem integrable_mul_sawtoothMode {μ : Measure ℝ} {h : ℝ → ℂ}
-    (hh : Integrable h μ) (n : ℕ) : Integrable (fun x => h x * sawtoothMode n x) μ :=
+theorem integrable_mul_sawtoothMode (n : ℕ) : Integrable (fun x => h x * sawtoothMode n x) μ :=
   hh.mul_bdd (continuous_sawtoothMode n).aestronglyMeasurable
     (Filter.Eventually.of_forall (norm_sawtoothMode_le n))
 
 /-- Absolute geometric domination justifies the damped Fourier series under the integral. -/
-theorem hasSum_integral_abelSawtooth {μ : Measure ℝ} {h : ℝ → ℂ}
-    (hh : Integrable h μ) {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
+theorem hasSum_integral_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) :
     HasSum (fun n : ℕ => (r : ℂ) ^ n * ∫ x, h x * sawtoothMode n x ∂μ)
       (∫ x, h x * (abelSawtooth r x : ℂ) ∂μ) := by
   let F : ℕ → ℝ → ℂ := fun n x => (r : ℂ) ^ n * (h x * sawtoothMode n x)
@@ -292,7 +293,7 @@ theorem hasSum_integral_abelSawtooth {μ : Measure ℝ} {h : ℝ → ℂ}
   have hi := hasSum_integral_of_summable_integral_norm hFi hsum
   simp_rw [hpoint] at hi
   simpa only [F, integral_const_mul] using hi
-
+end
 
 /-- Abel damping tends to the sum of an absolutely convergent complex series. -/
 theorem tendsto_tsum_abel {c : ℕ → ℂ} (hc : Summable c) {r : ℕ → ℝ}

@@ -11,6 +11,7 @@ public import Mathlib.Analysis.InnerProductSpace.Dual
 public import Mathlib.MeasureTheory.Function.LpSpace.Complete
 public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 public import Mathlib.Topology.Algebra.Support
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -106,15 +107,19 @@ lemma hasCompactSupport_grad {f : E → ℝ} (hf : HasCompactSupport f) :
     (HasCompactSupport.comp_left (f := fderiv ℝ f) (g := (InnerProductSpace.toDual ℝ E).symm)
       hf' (by simp))
 
+section
+variable {f : E → ℝ} (hf : f ∈ C1c (E := E))
+include f hf
 omit [CompleteSpace E] in
-lemma memLp_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) : MemLp f 2 μ := by
+lemma memLp_of_mem_C1c : MemLp f 2 μ := by
   exact (hf.1.continuous.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hf.2)
 
-lemma memLp_grad_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) :
+lemma memLp_grad_of_mem_C1c :
     MemLp (grad (E := E) f) 2 μ := by
   have hcont : Continuous (grad (E := E) f) := continuous_grad (E := E) (f := f) hf.1
   have hcs : HasCompactSupport (grad (E := E) f) := hasCompactSupport_grad (E := E) (f := f) hf.2
   exact hcont.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hcs
+end
 
 /-- The `L²` class of a `C¹` compactly supported function. -/
 noncomputable def toL2 (f : ↥(C1c (E := E))) : L2ℝ (μ := μ) :=
@@ -128,9 +133,7 @@ omit [CompleteSpace E] in
 private lemma toL2_add (f g : ↥(C1c (E := E))) :
     toL2 (μ := μ) (E := E) (f + g) =
       toL2 (μ := μ) (E := E) f + toL2 (μ := μ) (E := E) g := by
-  apply Lp.ext
-  have hf : (toL2 (μ := μ) (E := E) f : E → ℝ) =ᵐ[μ] f.1 :=
-    (memLp_of_mem_C1c (μ := μ) (E := E) f.2).coeFn_toLp
+  pm_2744
   have hg : (toL2 (μ := μ) (E := E) g : E → ℝ) =ᵐ[μ] g.1 :=
     (memLp_of_mem_C1c (μ := μ) (E := E) g.2).coeFn_toLp
   have hfg : (toL2 (μ := μ) (E := E) (f + g) : E → ℝ) =ᵐ[μ] (f.1 + g.1) :=
@@ -151,13 +154,10 @@ private lemma toL2_add (f g : ↥(C1c (E := E))) :
 omit [CompleteSpace E] in
 private lemma toL2_smul (c : ℝ) (f : ↥(C1c (E := E))) :
     toL2 (μ := μ) (E := E) (c • f) = c • toL2 (μ := μ) (E := E) f := by
-  apply Lp.ext
-  have hf : (toL2 (μ := μ) (E := E) f : E → ℝ) =ᵐ[μ] f.1 :=
-    (memLp_of_mem_C1c (μ := μ) (E := E) f.2).coeFn_toLp
+  pm_2744
   have hcf : (toL2 (μ := μ) (E := E) (c • f) : E → ℝ) =ᵐ[μ] (c • f.1) :=
     (memLp_of_mem_C1c (μ := μ) (E := E) (c • f).2).coeFn_toLp
-  refine hcf.trans ?_
-  filter_upwards [Lp.coeFn_smul c (toL2 (μ := μ) (E := E) f), hf] with x hxsmul hxf
+  pm_5361 toL2
   simp [Pi.smul_apply, hxsmul, hxf]
 
 /-- Linear map sending `C¹_c` functions to their `L²` classes. -/
@@ -169,9 +169,7 @@ noncomputable def toL2Linear : ↥(C1c (E := E)) →ₗ[ℝ] L2ℝ (μ := μ) wh
 private lemma toL2Grad_add (f g : ↥(C1c (E := E))) :
     toL2Grad (μ := μ) (E := E) (f + g) =
       toL2Grad (μ := μ) (E := E) f + toL2Grad (μ := μ) (E := E) g := by
-  apply Lp.ext
-  have hf : (toL2Grad (μ := μ) (E := E) f : E → E) =ᵐ[μ] grad (E := E) f.1 :=
-    (memLp_grad_of_mem_C1c (μ := μ) (E := E) f.2).coeFn_toLp
+  pm_2745
   have hg : (toL2Grad (μ := μ) (E := E) g : E → E) =ᵐ[μ] grad (E := E) g.1 :=
     (memLp_grad_of_mem_C1c (μ := μ) (E := E) g.2).coeFn_toLp
   have hfg :
@@ -180,8 +178,7 @@ private lemma toL2Grad_add (f g : ↥(C1c (E := E))) :
   refine hfg.trans ?_
   filter_upwards [Lp.coeFn_add (toL2Grad (μ := μ) (E := E) f) (toL2Grad (μ := μ) (E := E) g), hf,
     hg] with x hxadd hxf hxg
-  have hdf : DifferentiableAt ℝ f.1 x :=
-    (f.2.1.differentiable one_ne_zero).differentiableAt
+  pm_7480
   have hdg : DifferentiableAt ℝ g.1 x :=
     (g.2.1.differentiable one_ne_zero).differentiableAt
   -- Rewrite in terms of pointwise evaluation and use linearity of `grad`.
@@ -201,16 +198,12 @@ private lemma toL2Grad_add (f g : ↥(C1c (E := E))) :
 
 private lemma toL2Grad_smul (c : ℝ) (f : ↥(C1c (E := E))) :
     toL2Grad (μ := μ) (E := E) (c • f) = c • toL2Grad (μ := μ) (E := E) f := by
-  apply Lp.ext
-  have hf : (toL2Grad (μ := μ) (E := E) f : E → E) =ᵐ[μ] grad (E := E) f.1 :=
-    (memLp_grad_of_mem_C1c (μ := μ) (E := E) f.2).coeFn_toLp
+  pm_2745
   have hcf :
       (toL2Grad (μ := μ) (E := E) (c • f) : E → E) =ᵐ[μ] grad (E := E) (c • f.1) :=
     (memLp_grad_of_mem_C1c (μ := μ) (E := E) (c • f).2).coeFn_toLp
-  refine hcf.trans ?_
-  filter_upwards [Lp.coeFn_smul c (toL2Grad (μ := μ) (E := E) f), hf] with x hxsmul hxf
-  have hdf : DifferentiableAt ℝ f.1 x :=
-    (f.2.1.differentiable one_ne_zero).differentiableAt
+  pm_5361 toL2Grad
+  pm_7480
   have hgrad : grad (E := E) (c • f.1) x = c • grad (E := E) f.1 x := by
     simp [grad, fderiv_const_smul hdf, map_smul]
   calc
@@ -234,16 +227,6 @@ noncomputable def graph : ↥(C1c (E := E)) →ₗ[ℝ] H1Target (μ := μ) :=
 /-- The Euclidean `H¹` space (as a closed submodule of `L² × L²(E)`). -/
 noncomputable def h1 : Submodule ℝ (H1Target (μ := μ)) :=
   (LinearMap.range (graph (μ := μ) (E := E))).topologicalClosure
-
-/-- The Euclidean `H¹` submodule is closed by construction. -/
-theorem isClosed_h1 : IsClosed (h1 (μ := μ) (E := E) : Set (H1Target (μ := μ))) := by
-  delta h1
-  exact Submodule.isClosed_topologicalClosure (LinearMap.range (graph (μ := μ) (E := E)))
-
-/-- `H¹` is complete (a Hilbert space once the ambient `L²` spaces are). -/
-instance instCompleteSpaceh1 : CompleteSpace (↥(h1 (μ := μ) (E := E))) := by
-  classical
-  exact (isClosed_h1 (μ := μ) (E := E)).isComplete.completeSpace_coe
 
 /-- The continuous embedding `H¹ → L²`. -/
 noncomputable def h1ToL2 : (↥(h1 (μ := μ) (E := E))) →L[ℝ] L2ℝ (μ := μ) :=

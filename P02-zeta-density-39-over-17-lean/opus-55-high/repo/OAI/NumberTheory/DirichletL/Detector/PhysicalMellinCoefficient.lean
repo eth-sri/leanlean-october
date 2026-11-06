@@ -64,7 +64,7 @@ theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
     star ((calibrationForSet S hS).residueMonoid H)*
     bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I hI) (completedIndex I J) s
       (supportedElement_ne_zero _ hA) H) hn
-  convert he using 1 <;> ring_nf
+  grind
 
 end SevenEighths.ProbePhysical
 end

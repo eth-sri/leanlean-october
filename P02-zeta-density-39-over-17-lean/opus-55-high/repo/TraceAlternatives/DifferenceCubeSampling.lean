@@ -1,6 +1,7 @@
 module
 public import TraceAlternatives.CubeMoment
 public import DensityEnergyGM.DifferenceLayerCake
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,60 +25,27 @@ theorem difference_peak_sixth_moment_native (ε : ℝ) (hε : 0 < ε) :
             ‖dirichletPoly M a ((p j).1 - (p j).2)‖ ^ 6) ≤
               C * T ^ ε * ((M : ℝ) ^ 6 + T * (M : ℝ) ^ 3) := by
   classical
-  obtain ⟨C₀, hC₀, hMoment⟩ := short_polynomial_sixth_moment_native ε hε
+  pm_98 C₀ hC₀ hMoment short_polynomial_sixth_moment_native ε hε
   refine ⟨6 * C₀ * (2 : ℝ) ^ ε, by positivity, ?_⟩
   intro M T a W hM hT hMT ha hBase p hrep
   have hTp : 0 < T := by linarith
   let S := differenceFloorSupport W
-  let color : ℤ → ℕ := fun j => (j % 3).toNat
-  let y : ℤ → ℝ := fun j => (p j).1 - (p j).2 + T
+  pm_4112
   have hsupport : ∀ j ∈ S, j ∈ differenceFloorSupport W := fun _ h => h
   have hcolor : ∀ j ∈ S, color j ∈ range 3 := by
-    intro j hj
-    have hnonneg := Int.emod_nonneg j (by norm_num : (3 : ℤ) ≠ 0)
-    have hlt := Int.emod_lt_of_pos j (by norm_num : (0 : ℤ) < 3)
-    rw [mem_range]
-    change (j % 3).toNat < 3
-    omega
+    pm_4113
+    pm_5499 mem_range
   have hEach : ∀ r ∈ range 3,
       (∑ j ∈ S.filter (fun j => color j = r),
         ‖dirichletPoly M a ((p j).1 - (p j).2)‖ ^ 6) ≤
           C₀ * (2 * T) ^ ε * ((M : ℝ) ^ 6 + (2 * T) * (M : ℝ) ^ 3) := by
-    intro r hr
-    let A := S.filter fun j => color j = r
-    let Y := A.image y
-    have hA : ∀ j ∈ A, j ∈ S := fun j hj => (Finset.mem_filter.mp hj).1
+    pm_4111
     have hfloor : ∀ j ∈ A, ⌊y j - T⌋ = j := by
       intro j hj
       have h := (hrep j (hsupport j (hA j hj))).2
       simpa only [y, add_sub_cancel_right, differenceFloor] using h
-    have hyinj : Set.InjOn y A := by
-      intro i hi j hj heq
-      have h := congrArg (fun x : ℝ => ⌊x - T⌋) heq
-      rwa [hfloor i hi, hfloor j hj] at h
-    have hSepY : IsSeparated 1 Y := by
-      intro x hx z hz hne
-      obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hx
-      obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hz
-      have hneij : i ≠ j := by intro h; subst j; exact hne rfl
-      have hci := (Finset.mem_filter.mp hi).2
-      have hcj := (Finset.mem_filter.mp hj).2
-      have hmod : i % 3 = j % 3 := by
-        have hinonneg := Int.emod_nonneg i (by norm_num : (3 : ℤ) ≠ 0)
-        have hjnonneg := Int.emod_nonneg j (by norm_num : (3 : ℤ) ≠ 0)
-        dsimp only [color] at hci hcj
-        omega
-      have h := difference_floor_residue_separated (hfloor i hi) (hfloor j hj) hmod hneij
-      simpa only [Real.dist_eq, sub_sub_sub_cancel_right] using h
-    have hBaseY : InBaseInterval (2 * T) Y := by
-      intro z hz
-      obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hz
-      have hp := (hrep j (hsupport j (hA j hj))).1
-      obtain ⟨hp1, hp2⟩ := Finset.mem_product.mp hp
-      have ht := hBase (p j).1 hp1
-      have hu := hBase (p j).2 hp2
-      dsimp only [y]
-      exact ⟨by linarith [ht.1, hu.2], by linarith [ht.2, hu.1]⟩
+    pm_4110
+    pm_4109
     have hh := hMoment M (2 * T) (phaseShiftCoeffs (-T) a) Y hM
       (by linarith) (by linarith)
       (by intro n hn; rw [norm_phaseShiftCoeffs]; exact ha n hn) hSepY hBaseY

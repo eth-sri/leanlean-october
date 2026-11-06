@@ -31,71 +31,17 @@ For a fixed point `z₀`, the complement factor agrees with the usual Weierstras
 the fiber over `z₀`, and is `1` on that fiber.
 -/
 
-/-- The factor used in complement products. -/
-noncomputable def divisorComplementFactor
-    (m : ℕ) (f : ℂ → ℂ) (z₀ : ℂ)
-    (p : divisorZeroIndex₀ f (Set.univ : Set ℂ)) (z : ℂ) : ℂ := by
-  classical
-  exact if p ∈ divisorZeroIndex₀_fiberFinset (f := f) z₀ then (1 : ℂ)
-    else weierstrassFactor m (z / divisorZeroIndex₀_val p)
-
-@[simp]
-theorem divisorComplementFactor_eq_one_of_mem
-    (m : ℕ) (f : ℂ → ℂ) (z₀ : ℂ)
-    (p : divisorZeroIndex₀ f (Set.univ : Set ℂ)) (z : ℂ)
-    (hp : p ∈ divisorZeroIndex₀_fiberFinset (f := f) z₀) :
-    divisorComplementFactor m f z₀ p z = 1 := by
-  classical
-  simp [divisorComplementFactor, hp]
-
-@[simp]
-theorem divisorComplementFactor_eq_weierstrassFactor_of_not_mem
-    (m : ℕ) (f : ℂ → ℂ) (z₀ : ℂ)
-    (p : divisorZeroIndex₀ f (Set.univ : Set ℂ)) (z : ℂ)
-    (hp : p ∉ divisorZeroIndex₀_fiberFinset (f := f) z₀) :
-    divisorComplementFactor m f z₀ p z =
-      weierstrassFactor m (z / divisorZeroIndex₀_val p) := by
-  classical
-  simp [divisorComplementFactor, hp]
-
 /-!
 ## Partial products as a named function
 
 These finite products are the approximants to the divisor-indexed canonical product.
 -/
 
-/-- Finite partial product of Weierstrass factors indexed by a finset of divisor indices. -/
-noncomputable def divisorPartialProduct (m : ℕ) (f : ℂ → ℂ)
-    (s : Finset (divisorZeroIndex₀ f (Set.univ : Set ℂ))) (z : ℂ) : ℂ :=
-  ∏ p ∈ s, weierstrassFactor m (z / divisorZeroIndex₀_val p)
-
-@[simp]
-lemma divisorPartialProduct_def (m : ℕ) (f : ℂ → ℂ)
-    (s : Finset (divisorZeroIndex₀ f (Set.univ : Set ℂ))) (z : ℂ) :
-    divisorPartialProduct m f s z = ∏ p ∈ s, weierstrassFactor m (z / divisorZeroIndex₀_val p) :=
-  rfl
-
 /-!
 ## Splitting finite partial products into fiber vs complement
 
 This is the finitary “fiber × complement” split.
 -/
-
-/-- The partial product over indices *not* in the fiber over `z₀`. -/
-noncomputable def divisorComplementPartialProduct
-    (m : ℕ) (f : ℂ → ℂ) (z₀ : ℂ)
-    (s : Finset (divisorZeroIndex₀ f (Set.univ : Set ℂ))) (z : ℂ) : ℂ :=
-  ∏ p ∈ s, divisorComplementFactor m f z₀ p z
-
-@[simp]
-lemma divisorComplementPartialProduct_def
-    (m : ℕ) (f : ℂ → ℂ) (z₀ : ℂ)
-    (s : Finset (divisorZeroIndex₀ f (Set.univ : Set ℂ))) (z : ℂ) :
-    divisorComplementPartialProduct m f z₀ s z =
-      ∏ p ∈ s, if divisorZeroIndex₀_val p = z₀ then (1 : ℂ)
-        else weierstrassFactor m (z / divisorZeroIndex₀_val p) := by
-  simp [divisorComplementPartialProduct, divisorComplementFactor,
-    mem_divisorZeroIndex₀_fiberFinset]
 
 /-!
 ## Complement canonical product (fiber factors removed)

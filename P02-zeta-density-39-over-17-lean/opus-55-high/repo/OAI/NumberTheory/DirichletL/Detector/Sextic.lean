@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussValuation
 public import OAI.NumberTheory.DirichletL.Moments.Canonical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,8 +30,7 @@ theorem actualSextic_primePowerGauss_at_pow (p : O) (hp : Prime p)
   by_cases hr : 6 ∣ r
   · rw [ite_eq_left hr, (actualSextic_pow_eq_one_iff _ hg hc r).mpr hr]
     apply primePowerGauss_at_pow_principal p hp
-    have hprim : (quotientTrace p hp.ne_zero).IsPrimitive :=
-      GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp.ne_zero
+    pm_8422 hprim quotientTrace hp.ne_zero
     simpa using hprim (a := 1) one_ne_zero
   · rw [ite_eq_right hr]
     exact primePowerGauss_at_pow_nonprincipal p hp _

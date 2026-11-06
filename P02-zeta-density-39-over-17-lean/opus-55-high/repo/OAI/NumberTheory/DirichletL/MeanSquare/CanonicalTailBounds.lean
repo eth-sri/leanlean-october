@@ -93,10 +93,10 @@ open ConcreteTraceCRT (eisEmbedding)
 
 lemma firstTail_inverse_scale_bound (K D U:ℝ) (hK:0<K) (hD:0<D) (hU:D≤U):
     ((min 1 (K/D))⁻¹)^2≤(1+U/K)^2 := by
-  have hU0:0≤U/K:=div_nonneg (hD.le.trans hU) hK.le
+  have hU0:=div_nonneg (hD.le.trans hU) hK.le
   have hi:(min 1 (K/D))⁻¹≤1+U/K:=by
     by_cases h:1≤K/D
-    · rw [min_eq_left h,inv_one];linarith
+    grind
     · rw [min_eq_right (le_of_lt (lt_of_not_ge h)),inv_div]
       exact (div_le_div_of_nonneg_right hU hK.le).trans (by linarith)
   exact pow_le_pow_left₀ (inv_nonneg.mpr (le_min zero_le_one (div_pos hK hD).le)) hi 2

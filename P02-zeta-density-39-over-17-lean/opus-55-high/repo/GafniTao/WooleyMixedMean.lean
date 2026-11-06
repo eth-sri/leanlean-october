@@ -13,7 +13,6 @@ as an abstract predicate.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -33,11 +32,9 @@ instance {p a b nu : ℕ} :
   fun xi eta => Classical.propDecidable
     (wooleyResiduesSeparated nu xi eta)
 
-theorem wooleyTriangular_zero : wooleyTriangular 0 = 0 := by
-  simp [wooleyTriangular]
+theorem wooleyTriangular_zero : wooleyTriangular 0 = 0 := by aesop
 
-theorem wooleyTriangular_one : wooleyTriangular 1 = 1 := by
-  norm_num [wooleyTriangular]
+theorem wooleyTriangular_one : wooleyTriangular 1 = 1 := by aesop
 
 end
 

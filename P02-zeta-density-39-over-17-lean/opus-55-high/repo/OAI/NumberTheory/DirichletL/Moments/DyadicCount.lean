@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 public import Mathlib.Data.Int.Interval
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Set
 namespace SevenEighths.CenteredMomentDyadicCount
 open CenteredMomentSectorLocalization
@@ -19,7 +20,10 @@ def indices (a b : ℝ) : Finset ℤ :=
 lemma logb_dyadicScale (n : ℤ) : Real.logb 2 (dyadicScale n)=(n:ℝ) := by
   rw [dyadicScale,←Real.rpow_intCast,Real.logb_rpow (by norm_num : (0:ℝ)<2) (by norm_num)]
 
-lemma mem_indices_iff_scale (a b : ℝ) (ha : 0<a) (hb : 0<b) (n : ℤ) :
+section
+variable (a b : ℝ) (ha : 0<a)
+include a b ha
+lemma mem_indices_iff_scale (hb : 0<b) (n : ℤ) :
     n∈indices a b ↔ a≤dyadicScale n ∧ dyadicScale n≤4*b := by
   rw [indices,Finset.mem_Icc,Int.ceil_le,Int.le_floor]
   rw [←logb_dyadicScale n]
@@ -31,7 +35,7 @@ lemma mem_indices_iff_scale (a b : ℝ) (ha : 0<a) (hb : 0<b) (n : ℤ) :
     exact ⟨Real.logb_le_logb_of_le (by norm_num) ha h1,
       Real.logb_le_logb_of_le (by norm_num) (dyadicScale_pos n) h2⟩
 
-lemma mem_indices_iff_whole_support (a b : ℝ) (ha : 0<a) (hab : a≤b) (n : ℤ) :
+lemma mem_indices_iff_whole_support (hab : a≤b) (n : ℤ) :
     n∈indices a b ↔ ∃q∈Icc a b,q∈tsupport (dyadicWeight n) := by
   rw [mem_indices_iff_scale a b ha (ha.trans_le hab) n]
   constructor
@@ -42,6 +46,7 @@ lemma mem_indices_iff_whole_support (a b : ℝ) (ha : 0<a) (hab : a≤b) (n : �
   · rintro ⟨q,hq,hq'⟩
     have hh := dyadicWeight_tsupport n hq'
     exact ⟨hq.1.trans hh.2,by linarith [hq.2,hh.1]⟩
+end
 
 lemma support_indices (a b q : ℝ) (ha : 0<a) (hq : q∈Icc a b)
     (n : ℤ) (hne : dyadicWeight n q≠0) : n∈indices a b :=
@@ -88,12 +93,11 @@ lemma retained_integral_mem (R q : ℝ) (hq : 1≤q) (n : ℤ)
     (retained_scale_le R n hr).trans (by linarith [le_max_right (1:ℝ) R])⟩
 
 theorem indices_card_log_bound (C R Z a b : ℝ) (hC : 1≤C) (hR : 0≤R)
-    (hZ : 1≤Z) (ha : 0<a) (hab : a≤b) (hratio : b/a≤C*Z^R) :
+    (hZ : 1≤Z) (ha : 0<a) (hab : a≤b) (hratio : b/a≤C*Z ^R) :
     ((indices a b).card:ℝ)≤
       (3+Real.logb 2 C+R/Real.log 2)*(1+Real.log Z) := by
   have hb := ha.trans_le hab
-  have hZp : 0<Z := zero_lt_one.trans_le hZ
-  have hCp : 0<C := zero_lt_one.trans_le hC
+  pm_202 hZp Z hZ hCp C hC
   have hlog := Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2) (div_pos hb ha) hratio
   rw [Real.logb_mul hCp.ne' (Real.rpow_pos_of_pos hZp R).ne',
     Real.logb_rpow_eq_mul_logb_of_pos hZp] at hlog
@@ -109,8 +113,8 @@ theorem indices_card_log_bound (C R Z a b : ℝ) (hC : 1≤C) (hR : 0≤R)
 theorem four_indices_subpower (C R ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hε : 0<ε) :
     ∃D : ℝ,0<D ∧ ∀ᶠZ : ℝ in Filter.atTop,
       ∀a b : Fin 4→ℝ,(∀j,0<a j) → (∀j,a j≤b j) →
-      (∀j,b j/a j≤C*Z^R) →
-      (Fintype.card (∀j:Fin 4,↥(indices (a j) (b j))):ℝ)≤D*Z^ε := by
+      (∀j,b j/a j≤C*Z ^R) →
+      (Fintype.card (∀j:Fin 4,↥(indices (a j) (b j))):ℝ)≤D *Z ^ε := by
   let K : ℝ := 3+Real.logb 2 C+R/Real.log 2
   have hK : 0<K := by
     have hc := Real.logb_nonneg (by norm_num : (1:ℝ)<2) hC
@@ -118,14 +122,14 @@ theorem four_indices_subpower (C R ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hε : 0<
     dsimp [K]
     linarith
   have hlog := (isLittleO_log_rpow_rpow_atTop (4:ℝ) hε).bound (by norm_num : (0:ℝ)<1)
-  refine ⟨16*K^4,by positivity,?_⟩
+  refine ⟨16*K ^4,by positivity,?_⟩
   filter_upwards [hlog,Filter.eventually_ge_atTop (Real.exp 1),Filter.eventually_ge_atTop (1:ℝ)] with Z hlog hZexp hZ
   intro a b ha hab hratio
   have hZp : 0<Z := zero_lt_one.trans_le hZ
   have hz : 1≤Real.log Z := by
     have hh := Real.log_le_log (Real.exp_pos (1:ℝ)) hZexp
     simpa only [Real.log_exp] using hh
-  have hp : (Real.log Z)^4≤Z^ε := by
+  have hp : (Real.log Z)^4≤Z ^ε := by
     apply (le_abs_self _).trans
     simpa only [Real.rpow_ofNat,Real.norm_eq_abs,
       abs_of_nonneg (Real.rpow_nonneg hZp.le _),one_mul] using hlog
@@ -141,7 +145,7 @@ theorem four_indices_subpower (C R ε : ℝ) (hC : 1≤C) (hR : 0≤R) (hε : 0<
   calc
     _ ≤ (K*(1+Real.log Z))^4 := hcard
     _ ≤ (K*(2*Real.log Z))^4 := by gcongr;linarith
-    _ = (16*K^4)*(Real.log Z)^4 := by ring
+    _ = (16*K ^4)*(Real.log Z)^4 := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hp (by positivity)
 
 end SevenEighths.CenteredMomentDyadicCount

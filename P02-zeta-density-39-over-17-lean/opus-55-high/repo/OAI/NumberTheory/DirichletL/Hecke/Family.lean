@@ -43,8 +43,7 @@ def Character.ofResidue (M : Ideal O) (hM : M ≠ ⊥)
     unit_trivial := hu
     period := Fintype.card (O ⧸ M)
     period_pos := Fintype.card_pos
-    period_mem := Ideal.Quotient.eq_zero_iff_mem.mp (by
-      simpa only [map_natCast] using Nat.cast_card_eq_zero (O ⧸ M)) }
+    period_mem := Ideal.Quotient.eq_zero_iff_mem.mp (by simp_all) }
 
 instance (χ : Character) : NeZero χ.period := ⟨Nat.ne_of_gt χ.period_pos⟩
 
@@ -53,28 +52,31 @@ def elementCoeff (χ : Character) (z : O) : ℂ := χ.residue (Ideal.Quotient.mk
 def coefficients (χ : Character) (a : Fin χ.period × Fin χ.period) : ℂ :=
   elementCoeff χ (coordinateElement a.1 a.2)
 
-@[simp] theorem elementCoeff_one (χ : Character) : elementCoeff χ 1 = 1 := by
+section
+variable (χ : Character)
+include χ
+@[simp] theorem elementCoeff_one : elementCoeff χ 1 = 1 := by
   simp [elementCoeff]
 
-theorem elementCoeff_mul (χ : Character) (z w : O) :
+theorem elementCoeff_mul (z w : O) :
     elementCoeff χ (z * w) = elementCoeff χ z * elementCoeff χ w := by
   simp [elementCoeff, map_mul]
 
-theorem elementCoeff_unit_mul (χ : Character) (u : Oˣ) (z : O) :
+theorem elementCoeff_unit_mul (u : Oˣ) (z : O) :
     elementCoeff χ ((u : O) * z) = elementCoeff χ z := by
   rw [elementCoeff_mul]
   have hu : elementCoeff χ (u : O) = 1 := χ.unit_trivial u
-  rw [hu, one_mul]
+  grind
 
-theorem quotient_period (χ : Character) :
+theorem quotient_period :
     Ideal.Quotient.mk χ.modulus (χ.period : O) = 0 :=
   Ideal.Quotient.eq_zero_iff_mem.mpr χ.period_mem
 
-theorem elementCoeff_add_period_mul (χ : Character) (z w : O) :
+theorem elementCoeff_add_period_mul (z w : O) :
     elementCoeff χ (z + (χ.period : O) * w) = elementCoeff χ z := by
   simp [elementCoeff, map_add, map_mul, quotient_period χ]
 
-theorem periodicCoeff_eq_elementCoeff (χ : Character) (n : ℤ × ℤ) :
+theorem periodicCoeff_eq_elementCoeff (n : ℤ × ℤ) :
     HeckeTheta.periodicCoeff (coefficients χ) n =
       elementCoeff χ (coordinateElement n.1 n.2) := by
   obtain ⟨p, rfl⟩ := (HeckeTheta.residueEquiv χ.period).symm.surjective n
@@ -90,6 +92,7 @@ theorem periodicCoeff_eq_elementCoeff (χ : Character) (n : ℤ × ℤ) :
     push_cast
     ring
   rw [heq, elementCoeff_add_period_mul]
+end
 
 def continuedLattice (χ : Character) : ℂ → ℂ := HeckeTheta.latticeL (coefficients χ)
 

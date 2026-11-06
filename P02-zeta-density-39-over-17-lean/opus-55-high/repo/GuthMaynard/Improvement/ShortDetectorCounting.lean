@@ -1,13 +1,12 @@
 module
 public import GuthMaynard.Improvement.ShortLocalZeroCount
 public import GuthMaynard.Improvement.ShortDetectorAlternative
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Complex Filter Set MathCollab.Density
-open scoped Topology BigOperators
-set_option autoImplicit false
-noncomputable section
+open Complex Filter MathCollab.Density
+open scoped Topology
 namespace GuthMaynard.Improvement
 
 /-- The actual detector alternatives restore all zero multiplicities once
@@ -27,8 +26,7 @@ theorem short_slab_count_of_separated_branch_bounds :
         (R.card:ℝ) ≤ BII) →
       (zetaSlabCount σ H (2*H):ℝ) ≤ C*Real.log (2*H)*(BI+BII) := by
   classical
-  obtain ⟨C,hC,hrestore⟩ := short_zeta_separated_representatives
-  refine ⟨C,hC,?_⟩
+  pm_155 C hC hrestore short_zeta_separated_representatives
   filter_upwards [eventually_ge_atTop (2:ℝ), short_detector_eventually_alternative]
     with H hH halt
   intro σ BI BII hσ hI hII
@@ -36,8 +34,7 @@ theorem short_slab_count_of_separated_branch_bounds :
   let P := fun ρ : ℂ => (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖
   let RI := R.filter P
   let RII := R.filter (fun ρ => ¬ P ρ)
-  have hRI : RI ⊆ R := Finset.filter_subset _ _
-  have hRII : RII ⊆ R := Finset.filter_subset _ _
+  pm_5147 hRI RI R hRII RII
   have hinj : Set.InjOn Complex.im (R:Set ℂ) := Finset.injOn_of_card_image_eq hcard
   have hIc : (RI.image Complex.im).card = RI.card :=
     Finset.card_image_of_injOn (hinj.mono hRI)
@@ -51,7 +48,7 @@ theorem short_slab_count_of_separated_branch_bounds :
   have hbII := hII RII (hRII.trans hR) hIIc hIIs (by
     intro ρ hρ
     obtain ⟨hz,hβ,hγ,hγ'⟩ := mem_zetaZeroFinset.mp (hR (hRII hρ))
-    have habs : |ρ.im| = ρ.im := abs_of_nonneg (by linarith)
+    pm_7268
     rcases halt ρ (hσ.trans hβ) hz.2.2 (by rwa [habs]) (by rwa [habs]) hz.1
       with hi | hii
     · exact ((Finset.mem_filter.mp hρ).2 hi).elim

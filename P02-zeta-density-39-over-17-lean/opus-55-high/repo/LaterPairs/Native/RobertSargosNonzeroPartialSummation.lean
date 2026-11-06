@@ -7,9 +7,9 @@ public import LaterPairs.Native.RobertSargosNonzeroShiftReorder
 public import LaterPairs.Native.RobertSargosPhysicalNonzeroShiftedTriple
 public import LaterPairs.Native.RobertSargosWeightRemoval
 public import LaterPairs.Native.SargosIntegerPrefix
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
@@ -17,18 +17,20 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 open GafniTao Set
-open scoped BigOperators ContDiff
+open scoped ContDiff
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_nonzero_q_split {A : Type*} [AddCommMonoid A]
+section
+variable {A : Type*} [AddCommMonoid A]
+include A
+theorem robertSargos_nonzero_q_split
     (Q : ℕ) (v : ℤ → A) :
     (∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0, v q) =
       (∑ x ∈ Finset.range (Q-1), v (1+x)) +
       ∑ x ∈ Finset.range (Q-1), v (1-(Q:ℤ)+x) := by
   have he : (Finset.Ioo (-(Q:ℤ)) Q).erase 0 =
       Finset.Icc (1:ℤ) (Q-1) ∪ Finset.Icc (1-(Q:ℤ)) (-1) := by
-    ext q
-    simp only [Finset.mem_erase,Finset.mem_Ioo,Finset.mem_union,Finset.mem_Icc]
+    pm_187 q Finset.mem_erase Finset.mem_Ioo Finset.mem_union Finset.mem_Icc
     omega
   have hd : Disjoint (Finset.Icc (1:ℤ) (Q-1))
       (Finset.Icc (1-(Q:ℤ)) (-1)) := by
@@ -39,15 +41,16 @@ theorem robertSargos_nonzero_q_split {A : Type*} [AddCommMonoid A]
   rw [he,Finset.sum_union hd,sargos_sum_Icc_eq_range,sargos_sum_Icc_eq_range]
   have hpos : ((Q:ℤ)-1+1-1).toNat = Q-1 := by omega
   have hneg : ((-1:ℤ)+1-(1-Q)).toNat = Q-1 := by omega
-  rw [hpos,hneg]
+  grind
 
-theorem robertSargos_overlap_sum_range {A : Type*} [AddCommMonoid A]
+theorem robertSargos_overlap_sum_range
     (H : ℕ) (r : ℤ) (v : ℤ → A) :
     (∑ h ∈ robertSargosHOverlap H r, v h) =
       ∑ y ∈ Finset.range (robertSargosHOverlap H r).card,
         v (max (H:ℤ) (H-r)+y) := by
   rw [robertSargosHOverlap,sargos_sum_Icc_eq_range]
-  simp only [Int.card_Icc]
+  simp_all
+end
 
 theorem robertSargos_nonzero_triple_rectangles (f : ℝ → ℝ)
     (H Q N : ℕ) (r m : ℤ) :
@@ -71,8 +74,8 @@ theorem robertSargos_nonzero_triple_rectangles (f : ℝ → ℝ)
   unfold robertSargosNonzeroShiftedTriple
   rw [robertSargos_nonzero_q_split]
   simp_rw [robertSargos_overlap_sum_range,sargos_sum_Icc_eq_range]
-  have hn : ((N:ℤ)+1-1).toNat = N := by omega
-  simp only [hn,Int.cast_add,Int.cast_sub,Int.cast_one,Int.cast_natCast]
+  pm_6613 hn
+  pm_94 hn Int.cast_add Int.cast_sub Int.cast_one Int.cast_natCast
 
 theorem robertSargos_overlap_rectangle_bounds (H : ℕ) (r : ℤ)
     (hne : (robertSargosHOverlap H r).Nonempty) :
@@ -182,14 +185,12 @@ theorem robertSargos_physical_nonzero_common_prefix
         hQeq hC hlam hsmall hH hXp hYp hQp (by omega) hYQ le_rfl hs hq
         hBlo hBhi hBrlo hBrhi hf hlo hhi
     refine ⟨i+1,by omega,j+1,by omega,k+1,by omega,?_⟩
-    simpa only [S,W,D,A,B,Y,robertSargosSignedPolynomialPrefix] using hbound
+    pm_314 S W D A B Y robertSargosSignedPolynomialPrefix hbound
   obtain ⟨Xp,hXp',Yp,hYp',Np,hNp',hp⟩ := hrect true
   obtain ⟨Xm,hXm',Ym,hYm',Nm,hNm',hm⟩ := hrect false
   let P := ∑ m ∈ S, ‖robertSargosSignedPolynomialPrefix f H Q r m true Xp Yp Np‖
   let T := ∑ m ∈ S, ‖robertSargosSignedPolynomialPrefix f H Q r m false Xm Ym Nm‖
-  have hD : 0 ≤ D := by
-    dsimp [D]
-    positivity
+  pm_165 hD D
   have htotal :
       (∑ m ∈ S, ‖robertSargosNonzeroShiftedTriple f H Q Q r m‖) ≤ D*P+D*T := by
     calc
@@ -202,17 +203,9 @@ theorem robertSargos_physical_nonzero_common_prefix
       _ ≤ D*P+D*T := add_le_add hp hm
   rcases le_total P T with hPT | hTP
   · refine ⟨false,Xm,Ym,Nm,hXm',hYm',hNm',?_⟩
-    change (∑ m ∈ S, ‖robertSargosNonzeroShiftedTriple f H Q Q r m‖) ≤
-      32*(1+648*Real.pi*C)^3*T
-    have hmul := mul_le_mul_of_nonneg_left hPT hD
-    dsimp [D] at htotal hmul
-    linarith
+    pm_596 T hPT
   · refine ⟨true,Xp,Yp,Np,hXp',hYp',hNp',?_⟩
-    change (∑ m ∈ S, ‖robertSargosNonzeroShiftedTriple f H Q Q r m‖) ≤
-      32*(1+648*Real.pi*C)^3*P
-    have hmul := mul_le_mul_of_nonneg_left hTP hD
-    dsimp [D] at htotal hmul
-    linarith
+    pm_596 P hTP
 
 
 
@@ -237,8 +230,7 @@ theorem robertSargos_physical_polynomial_reduction
                 ‖robertSargosSignedPolynomialPrefix f H Q r m
                   (positive r) (X r) (Y r) (N r)‖ := by
   dsimp only
-  let Q := ⌊lam^(-(3:ℝ)/13)⌋₊
-  let R := ⌊lam^(-(1:ℝ)/13)⌋₊
+  pm_1667
   choose positive X Y N hX hY hN hb using
     (fun r : ℤ => robertSargos_physical_nonzero_common_prefix
       f M H Q r rfl hC hlam hsmall hHmax hf hlo hhi)

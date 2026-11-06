@@ -30,20 +30,24 @@ theorem modelPhaseAveragedCurvature_at_inverse (F : ℝ → ℝ) (v : ℝ) :
   unfold modelPhaseCurvatureAt
   ring
 
-theorem modelPhaseAveragedCurvature_contDiffAt
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
-    (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
-    ContDiffAt ℝ ∞ (modelPhaseAveragedCurvature F v) u := by
+set_option hygiene false in
+macro "pb_1919" : tactic => `(tactic| (
   have hj : ∀ x ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ ∞ (deriv (deriv F)) x := by
     intro x hx
     simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
-      approximateModelPhase_iteratedDeriv_contDiffAt hF hx 2
+      approximateModelPhase_iteratedDeriv_contDiffAt hF hx 2))
+section
+variable {F : ℝ → ℝ} {σ δ v u : ℝ}
+include F σ δ v u
+theorem modelPhaseAveragedCurvature_contDiffAt {P : ℕ}
+    (hF : IsApproximateModelPhaseFunction F σ P δ)
+    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+    ContDiffAt ℝ ∞ (modelPhaseAveragedCurvature F v) u := by
+  pb_1919
   exact contDiffAt_const.mul ((segmentTaylorAverage_contDiffOn hj
     (modelPhaseInverseSlope_mem hv) 0).contDiffAt (isOpen_Ioo.mem_nhds hu))
 
-theorem modelPhaseStationaryDeficit_eq_averagedCurvature
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+theorem modelPhaseStationaryDeficit_eq_averagedCurvature {P : ℕ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseStationaryDeficit F v u =
@@ -52,10 +56,9 @@ theorem modelPhaseStationaryDeficit_eq_averagedCurvature
     (modelPhaseInverseSlope_mem hv) hu
   rw [deriv_modelPhaseInverseSlope_apply hv] at h
   unfold modelPhaseStationaryDeficit modelPhaseAveragedCurvature
-  nlinarith only [h]
+  grind
 
 theorem modelPhaseAveragedCurvature_bounds
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
@@ -71,15 +74,13 @@ theorem modelPhaseAveragedCurvature_bounds
     constructor <;> nlinarith [h.1,h.2]
 
 theorem modelPhaseAveragedCurvature_pos
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
     0 < modelPhaseAveragedCurvature F v u :=
   (modelPhaseCurvatureLower_pos hσ).trans_le (modelPhaseAveragedCurvature_bounds hσ hδ hF hv hu).1
 
-theorem modelPhaseMorseCoordinate_eq_smooth
-    {F : ℝ → ℝ} {σ δ v u : ℝ} {P : ℕ}
+theorem modelPhaseMorseCoordinate_eq_smooth {P : ℕ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseMorseCoordinate F v u =
@@ -95,7 +96,6 @@ theorem modelPhaseMorseCoordinate_eq_smooth
   · rw [abs_of_nonneg (sub_nonneg.mpr (le_of_not_gt h))]
 
 theorem modelPhaseMorseCoordinate_contDiffAt
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
@@ -108,6 +108,7 @@ theorem modelPhaseMorseCoordinate_contDiffAt
   apply h.congr_of_eventuallyEq
   filter_upwards [isOpen_Ioo.mem_nhds hu] with x hx
   exact modelPhaseMorseCoordinate_eq_smooth hF hv hx
+end
 
 theorem modelPhaseMorseCoordinate_contDiffOn
     {F : ℝ → ℝ} {σ δ v : ℝ}

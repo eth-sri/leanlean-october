@@ -3,6 +3,7 @@ module
 public import WeylPort.AFE.UpperIntegralEstimate
 public import WeylPort.AFE.ChiGammaFactor
 public import WeylPort.Analytic.ComplexLaplace
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,31 +48,32 @@ theorem dampedWeightedKernel_eq_laplace (s : ℂ) (ε m u : ℝ) :
         exp (-(((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)) * (u : ℂ))) := by
   rw [show (1 - s) - 1 = -s by ring]
   unfold dampedWeightedKernel
-  rw [mul_assoc, ← Complex.exp_add]
-  congr 2
-  ring
+  pm_7086 Complex.exp_add
 
+section
+variable {s : ℂ} (hs : s.re < 1) {ε : ℝ} (hε : 0 < ε) (m : ℝ)
+include s hs ε hε m
 /-- Positive damping gives absolute integrability on the positive half-line. -/
-theorem integrableOn_dampedWeightedKernel {s : ℂ} (hs : s.re < 1)
-    {ε : ℝ} (hε : 0 < ε) (m : ℝ) :
+theorem integrableOn_dampedWeightedKernel :
     IntegrableOn (dampedWeightedKernel s ε m) (Set.Ioi 0) := by
-  have hz : 0 < (1 - s).re := by simp; linarith
-  have ha : 0 < ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)).re := by simpa using hε
+  pm_21
   exact (RiemannZeta.GuthMaynard.integrableOn_cpow_mul_cexp_neg_complex_mul_Ioi hz ha).congr_fun
     (fun u _ => (dampedWeightedKernel_eq_laplace s ε m u).symm) measurableSet_Ioi
 
 /-- The already proved foundation Laplace theorem evaluates the actual damped integral. -/
-theorem integral_dampedWeightedKernel_Ioi {s : ℂ} (hs : s.re < 1)
-    {ε : ℝ} (hε : 0 < ε) (m : ℝ) :
+theorem integral_dampedWeightedKernel_Ioi :
     (∫ u in Set.Ioi 0, dampedWeightedKernel s ε m u) =
       ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)) ^ (s - 1) * Gamma (1 - s) := by
-  have hz : 0 < (1 - s).re := by simp; linarith
-  have ha : 0 < ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)).re := by simpa using hε
+  pm_21
   simp_rw [dampedWeightedKernel_eq_laplace]
   simpa only [neg_sub, RiemannZeta.GuthMaynard.dfiComplexLaplace] using RiemannZeta.GuthMaynard.dfiComplexLaplace_eq hz ha
+end
 
+section
+variable (s : ℂ)
+include s
 /-- The zero-damping value uses the actual principal branch at the negative imaginary axis. -/
-theorem continuousAt_dampedGamma_factor (s : ℂ) {m : ℝ} (hm : 0 < m) :
+theorem continuousAt_dampedGamma_factor {m : ℝ} (hm : 0 < m) :
     ContinuousAt (fun ε : ℝ =>
       ((ε : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ)) ^ (s - 1) * Gamma (1 - s)) 0 := by
   have hi : (0 : ℂ) - 2 * (Real.pi : ℂ) * I * (m : ℂ) ∈ Complex.slitPlane := by
@@ -85,20 +87,21 @@ theorem continuousAt_dampedGamma_factor (s : ℂ) {m : ℝ} (hm : 0 < m) :
     (Complex.continuous_ofReal.continuousAt.sub continuousAt_const)).mul_const _
 
 /-- Zero damping returns the literal undamped weighted integrand. -/
-theorem dampedWeightedKernel_zero (s : ℂ) (m u : ℝ) :
+theorem dampedWeightedKernel_zero (m u : ℝ) :
     dampedWeightedKernel s 0 m u =
       (u : ℂ) ^ (-s) * exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (u : ℂ)) := by
   simp [dampedWeightedKernel]
 
 /-- Nonnegative damping contracts the norm on the positive half-line. -/
-theorem norm_dampedWeightedKernel_le (s : ℂ) {ε u : ℝ} (hε : 0 ≤ ε) (hu : 0 ≤ u) (m : ℝ) :
+theorem norm_dampedWeightedKernel_le {ε u : ℝ} (hε : 0 ≤ ε) (hu : 0 ≤ u) (m : ℝ) :
     ‖dampedWeightedKernel s ε m u‖ ≤
       ‖(u : ℂ) ^ (-s) * exp (2 * (Real.pi : ℂ) * I * (m : ℂ) * (u : ℂ))‖ := by
   rw [dampedWeightedKernel, norm_mul, Complex.norm_exp]
   apply mul_le_of_le_one_right (norm_nonneg _)
   apply Real.exp_le_one_iff.mpr
-  simp only [neg_re, mul_re, ofReal_re, ofReal_im, mul_zero, sub_zero]
+  pm_316 neg_re mul_re ofReal_re ofReal_im mul_zero sub_zero
   exact neg_nonpos.mpr (mul_nonneg hε hu)
+end
 
 /-- Dominated convergence removes damping on each actual finite zero-endpoint interval. -/
 theorem dampedWeightedKernel_finite_abel_limit {s : ℂ} (hs : s.re < 1)
@@ -112,9 +115,7 @@ theorem dampedWeightedKernel_finite_abel_limit {s : ℂ} (hs : s.re < 1)
     rw [Set.uIoc_of_le hR]
     exact (intervalIntegrable_dampedWeightedKernel hs ε m 0 R).1.aestronglyMeasurable
   · filter_upwards [self_mem_nhdsWithin] with ε hε
-    apply Filter.Eventually.of_forall
-    intro u hu
-    rw [Set.uIoc_of_le hR] at hu
+    pm_445 Filter.Eventually.of_forall u hu Set.uIoc_of_le hR
     exact norm_dampedWeightedKernel_le s hε.le hu.1.le m
   · exact (intervalIntegrable_weighted_integrand hs 0 R m).norm
   · apply Filter.Eventually.of_forall
@@ -129,7 +130,7 @@ theorem norm_integral_dampedWeightedKernel_le {σ t ε m a b : ℝ} (hσ : 0 ≤
     (hcut : t < Real.pi * m * a) :
     ‖∫ u in a..b, dampedWeightedKernel ((σ : ℂ) + (t : ℂ) * I) ε m u‖ ≤
       2 * a ^ (-σ) / (Real.pi * m) := by
-  have hp (u : ℝ) (hu : u ∈ Set.Icc a b) : 0 < u := ha.trans_le hu.1
+  pm_25
   let g : ℝ → ℝ := fun u => u ^ (-σ) * Real.exp (-ε * u)
   let g' : ℝ → ℝ := fun u =>
     (-σ * u ^ (-σ - 1)) * Real.exp (-ε * u) +
@@ -163,12 +164,9 @@ theorem norm_integral_dampedWeightedKernel_le {σ t ε m a b : ℝ} (hσ : 0 ≤
     (fun u hu => norm_integral_upper_phase_le hm ha hu.1 hcut)
   have he : (∫ u in a..b, dampedWeightedKernel ((σ : ℂ) + (t : ℂ) * I) ε m u) =
       ∫ u in a..b, (g u : ℂ) * exp (I * (weightedIntegralPhase t m u : ℂ)) := by
-    apply intervalIntegral.integral_congr
-    intro u hu
-    have hup : 0 < u := hp u (Set.uIcc_of_le hab ▸ hu)
+    pm_5802
     unfold dampedWeightedKernel
-    rw [show -((σ : ℂ) + (t : ℂ) * I) =
-      (((-σ : ℝ) : ℂ) - (t : ℂ) * I) by push_cast; ring]
+    pm_29 I
     rw [cpow_linear_wave_eq_power_log_phase (-σ) t m hup]
     dsimp [g]
     rw [Complex.ofReal_mul, Complex.ofReal_exp]
@@ -192,7 +190,7 @@ theorem norm_integral_Ioi_dampedWeightedKernel_le {σ t ε m a : ℝ}
     (hcut : t < Real.pi * m * a) :
     ‖∫ u in Set.Ioi a, dampedWeightedKernel ((σ : ℂ) + (t : ℂ) * I) ε m u‖ ≤
       2 * a ^ (-σ) / (Real.pi * m) := by
-  have hs : ((σ : ℂ) + (t : ℂ) * I).re < 1 := by simpa using hσ.2
+  pm_22
   have hi := (integrableOn_dampedWeightedKernel hs hε m).mono_set
     (Set.Ioi_subset_Ioi ha.le)
   have hlim := intervalIntegral_tendsto_integral_Ioi a hi Filter.tendsto_id
@@ -208,7 +206,7 @@ theorem norm_dampedGamma_sub_finite_integral_le {σ t ε m R : ℝ}
         (((σ : ℂ) + (t : ℂ) * I) - 1) * Gamma (1 - ((σ : ℂ) + (t : ℂ) * I)) -
       ∫ u in 0..R, dampedWeightedKernel ((σ : ℂ) + (t : ℂ) * I) ε m u‖ ≤
       2 * R ^ (-σ) / (Real.pi * m) := by
-  have hs : ((σ : ℂ) + (t : ℂ) * I).re < 1 := by simpa using hσ.2
+  pm_22
   have hsplit := intervalIntegral.integral_Ioi_sub_Ioi
     (integrableOn_dampedWeightedKernel hs hε m) hR.le
   rw [integral_dampedWeightedKernel_Ioi hs hε m] at hsplit
@@ -227,7 +225,7 @@ theorem norm_gamma_sub_weightedIntegral_le {σ t m R : ℝ} (hσ : σ ∈ Set.Ic
         Gamma (1 - ((σ : ℂ) + (t : ℂ) * I)) -
       weightedIntegral ((σ : ℂ) + (t : ℂ) * I) 0 R m‖ ≤
       2 * R ^ (-σ) / (Real.pi * m) := by
-  have hs : ((σ : ℂ) + (t : ℂ) * I).re < 1 := by simpa using hσ.2
+  pm_22
   have hg := (continuousAt_dampedGamma_factor ((σ : ℂ) + (t : ℂ) * I) hm).tendsto.mono_left
     (show 𝓝[>] (0 : ℝ) ≤ 𝓝 0 from inf_le_left)
   have hf := dampedWeightedKernel_finite_abel_limit hs hR.le m
@@ -267,7 +265,7 @@ theorem cpow_negative_imaginary_frequency (s : ℂ) {m : ℝ} (hm : 0 < m) :
       (2 * (Real.pi : ℂ) / I) ^ (s - 1) * (m : ℂ) ^ (s - 1) := by
   have hb : 2 * (Real.pi : ℂ) / I ≠ 0 :=
     div_ne_zero (mul_ne_zero (by norm_num) (ofReal_ne_zero.mpr Real.pi_ne_zero)) I_ne_zero
-  have hm' : (m : ℂ) ≠ 0 := ofReal_ne_zero.mpr hm.ne'
+  pm_115 hm' m ofReal_ne_zero.mpr hm.ne'
   have he : -(2 * (Real.pi : ℂ) * I * (m : ℂ)) = (2 * (Real.pi : ℂ) / I) * m := by
     rw [div_eq_mul_inv, inv_I]
     ring
@@ -301,7 +299,7 @@ theorem weightedIntegralTail_eq_sub {σ t m : ℝ} (hσ : σ ∈ Set.Ioo 0 1)
     weightedIntegralTail ((σ : ℂ) + (t : ℂ) * I) a m =
       weightedIntegralTail ((σ : ℂ) + (t : ℂ) * I) 0 m -
         weightedIntegral ((σ : ℂ) + (t : ℂ) * I) 0 a m := by
-  have hs : ((σ : ℂ) + (t : ℂ) * I).re < 1 := by simpa using hσ.2
+  pm_22
   apply tendsto_nhds_unique (weightedIntegral_tendsto_tail hσ hm a)
   have h := (weightedIntegral_tendsto_tail (t := t) hσ hm 0).sub_const
     (weightedIntegral ((σ : ℂ) + (t : ℂ) * I) 0 a m)

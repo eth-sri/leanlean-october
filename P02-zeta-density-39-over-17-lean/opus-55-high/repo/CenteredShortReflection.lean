@@ -48,9 +48,8 @@ theorem reflection_local_pair_le_three {H : ℝ} (hH : 0 < H)
       apply sum_le_sum
       intro j _
       by_cases htj : t ∈ localSet W H j
-      · simp only [htj,true_and,ite_true]
-        split_ifs <;> first | exact le_rfl | exact sq_nonneg _
-      · simp only [htj,false_and,ite_false,le_refl]
+      aesop
+      grind
     _ = 3*‖dyadicPolynomial M (t-u)‖^2 := by
       rw [← sum_filter,localIndices_filter_point hH ht]
       simp

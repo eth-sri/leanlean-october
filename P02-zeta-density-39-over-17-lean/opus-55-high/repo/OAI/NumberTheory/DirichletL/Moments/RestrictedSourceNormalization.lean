@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.RestrictedSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawCost
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal
     (f : Ideal O → ℂ) (keep : O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
     (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceRestrictedEnergy keep (residualPool C hC.1 (finiteColumns (Fintype.piFinset S)))
-      (fun I => if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
+      (fun I=> if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0) f W K)/(Traw*∏ i,P i)≤
       ((actualAllocations S C).card:ℝ)*∑ B : actualAllocations S C,
         (‖frozenCoefficient B C R ν Wslot P‖^2/rawReduction B P)*
@@ -42,16 +43,14 @@ theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal
   have htotal : 0<Traw*∏ i,P i := mul_pos hTraw (Finset.prod_pos (fun i _ => hP i))
   apply (div_le_div_of_nonneg_right h htotal.le).trans_eq
   rw [mul_div_assoc,Finset.sum_div]
-  apply congrArg (fun x : ℝ => ((actualAllocations S C).card:ℝ)*x)
-  apply Finset.sum_congr rfl
-  intro B hB
+  pm_241 S
   have hb := (allocation_data S C B (Finset.mem_filter.mp B.property).1).1
   have hr := raw_scale_identity B hb Traw P
   have hpR := rawReduction_pos B hb P hP
-  have hpL : 0<remainingRaw B Traw P := by
+  have hpL : 0< remainingRaw B Traw P := by
     apply (mul_pos_iff_of_pos_right hpR).mp
     exact hr.symm ▸ htotal
-  have alg (d e n r l : ℝ) (hr : 0<r) (hl : 0<l) (hn : l*r=n) :
+  have alg (d e n r l : ℝ) (hr : 0< r) (hl : 0<l) (hn : l*r=n) :
       d*e/n=(d/r)*(e/l) := by
     rw [←hn]
     field_simp [hr.ne',hl.ne']

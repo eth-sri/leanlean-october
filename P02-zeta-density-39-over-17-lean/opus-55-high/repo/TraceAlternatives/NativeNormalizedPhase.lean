@@ -16,7 +16,7 @@ theorem sourceRatioIndices_nat (M : ℕ) : sourceRatioIndices (M:ℝ)=Ioc M (2*M
   have hf : ⌊2*(M:ℝ)⌋₊=2*M := by
     norm_cast
     exact Nat.floor_natCast _
-  rw [hf]
+  grind
 
 /-- Conjugation and a common unit phase identify the actual normalized
 positive-phase polynomial with the native negative-phase polynomial in norm. -/
@@ -31,9 +31,7 @@ theorem norm_boundedPolynomial_native_conjugate {M : ℕ} (hM : 0<M)
     intro n hn
     simp only [dirichletPhase]
     congr 2
-    rw [Complex.cpow_def_of_ne_zero (by
-      have hh : 0<n := lt_of_le_of_lt (Nat.zero_le _) (mem_Ioc.mp hn).1
-      exact_mod_cast hh.ne')]
+    rw [Complex.cpow_def_of_ne_zero (by aesop)]
     rw [← Complex.natCast_log]
     congr 1
     push_cast

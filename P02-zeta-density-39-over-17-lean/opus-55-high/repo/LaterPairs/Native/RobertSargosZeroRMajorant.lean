@@ -44,11 +44,6 @@ theorem sum_robertSargos_zero_r_majorant
     (show 0 ≤ 12*C*M*H*Real.sqrt (4*(H:ℝ)*lam) by positivity)
   have hi := mul_le_mul_of_nonneg_left (sum_signed_inverse_sqrt_le Q)
     (show 0 ≤ 24*H/Real.sqrt (2*(H:ℝ)*lam) by positivity)
-  calc
-    _ ≤ (2*(Q:ℝ))*H+
-        (12*C*M*H*Real.sqrt (4*(H:ℝ)*lam))*(2*(Q:ℝ)*Real.sqrt Q)+
-        (24*H/Real.sqrt (2*(H:ℝ)*lam))*(4*Real.sqrt Q) :=
-      add_le_add (add_le_add hc hs) hi
-    _ = _ := by ring
+  grind
 
 end TaoTrudgianYang2025

@@ -1,10 +1,10 @@
 module
 public import AtomicRadialAssembly
 public import BoxTimeDensity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped ContDiff FourierTransform
@@ -31,8 +31,7 @@ theorem radial_profile_sum_bound (w : MathCollab.Density.ReflectionCutoff) (n : 
       |L|^3*Cnear*D*(∑ m ∈ S, ∫ p in ratioBox, maskedRadialNearMass μ univ univ univ L H m p)+
         |L|^3*S.card*Ctail/H^n*M^3*(99/10:ℝ)^2 := by
   have hs : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ)=0 := by
-    intro x hx
-    have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+    pm_4496
     simp only [hz,Complex.ofReal_zero]
   obtain ⟨Cn,hCn,hnear⟩ := radial_uniform_power_decay w.complex_smooth (by norm_num : (1/2:ℝ) ≤ 5)
     hs (1/10) 10 (1/10) 10 0
@@ -40,7 +39,7 @@ theorem radial_profile_sum_bound (w : MathCollab.Density.ReflectionCutoff) (n : 
     hs (1/10) 10 (1/10) 10 n
   obtain ⟨B,hB,hiNear⟩ := masked_radial_near_bound w.complex_smooth (by norm_num : (1/2:ℝ) ≤ 5)
     hs (1/10) 10 (1/10) 10
-  refine ⟨Cn,Ct,hCn,hCt,?_⟩
+  pm_119 Cn Ct hCn hCt
   intro L H S F M D μ hH hF hM hbF hD hm h0 hi hdom
   have hQ : volume ratioBox < ⊤ := (isCompact_Icc.prod isCompact_Icc).measure_lt_top
   have hQm : MeasurableSet ratioBox := measurableSet_Icc.prod measurableSet_Icc
@@ -65,7 +64,7 @@ theorem radial_profile_sum_bound (w : MathCollab.Density.ReflectionCutoff) (n : 
       ‖radialKernel (fun x => (w x:ℂ)) L m p*ratioFourierProduct F p‖ ≤
       Cn*D*maskedRadialNearMass μ univ univ univ L H m p+Ct/H^n*M^3 := by
     have hmask : ratioMaskProduct univ univ univ p=1 := by simp [ratioMaskProduct]
-    by_cases hh : |L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ))| ≤ H
+    pm_1238 hh
     · have hnearMass : maskedRadialNearMass μ univ univ univ L H m p =
           ‖GuthMaynard.Improvement.ratioFourierProduct μ p‖ := by
         simp only [maskedRadialNearMass,ite_eq_left hh,hmask,norm_one,mul_one]
@@ -73,10 +72,9 @@ theorem radial_profile_sum_bound (w : MathCollab.Density.ReflectionCutoff) (n : 
       have hx := mul_le_mul (hk m p hp) (hdom p hp) (norm_nonneg _) hCn.le
       nlinarith [show 0 ≤ Ct/H^n*M^3 by positivity]
     · have ht : ‖radialKernel (fun x => (w x:ℂ)) L m p‖ ≤ Ct/H^n := by
-        have hb := htail p.1 hp.1 p.2 hp.2 (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))
+        pm_5176 hb htail
         have hpw := pow_le_pow_left₀ hH.le (le_of_lt (lt_of_not_ge hh)) n
-        rw [radialKernel,radial_integral_fourier]
-        apply (le_div_iff₀ (pow_pos hH n)).mpr
+        pm_6686
         nlinarith [mul_le_mul_of_nonneg_right hpw (norm_nonneg (𝓕 (radialAmplitude (fun x => (w x:ℂ)) p.1 p.2)
           (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))))]
       rw [show maskedRadialNearMass μ univ univ univ L H m p=0 from ite_eq_right hh,

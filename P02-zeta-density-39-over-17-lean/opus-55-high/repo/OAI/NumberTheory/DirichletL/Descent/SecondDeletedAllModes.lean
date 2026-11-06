@@ -1,14 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedOriginalBound
 public import OAI.NumberTheory.DirichletL.Descent.SecondSectorAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open ActualEisensteinCubic SecondPassArithmetic
 open JointLogSeparation MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -22,7 +23,7 @@ def secondDeletedFullModeSum {Jo : ℕ} (source : Finset (MarkedSecondSource ι 
     (sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
+    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→ Finset ι)
     (ω₁ ω₂ : ℝ → ℂ) (G E V B X : ℝ) (w : MarkedSecondSource ι Jo 0 → ℂ)
     (t : Frequency × (Fin 6 → ℝ)) : ℂ :=
   ∑ uv : Eisˣ × Eisˣ,∑ J₁∈slots₁.powerset,∑ J₂∈slots₂.powerset,
@@ -35,7 +36,7 @@ theorem secondDeletedFullModeSum_physical {Jo : ℕ} (source : Finset (MarkedSec
     (sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
+    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→ Finset ι)
     (ω₁ ω₂ : ℝ → ℂ) (G E V B X : ℝ) (w : MarkedSecondSource ι Jo 0 → ℂ)
     (t : Frequency × (Fin 6 → ℝ)) :
     secondDeletedFullModeSum p hp hcop hg source sector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂
@@ -50,14 +51,8 @@ theorem secondDeletedFullModeSum_physical {Jo : ℕ} (source : Finset (MarkedSec
   intro uv huv
   simp only [Finset.mul_sum]
   symm
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro J₁ hJ₁
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro J₂ hJ₂
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_388 Finset.sum_comm J₁ hJ₁
+  pm_3397 J₂ hJ₂ x hx
   ring
 
 theorem actual_second_deleted_all_modes_bound
@@ -69,7 +64,7 @@ theorem actual_second_deleted_all_modes_bound
     (sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ a,‖Ψ a‖ ≤ 1) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
+    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→ Finset ι)
     (hd₁ : ∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨
       (Ideal.span {p i}:Ideal Eis)∣x.quotient)
     (hd₂ : ∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨
@@ -121,12 +116,8 @@ theorem actual_second_deleted_all_modes_bound
           actualSecondSignedWeight p hp hcop hg Ψ (m*ConcretePrimeRowBridge.idealGenerator x.quotient) z x*w x*
             secondModeBranch p hp hcop hg x uv.1 uv.2 pool Ψ m z slots₁ slots₂ J₁ J₂ (fun i=>lists₁ i\deleted₁ x) (fun i=>lists₂ i\deleted₂ x) a₁ a₂
               ω₁ ω₂ G E V B X t‖ := by
-      apply (norm_sum_le _ _).trans
-      apply Finset.sum_le_sum
-      intro uv huv
-      apply (norm_sum_le _ _).trans
-      apply Finset.sum_le_sum
-      intro J₁ hJ₁
+      pm_3719 uv huv
+      pm_3719 J₁ hJ₁
       exact norm_sum_le _ _
     _ ≤ ∑ _uv : Eisˣ × Eisˣ,∑ _J₁∈slots₁.powerset,∑ _J₂∈slots₂.powerset,A*mass := by
       apply Finset.sum_le_sum
@@ -135,8 +126,7 @@ theorem actual_second_deleted_all_modes_bound
       intro J₁ hJ₁
       exact Finset.sum_le_sum (fun J₂ hJ₂ => hbound uv J₁ hJ₁ J₂ hJ₂)
     _ = _ := by
-      simp only [Finset.sum_const,Finset.card_univ,Finset.card_powerset,nsmul_eq_mul,
-        second_unit_sector_card,Nat.cast_pow,Nat.cast_ofNat,mass]
+      pm_3650 Finset.sum_const Finset.card_univ Finset.card_powerset nsmul_eq_mul second_unit_sector_card Nat.cast_pow Nat.cast_ofNat mass
       ring
 
 end

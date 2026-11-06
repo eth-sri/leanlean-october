@@ -3,6 +3,7 @@ module
 public import WeylPort.AFE.SecondTailSharp
 public import WeylPort.AFE.ZetaTruncation
 public import WeylPort.AFE.WeightedIntegralAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,8 +23,11 @@ namespace DhimanKadiriQuesadaHerrera2026
 open Filter
 open scoped Topology
 
+section
+variable {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u)
+include σ c u hσ hc hu
 /-- The source H numerator has its exact power-weight value. -/
-theorem secondH_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u) :
+theorem secondH_afe :
     secondH (afePhase c) (afeWeight σ) u = (σ + 2 * Real.pi * c) * u ^ (-σ - 1) := by
   unfold secondH
   rw [abs_deriv_afeWeight hσ hu, (afePhase_hasDerivAt c hu).deriv,
@@ -33,7 +37,7 @@ theorem secondH_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u) 
   ring_nf
 
 /-- The source H₁ numerator has its exact power-weight value. -/
-theorem secondH1_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u) :
+theorem secondH1_afe :
     secondH1 (afePhase c) (afeWeight σ) u =
       (σ + 1) * (σ + 2 * Real.pi * c) * u ^ (-σ - 2) := by
   unfold secondH1
@@ -54,14 +58,15 @@ theorem secondH1_afe {σ c u : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) (hu : 0 < u)
   rw [he]
   field_simp
   ring_nf
+end
 
 /-- The actual H amplitude tends to zero at the upper endpoint, including σ=0. -/
 theorem tendsto_secondH_afe {σ c : ℝ} (hσ : 0 ≤ σ) (hc : 0 ≤ c) :
     Tendsto (fun u : ℝ => secondH (afePhase c) (afeWeight σ) u) atTop (𝓝 0) := by
   have hs : 0 < σ + 1 := by linarith
   have ht := (tendsto_rpow_neg_atTop hs).const_mul (σ + 2 * Real.pi * c)
-  apply (show Tendsto (fun u : ℝ => (σ + 2 * Real.pi * c) * u ^ (-(σ + 1))) atTop (𝓝 0) by simpa using ht).congr'
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with u hu
+  apply (show Tendsto (fun u : ℝ => (σ + 2 * Real.pi * c) * u ^ (-(σ + 1))) atTop (𝓝 0) by grind).congr'
+  pm_414 eventually_gt_atTop u hu
   rw [secondH_afe hσ hc hu]
   congr 1
   ring_nf
@@ -76,7 +81,7 @@ theorem norm_poissonHeadBoundary_nat (f g : ℝ → ℝ) (N M : ℕ) (hg : 0 ≤
   have hhm : 0 ≤ (harmonic M : ℝ) := by
     have hq : 0 ≤ harmonic M := Finset.sum_nonneg (fun n _ => by positivity)
     exact_mod_cast hq
-  rw [abs_of_nonneg hhm]
+  simp_all
 
 /-- The full upper-endpoint error after its actual two tails are uniformly bounded. -/
 noncomputable def afeSecondUpperError (σ c : ℝ) (M : ℕ) (b : ℝ) : ℝ :=
@@ -90,7 +95,7 @@ theorem tendsto_afeSecondUpperError {σ c : ℝ} (hσ : 0 < σ) (hc : 0 ≤ c) (
   have hH := tendsto_secondH_afe hσ.le hc
   have ht := (((hw.div_const (2 * Real.pi)).mul_const (harmonic M : ℝ)).add (hw.div_const 2)).add
     ((hH.const_mul 6).div_const (4 * Real.pi ^ 2))
-  simp only [zero_div, zero_mul, mul_zero, add_zero] at ht
+  pm_298 zero_div zero_mul mul_zero add_zero ht
   exact ht
 
 /-- The left-endpoint error retained in the actual AFE zeta-limit argument. -/
@@ -113,8 +118,7 @@ theorem afe_finite_poisson_second_left_half {σ c a : ℝ} (hσ : 0 ≤ σ) (hc 
       poissonMain (afePhase c) (afeWeight σ) a N ⌊c / a⌋₊‖ ≤
         afeSecondLeftError σ c a + afeSecondUpperError σ c ⌊c / a⌋₊ N := by
   have hN := ha.trans haN
-  have hya := div_pos hc ha
-  have hyN := div_pos hc hN
+  pm_733 hya div_pos hc ha hyN hN
   have heb := mul_le_mul_of_nonneg_left
     (add_le_add (norm_negativeTail_le_four (M := ⌊c / a⌋₊) hyN hsmall (N : ℝ))
       (norm_positiveTail_le_two hyN (-(N : ℝ))))
@@ -130,21 +134,16 @@ theorem afe_finite_poisson_second_left_half {σ c a : ℝ} (hσ : 0 ≤ σ) (hc 
   unfold afeSecondLeftError afeSecondUpperError
   dsimp only
   simp only [div_eq_mul_inv] at ht hea heb hha hg ⊢
-  nlinarith only [ht, hea, heb, hha, hg]
+  grind
 
 /-- Conjugation of the actual finite Poisson main term gives precisely the weighted Dirichlet integrals. -/
 theorem conj_poissonMain_afe (σ t : ℝ) {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) (M : ℕ) :
     starRingEnd ℂ (poissonMain (afePhase (t / (2 * Real.pi))) (afeWeight σ) a b M) =
       ∑ m ∈ Finset.Icc 0 M, weightedIntegral ((σ : ℂ) + (t : ℂ) * Complex.I) a b m := by
-  unfold poissonMain
-  rw [map_sum]
-  apply Finset.sum_congr rfl
-  intro m _
+  pm_5313 poissonMain map_sum m
   rw [conj_intervalIntegral]
   unfold weightedIntegral
-  apply intervalIntegral.integral_congr
-  intro u hu
-  have hup : 0 < u := ha.trans_le ((Set.uIcc_of_le hab ▸ hu).1)
+  pm_6174 hab
   dsimp only
   rw [map_mul, conj_weightedWave_afe σ t hup, conj_expMode]
   congr 1
@@ -157,10 +156,7 @@ theorem conj_poissonMain_afe (σ t : ℝ) {a b : ℝ} (ha : 0 < a) (hab : a ≤ 
 theorem sum_weightedIntegral_eq_zero_add (s : ℂ) (a b : ℝ) (M : ℕ) :
     (∑ m ∈ Finset.Icc 0 M, weightedIntegral s a b m) =
       (∫ u in a..b, (u : ℂ) ^ (-s)) + ∑ m ∈ Finset.Icc 1 M, weightedIntegral s a b m := by
-  have hset : Finset.Icc 0 M = Finset.range (M + 1) := by
-    ext n
-    simp only [Finset.mem_Icc, Finset.mem_range]
-    omega
+  pm_1125
   rw [hset, Finset.sum_range_succ', sum_Icc_one_eq_sum_range]
   simp only [Nat.cast_zero, weightedIntegral, Complex.ofReal_zero, mul_zero, zero_mul,
     Complex.exp_zero, mul_one]
@@ -177,7 +173,7 @@ theorem afe_second_finite_cpow_bound {σ t a : ℝ} (hσ : 0 ≤ σ) (ht : 0 < t
         weightedIntegral ((σ : ℂ) + (t : ℂ) * Complex.I) a N m‖ ≤
       afeSecondLeftError σ (t / (2 * Real.pi)) a +
         afeSecondUpperError σ (t / (2 * Real.pi)) ⌊(t / (2 * Real.pi)) / a⌋₊ N := by
-  have hc : 0 < t / (2 * Real.pi) := div_pos ht (by positivity)
+  pm_6015
   have hb := afe_finite_poisson_second_left_half hσ hc ha haN hah hδ hsmall
   have he : (∑ n ∈ Finset.Ioc ⌊a⌋ (N : ℤ), (n : ℂ) ^ (-((σ : ℂ) + (t : ℂ) * Complex.I))) -
       ∑ m ∈ Finset.Icc 0 ⌊(t / (2 * Real.pi)) / a⌋₊,
@@ -206,7 +202,7 @@ theorem afe_zeta_sub_sum_pole_integrals_bound {σ t a : ℝ} (hσ : σ ∈ Set.I
     ‖riemannZeta s - sharpZetaSum s a - (a : ℂ) ^ (1 - s) / (s - 1) -
       ∑ m ∈ Finset.Icc 1 ⌊c / a⌋₊, weightedIntegralTail s a m‖ ≤ afeSecondLeftError σ c a := by
   dsimp only
-  have hc : 0 < t / (2 * Real.pi) := div_pos ht (by positivity)
+  pm_6015
   have hs : 0 < ((σ : ℂ) + (t : ℂ) * Complex.I).re := by simpa using hσ.1
   have hs1 : (σ : ℂ) + (t : ℂ) * Complex.I ≠ 1 := by
     intro h
@@ -235,7 +231,6 @@ theorem afe_zeta_sub_sum_pole_integrals_bound {σ t a : ℝ} (hσ : σ ∈ Set.I
     have htN := (le_max_right a (2 * (t / (2 * Real.pi)))).trans_lt hN
     linarith
   have hb := afe_second_finite_cpow_bound hσ.1.le ht ha haN hah hδ hsmall
-  rw [sum_weightedIntegral_eq_zero_add] at hb
-  simpa only [sub_add_eq_sub_sub, Function.comp_apply] using hb
+  pm_354 sum_weightedIntegral_eq_zero_add hb sub_add_eq_sub_sub Function.comp_apply
 
 end DhimanKadiriQuesadaHerrera2026

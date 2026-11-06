@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleySection4Insertion
 public import GafniTao.WooleySection7ConditionedExpansion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,6 @@ formal counterpart of the paragraph following (4.14).
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -68,10 +68,7 @@ theorem wooleySection4ConditionedInsertedAverage_expand
             wooleySourcePolynomialConditionedMean s qPrime qH Psi
               (wooleySourceTwist gamma
                 (fun n => wooleySourcePolynomialPhase theta alpha n)) := by
-      simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      ring
+      pm_5620
     _ = (((q ^ k : ℕ) : ℝ)⁻¹) *
         ∑ alpha : Fin k → ZMod q,
           ∑ zeta : ZMod qH,
@@ -79,18 +76,11 @@ theorem wooleySection4ConditionedInsertedAverage_expand
               wooleySourcePolynomialMean s qPrime Psi
                 (wooleySourceTwist
                   (wooleySourceResidueSequence gamma qH zeta)
-                  (fun n => wooleySourcePolynomialPhase theta alpha n)) := by
-      apply congrArg (fun x : ℝ => ((q ^ k : ℕ) : ℝ)⁻¹ * x)
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      exact hexpand alpha
+                  (fun n => wooleySourcePolynomialPhase theta alpha n)) := by grind
     _ = _ := by
       rw [Finset.sum_comm]
       simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro zeta hzeta
-      apply Finset.sum_congr rfl
-      intro alpha halpha
+      pm_90 Finset.sum_congr zeta hzeta alpha halpha
       ring
 
 /-- Equation (4.14) after the lower critical-exponent estimate: the
@@ -157,10 +147,7 @@ theorem wooleySection4_conditionedInsertedAverage_eq_of_equation_4_12
         wooleySourceResidueMassSq gamma (p ^ (H - h)) zeta *
           wooleySourcePolynomialMean s (p ^ B) theta
             (wooleySourceResidueSequence gamma (p ^ (H - h)) zeta) := by
-      rw [hexpand]
-      apply Finset.sum_congr rfl
-      intro zeta hzeta
-      rw [h412Residue]
+      pm_223 hexpand zeta hzeta h412Residue
     have hconditioned :=
       wooleySourcePolynomialConditionedMean_polynomialTwist_expand
         (q := p ^ B) (qPrime := p ^ B) (qH := p ^ (H - h))

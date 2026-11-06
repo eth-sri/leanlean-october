@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.ShortDensityUniform
 @[expose] public section
 
 open MathCollab.Density
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 

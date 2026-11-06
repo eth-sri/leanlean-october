@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftJets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -34,7 +35,7 @@ theorem modelPhase_jet_difference_error
     |iteratedDeriv (p+1) F v-iteratedDeriv (p+1) F w-
       σ*(w-v)*iteratedDeriv p (modelPhase (σ+1)) u| ≤
       (δ+σ*modelPhaseJetCoefficient (σ+1) (p+1)*η)*(w-v) := by
-  let R := iteratedDeriv p (modelPhase (σ+1)) u
+  pm_5493 modelPhase
   let f : ℝ → ℝ := fun x => iteratedDeriv (p+1) F x+σ*x*R
   have hxI {x : ℝ} (hx : x ∈ Icc v w) : x ∈ Ioo (1 : ℝ) 2 :=
     ⟨hv.1.trans_le hx.1,hx.2.trans_lt hw.2⟩
@@ -42,14 +43,13 @@ theorem modelPhase_jet_difference_error
     have hl := (abs_le.mp hvu).1
     have hr := (abs_le.mp hwu).2
     rw [abs_le]
-    constructor <;> linarith [hx.1,hx.2]
+    grind
   have hd (x : ℝ) (hx : x ∈ Icc v w) :
       HasDerivAt f (iteratedDeriv (p+2) F x+σ*R) x := by
     have hdF := (contDiffAt_iteratedDeriv_infty
       (approximateModelPhase_contDiffAt hF (hxI hx)) (p+1)).differentiableAt
         (by simp : (∞ : WithTop ℕ∞) ≠ 0)
-    have hj : HasDerivAt (iteratedDeriv (p+1) F) (iteratedDeriv (p+2) F x) x := by
-      simpa only [iteratedDeriv_succ] using hdF.hasDerivAt
+    pm_5338 x hdF.hasDerivAt
     convert hj.add (((hasDerivAt_id x).const_mul σ).mul_const R) using 1 <;>
       first | rfl | ring
   have hb (x : ℝ) (hx : x ∈ Icc v w) :
@@ -72,8 +72,7 @@ theorem modelPhase_jet_difference_error
       _ ≤ |iteratedDeriv (p+2) F x-iteratedDeriv (p+1) (modelPhase σ) x|+
           |σ*(R-iteratedDeriv p (modelPhase (σ+1)) x)| := abs_add_le _ _
       _ ≤ δ+σ*(modelPhaseJetCoefficient (σ+1) (p+1)*η) := by
-        rw [abs_mul,abs_of_pos hσ]
-        exact add_le_add he (mul_le_mul_of_nonneg_left hl' hσ.le)
+        pm_8411 hσ he hl' hσ.le
       _ = _ := by ring
   have hm := Convex.norm_image_sub_le_of_norm_deriv_le
     (fun x hx => (hd x hx).differentiableAt) hb (convex_Icc v w)

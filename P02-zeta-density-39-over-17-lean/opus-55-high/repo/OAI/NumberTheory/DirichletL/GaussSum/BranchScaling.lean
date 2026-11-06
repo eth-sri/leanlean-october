@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.ReflectedDyadicSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -96,7 +97,10 @@ variable {F : Type*} [Field F] [Fintype F]
 def unitArgumentFactor (χ : MulChar F ℂ) (j : ℕ) (z : F) : ℂ :=
   if j=4 then 1 else (χ^(j+2))⁻¹ z
 
-theorem bracket_mul_unit (χ : MulChar F ℂ) (j : ℕ) (z x : F) (hz : z≠0) :
+section
+variable (χ : MulChar F ℂ) (j : ℕ)
+include χ j
+theorem bracket_mul_unit (z x : F) (hz : z≠0) :
     bracket χ j (z*x)=unitArgumentFactor χ j z*bracket χ j x := by
   by_cases hj4 : j=4
   · simp [unitArgumentFactor,bracket,hj4,hz]
@@ -107,12 +111,13 @@ theorem bracket_mul_unit (χ : MulChar F ℂ) (j : ℕ) (z x : F) (hz : z≠0) :
       ring
     · simp only [unitArgumentFactor,bracket,ite_eq_right hj4,ite_eq_right hj0,map_mul]
 
-theorem unitArgumentFactor_norm (χ : MulChar F ℂ) (j : ℕ) (z : F) (hz : z≠0) :
+theorem unitArgumentFactor_norm (z : F) (hz : z≠0) :
     ‖unitArgumentFactor χ j z‖=1 := by
   by_cases hj : j=4
   · simp [unitArgumentFactor,hj]
   · rw [unitArgumentFactor,ite_eq_right hj]
     exact FiniteRayExpansion.norm_char_unit ((χ^(j+2))⁻¹) (Units.mk0 z hz)
+end
 
 end LocalReflectionBrackets
 namespace CompletedGauss
@@ -222,10 +227,10 @@ lemma threeGaussRowFactor_zero_nonempty
     threeGaussRowFactor p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d 0=0 := by
   simp only [threeGaussRowFactor,blockRow_at_zero,ite_eq_right hne,star_zero,mul_zero]
 
-theorem actualFirstKernel_zero
-    (F B:Finset ι) (v:ι→ℕ) (ε₁ ε₂:ι→Bool)
-    (C₁ C₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ)) (V₁ V₂:ℝ→ℂ)
-    (X₁ X₂ K:ℝ) (d:O) :
+section
+variable (F B:Finset ι) (v:ι→ℕ) (ε₁ ε₂:ι→Bool) (C₁ C₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ)) (V₁ V₂:ℝ→ℂ) (X₁ X₂ K:ℝ)
+include F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K
+theorem actualFirstKernel_zero (d:O) :
     actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d 0 =
       if cubeActiveSupport B v ε₁ ε₂=∅ then
         (V₁ (columnLog p X₁ ∅)*V₂ (columnLog p X₂ ∅))*(K:ℂ)*paperRadialFourier W 0*
@@ -249,7 +254,7 @@ theorem actualFirstKernel_zero
         exact hN0 (Finset.eq_empty_iff_forall_notMem.mpr (fun i hi=>by
           have : i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂:=Finset.mem_union_left _ (Finset.mem_union_left _ hi)
           simp only [he, Finset.notMem_empty] at this))
-      simp only [threeGaussRowFactor_zero_nonempty p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d hn,mul_zero,ite_self]
+      pm_1417
     · simp
   · rw [ite_eq_right hB]
     apply Finset.sum_eq_zero
@@ -261,16 +266,14 @@ theorem actualFirstKernel_zero
       exact hB (Finset.eq_empty_iff_forall_notMem.mpr (fun i hi=>by
         have : i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂:=Finset.mem_union_right _ hi
         simp only [he, Finset.notMem_empty] at this))
-    simp only [threeGaussRowFactor_zero_nonempty p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d hn,mul_zero,ite_self]
+    pm_1417
 
-theorem actualFirstKernel_truncate
-    (F B:Finset ι) (v:ι→ℕ) (ε₁ ε₂:ι→Bool)
-    (C₁ C₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ)) (V₁ V₂:ℝ→ℂ)
-    (X₁ X₂ K:ℝ) (hK:0<K) (d:O) (hd:d≠0) (T:Finset O) :
+theorem actualFirstKernel_truncate (hK:0<K) (d:O) (hd:d≠0) (T:Finset O) :
     (∑'h:O,actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h)=
       (∑h∈T,actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h)+
       ∑'h:{h:O//h∉T},actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val := by
   exact (actualFirstKernel_summable p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d hd).sum_add_tsum_subtype_compl T |>.symm
+end
 
 end FirstPassCubeLabels
 

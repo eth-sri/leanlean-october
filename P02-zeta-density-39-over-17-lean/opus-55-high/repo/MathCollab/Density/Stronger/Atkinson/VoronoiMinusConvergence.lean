@@ -9,12 +9,12 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.VoronoiMultiplierBounds
 public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinDecay
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Set MeasureTheory Filter Topology
 open MathCollab.Density.Contour
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -35,11 +35,13 @@ theorem norm_voronoiNatPower_le_one {n : ℕ} (hn : 0<n) {z : ℂ} (hz : z.re �
     ‖(n:ℂ)^(-(1-z))‖ ≤ 1 := by
   rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos (by exact_mod_cast hn)]
   apply Real.rpow_le_one_of_one_le_of_nonpos
-  · exact_mod_cast hn
-  · simp only [neg_re, sub_re, one_re]; linarith
+  aesop
+  simp_all
 
-theorem DFIVoronoiTestFunction.exists_minusIntegrand_strip_decay (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+section
+variable (q : ℕ) [NeZero q] {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include q g hg
+theorem DFIVoronoiTestFunction.exists_minusIntegrand_strip_decay :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ n : ℕ, 0<n → ∀ σ : ℝ,
       -(1/2 : ℝ) ≤ σ → σ ≤ 13/16 → ∀ u : ℝ,
       ‖dfiVoronoiMinusIntegrand q g n ((σ:ℂ)+(u:ℂ)*I)‖ ≤ C/(1+|u|)^2 := by
@@ -47,14 +49,14 @@ theorem DFIVoronoiTestFunction.exists_minusIntegrand_strip_decay (q : ℕ) [NeZe
   refine ⟨10368*(q:ℝ)^3*D, by positivity, ?_⟩
   intro n hn σ hlo hhi u
   let z : ℂ := (σ:ℂ)+(u:ℂ)*I
-  have hzre : z.re = σ := by simp [z]
-  have hzim : z.im = u := by simp [z]
-  have hp := norm_voronoiNatPower_le_one hn (z := z) (by rw [hzre]; linarith)
+  have hzre : z.re = σ := by aesop
+  have hzim : z.im = u := by aesop
+  have hp := norm_voronoiNatPower_le_one hn (z := z) (by grind)
   have hmul := norm_dfiVoronoiMinusMultiplier_strip_le q
-    (z := z) (by simpa only [hzre]) (by simpa only [hzre])
+    (z := z) (by grind) (by grind)
   rw [hzim] at hmul
   have hm' := hm σ hlo (by linarith) u
-  apply (le_div_iff₀ (by positivity : 0 < (1+|u|)^2)).mpr
+  pm_569 u
   change ‖dfiVoronoiMinusIntegrand q g n z‖*(1+|u|)^2 ≤ _
   unfold dfiVoronoiMinusIntegrand
   rw [norm_mul, norm_mul]
@@ -63,18 +65,16 @@ theorem DFIVoronoiTestFunction.exists_minusIntegrand_strip_decay (q : ℕ) [NeZe
     _ = (10368*(q:ℝ)^3)*((1+|u|)^4*‖mellin g z‖) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hm' (by positivity)
 
-theorem DFIVoronoiTestFunction.continuous_minusIntegrand_vertical (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+theorem DFIVoronoiTestFunction.continuous_minusIntegrand_vertical {n : ℕ} (hn : 0<n)
     {σ : ℝ} (hσ : σ < 1) :
     Continuous (fun u : ℝ => dfiVoronoiMinusIntegrand q g n ((σ:ℂ)+(u:ℂ)*I)) := by
   apply continuous_iff_continuousAt.mpr
   intro u
   have hc := (differentiableAt_dfiVoronoiMinusIntegrand q hg hn
     (z := (σ:ℂ)+(u:ℂ)*I) (by simpa using hσ)).continuousAt
-  exact hc.comp (f := fun v : ℝ => (σ:ℂ)+(v:ℂ)*I) (by fun_prop)
+  fun_prop
 
-theorem DFIVoronoiTestFunction.integrable_minusIntegrand_vertical (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+theorem DFIVoronoiTestFunction.integrable_minusIntegrand_vertical {n : ℕ} (hn : 0<n)
     {σ : ℝ} (hσ : -(1/2 : ℝ) ≤ σ) (hσ' : σ ≤ 13/16) :
     Integrable (fun u : ℝ => dfiVoronoiMinusIntegrand q g n ((σ:ℂ)+(u:ℂ)*I)) := by
   obtain ⟨C,hC,hb⟩ := hg.exists_minusIntegrand_strip_decay q
@@ -88,8 +88,7 @@ theorem DFIVoronoiTestFunction.integrable_minusIntegrand_vertical (q : ℕ) [NeZ
       (by nlinarith [sq_abs u, abs_nonneg u])
     _ = _ := by rw [div_eq_mul_inv]
 
-theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n) :
+theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits {n : ℕ} (hn : 0<n) :
     Tendsto (fun H : ℝ => HIntegral' (dfiVoronoiMinusIntegrand q g n) (-(1/2)) (13/16) H)
         atTop (𝓝 0) ∧
       Tendsto (fun H : ℝ => HIntegral' (dfiVoronoiMinusIntegrand q g n) (-(1/2)) (13/16) (-H))
@@ -107,11 +106,7 @@ theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZer
         exact hdecay n hn x hx'.1 hx'.2 H)
     convert hInt using 1 <;> norm_num [HIntegral]
   have hEnv : Tendsto (fun H : ℝ => C/(1+|H|)^2*(21/16)) atTop (𝓝 0) := by
-    have ha : Tendsto (fun H : ℝ => |H|) atTop atTop :=
-      tendsto_atTop_mono' atTop (Eventually.of_forall fun H => le_abs_self H) tendsto_id
-    have hd : Tendsto (fun H : ℝ => (1+|H|)^2) atTop atTop :=
-      (tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)).comp (tendsto_const_nhds.add_atTop ha)
-    have h := (tendsto_const_nhds (x := C)).div_atTop hd
+    pm_193
     simpa using h.mul_const (21/16)
   have htop : Tendsto (fun H : ℝ => HIntegral (dfiVoronoiMinusIntegrand q g n) (-(1/2)) (13/16) H)
       atTop (𝓝 0) := by
@@ -120,11 +115,11 @@ theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZer
   have hbottom : Tendsto (fun H : ℝ => HIntegral (dfiVoronoiMinusIntegrand q g n) (-(1/2)) (13/16) (-H))
       atTop (𝓝 0) := by
     rw [tendsto_zero_iff_norm_tendsto_zero]
-    apply squeeze_zero (fun _ => norm_nonneg _) _ hEnv
-    intro H
+    pm_5903 squeeze_zero hEnv H
     simpa only [abs_neg] using hbound (-H)
   constructor
-  · simpa [HIntegral'] using htop.const_smul (1/(2*Real.pi*I) : ℂ)
-  · simpa [HIntegral'] using hbottom.const_smul (1/(2*Real.pi*I) : ℂ)
+  pm_376 htop.const_smul
+  pm_376 hbottom.const_smul
+end
 
 end MathCollab.Density.Stronger.Atkinson

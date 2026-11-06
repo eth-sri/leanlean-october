@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleyIterationArithmetic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,10 +29,10 @@ def wooleyTwoStepWeight (k r₁ r₂ : ℕ) : ℝ :=
 theorem wooley_nextB_ge_divisor_scale
     {k r b : ℕ} (hr : 1 ≤ r) (hrk : r ≤ k) :
     b ≤ k * wooleyNextB k r b := by
-  have hlower := wooley_nextB_lower (k := k) (r := r) (b := b) hr
+  pm_6621 hlower
   have hcoef : r ≤ k := hrk
   have hleft : b ≤ (k - r + 1) * b := by
-    exact Nat.le_mul_of_pos_left b (by omega)
+    grind
   exact hleft.trans (hlower.trans (Nat.mul_le_mul_right _ hcoef))
 
 theorem wooley_twoStep_indices
@@ -40,7 +41,7 @@ theorem wooley_twoStep_indices
     1 ≤ wooleyTwoStepR k r₂ ∧
       wooleyTwoStepR k r₂ ≤ k - 1 := by
   unfold wooleyTwoStepR
-  constructor <;> omega
+  grind
 
 theorem wooley_twoStep_upper
     {k r₁ r₂ b : ℕ} (hr₁ : 1 ≤ r₁) (hr₁k : r₁ < k)
@@ -70,22 +71,20 @@ theorem wooley_twoStep_growth
     exact wooley_nextB_lower hr₂
   have h₁ : ((k - r₁ + 1) * b : ℕ) ≤ r₁ * a' := h₁Nat
   have h₂ : ((k - r₂ + 1) * a' : ℕ) ≤ r₂ * b' := h₂Nat
-  have hr₁pos : (0 : ℝ) < r₁ := by exact_mod_cast (show 0 < r₁ by omega)
-  have hr₂pos : (0 : ℝ) < r₂ := by exact_mod_cast (show 0 < r₂ by omega)
-  have hkpos : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  pm_2847 hr₁pos r₁
+  pm_2847 hr₂pos r₂
+  pm_91 hkpos k
   have hcast₁ : (k - r₁ + 1 : ℕ) = k - r₁ + 1 := rfl
   have hkr₁ : r₁ ≤ k := hr₁k.le
   have hkr₂ : r₂ ≤ k := hr₂k.trans (Nat.sub_le _ _)
-  have h₁R : ((k : ℝ) - r₁ + 1) * b ≤ (r₁ : ℝ) * a' := by
-    exact_mod_cast h₁Nat
-  have h₂R : ((k : ℝ) - r₂ + 1) * a' ≤ (r₂ : ℝ) * b' := by
-    exact_mod_cast h₂Nat
-  have hs₁ : (r₁ : ℝ) + r₂ ≤ k := by exact_mod_cast (by omega : r₁ + r₂ ≤ k)
-  have hfac₁ : (r₂ : ℝ) + 1 ≤ (k : ℝ) - r₁ + 1 := by linarith
-  have hfac₂ : (r₁ : ℝ) + 1 ≤ (k : ℝ) - r₂ + 1 := by linarith
-  have hbnonneg : (0 : ℝ) ≤ b := by positivity
-  have hanonneg : (0 : ℝ) ≤ a' := by positivity
-  have hb'nonneg : (0 : ℝ) ≤ b' := by positivity
+  pm_8796 h₁R r₁ b a' h₁Nat
+  pm_8796 h₂R r₂ a' b' h₂Nat
+  pm_5598 hs₁
+  pm_7891 hfac₁ r₂ r₁
+  pm_7891 hfac₂ r₁ r₂
+  pm_96 hbnonneg b
+  pm_96 hanonneg a'
+  pm_96 hb'nonneg b'
   have hprod :
       ((r₁ : ℝ) + 1) * ((r₂ : ℝ) + 1) * b ≤
         (r₁ : ℝ) * (r₂ : ℝ) * b' := by
@@ -108,8 +107,8 @@ theorem wooley_twoStep_growth
   have hcoef :
       ((k : ℝ) + 2) * (r₁ : ℝ) * (r₂ : ℝ) ≤
         (k : ℝ) * ((r₁ : ℝ) + 1) * ((r₂ : ℝ) + 1) := by
-    have hr₁le : (r₁ : ℝ) ≤ k := by exact_mod_cast hkr₁
-    have hr₂le : (r₂ : ℝ) ≤ k := by exact_mod_cast hkr₂
+    pm_106 hr₁le r₁ k hkr₁
+    pm_106 hr₂le r₂ k hkr₂
     nlinarith [mul_nonneg (sub_nonneg.mpr hr₁le) (by positivity : (0 : ℝ) ≤ r₂),
       mul_nonneg (sub_nonneg.mpr hr₂le) (by positivity : (0 : ℝ) ≤ r₁)]
   have hmul :
@@ -134,7 +133,7 @@ theorem wooley_twoStep_growth
   rw [show (1 + 2 / (k : ℝ)) = ((k : ℝ) + 2) / k by
     field_simp]
   rw [div_mul_eq_mul_div, div_le_iff₀ hkpos]
-  simpa [mul_comm] using hcancel
+  grind
 
 theorem wooley_twoStep_defining_ceiling
     {k r₁ r₂ b : ℕ} (hr₂k : r₂ ≤ k) :
@@ -190,12 +189,12 @@ theorem wooley_twoStep_weight_lt
     (hr₁ : 1 ≤ r₁) (hr₁k : r₁ < k)
     (hr₂ : 1 ≤ r₂) (hr₂k : r₂ ≤ k - r₁) :
     wooleyTwoStepWeight k r₁ r₂ < (1 - 1 / (k : ℝ)) ^ 2 := by
-  have hkpos : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
-  have hd₁ : (0 : ℝ) < (k - r₁ + 1 : ℕ) := by positivity
-  have hd₂ : (0 : ℝ) < (k - r₂ + 1 : ℕ) := by positivity
-  have hr₁R : (0 : ℝ) < r₁ := by exact_mod_cast (show 0 < r₁ by omega)
-  have hr₂R : (0 : ℝ) < r₂ := by exact_mod_cast (show 0 < r₂ by omega)
-  have hsum : (r₁ : ℝ) + r₂ ≤ k := by exact_mod_cast (by omega : r₁ + r₂ ≤ k)
+  pm_91 hkpos k
+  pm_1333 hd₁ r₁
+  pm_1333 hd₂ r₂
+  pm_91 hr₁R r₁
+  pm_91 hr₂R r₂
+  pm_5598 hsum
   have hden₁ : ((k - r₁ + 1 : ℕ) : ℝ) = (k : ℝ) - r₁ + 1 := by
     rw [Nat.cast_add, Nat.cast_sub hr₁k.le]
     norm_num
@@ -204,15 +203,15 @@ theorem wooley_twoStep_weight_lt
     norm_num
   unfold wooleyTwoStepWeight wooleyRho
   rw [hden₁, hden₂]
-  have hleftDen : 0 < (k : ℝ) - r₁ + 1 := by linarith
-  have hrightDen : 0 < (k : ℝ) - r₂ + 1 := by linarith
+  pm_8480 hleftDen r₁
+  pm_8480 hrightDen r₂
   let x : ℝ := r₁
   let y : ℝ := k - r₁
   let z : ℝ := r₂
   let m : ℝ := ((k : ℝ) - 1) / k
   have hypos : 0 < y := by
     dsimp [y]
-    have hr₁kR : (r₁ : ℝ) < k := by exact_mod_cast hr₁k
+    pm_5450 hr₁kR r₁ hr₁k
     linarith
   have hzle : z ≤ y := by
     dsimp [z, y]
@@ -223,7 +222,7 @@ theorem wooley_twoStep_weight_lt
   have hmpos : 0 < m := by
     dsimp [m]
     have hkR : (1 : ℝ) < k := by exact_mod_cast (show 1 < k by omega)
-    have hnum : (0 : ℝ) < (k : ℝ) - 1 := by linarith
+    pm_759 hnum
     exact div_pos hnum hkpos
   have hxpos : 0 < x := by simpa [x] using hr₁R
   have hzpos : 0 < z := by simpa [z] using hr₂R
@@ -232,16 +231,14 @@ theorem wooley_twoStep_weight_lt
     exact_mod_cast hr₁
   have hyone : 1 ≤ y := by
     dsimp [y]
-    have hsucc : r₁ + 1 ≤ k := by omega
-    have hsuccR : (r₁ : ℝ) + 1 ≤ k := by exact_mod_cast hsucc
+    pm_4934 hsucc r₁ k
+    pm_7869 hsuccR r₁ k hsucc
     linarith
   have hXle : x / (x + 1) ≤ m := by
-    dsimp [m]
-    rw [div_le_div_iff₀ (by positivity) hkpos]
+    pm_859 div_le_div_iff₀
     nlinarith [hxy, hyone]
   have hYle : y / (y + 1) ≤ m := by
-    dsimp [m]
-    rw [div_le_div_iff₀ (by positivity) hkpos]
+    pm_859 div_le_div_iff₀
     nlinarith [hxy, hxone]
   have hB : z / ((k : ℝ) - z + 1) ≤ y / (x + 1) := by
     have hdz : 0 < (k : ℝ) - z + 1 := by
@@ -252,18 +249,16 @@ theorem wooley_twoStep_weight_lt
   have hcore : x / (x + 1) * (y / (y + 1)) < m * m := by
     by_cases hxeq : x = 1
     · have hygt : 1 < y := by
-        have hkR : (3 : ℝ) ≤ k := by exact_mod_cast hk
+        pm_5012 hkR k hk
         nlinarith [hxy]
       have hXlt : x / (x + 1) < m := by
-        dsimp [m]
-        rw [div_lt_div_iff₀ (by positivity) hkpos]
+        pm_859 div_lt_div_iff₀
         nlinarith
       exact (mul_lt_mul_of_pos_right hXlt (div_pos hypos (by positivity))).trans_le
         (mul_le_mul_of_nonneg_left hYle hmpos.le)
     · have hxgt : 1 < x := lt_of_le_of_ne hxone (Ne.symm hxeq)
       have hYlt : y / (y + 1) < m := by
-        dsimp [m]
-        rw [div_lt_div_iff₀ (by positivity) hkpos]
+        pm_859 div_lt_div_iff₀
         nlinarith
       exact (mul_lt_mul_of_pos_left hYlt (div_pos hxpos (by positivity))).trans_le
         (mul_le_mul_of_nonneg_right hXle hmpos.le)
@@ -308,10 +303,10 @@ theorem wooley_twoStep_weight_lt_one
     norm_num [wooleyTwoStepWeight, wooleyRho]
   · have hkThree : 3 ≤ k := by omega
     have hstrong := wooley_twoStep_weight_lt hkThree hr₁ hr₁k hr₂ hr₂k
-    have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
+    pm_2797
     have htop : (1 - 1 / (k : ℝ)) ^ 2 < 1 := by
-      have hkpos : (0 : ℝ) < k := by positivity
-      have hfrac : 0 < 1 / (k : ℝ) := by positivity
+      pm_117 hkpos k
+      pm_8873 hfrac k
       have hbase0 : 0 ≤ 1 - 1 / (k : ℝ) := by
         rw [sub_nonneg, div_le_iff₀ hkpos]
         linarith
@@ -340,7 +335,7 @@ theorem wooley_twoStep_admissible
   have hbaNat : b ≤ k * wooleyTwoStepA k r₁ b :=
     wooley_nextB_ge_divisor_scale hr₁ hr₁k.le
   have hba : (b : ℝ) ≤ k * wooleyTwoStepA k r₁ b := by exact_mod_cast hbaNat
-  have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
+  pm_2797
   have ha : delta * theta ≤ (wooleyTwoStepA k r₁ b : ℝ) := by
     nlinarith [mul_nonneg hdt (sq_nonneg ((k : ℝ) - 1))]
   have hgrowth := wooley_twoStep_growth (b := b)
@@ -350,7 +345,7 @@ theorem wooley_twoStep_admissible
     have hone : (1 : ℝ) ≤ 1 + 2 / (k : ℝ) := by
       have : (0 : ℝ) ≤ 2 / (k : ℝ) := by positivity
       linarith
-    have hbnonneg : (0 : ℝ) ≤ b := by positivity
+    pm_96 hbnonneg b
     have hbGrow : (b : ℝ) ≤ (1 + 2 / (k : ℝ)) * b := by
       simpa only [one_mul] using mul_le_mul_of_nonneg_right hone hbnonneg
     exact hb.trans (hbGrow.trans hgrowth)

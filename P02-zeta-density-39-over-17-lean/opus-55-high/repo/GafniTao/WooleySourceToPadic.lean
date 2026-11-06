@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleyCoefficientBridge
 public import GafniTao.WooleyPadicConcentration
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source Corollary 3.2 implies the monomial p-adic concentration theorem
@@ -14,7 +15,6 @@ statement and proves all normalization and conditioning conversions.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleyPadicCount_degree_zero (Q p h : ℕ) :
     wooleyPadicCount (fordVinogradovKappa 0) 0 Q p (0 * h) = 1 := by
@@ -53,10 +53,7 @@ theorem wooleyMonomialPadicConcentration_of_polynomialCorollary32
     have hbound := hmain (k * h) phi (wooleyBoxSourceSequence gamma)
       hB hPhi hadm
     have hceil : (k * h) ⌈/⌉ k = h := wooley_mul_ceilDiv_self hk
-    have hs : 1 ≤ wooleyTriangular k := by
-      simp only [wooleyTriangular]
-      have : 2 ≤ k * (k + 1) := by nlinarith
-      omega
+    pm_5941 hs k
     have hconditioned :
         wooleySourcePolynomialConditionedMean
             (wooleyTriangular k) (p ^ (k * h))
@@ -75,13 +72,12 @@ theorem wooleyMonomialPadicConcentration_of_polynomialCorollary32
         wooleyWeightedGridMean_one hQ,
         wooley_equations_3_5_to_3_7 hp hQ]
     rw [hmean, hconditioned, mul_one] at hbound
-    have hQpos : (0 : ℝ) < Q := by exact_mod_cast (show 0 < Q by omega)
+    pm_91 hQpos Q
     have hQpowPos : (0 : ℝ) < ((Q ^ wooleyTriangular k : ℕ) : ℝ) := by
       positivity
     have hmul := (div_le_iff₀ hQpowPos).mp hbound
-    simpa only [Nat.cast_pow, mul_assoc, wooleyTriangular, fordVinogradovKappa] using hmul
+    pm_99 Nat.cast_pow mul_assoc wooleyTriangular fordVinogradovKappa hmul
 
 
-end
 
 end GafniTao

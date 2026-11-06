@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAllocatedNaturalSource
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentNaturalRowSource CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation
 open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
 open CenteredMomentDivisorRaw CenteredMomentDivisorRetained
 local notation "O" => HeckeFamily.O
@@ -29,12 +28,16 @@ structure Plain where
 def Plain.profile (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) : 𝓢(ℝ,ℂ) :=
   if h : 1≤U*V.b then retainedProfile V.W V.a V.b V.a_pos V.support V.smooth U hU h t else 0
 
-lemma Plain.profile_retained (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) (h : 1≤U*V.b) :
+section
+variable (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ)
+include V U hU t
+lemma Plain.profile_retained (h : 1≤U*V.b) :
     V.profile U hU t=retainedProfile V.W V.a V.b V.a_pos V.support V.smooth U hU h t := by
   simp [Plain.profile,h]
 
-lemma Plain.profile_zero (V : Plain) (U : ℝ) (hU : 0<U) (t : ℝ) (h : U*V.b<1) :
+lemma Plain.profile_zero (h : U*V.b<1) :
     V.profile U hU t=0 := by simp [Plain.profile,not_le.mpr h]
+end
 
 lemma polynomial_zero (χ : Character) (X : ℝ) :
     HeckeDyadic.polynomial χ false (0 : 𝓢(ℝ,ℂ)) X 0 0=0 := by

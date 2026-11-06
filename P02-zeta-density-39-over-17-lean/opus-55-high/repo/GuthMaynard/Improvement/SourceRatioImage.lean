@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.SourceRatioSampling
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped FourierTransform
@@ -13,18 +13,20 @@ def sourceRatioPairSet (N : ℝ) : Finset (ℕ × ℕ) :=
 def sourceRatioImage (N : ℝ) : Finset (ℕ × ℕ) := (sourceRatioPairSet N).image sourceReducedPair
 def sourceRatioWeight (N : ℝ) (q : ℕ × ℕ) : ℝ := (sourceRatioFiber (sourceRatioPairSet N) q).card
 
-theorem source_ratio_pair_box {N : ℝ} (hN : 0 ≤ N) :
+section
+variable {N : ℝ}
+include N
+theorem source_ratio_pair_box (hN : 0 ≤ N) :
     ∀ p ∈ sourceRatioPairSet N, 0 < p.1 ∧ 0 < p.2 ∧ p.1 ≤ ⌊2*N⌋₊ ∧ p.2 ≤ ⌊2*N⌋₊ := by
-  intro p hp
-  obtain ⟨hn,hm⟩ := mem_product.mp hp
-  have hn' := (sourceRatioIndices_mem hN p.1).mp hn
+  pm_161 p hp hn hm mem_product.mp
+  pm_8401
   have hm' := (sourceRatioIndices_mem hN p.2).mp hm
   exact ⟨by exact_mod_cast hN.trans_lt hn'.1,by exact_mod_cast hN.trans_lt hm'.1,
     Nat.le_floor hn'.2,Nat.le_floor hm'.2⟩
 
 /-- The actual primitive image, actual multiplicity, and actual normalized
 frequency obey the geometry needed by both sampling regimes. -/
-theorem source_ratio_image_data {N : ℝ} (hN : 0 ≤ N) {q : ℕ × ℕ}
+theorem source_ratio_image_data (hN : 0 ≤ N) {q : ℕ × ℕ}
     (hq : q ∈ sourceRatioImage N) :
     0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧ max q.1 q.2 ≤ ⌊2*N⌋₊ ∧
     (max q.1 q.2:ℕ) ≤ 2*N ∧ |sourceRatioFrequency q| ≤ 1 ∧
@@ -44,7 +46,7 @@ theorem source_ratio_image_data {N : ℝ} (hN : 0 ≤ N) {q : ℕ × ℕ}
     have hl := source_ratio_log_band hN hn hm
     unfold sourceRatioFrequency
     rw [sourceReducedPair_ratio ⟨hb.1,hb.2.1⟩,abs_div,abs_of_pos (by positivity : 0 < 2*Real.pi)]
-    apply (div_le_one (by positivity : 0 < 2*Real.pi)).mpr
+    pm_8866 div_le_one Real.pi
     have hh := Real.log_le_sub_one_of_pos (by norm_num : (0:ℝ)<2)
     linarith [Real.pi_gt_three]
   exact ⟨hp.1,hp.2.1,hp.2.2.1,hp.2.2.2,
@@ -52,20 +54,19 @@ theorem source_ratio_image_data {N : ℝ} (hN : 0 ≤ N) {q : ℕ × ℕ}
 
 /-- The global square-weight budget dominates every actual low-height subset.
 Its logarithm is the source length log(2N), avoiding an artificial floor loss. -/
-theorem source_ratio_image_square_weight {N : ℝ} (hN : 2 ≤ N)
+theorem source_ratio_image_square_weight (hN : 2 ≤ N)
     (S : Finset (ℕ × ℕ)) (hS : S ⊆ sourceRatioImage N) :
     (∑ q ∈ S, (sourceRatioWeight N q)^2) ≤ 16*N^2*Real.log (2*N) := by
   have hN0 : 0 ≤ N := by linarith
   have hlog : 1 ≤ Real.log (2*N) := by
-    have h4 : Real.log 4 ≤ Real.log (2*N) := Real.log_le_log (by norm_num) (by linarith)
+    pm_6205 h4
     have he : Real.log 4 = 2*Real.log 2 := by
       rw [show (4:ℝ)=2*2 by norm_num,Real.log_mul (by norm_num) (by norm_num)]
       ring
     rw [he] at h4
     linarith [Real.log_two_gt_d9]
   have hfloor : (0:ℝ) < (⌊2*N⌋₊:ℝ) := by
-    have hh : 1 ≤ ⌊2*N⌋₊ := Nat.le_floor (by norm_num; linarith)
-    exact_mod_cast hh
+    pm_5703
   have hlf := Real.log_le_log hfloor (Nat.floor_le (by positivity : 0 ≤ 2*N))
   have hb := positive_ratio_square_weight_log S (X := 2*N) (Y := ⌊2*N⌋₊) (by positivity)
     (fun q hq => ⟨(source_ratio_image_data hN0 (hS hq)).1,(source_ratio_image_data hN0 (hS hq)).2.1⟩)
@@ -80,7 +81,7 @@ theorem source_ratio_image_square_weight {N : ℝ} (hN : 2 ≤ N)
     _ = _ := by ring
 
 /-- Exact low-height estimate for actual gcd fibers. -/
-theorem source_actual_ratio_low {N : ℝ} (hN : 2 ≤ N) {Y : ℝ} (hY : 0 < Y)
+theorem source_actual_ratio_low (hN : 2 ≤ N) {Y : ℝ} (hY : 0 < Y)
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     (∑ q ∈ (sourceRatioImage N).filter (fun q => (max q.1 q.2:ℕ) ≤ Y),
@@ -88,15 +89,14 @@ theorem source_actual_ratio_low {N : ℝ} (hN : 2 ≤ N) {Y : ℝ} (hY : 0 < Y)
     Real.sqrt (16*N^2*Real.log (2*N))*Real.sqrt ((2*Real.pi*Y^2+4*Real.pi*R)*(∫ t, ‖f t‖^2)) := by
   apply source_ratio_fourier_weighted_low _ hY _ (sourceRatioWeight N)
     (source_ratio_image_square_weight hN _ (filter_subset ..)) h1 h2 hR hs
-  intro q hq
-  obtain ⟨hq,hheight⟩ := mem_filter.mp hq
+  pm_4584 q hq hheight
   have hp := source_ratio_image_data (by linarith : 0 ≤ N) hq
   refine ⟨hp.1,hp.2.1,hp.2.2.1,?_,?_⟩
-  · exact (show (q.1:ℝ) ≤ (max q.1 q.2:ℕ) by exact_mod_cast (le_max_left q.1 q.2)).trans hheight
+  pm_5434 hheight
   · exact (show (q.2:ℝ) ≤ (max q.1 q.2:ℕ) by exact_mod_cast (le_max_right q.1 q.2)).trans hheight
 
 /-- Actual high-shell estimate with no arithmetic premise left open. -/
-theorem source_actual_ratio_shell {N : ℝ} (hN : 2 ≤ N) {Q : ℝ} (hQ : 1 ≤ Q)
+theorem source_actual_ratio_shell (hN : 2 ≤ N) {Q : ℝ} (hQ : 1 ≤ Q)
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     (∑ q ∈ (sourceRatioImage N).filter (fun q => Q < (max q.1 q.2:ℕ) ∧ (max q.1 q.2:ℕ) ≤ 2*Q),
@@ -114,5 +114,6 @@ theorem source_actual_ratio_shell {N : ℝ} (hN : 2 ≤ N) {Q : ℝ} (hQ : 1 ≤
     (fun q hq => (source_ratio_image_data (by linarith : 0 ≤ N) (mem_filter.mp hq).1).2.2.2.2.2.2.2)
     h1 h2 hR hs
   convert hh using 1; ring
+end
 
 end GuthMaynard.Improvement

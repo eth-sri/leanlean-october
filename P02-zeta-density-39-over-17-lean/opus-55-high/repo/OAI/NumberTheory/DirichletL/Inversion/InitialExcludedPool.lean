@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCompletePool
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,9 +22,8 @@ def originalOutside (A E:Finset (Ideal O)):Finset (Ideal O):=A.filter (outside E
 theorem column_outside (A E:Finset (Ideal O)){P j c:Ideal O}
     (hE:∀Q∈E,Prime Q)(hj:j∣P)(hP:outside E P)
     (hA:∀n∈A,outside E n)(hc:c∈columns A P j):outside E c := by
-  obtain ⟨n,hn,rfl⟩:=Finset.mem_image.mp hc
-  obtain ⟨hnA,hns,hg⟩:=mem_original.mp hn
-  have hjn:j∣n:=hg ▸ GCDMonoid.gcd_dvd_left n P
+  pm_7075 hnA hg
+  pm_7803
   intro Q hQ hd
   rcases (hE Q hQ).dvd_mul.mp hd with hn|hpr
   · exact hA n hnA Q hQ (hn.trans (idealQuotient_dvd hjn))
@@ -37,13 +37,13 @@ theorem admissible_mem_excluded_complete (E:Finset (Ideal O)){I:Ideal O}
   exact Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI.1)
 
 theorem exists_excluded_complete_pool {κ:Type*}(A E:Finset (Ideal O))(T:Finset κ)
-    (P:κ→Ideal O)(j:Ideal O)(hE:∀Q∈E,Prime Q)
+    (P:κ→ Ideal O)(j:Ideal O)(hE:∀Q∈E,Prime Q)
     (hP:∀k∈T,Admissible (P k))(hj:∀k∈T,j∣P k)
     (hPE:∀k∈T,outside E (P k))
-    (hA:∀n∈A,Squarefree n→Supported n)(bmax Xmax:ℝ)(hb:0≤bmax)(_hX:0≤Xmax):
+    (hA:∀n∈A,Squarefree n→ Supported n)(bmax Xmax:ℝ)(hb:0≤bmax)(_hX:0≤Xmax):
     ∃D:ℕ,tupleColumns (originalOutside A E) T P j⊆
       InitialMeanSquare.outsideSquarefreeIdeals E D ∧
-      ∀b X:ℝ,0≤b→b≤bmax→0≤X→X≤Xmax→b*X≤(D:ℝ) := by
+      ∀b X:ℝ,0≤b→ b≤bmax→0≤X→ X≤Xmax→ b*X≤(D:ℝ) := by
   let D:=max (A.sup Ideal.absNorm*T.sup (fun k=>(P k).absNorm)) ⌈bmax*Xmax⌉₊
   refine ⟨D,?_,?_⟩
   · intro c hc

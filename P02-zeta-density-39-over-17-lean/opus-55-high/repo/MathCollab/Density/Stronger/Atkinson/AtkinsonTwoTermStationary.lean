@@ -10,6 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonLeadingSeriesConverge
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationarySumError
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
 public import MathCollab.Density.Stronger.Atkinson.SourceLogScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,14 +33,13 @@ theorem exists_tsum_zetaAtkinsonTwoTerm_sub_leading_bound {δ : ℝ} (hδ : 0 < 
       eventually_zeta_source_log_window_scales hδ] with T hsupport hscale
     intro G hlower hupper
     obtain ⟨hG, _, hwidth, _⟩ := hsupport.2 G hlower
-    have hT1 : 1 ≤ T := by linarith [hsupport.1]
-    have hG1 : 1 ≤ G := (Real.one_le_rpow hT1 hδ.le).trans hlower
-    exact hbound T G (Real.log T) hT1 hG1
-      (hscale.2.2 G hG hupper).1 hscale.2.1 hwidth
+    have hT1 : 1 ≤ T := by grind
+    pm_5447 hG1 hT1 hlower
+    grind
   obtain ⟨B, hB⟩ := eventually_atTop.mp hev
   refine ⟨C, hC, max 16 B, le_max_left _ _, ?_⟩
   intro T G hT hlower hupper
-  exact hB T ((le_max_right _ _).trans hT) G hlower hupper
+  grind
 
 /-- The full original two-term arithmetic series is within O(G) of the exact
 stationary series above fourth-root width. This asserts no zeta-source identity. -/
@@ -54,7 +54,7 @@ theorem exists_tsum_zetaAtkinsonTwoTerm_sub_stationary_above_fourthRoot
     exists_atkinsonLeadingSum_sub_stationary_above_fourthRoot hδ hκ
   refine ⟨C + D, by positivity, max B E, hE.trans (le_max_right _ _), ?_⟩
   intro T G hT hlower hupper hquarter
-  have hc := hcorrection T G ((le_max_left _ _).trans hT) hlower hupper
+  pm_6117 hc hcorrection le_max_left
   have hs := hstationary T G ((le_max_right _ _).trans hT) hlower hupper hquarter
   apply (norm_sub_le_norm_sub_add_norm_sub _ (atkinsonLeadingSum T G (Real.log T)) _).trans
   calc

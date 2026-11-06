@@ -26,7 +26,7 @@ theorem four_upper_scales (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
     (inp).X₂≤Z^(max Mcap (2*Lgoal)) ∧
     (inp).Y₁≤Z^(max Mcap (2*Lgoal)) ∧
     (inp).Y₂≤Z^(max Mcap (2*Lgoal)) := by
-  have hLg:Lgoal≤max Mcap (2*Lgoal):=by linarith [le_max_right Mcap (2*Lgoal)]
+  have hLg:Lgoal≤max Mcap (2*Lgoal):=by grind
   have hp:0<Z:=zero_lt_one.trans hZ
   have hquarter:0≤s.width/4:=div_nonneg s.width_nonneg (by norm_num)
   have hY₁:1≤comparisonFirst Z s.width:=Real.one_le_rpow hZ.le hquarter
@@ -34,7 +34,7 @@ theorem four_upper_scales (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
     hc₂.trans (Real.rpow_le_rpow_of_exponent_le hZ.le hLg),?_,?_⟩
   · change Z^(s.width/4)≤_
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
-    linarith [s.width_nonneg,le_max_left Mcap (2*Lgoal)]
+    grind
   · change X₁*X₂/comparisonFirst Z s.width≤_
     calc
       _≤X₁*X₂:=div_le_self (mul_pos hX₁ hX₂).le hY₁

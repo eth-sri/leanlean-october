@@ -22,10 +22,13 @@ open scoped BigOperators
 theorem sum_Icc_one_eq_sum_range_real (f : ℕ → ℝ) (N : ℕ) :
     (∑ n ∈ Finset.Icc 1 N, f n) = ∑ n ∈ Finset.range N, f (n + 1) := by
   rw [← Finset.Ico_add_one_right_eq_Icc, Finset.sum_Ico_eq_sum_range]
-  simp [Nat.add_comm]
+  grind
 
+section
+variable (N : ℕ)
+include N
 /-- The weighted alternating prefix has an exact closed form for either parity. -/
-theorem alternating_linear_sum_eq (N : ℕ) :
+theorem alternating_linear_sum_eq :
     (∑ m ∈ Finset.Icc 1 N, (-1 : ℝ) ^ m * (m : ℝ)) =
       ((-1 : ℝ) ^ N * (2 * (N : ℝ) + 1) - 1) / 4 := by
   rw [sum_Icc_one_eq_sum_range_real]
@@ -37,7 +40,7 @@ theorem alternating_linear_sum_eq (N : ℕ) :
     ring
 
 /-- The weighted alternating boundary term keeps the sharp half-size growth. -/
-theorem abs_alternating_linear_sum_le (N : ℕ) :
+theorem abs_alternating_linear_sum_le :
     |∑ m ∈ Finset.Icc 1 N, (-1 : ℝ) ^ m * (m : ℝ)| ≤ ((N : ℝ) + 1) / 2 := by
   rw [alternating_linear_sum_eq, abs_div]
   have h := abs_sub ((-1 : ℝ) ^ N * (2 * (N : ℝ) + 1)) 1
@@ -47,7 +50,7 @@ theorem abs_alternating_linear_sum_le (N : ℕ) :
   linarith
 
 /-- The same boundary estimate holds for the literal complex alternating sum. -/
-theorem norm_alternating_linear_sum_le (N : ℕ) :
+theorem norm_alternating_linear_sum_le :
     ‖∑ m ∈ Finset.Icc 1 N, (-1 : ℂ) ^ m * (m : ℂ)‖ ≤ ((N : ℝ) + 1) / 2 := by
   have he : (∑ m ∈ Finset.Icc 1 N, (-1 : ℂ) ^ m * (m : ℂ)) =
       ((∑ m ∈ Finset.Icc 1 N, (-1 : ℝ) ^ m * (m : ℝ) : ℝ) : ℂ) := by push_cast; rfl
@@ -55,7 +58,7 @@ theorem norm_alternating_linear_sum_le (N : ℕ) :
   exact abs_alternating_linear_sum_le N
 
 /-- The unweighted complex alternating boundary sum is uniformly at most one. -/
-theorem norm_alternating_sum_le_one (N : ℕ) :
+theorem norm_alternating_sum_le_one :
     ‖∑ m ∈ Finset.Icc 1 N, (-1 : ℂ) ^ m‖ ≤ 1 := by
   have hs : Real.sin (Real.pi * (1 / 2)) ≠ 0 := by
     rw [show Real.pi * (1 / 2) = Real.pi / 2 by ring, Real.sin_pi_div_two]
@@ -65,5 +68,6 @@ theorem norm_alternating_sum_le_one (N : ℕ) :
     simpa only [Int.cast_zero, zero_add] using expMode_half_integer 0 m
   simpa only [finiteS0, Nat.floor_natCast, hm, show Real.pi * (1 / 2) = Real.pi / 2 by ring,
     Real.sin_pi_div_two, abs_one, div_one] using h
+end
 
 end DhimanKadiriQuesadaHerrera2026

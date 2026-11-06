@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.State
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,14 +27,14 @@ theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
       exact hh
     linarith
   obtain ⟨degree,S,C,hC,hfloor⟩:=natural_masked_floor a b e ha hb he
-  refine ⟨degree,S,C*bΦ^4,mul_pos hC (pow_pos hbΦ _),?_⟩
+  pm_6183 degree
   intro Q Z hZ₀ s hQ hs p t X₁ X₂ hX₁ hX₂
   have hZ:=s.base_ge_one
   have hZ0:0<Z:=zero_lt_one.trans_le hZ
-  have hrad: (s.puncture.radical.absNorm:ℝ)^e≤Z^(Bmask*e):=by
+  have hrad: (s.puncture.radical.absNorm:ℝ)^e≤Z ^(Bmask*e):=by
     rw [Real.rpow_mul hZ0.le]
     exact Real.rpow_le_rpow (by positivity) s.radical_bound he.le
-  have hp:Z^(Bmask*e)*Z^(s.width+4*(ε/16))≤Z^(s.width+ε):=by
+  have hp:Z ^(Bmask*e)*Z ^(s.width+4*(ε/16))≤Z ^(s.width+ε):=by
     rw [←Real.rpow_add hZ0]
     apply Real.rpow_le_rpow_of_exponent_le hZ
     linarith
@@ -47,12 +48,12 @@ theorem exists_zero_floor (a b bΦ Bmask ε:ℝ)(ha:0<a)(hb:0≤b)
   have hd:=diagonalControl_nonneg s.radial.profile
   have hc:=p.control_nonneg S
   change C*(s.puncture.radical.absNorm:ℝ)^e*bΦ^4*diagonalControl s.radial.profile*
-    (p.control S)^2*(1+‖t‖)^degree*Z^(s.width+4*(ε/16))≤_
+    (p.control S)^2*(1+‖t‖)^degree*Z ^(s.width+4*(ε/16))≤_
   calc
-    _≤C*Z^(Bmask*e)*bΦ^4*diagonalControl s.radial.profile*
-      (p.control S)^2*(1+‖t‖)^degree*Z^(s.width+4*(ε/16)):=by gcongr
+    _≤C*Z ^(Bmask*e)*bΦ^4*diagonalControl s.radial.profile*
+      (p.control S)^2*(1+‖t‖)^degree*Z ^(s.width+4*(ε/16)):=by gcongr
     _=(C*bΦ^4*diagonalControl s.radial.profile*(p.control S)^2*(1+‖t‖)^degree)*
-      (Z^(Bmask*e)*Z^(s.width+4*(ε/16))):=by ring
+      (Z ^(Bmask*e)*Z ^(s.width+4*(ε/16))):=by ring
     _≤_:=mul_le_mul_of_nonneg_left hp (by positivity)
 
 end SevenEighths.CenteredMomentEnergyState

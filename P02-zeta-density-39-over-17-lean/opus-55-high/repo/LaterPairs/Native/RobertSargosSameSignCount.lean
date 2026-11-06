@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSignedCoefficientCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -53,7 +54,7 @@ theorem robertSargos_primitive_fixed_coeff_card_le
     intro p hp
     have hp' := Finset.mem_filter.mp hp
     have hn := (mul_pos_iff.mp (hsign p hp'.1)).resolve_left (by intro hh; omega)
-    exact ⟨by exact_mod_cast hn.1,by exact_mod_cast hn.2⟩
+    pm_8313
   have hbP := robertSargos_primitive_positive_q_fixed_coeff_card_le P hc hr hH hQ hδ
     hrH hh₁ hh₂
     (fun p hp => by
@@ -64,29 +65,24 @@ theorem robertSargos_primitive_fixed_coeff_card_le
     (fun p hp => hline p (Finset.mem_filter.mp hp).1)
     (fun p hp => hnear p (Finset.mem_filter.mp hp).1)
   have hMden : ∀ p ∈ M, (p.2.1:ℝ) ∈ Set.Icc Q (2*Q) := by
-    intro p hp
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
+    pm_2551
     simpa only [f,Int.cast_neg,abs_of_neg (hneg q hq).1] using
       hq₁ q (Finset.mem_filter.mp hq).1
   have hMnum : ∀ p ∈ M, Q ≤ (p.1:ℝ) := by
-    intro p hp
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
+    pm_2551
     simpa only [f,Int.cast_neg,abs_of_neg (hneg q hq).2] using
       hq₂ q (Finset.mem_filter.mp hq).1
   have hMprim : ∀ p ∈ M, Int.gcd (Int.gcd p.1 p.2.1 : ℤ) p.2.2 = 1 := by
-    intro p hp
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
+    pm_2551
     simpa only [f,Int.neg_gcd,Int.gcd_neg] using hpp q (Finset.mem_filter.mp hq).1
   have hMline : ∀ p ∈ M, r*p.2.2+h₁*p.2.1-h₂*p.1 = 0 := by
-    intro p hp
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
+    pm_2551
     have hl := hline q (Finset.mem_filter.mp hq).1
     dsimp [f]
     nlinarith only [hl]
   have hMnear : ∀ p ∈ M,
       |robertSargosReduced r p.2.1 p.1 h₁ h₂ p.2.2| ≤ δ*H*Q^2 := by
-    intro p hp
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hp
+    pm_2551
     simpa only [f,Int.cast_neg,robertSargosReduced_neg] using
       hnear q (Finset.mem_filter.mp hq).1
   have hbM := robertSargos_primitive_positive_q_fixed_coeff_card_le M hc hr hH hQ hδ

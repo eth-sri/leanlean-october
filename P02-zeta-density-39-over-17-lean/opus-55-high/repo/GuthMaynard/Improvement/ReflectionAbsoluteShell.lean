@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.ReflectionShellBudget
 public import GuthMaynard.Improvement.ReflectionNearRow
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -12,17 +11,15 @@ namespace GuthMaynard.Improvement
 theorem reflection_restrict_density_integral {μ : ℝ → ℝ} (hm : Measurable μ)
     (h0 : ∀ t, 0 ≤ μ t) (S : Set ℝ) (hS : MeasurableSet S) (F : ℝ → ℝ) :
     (∫ t, F t ∂(timeMeasure μ).restrict S) = ∫ t in S, μ t*F t := by
-  rw [timeMeasure,restrict_withDensity hS,
-    integral_withDensity_eq_integral_toReal_smul hm.ennreal_ofReal
-      (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top))]
-  simp only [ENNReal.toReal_ofReal (h0 _),smul_eq_mul]
+  pm_6900 hS
+  simp_all
 
 /-- The order-two discarded-mode error is absorbed at the correct scale. -/
 theorem reflection_shell_error_absorb {N L H ε : ℝ} (hN : 2 ≤ N) (hNL : N ≤ L)
     (hH : 0 ≤ H) (hε : 0 ≤ ε) (K : ℝ) :
     2*(K*L/L^2)^2*(4*N^2*H) ≤ (8*K^2)*N^ε*L*N*H := by
   have hL : 0 < L := by linarith
-  have hn : 1 ≤ N^ε := Real.one_le_rpow (by linarith) hε
+  pm_4532 hn ε hε
   have hratio : N^2/L^2 ≤ 1 := (div_le_one (sq_pos_of_pos hL)).mpr (by nlinarith)
   have he : 2*(K*L/L^2)^2*(4*N^2*H) = 8*K^2*H*(N^2/L^2) := by field_simp; ring
   have hbig : 1 ≤ N^ε*L*N := by nlinarith [mul_le_mul_of_nonneg_right hn hL.le]
@@ -46,8 +43,7 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
   refine ⟨2*(C+8*K^2),by positivity,?_⟩
   intro N L H u hN hNL hH hupper a μ ha hm hi h0 hμ
   let := timeMeasure_finite hi
-  let F := fun t => μ t*‖centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L (t-u)‖^2
-  have hiF : Integrable F := centered_row_integrable w (by linarith) u hi
+  pm_4557
   have hF0 (t : ℝ) : 0 ≤ F t := mul_nonneg (h0 t) (sq_nonneg _)
   have hsingle (S : Set ℝ) (hS : S ∈ ({Icc (u+H) (u+2*H),Icc (u-2*H) (u-H)} : Set (Set ℝ))) :
       (∫ t in S, F t) ≤ (C+8*K^2)*N^ε*L*N*H := by
@@ -85,11 +81,9 @@ theorem reflection_absolute_shell_bound (w : MathCollab.Density.ReflectionCutoff
     change H < |t-u| ∧ |t-u| ≤ 2*H at ht
     rcases lt_or_ge (t-u) 0 with hn | hn
     · right
-      rw [abs_of_neg hn] at ht
-      constructor <;> linarith [ht.1,ht.2]
+      pm_8025 abs_of_neg
     · left
-      rw [abs_of_nonneg hn] at ht
-      constructor <;> linarith [ht.1,ht.2]
+      pm_8025 abs_of_nonneg
   calc
     _ ≤ ∫ t in Icc (u+H) (u+2*H) ∪ Icc (u-2*H) (u-H), F t :=
       setIntegral_mono_set hiF.integrableOn (Filter.Eventually.of_forall hF0)

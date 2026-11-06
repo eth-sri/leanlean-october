@@ -7,15 +7,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -37,7 +34,10 @@ theorem conjO_eval_coordinates (a b : ℤ) :
   push_cast
   ring
 
-theorem coordinate_norm_eq_mul_conjO (p : O) :
+section
+variable (p : O)
+include p
+theorem coordinate_norm_eq_mul_conjO :
     ((q (coords p) : ℤ) : O) = p * conjO p := by
   let a := (coords p).1
   let b := (coords p).2
@@ -53,19 +53,20 @@ theorem coordinate_norm_eq_mul_conjO (p : O) :
       push_cast
       ring
 
-theorem algebraNorm_eq_coordinate_norm (p : O) :
+theorem algebraNorm_eq_coordinate_norm :
     Algebra.norm ℤ p = q (coords p) := by
   have h := (norm_int_eq_mul_conjO p).trans
     (coordinate_norm_eq_mul_conjO p).symm
   exact_mod_cast h
 
-theorem qNat_eq_absNorm_span (p : O) :
+theorem qNat_eq_absNorm_span :
     qNat p = Ideal.absNorm (Ideal.span {p}) := by
   rw [Ideal.absNorm_span_singleton, algebraNorm_eq_coordinate_norm]
   unfold qNat
   apply Nat.cast_injective (R := ℤ)
   rw [Int.toNat_of_nonneg (qO_nonneg p),
     Int.natAbs_of_nonneg (qO_nonneg p)]
+end
 
 end
 
@@ -124,7 +125,7 @@ theorem sixth_power_rows_injective
   rw [hgen i hi, hgen j hj]
   exact hsame
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem rational_modulus_card (m : ℕ) (_hm : m ≠ 0) :
     Nat.card (O ⧸ Ideal.span {(m : O)}) = m ^ 2 := by
@@ -215,8 +216,10 @@ end
 
 section
 
-theorem cubic_roots_reduce_injective (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) {x y : O}
+section
+variable (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P)
+include P hgood
+theorem cubic_roots_reduce_injective {x y : O}
     (hx : x ^ 3 = 1) (hy : y ^ 3 = 1)
     (hxy : Ideal.Quotient.mk P x = Ideal.Quotient.mk P y) : x = y := by
   obtain ⟨i, hi, rfl⟩ := omega_primitive.eq_pow_of_pow_eq_one hx
@@ -226,8 +229,7 @@ theorem cubic_roots_reduce_injective (P : Ideal O) [P.IsMaximal]
     simpa only [map_pow] using hxy
   rw [hij]
 
-theorem cubicChar_omega (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
+theorem cubicChar_omega :
     cubicChar P hgood (Ideal.Quotient.mk P omega) =
       omega ^ ((Nat.card (O ⧸ P) - 1) / 3) := by
   let χ := cubicChar P hgood
@@ -239,6 +241,7 @@ theorem cubicChar_omega (P : Ideal O) [P.IsMaximal]
   apply cubic_roots_reduce_injective P hgood hx hy
   rw [map_pow]
   exact cubicChar_reduce P hgood (Ideal.Quotient.mk P omega)
+end
 
 theorem finiteSquarefreeRow_one
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]

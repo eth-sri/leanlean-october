@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition
 open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
@@ -26,44 +26,13 @@ theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
         quotientTrace a ha (frequencyReduction a (a*b) (dvd_mul_right a b) h*x)) *
       (∑ y : Residue b, F (Ideal.Quotient.mk _ a*y) *
         quotientTrace b hb (frequencyReduction b (a*b) (dvd_mul_left b a) h*y)) := by
-  let ua := residueUnit a b hcop
-  let ub := residueUnit b a hcop.symm
-  let e : Residue a × Residue b ≃ Residue (a * b) :=
-    (ua.mulLeft.prodCongr ub.mulLeft).trans (principalCRT a b hcop).toEquiv.symm
-  have heproj (x : Residue a × Residue b) : principalCRT a b hcop (e x) =
-      ((ua : Residue a) * x.1, (ub : Residue b) * x.2) := by
-    change (principalCRT a b hcop).toEquiv
-      ((principalCRT a b hcop).toEquiv.symm ((ua : Residue a) * x.1, (ub : Residue b) * x.2)) = _
-    exact (principalCRT a b hcop).toEquiv.apply_symm_apply _
-  have he (x : Residue a × Residue b) : e x =
-      scaledResidue a b (a * b) rfl x.1 + scaledResidue b a (a * b) (mul_comm a b) x.2 := by
-    apply (principalCRT a b hcop).injective
-    rw [heproj, map_add, principalCRT_scaled_left, principalCRT_scaled_right]
-    simp only [Prod.mk_add_mk, add_zero, zero_add, ua, ub, residueUnit_coe]
-  have hproj (x : Residue (a * b)) :
-      (frequencyReduction a (a * b) (dvd_mul_right a b) x,
-        frequencyReduction b (a * b) (dvd_mul_left b a) x) = principalCRT a b hcop x := by
-    obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
-    simp only [frequencyReduction_mk, principalCRT_mk]
-  have hprojA (x : Residue a × Residue b) :
-      frequencyReduction a (a * b) (dvd_mul_right a b) (e x) = Ideal.Quotient.mk _ b * x.1 := by
-    have ht := congrArg Prod.fst (hproj (e x))
-    rw [heproj] at ht
-    simpa only [ua, residueUnit_coe] using ht
-  have hprojB (x : Residue a × Residue b) :
-      frequencyReduction b (a * b) (dvd_mul_left b a) (e x) = Ideal.Quotient.mk _ a * x.2 := by
-    have ht := congrArg Prod.snd (hproj (e x))
-    rw [heproj] at ht
-    simpa only [ub, residueUnit_coe] using ht
-  rw [← e.sum_comp]
-  simp_rw [hprojA, hprojB]
+  pm_3894
+  pm_2989
   simp only [ he, mul_add, AddChar.map_add_eq_mul,
     quotientTrace_scaled a b (a * b) rfl ha hb (mul_ne_zero ha hb),
     quotientTrace_scaled b a (a * b) (mul_comm a b) hb ha (mul_ne_zero ha hb)]
   simp only [Fintype.sum_prod_type, ]
-  simp only [Finset.mul_sum, Finset.sum_mul]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pc_200 Finset.mul_sum Finset.sum_mul
   intro x _
   apply Finset.sum_congr rfl
   intro y _
@@ -79,18 +48,14 @@ theorem sexticGauss_coprime_product (a b : O)
   let := finite_quotient_span (supportedElement_ne_zero a ha)
   let := finite_quotient_span (supportedElement_ne_zero b hb)
   let := finite_quotient_span (mul_ne_zero (supportedElement_ne_zero a ha) (supportedElement_ne_zero b hb))
-  let : Fintype (Residue a) := Fintype.ofFinite _
-  let : Fintype (Residue b) := Fintype.ofFinite _
-  let : Fintype (Residue (a*b)) := Fintype.ofFinite _
+  pm_2956
+  pm_458 Residue a b
   have he := coprime_character_fourier a b (supportedElement_ne_zero a ha) (supportedElement_ne_zero b hb)
     hcop (supportedModulusCharacter a ha) (supportedModulusCharacter b hb) (Ideal.Quotient.mk _ H)
   simp only [frequencyReduction_mk, supportedModulusCharacter_mk,
     residueGauss_supported_mk] at he
   rw [← he]
-  unfold sexticGauss
-  rw [tsum_fintype]
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_3809 sexticGauss tsum_fintype x hx
   obtain ⟨m,rfl⟩ := Ideal.Quotient.mk_surjective x
   rw [sexticGauss_coefficient_mk]
   simp only [frequencyReduction_mk, supportedModulusCharacter_mk]
@@ -101,7 +66,10 @@ lemma elementFourier_const_mul (c : O) (hc : c≠0) (F : O → ℂ) (H : O) (B :
     elementFourier c hc (fun m => B*F m) H = B*elementFourier c hc F H := by
   simp only [elementFourier, mul_assoc, tsum_mul_left]
 
-lemma bareMoving_product (A B s r : O) (hs : Supported (Ideal.span {s}))
+section
+variable (A B s r : O)
+include A B s r
+lemma bareMoving_product (hs : Supported (Ideal.span {s}))
     (hr : Supported (Ideal.span {r})) (hcop : IsCoprime s r) (m : O) :
     idealRowHom m (Ideal.span {A*B}) *
       sexticGauss (s*r) (mul_ne_zero (supportedElement_ne_zero s hs) (supportedElement_ne_zero r hr)) (-m) =
@@ -112,7 +80,7 @@ lemma bareMoving_product (A B s r : O) (hs : Supported (Ideal.span {s}))
   rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
   ring
 
-theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
+theorem barePhysicalFourier_product (hA : A≠0) (hB : B≠0)
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
     (hcop : IsCoprime (A*s) (B*r)) (H : O) :
     barePhysicalFourier (A*B) (s*r) (mul_ne_zero hA hB)
@@ -127,11 +95,9 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
   have hc2 : IsCoprime (A*s) r := hcop.of_mul_right_right
   have hAs := mul_ne_zero hA (supportedElement_ne_zero s hs)
   have hBr := mul_ne_zero hB (supportedElement_ne_zero r hr)
-  let := finite_quotient_span hAs
-  let := finite_quotient_span hBr
-  let := finite_quotient_span (mul_ne_zero hAs hBr)
-  let : Fintype (Residue (A*s)) := Fintype.ofFinite _
-  let : Fintype (Residue (B*r)) := Fintype.ofFinite _
+  pm_5920 hAs hBr
+  pm_458 Residue A s
+  pm_458 Residue B r
   let : Fintype (Residue ((A*s)*(B*r))) := Fintype.ofFinite _
   have he := coprime_function_fourier (A*s) (B*r) hAs hBr hcop
     (movingQuotient A s (supportedElement_ne_zero s hs))
@@ -166,8 +132,7 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
         ring
       _ = _ := he
       _ = _ := by
-        simp only [barePhysicalFourier, elementFourier, movingQuotient, tsum_fintype]
-        ring
+        pm_3523 barePhysicalFourier elementFourier movingQuotient tsum_fintype
   simp only [barePhysicalFourier] at hexpand
   unfold barePhysicalFourier
   rw [elementFourier_congr ((A*B)*(s*r)) ((A*s)*(B*r)) _ (mul_ne_zero hAs hBr) _ H (by ring)]
@@ -175,7 +140,7 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
   rw [elementFourier_const_mul, hexpand]
   ring
 
-theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0)
+theorem bareCongruenceCoefficient_product (hA : A≠0) (hB : B≠0)
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
     (hcop : IsCoprime (A*s) (B*r)) (H : O) :
     bareCongruenceCoefficient (A*B) (s*r) (mul_ne_zero hA hB) H =
@@ -189,15 +154,12 @@ theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0
       Ideal.absNorm (Ideal.span {s}) * Ideal.absNorm (Ideal.span {r}) := by
     rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
   rw [hnorm, Nat.cast_mul] at he
-  have hns : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero s hs))
-  have hnr : (Ideal.absNorm (Ideal.span {r}):ℂ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero r hr))
+  pm_3847 hns s hs
+  pm_3847 hnr r hr
   apply mul_left_cancel₀ (mul_ne_zero hns hnr)
   rw [he]
   ring
+end
 
 lemma idealRowHom_ne_zero_of_coprime (s a : O)
     (hs : Supported (Ideal.span {s})) (hc : IsCoprime s a) :
@@ -227,6 +189,5 @@ theorem bareCongruenceCoefficient_product_reduced (A B s r : O) (hA : A≠0) (hB
   field_simp
 
 end SevenEighths.ProbePhysical
-end
 
 end OAI

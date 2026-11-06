@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosDisplacementSums
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -19,32 +20,28 @@ theorem sum_inverse_gcd_product (J K : ℕ) :
       (harmonic J:ℝ)*(harmonic K:ℝ) := by
   simp only [harmonic_eq_sum_Icc,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
   rw [Finset.sum_mul_sum]
-  apply Finset.sum_congr rfl
-  intro j _
-  apply Finset.sum_congr rfl
-  intro k _
-  simp only [one_div,mul_inv]
+  pm_156 Finset.sum_congr j k
+  grind
 
 theorem exists_robertSargos_gcd_harmonic_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ R H Q : ℝ, 1 ≤ R → 1 ≤ H → 1 ≤ Q →
       (harmonic ⌊R⌋₊:ℝ)*(harmonic ⌊2*Q⌋₊:ℝ) ≤ C*(R*H*Q)^ε := by
   let η := ε/2
   let K := 1+1/η
-  have hη : 0 < η := by dsimp [η]; linarith
-  have hK : 0 < K := by dsimp [K]; positivity
-  refine ⟨K^2*(2:ℝ)^η,by positivity,?_⟩
+  pm_358 hη η
+  pm_64 hK K
+  pm_7932 K η
   intro R H Q hR hH hQ
-  have hRp : 0 < R := by linarith
-  have hHp : 0 < H := by linarith
+  pm_72 hRp R hHp H
   have hQp : 0 < Q := by linarith
-  have hB : 0 < R*H*Q := by positivity
+  pm_655 hB R H Q
   have hRB : R ≤ R*H*Q :=
     (le_mul_of_one_le_right hRp.le hH).trans
       (le_mul_of_one_le_right (by positivity : 0 ≤ R*H) hQ)
   have hQB : Q ≤ R*H*Q := by
     have hm := mul_le_mul_of_nonneg_right
       (one_le_mul_of_one_le_of_one_le hR hH) hQp.le
-    nlinarith only [hm]
+    grind
   have hJ : 1 ≤ ⌊R⌋₊ := (Nat.one_le_floor_iff R).mpr hR
   have hL : 1 ≤ ⌊2*Q⌋₊ := (Nat.one_le_floor_iff (2*Q)).mpr (by linarith)
   have hJbound : (⌊R⌋₊:ℝ) ≤ R*H*Q := (Nat.floor_le hRp.le).trans hRB
@@ -71,7 +68,7 @@ theorem exists_robertSargos_gcd_harmonic_bound (ε : ℝ) (hε : 0 < ε) :
           simp only [harmonic_eq_sum_Icc,Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
           exact Finset.sum_nonneg (fun _ _ => by positivity)) (by positivity)
     _ = K^2*(2:ℝ)^η*((R*H*Q)^η*(R*H*Q)^η) := by
-      rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hB.le]
+      pm_7402 hB.le
       ring
     _ = _ := by rw [hsq]
 

@@ -7,6 +7,7 @@ third_party/twelfth/LICENSE-MIT-0.
 Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonGapBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,8 +35,7 @@ theorem exists_atkinsonGapBudget_le_arithmetic {η : ℝ} (hη : 0 < η) :
       (∀ j < Nat.clog 2 N, ∀ t ∈ W, ∀ u ∈ W,
         0 ≤ atkinsonPrefixGapMajorant (2^j) (2^j) t u) →
       atkinsonDyadicGapBudget N W ≤ C*atkinsonArithmeticGapBudget η N W := by
-  obtain ⟨C,hC,henergy⟩ := exists_atkinsonBlockCoefficientEnergy_le hη
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC henergy exists_atkinsonBlockCoefficientEnergy_le hη
   intro N W hnonneg
   unfold atkinsonDyadicGapBudget atkinsonArithmeticGapBudget
   have hsum :
@@ -60,8 +60,8 @@ theorem exists_atkinsonGapBudget_le_arithmetic {η : ℝ} (hη : 0 < η) :
       _ = C*((((2^j:ℕ):ℝ)^(-(1/4:ℝ)))^2*((2^j:ℕ):ℝ)^(1+η))*
           ∑ t ∈ W, ∑ u ∈ W, atkinsonPrefixGapMajorant (2^j) (2^j) t u := by ring
       _ = _ := by rw [atkinson_quarter_energy_power hM]; ring
-  have hm := mul_le_mul_of_nonneg_left hsum (Nat.cast_nonneg (Nat.clog 2 N) : (0:ℝ) ≤ _)
+  pm_6414 hsum
   rw [← Finset.mul_sum] at hm
-  exact hm.trans_eq (by ring)
+  grind
 
 end MathCollab.Density.Stronger.Atkinson

@@ -24,16 +24,20 @@ theorem integerTripleGcd_dvd (a b c : ℤ) :
     dvd_trans hg (Int.gcd_dvd_right a b),
     Int.gcd_dvd_right (Int.gcd a b:ℤ) c⟩
 
-theorem integerTripleGcd_pos {a b c : ℤ} (ha : a ≠ 0) :
+section
+variable {a b c : ℤ} (ha : a ≠ 0)
+include a b c ha
+theorem integerTripleGcd_pos :
     0 < integerTripleGcd a b c := by
   apply Int.gcd_pos_of_ne_zero_left
-  exact_mod_cast (Int.gcd_pos_of_ne_zero_left b ha).ne'
+  simp_all
 
-theorem integerTripleGcd_le_natAbs {a b c : ℤ} (ha : a ≠ 0) :
+theorem integerTripleGcd_le_natAbs :
     integerTripleGcd a b c ≤ a.natAbs := by
   apply Nat.le_of_dvd (Int.natAbs_pos.mpr ha)
   simpa only [Int.natAbs_natCast] using
     Int.natAbs_dvd_natAbs.mpr (integerTripleGcd_dvd a b c).1
+end
 
 theorem integerTripleGcd_mul_nat (g : ℕ) (a b c : ℤ) :
     integerTripleGcd ((g:ℤ)*a) ((g:ℤ)*b) ((g:ℤ)*c) =

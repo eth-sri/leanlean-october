@@ -19,7 +19,7 @@ theorem vertical_integral_eq_of_shifted_polynomial_gaussian_bound (F : ℂ→ℂ
   have hg : DifferentiableOn ℂ G {s : ℂ | a≤s.re ∧ s.re≤b} := by
     apply hhol.comp (differentiable_id.sub_const ((q:ℂ)*I)).differentiableOn
     intro s hs
-    simpa using hs
+    simp_all
   have hbnd (x : ℝ) (hx : x∈Icc a b) (t : ℝ) :
       ‖G ((x:ℂ)+t*I)‖≤C*polynomialGaussian n t := by
     have heq : (x:ℂ)+t*I-(q:ℂ)*I=(x:ℂ)+(t-q)*I := by ring
@@ -34,15 +34,12 @@ theorem vertical_integral_eq_of_shifted_polynomial_gaussian_bound (F : ℂ→ℂ
     rw [hg']
     simpa only [Complex.ofReal_add,Complex.ofReal_neg] using
       (integral_add_right_eq_self (fun t : ℝ=>F ((x:ℂ)+t*I)) (-q) (μ:=volume))
-  simpa only [heq] using hi
+  simp_all
 
 lemma shifted_height_two (t q : ℝ) :
     (3+|t|)^2≤2*(3+|q|)^2*(1+|t+q|^2) := by
   have ht : |t|≤|t+q|+|q| := by
-    calc
-      |t|=|(t+q)+(-q)| := by ring_nf
-      _ ≤ |t+q|+|-q| := abs_add_le _ _
-      _ = _ := by rw [abs_neg]
+    grind
   have hq : 0≤|q| := abs_nonneg _
   have hu : 0≤|t+q| := abs_nonneg _
   have hb : (3+|t|)^2≤(3+|q|+|t+q|)^2 := by

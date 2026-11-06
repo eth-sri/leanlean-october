@@ -10,12 +10,12 @@ public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 public import Mathlib.Analysis.SpecialFunctions.Artanh
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
 public import Mathlib.Analysis.MellinTransform
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Set MeasureTheory
 open scoped Topology Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -42,18 +42,9 @@ theorem dfiBesselY0MellinSymbol_two_mul (w : ℂ) :
   unfold dfiBesselY0MellinSymbol
   congr 2
   · ring_nf
-  · congr 1
-    ring_nf
+  grind
 
-/-- The elementary Gamma integral after a positive real dilation. -/
-theorem integral_cpow_mul_exp_neg_mul_Ioi_eq
-    {s : ℂ} (hs : 0 < s.re) {a : ℝ} (ha : 0 < a) :
-    (∫ x : ℝ in Set.Ioi 0,
-        (x : ℂ) ^ (s - 1) * Complex.exp (-(a * x))) =
-      (1 / a : ℂ) ^ s * Gamma s := by
-  simpa only [Complex.ofReal_neg, Complex.ofReal_mul,
-    Complex.ofReal_exp] using
-    Complex.integral_cpow_mul_exp_neg_mul_Ioi hs ha
+export RiemannZeta.GuthMaynard (integral_cpow_mul_exp_neg_mul_Ioi_eq)
 
 /-- Squaring is a bijection from the positive unit interval to itself. -/
 theorem image_sq_Ioo_zero_one :
@@ -62,8 +53,7 @@ theorem image_sq_Ioo_zero_one :
   constructor
   · rintro ⟨x, hx, rfl⟩
     constructor
-    · change 0 < x ^ 2
-      exact sq_pos_of_pos hx.1
+    simp_all
     · change x ^ 2 < 1
       nlinarith [hx.1, hx.2, sq_nonneg (x - 1)]
   · intro hy
@@ -95,8 +85,7 @@ theorem betaIntegral_square_substitution (u v : ℂ) :
       convert (hasDerivAt_pow 2 x).hasDerivWithinAt using 1
       ring_nf)
     (fun x hx y hy hxy => by
-      have hxp : 0 < x := hx.1
-      have hyp : 0 < y := hy.1
+      pm_6748
       nlinarith)
     (fun x : ℝ =>
       (x : ℂ) ^ (u - 1) * (1 - (x : ℂ)) ^ (v - 1))
@@ -133,12 +122,7 @@ theorem integral_one_sub_sq_cpow_Ioo_eq_half_beta
     rw [h]
     apply setIntegral_congr_fun measurableSet_Ioo
     intro x hx
-    change |2 * x| •
-        ((((x ^ 2 : ℝ) : ℂ) ^ ((1 / 2 : ℂ) - 1)) *
-          (1 - ((x ^ 2 : ℝ) : ℂ)) ^ (w - 1)) = _
-    rw [← smul_mul_assoc, abs_two_mul_smul_sq_cpow_neg_half hx.1]
-    push_cast
-    norm_num
+    pm_4386
   rw [h', ← MeasureTheory.integral_const_mul]
   ring_nf
 
@@ -168,15 +152,13 @@ theorem hasDerivAt_tanh_recip_cosh_sq (x : ℝ) :
     exact (Real.tanh_eq_sinh_div_cosh (x := y)).symm
   rw [hfun] at h
   convert h using 1
-  field_simp [(Real.cosh_pos x).ne']
-  nlinarith [Real.cosh_sq_sub_sinh_sq x]
+  pm_7549
 
 /-- The elementary hyperbolic identity used by the `tanh` substitution. -/
 theorem one_sub_tanh_sq_eq_inv_cosh_sq (x : ℝ) :
     1 - Real.tanh x ^ 2 = 1 / Real.cosh x ^ 2 := by
   rw [Real.tanh_eq_sinh_div_cosh]
-  field_simp [(Real.cosh_pos x).ne']
-  nlinarith [Real.cosh_sq_sub_sinh_sq x]
+  pm_7549
 
 /-- Complex-power bookkeeping for the hyperbolic Jacobian. -/
 theorem inv_sq_mul_inv_sq_cpow_sub_one
@@ -258,17 +240,19 @@ theorem integral_cosh_cpow_neg_two_mul_Ioi_eq
               change (Real.cosh x : ℂ) ^ (-2 * w) =
                 |1 / Real.cosh x ^ 2| •
                   (((1 - Real.tanh x ^ 2 : ℝ) : ℂ) ^ (w - 1))
-              rw [abs_of_pos (by positivity : 0 < 1 / Real.cosh x ^ 2)]
+              pm_6517
               exact (tanh_jacobian_smul_one_sub_sq_cpow x w).symm
     _ = ∫ u : ℝ in Set.Ioo 0 1,
           ((1 - u ^ 2 : ℝ) : ℂ) ^ (w - 1) := h.symm
     _ = (1 / 2 : ℂ) * Complex.betaIntegral (1 / 2) w :=
       integral_one_sub_sq_cpow_Ioo_eq_half_beta
 
+section
+variable {w : ℂ} (hw : 0 < w.re)
+include w hw
 /-- Absolute integrability of the beta kernel obtained after the square
 substitution. -/
-theorem integrableOn_one_sub_sq_cpow_Ioo
-    {w : ℂ} (hw : 0 < w.re) :
+theorem integrableOn_one_sub_sq_cpow_Ioo :
     IntegrableOn
       (fun x : ℝ => ((1 - x ^ 2 : ℝ) : ℂ) ^ (w - 1))
       (Set.Ioo 0 1) := by
@@ -289,8 +273,7 @@ theorem integrableOn_one_sub_sq_cpow_Ioo
         convert (hasDerivAt_pow 2 x).hasDerivWithinAt using 1
         ring_nf)
       (fun x hx y hy hxy => by
-        have hxp : 0 < x := hx.1
-        have hyp : 0 < y := hy.1
+        pm_6748
         nlinarith) g
     rw [image_sq_Ioo_zero_one] at hiff
     exact hiff.mp hg
@@ -300,12 +283,7 @@ theorem integrableOn_one_sub_sq_cpow_Ioo
     refine htrans.congr_fun ?_ measurableSet_Ioo
     intro x hx
     dsimp [g]
-    change |2 * x| •
-        ((((x ^ 2 : ℝ) : ℂ) ^ ((1 / 2 : ℂ) - 1)) *
-          (1 - ((x ^ 2 : ℝ) : ℂ)) ^ (w - 1)) = _
-    rw [← smul_mul_assoc, abs_two_mul_smul_sq_cpow_neg_half hx.1]
-    push_cast
-    norm_num
+    pm_4386
   have hhalf : IntegrableOn
       (fun x : ℝ => (1 / 2 : ℂ) *
         (2 * (((1 - x ^ 2 : ℝ) : ℂ) ^ (w - 1))))
@@ -315,8 +293,7 @@ theorem integrableOn_one_sub_sq_cpow_Ioo
   ring
 
 /-- Absolute integrability of the hyperbolic Mellin kernel. -/
-theorem integrableOn_cosh_cpow_neg_two_mul_Ioi
-    {w : ℂ} (hw : 0 < w.re) :
+theorem integrableOn_cosh_cpow_neg_two_mul_Ioi :
     IntegrableOn
       (fun x : ℝ => (Real.cosh x : ℂ) ^ (-2 * w))
       (Set.Ioi 0) := by
@@ -331,12 +308,9 @@ theorem integrableOn_cosh_cpow_neg_two_mul_Ioi
     Real.tanh_injective.injOn g
   rw [image_tanh_Ioi_zero] at hiff
   have htrans := hiff.mp hg
-  refine htrans.congr_fun ?_ measurableSet_Ioi
-  intro x _
-  dsimp [g]
-  rw [abs_of_pos (by positivity : 0 < 1 / Real.cosh x ^ 2)]
+  pm_7911 htrans.congr_fun g
+  pm_6517
   exact tanh_jacobian_smul_one_sub_sq_cpow x w
-
-
+end
 
 end MathCollab.Density.Stronger.Atkinson

@@ -36,16 +36,7 @@ theorem atkinsonPowerWeight_eq_amplitude {T x : ℝ} (hT : 0 < T) (hx : 0 < x)
   rw [zetaDivisorWeight_source_eq_profile hT hx]
   have heC : ((T ^ (-α) : ℝ) : ℂ) * (((x / T) ^ (-α) : ℝ) : ℂ) = ((x ^ (-α) : ℝ) : ℂ) := by
     exact_mod_cast he
-  calc
-    _ = (((T ^ (-α) : ℝ) : ℂ) * (((x / T) ^ (-α) : ℝ) : ℂ)) *
-      (zetaMainMellinProfile (x / T) * (zetaDivisorBandCutoff T G L x : ℂ) *
-        zetaSquareReflectedGammaPhase T *
-          zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi)))) := by ring
-    _ = _ := by
-      rw [heC]
-      linear_combination -((x ^ (-α) : ℝ) : ℂ) * zetaMainMellinProfile (x / T) *
-        (zetaDivisorBandCutoff T G L x : ℂ) * zetaSquareReflectedGammaPhase T *
-          zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi))) * hs
+  grind
 
 
 end MathCollab.Density.Stronger.Atkinson

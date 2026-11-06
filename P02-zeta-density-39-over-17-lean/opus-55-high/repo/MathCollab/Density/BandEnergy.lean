@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.WeightedSquare
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,9 +27,11 @@ theorem norm_bandPhaseSum_le (L H v r : ℝ) :
   exact (norm_sum_le _ _).trans_eq (by simp only [norm_dirichletPhase, Finset.sum_const,
     nsmul_eq_mul, mul_one])
 
+section
+variable (w : ReflectionCutoff) {L H : ℝ} (hL : 0 < L) (hH : 0 < H) (v : ℝ)
+include w L H hL hH v
 /-- Interchange of the finite retained-mode sum with the full Mellin integral. -/
-theorem bandContribution_mellin (w : ReflectionCutoff) {L H : ℝ}
-    (hL : 0 < L) (hH : 0 < H) (v : ℝ) :
+theorem bandContribution_mellin :
     bandContribution w L H v = ((L/(2*Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
       mellinLine (fun x => (w x : ℂ)) r *
         (reflectionKernel H v r * bandPhaseSum L H v r) := by
@@ -60,12 +63,11 @@ theorem bandContribution_mellin (w : ReflectionCutoff) {L H : ℝ}
   ring
 
 /-- Full-line weighted estimate for the retained band, uniform in the phase. -/
-theorem norm_bandContribution_sq_le (w : ReflectionCutoff) {L H : ℝ}
-    (hL : 0 < L) (hH : 0 < H) (v : ℝ) :
+theorem norm_bandContribution_sq_le :
     ‖bandContribution w L H v‖ ^ 2 ≤
       (500 / Real.pi^2) * mellinMass w * (L^2/H) *
         ∫ r, ‖mellinLine (fun x => (w x : ℂ)) r‖ * ‖bandPhaseSum L H v r‖ ^ 2 := by
-  let W := mellinLine (fun x => (w x : ℂ))
+  pm_7000
   let B := bandPhaseSum L H v
   let g := fun r => reflectionKernel H v r * B r
   have hW : Integrable W := integrable_mellin_line_one w.complex_smooth w.complex_support
@@ -99,5 +101,6 @@ theorem norm_bandContribution_sq_le (w : ReflectionCutoff) {L H : ℝ}
         (mellinMass w * ((2000/H) * ∫ r, ‖W r‖ * ‖B r‖ ^ 2)) :=
       mul_le_mul_of_nonneg_left hs' (sq_nonneg _)
     _ = _ := by dsimp [W, B]; ring
+end
 
 end MathCollab.Density

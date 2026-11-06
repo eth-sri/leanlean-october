@@ -18,8 +18,10 @@ variable {σ:Type*} [DecidableEq σ]
 def poolList (F:Finset (Ideal Eis))(L:Finset (Ideal Eis)) : Finset (primePool F) :=
   Finset.univ.filter (fun i=>i.val∈L)
 
-theorem dividing_list_image (F:Finset (Ideal Eis))(L:Finset (Ideal Eis))
-    (hL:∀P∈L,Prime P)(A:Finset (primePool F)) :
+section
+variable (F:Finset (Ideal Eis)) (L:Finset (Ideal Eis)) (hL:∀P∈L,Prime P)
+include F L hL
+theorem dividing_list_image(A:Finset (primePool F)) :
     ((poolList F L).filter (fun i=>i∈A)).image Subtype.val=
       L.filter (fun P=>P∣∏i∈A,i.val) := by
   ext P
@@ -36,13 +38,13 @@ theorem dividing_list_image (F:Finset (Ideal Eis))(L:Finset (Ideal Eis))
     refine Finset.mem_image.mpr ⟨i,Finset.mem_filter.mpr ⟨?_,hi⟩,he.symm⟩
     exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,he ▸ hPL⟩
 
-theorem original_ideal_slot (F:Finset (Ideal Eis))(L:Finset (Ideal Eis))
-    (hL:∀P∈L,Prime P)(a:Ideal Eis→ℂ)(A:Finset (primePool F)) :
+theorem original_ideal_slot(a:Ideal Eis→ℂ)(A:Finset (primePool F)) :
     (∑P∈L,if P∣∏i∈A,i.val then a P else 0)=
       primeSlot (poolList F L) (fun i=>a i.val) A := by
   rw [←Finset.sum_filter,←dividing_list_image F L hL A,
     Finset.sum_image (fun i _ j _ h=>Subtype.val_injective h)]
   simp only [primeSlot,←Finset.sum_filter]
+end
 
 theorem original_ideal_mark (F:Finset (Ideal Eis))(I:Finset σ)
     (L:σ→Finset (Ideal Eis))(hL:∀i∈I,∀P∈L i,Prime P)

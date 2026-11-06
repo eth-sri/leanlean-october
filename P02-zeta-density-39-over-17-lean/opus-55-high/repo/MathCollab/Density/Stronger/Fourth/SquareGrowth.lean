@@ -10,33 +10,16 @@ No global-order, Hadamard, Architect, or upstream project module is imported.
 public import MathCollab.Density.Stronger.Fourth.SquareSource
 public import MathCollab.Density.AbelZetaGrowth
 public import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
+public import MathCollab.Density.GammaMellin
 
-@[expose] public section
+public section
 
 open Complex Filter MeasureTheory Set Topology
 open MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth
-open MathCollab.Density.Contour
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
-theorem norm_Gamma_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
-    ‖Complex.Gamma s‖ ≤ Real.Gamma s.re := by
-  rw [Complex.Gamma_eq_integral hs, Real.Gamma_eq_integral hs]
-  calc
-    ‖∫ x in Set.Ioi (0 : ℝ),
-        ((Real.exp (-x) : ℝ) : ℂ) * (x : ℂ) ^ (s - 1)‖ ≤
-        ∫ x in Set.Ioi (0 : ℝ),
-          ‖((Real.exp (-x) : ℝ) : ℂ) * (x : ℂ) ^ (s - 1)‖ :=
-      MeasureTheory.norm_integral_le_integral_norm _
-    _ = ∫ x in Set.Ioi (0 : ℝ),
-        Real.exp (-x) * x ^ (s.re - 1) := by
-      apply MeasureTheory.integral_congr_ae
-      filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with x hx
-      rw [norm_mul, Complex.norm_real, Complex.norm_cpow_eq_rpow_re_of_pos hx]
-      simp only [Complex.sub_re, Complex.one_re]
-      simp [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+export MathCollab.Density.GammaMellin (norm_Gamma_le_realGamma_re)
 
 /-- Height-uniform majorant for Deligne's real Gamma factor on a positive
 vertical line. -/
@@ -46,13 +29,13 @@ theorem norm_GammaR_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
   rw [Complex.Gammaℝ_def, norm_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos Real.pi_pos]
   have hreHalf : (s / 2).re = s.re / 2 := by
-    norm_num [Complex.div_re, Complex.normSq]
+    simp_all
   have hhalf : 0 < (s / 2).re := by
     rw [hreHalf]
     linarith
   have hGamma := norm_Gamma_le_realGamma_re hhalf
   have hre : (-s / 2).re = -s.re / 2 := by
-    norm_num [Complex.div_re, Complex.normSq]
+    simp_all
   rw [hre]
   rw [hreHalf] at hGamma
   exact mul_le_mul_of_nonneg_left hGamma (by positivity)
@@ -63,7 +46,7 @@ theorem exists_norm_GammaR_strip_le {a b : ℝ} (ha : 0 < a) :
   let major : ℝ → ℝ := fun x => Real.pi ^ (-x/2) * Real.Gamma (x/2)
   have hgamma : ContinuousOn (fun x : ℝ => Real.Gamma (x/2)) (Icc a b) :=
     Real.differentiableOn_Gamma_Ioi.continuousOn.comp (by fun_prop)
-      (fun x hx => by change 0 < x/2; linarith [hx.1])
+      (fun x hx => by grind)
   have hpow : Continuous (fun x : ℝ => Real.pi ^ (-x/2)) :=
     (Real.continuous_const_rpow Real.pi_ne_zero).comp (by fun_prop)
   have hcont : ContinuousOn major (Icc a b) := hpow.continuousOn.mul hgamma
@@ -120,7 +103,6 @@ theorem exists_completedXiNumerator_strip_cubic_high {c : ℝ} (_hc : 0 ≤ c) :
       _ ≤ 5*G*(1+‖1-s‖)^3 := h
       _ ≤ 5*G*(2*(1+‖s‖))^3 := by gcongr
       _ = _ := by ring
-
 
 /-- The compact middle of the strip supplies the same cubic bound at every height. -/
 theorem exists_completedXiNumerator_strip_cubic {c : ℝ} (hc : 0 ≤ c) :

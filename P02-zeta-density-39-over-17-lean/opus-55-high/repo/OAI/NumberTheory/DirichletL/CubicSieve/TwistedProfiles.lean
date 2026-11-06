@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.TruncatedSecondTransfer
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,73 +8,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
 section
@@ -91,7 +48,7 @@ end
 section
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap FourierTransform
 open ActualEisensteinCubic
 open FirstPassCubeLabels (b0Label)
 open JointLogSeparation
@@ -115,7 +72,7 @@ end SecondPassArithmetic
 
 namespace CubicEisenstein
 open Filter
-open scoped BigOperators Classical MatrixGroups Matrix Topology
+open scoped Classical MatrixGroups Matrix Topology
 
 open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
 
@@ -126,9 +83,7 @@ def coordinateSection (w : UpperCoordinates) : SL(2,ℂ) :=
 
 lemma continuous_coordinate_inverse_operator :
     Continuous (fun w : UpperCoordinates => rowOperator (coordinateSection w)⁻¹) := by
-  have hroot : Continuous (fun w : UpperCoordinates => (Real.sqrt w.1.2 : ℂ)) :=
-    Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp
-      (continuous_snd.comp continuous_subtype_val))
+  pm_1043
   have hne : ∀ w : UpperCoordinates, (Real.sqrt w.1.2 : ℂ) ≠ 0 := fun w =>
     Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr w.2).ne'
   apply continuous_clm_apply.mpr
@@ -137,17 +92,10 @@ lemma continuous_coordinate_inverse_operator :
   intro i
   change Continuous (fun w : UpperCoordinates =>
     Matrix.vecMul u (Matrix.adjugate (coordinateSection w : Matrix (Fin 2) (Fin 2) ℂ)) i)
-  simp only [Matrix.vecMul,dotProduct,Fin.sum_univ_two,coordinateSection,upperSection,
-    Matrix.SpecialLinearGroup.coe_mk,Matrix.adjugate_fin_two]
+  pm_3780 Matrix.vecMul dotProduct Fin.sum_univ_two coordinateSection upperSection Matrix.SpecialLinearGroup.coe_mk Matrix.adjugate_fin_two
   fin_cases i
-  · change Continuous (fun w : UpperCoordinates =>
-      u 0 * (Real.sqrt w.1.2 : ℂ)⁻¹ + u 1 * (-0))
-    exact (continuous_const.mul (hroot.inv₀ hne)).add
-      (continuous_const.mul continuous_const)
-  · change Continuous (fun w : UpperCoordinates =>
-      u 0 * (-(w.1.1 / (Real.sqrt w.1.2 : ℂ))) + u 1 * (Real.sqrt w.1.2 : ℂ))
-    exact (continuous_const.mul ((continuous_fst.comp continuous_subtype_val).div hroot hne).neg).add
-      (continuous_const.mul hroot)
+  fun_prop
+  fun_prop
 
 lemma continuous_coordinate_rowBound :
     Continuous (fun w : UpperCoordinates => rowBound (coordinateSection w)) :=
@@ -183,8 +131,7 @@ lemma coordinate_summable_majorant (C a b : ℝ) (hC : 0 < C)
   let weight (t : ℝ) (x : CuspCosets) :=
     C^(2*t)*‖rowCoordinates (cosetRow x)‖^(-(2*t))
   have hsum (t : ℝ) (ht : 2<t) : Summable (weight t) := by
-    have hinj : Function.Injective (fun x : CuspCosets => rowCoordinates (cosetRow x)) :=
-      rowCoordinates_injective.comp cosetRow_injective
+    pm_3680
     exact ((summable_integer_four_rpow (2*t) (by linarith)).comp_injective hinj).mul_left _
   refine ⟨fun x => weight a x + weight b x,(hsum a ha).add (hsum b hb),?_,?_⟩
   · intro x
@@ -193,14 +140,13 @@ lemma coordinate_summable_majorant (C a b : ℝ) (hC : 0 < C)
   · intro p hbound hpa hpb x
     apply (norm_summand_strip (coordinateSection p.1) a b p.2 hpa hpb x).trans
     apply add_le_add
-    · apply (norm_summand_bound (coordinateSection p.1) (a:ℂ) (by simpa using lt_trans (by norm_num) ha) x).trans
-      exact mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow (rowBound_pos _).le hbound (by simpa only [Complex.ofReal_re] using (show 0 ≤ 2*a by linarith))) (by positivity)
-    · apply (norm_summand_bound (coordinateSection p.1) (b:ℂ) (by simpa using lt_trans (by norm_num) hb) x).trans
-      exact mul_le_mul_of_nonneg_right
-        (Real.rpow_le_rpow (rowBound_pos _).le hbound (by simpa only [Complex.ofReal_re] using (show 0 ≤ 2*b by linarith))) (by positivity)
+    pm_3804 a ha
+    pm_3804 b hb
 
-theorem coordinate_eisenstein_continuousAt (p : UpperCoordinates × ℂ) (hp : 2 < p.2.re) :
+section
+variable (p : UpperCoordinates × ℂ) (hp : 2 < p.2.re)
+include p hp
+theorem coordinate_eisenstein_continuousAt :
     ContinuousAt (fun q : UpperCoordinates × ℂ => eisenstein (coordinateSection q.1) q.2) p := by
   let a : ℝ := (2+p.2.re)/2
   let b : ℝ := p.2.re+1
@@ -210,7 +156,7 @@ theorem coordinate_eisenstein_continuousAt (p : UpperCoordinates × ℂ) (hp : 2
   have ha : 2<a := by dsimp [a]; linarith
   have hb : 2<b := by dsimp [b]; linarith
   have hC : 0<C := by dsimp [C]; linarith [rowBound_pos (coordinateSection p.1)]
-  obtain ⟨M,hM,hMnonneg,hbound⟩ := coordinate_summable_majorant C a b hC ha hb
+  pm_562 M hM hMnonneg hbound coordinate_summable_majorant C a b hC ha hb
   have hopen : IsOpen region := by
     exact (isOpen_lt (continuous_coordinate_rowBound.comp continuous_fst) continuous_const).inter
       ((isOpen_lt continuous_const (Complex.continuous_re.comp continuous_snd)).inter
@@ -227,23 +173,25 @@ theorem coordinate_eisenstein_continuousAt (p : UpperCoordinates × ℂ) (hp : 2
     exact hbound q hq.1.le hq.2.1.le hq.2.2.le x
   exact (hcont p hmem).continuousAt (hopen.mem_nhds hmem)
 
-theorem upperEisenstein_joint_continuousAt (p : UpperCoordinates × ℂ)
-    (hp : 2 < p.2.re) :
+theorem upperEisenstein_joint_continuousAt :
     ContinuousAt (fun q : UpperCoordinates × ℂ =>
       upperEisenstein q.1.1.1 q.1.1.2 q.1.2 q.2) p :=
   coordinate_eisenstein_continuousAt p hp
+end
 
 end CubicEisenstein
 
-open Filter
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
 def logRatioPower (s : ℂ) (v q : ℝ) : ℂ :=
   Complex.exp (s * ((Real.log v - Real.log q : ℝ) : ℂ))
 
-lemma logRatioPower_eq_cpow (s : ℂ) {v q : ℝ} (hv : 0<v) (hq : 0<q) :
+section
+variable (s : ℂ)
+include s
+lemma logRatioPower_eq_cpow {v q : ℝ} (hv : 0<v) (hq : 0<q) :
     logRatioPower s v q = ((v/q : ℝ):ℂ)^s := by
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (div_pos hv hq).ne'),
     ← Complex.ofReal_log (div_pos hv hq).le, Real.log_div hv.ne' hq.ne']
@@ -251,7 +199,7 @@ lemma logRatioPower_eq_cpow (s : ℂ) {v q : ℝ} (hv : 0<v) (hq : 0<q) :
   congr 1
   ring
 
-lemma hasDerivAt_logRatioPower (s : ℂ) {f g : ℝ → ℝ} {x f' g' : ℝ}
+lemma hasDerivAt_logRatioPower {f g : ℝ → ℝ} {x f' g' : ℝ}
     (hf : HasDerivAt f f' x) (hg : HasDerivAt g g' x)
     (hf0 : f x ≠ 0) (hg0 : g x ≠ 0) :
     HasDerivAt (fun t => logRatioPower s (f t) (g t))
@@ -259,7 +207,7 @@ lemma hasDerivAt_logRatioPower (s : ℂ) {f g : ℝ → ℝ} {x f' g' : ℝ}
   convert (((hf.log hf0).sub (hg.log hg0)).ofReal_comp.const_mul s).cexp using 1 <;>
     dsimp [logRatioPower] ; ring
 
-lemma hasDerivAt_deriv_logRatioPower (s : ℂ) (f g df dg : ℝ → ℝ) (x ddf ddg : ℝ)
+lemma hasDerivAt_deriv_logRatioPower (f g df dg : ℝ → ℝ) (x ddf ddg : ℝ)
     (hf : ∀t, HasDerivAt f (df t) t) (hg : ∀t, HasDerivAt g (dg t) t)
     (hdf : HasDerivAt df ddf x) (hdg : HasDerivAt dg ddg x)
     (hf0 : f x ≠ 0) (hg0 : g x ≠ 0) :
@@ -279,29 +227,28 @@ lemma hasDerivAt_deriv_logRatioPower (s : ℂ) (f g df dg : ℝ → ℝ) (x ddf 
   apply HasDerivAt.congr_of_eventuallyEq _ heq
   convert (hfirst.mul_const s).mul hsecond using 1 ;
     simp only [Pi.sub_apply,Pi.div_apply] ; ring
+end
 
 def quadraticHeightDenominator (A B C D x y v : ℝ) : ℝ :=
   A*(x^2+y^2+v^2)+2*(B*x+C*y)+D
 
-lemma quadraticHeightDenominator_hasDerivAt_x (A B C D x y v : ℝ) :
+section
+variable (A B C D x y v : ℝ)
+include A B C D x y v
+lemma quadraticHeightDenominator_hasDerivAt_x :
     HasDerivAt (fun t => quadraticHeightDenominator A B C D t y v)
-      (2*(A*x+B)) x := by
-  convert (((((hasDerivAt_id x).pow 2).add_const (y^2)).add_const (v^2)).const_mul A).add
-    ((((hasDerivAt_id x).const_mul B).add_const (C*y)).const_mul 2) |>.add_const D using 1 <;>
-    dsimp [quadraticHeightDenominator] ; ring
+      (2*(A*x+B)) x := by pm_3805 x add_const y B C
 
-lemma quadraticHeightDenominator_hasDerivAt_y (A B C D x y v : ℝ) :
+lemma quadraticHeightDenominator_hasDerivAt_y :
     HasDerivAt (fun t => quadraticHeightDenominator A B C D x t v)
-      (2*(A*y+C)) y := by
-  convert (((((hasDerivAt_id y).pow 2).const_add (x^2)).add_const (v^2)).const_mul A).add
-    ((((hasDerivAt_id y).const_mul C).const_add (B*x)).const_mul 2) |>.add_const D using 1 <;>
-    dsimp [quadraticHeightDenominator] ; ring
+      (2*(A*y+C)) y := by pm_3805 y const_add x C B
 
-lemma quadraticHeightDenominator_hasDerivAt_v (A B C D x y v : ℝ) :
+lemma quadraticHeightDenominator_hasDerivAt_v :
     HasDerivAt (fun t => quadraticHeightDenominator A B C D x y t)
       (2*A*v) v := by
   convert ((((hasDerivAt_id v).pow 2).const_add (x^2+y^2)).const_mul A).add_const
     (2*(B*x+C*y)+D) using 1 <;> dsimp [quadraticHeightDenominator] <;> ring_nf
+end
 
 def spatialHeightPower (s : ℂ) (A B C D x y v : ℝ) : ℂ :=
   logRatioPower s v (quadraticHeightDenominator A B C D x y v)
@@ -323,15 +270,16 @@ def heightLogDvv (A B C D x y v : ℝ) : ℝ :=
   -(1/v^2) - ((2*A*quadraticHeightDenominator A B C D x y v -
     (2*A*v)*(2*A*v))/(quadraticHeightDenominator A B C D x y v)^2)
 
-lemma deriv_spatialHeightPower_v (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+section
+variable (s : ℂ) (A B C D x y v : ℝ) (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0)
+include s A B C D x y v hv hq
+lemma deriv_spatialHeightPower_v :
     deriv (spatialHeightPower s A B C D x y) v =
       spatialHeightPower s A B C D x y v * s * (heightLogDv A B C D x y v : ℂ) := by
   exact (hasDerivAt_logRatioPower s (hasDerivAt_id v)
     (quadraticHeightDenominator_hasDerivAt_v A B C D x y v) hv hq).deriv
 
-lemma deriv2_spatialHeightPower_x (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+lemma deriv2_spatialHeightPower_x :
     deriv (deriv (fun t => spatialHeightPower s A B C D t y v)) x =
       spatialHeightPower s A B C D x y v *
         (s^2*(heightLogDx A B C D x y v : ℂ)^2 +
@@ -343,10 +291,9 @@ lemma deriv2_spatialHeightPower_x (s : ℂ) (A B C D x y v : ℝ)
     (fun t => quadraticHeightDenominator_hasDerivAt_x A B C D t y v)
     (hasDerivAt_const x 0) (by simpa only [id_eq,mul_one] using ((hasDerivAt_id x).const_mul A |>.add_const B).const_mul 2)
     hv hq
-  simpa only [spatialHeightPower,heightLogDx,heightLogDxx,zero_div,zero_sub,zero_mul,sub_zero] using h.deriv
+  pm_314 spatialHeightPower heightLogDx heightLogDxx zero_div zero_sub zero_mul sub_zero h.deriv
 
-lemma deriv2_spatialHeightPower_y (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+lemma deriv2_spatialHeightPower_y :
     deriv (deriv (fun t => spatialHeightPower s A B C D x t v)) y =
       spatialHeightPower s A B C D x y v *
         (s^2*(heightLogDy A B C D x y v : ℂ)^2 +
@@ -358,10 +305,9 @@ lemma deriv2_spatialHeightPower_y (s : ℂ) (A B C D x y v : ℝ)
     (fun t => quadraticHeightDenominator_hasDerivAt_y A B C D x t v)
     (hasDerivAt_const y 0) (by simpa only [id_eq,mul_one] using ((hasDerivAt_id y).const_mul A |>.add_const C).const_mul 2)
     hv hq
-  simpa only [spatialHeightPower,heightLogDy,heightLogDyy,zero_div,zero_sub,zero_mul,sub_zero] using h.deriv
+  pm_314 spatialHeightPower heightLogDy heightLogDyy zero_div zero_sub zero_mul sub_zero h.deriv
 
-lemma deriv2_spatialHeightPower_v (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+lemma deriv2_spatialHeightPower_v :
     deriv (deriv (spatialHeightPower s A B C D x y)) v =
       spatialHeightPower s A B C D x y v *
         (s^2*(heightLogDv A B C D x y v : ℂ)^2 +
@@ -375,17 +321,19 @@ lemma deriv2_spatialHeightPower_v (s : ℂ) (A B C D x y v : ℝ)
     (fun t => quadraticHeightDenominator_hasDerivAt_v A B C D x y t)
     (hasDerivAt_const v 1) (by simpa only [id_eq,mul_one] using (hasDerivAt_id v).const_mul (2*A))
     hv hq
-  simpa only [spatialHeightPower,heightLogDv,heightLogDvv,zero_mul,zero_sub,one_mul,neg_div] using h.deriv
+  pm_314 spatialHeightPower heightLogDv heightLogDvv zero_mul zero_sub one_mul neg_div h.deriv
+end
 
-lemma quadraticHeight_gradient_square (A B C D x y v : ℝ)
-    (hrel : A*D=B^2+C^2) :
+section
+variable (A B C D x y v : ℝ) (hrel : A*D=B^2+C^2)
+include A B C D x y v hrel
+lemma quadraticHeight_gradient_square :
     (A*x+B)^2 + (A*y+C)^2 + (A*v)^2 =
       A*quadraticHeightDenominator A B C D x y v := by
   unfold quadraticHeightDenominator
   nlinarith [hrel]
 
-lemma heightLog_eikonal (A B C D x y v : ℝ)
-    (hrel : A*D=B^2+C^2) (hv : v≠0)
+lemma heightLog_eikonal (hv : v≠0)
     (hq : quadraticHeightDenominator A B C D x y v≠0) :
     v^2 * ((heightLogDx A B C D x y v)^2 +
       (heightLogDy A B C D x y v)^2 + (heightLogDv A B C D x y v)^2) = 1 := by
@@ -397,8 +345,7 @@ lemma heightLog_eikonal (A B C D x y v : ℝ)
       ; ring
     _ = 1 := by rw [quadraticHeight_gradient_square A B C D x y v hrel]; ring
 
-lemma heightLog_laplacian (A B C D x y v : ℝ)
-    (hrel : A*D=B^2+C^2) (hv : v≠0)
+lemma heightLog_laplacian (hv : v≠0)
     (hq : quadraticHeightDenominator A B C D x y v≠0) :
     v^2 * (heightLogDxx A B C D x y v +
       heightLogDyy A B C D x y v + heightLogDvv A B C D x y v) -
@@ -410,6 +357,7 @@ lemma heightLog_laplacian (A B C D x y v : ℝ)
       field_simp [hv,hq]
       ; ring
     _ = -2 := by rw [quadraticHeight_gradient_square A B C D x y v hrel]; ring
+end
 
 def hyperbolicLaplacian (f : ℝ → ℝ → ℝ → ℂ) (x y v : ℝ) : ℂ :=
   (v:ℂ)^2 * (deriv (deriv (fun t => f t y v)) x +
@@ -423,11 +371,11 @@ theorem spatialHeightPower_eigenfunction (s : ℂ) (A B C D x y v : ℝ)
       s*(s-2)*spatialHeightPower s A B C D x y v := by
   have he : (v:ℂ)^2 * ((heightLogDx A B C D x y v : ℂ)^2 +
       (heightLogDy A B C D x y v : ℂ)^2 + (heightLogDv A B C D x y v : ℂ)^2) = 1 := by
-    exact_mod_cast heightLog_eikonal A B C D x y v hrel hv hq
+    pm_8772 heightLog_eikonal
   have hl : (v:ℂ)^2 * ((heightLogDxx A B C D x y v : ℂ) +
       (heightLogDyy A B C D x y v : ℂ) + (heightLogDvv A B C D x y v : ℂ)) -
       (v:ℂ)*(heightLogDv A B C D x y v : ℂ) = -2 := by
-    exact_mod_cast heightLog_laplacian A B C D x y v hrel hv hq
+    pm_8772 heightLog_laplacian
   unfold hyperbolicLaplacian
   rw [deriv2_spatialHeightPower_x s A B C D x y v hv hq,
     deriv2_spatialHeightPower_y s A B C D x y v hv hq,
@@ -444,8 +392,7 @@ theorem spatialHeightPower_eigenfunction (s : ℂ) (A B C D x y v : ℝ)
 
 lemma complex_row_quadratic_relation (c d : ℂ) :
     Complex.normSq c * Complex.normSq d = (c*star d).re^2 + (-(c*star d).im)^2 := by
-  simp only [Complex.normSq_apply,Complex.mul_re,Complex.mul_im,Complex.star_def,
-    Complex.conj_re,Complex.conj_im]
+  pm_162 Complex.normSq_apply Complex.mul_re Complex.mul_im Complex.star_def Complex.conj_re Complex.conj_im
   ring
 
 lemma heightDenominator_eq_quadratic (u : Fin 2 → ℂ) (x y v : ℝ) :

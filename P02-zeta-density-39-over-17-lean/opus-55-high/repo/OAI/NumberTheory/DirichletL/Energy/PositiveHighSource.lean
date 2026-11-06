@@ -4,6 +4,7 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionSymmetric
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLivePower
 public import OAI.NumberTheory.DirichletL.Energy.FixedRadialReduction
 public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -54,25 +55,25 @@ lemma balanced_matches:
 
 omit [DecidableEq α] in
 lemma balanced_volume:
-    CenteredMomentAmplificationChildInput.volume balancedSource=X₁*X₂*∏i,Z^(w i):=rfl
+    CenteredMomentAmplificationChildInput.volume balancedSource=X₁*X₂*∏i,Z ^(w i):=rfl
 
 omit [DecidableEq α] in
 lemma balanced_volume_bound (κ Mcap:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
-    (hcap:length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width)(hs:s.width≤Mcap):
-    CenteredMomentAmplificationChildInput.volume balancedSource≤Z^Mcap:=by
+    (hcap:length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width)(hs:s.width≤Mcap):
+    CenteredMomentAmplificationChildInput.volume balancedSource≤Z ^Mcap:=by
   rw [balanced_volume]
   have hz:=zero_lt_one.trans hZ
-  have hw0:0≤∑i,w i:=Finset.sum_nonneg (fun i _=>hw i)
-  have hx (X:ℝ):X≤Z^(length Z X):=by
+  pm_744 hw0 w hw
+  have hx (X:ℝ):X≤Z ^(length Z X):=by
     rw [length,Real.rpow_logb hz hZ.ne' (lt_of_lt_of_le zero_lt_one (le_max_left _ _))]
-    exact le_max_right _ _
+    grind
   calc
-    _≤(Z^(length Z X₁)*Z^(length Z X₂))*(∏i,Z^(w i)):=by
+    _≤(Z ^(length Z X₁)*Z ^(length Z X₂))*(∏i,Z ^(w i)):=by
       apply mul_le_mul_of_nonneg_right _ (Finset.prod_nonneg (fun _ _=>Real.rpow_nonneg hz.le _))
       exact mul_le_mul (hx X₁) (hx X₂) hX₂.le (Real.rpow_nonneg hz.le _)
-    _=Z^(length Z X₁+length Z X₂+∑i,w i):=by
+    _=Z ^(length Z X₁+length Z X₂+∑i,w i):=by
       rw [←Real.rpow_add hz,←Real.rpow_sum_of_pos hz,←Real.rpow_add hz]
-    _≤Z^Mcap:=Real.rpow_le_rpow_of_exponent_le hZ.le (by nlinarith)
+    _≤Z ^Mcap:=Real.rpow_le_rpow_of_exponent_le hZ.le (by nlinarith)
 
 end SevenEighths.CenteredMomentEnergyPositiveHighSource
 

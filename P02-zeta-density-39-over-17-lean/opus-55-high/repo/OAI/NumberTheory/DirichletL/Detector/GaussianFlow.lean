@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussianSummation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -40,20 +41,20 @@ lemma gaussianFlow_disk_bound (a L : ℝ) (_hL : 0≤L) :
       ∀z∈Metric.closedBall (y:ℂ) 1,‖gaussianFlow R z‖≤C*R^(-a) := by
   let c := ‖((1/(2*Real.pi):ℝ):ℂ)*(Real.pi:ℂ)^(1/2:ℂ)‖
   let B := Real.exp (a^2+1/4+|a| *(L+1))
-  have hc : 0≤c := norm_nonneg _
+  have hc : 0≤ c := norm_nonneg _
   have hB : 0<B := Real.exp_pos _
   refine ⟨(c+1)*B,by positivity,?_⟩
   intro R hR y hy z hz
   have hd : ‖z-(y:ℂ)‖≤1 := by simpa only [Metric.mem_closedBall,dist_eq_norm] using hz
-  have hzr := (Complex.abs_re_le_norm (z-(y:ℂ))).trans hd
-  have hzi := (Complex.abs_im_le_norm (z-(y:ℂ))).trans hd
+  pm_8508 hzr Complex.abs_re_le_norm
+  pm_8508 hzi Complex.abs_im_le_norm
   simp only [Complex.sub_re,Complex.sub_im,Complex.ofReal_re,Complex.ofReal_im,sub_zero] at hzr hzi
   have hre : |z.re|≤L+1 := by
     have h := abs_add_le (z.re-y) y
     have he : z.re-y+y=z.re := by ring
     rw [he] at h
     linarith
-  have hsq : z.im^2≤1 := by nlinarith [(abs_le.mp hzi).1,(abs_le.mp hzi).2]
+  have hsq : z.im^2≤1 := by simp_all
   have hmul : -(a*z.re)≤|a| *(L+1) := by
     calc
       _ ≤ |a*z.re| := neg_le_abs _
@@ -74,7 +75,7 @@ lemma gaussianFlow_disk_bound (a L : ℝ) (_hL : 0≤L) :
 lemma gaussianFlow_derivative_bound (a L : ℝ) (hL : 0≤L) (n : ℕ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→∀y : ℝ,|y|≤L→
       ‖iteratedDeriv n (fun s : ℝ=>gaussianFlow R (s:ℂ)) y‖≤C*R^(-a) := by
-  obtain ⟨B,hB,hbound⟩ := gaussianFlow_disk_bound a L hL
+  pm_114 B hB hbound gaussianFlow_disk_bound a L hL
   refine ⟨(n.factorial:ℝ)*B,by positivity,?_⟩
   intro R hR y hy
   rw [iteratedDeriv_restrict_real _ (fun x=>gaussianFlow_analytic R (x:ℂ)) n y]

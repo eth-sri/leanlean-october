@@ -1,8 +1,8 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -17,18 +17,19 @@ theorem middle_time_bounds {N T : ℝ} (hN : 2 ≤ N)
   constructor
   · have hh := Real.rpow_le_rpow_of_exponent_le hn (by norm_num : (1:ℝ)≤6/5)
     rw [Real.rpow_one] at hh
-    exact hh.trans hlo
+    grind
   · have hh := Real.rpow_le_rpow_of_exponent_le hn (by norm_num : (5:ℝ)/3≤2)
     rw [Real.rpow_ofNat] at hh
-    exact hhi.trans hh
+    grind
 
-theorem middle_length_bounds {N T : ℝ} (hN : 2 ≤ N)
-    (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3)) :
+section
+variable {N T : ℝ} (hN : 2 ≤ N) (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3))
+include N T hN hlo hhi
+theorem middle_length_bounds :
     N ≤ middleLength N T ∧ T^((4:ℝ)/5) ≤ middleLength N T ∧
       middleLength N T ≤ T := by
   have hnt := (middle_time_bounds hN hlo hhi).1
-  have hn : 0 < N := by linarith
-  have ht : 0 < T := by linarith
+  pm_4537
   have ht1 : 1 ≤ T := by linarith
   unfold middleLength
   constructor
@@ -53,11 +54,10 @@ theorem middle_length_bounds {N T : ℝ} (hN : 2 ≤ N)
       _ = T := Real.rpow_one _
 
 /-- The factor-five rescaling matches the actual time support of the source. -/
-theorem middle_rescaled_length_bounds {N T : ℝ} (hN : 2 ≤ N)
-    (hlo : N^((6:ℝ)/5) ≤ T) (hhi : T ≤ N^((5:ℝ)/3)) :
+theorem middle_rescaled_length_bounds :
     N ≤ 5*middleLength N T ∧ (5*T)^((4:ℝ)/5) ≤ 5*middleLength N T ∧
       5*middleLength N T ≤ 5*T ∧ 5*middleLength N T ≤ 5*N^2 := by
-  obtain ⟨hnl,htl,hlt⟩ := middle_length_bounds hN hlo hhi
+  pm_114 hnl htl hlt middle_length_bounds hN hlo hhi
   obtain ⟨hnt,htn⟩ := middle_time_bounds hN hlo hhi
   have ht : 0 ≤ T := by linarith
   have hfive : (5:ℝ)^((4:ℝ)/5) ≤ 5 := by
@@ -65,9 +65,10 @@ theorem middle_rescaled_length_bounds {N T : ℝ} (hN : 2 ≤ N)
       (by norm_num : (4:ℝ)/5≤1)
     simpa only [Real.rpow_one] using hh
   refine ⟨by linarith,?_,by linarith,by linarith⟩
-  rw [Real.mul_rpow (by norm_num : (0:ℝ)≤5) ht]
+  pm_7444 ht
   exact (mul_le_mul_of_nonneg_right hfive (Real.rpow_nonneg ht _)).trans
     (mul_le_mul_of_nonneg_left htl (by norm_num))
+end
 
 theorem middle_threshold_ge_one {N T : ℝ} (hN : 1 ≤ N) (hT : 1 ≤ T) :
     1 ≤ middleThreshold N T := by

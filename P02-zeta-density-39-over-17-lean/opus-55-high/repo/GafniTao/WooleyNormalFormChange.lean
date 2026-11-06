@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleySection7TopExtraction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,6 @@ from equal-length tuple displacements), and an exact `p^B` error.
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -36,14 +36,12 @@ def wooleyNormalFormPositiveLow {k : ℕ}
     C ((wooleyNormalFormCombination phi q G i).coeff ((d : ℕ) + 1)) *
       X ^ ((d : ℕ) + 1)
 
+section
+variable {k p B : ℕ} {phi : WooleyPolynomialSystem k} (G : Matrix (Fin k) (Fin k) (ZMod (p ^ B))) (hG : G * Matrix.transpose (wooleyPolynomialSystemLowMatrixMod phi (p ^ B)) = 1) (i : Fin k)
+include k p B phi G hG i
 /-- The inverse low-coefficient matrix makes the transformed positive low
 part exactly one monomial modulo the working modulus. -/
-theorem wooleyNormalFormPositiveLow_map_eq_monomial
-    {k p B : ℕ} {phi : WooleyPolynomialSystem k}
-    (G : Matrix (Fin k) (Fin k) (ZMod (p ^ B)))
-    (hG : G * Matrix.transpose
-      (wooleyPolynomialSystemLowMatrixMod phi (p ^ B)) = 1)
-    (i : Fin k) :
+theorem wooleyNormalFormPositiveLow_map_eq_monomial :
     Polynomial.map (Int.castRingHom (ZMod (p ^ B)))
         (wooleyNormalFormPositiveLow phi (p ^ B) G i) =
       X ^ ((i : ℕ) + 1) := by
@@ -51,11 +49,8 @@ theorem wooleyNormalFormPositiveLow_map_eq_monomial
       ((wooleyNormalFormCombination phi (p ^ B) G i).coeff
           ((d : ℕ) + 1) : ZMod (p ^ B)) =
         if i = d then 1 else 0 := by
-    have hentry := congrArg
-      (fun A : Matrix (Fin k) (Fin k) (ZMod (p ^ B)) => A i d) hG
-    unfold wooleyNormalFormCombination
-    rw [← lcoeff_apply, map_sum]
-    simp only [lcoeff_apply, coeff_C_mul]
+    pm_6327 A k B
+    pm_6689
     have hlow (j : Fin k) :
         ((phi j).coeff ((d : ℕ) + 1) : ZMod (p ^ B)) =
           wooleyPolynomialSystemLowMatrixMod phi (p ^ B) d j := by
@@ -81,8 +76,7 @@ theorem wooleyNormalFormPositiveLow_map_eq_monomial
         simpa only [Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply]
           using hentry
   unfold wooleyNormalFormPositiveLow
-  simp only [Polynomial.map_sum, Polynomial.map_mul, Polynomial.map_C,
-    Polynomial.map_pow, Polynomial.map_X]
+  pm_503 Polynomial.map_sum Polynomial.map_mul Polynomial.map_C Polynomial.map_pow Polynomial.map_X
   calc
     (∑ d : Fin k,
         C (((wooleyNormalFormCombination phi (p ^ B) G i).coeff
@@ -93,20 +87,11 @@ theorem wooleyNormalFormPositiveLow_map_eq_monomial
           intro d hd
           rw [hcoeff d]
     _ = X ^ ((i : ℕ) + 1) := by
-      rw [Finset.sum_eq_single i]
-      · simp
-      · intro d hd hdi
-        simp [Ne.symm hdi]
-      · simp
+      pm_6037
 
 /-- The modular error in the low positive part is an exact integral
 multiple of `p^B`. -/
-theorem wooleyNormalFormPositiveLow_exists_error
-    {k p B : ℕ} {phi : WooleyPolynomialSystem k}
-    (G : Matrix (Fin k) (Fin k) (ZMod (p ^ B)))
-    (hG : G * Matrix.transpose
-      (wooleyPolynomialSystemLowMatrixMod phi (p ^ B)) = 1)
-    (i : Fin k) :
+theorem wooleyNormalFormPositiveLow_exists_error :
     ∃ Error : Polynomial ℤ,
       wooleyNormalFormPositiveLow phi (p ^ B) G i =
         X ^ ((i : ℕ) + 1) + C ((p : ℤ) ^ B) * Error := by
@@ -127,6 +112,7 @@ theorem wooleyNormalFormPositiveLow_exists_error
           X ^ ((i : ℕ) + 1)) + X ^ ((i : ℕ) + 1) := by ring
     _ = C ((p : ℤ) ^ B) * Error + X ^ ((i : ℕ) + 1) := by rw [hError]
     _ = X ^ ((i : ℕ) + 1) + C ((p : ℤ) ^ B) * Error := by ring
+end
 
 /-- A zero-constant polynomial with a scalar-divisible tail has the exact
 tail-only form needed in (7.7). -/
@@ -140,8 +126,7 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalar_X_tail
         C z * X ^ (k + 1) * theta := by
   obtain ⟨Xi, hXi⟩ :=
     wooleyPolynomial_exists_positiveLow_add_scalarTail k f z hzero hhigh
-  let low : Polynomial ℤ :=
-    ∑ i : Fin k, C (f.coeff ((i : ℕ) + 1)) * X ^ ((i : ℕ) + 1)
+  pm_680 k
   have hXiLow : ∀ n < k + 1, Xi.coeff n = 0 := by
     intro n hn
     have hcoeff := congrArg (fun g : Polynomial ℤ => g.coeff n) hXi
@@ -149,23 +134,12 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalar_X_tail
       dsimp only [low]
       rw [← lcoeff_apply, map_sum]
       simp only [lcoeff_apply, coeff_C_mul, coeff_X_pow]
-      by_cases hn0 : n = 0
-      · subst n
-        simp [hzero]
+      pm_6106 hn0 n hzero
       · let i : Fin k := ⟨n - 1, by omega⟩
         have hi : (i : ℕ) + 1 = n := by
           dsimp only [i]
           omega
-        rw [Finset.sum_eq_single i]
-        · simp [hi]
-        · intro d hd hdi
-          have hval : (d : ℕ) + 1 ≠ n := by
-            intro heq
-            apply hdi
-            apply Fin.ext
-            omega
-          simp [Ne.symm hval]
-        · simp
+        pm_5318 d hd hdi hval
     simp only [coeff_add, coeff_C_mul] at hcoeff
     rw [hlowCoeff] at hcoeff
     have hmul : z * Xi.coeff n = 0 := by linarith
@@ -190,19 +164,16 @@ def wooleyIntegerMixedPolynomialDisplacement {I J : Type*}
   wooleyIntegerTupleDisplacement R (fun x => f.eval (leftPoint x)) leftXY -
     wooleyIntegerTupleDisplacement S (fun x => f.eval (rightPoint x)) rightXY
 
-theorem wooleyIntegerMixedPolynomialDisplacement_zero
-    {I J : Type*} (R S : ℕ) (leftPoint : I → ℤ) (rightPoint : J → ℤ)
-    (leftXY : WooleyFiniteTuple R I × WooleyFiniteTuple R I)
-    (rightXY : WooleyFiniteTuple S J × WooleyFiniteTuple S J) :
+section
+variable {I J : Type*} (R S : ℕ) (leftPoint : I → ℤ) (rightPoint : J → ℤ) (leftXY : WooleyFiniteTuple R I × WooleyFiniteTuple R I) (rightXY : WooleyFiniteTuple S J × WooleyFiniteTuple S J)
+include I J R S leftPoint rightPoint leftXY rightXY
+theorem wooleyIntegerMixedPolynomialDisplacement_zero :
     wooleyIntegerMixedPolynomialDisplacement R S leftPoint rightPoint
       leftXY rightXY 0 = 0 := by
   simp [wooleyIntegerMixedPolynomialDisplacement,
     wooleyIntegerTupleDisplacement]
 
 theorem wooleyIntegerMixedPolynomialDisplacement_add
-    {I J : Type*} (R S : ℕ) (leftPoint : I → ℤ) (rightPoint : J → ℤ)
-    (leftXY : WooleyFiniteTuple R I × WooleyFiniteTuple R I)
-    (rightXY : WooleyFiniteTuple S J × WooleyFiniteTuple S J)
     (f g : Polynomial ℤ) :
     wooleyIntegerMixedPolynomialDisplacement R S leftPoint rightPoint
         leftXY rightXY (f + g) =
@@ -216,9 +187,6 @@ theorem wooleyIntegerMixedPolynomialDisplacement_add
   ring
 
 theorem wooleyIntegerMixedPolynomialDisplacement_C_mul
-    {I J : Type*} (R S : ℕ) (leftPoint : I → ℤ) (rightPoint : J → ℤ)
-    (leftXY : WooleyFiniteTuple R I × WooleyFiniteTuple R I)
-    (rightXY : WooleyFiniteTuple S J × WooleyFiniteTuple S J)
     (z : ℤ) (f : Polynomial ℤ) :
     wooleyIntegerMixedPolynomialDisplacement R S leftPoint rightPoint
         leftXY rightXY (C z * f) =
@@ -230,14 +198,12 @@ theorem wooleyIntegerMixedPolynomialDisplacement_C_mul
   ring
 
 theorem wooleyIntegerMixedPolynomialDisplacement_C
-    {I J : Type*} (R S : ℕ) (leftPoint : I → ℤ) (rightPoint : J → ℤ)
-    (leftXY : WooleyFiniteTuple R I × WooleyFiniteTuple R I)
-    (rightXY : WooleyFiniteTuple S J × WooleyFiniteTuple S J)
     (z : ℤ) :
     wooleyIntegerMixedPolynomialDisplacement R S leftPoint rightPoint
       leftXY rightXY (C z) = 0 := by
   simp [wooleyIntegerMixedPolynomialDisplacement,
     wooleyIntegerTupleDisplacement]
+end
 
 /-- The mixed displacement is additive over a finite polynomial family. -/
 theorem wooleyIntegerMixedPolynomialDisplacement_sum
@@ -260,10 +226,12 @@ theorem wooleyIntegerMixedPolynomialDisplacement_sum
         R S leftPoint rightPoint leftXY rightXY }
   exact _root_.map_sum F f Finset.univ
 
+section
+variable {I J : Type*}
+include I J
 /-- A lifted modular row operation sends the mixed displacement to the same
 integer linear combination of the original displacements. -/
-theorem wooleyNormalFormCombination_mixed_displacement
-    {I J : Type*} {k q R S : ℕ} (phi : WooleyPolynomialSystem k)
+theorem wooleyNormalFormCombination_mixed_displacement {k q R S : ℕ} (phi : WooleyPolynomialSystem k)
     (G : Matrix (Fin k) (Fin k) (ZMod q)) (i : Fin k)
     (leftPoint : I → ℤ) (rightPoint : J → ℤ)
     (leftXY : WooleyFiniteTuple R I × WooleyFiniteTuple R I)
@@ -282,8 +250,7 @@ theorem wooleyNormalFormCombination_mixed_displacement
 
 /-- Divisibility of the source mixed displacement is inherited by every
 lifted row combination. -/
-theorem wooleyNormalFormCombination_mixed_displacement_dvd
-    {I J : Type*} {k p B R S : ℕ} (phi : WooleyPolynomialSystem k)
+theorem wooleyNormalFormCombination_mixed_displacement_dvd {k p B R S : ℕ} (phi : WooleyPolynomialSystem k)
     (G : Matrix (Fin k) (Fin k) (ZMod (p ^ B))) (i : Fin k)
     (leftPoint : I → ℤ) (rightPoint : J → ℤ)
     (leftXY : WooleyFiniteTuple R I × WooleyFiniteTuple R I)
@@ -301,8 +268,7 @@ theorem wooleyNormalFormCombination_mixed_displacement_dvd
 
 /-- The exact normal-form equality therefore transfers the genuine source
 mixed congruence to the tail-only system used in (7.7). -/
-theorem wooleyTailNormalChange_mixed_displacement_dvd
-    {I J : Type*} {k p c B R S : ℕ} (phi : WooleyPolynomialSystem k)
+theorem wooleyTailNormalChange_mixed_displacement_dvd {k p c B R S : ℕ} (phi : WooleyPolynomialSystem k)
     (G : Matrix (Fin k) (Fin k) (ZMod (p ^ B)))
     (psi Error : WooleyPolynomialSystem k)
     (hchange : ∀ i : Fin k,
@@ -335,6 +301,7 @@ theorem wooleyTailNormalChange_mixed_displacement_dvd
   rw [hrel] at hW
   have hsub := dvd_sub hW herror
   simpa only [zero_add, add_sub_cancel_right] using hsub
+end
 
 /-- Swapping the positive and negative halves of a tuple pair negates its
 integral displacement. -/

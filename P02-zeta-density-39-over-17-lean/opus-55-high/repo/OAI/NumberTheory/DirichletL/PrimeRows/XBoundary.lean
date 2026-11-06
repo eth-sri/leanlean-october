@@ -2,19 +2,20 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.XGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedContour
 public import OAI.NumberTheory.DirichletL.ContinuationShiftedGaussian
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 local notation "O" => HeckeFamily.O
 
-def xRowScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
+def xRowScalar {K : ℕ} (P : Fin K→ PrimeIdeal) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y : ℝ) (w z : ℂ) : ℂ :=
   (X:ℂ)^(1/2-z)*(Y:ℂ)^(w-1)*
     mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) z*mellin W1 w*
@@ -23,7 +24,7 @@ def xRowScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
 
 lemma continuedPhysicalRowKernel_x_factor {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
+    (P : Fin K→ PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z=
       xRowScalar P u W0 W1 X Y w z*(Z:ℂ)^(x+z-1)*Complex.exp ((x+z-1)^2)*
@@ -42,15 +43,15 @@ lemma coupled_gaussian_bound (z : ℂ) {l r v : ℝ} (hl : 0<l) (hv : v∈Icc l 
   have hvp : 0<v := hl.trans_le hv.1
   have hA : |v+z.re-1|≤|z.re|+r+1 := by
     rw [abs_le]
-    constructor <;> linarith [neg_abs_le z.re,le_abs_self z.re,hv.2]
-  have hh := pow_le_pow_left₀ (abs_nonneg (v+z.re-1)) hA 2
+    grind
+  pm_7871 hh v z.re hA
   rw [sq_abs] at hh
   linarith
 
 theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
     (e eps : ℝ) (he : 0<e) (he' : e<1/1000)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
+    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→ PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ)
     (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ) (l r : ℝ)
     (hl : (51/100:ℝ)≤l) (hlβ : HeckeZeroSupremum.beta+8*e≤l)
@@ -69,7 +70,7 @@ theorem continuedPhysicalRowKernel_x_gaussian {K : ℕ}
   have hZb := cpow_le_scaleBound hZ (((v:ℂ)+t*I)+z-1)
     (show (((v:ℂ)+t*I)+z-1).re∈Icc (l+z.re-1) (r+z.re-1) by
       simpa using And.intro (by linarith [hv.1] : l+z.re-1≤v+z.re-1)
-        (by linarith [hv.2] : v+z.re-1≤r+z.re-1))
+        (by linarith [hv.2] : v+z.re-1≤ r+z.re-1))
   have hgb := coupled_gaussian_bound z (by linarith : 0<l) hv t
   have hr : ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
       physicalCompensatedRow S hS (Finset.univ.image P) (contourTupleOutside S P hPS) η u ((v:ℂ)+t*I) w z‖≤C*(3+|t|)^2 := by

@@ -14,18 +14,22 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 def secondUnitFrequency (u v : Eisˣ) (k : Eis) : Eis := ((u^4*v:Eisˣ):Eis)*k
 
-lemma secondUnitFrequency_injective (u v : Eisˣ) : Function.Injective (secondUnitFrequency u v) := by
+section
+variable (u v : Eisˣ)
+include u v
+lemma secondUnitFrequency_injective : Function.Injective (secondUnitFrequency u v) := by
   intro a b hab
   exact mul_left_cancel₀ (Units.ne_zero (u^4*v)) hab
 
-lemma secondUnitFrequency_norm (u v : Eisˣ) (k : Eis) :
+lemma secondUnitFrequency_norm (k : Eis) :
     ‖ConcreteTraceCRT.eisEmbedding (secondUnitFrequency u v k)‖ =
       ‖ConcreteTraceCRT.eisEmbedding k‖ :=
   GaussGeneratorTransport.norm_eisEmbedding_unit_mul (u^4*v) k
 
-lemma secondUnitFrequency_neg (u v : Eisˣ) (k : Eis) :
+lemma secondUnitFrequency_neg (k : Eis) :
     secondUnitFrequency u v (-k) = -secondUnitFrequency u v k := by
   simp only [secondUnitFrequency,mul_neg]
+end
 
 variable {ι σ : Type*} [DecidableEq ι]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]

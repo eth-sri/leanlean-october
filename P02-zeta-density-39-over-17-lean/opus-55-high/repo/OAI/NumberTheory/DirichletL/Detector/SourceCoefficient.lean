@@ -42,15 +42,7 @@ theorem sourceHighCoefficient_eq_bare (S : Finset (Ideal O)) (hS : ∀ P∈S,P.I
   rw [hval] at he
   unfold sourceHighCoefficient bareSourceCoefficient correctedFiniteCoefficient reciprocityCoefficient
   simp only [star_mul]
-  calc
-    _ = (actualCongruenceCoefficient (calibrationForSet S hS) A s (supportedElement_ne_zero A hA) (u*a^6) *
-      idealRowHom (calibrationForSet S hS).generator (Ideal.span {s}) /
-      ((Real.sqrt (elementNorm (calibrationForSet S hS).generator):ℂ)*(calibrationForSet S hS).tau*
-       (calibrationForSet S hS).residueMonoid s*star ((calibrationForSet S hS).residueMonoid u)) *
-      ((calibrationForSet S hS).Xi A)⁻¹) *
-      (gaussTwo I hI * star (G A) * star (FiniteGaussPhase.angularFactor A) *
-        targetMonoid η A * reciprocitySign A s) := by ring
-    _ = _ := by rw [he]; ring
+  grind
 
 theorem bareSourceCoefficient_product (η : HeckeFamily.Character) (I J : Ideal O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)

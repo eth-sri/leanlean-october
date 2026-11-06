@@ -32,22 +32,26 @@ def swapIndex (C D : Ideal O) : CommonIndex C D ≃ CommonIndex D C where
 def swapSubset (C D : Ideal O) (E : Finset (CommonIndex C D)) :
     Finset (CommonIndex D C) := E.map (swapIndex C D).toEmbedding
 
-lemma swapSubset_product (C D : Ideal O) (E : Finset (CommonIndex C D)) :
+section
+variable (C D : Ideal O) (E : Finset (CommonIndex C D))
+include C D E
+lemma swapSubset_product :
     (∏P∈swapSubset C D E,P.val)=∏P∈E,P.val := by
   simp only [swapSubset,Finset.prod_map,Equiv.toEmbedding_apply,swapIndex_val]
 
-lemma swapSubset_generator (C D : Ideal O) (E : Finset (CommonIndex C D)) :
+lemma swapSubset_generator :
     primeSubsetGenerator (fun P : CommonIndex D C=>P.val) (swapSubset C D E)=
       primeSubsetGenerator (fun P : CommonIndex C D=>P.val) E := by
   unfold primeSubsetGenerator
   rw [swapSubset_product]
 
-lemma swapped_modulus_factor (C D : Ideal O) (E : Finset (CommonIndex C D)) :
+lemma swapped_modulus_factor :
     Ideal.span {(primeSubsetGenerator (fun P : CommonIndex D C=>P.val)
       (swapSubset C D E)*activeConductor D C)}=
     Ideal.span {primeSubsetGenerator (fun P : CommonIndex C D=>P.val) E*activeConductor C D} := by
   rw [swapSubset_generator,←Ideal.span_singleton_mul_span_singleton,
     ←Ideal.span_singleton_mul_span_singleton,active_span_swap]
+end
 
 theorem right_modulus (η : Character) (C D : Ideal O) (hC : Supported C)
     (E : Finset (CommonIndex C D)) (ξ₁ ξ₂ : RayFourExpansion.RayCharacter)

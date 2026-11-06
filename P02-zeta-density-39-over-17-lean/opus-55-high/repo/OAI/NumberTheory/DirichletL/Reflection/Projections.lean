@@ -26,67 +26,48 @@ def actualSlotPhase (F : PrimeFamily φ) (S : PrimeFamily σ) (jF : φ → ℕ)
     (Sum.elim jF (fun _ => 0)) (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m
 
 omit [Fintype σ] in
-theorem sourceRowPhase_eq_actual (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ → ℕ)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : Eisˣ) (m : ℕ) :
-    sourceRowPhase s (F.reflected K hK S).generator_ne_zero
-      (F.reflected K hK S).generator_good (reflectedExponent jF)
-      (residualIndices φ (PrimeIndex K) σ) (frozenIndices φ (PrimeIndex K) σ) u m =
-      actualRowPhase F K hK jF s u m := by
+set_option hygiene false in
+macro "pf_91" x1:term:max x2:ident x3:ident x4:term:max x5:term:max x6:ident x7:ident x8:ident : tactic => `(tactic| (
   classical
-  let f : φ ⊕ PrimeIndex K → φ ⊕ (PrimeIndex K ⊕ σ) := Sum.elim Sum.inl (Sum.inr ∘ Sum.inl)
+  let f : φ ⊕ $x1:term → φ ⊕ (PrimeIndex K ⊕ σ) := Sum.elim Sum.inl (Sum.inr ∘ $x2:ident)
   have hf : Function.Injective f := by
     intro i k h
     cases i <;> cases k <;> simp_all [f]
-  have he := sourceRowPhase_transport s (F.reflected K hK S).generator_ne_zero
+  have he := $x3:ident s (F.reflected K hK S).generator_ne_zero
     (F.reflected K hK S).generator_good (reflectedExponent jF) f hf
     (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m
   have hp : (fun i => (F.reflected K hK S).generator (f i)) =
-      (F.sum (PrimeFamily.residual K hK)).generator := by
+      (F.sum $x4:term).generator := by
     funext i
     cases i <;> rfl
-  have hj : (fun i => reflectedExponent jF (f i)) = Sum.elim jF (fun _ => 1) := by
+  have hj : (fun i => reflectedExponent jF (f i)) = Sum.elim jF (fun _ => $x5:term) := by
     funext i
     cases i <;> rfl
-  have hh := sourceRowPhase_congr_functions s
+  have hh := $x6:ident s
     (fun i => (F.reflected K hK S).generator_ne_zero (f i))
     (fun i => (F.reflected K hK S).generator_good (f i))
-    (F.sum (PrimeFamily.residual K hK)).generator_ne_zero
-    (F.sum (PrimeFamily.residual K hK)).generator_good
+    (F.sum $x4:term).generator_ne_zero
+    (F.sum $x4:term).generator_good
     _ _ (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m hp hj
   rw [he] at hh
-  simpa only [actualRowPhase,residualIndices,frozenIndices,Finset.image_image,
-    Function.comp_def,f,Sum.elim_inl,Sum.elim_inr] using hh
+  simpa only [$x7:ident,$x8:ident,frozenIndices,Finset.image_image,
+    Function.comp_def,f,Sum.elim_inl,Sum.elim_inr] using hh))
+section
+variable (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) (jF : φ → ℕ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : Eisˣ) (m : ℕ)
+include F K hK S jF s u m
+omit [Fintype σ] in
+theorem sourceRowPhase_eq_actual :
+    sourceRowPhase s (F.reflected K hK S).generator_ne_zero
+      (F.reflected K hK S).generator_good (reflectedExponent jF)
+      (residualIndices φ (PrimeIndex K) σ) (frozenIndices φ (PrimeIndex K) σ) u m =
+      actualRowPhase F K hK jF s u m := by pf_91 (PrimeIndex K) Sum.inl sourceRowPhase_transport (PrimeFamily.residual K hK) 1 sourceRowPhase_congr_functions actualRowPhase residualIndices
 
-theorem sourceSlotPhase_eq_actual (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ → ℕ)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (u : Eisˣ) (m : ℕ) :
+theorem sourceSlotPhase_eq_actual :
     sourceSlotPhase s (F.reflected K hK S).generator_ne_zero
       (F.reflected K hK S).generator_good (reflectedExponent jF)
       (slotIndices φ (PrimeIndex K) σ) (frozenIndices φ (PrimeIndex K) σ) u m =
-      actualSlotPhase F S jF s u m := by
-  classical
-  let f : φ ⊕ σ → φ ⊕ (PrimeIndex K ⊕ σ) := Sum.elim Sum.inl (Sum.inr ∘ Sum.inr)
-  have hf : Function.Injective f := by
-    intro i k h
-    cases i <;> cases k <;> simp_all [f]
-  have he := sourceSlotPhase_transport s (F.reflected K hK S).generator_ne_zero
-    (F.reflected K hK S).generator_good (reflectedExponent jF) f hf
-    (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m
-  have hp : (fun i => (F.reflected K hK S).generator (f i)) = (F.sum S).generator := by
-    funext i
-    cases i <;> rfl
-  have hj : (fun i => reflectedExponent jF (f i)) = Sum.elim jF (fun _ => 0) := by
-    funext i
-    cases i <;> rfl
-  have hh := sourceSlotPhase_congr_functions s
-    (fun i => (F.reflected K hK S).generator_ne_zero (f i))
-    (fun i => (F.reflected K hK S).generator_good (f i))
-    (F.sum S).generator_ne_zero (F.sum S).generator_good
-    _ _ (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m hp hj
-  rw [he] at hh
-  simpa only [actualSlotPhase,slotIndices,frozenIndices,Finset.image_image,
-    Function.comp_def,f,Sum.elim_inl,Sum.elim_inr] using hh
+      actualSlotPhase F S jF s u m := by pf_91 σ Sum.inr sourceSlotPhase_transport S 0 sourceSlotPhase_congr_functions actualSlotPhase slotIndices
+end
 
 end
 end SevenEighths.InverseReflectedPhase

@@ -2,6 +2,7 @@ module
 public import GafniTao.HeathBrownAbelTransfer
 public import GafniTao.FordVinogradovIntegral
 public import Mathlib.MeasureTheory.Group.AddCircle
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,8 +14,8 @@ The source integrates over the coefficient torus.  For each source index
 `f^(j+1)(n)/(j+1)!` modulo one.
 -/
 
-open Finset Set MeasureTheory Metric
-open scoped BigOperators ENNReal
+open Finset Set MeasureTheory
+open scoped ENNReal
 
 namespace GafniTao
 
@@ -55,12 +56,12 @@ theorem two_mul_heathBrownCellRadius_le_one
     calc
       (2 : ℝ) ≤ (H : ℝ) := by exact_mod_cast hH
       _ ≤ (H : ℝ) ^ (j + 1) := by
-        have hHreal : (1 : ℝ) ≤ H := by exact_mod_cast (by omega : 1 ≤ H)
+        pm_308 hHreal H
         simpa only [pow_one] using
           (pow_le_pow_right₀ hHreal (by omega : 1 ≤ j + 1))
   have hpowPos : 0 < (H : ℝ) ^ (j + 1) := by positivity
   rw [mul_inv_le_iff₀ hpowPos]
-  simpa [mul_comm] using hpow
+  grind
 
 theorem measure_heathBrownCoefficientCell
     {k H : ℕ} (hH : 2 ≤ H) (f : ℝ → ℝ) (n : ℝ) :

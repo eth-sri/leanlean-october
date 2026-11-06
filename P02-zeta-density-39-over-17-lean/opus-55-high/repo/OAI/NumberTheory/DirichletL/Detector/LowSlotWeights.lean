@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowSlotPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ local notation "O" => ActualEisensteinCubic.O
 def lowSingleSlotWeight (η : HeckeFamily.Character) (W : ℝ→ℂ) (P t : ℝ) (a : O) : ℂ :=
   star (HeckeFamily.elementCoeff η a)*W (elementNorm a/P)*logPhase (-t) (Real.log (elementNorm a/P))
 
-lemma lowSelectedWeight_eq_product {K : ℕ} (η : HeckeFamily.Character) (slots : Fin K→Finset O)
+lemma lowSelectedWeight_eq_product {K : ℕ} (η : HeckeFamily.Character) (slots : Fin K→ Finset O)
     (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (t : ℝ)
     (b : LowSelectedTuple slots J) :
     lowSelectedWeight η slots J W P t b=
@@ -22,8 +23,7 @@ lemma lowSelectedWeight_eq_product {K : ℕ} (η : HeckeFamily.Character) (slots
   have he : HeckeFamily.elementCoeff η (∏i : SelectedSlot J,(b i).val)=
       ∏i : SelectedSlot J,HeckeFamily.elementCoeff η (b i).val := map_prod (targetMonoid η) _ _
   unfold lowSelectedWeight lowSingleSlotWeight
-  rw [he,star_prod]
-  simp only [Finset.prod_mul_distrib,mul_assoc]
+  pm_326 he star_prod Finset.prod_mul_distrib mul_assoc
 
 lemma lowSingleSlotWeight_norm (η : HeckeFamily.Character) (W : ℝ→ℂ) (P t : ℝ) (a : O) :
     ‖lowSingleSlotWeight η W P t a‖≤‖W (elementNorm a/P)‖ := by

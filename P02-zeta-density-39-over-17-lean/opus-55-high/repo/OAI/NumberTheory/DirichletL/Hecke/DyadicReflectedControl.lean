@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,9 +26,9 @@ theorem buffered_reflected_line_control (e ε : ℝ)
       ‖LFunction (χ j) s‖≤C*((χ j).modulus.absNorm : ℝ)^(a-1/2+6*e)*
         ((radical (χ j).modulus).absNorm : ℝ)^(6*e+2*ε)*
         (3+(3*i+2 : ℕ)*T)^2*(presentationComplexity (χ j) ((3*i+2 : ℕ)*T))^ε := by
-  obtain ⟨Cg,hCg,hreflect⟩ := original_reflected_subpower ε hε
-  obtain ⟨Cb,hCb,hrect⟩ := buffered_rectangle_control e ε he he' hε
-  refine ⟨Cg*Cb,mul_pos hCg hCb,?_⟩
+  pm_69 Cg hCg hreflect original_reflected_subpower ε hε
+  pm_3547 Cb hCb hrect buffered_rectangle_control e ε he he' hε
+  pm_3171 Cg Cb mul_pos hCg hCb
   intro ι _ χ hχ T a i hT ha ha' hmax j s hs him
   have hwre : (1-conj s).re=a+6*e := by simp; linarith
   have hwim : (1-conj s).im=s.im := by simp
@@ -56,19 +57,16 @@ theorem buffered_reflected_line_control (e ε : ℝ)
 
 theorem original_upper_strip (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ χ : Character, χ.residue≠1 → ∀ s : ℂ,
-      -(1/10 : ℝ)≤s.re →
+      -(1/10 : ℝ)≤ s.re →
       ‖LFunction χ s‖≤C*(χ.modulus.absNorm : ℝ)^(3/5 : ℝ)*
         ((radical χ.modulus).absNorm : ℝ)^(1/10+ε)*(3+|s.im|)^2 := by
-  obtain ⟨Cd,hCd,hdel⟩ := factors_any_re_subpower_bound ε hε
-  refine ⟨(1+HeckeLogarithmicInput.uniformConstant)*Cd,
-    mul_pos (by linarith [HeckeLogarithmicInput.uniformConstant_nonneg]) hCd,?_⟩
-  intro χ hχ s hs
-  obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue≠1 := fun h => hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
+  pm_69 Cd hCd hdel factors_any_re_subpower_bound ε hε
+  pm_928
+  pm_3134
+  pm_3133 HeckeFiniteDeletion.principal_iff_of_mask
   have hg := HeckeLogarithmicInput.regular_right_growth ψ hp hs
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
-  have hQ' : (ψ.modulus.absNorm : ℝ)^(3/5 : ℝ)≤(χ.modulus.absNorm : ℝ)^(3/5 : ℝ) :=
-    Real.rpow_le_rpow (by positivity) (by exact_mod_cast hQ) (by norm_num)
+  pm_412
   have hd : ‖HeckeFiniteDeletion.factors χ.modulus ψ s‖≤
       Cd*((radical χ.modulus).absNorm : ℝ)^(1/10+ε) := by
     apply (hdel χ.modulus ψ s).trans

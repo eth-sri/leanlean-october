@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerReference
 public import OAI.NumberTheory.DirichletL.Descent.SecondSquarefree
 public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialProfile InverseInitialClippedColumns ConcreteTraceCRT
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
-  (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -32,7 +33,7 @@ theorem outerCoefficient_nonzero_coprime
     simp only [rowCoprimeMask,ite_eq_left (show ∃i∈x.overlap,j*(∏k∈x.common,p k)∈Ideal.span {p i}
       from ⟨i,hi,hmc⟩)]
   apply hn
-  simp only [outerCoefficient,initialColumn,hz,mul_zero,zero_mul,star_zero]
+  pm_382 outerCoefficient initialColumn hz mul_zero zero_mul star_zero
 
 omit [DecidableEq ι] in
 theorem initial_child_label_norm (x:Source (ι:=ι) 0)(u:Eisˣ) :
@@ -53,7 +54,7 @@ theorem initial_child_row_norm (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p
     change primaryGenerator (sourceIdeal p x.divisor)*((u:Eis)^5*x.frequency)=
       (u:Eis)^5*(primaryGenerator (sourceIdeal p x.divisor)*x.frequency)
     ring
-  rw [he,GaussGeneratorTransport.norm_eisEmbedding_unit_mul,map_mul,norm_mul,mul_pow]
+  pm_3681 he GaussGeneratorTransport.norm_eisEmbedding_unit_mul map_mul norm_mul mul_pow
   rw [eisEmbedding_norm_sq_eq_absNorm_span,sourceIdeal_gen p hp hpr]
   rfl
 
@@ -70,21 +71,15 @@ include hp in
 theorem initial_child_enclosures
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x:Source (ι:=ι) 0)(u:Eisˣ)(Z θ v H η:ℝ)(hZ:0<Z)
-    (hd:((sourceIdeal p x.divisor).absNorm:ℝ)≤Z^(θ+η))
-    (hv:((sourceIdeal p x.overlap).absNorm:ℝ)≤Z^(v+η))
-    (hh:‖eisEmbedding x.frequency‖^2≤Z^(H+η)) :
-    ((initialChild (toTuple p (sectorSource u x))).2.1.absNorm:ℝ)≤Z^(θ+v+2*η) ∧
-      ‖eisEmbedding (initialChild (toTuple p (sectorSource u x))).2.2‖^2≤Z^(θ+H+2*η) := by
+    (hd:((sourceIdeal p x.divisor).absNorm:ℝ)≤Z ^(θ+η))
+    (hv:((sourceIdeal p x.overlap).absNorm:ℝ)≤Z ^(v+η))
+    (hh:‖eisEmbedding x.frequency‖^2≤Z ^(H+η)) :
+    ((initialChild (toTuple p (sectorSource u x))).2.1.absNorm:ℝ)≤Z ^(θ+v+2*η) ∧
+      ‖eisEmbedding (initialChild (toTuple p (sectorSource u x))).2.2‖^2≤Z ^(θ+H+2*η) := by
   rw [initial_child_label_norm p,initial_child_row_norm p hp hpr]
   constructor
-  · apply (mul_le_mul hd hv (by positivity) (by positivity)).trans_eq
-    rw [←Real.rpow_add hZ]
-    congr 1
-    ring
-  · apply (mul_le_mul hd hh (by positivity) (by positivity)).trans_eq
-    rw [←Real.rpow_add hZ]
-    congr 1
-    ring
+  pm_5601 hv
+  pm_5601 hh
 
 end SevenEighths.InverseInitialEnergyCallerGeometry
 

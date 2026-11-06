@@ -3,44 +3,37 @@ public import GuthMaynard.Improvement.ShortPoweredDetectorFamily
 public import GuthMaynard.Improvement.ShortWindowLargeValues
 public import GuthMaynard.Improvement.RealIntegerSource
 public import MathCollab.Density.ZeroSeparation
+public import GuthMaynard.Improvement.UpperTypeICount
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter Set MathCollab.Density
-open scoped Topology BigOperators
-set_option autoImplicit false
+open scoped Topology
 set_option maxRecDepth 2000
-noncomputable section
 namespace GuthMaynard.Improvement
 
-/-- Actual Type-I detection of an ordinate-injective separated finite family.
-The constant and height threshold precede sigma, translation and the family. -/
-theorem short_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (σ t₀ : ℝ) (R : Finset ℂ),
-      9/13 ≤ σ → σ ≤ 5/7 →
-      (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
-      (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
-        (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖) →
-      (R.card:ℝ) ≤ C*H^(shortDensityExponent σ+ε) := by
+set_option hygiene false in
+macro "pf_13" x1:ident x2:ident x3:term:max x4:term:max x5:ident : tactic => `(tactic| (
   classical
   let η : ℝ := min (ε/100) (1/100)
   have hη : 0 < η := lt_min (by positivity) (by norm_num)
   have hηsmall : η ≤ 1/100 := min_le_right _ _
   have hηeps : η ≤ ε/100 := min_le_left _ _
-  obtain ⟨C,hC,hLV⟩ := short_window_large_values hη hηsmall
+  obtain ⟨C,hC,hLV⟩ := $x1:ident hη hηsmall
   have hloglim := (isLittleO_log_rpow_rpow_atTop (2:ℝ) hη).tendsto_div_nhds_zero
   norm_num at hloglim
   refine ⟨C,hC,?_⟩
-  filter_upwards [eventually_ge_atTop (2:ℝ), shortPoweredDetectorFamily_cover hη,
+  filter_upwards [eventually_ge_atTop (2:ℝ), $x2:ident hη,
     shortPoweredDetectorFamily_coefficients hη,
     (tendsto_rpow_atTop hη).eventually_ge_atTop ((2:ℝ)^99),
-    (tendsto_rpow_atTop (show (0:ℝ)<3/4 by norm_num)).eventually_ge_atTop 2,
+    (tendsto_rpow_atTop (show (0:ℝ)<$x3:term/$x4:term by norm_num)).eventually_ge_atTop 2,
     hloglim.eventually (gt_mem_nhds (show (0:ℝ)<1/600000 by norm_num))]
     with H hH hfamily hcoeff hconst hlength hlog
   intro σ t₀ R hσ hσ' hcard hsep hR
   have hHpos : 0 < H := by linarith
   have hHa : 1 ≤ H := by linarith
-  have hsc := short_density_scale_bounds hσ hσ'
+  have hsc := $x5:ident hσ hσ'
   let J := (shortPoweredDetectorIndices H).filter (fun p =>
     H^(shortDensityA σ) ≤ (shortPoweredDetectorScale p:ℝ) ∧
     (shortPoweredDetectorScale p:ℝ) ≤ (2:ℝ)^99*H^(shortDensityB σ) ∧
@@ -106,22 +99,27 @@ theorem short_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
       rw [← mul_left_comm, ← Real.rpow_add hHpos]
       congr 2
       ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left hpow hC.le
+    _ ≤ _ := mul_le_mul_of_nonneg_left hpow hC.le))
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
+/-- Actual Type-I detection of an ordinate-injective separated finite family.
+The constant and height threshold precede sigma, translation and the family. -/
+theorem short_typeI_separated_count :
+    ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (σ t₀ : ℝ) (R : Finset ℂ),
+      9/13 ≤ σ → σ ≤ 5/7 →
+      (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
+      (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
+        (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖) →
+      (R.card:ℝ) ≤ C*H^(shortDensityExponent σ+ε) := by pf_13 short_window_large_values shortPoweredDetectorFamily_cover 3 4 short_density_scale_bounds
 
 /-- The Type-I branch count on actual zero-slab representatives. -/
-theorem short_typeI_zero_slab_count {ε : ℝ} (hε : 0 < ε) :
+theorem short_typeI_zero_slab_count :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (σ : ℝ) (R : Finset ℂ),
       9/13 ≤ σ → σ ≤ 5/7 → R ⊆ zetaZeroFinset σ H (2*H) →
       (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
       (∀ ρ ∈ R, (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖) →
-      (R.card:ℝ) ≤ C*H^(shortDensityExponent σ+ε) := by
-  obtain ⟨C,hC,hcount⟩ := short_typeI_separated_count hε
-  refine ⟨C,hC,?_⟩
-  filter_upwards [hcount] with H hh
-  intro σ R hσ hσ' hR hcard hsep hlarge
-  apply hh σ H R hσ hσ' hcard hsep
-  intro ρ hρ
-  obtain ⟨hz,hβ,hγ,hγ'⟩ := mem_zetaZeroFinset.mp (hR hρ)
-  exact ⟨hβ,hz.2.2.le,⟨hγ,by linarith⟩,hlarge ρ hρ⟩
+      (R.card:ℝ) ≤ C*H^(shortDensityExponent σ+ε) := by pm_4571 short_typeI_separated_count
+end
 
 end GuthMaynard.Improvement

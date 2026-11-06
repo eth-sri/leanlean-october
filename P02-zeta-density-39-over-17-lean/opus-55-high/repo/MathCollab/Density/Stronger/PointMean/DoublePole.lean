@@ -8,15 +8,14 @@ See SOURCE-MANIFEST.json and LICENSE-MIT-0; no upstream module is imported.
 -/
 public import MathCollab.Density.RectangleResidue
 public import Mathlib.Analysis.Complex.RealDeriv
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set MeasureTheory
 open MathCollab.Density.Contour
 open scoped Topology Interval
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
-noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 private theorem hasDerivAt_ofReal (x : ℝ) :
@@ -35,7 +34,7 @@ private theorem hIntegral_const_div_sq (C p : ℂ) (x₁ x₂ y : ℝ)
     have hi := congrArg Complex.im h
     simp only [sub_im, add_im, ofReal_im, ofReal_re, mul_im, I_im, I_re,
       mul_one, mul_zero, zero_add, zero_im, add_zero] at hi
-    exact hy (sub_eq_zero.mp hi)
+    grind
   have hhas : ∀ x : ℝ, HasDerivAt F (F' x) x := by
     intro x
     dsimp [F, F']
@@ -44,11 +43,8 @@ private theorem hIntegral_const_div_sq (C p : ℂ) (x₁ x₂ y : ℝ)
       convert (hasDerivAt_ofReal x).add_const ((y : ℂ) * I - p) using 1
       ext z
       ring
-    convert (hasDerivAt_const x (-C)).div hg (hne x) using 1
-    ring
-  have hd : deriv F = F' := funext fun x => (hhas x).deriv
-  have hdiff : ∀ x ∈ Set.uIcc x₁ x₂, DifferentiableAt ℝ F x :=
-    fun x _ => (hhas x).differentiableAt
+    pm_7383 x
+  pm_5323 x x₁ x₂
   have hcont : Continuous F' := by
     dsimp [F']
     exact continuous_const.div
@@ -80,11 +76,8 @@ private theorem vIntegral_const_div_sq (C p : ℂ) (x y₁ y₂ : ℝ)
       · ext z
         ring
       · simp
-    convert (hasDerivAt_const y (-C)).div hg (hne y) using 1
-    ring
-  have hd : deriv F = F' := funext fun y => (hhas y).deriv
-  have hdiff : ∀ y ∈ Set.uIcc y₁ y₂, DifferentiableAt ℝ F y :=
-    fun y _ => (hhas y).differentiableAt
+    pm_7383 y
+  pm_5323 y y₁ y₂
   have hcont : Continuous F' := by
     dsimp [F']
     exact continuous_const.div
@@ -138,18 +131,11 @@ theorem rectangleIntegral'_div_sq_eq_deriv
   let A : ℂ := D p
   let f : ℂ → ℂ := fun u => N u / (u - p) ^ 2
   let f₁ : ℂ → ℂ := fun u => f u - C / (u - p) ^ 2
-  have hD : HolomorphicOn D (Rectangle z w) := by
-    change DifferentiableOn ℂ D (Rectangle z w)
-    dsimp only [D]
-    exact (Complex.differentiableOn_dslope hp).2 hN
-  have hR : HolomorphicOn R (Rectangle z w) := by
-    change DifferentiableOn ℂ R (Rectangle z w)
-    dsimp only [R]
-    exact (Complex.differentiableOn_dslope hp).2 hD
+  pm_5916 hD D hN
+  pm_5916 hR R hD
   have hPrincipal : Set.EqOn
       (f₁ - fun u => A / (u - p)) R (Rectangle z w \ {p}) := by
-    intro u hu
-    have hup : u ≠ p := hu.2
+    pm_8118
     have hND := sub_smul_dslope N p u
     have hDR := sub_smul_dslope D p u
     change (u - p) * D u = N u - N p at hND
@@ -173,8 +159,7 @@ theorem rectangleIntegral'_div_sq_eq_deriv
   have hDouble := rectangleIntegral'_const_div_sq_eq_zero
     (C := C) (p := p) hzre hzim hp
   have hf₁Holo : HolomorphicOn f₁ (Rectangle z w \ {p}) := by
-    intro u hu
-    have hup : u ≠ p := hu.2
+    pm_8118
     have huRect : u ∈ Rectangle z w := hu.1
     have hQuotient : DifferentiableWithinAt ℂ
         (fun v => N v / (v - p) ^ 2 - C / (v - p) ^ 2)

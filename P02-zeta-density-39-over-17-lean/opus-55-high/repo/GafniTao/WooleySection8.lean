@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleySection8Arithmetic
 public import GafniTao.WooleyPolynomialLemma63
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,6 @@ exponents visible.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -57,30 +57,25 @@ theorem wooley_sum_separatedResiduePairsAt_swap
   rw [wooley_sum_separatedResiduePairsAt,
     wooley_sum_separatedResiduePairsAt
       (F := fun eta xi => F xi eta)]
-  simp_rw [Finset.sum_filter]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro eta heta
-  apply Finset.sum_congr rfl
-  intro xi hxi
-  have hsep := wooleyResiduesSeparated_symm
-    (p := p) (nu := nu) (a := a) (b := b) (xi := xi) (eta := eta)
+  pm_224 Finset.sum_filter Finset.sum_comm eta heta
+  pm_2798
   by_cases h : wooleyResiduesSeparated nu xi eta
-  · rw [ite_eq_left h, ite_eq_left (hsep.mp h)]
-  · rw [ite_eq_right h, ite_eq_right (fun hs => h (hsep.mpr hs))]
+  grind
+  grind
 
+section
+variable {ι : Type*} (t : Finset ι)
+include ι t
 /-- Hölder interpolation with the common finite-average normalizer retained.
 This is the exact form needed for the `∮_{p^B}` normalization. -/
-theorem wooley_scaled_two_factor_holder_real
-    {ι : Type*} (t : Finset ι) (f g : ι → ℝ)
+theorem wooley_scaled_two_factor_holder_real (f g : ι → ℝ)
     (hf : ∀ i ∈ t, 0 ≤ f i) (hg : ∀ i ∈ t, 0 ≤ g i)
     {u c : ℝ} (hu0 : 0 ≤ u) (hu1 : u ≤ 1) (hc : 0 < c) :
     c * (∑ i ∈ t, f i ^ u * g i ^ (1 - u)) ≤
       (c * ∑ i ∈ t, f i) ^ u *
         (c * ∑ i ∈ t, g i) ^ (1 - u) := by
   have hholder := wooley_two_factor_holder_real t f g hf hg hu0 hu1
-  have hsumF : 0 ≤ ∑ i ∈ t, f i := Finset.sum_nonneg hf
-  have hsumG : 0 ≤ ∑ i ∈ t, g i := Finset.sum_nonneg hg
+  pm_2826
   have hscale := mul_le_mul_of_nonneg_left hholder hc.le
   calc
     c * (∑ i ∈ t, f i ^ u * g i ^ (1 - u)) ≤
@@ -99,8 +94,7 @@ theorem wooley_scaled_two_factor_holder_real
 /-- The weighted form of the normalized finite-average Hölder inequality.
 The same nonnegative mass `w i` is retained in both interpolated moments,
 exactly as in the second Hölder application following Wooley (8.3). -/
-theorem wooley_scaled_weighted_two_factor_holder_real
-    {ι : Type*} (t : Finset ι) (w f g h : ι → ℝ)
+theorem wooley_scaled_weighted_two_factor_holder_real (w f g h : ι → ℝ)
     (hw : ∀ i ∈ t, 0 ≤ w i) (hf : ∀ i ∈ t, 0 ≤ f i)
     (hg : ∀ i ∈ t, 0 ≤ g i)
     {u c : ℝ} (hu0 : 0 ≤ u) (hu1 : u ≤ 1) (hc : 0 < c)
@@ -108,10 +102,10 @@ theorem wooley_scaled_weighted_two_factor_holder_real
     c * (∑ i ∈ t, w i * h i) ≤
       (c * ∑ i ∈ t, w i * f i) ^ u *
         (c * ∑ i ∈ t, w i * g i) ^ (1 - u) := by
-  let F : ι → ℝ := fun i => w i * f i
-  let G : ι → ℝ := fun i => w i * g i
-  have hF : ∀ i ∈ t, 0 ≤ F i := fun i hi => mul_nonneg (hw i hi) (hf i hi)
-  have hG : ∀ i ∈ t, 0 ≤ G i := fun i hi => mul_nonneg (hw i hi) (hg i hi)
+  pm_8874 F f
+  pm_8874 G g
+  pm_6560 hF F hf
+  pm_6560 hG G hg
   have hweight (i : ι) (hi : i ∈ t) :
       F i ^ u * G i ^ (1 - u) =
         w i * (f i ^ u * g i ^ (1 - u)) := by
@@ -136,6 +130,7 @@ theorem wooley_scaled_weighted_two_factor_holder_real
   exact hscaled.trans (by
     simpa only [F, G] using
       wooley_scaled_two_factor_holder_real t F G hF hG hu0 hu1 hc)
+end
 
 /-- The pointwise exponent identity used in the first Hölder application in
 Wooley (8.3).  Here `x` is the `b'`-residue sum and `y` the `b`-residue sum. -/
@@ -154,10 +149,8 @@ theorem wooley_section8_integrand_identity
     wooleyTriangular_sub_le k r
   have htriPred : wooleyTriangular (r - 1) ≤ wooleyTriangular k :=
     wooleyTriangular_pred_le (show r ≤ k by omega)
-  have htriR : wooleyTriangular r ≤ wooleyTriangular k :=
-    wooleyTriangular_mono (show r ≤ k by omega)
-  have hleft := wooley_section8_left_exponent hr hrk
-  have hright := wooley_section8_right_exponent hr hrk
+  pm_7114 htriR
+  pm_111 hleft wooley_section8_left_exponent hr hrk hright wooley_section8_right_exponent
   have hleft' :
       ((2 * (wooleyTriangular k - wooleyTriangular (k - r)) : ℕ) : ℝ) *
             (1 / ((k - r + 1 : ℕ) : ℝ)) +
@@ -174,7 +167,7 @@ theorem wooley_section8_integrand_identity
         ((2 * (wooleyTriangular k - wooleyTriangular r) : ℕ) : ℝ) := by
     simpa only [Nat.cast_mul, Nat.cast_ofNat, mul_comm, mul_left_comm,
       mul_assoc] using hright
-  have hrReal : (1 : ℝ) ≤ r := by exact_mod_cast hr
+  pm_77 hrReal r hr
   have htriRReal : (0 : ℝ) < (wooleyTriangular r : ℕ) := by
     rw [wooleyTriangular_cast]
     positivity
@@ -183,7 +176,7 @@ theorem wooley_section8_integrand_identity
       (wooleyTriangular r : ℝ) < (wooleyTriangular k : ℕ) := by
     rw [wooleyTriangular_cast, wooleyTriangular_cast]
     have hprod : 0 < ((k : ℝ) - r) * ((k : ℝ) + r + 1) := by
-      have hkrReal : (r : ℝ) < k := by exact_mod_cast hrk
+      pm_5450 hkrReal r hrk
       exact mul_pos (sub_pos.mpr hkrReal) (by positivity)
     nlinarith
   have htriLt : wooleyTriangular r < wooleyTriangular k := by
@@ -207,8 +200,7 @@ theorem wooley_section8_integrand_identity
   rw [Real.mul_rpow (pow_nonneg hy _) (pow_nonneg hx _),
     Real.mul_rpow (pow_nonneg hx _) (pow_nonneg hy _)]
   simp_rw [← Real.rpow_natCast]
-  rw [← Real.rpow_mul hy, ← Real.rpow_mul hx,
-    ← Real.rpow_mul hx, ← Real.rpow_mul hy]
+  pm_8656 hy hx
   calc
     _ =
         (x ^ (((2 * (wooleyTriangular k - wooleyTriangular (k - r)) : ℕ) : ℝ) *
@@ -247,14 +239,9 @@ theorem wooleyPolynomial_section8_local_holder
       (wooleyPolynomialMixedResidueGridMoment
           phi (wooleyTriangular k) (r - 1) p B bPrime b gamma xi eta) ^
         (((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ)) := by
-  let u : ℝ := 1 / ((k - r + 1 : ℕ) : ℝ)
-  let v : ℝ := ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ)
-  let x (alpha : Fin k → ZMod (p ^ B)) : ℝ :=
-    ‖wooleyPolynomialNormalizedResidueGridSum
-      phi (p ^ B) gamma alpha xi‖
-  let y (alpha : Fin k → ZMod (p ^ B)) : ℝ :=
-    ‖wooleyPolynomialNormalizedResidueGridSum
-      phi (p ^ B) gamma alpha eta‖
+  pm_2799
+  pm_5482 x xi
+  pm_5482 y eta
   let f (alpha : Fin k → ZMod (p ^ B)) : ℝ :=
     y alpha ^ (2 * wooleyTriangular (k - r)) *
       x alpha ^
@@ -263,31 +250,19 @@ theorem wooleyPolynomial_section8_local_holder
     x alpha ^ (2 * wooleyTriangular (r - 1)) *
       y alpha ^
         (2 * (wooleyTriangular k - wooleyTriangular (r - 1)))
-  let c : ℝ := (((p ^ B) ^ k : ℕ) : ℝ)⁻¹
-  have hu0 : 0 ≤ u := by dsimp [u]; positivity
+  pm_2840 c
+  pm_61 hu0 u
   have hu1 : u ≤ 1 := by
-    dsimp [u]
-    have hdenNat : 1 ≤ k - r + 1 := by omega
-    have hden : (1 : ℝ) ≤ ((k - r + 1 : ℕ) : ℝ) := by
-      exact_mod_cast hdenNat
+    pm_2800
     have hdenPos : (0 : ℝ) < ((k - r + 1 : ℕ) : ℝ) := lt_of_lt_of_le zero_lt_one hden
-    rw [div_le_iff₀ hdenPos]
-    simpa only [one_mul] using hden
+    pm_1447 div_le_iff₀ hdenPos one_mul hden
   have hc : 0 < c := by
     dsimp [c]
     have hpB : 0 < p ^ B := Nat.pos_of_ne_zero (NeZero.ne (p ^ B))
     have hpow : 0 < (p ^ B) ^ k := pow_pos hpB k
     exact inv_pos.mpr (by exact_mod_cast hpow)
-  have hf : ∀ alpha ∈ (Finset.univ : Finset (Fin k → ZMod (p ^ B))),
-      0 ≤ f alpha := by
-    intro alpha halpha
-    dsimp [f]
-    positivity
-  have hg : ∀ alpha ∈ (Finset.univ : Finset (Fin k → ZMod (p ^ B))),
-      0 ≤ g alpha := by
-    intro alpha halpha
-    dsimp [g]
-    positivity
+  pm_5130 hf f
+  pm_5130 hg g
   have hholder := wooley_scaled_two_factor_holder_real
     (Finset.univ : Finset (Fin k → ZMod (p ^ B))) f g hf hg hu0 hu1 hc
   have huv : 1 - u = v := by
@@ -340,38 +315,21 @@ theorem wooleyPolynomial_equation_8_3
         phi (wooleyTriangular k) r p B bPrime b gamma xy.1 xy.2
     let u : ℝ := 1 / ((k - r + 1 : ℕ) : ℝ)
     let c : ℝ := (wooleyWeightedMassSq gamma)⁻¹ ^ 2
-    have hu0 : 0 ≤ u := by dsimp [u]; positivity
+    pm_61 hu0 u
     have hu1 : u ≤ 1 := by
-      dsimp [u]
-      have hdenNat : 1 ≤ k - r + 1 := by omega
-      have hden : (1 : ℝ) ≤ ((k - r + 1 : ℕ) : ℝ) := by
-        exact_mod_cast hdenNat
+      pm_2800
       have hdenPos : (0 : ℝ) < ((k - r + 1 : ℕ) : ℝ) :=
         lt_of_lt_of_le zero_lt_one hden
-      rw [div_le_iff₀ hdenPos]
-      simpa only [one_mul] using hden
+      pm_1447 div_le_iff₀ hdenPos one_mul hden
     have huv : 1 - u =
         ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ) := by
       dsimp [u]
       exact wooley_section8_weight_complement hrk
-    have hmassPos : 0 < wooleyWeightedMassSq gamma :=
-      lt_of_le_of_ne (wooleyWeightedMassSq_nonneg gamma) (Ne.symm hmass)
-    have hc : 0 < c := by dsimp [c]; positivity
-    have hw : ∀ xy ∈ pairs, 0 ≤ w xy := by
-      intro xy hxy
-      exact mul_nonneg
-        (wooleyWeightedResidueMassSq_nonneg gamma xy.1)
-        (wooleyWeightedResidueMassSq_nonneg gamma xy.2)
-    have hf' : ∀ xy ∈ pairs, 0 ≤ f xy := by
-      intro xy hxy
-      dsimp [f]
-      unfold wooleyPolynomialMixedResidueGridMoment
-      positivity
-    have hg : ∀ xy ∈ pairs, 0 ≤ g xy := by
-      intro xy hxy
-      dsimp [g]
-      unfold wooleyPolynomialMixedResidueGridMoment
-      positivity
+    pm_8789 hmassPos wooleyWeightedMassSq gamma wooleyWeightedMassSq_nonneg hmass
+    pm_64 hc c
+    pm_5289 pairs
+    pm_6821 hf' f
+    pm_6821 hg g
     have hpoint : ∀ xy ∈ pairs,
         h xy ≤ f xy ^ u * g xy ^ (1 - u) := by
       intro xy hxy
@@ -504,14 +462,8 @@ theorem wooleyPolynomialMixedGridMean_zero_le_conditioned
                 wooleyResiduesSeparated nu eta xi,
                   wooleyWeightedResidueMassSq gamma xi := by
       simp_rw [Finset.sum_filter]
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro eta heta
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro xi hxi
-      have hsep := wooleyResiduesSeparated_symm
-        (p := p) (nu := nu) (a := a) (b := b) (xi := xi) (eta := eta)
+      pm_223 Finset.sum_comm eta heta Finset.mul_sum
+      pm_2798
       by_cases hs : wooleyResiduesSeparated nu xi eta
       · rw [ite_eq_left hs, ite_eq_left (hsep.mp hs)]
         ring
@@ -548,12 +500,8 @@ theorem wooleyPolynomialMixedGridMean_zero_le_conditioned
           exact mul_le_mul_of_nonneg_left (hxi eta)
             (mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta) (hL eta))
         _ = _ := by
-          rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro eta heta
-          ring
-    have hmassPos : 0 < wooleyWeightedMassSq gamma :=
-      lt_of_le_of_ne (wooleyWeightedMassSq_nonneg gamma) (Ne.symm hmass)
+          pm_4886 eta heta
+    pm_8789 hmassPos wooleyWeightedMassSq gamma wooleyWeightedMassSq_nonneg hmass
     have hscaled := mul_le_mul_of_nonneg_left hsum
       (sq_nonneg (wooleyWeightedMassSq gamma)⁻¹)
     calc

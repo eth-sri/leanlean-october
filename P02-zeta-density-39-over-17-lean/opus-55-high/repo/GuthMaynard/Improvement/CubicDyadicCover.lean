@@ -1,11 +1,10 @@
 module
 public import GuthMaynard.Improvement.CenteredTruncation
 public import MathCollab.Density.DyadicBlocks
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open Set
 namespace GuthMaynard.Improvement
 
 def integerDyadicIndex (m : ℤ) : ℕ := m.natAbs.log2
@@ -22,35 +21,38 @@ theorem integer_dyadic_bounds {m : ℤ} (hm : m ≠ 0) :
       |(m:ℝ)| < 2*(2:ℝ)^(integerDyadicIndex m) := by
   have hp : 0 < m.natAbs := Int.natAbs_pos.mpr hm
   have hh := MathCollab.Density.log2_block_bounds hp
-  have he : (m.natAbs:ℝ) = |(m:ℝ)| := by rw [Nat.cast_natAbs,Int.cast_abs]
+  have he : (m.natAbs:ℝ) = |(m:ℝ)| := by simp_all
   rw [← he]
   constructor
   · exact_mod_cast hh.1
   · exact_mod_cast hh.2
 
+section
+variable {U : ℝ} (hU : 1 ≤ U)
+include U hU
 /-- Every actual retained nonzero mode triple is assigned a fixed dyadic
 class, independent of integration variables and Fourier masks. -/
-theorem cubicDyadicClass_mem {U : ℝ} (hU : 1 ≤ U) {m : ℤ × (ℤ × ℤ)}
+theorem cubicDyadicClass_mem {m : ℤ × (ℤ × ℤ)}
     (hm : m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U) :
     cubicDyadicClass m ∈ cubicDyadicClasses U := by
-  have hp : 0 < ⌊U⌋₊ := (Nat.one_le_floor_iff U).mpr hU
+  pm_6757
   have hb : ∀ k ∈ poissonModes U, integerDyadicIndex k < ⌊U⌋₊.log2+1 := by
     intro k hk
     obtain ⟨hk0,hkU⟩ := (mem_poissonModes U k).mp hk
     have hkn : k.natAbs ≤ ⌊U⌋₊ := by
       apply Nat.le_floor
-      simpa only [Nat.cast_natAbs,Int.cast_abs] using hkU
+      simp_all
     have hpow := (MathCollab.Density.log2_block_bounds (Int.natAbs_pos.mpr hk0)).1
     have hi := (Nat.le_log2 hp.ne').mpr (hpow.trans hkn)
-    exact Nat.lt_succ_of_le hi
+    aesop
   simpa only [cubicDyadicClasses,cubicDyadicClass,Finset.mem_product,Finset.mem_range] using
     And.intro (hb _ hm.1) (And.intro (hb _ hm.2.1) (hb _ hm.2.2))
 
 /-- The finite dyadic class list has its exact logarithmic count. -/
-theorem cubicDyadicClasses_card {U : ℝ} (hU : 1 ≤ U) :
+theorem cubicDyadicClasses_card :
     ((cubicDyadicClasses U).card:ℝ) ≤ (Real.log (2*U)/Real.log 2)^3 := by
-  have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hp : 0 < ⌊U⌋₊ := (Nat.one_le_floor_iff U).mpr hU
+  pm_123 hlog
+  pm_6757
   have hpow : (2:ℝ)^⌊U⌋₊.log2 ≤ U := by
     have hh : (2:ℝ)^⌊U⌋₊.log2 ≤ (⌊U⌋₊:ℝ) := by exact_mod_cast (MathCollab.Density.log2_block_bounds hp).1
     exact hh.trans (Nat.floor_le (by linarith))
@@ -64,6 +66,7 @@ theorem cubicDyadicClasses_card {U : ℝ} (hU : 1 ≤ U) :
   calc
     _ = (((⌊U⌋₊.log2+1:ℕ):ℝ))^3 := by ring
     _ ≤ _ := by gcongr
+end
 
 /-- Exact finite partition, so no modes or mask-dependent multiplicities
 are hidden in the dyadic decomposition. -/
@@ -79,9 +82,9 @@ theorem cubicDyadicClasses_subpower {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ U : ℝ, 1 ≤ U →
       ((cubicDyadicClasses U).card:ℝ) ≤ C*U^ε := by
   have he : 0 < ε/3 := by positivity
-  have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_123 hlog
   let D := (Real.log 2+1/(ε/3))/Real.log 2
-  have hD : 0 < D := by dsimp [D]; positivity
+  pm_64 hD D
   refine ⟨D^3,by positivity,?_⟩
   intro U hU
   have hUp : 0 < U := by linarith

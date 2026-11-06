@@ -41,7 +41,7 @@ local notation "O" => ActualEisensteinCubic.O
   rw [hc]
   dsimp only [Radial.weight]
   rw [hm,hA,hX₁,hX₂,hY₁,hY₂]
-  split_ifs <;> ring
+  grind
 
 end SevenEighths.CenteredMomentRadialSourceDictionary
 

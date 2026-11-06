@@ -3,8 +3,9 @@ public import Mathlib.Algebra.Order.Floor.Semiring
 public import Mathlib.Analysis.Real.Sqrt
 public import Mathlib.Analysis.Real.Pi.Bounds
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace WeylPort
 
@@ -15,26 +16,21 @@ theorem exists_balanced_half_cutoff (R : ℝ) (hR : 10 ≤ R) :
       R ≤ x ∧ x ≤ (12/5)*R ∧ (2/5)*R ≤ y ∧ y ≤ R ∧
       (M:ℝ)+1/8 ≤ y ∧ y ≤ (M:ℝ)+1/2 ∧ ⌊y⌋₊ = M := by
   let M : ℕ := ⌊R/2⌋₊
-  let b : ℝ := M + 1/2
-  let u : ℝ := R^2/b
+  pm_8822 b M u
   let A : ℕ := ⌊u+1/2⌋₊
-  let x : ℝ := A + 1/2
-  let y : ℝ := R^2/x
+  pm_8822 x A y
   have hR0 : 0 < R := by linarith
   have hMlo : R/2 < (M:ℝ)+1 := Nat.lt_floor_add_one (R/2)
   have hMhi : (M:ℝ) ≤ R/2 := Nat.floor_le (by positivity)
   have hM5 : (5:ℝ) ≤ M := by
-    have hm : 5 ≤ M := Nat.le_floor (by norm_num; linarith)
+    have hm : 5 ≤ M := Nat.le_floor (by grind)
     exact_mod_cast hm
-  have hb : 0 < b := by dsimp [b]; positivity
+  pm_1604
   have hbR : b ≤ R := by dsimp [b]; linarith
   have hbRlo : (9/20)*R ≤ b := by dsimp [b]; linarith
   have hub : u*b = R^2 := by dsimp [u]; field_simp
   have huR : R ≤ u := by
-    dsimp [u]
-    apply (le_div_iff₀ hb).mpr
-    have := mul_le_mul_of_nonneg_left hbR hR0.le
-    nlinarith
+    pm_8668 le_div_iff₀ hbR
   have huM : 3*(M:ℝ) ≤ u := by
     have hs : (2*(M:ℝ))^2 ≤ R^2 :=
       pow_le_pow_left₀ (by positivity) (by linarith) 2
@@ -43,10 +39,7 @@ theorem exists_balanced_half_cutoff (R : ℝ) (hR : 10 ≤ R) :
     dsimp [b]
     nlinarith
   have huhi : u ≤ (20/9)*R := by
-    dsimp [u]
-    apply (div_le_iff₀ hb).mpr
-    have := mul_le_mul_of_nonneg_left hbRlo hR0.le
-    nlinarith
+    pm_8668 div_le_iff₀ hbRlo
   have hu0 : 0 < u := hR0.trans_le huR
   have hux : u < x := by
     have := Nat.lt_floor_add_one (u+1/2)
@@ -69,14 +62,14 @@ theorem exists_balanced_half_cutoff (R : ℝ) (hR : 10 ≤ R) :
     apply (le_div_iff₀ hx).mpr
     have hm : 0 ≤ (M:ℝ)+1/8 := by positivity
     have hh := mul_le_mul_of_nonneg_left hxu hm
-    have hbu : ((M:ℝ)+1/2)*u = R^2 := by simpa only [b, mul_comm] using hub
+    have hbu : ((M:ℝ)+1/2)*u = R^2 := by grind
     nlinarith
   have hyR : (2/5)*R ≤ y := by linarith
   have hyM : y ≤ (M:ℝ)+1/2 := hyb
   have hfloor : ⌊y⌋₊ = M := by
     apply Nat.floor_eq_iff (by positivity : 0 ≤ y) |>.mpr
-    constructor <;> linarith
-  exact ⟨A, M, huR.trans hux.le, hxR, hyR, hyb.trans hbR, hylo, hyM, hfloor⟩
+    grind
+  grind
 
 /-- At every sufficiently large physical height, the first cutoff is a
 half-integer, the dual cutoff obeys both required gap conditions, and both
@@ -97,8 +90,8 @@ theorem exists_afe_cutoffs_all_heights (t : ℝ) (ht : 200*Real.pi ≤ t) :
   have htR : t = 2*Real.pi*R^2 := by rw [hRsq]; field_simp
   obtain ⟨A,M,hxlo,hxhi,hylo,hyhi,hgaplo,hgaphi,hfloor⟩ := exists_balanced_half_cutoff R hR
   let x : ℝ := A+1/2
-  let y : ℝ := t/(2*Real.pi*x)
-  have hx0 : 0 < x := by dsimp [x]; positivity
+  pm_7156
+  pm_64 hx0 x
   have hydef : y = R^2/x := by dsimp [y]; rw [hRsq, div_div]
   change R ≤ x at hxlo
   change x ≤ (12/5)*R at hxhi
@@ -114,11 +107,11 @@ theorem exists_afe_cutoffs_all_heights (t : ℝ) (ht : 200*Real.pi ≤ t) :
   have htbig : 6*R^2 ≤ t := by
     rw [htR]
     nlinarith [Real.pi_gt_three, sq_nonneg R]
-  have hA : (A:ℝ)^2 ≤ t := by nlinarith [sq_nonneg R]
+  pm_7926 hA A
   have hMy : (M:ℝ) ≤ y := by linarith
   have hMsq : (M:ℝ)^2 ≤ R^2 :=
     pow_le_pow_left₀ (by positivity) (hMy.trans hyhi) 2
-  have hM : (M:ℝ)^2 ≤ t := by nlinarith [sq_nonneg R]
+  pm_7926 hM M
   have hxFloor : ⌊x⌋₊ = A := by
     apply (Nat.floor_eq_iff hx0.le).mpr
     dsimp [x]

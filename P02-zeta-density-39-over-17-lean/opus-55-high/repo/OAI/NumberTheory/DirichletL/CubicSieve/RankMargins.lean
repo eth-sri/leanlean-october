@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.RowCompletion.PolynomialHeight
 public import OAI.NumberTheory.DirichletL.CubicSieve.DensityBudgets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -106,7 +107,10 @@ def fixedLogReturnCLM (a b : ℝ) (ha : 0 < a) : 𝓢(ℝ,ℂ) →L[ℝ] 𝓢(�
       (patchedLog_temperate (a/2) (max a b+a/2) (by linarith))
       (patchedLog_proper (a/2) (max a b+a/2) (by linarith)))
 
-lemma fixedLogReturnCLM_apply (a b : ℝ) (ha : 0 < a) (g : 𝓢(ℝ,ℂ)) (x : ℝ) :
+section
+variable (a b : ℝ) (ha : 0 < a)
+include a b ha
+lemma fixedLogReturnCLM_apply (g : 𝓢(ℝ,ℂ)) (x : ℝ) :
     fixedLogReturnCLM a b ha g x = positiveCutoff a b ha x •
       g (patchedLog (a/2) (max a b+a/2) (by linarith) x) := by
   rw [fixedLogReturnCLM,ContinuousLinearMap.comp_apply,
@@ -114,13 +118,11 @@ lemma fixedLogReturnCLM_apply (a b : ℝ) (ha : 0 < a) (g : 𝓢(ℝ,ℂ)) (x : 
       ((positiveCutoff a b ha).hasCompactSupport.hasTemperateGrowth (positiveCutoff a b ha).contDiff)]
   rfl
 
-lemma positiveCutoff_support_bounds (a b : ℝ) (ha : 0 < a) (x : ℝ)
+lemma positiveCutoff_support_bounds (x : ℝ)
     (hx : positiveCutoff a b ha x ≠ 0) : x ∈ Icc (a/2) (max a b+a/2) := by
   have hm : x ∈ Function.support (positiveCutoff a b ha) := hx
-  rw [(positiveCutoff a b ha).support_eq] at hm
-  change dist x ((a+max a b)/2) < (max a b-a)/2+a/2 at hm
-  rw [Real.dist_eq,abs_lt] at hm
-  constructor <;> linarith [hm.1,hm.2]
+  pm_3527
+end
 
 def uniformTwistedSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0 < a)
     (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) : 𝓢(ℝ,ℂ) :=
@@ -135,13 +137,13 @@ lemma uniformTwistedSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0 < a)
   · have hx : W x=0 := by
       by_contra hx
       have := positiveCutoff_one a b ha x (hs hx)
-      exact zero_ne_one (hc.symm.trans this)
-    simp only [hc,zero_smul,normTwistedSource,hx,mul_zero]
+      grind
+    pm_94 hc zero_smul normTwistedSource hx mul_zero
   · have hb := positiveCutoff_support_bounds a b ha x hc
-    have hx : 0 < x := by linarith [hb.1]
+    have hx : 0 < x := by grind
     rw [patchedLog_eq_log _ _ _ x hb,Real.exp_log hx]
     by_cases hw : W x=0
-    · simp only [hw,mul_zero,smul_zero,normTwistedSource]
+    pm_3814 hw mul_zero smul_zero normTwistedSource
     · rw [positiveCutoff_one a b ha x (hs hw),one_smul]
       rfl
 

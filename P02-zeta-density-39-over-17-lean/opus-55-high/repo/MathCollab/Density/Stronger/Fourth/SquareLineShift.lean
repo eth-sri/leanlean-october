@@ -7,6 +7,7 @@ Provenance: ../../../../../third_party/twelfth/FOURTH_MOMENT_MANIFEST.json.
 Mathlib and narrow DigammaSeries dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.SquareTerm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,8 +17,10 @@ open MathCollab.Density.Stronger
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
-theorem integral_zetaFourthTerm_vertical_eq_of_le
-    {a b t : ℝ} (ha : 0 < a) (hab : a ≤ b) (ht : 0 ≤ t) (n : ℕ) :
+section
+variable {a b t : ℝ} (ha : 0 < a)
+include a b t ha
+theorem integral_zetaFourthTerm_vertical_eq_of_le (hab : a ≤ b) (ht : 0 ≤ t) (n : ℕ) :
     (∫ u : ℝ, zetaFourthTerm t n ((a:ℂ)+(u:ℂ)*I)) =
       ∫ u : ℝ, zetaFourthTerm t n ((b:ℂ)+(u:ℂ)*I) := by
   have hbottom := tendsto_zetaFourthTerm_horizontal_of_sq_eq ha hab ht n
@@ -42,13 +45,13 @@ theorem integral_zetaFourthTerm_vertical_eq_of_le
   simp only [sub_self,zero_add,smul_eq_mul,← mul_sub] at hzero
   exact (sub_eq_zero.mp ((mul_eq_zero.mp hzero).resolve_left I_ne_zero)).symm
 
-theorem integral_zetaFourthTerm_vertical_eq
-    {a b t : ℝ} (ha : 0 < a) (hb : 0 < b) (ht : 0 ≤ t) (n : ℕ) :
+theorem integral_zetaFourthTerm_vertical_eq (hb : 0 < b) (ht : 0 ≤ t) (n : ℕ) :
     (∫ u : ℝ, zetaFourthTerm t n ((a:ℂ)+(u:ℂ)*I)) =
       ∫ u : ℝ, zetaFourthTerm t n ((b:ℂ)+(u:ℂ)*I) := by
   rcases le_total a b with hab | hba
   · exact integral_zetaFourthTerm_vertical_eq_of_le ha hab ht n
   · exact (integral_zetaFourthTerm_vertical_eq_of_le hb hba ht n).symm
+end
 
 def zetaFourthContribution (t c : ℝ) (n : ℕ) : ℂ :=
   (1 / (2 * Real.pi) : ℂ) *
@@ -57,8 +60,7 @@ def zetaFourthContribution (t c : ℝ) (n : ℕ) : ℂ :=
 theorem zetaFourthContribution_one (t : ℝ) (n : ℕ) :
     zetaFourthContribution t 1 n =
       zetaSquareDivisorContribution (-t) n / zetaSquareGammaNormalization t := by
-  simp only [zetaFourthContribution,Complex.ofReal_one,zetaFourthTerm_one,
-    integral_div,zetaSquareDivisorContribution]
+  pm_352 zetaFourthContribution Complex.ofReal_one zetaFourthTerm_one integral_div zetaSquareDivisorContribution
   ring
 
 theorem zetaFourthContribution_line_eq

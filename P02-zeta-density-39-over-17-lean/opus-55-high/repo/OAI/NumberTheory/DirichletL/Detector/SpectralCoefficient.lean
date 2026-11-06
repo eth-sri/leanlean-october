@@ -29,7 +29,7 @@ lemma rayMask_supported (a : O) (ha : Supported (Ideal.span {a})) : RayFourExpan
 lemma completedCorrection_supported (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
     completedCorrection I J=star (G (completedIndex I J)) := by
   rw [completedCorrection_eq_phase,rayMask_supported]
-  · exact one_mul _
+  grind
   · exact supported_completed _ _ ((supported_span_primaryGenerator_iff I).mpr hI)
       ((supported_span_primaryGenerator_iff J).mpr hJ)
 
@@ -75,14 +75,7 @@ theorem spectralSummand_source_coefficient (S : Finset (Ideal O)) (D I J : Ideal
       baseRowCoefficient η C.Xi s hs (primaryGenerator J)^3/(Ideal.absNorm J:ℂ))*_=_
   rw [hangle]
   simp only [star_mul,star_pow]
-  calc
-    _ = completedMask S D I J*
-      (gaussTwo I (supported_primaryGenerator_ne_zero I hI)*
-        (star (FiniteGaussPhase.angularFactor (primaryGenerator I))*
-         star (FiniteGaussPhase.angularFactor (primaryGenerator J))^3)*star (G (completedIndex I J))*
-        (baseRowCoefficient η C.Xi s hs (primaryGenerator I)*baseRowCoefficient η C.Xi s hs (primaryGenerator J)^3)) /
-      ((Real.sqrt (Ideal.absNorm I):ℂ)*(Ideal.absNorm J:ℂ))*(fullIdealWeight t I*fullIdealWeight (3*t) J) := by ring
-    _ = _ := by rw [hm];ring
+  grind
 
 end SevenEighths.ProbePhysical
 end

@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection10HierarchySelection
 public import GafniTao.WooleySection4Lemma42
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Uniform upper bounds for the Section 10 iteration
@@ -15,7 +16,6 @@ depth, so the other half of epsilon absorbs its uniform constant.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- A fixed positive constant is eventually absorbed by a positive real
 power of the prime-power scale. -/
@@ -23,7 +23,7 @@ theorem wooley_constant_le_primePower_rpow_eventually
     {p : ℕ} (hp : 1 < p) {eta C : ℝ} (heta : 0 < eta) :
     ∃ H0 : ℕ, ∀ H : ℕ, H0 ≤ H →
       C ≤ (((p ^ H : ℕ) : ℝ) ^ eta) := by
-  have hpReal : (1 : ℝ) < p := by exact_mod_cast hp
+  pm_5451 hpReal p hp
   have hpTop : Filter.Tendsto (fun H : ℕ ↦ ((p : ℝ) ^ H))
       Filter.atTop Filter.atTop :=
     tendsto_pow_atTop_atTop_of_one_lt hpReal
@@ -32,7 +32,7 @@ theorem wooley_constant_le_primePower_rpow_eventually
       Filter.atTop Filter.atTop := by
     convert (tendsto_rpow_atTop heta).comp hpTop using 1
     ext H
-    simp only [Function.comp_apply, Nat.cast_pow]
+    grind
   exact Filter.eventually_atTop.mp
     (hTop.eventually (Filter.eventually_ge_atTop C))
 
@@ -59,7 +59,7 @@ theorem wooley_lemma41_absorb_constant
           (p ^ B) (p ^ H) phi gamma := by
   have hpPos : 0 < p := by omega
   have hC' : C ≤ (((p ^ (H - h) : ℕ) : ℝ) ^ (epsilon / 2)) := by
-    have hpOne : (1 : ℝ) ≤ p := by exact_mod_cast hp.le
+    pm_77 hpOne p hp.le
     have hhH : h ≤ H := by omega
     have hdiff : (H : ℝ) / 2 ≤ (H - h : ℕ) := by
       have hhalfReal : 2 * (h : ℝ) ≤ (H : ℝ) := by exact_mod_cast hhalf
@@ -124,7 +124,7 @@ theorem wooleySourcePolynomial_lemma_4_1_coefficientOne_half
             wooleySourcePolynomialConditionedMean (wooleyTriangular k)
               (p ^ B) (p ^ (B ⌈/⌉ k)) phi gamma := by
   have hp : 1 < p := lt_of_le_of_lt hk hkp
-  have hepsilonHalf : 0 < epsilon / 2 := by positivity
+  pm_4910 hepsilonHalf epsilon
   have hdeltaOne : delta < 1 := lt_of_le_of_lt hdeltaHalf (by norm_num)
   obtain ⟨C, hC, B0, hraw⟩ :=
     wooleySourcePolynomial_lemma_4_1 hpPrime hk hkp hepsilonHalf
@@ -134,10 +134,9 @@ theorem wooleySourcePolynomial_lemma_4_1_coefficientOne_half
       (show 0 < epsilon / 4 by positivity) (C := C)
   refine ⟨max B0 (k * H0), ?_⟩
   intro B phi gamma h hB hphi hgamma hhalf
-  have hB0 : B0 ≤ B := (le_max_left _ _).trans hB
+  pm_207 hB0 B0 B le_max_left hB
   have hkH0B : k * H0 ≤ B := (le_max_right _ _).trans hB
-  have hBceil : B ≤ k * (B ⌈/⌉ k) :=
-    le_smul_ceilDiv (by omega : 0 < k)
+  pm_1276
   have hH0 : H0 ≤ B ⌈/⌉ k := by
     exact Nat.le_of_mul_le_mul_left (hkH0B.trans hBceil) (by omega)
   have hhH : h ≤ B ⌈/⌉ k := by omega
@@ -146,12 +145,11 @@ theorem wooleySourcePolynomial_lemma_4_1_coefficientOne_half
       exact_mod_cast hhalf
     have hHnonneg : (0 : ℝ) ≤ ((B ⌈/⌉ k : ℕ) : ℝ) := by positivity
     nlinarith
-  have hraw' := hraw B phi gamma h hB0 hphi hgamma hdepth
+  pm_528 hraw' hraw B phi gamma h hB0 hphi hgamma hdepth
   have hCscale :
       C ≤ (((p ^ (B ⌈/⌉ k) : ℕ) : ℝ) ^ (epsilon / 4)) :=
     habsorb (B ⌈/⌉ k) hH0
   exact wooley_lemma41_absorb_constant hp hepsilon hhalf hCscale hraw'
 
-end
 
 end GafniTao

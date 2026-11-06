@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialProfile
 public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
 public import OAI.NumberTheory.DirichletL.Inversion.AmbientProfileTower
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,7 +10,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open SevenEighths.InverseMoment
@@ -26,8 +27,8 @@ theorem clippedTest_eq_source (w : ℝ → ℂ) (c h x : ℝ) :
 
 theorem child_test_clipping (w : ℝ → ℂ) {Z q : ℝ} (hZ : 0 < Z) (hq : 0 < q)
     (N h : ℝ) :
-    childLogTest w h (q/Z^N) = logPhase h (Real.log (Z^(max 0 N-N))) *
-      clippedTest w (Z^(max 0 N-N)) h (q/Z^(max 0 N)) := by
+    childLogTest w h (q/Z ^N) = logPhase h (Real.log (Z ^(max 0 N-N))) *
+      clippedTest w (Z ^(max 0 N-N)) h (q/Z ^(max 0 N)) := by
   rw [clippedTest_eq_source]
   simpa only [childLogTest,mul_comm] using
     InverseInitialProfile.clipped_column_source_identity w hZ hq N h
@@ -51,19 +52,22 @@ omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
 theorem freshColumns_clipping_range (pool : Finset ι) (w : ℝ → ℂ)
     (a b Z N : ℝ) (hZ : 1 < Z) (hb : 1 ≤ b)
     (hw : Function.support w ⊆ Set.Icc a b)
-    (hn : (freshColumns p pool w (Z^N)).Nonempty) :
-    1 ≤ Z^(max 0 N-N) ∧ Z^(max 0 N-N) ≤ b := by
+    (hn : (freshColumns p pool w (Z ^N)).Nonempty) :
+    1 ≤ Z ^(max 0 N-N) ∧ Z ^(max 0 N-N) ≤ b := by
   obtain ⟨U,hU⟩ := hn
   exact InverseClippingProfiles.clipping_ratio_of_column_witness w Z N
     (primeProductNorm p U) a b hZ (primeProductNorm_ge_one p hp U) hb hw
-    ((mem_freshColumns p pool w (Z^N) U).mp hU).2
+    ((mem_freshColumns p pool w (Z ^N) U).mp hU).2
 
+section
+variable (pool : Finset ι)
+include pool
 include hp in
 omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
-theorem freshColumns_initial_clipping_shift (pool : Finset ι) (w : ℝ → ℂ)
+theorem freshColumns_initial_clipping_shift (w : ℝ → ℂ)
     (a b Z N η : ℝ) (hZ : 1 < Z) (hb : 1 ≤ b)
     (hw : Function.support w ⊆ Set.Icc a b)
-    (hn : (freshColumns p pool w (Z^N)).Nonempty)
+    (hn : (freshColumns p pool w (Z ^N)).Nonempty)
     (hthreshold : Real.log b ≤ 3*η*Real.log Z) :
     0 ≤ max 0 N-N ∧ max 0 N-N ≤ 3*η := by
   have hc := freshColumns_clipping_range p hp pool w a b Z N hZ hb hw hn
@@ -73,8 +77,7 @@ theorem freshColumns_initial_clipping_shift (pool : Finset ι) (w : ℝ → ℂ)
   refine ⟨sub_nonneg.mpr (le_max_right _ _), ?_⟩
   exact (mul_le_mul_iff_left₀ (Real.log_pos hZ)).mp (hl.trans hthreshold)
 
-theorem canonical_row_zero_of_freshColumns_empty
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+theorem canonical_row_zero_of_freshColumns_empty (Ψ : Eis →* ℂ) (m f k : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (w : ℝ → ℂ) (X h : ℝ) (he : freshColumns p pool w X = ∅) :
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
@@ -87,35 +90,31 @@ theorem canonical_row_zero_of_freshColumns_empty
     have hu : U ∈ freshColumns p pool w X := Finset.mem_filter.mpr ⟨hU,hw⟩
     rw [he] at hu
     exact Finset.notMem_empty U hu
-  simp only [secondChildColumn,childLogTest,hw,zero_mul,mul_zero]
+  pm_94 secondChildColumn childLogTest hw zero_mul mul_zero
 
-theorem canonical_row_clipping
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+theorem canonical_row_clipping (Ψ : Eis →* ℂ) (m f k : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (w : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (N h : ℝ) :
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
-      (childLogTest w h) (Z^N) =
-      logPhase h (Real.log (Z^(max 0 N-N))) *
+      (childLogTest w h) (Z ^N) =
+      logPhase h (Real.log (Z ^(max 0 N-N))) *
         finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
-          (clippedTest w (Z^(max 0 N-N)) h) (Z^(max 0 N)) := by
-  unfold finiteCanonicalMarkedRow fixedChildRow
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro U hU
+          (clippedTest w (Z ^(max 0 N-N)) h) (Z ^(max 0 N)) := by
+  pm_315 finiteCanonicalMarkedRow fixedChildRow Finset.mul_sum Finset.sum_congr U hU
   simp only [secondChildColumn]
   rw [child_test_clipping w hZ (primeProductNorm_pos p hp U) N h]
   ring
 
-theorem canonical_row_clipping_norm
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+theorem canonical_row_clipping_norm (Ψ : Eis →* ℂ) (m f k : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (w : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (N h : ℝ) :
     ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
-      (childLogTest w h) (Z^N)‖ =
+      (childLogTest w h) (Z ^N)‖ =
     ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a
-      (clippedTest w (Z^(max 0 N-N)) h) (Z^(max 0 N))‖ := by
+      (clippedTest w (Z ^(max 0 N-N)) h) (Z ^(max 0 N))‖ := by
   rw [canonical_row_clipping p hp hcop hg pool Ψ m f k slots lists a w hZ N h,
     norm_mul,logPhase_norm,one_mul]
+end
 
 def columnEnergy (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
@@ -131,9 +130,9 @@ theorem columnEnergy_clipping
     (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
     (w : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (N h : ℝ) :
     columnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D
-      (childLogTest w h) (Z^N) =
+      (childLogTest w h) (Z ^N) =
     columnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D
-      (clippedTest w (Z^(max 0 N-N)) h) (Z^(max 0 N)) := by
+      (clippedTest w (Z ^(max 0 N-N)) h) (Z ^(max 0 N)) := by
   unfold columnEnergy
   simp_rw [canonical_row_clipping_norm p hp hcop hg pool Ψ m _ _ slots lists a w hZ N h]
 
@@ -142,26 +141,23 @@ def normalizedColumnEnergy (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
     (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
     (W : ℝ → ℂ) (X Z F : ℝ) : ℝ :=
   ∑ f ∈ labels, D f * ∑ k ∈ rows,
-    ‖((Z^(-F/2) : ℝ) : ℂ) *
+    ‖((Z ^(-F/2) : ℝ) : ℂ) *
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m (primaryGenerator f) k
         slots lists a W X‖^2
 
+section
+variable (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
+include pool Ψ m slots lists a labels rows D
 theorem columnEnergy_normalization
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
     (W : ℝ → ℂ) (X : ℝ) {Z : ℝ} (hZ : 0 < Z) (F : ℝ) :
     columnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D W X =
-      Z^F * normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a
+      Z ^F * normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a
         labels rows D W X Z F := by
-  have hr : Z^F * (Z^(-F/2))^2 = 1 := by
+  have hr : Z ^F * (Z ^(-F/2))^2 = 1 := by
     rw [← Real.rpow_mul_natCast hZ.le, ← Real.rpow_add hZ]
     rw [show F+(-F/2)*(2:ℕ) = 0 by ring, Real.rpow_zero]
-  unfold columnEnergy normalizedColumnEnergy
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro f hf
-  rw [← mul_assoc, mul_comm (Z^F) (D f), mul_assoc]
+  pm_315 columnEnergy normalizedColumnEnergy Finset.mul_sum Finset.sum_congr f hf
+  rw [← mul_assoc, mul_comm (Z ^F) (D f), mul_assoc]
   congr 1
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -170,32 +166,32 @@ theorem columnEnergy_normalization
     abs_of_pos (Real.rpow_pos_of_pos hZ _),mul_pow,← mul_assoc,hr,one_mul]
 
 theorem initial_columnEnergy_clipping_normalized
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
-    (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis) (D : Ideal Eis → ℝ)
     (w : ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (N V h : ℝ) :
     columnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D
-      (childLogTest w h) (Z^N) =
-      Z^(max 0 N+V) * normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a
-        labels rows D (clippedTest w (Z^(max 0 N-N)) h) (Z^(max 0 N)) Z (max 0 N+V) := by
+      (childLogTest w h) (Z ^N) =
+      Z ^(max 0 N+V) * normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a
+        labels rows D (clippedTest w (Z ^(max 0 N-N)) h) (Z ^(max 0 N)) Z (max 0 N+V) := by
   rw [columnEnergy_clipping p hp hcop hg pool Ψ m slots lists a labels rows D w hZ N h]
   exact columnEnergy_normalization p hp hcop hg pool Ψ m slots lists a labels rows D
     _ _ hZ _
+end
 
 end Arithmetic
 
 def leftHeight (z : Frequency × (Fin 6 → ℝ)) : ℝ := z.2 4+z.1.1-z.1.2.2
 def rightHeight (z : Frequency × (Fin 6 → ℝ)) : ℝ := z.2 5+z.1.2.1-z.1.2.2
 
-theorem leftHeight_eq (z : Frequency × (Fin 6 → ℝ)) :
+section
+variable (z : Frequency × (Fin 6 → ℝ))
+include z
+theorem leftHeight_eq :
     leftHeight z = profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2 4 := by
-  simp [leftHeight,profileHeight,secondLeftSlope,secondRightSlope,secondKernelSlope]
-  ring
+  pm_8568 leftHeight
 
-theorem rightHeight_eq (z : Frequency × (Fin 6 → ℝ)) :
+theorem rightHeight_eq :
     rightHeight z = profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2 5 := by
-  simp [rightHeight,profileHeight,secondLeftSlope,secondRightSlope,secondKernelSlope]
-  ring
+  pm_8568 rightHeight
+end
 
 theorem child_height_moment_bound (K : ℕ) (z : Frequency × (Fin 6 → ℝ)) :
     (1+‖leftHeight z‖)^K * (1+‖rightHeight z‖)^K ≤

@@ -50,15 +50,4 @@ theorem hughesYoungAuxiliaryZero_zero :
     hughesYoungAuxiliaryZero 0 = 1 := by
   norm_num [hughesYoungAuxiliaryZero]
 
--- The literal half argument matches the source statement and is intentionally retained.
-@[simp, nolint simpNF]
-theorem hughesYoungAuxiliaryZero_one_half :
-    hughesYoungAuxiliaryZero (1 / 2 : ℂ) = 0 := by
-  norm_num [hughesYoungAuxiliaryZero]
-
-@[simp]
-theorem hughesYoungAuxiliaryZero_neg_one_half :
-    hughesYoungAuxiliaryZero (-1 / 2 : ℂ) = 0 := by
-  norm_num [hughesYoungAuxiliaryZero]
-
 end GuthMaynard.NativeMoment

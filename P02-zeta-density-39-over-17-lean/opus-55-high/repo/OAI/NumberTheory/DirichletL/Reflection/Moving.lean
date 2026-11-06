@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Rows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -50,25 +51,23 @@ lemma reflected_residual_exponent {φ ρ σ : Type*} [Fintype ρ] (jF : φ → �
   rfl
 
 namespace PrimeFamily
-lemma reflected_residual_product {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) :
+section
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ)
+include φ σ F K hK S
+lemma reflected_residual_product :
     (∏ i ∈ residualIndices φ (PrimeIndex K) σ,
       Ideal.span {(F.reflected K hK S).generator i}) = K := by
-  classical
-  let : DecidableEq (φ ⊕ (PrimeIndex K ⊕ σ)) := Classical.decEq _
-  simp only [generator_span, residualIndices]
-  rw [Finset.prod_image (Sum.inr_injective.comp Sum.inl_injective).injOn]
+  pm_3316
+  pm_8691 residualIndices Sum.inl_injective
   exact residual_product K hK
 
-lemma reflected_slot_product {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) :
+lemma reflected_slot_product :
     (∏ i ∈ slotIndices φ (PrimeIndex K) σ,
       Ideal.span {(F.reflected K hK S).generator i}) = ∏ i, S.ideal i := by
-  classical
-  let : DecidableEq (φ ⊕ (PrimeIndex K ⊕ σ)) := Classical.decEq _
-  simp only [generator_span, slotIndices]
-  rw [Finset.prod_image (Sum.inr_injective.comp Sum.inr_injective).injOn]
+  pm_3316
+  pm_8691 slotIndices Sum.inr_injective
   rfl
+end
 end PrimeFamily
 
 end

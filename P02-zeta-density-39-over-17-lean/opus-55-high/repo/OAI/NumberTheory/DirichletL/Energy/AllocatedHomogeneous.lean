@@ -1,23 +1,24 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.AllocatedClipped
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyAllocatedClipped
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyAllocatedProfiles
+open CenteredMomentEnergyAllocatedChildren
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
+open CenteredMomentAllocatedNaturalSource
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
@@ -31,7 +32,7 @@ theorem actual_clipped_homogeneous_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslo
     (ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)
     (hMcap:0≤Mcap)(hbΦ:0≤bΦ)(hLs:0≤Lslot)(hε:0<εremove)
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
-    ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→RayQuotient.Characters M H,
+    ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→ RayQuotient.Characters M H,
     ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z →
     ∀(Bmask εchild:ℝ)(Q:Ideal O),Q≤M →
     ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
@@ -39,14 +40,14 @@ theorem actual_clipped_homogeneous_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslo
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
       (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
       (J:Finset (CenteredMomentCommonProfile.liveIndices B.val)),
     ∀st:NaturalState Z Bmask bΦ,st.puncture=1 → st.fixedModulus=internalQ Q η₀ → st.width≤Mcap →
-    ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z^L → X₂≤Z^L →
+    ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z ^L → X₂≤Z ^L →
     ∀F₁ F₂:Finset (Ideal O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
     let d:=commonData (withHeight src st.character v) C R B
     allocatedEnergy st.character st.radial D alloc
@@ -56,16 +57,13 @@ theorem actual_clipped_homogeneous_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslo
       Cc*(C₀+C₁)*diagonalControl st.radial.profile*
         (p.control T)^2*
         (1+(|v|+height))^(dc+degree+4*n)*
-        Z^(st.width+εchild+εremove+
+        Z ^(st.width+εchild+εremove+
           CenteredMomentLiveCapacity.excess (originalImage src C B D alloc J) w
             (length Z (scale D alloc X₁ 0 F₁)) (length Z (scale D alloc X₂ 1 F₂)) st.width κ/6+κ*mesh) := by
-  obtain ⟨dc,Cc,hCc,hbound⟩:=actual_clipped_paid_bands (α:=α) M H hH W aslot bslot Mcap bΦ Lslot
-    εremove lo hi κ ha hWs hW hMcap hbΦ hLs hε hbeta hκ
+  pm_3386 actual_clipped_paid_bands
   obtain ⟨n,T,Cp,hCp,hprofile⟩:=retained_pair_control a b haPlain S
   refine ⟨n,T,dc,Cc*Cp^2,mul_pos hCc (sq_pos_of_pos hCp),?_⟩
-  intro η₀ θ
-  obtain ⟨Z₀,hZ₀,hbound⟩:=hbound η₀ θ
-  refine ⟨Z₀,hZ₀,?_⟩
+  pm_3385
   intro Z hZ Bmask εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
     src hmatch C R B D alloc J st hunit hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂ F₁ F₂ hF₁ hF₂
@@ -89,7 +87,7 @@ theorem actual_clipped_homogeneous_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslo
     _≤Cc*(C₀+C₁)*diagonalControl st.radial.profile*
         (Cp*p.control T*(1+|v|+height)^(2*n))^2*
         (1+(|v|+height))^(dc+degree)*
-        Z^(st.width+εchild+εremove+
+        Z ^(st.width+εchild+εremove+
           CenteredMomentLiveCapacity.excess (originalImage src C B D alloc J) w
             (length Z (scale D alloc X₁ 0 F₁)) (length Z (scale D alloc X₂ 1 F₂)) st.width κ/6+κ*mesh):=by
       apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (zero_le_one.trans st.base_ge_one) _)

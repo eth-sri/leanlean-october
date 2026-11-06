@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.EulerFinsupp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,18 +25,14 @@ lemma markedArray_finite (T S : Finset α) (hTS : T⊆S) (m f : α→β→ℂ)
   congr 1
   · symm
     rw [←Finset.prod_subset hTS]
-    · apply Finset.prod_congr rfl
-      intro a ha
-      simp only [ite_eq_left ha]
-    · intro a ha hna
-      simp only [ite_eq_right hna]
+    simp_all
+    grind
   · exact Finsupp.prod_of_support_subset v hv _ (fun a _=>h0 a)
 
 lemma markedArray_norm_le (T : Finset α) (m f : α→β→ℂ)
     (hm : ∀a∈T,∀b,‖m a b‖≤1) (v : α→₀β) :
     ‖markedArray T m f v‖≤‖v.prod f‖ := by
-  rw [markedArray,norm_mul]
-  apply mul_le_of_le_one_left (norm_nonneg _)
+  pm_1219 markedArray
   rw [norm_prod]
   exact Finset.prod_le_one₀ (fun _ _=>norm_nonneg _) (fun a ha=>hm a ha _)
 
@@ -44,8 +41,7 @@ lemma marked_finiteEuler (T S : Finset α) (hTS : T⊆S) (m f : α→β→ℂ)
     (hm : ∀a∈T,∀b,‖m a b‖≤1) :
     (∑'v : {v : α→₀β // (v.support:Set α)⊆S},markedArray T m f v.val)=
       ∏a∈S,∑'b,markedLocal T m f a b := by
-  let e : {v : α→₀β // (v.support:Set α)⊆S} ≃ (S→β) :=
-    (Finsupp.restrictSupportEquiv (S:Set α) β).trans Finsupp.equivFunOnFinite
+  pm_3821
   have he (v : {v : α→₀β // (v.support:Set α)⊆S}) :
       markedArray T m f v.val=∏a:S,markedLocal T m f a.val (e v a) := by
     rw [markedArray_finite T S hTS m f h0 v.val v.property]
@@ -53,8 +49,7 @@ lemma marked_finiteEuler (T S : Finset α) (hTS : T⊆S) (m f : α→β→ℂ)
   have hg (a : α) : Summable (fun b=>‖markedLocal T m f a b‖) := by
     apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ (hf a)
     intro b
-    rw [markedLocal,norm_mul]
-    apply mul_le_of_le_one_left (norm_nonneg _)
+    pm_1219 markedLocal
     split_ifs with ha
     · exact hm a ha b
     · simp
@@ -67,30 +62,22 @@ theorem marked_hasProd (T : Finset α) (m f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     (hs : Summable (fun v : α→₀β=>‖v.prod f‖))
     (hm : ∀a∈T,∀b,‖m a b‖≤1) :
     HasProd (fun a=>∑'b,markedLocal T m f a b) (∑'v : α→₀β,markedArray T m f v) := by
-  have hf (a : α) : Summable (fun b=>‖f a b‖) := by
-    have hh := hs.comp_injective (Finsupp.single_injective a)
-    simpa only [Function.comp_def,Finsupp.prod_single_index (h0 a)] using hh
+  pm_3822
   have ht : Tendsto (fun S : Finset α=>∑'v : α→₀β,
       if v.support⊆S then markedArray T m f v else 0) atTop
       (𝓝 (∑'v : α→₀β,markedArray T m f v)) := by
-    apply tendsto_tsum_of_dominated_convergence hs
-    · intro v
-      apply tendsto_const_nhds.congr'
-      filter_upwards [eventually_ge_atTop v.support] with S hS
-      simp only [ite_eq_left hS]
+    pm_1573
     · apply Filter.Eventually.of_forall
       intro S v
       split_ifs
       · exact markedArray_norm_le T m f hm v
-      · simpa only [norm_zero] using norm_nonneg (v.prod f)
+      pm_7827
   change Tendsto (fun S : Finset α=>∏a∈S,∑'b,markedLocal T m f a b) atTop _
   apply ht.congr'
   filter_upwards [eventually_ge_atTop T] with S hTS
   rw [←marked_finiteEuler T S hTS m f h0 hf hm]
   trans ∑'v : α→₀β,{v : α→₀β | (v.support:Set α)⊆S}.indicator (markedArray T m f) v
-  · apply tsum_congr
-    intro v
-    simp only [Set.indicator,Set.mem_ofPred_eq,Finset.coe_subset]
+  pm_7251
   · exact (tsum_subtype {v : α→₀β | (v.support:Set α)⊆S} (markedArray T m f)).symm
 
 end SevenEighths.ProbeEulerFinsupp

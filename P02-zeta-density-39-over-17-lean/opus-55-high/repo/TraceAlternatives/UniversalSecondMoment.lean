@@ -1,5 +1,6 @@
 module
 public import TraceAlternatives.UniversalSecondMomentLog
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ theorem universalShortProfile_double {T M R E : ℝ}
     exact mul_le_mul_of_nonneg_right (by
       have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2)
         (by norm_num : (1/6:ℝ)≤1)
-      simpa only [Real.rpow_one] using hh) (by positivity)
+      simp_all) (by positivity)
   have h2b : (2*T)^(1/16:ℝ) ≤ 2*T^(1/16:ℝ) := by
     rw [Real.mul_rpow (by norm_num) hT]
     exact mul_le_mul_of_nonneg_right (by
@@ -42,19 +43,18 @@ theorem actual_second_moment_universal_native (ε : ℝ) (hε : 0<ε) :
       (∑ t∈W, ∑ u∈W, ‖dirichletPoly M a (t-u)‖^2) ≤
       C*T^ε*universalShortProfile T M W.card (discreteAdditiveEnergy W) := by
   let δ : ℝ := ε/2
-  have hδ : 0<δ := by dsimp only [δ]; positivity
-  obtain ⟨K,hK,hS2⟩ := actual_second_moment_universal_log δ hδ
+  pm_307 hδ δ
+  pm_69 K hK hS2 actual_second_moment_universal_log δ hδ
   let A : ℝ := 1+8*K*(2:ℝ)^δ
-  let L : ℝ := 2+1/(δ*Real.log 2)
-  have hLog2 : 0<Real.log 2 := Real.log_pos (by norm_num)
-  have hA : 0<A := by dsimp only [A]; positivity
-  have hL : 0<L := by dsimp only [L]; positivity
+  pm_8871 L δ
+  pm_479 hLog2
+  pm_307 hA A
+  pm_307 hL L
   refine ⟨A*L,mul_pos hA hL,?_⟩
-  intro M T a W hM hT hMT ha hBase
-  have hTp : 0<T := by linarith
+  pm_6036
   have hT1 : 1≤T := by linarith
-  have hM1 : (1:ℝ)≤M := by exact_mod_cast hM
-  have hTδ : 1≤T^δ := Real.one_le_rpow hT1 hδ.le
+  pm_277 hM1 M hM
+  pm_242 hTδ T δ hT1 hδ.le
   let F : ℝ := universalShortProfile T M W.card (discreteAdditiveEnergy W)
   have hF : 0≤F := universalShortProfile_nonneg hTp.le
     (Nat.cast_nonneg _) (Nat.cast_nonneg _) (Nat.cast_nonneg _)

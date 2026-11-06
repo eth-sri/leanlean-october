@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonPairedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,13 +29,7 @@ omit [DecidableEq ι] in
 theorem scalar_volume_exact (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):
     ‖commonScalar s C R B‖*Real.sqrt (volume (commonData s C R B))=
       ‖frozenCoefficient B.val C R s.ν s.W s.P‖*Real.sqrt (volume s.toData)/rawReduction B.val s.P:=by
-  have hv:=volume_pos (commonData s C R B)
-  have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
-  have he:volume (commonData s C R B)*rawReduction B.val s.P=volume s.toData:=by
-    rw [common_volume]
-    exact raw_scale_identity B.val (alloc_ne s C B) (s.X₁*s.X₂) s.P
-  have hs:Real.sqrt (volume s.toData)=Real.sqrt (volume (commonData s C R B))*
-      Real.sqrt (rawReduction B.val s.P):=by rw [←he,Real.sqrt_mul hv.le]
+  pm_2955
   rw [commonScalar,norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _),hs]
   have hsq:=Real.sq_sqrt hr.le
@@ -48,10 +43,9 @@ theorem scalar_volume_bound (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
     ‖commonScalar s C R B‖*Real.sqrt (volume (commonData s C R B))≤
       frozenProfile s*Real.sqrt (volume s.toData)/(Ideal.absNorm C:ℝ):=by
   rw [scalar_volume_exact]
-  have hr:=rawReduction_pos B.val (alloc_ne s C B) s.P s.P_pos
-  have hN:(0:ℝ)<Ideal.absNorm C:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC)
-  by_cases hz:frozenCoefficient B.val C R s.ν s.W s.P=0
+  pm_495
+  pm_408 hN
+  pm_7334 hz B.val
   · rw [hz,norm_zero,zero_mul,zero_div]
     exact div_nonneg (mul_nonneg (frozenProfile_nonneg s) (Real.sqrt_nonneg _)) hN.le
   · have hn:=(actual_reduction_norm B.val (alloc_ne s C B) C R
@@ -72,7 +66,7 @@ theorem scalar_volume_bound (s:Input ι)(C R:Ideal O)(hC:C≠0)(B:actualAllocati
 
 omit [DecidableEq ι] in
 theorem common_slotControl (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):
-    slotControl (commonData s C R B)≤slotControl s.toData:=by
+    slotControl (commonData s C R B)≤ slotControl s.toData:=by
   unfold slotControl
   change (∏i:liveIndices B.val,s.M i.val)*
     (∏i:liveIndices B.val,max 1 (128*max 0 (s.hi i.val)*s.M i.val))≤_

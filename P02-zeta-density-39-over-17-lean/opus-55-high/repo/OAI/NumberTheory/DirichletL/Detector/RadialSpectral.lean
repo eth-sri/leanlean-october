@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RadialIdentity
 public import OAI.NumberTheory.DirichletL.Detector.SpectralPoisson
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ local notation "Id" => Ideal O
 lemma spectralSummand_mask_nonzero (S : Finset Id) (D I J : Id) (Ψ : O→*ℂ) (t : ℂ)
     (h : spectralSummand S D Ψ t I J≠0) : completedMask S D I J≠0 := by
   intro hz
-  exact h (by simp only [spectralSummand,hz,zero_mul])
+  pm_3030 h spectralSummand hz zero_mul
 
 lemma spectralSummand_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (D I J : Id) (Ψ : O→*ℂ) (t : ℂ) (h : spectralSummand S D Ψ t I J≠0) :
@@ -26,14 +27,9 @@ lemma spectralSummand_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMax
   have hA : completedIndex I J≠0 := by
     intro hz
     exact h (spectralSummand_zero_completedIndex S D I J Ψ t hz)
-  have hout : ∀P∈S,¬P∣I*J^3 := by
-    unfold completedMask at hm
-    split_ifs at hm with hd
-    · exact hd.2
-    · exact False.elim (hm rfl)
-  apply calibrationForSet_coprime_of_excluded S hS
-  rw [completedIndex_eq_primaryGenerator] at hA ⊢
-  rw [(primaryGenerator_spec (I*J^3) hA).1]
+  have hout : ∀P∈S,¬P∣I*J ^3 := by
+    pm_3823
+  pm_1045
   exact hout
 
 def radialMellinSpectralTerm (η : HeckeFamily.Character) (C : CalibrationData)
@@ -53,7 +49,7 @@ theorem transformedSpectralTerm_radial_mellin (η : HeckeFamily.Character)
     (s : O) (hs : Supported (Ideal.span {s})) (hcs : IsCoprime (calibrationForSet S hS).generator s)
     (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a) (hW : Function.support W⊆Set.Icc a b)
     (K σ : ℝ) (hK : 0<K) (hσ : 1<σ) (t : ℂ) (I J : Id) :
-    transformedSpectralTerm η (calibrationForSet S hS) S D s hs W K t I J=
+    transformedSpectralTerm η (calibrationForSet S hS) S D s hs W K t I J =
       radialMellinSpectralTerm η (calibrationForSet S hS) S D s hs W K σ t I J := by
   unfold transformedSpectralTerm radialMellinSpectralTerm
   split_ifs with hA

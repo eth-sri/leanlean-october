@@ -1,9 +1,9 @@
 module
 public import GuthMaynard.Improvement.OrdinaryFourierMoments
 public import GuthMaynard.Improvement.RatioFourierBridge
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform ComplexConjugate
@@ -17,26 +17,31 @@ def sourceFourierMass (μ : ℝ → ℝ) (Λ : ℝ) : ℝ :=
   ∫ ξ in sourceFourierSet μ Λ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2
 def sourceFourierSignal (μ : ℝ → ℝ) (Λ : ℝ) : ℝ → ℂ := 𝓕⁻ (sourceFourierCut μ Λ)
 
-theorem sourceFourierSet_measurable {μ : ℝ → ℝ} (h1 : Integrable μ) (Λ : ℝ) :
-    MeasurableSet (sourceFourierSet μ Λ) := by
+set_option hygiene false in
+macro "pb_2745" : tactic => `(tactic| (
   have hc : Continuous (𝓕 (fun t => (μ t:ℂ))) := VectorFourier.fourierIntegral_continuous
-    Real.continuous_fourierChar (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)
+    Real.continuous_fourierChar (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)))
+section
+variable {μ : ℝ → ℝ}
+include μ
+theorem sourceFourierSet_measurable (h1 : Integrable μ) (Λ : ℝ) :
+    MeasurableSet (sourceFourierSet μ Λ) := by
+  pb_2745
   exact measurableSet_lt measurable_const hc.measurable.norm
 
-theorem sourceFourierCut_square {μ : ℝ → ℝ} (Λ : ℝ) :
+theorem sourceFourierCut_square (Λ : ℝ) :
     (fun ξ => ‖sourceFourierCut μ Λ ξ‖^2) =
       (sourceFourierSet μ Λ).indicator (fun ξ => ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2) := by
   funext ξ
   by_cases hξ : ξ ∈ sourceFourierSet μ Λ <;> simp [sourceFourierCut,hξ]
 
 /-- The actual exceptional frequency cutoff is both L1 and L2. -/
-theorem sourceFourierCut_integrability {μ : ℝ → ℝ} (h1 : Integrable μ)
+theorem sourceFourierCut_integrability (h1 : Integrable μ)
     (h2 : Integrable (fun t => μ t^2)) {Λ : ℝ} (hΛ : 0 < Λ) :
     Integrable (sourceFourierCut μ Λ) ∧ MemLp (sourceFourierCut μ Λ) 2 ∧
       (∫ ξ, ‖sourceFourierCut μ Λ ξ‖) ≤ sourceFourierMass μ Λ/Λ := by
   have hA := sourceFourierSet_measurable h1 Λ
-  have hc : Continuous (𝓕 (fun t => (μ t:ℂ))) := VectorFourier.fourierIntegral_continuous
-    Real.continuous_fourierChar (innerSL ℝ).continuous₂ (Complex.ofRealCLM.integrable_comp h1)
+  pb_2745
   have hm : Measurable (sourceFourierCut μ Λ) := hc.measurable.indicator hA
   have hi2 : Integrable (fun ξ => ‖sourceFourierCut μ Λ ξ‖^2) := by
     rw [sourceFourierCut_square]
@@ -52,13 +57,14 @@ theorem sourceFourierCut_integrability {μ : ℝ → ℝ} (h1 : Integrable μ)
       nlinarith [norm_nonneg (𝓕 (fun t => (μ t:ℂ)) ξ)]
     · simp [sourceFourierCut,hξ]
   have hi1 : Integrable (sourceFourierCut μ Λ) := (hi2.const_mul Λ⁻¹).mono' hm.aestronglyMeasurable (Filter.Eventually.of_forall hp)
-  refine ⟨hi1,(memLp_two_iff_integrable_sq_norm hm.aestronglyMeasurable).mpr hi2,?_⟩
+  pm_8544 hm.aestronglyMeasurable
   calc
     _ ≤ ∫ ξ, Λ⁻¹*‖sourceFourierCut μ Λ ξ‖^2 := integral_mono hi1.norm (hi2.const_mul _) hp
     _ = _ := by
       rw [integral_const_mul,sourceFourierCut_square,integral_indicator hA]
       unfold sourceFourierMass
       ring
+end
 
 /-- Literal inverse Plancherel on L1/L2, obtained from the forward L2
 compatibility by reflection. No L1 premise on the inverse transform. -/
@@ -67,15 +73,17 @@ theorem ordinary_inverse_fourier_l2 {f : ℝ → ℂ} (h1 : Integrable f) (h2 : 
   have hn1 : Integrable (fun x => f (-x)) := by simpa using (integrable_comp_mul_left_iff _ (by norm_num : (-1:ℝ) ≠ 0)).mpr h1
   have hn2i : Integrable (fun x => ‖f (-x)‖^2) := by
     have hi := (memLp_two_iff_integrable_sq_norm h2.aestronglyMeasurable).mp h2
-    simpa using (integrable_comp_mul_left_iff _ (by norm_num : (-1:ℝ) ≠ 0)).mpr hi
+    pm_6415 hi
   have hn2 : MemLp (fun x => f (-x)) 2 := (memLp_two_iff_integrable_sq_norm hn1.aestronglyMeasurable).mpr hn2i
   rw [Real.fourierInv_eq_fourier_comp_neg]
   refine ⟨ordinary_fourier_memLp hn1 hn2,?_⟩
   rw [ordinary_fourier_integral_sq hn1 hn2]
   simpa using Measure.integral_comp_mul_left (fun ξ => ‖f ξ‖^2) (-1)
 
-theorem sourceFourierSignal_l2 {μ : ℝ → ℝ} (h1 : Integrable μ)
-    (h2 : Integrable (fun t => μ t^2)) {Λ : ℝ} (hΛ : 0 < Λ) :
+section
+variable {μ : ℝ → ℝ} (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) {Λ : ℝ} (hΛ : 0 < Λ)
+include μ h1 h2 Λ hΛ
+theorem sourceFourierSignal_l2 :
     MemLp (sourceFourierSignal μ Λ) 2 ∧
       (∫ t, ‖sourceFourierSignal μ Λ t‖^2) = sourceFourierMass μ Λ := by
   obtain ⟨hi,hp,_⟩ := sourceFourierCut_integrability h1 h2 hΛ
@@ -84,12 +92,12 @@ theorem sourceFourierSignal_l2 {μ : ℝ → ℝ} (h1 : Integrable μ)
   rw [sourceFourierSignal,he,sourceFourierCut_square,integral_indicator (sourceFourierSet_measurable h1 Λ)]
   rfl
 
-theorem sourceFourierSignal_bound {μ : ℝ → ℝ} (h1 : Integrable μ)
-    (h2 : Integrable (fun t => μ t^2)) {Λ : ℝ} (hΛ : 0 < Λ) (t : ℝ) :
+theorem sourceFourierSignal_bound (t : ℝ) :
     ‖sourceFourierSignal μ Λ t‖ ≤ sourceFourierMass μ Λ/Λ := by
   rw [sourceFourierSignal,Real.fourierInv_eq_fourier_neg]
   exact (VectorFourier.norm_fourierIntegral_le_integral_norm Real.fourierChar volume
     (innerₗ ℝ) _ (-t)).trans (sourceFourierCut_integrability h1 h2 hΛ).2.2
+end
 
 /-- Hermitian symmetry of the literal cutoff; the threshold set is symmetric. -/
 theorem sourceFourierCut_conj (μ : ℝ → ℝ) (Λ ξ : ℝ) :
@@ -99,10 +107,12 @@ theorem sourceFourierCut_conj (μ : ℝ → ℝ) (Λ ξ : ℝ) :
   · simp only [sourceFourierCut,indicator_of_mem hξ,indicator_of_mem (hs.mpr hξ),realDensity_fourier_conj]
   · simp [sourceFourierCut,hξ,hs]
 
+section
+variable {μ : ℝ → ℝ} (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) {Λ : ℝ} (hΛ : 0 < Λ)
+include μ h1 h2 Λ hΛ
 /-- The actual ordinary density/signal product is integrable from L2-L2,
 without asserting that the signal is L1. -/
-theorem sourceFourierSignal_pair_integrable {μ : ℝ → ℝ} (h1 : Integrable μ)
-    (h2 : Integrable (fun t => μ t^2)) {Λ : ℝ} (hΛ : 0 < Λ) :
+theorem sourceFourierSignal_pair_integrable :
     Integrable (fun t => (μ t:ℂ)*sourceFourierSignal μ Λ t) := by
   have hc1 := Complex.ofRealCLM.integrable_comp h1
   have hm : MemLp (fun t => (μ t:ℂ)) 2 := by
@@ -113,13 +123,12 @@ theorem sourceFourierSignal_pair_integrable {μ : ℝ → ℝ} (h1 : Integrable 
 /-- Exact ordinary pairing with the literal inverse signal. The proof uses
 L1 frequency-space Fubini; it does not assume the ordinary Fourier integral
 of the possibly non-L1 time signal exists. -/
-theorem sourceFourierSignal_pairing {μ : ℝ → ℝ} (h1 : Integrable μ)
-    (h2 : Integrable (fun t => μ t^2)) {Λ : ℝ} (hΛ : 0 < Λ) :
+theorem sourceFourierSignal_pairing :
     (∫ t, (μ t:ℂ)*sourceFourierSignal μ Λ t) = (sourceFourierMass μ Λ:ℂ) := by
   have hc1 := Complex.ofRealCLM.integrable_comp h1
   have hcut := (sourceFourierCut_integrability h1 h2 hΛ).1
   have hn : Integrable (fun ξ => sourceFourierCut μ Λ (-ξ)) := by
-    simpa using (integrable_comp_mul_left_iff _ (by norm_num : (-1:ℝ) ≠ 0)).mpr hcut
+    pm_6415 hcut
   have hpair : (∫ ξ, 𝓕 (fun t => (μ t:ℂ)) ξ * sourceFourierCut μ Λ (-ξ)) =
       ∫ t, (μ t:ℂ)*sourceFourierSignal μ Λ t := by
     simpa [sourceFourierSignal,Real.fourierInv_eq_fourier_comp_neg,Real.fourier_eq,
@@ -137,5 +146,6 @@ theorem sourceFourierSignal_pairing {μ : ℝ → ℝ} (h1 : Integrable μ)
     · simp [sourceFourierCut,hξ]
   rw [he,integral_indicator (sourceFourierSet_measurable h1 Λ)]
   norm_cast
+end
 
 end GuthMaynard.Improvement

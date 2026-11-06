@@ -14,7 +14,6 @@ its absolute value is exactly the circle distance.  Thus membership in the
 literal coefficient cell gives the exact bounds `|β_j| ≤ H^(-j)`.
 -/
 
-open Set Metric
 
 namespace GafniTao
 
@@ -25,8 +24,7 @@ theorem exists_unitAddCircle_centeredLift (u : UnitAddCircle) :
   induction u using Quotient.inductionOn with
   | _ x =>
       refine ⟨x - round x, ?_, ?_⟩
-      · rw [AddCircle.coe_sub]
-        simp
+      simp_all
       · exact (UnitAddCircle.norm_eq (x := x)).symm
 
 noncomputable def unitAddCircleCenteredLift (u : UnitAddCircle) : ℝ :=
@@ -44,25 +42,26 @@ noncomputable def heathBrownCoefficientDisplacement
     {k : ℕ} (c α : HeathBrownCoefficientTorus k) (j : Fin (k - 1)) : ℝ :=
   unitAddCircleCenteredLift (α j - c j)
 
-theorem coe_heathBrownCoefficientDisplacement
-    {k : ℕ} (c α : HeathBrownCoefficientTorus k) (j : Fin (k - 1)) :
+section
+variable {k : ℕ} (c α : HeathBrownCoefficientTorus k) (j : Fin (k - 1))
+include k c α j
+theorem coe_heathBrownCoefficientDisplacement :
     ((heathBrownCoefficientDisplacement c α j : ℝ) : UnitAddCircle) =
       α j - c j :=
   coe_unitAddCircleCenteredLift _
 
-theorem coe_center_add_heathBrownCoefficientDisplacement
-    {k : ℕ} (c α : HeathBrownCoefficientTorus k) (j : Fin (k - 1)) :
+theorem coe_center_add_heathBrownCoefficientDisplacement :
     c j + ((heathBrownCoefficientDisplacement c α j : ℝ) : UnitAddCircle) =
       α j := by
   rw [coe_heathBrownCoefficientDisplacement]
   abel
 
-theorem abs_heathBrownCoefficientDisplacement
-    {k : ℕ} (c α : HeathBrownCoefficientTorus k) (j : Fin (k - 1)) :
+theorem abs_heathBrownCoefficientDisplacement :
     |heathBrownCoefficientDisplacement c α j| = dist (α j) (c j) := by
   unfold heathBrownCoefficientDisplacement
   rw [abs_unitAddCircleCenteredLift]
   rw [dist_eq_norm]
+end
 
 theorem abs_heathBrownCoefficientDisplacement_le_radius
     {k H : ℕ} {f : ℝ → ℝ} {n : ℝ}
@@ -73,7 +72,7 @@ theorem abs_heathBrownCoefficientDisplacement_le_radius
       heathBrownCellRadius H j := by
   rw [abs_heathBrownCoefficientDisplacement]
   have hj := hα j (Set.mem_univ j)
-  simpa only [mem_closedBall, dist_comm] using hj
+  simp_all
 
 
 end

@@ -2,18 +2,21 @@ module
 public import WeylPort.Block
 public import WeylPort.GrowthAlgebra
 public import Mathlib.Data.Nat.Log
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset
-open scoped BigOperators
 
 namespace WeylPort
 
 noncomputable def criticalTerm (t : ℝ) (n : ℕ) : ℂ :=
   (n : ℂ) ^ (-((1 / 2 : ℂ) + (t : ℂ) * I))
 
-theorem norm_criticalTerm (t : ℝ) {n : ℕ} (hn : 0 < n) :
+section
+variable (t : ℝ)
+include t
+theorem norm_criticalTerm {n : ℕ} (hn : 0 < n) :
     ‖criticalTerm t n‖ = (n : ℝ) ^ (-(1 / 2 : ℝ)) := by
   unfold criticalTerm
   rw [Complex.norm_natCast_cpow_of_pos hn]
@@ -21,11 +24,11 @@ theorem norm_criticalTerm (t : ℝ) {n : ℕ} (hn : 0 < n) :
   simp
 
 /-- Absolute estimation handles every block below the cube-root height. -/
-theorem norm_critical_block_small (t : ℝ) (A N : ℕ)
+theorem norm_critical_block_small (A N : ℕ)
     (ht : 0 ≤ t) (hA : 0 < A) (hNA : N ≤ A)
     (hsmall : (A : ℝ) ≤ t ^ (1 / 3 : ℝ)) :
     ‖∑ n ∈ range N, criticalTerm t (A+n)‖ ≤ t ^ (1 / 6 : ℝ) := by
-  have hApos : 0 < (A : ℝ) := by exact_mod_cast hA
+  pm_456 hApos A hA
   calc
     _ ≤ ∑ n ∈ range N, ‖criticalTerm t (A+n)‖ := norm_sum_le _ _
     _ ≤ ∑ _n ∈ range N, (A : ℝ) ^ (-(1 / 2 : ℝ)) := by
@@ -45,7 +48,7 @@ theorem norm_critical_block_small (t : ℝ) (A N : ℕ)
     _ = t ^ (1 / 6 : ℝ) := by rw [← Real.rpow_mul ht]; norm_num
 
 /-- Uniform Weyl bound on all blocks up to the square-root length. -/
-theorem norm_critical_block_le (t : ℝ) (A N : ℕ)
+theorem norm_critical_block_le (A N : ℕ)
     (ht : 1 ≤ t) (hA : 0 < A) (hNA : N ≤ A) (hAt : (A : ℝ)^2 ≤ t) :
     ‖∑ n ∈ range N, criticalTerm t (A+n)‖ ≤ 30 * t ^ (1 / 6 : ℝ) := by
   by_cases hlo : t ^ (1 / 3 : ℝ) ≤ A
@@ -53,11 +56,11 @@ theorem norm_critical_block_le (t : ℝ) (A N : ℕ)
       norm_criticalLine_cpow_block_le t A N ht hA hlo hAt hNA
   · have hb := norm_critical_block_small t A N (by linarith) hA hNA
       (le_of_not_ge hlo)
-    have hp : 0 ≤ t ^ (1 / 6 : ℝ) := Real.rpow_nonneg (by linarith) _
+    pm_5632
     linarith
 
 /-- At most `K` dyadic blocks suffice for every prefix shorter than `2^K`. -/
-theorem norm_critical_sum_le_dyadic (t : ℝ) (K N : ℕ)
+theorem norm_critical_sum_le_dyadic (K N : ℕ)
     (ht : 1 ≤ t) (hNK : N < 2^K) (hNt : (N : ℝ)^2 ≤ t) :
     ‖∑ n ∈ Ico 1 (N+1), criticalTerm t n‖ ≤ 30 * K * t ^ (1 / 6 : ℝ) := by
   induction K generalizing N with
@@ -97,7 +100,7 @@ theorem norm_critical_sum_le_dyadic (t : ℝ) (K N : ℕ)
       linarith
 
 /-- Explicit bound for every short Dirichlet polynomial on the critical line. -/
-theorem norm_critical_sum_le_log (t : ℝ) (N : ℕ)
+theorem norm_critical_sum_le_log (N : ℕ)
     (ht : 1 ≤ t) (hNt : (N : ℝ)^2 ≤ t) :
     ‖∑ n ∈ Ico 1 (N+1), criticalTerm t n‖ ≤
       30 * (Real.log t + 1) * t ^ (1 / 6 : ℝ) := by
@@ -113,8 +116,7 @@ theorem norm_critical_sum_le_log (t : ℝ) (N : ℕ)
   have hl := Real.log_le_log (by positivity) hpow
   rw [Real.log_pow] at hl
   have hs := Real.log_le_log (sq_pos_of_pos hNpos) hNt
-  rw [Real.log_pow] at hs
-  norm_num only [Nat.cast_ofNat] at hs
+  pm_1451 Real.log_pow hs Nat.cast_ofNat
   have htwo : (1/2:ℝ) ≤ Real.log 2 := by
     have := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ) < 2)
     norm_num at this ⊢
@@ -124,9 +126,10 @@ theorem norm_critical_sum_le_log (t : ℝ) (N : ℕ)
     linarith
   have hb := norm_critical_sum_le_dyadic t (Nat.log 2 N+1) N ht
     (Nat.lt_pow_succ_log_self (by norm_num) N) hNt
-  have hp : 0 ≤ t ^ (1 / 6 : ℝ) := Real.rpow_nonneg (by linarith) _
+  pm_5632
   push_cast at hb
   exact hb.trans (mul_le_mul_of_nonneg_right (by linarith) hp)
+end
 
 /-- A fixed multiplier and the entire logarithmic loss are absorbed by any positive epsilon.
 The eventual threshold is chosen before, and uniformly for, every cutoff `N`. -/

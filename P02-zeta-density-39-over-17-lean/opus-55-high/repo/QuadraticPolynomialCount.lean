@@ -1,5 +1,6 @@
 module
 public import QuadraticHeightBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ theorem quadratic_polynomial_count_loss {σ a δ : ℝ}
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∀ t ∈ W, N^σ*T^(-2*δ) ≤ ‖boundedPolynomial N b t‖) →
       (W.card:ℝ) ≤ C*T^(3*a*(1-σ)+51*δ) := by
-  obtain ⟨A,hA,hbound⟩ := finite_quadratic_large_value_second MathCollab.Density.comparisonCutoff hδ
+  pm_69 A hA hbound finite_quadratic_large_value_second MathCollab.Density.comparisonCutoff hδ
   refine ⟨1+(1+6*A)^3,by positivity,?_⟩
   filter_upwards [eventually_gt_atTop (1:ℝ),quadratic_diagonal_budget hw hA hδ.le hsmall]
     with T hT hsink

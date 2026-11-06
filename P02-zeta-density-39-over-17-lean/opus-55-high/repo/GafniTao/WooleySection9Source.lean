@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection8Ratio
 public import GafniTao.WooleySection9Product
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source specialization of Wooley Lemma 9.1
@@ -15,7 +16,6 @@ hypothesis needed by (8.4)--(8.5).
 
 namespace GafniTao
 
-noncomputable section
 
 /-- A Section-7 multiplier raised to the normalization exponent is bounded
 by the multiplier itself. -/
@@ -37,17 +37,17 @@ theorem wooley_section9_base_coefficient
       (C * (p : ℝ) ^ (((k ^ 2 * nu : ℕ) : ℝ))) ^ (2 : ℝ) *
         (p : ℝ) ^ (-(b : ℝ) * (1 - 1 / (k : ℝ)) * Lambda) *
         X ^ wooleyRho k 1 := by
-  let A : ℝ := C * (p : ℝ) ^ (((k ^ 2 * nu : ℕ) : ℝ))
-  let v : ℝ := 1 - 1 / (k : ℝ)
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
-  have hkR : (0 : ℝ) < k := by positivity
+  pm_5362 A
+  pm_5500 k
+  pm_2786
+  pm_117 hkR k
   have hv : 0 ≤ v := by
     dsimp [v]
     rw [sub_nonneg, div_le_one hkR]
     exact_mod_cast (show 1 ≤ k by omega)
   have hsR : (s : ℝ) ≤ (k : ℝ) ^ 2 := by
     exact_mod_cast hs
-  have hnuR : (0 : ℝ) ≤ nu := Nat.cast_nonneg _
+  pm_391 hnuR nu
   have hexp :
       ((s : ℝ) * (nu : ℝ) - Lambda * (b : ℝ)) * v ≤
         (((k ^ 2 * nu : ℕ) : ℝ)) -
@@ -132,7 +132,7 @@ theorem wooley_section8_exponent_eq_rho_div
     {k r : ℕ} (hr : 1 ≤ r) :
     1 / ((k - r + 1 : ℕ) : ℝ) = wooleyRho k r / (r : ℝ) := by
   unfold wooleyRho
-  have hrR : (r : ℝ) ≠ 0 := by positivity
+  pm_392 hrR r
   field_simp
 
 /-- The first successor scale in Section 9 is literally `k*b`. -/
@@ -183,15 +183,12 @@ theorem wooleySourcePolynomial_lemma_9_1_of_section7
             wooleySourceNormalizedMixedMean
               phi p B H (wooleyTriangular k) (k - j) b
                 (wooleyNextB k j b) nu Lambda gamma) := by
-  let D : ℝ := C * (p : ℝ) ^ (((k ^ 2 * nu : ℕ) : ℝ))
-  let X : ℕ → ℝ := fun j =>
-    wooleySourceNormalizedMixedMean
-      phi p B H (wooleyTriangular k) (k - j) b
-        (wooleyNextB k j b) nu Lambda gamma
+  pm_5362 D
+  pm_2783
   let K : ℕ → ℕ → ℝ := fun r a =>
     wooleySourceNormalizedMixedMean
       phi p B H (wooleyTriangular k) r a b nu Lambda gamma
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
+  pm_2786
   have hDOne : 1 ≤ D := by
     dsimp [D]
     have hC0 : 0 ≤ C := by linarith
@@ -204,13 +201,10 @@ theorem wooleySourcePolynomial_lemma_9_1_of_section7
         mul_le_mul hC hpPow (by norm_num) hC0
   have hX : ∀ j, 1 ≤ j → j < k → 0 ≤ X j := by
     intro j hj hjk
-    exact wooleySourceNormalizedMixedMean_nonneg
-      phi p B H (wooleyTriangular k) (k - j) b
-        (wooleyNextB k j b) nu Lambda gamma
+    pm_1145
   have hK : ∀ r a, 0 ≤ K r a := by
     intro r a
-    exact wooleySourceNormalizedMixedMean_nonneg
-      phi p B H (wooleyTriangular k) r a b nu Lambda gamma
+    pm_6690
   have hbase : ∀ a, Valid 1 a →
       K 1 a ≤ D ^ (2 : ℝ) *
         (p : ℝ) ^ (-((b : ℝ) * (1 - 1 / (k : ℝ)) * Lambda)) *
@@ -225,7 +219,7 @@ theorem wooleySourcePolynomial_lemma_9_1_of_section7
     have htri : wooleyTriangular k ≤ k ^ 2 := by
       exact_mod_cast (show (wooleyTriangular k : ℝ) ≤ (k : ℝ) ^ 2 by
         rw [wooleyTriangular_cast]
-        have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
+        pm_2797
         nlinarith)
     have hcoef := wooley_section9_base_coefficient
       (p := p) (k := k) (s := wooleyTriangular k) (b := b) (nu := nu)
@@ -292,7 +286,7 @@ theorem wooley_section9_constant_loss_absorption
           (-((b : ℝ) * (1 - 1 / (k : ℝ)) * Lambda) / (r : ℝ)) ≤
       C ^ ((r + 1 : ℕ) : ℝ) *
         (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) := by
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
+  pm_2786
   have hC0 : 0 ≤ C := by linarith
   have hpPow0 : 0 ≤ (p : ℝ) ^ (((k ^ 2 * nu : ℕ) : ℝ)) :=
     Real.rpow_nonneg hpR.le _
@@ -354,19 +348,14 @@ theorem wooleySourcePolynomial_lemma_9_2_of_lemma_9_1
               (wooleyNextB k rPrime b) nu Lambda gamma) ^
               wooleyRho k rPrime *
           (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) := by
-  let X : ℕ → ℝ := fun j =>
-    wooleySourceNormalizedMixedMean
-      phi p B H (wooleyTriangular k) (k - j) b
-        (wooleyNextB k j b) nu Lambda gamma
+  pm_2783
   have hX : ∀ j ∈ wooleyGradeRange r, 0 ≤ X j := by
     intro j hj
-    exact wooleySourceNormalizedMixedMean_nonneg
-      phi p B H (wooleyTriangular k) (k - j) b
-        (wooleyNextB k j b) nu Lambda gamma
+    pm_1145
   obtain ⟨rPrime, hrPrime, hselect⟩ :=
     exists_wooley_grade_for_weighted_product hr X hX
   refine ⟨rPrime, hrPrime, ?_⟩
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
+  pm_2786
   have hcoef := wooley_section9_constant_loss_absorption
     hp hk hr hrk hC hLambda hhierarchy
   have htail : 0 ≤ (p : ℝ) ^ (-(b : ℝ) * Lambda / (2 * (k : ℝ))) :=
@@ -405,6 +394,5 @@ theorem wooleySourcePolynomial_lemma_9_2_of_lemma_9_1
   exact h91.trans (by simpa only [X] using hselected)
 
 
-end
 
 end GafniTao

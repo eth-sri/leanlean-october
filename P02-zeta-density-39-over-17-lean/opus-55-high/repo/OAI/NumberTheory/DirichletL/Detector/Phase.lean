@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,23 +32,21 @@ theorem reciprocitySign_mul_right (a b c : O) :
     reciprocitySign a (b * c) = reciprocitySign a b * reciprocitySign a c := by
   simp only [reciprocitySign, residue_mul, quadraticRaySign_mul_right, Int.cast_mul]
 
-theorem reciprocitySign_sq (a b : O)
-    (ha : EisensteinEPrimaryPhase.odd (residue a))
-    (hb : EisensteinEPrimaryPhase.odd (residue b)) :
+section
+variable (a b : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (hb : EisensteinEPrimaryPhase.odd (residue b))
+include a b ha hb
+theorem reciprocitySign_sq :
     reciprocitySign a b ^ 2 = 1 := by
   unfold reciprocitySign
   exact_mod_cast quadraticRaySign_sq (residue a) (residue b) ha hb
 
-theorem reciprocitySign_cube_right (a b : O)
-    (ha : EisensteinEPrimaryPhase.odd (residue a))
-    (hb : EisensteinEPrimaryPhase.odd (residue b)) :
+theorem reciprocitySign_cube_right :
     reciprocitySign a (b ^ 3) = reciprocitySign a b := by
   rw [show b ^ 3 = b ^ 2 * b by ring, reciprocitySign_mul_right,
     pow_two, reciprocitySign_mul_right]
   have hs := reciprocitySign_sq a b ha hb
-  calc
-    _ = reciprocitySign a b ^ 2 * reciprocitySign a b := by ring
-    _ = reciprocitySign a b := by rw [hs, one_mul]
+  grind
+end
 
 theorem quadraticRayValue_cube (r : EisensteinEPrimaryPhase.Coord)
     (hr : EisensteinEPrimaryPhase.odd r) :
@@ -65,9 +64,7 @@ theorem G_cube (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
   have hχ := congrArg
     (fun η : MulChar (O ⧸ cubicTwoIdeal) O => η (Ideal.Quotient.mk cubicTwoIdeal a))
     (cubicChar_pow_three cubicTwoIdeal cubicTwoIdeal_good)
-  simp only [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), MulChar.one_apply hu] at hχ
-  have hc := congrArg eisEmbedding hχ
-  simp only [map_pow, map_one] at hc
+  pm_3926
   change fixedGValue (residue (a ^ 3)) = quadraticRayValue (residue a)
   simp only [fixedGValue, ← fixed_two_mk_eq_residue_lift]
   simp only [map_pow, hc, inv_one, one_mul]

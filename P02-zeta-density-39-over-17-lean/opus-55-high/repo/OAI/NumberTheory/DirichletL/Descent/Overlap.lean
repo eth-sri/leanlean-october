@@ -38,30 +38,14 @@ theorem moebius_character_overlap (ψ : M →* ℂ) {j n₀ P₀ : M}
 end Moebius
 
 theorem inverse_eq_square_of_fourth_eq {z : ℂ} (hz : z ^ 4 = z) :
-    z⁻¹ = z ^ 2 := by
-  by_cases hzero : z = 0
-  · simp [hzero]
-  have hcube : z ^ 3 = 1 := by
-    apply mul_left_cancel₀ hzero
-    calc
-      z * z ^ 3 = z ^ 4 := by ring
-      _ = z := hz
-      _ = z * 1 := by ring
-  calc
-    z⁻¹ = z⁻¹ * z ^ 3 := by rw [hcube, mul_one]
-    _ = z ^ 2 := by field_simp
+    z⁻¹ = z ^ 2 := by grind
 
 theorem inverse_cube_square_eq_sixth {z : ℂ} (h : z ^ 6 = 0 ∨ z ^ 6 = 1) :
-    ((z ^ 3)⁻¹) ^ 2 = z ^ 6 := by
-  rw [← inv_pow, ← pow_mul]
-  norm_num
-  rcases h with h | h <;> rw [h] <;> norm_num
+    ((z ^ 3)⁻¹) ^ 2 = z ^ 6 := by grind
 
 theorem inverse_square_cube_mask {M : Type*} [Monoid M]
     (ψ : M →* ℂ) (n b : M) (h : ψ b ^ 6 = 0 ∨ ψ b ^ 6 = 1) :
-    (ψ (n * b ^ 3))⁻¹ ^ 2 = (ψ n)⁻¹ ^ 2 * ψ b ^ 6 := by
-  rw [map_mul, map_pow, mul_inv_rev, mul_pow, inverse_cube_square_eq_sixth h]
-  ring
+    (ψ (n * b ^ 3))⁻¹ ^ 2 = (ψ n)⁻¹ ^ 2 * ψ b ^ 6 := by grind
 
 end SevenEighths.InverseMoment
 

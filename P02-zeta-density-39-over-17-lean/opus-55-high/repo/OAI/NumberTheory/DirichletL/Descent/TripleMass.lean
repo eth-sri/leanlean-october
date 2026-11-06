@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -86,13 +87,13 @@ theorem triple_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
       (∀ γ ∈ Γ, (Ideal.absNorm γ.q0 : ℝ) ≤ B ∧
         (Ideal.absNorm γ.quotient : ℝ) ≤ T ∧ (Ideal.absNorm γ.residual : ℝ) ≤ R) →
       (B*T*R)⁻¹ * (∑ γ ∈ Γ, tripleDivisorWeight K γ) ≤ C*(B*T*R)^ε := by
-  obtain ⟨C,hC,hb⟩ := tripleDivisorWeight_small K ε hε
+  pm_114 C hC hb tripleDivisorWeight_small K ε hε
   refine ⟨128^3*C, by positivity, ?_⟩
   intro Γ B T R hB hT hR hz hn
-  have hpos : 0 < B*T*R := by positivity
+  pm_655 hpos B T R
   have hw : ∀ γ ∈ Γ, tripleDivisorWeight K γ ≤ C*(B*T*R)^ε := by
     intro γ hγ
-    obtain ⟨hq,ht,hr⟩ := hz γ hγ
+    pm_69 hq ht hr hz γ hγ
     apply (hb γ hq ht hr).trans
     gcongr
     · exact (hn γ hγ).1
@@ -104,8 +105,7 @@ theorem triple_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
       _ ≤ ∑ _γ ∈ Γ, C*(B*T*R)^ε := Finset.sum_le_sum hw
       _ = (Γ.card : ℝ)*(C*(B*T*R)^ε) := by simp
       _ ≤ _ := mul_le_mul_of_nonneg_right (outerTriple_card Γ B T R hB hT hR hz hn) (by positivity)
-  apply (mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr hpos.le)).trans_eq
-  field_simp
+  pm_8928 hpos.le
 
 end
 end SevenEighths.InverseMoment

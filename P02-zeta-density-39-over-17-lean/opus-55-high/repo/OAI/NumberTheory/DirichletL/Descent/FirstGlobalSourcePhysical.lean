@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalSourceSupport
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalSourceIndex
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -38,26 +39,16 @@ theorem firstCubePhysicalMode_fixed_pool (pool : Finset ι) (b : CubeCoordinates
     (K : ℂ) * cubeBaseFactor p hp hg b.support
       (fun i => b.leftExponent i + b.rightExponent i) b.leftBit b.rightBit d x.2 * z)
   apply firstPhysicalCommonRows_fixed_pool p hg _ pool Finset.sdiff_subset
-  · intro U hU hn
-    apply firstCanonicalCoefficient_zero_overlap p hp hcop hg
-    intro hd
-    apply hn
-    intro i hi
-    exact Finset.mem_sdiff.mpr ⟨hU hi,fun he=>Finset.disjoint_left.mp hd hi he⟩
-  · intro U hU hn
-    apply firstCanonicalCoefficient_zero_overlap p hp hcop hg
-    intro hd
-    apply hn
-    intro i hi
-    exact Finset.mem_sdiff.mpr ⟨hU hi,fun he=>Finset.disjoint_left.mp hd hi he⟩
+  pm_3770
+  pm_3770
 
 theorem original_retained_global_family
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O)) (hlabels : ∀I∈labels,I≠0)
     (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
-    (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
+    (mark : (ι→₀ℕ)→ Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
     (hRY : ∀k∈firstOriginalOuter pool Q,∀f∈labels,R k.1 k.2.1 f k.2.2≤Y)
-    (s : Fin 9→ℝ) (hs : ∀i,0<s i) :
+    (s : Fin 9→ℝ) (hs : ∀i,0< s i) :
     reopenedPhysicalSourceSum pool Q labels β (fun b C I=>
       reopenedPhysicalRetained p hp hcop hg pool b C Ψ m I mark W Φ K (R b C I)) =
     (K:ℂ)*firstFamilyPhysicalRows p hg

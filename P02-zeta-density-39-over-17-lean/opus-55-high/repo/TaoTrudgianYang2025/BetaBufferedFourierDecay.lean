@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedKernelJets
 public import TaoTrudgianYang2025.FourierDecayCore
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,8 +35,10 @@ theorem modelPhaseNormalizedMode_eq_fourier (χ F : ℝ → ℝ) (T ξ : ℝ) :
     AddChar.map_add_eq_mul,Circle.coe_mul]
   ring
 
-theorem modelPhaseBufferedFourierMode_uniform_decay
-    {σ : ℝ} (hσ : 0 ≤ σ) :
+section
+variable {σ : ℝ} (hσ : 0 ≤ σ)
+include σ hσ
+theorem modelPhaseBufferedFourierMode_uniform_decay :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (l r η : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → η ≤ 1 →
       ∀ (F : ℝ → ℝ) (δ T N q : ℝ), δ ≤ 1 →
         IsApproximateModelPhaseFunction F σ 1 δ → 0 < N →
@@ -78,15 +81,13 @@ theorem modelPhaseBufferedFourierMode_uniform_decay
   dsimp [f,χ] at hh ⊢
   nlinarith
 
-theorem modelPhaseBufferedFourierMode_inverse_square_bound
-    {σ : ℝ} (hσ : 0 ≤ σ) :
+theorem modelPhaseBufferedFourierMode_inverse_square_bound :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (l r η : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → η ≤ 1 →
       ∀ (F : ℝ → ℝ) (δ T N q : ℝ), δ ≤ 1 →
         IsApproximateModelPhaseFunction F σ 1 δ → 0 < N → q ≠ 0 →
         ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q‖ ≤
           C*(η⁻¹)^2*(1+|T|)^2/(N*q^2) := by
-  obtain ⟨C,hC,hdecay⟩ := modelPhaseBufferedFourierMode_uniform_decay hσ
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC hdecay modelPhaseBufferedFourierMode_uniform_decay hσ
   intro l r η hl hr hη hη₁ F δ T N q hδ hF hN hq
   have h := hdecay l r η hl hr hη hη₁ F δ T N q hδ hF hN
   have hsmall : |q*N|^2 ≤ (1+|q*N|)^2 := by nlinarith [abs_nonneg (q*N)]
@@ -96,5 +97,6 @@ theorem modelPhaseBufferedFourierMode_inverse_square_bound
   apply (le_div_iff₀ (mul_pos hN (sq_pos_of_ne_zero hq))).mpr
   apply (mul_le_mul_iff_left₀ hN).mp
   nlinarith
+end
 
 end TaoTrudgianYang2025

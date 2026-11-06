@@ -5,6 +5,7 @@ Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3
 See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonBandCancellation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,7 +39,7 @@ theorem iteratedDeriv_two_real_inv {g : ℝ → ℝ} {x : ℝ}
   change deriv (fun y => -deriv g y / (g y) ^ 2) x = _ at h
   dsimp only [Pi.neg_apply, Pi.pow_apply] at h
   rw [iteratedDeriv_succ, iteratedDeriv_one, he.deriv_eq, h]
-  simp only [iteratedDeriv_succ, iteratedDeriv_zero, Nat.cast_ofNat, Nat.reduceSub, pow_one]
+  pm_93 iteratedDeriv_succ iteratedDeriv_zero Nat.cast_ofNat Nat.reduceSub pow_one
   field_simp
   ring
 
@@ -94,10 +95,10 @@ theorem IntervalC2Bound.deriv_c1 {f : ℝ → ℂ} {a c M R : ℝ}
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hac]
     exact fun x hx => ((hs x hx).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
-  have hlen : 0 ≤ c - a := sub_nonneg.mpr hac
-  have hMR : 0 ≤ M * R := mul_nonneg hf.nonneg hf.scale_nonneg
+  pm_7297 hlen c a hac
+  pm_5094 hMR M R hf.nonneg hf.scale_nonneg
   have hlast : 0 ≤ M * ((c - a) * R ^ 2) := by positivity [hf.nonneg]
-  refine ⟨by positivity [hf.nonneg, hf.scale_nonneg], hs, ?_, ?_⟩
+  pm_7719 hf.scale_nonneg
   · intro x hx
     exact (hf.deriv_le x hx).trans (by nlinarith)
   · calc

@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosWeightedShift
 public import LaterPairs.Native.RobertSargosWeightedZeroSplit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -59,10 +60,8 @@ theorem robertSargos_nonzero_weighted_shift_error (f : ℝ → ℝ) (M H Q R N :
       intro q hq
       apply Finset.sum_le_sum
       intro r hr
-      have hqm := (Finset.mem_erase.mp hq).2
-      have hrm := (Finset.mem_erase.mp hr).2
-      apply mul_le_mul_of_nonneg_left _ (mul_nonneg
-        (signed_triangular_weight_nonneg hQ hqm) (signed_triangular_weight_nonneg hR hrm))
+      pm_547 hqm Finset.mem_erase.mp hq hrm hr
+      pm_8670 hqm hrm
       have hn := norm_robertSargos_trimmed_shift_error f M H Q N q r hN hqm
       have he := Complex.re_le_norm
         (robertSargosTrimmedCorrelation f M H q r-robertSargosShiftedCorrelation f M H Q N q r)

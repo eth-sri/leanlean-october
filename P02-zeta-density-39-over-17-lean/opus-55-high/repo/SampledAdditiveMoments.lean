@@ -1,9 +1,9 @@
 module
 public import BoxFourierKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform Convolution
@@ -12,9 +12,12 @@ namespace Montgomery.RationalMoment
 def centeredCharacter (W : Finset ℝ) (t₀ ξ : ℝ) : ℂ :=
   ∑ w ∈ W, GuthMaynard.Improvement.phase (-ξ*(w-t₀))
 
+section
+variable (W : Finset ℝ)
+include W
 /-- The time translate is a unit phase; the actual logarithmic rational sum
 has exactly the same norm. -/
-theorem centered_character_norm (W : Finset ℝ) (t₀ r : ℝ) :
+theorem centered_character_norm (t₀ r : ℝ) :
     ‖centeredCharacter W t₀ (Real.log r/(2*Real.pi))‖ = ‖∑ t ∈ W, phase r t‖ := by
   have he : centeredCharacter W t₀ (Real.log r/(2*Real.pi)) =
       GuthMaynard.Improvement.phase ((Real.log r/(2*Real.pi))*t₀)*star (∑ t ∈ W, phase r t) := by
@@ -25,7 +28,7 @@ theorem centered_character_norm (W : Finset ℝ) (t₀ r : ℝ) :
       rw [show -(Real.log r/(2*Real.pi))*t=(-t)*GuthMaynard.Improvement.mellinFrequency r by
         unfold GuthMaynard.Improvement.mellinFrequency; ring,
         GuthMaynard.Improvement.mellinFrequency_phase]
-      change Complex.exp _ = (starRingEnd ℂ) (Complex.exp _)
+      pm_7773
       rw [← Complex.exp_conj]
       congr 1
       simp only [map_mul,Complex.conj_ofReal,Complex.conj_I]
@@ -38,21 +41,18 @@ theorem centered_character_norm (W : Finset ℝ) (t₀ r : ℝ) :
 
 /-- The convolution smoothing has the square of the original character
 sum, without coefficient collisions or a change of energy definition. -/
-theorem centered_pair_character (W : Finset ℝ) (t₀ ξ : ℝ) :
+theorem centered_pair_character (t₀ ξ : ℝ) :
     (∑ p ∈ W ×ˢ W, GuthMaynard.Improvement.phase (-ξ*(p.1+p.2-2*t₀))) =
       (centeredCharacter W t₀ ξ)^2 := by
   rw [pow_two,centeredCharacter,sum_mul]
   simp only [sum_product,mul_sum]
-  apply sum_congr rfl
-  intro t _
-  apply sum_congr rfl
-  intro u _
+  pm_156 sum_congr t u
   rw [← GuthMaynard.Improvement.phase_add]
   congr 1
   ring
 
 /-- Narrow single-point smoothing has no overlap on a one-separated set. -/
-theorem point_smoothing_energy (W : Finset ℝ) (t₀ : ℝ)
+theorem point_smoothing_energy (t₀ : ℝ)
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) :
     (∫ t, ‖finiteSmooth W (fun w => w-t₀) energyBox t‖^2) ≤ 32*(W.card:ℝ) := by
   have hh := finite_smooth_l2_energy W (fun w => w-t₀) energy_box_integrable
@@ -77,7 +77,7 @@ theorem point_smoothing_energy (W : Finset ℝ) (t₀ : ℝ)
   exact hh
 
 /-- Pair-sum smoothing is bounded by the literal quadruple count. -/
-theorem pair_smoothing_energy (W : Finset ℝ) (t₀ : ℝ) :
+theorem pair_smoothing_energy (t₀ : ℝ) :
     (∫ t, ‖finiteSmooth (W ×ˢ W) (fun p => p.1+p.2-2*t₀) energyPairBox t‖^2) ≤
       64*(discreteAdditiveEnergy W:ℝ) := by
   have hh := finite_smooth_l2_energy (W ×ˢ W) (fun p => p.1+p.2-2*t₀)
@@ -89,15 +89,10 @@ theorem pair_smoothing_energy (W : Finset ℝ) (t₀ : ℝ) :
     have he : (discreteAdditiveEnergy W:ℝ) = ∑ t ∈ W, ∑ u ∈ W, ∑ v ∈ W, ∑ w ∈ W,
         if |t+u-v-w| ≤ 1 then (1:ℝ) else 0 := by
       unfold discreteAdditiveEnergy
-      simp only [card_eq_sum_ones,Nat.cast_sum,sum_filter,sum_product,Nat.cast_ite,Nat.cast_one,Nat.cast_zero]
+      pm_545 card_eq_sum_ones Nat.cast_sum sum_filter sum_product Nat.cast_ite Nat.cast_one Nat.cast_zero
     rw [he]
     simp only [sum_product]
-    apply sum_le_sum
-    intro t _
-    apply sum_le_sum
-    intro u _
-    apply sum_le_sum
-    intro v _
+    pm_387 sum_le_sum t u v
     apply sum_le_sum
     intro w _
     by_cases h : |(t+u-2*t₀)-(v+w-2*t₀)| ≤ 2*(1/32:ℝ)
@@ -109,11 +104,13 @@ theorem pair_smoothing_energy (W : Finset ℝ) (t₀ : ℝ) :
       split_ifs <;> norm_num
   rw [show (2:ℝ)*(1/32)*32^2=64 by norm_num] at hh
   exact hh.trans (mul_le_mul_of_nonneg_left hc (by norm_num))
+end
 
+section
+variable {ι : Type*} [Fintype ι] {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ) (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+include ι T t₀ δ hT hδ W hW
 /-- Sampled second moment from the existing Fourier-square sampling theorem. -/
-theorem sampled_character_second {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_second
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|)
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
@@ -147,9 +144,7 @@ theorem sampled_character_second {ι : Type*} [Fintype ι]
     _ = _ := by ring
 
 /-- Sampled fourth moment has the actual additive energy on the right. -/
-theorem sampled_character_fourth {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_fourth
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
     (∑ i, ‖centeredCharacter W t₀ (x i)‖^4) ≤
@@ -160,8 +155,7 @@ theorem sampled_character_fourth {ι : Type*} [Fintype ι]
     energy_pair_box_integrable energy_pair_box_bound
   have hsupport : Function.support f ⊆ Icc (-(3*T)) (3*T) := by
     apply finite_smooth_support _ _ energy_pair_box_support
-    intro p hp
-    obtain ⟨hp1,hp2⟩ := mem_product.mp hp
+    pm_161 p hp hp1 hp2 mem_product.mp
     have hh1 := hW p.1 hp1
     have hh2 := hW p.2 hp2
     have hab : |p.1+p.2-2*t₀| ≤ 2*T :=
@@ -188,9 +182,7 @@ theorem sampled_character_fourth {ι : Type*} [Fintype ι]
 
 /-- The separated cubic estimate needed for the small-gcd argument follows
 from the two proved sampled moments. No general L3 sampling theorem is assumed. -/
-theorem sampled_character_cubic {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_cubic
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|)
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
@@ -198,15 +190,13 @@ theorem sampled_character_cubic {ι : Type*} [Fintype ι]
       (512*(1+12*Real.pi))*(T+δ⁻¹)*Real.sqrt (W.card:ℝ)*
         Real.sqrt (discreteAdditiveEnergy W:ℝ) := by
   let D := (1+12*Real.pi)*(T+δ⁻¹)
-  have hD : 0 ≤ D := by dsimp [D]; positivity
-  have hsecond := sampled_character_second hT hδ W hW hsep x hx hxs
+  pm_61 hD D
+  pm_528 hsecond sampled_character_second hT hδ W hW hsep x hx hxs
   have hfourth := sampled_character_fourth hT hδ W hW x hx hxs
   have hd2 : δ⁻¹+8*Real.pi*T ≤ D := by
-    dsimp [D]
-    nlinarith [mul_nonneg Real.pi_pos.le (inv_nonneg.mpr hδ.le)]
+    pm_7554
   have hd4 : δ⁻¹+12*Real.pi*T ≤ D := by
-    dsimp [D]
-    nlinarith [mul_nonneg Real.pi_pos.le (inv_nonneg.mpr hδ.le)]
+    pm_7554
   have h2 : (∑ i, ‖centeredCharacter W t₀ (x i)‖^2) ≤ 128*D*(W.card:ℝ) :=
     hsecond.trans (by gcongr)
   have h4 : (∑ i, ‖centeredCharacter W t₀ (x i)‖^4) ≤ 1024*D*(discreteAdditiveEnergy W:ℝ) :=
@@ -235,5 +225,6 @@ theorem sampled_character_cubic {ι : Type*} [Fintype ι]
   convert hr using 1
   dsimp [D]
   ring
+end
 
 end Montgomery.RationalMoment

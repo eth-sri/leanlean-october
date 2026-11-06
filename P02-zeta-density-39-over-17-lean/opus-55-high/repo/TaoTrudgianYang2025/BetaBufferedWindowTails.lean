@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedLocalNonstationary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -44,7 +45,7 @@ theorem norm_bufferedNormalizedMode_sub_window_le
     dsimp [lam]
     positivity [modelPhaseCurvatureLower_pos hσ]
   have hgap := modelPhaseMorseInverse_window_slope_gaps hσ hδ hF hv hH.le hleft hright
-  have hmono := (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn
+  pm_5045 hmono approximateModelPhase_deriv_strictAntiOn
   have hL : ‖∫ u in (l+η)..a, g u‖ ≤ 4/(lam*Real.pi) := by
     apply norm_buffered_subinterval_nonstationary hσ hδ hF hT hη hcutleft
       (by linarith) ha.2 hlam
@@ -72,7 +73,7 @@ theorem norm_bufferedNormalizedMode_sub_window_le
     intro u hu
     have hχ : modelPhaseBufferedCutoff l r η u ≠ 0 := by
       intro hz
-      exact hu (by simp only [g,hz,Complex.ofReal_zero,zero_mul])
+      pm_399 hu g hz Complex.ofReal_zero zero_mul
     have hh := modelPhaseBufferedCutoff_support_open hη hχ
     exact ⟨hh.1,hh.2.le⟩
   have hsource : modelPhaseNormalizedMode (modelPhaseBufferedCutoff l r η) F T (T*v) =

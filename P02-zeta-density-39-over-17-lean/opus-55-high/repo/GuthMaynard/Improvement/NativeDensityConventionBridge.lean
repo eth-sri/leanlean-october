@@ -1,13 +1,12 @@
 module
 public import GuthMaynard.Improvement.GlobalDensityConditional
 public import Mathlib.Analysis.Asymptotics.Basic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MathCollab.Density
 open scoped Topology
-set_option autoImplicit false
-noncomputable section
 namespace GuthMaynard.Improvement
 
 /-- A literal native closed rectangle zero set has exactly the audited count.
@@ -51,10 +50,7 @@ theorem zetaDensityCount_all_height_of_eventual {σ p C : ℝ}
   let Q : ℝ := zetaDensityCount σ R
   have hQ : 0 ≤ Q := Nat.cast_nonneg _
   refine ⟨C+Q,by positivity,?_⟩
-  intro T hT
-  by_cases hRT : R ≤ T
-  · exact (hD T ((le_max_right _ _).trans hRT)).trans
-      (mul_le_mul_of_nonneg_right (by linarith : C ≤ C+Q) (by positivity))
+  pm_4315
   · have hsmall : (zetaDensityCount σ T:ℝ) ≤ Q := by
       dsimp [Q]
       exact_mod_cast zetaDensityCount_mono (le_refl σ) (le_of_not_ge hRT)

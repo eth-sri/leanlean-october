@@ -1,10 +1,10 @@
 module
 public import CenteredMixedTrace
 public import GuthMaynard.Improvement.SourceQuarticKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
@@ -21,7 +21,7 @@ theorem energy_weight_integrable : Integrable energyReproducingWeight :=
 
 theorem energy_weight_shift {x y : ℝ} (hxy : |x-y| ≤ 1) :
     energyReproducingWeight x ≤ 3*energyReproducingWeight y := by
-  have hd : (x-y)^2 ≤ 1 := by nlinarith [sq_abs (x-y),abs_nonneg (x-y)]
+  have hd : (x-y)^2 ≤ 1 := by simp_all
   have hs : 1+y^2 ≤ 3*(1+x^2) := by nlinarith [sq_nonneg (2*x-y)]
   unfold energyReproducingWeight
   simp only [inv_eq_one_div]
@@ -35,12 +35,8 @@ theorem detecting_energy_weight_integrable (N : ℝ) (a : ℕ → ℂ) (s : ℝ)
     Integrable (fun t => energyReproducingWeight (t-s)*
       ‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2) := by
   obtain ⟨hc,hb⟩ := GuthMaynard.Improvement.boundedPolynomial_regular N a
-  apply (energy_weight_integrable.comp_sub_right s).mul_bdd (hc.norm.pow 2).aestronglyMeasurable
-    (c := (∑ n ∈ GuthMaynard.Improvement.sourceRatioIndices N, ‖a n‖)^2)
-  filter_upwards with t
-  change |‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2| ≤ _
-  rw [abs_of_nonneg (sq_nonneg _)]
-  exact pow_le_pow_left₀ (norm_nonneg _) (hb t) 2
+  pm_5288 s
+  pm_2716
 
 /-- Unit-nearby ordinates in a one-separated set have multiplicity at most three. -/
 theorem energy_nearby_card_le (W : Finset ℝ)
@@ -48,13 +44,8 @@ theorem energy_nearby_card_le (W : Finset ℝ)
     ((W.filter (fun t => |s-t| ≤ 1)).card:ℝ) ≤ 3 := by
   have hh := separated_interval_card (T := 2) (t₀ := s-1) (by norm_num)
     (W.filter (fun t => |s-t| ≤ 1))
-    (by
-      intro t ht
-      have hp := abs_le.mp (mem_filter.mp ht).2
-      constructor <;> linarith)
-    (by
-      intro t ht u hu hne
-      exact hsep t (mem_filter.mp ht).1 u (mem_filter.mp hu).1 hne)
+    (by grind)
+    (by grind)
   norm_num at hh
   exact_mod_cast hh
 
@@ -81,14 +72,13 @@ theorem detecting_square_reproduction :
   open GuthMaynard.Improvement in
   let mass : ℝ := ∫ s, sourceQuarticWeight s
   open GuthMaynard.Improvement in
-  have hmass : 0 ≤ mass := integral_nonneg (fun _ => norm_nonneg _)
+  pm_5073 hmass mass integral_nonneg norm_nonneg
   refine ⟨1+mass*B,by positivity,?_⟩
   intro N hN a w
   open GuthMaynard.Improvement in
   obtain ⟨hc,hb⟩ := boundedPolynomial_regular N a
   open GuthMaynard.Improvement in
-  have hi : Integrable (fun t => sourceReproducingKernel (t-w)) :=
-    sourceReproducingKernel.integrable.comp_sub_right w
+  pm_6241
   open GuthMaynard.Improvement in
   have hf := MathCollab.Density.norm_integral_mul_sq_le hi hc.aestronglyMeasurable hb
   open GuthMaynard.Improvement in
@@ -103,17 +93,13 @@ theorem detecting_square_reproduction :
   have hkernel (x : ℝ) : GuthMaynard.Improvement.sourceQuarticWeight x ≤
       B*energyReproducingWeight x := by
     refine (hdec x).trans ?_
-    have hh : 1+x^2 ≤ (1+|x|)^2 := by nlinarith [sq_abs x,abs_nonneg x]
+    pm_6345 hh x
     simpa only [energyReproducingWeight,div_eq_mul_inv] using
       div_le_div_of_nonneg_left hB.le (by positivity : 0 < 1+x^2) hh
   have hweight : Integrable (fun t => energyReproducingWeight (t-w)*
       ‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2) := by
-    apply (energy_weight_integrable.comp_sub_right w).mul_bdd (hc.norm.pow 2).aestronglyMeasurable
-      (c := (∑ n ∈ GuthMaynard.Improvement.sourceRatioIndices N, ‖a n‖)^2)
-    filter_upwards with t
-    change |‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2| ≤ _
-    rw [abs_of_nonneg (sq_nonneg _)]
-    exact pow_le_pow_left₀ (norm_nonneg _) (hb t) 2
+    pm_5288 w
+    pm_2716
   have hint : (∫ t, GuthMaynard.Improvement.sourceQuarticWeight (t-w)*
       ‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2) ≤
       B*∫ t, energyReproducingWeight (t-w)*‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2 := by
@@ -169,8 +155,7 @@ theorem energy_triple_fourier (W : Finset ℝ) (ξ : ℝ) :
     ring
   rw [GuthMaynard.Improvement.fourier_eq_phase_integral]
   simp_rw [energyTripleWeight,Complex.ofReal_sum,mul_sum]
-  rw [integral_finsetSum _ (fun a _ => integrable_finsetSum _ (fun b _ =>
-    integrable_finsetSum _ (fun c _ => hi (a+b-c))))]
+  pm_5725 a b c
   simp_rw [integral_finsetSum _ (fun b _ => integrable_finsetSum _ (fun c _ => hi (_+b-c))),
     integral_finsetSum _ (fun c _ => hi (_+_-c)),ht,hp]
   simp only [pow_two,star_sum,sum_mul,mul_sum]
@@ -183,10 +168,7 @@ theorem energy_triple_fourier (W : Finset ℝ) (ξ : ℝ) :
       _ = _ := sum_comm
   rw [hs]
   dsimp only [κ]
-  apply sum_congr rfl
-  intro a _
-  apply sum_congr rfl
-  intro b _
+  pm_156 sum_congr a b
   apply sum_congr rfl
   intro c _
   ring
@@ -202,7 +184,7 @@ theorem energy_triple_fourier_norm (W : Finset ℝ) (r : ℝ) :
     rw [show -(Real.log r/(2*Real.pi))*t = (-t)*GuthMaynard.Improvement.mellinFrequency r by
       unfold GuthMaynard.Improvement.mellinFrequency; ring,
       GuthMaynard.Improvement.mellinFrequency_phase]
-    change Complex.exp _ = (starRingEnd ℂ) (Complex.exp _)
+    pm_7773
     rw [← Complex.exp_conj]
     congr 1
     simp only [map_mul,Complex.conj_ofReal,Complex.conj_I]
@@ -221,8 +203,7 @@ theorem detecting_near_square_reproduction :
       |s-w| ≤ 1 → ‖GuthMaynard.Improvement.boundedPolynomial N a w‖^2 ≤
         C*∫ t, energyReproducingWeight (t-s)*
           ‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2 := by
-  obtain ⟨C,hC,hrepro⟩ := detecting_square_reproduction
-  refine ⟨3*C,by positivity,?_⟩
+  pm_448 hrepro detecting_square_reproduction
   intro N hN a s w hsw
   have hi : (∫ t, energyReproducingWeight (t-w)*
       ‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2) ≤
@@ -246,8 +227,7 @@ theorem discrete_energy_reproduction_lower :
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (discreteAdditiveEnergy W:ℝ)*V^2 ≤
         C*∫ t, energyTripleWeight W t*‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2 := by
-  obtain ⟨C,hC,hrepro⟩ := detecting_near_square_reproduction
-  refine ⟨3*C,by positivity,?_⟩
+  pm_448 hrepro detecting_near_square_reproduction
   intro N hN a W V hV hlarge hsep
   have hi (s : ℝ) := detecting_energy_weight_integrable N a s
   have hnonneg (s : ℝ) : 0 ≤ ∫ t, energyReproducingWeight (t-s)*
@@ -273,16 +253,14 @@ theorem discrete_energy_reproduction_lower :
       ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W,
         ∫ t, energyReproducingWeight (t-(t₁+t₂-t₃))*‖GuthMaynard.Improvement.boundedPolynomial N a t‖^2 := by
     simp only [energyTripleWeight,sum_mul]
-    rw [integral_finsetSum _ (fun x _ => integrable_finsetSum _ (fun y _ =>
-      integrable_finsetSum _ (fun z _ => hi (x+y-z))))]
+    pm_5725 x y z
     apply sum_congr rfl
     intro x _
     rw [integral_finsetSum _ (fun y _ => integrable_finsetSum _ (fun z _ => hi (x+y-z)))]
     apply sum_congr rfl
     intro y _
     exact integral_finsetSum _ (fun z _ => hi (x+y-z))
-  rw [discrete_energy_fibers,he]
-  simp only [sum_mul,mul_sum]
+  pm_326 discrete_energy_fibers he sum_mul mul_sum
   exact sum_le_sum (fun x _ => sum_le_sum (fun y _ => sum_le_sum (fun z _ => hf (x+y-z))))
 
 /-- The triple-convolution upper bound is the actual cubic rational sum. -/
@@ -334,10 +312,10 @@ theorem discrete_additive_energy_reproducing :
         (∑ n ∈ GuthMaynard.Improvement.sourceRatioIndices N,
           ∑ m ∈ GuthMaynard.Improvement.sourceRatioIndices N, ‖∑ t ∈ W, phase ((n:ℝ)/m) t‖^3) := by
   obtain ⟨C,hC,hlower⟩ := discrete_energy_reproduction_lower
-  have hmass : 0 ≤ ∫ t, energyReproducingWeight t := integral_nonneg energy_weight_nonneg
+  pm_4518 hmass t energyReproducingWeight integral_nonneg energy_weight_nonneg
   refine ⟨C*(1+∫ t, energyReproducingWeight t),by positivity,?_⟩
   intro N hN a W V ha hV hlarge hsep
-  have hh := hlower N hN a W V hV hlarge hsep
+  pm_528 hh hlower N hN a W V hV hlarge hsep
   have hu := discrete_energy_triple_upper hN a ha W
   exact hh.trans ((mul_le_mul_of_nonneg_left hu hC.le).trans (by
     have h0 : 0 ≤ ∑ n ∈ GuthMaynard.Improvement.sourceRatioIndices N,

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstOldEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstToSecond
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,7 +40,7 @@ theorem first_family_original_to_second (ε : ℝ) (hε : 0 < ε) :
           ∑ core : FirstCoreIndex,‖firstCoreOuter p hg B v ε₁ ε₂ negative Ψ m D core‖ *
             (firstFreshSecondPoisson p hp hg hinj F D B v ε₁ ε₂ negative
               (if negative then r.1 else r.2) Ψ m H ω X c d core t Y).re) := by
-  obtain ⟨K,hK,hpush⟩ := first_block_old_label_energy ε hε
+  pm_69 K hK hpush first_block_old_label_energy ε hε
   refine ⟨K,hK,?_⟩
   intro ι _ p hp _ hinj hcop hg hc hpr F B selector v ε₁ ε₂ hv negative Ψ m hΨ
     H ω X t hX c d source rows w M Y hM hY hs hmap hrows hnorm hw
@@ -63,10 +64,7 @@ theorem first_family_original_to_second (ε : ℝ) (hε : 0 < ε) :
           (if negative then r.1 else r.2) Ψ m H ω X c d t rows Y hY hnorm (hΨ _)) (by positivity)
     _ = _ := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro r hr
-      apply Finset.sum_congr rfl
-      intro D hD
+      pm_3728
       apply Finset.sum_congr rfl
       intro core hcore
       ring

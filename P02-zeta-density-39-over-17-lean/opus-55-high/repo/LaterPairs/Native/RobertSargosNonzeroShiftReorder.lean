@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosShiftReorder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -33,19 +34,12 @@ theorem robertSargos_nonzero_weighted_shifted_reorder (f : ℝ → ℝ) (M H Q R
           ∑ m ∈ robertSargosCommonMInterval M H Q N,
             robertSargosNonzeroShiftedTriple f H Q N r m := by
   simp_rw [robertSargos_shifted_correlation_m_sum]
-  simp only [robertSargosNonzeroShiftedTriple,Complex.ofReal_mul,Finset.mul_sum]
-  rw [Finset.sum_comm]
+  pm_487 robertSargosNonzeroShiftedTriple Complex.ofReal_mul Finset.mul_sum Finset.sum_comm
   apply Finset.sum_congr rfl
   intro r _
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro m _
-  apply Finset.sum_congr rfl
-  intro q _
-  apply Finset.sum_congr rfl
-  intro h _
-  apply Finset.sum_congr rfl
-  intro n _
+  pm_156 Finset.sum_congr m q
+  pm_156 Finset.sum_congr h n
   ring
 
 end TaoTrudgianYang2025

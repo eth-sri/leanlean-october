@@ -1,19 +1,20 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.RestrictedDomain
 public import OAI.NumberTheory.DirichletL.Moments.OriginalChildEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedSource
 open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRowNorm
 open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedDomain
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
+open CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
 open CenteredMomentOriginalChildEnergy
 local notation "O" => ActualEisensteinCubic.O
 
@@ -37,11 +38,10 @@ theorem smoothed_restricted_allocation {α γ : Type*} [Fintype γ] (keep : O �
     (restrictedEnergy keep S a (fun i => ∑ B,b B*d B i) W K)≤
       (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*(restrictedEnergy keep S a (d B) W K) := by
   let u := fun z : O => if keep z then (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0
-  have hu (z : O) : 0≤u z := by dsimp only [u];split_ifs;exact hW z;exact le_rfl
+  have hu (z : O) : 0≤u z := by dsimp only [u];split_ifs;grind;exact le_rfl
   have hs := restricted_hasSum_weighted keep S a ha (fun i => ∑ B,b B*d B i) W K hK
   rw [← hs.tsum_eq]
-  apply Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hu z))
-  intro rows
+  pm_979 hu
   calc
     _ ≤ ∑ z∈rows,(Fintype.card γ:ℝ)*∑ B,‖b B‖^2*
         (‖rowPolynomial S a (d B) z‖^2*u z) := by
@@ -51,15 +51,12 @@ theorem smoothed_restricted_allocation {α γ : Type*} [Fintype γ] (keep : O �
         (CubicEisenstein.norm_sum_sq_le_card Finset.univ
           (fun B => b B*rowPolynomial S a (d B) z)) (hu z)
       rw [rowPolynomial_allocation]
-      simpa only [Finset.card_univ,norm_mul,mul_pow,Finset.sum_mul,mul_assoc] using h
+      pm_124 Finset.card_univ norm_mul mul_pow Finset.sum_mul mul_assoc h
     _ = (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*
         ∑ z∈rows,‖rowPolynomial S a (d B) z‖^2*u z := by
-      rw [← Finset.mul_sum,Finset.sum_comm]
-      simp only [Finset.mul_sum]
+      pm_539
     _ ≤ _ := by
-      apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
-      apply Finset.sum_le_sum
-      intro B hB
+      pm_2870
       exact mul_le_mul_of_nonneg_left
         (finite_weighted_le_restricted keep S a ha (d B) W K hK hW rows) (sq_nonneg _)
 
@@ -74,7 +71,7 @@ theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O
     (f : Ideal O → ℂ) (keep : O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
     (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceRestrictedEnergy keep (residualPool C hC.1 (finiteColumns (Fintype.piFinset S)))
-      (fun I => if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
+      (fun I=> if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0) f W K)≤
       ((actualAllocations S C).card:ℝ)*∑ B : actualAllocations S C,
         ‖frozenCoefficient B C R ν Wslot P‖^2*
@@ -83,27 +80,22 @@ theorem original_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O
             (finiteColumnCoefficient
               (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1)
               (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)) f W K) := by
-  let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
-  let b := fun B : actualAllocations S C => frozenCoefficient B C R ν Wslot P
+  pm_647
   let d := fun (B : actualAllocations S C) (I : supportedColumns Q) =>
     finiteColumnCoefficient (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I*f I
   have he (I : supportedColumns Q) :
       (if IsCoprime C (I:Ideal O) then finiteColumnCoefficient (Fintype.piFinset S)
-        (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0)*f I=
+        (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0)*f I =
       ∑ B,b B*d B I := by
-    rw [original_source_punctured_column S hS hp C R s I hC.1
-      (Finset.mem_filter.mp I.property).2.1 hsC ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂,Finset.sum_mul]
-    simp only [b,d,mul_assoc]
+    pm_1206 original_source_punctured_column hsC
   have h := smoothed_restricted_allocation keep Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q) b d W K hK hW
   have he' := funext he
   change (restrictedEnergy keep Finset.univ (sourceGenerator Q) _ W K)≤_
   rw [he']
   apply h.trans_eq
   rw [Fintype.card_coe]
-  apply congrArg (fun x : ℝ => ((actualAllocations S C).card:ℝ)*x)
-  apply Finset.sum_congr rfl
-  intro B hB
+  pm_241 S
   simpa only [b,d,sourceRestrictedEnergy] using
     congrArg (fun x : ℝ => ‖frozenCoefficient B C R ν Wslot P‖^2*x)
     (live_restrictedEnergy S hS hp B

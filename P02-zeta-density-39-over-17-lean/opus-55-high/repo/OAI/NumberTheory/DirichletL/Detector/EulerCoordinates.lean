@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.CorrectionBounds
 public import OAI.NumberTheory.DirichletL.Detector.Row
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ def unramifiedClosed (Q : ℝ) (A eta v x w z : ℂ) : ℂ :=
   let W := coordW Q v w
   let D := coordD Q eta v x
   let K := coordK Q eta x w
-  ProbeLocal.continuedCorrection V W D (markedFactor R V (Q:ℂ)⁻¹ K (-D+W*R) 1)
+  ProbeLocal.continuedCorrection V W D (markedFactor R V (Q:ℂ)⁻¹ K (-D +W*R) 1)
 
 def actualAPhase (eta : HeckeFamily.Character) (p : O) : ℂ :=
   star (FiniteGaussPhase.angularFactor p) ^ 6 * HeckeFamily.elementCoeff eta p ^ 6
@@ -42,30 +43,33 @@ lemma actualAPhase_norm_le_one (eta : HeckeFamily.Character) (p : O) :
     (pow_le_one₀ (norm_nonneg _) (CompletedGauss.angularFactor_norm_le_one p))).trans
     (pow_le_one₀ (norm_nonneg _) (ProbeRow.targetMonoid_norm_le_one eta p))
 
-lemma coordV_norm (Q : ℝ) (hQ : 0 < Q) (z : ℂ) :
+section
+variable (Q : ℝ) (hQ : 0 < Q)
+include Q hQ
+lemma coordV_norm (z : ℂ) :
     ‖coordV Q z‖ = Q ^ (-6*z.re) := by
   rw [coordV, Complex.norm_cpow_eq_rpow_re_of_pos hQ]
   simp
 
-lemma coordR_norm_le (Q : ℝ) (hQ : 0 < Q) (A x z : ℂ) (hA : ‖A‖ ≤ 1) :
+lemma coordR_norm_le (A x z : ℂ) (hA : ‖A‖ ≤ 1) :
     ‖coordR Q A x z‖ ≤ Q ^ (4-6*x.re-6*z.re) := by
   rw [coordR, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ]
-  simp only [Complex.sub_re, Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat,
-    zero_mul, sub_zero]
+  pm_204 Complex.sub_re Complex.mul_re Complex.re_ofNat Complex.im_ofNat zero_mul sub_zero
   exact mul_le_of_le_one_left (Real.rpow_nonneg hQ.le _) hA
 
-lemma coordW_norm_le (Q : ℝ) (hQ : 0 < Q) (v w : ℂ) (hv : ‖v‖ ≤ 1) :
+lemma coordW_norm_le (v w : ℂ) (hv : ‖v‖ ≤ 1) :
     ‖coordW Q v w‖ ≤ Q ^ (-w.re) := by
   rw [coordW, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ, Complex.neg_re]
   exact mul_le_of_le_one_left (Real.rpow_nonneg hQ.le _) hv
 
-lemma coordD_norm_le (Q : ℝ) (hQ : 0 < Q) (eta v x : ℂ)
+lemma coordD_norm_le (eta v x : ℂ)
     (he : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1) :
     ‖coordD Q eta v x‖ ≤ Q ^ (-x.re) := by
   rw [coordD, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hQ, Complex.neg_re]
   apply mul_le_of_le_one_left (Real.rpow_nonneg hQ.le _)
   rw [norm_mul, norm_star]
   exact (mul_le_of_le_one_left (norm_nonneg _) he).trans hv
+end
 
 lemma coordK_norm_le (Q : ℝ) (hQ : 1 ≤ Q) (eta x w : ℂ) (he : ‖eta‖ ≤ 1) :
     ‖coordK Q eta x w‖ ≤ Q ^ (1-x.re-w.re) := by

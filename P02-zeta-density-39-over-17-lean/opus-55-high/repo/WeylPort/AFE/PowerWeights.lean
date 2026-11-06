@@ -35,7 +35,7 @@ theorem afePhase_hasDerivAt (c : ℝ) {x : ℝ} (hx : 0 < x) :
     HasDerivAt (afePhase c) (c / x) x := by
   change HasDerivAt (fun y : ℝ => c * Real.log y) (c / x) x
   convert (Real.hasDerivAt_log hx.ne').const_mul c using 1
-  rw [div_eq_mul_inv]
+  grind
 
 /-- The power weight is positive on its actual domain. -/
 theorem afeWeight_pos (sigma : ℝ) {x : ℝ} (hx : 0 < x) : 0 < afeWeight sigma x :=

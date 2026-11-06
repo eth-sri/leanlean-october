@@ -2,21 +2,23 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowWindow
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowReflectionError
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLiveClippingDefect
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentRetainedEnergy
 open CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 
-theorem rowTwistedSum_support_witness (η : Character) (m A z : O)
-    (W : ℝ → ℂ) (t X : ℝ) (h : rowTwistedSum η m A z W t X ≠ 0) :
+section
+variable (η : Character) (m A z : O) (W : ℝ → ℂ)
+include η m A z W
+theorem rowTwistedSum_support_witness (t X : ℝ) (h : rowTwistedSum η m A z W t X ≠ 0) :
     ∃ I : Ideal O, I ≠ 0 ∧ W ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
   by_contra hn
   push Not at hn
@@ -32,18 +34,21 @@ theorem rowTwistedSum_support_witness (η : Character) (m A z : O)
       · rw [hn I hI, mul_zero]
     _ = 0 := tsum_zero
 
-theorem rowTwistedSum_support_scale (η : Character) (m A z : O)
-    (W : ℝ → ℂ) (t X b : ℝ) (hX : 0 < X)
+theorem rowTwistedSum_support_scale (t X b : ℝ) (hX : 0 < X)
     (hs : Function.support W ⊆ Set.Iic b)
     (h : rowTwistedSum η m A z W t X ≠ 0) : 1 ≤ b * X := by
   obtain ⟨I, hI, hW⟩ := rowTwistedSum_support_witness η m A z W t X h
   have hn : (1 : ℝ) ≤ Ideal.absNorm I := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   exact hn.trans ((div_le_iff₀ hX).mp (hs hW))
+end
 
 variable {ι : Type*} [Fintype ι]
 
-theorem positiveSlotRow_support_scales (η : Character) (m A z : O)
+section
+variable (η : Character) (m A z : O)
+include η m A z
+theorem positiveSlotRow_support_scales
     (W₁ W₂ : ℝ → ℂ) (S : ι → Finset (Ideal O))
     (β : ι → Ideal O → ℂ) (P : ι → ℝ) (t X₁ X₂ b : ℝ)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
@@ -57,7 +62,7 @@ theorem positiveSlotRow_support_scales (η : Character) (m A z : O)
     rowTwistedSum_support_scale η m A z W₂ t X₂ b hX₂ hs₂
       (right_ne_zero_of_mul hp)⟩
 
-theorem positiveSlotRow_profiles_scales (η : Character) (m A z : O)
+theorem positiveSlotRow_profiles_scales
     {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
     (β : ι → Ideal O → ℂ) (P : ι → ℝ) (t X₁ X₂ : ℝ)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
@@ -65,6 +70,7 @@ theorem positiveSlotRow_profiles_scales (η : Character) (m A z : O)
     1 ≤ b * X₁ ∧ 1 ≤ b * X₂ := by
   exact positiveSlotRow_support_scales η m A z _ _ S β P t X₁ X₂ b hX₁ hX₂
     (fun _ hx => (p.support 0 hx).2) (fun _ hx => (p.support 1 hx).2) h
+end
 
 theorem length_le_raw_add_endpoint (Z X b : ℝ) (hZ : 1 < Z) (hX : 0 < X)
     (hs : 1 ≤ b * X) : length Z X ≤ Real.logb Z X + Real.logb Z (max 1 b) := by
@@ -101,7 +107,7 @@ theorem endpoint_threshold (b δ : ℝ) (hδ : 0 < δ) :
   rw [Real.log_exp] at hlog
   have hbound : 2 * Real.log (max 1 b) ≤ δ * Real.log Z := by
     have hh : 2 * Real.log (max 1 b) / δ ≤ Real.log Z := by linarith
-    exact (div_le_iff₀ hδ).mp hh |>.trans_eq (mul_comm _ _)
+    pm_516 hδ hh
   rw [Real.logb, ← mul_div_assoc]
   exact (div_le_iff₀ (Real.log_pos hZ)).mpr hbound
 
@@ -114,7 +120,10 @@ theorem total_clipping_defect_nonneg (Z X₁ X₂ : ℝ) (hZ : 1 < Z)
   dsimp only [length]
   linarith
 
-theorem positiveSlotRow_zero_or_defect (η : Character) (m A z : O)
+section
+variable (η : Character)
+include η
+theorem positiveSlotRow_zero_or_defect (m A z : O)
     {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
     (β : ι → Ideal O → ℂ) (P : ι → ℝ) (t X₁ X₂ Z : ℝ)
     (hZ : 1 < Z) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) :
@@ -128,7 +137,7 @@ theorem positiveSlotRow_zero_or_defect (η : Character) (m A z : O)
     exact Or.inr ⟨total_clipping_defect_nonneg Z X₁ X₂ hZ hX₁ hX₂,
       total_clipping_defect Z X₁ X₂ b hZ hX₁ hX₂ h1 h2⟩
 
-theorem energy_support_witness (η : Character) (m A : O) (t : ℝ)
+theorem energy_support_witness (m A : O) (t : ℝ)
     (W₁ W₂ : ℝ → ℂ) (S : ι → Finset (Ideal O))
     (β : ι → Ideal O → ℂ) (P : ι → ℝ) (X₁ X₂ : ℝ)
     (keep : O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
@@ -147,7 +156,7 @@ theorem energy_support_witness (η : Character) (m A : O) (t : ℝ)
       · simp only [ite_eq_right hk]
     _ = 0 := tsum_zero
 
-theorem energy_zero_or_defect (η : Character) (m A : O) (t : ℝ)
+theorem energy_zero_or_defect (m A : O) (t : ℝ)
     {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
     (β : ι → Ideal O → ℂ) (P : ι → ℝ) (X₁ X₂ Z : ℝ)
     (keep : O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
@@ -162,6 +171,7 @@ theorem energy_zero_or_defect (η : Character) (m A : O) (t : ℝ)
   · exact Or.inl h
   · obtain ⟨z, _, hz⟩ := energy_support_witness η m A t _ _ S β P X₁ X₂ keep Φ K h
     exact Or.inr ((positiveSlotRow_zero_or_defect η m A z p S β P t X₁ X₂ Z hZ hX₁ hX₂).resolve_left hz)
+end
 
 theorem raw_gates_of_defect (Z M X₁ X₂ ell κ e : ℝ) (hZ : 1 < Z)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
@@ -216,10 +226,7 @@ theorem robust_reflected_low (M short along ell z kappa xi defect reflected : �
   have hzcap : z ≤ M/21+2*defect/7 := hze.trans he
   refine ⟨haz, ?_⟩
   by_cases hr : 0 ≤ M-along+xi
-  · rw [max_eq_right hr] at href
-    constructor <;> nlinarith
-  · rw [max_eq_left (le_of_not_ge hr)] at href
-    constructor <;> nlinarith
+  pm_1156
 
 theorem robust_reflected_low_admissible (M xi defect short reflected z kappa : ℝ)
     (hd : 0 ≤ defect) (hreserve : xi+11*defect/7 ≤ M/14)
@@ -247,15 +254,12 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
       reflected+short+z ≤ 16*M/21+ξ+4*e/7 ∧
       reflected+short+6*κ*z ≤ 13*M/14+ξ+11*e/7) := by
   dsimp only
-  have hb := robust_balanced_long_nonneg M (Real.logb Z (X₁*X₂)) ell κ ξ e
-    hM hell hκ hξ hlarge hcap hreserve
+  pm_8428 M ξ hM hξ
   have hpos := comparison_positive Z M X₁ X₂ (zero_lt_one.trans hZ) hX₁ hX₂
   have hlog : Real.logb Z (comparisonSecond Z M X₁ X₂) = Real.logb Z (X₁*X₂)-M/4 := by
     rw [comparison_second_power Z M X₁ X₂ hZ hX₁ hX₂,
       Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
-  have hY : 1 ≤ comparisonSecond Z M X₁ X₂ := by
-    rw [comparison_second_power Z M X₁ X₂ hZ hX₁ hX₂]
-    exact Real.one_le_rpow hZ.le hb.2
+  pm_6135 hY M
   have hn₂ := product_norm_ge_one D₂ hD₂
   have hlongpos := div_pos hpos.2 (zero_lt_one.trans_le hn₂)
   have hshort := deleted_short_length Z M hZ hM D₁ hD₁
@@ -280,6 +284,5 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
 
 end SevenEighths.CenteredMomentEnergyLiveClippingDefect
 
-end
 
 end OAI

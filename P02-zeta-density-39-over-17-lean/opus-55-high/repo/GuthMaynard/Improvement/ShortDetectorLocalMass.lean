@@ -3,11 +3,11 @@ module
 mollifier bounds. This file does not assume a fourth moment. -/
 public import GuthMaynard.Improvement.ShortDetectorIdentity
 public import MathCollab.Density.BandEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open Complex MeasureTheory Set Filter MathCollab.Density
+open Complex MeasureTheory Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
 
@@ -18,11 +18,7 @@ theorem shortTwistedNorm_continuous (H : ℝ) : Continuous (shortTwistedNorm H) 
   apply Continuous.norm
   apply Continuous.mul
   · apply continuous_iff_continuousAt.mpr
-    intro t
-    apply ContinuousAt.comp' (differentiableAt_riemannZeta ?_).continuousAt (by fun_prop)
-    intro hh
-    have hr := congrArg Complex.re hh
-    norm_num at hr
+    pm_7061 hh hr
   · apply continuous_iff_continuousAt.mpr
     intro t
     exact ContinuousAt.comp' (differentiableAt_zetaMollifier _ _).continuousAt (by fun_prop)
@@ -58,7 +54,7 @@ theorem short_weighted_fourth_holder {g F : ℝ → ℝ} (hg0 : ∀ t, 0 ≤ g t
     (∫ t, g t*F t)^4 ≤ (∫ t,g t)^3*(∫ t,g t*(F t)^4) := by
   have hfirst := weighted_integral_sq_le hg0 hg hgf hgf2
   have hsecond := weighted_integral_sq_le (f := fun t => (F t)^2) hg0 hg hgf2
-    (by simpa only [← pow_mul] using hgf4)
+    (by grind)
   have h0 : 0 ≤ ∫ t,g t := integral_nonneg hg0
   have h2 : 0 ≤ ∫ t,g t*(F t)^2 := integral_nonneg (fun t => mul_nonneg (hg0 t) (sq_nonneg _))
   have hh := pow_le_pow_left₀ (sq_nonneg _) hfirst 2

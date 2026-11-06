@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroRBlock
 public import LaterPairs.Native.RobertSargosZeroRMajorant
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -42,14 +43,12 @@ theorem robertSargos_zero_r_weighted_row_bound
     have hb := robertSargos_zero_r_trimmed_correlation_bound f M H q
       hC hH hmem.1 hlam hs hf hlo hhi
     have hw0 := signed_triangular_weight_nonneg hQ hmem.2
-    have hw1 : 1-|(q:ℝ)|/Q ≤ 1 := by
-      have hn : 0 ≤ |(q:ℝ)|/Q := by positivity
-      linarith
+    pm_5209 q Q
     calc
       _ ≤ (1-|(q:ℝ)|/Q)*‖robertSargosTrimmedCorrelation f M H q 0‖ :=
         mul_le_mul_of_nonneg_left (Complex.re_le_norm _) hw0
       _ ≤ ‖robertSargosTrimmedCorrelation f M H q 0‖ := by
-        simpa only [one_mul] using mul_le_mul_of_nonneg_right hw1 (norm_nonneg _)
+        pm_6157 hw1
       _ ≤ B q := hb
   calc
     _ ≤ ∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0, B q := Finset.sum_le_sum hpoint

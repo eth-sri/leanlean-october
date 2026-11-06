@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma actual_ideal_norm_pos (I : Ideal Eis) (hI : I ≠ 0) : 0 < (Ideal.absNorm I : ℝ) := by
-  exact_mod_cast Nat.pos_of_ne_zero (fun hz => hI (Ideal.absNorm_eq_zero_iff.mp hz))
+  pm_3073 Nat.pos_of_ne_zero hz hI
 
 theorem actual_residual_norm_width (I Q : Ideal Eis) (hI : I ≠ 0) :
     (Ideal.absNorm (rowResidualPart I Q) : ℝ) *
@@ -29,10 +30,13 @@ theorem actual_residual_norm_width (I Q : Ideal Eis) (hI : I ≠ 0) :
       have hh := mul_le_mul_of_nonneg_left hm
         (show 0 ≤ (Ideal.absNorm (rowResidualPart I Q) : ℝ) *
           (Ideal.absNorm (rowPowerfulPart I) : ℝ) by positivity)
-      nlinarith [hh]
+      grind
     _ = _ := he
 
-theorem actual_common_width_charge {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+theorem actual_common_width_charge
     (I F Q : Ideal Eis) (hI : I ≠ 0) (hQ : Q ≠ 0)
     (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
@@ -54,7 +58,7 @@ theorem actual_common_width_charge {ι : Type*} [Fintype ι]
         (sq_nonneg _)
     _ = _ := by rw [he]; field_simp
 
-theorem actual_common_width_charge_label_puncture {ι : Type*} [Fintype ι]
+theorem actual_common_width_charge_label_puncture
     (I F rho S : Ideal Eis) (hI : I ≠ 0) (hF : F ≠ 0) (hrho : rho ≠ 0) (hS : S ≠ 0)
     (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
@@ -69,6 +73,7 @@ theorem actual_common_width_charge_label_puncture {ι : Type*} [Fintype ι]
     (mul_ne_zero (mul_ne_zero hS hF) hrho) P hcop hpool hres e using 1
   simp only [map_mul, Nat.cast_mul]
   ring
+end
 
 end
 end SevenEighths.InverseMoment

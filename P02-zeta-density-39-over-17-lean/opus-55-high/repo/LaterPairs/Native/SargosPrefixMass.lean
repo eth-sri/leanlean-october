@@ -20,15 +20,13 @@ namespace TaoTrudgianYang2025
 theorem sargos_sum_zmod_val {N : ℕ} [NeZero N] (g : ℕ → ℝ) :
     (∑ k : ZMod N, g k.val) = ∑ j ∈ Finset.range N, g j := by
   refine Finset.sum_bij (fun k _ => k.val) ?_ ?_ ?_ ?_
-  · intro k hk
-    exact Finset.mem_range.mpr (ZMod.val_lt k)
+  grind
   · intro k hk l hl he
     exact ZMod.val_injective N he
   · intro j hj
     exact ⟨(j : ZMod N),Finset.mem_univ _,
       ZMod.val_cast_of_lt (Finset.mem_range.mp hj)⟩
-  · intro k hk
-    rfl
+  grind
 
 theorem sargos_sum_range_inv_le_harmonic (N : ℕ) :
     (∑ j ∈ Finset.range N, (j : ℝ)⁻¹) ≤ (harmonic N : ℝ) := by
@@ -40,7 +38,10 @@ theorem sargos_sum_range_inv_le_harmonic (N : ℕ) :
       rw [Finset.sum_range_succ']
       simp [harmonic]
 
-theorem sum_sargosPrefixMajorant_eq {N : ℕ} [NeZero N] :
+section
+variable {N : ℕ} [NeZero N]
+include N
+theorem sum_sargosPrefixMajorant_eq :
     (∑ k : ZMod N, sargosPrefixMajorant k) =
       1+2*(∑ j ∈ Finset.range N, (j : ℝ)⁻¹) := by
   have hn : (∑ k : ZMod N, ((-k).val : ℝ)⁻¹) =
@@ -52,17 +53,18 @@ theorem sum_sargosPrefixMajorant_eq {N : ℕ} [NeZero N] :
   simp
   ring
 
-theorem sum_sargosPrefixMajorant_le_harmonic {N : ℕ} [NeZero N] :
+theorem sum_sargosPrefixMajorant_le_harmonic :
     (∑ k : ZMod N, sargosPrefixMajorant k) ≤ 1+2*(harmonic N : ℝ) := by
   rw [sum_sargosPrefixMajorant_eq]
   linarith [sargos_sum_range_inv_le_harmonic N]
 
-theorem sum_sargosPrefixMajorant_le_log {N : ℕ} [NeZero N] :
+theorem sum_sargosPrefixMajorant_le_log :
     (∑ k : ZMod N, sargosPrefixMajorant k) ≤ 3*(1+Real.log N) := by
   have hN : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne N)
   have hlog := Real.log_nonneg hN
   have h := sum_sargosPrefixMajorant_le_harmonic (N := N)
   have hh := harmonic_le_one_add_log N
   linarith
+end
 
 end TaoTrudgianYang2025

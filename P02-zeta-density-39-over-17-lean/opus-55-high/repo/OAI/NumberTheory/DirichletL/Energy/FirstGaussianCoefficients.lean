@@ -1,38 +1,40 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedFourCoefficients
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceSeededPowerDescent
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
 open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent
+open CenteredMomentSecondSourceSeededPowerDescent
 open CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
+open CenteredMomentFirstAmplifiedFourCoefficients
 local notation "O"=>HeckeFamily.O
 
 def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:ℝ)
     (J:ℕ)(Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ)):Fin 4→ℝ:=
-  ![Cm*Z^(2*delta+epsilon)*cost*Ebase*heightEnvelope t^(J+J)*profileMoment J*profileMoment J,
-    Ce*Z^(2*epsilon+2*delta+2*(5*B+1)*theta)*loFloor^(-2/3:ℝ),
+  ![Cm*Z ^(2*delta+epsilon)*cost*Ebase*heightEnvelope t^(J+J)*profileMoment J*profileMoment J,
+    Ce*Z ^(2*epsilon+2*delta+2*(5*B+1)*theta)*loFloor^(-2/3:ℝ),
     Cd*‖EisensteinSchwartzPoisson.paperRadialFourier W 0‖,
     Ct*Sf.sup (schwartzSeminormFamily ℝ ℝ ℂ) W/seed]
 
-lemma coefficients_mul {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ):
+section
+variable {a b:ℝ} (N:ℕ) (upper b1 b2 A:ℝ) (Sp:Finset (ℕ×ℕ)) (p:Profiles a b) (J:ℕ) (Q:Ideal O) (K t epsilon seed:ℝ) (f g:Fin 4→ℝ)
+include a b N upper b1 b2 A Sp p J Q K t epsilon seed f g
+lemma coefficients_mul:
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed (fun j=>f j*g j) j=
       CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j*g j:=by
   intro j
   fin_cases j <;> simp [CenteredMomentSecondChildPowerBudget.coefficients] <;> ring
 
-lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ)
-    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤K)(hseed:0≤seed)
+lemma coefficients_mono
+    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤K)(hseed:0≤ seed)
     (hfg:∀j,f j≤g j):
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j≤
       CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed g j:=by
@@ -49,47 +51,51 @@ lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ)
     gcongr
   · gcongr
   · gcongr
+end
 
 theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
     ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
     (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
-    (_hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
+    (_hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤ radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
-    let E:=Ebase*Z^(ell+deficit/6+paid);
+    let E:=Ebase*Z ^(ell+deficit/6+paid);
     ∀j,seededFactors Cm Ce Cd Ct Z epsilon delta theta B saving radius t (cost*q)
         E E r loProduct wlo seed J J Sf W j≤
       fixedFactors Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed J Sf W j*
         mainPowers q Z radius ell deficit paid saving r j:=by
   dsimp only
-  have hEp:0≤Ebase*Z^(ell+deficit/6+paid):=mul_nonneg hE (Real.rpow_nonneg hZ.le _)
-  have hsqrt:Real.sqrt ((Ebase*Z^(ell+deficit/6+paid))*(Ebase*Z^(ell+deficit/6+paid)))=
-      Ebase*Z^(ell+deficit/6+paid):=by rw [←pow_two,Real.sqrt_sq hEp]
+  have hEp:0≤Ebase*Z ^(ell+deficit/6+paid):=mul_nonneg hE (Real.rpow_nonneg hZ.le _)
+  have hsqrt:Real.sqrt ((Ebase*Z ^(ell+deficit/6+paid))*(Ebase*Z ^(ell+deficit/6+paid)))=
+      Ebase*Z ^(ell+deficit/6+paid):=by simp_all
   have hneg:(loProduct*wlo*wlo)^(-2/3:ℝ)≤loFloor^(-2/3:ℝ):=
     Real.rpow_le_rpow_of_nonpos hlo hloProduct (by norm_num)
   intro j
   fin_cases j
   · simp only [seededFactors,physicalFactors,fixedFactors,mainPowers,Fin.isValue,Matrix.cons_val,Fin.reduceFinMk,hsqrt]
-    exact le_of_eq (by ring)
+    grind
   · simp only [seededFactors,physicalFactors,fixedFactors,mainPowers,Fin.isValue,Matrix.cons_val,Fin.reduceFinMk]
     rw [Real.rpow_sub hZ]
-    have hbase:0≤Ce*Z^(2*epsilon+2*delta+2*(5*B+1)*theta)/Z^(2*max r 0/3)*radius^(5/6:ℝ):=by positivity
+    have hbase:0≤Ce*Z ^(2*epsilon+2*delta+2*(5*B+1)*theta)/Z ^(2*max r 0/3)*radius^(5/6:ℝ):=by positivity
     have hh:=mul_le_mul_of_nonneg_left hneg hbase
-    have hpow:Z^(-2*max r 0/3)=(Z^(2*max r 0/3))⁻¹:=by
+    have hpow:Z ^(-2*max r 0/3)=(Z ^(2*max r 0/3))⁻¹:=by
       rw [show -2*max r 0/3=-(2*max r 0/3) by ring,Real.rpow_neg hZ.le]
     convert hh using 1 <;> (try rw [hpow]) <;> ring
   · simp [seededFactors,physicalFactors,fixedFactors,mainPowers,mul_comm,mul_left_comm,mul_assoc]
   · simp only [seededFactors,physicalFactors,fixedFactors,mainPowers,Fin.isValue,Matrix.cons_val,Fin.reduceFinMk]
     exact le_of_eq (by ring)
 
-theorem main_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
+section
+variable {a b:ℝ} (N:ℕ) (upper b1 b2 A:ℝ) (Sp:Finset (ℕ×ℕ))
+include a b N upper b1 b2 A Sp
+theorem main_coefficients
     (p:Profiles a b)(Jprofile:ℕ)(Q:Ideal O)(Kfix:ℝ)
     (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
       ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
     (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
-    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤seed)
-    (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
+    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤ seed)
+    (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤ radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
-    let E:=Ebase*Z^(ell+deficit/6+paid);
+    let E:=Ebase*Z ^(ell+deficit/6+paid);
     let H:=CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed
       (fixedFactors Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed J Sf W);
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed
@@ -104,36 +110,36 @@ theorem main_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×�
   intro j
   exact (hh j).trans_eq (coefficients_mul N upper b1 b2 A Sp p Jprofile Q Kfix t epsilon seed _ _ j)
 
-theorem error_coefficients {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
+theorem error_coefficients
     (profiles:Profiles a b)(Jprofile:ℕ)(Q:Ideal O)(Kfix:ℝ)(prime:O)(k:ℕ)
     (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
       deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)
     (Sf:Finset (ℕ×ℕ))(W:𝓢(ℝ,ℂ))
-    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤seed)
-    (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤radius)
+    (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤Kfix)(hseed:0≤ seed)
+    (hCm:0≤Cm)(hCe:0≤Ce)(hZ:0<Z)(hE:0≤Ebase)(hradius:0≤ radius)
     (hlo:0<loFloor)(hloProduct:loFloor≤loProduct*wlo*wlo):
-    let E:=Ebase*Z^(CenteredMomentFirstAmplificationChoice.errorRemoval prime Z k+deficit/6+paid);
+    let E:=Ebase*Z ^(CenteredMomentFirstAmplificationChoice.errorRemoval prime Z k+deficit/6+paid);
     let H:=CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp profiles Jprofile Q Kfix t epsilon seed
       (fixedFactors Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed J Sf W);
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp profiles Jprofile Q Kfix t epsilon seed
       (seededFactors Cm Ce Cd Ct Z epsilon delta theta B saving radius t
-        (cost*q*Z^(CenteredMomentFirstAmplificationChoice.errorMoving prime Z k))
+        (cost*q*Z ^(CenteredMomentFirstAmplificationChoice.errorMoving prime Z k))
         E E r loProduct wlo seed J J Sf W) j≤
       H j*errorPowers prime k q Z radius deficit paid saving r j:=by
   dsimp only
   have hh:=main_coefficients N upper b1 b2 A Sp profiles Jprofile Q Kfix
     Cm Ce Cd Ct Z epsilon delta theta B saving radius t
-    (q*Z^(CenteredMomentFirstAmplificationChoice.errorMoving prime Z k)) cost Ebase
+    (q*Z ^(CenteredMomentFirstAmplificationChoice.errorMoving prime Z k)) cost Ebase
     (CenteredMomentFirstAmplificationChoice.errorRemoval prime Z k) deficit paid r
     loProduct wlo loFloor seed J Sf W hu hb1 hb2 hK hseed hCm hCe hZ hE hradius hlo hloProduct
   intro j
-  have hid:mainPowers (q*Z^(CenteredMomentFirstAmplificationChoice.errorMoving prime Z k)) Z radius
+  have hid:mainPowers (q*Z ^(CenteredMomentFirstAmplificationChoice.errorMoving prime Z k)) Z radius
       (CenteredMomentFirstAmplificationChoice.errorRemoval prime Z k) deficit paid saving r j=
       errorPowers prime k q Z radius deficit paid saving r j:=by
     fin_cases j <;> rfl
   have hhj:=hh j
-  rw [hid] at hhj
-  simpa only [mul_assoc] using hhj
+  pm_293 hid hhj mul_assoc
+end
 
 end SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
 

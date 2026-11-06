@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.RationalTranslations
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,79 +10,37 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
-lemma ramified_denominator_ne_zero (s : ℂ) (hs : 1<s.re) :
+section
+variable (s : ℂ) (hs : 1< s.re)
+include s hs
+lemma ramified_denominator_ne_zero :
     (3:ℂ)^(3*s-3)-1≠0 := by
   intro he
   have hpow : (3:ℂ)^(3*s-3)=1 := sub_eq_zero.mp he
@@ -92,18 +51,19 @@ lemma ramified_denominator_ne_zero (s : ℂ) (hs : 1<s.re) :
     norm_num
     linarith
   rw [hpow,norm_one] at hnorm
-  exact lt_irrefl _ hnorm
+  grind
 
-lemma cuspWhittakerHeightFactor_zero (s : ℂ) (hs : 1<s.re) :
+lemma cuspWhittakerHeightFactor_zero :
     cuspWhittakerHeightFactor s 0=((Real.pi:ℂ)/(s-1))*cuspScatterHeightFactor s := by
   have hs0 : s≠0 := by intro he;subst s;norm_num at hs
   unfold cuspWhittakerHeightFactor
   simp only [cuspFrequency,map_zero,zero_div,zero_mul,sourceFourierKernel_zero s hs]
   rw [integral_mul_const,cuspScatterHeightFactor_integral s hs0]
   ring
+end
 
-lemma opposite_zero_initial_cross (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
-    2*translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) s=
+lemma opposite_zero_initial_cross (s : ℂ) (hs : 4< s.re) (hi : 0< s.im) :
+    2*translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) s =
       ((3:ℂ)^(3*s-3)-1)*baseOutgoingConstant s := by
   have hb : kernelCuspAverageFamily 2 3 (by norm_num) (by norm_num) s=cuspConstantAverage s := by
     apply (kernelCuspAverageFamily_eq_of_initial_overlap 2 3 (by norm_num) (by norm_num)
@@ -114,8 +74,8 @@ lemma opposite_zero_initial_cross (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
   rw [ht,cuspWhittakerHeightFactor_zero s (by linarith),baseOutgoingConstant,hb,
     cuspConstantAverage,scatteringCoefficient,arithmeticDirichletSeries_zero_unramified s (by linarith)]
   have hs1 : s-1≠0 := by intro he;have hsx : s=1:=sub_eq_zero.mp he;subst s;norm_num at hs
-  have halg (D V A P H U : ℂ) (hD:D≠0) (hV:V≠0) :
-      2*(U*(P*H))=D*(V*(A+P*((2*D⁻¹)*U/V)*H)-V*A) := by
+  have halg (D V A P H U : ℂ) (hD:D ≠0) (hV:V≠0) :
+      2*(U*(P*H))=D *(V*(A+P*((2*D⁻¹)*U/V)*H)-V*A) := by
     field_simp
     ; ring
   exact halg _ _ _ _ _ _ (ramified_denominator_ne_zero s (by linarith)) cusp_volume_ne_zero
@@ -123,11 +83,8 @@ lemma opposite_zero_initial_cross (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
 lemma opposite_zero_cross_identity :
     Set.EqOn (fun s=>2*translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) s)
       (fun s=>((3:ℂ)^(3*s-3)-1)*baseOutgoingConstant s)
-      {s : ℂ | 1<s.re ∧ 0<s.im} := by
-  let domain : Set ℂ := {s | 1<s.re ∧ 0<s.im}
-  have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
+      {s : ℂ | 1< s.re ∧ 0< s.im} := by
+  pm_3668
   have hleft : AnalyticOnNhd ℂ
       (fun s=>2*translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) s) domain := by
     intro s hs
@@ -142,10 +99,7 @@ lemma opposite_zero_cross_identity :
         ((((differentiableAt_const (3:ℂ)).mul differentiableAt_id).sub_const 3).const_cpow
           (Or.inl (by norm_num))).sub_const 1
     exact hp.mul (baseOutgoingConstant_analyticAt s hs.1 hs.2)
-  have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
-  have hopen : IsOpen {s:ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
+  pm_3612
   have hevent : (fun s=>2*translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) s)
       =ᶠ[𝓝 (5+Complex.I:ℂ)] (fun s=>((3:ℂ)^(3*s-3)-1)*baseOutgoingConstant s) := by
     filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
@@ -166,26 +120,28 @@ theorem translatedCuspFourier_opposite_zero_residue :
       translatedCuspFamily 0 oppositeSource 2 3 (by norm_num) (by norm_num) ((4/3:ℂ)+(t:ℂ)*Complex.I)))
       =ᶠ[𝓝[>] (0:ℝ)] (fun t:ℝ=>((3:ℂ)^(3*((4/3:ℂ)+(t:ℂ)*Complex.I)-3)-1)*
         ((((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*baseOutgoingConstant ((4/3:ℂ)+(t:ℂ)*Complex.I))) := by
-    filter_upwards [self_mem_nhdsWithin] with t ht
-    change 0<t at ht
-    have he:=opposite_zero_cross_identity (show (4/3:ℂ)+(t:ℂ)*Complex.I∈{s:ℂ|1<s.re ∧ 0<s.im} by
+    pm_3637
+    have he:=opposite_zero_cross_identity (show (4/3:ℂ)+(t:ℂ)*Complex.I∈{s:ℂ|1< s.re ∧ 0< s.im} by
       constructor
       · norm_num
       · simpa using ht)
-    linear_combination (((4/3:ℂ)+(t:ℂ)*Complex.I)-4/3)*he
+    pm_3669
   have heq : 2*translatedCuspFourier 0 oppositeSource cubicEisensteinResidue=2*cuspConstantAverageResidue :=
     tendsto_nhds_unique_of_eventuallyEq hl hr hevent
   exact mul_left_cancel₀ (by norm_num : (2:ℂ)≠0) heq
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 section
 open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma rationalComplex_conjugate (r:SL(2,ℤ)) (M:levelThree) :
+section
+variable (r:SL(2,ℤ))
+include r
+lemma rationalComplex_conjugate (M:levelThree) :
     complexMatrix (levelThreeConjugate (rationalEmbedding r) M)*rationalComplex r=
       rationalComplex r*complexMatrix M := by
   rw [←integralComplexMatrix_levelThree,←integralComplexMatrix_levelThree]
@@ -194,20 +150,21 @@ lemma rationalComplex_conjugate (r:SL(2,ℤ)) (M:levelThree) :
       integralComplexMatrix (rationalEmbedding r)*integralComplexMatrix (M:SL(2,Eis))
   rw [←map_mul,inv_mul_cancel_right,map_mul]
 
-lemma hyperbolicEisenstein_rational_automorphy (r:SL(2,ℤ)) (M:levelThree)
-    (s:ℂ) (hs:2<s.re) (w:HyperbolicSpace) :
+lemma hyperbolicEisenstein_rational_automorphy (M:levelThree)
+    (s:ℂ) (hs:2< s.re) (w:HyperbolicSpace) :
     hyperbolicEisenstein s (rationalComplex r • (complexMatrix M • w))=
       complexCharacter M*hyperbolicEisenstein s (rationalComplex r • w) := by
   rw [←mul_smul,←rationalComplex_conjugate,mul_smul,hyperbolicEisenstein_automorphy _ _ hs,
     complexCharacter_conjugate_rational]
 
-lemma hyperbolicEisenstein_rational_periodic (r:SL(2,ℤ)) (a:Eis)
-    (s:ℂ) (hs:2<s.re) (z:ℂ) (v:ℝ) (hv:0<v) :
+lemma hyperbolicEisenstein_rational_periodic (a:Eis)
+    (s:ℂ) (hs:2< s.re) (z:ℂ) (v:ℝ) (hv:0<v) :
     hyperbolicEisenstein s (rationalComplex r • upperPoint (z+3*eisEmbedding a) v hv)=
       hyperbolicEisenstein s (rationalComplex r • upperPoint z v hv) := by
   have he : upperPoint (z+3*eisEmbedding a) v hv=complexMatrix (upperTranslation a) • upperPoint z v hv :=
     congrArg (fun g : SL(2,ℂ)=>(g:HyperbolicSpace)) (upperTranslation_section a z v hv).symm
   rw [he,hyperbolicEisenstein_rational_automorphy r _ s hs,complexCharacter_upperTranslation,one_mul]
+end
 
 lemma rationalComplex_unipotent_coe (t : ℤ) :
     (rationalComplex (rationalUnipotent t) : Matrix (Fin 2) (Fin 2) ℂ) =
@@ -236,23 +193,20 @@ lemma rationalComplex_T_pow_upper (n:ℕ) (z:ℂ) (v:ℝ) (hv:0<v) :
   have he:=congrArg (fun g : SL(2,ℂ)=>(g:HyperbolicSpace)) (rationalUnipotent_section (n:ℤ) z v hv)
   simpa only [rationalUnipotent_nat,Int.cast_natCast] using he
 
-theorem rational_cusp_average_right_T (r:SL(2,ℤ)) (n:ℕ) (s:ℂ) (hs:2<s.re) :
+theorem rational_cusp_average_right_T (r:SL(2,ℤ)) (n:ℕ) (s:ℂ) (hs:2< s.re) :
     (∫w in cuspPeriodStrip 5 6,
-      hyperbolicEisenstein s (rationalComplex (r*ModularGroup.T^n) • w)∂hyperbolicVolume)=
+      hyperbolicEisenstein s (rationalComplex (r*ModularGroup.T^n) • w)∂ hyperbolicVolume)=
     ∫w in cuspPeriodStrip 5 6,
-      hyperbolicEisenstein s (rationalComplex r • w)∂hyperbolicVolume := by
+      hyperbolicEisenstein s (rationalComplex r • w)∂ hyperbolicVolume := by
   let f : HyperbolicSpace→ℂ := fun w=>hyperbolicEisenstein s (rationalComplex (r*ModularGroup.T^n) • w)
   let g : HyperbolicSpace→ℂ := fun w=>hyperbolicEisenstein s (rationalComplex r • w)
   have hf : Continuous f := (hyperbolicEisenstein_continuous s hs).comp (continuous_hyperbolic_action _)
   have hg : Continuous g := (hyperbolicEisenstein_continuous s hs).comp (continuous_hyperbolic_action _)
-  change (∫w in cuspPeriodStrip 5 6,f w∂hyperbolicVolume)=∫w in cuspPeriodStrip 5 6,g w∂hyperbolicVolume
+  change (∫w in cuspPeriodStrip 5 6,f w∂ hyperbolicVolume)=∫w in cuspPeriodStrip 5 6,g w∂ hyperbolicVolume
   rw [cuspPeriodStrip_integral_coordinates f hf.aestronglyMeasurable (cuspCoordinateLift_weighted_integrable f hf),
     cuspPeriodStrip_integral_coordinates g hg.aestronglyMeasurable (cuspCoordinateLift_weighted_integrable g hg)]
-  apply setIntegral_congr_fun measurableSet_Icc
-  intro v hv
-  have hv0 : 0<v := by linarith [hv.1]
-  dsimp only
-  apply congrArg (fun q:ℂ=>q/(v:ℂ)^3)
+  pm_5857
+  pm_7377 q
   simp_rw [f,g,cuspCoordinateLift_positive v _ hv0,map_mul,mul_smul,rationalComplex_T_pow_upper]
   have hh:=period_integral_translation
     (fun z=>hyperbolicEisenstein s (rationalComplex r • upperPoint z v hv0))
@@ -264,48 +218,32 @@ lemma cuspFourierPhase_zero (w:HyperbolicSpace) : cuspFourierPhase (0:Eis) w=1 :
 
 lemma kernelCuspFourier_zero (F:KernelQuotientL2) :
     kernelCuspFourier (0:Eis) F=kernelCuspStripAverage F := by
-  rw [kernelCuspFourier_integral,kernelCuspStripAverage_hyperbolic]
-  simp only [cuspFourierPhase_zero,mul_one]
+  pm_326 kernelCuspFourier_integral kernelCuspStripAverage_hyperbolic cuspFourierPhase_zero mul_one
 
 theorem translatedCuspFourier_residue_eq_of_initial (M N:levelTwo)
-    (he : ∀s:ℂ,4<s.re→0<s.im→
-      (∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (sourceComplexMatrix M • w)∂hyperbolicVolume)=
-      ∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (sourceComplexMatrix N • w)∂hyperbolicVolume) :
+    (he : ∀s:ℂ,4< s.re→0< s.im→
+      (∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (sourceComplexMatrix M • w)∂ hyperbolicVolume)=
+      ∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (sourceComplexMatrix N • w)∂ hyperbolicVolume) :
     translatedCuspFourier 0 M cubicEisensteinResidue=
       translatedCuspFourier 0 N cubicEisensteinResidue := by
-  let f : ℂ→ℂ := translatedCuspFamily 0 M 2 3 (by norm_num) (by norm_num)
-  let g : ℂ→ℂ := translatedCuspFamily 0 N 2 3 (by norm_num) (by norm_num)
-  let domain : Set ℂ := {s | 1<s.re ∧ 0<s.im}
-  have hconvex : Convex ℝ domain :=
-    ((convex_Ioi (1:ℝ)).linear_preimage Complex.reCLM.toLinearMap).inter
-      ((convex_Ioi (0:ℝ)).linear_preimage Complex.imCLM.toLinearMap)
-  have hf : AnalyticOnNhd ℂ f domain := fun s hs=>
-    translatedCuspFamily_analyticAt_nonreal 0 M 2 3 (by norm_num) (by norm_num) s hs.1.ne' hs.2.ne'
-  have hg : AnalyticOnNhd ℂ g domain := fun s hs=>
-    translatedCuspFamily_analyticAt_nonreal 0 N 2 3 (by norm_num) (by norm_num) s hs.1.ne' hs.2.ne'
-  have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
-  have hopen : IsOpen {s:ℂ | 4<s.re ∧ 0<s.im} :=
-    (isOpen_lt continuous_const Complex.continuous_re).inter
-      (isOpen_lt continuous_const Complex.continuous_im)
+  pm_7648 f M
+  pm_7648 g N
+  pm_3668
+  pm_6565 hf f M
+  pm_6565 hg g N
+  pm_3612
   have hev : f=ᶠ[𝓝 (5+Complex.I:ℂ)]g := by
-    filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
-    dsimp only [f,g]
+    pm_3613
     rw [translatedCuspFamily_initial 0 M 2 3 (by norm_num) (by norm_num) (by norm_num) s hs.1 hs.2,
       translatedCuspFamily_initial 0 N 2 3 (by norm_num) (by norm_num) (by norm_num) s hs.1 hs.2]
     simp only [cuspFourierPhase_zero,mul_one]
     exact he s hs.1 hs.2
   have heq := hf.eqOn_of_preconnected_of_eventuallyEq hg hconvex.isPreconnected hstart hev
-  have hl := (translatedCuspFamily_residue_limit 0 M 2 3 (by norm_num) (by norm_num)).comp
-    upperVertical_tendsto_cubic_punctured
-  have hr := (translatedCuspFamily_residue_limit 0 N 2 3 (by norm_num) (by norm_num)).comp
-    upperVertical_tendsto_cubic_punctured
+  pm_7649 hl M
+  pm_7649 hr N
   apply tendsto_nhds_unique_of_eventuallyEq hl hr
-  filter_upwards [self_mem_nhdsWithin] with t ht
-  change 0<t at ht
-  have hv:=heq (show (4/3:ℂ)+(t:ℂ)*Complex.I∈domain by
-    constructor
-    · norm_num
-    · simpa using ht)
+  pm_3637
+  pm_5345 hv ht
   exact congrArg (fun z:ℂ=>((4/3:ℂ)+(t:ℂ)*Complex.I-4/3)*z) hv
 
 end
@@ -339,8 +277,8 @@ lemma translatedCuspFourier_bruhat_residue (i:RationalBruhatIndex) :
         simp_rw [sourceComplexMatrix_rationalLift,hyperbolicEisenstein_bruhat]
         change (∫w in cuspPeriodStrip 5 6,
           hyperbolicEisenstein s (rationalComplex ModularGroup.S •
-            (rationalComplex (ModularGroup.T^b.val) • w))∂hyperbolicVolume)=
-          ∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (rationalComplex ModularGroup.S • w)∂hyperbolicVolume
+            (rationalComplex (ModularGroup.T^b.val) • w))∂ hyperbolicVolume)=
+          ∫w in cuspPeriodStrip 5 6,hyperbolicEisenstein s (rationalComplex ModularGroup.S • w)∂ hyperbolicVolume
         simpa only [map_mul,mul_smul] using
           rational_cusp_average_right_T ModularGroup.S b.val s (by linarith)
       _=cuspConstantAverageResidue := translatedCuspFourier_opposite_zero_residue
@@ -358,7 +296,7 @@ theorem kernelSourceProjection_residue_cusp_average :
   ring
 
 theorem cubicSourceResidualFunction_cusp_average :
-    (∫w in cuspPeriodStrip 5 6,cubicSourceResidualFunction w∂hyperbolicVolume)=
+    (∫w in cuspPeriodStrip 5 6,cubicSourceResidualFunction w∂ hyperbolicVolume)=
       cuspConstantAverageResidue := by
   rw [←kernelSourceProjection_residue_cusp_average,kernelCuspStripAverage_hyperbolic]
   apply integral_congr_ae
@@ -376,15 +314,17 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 section
 
-lemma complex_gaussian_power_integrable (s : ℂ) (r : ℝ)
-    (hs : 0<s.re) (hr : 0<r) :
+section
+variable (s : ℂ) (r : ℝ) (hs : 0< s.re) (hr : 0< r)
+include s r hs hr
+lemma complex_gaussian_power_integrable :
     IntegrableOn (fun x : ℝ => (x:ℂ)^(s-1)*Complex.exp (-(r:ℂ)*(x:ℂ)^2))
       (Set.Ioi 0) volume := by
-  have hs2 : 0<(s/(2:ℂ)).re := by simpa using half_pos hs
+  pm_5680
   have hbase : MellinConvergent (fun t : ℝ => Complex.exp (-(t:ℂ))) (s/2) := by
     simpa only [MellinConvergent,smul_eq_mul,Complex.ofReal_exp,Complex.ofReal_neg,mul_comm]
       using Complex.GammaIntegral_convergent hs2
@@ -396,36 +336,35 @@ lemma complex_gaussian_power_integrable (s : ℂ) (r : ℝ)
   simpa only [MellinConvergent,smul_eq_mul,Real.rpow_two,
     Complex.ofReal_mul,Complex.ofReal_pow,neg_mul] using hgaussian
 
-lemma complex_gaussian_power_integral (s : ℂ) (r : ℝ)
-    (hs : 0<s.re) (hr : 0<r) :
+lemma complex_gaussian_power_integral :
     (∫x : ℝ in Set.Ioi 0,(x:ℂ)^(s-1)*Complex.exp (-(r:ℂ)*(x:ℂ)^2)) =
       (1/2:ℂ)*((1/(r:ℂ))^(s/2)*Complex.Gamma (s/2)) := by
-  have hs2 : 0<(s/(2:ℂ)).re := by simpa using half_pos hs
+  pm_5680
   have he := mellin_comp_rpow (fun t : ℝ => Complex.exp (-((r*t:ℝ):ℂ))) s 2
   simp only [mellin,smul_eq_mul,Real.rpow_two,Complex.ofReal_mul,
     Complex.ofReal_pow,Complex.real_smul] at he
   norm_num only [Complex.ofReal_ofNat] at he
   rw [Complex.integral_cpow_mul_exp_neg_mul_Ioi hs2 hr] at he
   simpa [neg_mul] using he
+end
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 open Finset AddChar MulChar EisensteinEmbedding
 
 def cubicMellinMixture (s : ℂ) (t x : ℝ) : ℂ :=
   (t:ℂ)^(-(2:ℂ)/3)*Complex.exp (-(t:ℂ))*
     ((x:ℂ)^((s-1/3)-1)*Complex.exp (-((1/(4*t):ℝ):ℂ)*(x:ℂ)^2))
 
-lemma cubicMellinMixture_slice_integrable (s : ℂ) (hs : 1/3<s.re)
-    (t : ℝ) (ht : 0<t) :
+section
+variable (s : ℂ) (hs : 1/3< s.re) (t : ℝ) (ht : 0<t)
+include s hs t ht
+lemma cubicMellinMixture_slice_integrable :
     IntegrableOn (cubicMellinMixture s t) (Set.Ioi 0) volume := by
   apply (complex_gaussian_power_integrable (s-1/3) (1/(4*t))
     (by norm_num; linarith) (by positivity)).const_mul
 
-lemma cubicMellinMixture_integral_x (s : ℂ) (hs : 1/3<s.re)
-    (t : ℝ) (ht : 0<t) :
+lemma cubicMellinMixture_integral_x :
     (∫x : ℝ in Set.Ioi 0,cubicMellinMixture s t x) =
       ((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
         ((t:ℂ)^((s+1/3)/2-1)*Complex.exp (-(t:ℂ))) := by
@@ -442,13 +381,12 @@ lemma cubicMellinMixture_integral_x (s : ℂ) (hs : 1/3<s.re)
   rw [hb,hm]
   have hp : (t:ℂ)^(-(2:ℂ)/3)*(t:ℂ)^((s-1/3)/2)=
       (t:ℂ)^((s+1/3)/2-1) := by
-    rw [←Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr ht.ne')]
-    congr 1
-    ring
+    pm_8274 ht.ne'
   calc
     _ = ((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
         (((t:ℂ)^(-(2:ℂ)/3)*(t:ℂ)^((s-1/3)/2))*Complex.exp (-(t:ℂ))) := by ring
     _ = _ := by rw [hp]
+end
 
 lemma cubicMellinMixture_norm (s : ℂ) (t x : ℝ) (ht : 0<t) (hx : 0<x) :
     ‖cubicMellinMixture s t x‖ =
@@ -462,14 +400,17 @@ lemma cubicMellinMixture_norm (s : ℂ) (t x : ℝ) (ht : 0<t) (hx : 0<x) :
     Complex.norm_exp,Complex.ofReal_re,Complex.neg_re]
   norm_num
 
-lemma real_gaussian_power_integral (sigma r : ℝ) (hs : 0<sigma) (hr : 0<r) :
+lemma real_gaussian_power_integral (sigma r : ℝ) (hs : 0< sigma) (hr : 0< r) :
     (∫x : ℝ in Set.Ioi 0,x^(sigma-1)*Real.exp (-r*x^2)) =
       r^(-sigma/2)*(1/2)*Real.Gamma (sigma/2) := by
   simpa only [Real.rpow_two,sub_add_cancel] using
     (_root_.integral_rpow_mul_exp_neg_mul_rpow (p:=2) (q:=sigma-1) (b:=r)
       (by norm_num) (by linarith) hr)
 
-lemma cubicMellinMixture_integral_norm (s : ℂ) (hs : 1/3<s.re)
+section
+variable (s : ℂ) (hs : 1/3< s.re)
+include s hs
+lemma cubicMellinMixture_integral_norm
     (t : ℝ) (ht : 0<t) :
     (∫x : ℝ in Set.Ioi 0,‖cubicMellinMixture s t x‖) =
       ((1/2:ℝ)*(4:ℝ)^((s.re-1/3)/2)*Real.Gamma ((s.re-1/3)/2))*
@@ -497,24 +438,21 @@ lemma cubicMellinMixture_integral_norm (s : ℂ) (hs : 1/3<s.re)
             ((t^(-(2:ℝ)/3)*t^((s.re-1/3)/2))*Real.exp (-t)) := by ring
         _ = _ := by rw [hp]
 
-lemma cubicMellinMixture_integrable (s : ℂ) (hs : 1/3<s.re) :
+lemma cubicMellinMixture_integrable :
     Integrable (fun p : ℝ × ℝ => cubicMellinMixture s p.1 p.2)
       ((volume.restrict (Set.Ioi 0)).prod (volume.restrict (Set.Ioi 0))) := by
   have hm : AEStronglyMeasurable (fun p : ℝ × ℝ => cubicMellinMixture s p.1 p.2)
       ((volume.restrict (Set.Ioi 0)).prod (volume.restrict (Set.Ioi 0))) := by
     unfold cubicMellinMixture
     fun_prop
-  apply (integrable_prod_iff hm).mpr
-  constructor
-  · filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    exact cubicMellinMixture_slice_integrable s hs t ht
+  pm_8176 hm cubicMellinMixture_slice_integrable hs
   · have hg := (Real.GammaIntegral_convergent
         (show 0<(s.re+1/3)/2 by linarith)).const_mul
         ((1/2:ℝ)*(4:ℝ)^((s.re-1/3)/2)*Real.Gamma ((s.re-1/3)/2))
     apply hg.congr
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    rw [cubicMellinMixture_integral_norm s hs t ht]
+    pm_8699 cubicMellinMixture_integral_norm hs
     ring
+end
 
 lemma cubicMellinMixture_integral_t (s : ℂ) (x : ℝ) :
     (∫t : ℝ in Set.Ioi 0,cubicMellinMixture s t x) =
@@ -537,11 +475,12 @@ lemma cubicMellinMixture_integral_t (s : ℂ) (x : ℝ) :
 
 end
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 open Finset AddChar MulChar EisensteinEmbedding
 
-lemma schlafliBesselK_cubic_mellin_mixture (s : ℂ) (x : ℝ) (hx : 0<x) :
+section
+variable (s : ℂ)
+include s
+lemma schlafliBesselK_cubic_mellin_mixture (x : ℝ) (hx : 0<x) :
     (x:ℂ)^(s-1)*schlafliBesselK (1/3) x =
       ((1/2:ℂ)*(2:ℂ)^(1/3:ℂ))*(∫t : ℝ in Set.Ioi 0,cubicMellinMixture s t x) := by
   rw [schlafliBesselK,cubicMellinMixture_integral_t]
@@ -550,12 +489,10 @@ lemma schlafliBesselK_cubic_mellin_mixture (s : ℂ) (x : ℝ) (hx : 0<x) :
       Complex.div_cpow_ofReal_nonneg hx.le (by norm_num : 0≤(2:ℝ)) (-(1/3:ℂ))
   rw [hdiv,Complex.cpow_neg (2:ℂ) (1/3),div_inv_eq_mul]
   have hp : (x:ℂ)^(s-1)*(x:ℂ)^(-(1/3:ℂ))=(x:ℂ)^((s-1/3)-1) := by
-    rw [←Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hx.ne')]
-    congr 1
-    ring
+    pm_8274 hx.ne'
   linear_combination (1/2:ℂ)*(2:ℂ)^(1/3:ℂ)*schlafliIntegral (1/3) x*hp
 
-lemma schlafliBesselK_cubic_mellin_integrable (s : ℂ) (hs : 1/3<s.re) :
+lemma schlafliBesselK_cubic_mellin_integrable (hs : 1/3< s.re) :
     IntegrableOn (fun x : ℝ => (x:ℂ)^(s-1)*schlafliBesselK (1/3) x)
       (Set.Ioi 0) volume := by
   apply ((cubicMellinMixture_integrable s hs).integral_prod_right.const_mul
@@ -563,7 +500,7 @@ lemma schlafliBesselK_cubic_mellin_integrable (s : ℂ) (hs : 1/3<s.re) :
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
   exact (schlafliBesselK_cubic_mellin_mixture s x hx).symm
 
-lemma cubicMellinMixture_double_integral (s : ℂ) (hs : 1/3<s.re) :
+lemma cubicMellinMixture_double_integral (hs : 1/3< s.re) :
     (∫t : ℝ in Set.Ioi 0,∫x : ℝ in Set.Ioi 0,cubicMellinMixture s t x) =
       ((1/2:ℂ)*(4:ℂ)^((s-1/3)/2)*Complex.Gamma ((s-1/3)/2))*
         Complex.Gamma ((s+1/3)/2) := by
@@ -581,7 +518,7 @@ lemma cubicMellinMixture_double_integral (s : ℂ) (hs : 1/3<s.re) :
       simpa only [Complex.GammaIntegral,Complex.ofReal_exp,Complex.ofReal_neg,mul_comm] using
         (Complex.Gamma_eq_integral hB).symm
 
-theorem schlafliBesselK_cubic_mellin (s : ℂ) (hs : 1/3<s.re) :
+theorem schlafliBesselK_cubic_mellin (hs : 1/3< s.re) :
     (∫x : ℝ in Set.Ioi 0,(x:ℂ)^(s-1)*schlafliBesselK (1/3) x) =
       (2:ℂ)^(s-2)*Complex.Gamma ((s-1/3)/2)*Complex.Gamma ((s+1/3)/2) := by
   have hmix : Integrable (Function.uncurry (cubicMellinMixture s))
@@ -617,6 +554,7 @@ theorem schlafliBesselK_cubic_mellin (s : ℂ) (hs : 1/3<s.re) :
     _ = ((1/4:ℂ)*((2:ℂ)^(1/3:ℂ)*(4:ℂ)^((s-1/3)/2)))*
         Complex.Gamma ((s-1/3)/2)*Complex.Gamma ((s+1/3)/2) := by ring
     _ = _ := by rw [hprod,hscale]
+end
 
 end CubicEisenstein
 

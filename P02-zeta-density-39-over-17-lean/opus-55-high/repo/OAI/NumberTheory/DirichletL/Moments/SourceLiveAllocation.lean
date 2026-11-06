@@ -24,11 +24,13 @@ theorem prime_residual_frozen (B : Tuple ι) (hB : ∀ i,B i≠0)
   intro i hi I hI
   have hprime := hp i _ ((mem_residualPool _ _ _ _).mp hI)
   rcases hprime.irreducible.isUnit_or_isUnit rfl with h|h
-  · exact False.elim (hi (by simpa only [Ideal.isUnit_iff,Ideal.one_eq_top] using h))
-  · simpa only [Ideal.isUnit_iff,Ideal.one_eq_top] using h
+  simp_all
+  simp_all
 
-theorem allocation_frozen_gate (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I) (C : Ideal O) (B : Tuple ι)
+section
+variable (S : (ι ⊕ Fin 2) → Finset (Ideal O)) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
+include S hp
+theorem allocation_frozen_gate (C : Ideal O) (B : Tuple ι)
     (hB : B∈CenteredMomentCommonAllocationSum.allocationLabels S C) :
     ∀ i,B (Sum.inl i)≠1 → B (Sum.inl i)∈S (Sum.inl i) := by
   classical
@@ -46,8 +48,7 @@ theorem allocation_frozen_gate (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   · rwa [he] at hvi
   · exact False.elim (hi he.symm)
 
-theorem residual_source_profile (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
+theorem residual_source_profile
     (B : Tuple ι) (hB : ∀ i,B i≠0) (C R s : Ideal O)
     (hprod : finiteTupleProduct B=C) (hsC : s∣C)
     (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
@@ -93,6 +94,7 @@ theorem residual_source_profile (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       rw [remaining_box_sum_gate B T hf]
       simp only [remaining_restore,T,mem_residualPool,mul_one]
       rfl
+end
 
 end SevenEighths.CenteredMomentSourceLiveAllocation
 

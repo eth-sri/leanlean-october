@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Initial
 public import OAI.NumberTheory.DirichletL.Moments.Cauchy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,12 +39,10 @@ theorem row_pair_summable (a b : O) (ha : Supported (Ideal.span {a}))
     Summable (fun z : O =>
       (idealRowHom z (Ideal.span {a}) * star (idealRowHom z (Ideal.span {b}))) *
         W (‖eisEmbedding z‖ ^ 2 / K)) := by
-  let := finite_quotient_span (mul_ne_zero (supported_element_ne_zero a ha)
-    (supported_element_ne_zero b hb))
-  let : Fintype (Residue (a * b)) := Fintype.ofFinite _
+  pm_2978
   have h := actual_eisenstein_periodic_summable (scaledRadialTest W K hK)
     (Ideal.Quotient.mk (Ideal.span {a * b})) (pairResidue a b ha hb)
-  simpa only [pairResidue_mk, scaledRadialTest_apply] using h
+  simp_all
 
 def rowPolynomial {α : Type*} (S : Finset α) (a : α → O) (c : α → ℂ) (z : O) : ℂ :=
   ∑ i ∈ S, c i * idealRowHom z (Ideal.span {a i})
@@ -62,10 +61,7 @@ theorem rowPolynomial_norm_sq {α : Type*} (S : Finset α) (a : α → O)
   simp only [rowPolynomial, map_sum, map_mul, Finset.sum_mul, Finset.mul_sum,
     Complex.star_def]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_3622
   ring
 
 theorem rowEnergy_expand {α : Type*} (S : Finset α) (a : α → O) (c : α → ℂ)
@@ -74,16 +70,7 @@ theorem rowEnergy_expand {α : Type*} (S : Finset α) (a : α → O) (c : α →
     rowEnergy S a c W K =
       ∑ i ∈ S, ∑ j ∈ S, (c i * star (c j)) *
         ∑' z : O, (idealRowHom z (Ideal.span {a i}) *
-          star (idealRowHom z (Ideal.span {a j}))) * W (‖eisEmbedding z‖ ^ 2 / K) := by
-  have hs (i j : α) := (row_pair_summable (a i) (a j) (ha i) (ha j) W K hK).mul_left
-    (c i * star (c j))
-  simp only [mul_assoc] at hs
-  simp only [rowEnergy, rowPolynomial_norm_sq, Finset.sum_mul, mul_assoc]
-  rw [Summable.tsum_finsetSum (fun i _ => (hasSum_sum (fun j _ => (hs i j).hasSum)).summable)]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [Summable.tsum_finsetSum (fun j _ => hs i j)]
-  simp only [tsum_mul_left]
+          star (idealRowHom z (Ideal.span {a j}))) * W (‖eisEmbedding z‖ ^ 2 / K) := by pm_2979 row_pair_summable rowEnergy rowPolynomial_norm_sq
 
 end SevenEighths.CenteredMomentRowNorm
 

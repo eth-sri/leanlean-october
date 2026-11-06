@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownClosePairs
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,8 +27,10 @@ theorem heathBrownBlockParameter_pos
   unfold heathBrownBlockParameter
   omega
 
-theorem heathBrown_scale_lt_blockParameter
-    {A lambda : ℝ} {N : ℕ} :
+section
+variable {A lambda : ℝ} {N : ℕ}
+include A lambda N
+theorem heathBrown_scale_lt_blockParameter :
     4 * A * lambda * N <
       (heathBrownBlockParameter A lambda N : ℝ) := by
   unfold heathBrownBlockParameter
@@ -37,14 +40,13 @@ theorem heathBrown_scale_lt_blockParameter
 /-- The exact strict half-unit margin used to remove wrapping in the last
 coordinate. -/
 theorem heathBrown_block_scale_lt_half
-    {A lambda : ℝ} {N : ℕ}
     (hsmall : A * lambda ≤ 1 / 4) :
     A * lambda *
         (1 + (N : ℝ) / heathBrownBlockParameter A lambda N) <
       1 / 2 := by
   let K := heathBrownBlockParameter A lambda N
   have hKposNat : 0 < K := heathBrownBlockParameter_pos A lambda N
-  have hKpos : (0 : ℝ) < K := by exact_mod_cast hKposNat
+  pm_74 hKpos K hKposNat
   have hscale : 4 * A * lambda * N < (K : ℝ) :=
     heathBrown_scale_lt_blockParameter
   have hquot : A * lambda * (N : ℝ) / K < 1 / 4 := by
@@ -57,12 +59,12 @@ theorem heathBrown_block_scale_lt_half
   linarith
 
 theorem heathBrown_block_scale_le_half
-    {A lambda : ℝ} {N : ℕ}
     (hsmall : A * lambda ≤ 1 / 4) :
     A * lambda *
         (1 + (N : ℝ) / heathBrownBlockParameter A lambda N) ≤
       1 / 2 :=
   (heathBrown_block_scale_lt_half hsmall).le
+end
 
 /-- A nonnegative derivative bounded by `M` controls the absolute difference
 between two sampled values. -/
@@ -74,10 +76,8 @@ theorem heathBrown_abs_difference_le_deriv_bound
     (hderivUpper : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), deriv g x ≤ M)
     {m n : ℕ} (hm : m ≤ N) (hn : n ≤ N) :
     |g m - g n| ≤ M * |(m : ℝ) - n| := by
-  have hmI : (m : ℝ) ∈ Set.Icc (0 : ℝ) N :=
-    ⟨by positivity, by exact_mod_cast hm⟩
-  have hnI : (n : ℝ) ∈ Set.Icc (0 : ℝ) N :=
-    ⟨by positivity, by exact_mod_cast hn⟩
+  pm_2779 hmI m hm
+  pm_2779 hnI n hn
   rcases le_total m n with hmn | hnm
   · have hlower := heathBrown_lower_slope hg hgd hderivLower hmI hnI
       (by exact_mod_cast hmn)

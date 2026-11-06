@@ -1,11 +1,10 @@
 module
 public import RetunedLongMultiplicity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open MeasureTheory Set Filter
-open scoped BigOperators
-set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
 open MathCollab.Density.Stronger MathCollab.Density
@@ -42,11 +41,7 @@ theorem weightedCriticalMean_tail_pointwise {T u t : ℝ}
     (hT : 1 ≤ T) (hu : u ∈ Icc T (2*T)) (ht : t ∉ Icc 0 (3*T)) :
     momentDecay 128 (t-u)*zetaMomentCriticalNorm t ≤
       12*T^(-125 : ℝ)*momentDecay 2 (t-u) := by
-  obtain ⟨hgap,htnorm⟩ := physical_tail_geometry hT hu ht
-  have hTp : 0 < T := by linarith
-  have hz : zetaMomentCriticalNorm t ≤ 12*(1+|t-u|) := by
-    have hh := zetaMomentCriticalNorm_le_linear t
-    linarith
+  pm_4493
   have hpow : T^125 ≤ (1+|t-u|)^125 := pow_le_pow_left₀ hTp.le (by linarith) _
   calc
     _ = zetaMomentCriticalNorm t/(1+|t-u|)^128 := by unfold momentDecay; ring
@@ -67,21 +62,10 @@ theorem weightedCriticalMean_physical_tail {T u : ℝ} (hT : 1 ≤ T)
     (∫ t in (Icc 0 (3*T))ᶜ, momentDecay 128 (t-u)*zetaMomentCriticalNorm t) ≤
       12*T^(-125 : ℝ)*Real.pi := by
   have hi := integrable_translated_critical_mean u
-  have hw : Integrable (fun t : ℝ => momentDecay 2 (t-u)) :=
-    (integrable_momentDecay (by norm_num : 2 ≤ 2)).comp_sub_right u
+  pm_4494
   let C : ℝ := 12*T^(-125 : ℝ)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
-  calc
-    _ ≤ ∫ t in (Icc 0 (3*T))ᶜ, C*momentDecay 2 (t-u) := by
-      apply setIntegral_mono_on hi.integrableOn (hw.const_mul C).integrableOn measurableSet_Icc.compl
-      intro t ht
-      exact weightedCriticalMean_tail_pointwise hT hu ht
-    _ ≤ ∫ t : ℝ, C*momentDecay 2 (t-u) :=
-      setIntegral_le_integral (hw.const_mul C) (Eventually.of_forall (fun t =>
-        mul_nonneg hC (momentDecay_pos 2 (t-u)).le))
-    _ = C*∫ t : ℝ, momentDecay 2 t := by
-      rw [integral_const_mul,integral_sub_right_eq_self]
-    _ ≤ C*Real.pi := mul_le_mul_of_nonneg_left (momentDecay_mass_bounds (by norm_num : 2 ≤ 2)).2 hC
+  pm_61 hC C
+  pm_4495 weightedCriticalMean_tail_pointwise
 
 /-- A literal truncation of each actual weighted zeta mean. -/
 theorem weightedCriticalMean_le_threshold_excess {T u v : ℝ}
@@ -91,8 +75,7 @@ theorem weightedCriticalMean_le_threshold_excess {T u v : ℝ}
         12*T^(-125 : ℝ)*Real.pi := by
   have hw : Integrable (fun t : ℝ => momentDecay 128 (t-u)) :=
     (integrable_momentDecay (by norm_num : 2 ≤ 128)).comp_sub_right u
-  have he : IntegrableOn (criticalExcess v) (Icc 0 (3*T)) :=
-    (criticalExcess_continuous v).continuousOn.integrableOn_compact isCompact_Icc
+  pm_1275
   have hew : IntegrableOn (fun t => momentDecay 128 (t-u)*criticalExcess v t) (Icc 0 (3*T)) :=
     integrable_momentDecay_mul he 128 u
   have hi := integrable_translated_critical_mean u
@@ -129,10 +112,9 @@ theorem separated_weightedCriticalMean_excess_count {T B : ℝ}
     (U.card:ℝ)*B ≤ 2*separationMass*
       ∫ t in Icc 0 (3*T),criticalExcess (B/(4*Real.pi)) t := by
   let v : ℝ := B/(4*Real.pi)
-  have hv : 0 ≤ v := by dsimp [v]; positivity
+  pm_61 hv v
   have hvB : Real.pi*v=B/4 := by dsimp [v]; field_simp
-  have he : IntegrableOn (criticalExcess v) (Icc 0 (3*T)) :=
-    (criticalExcess_continuous v).continuousOn.integrableOn_compact isCompact_Icc
+  pm_1275
   have hp (u : ℝ) (hu : u ∈ U) : B/2 ≤
       ∫ t in Icc 0 (3*T),momentDecay 128 (t-u)*criticalExcess v t := by
     have hh := (hmean u hu).trans (weightedCriticalMean_le_threshold_excess hT (hslab u hu) hv)

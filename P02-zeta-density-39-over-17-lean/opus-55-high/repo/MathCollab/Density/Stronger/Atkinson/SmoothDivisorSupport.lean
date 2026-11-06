@@ -7,6 +7,7 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorTest
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,8 +20,10 @@ noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 
-theorem zetaDivisorBandEdge_outer_bounds {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 ≤ L) (hwidth : 8 * L ≤ G) :
+section
+variable {T G L : ℝ} (hT : 0 < T) (hG : 0 < G)
+include T G L hT hG
+theorem zetaDivisorBandEdge_outer_bounds (hL : 0 ≤ L) (hwidth : 8 * L ≤ G) :
     T / (4 * Real.pi) ≤ zetaDivisorBandEdge T G (-2 * L) ∧
       zetaDivisorBandEdge T G (2 * L) ≤ T / Real.pi := by
   have hr0 : 0 ≤ 2 * L / G := by positivity
@@ -29,9 +32,8 @@ theorem zetaDivisorBandEdge_outer_bounds {T G L : ℝ}
     linarith
   have hlo := Real.add_one_le_exp (-(2 * L / G))
   have hhi := exp_sub_one_le_two_mul hr0 (by linarith : 2 * L / G ≤ 1)
-  have hA : 0 < T / (2 * Real.pi) := by positivity
-  have hl := mul_le_mul_of_nonneg_left hlo hA.le
-  have hu := mul_le_mul_of_nonneg_left hhi hA.le
+  pm_8021 hA
+  pm_194 hl mul_le_mul_of_nonneg_left hlo hA.le hu hhi
   unfold zetaDivisorBandEdge
   rw [show -2 * L / G = -(2 * L / G) by ring]
   have hhalfeq : T / (4 * Real.pi) = (T / (2 * Real.pi)) / 2 := by ring
@@ -39,8 +41,7 @@ theorem zetaDivisorBandEdge_outer_bounds {T G L : ℝ}
   rw [hhalfeq, hdouble]
   constructor <;> nlinarith
 
-theorem support_zetaSmoothDivisorTest_physical {T G L : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
+theorem support_zetaSmoothDivisorTest_physical (hL : 0 < L) (hwidth : 8 * L ≤ G) :
     Function.support (zetaSmoothDivisorTest T G L) ⊆ Icc (T / 16) T := by
   intro x hx
   have hs := support_zetaSmoothDivisorTest hT hG hL hx
@@ -51,7 +52,8 @@ theorem support_zetaSmoothDivisorTest_physical {T G L : ℝ}
   have hhigh : T / Real.pi ≤ T := by
     apply (div_le_iff₀ Real.pi_pos).mpr
     nlinarith [Real.pi_gt_three]
-  exact ⟨hlow.trans (hb.1.trans hs.1), (hs.2.trans hb.2).trans hhigh⟩
+  grind
+end
 
 theorem eventually_zetaSmoothDivisorTest_support_physical {δ : ℝ} (hδ : 0 < δ) :
     ∀ᶠ T : ℝ in atTop, 16 ≤ T ∧ ∀ G : ℝ, T ^ δ ≤ G →
@@ -62,8 +64,8 @@ theorem eventually_zetaSmoothDivisorTest_support_physical {δ : ℝ} (hδ : 0 < 
   refine ⟨hT, ?_⟩
   intro G hG
   have hT0 : 0 < T := by linarith
-  have hG0 : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hG
-  have hlog0 : 0 < Real.log T := Real.log_pos (by linarith)
+  pm_650 hG0 G Real.rpow_pos_of_pos hT0 δ hG
+  pm_390 hlog0 T
   have hwidth : 8 * Real.log T ≤ G := by simpa only [pow_one] using hlog.trans hG
   exact ⟨hG0, hlog0, hwidth, support_zetaSmoothDivisorTest_physical hT0 hG0 hlog0 hwidth⟩
 

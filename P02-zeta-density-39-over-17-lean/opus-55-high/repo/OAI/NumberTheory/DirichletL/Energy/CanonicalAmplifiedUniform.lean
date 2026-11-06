@@ -18,13 +18,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidReserve
 public import OAI.NumberTheory.DirichletL.Energy.CanonicalUniformReference
 public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidAdmission
 public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalAmplifiedUniform
 open HeckeFamily ConcreteTraceCRT
@@ -81,18 +82,15 @@ open CenteredMomentFirstAmplificationChoice (errorMoving errorRemoval)
 
 lemma front_mono {a b:ℝ}(p:Profiles a b)(U V:Finset (ℕ×ℕ))(hUV:U⊆V)
     (J K:ℕ)(hJK:J≤K)(c d C₀ C₁ t height:ℝ)
-    (hc:0≤c)(hcd:c≤d)(hC₀:0≤C₀)(hC₁:0≤C₁)(hh:0≤height):
-    c*(C₀+C₁+1)*(p.control U)^2*(1+|t|+height)^J≤
+    (hc:0≤ c)(hcd:c≤d)(hC₀:0≤C₀)(hC₁:0≤C₁)(hh:0≤height):
+    c*(C₀+C₁+1)*(p.control U)^2*(1+|t|+height)^J ≤
       d*(C₀+C₁+1)*(p.control V)^2*(1+|t|+height)^K:=by
   have hp:p.control U≤p.control V:=by
-    unfold Profiles.control
-    exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono hUV) (p.profile 0))
-      (Seminorm.le_def.mp (Finset.sup_mono hUV) (p.profile 1))
-      (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+    pm_112 hUV
   have hp0:=p.control_nonneg U
   have hp1:=p.control_nonneg V
   have ht:(1+|t|+height)^J≤(1+|t|+height)^K:=
-    pow_le_pow_right₀ (by linarith [abs_nonneg t]) hJK
+    pow_le_pow_right₀ (by grind) hJK
   have hd:0≤d:=hc.trans hcd
   gcongr
 
@@ -109,39 +107,39 @@ theorem actual_original_subsets_amplified_power
     (lows highs:α→ℝ)(hhighs:∀i,0≤highs i)
     (εsrc δsrc θsrc Bcap Bseed ξ saving:ℝ)
     (hεsrc:0<εsrc)(hδsrc:0<δsrc)(hθsrc:0<θsrc)(hBcap:0≤Bcap)(hξ:0<ξ)
-    (sigma cost:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤sigma/4)(hcost:1≤cost):
+    (sigma cost:ℝ)(hsigma:0< sigma)(hξsmall:ξ≤ sigma/4)(hcost:1≤ cost):
     ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
     ∀η₀:Character,∀Q:Ideal O,Q≤M →
       internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
     ∃Cbound:ℝ,0<Cbound ∧ ∃Z₀:ℝ,1<Z₀ ∧
-    (∀Aorig:Finset α,∀θ:Aorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
+    (∀Aorig:Finset α,∀θ:Aorig→ RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
     ∀εchild:ℝ,∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
-    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) →
+    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) →
     (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input Aorig,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
     (∀i,src.lo i=lows i.val) → (∀i,src.hi i=highs i.val) →
-    Fintype.card Aorig≤N → lower≤src.lower → src.upper≤upper →
-    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
+    Fintype.card Aorig≤N → lower≤ src.lower → src.upper≤upper →
+    0≤ src.b₁ → 0≤ src.b₂ → src.b₁≤ max 1 b → src.b₂≤ max 1 b →
     ∀(C D R0:Ideal O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
     ∀(E:Finset (CommonIndex C D))(B:actualAllocations src.pools C)(τ:Character)(t:ℝ),
     frozenCoefficient B.val C R0 src.ν src.W src.P≠0 →
     τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D} →
+      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E*activeConductor C D} →
     ∀K delta reserve asource:ℝ,0<K → 0<asource →
-    0≤delta → 0≤reserve → a0≤asource →
+    0≤delta → 0≤ reserve → a0≤asource →
     let input:=child src C R0 B τ t
     let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (Real.logb Z (firstNominalScale C D
-        (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume src)))
+        (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E}) K (volume src)))
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve
     Ready input (R0*C) Kmain Z ξ Bcap →
-    ∀seed:Ideal O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z^Bseed →
+    ∀seed:Ideal O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z ^Bseed →
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
-    src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
+    src.X₁≤Z ^L → src.X₂≤Z ^L → src.Y₁≤Z ^L → src.Y₂≤Z ^L →
     ∀Mdecl Mwidth θclip:ℝ,0≤θclip →
     length Z src.X₁+length Z src.X₂+6*κ*(∑i,w i)≤Mdecl →
     Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ)≤Mdecl →
@@ -149,33 +147,33 @@ theorem actual_original_subsets_amplified_power
     Mwidth-sigma/2≤Mcap →
     Real.logb Z (max 1 b*max 1 b)≤2*θclip →
     asource≤CenteredMomentSecondInputCapacitySource.lowerFactor N lower a →
-    ∀r:ℝ,Z^r≤ input.X₁ → Z^r≤ input.X₂ → Z^r≤ input.Y₁ → Z^r≤ input.Y₂ →
+    ∀r:ℝ,Z ^r≤ input.X₁ → Z ^r≤ input.X₂ → Z ^r≤ input.Y₁ → Z ^r≤ input.Y₂ →
     let paid:=(Bcap+Bcap)*εmask+εchild+εremove+(delta+reserve+θsource)/6+θclip/3+κ*mesh;
     normalizedGaussSource input (R0*C) seed CenteredMomentFirstAmplificationChoice.ballProfile Kmain≤
       (∑j,(Cbound*(C₀+C₁+1)*(p.control Uprofile)^2*(1+|t|+height)^Jheight*
-        Z^(CenteredMomentEnergyFirstGaussianProfileWeights.losses εsrc δsrc θsrc Bcap j)/(seed.absNorm:ℝ))*
+        Z ^(CenteredMomentEnergyFirstGaussianProfileWeights.losses εsrc δsrc θsrc Bcap j)/(seed.absNorm:ℝ))*
         mainPowers (τ.modulus.absNorm:ℝ) Z Kmain (sigma/3)
         (Mdecl-(Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ))) paid saving r j*
         (volume input)^(powers εsrc j))*mass input^2) ∧
-    (∀Aorig:Finset α,∀θ:Aorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
+    (∀Aorig:Finset α,∀θ:Aorig→ RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
     ∀εchild:ℝ,∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
-    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) →
+    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) →
     (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input Aorig,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
     (∀i,src.lo i=lows i.val) → (∀i,src.hi i=highs i.val) →
-    Fintype.card Aorig≤N → lower≤src.lower → src.upper≤upper →
-    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
+    Fintype.card Aorig≤N → lower≤ src.lower → src.upper≤upper →
+    0≤ src.b₁ → 0≤ src.b₂ → src.b₁≤ max 1 b → src.b₂≤ max 1 b →
     ∀(C D R0:Ideal O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
     ∀(E:Finset (CommonIndex C D))(B:actualAllocations src.pools C)(τ:Character)(t:ℝ),
     frozenCoefficient B.val C R0 src.ν src.W src.P≠0 →
     τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D} →
+      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E*activeConductor C D} →
     ∀K delta reserve asource:ℝ,0<K → 0<asource →
-    0≤delta → 0≤reserve → a0≤asource →
+    0≤delta → 0≤ reserve → a0≤asource →
     ∀(prime:O),prime≠0 → ∀k:ℕ,(k=0 ∨ k=5 ∨ k=6) →
     sigma/6≤Real.logb Z (normValue prime) →
     (∀i,∀I∈(activeInput (child src C R0 B τ t)).slots i,IsCoprime (Ideal.span {prime}) I) →
@@ -184,17 +182,17 @@ theorem actual_original_subsets_amplified_power
     υ.modulus.absNorm≤CenteredMomentAmplificationRadicalFamily.radicalBound
       (CenteredMomentChildRows.childCharacter τ χerr) fixedBadMask prime
       (CenteredMomentAmplificationActiveFactor.errorMovingExponent k) →
-    (υ.modulus.absNorm:ℝ)≤cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving prime Z (k+1)) →
+    (υ.modulus.absNorm:ℝ)≤ cost*(τ.modulus.absNorm:ℝ)*Z ^(errorMoving prime Z (k+1)) →
     ∀input:Input (CenteredMomentCommonProfile.liveIndices Bp.val),
     input=errorInput src C R0 B τ t (Ideal.span {prime}) (k+1) Bp υ t →
     let Kerror:=errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (Real.logb Z (firstNominalScale C D
-        (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume src)))
+        (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D =>P.val) E}) K (volume src)))
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve prime (k+1)
     Ready input ((R0*C)*(Ideal.span {prime})^(k+1)) Kerror Z ξ Bcap →
-    ∀seed:Ideal O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z^Bseed →
+    ∀seed:Ideal O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z ^Bseed →
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
-    src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
+    src.X₁≤Z ^L → src.X₂≤Z ^L → src.Y₁≤Z ^L → src.Y₂≤Z ^L →
     ∀Mdecl Mwidth θclip:ℝ,0≤θclip →
     length Z src.X₁+length Z src.X₂+6*κ*(∑i,w i)≤Mdecl →
     Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ)≤Mdecl →
@@ -202,31 +200,20 @@ theorem actual_original_subsets_amplified_power
     Mwidth-sigma/2≤Mcap →
     Real.logb Z (max 1 b*max 1 b)≤2*θclip →
     asource≤CenteredMomentSecondInputCapacitySource.lowerFactor N lower a →
-    ∀r:ℝ,Z^r≤ input.X₁ → Z^r≤ input.X₂ → Z^r≤ input.Y₁ → Z^r≤ input.Y₂ →
+    ∀r:ℝ,Z ^r≤ input.X₁ → Z ^r≤ input.X₂ → Z ^r≤ input.Y₁ → Z ^r≤ input.Y₂ →
     let paid:=(Bcap+Bcap)*εmask+εchild+εremove+(delta+reserve+θsource)/6+θclip/3+κ*mesh;
     normalizedGaussSource input ((R0*C)*(Ideal.span {prime})^(k+1)) seed
       CenteredMomentFirstAmplificationChoice.ballProfile Kerror≤
       (∑j,(Cbound*(C₀+C₁+1)*(p.control Uprofile)^2*(1+|t|+height)^Jheight*
-        Z^(CenteredMomentEnergyFirstGaussianProfileWeights.losses εsrc δsrc θsrc Bcap j)/(seed.absNorm:ℝ))*
+        Z ^(CenteredMomentEnergyFirstGaussianProfileWeights.losses εsrc δsrc θsrc Bcap j)/(seed.absNorm:ℝ))*
         CenteredMomentFirstAmplifiedFourCoefficients.errorPowers prime (k+1)
         (τ.modulus.absNorm:ℝ) Z Kerror
         (Mdecl-(Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ))) paid saving r j*
         (volume input)^(powers εsrc j))*mass input^2) :=by
-  obtain ⟨Um,Jm,hm⟩:=
-    CenteredMomentEnergyCanonicalMainSubsets.actual_original_subsets_main_power (α:=α) M H hH
-      Wslot aslot bslot Mcap Lslot εremove lo hi κ a b Mslot εmask hMslot hεmask haPlain hbPlain
-      L hL degree S ha hWs hW hMcap hLs hε hκsmall hbeta hκ N lower upper a0 θsource
-      hlower hupper ha0 hθsource lows highs hhighs εsrc δsrc θsrc Bcap Bseed ξ saving
-      hεsrc hδsrc hθsrc hBcap hξ sigma cost hsigma hξsmall hcost
-  obtain ⟨Ue,Je,he⟩:=
-    CenteredMomentEnergyCanonicalErrorSubsets.actual_original_subsets_error_power (α:=α) M H hH
-      Wslot aslot bslot Mcap Lslot εremove lo hi κ a b Mslot εmask hMslot hεmask haPlain hbPlain
-      L hL degree S ha hWs hW hMcap hLs hε hκsmall hbeta hκ N lower upper a0 θsource
-      hlower hupper ha0 hθsource lows highs hhighs εsrc δsrc θsrc Bcap Bseed ξ saving
-      hεsrc hδsrc hθsrc hBcap hξ sigma cost hsigma hξsmall hcost
+  pm_3353 Um Jm hm CenteredMomentEnergyCanonicalMainSubsets.actual_original_subsets_main_power
+  pm_3353 Ue Je he CenteredMomentEnergyCanonicalErrorSubsets.actual_original_subsets_error_power
   refine ⟨Um∪Ue,max Jm Je,?_⟩
-  intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨Cm,hCm,Zm,hZm,hmain⟩:=hm η₀ Q hQM hQ0 hQt hQ72
+  pm_5372 Cm hCm Zm hZm hmain hm
   obtain ⟨Ce,hCe,Ze,hZe,herror⟩:=he η₀ Q hQM hQ0 hQt hQ72
   refine ⟨Cm+Ce,add_pos hCm hCe,max Zm Ze,lt_of_lt_of_le hZm (le_max_left _ _),?_,?_⟩
   ·

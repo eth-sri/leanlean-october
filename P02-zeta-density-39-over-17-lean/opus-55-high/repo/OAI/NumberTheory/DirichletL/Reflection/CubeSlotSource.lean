@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.CubeSlotChoices
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,7 +12,7 @@ open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
-variable (H : Ideal Eis) (L : σ→Finset (Ideal Eis))
+variable (H : Ideal Eis) (L : σ→ Finset (Ideal Eis))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
@@ -73,10 +74,7 @@ theorem original_cube_shifted_tuple_source (w : ∀ i,L i→ℂ)
   change (∑ x : CubeSlotChoices H L,(∏ i,w i (cubeChoicesJoin H L x i))*
     markedCompletedT Ψ W X (fun A => ∏ i,if (cubeChoicesJoin H L x i).val∣H^3*A then (1:ℂ) else 0))=_
   simp_rw [cubeJoined_completed H L hmax hgood,cubeJoined_coefficient]
-  rw [Fintype.sum_sigma]
-  apply Finset.sum_congr rfl
-  intro T hT
-  rw [Fintype.sum_prod_type]
+  pm_223 Fintype.sum_sigma T hT Fintype.sum_prod_type
   simp only [cubeAbsorbedCoefficient,Finset.sum_mul,Finset.mul_sum,mul_assoc]
   rw [Finset.sum_comm]
 

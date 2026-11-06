@@ -51,8 +51,6 @@ theorem norm_range_from_square_root_blocks
     rw [← Real.rpow_sub hμ]
     congr 1
     ring
-  calc
-    _ = 120*C*(1+2*Real.pi*D)*M*(μ^(-(5:ℝ)/12)/μ^(-(1:ℝ)/2)) := by ring
-    _ = _ := by rw [hp]
+  grind
 
 end TaoTrudgianYang2025

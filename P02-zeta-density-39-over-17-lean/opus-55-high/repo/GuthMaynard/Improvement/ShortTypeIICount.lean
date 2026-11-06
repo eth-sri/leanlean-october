@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.ShortDetectorWindowDetection
 public import GuthMaynard.Improvement.ShortTypeIIPacking
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
@@ -26,7 +25,7 @@ theorem short_typeII_count_by_moment :
   let J := fun u : ℝ => ∫ v in Icc (-(H/2)) (H/2),
     ‖Complex.Gamma (((1/2-(ρ u).re:ℝ):ℂ)+(v:ℂ)*I)‖*(shortTwistedNorm H (u+v))^4
   have hone (u : ℝ) (hu : u ∈ W) : (1:ℝ) ≤ A*H^(1-2*σ)*J u := by
-    obtain ⟨him,hlo,hhi⟩ := hρ u hu
+    pm_69 him hlo hhi hρ u hu
     have hγ : |(ρ u).im| ≤ 2*H := by
       rw [him,abs_of_nonneg (show 0 ≤ u by linarith [(hw u hu).1])]
       exact (hw u hu).2

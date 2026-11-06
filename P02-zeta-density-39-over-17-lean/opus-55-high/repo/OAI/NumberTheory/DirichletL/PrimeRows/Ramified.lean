@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.Ideal
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsRamified
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,20 +30,15 @@ theorem localCorrection_eq_ramified (η : Character) (u : FreeRow) (P : PrimeIde
     (hs : Supported P.val) (hPu : P.val∣Ideal.span {u.val})
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     localCorrection η u P x w z=ramifiedCorrection η u P hs x w z := by
-  let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
+  pm_3885
   let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
-  have hprimary := (primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2
+  pm_3886
+  pm_3888
   have hdiv : p∣u.val := Ideal.span_singleton_le_span_singleton.mp
-    (by rw [hspan]; exact Ideal.dvd_iff_le.mp hPu)
+    (by simp_all)
   have hj0 : multiplicity p u.val≠0 := ne_of_gt (multiplicity_pos_of_dvd hdiv
     (FiniteMultiplicity.of_prime_left hp u.property.1))
-  have hρ := actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)
-  have hgeom := row_initial_geometric η p hp hg.1 hg.2 (unitPart u p hp)
-    (unitPart_coprime u p hp) x w z hx hw hz
+  pm_3491
   dsimp only at hgeom
   have hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) (actualACube η p)
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)) (coordV (Ideal.absNorm (Ideal.span {p})) z)‖<1 := by
@@ -60,7 +56,7 @@ theorem localCorrection_eq_ramified (η : Character) (u : FreeRow) (P : PrimeIde
   convert he using 1
   · simp only [sourceRowSeries,CubicEisenstein.fullIdealWeight,
       hP0,ite_false,Complex.ofReal_natCast,coordV]
-    rw [show -(6*z)=(-6 : ℂ)*z by ring]
+    pm_5676
   · rfl
 
 def ramifiedPrimes (S : Finset (Ideal O)) (u : FreeRow) : Finset PrimeIdeal :=

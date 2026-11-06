@@ -1,13 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.AbsoluteEnergy
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRetained
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentPositiveSummability
 open HeckeFamily CenteredMomentAbsoluteEnergy CenteredMomentSourceMass
@@ -24,12 +24,9 @@ lemma plain_finite_norm (η:Character) (m A z:O) (t:ℝ) (W:ℝ→ℂ) (b X:ℝ)
   · apply (norm_sum_le _ _).trans
     apply Finset.sum_le_sum
     intro I hI
-    rw [norm_mul]
-    exact mul_le_of_le_one_left (norm_nonneg _) (rowWeight_norm_le_one_all η m A z t I)
+    pm_6869 mul_le_of_le_one_left
   · intro I hI
-    by_cases h0:I=0
-    · subst I
-      simp only [map_zero,zero_mul]
+    pm_8686 h0 zero_mul
     · have hw:W ((Ideal.absNorm I:ℝ)/X)=0 := by
         by_contra hn
         have hh:=hs hn
@@ -44,7 +41,7 @@ lemma slot_finite_norm (η:Character) (m A z:O) (t:ℝ)
   exact finite_hecke_polynomial_norm η m A z t S β
 
 lemma bounded_radial_summable (F:O→ℂ) (B:ℝ) (hF:∀z,‖F z‖≤B)
-    (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
+    (keep:O→ Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
     Summable (fun z:O=>if keep z then ‖F z‖^2*(Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _)
@@ -56,12 +53,12 @@ lemma bounded_radial_summable (F:O→ℂ) (B:ℝ) (hF:∀z,‖F z‖≤B)
         (Complex.abs_re_le_norm _) (abs_nonneg _) (sq_nonneg _)
     · simp only [norm_zero]
       positivity
-  · exact (radial_norm_summable Φ K hK).mul_left _
+  pm_8339
 
 lemma product_bounded {ι:Type*} [Fintype ι]
     (η:Character) (m A:O) (t:ℝ) (c:ℂ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) :
+    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→ Finset (Ideal O)) (β:ι→ Ideal O→ℂ) :
     ∃B:ℝ,∀z:O,‖c*((rowTwistedSum η m A z W₁ t X₁*
       rowTwistedSum η m A z W₂ t X₂)*∏i,rowSlot η m A z (S i) (β i) t)‖≤B := by
   refine ⟨‖c‖*((∑I∈idealBall (b₁*X₁),‖W₁ ((Ideal.absNorm I:ℝ)/X₁)‖)*
@@ -80,8 +77,8 @@ lemma product_bounded {ι:Type*} [Fintype ι]
  theorem retained_positive_summable {ι:Type*} [Fintype ι]
     (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) (P:ι→ℝ)
-    (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
+    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→ Finset (Ideal O)) (β:ι→ Ideal O→ℂ) (P:ι→ℝ)
+    (keep:O→ Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
     Summable (fun z:O=>if keep z then ‖retainedPositiveRow η m A z W₁ W₂ S β P t X₁ X₂‖^2*
       (Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   unfold retainedPositiveRow positiveSlotRow
@@ -95,20 +92,18 @@ lemma product_bounded {ι:Type*} [Fintype ι]
 theorem allocated_positive_summable {ι:Type*} [Fintype ι] [DecidableEq ι]
     (η:Character) (m A:O) (t:ℝ) (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
-    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) (P:ι→ℝ)
+    (hX₁:0<X₁) (hX₂:0<X₂) (S:ι→ Finset (Ideal O)) (β:ι→ Ideal O→ℂ) (P:ι→ℝ)
     (D:Ideal O) (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
-    (keep:O→Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
+    (keep:O→ Prop) (Φ:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
     Summable (fun z:O=>if keep z then ‖allocatedPositiveRow η m A z t S β P D a W₁ W₂ X₁ X₂‖^2*
       (Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   have hN (j:Fin 2):(0:ℝ)<Ideal.absNorm (selectedPlain D a j) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
+    pm_1318 Nat.pos_of_ne_zero selectedDivisor_ne_zero D j
   unfold allocatedPositiveRow
   exact retained_positive_summable η m A t W₁ W₂ b₁ b₂ _ _ hs₁ hs₂
     (div_pos hX₁ (hN 0)) (div_pos hX₂ (hN 1)) _ _ _ keep Φ K hK
 
 end SevenEighths.CenteredMomentPositiveSummability
 
-end
 
 end OAI

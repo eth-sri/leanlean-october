@@ -1,18 +1,21 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ExtractedGrid
 public import OAI.NumberTheory.DirichletL.Descent.OriginalBlock
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
+open scoped Classical
+open CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem hybrid_extracted_dyadic_block_nonempty :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
       1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ C → 1 ≤ T →
     ∀ (R r t : Ideal Eis), R ≠ 0 → r ≠ 0 → T ≤ (Ideal.absNorm t : ℝ) →
@@ -33,7 +36,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
       C₀ * (K * (N * B) * N) ^ ε * (K + N * B) * B /
         ((Ideal.absNorm R : ℝ) * (Ideal.absNorm r : ℝ) * T ^ 2) *
           CubicSieve.sieveNorm N (2 * L) := by
-  obtain ⟨C₁, hC₁, hblock⟩ := hybrid_original_quotient_block ε hε
+  pm_98 C₁ hC₁ hblock hybrid_original_quotient_block ε hε
   refine ⟨2 * C₁, by positivity, ?_⟩
   intro K N B L C T hK hN hB hC hT R r t hR hr ht rows nset Pset D a beta
     hrows hn hP ha hD hbeta hQ
@@ -41,8 +44,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
   let X := N * B / (C ^ 2 * T ^ 2)
   let A := 2 * C / (Ideal.absNorm r : ℝ)
   let H := B / (C * T ^ 2)
-  have hC0 : 0 < C := by linarith
-  have hT0 : 0 < T := by linarith
+  pm_72 hC0 C hT0 T
   have hnr : 0 < (Ideal.absNorm r : ℝ) := QuadraticMainBoundary.norm_pos hr
   have hnorm (d : HybridColumnData) (hd : d ∈ D) :
       (Ideal.absNorm d.residualN : ℝ) ≤ N / C ∧
@@ -68,8 +70,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     obtain ⟨u, hu, hup⟩ := Finset.mem_image.mp hp
     obtain ⟨d, hd, he, hdc⟩ := quotientGridSupport_origin r hr D u.1 u.2 hu
     have he' : (d.residualN, d.residualB) = p := he.trans hup
-    have hm := congrArg Prod.fst he'
-    have hh := congrArg Prod.snd he'
+    pm_194 hm congrArg Prod.fst he' hh Prod.snd
     have hdB : d.residualB ≠ 0 :=
       ne_zero_of_dvd_ne_zero d.g_squarefree.ne_zero (dvd_mul_left _ _)
     exact ⟨by simpa only [← hm, ← hh] using d.residual_product_squarefree,
@@ -94,8 +95,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     (QuadraticMainBoundary.norm_one_le (hcset u₀.1 hp₀ u₀.2 hc₀).1).trans
       (hcset u₀.1 hp₀ u₀.2 hc₀).2.1
   have hbGrid : ∀ u ∈ hybridGridSupport D, ‖beta u.2 u.1.1 u.1.2‖ ≤ 1 := by
-    intro u hu
-    obtain ⟨d, hd, rfl⟩ := Finset.mem_image.mp hu
+    pm_136 u hu d hd Finset.mem_image.mp
     exact hbeta d hd
   have he := hblock K X N L A H hK hX hN hA hH R r t hR hr rows nset Pset
     (Q.image Prod.fst) (gridCommonSupport Q) a
@@ -123,13 +123,13 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
   calc
     _ ≤ C₁ * (K * (N * B) * N) ^ ε * (K + N * B) * A * H /
         (Ideal.absNorm R : ℝ) * CubicSieve.sieveNorm N (2 * L) := by
-      have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
+      pm_3762
       gcongr
     _ = _ := by
       dsimp only [A, H]
       field_simp
 
-theorem hybrid_extracted_dyadic_block (ε : ℝ) (hε : 0 < ε) :
+theorem hybrid_extracted_dyadic_block :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
       1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ C → 1 ≤ T →
     ∀ (R r t : Ideal Eis), R ≠ 0 → r ≠ 0 → T ≤ (Ideal.absNorm t : ℝ) →
@@ -149,7 +149,7 @@ theorem hybrid_extracted_dyadic_block (ε : ℝ) (hε : 0 < ε) :
       C₀ * (K * (N * B) * N) ^ ε * (K + N * B) * B /
         ((Ideal.absNorm R : ℝ) * (Ideal.absNorm r : ℝ) * T ^ 2) *
           CubicSieve.sieveNorm N (2 * L) := by
-  obtain ⟨C₀, hC₀, he⟩ := hybrid_extracted_dyadic_block_nonempty ε hε
+  pm_98 C₀ hC₀ he hybrid_extracted_dyadic_block_nonempty ε hε
   refine ⟨C₀, hC₀, ?_⟩
   intro K N B L C T hK hN hB hC hT R r t hR hr ht rows nset Pset D a beta
     hrows hn hP ha hD hbeta
@@ -159,10 +159,10 @@ theorem hybrid_extracted_dyadic_block (ε : ℝ) (hε : 0 < ε) :
   · have hQ' := Finset.not_nonempty_iff_eq_empty.mp hQ
     simp only [gridDivisorHybridBlock_eq_zero_of_quotientGrid_empty _ _ _ _ _ _ _ _ hQ',
       norm_zero, zero_pow (by norm_num : 2 ≠ 0), Finset.sum_const_zero]
-    have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
+    pm_3762
     positivity
-
 end
+
 end SevenEighths.InverseMoment
 
 end OAI

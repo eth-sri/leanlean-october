@@ -10,6 +10,7 @@ public import MathCollab.Density.Stronger.CriticalMoment
 public import MathCollab.Density.LargeValueDefinitions
 public import Mathlib.Analysis.Complex.ExponentialBounds
 public import Mathlib.Analysis.SpecificLimits.Normed
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem exp_neg_abs_le_half_pow_floor (u x : ℝ) :
     Nat.floor_le (abs_nonneg _)
   have hexp : Real.exp (-|u - x|) ≤
       Real.exp (-(Nat.floor |u - x| : ℝ)) := by
-    exact Real.exp_le_exp.mpr (neg_le_neg hfloor)
+    simp_all
   have hrewrite : Real.exp (-(Nat.floor |u - x| : ℝ)) =
       (Real.exp (-1)) ^ Nat.floor |u - x| := by
     rw [← Real.exp_nat_mul]
@@ -42,78 +43,39 @@ theorem exp_neg_abs_le_half_pow_floor (u x : ℝ) :
       pow_le_pow_left₀ (Real.exp_pos (-1)).le
         Real.exp_neg_one_lt_half.le _
 
+section
+variable (W : Finset ℝ) (x : ℝ)
+include W x
 /-- Every distance shell about an arbitrary real centre contains at most two
 members of a unit-separated finite set. -/
-theorem separated_distance_shell_card_le_two
-    (W : Finset ℝ) (x : ℝ) (k : ℕ) (hSep : oneSeparated W) :
+theorem separated_distance_shell_card_le_two (k : ℕ) (hSep : oneSeparated W) :
     ({u ∈ W | Nat.floor |u - x| = k}).card ≤ 2 := by
   let S := {u ∈ W | Nat.floor |u - x| = k}
-  let P : ℝ → Prop := fun u => x ≤ u
+  pm_8591 x
   have hpos : (S.filter P).card ≤ 1 := by
-    rw [Finset.card_le_one]
-    intro a ha b hb
-    by_contra hab
-    have haData := Finset.mem_filter.mp ha
-    have hbData := Finset.mem_filter.mp hb
-    have haS := Finset.mem_filter.mp haData.1
-    have hbS := Finset.mem_filter.mp hbData.1
-    have haHigh : |a - x| < (k : ℝ) + 1 := by
-      rw [← haS.2]
-      exact Nat.lt_floor_add_one _
-    have hbHigh : |b - x| < (k : ℝ) + 1 := by
-      rw [← hbS.2]
-      exact Nat.lt_floor_add_one _
-    have haLow : (k : ℝ) ≤ |a - x| := by
-      rw [← haS.2]
-      exact Nat.floor_le (abs_nonneg _)
-    have hbLow : (k : ℝ) ≤ |b - x| := by
-      rw [← hbS.2]
-      exact Nat.floor_le (abs_nonneg _)
+    pm_4454
     rw [abs_of_nonneg (sub_nonneg.mpr haData.2)] at haHigh haLow
     rw [abs_of_nonneg (sub_nonneg.mpr hbData.2)] at hbHigh hbLow
     have habs : |a - b| < 1 := by
       rw [abs_lt]
-      constructor <;> linarith
+      grind
     have hlarge := hSep a haS.1 b hbS.1 hab
-    exact (not_lt_of_ge hlarge) habs
+    grind
   have hneg : (S.filter (fun u => ¬ P u)).card ≤ 1 := by
-    rw [Finset.card_le_one]
-    intro a ha b hb
-    by_contra hab
-    have haData := Finset.mem_filter.mp ha
-    have hbData := Finset.mem_filter.mp hb
-    have haS := Finset.mem_filter.mp haData.1
-    have hbS := Finset.mem_filter.mp hbData.1
-    have haHigh : |a - x| < (k : ℝ) + 1 := by
-      rw [← haS.2]
-      exact Nat.lt_floor_add_one _
-    have hbHigh : |b - x| < (k : ℝ) + 1 := by
-      rw [← hbS.2]
-      exact Nat.lt_floor_add_one _
-    have haLow : (k : ℝ) ≤ |a - x| := by
-      rw [← haS.2]
-      exact Nat.floor_le (abs_nonneg _)
-    have hbLow : (k : ℝ) ≤ |b - x| := by
-      rw [← hbS.2]
-      exact Nat.floor_le (abs_nonneg _)
+    pm_4454
     have hax : a - x ≤ 0 := by linarith
     have hbx : b - x ≤ 0 := by linarith
     rw [abs_of_nonpos hax] at haHigh haLow
     rw [abs_of_nonpos hbx] at hbHigh hbLow
-    have habs : |a - b| < 1 := by
-      rw [abs_lt]
-      constructor <;> linarith
+    pm_8841 habs a b
     have hlarge := hSep a haS.1 b hbS.1 hab
     exact (not_lt_of_ge hlarge) habs
-  have hsplit := Finset.card_filter_add_card_filter_not (s := S) P
-  change S.card ≤ 2
-  omega
+  pm_7009
 
 /-- The source exponential kernels have a uniform overlap bound. -/
-theorem sum_exp_neg_abs_sub_le_four
-    (W : Finset ℝ) (x : ℝ) (hSep : oneSeparated W) :
+theorem sum_exp_neg_abs_sub_le_four (hSep : oneSeparated W) :
     ∑ u ∈ W, Real.exp (-|u - x|) ≤ 4 := by
-  let shell : ℝ → ℕ := fun u => Nat.floor |u - x|
+  pm_1481 x
   have hpoint : ∀ u ∈ W, Real.exp (-|u - x|) ≤
       (1 / 2 : ℝ) ^ shell u := by
     intro u _hu
@@ -136,9 +98,7 @@ theorem sum_exp_neg_abs_sub_le_four
           rw [Finset.card_eq_sum_ones]
           push_cast
           rw [Finset.sum_mul]
-          apply Finset.sum_congr rfl
-          intro u hu
-          rw [(Finset.mem_filter.mp hu).2]
+          pm_275 Finset.sum_congr u hu Finset.mem_filter.mp
           simp
         _ ≤ 2 * (1 / 2 : ℝ) ^ k := by
           gcongr
@@ -150,5 +110,6 @@ theorem sum_exp_neg_abs_sub_le_four
       rw [tsum_mul_left, tsum_geometric_of_norm_lt_one]
       · norm_num
       · norm_num
+end
 
 end MathCollab.Density.Stronger.PointMean

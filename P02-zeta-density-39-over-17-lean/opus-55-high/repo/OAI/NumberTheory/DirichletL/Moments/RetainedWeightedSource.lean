@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionApproximation
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedNormalization
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionWeightedEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentRetainedWeightedSource
 open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion
 open CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy
@@ -29,8 +30,7 @@ lemma dualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
     0<dualScale χ ψ X D H := by
   have hD : (∏P∈D.val,P : Ideal O)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>
     (redundantSet_prime χ.modulus ψ.modulus P ((Finset.mem_powerset.mp D.property) hP)).ne_zero)
-  have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+  pm_2879
   have hd : 0<(Ideal.absNorm (∏P∈D.val,P):ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
   exact div_pos (mul_pos hQ hd) (mul_pos hX (CenteredMomentReflectionDeletion.norm_pos H.val))
@@ -44,8 +44,10 @@ def retainedColumn (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
       (dyadicScale a.2*dualScale χ ψ X a.1.1 a.1.2) 0 0 * P
   else 0
 
-theorem finiteAnnularColumn_normalized (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
+section
+variable (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
+include χ ψ W X R t hX B n P
+theorem finiteAnnularColumn_normalized
     (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) :
     finiteAnnularColumn χ.inverse (paperRadialFourier (CompletedHeight.normTwistedSource W t))
       R (dualScale χ ψ X D H)*P =
@@ -60,8 +62,7 @@ theorem finiteAnnularColumn_normalized (χ ψ : Character) (W : ℝ→ℂ)
   rw [retainedColumn,ite_eq_left hk,actual_annular_normalization]
   ring
 
-theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
+theorem retainedOriginal_eq_weighted
     (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
       ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
         retainedColumn χ ψ W X R t hX B n P a‖)) :
@@ -84,12 +85,11 @@ theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
   change (coefficient ψ ψ.inverse (sourcePrimes χ ψ) D.val H*
     finiteAnnularColumn χ.inverse (paperRadialFourier (CompletedHeight.normTwistedSource W t))
       R (dualScale χ ψ X D H))*P = _
-  rw [mul_assoc,finiteAnnularColumn_normalized χ ψ W X R t hX B n P D H]
+  pm_6257
   simp only [mul_assoc,tsum_mul_left]
   ring
 
-theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
+theorem retainedOriginal_fiber_summable
     (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
       ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
         retainedColumn χ ψ W X R t hX B n P a‖))
@@ -102,13 +102,14 @@ theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
   apply hh.congr
   intro H
   congr 1
-  rw [mul_assoc,finiteAnnularColumn_normalized χ ψ W X R t hX B n P D H]
+  pm_6257
   simp only [signedWeight,mul_assoc,tsum_mul_left]
   ring
+end
 
 theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],
-      ∀(χ ψ : ι→Character)(W : ι→ℝ→ℂ)(X R t : ι→ℝ)
+      ∀(χ ψ : ι→ Character)(W : ι→ℝ→ℂ)(X R t : ι→ℝ)
         (hX : ∀i,0<X i)(B : ι→ℕ)(n : ℕ)(P : ι→ℂ),
       (∀i,2≤B i) → ∀(T Rcap E : ℝ),0≤T → (∀i,‖t i‖≤T) → 1≤Rcap →
       (∀i,(Ideal.absNorm (∏Q∈sourcePrimes (χ i) (ψ i),Q):ℝ)≤Rcap) →
@@ -129,7 +130,7 @@ theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
               (R i) (dualScale (χ i) (ψ i) (X i) D H))*P i‖)) ∧
       (∑i,‖retainedOriginal (χ i) (ψ i) (W i) (X i) (R i) (t i)*P i‖^2) ≤
         C*Rcap^ε*(1+T)^(2*n)*E := by
-  obtain ⟨C,hC,hbound⟩ := actual_reflection_energy ε hε
+  pm_69 C hC hbound actual_reflection_energy ε hε
   refine ⟨C,hC,?_⟩
   intro ι _ χ ψ W X R t hX B n P hB T Rcap E hT ht hRcap hcap hselection
   let f (i : ι) := retainedColumn (χ i) (ψ i) (W i) (X i) (R i) (t i) (hX i) (B i) n (P i)

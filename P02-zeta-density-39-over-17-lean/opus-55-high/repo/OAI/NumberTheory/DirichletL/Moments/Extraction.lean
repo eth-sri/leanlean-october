@@ -19,7 +19,7 @@ theorem idealRectangle_extract (W₁ W₂ : ℝ → ℂ)
         (X₁ / Ideal.absNorm B₁) (X₂ / Ideal.absNorm B₂)
         (Y₁ / Ideal.absNorm B₁) (Y₂ / Ideal.absNorm B₂) I J := by
   simp only [idealRectangle, map_mul, Nat.cast_mul, div_div_eq_mul_div]
-  congr 2 <;> congr 1 <;> ring
+  grind
 
 theorem idealWeight_norm_le_one (c : O) (hc : c ≠ 0)
     (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (R : Ideal O) (t : ℝ)
@@ -30,7 +30,7 @@ theorem idealWeight_norm_le_one (c : O) (hc : c ≠ 0)
   simp only [idealWeight, norm_mul, hpow, mul_one]
   by_cases hcop : IsCoprime I R
   · simpa only [hcop, ite_true, norm_one, one_mul] using primaryIdealCharacter_norm_le_one c hc χ I
-  · simp only [hcop, ite_false, norm_zero, zero_mul, zero_le_one]
+  simp_all
 
 end SevenEighths.CenteredMomentExtraction
 end

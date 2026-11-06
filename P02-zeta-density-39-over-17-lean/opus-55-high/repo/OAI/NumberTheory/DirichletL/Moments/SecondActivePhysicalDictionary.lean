@@ -34,8 +34,8 @@ local notation "O"=>HeckeFamily.O
   apply Finset.sum_congr rfl
   intro I hI
   by_cases h:β (C*I)=0
-  · simp only [h,ne_eq,not_true_eq_false,ite_false,hf I h]
-  · simp only [h,ne_eq,not_false_eq_true,ite_true]
+  grind
+  grind
 
  theorem sector_pair_sum_active (C D:Ideal O)(hC:C≠0)(hD:D≠0)
     (S:Finset (Ideal O))(β:Ideal O→ℂ)(f:Ideal O→Ideal O→ℂ)
@@ -45,7 +45,7 @@ local notation "O"=>HeckeFamily.O
   simp_rw [sector_sum_active D hD S β _ (fun J h=>hright _ J h)]
   apply sector_sum_active C hC S β
   intro I h
-  exact Finset.sum_eq_zero (fun J hJ=>hleft I J h)
+  simp_all
 
  theorem sectorFrequency_active (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(F:O→Ideal O→Ideal O→ℂ)(z:O):
@@ -79,9 +79,7 @@ local notation "O"=>HeckeFamily.O
   · intro I J h
     simp only [f,h,zero_mul,mul_zero]
     split_ifs <;> rfl
-  · intro I J h
-    simp only [f,h,zero_mul,star_zero,mul_zero]
-    split_ifs <;> rfl
+  grind
 
  theorem physicalBlock_active (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))

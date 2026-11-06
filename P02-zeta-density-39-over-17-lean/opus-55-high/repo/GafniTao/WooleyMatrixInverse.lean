@@ -15,22 +15,22 @@ monomial congruences; no determinant or assumed inverse is used here.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
 noncomputable section
 
+section
+variable {R : Type*} [Ring R]
+include R
 /-- A nilpotent element has a finite geometric-series left inverse after
 subtracting it from one. -/
-theorem wooley_geomSum_mul_one_sub_of_pow_eq_zero
-    {R : Type*} [Ring R] (x : R) (m : ℕ) (hx : x ^ m = 0) :
+theorem wooley_geomSum_mul_one_sub_of_pow_eq_zero (x : R) (m : ℕ) (hx : x ^ m = 0) :
     (∑ i ∈ range m, x ^ i) * (1 - x) = 1 := by
   rw [geom_sum_mul_neg, hx, sub_zero]
 
 /-- Left multiplication by `1-x` is injective when `x` is nilpotent. -/
-theorem wooley_one_sub_mul_eq_zero_of_pow_eq_zero
-    {R : Type*} [Ring R] (x y : R) (m : ℕ)
+theorem wooley_one_sub_mul_eq_zero_of_pow_eq_zero (x y : R) (m : ℕ)
     (hx : x ^ m = 0) (hxy : (1 - x) * y = 0) :
     y = 0 := by
   let g : R := ∑ i ∈ range m, x ^ i
@@ -40,6 +40,7 @@ theorem wooley_one_sub_mul_eq_zero_of_pow_eq_zero
       rw [wooley_geomSum_mul_one_sub_of_pow_eq_zero x m hx]
     _ = g * ((1 - x) * y) := by rw [mul_assoc]
     _ = 0 := by rw [hxy, mul_zero]
+end
 
 /-- The scalar `(p^c)` is nilpotent modulo `p^B` as soon as `c` is positive.
 The exponent `B+1` handles the degenerate modulus `p^0=1` uniformly. -/

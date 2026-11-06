@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalReassembly
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailInfinite
 public import OAI.NumberTheory.DirichletL.Inversion.InitialConjugateEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,13 +10,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialPhysicalLimit
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialPhysicalReassembly
+open InverseInitialRayAttachment InverseInitialPhysicalMeasure
+open InverseInitialEnergyCallerSource InverseInitialPhysicalReassembly
 local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
+variable {ι:Type*}[DecidableEq ι](p:ι→ O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -26,8 +27,10 @@ def physicalFrequency (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
     if Disjoint U T then ∑E∈G.powerset,
       initialPhysicalMode p hp hcop hg Ψ j marks W Φ Z D m G U T E h else 0
 
+section
+variable (hinj:Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
 theorem physicalFrequency_finite
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (pool:Finset ι)(freqT:Finset O)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
     (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ):
     (∑h∈freqT,physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h)=
@@ -36,21 +39,16 @@ theorem physicalFrequency_finite
   rw [←finite_physical_reassembly p hp hcop hg hinj]
   unfold physicalFrequency
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro G hG
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro U hU
+  pm_3170 G hG Finset.sum_comm U hU
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro T hT
   by_cases hd:Disjoint U T
   · simp only [hd,ite_true]
     exact Finset.sum_comm
-  · simp only [hd,ite_false,Finset.sum_const_zero]
+  simp_all
 
 theorem physicalFrequency_hasSum
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
@@ -60,11 +58,7 @@ theorem physicalFrequency_hasSum
         if Disjoint U T then ∑E∈G.powerset,∑'h:O,
           initialPhysicalMode p hp hcop hg Ψ j marks W Φ Z D m G U T E h else 0):=by
   unfold physicalFrequency
-  apply hasSum_sum
-  intro G hG
-  apply hasSum_sum
-  intro U hU
-  apply hasSum_sum
+  pm_201 hasSum_sum G hG U hU
   intro T hT
   by_cases hd:Disjoint U T
   · simp only [hd,ite_true]
@@ -77,13 +71,12 @@ theorem physicalFrequency_hasSum
   · simpa only [hd,ite_false] using (hasSum_zero : HasSum (fun _ : O=>(0:ℂ)) 0)
 
 theorem original_input_zero_nonzero
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
     (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(hZ:0<Z):
-    (∑'u:O,Φ (‖eisEmbedding u‖^2/Z^m)*
-      (‖((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg pool Ψ j 1 1
+    (∑'u:O,Φ (‖eisEmbedding u‖^2/Z ^m)*
+      (‖((Z ^(-D /2):ℝ):ℂ)*inputConjugateRow p hg pool Ψ j 1 1
         (initialTest p marks W Z D) u‖^2:ℝ))=
     physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m 0+
       ∑'h:O,if h=0 then 0 else physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h:=by
@@ -93,7 +86,6 @@ theorem original_input_zero_nonzero
   exact hs.summable.tsum_eq_add_tsum_ite 0
 
 theorem nonzero_frequency_norm_le
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
@@ -117,6 +109,7 @@ theorem nonzero_frequency_norm_le
     simp only [freqT,Finset.sum_filter,ite_not]
   rw [he,physicalFrequency_finite p hp hcop hg hinj]
   exact hfinite freqT hzero
+end
 
 end SevenEighths.InverseInitialPhysicalLimit
 

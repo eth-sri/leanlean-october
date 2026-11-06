@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Moments.PrimePower
 public import OAI.NumberTheory.DirichletL.Moments.CRT
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,8 +48,7 @@ theorem pairwise_isCoprime_pow {ι : Type*}
     (P : ι → Ideal O) (c : ι → ℕ)
     (hcop : Pairwise (Function.onFun IsCoprime P)) :
     Pairwise (Function.onFun IsCoprime (fun i => P i ^ c i)) := by
-  intro i j hij
-  exact (hcop hij).pow
+  pm_8347
 
 def canonicalCRTCharacter {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -59,19 +59,16 @@ def canonicalCRTCharacter {ι : Type*} [Fintype ι]
     (pairwise_isCoprime_pow P c hcop))
     (fun i => canonicalPrimePowerCharacter (P i) (hg i) (hc i))
 
-theorem canonicalCRTCharacter_mk {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
-    (hcop : Pairwise (Function.onFun IsCoprime P)) (x : O) :
+section
+variable {ι : Type*} [Fintype ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hcop : Pairwise (Function.onFun IsCoprime P))
+include ι P hg c hc hcop
+theorem canonicalCRTCharacter_mk (x : O) :
     canonicalCRTCharacter P hg c hc hcop (Ideal.Quotient.mk (∏ i, P i ^ c i) x) =
       CanonicalRowCompletion.idealRowHom x (∏ i, P i ^ c i) := by
   simp only [canonicalCRTCharacter, crtCharacter_apply,
     IdealGaussCRT.quotientProdEquivPi_mk, canonicalPrimePowerCharacter_mk, map_prod]
 
-theorem canonicalCRTCorrelation {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
-    (hcop : Pairwise (Function.onFun IsCoprime P))
+theorem canonicalCRTCorrelation
     [Fintype (O ⧸ ∏ i, P i ^ c i)] [∀ i, Fintype (O ⧸ P i ^ c i)]
     (u v k : O ⧸ ∏ i, P i ^ c i) :
     let e := IdealGaussCRT.quotientProdEquivPi (fun i => P i ^ c i)
@@ -90,6 +87,7 @@ theorem canonicalCRTCorrelation {ι : Type*} [Fintype ι]
   rw [fullCorrelation_ringEquiv (IdealGaussCRT.quotientProdEquivPi _ _) u v k
     (fun x => ∏ i, primePowerRow (P i) (hg i) (hc i) (x i))
     (fun x => ∏ i, primePowerRow (P i) (hg i) (hc i) (x i)), fullCorrelation_pi]
+end
 
 end SevenEighths.CenteredMomentCanonical
 end

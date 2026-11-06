@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.Phase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,13 +32,13 @@ theorem completedCorrection_eq_phase (I J : Ideal O) :
 theorem completedMask_norm_le_one (S : Finset (Ideal O)) (D I J : Ideal O) :
     ‖completedMask S D I J‖ ≤ 1 := by
   unfold completedMask
-  split_ifs <;> norm_num
+  aesop
 
 theorem completedCorrection_norm_le_two (I J : Ideal O) :
     ‖completedCorrection I J‖ ≤ 2 := by
   have hm : ‖rayMask (completedIndex I J)‖ ≤ 1 := by
     unfold rayMask
-    split_ifs <;> norm_num
+    aesop
   unfold completedCorrection
   rw [norm_mul, norm_star]
   exact (mul_le_mul hm (fixedGQuotientValue_norm_le_two _) (norm_nonneg _) (by norm_num)).trans_eq
@@ -71,7 +72,10 @@ theorem completedCorrection_expansion (I J : Ideal O) :
       ∑ χ : RayCharacter, correctionCoeff χ * rayCharacter χ (completedIndex I J) := by
   exact phase_expansion (fun r => star (fixedGQuotientValue r)) (completedIndex I J)
 
-theorem correctedSummand_ray_expansion (S : Finset (Ideal O)) (D I J : Ideal O)
+section
+variable (S : Finset (Ideal O))
+include S
+theorem correctedSummand_ray_expansion (D I J : Ideal O)
     (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ) :
     correctedSummand S D Ψ W X I J =
       ∑ χ : RayCharacter, correctionCoeff χ *
@@ -85,23 +89,21 @@ theorem correctedSummand_ray_expansion (S : Finset (Ideal O)) (D I J : Ideal O)
   simp only [rayMonoid_apply, completedIndex]
   ring
 
-theorem markedSummand_summable (S : Finset (Ideal O)) (D : Ideal O)
+theorem markedSummand_summable (D : Ideal O)
     (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
     Summable (fun p : Ideal O × Ideal O => markedSummand S D Ψ W X p.1 p.2) := by
-  apply summable_of_hasFiniteSupport
-  apply (completedT_finite_support Ψ W hW X hX).subset
+  pm_1371
   intro p hp
   exact fun hz => hp (by simp only [markedSummand, hz, mul_zero])
 
-theorem correctedSummand_summable (S : Finset (Ideal O)) (D : Ideal O)
+theorem correctedSummand_summable (D : Ideal O)
     (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
     Summable (fun p : Ideal O × Ideal O => correctedSummand S D Ψ W X p.1 p.2) := by
-  apply summable_of_hasFiniteSupport
-  apply (completedT_finite_support Ψ W hW X hX).subset
+  pm_1371
   intro p hp
   exact fun hz => hp (by simp only [correctedSummand, markedSummand, hz, mul_zero])
 
-theorem correctedCompletedT_ray_expansion (S : Finset (Ideal O)) (D : Ideal O)
+theorem correctedCompletedT_ray_expansion (D : Ideal O)
     (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
     correctedCompletedT S D Ψ W X =
       ∑ χ : RayCharacter, correctionCoeff χ *
@@ -111,6 +113,7 @@ theorem correctedCompletedT_ray_expansion (S : Finset (Ideal O)) (D : Ideal O)
   rw [Summable.tsum_finsetSum (fun χ _ =>
     (markedSummand_summable S D (rayMonoid χ * Ψ) W hW X hX).mul_left (correctionCoeff χ))]
   simp only [tsum_mul_left, markedCompletedT]
+end
 
 end SevenEighths.ProbeCompleted
 end

@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownSpacingMonomials
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,13 +28,7 @@ noncomputable def heathBrownLemmaOneSourceConstant
 theorem heathBrown_vmvt_epsilon_identity
     {k : ℕ} (hk : 2 ≤ k) (epsilon : ℝ) :
     (epsilon * (heathBrownCriticalMoment k : ℝ)) *
-        heathBrownCriticalReciprocal k = epsilon / 2 := by
-  rw [heathBrownCriticalMoment_cast (by omega : 1 ≤ k)]
-  unfold heathBrownCriticalReciprocal
-  have hkReal : (2 : ℝ) ≤ k := by exact_mod_cast hk
-  have hk0 : (k : ℝ) ≠ 0 := by linarith
-  have hkm10 : (k : ℝ) - 1 ≠ 0 := by linarith
-  field_simp
+        heathBrownCriticalReciprocal k = epsilon / 2 := by pm_2793
 
 theorem heathBrown_H_vmvt_loss_le
     {N k : ℕ} {A lambda epsilon : ℝ}
@@ -51,7 +46,7 @@ theorem heathBrown_epsilon_halves
     {N : ℕ} (hN : 1 ≤ N) (epsilon : ℝ) :
     (N : ℝ) ^ (epsilon / 2) * (N : ℝ) ^ (epsilon / 2) =
       (N : ℝ) ^ epsilon := by
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+  pm_6810 hNpos N
   rw [← Real.rpow_add hNpos]
   congr 1
   ring
@@ -83,7 +78,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
   let r := heathBrownCriticalReciprocal k
   let H := heathBrownHChoice k A lambda
   let B := heathBrownSpacingBase N k lambda
-  let L := 1 + Real.log (N : ℝ)
+  pm_8066
   have hcore := heathBrownLemmaOneNormalized_le_core
     (N := N) (k := k) (A := A) (lambda := lambda)
     (epsilon := epsilon * (s : ℝ)) (C := C)
@@ -96,8 +91,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
         ((H : ℝ) ^ ((epsilon * (s : ℝ)) * r) *
           (heathBrownLemmaTwoConstant k A * B * L) ^ r *
           (N : ℝ) ^ (1 - 2 * r)) + H at hcore
-  have hr0 : 0 ≤ r :=
-    (heathBrownCriticalReciprocal_pos (by omega : 2 ≤ k)).le
+  pm_6038
   have hr1 : r ≤ 1 :=
     (heathBrownCriticalReciprocal_le_half
       (by omega : 2 ≤ k)).trans (by norm_num)
@@ -106,7 +100,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
     positivity
   have hL0 : 0 ≤ L := by
     dsimp only [L]
-    have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
+    pm_2807
     have := Real.log_nonneg hNReal
     linarith
   have hCtwo0 : 0 ≤ heathBrownLemmaTwoConstant k A :=
@@ -222,7 +216,7 @@ theorem heathBrownLemmaOneNormalized_le_sourceScale
         unfold heathBrownLemmaOneSourceConstant
         dsimp only
         ring
-  exact hcore.trans (add_le_add hMain le_rfl)
+  grind
 
 
 end

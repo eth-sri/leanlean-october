@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,11 +24,10 @@ theorem certified_radial_mono (W : ℝ → ℂ)
     (hrad : radialNew ≤ radialOld)
     (h : CertifiedBand (α := α) M H hH W bslot a b radialOld Bmask L lo hi Mcap κ ε k) :
     CertifiedBand (α := α) M H hH W bslot a b radialNew Bmask L lo hi Mcap κ ε k := by
-  obtain ⟨degree, S, hbound⟩ := h
-  refine ⟨degree, S, ?_⟩
+  pm_157 degree S hbound h
   intro η₀ Q hQM hQ0 hQt hQ72
   obtain ⟨Czero, Cpositive, hCzero, hCpositive, hcert⟩ := hbound η₀ Q hQM hQ0 hQt hQ72
-  refine ⟨Czero, Cpositive, hCzero, hCpositive, ?_⟩
+  pm_505 Czero Cpositive hCzero hCpositive
   filter_upwards [hcert] with Z hZ
   refine ⟨hZ.1, ?_, ?_⟩
   · exact zeroAt_transport _ _ _ _ _ _ _ _ Z _ _ _ _ _ _ _

@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.RowNorm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentGaussEnergy
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open CanonicalQuadraticSieve CenteredMomentFourier CenteredMomentPoisson
@@ -21,9 +22,7 @@ theorem gaussRow_pair_summable (a b : O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
     Summable (fun z : O => gaussRow a ha z * star (gaussRow b hb z) *
       W (‖eisEmbedding z‖ ^ 2 / K)) := by
-  let := finite_quotient_span (mul_ne_zero (supported_element_ne_zero a ha)
-    (supported_element_ne_zero b hb))
-  let : Fintype (Residue (a * b)) := Fintype.ofFinite _
+  pm_2978
   let P : Residue (a * b) → ℂ := fun x =>
     normalizedResidueGauss a (supported_element_ne_zero a ha)
       (supportedModulusCharacter a ha) (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
@@ -44,8 +43,10 @@ def gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
   ∑' z : O, ((‖gaussPolynomial S a ha c z‖ ^ 2 : ℝ) : ℂ) *
     W (‖eisEmbedding z‖ ^ 2 / K)
 
-theorem gaussPolynomial_norm_sq {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ) (z : O) :
+section
+variable {α : Type*} (S : Finset α) (a : α → O) (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
+include α S a ha c
+theorem gaussPolynomial_norm_sq (z : O) :
     ((‖gaussPolynomial S a ha c z‖ ^ 2 : ℝ) : ℂ) =
       ∑ i ∈ S, ∑ j ∈ S, (c i * star (c j)) *
         (gaussRow (a i) (ha i) z * star (gaussRow (a j) (ha j) z)) := by
@@ -53,49 +54,30 @@ theorem gaussPolynomial_norm_sq {α : Type*} (S : Finset α) (a : α → O)
   simp only [gaussPolynomial, map_sum, map_mul, Finset.sum_mul, Finset.mul_sum,
     Complex.star_def]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_3622
   ring
 
-theorem gaussEnergy_expand {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
+theorem gaussEnergy_expand
     (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
     gaussEnergy S a ha c W K =
       ∑ i ∈ S, ∑ j ∈ S, (c i * star (c j)) *
         ∑' z : O, (gaussRow (a i) (ha i) z * star (gaussRow (a j) (ha j) z)) *
-          W (‖eisEmbedding z‖ ^ 2 / K) := by
-  have hs (i j : α) := (gaussRow_pair_summable (a i) (a j) (ha i) (ha j) W K hK).mul_left
-    (c i * star (c j))
-  simp only [mul_assoc] at hs
-  simp only [gaussEnergy, gaussPolynomial_norm_sq, Finset.sum_mul, mul_assoc]
-  rw [Summable.tsum_finsetSum (fun i _ => (hasSum_sum (fun j _ => (hs i j).hasSum)).summable)]
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [Summable.tsum_finsetSum (fun j _ => hs i j)]
-  simp only [tsum_mul_left]
+          W (‖eisEmbedding z‖ ^ 2 / K) := by pm_2979 gaussRow_pair_summable gaussEnergy gaussPolynomial_norm_sq
+end
 
-theorem gaussEnergy_summable {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
+section
+variable {α : Type*} (S : Finset α) (a : α → O) (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ) (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K)
+include α S a ha c W K hK
+theorem gaussEnergy_summable :
     Summable (fun z : O => ((‖gaussPolynomial S a ha c z‖ ^ 2 : ℝ) : ℂ) *
-      W (‖eisEmbedding z‖ ^ 2 / K)) := by
-  have hs (i j : α) := (gaussRow_pair_summable (a i) (a j) (ha i) (ha j) W K hK).mul_left
-    (c i * star (c j))
-  simp only [mul_assoc] at hs
-  simp only [gaussPolynomial_norm_sq, Finset.sum_mul, mul_assoc]
-  exact (hasSum_sum (fun i _ =>
-    (hasSum_sum (fun j _ => (hs i j).hasSum)))).summable
+      W (‖eisEmbedding z‖ ^ 2 / K)) := by pm_2878 gaussRow_pair_summable gaussPolynomial_norm_sq
 
-theorem finite_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) (rows : Finset O)
+theorem finite_energy_le_gaussEnergy (rows : Finset O)
     (hW : ∀ z : O, 0 ≤ (W (‖eisEmbedding z‖ ^ 2 / K)).re)
     (hmajor : ∀ z ∈ rows, 1 ≤ (W (‖eisEmbedding z‖ ^ 2 / K)).re) :
     (∑ z ∈ rows, ‖gaussPolynomial S a ha c z‖ ^ 2) ≤
       (gaussEnergy S a ha c W K).re := by
-  have hs := Complex.hasSum_re (gaussEnergy_summable S a ha c W K hK).hasSum
+  pm_5933 gaussEnergy_summable W
   change HasSum _ (gaussEnergy S a ha c W K).re at hs
   simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero] at hs
   calc
@@ -106,9 +88,7 @@ theorem finite_energy_le_gaussEnergy {α : Type*} (S : Finset α) (a : α → O)
       exact le_mul_of_one_le_right (sq_nonneg _) (hmajor z hz)
     _ ≤ _ := sum_le_hasSum rows (fun z _ => mul_nonneg (sq_nonneg _) (hW z)) hs
 
-theorem gaussEnergy_poisson {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
+theorem gaussEnergy_poisson :
     gaussEnergy S a ha c W K =
       ∑ i ∈ S, ∑ j ∈ S, (c i * star (c j)) *
         (((K : ℂ) / ((Real.sqrt (Ideal.absNorm (Ideal.span {a i}) : ℝ) : ℂ) *
@@ -117,12 +97,10 @@ theorem gaussEnergy_poisson {α : Type*} (S : Finset α) (a : α → O)
             paperRadialFourier W
               (K * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding (a i * a j)‖ ^ 2)) := by
   rw [gaussEnergy_expand S a ha c W K hK]
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_3622
   simp only [gaussRow]
   rw [sextic_gauss_pair_poisson (a i) (a j) (ha i) (ha j) W K hK]
+end
 
 end SevenEighths.CenteredMomentGaussEnergy
 

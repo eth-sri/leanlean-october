@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.FixedRadialReduction
 public import OAI.NumberTheory.DirichletL.Energy.ZeroComparison
 public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,22 +40,19 @@ theorem original_low_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
       (∀i,s.hi i≤hi i) →∀(R:Ideal O)(r:Radial),
       Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ →
-      CenteredMomentAmplificationChildInput.volume s≤Z^B → r.scale⁻¹≤Z^B →
+      CenteredMomentAmplificationChildInput.volume s≤Z ^B → r.scale⁻¹≤Z ^B →
       let hz₁:s.W₁ 0=0:=by rw [he₁];exact CenteredMomentDetectorPlainSource.support_zero W₁ a b ha hs₁;
       let hz₂:s.W₂ 0=0:=by rw [he₂];exact CenteredMomentDetectorPlainSource.support_zero W₂ a b ha hs₂;
       energy s.η (fixedBadMask*idealGenerator R) 1 s.t s.W₁ s.W₂ s.slots s.toData.coefficient
         s.P s.X₁ s.X₂ r.keep r.profile r.scale≤
       2*diagonalControl r.profile*(
         physicalMass (zeroInput s hz₁ hz₂) R 1 fixedBadMask 1 Ψ r.scale Z ξ/
-          CenteredMomentAmplificationChildInput.volume s+
-        Cdiag*(plainControl s W₁ W₂)^2*Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*r.scale*Z^ε+
-        Ctail*(plainControl s W₁ W₂)^2*Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*r.scale*Z^(-saving)):=by
+          CenteredMomentAmplificationChildInput.volume s +
+        Cdiag*(plainControl s W₁ W₂)^2*Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*r.scale*Z ^ε+
+        Ctail*(plainControl s W₁ W₂)^2*Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*r.scale*Z ^(-saving)):=by
   obtain ⟨Ψ,hsΨ,hnΨ,Sdiag,Stail,Cdiag,Ctail,hCd,hCt,hred⟩:=actual_original_reduction
     bΦ hbΦ hi a b B ε ξ saving hhi ha hb hB hε hξ
-  refine ⟨Ψ,hsΨ,hnΨ,Sdiag,Stail,Cdiag,Ctail,hCd,hCt,?_⟩
-  filter_upwards [hred] with Z hz
-  refine ⟨hz.1,?_⟩
-  intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hsi R r hr hV hK
+  pm_3381 hsΨ hnΨ
   dsimp only
   let hz₁:s.W₁ 0=0:=by rw [he₁];exact CenteredMomentDetectorPlainSource.support_zero W₁ a b ha hs₁
   let hz₂:s.W₂ 0=0:=by rw [he₂];exact CenteredMomentDetectorPlainSource.support_zero W₂ a b ha hs₂

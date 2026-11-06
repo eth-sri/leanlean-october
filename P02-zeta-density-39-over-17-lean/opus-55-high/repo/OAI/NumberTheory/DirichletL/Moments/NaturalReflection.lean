@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.NaturalPrimitive
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionDeletion
 public import OAI.NumberTheory.DirichletL.Hecke.Conjugation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,14 +24,14 @@ lemma polynomial_coeff_congr (χ ψ : Character)
   apply tsum_congr
   intro I
   unfold HeckeDyadic.summand HeckeDyadic.coefficient
-  rw [h]
+  grind
 
 lemma inverse_deletion_coeff (χ ψ : Character) (S : Finset (Ideal O))
     (hS : ∀P∈S,Prime P) (h : ∀I,idealCoeff χ I=idealCoeff (ψ.excludePrimes S hS) I)
     (I : Ideal O) : idealCoeff χ.inverse I=idealCoeff (ψ.inverse.excludePrimes S hS) I := by
   rw [idealCoeff_inverse_conj,h,idealCoeff_excludePrimes,idealCoeff_excludePrimes,
     idealCoeff_inverse_conj]
-  split_ifs <;> simp
+  grind
 
 theorem primitive_character_deleted (ψ : Character)
     (hp : FiniteFourier.IsPrimitiveOnIdeals ψ.residue) (hn : ψ.residue≠1) :
@@ -53,7 +54,10 @@ theorem primitive_character_deleted (ψ : Character)
   rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span] at hh
   exact hh
 
-theorem original_natural_reflection (χ : Character) (hn : χ.residue≠1) :
+section
+variable (χ : Character) (hn : χ.residue≠1)
+include χ hn
+theorem original_natural_reflection :
     ∃(ψ : Character)(G : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖G‖=1 ∧
       let S := redundantSet χ.modulus ψ.modulus
       let hS := redundantSet_prime χ.modulus ψ.modulus
@@ -73,7 +77,7 @@ theorem original_natural_reflection (χ : Character) (hn : χ.residue≠1) :
   have hh := hreflection _ (redundantSet_prime χ.modulus ψ.modulus) W X hX
   exact ⟨hh.1,(polynomial_coeff_congr χ _ hcoeff W X).trans hh.2⟩
 
-theorem original_inverse_reflection (χ : Character) (hn : χ.residue≠1) :
+theorem original_inverse_reflection :
     ∃(ψ : Character)(G : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖G‖=1 ∧
       let S := redundantSet χ.modulus ψ.modulus
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm ∧
@@ -86,7 +90,7 @@ theorem original_inverse_reflection (χ : Character) (hn : χ.residue≠1) :
               HeckeDyadic.polynomial χ.inverse false (paperRadialFourier W)
                 ((ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)) 0 0 := by
   obtain ⟨ψ,G,hprim,hne,hG,hnorm,hcop,hcoeff,hreflect⟩ := original_natural_reflection χ hn
-  refine ⟨ψ,G,hprim,hne,hG,hnorm,?_⟩
+  pm_211 ψ G hprim hne hG hnorm
   intro W X hX
   rw [(hreflect W X hX).2]
   congr 1
@@ -97,6 +101,7 @@ theorem original_inverse_reflection (χ : Character) (hn : χ.residue≠1) :
   unfold reflectedTerm
   rw [←polynomial_coeff_congr χ.inverse _
     (inverse_deletion_coeff χ ψ _ (redundantSet_prime χ.modulus ψ.modulus) hcoeff)]
+end
 
 end SevenEighths.CenteredMomentNaturalReflection
 

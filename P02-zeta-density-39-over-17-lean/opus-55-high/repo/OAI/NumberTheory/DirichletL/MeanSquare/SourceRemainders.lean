@@ -1,89 +1,44 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.HighRadialBounds
 public import OAI.NumberTheory.DirichletL.CubicSieve.PaddedPassage
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic
+open ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 
 namespace InitialMeanSquare
 
 section
 
 open MeasureTheory
-open scoped BigOperators Classical
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open scoped Classical
+open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration
 open FirstPassCubeLabels (primeProductNorm)
 
 section
@@ -106,13 +61,12 @@ open ConcreteTraceCRT (eisEmbedding)
 end
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open scoped Classical SchwartzMap ContDiff
+open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap
 namespace FirstPassCubeLabels
 
 section
@@ -127,29 +81,24 @@ variable {ι : Type*} [DecidableEq ι]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})
 
-lemma threeBlockExponent_ne_zero_on (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool) :
+section
+variable (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
+include N P B v ε₁ ε₂
+lemma threeBlockExponent_ne_zero_on :
     ∀i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂,threeBlockExponent N P v ε₁ ε₂ i≠0 := by
-  intro i hi
-  by_cases hn:i∈N
-  · simp [threeBlockExponent,hn]
-  by_cases hp':i∈P
-  · simp [threeBlockExponent,hn,hp']
-  · have hiC:i∈cubeActiveSupport B v ε₁ ε₂ := by simpa [hn,hp'] using hi
-    simp only [threeBlockExponent,ite_eq_right hn,ite_eq_right hp']
-    exact (ZMod.val_eq_zero _).not.mpr (Finset.mem_filter.mp hiC).2
+  pm_3162
 
-lemma threeBlockExponent_lt_six_on (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool) :
+lemma threeBlockExponent_lt_six_on :
     ∀i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂,threeBlockExponent N P v ε₁ ε₂ i<6 := by
-  intro i hi
-  unfold threeBlockExponent
-  split_ifs <;> first | omega | exact ZMod.val_lt _
+  pm_7216
+end
 
-lemma threeGaussRowFactor_norm_le
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-    (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
-    (C₁ C₂ : Finset ι→ℂ) (d h : O) :
+section
+variable (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2) (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool) (C₁ C₂ : Finset ι→ℂ)
+include hc N P B v ε₁ ε₂ C₁ C₂
+lemma threeGaussRowFactor_norm_le (d h : O) :
     ‖threeGaussRowFactor p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d h‖≤‖C₁ N‖*‖C₂ P‖ := by
-  let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
+  pm_891
   let e := threeBlockExponent N P v ε₁ ε₂
   have hG := FiniteGaussPhase.norm_canonicalProductGauss
     (fun i:S=>p i.val) (fun i=>hp i.val) (columnPrimeCoprime p hcop S)
@@ -167,10 +116,7 @@ lemma threeGaussRowFactor_norm_le
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (blockRow_norm_le_one p hg S e d)).trans (blockRow_norm_le_one p hg S e h)
 
-lemma canonicalPairMode_norm_le
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-    (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
-    (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
+lemma canonicalPairMode_norm_le (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
     (X₁ X₂ K : ℝ) (hK : 0<K) (d h : O) :
     ‖canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h‖≤
       (‖V₁ (columnLog p X₁ N)‖*‖V₂ (columnLog p X₂ P)‖*
@@ -194,6 +140,7 @@ lemma canonicalPairMode_norm_le
       (‖C₁ N‖*‖C₂ P‖) := mul_le_mul_of_nonneg_left
         (threeGaussRowFactor_norm_le p hp hcop hg hc N P B v ε₁ ε₂ C₁ C₂ d h) (by positivity)
     _ = _ := by ring
+end
 
 end
 
@@ -208,25 +155,23 @@ theorem full_uniform_canonicalPairMode_remainder (A : ℕ) :
       (X₁ X₂ K H : ℝ),0<K → 0≤H → ∀(d : O),d≠0 → ∀T:Finset O,
       let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
       let scale := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
-      (∀h:O,h∉T → H≤scale*‖eisEmbedding h‖^2) →
+      (∀h:O,h∉T → H≤ scale*‖eisEmbedding h‖^2) →
       ‖∑'h:{h:O // h∉T},canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val‖≤
       (‖V₁ (columnLog p X₁ N)‖*‖V₂ (columnLog p X₂ P)‖*
         (K/‖eisEmbedding (∏i∈S,p i)‖)*(‖C₁ N‖*‖C₂ P‖))*
       ((C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/((min 1 scale)^2*(1+H)^A)) := by
-  obtain ⟨s,C,hC,hb⟩ := EisensteinSchwartzPoisson.paperRadialFourier_lattice_tail A
-  refine ⟨s,C,hC,?_⟩
+  pm_3085 s C hC hb EisensteinSchwartzPoisson.paperRadialFourier_lattice_tail A
   intro ι _ p hp _ hcop hg hc N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K H hK hH d hd T
   dsimp only
   intro hT
-  let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
-  let scale := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
+  pm_891
+  pm_7413 scale
   let c := ‖V₁ (columnLog p X₁ N)‖*‖V₂ (columnLog p X₂ P)‖*
         (K/‖eisEmbedding (∏i∈S,p i)‖)*(‖C₁ N‖*‖C₂ P‖)
-  have hscale : 0<scale := div_pos hK (mul_pos
-    (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))) (primeProductNorm_pos p hp S))
-  have hc0 : 0≤c := by dsimp [c]; positivity
+  pm_5749 hscale scale
+  pm_3063 hc0 c
   let small : Set O := {h|h∉T}
-  let large : Set O := {h|H≤scale*‖eisEmbedding h‖^2}
+  let large : Set O := {h|H≤ scale*‖eisEmbedding h‖^2}
   let f : small→large := fun h=>⟨h.val,hT h.val h.property⟩
   have hfi : Function.Injective f := by
     intro a b hab
@@ -257,6 +202,5 @@ open SecondPassArithmetic (firstFrequencyDisk outside_firstFrequencyDisk columnL
 
 end FirstPassCubeLabels
 
-end
 
 end OAI

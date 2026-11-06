@@ -9,6 +9,7 @@ and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexScales
 public import GuthMaynard.SecondOrderMeanValue
 public import GuthMaynard.SecondDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,7 +30,6 @@ open RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- Orient the two-height phase difference so that its second derivative is
@@ -37,8 +37,10 @@ positive when `u < t`. -/
 def atkinsonIndexPositiveDifference (t u x : ℝ) : ℝ :=
   atkinsonIndexRealPhase u x - atkinsonIndexRealPhase t x
 
-theorem hasDerivAt_atkinsonIndexPositiveDifference
-    {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x) :
+section
+variable {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x)
+include t u x ht hu hx
+theorem hasDerivAt_atkinsonIndexPositiveDifference :
     HasDerivAt (atkinsonIndexPositiveDifference t u)
       (atkinsonIndexRealSlope u x -
         atkinsonIndexRealSlope t x) x := by
@@ -46,8 +48,7 @@ theorem hasDerivAt_atkinsonIndexPositiveDifference
   exact (hasDerivAt_atkinsonIndexRealPhase hu hx).sub
     (hasDerivAt_atkinsonIndexRealPhase ht hx)
 
-theorem hasDerivAt_atkinsonIndexPositiveDifferenceSlope
-    {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexPositiveDifferenceSlope :
     HasDerivAt
       (fun y => atkinsonIndexRealSlope u y -
         atkinsonIndexRealSlope t y)
@@ -58,8 +59,7 @@ theorem hasDerivAt_atkinsonIndexPositiveDifferenceSlope
 
 /-- Exact second-order mean-value identity for the positively oriented phase
 difference. -/
-theorem exists_atkinsonIndexPositiveDifference_secondDifference
-    {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x) :
+theorem exists_atkinsonIndexPositiveDifference_secondDifference :
     ∃ xi ∈ Set.Ioo x (x + 2),
       atkinsonIndexRealCurvature u xi -
           atkinsonIndexRealCurvature t xi =
@@ -82,13 +82,10 @@ theorem exists_atkinsonIndexPositiveDifference_secondDifference
       dsimp only [F', F'']
       exact hasDerivAt_atkinsonIndexPositiveDifferenceSlope ht hu
         (hx.trans_le hy.1))
-  obtain ⟨xi, hxi, heq⟩ := hmv
-  refine ⟨xi, hxi, ?_⟩
+  pm_157 xi hxi heq hmv
   dsimp only [F, F''] at heq ⊢
-  calc
-    _ = F (x + 2) - 2 * F (x + 1) + F x := heq
-    _ = (F (x + 2) - F (x + 1)) -
-        (F (x + 1) - F x) := by ring
+  grind
+end
 
 /-- The natural-index phase used by the finite B-process. -/
 def atkinsonIndexPositiveDifferenceNat
@@ -117,8 +114,10 @@ def atkinsonIndexBProcessLambdaUpper
     (t u : ℝ) (K N : ℕ) : ℝ :=
   atkinsonIndexBoxCurvatureUpper u K (K + N + 2) * (t - u)
 
-theorem atkinsonIndexBProcessLambda_pos
-    {t u : ℝ} {K N : ℕ} (hu : 0 < u) (htu : u < t) (hK : 0 < K) :
+section
+variable {t u : ℝ} {K N : ℕ} (hu : 0 < u) (htu : u < t) (hK : 0 < K)
+include t u K N hu htu hK
+theorem atkinsonIndexBProcessLambda_pos :
     0 < atkinsonIndexBProcessLambda t u K N := by
   unfold atkinsonIndexBProcessLambda
     atkinsonIndexBoxCurvatureLower
@@ -132,8 +131,6 @@ theorem atkinsonIndexBProcessLambda_pos
 /-- Every unit-spaced second difference of the exact natural phase is
 bounded by the explicit dyadic curvature parameters. -/
 theorem atkinsonIndexPositiveDifferenceNat_secondDifference_bounds
-    {t u : ℝ} {K N : ℕ}
-    (hu : 0 < u) (htu : u < t) (hK : 0 < K)
     (hblock : ((K + N + 2 : ℕ) : ℝ) ≤ u)
     (htUpper : t ≤ 2 * u) :
     ∀ n, n < N →
@@ -149,8 +146,7 @@ theorem atkinsonIndexPositiveDifferenceNat_secondDifference_bounds
         atkinsonIndexBProcessLambdaUpper t u K N := by
   intro n hn
   have ht : 0 < t := hu.trans htu
-  have hx : 0 < ((K + n : ℕ) : ℝ) := by
-    exact_mod_cast (show 0 < K + n by omega)
+  pm_5302 hx
   obtain ⟨xi, hxi, heq⟩ :=
     exists_atkinsonIndexPositiveDifference_secondDifference ht hu hx
   have hAxi : (K : ℝ) ≤ xi := by
@@ -165,7 +161,7 @@ theorem atkinsonIndexPositiveDifferenceNat_secondDifference_bounds
     (by exact_mod_cast hK) hAxi hxiB
   have hpoint := atkinsonIndexCurvatureDifference_bounds hu htu
     (hx.trans hxi.1) (hxiB.trans hblock) htUpper
-  have hgap : 0 ≤ t - u := sub_nonneg.mpr htu.le
+  pm_7297 hgap t u htu.le
   have hlower := (mul_le_mul_of_nonneg_right hbox.1 hgap).trans hpoint.1
   have hupper := hpoint.2.trans (mul_le_mul_of_nonneg_right hbox.2 hgap)
   have heqNat :
@@ -202,7 +198,8 @@ theorem atkinsonIndexPositiveDifferenceNat_secondDifference_bounds
   rw [heqNat] at hlower hupper
   push_cast at hlower hupper ⊢
   have hpair := And.intro hlower hupper
-  simpa only [add_assoc] using hpair
+  grind
+end
 
 end
 

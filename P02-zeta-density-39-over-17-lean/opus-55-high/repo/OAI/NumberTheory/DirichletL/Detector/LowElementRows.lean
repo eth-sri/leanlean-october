@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowInverseEnergy
 public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,22 +28,23 @@ lemma lowElementRowPoint_injective : Function.Injective lowElementRowPoint :=
 
 def lowIdealRows (R : Finset O) : Finset Id := R.image (fun m=>Ideal.span {m})
 
-lemma lowIdealRows_nonzero (R : Finset O) (hR : ∀m∈R,m≠0) (I : Id) (hI : I∈lowIdealRows R) : I≠0 := by
+section
+variable (R : Finset O)
+include R
+lemma lowIdealRows_nonzero (hR : ∀m∈R,m≠0) (I : Id) (hI : I∈lowIdealRows R) : I≠0 := by
   obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hI
   exact Ideal.span_singleton_eq_bot.not.mpr (hR m hm)
 
-lemma lowIdealRows_norm_bound (R : Finset O) (Q : ℝ) (hR : ∀m∈R,elementNorm m≤Q)
+lemma lowIdealRows_norm_bound (Q : ℝ) (hR : ∀m∈R,elementNorm m≤Q)
     (I : Id) (hI : I∈lowIdealRows R) : (Ideal.absNorm I:ℝ)≤Q := by
-  obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hI
-  exact hR m hm
+  pm_386 m hm hI hR
 
-theorem low_element_energy_le_units (R : Finset O) (_hR : ∀m∈R,m≠0) (F : O→ℂ) :
+theorem low_element_energy_le_units (_hR : ∀m∈R,m≠0) (F : O→ℂ) :
     (∑m∈R,‖F m‖^2)≤∑u : Oˣ,∑I∈lowIdealRows R,‖F (u.val*idealGenerator I)‖^2 := by
   let P : Finset (Oˣ×Id) := Finset.univ×ˢlowIdealRows R
   have hsub : R.image lowElementRowPoint⊆P := by
-    intro p hp
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hp
-    exact Finset.mem_product.mpr ⟨Finset.mem_univ _,Finset.mem_image.mpr ⟨m,hm,rfl⟩⟩
+    pm_67 p hp m hm Finset.mem_image.mp
+    pm_8883 m hm
   have he : (∑m∈R,‖F m‖^2)=∑p∈R.image lowElementRowPoint,‖F (lowIdealRowElement p)‖^2 := by
     rw [Finset.sum_image (fun m _ n _ h=>lowElementRowPoint_injective h)]
     simp only [lowIdealRowElement_point]
@@ -50,6 +52,7 @@ theorem low_element_energy_le_units (R : Finset O) (_hR : ∀m∈R,m≠0) (F : O
   have hh := Finset.sum_le_sum_of_subset_of_nonneg hsub
     (fun p _ _=>sq_nonneg ‖F (lowIdealRowElement p)‖)
   simpa only [P,Finset.sum_product,lowIdealRowElement] using hh
+end
 
 lemma low_rowTwist_label_one (Ψ : O→*ℂ) (m : O) (u : Oˣ) (I : Id) :
     CanonicalRowCompletion.rowTwist Ψ m 1 (u.val*idealGenerator I)=
@@ -85,17 +88,19 @@ lemma low_element_rowTwist_energy (R : Finset O) (hR : ∀z∈R,z≠0)
   intro I hI
   exact low_units_label_one_sum (fun Ψ=>‖F Ψ‖^2) Ψ m I
 
-lemma lowNumeratorRows_nonzero (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
-    (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : z≠0 := by
+section
+variable (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q) (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ)
+include a b ha hb Q hQ z hz
+lemma lowNumeratorRows_nonzero : z≠0 := by
   intro he
   have hh := (lowNumeratorRows_mem a b ha hb Q hQ z).mp hz
   rw [he,elementNorm,Ideal.span_singleton_zero,Ideal.absNorm_bot,Nat.cast_zero,zero_div] at hh
   exact hh (lowOuterCutoff_small a b ha 0 (by positivity))
 
-lemma lowNumeratorRows_norm_bound (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
-    (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : elementNorm z≤2*b*Q := by
+lemma lowNumeratorRows_norm_bound : elementNorm z≤2*b*Q := by
   have hh := (lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q hQ z).mp hz)).2
   exact (div_le_iff₀ hQ).mp hh
+end
 
 lemma low_unit_card : Fintype.card Oˣ=6 := by
   simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six

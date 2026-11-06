@@ -21,7 +21,10 @@ open scoped ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem slope_drop_of_deriv_le {f : ℝ → ℝ} {a b m : ℝ}
+section
+variable {f : ℝ → ℝ}
+include f
+theorem slope_drop_of_deriv_le {a b m : ℝ}
     (hf : ∀ x ∈ Icc a b, DifferentiableAt ℝ f x)
     (hd : ∀ x ∈ Icc a b, deriv f x ≤ -m)
     {x y : ℝ} (hx : x ∈ Icc a b) (hy : y ∈ Icc a b) (hxy : x ≤ y) :
@@ -32,7 +35,7 @@ theorem slope_drop_of_deriv_le {f : ℝ → ℝ} {a b m : ℝ}
     (fun z hz => hd z (interior_subset hz)) x hx y hy hxy
   linarith
 
-theorem exists_slope_transition_partition {f : ℝ → ℝ} {a b lam : ℝ}
+theorem exists_slope_transition_partition {a b lam : ℝ}
     (hab : a ≤ b) (hlam : 0 ≤ lam) (hf : ContinuousOn f (Icc a b))
     (hlo : f b ≤ lam) (hhi : -lam ≤ f a) :
     ∃ c d : ℝ, a ≤ c ∧ c ≤ d ∧ d ≤ b ∧
@@ -53,7 +56,7 @@ theorem exists_slope_transition_partition {f : ℝ → ℝ} {a b lam : ℝ}
       (show -lam ∈ Icc (f b) (f c) from ⟨le_of_not_ge hb,hclo⟩)
     exact ⟨c,d,hac,hd.1,hd.2,hchi,hfd.ge,hc,Or.inr hfd⟩
 
-theorem slope_transition_width_le {f : ℝ → ℝ} {a b c d m lam : ℝ}
+theorem slope_transition_width_le {a b c d m lam : ℝ}
     (hm : 0 < m)
     (hf : ∀ x ∈ Icc a b, DifferentiableAt ℝ f x)
     (hd : ∀ x ∈ Icc a b, deriv f x ≤ -m)
@@ -63,5 +66,6 @@ theorem slope_transition_width_le {f : ℝ → ℝ} {a b c d m lam : ℝ}
   have hdrop := slope_drop_of_deriv_le hf hd hc he hcd
   apply (le_div_iff₀ hm).mpr
   nlinarith
+end
 
 end TaoTrudgianYang2025

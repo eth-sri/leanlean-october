@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.TupleGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,7 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
   obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
   let A : T→ℝ := fun P=>961*((P.val.val.absNorm:ℝ)^(1/2:ℝ)+1)
-  let L : ℝ := ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖*
-    ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
+  pm_559
   let C : ℝ := L*(Cn*N^(3/5+1:ℝ))*(Ch*N)*∏P:T,A P
   have hC : 0≤C := by dsimp [C,L,A,N];positivity
   refine ⟨1+C,by linarith,?_⟩
@@ -41,9 +41,8 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
     change (∏P:T,‖continuedCompensatedLocal η u P.val _ x w z
       (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
       ((P.val.val.absNorm:ℂ)^(-w))‖)≤_
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
-    intro P _
-    have hQ : (4:ℝ)≤P.val.val.absNorm := by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)
+    pm_5771 P
+    pm_5853
     apply (continuedCompensatedLocal_bound η u P.val _ hQ x w z hx hw hz).trans
     dsimp [A]
     by_cases hp : P.val.val∣Ideal.span {u.val}
@@ -68,16 +67,14 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
         ((P.val.val.absNorm:ℂ)^(-w)) := by
     unfold physicalCompensatedRow continuedCompensatedRow
     ring
-  rw [he,norm_mul,norm_mul,norm_mul]
-  have hh'' : ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤Ch*N := by
-    simpa only [Real.rpow_one] using hh'
+  pm_413
   have hn'' : ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
       HeckeOrigin.continued (rowCharacter S hS.prime u) w‖≤Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2 := hn'
   calc
     _ ≤ L*(Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := by
       rw [norm_mul]
-      apply mul_le_mul _ hg (norm_nonneg _) (by dsimp [L,N];positivity)
-      apply mul_le_mul _ hh'' (norm_nonneg _) (by dsimp [L,N];positivity)
+      pm_409 hg
+      pm_409 hh''
       exact mul_le_mul_of_nonneg_left hn'' (by positivity)
     _ = C*(3+|w.im|)^2 := by dsimp [C];ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)

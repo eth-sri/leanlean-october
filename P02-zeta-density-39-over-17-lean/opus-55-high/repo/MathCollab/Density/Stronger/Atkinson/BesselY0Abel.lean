@@ -6,8 +6,9 @@ MIT-0. See third_party/twelfth/Y0_MELLIN_MANIFEST.json and third_party/twelfth/L
 retain Apache-2.0 attribution. No Estermann/Voronoi identity is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.BesselComplexLaplace
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Abel-regularized oscillatory Mellin integrals for `Y₀`
@@ -18,25 +19,21 @@ absolutely convergent; the undamped Neumann transform will be recovered by
 a dominated Abel limit.
 -/
 
-open Complex Set MeasureTheory Filter
+open Complex MeasureTheory Filter
 open scoped Topology Interval
 
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem integral_cpow_mul_damped_cexp_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+section
+variable {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε)
+include s hs ε a hε
+theorem integral_cpow_mul_damped_cexp_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) *
           cexp (-((ε : ℂ) * x)) * cexp (I * (a * x))) =
       ((ε : ℂ) - I * a) ^ (-s) * Gamma s := by
-  have haRe : 0 < ((ε : ℂ) - I * a).re := by simp [hε]
-  have h := dfiComplexLaplace_eq hs haRe
-  unfold dfiComplexLaplace at h
-  rw [← h]
-  apply setIntegral_congr_fun measurableSet_Ioi
-  intro x _
+  have haRe : 0 < ((ε : ℂ) - I * a).re := by simp_all
+  pm_5695
   change (x : ℂ) ^ (s - 1) * cexp (-((ε : ℂ) * x)) *
       cexp (I * ((a : ℂ) * x)) =
     (x : ℂ) ^ (s - 1) * cexp (-(((ε : ℂ) - I * a) * x))
@@ -48,18 +45,13 @@ theorem integral_cpow_mul_damped_cexp_Ioi
   congr 2
   ring
 
-theorem integral_cpow_mul_damped_cexp_neg_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+theorem integral_cpow_mul_damped_cexp_neg_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) *
           cexp (-((ε : ℂ) * x)) * cexp (-(I * (a * x)))) =
       ((ε : ℂ) + I * a) ^ (-s) * Gamma s := by
-  have haRe : 0 < ((ε : ℂ) + I * a).re := by simp [hε]
-  have h := dfiComplexLaplace_eq hs haRe
-  unfold dfiComplexLaplace at h
-  rw [← h]
-  apply setIntegral_congr_fun measurableSet_Ioi
-  intro x _
+  have haRe : 0 < ((ε : ℂ) + I * a).re := by simp_all
+  pm_5695
   change (x : ℂ) ^ (s - 1) * cexp (-((ε : ℂ) * x)) *
       cexp (-(I * ((a : ℂ) * x))) =
     (x : ℂ) ^ (s - 1) * cexp (-(((ε : ℂ) + I * a) * x))
@@ -71,8 +63,7 @@ theorem integral_cpow_mul_damped_cexp_neg_Ioi
   congr 2
   ring
 
-theorem integral_cpow_mul_damped_sin_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+theorem integral_cpow_mul_damped_sin_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) * Real.sin (a * x)) =
       (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) /
@@ -85,19 +76,15 @@ theorem integral_cpow_mul_damped_sin_Ioi
     cexp (-((ε : ℂ) * x)) * cexp (-(I * ((a : ℂ) * x)))
   have hPInt : IntegrableOn P (Set.Ioi 0) := by
     have h := integrableOn_cpow_mul_cexp_neg_complex_mul_Ioi hs
-      (show 0 < ((ε : ℂ) - I * a).re by simp [hε])
-    refine h.congr_fun ?_ measurableSet_Ioi
-    intro x _
-    dsimp [P]
+      (show 0 < ((ε : ℂ) - I * a).re by simp_all)
+    pm_7911 h.congr_fun P
     rw [show -(((ε : ℂ) - I * a) * x) =
       -((ε : ℂ) * x) + I * ((a : ℂ) * x) by ring, Complex.exp_add]
     ring
   have hMInt : IntegrableOn M (Set.Ioi 0) := by
     have h := integrableOn_cpow_mul_cexp_neg_complex_mul_Ioi hs
-      (show 0 < ((ε : ℂ) + I * a).re by simp [hε])
-    refine h.congr_fun ?_ measurableSet_Ioi
-    intro x _
-    dsimp [M]
+      (show 0 < ((ε : ℂ) + I * a).re by simp_all)
+    pm_7911 h.congr_fun M
     rw [show -(((ε : ℂ) + I * a) * x) =
       -((ε : ℂ) * x) + -(I * ((a : ℂ) * x)) by ring, Complex.exp_add]
     ring
@@ -119,7 +106,7 @@ theorem integral_cpow_mul_damped_sin_Ioi
         have hSin (y : ℝ) : (Real.sin y : ℂ) =
             (cexp (I * y) - cexp (-(I * y))) / (2 * I) := by
           rw [show I * (y : ℂ) = (y : ℂ) * I by ring,
-            show -((y : ℂ) * I) = ((-y : ℝ) : ℂ) * I by push_cast; ring,
+            show -((y : ℂ) * I) = ((-y : ℝ) : ℂ) * I by simp_all,
             Complex.exp_mul_I, Complex.exp_mul_I, Complex.ofReal_neg,
             Complex.cos_neg, Complex.sin_neg,
             ← Complex.ofReal_cos, ← Complex.ofReal_sin]
@@ -141,11 +128,14 @@ theorem integral_cpow_mul_damped_sin_Ioi
         show (∫ x : ℝ in Set.Ioi 0, M x) =
           ((ε : ℂ) + I * a) ^ (-s) * Gamma s by exact hm]
       field_simp
+end
 
+section
+variable (s : ℂ) {a : ℝ} (ha : 0 < a)
+include s a ha
 /-- The two damped complex powers have their expected nontangential Abel
 limit at the imaginary axis. -/
-theorem tendsto_dfiDampedSineFactor
-    (s : ℂ) {a : ℝ} (ha : 0 < a) :
+theorem tendsto_dfiDampedSineFactor :
     Tendsto (fun ε : ℝ =>
         (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) / (2 * I))
       (𝓝[>] 0)
@@ -160,10 +150,10 @@ theorem tendsto_dfiDampedSineFactor
     simp [ha.ne']
   have hnegBase : Tendsto (fun ε : ℝ => (ε : ℂ) - I * a) (𝓝 0)
       (𝓝 (-I * a)) := by
-    simpa using! ((Complex.continuous_ofReal.sub continuous_const).tendsto 0)
+    pm_8943 Complex.continuous_ofReal.sub
   have hposBase : Tendsto (fun ε : ℝ => (ε : ℂ) + I * a) (𝓝 0)
       (𝓝 (I * a)) := by
-    simpa using! ((Complex.continuous_ofReal.add continuous_const).tendsto 0)
+    pm_8943 Complex.continuous_ofReal.add
   have hneg : Tendsto (fun ε : ℝ => ((ε : ℂ) - I * a) ^ (-s)) (𝓝[>] 0)
       (𝓝 ((-I * a) ^ (-s))) :=
     ((continuousAt_cpow_const hnegSlit).tendsto.comp hnegBase).mono_left inf_le_left
@@ -174,11 +164,10 @@ theorem tendsto_dfiDampedSineFactor
 
 /-- The boundary value of the damped sine factor.  This is the exact
 oscillatory Mellin factor used in the Schläfli representation of `Y₀`. -/
-theorem dfiDampedSineFactor_limit_eq
-    (s : ℂ) {a : ℝ} (ha : 0 < a) :
+theorem dfiDampedSineFactor_limit_eq :
     (((-I * a) ^ (-s) - (I * a) ^ (-s)) / (2 * I)) =
       (a : ℂ) ^ (-s) * Complex.sin (Real.pi * s / 2) := by
-  have haC : (a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr ha.ne'
+  pm_115 haC a Complex.ofReal_ne_zero.mpr ha.ne'
   have hnegI : (-I : ℂ) ≠ 0 := by simp
   have hI : (I : ℂ) ≠ 0 := by simp
   rw [Complex.cpow_def_of_ne_zero (mul_ne_zero hnegI haC),
@@ -207,5 +196,6 @@ theorem dfiDampedSineFactor_limit_eq
   have hIsq : I ^ 2 = (-1 : ℂ) := by rw [pow_two, Complex.I_mul_I]
   rw [hIsq]
   ring
+end
 
 end MathCollab.Density.Stronger.Atkinson

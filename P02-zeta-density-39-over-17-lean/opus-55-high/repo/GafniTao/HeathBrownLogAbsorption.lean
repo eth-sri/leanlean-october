@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownCriticalExponents
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,8 +31,8 @@ theorem heathBrown_one_add_log_le
     1 + Real.log (N : ℝ) ≤
       heathBrownLogConstant epsilon *
         (N : ℝ) ^ (epsilon / 2) := by
-  have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hhalf : 0 < epsilon / 2 := by positivity
+  pm_2807
+  pm_4910 hhalf epsilon
   have hone : (1 : ℝ) ≤ (N : ℝ) ^ (epsilon / 2) :=
     Real.one_le_rpow hNReal hhalf.le
   have hlog := Real.log_le_rpow_div
@@ -55,10 +56,8 @@ theorem heathBrown_one_add_log_rpow_le
     (1 + Real.log (N : ℝ)) ^ r ≤
       (heathBrownLogConstant epsilon) ^ r *
         (N : ℝ) ^ (epsilon / 2) := by
-  have hNReal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hbase : 0 ≤ 1 + Real.log (N : ℝ) := by
-    have := Real.log_nonneg hNReal
-    linarith
+  pm_2807
+  pm_7636 hbase hNReal
   have hmain := Real.rpow_le_rpow hbase
     (heathBrown_one_add_log_le hN hepsilon) hr0
   have hconstant : 0 ≤ heathBrownLogConstant epsilon :=

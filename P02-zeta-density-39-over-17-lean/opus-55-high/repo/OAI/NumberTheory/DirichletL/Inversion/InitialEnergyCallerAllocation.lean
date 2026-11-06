@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSector
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite Inve
 open InverseInitialEnergyCallerSector
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -27,17 +28,17 @@ def modeCoefficient (Ψ:Eis→*ℂ)(j:Eis)(Z D B v θ H:ℝ)
       (relativeLog (coordinates p (sourcePoint x ∅ ∅)) Z D B v θ H)
 
 def allocatedMode (u:Eisˣ)(pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)
-    (slots J₁ J₂:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (slots J₁ J₂:Finset σ)(lists:σ→ Finset ι)(a:σ→ι→ℂ)
     (ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
     (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) : ℂ :=
   let height := profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2
   modeCoefficient p hp hcop hg Ψ j Z D B v θ H x ρ z *
     (star (primeMark J₁ lists a (x.common∪x.overlap))*primeMark J₂ lists a (x.common∪x.overlap))*
     (star (child p hp hcop hg pool (secondRayMinus Ψ ρ) j (slots\J₁) lists a
-      (childLogTest ω₁ (-height 4)) (Z^(columnCenter D B v))
+      (childLogTest ω₁ (-height 4)) (Z ^(columnCenter D B v))
       (initialChild (toTuple p (sectorSource u x))))*
       child p hp hcop hg pool (secondRayPlus Ψ ρ) j (slots\J₂) lists a
-      (childLogTest ω₂ (height 5)) (Z^(columnCenter D B v))
+      (childLogTest ω₂ (height 5)) (Z ^(columnCenter D B v))
       (negativeChild (initialChild (toTuple p (sectorSource u x)))))
 
 theorem rowMode_eq_allocations
@@ -45,7 +46,7 @@ theorem rowMode_eq_allocations
     (x:Source (ι:=ι) 0)(hdiv:x.divisor⊆x.common)(u:Eisˣ)
     (hu:unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
     (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
-    (lists:σ→Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
+    (lists:σ→ Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
     (ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) :
     rowMode p hp hcop hg hpr pool Ψ j slots lists a ω₁ ω₂ Z D B v θ H x ρ z=
       ∑J₁∈slots.powerset,∑J₂∈slots.powerset,
@@ -55,12 +56,8 @@ theorem rowMode_eq_allocations
   dsimp only
   rw [markedModeColumn_sector p hp hcop hg hpr x hdiv u hu,
     markedModeColumn_negative_sector p hp hcop hg hpr x hdiv u hu]
-  simp only [star_sum,Finset.sum_mul,Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro J₁ hJ₁
-  apply Finset.sum_congr rfl
-  intro J₂ hJ₂
+  pm_487 star_sum Finset.sum_mul Finset.mul_sum Finset.sum_comm
+  pm_3397 J₁ hJ₁ J₂ hJ₂
   simp only [star_mul,allocatedMode,modeCoefficient]
   ring
 

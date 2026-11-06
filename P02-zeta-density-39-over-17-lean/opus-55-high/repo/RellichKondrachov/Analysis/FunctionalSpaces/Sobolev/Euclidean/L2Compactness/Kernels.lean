@@ -68,7 +68,7 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
     exact hx.1
   have hf0_ne : f (0 : E) ≠ 0 := by
     -- `f 0 = 1`.
-    simp [hf0]
+    grind
   -- The integral is strictly positive (Lebesgue is an open-positive measure).
   have hIpos :
       0 < ∫ x, f x ∂(volume : Measure E) := by
@@ -77,11 +77,11 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
         hf_cont hf_cs hf_nonneg hf0_ne)
   set I : ℝ := ∫ x, f x ∂(volume : Measure E)
   have hI0 : I ≠ 0 := ne_of_gt hIpos
-  have hIpos' : 0 < I := by simpa [I] using hIpos
+  have hIpos' : 0 < I := by grind
   -- Normalize: `ψ = I⁻¹ • f`.
   let ψ : E → ℝ := fun x => I⁻¹ * f x
   have hψc : Continuous ψ := by
-    exact (continuous_const.mul hf_cont)
+    fun_prop
   have hψcs : HasCompactSupport ψ := by
     exact
       (HasCompactSupport.smul_left (f := fun _x : E => I⁻¹) (f' := f) hf_cs)
@@ -89,20 +89,20 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
     intro x
     have hInv : 0 ≤ I⁻¹ := by
       have : 0 ≤ I := le_of_lt hIpos'
-      simpa using inv_nonneg.2 this
-    simpa [ψ] using mul_nonneg hInv (hf_nonneg x)
+      simp_all
+    aesop
   have hψint : ∫ x, ψ x ∂(volume : Measure E) = 1 := by
     have : (∫ x, ψ x ∂(volume : Measure E)) = I⁻¹ * I := by
       -- Pull out the constant scalar.
       simpa [ψ, I] using
         (MeasureTheory.integral_const_mul (μ := (volume : Measure E)) (r := I⁻¹) (f := f))
-    simp [this, hI0]
+    grind
   have hψ_tsupp : tsupport ψ ⊆ Metric.ball (0 : E) deltaLoss := by
     -- Scaling does not enlarge topological support; use the bump support inclusion.
     have hsub : tsupport ψ ⊆ tsupport f := by
       simpa [ψ, smul_eq_mul] using (tsupport_smul_subset_right (f := fun _x : E => I⁻¹) (g := f))
     exact hsub.trans hf_tsupp
-  exact ⟨ψ, hψc, hψcs, hψ0, hψint, hψ_tsupp⟩
+  grind
 
 end Volume
 

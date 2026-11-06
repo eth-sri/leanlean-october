@@ -24,7 +24,7 @@ lemma original_active (s:Input ι)(R seed:Ideal HeckeFamily.O):
   unfold original OriginalData.active
   congr 1
   funext j
-  cases j <;> rfl
+  aesop
 
 lemma active_volume (s:Input ι):volume (activeInput s)=volume s:=rfl
 

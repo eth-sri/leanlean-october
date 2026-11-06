@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,29 +40,28 @@ def remainingSets (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O)) :
     (liveIndices B ⊕ Fin 2) → Finset (Ideal O) :=
   Sum.elim (fun i => S (Sum.inl i.val)) (fun j => S (Sum.inr j))
 
-theorem remaining_mem (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+section
+variable (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+include B S
+theorem remaining_mem
     (u : Tuple ι) (hu : u∈Fintype.piFinset S) :
     remainingTuple B u∈Fintype.piFinset (remainingSets B S) := by
-  apply Fintype.mem_piFinset.mpr
-  intro i
-  rcases i with i|j
+  pm_8349
   · exact Fintype.mem_piFinset.mp hu (Sum.inl i.val)
   · exact Fintype.mem_piFinset.mp hu (Sum.inr j)
 
-theorem restore_mem (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem restore_mem
     (hg : ∀ i,B (Sum.inl i)≠1 → (1 : Ideal O)∈S (Sum.inl i))
     (v : Tuple (liveIndices B)) (hv : v∈Fintype.piFinset (remainingSets B S)) :
     restoreTuple B v∈Fintype.piFinset S := by
-  apply Fintype.mem_piFinset.mpr
-  intro i
-  rcases i with i|j
+  pm_8349
   · simp only [restoreTuple,Sum.elim_inl]
     split_ifs with hi
     · exact Fintype.mem_piFinset.mp hv (Sum.inl ⟨i,hi⟩)
     · exact hg i (by simpa [liveIndices] using hi)
   · exact Fintype.mem_piFinset.mp hv (Sum.inr j)
 
-theorem remaining_box_sum (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem remaining_box_sum
     (hf : ∀ i,B (Sum.inl i)≠1 → ∀ I∈S (Sum.inl i),I=1)
     (hg : ∀ i,B (Sum.inl i)≠1 → (1 : Ideal O)∈S (Sum.inl i))
     (F : Tuple ι → ℂ) :
@@ -70,15 +70,15 @@ theorem remaining_box_sum (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O
   apply Finset.sum_bij (fun u _ => remainingTuple B u)
   · exact fun u hu => remaining_mem B S u hu
   · intro u hu v hv he
-    have hu' := restore_remaining B u (fun i hi => hf i hi _ (Fintype.mem_piFinset.mp hu _))
-    have hv' := restore_remaining B v (fun i hi => hf i hi _ (Fintype.mem_piFinset.mp hv _))
+    pm_8440 hu' u hu
+    pm_8440 hv' v hv
     rw [← hu',← hv',he]
   · intro v hv
     exact ⟨restoreTuple B v,restore_mem B S hg v hv,remaining_restore B v⟩
   · intro u hu
     rw [restore_remaining B u (fun i hi => hf i hi _ (Fintype.mem_piFinset.mp hu _))]
 
-theorem remaining_box_sum_gate (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem remaining_box_sum_gate
     (hf : ∀ i,B (Sum.inl i)≠1 → ∀ I∈S (Sum.inl i),I=1)
     (F : Tuple ι → ℂ) :
     (∑ u∈Fintype.piFinset S,F u)=
@@ -94,6 +94,7 @@ theorem remaining_box_sum_gate (B : Tuple ι) (S : (ι ⊕ Fin 2) → Finset (Id
       have hui := Fintype.mem_piFinset.mp hu (Sum.inl i)
       rwa [hf i hi _ hui] at hui
     rw [he,Finset.sum_empty]
+end
 
 end SevenEighths.CenteredMomentRemainingBox
 

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.LiteralSources
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
 
 @[expose] public section
 
@@ -127,7 +128,7 @@ namespace InitialMeanSquare
 
 section
 open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 
 end
 

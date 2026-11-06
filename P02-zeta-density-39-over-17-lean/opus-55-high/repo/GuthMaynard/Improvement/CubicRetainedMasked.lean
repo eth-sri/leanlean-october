@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.CubicMaskedEstimate
 public import GuthMaynard.Improvement.CubicRetainedPartition
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
@@ -28,7 +27,7 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
         (retainedPoissonKernel (volume.restrict (Icc l u)) a L (poissonModes (T^(1+η)/L)))‖ ≤
         C*T^ε*(T^2*M*Real.sqrt M+T*L*Real.sqrt M*Real.sqrt E₀+
           Real.sqrt A₂*(T^2*M+T*L*Real.sqrt E)) := by
-  obtain ⟨η,C,T₀,hη,hη1,hC,hT₀,h⟩ := cubic_masked_spatial_estimate ha hl hlu hs hε
+  pm_7328 hη1 h cubic_masked_spatial_estimate
   refine ⟨η,8*C,T₀,hη,hη1,by positivity,hT₀,?_⟩
   intro T L t₀ t₁ μ A hT hLl hLu ht hlen hm h0 hi h2 hsup hA hAsym
   let M := ∫ t, μ t^2
@@ -36,15 +35,14 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
   let E₀ := ∫ ξ in Aᶜ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^4
   let A₂ := ∫ ξ in A, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2
   let Q := ∫ ξ in Aᶜ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2
-  let U := T^(1+η)/L
-  let X := T^2*M*Real.sqrt M+T*L*Real.sqrt M*Real.sqrt E₀
+  pm_5436
+  pm_5085 M E₀
   let Y := Real.sqrt A₂*(T^2*M+T*L*Real.sqrt E)
   let Z := T^(-100:ℝ)*Real.sqrt M^3
-  have hT1 : 1 ≤ T := by linarith
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
-  have hM : 0 ≤ M := integral_nonneg (fun _ => sq_nonneg _)
-  have hQ : 0 ≤ Q := integral_nonneg (fun _ => sq_nonneg _)
+  pm_4572
+  pm_4573
+  pm_4586 hM M
+  pm_4586 hQ Q
   have hQM : Q ≤ M := by
     calc
       _ ≤ ∫ ξ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2 :=
@@ -81,13 +79,13 @@ theorem retained_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
         · positivity
       _ = T^ε*X := by dsimp [X]; ring
   have hh₁ : ‖maskedRetainedCubic a μ L U A univ univ‖ ≤ C*(T^ε*Y+Z) := by
-    simpa only [maskedRetainedCubic, Y, Z, M, E, A₂, mul_assoc, setIntegral_univ,ordinary_real_fourier_integral_square hi h2] using hhigh₁
+    pm_4536 hhigh₁
   have hh₂ : ‖maskedRetainedCubic a μ L U A univ Aᶜ‖ ≤ C*(T^ε*Y+Z) := by
-    simpa only [maskedRetainedCubic, Y, Z, M, E, A₂, mul_assoc, setIntegral_univ,ordinary_real_fourier_integral_square hi h2] using hhigh₂
+    pm_4536 hhigh₂
   have hh₃ : ‖maskedRetainedCubic a μ L U A Aᶜ Aᶜ‖ ≤ C*(T^ε*Y+Z) := by
-    simpa only [maskedRetainedCubic, Y, Z, M, E, A₂, mul_assoc, setIntegral_univ,ordinary_real_fourier_integral_square hi h2] using hhigh₃
-  have hX : 0 ≤ X := by dsimp [X]; positivity
-  have hY : 0 ≤ Y := by dsimp [Y]; positivity
+    pm_4536 hhigh₃
+  pm_4556
+  pm_61 hY Y
   have hZ : Z ≤ T^ε*X := by
     have hpow : T^(-100:ℝ) ≤ T^ε*T^2 := by
       rw [← Real.rpow_natCast T 2,← Real.rpow_add hTp]

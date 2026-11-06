@@ -22,19 +22,8 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 def quadraticRemainderConstant (H M₀ M₂ M₃ : ℝ) : ℝ :=
   4*M₀/(H*Real.pi)+(2*H*M₂+2*H*(M₂+H*M₃))/(2*Real.pi)
 
-theorem norm_quadratic_window_remainder_le
-    {W : ℝ → ℝ} {T H M₀ M₂ M₃ : ℝ}
-    (hW : ContDiff ℝ ∞ W) (hT : 0 < T) (hH : 0 < H)
-    (h₀ : |W 0| ≤ M₀)
-    (h₂ : ∀ z : ℝ, |iteratedDeriv 2 W z| ≤ M₂)
-    (h₃ : ∀ z : ℝ, |iteratedDeriv 3 W z| ≤ M₃) :
-    ‖(∫ z in (-H)..H, (W z : ℂ)*betaQuadraticKernel T z)-
-      (W 0 : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))‖ ≤
-        quadraticRemainderConstant H M₀ M₂ M₃/T := by
-  have hparts := norm_integral_sq_mul_betaQuadraticKernel_le
-    (quadraticTaylorCoefficient_contDiff hW) hT hH
-    (abs_quadraticTaylorCoefficient_le h₂)
-    (abs_deriv_quadraticTaylorCoefficient_le hW h₃)
+set_option hygiene false in
+macro "pb_160" : tactic => `(tactic| (
   have htail := norm_betaQuadraticWindow_sub_main hT hH
   rw [integral_weighted_betaQuadraticKernel_taylor hW]
   have he :
@@ -55,11 +44,24 @@ theorem norm_quadratic_window_remainder_le
     exact mul_le_mul h₀ htail (norm_nonneg _) ((abs_nonneg _).trans h₀)
   apply (add_le_add hmain hparts).trans_eq
   unfold quadraticRemainderConstant
-  field_simp
+  field_simp))
+section
+variable {W : ℝ → ℝ} {T H M₀ M₂ M₃ : ℝ} (hW : ContDiff ℝ ∞ W) (hT : 0 < T) (hH : 0 < H)
+include W T H M₀ M₂ M₃ hW hT hH
+theorem norm_quadratic_window_remainder_le
+    (h₀ : |W 0| ≤ M₀)
+    (h₂ : ∀ z : ℝ, |iteratedDeriv 2 W z| ≤ M₂)
+    (h₃ : ∀ z : ℝ, |iteratedDeriv 3 W z| ≤ M₃) :
+    ‖(∫ z in (-H)..H, (W z : ℂ)*betaQuadraticKernel T z)-
+      (W 0 : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))‖ ≤
+        quadraticRemainderConstant H M₀ M₂ M₃/T := by
+  have hparts := norm_integral_sq_mul_betaQuadraticKernel_le
+    (quadraticTaylorCoefficient_contDiff hW) hT hH
+    (abs_quadraticTaylorCoefficient_le h₂)
+    (abs_deriv_quadraticTaylorCoefficient_le hW h₃)
+  pb_160
 
 theorem norm_quadratic_global_remainder_le
-    {W : ℝ → ℝ} {T H M₀ M₂ M₃ : ℝ}
-    (hW : ContDiff ℝ ∞ W) (hT : 0 < T) (hH : 0 < H)
     (hs : Function.support W ⊆ Ioc (-H) H)
     (h₀ : |W 0| ≤ M₀)
     (h₂ : ∀ z : ℝ, |iteratedDeriv 2 W z| ≤ M₂)
@@ -74,5 +76,6 @@ theorem norm_quadratic_global_remainder_le
     exact hz (by simp only [hzero,Complex.ofReal_zero,zero_mul])
   rw [← intervalIntegral.integral_eq_integral_of_support_subset hs']
   exact norm_quadratic_window_remainder_le hW hT hH h₀ h₂ h₃
+end
 
 end TaoTrudgianYang2025

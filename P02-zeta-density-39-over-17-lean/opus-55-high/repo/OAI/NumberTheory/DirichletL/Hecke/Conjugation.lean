@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.IdealOperations
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,18 +12,20 @@ open scoped Classical Topology ComplexConjugate
 open Complex
 namespace SevenEighths.HeckeFamily
 
-theorem idealCoeff_inverse_conj (χ : Character) (J : Ideal O) :
+section
+variable (χ : Character)
+include χ
+theorem idealCoeff_inverse_conj (J : Ideal O) :
     idealCoeff χ.inverse J=conj (idealCoeff χ J) := by
-  let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
+  pm_4915 χ.modulus Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   by_cases hJ : J=0
-  · subst J
-    rw [map_zero,map_zero,map_zero]
+  grind
   have hg := ConcretePrimeRowBridge.idealGenerator_ne_zero J hJ
   rw [←ConcretePrimeRowBridge.span_idealGenerator J,
     idealCoeff_span χ.inverse hg,idealCoeff_span χ hg]
   exact (MulChar.star_apply' χ.residue _).symm
 
-theorem idealTerm_inverse_conj (χ : Character) (s : ℂ) (J : Ideal O) :
+theorem idealTerm_inverse_conj (s : ℂ) (J : Ideal O) :
     idealTerm χ.inverse s J=conj (idealTerm χ (conj s) J) := by
   by_cases hJ : J=0
   · subst J
@@ -36,7 +39,7 @@ theorem idealTerm_inverse_conj (χ : Character) (s : ℂ) (J : Ideal O) :
   rw [idealCoeff_inverse_conj,map_div₀]
   congr 1
 
-theorem LFunction_inverse_conj (χ : Character) (hχ : χ.residue≠1) (s : ℂ) :
+theorem LFunction_inverse_conj (hχ : χ.residue≠1) (s : ℂ) :
     LFunction χ.inverse s=conj (LFunction χ (conj s)) := by
   have hi : χ.inverse.residue≠1 := by
     change χ.residue⁻¹≠1
@@ -47,12 +50,12 @@ theorem LFunction_inverse_conj (χ : Character) (hχ : χ.residue≠1) (s : ℂ)
     simpa only [Function.comp_def,conj_conj] using
       (LFunction_entire_nonprincipal χ hχ (conj z)).conj_conj
   have he : LFunction χ.inverse=(fun z => conj (LFunction χ (conj z))) := by
-    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr hA).eq_of_eventuallyEq
-      (Complex.analyticOnNhd_univ_iff_differentiable.mpr hB) (z₀ := (2 : ℂ))
-    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ)<(2 : ℂ).re)] with z hz
+    pm_519 hA hB
+    pm_800
     rw [LFunction_eq_ideal_tsum χ.inverse hz,LFunction_eq_ideal_tsum χ (by simpa using hz),conj_tsum]
     exact tsum_congr (idealTerm_inverse_conj χ z)
   exact congr_fun he s
+end
 
 end SevenEighths.HeckeFamily
 

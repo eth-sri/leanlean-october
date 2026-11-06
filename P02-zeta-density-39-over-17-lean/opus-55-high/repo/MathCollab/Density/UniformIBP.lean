@@ -4,6 +4,7 @@ public import Mathlib.Analysis.Calculus.ContDiff.Deriv
 public import Mathlib.Analysis.Calculus.Deriv.Support
 public import Mathlib.Topology.Order.Compact
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -102,7 +103,7 @@ theorem ibpAmplitude_uniform_bound {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w) (
       norm_num at hgap
     exact (ibpAmplitude_contDiffAt hw n hne).continuousAt.norm.continuousWithinAt
   obtain ⟨C, hC⟩ := (offBandParameters_isCompact.prod isCompact_Icc).bddAbove_image hcont
-  refine ⟨max C 0, le_max_right _ _, ?_⟩
+  pm_6166 C
   intro p hp x hx
   exact (hC ⟨(p, x), ⟨hp, hx⟩, rfl⟩).trans (le_max_left _ _)
 
@@ -113,30 +114,26 @@ theorem offBand_denominator_gap {H v k x : ℝ} (hH : 0 < H)
     (H + |k|) / 300 ≤ |v - 2 * Real.pi * k * x| := by
   have hp := Real.pi_gt_three
   have hp4 := Real.pi_lt_four
-  have hx0 : 0 ≤ x := by linarith [hx.1]
+  pm_7847
   by_cases hk0 : k ≤ 0
   · rw [abs_of_nonpos hk0]
     have hprod : 2 * Real.pi * (-k) * (1 / 3) ≤ 2 * Real.pi * (-k) * x :=
       mul_le_mul_of_nonneg_left hx.1 (mul_nonneg (by positivity) (neg_nonneg.mpr hk0))
     have hpk : 3 * (-k) ≤ Real.pi * (-k) :=
       mul_le_mul_of_nonneg_right hp.le (by linarith)
-    have hsign : 0 ≤ v - 2 * Real.pi * k * x := by nlinarith
-    rw [abs_of_nonneg hsign]
-    nlinarith
+    pm_1431
   · have hkpos : 0 < k := lt_of_not_ge hk0
     rw [abs_of_pos hkpos]
     rcases hk with hlo | hhi
     · have hsmall : k * (20 * Real.pi) < H := (lt_div_iff₀ (by positivity)).1 hlo
       have hprod : 2 * Real.pi * k * x ≤ 2 * Real.pi * k * 6 :=
         mul_le_mul_of_nonneg_left hx.2 (by positivity)
-      have hpk : 3 * k ≤ Real.pi * k := mul_le_mul_of_nonneg_right hp.le hkpos.le
-      have hsign : 0 ≤ v - 2 * Real.pi * k * x := by nlinarith
-      rw [abs_of_nonneg hsign]
-      nlinarith
+      pm_7269
+      pm_1431
     · have hlarge : 4 * H < k * Real.pi := (div_lt_iff₀ Real.pi_pos).1 hhi
       have hprod : 2 * Real.pi * k * (1 / 3) ≤ 2 * Real.pi * k * x :=
         mul_le_mul_of_nonneg_left hx.1 (by positivity)
-      have hpk : 3 * k ≤ Real.pi * k := mul_le_mul_of_nonneg_right hp.le hkpos.le
+      pm_7269
       have hpk4 : Real.pi * k ≤ 4 * k := mul_le_mul_of_nonneg_right hp4.le hkpos.le
       have hsign : v - 2 * Real.pi * k * x ≤ 0 := by nlinarith
       rw [abs_of_nonpos hsign]
@@ -147,7 +144,7 @@ theorem normalized_offBand_mem {H v k : ℝ} (hH : 0 < H)
     (hv : H ≤ v) (hv2 : v ≤ 2 * H)
     (hk : k < H / (20 * Real.pi) ∨ 4 * H / Real.pi < k) :
     (v / (H + |k|), (2 * Real.pi * k) / (H + |k|)) ∈ offBandParameters := by
-  have hR : 0 < H + |k| := by positivity
+  pm_425 hR H k
   refine ⟨?_, ?_, ?_⟩
   · rw [abs_div, abs_of_pos hR, abs_of_pos (hH.trans_le hv)]
     apply (div_le_iff₀ hR).2
@@ -166,11 +163,14 @@ theorem normalized_offBand_mem {H v k : ℝ} (hH : 0 < H)
 def logOscillation (R : ℝ) (p : ℝ × ℝ) (x : ℝ) : ℂ :=
   Complex.exp (((R * (p.1 * Real.log x - p.2 * x) : ℝ) : ℂ) * Complex.I)
 
-theorem norm_logOscillation (R : ℝ) (p : ℝ × ℝ) (x : ℝ) :
+section
+variable (R : ℝ) (p : ℝ × ℝ)
+include R p
+theorem norm_logOscillation (x : ℝ) :
     ‖logOscillation R p x‖ = 1 := by
   simp [logOscillation, Complex.norm_exp]
 
-theorem hasDerivAt_logOscillation (R : ℝ) (p : ℝ × ℝ) {x : ℝ} (hx : x ≠ 0) :
+theorem hasDerivAt_logOscillation {x : ℝ} (hx : x ≠ 0) :
     HasDerivAt (logOscillation R p)
       (((R * (p.1 / x - p.2) : ℝ) : ℂ) * Complex.I * logOscillation R p x) x := by
   have hr : HasDerivAt (fun y : ℝ => R * (p.1 * Real.log y - p.2 * y))
@@ -183,6 +183,7 @@ theorem hasDerivAt_logOscillation (R : ℝ) (p : ℝ × ℝ) {x : ℝ} (hx : x �
   · rfl
   · dsimp [logOscillation]
     ring
+end
 
 theorem ibpAmplitude_contDiffAt_slice {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     (n : ℕ) {p : ℝ × ℝ} {x : ℝ} (h : p.1 - p.2 * x ≠ 0) :
@@ -207,36 +208,34 @@ theorem offBandParameters_ne {p : ℝ × ℝ} (hp : p ∈ offBandParameters)
 def ibpIntegral (w : ℝ → ℂ) (R : ℝ) (p : ℝ × ℝ) (n : ℕ) : ℂ :=
   ∫ x in (1 / 3 : ℝ)..6, ibpAmplitude w n p x * logOscillation R p x
 
+section
+variable {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w) (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+include w hw hws
 /-- Exact one-step integration by parts, with vanishing endpoint amplitudes. -/
-theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+theorem ibpIntegral_recurrence
     {p : ℝ × ℝ} (hp : p ∈ offBandParameters) (R : ℝ) (n : ℕ) :
     ((R : ℂ) * Complex.I) * ibpIntegral w R p n = -ibpIntegral w R p (n + 1) := by
   let g : ℝ → ℂ := fun x => ibpAmplitude w n p x * phaseQuotient p x
   have hg : ∀ x ∈ uIcc (1 / 3 : ℝ) 6,
       HasDerivAt g (ibpAmplitude w (n + 1) p x) x := by
-    intro x hx
-    have hx' : x ∈ Icc (1 / 3 : ℝ) 6 := by simpa only [uIcc_of_le (by norm_num : (1 / 3 : ℝ) ≤ 6)] using hx
+    pm_4280
     exact ((ibpAmplitude_contDiffAt_slice hw n (offBandParameters_ne hp hx')).mul
       (phaseQuotient_contDiffAt_slice (offBandParameters_ne hp hx'))).differentiableAt
         (by simp) |>.hasDerivAt
   have he : ∀ x ∈ uIcc (1 / 3 : ℝ) 6,
       HasDerivAt (logOscillation R p)
         (((R * (p.1 / x - p.2) : ℝ) : ℂ) * Complex.I * logOscillation R p x) x := by
-    intro x hx
-    have hx' : x ∈ Icc (1 / 3 : ℝ) 6 := by simpa only [uIcc_of_le (by norm_num : (1 / 3 : ℝ) ≤ 6)] using hx
+    pm_4280
     exact hasDerivAt_logOscillation R p (by linarith [hx'.1])
   have hgi : IntervalIntegrable (ibpAmplitude w (n + 1) p) volume (1 / 3) 6 := by
     apply ContinuousOn.intervalIntegrable
-    intro x hx
-    have hx' : x ∈ Icc (1 / 3 : ℝ) 6 := by simpa only [uIcc_of_le (by norm_num : (1 / 3 : ℝ) ≤ 6)] using hx
+    pm_4280
     exact (ibpAmplitude_contDiffAt_slice hw (n+1) (offBandParameters_ne hp hx')).continuousAt.continuousWithinAt
   have hei : IntervalIntegrable
       (fun x : ℝ => ((R * (p.1 / x - p.2) : ℝ) : ℂ) * Complex.I * logOscillation R p x)
       volume (1 / 3) 6 := by
     apply ContinuousOn.intervalIntegrable
-    intro x hx
-    have hx' : x ∈ Icc (1 / 3 : ℝ) 6 := by simpa only [uIcc_of_le (by norm_num : (1 / 3 : ℝ) ≤ 6)] using hx
+    pm_4280
     have hx0 : x ≠ 0 := by linarith [hx'.1]
     apply ContinuousAt.continuousWithinAt
     exact ((Complex.continuous_ofReal.continuousAt.comp
@@ -256,8 +255,7 @@ theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
           (((R * (p.1 / x - p.2) : ℝ) : ℂ) * Complex.I * logOscillation R p x) := by
       rw [ibpIntegral, ← intervalIntegral.integral_const_mul]
       apply intervalIntegral.integral_congr
-      intro x hx
-      have hx' : x ∈ Icc (1 / 3 : ℝ) 6 := by simpa only [uIcc_of_le (by norm_num : (1 / 3 : ℝ) ≤ 6)] using hx
+      pm_4280
       have hx0 : (x : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (by linarith [hx'.1])
       have hd : (p.1 : ℂ) - (p.2 : ℂ) * (x : ℂ) ≠ 0 := by
         exact_mod_cast offBandParameters_ne hp hx'
@@ -268,8 +266,7 @@ theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
       field_simp [hx0, hd, hd']
     _ = -ibpIntegral w R p (n + 1) := hparts
 
-theorem ibpIntegral_norm_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+theorem ibpIntegral_norm_recurrence
     {p : ℝ × ℝ} (hp : p ∈ offBandParameters) {R : ℝ} (hR : 0 < R) (n : ℕ) :
     R * ‖ibpIntegral w R p n‖ = ‖ibpIntegral w R p (n+1)‖ := by
   have hh := congrArg norm (ibpIntegral_recurrence hw hws hp R n)
@@ -277,11 +274,10 @@ theorem ibpIntegral_norm_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     Complex.norm_I, mul_one, norm_neg] using hh
 
 /-- Arbitrary-order uniform decay on the fixed compact parameter set. -/
-theorem uniform_normalized_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (A : ℕ) :
+theorem uniform_normalized_decay (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ offBandParameters, ∀ R : ℝ, 0 < R →
       ‖ibpIntegral w R p 0‖ ≤ C / R ^ A := by
-  obtain ⟨C, hC, hbound⟩ := ibpAmplitude_uniform_bound hw A
+  pm_98 C hC hbound ibpAmplitude_uniform_bound hw A
   refine ⟨6 * C, by positivity, ?_⟩
   intro p hp R hR
   have hpower (n : ℕ) : R ^ n * ‖ibpIntegral w R p 0‖ = ‖ibpIntegral w R p n‖ := by
@@ -302,6 +298,7 @@ theorem uniform_normalized_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   rw [mul_comm, hpower]
   norm_num at hnorm
   nlinarith
+end
 
 /-- The off-band estimate with the constant chosen before H, v, and k. -/
 theorem uniform_offBand_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
@@ -311,10 +308,10 @@ theorem uniform_offBand_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
       ‖∫ x in (1 / 3 : ℝ)..6, w x *
         Complex.exp (((v * Real.log x - 2 * Real.pi * k * x : ℝ) : ℂ) * Complex.I)‖ ≤
           C / (H + |k|) ^ A := by
-  obtain ⟨C, hC, hbound⟩ := uniform_normalized_decay hw hws A
+  pm_837 C hC hbound uniform_normalized_decay hw hws A
   refine ⟨C, hC, ?_⟩
   intro H v k hH hv hv2 hk
-  have hR : 0 < H + |k| := by positivity
+  pm_425 hR H k
   have hh := hbound _ (normalized_offBand_mem hH hv hv2 hk) _ hR
   have heq : ibpIntegral w (H + |k|)
       (v / (H + |k|), (2 * Real.pi * k) / (H + |k|)) 0 =

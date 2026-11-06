@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicCell
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesBudget
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRank
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSour
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def extra (negative : Bool) (c : CubeCoordinates ι) : Finset ι :=
   if negative then c.rightExponent.support else c.leftExponent.support
@@ -42,24 +43,24 @@ lemma label_parent_valid (pool : Finset ι) (Q : Finset (ι→₀ℕ))
 include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem label_parent_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (k : SourceIndex) (l j : ℕ) (Z ell eta : ℝ) (hZ : 1<Z) (heta : 0≤eta) (hbin : 2≤Z^eta)
-    (hQ : ∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta)) :
+    (k : SourceIndex) (l j : ℕ) (Z ell eta : ℝ) (hZ : 1<Z) (heta : 0≤eta) (hbin : 2≤Z ^eta)
+    (hQ : ∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z ^(ell+eta)) :
     ∀y∈InverseFirstGlobalCaps.labelParentCell p pool Q (fun _ _=>1) k l j,
-      ‖eisEmbedding (primeProduct p y.cube.support y.cube.leftExponent)‖^2≤Z^(ell+eta) ∧
-      ‖eisEmbedding (primeProduct p y.cube.support y.cube.rightExponent)‖^2≤Z^(ell+eta) ∧
+      ‖eisEmbedding (primeProduct p y.cube.support y.cube.leftExponent)‖^2≤Z ^(ell+eta) ∧
+      ‖eisEmbedding (primeProduct p y.cube.support y.cube.rightExponent)‖^2≤Z ^(ell+eta) ∧
       primeProductNorm p (cubeActiveSupport y.cube.support
         (fun i=>y.cube.leftExponent i+y.cube.rightExponent i) y.cube.leftBit y.cube.rightBit)
-        ≤Z^(InverseFirstGlobalCaps.dyadicExponent Z (k 4)+eta) ∧
-      primeProductNorm p y.firstCommon≤Z^(InverseFirstGlobalCaps.dyadicExponent Z (k 2)+eta) ∧
-      primeProductNorm p y.quotientSupport≤Z^(InverseFirstGlobalCaps.dyadicExponent Z l+eta) ∧
-      Z^(InverseFirstGlobalCaps.dyadicExponent Z j-eta)≤InverseFirstGlobalCaps.jNorm p (toOriginal y) ∧
-      InverseFirstGlobalCaps.jNorm p (toOriginal y)≤Z^(InverseFirstGlobalCaps.dyadicExponent Z j+eta) ∧
-      primeProductNorm p y.firstDivisor≤Z^(InverseFirstGlobalCaps.dyadicExponent Z (k 3)+eta) := by
+        ≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z (k 4)+eta) ∧
+      primeProductNorm p y.firstCommon≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z (k 2)+eta) ∧
+      primeProductNorm p y.quotientSupport≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z l+eta) ∧
+      Z ^(InverseFirstGlobalCaps.dyadicExponent Z j-eta)≤InverseFirstGlobalCaps.jNorm p (toOriginal y) ∧
+      InverseFirstGlobalCaps.jNorm p (toOriginal y)≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z j+eta) ∧
+      primeProductNorm p y.firstDivisor≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z (k 3)+eta) := by
   intro y hy
   have hparent := (Finset.mem_filter.mp hy).1
   have hc := InverseFirstGlobalCaps.parentCell_cube_bounds p pool Q (fun _ _=>1) k l Z ell eta hQ y hparent
-  have hn := InverseFirstGlobalCaps.parentCell_norm_bounds p hp pool Q (fun _ _=>1) k l Z eta hZ hbin y hparent
-  have hi := InverseFirstGlobalCaps.parentCell_ideal_bounds p hp pool Q (fun _ _=>1) k l Z eta hZ hbin y hparent
+  pm_6838 hn InverseFirstGlobalCaps.parentCell_norm_bounds
+  pm_6838 hi InverseFirstGlobalCaps.parentCell_ideal_bounds
   have hj := InverseFirstGlobalCaps.labelParentCell_bounds p hp pool Q (fun _ _=>1) k l j Z eta hZ hbin y hy
   refine ⟨hc.1,hc.2,?_,hi.1.2,?_,?_,hj.2.2,?_⟩
   · simpa only [InverseFirstGlobalCaps.sourceIdeal_norm] using hi.2.2.2
@@ -70,25 +71,25 @@ theorem label_parent_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
 include hp in
 
 theorem retained_label_numeric (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (k : SourceIndex) (l j : ℕ) (Z ell eta : ℝ) (hZ : 1<Z) (heta : 0≤eta) (hbin : 2≤Z^eta)
-    (hQ : ∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (cutoff : Finset ι→Finset ι→ℝ) (b X : ℝ) :
+    (k : SourceIndex) (l j : ℕ) (Z ell eta : ℝ) (hZ : 1<Z) (heta : 0≤eta) (hbin : 2≤Z ^eta)
+    (hQ : ∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z ^(ell+eta))
+    (negative : Bool) (J : Finset σ) (lists : σ→ Finset ι) (cutoff : Finset ι→ Finset ι→ℝ) (b X : ℝ) :
     let source := supportedRetainedSource p (extra negative)
       (InverseFirstGlobalCaps.labelParentCell p pool Q (fun _ _=>1) k l j) negative J lists pool cutoff b X
     ∀x∈source,
-      ‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤Z^(ell+eta) ∧
-      ‖eisEmbedding (primeProduct p x.cube.support x.cube.rightExponent)‖^2≤Z^(ell+eta) ∧
+      ‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤Z ^(ell+eta) ∧
+      ‖eisEmbedding (primeProduct p x.cube.support x.cube.rightExponent)‖^2≤Z ^(ell+eta) ∧
       primeProductNorm p (cubeActiveSupport x.cube.support
         (fun i=>x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)
-        ≤Z^(InverseFirstGlobalCaps.dyadicExponent Z (k 4)+eta) ∧
-      primeProductNorm p x.firstCommon≤Z^(InverseFirstGlobalCaps.dyadicExponent Z (k 2)+eta) ∧
-      (Ideal.absNorm x.quotient:ℝ)≤Z^(InverseFirstGlobalCaps.dyadicExponent Z l+eta) ∧
-      Z^(InverseFirstGlobalCaps.dyadicExponent Z j-eta)≤
+        ≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z (k 4)+eta) ∧
+      primeProductNorm p x.firstCommon≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z (k 2)+eta) ∧
+      (Ideal.absNorm x.quotient:ℝ)≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z l+eta) ∧
+      Z ^(InverseFirstGlobalCaps.dyadicExponent Z j-eta)≤
         ‖eisEmbedding (jLabel p x.cube.support (fun i=>x.cube.leftExponent i+x.cube.rightExponent i)
           x.cube.leftBit x.cube.rightBit)‖^2 ∧
       ‖eisEmbedding (jLabel p x.cube.support (fun i=>x.cube.leftExponent i+x.cube.rightExponent i)
-        x.cube.leftBit x.cube.rightBit)‖^2≤Z^(InverseFirstGlobalCaps.dyadicExponent Z j+eta) ∧
-      primeProductNorm p x.firstDivisor≤Z^(InverseFirstGlobalCaps.dyadicExponent Z (k 3)+eta) := by
+        x.cube.leftBit x.cube.rightBit)‖^2≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z j+eta) ∧
+      primeProductNorm p x.firstDivisor≤Z ^(InverseFirstGlobalCaps.dyadicExponent Z (k 3)+eta) := by
   intro source x hx
   have h := label_parent_bounds p hp pool Q k l j Z ell eta hZ heta hbin hQ
   exact original_numeric_gates p (extra negative) _ negative J lists pool cutoff _ _ _ _ _ _ _

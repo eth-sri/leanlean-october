@@ -47,8 +47,6 @@ theorem modelPhaseDualParameter_cancel (σ : ℝ) {A : ℝ}
   have h : A^(1-σ⁻¹)*A^(σ⁻¹-1) = 1 := by
     rw [← Real.rpow_add hA,show 1-σ⁻¹+(σ⁻¹-1) = 0 by ring,Real.rpow_zero]
   unfold modelPhaseDualParameter
-  calc
-    A^(1-σ⁻¹)*T*A^(σ⁻¹-1) = (A^(1-σ⁻¹)*A^(σ⁻¹-1))*T := by ring
-    _ = T := by rw [h,one_mul]
+  grind
 
 end TaoTrudgianYang2025

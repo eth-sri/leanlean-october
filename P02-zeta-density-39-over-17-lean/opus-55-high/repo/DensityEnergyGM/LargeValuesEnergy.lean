@@ -2,11 +2,12 @@ module
 public import DensityEnergyGM.LargeValuesS3Refined
 public import DensityEnergyGM.HeathBrownReflection
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointSlab
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset Filter FourierTransform MeasureTheory Real Set
-open scoped BigOperators ContDiff FourierTransform SchwartzMap
+open scoped ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
 
@@ -40,13 +41,12 @@ theorem fourierDeweightFiniteBlock_logShift_coeffs_native
     have hpairMap : 𝓕⁻ (𝓕 f) = f := FourierTransform.fourierInv_fourier_eq f
     have hpair := congrArg (fun g : SchwartzMap ℝ ℂ ↦ g u) hpairMap
     change (𝓕⁻ (𝓕 f)) u = f u at hpair
-    rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq'] at hpair
-    simpa only [Real.inner_apply, smul_eq_mul] using hpair.symm
+    pm_6482
   have hbaseIntegrable (n : ℕ) (hn : 0 < n) : Integrable
       (fun ξ : ℝ ↦ 𝓕 f ξ *
         Complex.exp (-(((2 * Real.pi * ξ * a : ℝ) : ℂ) * I)) *
           (n : ℂ) ^ (-(((t - 2 * Real.pi * ξ : ℝ) : ℂ)) * I)) := by
-    have hnNe : (n : ℂ) ≠ 0 := by exact_mod_cast hn.ne'
+    pm_146 hnNe n hn.ne'
     have hcontinuous : Continuous (fun ξ : ℝ ↦
         Complex.exp (-(((2 * Real.pi * ξ * a : ℝ) : ℂ) * I)) *
           (n : ℂ) ^ (-(((t - 2 * Real.pi * ξ : ℝ) : ℂ)) * I)) := by
@@ -81,7 +81,7 @@ theorem fourierDeweightFiniteBlock_logShift_coeffs_native
       apply Finset.sum_congr rfl
       intro n hnS
       have hn := hS n hnS
-      have hnNe : (n : ℂ) ≠ 0 := by exact_mod_cast hn.ne'
+      pm_146 hnNe n hn.ne'
       rw [hinversion]
       rw [← MeasureTheory.integral_const_mul,
         ← MeasureTheory.integral_mul_const]
@@ -95,7 +95,7 @@ theorem fourierDeweightFiniteBlock_logShift_coeffs_native
               (n : ℂ) ^ (-(((t - 2 * Real.pi * ξ : ℝ) : ℂ)) * I) := by
         rw [Complex.cpow_def_of_ne_zero hnNe,
           Complex.cpow_def_of_ne_zero hnNe]
-        have hnReal : (0 : ℝ) < n := by exact_mod_cast hn
+        pm_74 hnReal n hn
         have hlog : Complex.log (n : ℂ) =
             (Real.log (n : ℝ) : ℂ) := (Complex.ofReal_log hnReal.le).symm
         rw [hlog, ← Complex.exp_add, ← Complex.exp_add]
@@ -146,7 +146,7 @@ theorem gmAffineLocalBumpSchwartz_one_on_dyadicLog
     {M n : ℕ} (hM : 0 < M) (hn : n ∈ dyadicInterval M) :
     gmAffineLocalBumpSchwartz (Real.log n - Real.log M) = 1 := by
   have hnBounds := Finset.mem_Ioc.mp hn
-  have hMr : (0 : ℝ) < M := by exact_mod_cast hM
+  pm_74 hMr M hM
   have hnr : (0 : ℝ) < n := by exact_mod_cast (hM.trans hnBounds.1)
   have hLowerCast : (M : ℝ) ≤ n := by exact_mod_cast hnBounds.1.le
   have hUpperCast : (n : ℝ) ≤ 2 * M := by
@@ -172,9 +172,7 @@ theorem sourceDirichletPoly_energyFourier_reproduction
         Complex.exp
           (-(((2 * Real.pi * ξ * Real.log (M : ℝ) : ℝ) : ℂ) * I)) *
         sourceDirichletPoly M b (t + 2 * Real.pi * ξ) := by
-  have hPositive : ∀ n ∈ dyadicInterval M, 0 < n := by
-    intro n hn
-    exact hM.trans (Finset.mem_Ioc.mp hn).1
+  pm_8623 hPositive dyadicInterval hM.trans Finset.mem_Ioc.mp
   have hFourier := fourierDeweightFiniteBlock_logShift_coeffs_native
     gmAffineLocalBumpSchwartz (dyadicInterval M) b (-t)
       (Real.log (M : ℝ)) hPositive
@@ -224,7 +222,7 @@ theorem gmAffineLocalBumpFourier_polynomial_decay (q : ℕ) :
       |ξ| ^ q * ‖𝓕 gmAffineLocalBumpSchwartz ξ‖ ≤ C := by
   let F : SchwartzMap ℝ ℂ := 𝓕 gmAffineLocalBumpSchwartz
   let C : ℝ := SchwartzMap.seminorm ℝ q 0 F
-  have hC : 0 ≤ C := by dsimp only [C]; positivity
+  pm_82 hC C
   refine ⟨C, hC, ?_⟩
   intro ξ
   have hSem := SchwartzMap.le_seminorm' (𝕜 := ℝ) q 0 F ξ
@@ -257,30 +255,23 @@ theorem exists_gmAffineLocalBumpFourier_tail_bound (q : ℕ) (hq : 2 ≤ q) :
         C * H ^ (1 - (q : ℝ)) := by
   obtain ⟨C₀, hC₀, hDecay⟩ :=
     gmAffineLocalBumpFourier_polynomial_decay q
-  let C : ℝ := max 1 (2 * C₀ / ((q : ℝ) - 1))
-  refine ⟨C, lt_of_lt_of_le zero_lt_one (le_max_left _ _), ?_⟩
-  intro H hH
-  have hHPos : 0 < H := zero_lt_one.trans_le hH
+  pm_4729 q
   let F : SchwartzMap ℝ ℂ := 𝓕 gmAffineLocalBumpSchwartz
-  have hqReal : (1 : ℝ) < q := by exact_mod_cast hq
-  have hExp : -(q : ℝ) < -1 := by linarith
-  have hFInt : Integrable (fun ξ : ℝ => ‖F ξ‖) := F.integrable.norm
+  pm_4728 hqReal q hq
+  pm_8013 hExp
+  pm_7434 hFInt
   have hDomInt : IntegrableOn (fun ξ : ℝ => C₀ * |ξ| ^ (-(q : ℝ)))
       (Set.Icc (-H) H)ᶜ := by
     exact (integrableOn_abs_rpow_compl_Icc hExp hHPos).const_mul C₀
   have hPoint : ∀ᵐ ξ : ℝ ∂volume.restrict (Set.Icc (-H) H)ᶜ,
       ‖F ξ‖ ≤ C₀ * |ξ| ^ (-(q : ℝ)) := by
-    filter_upwards [ae_restrict_mem measurableSet_Icc.compl] with ξ hξ
-    have hAbs : H < |ξ| := by
-      by_contra hnot
-      exact hξ (abs_le.mp (le_of_not_gt hnot))
-    have hAbsPos : 0 < |ξ| := hHPos.trans hAbs
+    pm_5942 ξ hξ
+    pm_4888 hAbsPos ξ hHPos.trans hAbs
     have hRaw := hDecay ξ
     change |ξ| ^ q * ‖F ξ‖ ≤ C₀ at hRaw
     rw [show |ξ| ^ (-(q : ℝ)) = (|ξ| ^ q)⁻¹ by
       rw [Real.rpow_neg hAbsPos.le, Real.rpow_natCast]]
-    rw [le_mul_inv_iff₀ (pow_pos hAbsPos q)]
-    simpa only [mul_comm] using hRaw
+    pm_7713 q
   calc
     ∫ ξ : ℝ in (Set.Icc (-H) H)ᶜ,
         ‖𝓕 gmAffineLocalBumpSchwartz ξ‖ ≤
@@ -292,12 +283,11 @@ theorem exists_gmAffineLocalBumpFourier_tail_bound (q : ℕ) (hq : 2 ≤ q) :
       have hexp : -(q : ℝ) + 1 = 1 - (q : ℝ) := by ring
       rw [hexp]
       have hden : (q : ℝ) - 1 ≠ 0 := ne_of_gt (sub_pos.mpr hqReal)
-      have hden' : 1 - (q : ℝ) ≠ 0 := by linarith
+      pm_8014 hden'
       field_simp [hden, hden']
       ring
     _ ≤ C * H ^ (1 - (q : ℝ)) := by
-      exact mul_le_mul_of_nonneg_right (le_max_right _ _)
-        (Real.rpow_nonneg hHPos.le _)
+      pm_7835
 
 /-- A single proved Schwartz-tail constant, fixed once for a decay order.
 Its proof argument is propositionally irrelevant, so every later ordinate
@@ -306,20 +296,22 @@ noncomputable def gmAffineLocalBumpFourierTailConstant
     (q : ℕ) (hq : 2 ≤ q) : ℝ :=
   Classical.choose (exists_gmAffineLocalBumpFourier_tail_bound q hq)
 
-theorem gmAffineLocalBumpFourierTailConstant_pos
-    (q : ℕ) (hq : 2 ≤ q) :
+section
+variable (q : ℕ) (hq : 2 ≤ q)
+include q hq
+theorem gmAffineLocalBumpFourierTailConstant_pos :
     0 < gmAffineLocalBumpFourierTailConstant q hq :=
   (Classical.choose_spec
     (exists_gmAffineLocalBumpFourier_tail_bound q hq)).1
 
-theorem gmAffineLocalBumpFourierTailConstant_bound
-    (q : ℕ) (hq : 2 ≤ q) (H : ℝ) (hH : 1 ≤ H) :
+theorem gmAffineLocalBumpFourierTailConstant_bound (H : ℝ) (hH : 1 ≤ H) :
     ∫ ξ : ℝ in (Set.Icc (-H) H)ᶜ,
         ‖𝓕 gmAffineLocalBumpSchwartz ξ‖ ≤
       gmAffineLocalBumpFourierTailConstant q hq *
         H ^ (1 - (q : ℝ)) :=
   (Classical.choose_spec
     (exists_gmAffineLocalBumpFourier_tail_bound q hq)).2 H hH
+end
 
 /-- Trivial source-polynomial bound with the exact dyadic cardinality.  It
 is used only on the omitted Fourier tail in Lemma 11.3. -/
@@ -341,10 +333,12 @@ theorem norm_sourceDirichletPoly_le_scale
       simpa using hb n hn
     _ = M := by simp [dyadicInterval, Nat.card_Ioc]; omega
 
+section
+variable {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ)
+include M hM b
 /-- The complete reproducing integrand is integrable uniformly in its
 ordinate.  This justifies the exact central/tail split used below. -/
-theorem integrable_sourceDirichletPoly_energyFourier
-    {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ) (t : ℝ)
+theorem integrable_sourceDirichletPoly_energyFourier (t : ℝ)
     (hb : ∀ n ∈ dyadicInterval M, ‖b n‖ ≤ 1) :
     Integrable (fun ξ : ℝ => 𝓕 gmAffineLocalBumpSchwartz ξ *
       Complex.exp
@@ -359,21 +353,8 @@ theorem integrable_sourceDirichletPoly_energyFourier
     apply Continuous.mul
     · fun_prop
     · dsimp only [sourceDirichletPoly]
-      apply continuous_finsetSum
-      intro n hn
-      apply Continuous.const_mul
-      apply Continuous.const_cpow
-      · fun_prop
-      · left
-        exact_mod_cast (hM.trans (Finset.mem_Ioc.mp hn).1).ne'
-  have hexpNorm (ξ : ℝ) :
-      ‖Complex.exp
-        (-(((2 * Real.pi * ξ * Real.log (M : ℝ) : ℝ) : ℂ) * I))‖ = 1 := by
-    rw [show -(((2 * Real.pi * ξ * Real.log (M : ℝ) : ℝ) : ℂ) * I) =
-        ((-(2 * Real.pi * ξ * Real.log (M : ℝ)) : ℝ) : ℂ) * I by
-      push_cast
-      ring]
-    exact Complex.norm_exp_ofReal_mul_I _
+      pm_3948
+  pm_3949
   have hgBound : ∀ᵐ ξ : ℝ ∂volume, ‖g ξ‖ ≤ M := by
     filter_upwards with ξ
     rw [norm_mul, hexpNorm, one_mul]
@@ -385,8 +366,7 @@ theorem integrable_sourceDirichletPoly_energyFourier
 /-- Quantitative local-shift form of Guth--Maynard Lemma 11.3.  The first
 term contains only shifts `|2πξ| ≤ 2πH`; the second is the complete omitted
 Fourier tail, with arbitrary polynomial decay and no untracked term. -/
-theorem sourceDirichletPoly_norm_le_localFourier_add_tail
-    {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ) (t H : ℝ)
+theorem sourceDirichletPoly_norm_le_localFourier_add_tail (t H : ℝ)
     (hb : ∀ n ∈ dyadicInterval M, ‖b n‖ ≤ 1)
     (hH : 1 ≤ H) (q : ℕ) (hq : 2 ≤ q) :
     ‖sourceDirichletPoly M b t‖ ≤
@@ -408,14 +388,7 @@ theorem sourceDirichletPoly_norm_le_localFourier_add_tail
   have hrepr := sourceDirichletPoly_energyFourier_reproduction hM b t
   have hsplit := integral_add_compl
     (s := Set.Icc (-H) H) measurableSet_Icc hf
-  have hexpNorm (ξ : ℝ) :
-      ‖Complex.exp
-        (-(((2 * Real.pi * ξ * Real.log (M : ℝ) : ℝ) : ℂ) * I))‖ = 1 := by
-    rw [show -(((2 * Real.pi * ξ * Real.log (M : ℝ) : ℝ) : ℂ) * I) =
-        ((-(2 * Real.pi * ξ * Real.log (M : ℝ)) : ℝ) : ℂ) * I by
-      push_cast
-      ring]
-    exact Complex.norm_exp_ofReal_mul_I _
+  pm_3949
   have hTailNorm : ‖∫ ξ : ℝ in (Set.Icc (-H) H)ᶜ, f ξ‖ ≤
       (M : ℝ) * C * H ^ (1 - (q : ℝ)) := by
     calc
@@ -427,9 +400,7 @@ theorem sourceDirichletPoly_norm_le_localFourier_add_tail
         apply integral_mono_ae hf.norm.integrableOn
           ((𝓕 gmAffineLocalBumpSchwartz).integrable.norm.const_mul M).integrableOn
         filter_upwards with ξ
-        dsimp only [f]
-        rw [norm_mul, norm_mul, hexpNorm]
-        simp only [mul_one]
+        pm_6288
         have hp := norm_sourceDirichletPoly_le_scale b
           (t + 2 * Real.pi * ξ) hb
         simpa only [mul_assoc, mul_comm, mul_left_comm] using
@@ -448,7 +419,7 @@ theorem sourceDirichletPoly_norm_le_localFourier_add_tail
           (∫ ξ : ℝ in (Set.Icc (-H) H)ᶜ, f ξ)‖ := by
       have hrepr' : sourceDirichletPoly M b t = ∫ ξ : ℝ, f ξ := by
         simpa only [f] using hrepr
-      exact (congrArg norm hrepr').trans (congrArg norm hsplit.symm)
+      pm_8726 hrepr'
     _ ≤ ‖(∫ ξ : ℝ in Set.Icc (-H) H, f ξ)‖ +
           ‖(∫ ξ : ℝ in (Set.Icc (-H) H)ᶜ, f ξ)‖ := by
       simpa using norm_add_le
@@ -465,9 +436,8 @@ theorem sourceDirichletPoly_norm_le_localFourier_add_tail
       congr 1
       apply setIntegral_congr_fun measurableSet_Icc
       intro ξ hξ
-      dsimp only [f]
-      rw [norm_mul, norm_mul, hexpNorm]
-      simp only [mul_one]
+      pm_6288
+end
 
 /-- The arbitrary-order Fourier tail in Lemma 11.3 is `O(T⁻ᴬ)` once the
 polynomial length is at most the ambient height.  The decay order and its
@@ -562,11 +532,13 @@ theorem setIntegral_Icc_comp_mul_add
     ← MeasureTheory.integral_Icc_eq_integral_Ioc]
   rfl
 
+section
+variable {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ)
+include M hM b
 /-- A local Fourier integral centered at any displacement `|s| ≤ 1` is
 dominated by one common interval.  This is the rigorous replacement for
 the paper's `sup_{|s| ≪ 1}` before applying Heath--Brown. -/
-theorem sourceDirichletPoly_localFourier_le_commonInterval
-    {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ) (base s H : ℝ)
+theorem sourceDirichletPoly_localFourier_le_commonInterval (base s H : ℝ)
     (hs : |s| ≤ 1) (hH : 0 ≤ H) :
     (∫ ξ : ℝ in Set.Icc (-H) H,
         ‖𝓕 gmAffineLocalBumpSchwartz ξ‖ *
@@ -575,17 +547,11 @@ theorem sourceDirichletPoly_localFourier_le_commonInterval
         ∫ t : ℝ in Set.Icc (-(gmSection11CommonRadius H))
             (gmSection11CommonRadius H),
           ‖sourceDirichletPoly M b (base + t)‖ := by
-  let f : ℝ → ℝ := fun t => ‖sourceDirichletPoly M b (base + t)‖
+  pm_5865
   have hf : Continuous f := by
     dsimp only [f, sourceDirichletPoly]
     apply Continuous.norm
-    apply continuous_finsetSum
-    intro n hn
-    apply Continuous.const_mul
-    apply Continuous.const_cpow
-    · fun_prop
-    · left
-      exact_mod_cast (hM.trans (Finset.mem_Ioc.mp hn).1).ne'
+    pm_3948
   have hOrder : -H ≤ H := by linarith
   have hLocalSource : Continuous (fun ξ : ℝ =>
       ‖sourceDirichletPoly M b (base + s + 2 * Real.pi * ξ)‖) := by
@@ -682,8 +648,7 @@ theorem sourceDirichletPoly_localFourier_le_commonInterval
       field_simp [Real.pi_ne_zero]
 
 /-- Cauchy--Schwarz on the common Section 11 displacement interval. -/
-theorem sq_setIntegral_norm_sourceDirichletPoly_le
-    {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ) (base H : ℝ) (hH : 0 ≤ H) :
+theorem sq_setIntegral_norm_sourceDirichletPoly_le (base H : ℝ) (hH : 0 ≤ H) :
     (∫ t : ℝ in Set.Icc (-(gmSection11CommonRadius H))
         (gmSection11CommonRadius H),
         ‖sourceDirichletPoly M b (base + t)‖) ^ 2 ≤
@@ -691,17 +656,11 @@ theorem sq_setIntegral_norm_sourceDirichletPoly_le
         ∫ t : ℝ in Set.Icc (-(gmSection11CommonRadius H))
             (gmSection11CommonRadius H),
           ‖sourceDirichletPoly M b (base + t)‖ ^ 2 := by
-  let f : ℝ → ℝ := fun t => ‖sourceDirichletPoly M b (base + t)‖
+  pm_5865
   have hf : Continuous f := by
     dsimp only [f, sourceDirichletPoly]
     apply Continuous.norm
-    apply continuous_finsetSum
-    intro n hn
-    apply Continuous.const_mul
-    apply Continuous.const_cpow
-    · fun_prop
-    · left
-      exact_mod_cast (hM.trans (Finset.mem_Ioc.mp hn).1).ne'
+    pm_3948
   have hRadius : 0 ≤ gmSection11CommonRadius H := by
     dsimp only [gmSection11CommonRadius]
     positivity
@@ -712,6 +671,7 @@ theorem sq_setIntegral_norm_sourceDirichletPoly_le
     intervalIntegral.integral_of_le (neg_le_self hRadius),
     ← MeasureTheory.integral_Icc_eq_integral_Ioc] at hCS
   simpa only [f] using hCS
+end
 
 /-- Squared common-interval form of Lemma 11.3, uniform in the bounded
 nearest-integer displacement and with the complete `T^{-A}` error. -/
@@ -800,9 +760,8 @@ theorem gmDiscreteSecondMoment_native :
                 ((W.card : ℝ) ^ (5 / 4 : ℝ) *
                   T ^ (1 / 2 : ℝ) * M)) := by
   intro epsilon hepsilon
-  obtain ⟨C, T₀, hC, hT₀, hHB⟩ :=
-    heathBrownCoefficientOneMeanSquare_native epsilon hepsilon
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3983 C T₀ hC hT₀ hHB heathBrownCoefficientOneMeanSquare_native epsilon hepsilon
+  pm_4084
   intro M T W hM hT hSep hBase
   rw [← sourceCoefficientOne_differenceMoment_eq_gmR_ratioMoment]
   exact hHB M T W hM hT hSep hBase
@@ -821,8 +780,8 @@ theorem gmDiscreteRatioSecondMoment_native :
                 ((W.card : ℝ) ^ (5 / 4 : ℝ) *
                   T ^ (1 / 2 : ℝ) * M)) := by
   intro epsilon hepsilon
-  obtain ⟨C, T₀, hC, hT₀, h⟩ := gmDiscreteSecondMoment_native epsilon hepsilon
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_4083 C T₀ hC hT₀ h gmDiscreteSecondMoment_native epsilon hepsilon
+  pm_4084
   intro M T W hM hT hSep hBase
   rw [gmDiscreteRatioMoment_eq_iterated]
   exact h M T W hM hT hSep hBase
@@ -856,10 +815,10 @@ theorem gmHalfMatchedToEnergy_mem (W : Finset ℝ) (q : (ℝ × ℝ) × (ℝ × 
     Finset.mem_filter, Finset.mem_product]
   refine ⟨⟨⟨hq.1.1.1, hq.1.2.2⟩, hq.1.1.2, hq.1.2.1⟩, ?_⟩
   have hfloor := hq.2
-  have hleftLower := Int.floor_le ((q.1.1 - q.1.2) + 1 / 2)
-  have hleftUpper := Int.lt_floor_add_one ((q.1.1 - q.1.2) + 1 / 2)
-  have hrightLower := Int.floor_le ((q.2.1 - q.2.2) + 1 / 2)
-  have hrightUpper := Int.lt_floor_add_one ((q.2.1 - q.2.2) + 1 / 2)
+  pm_8890 hleftLower Int.floor_le
+  pm_8890 hleftUpper Int.lt_floor_add_one
+  pm_8891 hrightLower Int.floor_le
+  pm_8891 hrightUpper Int.lt_floor_add_one
   unfold gmHalfDifferenceBin at hfloor
   rw [hfloor] at hleftLower hleftUpper
   rw [abs_le]
@@ -944,11 +903,11 @@ theorem gmHalfDifferenceMultiplicity_le_card (W : Finset ℝ)
   unfold gmHalfDifferenceMultiplicity
   apply Finset.card_le_card_of_injOn Prod.fst
   · intro p hp
-    change p ∈ (W ×ˢ W).filter (fun p ↦ gmHalfDifferenceBin p = u) at hp
+    pm_5684
     simp only [Finset.mem_filter, Finset.mem_product] at hp
     exact hp.1.1
   · intro p hp q hq hpq
-    change p ∈ (W ×ˢ W).filter (fun p ↦ gmHalfDifferenceBin p = u) at hp
+    pm_5684
     change q ∈ (W ×ˢ W).filter (fun p ↦ gmHalfDifferenceBin p = u) at hq
     simp only [Finset.mem_filter, Finset.mem_product] at hp hq
     have hpMem := hp
@@ -961,10 +920,10 @@ theorem gmHalfDifferenceMultiplicity_le_card (W : Finset ℝ)
     · have hseparation : 1 ≤ |p.2 - q.2| := by
         simpa [Real.dist_eq] using
           hSep p.2 hpMem.1.2 q.2 hqMem.1.2 hsecond
-      have hpLower := Int.floor_le ((p.1 - p.2) + 1 / 2)
-      have hpUpper := Int.lt_floor_add_one ((p.1 - p.2) + 1 / 2)
-      have hqLower := Int.floor_le ((q.1 - q.2) + 1 / 2)
-      have hqUpper := Int.lt_floor_add_one ((q.1 - q.2) + 1 / 2)
+      pm_3950 hpLower Int.floor_le
+      pm_3950 hpUpper Int.lt_floor_add_one
+      pm_8892 hqLower Int.floor_le
+      pm_8892 hqUpper Int.lt_floor_add_one
       unfold gmHalfDifferenceBin at hfloor
       rw [hfloor, hfirst] at hpLower hpUpper
       have hdiff : |p.2 - q.2| < 1 := by
@@ -997,15 +956,13 @@ theorem mem_gmHalfDifferenceDyadicClass {W : Finset ℝ} {j : ℕ} {u : ℤ} :
         gmHalfDifferenceMultiplicity W u < 2 ^ (j + 1) := by
   simp [gmHalfDifferenceDyadicClass]
 
+section
+variable (W : Finset ℝ) (j : ℕ)
+include W j
 /-- Exact `B |U_B| ≤ |W|^2`. -/
-theorem twoPow_mul_card_gmHalfDifferenceDyadicClass_le
-    (W : Finset ℝ) (j : ℕ) :
+theorem twoPow_mul_card_gmHalfDifferenceDyadicClass_le :
     2 ^ j * (gmHalfDifferenceDyadicClass W j).card ≤ W.card ^ 2 := by
-  let U := gmHalfDifferenceDyadicClass W j
-  let S := (W ×ˢ W).image gmHalfDifferenceBin
-  have hUS : U ⊆ S := by
-    intro u hu
-    exact (mem_gmHalfDifferenceDyadicClass.mp hu).1
+  pm_3951
   have hpoint : ∀ u ∈ U, 2 ^ j ≤ gmHalfDifferenceMultiplicity W u := by
     intro u hu
     exact (mem_gmHalfDifferenceDyadicClass.mp hu).2.1
@@ -1014,20 +971,15 @@ theorem twoPow_mul_card_gmHalfDifferenceDyadicClass_le
     _ ≤ ∑ u ∈ U, gmHalfDifferenceMultiplicity W u := by
       exact Finset.sum_le_sum fun u hu ↦ hpoint u hu
     _ ≤ ∑ u ∈ S, gmHalfDifferenceMultiplicity W u := by
-      exact Finset.sum_le_sum_of_subset_of_nonneg hUS (fun _ _ _ ↦ Nat.zero_le _)
+      pm_7836
     _ = W.card ^ 2 := by
       simpa only [S] using sum_gmHalfDifferenceMultiplicity W
 
 /-- Exact `B² |U_B| ≤ E(W)`. -/
-theorem twoPow_sq_mul_card_gmHalfDifferenceDyadicClass_le_energy
-    (W : Finset ℝ) (j : ℕ) :
+theorem twoPow_sq_mul_card_gmHalfDifferenceDyadicClass_le_energy :
     (2 ^ j) ^ 2 * (gmHalfDifferenceDyadicClass W j).card ≤
       ApproxAddEnergy 1 W := by
-  let U := gmHalfDifferenceDyadicClass W j
-  let S := (W ×ˢ W).image gmHalfDifferenceBin
-  have hUS : U ⊆ S := by
-    intro u hu
-    exact (mem_gmHalfDifferenceDyadicClass.mp hu).1
+  pm_3951
   have hpoint : ∀ u ∈ U,
       (2 ^ j) ^ 2 ≤ gmHalfDifferenceMultiplicity W u ^ 2 := by
     intro u hu
@@ -1038,9 +990,10 @@ theorem twoPow_sq_mul_card_gmHalfDifferenceDyadicClass_le_energy
     _ ≤ ∑ u ∈ U, gmHalfDifferenceMultiplicity W u ^ 2 := by
       exact Finset.sum_le_sum fun u hu ↦ hpoint u hu
     _ ≤ ∑ u ∈ S, gmHalfDifferenceMultiplicity W u ^ 2 := by
-      exact Finset.sum_le_sum_of_subset_of_nonneg hUS (fun _ _ _ ↦ Nat.zero_le _)
+      pm_7836
     _ ≤ ApproxAddEnergy 1 W := by
       simpa only [S] using sum_gmHalfDifferenceMultiplicity_sq_le_energy W
+end
 
 /-- Every occupied difference bin has positive multiplicity.  This is the
 finite nonvanishing fact needed before taking its base-two logarithm. -/
@@ -1048,16 +1001,15 @@ theorem gmHalfDifferenceMultiplicity_pos_of_mem {W : Finset ℝ} {u : ℤ}
     (hu : u ∈ (W ×ˢ W).image gmHalfDifferenceBin) :
     0 < gmHalfDifferenceMultiplicity W u := by
   classical
-  rw [Finset.mem_image] at hu
-  obtain ⟨p, hp, rfl⟩ := hu
+  pm_3952 hu p hp
   unfold gmHalfDifferenceMultiplicity
   exact Finset.card_pos.mpr ⟨p, by simp only [Finset.mem_filter, hp, true_and]⟩
 
 /-- Nearest-integer error for the actual Section 11 difference bin. -/
 theorem abs_sub_gmHalfDifferenceBin_le_half (p : ℝ × ℝ) :
     |(p.1 - p.2) - (gmHalfDifferenceBin p : ℝ)| ≤ 1 / 2 := by
-  have hlower := Int.floor_le ((p.1 - p.2) + 1 / 2)
-  have hupper := Int.lt_floor_add_one ((p.1 - p.2) + 1 / 2)
+  pm_3950 hlower Int.floor_le
+  pm_3950 hupper Int.lt_floor_add_one
   unfold gmHalfDifferenceBin
   rw [abs_le]
   constructor <;> linarith
@@ -1084,10 +1036,12 @@ theorem gmHalfDifference_pair_displacement
       _ = 1 := by norm_num
   · ring
 
+section
+variable {W : Finset ℝ} {j : ℕ}
+include W j
 /-- Every pair in the `j`th logarithmic multiplicity block maps to the
 corresponding integer-bin class `U_{2^j}`. -/
-theorem gmHalfDifferenceBin_mem_dyadicClass_of_pair
-    {W : Finset ℝ} {j : ℕ} {p : ℝ × ℝ}
+theorem gmHalfDifferenceBin_mem_dyadicClass_of_pair {p : ℝ × ℝ}
     (hp : p ∈ (W ×ˢ W).filter (fun p ↦
       Nat.log 2 (gmHalfDifferenceMultiplicity W
         (gmHalfDifferenceBin p)) = j)) :
@@ -1107,8 +1061,7 @@ theorem gmHalfDifferenceBin_mem_dyadicClass_of_pair
         (gmHalfDifferenceMultiplicity W (gmHalfDifferenceBin p))
 
 /-- A pair fiber inside the `j`th block has fewer than `2^(j+1)` members. -/
-theorem card_gmHalfDifferenceDyadicPairFiber_lt
-    {W : Finset ℝ} {j : ℕ} {u : ℤ}
+theorem card_gmHalfDifferenceDyadicPairFiber_lt {u : ℤ}
     (hu : u ∈ gmHalfDifferenceDyadicClass W j) :
     (((W ×ˢ W).filter (fun p ↦
         Nat.log 2 (gmHalfDifferenceMultiplicity W
@@ -1126,6 +1079,7 @@ theorem card_gmHalfDifferenceDyadicPairFiber_lt
     simp only [Finset.mem_filter] at hp ⊢
     exact ⟨hp.1.1, hp.2⟩
   exact hcard.trans_lt (mem_gmHalfDifferenceDyadicClass.mp hu).2.2
+end
 
 /-- For a one-separated set, no occupied dyadic class has index beyond
 `log₂ |W|`.  Thus the source's dyadic selection ranges over a genuinely
@@ -1148,9 +1102,11 @@ noncomputable def gmHalfDifferenceDyadicPairBlock
       Nat.log 2 (gmHalfDifferenceMultiplicity W (gmHalfDifferenceBin p)) = j),
     gmHalfDifferencePairPhase p x
 
+section
+variable (W : Finset ℝ) (hSep : IsSeparated 1 W)
+include W hSep
 /-- Every pair is assigned to an index in `0, ..., log₂ |W|`. -/
-theorem gmHalfDifferencePairScale_mem_range
-    (W : Finset ℝ) (hSep : IsSeparated 1 W) (p : ℝ × ℝ) :
+theorem gmHalfDifferencePairScale_mem_range (p : ℝ × ℝ) :
     Nat.log 2 (gmHalfDifferenceMultiplicity W (gmHalfDifferenceBin p)) ∈
       Finset.range (Nat.log 2 W.card + 1) := by
   rw [Finset.mem_range]
@@ -1160,8 +1116,7 @@ theorem gmHalfDifferencePairScale_mem_range
 
 /-- Exact source decomposition before Cauchy--Schwarz: no pair is dropped
 and no dyadic multiplicity class is duplicated. -/
-theorem norm_gmRPhase_sq_eq_sum_halfDifferenceDyadicPairBlock
-    (W : Finset ℝ) (hSep : IsSeparated 1 W) (x : ℝ) :
+theorem norm_gmRPhase_sq_eq_sum_halfDifferenceDyadicPairBlock (x : ℝ) :
     ((‖gmRPhase W x‖ ^ 2 : ℝ) : ℂ) =
       ∑ j ∈ Finset.range (Nat.log 2 W.card + 1),
         gmHalfDifferenceDyadicPairBlock W j x := by
@@ -1175,8 +1130,7 @@ theorem norm_gmRPhase_sq_eq_sum_halfDifferenceDyadicPairBlock
   calc
     ((‖gmRPhase W x‖ ^ 2 : ℝ) : ℂ) =
         ∑ p ∈ P, phase p := by
-      rw [norm_gmRPhase_sq_expand]
-      simp only [P, phase, gmHalfDifferencePairPhase, Finset.sum_product]
+      pm_214 norm_gmRPhase_sq_expand P phase gmHalfDifferencePairPhase Finset.sum_product
     _ = ∑ j ∈ Finset.range (Nat.log 2 W.card + 1),
           ∑ p ∈ P with scale p = j, phase p := by
       exact (Finset.sum_fiberwise_of_maps_to hmaps phase).symm
@@ -1188,8 +1142,7 @@ theorem norm_gmRPhase_sq_eq_sum_halfDifferenceDyadicPairBlock
 
 /-- Cauchy--Schwarz across the exact finite dyadic decomposition.  The
 factor `log₂ |W| + 1` is kept explicit for the later epsilon budget. -/
-theorem norm_gmRPhase_fourth_le_dyadicPairBlocks
-    (W : Finset ℝ) (hSep : IsSeparated 1 W) (x : ℝ) :
+theorem norm_gmRPhase_fourth_le_dyadicPairBlocks (x : ℝ) :
     ‖gmRPhase W x‖ ^ 4 ≤
       ((Nat.log 2 W.card + 1 : ℕ) : ℝ) *
         ∑ j ∈ Finset.range (Nat.log 2 W.card + 1),
@@ -1212,6 +1165,7 @@ theorem norm_gmRPhase_fourth_le_dyadicPairBlocks
     _ = ((Nat.log 2 W.card + 1 : ℕ) : ℝ) *
           ∑ j ∈ Finset.range (Nat.log 2 W.card + 1),
             ‖gmHalfDifferenceDyadicPairBlock W j x‖ ^ 2 := by simp
+end
 
 /-- Exact two-variable fiber decomposition of a dyadic pair block.  It is
 stated for an arbitrary summand so that the source-polynomial moment can
@@ -1236,9 +1190,7 @@ theorem sum_gmHalfDifferenceDyadicPairs_eq_sum_fibers
                   (gmHalfDifferenceBin q)) = j) with
                   gmHalfDifferenceBin q = v,
               F p q := by
-  let Pj := (W ×ˢ W).filter (fun p ↦
-    Nat.log 2 (gmHalfDifferenceMultiplicity W
-      (gmHalfDifferenceBin p)) = j)
+  pm_945
   have hmaps : ∀ p ∈ Pj,
       gmHalfDifferenceBin p ∈ gmHalfDifferenceDyadicClass W j := by
     intro p hp
@@ -1276,23 +1228,22 @@ noncomputable def gmHalfDifferenceTranslatedClass
   (gmHalfDifferenceDyadicClass W j).image fun u : ℤ =>
     (u : ℝ) + (2 * T + 1)
 
-theorem card_gmHalfDifferenceTranslatedClass
-    (T : ℝ) (W : Finset ℝ) (j : ℕ) :
+section
+variable (T : ℝ) (W : Finset ℝ) (j : ℕ)
+include T W j
+theorem card_gmHalfDifferenceTranslatedClass :
     (gmHalfDifferenceTranslatedClass T W j).card =
       (gmHalfDifferenceDyadicClass W j).card := by
   unfold gmHalfDifferenceTranslatedClass
   rw [Finset.card_image_of_injective]
   intro u v huv
-  have hcast : (u : ℝ) = (v : ℝ) := by linarith
-  exact_mod_cast hcast
+  pm_5169 u v
 
-theorem gmHalfDifferenceTranslatedClass_separated
-    (T : ℝ) (W : Finset ℝ) (j : ℕ) :
+theorem gmHalfDifferenceTranslatedClass_separated :
     IsSeparated 1 (gmHalfDifferenceTranslatedClass T W j) := by
   intro x hx y hy hxy
   rw [gmHalfDifferenceTranslatedClass, Finset.mem_image] at hx hy
-  obtain ⟨u, hu, rfl⟩ := hx
-  obtain ⟨v, hv, rfl⟩ := hy
+  pm_7656 hu hv
   rw [Real.dist_eq]
   have huv : u ≠ v := by
     intro huv
@@ -1304,34 +1255,34 @@ theorem gmHalfDifferenceTranslatedClass_separated
   have hCast : (1 : ℝ) ≤ |(u : ℝ) - (v : ℝ)| := by
     exact_mod_cast hInt
   simpa only [add_sub_add_right_eq_sub] using hCast
+end
 
+section
+variable {T : ℝ} {W : Finset ℝ} (hBase : InBaseInterval T W)
+include T W hBase
 /-- Every occupied half-difference bin lies in the interval forced by the
 original base interval. -/
 theorem gmHalfDifferenceBin_bounds_of_base
-    {T : ℝ} {W : Finset ℝ} (hBase : InBaseInterval T W)
     {u : ℤ} (hu : u ∈ (W ×ˢ W).image gmHalfDifferenceBin) :
     -(T + 1) ≤ (u : ℝ) ∧ (u : ℝ) ≤ T + 1 := by
-  rw [Finset.mem_image] at hu
-  obtain ⟨p, hp, rfl⟩ := hu
+  pm_3952 hu p hp
   rw [Finset.mem_product] at hp
   have hp1 := hBase p.1 hp.1
   have hp2 := hBase p.2 hp.2
   rw [Set.mem_Icc] at hp1 hp2
-  have hlower := Int.lt_floor_add_one ((p.1 - p.2) + 1 / 2)
-  have hupper := Int.floor_le ((p.1 - p.2) + 1 / 2)
+  pm_3950 hlower Int.lt_floor_add_one
+  pm_3950 hupper Int.floor_le
   unfold gmHalfDifferenceBin
   constructor <;> linarith
 
 /-- The translated dyadic class lies in one explicit interval of length
 `4T+2`, so the source Heath--Brown theorem applies without any hidden
 recentering convention. -/
-theorem gmHalfDifferenceTranslatedClass_inBase
-    {T : ℝ} {W : Finset ℝ} (hBase : InBaseInterval T W) (j : ℕ) :
+theorem gmHalfDifferenceTranslatedClass_inBase (j : ℕ) :
     InBaseInterval (4 * T + 2)
       (gmHalfDifferenceTranslatedClass T W j) := by
   intro x hx
-  rw [gmHalfDifferenceTranslatedClass, Finset.mem_image] at hx
-  obtain ⟨u, hu, rfl⟩ := hx
+  pm_4080 gmHalfDifferenceTranslatedClass hx u hu
   have huImage := (mem_gmHalfDifferenceDyadicClass.mp hu).1
   have hb := gmHalfDifferenceBin_bounds_of_base hBase huImage
   have hTnonneg : 0 ≤ T := by
@@ -1341,6 +1292,7 @@ theorem gmHalfDifferenceTranslatedClass_inBase
     exact (hBase p.1 hpMem).1.trans (hBase p.1 hpMem).2
   rw [Set.mem_Icc]
   constructor <;> linarith
+end
 
 /-- Translation cancels in every two-ordinate difference. -/
 theorem gmHalfDifferenceTranslated_sub
@@ -1368,16 +1320,14 @@ theorem gmHalfDifferenceTranslatedMeanSquare_native :
                     (5 / 4 : ℝ) *
                   (4 * T + 2) ^ (1 / 2 : ℝ) * M)) := by
   intro ε hε
-  obtain ⟨C, T₀, hC, hT₀, hHB⟩ :=
-    heathBrownDifferenceSetMeanSquare_native ε hε
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3983 C T₀ hC hT₀ hHB heathBrownDifferenceSetMeanSquare_native ε hε
+  pm_4084
   intro M T W j s hM hT hSep hBase
   have hTnonneg : 0 ≤ T := hT₀.trans hT |>.trans' (by norm_num)
   have hHeight : T₀ ≤ 4 * T + 2 := by linarith
   have hCoeff : ∀ n ∈ dyadicInterval M,
       ‖(n : ℂ) ^ (((s : ℂ)) * I)‖ ≤ 1 := by
-    intro n hn
-    have hnpos : 0 < n := hM.trans (Finset.mem_Ioc.mp hn).1
+    pm_4148 hnpos hM.trans
     rw [Complex.norm_natCast_cpow_of_pos hnpos]
     simp
   have hApplied := hHB M (4 * T + 2)
@@ -1406,11 +1356,9 @@ theorem sum_gmHalfDifferenceTranslatedClass_eq_bins
       intro v hv
       rw [gmHalfDifferenceTranslated_sub]
     · intro v₁ hv₁ v₂ hv₂ heq
-      have hcast : (v₁ : ℝ) = (v₂ : ℝ) := by linarith
-      exact_mod_cast hcast
+      pm_5169 v₁ v₂
   · intro u₁ hu₁ u₂ hu₂ heq
-    have hcast : (u₁ : ℝ) = (u₂ : ℝ) := by linarith
-    exact_mod_cast hcast
+    pm_5169 u₁ u₂
 
 /-- A common real frequency shift is exactly a unit-modulus coefficient
 twist. -/
@@ -1420,9 +1368,8 @@ theorem sourceDirichletPoly_shift_eq_twisted
       sourceDirichletPoly M (fun _ => (1 : ℂ)) (u + s) := by
   unfold sourceDirichletPoly
   apply Finset.sum_congr rfl
-  intro n hn
-  have hnpos : 0 < n := hM.trans (Finset.mem_Ioc.mp hn).1
-  have hnne : (n : ℂ) ≠ 0 := by exact_mod_cast hnpos.ne'
+  pm_4148 hnpos hM.trans
+  pm_3953
   rw [one_mul, ← Complex.cpow_add _ _ hnne]
   congr 1
   push_cast
@@ -1446,9 +1393,8 @@ theorem gmHalfDifferenceBinShiftedMeanSquare_native :
                     (5 / 4 : ℝ) *
                   (4 * T + 2) ^ (1 / 2 : ℝ) * M)) := by
   intro ε hε
-  obtain ⟨C, T₀, hC, hT₀, hHB⟩ :=
-    gmHalfDifferenceTranslatedMeanSquare_native ε hε
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3983 C T₀ hC hT₀ hHB gmHalfDifferenceTranslatedMeanSquare_native ε hε
+  pm_4084
   intro M T W j s hM hT hSep hBase
   have hApplied := hHB M T W j s hM hT hSep hBase
   rw [sum_gmHalfDifferenceTranslatedClass_eq_bins] at hApplied
@@ -1465,17 +1411,13 @@ theorem ofReal_norm_sourceDirichletPoly_one_sq_expand
   rw [sourceDirichletPoly]
   simp only [one_mul]
   rw [ofReal_norm_finset_sum_sq_expand]
-  apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro m hm
-  have hnpos : 0 < n := hM.trans (Finset.mem_Ioc.mp hn).1
-  have hmpos : 0 < m := hM.trans (Finset.mem_Ioc.mp hm).1
-  have hnne : (n : ℂ) ≠ 0 := by exact_mod_cast hnpos.ne'
-  have hmne : (m : ℂ) ≠ 0 := by exact_mod_cast hmpos.ne'
+  pm_4079
+  pm_3954
+  pm_3953
+  pm_146 hmne m hmpos.ne'
   rw [Complex.cpow_def_of_ne_zero hnne, Complex.cpow_def_of_ne_zero hmne]
-  have hnCast : (n : ℂ) = ((n : ℝ) : ℂ) := by norm_num
-  have hmCast : (m : ℂ) = ((m : ℝ) : ℂ) := by norm_num
+  pm_4836
+  pm_5067 hmCast m
   rw [hnCast, hmCast,
     ← Complex.ofReal_log (by exact_mod_cast hnpos.le),
     ← Complex.ofReal_log (by exact_mod_cast hmpos.le),
@@ -1497,11 +1439,7 @@ theorem ofReal_norm_gmHalfDifferenceDyadicPairBlock_sq_expand
             (gmHalfDifferenceBin q)) = j),
           Complex.exp (((((q.1 - q.2) - (p.1 - p.2)) * x : ℝ) : ℂ) * I) := by
   unfold gmHalfDifferenceDyadicPairBlock
-  rw [ofReal_norm_finset_sum_sq_expand]
-  apply Finset.sum_congr rfl
-  intro p hp
-  apply Finset.sum_congr rfl
-  intro q hq
+  pm_4842 ofReal_norm_finset_sum_sq_expand p hp q hq
   unfold gmHalfDifferencePairPhase
   rw [Complex.star_def, ← Complex.exp_conj, ← Complex.exp_add]
   congr 1
@@ -1562,10 +1500,7 @@ theorem sum_four_comm_middle_to_front
     _ = ∑ c ∈ C, ∑ a ∈ A, ∑ b ∈ B, ∑ d ∈ D, f a b c d := by
       rw [Finset.sum_comm]
     _ = ∑ c ∈ C, ∑ a ∈ A, ∑ d ∈ D, ∑ b ∈ B, f a b c d := by
-      apply Finset.sum_congr rfl
-      intro c hc
-      apply Finset.sum_congr rfl
-      intro a ha
+      pm_90 Finset.sum_congr c hc a ha
       rw [Finset.sum_comm]
     _ = ∑ c ∈ C, ∑ d ∈ D, ∑ a ∈ A, ∑ b ∈ B, f a b c d := by
       apply Finset.sum_congr rfl
@@ -1592,15 +1527,8 @@ theorem sum_norm_gmHalfDifferenceDyadicPairBlock_sq_eq_sourceMoment
   push_cast
   simp_rw [ofReal_norm_gmHalfDifferenceDyadicPairBlock_sq_expand',
     ofReal_norm_sourceDirichletPoly_one_sq_expand' hM]
-  rw [sum_four_comm_middle_to_front]
-  apply Finset.sum_congr rfl
-  intro p hp
-  apply Finset.sum_congr rfl
-  intro q hq
-  apply Finset.sum_congr rfl
-  intro n hnMem
-  apply Finset.sum_congr rfl
-  intro m hmMem
+  pm_4842 sum_four_comm_middle_to_front p hp q hq
+  pm_90 Finset.sum_congr n hnMem m hmMem
   exact gmHalfDifferencePairPhase_log_div_eq_sourcePhase
     (hM.trans (Finset.mem_Ioc.mp hnMem).1)
     (hM.trans (Finset.mem_Ioc.mp hmMem).1) p q
@@ -1653,8 +1581,10 @@ noncomputable def gmSection11PairMajorant
         (gmReflectionDecayOrder A ε)
         (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2
 
-theorem gmSection11PairMajorant_nonneg
-    {A ε T : ℝ} {M : ℕ} {u v : ℤ} (hT : 0 ≤ T) :
+section
+variable {A ε T : ℝ} {M : ℕ}
+include A ε T M
+theorem gmSection11PairMajorant_nonneg {u v : ℤ} (hT : 0 ≤ T) :
     0 ≤ gmSection11PairMajorant A ε T M u v := by
   unfold gmSection11PairMajorant
   have hIntegral : 0 ≤
@@ -1664,9 +1594,7 @@ theorem gmSection11PairMajorant_nonneg
         ‖sourceDirichletPoly M (fun _ ↦ (1 : ℂ))
           (((u : ℝ) - v) + t)‖ ^ 2 :=
     integral_nonneg_of_ae (Filter.Eventually.of_forall fun _ => sq_nonneg _)
-  have hHeight : 0 ≤ gmReflectionHeight T ε := by
-    unfold gmReflectionHeight
-    exact Real.rpow_nonneg hT _
+  pm_7714 hT
   have hRadius : 0 ≤ gmSection11CommonRadius (gmReflectionHeight T ε) := by
     unfold gmSection11CommonRadius
     positivity
@@ -1677,7 +1605,6 @@ theorem gmSection11PairMajorant_nonneg
   exact add_nonneg (mul_nonneg hCoeff hIntegral) (by positivity)
 
 theorem sourceDirichletPoly_pairDifference_sq_le_majorant
-    {A ε T : ℝ} {M : ℕ}
     (hA : 0 < A) (hε : 0 < ε) (hT : 1 ≤ T)
     (hM : 0 < M) (hMT : (M : ℝ) ≤ T)
     {p q : ℝ × ℝ} {u v : ℤ}
@@ -1692,7 +1619,6 @@ theorem sourceDirichletPoly_pairDifference_sq_le_majorant
 /-- Sum over all actual pairs in one multiplicity block, bounded by the
 common-bin majorants with the exact `2^(j+1)` fiber loss. -/
 theorem sum_sourceMoment_dyadicPairs_le_binMajorants
-    {A ε T : ℝ} {M : ℕ}
     (hA : 0 < A) (hε : 0 < ε) (hT : 1 ≤ T)
     (hM : 0 < M) (hMT : (M : ℝ) ≤ T)
     (W : Finset ℝ) (j : ℕ) :
@@ -1708,9 +1634,7 @@ theorem sum_sourceMoment_dyadicPairs_le_binMajorants
         ∑ u ∈ gmHalfDifferenceDyadicClass W j,
           ∑ v ∈ gmHalfDifferenceDyadicClass W j,
             gmSection11PairMajorant A ε T M u v := by
-  let Pj := (W ×ˢ W).filter (fun p ↦
-    Nat.log 2 (gmHalfDifferenceMultiplicity W
-      (gmHalfDifferenceBin p)) = j)
+  pm_945
   let U := gmHalfDifferenceDyadicClass W j
   rw [sum_gmHalfDifferenceDyadicPairs_eq_sum_fibers]
   calc
@@ -1723,11 +1647,7 @@ theorem sum_sourceMoment_dyadicPairs_le_binMajorants
         ∑ _p ∈ Pj with gmHalfDifferenceBin _p = u,
           ∑ _q ∈ Pj with gmHalfDifferenceBin _q = v,
             gmSection11PairMajorant A ε T M u v := by
-      apply Finset.sum_le_sum
-      intro u hu
-      apply Finset.sum_le_sum
-      intro v hv
-      apply Finset.sum_le_sum
+      pm_201 Finset.sum_le_sum u hu v hv
       intro p hp
       apply Finset.sum_le_sum
       intro q hq
@@ -1738,10 +1658,7 @@ theorem sum_sourceMoment_dyadicPairs_le_binMajorants
         ((((Pj.filter fun p ↦ gmHalfDifferenceBin p = u).card : ℕ) : ℝ) *
           (((Pj.filter fun q ↦ gmHalfDifferenceBin q = v).card : ℕ) : ℝ)) *
             gmSection11PairMajorant A ε T M u v := by
-      apply Finset.sum_congr rfl
-      intro u hu
-      apply Finset.sum_congr rfl
-      intro v hv
+      pm_4212
       simp
       ring
     _ ≤ ∑ u ∈ U, ∑ v ∈ U,
@@ -1756,19 +1673,13 @@ theorem sum_sourceMoment_dyadicPairs_le_binMajorants
           (W := W) (j := j) (u := u) hu
         have hvCard := card_gmHalfDifferenceDyadicPairFiber_lt
           (W := W) (j := j) (u := v) hv
-        have huReal : ((Pj.filter fun p ↦ gmHalfDifferenceBin p = u).card : ℝ) ≤
-            ((2 ^ (j + 1) : ℕ) : ℝ) := by
-          exact_mod_cast huCard.le
-        have hvReal : ((Pj.filter fun p ↦ gmHalfDifferenceBin p = v).card : ℝ) ≤
-            ((2 ^ (j + 1) : ℕ) : ℝ) := by
-          exact_mod_cast hvCard.le
+        pm_5208 huReal u huCard.le
+        pm_5208 hvReal v hvCard.le
         nlinarith
       · exact gmSection11PairMajorant_nonneg (zero_le_one.trans hT)
     _ = _ := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro u hu
-      rw [Finset.mul_sum]
+      pm_388 Finset.mul_sum u hu
+end
 
 /-- Finite Fubini identity for the common-bin source moment. -/
 theorem integral_sum_gmHalfDifferenceBin_sourceMoment
@@ -1787,18 +1698,8 @@ theorem integral_sum_gmHalfDifferenceBin_sourceMoment
   have hInt (u v : ℤ) : IntegrableOn (fun t : ℝ =>
       ‖sourceDirichletPoly M (fun _ ↦ (1 : ℂ))
         (((u : ℝ) - v) + t)‖ ^ 2) (Set.Icc (-L) L) := by
-    apply ContinuousOn.integrableOn_Icc
-    apply Continuous.continuousOn
-    apply Continuous.pow
-    apply Continuous.norm
-    unfold sourceDirichletPoly
-    apply continuous_finsetSum
-    intro n hn
-    apply Continuous.const_mul
-    apply Continuous.const_cpow
-    · fun_prop
-    · left
-      exact_mod_cast (hM.trans (Finset.mem_Ioc.mp hn).1).ne'
+    pm_5144
+    pm_3948
   change (∫ t : ℝ in Set.Icc (-L) L,
       ∑ u ∈ U, ∑ v ∈ U,
         ‖sourceDirichletPoly M (fun _ ↦ (1 : ℂ))
@@ -1834,9 +1735,8 @@ theorem gmHalfDifferenceBinCommonIntervalMeanSquare_native :
                     (5 / 4 : ℝ) *
                   (4 * T + 2) ^ (1 / 2 : ℝ) * M)) := by
   intro η hη
-  obtain ⟨C, T₀, hC, hT₀, hHB⟩ :=
-    gmHalfDifferenceBinShiftedMeanSquare_native η hη
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3983 C T₀ hC hT₀ hHB gmHalfDifferenceBinShiftedMeanSquare_native η hη
+  pm_4084
   intro M T W j L hM hT hSep hBase hL
   let U := gmHalfDifferenceDyadicClass W j
   let B : ℝ := C * (4 * T + 2) ^ η *
@@ -1852,18 +1752,8 @@ theorem gmHalfDifferenceBinCommonIntervalMeanSquare_native :
   have hSingleInt (u v : ℤ) : IntegrableOn (fun t : ℝ =>
       ‖sourceDirichletPoly M (fun _ ↦ (1 : ℂ))
         (((u : ℝ) - v) + t)‖ ^ 2) (Set.Icc (-L) L) := by
-    apply ContinuousOn.integrableOn_Icc
-    apply Continuous.continuousOn
-    apply Continuous.pow
-    apply Continuous.norm
-    unfold sourceDirichletPoly
-    apply continuous_finsetSum
-    intro n hn
-    apply Continuous.const_mul
-    apply Continuous.const_cpow
-    · fun_prop
-    · left
-      exact_mod_cast (hM.trans (Finset.mem_Ioc.mp hn).1).ne'
+    pm_5144
+    pm_3948
   have hSumInt : IntegrableOn (fun t : ℝ =>
       ∑ u ∈ U, ∑ v ∈ U,
         ‖sourceDirichletPoly M (fun _ ↦ (1 : ℂ))
@@ -1918,18 +1808,15 @@ theorem sum_gmSection11PairMajorant_native :
                   (gmReflectionDecayOrder A ε)
                   (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2) := by
   intro A ε η hA hε hη
-  obtain ⟨C, T₀, hC, hT₀, hHB⟩ :=
-    gmHalfDifferenceBinCommonIntervalMeanSquare_native η hη
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3983 C T₀ hC hT₀ hHB gmHalfDifferenceBinCommonIntervalMeanSquare_native η hη
+  pm_4084
   intro M T W j hM hT hMT hSep hBase
   let U := gmHalfDifferenceDyadicClass W j
   let H := gmReflectionHeight T ε
   let L := gmSection11CommonRadius H
   let K : ℝ := 2 * (gmAffineLocalBumpFourierSup / (2 * Real.pi)) ^ 2 *
     (2 * L)
-  let E : ℝ := 2 * (gmAffineLocalBumpFourierTailConstant
-    (gmReflectionDecayOrder A ε)
-    (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2
+  pm_5534 E
   let Iuv : ℤ → ℤ → ℝ := fun u v =>
     ∫ t : ℝ in Set.Icc (-L) L,
       ‖sourceDirichletPoly M (fun _ ↦ (1 : ℂ))
@@ -1942,7 +1829,7 @@ theorem sum_gmSection11PairMajorant_native :
     dsimp only [L, gmSection11CommonRadius]
     positivity
   have hApplied := hHB M T W j L hM hT hSep hBase hL
-  have hK : 0 ≤ K := by dsimp only [K]; positivity
+  pm_82 hK K
   have hMain :
       (∑ u ∈ U, ∑ v ∈ U, K * Iuv u v) =
         K * ∑ u ∈ U, ∑ v ∈ U, Iuv u v := by
@@ -2000,10 +1887,8 @@ theorem gmDyadicPairBlockMoment_native :
                   (2 * (gmAffineLocalBumpFourierTailConstant
                     (gmReflectionDecayOrder A ε)
                     (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2)) := by
-  intro A ε η hA hε hη
-  obtain ⟨C, T₀, hC, hT₀, hMaj⟩ :=
-    sum_gmSection11PairMajorant_native A ε η hA hε hη
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3955 hMaj sum_gmSection11PairMajorant_native
+  pm_4084
   intro M T W j hM hT hMT hSep hBase
   rw [sum_norm_gmHalfDifferenceDyadicPairBlock_sq_eq_sourceMoment M hM W j]
   have hPairs := sum_sourceMoment_dyadicPairs_le_binMajorants
@@ -2013,8 +1898,10 @@ theorem gmDyadicPairBlockMoment_native :
 
 /-! ### Elementary multiplicity algebra for the Lemma 11.6 source shape -/
 
-theorem twoPowSucc_sq_mul_dyadicClass_card_sq_le_card_four
-    (W : Finset ℝ) (j : ℕ) :
+section
+variable (W : Finset ℝ) (j : ℕ)
+include W j
+theorem twoPowSucc_sq_mul_dyadicClass_card_sq_le_card_four :
     ((2 ^ (j + 1) : ℕ) : ℝ) ^ 2 *
         ((gmHalfDifferenceDyadicClass W j).card : ℝ) ^ 2 ≤
       4 * (W.card : ℝ) ^ 4 := by
@@ -2022,10 +1909,7 @@ theorem twoPowSucc_sq_mul_dyadicClass_card_sq_le_card_four
   have hBUr : ((2 ^ j : ℕ) : ℝ) *
       ((gmHalfDifferenceDyadicClass W j).card : ℝ) ≤ (W.card : ℝ) ^ 2 := by
     exact_mod_cast hBU
-  have hQ : ((2 ^ (j + 1) : ℕ) : ℝ) = 2 * ((2 ^ j : ℕ) : ℝ) := by
-    push_cast
-    rw [pow_succ]
-    ring
+  pm_3956
   have hSq := mul_self_le_mul_self
     (mul_nonneg (by positivity : 0 ≤ ((2 ^ j : ℕ) : ℝ))
       (by positivity : 0 ≤ ((gmHalfDifferenceDyadicClass W j).card : ℝ)))
@@ -2044,8 +1928,7 @@ theorem twoPowSucc_sq_mul_dyadicClass_card_sq_le_card_four
       mul_le_mul_of_nonneg_left hSq' (by norm_num)
     _ = 4 * (W.card : ℝ) ^ 4 := by ring
 
-theorem twoPowSucc_sq_mul_dyadicClass_card_le_energy
-    (W : Finset ℝ) (j : ℕ) :
+theorem twoPowSucc_sq_mul_dyadicClass_card_le_energy :
     ((2 ^ (j + 1) : ℕ) : ℝ) ^ 2 *
         ((gmHalfDifferenceDyadicClass W j).card : ℝ) ≤
       4 * (ApproxAddEnergy 1 W : ℝ) := by
@@ -2054,12 +1937,10 @@ theorem twoPowSucc_sq_mul_dyadicClass_card_le_energy
       ((gmHalfDifferenceDyadicClass W j).card : ℝ) ≤
         (ApproxAddEnergy 1 W : ℝ) := by
     exact_mod_cast hB2U
-  have hQ : ((2 ^ (j + 1) : ℕ) : ℝ) = 2 * ((2 ^ j : ℕ) : ℝ) := by
-    push_cast
-    rw [pow_succ]
-    ring
+  pm_3956
   rw [hQ]
   nlinarith
+end
 
 theorem mul_sq_mul_rpow_five_four_factor
     {B U : ℝ} (hB : 0 ≤ B) (hU : 0 ≤ U) :
@@ -2084,8 +1965,10 @@ theorem mul_sq_mul_rpow_five_four_factor
     _ = B ^ (2 * (3 / 4 : ℝ)) * U ^ (3 / 4 : ℝ) *
         (B ^ (1 / 2 : ℝ) * U ^ (1 / 2 : ℝ)) := by ring
 
-theorem twoPowSucc_sq_mul_dyadicClass_card_five_four_le
-    (W : Finset ℝ) (j : ℕ) :
+section
+variable (W : Finset ℝ) (j : ℕ)
+include W j
+theorem twoPowSucc_sq_mul_dyadicClass_card_five_four_le :
     ((2 ^ (j + 1) : ℕ) : ℝ) ^ 2 *
         ((gmHalfDifferenceDyadicClass W j).card : ℝ) ^ (5 / 4 : ℝ) ≤
       4 * (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
@@ -2094,10 +1977,8 @@ theorem twoPowSucc_sq_mul_dyadicClass_card_five_four_le
   let U : ℝ := ((gmHalfDifferenceDyadicClass W j).card : ℝ)
   let E : ℝ := (ApproxAddEnergy 1 W : ℝ)
   let R : ℝ := (W.card : ℝ)
-  have hB : 0 ≤ B := by positivity
-  have hU : 0 ≤ U := by positivity
-  have hE : 0 ≤ E := by positivity
-  have hR : 0 ≤ R := by positivity
+  pm_5102 hB B hU U
+  pm_5102 hE E hR R
   have hB2U : B ^ 2 * U ≤ E := by
     dsimp only [B, U, E]
     exact_mod_cast
@@ -2130,8 +2011,7 @@ theorem twoPowSucc_sq_mul_dyadicClass_card_five_four_le
 
 /-- The three elementary multiplicity inequalities assembled in exactly the
 shape needed after the native Heath--Brown estimate for one dyadic class. -/
-theorem gmDyadicMultiplicitySourceShape
-    (W : Finset ℝ) (j : ℕ) {K L S X : ℝ}
+theorem gmDyadicMultiplicitySourceShape {K L S X : ℝ}
     (hK : 0 ≤ K) (hL : 0 ≤ L) (hS : 0 ≤ S) (hX : 0 ≤ X) :
     ((2 ^ (j + 1) : ℕ) : ℝ) ^ 2 *
         (K *
@@ -2146,8 +2026,7 @@ theorem gmDyadicMultiplicitySourceShape
             (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
               (W.card : ℝ) * S * X) +
         4 * (W.card : ℝ) ^ 4 * L := by
-  have hOne := twoPowSucc_sq_mul_dyadicClass_card_sq_le_card_four W j
-  have hTwo := twoPowSucc_sq_mul_dyadicClass_card_le_energy W j
+  pm_111 hOne twoPowSucc_sq_mul_dyadicClass_card_sq_le_card_four W j hTwo twoPowSucc_sq_mul_dyadicClass_card_le_energy
   have hThree := twoPowSucc_sq_mul_dyadicClass_card_five_four_le W j
   calc
     ((2 ^ (j + 1) : ℕ) : ℝ) ^ 2 *
@@ -2180,6 +2059,7 @@ theorem gmDyadicMultiplicitySourceShape
             (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
               (W.card : ℝ) * S * X) +
         4 * (W.card : ℝ) ^ 4 * L := by ring
+end
 
 /-- Guth--Maynard Lemma 11.6 for one occupied dyadic multiplicity class,
 after the source inequalities `B|U_B| ≤ |W|²` and
@@ -2208,10 +2088,8 @@ theorem gmDyadicPairBlockMoment_sourceShape_native :
               (2 * (gmAffineLocalBumpFourierTailConstant
                 (gmReflectionDecayOrder A ε)
                 (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2) := by
-  intro A ε η hA hε hη
-  obtain ⟨C, T₀, hC, hT₀, hBlock⟩ :=
-    gmDyadicPairBlockMoment_native A ε η hA hε hη
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3955 hBlock gmDyadicPairBlockMoment_native
+  pm_4084
   intro M T W j hM hT hMT hSep hBase
   have hRaw := hBlock M T W j hM hT hMT hSep hBase
   let K : ℝ :=
@@ -2219,26 +2097,17 @@ theorem gmDyadicPairBlockMoment_sourceShape_native :
       (2 * gmSection11CommonRadius (gmReflectionHeight T ε))) *
       ((2 * gmSection11CommonRadius (gmReflectionHeight T ε)) *
         C * (4 * T + 2) ^ η)
-  let L : ℝ := 2 * (gmAffineLocalBumpFourierTailConstant
-    (gmReflectionDecayOrder A ε)
-    (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2
-  let S : ℝ := (4 * T + 2) ^ (1 / 2 : ℝ)
-  have hTone : 1 ≤ T := hT₀.trans hT
-  have hTpos : 0 < T := zero_lt_one.trans_le hTone
-  have hHeight : 0 ≤ gmReflectionHeight T ε := by
-    unfold gmReflectionHeight
-    exact Real.rpow_nonneg hTpos.le _
+  pm_5534 L
+  pm_5866
+  pm_512 hTone hT₀.trans hT hTpos
+  pm_7714 hTpos.le
   have hRadius : 0 ≤
       gmSection11CommonRadius (gmReflectionHeight T ε) := by
     unfold gmSection11CommonRadius
     positivity
-  have hBase : 0 ≤ 4 * T + 2 := by positivity
-  have hK : 0 ≤ K := by
-    dsimp only [K]
-    positivity
-  have hL : 0 ≤ L := by
-    dsimp only [L]
-    positivity
+  pm_7541
+  pm_4220 hK K
+  pm_4220 hL L
   have hS : 0 ≤ S := by
     dsimp only [S]
     exact Real.rpow_nonneg hBase _
@@ -2273,12 +2142,8 @@ theorem gmDiscreteFourthMoment_le_dyadicPairBlockMoments
       intro n hn
       apply Finset.sum_le_sum
       intro m hm
-      have hnNat : 0 < n := by
-        rw [dyadicInterval, Finset.mem_Ioc] at hn
-        omega
-      have hmNat : 0 < m := by
-        rw [dyadicInterval, Finset.mem_Ioc] at hm
-        omega
+      pm_5027 hnNat n hn
+      pm_5027 hmNat m hm
       have hratio : 0 < (n : ℝ) / m := by positivity
       rw [gmR_eq_gmRPhase_log hratio.ne', abs_of_pos hratio]
       exact norm_gmRPhase_fourth_le_dyadicPairBlocks W hSep
@@ -2320,12 +2185,10 @@ theorem gmDiscreteFourthMoment_raw_native :
                 (2 * (gmAffineLocalBumpFourierTailConstant
                   (gmReflectionDecayOrder A ε)
                   (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2)) := by
-  intro A ε η hA hε hη
-  obtain ⟨C, T₀, hC, hT₀, hBlock⟩ :=
-    gmDyadicPairBlockMoment_sourceShape_native A ε η hA hε hη
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_3955 hBlock gmDyadicPairBlockMoment_sourceShape_native
+  pm_4084
   intro M T W hM hT hMT hSep hBase
-  let J : ℝ := ((Nat.log 2 W.card + 1 : ℕ) : ℝ)
+  pm_6289
   let B : ℝ :=
     4 *
       ((2 * (gmAffineLocalBumpFourierSup / (2 * Real.pi)) ^ 2 *
@@ -2377,12 +2240,8 @@ theorem gmHalfDifferenceDyadicCount_le_six_log
     (hBase : InBaseInterval T W) :
     ((Nat.log 2 W.card + 1 : ℕ) : ℝ) ≤ 6 * Real.log T := by
   have hTone : 1 ≤ T := by
-    calc
-      1 = Real.exp 0 := by rw [Real.exp_zero]
-      _ ≤ Real.exp 1 := Real.exp_le_exp.mpr (by norm_num)
-      _ ≤ T := hT
-  have hlogTone : 1 ≤ Real.log T := by
-    simpa using Real.log_le_log (Real.exp_pos 1) hT
+    pm_4748
+  pm_667 hlogTone hT
   by_cases hWzero : W.card = 0
   · rw [hWzero]
     norm_num
@@ -2390,14 +2249,14 @@ theorem gmHalfDifferenceDyadicCount_le_six_log
   have hWone : 1 ≤ W.card := Nat.one_le_iff_ne_zero.mpr hWzero
   have hCard := gmSeparated_card_le_two_height hTone hSep hBase
   have hLogCard := natCast_log_two_le_log W.card hWone
-  have hCardPos : (0 : ℝ) < W.card := by exact_mod_cast (Nat.pos_of_ne_zero hWzero)
-  have hTwoTPos : 0 < 2 * T := by positivity
+  pm_4173 hCardPos W.card Nat.pos_of_ne_zero hWzero
+  pm_4895 hTwoTPos T
   have hLogMono : Real.log (W.card : ℝ) ≤ Real.log (2 * T) :=
     Real.strictMonoOn_log.monotoneOn
       (Set.mem_Ioi.mpr hCardPos) (Set.mem_Ioi.mpr hTwoTPos) hCard
   have hLogProduct : Real.log (2 * T) = Real.log 2 + Real.log T := by
     rw [Real.log_mul (by norm_num) (by positivity : T ≠ 0)]
-  have hlogTwoPos : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_123 hlogTwoPos
   push_cast
   calc
     (Nat.log 2 W.card : ℝ) + 1 ≤
@@ -2409,14 +2268,13 @@ theorem gmHalfDifferenceDyadicCount_le_six_log
       have hdiv :
           (Real.log 2 + Real.log T) / Real.log 2 ≤
             6 * Real.log T - 1 := by
-        rw [div_le_iff₀ hlogTwoPos]
-        nlinarith [Real.log_two_gt_d9, Real.log_two_lt_d9]
+        pm_8106
       linarith
 
 theorem four_mul_add_two_rpow_le_six_mul
     {T a : ℝ} (hT : 1 ≤ T) (ha : 0 ≤ a) :
     (4 * T + 2) ^ a ≤ 6 ^ a * T ^ a := by
-  have hBase : 0 ≤ 4 * T + 2 := by positivity
+  pm_7541
   have hSixT : 4 * T + 2 ≤ 6 * T := by linarith
   calc
     (4 * T + 2) ^ a ≤ (6 * T) ^ a :=
@@ -2427,9 +2285,7 @@ theorem gmSection11CommonRadius_le_epsilonPower
     {ε T : ℝ} (hε : 0 < ε) (hT : 1 ≤ T) :
     gmSection11CommonRadius (gmReflectionHeight T ε) ≤
       (1 + 2 * Real.pi) * T ^ (ε / 16) := by
-  have hEta : gmReflectionEta ε ≤ ε / 16 := by
-    unfold gmReflectionEta
-    exact min_le_left _ _
+  pm_7435 hEta
   have hHeight : gmReflectionHeight T ε ≤ T ^ (ε / 16) := by
     unfold gmReflectionHeight
     exact Real.rpow_le_rpow_of_exponent_le hT hEta
@@ -2502,13 +2358,12 @@ theorem gmDiscreteFourthMoment_native :
   intro ε hε
   let η : ℝ := ε / 16
   let δ : ℝ := ε / 4
-  have hη : 0 < η := by dsimp only [η]; positivity
-  have hδ : 0 < δ := by dsimp only [δ]; positivity
+  pm_4756
+  pm_4644
   obtain ⟨C₁, T₁, hC₁, hT₁, hRaw⟩ :=
     gmDiscreteFourthMoment_raw_native 100 ε η (by norm_num) hε hη
   have hLogEventually := eventually_log_nat_power_le_rpow 2 δ hδ
-  rw [eventually_atTop] at hLogEventually
-  obtain ⟨Tlog, hTlog⟩ := hLogEventually
+  pm_4757
   let T₀ : ℝ := max T₁ (max (Real.exp 1) Tlog)
   let A₀ : ℝ := 2 * (gmAffineLocalBumpFourierSup / (2 * Real.pi)) ^ 2
   let D₀ : ℝ := 1 + 2 * Real.pi
@@ -2518,7 +2373,7 @@ theorem gmDiscreteFourthMoment_native :
     576 * A₀ * D₀ ^ 2 * C₁ * 6 ^ η * Real.sqrt 6
   let Ctail : ℝ := 288 * E₀ ^ 2
   let C : ℝ := Cmain + Ctail
-  have hA₀ : 0 ≤ A₀ := by dsimp only [A₀]; positivity
+  pm_4198
   have hA₀pos : 0 < A₀ := by
     dsimp only [A₀]
     have hSup : 0 < gmAffineLocalBumpFourierSup :=
@@ -2528,30 +2383,23 @@ theorem gmDiscreteFourthMoment_native :
   have hE₀ : 0 < E₀ := by
     dsimp only [E₀]
     exact gmAffineLocalBumpFourierTailConstant_pos _ _
-  have hCmain : 0 < Cmain := by
-    dsimp only [Cmain]
-    positivity
-  have hCtail : 0 < Ctail := by dsimp only [Ctail]; positivity
+  pm_4790 hCmain Cmain
+  pm_116 hCtail Ctail
   refine ⟨C, T₀, by dsimp only [C]; positivity,
     le_trans hT₁ (le_max_left _ _), ?_⟩
   intro M T W hM hT hMT hSep hBase
-  have hT₁' : T₁ ≤ T := (le_max_left _ _).trans hT
+  pm_4630 hT₁' T₁ le_max_left hT
   have hTexp : Real.exp 1 ≤ T :=
     (le_max_left (Real.exp 1) Tlog).trans
       ((le_max_right T₁ (max (Real.exp 1) Tlog)).trans hT)
   have hTlog' : Tlog ≤ T :=
     (le_max_right (Real.exp 1) Tlog).trans
       ((le_max_right T₁ (max (Real.exp 1) Tlog)).trans hT)
-  have hTone : 1 ≤ T := by
-    calc
-      1 = Real.exp 0 := by rw [Real.exp_zero]
-      _ ≤ Real.exp 1 := Real.exp_le_exp.mpr (by norm_num)
-      _ ≤ T := hTexp
-  have hTpos : 0 < T := zero_lt_one.trans_le hTone
+  pm_5062 hTone hTexp hTpos
   have hLogPow : (Real.log T) ^ 2 ≤ T ^ δ := hTlog T hTlog'
-  let J : ℝ := ((Nat.log 2 W.card + 1 : ℕ) : ℝ)
+  pm_6289
   let R : ℝ := gmSection11CommonRadius (gmReflectionHeight T ε)
-  let S : ℝ := (4 * T + 2) ^ (1 / 2 : ℝ)
+  pm_5866
   let Core : ℝ :=
     (W.card : ℝ) ^ 4 * M +
       (ApproxAddEnergy 1 W : ℝ) * M ^ 2 +
@@ -2564,15 +2412,14 @@ theorem gmDiscreteFourthMoment_native :
         (W.card : ℝ) * S * M
   have hJ : J ≤ 6 * Real.log T := by
     simpa only [J] using gmHalfDifferenceDyadicCount_le_six_log hTexp hSep hBase
-  have hJ0 : 0 ≤ J := by dsimp only [J]; positivity
+  pm_82 hJ0 J
   have hLog0 : 0 ≤ Real.log T := Real.log_nonneg hTone
   have hJSq : J ^ 2 ≤ 36 * T ^ δ := by
     calc
       J ^ 2 ≤ (6 * Real.log T) ^ 2 := pow_le_pow_left₀ hJ0 hJ 2
       _ = 36 * (Real.log T) ^ 2 := by ring
       _ ≤ 36 * T ^ δ := by gcongr
-  have hR : R ≤ D₀ * T ^ (ε / 16) := by
-    simpa only [R, D₀] using gmSection11CommonRadius_le_epsilonPower hε hTone
+  pm_8420 hR R D₀ hTone
   have hR0 : 0 ≤ R := by
     dsimp only [R, gmSection11CommonRadius, gmReflectionHeight]
     positivity
@@ -2595,8 +2442,8 @@ theorem gmDiscreteFourthMoment_native :
     four_mul_add_two_rpow_le_six_mul hTone hη.le
   have hCore : RawCore ≤ Real.sqrt 6 * Core := by
     simpa only [RawCore, Core, S] using gmSection11RawCore_le_sqrtSix W hTone
-  have hCore0 : 0 ≤ Core := by dsimp only [Core]; positivity
-  have hRawCore0 : 0 ≤ RawCore := by dsimp only [RawCore, S]; positivity
+  pm_82 hCore0 Core
+  pm_3988 hRawCore0 RawCore S
   have hExponent : δ + ε / 8 + η ≤ ε := by
     dsimp only [δ, η]
     linarith
@@ -2645,9 +2492,8 @@ theorem gmDiscreteFourthMoment_native :
     apply div_le_self hE₀.le
     exact Real.one_le_rpow hTone (by norm_num)
   have hTailFrac0 : 0 ≤ E₀ / T ^ (100 : ℝ) := by positivity
-  have hTailSq : (E₀ / T ^ (100 : ℝ)) ^ 2 ≤ E₀ ^ 2 :=
-    pow_le_pow_left₀ hTailFrac0 hTailFrac 2
-  have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  pm_1170
+  pm_77 hMone M hM
   have hRfourM : (W.card : ℝ) ^ 4 ≤ Core := by
     dsimp only [Core]
     have : (W.card : ℝ) ^ 4 ≤ (W.card : ℝ) ^ 4 * M := by
@@ -2672,7 +2518,7 @@ theorem gmDiscreteFourthMoment_native :
         dsimp only [Ctail]
         ring
       _ ≤ Ctail * T ^ ε * Core := by gcongr
-  have hApplied := hRaw M T W hM hT₁' hMT hSep hBase
+  pm_528 hApplied hRaw M T W hM hT₁' hMT hSep hBase
   change gmDiscreteRatioMoment 4 M W ≤
       J ^ 2 *
         (4 * ((A₀ * (2 * R)) * ((2 * R) * C₁ * (4 * T + 2) ^ η)) *
@@ -2692,30 +2538,28 @@ theorem gmDiscreteFourthMoment_native :
 
 /-! ## The large-value input: Guth--Maynard Lemma 11.4 -/
 
+section
+variable {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ) (a : ℝ)
+include M hM b a
 /-- Exact finite expansion of the squared source polynomial, with the
 coefficient ordering chosen to match the three copies of `R` in Lemma 11.4.
 This is the arbitrary-coefficient analogue of
 `ofReal_norm_sourceDirichletPoly_one_sq_expand`. -/
-theorem ofReal_norm_sourceDirichletPoly_sq_expand
-    {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ) (a : ℝ) :
+theorem ofReal_norm_sourceDirichletPoly_sq_expand :
     ((‖sourceDirichletPoly M b a‖ ^ 2 : ℝ) : ℂ) =
       ∑ n ∈ dyadicInterval M, ∑ m ∈ dyadicInterval M,
         star (b n) * b m *
           Complex.exp ((((a * (Real.log m - Real.log n) : ℝ) : ℂ) * I)) := by
   rw [sourceDirichletPoly, ofReal_norm_finset_sum_sq_expand]
-  apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro m hm
-  have hnpos : 0 < n := hM.trans (Finset.mem_Ioc.mp hn).1
-  have hmpos : 0 < m := hM.trans (Finset.mem_Ioc.mp hm).1
-  have hnne : (n : ℂ) ≠ 0 := by exact_mod_cast hnpos.ne'
-  have hmne : (m : ℂ) ≠ 0 := by exact_mod_cast hmpos.ne'
+  pm_4079
+  pm_3954
+  pm_3953
+  pm_146 hmne m hmpos.ne'
   rw [star_mul, Complex.cpow_def_of_ne_zero hnne,
     Complex.cpow_def_of_ne_zero hmne]
   rw [Complex.star_def, ← Complex.exp_conj]
-  have hnCast : (n : ℂ) = ((n : ℝ) : ℂ) := by norm_num
-  have hmCast : (m : ℂ) = ((m : ℝ) : ℂ) := by norm_num
+  pm_4836
+  pm_5067 hmCast m
   rw [hnCast, hmCast,
     ← Complex.ofReal_log (by exact_mod_cast hnpos.le),
     ← Complex.ofReal_log (by exact_mod_cast hmpos.le)]
@@ -2743,8 +2587,7 @@ theorem ofReal_norm_sourceDirichletPoly_sq_expand
       rw [hphase]
       rfl
 
-theorem ofReal_norm_sourceDirichletPoly_sq_expand'
-    {M : ℕ} (hM : 0 < M) (b : ℕ → ℂ) (a : ℝ) :
+theorem ofReal_norm_sourceDirichletPoly_sq_expand' :
     ((‖sourceDirichletPoly M b a‖ : ℂ) ^ 2) =
       ∑ n ∈ dyadicInterval M, ∑ m ∈ dyadicInterval M,
         star (b n) * b m *
@@ -2752,6 +2595,7 @@ theorem ofReal_norm_sourceDirichletPoly_sq_expand'
   rw [← ofReal_norm_sourceDirichletPoly_sq_expand hM b a]
   push_cast
   rfl
+end
 
 theorem sum_three_swap_first_third
     {A B C R : Type*} [AddCommMonoid R]
@@ -2783,10 +2627,7 @@ theorem sum_five_last_two_to_front
   calc
     _ = ∑ a ∈ U, ∑ b ∈ V, ∑ d ∈ X, ∑ c ∈ W, ∑ e ∈ Y,
         f a b c d e := by
-      apply Finset.sum_congr rfl
-      intro a ha
-      apply Finset.sum_congr rfl
-      intro b hb
+      pm_90 Finset.sum_congr a ha b hb
       rw [Finset.sum_comm]
     _ = ∑ a ∈ U, ∑ d ∈ X, ∑ b ∈ V, ∑ c ∈ W, ∑ e ∈ Y,
         f a b c d e := by
@@ -2798,19 +2639,13 @@ theorem sum_five_last_two_to_front
       rw [Finset.sum_comm]
     _ = ∑ d ∈ X, ∑ a ∈ U, ∑ b ∈ V, ∑ e ∈ Y, ∑ c ∈ W,
         f a b c d e := by
-      apply Finset.sum_congr rfl
-      intro d hd
-      apply Finset.sum_congr rfl
-      intro a ha
+      pm_90 Finset.sum_congr d hd a ha
       apply Finset.sum_congr rfl
       intro b hb
       rw [Finset.sum_comm]
     _ = ∑ d ∈ X, ∑ a ∈ U, ∑ e ∈ Y, ∑ b ∈ V, ∑ c ∈ W,
         f a b c d e := by
-      apply Finset.sum_congr rfl
-      intro d hd
-      apply Finset.sum_congr rfl
-      intro a ha
+      pm_90 Finset.sum_congr d hd a ha
       rw [Finset.sum_comm]
     _ = _ := by
       apply Finset.sum_congr rfl
@@ -2835,15 +2670,10 @@ theorem sum_three_source_phases_eq_gmRPhase
           Complex.exp ((((t₁ * x : ℝ) : ℂ) * I)) *
           Complex.exp ((((t₂ * x : ℝ) : ℂ) * I)) *
           Complex.exp ((((t₃ * (-x) : ℝ) : ℂ) * I)) := by
-      apply Finset.sum_congr rfl
-      intro t₁ ht₁
-      apply Finset.sum_congr rfl
-      intro t₂ ht₂
+      pm_90 Finset.sum_congr t₁ ht₁ t₂ ht₂
       apply Finset.sum_congr rfl
       intro t₃ ht₃
-      rw [← Complex.exp_add, ← Complex.exp_add, ← Complex.exp_add]
-      congr 1
-      push_cast
+      pm_7222
       ring
     _ = Complex.exp ((((s * x : ℝ) : ℂ) * I)) *
         (∑ t ∈ W, Complex.exp ((((t * x : ℝ) : ℂ) * I))) *
@@ -2867,10 +2697,7 @@ theorem ofReal_sum_triple_sourceMoment_eq
   push_cast
   simp_rw [ofReal_norm_sourceDirichletPoly_sq_expand' hM]
   rw [sum_five_last_two_to_front]
-  apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro m hm
+  pm_4079
   calc
     ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W,
         star (b n) * b m *
@@ -2883,14 +2710,9 @@ theorem ofReal_sum_triple_sourceMoment_eq
       simp only [Finset.mul_sum]
     _ = _ := by
       rw [sum_three_source_phases_eq_gmRPhase]
-      have hnpos : 0 < n := hM.trans (Finset.mem_Ioc.mp hn).1
-      have hmpos : 0 < m := hM.trans (Finset.mem_Ioc.mp hm).1
-      have hmLog : Complex.log (m : ℂ) = ((Real.log m : ℝ) : ℂ) := by
-        symm
-        exact Complex.ofReal_log (by exact_mod_cast hmpos.le)
-      have hnLog : Complex.log (n : ℂ) = ((Real.log n : ℝ) : ℂ) := by
-        symm
-        exact Complex.ofReal_log (by exact_mod_cast hnpos.le)
+      pm_3954
+      pm_6331 hmLog m hmpos.le
+      pm_6331 hnLog n hnpos.le
       rw [hmLog, hnLog]
       push_cast
       rfl
@@ -2907,9 +2729,7 @@ theorem sum_triple_sourceMoment_le_discreteThirdMoment
       gmDiscreteRatioMoment 3 M W := by
   let S : ℝ := ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W,
     ‖sourceDirichletPoly M b (t₁ + t₂ - t₃ + s)‖ ^ 2
-  have hS0 : 0 ≤ S := by
-    dsimp only [S]
-    positivity
+  pm_4220 hS0 S
   have hSnorm : S = ‖((S : ℝ) : ℂ)‖ := by
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hS0]
   have hExpand := ofReal_sum_triple_sourceMoment_eq hM W b s
@@ -2940,12 +2760,11 @@ theorem sum_triple_sourceMoment_le_discreteThirdMoment
       intro n hn
       apply Finset.sum_le_sum
       intro m hm
-      have hnpos : 0 < n := hM.trans (Finset.mem_Ioc.mp hn).1
-      have hmpos : 0 < m := hM.trans (Finset.mem_Ioc.mp hm).1
+      pm_3954
       have hmn : 0 < (m : ℝ) / n := by positivity
       have hnm : (n : ℝ) / m ≠ 0 := by positivity
       have hlog : Real.log ((m : ℝ) / n) = Real.log m - Real.log n := by
-        rw [Real.log_div (by positivity) (by positivity)]
+        pm_3957
       have hRphase :
           ‖gmRPhase W (Real.log m - Real.log n)‖ =
             ‖gmR W ((n : ℝ) / m)‖ := by
@@ -2957,8 +2776,7 @@ theorem sum_triple_sourceMoment_le_discreteThirdMoment
             rw [gmR_eq_gmRPhase_log hmn.ne', abs_of_pos hmn, hlog]
           _ = ‖gmR W ((n : ℝ) / m)‖ := by
             rw [hrecip, norm_gmR_reciprocal W ((n : ℝ) / m) hnm]
-      have hbn := hb n hn
-      have hbm := hb m hm
+      pm_268 hbn hb n hn hbm m hm
       have hR0 : 0 ≤ ‖gmR W ((n : ℝ) / m)‖ := norm_nonneg _
       calc
         ‖star (b n) * b m *
@@ -2974,41 +2792,32 @@ theorem sum_triple_sourceMoment_le_discreteThirdMoment
         _ = _ := by ring
     _ = _ := rfl
 
+section
+variable (W : Finset ℝ) (hSep : IsSeparated 1 W)
+include W hSep
 /-- The possible fourth ordinates completing one tolerance-one additive
 quadruple form a one-separated subset of an interval of length two, hence
 there are at most three of them.  This is the finite packing fact used (and
 usually suppressed) in Guth--Maynard Lemma 11.4. -/
-theorem card_filter_abs_sub_le_one_le_three
-    (W : Finset ℝ) (hSep : IsSeparated 1 W) (center : ℝ) :
+theorem card_filter_abs_sub_le_one_le_three (center : ℝ) :
     (W.filter fun t => |t - center| ≤ 1).card ≤ 3 := by
   let F := W.filter fun t => |t - center| ≤ 1
   let f : ℝ → ℤ := fun t => ⌊t - center⌋
   have hinj : Set.InjOn f (F : Set ℝ) := by
-    intro x hx y hy hxy
-    by_contra hne
-    have hxF : x ∈ F := hx
-    have hyF : y ∈ F := hy
-    have hxW : x ∈ W := (Finset.mem_filter.mp hxF).1
-    have hyW : y ∈ W := (Finset.mem_filter.mp hyF).1
-    have hdist := hSep x hxW y hyW hne
+    pm_1196 hxW W hyW
     have hfloorX := Int.floor_le (x - center)
     have hfloorY := Int.floor_le (y - center)
     have hfloorX' := Int.lt_floor_add_one (x - center)
     have hfloorY' := Int.lt_floor_add_one (y - center)
     change ⌊x - center⌋ = ⌊y - center⌋ at hxy
     rw [hxy] at hfloorX hfloorX'
-    have hxylt : |x - y| < 1 := by
-      rw [abs_lt]
-      constructor <;> linarith
+    pm_8841 hxylt x y
     rw [Real.dist_eq] at hdist
     exact (not_lt_of_ge hdist) hxylt
-  have hcardImage : F.card = (F.image f).card := by
-    symm
-    exact Finset.card_image_iff.mpr hinj
+  pm_6734
   have hsub : F.image f ⊆ Finset.Icc (-1 : ℤ) 1 := by
     intro z hz
-    rw [Finset.mem_image] at hz
-    obtain ⟨t, htF, rfl⟩ := hz
+    pm_3952 hz t htF
     have htAbs := (Finset.mem_filter.mp htF).2
     rw [abs_le] at htAbs
     rw [Finset.mem_Icc]
@@ -3028,8 +2837,7 @@ theorem card_filter_abs_sub_le_one_le_three
 sum over approximate additive quadruples into three times the corresponding
 sum over the first three ordinates whenever the summand is independent of the
 fourth ordinate. -/
-theorem sum_approximateAdditiveQuadruples_le_three_mul_sum_triples
-    (W : Finset ℝ) (hSep : IsSeparated 1 W) (g : ℝ → ℝ → ℝ → ℝ)
+theorem sum_approximateAdditiveQuadruples_le_three_mul_sum_triples (g : ℝ → ℝ → ℝ → ℝ)
     (hg : ∀ t₁ ∈ W, ∀ t₂ ∈ W, ∀ t₃ ∈ W, 0 ≤ g t₁ t₂ t₃) :
     (∑ q ∈ approximateAdditiveQuadruples 1 W,
         g q.1.1 q.1.2 q.2.1) ≤
@@ -3061,19 +2869,18 @@ theorem sum_approximateAdditiveQuadruples_le_three_mul_sum_triples
     (∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W, ∑ t₄ ∈ W,
         if |t₁ + t₂ - t₃ - t₄| ≤ 1 then g t₁ t₂ t₃ else 0) ≤
       ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W, 3 * g t₁ t₂ t₃ := by
-      apply Finset.sum_le_sum
-      intro t₁ ht₁
-      apply Finset.sum_le_sum
-      intro t₂ ht₂
-      apply Finset.sum_le_sum
+      pm_201 Finset.sum_le_sum t₁ ht₁ t₂ ht₂
       intro t₃ ht₃
       exact hinner t₁ t₂ t₃ ht₁ ht₂ ht₃
     _ = 3 * ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W, g t₁ t₂ t₃ := by
       simp only [Finset.mul_sum]
+end
 
+section
+variable {M : ℕ} (hM : 0 < M) (W : Finset ℝ) (b : ℕ → ℂ) (L : ℝ)
+include M hM W b L
 /-- Finite Fubini for the three source-polynomial copies in Lemma 11.4. -/
-theorem integral_sum_triple_sourceMoment
-    {M : ℕ} (hM : 0 < M) (W : Finset ℝ) (b : ℕ → ℂ) (L : ℝ) :
+theorem integral_sum_triple_sourceMoment :
     (∫ s : ℝ in Set.Icc (-L) L,
         ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W,
           ‖sourceDirichletPoly M b (t₁ + t₂ - t₃ + s)‖ ^ 2) =
@@ -3083,18 +2890,8 @@ theorem integral_sum_triple_sourceMoment
   have hInt (t₁ t₂ t₃ : ℝ) : IntegrableOn (fun s : ℝ =>
       ‖sourceDirichletPoly M b (t₁ + t₂ - t₃ + s)‖ ^ 2)
       (Set.Icc (-L) L) := by
-    apply ContinuousOn.integrableOn_Icc
-    apply Continuous.continuousOn
-    apply Continuous.pow
-    apply Continuous.norm
-    unfold sourceDirichletPoly
-    apply continuous_finsetSum
-    intro n hn
-    apply Continuous.const_mul
-    apply Continuous.const_cpow
-    · fun_prop
-    · left
-      exact_mod_cast (hM.trans (Finset.mem_Ioc.mp hn).1).ne'
+    pm_5144
+    pm_3948
   rw [MeasureTheory.integral_finsetSum]
   · apply Finset.sum_congr rfl
     intro t₁ ht₁
@@ -3114,7 +2911,6 @@ theorem integral_sum_triple_sourceMoment
 /-- Integrating the coefficient-uniform triple-moment bound over the common
 reflection interval costs exactly its length `2L`. -/
 theorem sum_triple_integral_sourceMoment_le
-    {M : ℕ} (hM : 0 < M) (W : Finset ℝ) (b : ℕ → ℂ) (L : ℝ)
     (hL : 0 ≤ L) (hb : ∀ n ∈ dyadicInterval M, ‖b n‖ ≤ 1) :
     (∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W,
         ∫ s : ℝ in Set.Icc (-L) L,
@@ -3130,24 +2926,10 @@ theorem sum_triple_integral_sourceMoment_le
       ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W,
         ‖sourceDirichletPoly M b (t₁ + t₂ - t₃ + s)‖ ^ 2)
       (Set.Icc (-L) L) := by
-    apply MeasureTheory.integrable_finsetSum
-    intro t₁ ht₁
-    apply MeasureTheory.integrable_finsetSum
-    intro t₂ ht₂
-    apply MeasureTheory.integrable_finsetSum
+    pm_201 MeasureTheory.integrable_finsetSum t₁ ht₁ t₂ ht₂
     intro t₃ ht₃
-    apply ContinuousOn.integrableOn_Icc
-    apply Continuous.continuousOn
-    apply Continuous.pow
-    apply Continuous.norm
-    unfold sourceDirichletPoly
-    apply continuous_finsetSum
-    intro n hn
-    apply Continuous.const_mul
-    apply Continuous.const_cpow
-    · fun_prop
-    · left
-      exact_mod_cast (hM.trans (Finset.mem_Ioc.mp hn).1).ne'
+    pm_5144
+    pm_3948
   calc
     (∫ s : ℝ in Set.Icc (-L) L,
         ∑ t₁ ∈ W, ∑ t₂ ∈ W, ∑ t₃ ∈ W,
@@ -3167,6 +2949,7 @@ theorem sum_triple_integral_sourceMoment_le
       rw [measureReal_def, Real.volume_Icc, ENNReal.toReal_ofReal]
       · ring
       · linarith
+end
 
 /-- Exact pre-asymptotic form of Guth--Maynard Lemma 11.4.  It starts from
 the literal approximate-additive quadruples, uses the actual large-value
@@ -3186,7 +2969,7 @@ theorem approxAddEnergy_mul_largeValue_sq_le_thirdMoment_raw
           (gmAffineLocalBumpFourierTailConstant
             (gmReflectionDecayOrder A ε)
             (gmReflectionDecayOrder_two_le A ε) / T ^ A) ^ 2 := by
-  let K : ℝ := gmAffineLocalBumpFourierSup / (2 * Real.pi)
+  pm_5316 K gmAffineLocalBumpFourierSup Real.pi
   let L : ℝ := gmSection11CommonRadius (gmReflectionHeight T ε)
   let E : ℝ := gmAffineLocalBumpFourierTailConstant
     (gmReflectionDecayOrder A ε)
@@ -3291,7 +3074,7 @@ theorem card_cubed_le_gmDiscreteRatioMoment_three
   rw [gmDiscreteRatioMoment_eq_iterated]
   have hdiag :
       ‖gmR W ((n₀ : ℝ) / n₀)‖ ^ 3 = (W.card : ℝ) ^ 3 := by
-    have hn₀pos : (0 : ℝ) < n₀ := by exact_mod_cast (Nat.zero_lt_succ M)
+    pm_4173 hn₀pos n₀ Nat.zero_lt_succ M
     rw [div_self hn₀pos.ne', gmR_one]
     norm_num
   calc
@@ -3322,7 +3105,7 @@ theorem gmApproxAddEnergy_largeValues_native :
           (ApproxAddEnergy 1 W : ℝ) * V ^ 2 ≤
             C * T ^ ε * gmDiscreteRatioMoment 3 M W := by
   intro ε hε
-  let K : ℝ := gmAffineLocalBumpFourierSup / (2 * Real.pi)
+  pm_5316 K gmAffineLocalBumpFourierSup Real.pi
   let D : ℝ := 1 + 2 * Real.pi
   let E₀ : ℝ := gmAffineLocalBumpFourierTailConstant
     (gmReflectionDecayOrder 100 ε)
@@ -3345,8 +3128,7 @@ theorem gmApproxAddEnergy_largeValues_native :
   have hL0 : 0 ≤ L := by
     dsimp only [L, gmSection11CommonRadius, gmReflectionHeight]
     positivity
-  have hL : L ≤ D * T ^ (ε / 16) := by
-    simpa only [L, D] using gmSection11CommonRadius_le_epsilonPower hε hT
+  pm_8420 hL L D hT
   have hTwoLSq :
       (2 * L) ^ 2 ≤ (2 * D) ^ 2 * T ^ (ε / 8) := by
     calc
@@ -3390,10 +3172,9 @@ theorem gmApproxAddEnergy_largeValues_native :
     exact div_nonneg
       (gmAffineLocalBumpFourierTailConstant_pos _ _).le
       (Real.rpow_nonneg hTpos.le _)
-  have hTailSq : (E₀ / T ^ (100 : ℝ)) ^ 2 ≤ E₀ ^ 2 :=
-    pow_le_pow_left₀ hTailFrac0 hTailFrac 2
+  pm_1170
   have hCard := card_cubed_le_gmDiscreteRatioMoment_three hM W
-  have hOnePow : 1 ≤ T ^ ε := Real.one_le_rpow hT hε.le
+  pm_4168 hOnePow ε hT hε.le
   have hTail :
       6 * (W.card : ℝ) ^ 3 * (E₀ / T ^ (100 : ℝ)) ^ 2 ≤
         Ctail * T ^ ε * gmDiscreteRatioMoment 3 M W := by
@@ -3424,14 +3205,15 @@ noncomputable def gmFiniteExpSum
     {α : Type*} (S : Finset α) (c : α → ℂ) (freq : α → ℝ) (x : ℝ) : ℂ :=
   ∑ a ∈ S, c a * Complex.exp ((((freq a) * x : ℝ) : ℂ) * I)
 
-theorem continuous_gmFiniteExpSum
-    {α : Type*} (S : Finset α) (c : α → ℂ) (freq : α → ℝ) :
+section
+variable {α : Type*}
+include α
+theorem continuous_gmFiniteExpSum (S : Finset α) (c : α → ℂ) (freq : α → ℝ) :
     Continuous (gmFiniteExpSum S c freq) := by
   unfold gmFiniteExpSum
   fun_prop
 
-theorem norm_gmFiniteExpSum_le_coeffMass
-    {α : Type*} (S : Finset α) (c : α → ℂ) (freq : α → ℝ) (x : ℝ) :
+theorem norm_gmFiniteExpSum_le_coeffMass (S : Finset α) (c : α → ℂ) (freq : α → ℝ) (x : ℝ) :
     ‖gmFiniteExpSum S c freq x‖ ≤ ∑ a ∈ S, ‖c a‖ := by
   unfold gmFiniteExpSum
   calc
@@ -3447,8 +3229,7 @@ theorem norm_gmFiniteExpSum_le_coeffMass
 is reproduced exactly from translates on the physical scale `(B*T)⁻¹`.
 This is the additive-coordinate form of the Fourier identity in the proof
 of Guth--Maynard Lemma 11.7. -/
-theorem finiteExpSum_fourier_reproduction
-    {α : Type*} [DecidableEq α] (S : Finset α) (c : α → ℂ)
+theorem finiteExpSum_fourier_reproduction [DecidableEq α] (S : Finset α) (c : α → ℂ)
     (freq : α → ℝ) {B T : ℝ} (hBT : 0 < B * T)
     (hfreq : ∀ a ∈ S, |freq a| ≤ B * T) (x : ℝ) :
     (∑ a ∈ S, c a * Complex.exp ((((freq a) * x : ℝ) : ℂ) * I)) =
@@ -3468,8 +3249,7 @@ theorem finiteExpSum_fourier_reproduction
       (fun g : SchwartzMap ℝ ℂ => g u) hpairMap
     change (𝓕⁻ (𝓕 gmAffineLocalBumpSchwartz)) u =
       gmAffineLocalBumpSchwartz u at hpair
-    rw [SchwartzMap.fourierInv_coe, Real.fourierInv_eq'] at hpair
-    simpa only [Real.inner_apply, smul_eq_mul] using hpair.symm
+    pm_6482
   have hone (a : α) (ha : a ∈ S) :
       gmAffineLocalBumpSchwartz (freq a / (B * T)) = 1 := by
     rw [gmAffineLocalBumpSchwartz_apply]
@@ -3497,7 +3277,7 @@ theorem finiteExpSum_fourier_reproduction
       exact le_rfl
     have hbase := (𝓕 gmAffineLocalBumpSchwartz).integrable.mul_bdd
       (c := ‖c a‖) hg.aestronglyMeasurable hbounded
-    simpa only [g, mul_assoc, mul_left_comm, mul_comm] using hbase
+    pm_99 g mul_assoc mul_left_comm mul_comm hbase
   calc
     (∑ a ∈ S, c a * Complex.exp ((((freq a) * x : ℝ) : ℂ) * I)) =
         ∑ a ∈ S, c a * Complex.exp ((((freq a) * x : ℝ) : ℂ) * I) *
@@ -3533,10 +3313,7 @@ theorem finiteExpSum_fourier_reproduction
         ∑ a ∈ S, c a *
           Complex.exp ((((freq a) *
             (x + 2 * Real.pi * ξ / (B * T)) : ℝ) : ℂ) * I) := by
-      apply integral_congr_ae
-      filter_upwards with ξ
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
+      pm_1326 ξ
       intro a ha
       calc
         c a * Complex.exp ((((freq a) * x : ℝ) : ℂ) * I) *
@@ -3551,17 +3328,13 @@ theorem finiteExpSum_fourier_reproduction
               (c a * Complex.exp
                 (((freq a * (x + 2 * Real.pi * ξ / (B * T)) : ℝ) : ℂ) * I)) := by
           congr 2
-          rw [← Complex.exp_add]
-          congr 1
-          push_cast
-          field_simp [hBT.ne']
+          pm_8775 hBT.ne'
 
-theorem integrable_finiteExpSum_fourier_kernel
-    {α : Type*} [DecidableEq α] (S : Finset α) (c : α → ℂ)
+theorem integrable_finiteExpSum_fourier_kernel [DecidableEq α] (S : Finset α) (c : α → ℂ)
     (freq : α → ℝ) {B T : ℝ} (_hBT : 0 < B * T) (x : ℝ) :
     Integrable (fun ξ : ℝ => 𝓕 gmAffineLocalBumpSchwartz ξ *
       gmFiniteExpSum S c freq (x + 2 * Real.pi * ξ / (B * T))) := by
-  let mass : ℝ := ∑ a ∈ S, ‖c a‖
+  pm_7257
   have hcont : Continuous (fun ξ : ℝ =>
       gmFiniteExpSum S c freq (x + 2 * Real.pi * ξ / (B * T))) :=
     (continuous_gmFiniteExpSum S c freq).comp (by fun_prop)
@@ -3575,8 +3348,7 @@ theorem integrable_finiteExpSum_fourier_kernel
 /-- Complete local-plus-tail estimate for a finite band-limited
 exponential polynomial.  No asymptotic notation is hidden: the omitted
 Fourier mass is the explicit fixed Schwartz-tail constant. -/
-theorem norm_gmFiniteExpSum_le_localFourier_add_tail
-    {α : Type*} [DecidableEq α] (S : Finset α) (c : α → ℂ)
+theorem norm_gmFiniteExpSum_le_localFourier_add_tail [DecidableEq α] (S : Finset α) (c : α → ℂ)
     (freq : α → ℝ) {B T : ℝ} (hBT : 0 < B * T)
     (hfreq : ∀ a ∈ S, |freq a| ≤ B * T) (x H : ℝ)
     (hH : 1 ≤ H) (q : ℕ) (hq : 2 ≤ q) :
@@ -3588,7 +3360,7 @@ theorem norm_gmFiniteExpSum_le_localFourier_add_tail
       (∑ a ∈ S, ‖c a‖) *
         gmAffineLocalBumpFourierTailConstant q hq *
           H ^ (1 - (q : ℝ)) := by
-  let mass : ℝ := ∑ a ∈ S, ‖c a‖
+  pm_7257
   let C : ℝ := gmAffineLocalBumpFourierTailConstant q hq
   let f : ℝ → ℂ := fun ξ => 𝓕 gmAffineLocalBumpSchwartz ξ *
     gmFiniteExpSum S c freq (x + 2 * Real.pi * ξ / (B * T))
@@ -3629,7 +3401,7 @@ theorem norm_gmFiniteExpSum_le_localFourier_add_tail
     ‖gmFiniteExpSum S c freq x‖ =
         ‖(∫ ξ : ℝ in Set.Icc (-H) H, f ξ) +
           (∫ ξ : ℝ in (Set.Icc (-H) H)ᶜ, f ξ)‖ := by
-      exact (congrArg norm hrepr).trans (congrArg norm hsplit.symm)
+      pm_8726 hrepr
     _ ≤ ‖∫ ξ : ℝ in Set.Icc (-H) H, f ξ‖ +
           ‖∫ ξ : ℝ in (Set.Icc (-H) H)ᶜ, f ξ‖ := by
       exact norm_add_le _ _
@@ -3650,8 +3422,7 @@ theorem norm_gmFiniteExpSum_le_localFourier_add_tail
 
 /-- Physical-neighbourhood form of the preceding Fourier estimate.  The
 Jacobian `B*T/(2π)` is explicit, as is the radius `2πH/(B*T)`. -/
-theorem norm_gmFiniteExpSum_le_localIntegral_add_tail
-    {α : Type*} [DecidableEq α] (S : Finset α) (c : α → ℂ)
+theorem norm_gmFiniteExpSum_le_localIntegral_add_tail [DecidableEq α] (S : Finset α) (c : α → ℂ)
     (freq : α → ℝ) {B T : ℝ} (hBT : 0 < B * T)
     (hfreq : ∀ a ∈ S, |freq a| ≤ B * T) (x H : ℝ)
     (hH : 1 ≤ H) (q : ℕ) (hq : 2 ≤ q) :
@@ -3736,8 +3507,12 @@ theorem norm_gmFiniteExpSum_le_localIntegral_add_tail
   have hRaw := norm_gmFiniteExpSum_le_localFourier_add_tail
     S c freq hBT hfreq x H hH q hq
   exact hRaw.trans (add_le_add hLocal le_rfl)
+end
 
-theorem gmRPhase_sq_eq_gmFiniteExpSum (W : Finset ℝ) (x : ℝ) :
+section
+variable (W : Finset ℝ) (x : ℝ)
+include W x
+theorem gmRPhase_sq_eq_gmFiniteExpSum :
     ((‖gmRPhase W x‖ ^ 2 : ℝ) : ℂ) =
       gmFiniteExpSum (W ×ˢ W) (fun _ => (1 : ℂ))
         (fun p => p.1 - p.2) x := by
@@ -3746,7 +3521,7 @@ theorem gmRPhase_sq_eq_gmFiniteExpSum (W : Finset ℝ) (x : ℝ) :
   rw [Finset.sum_product]
   simp
 
-theorem gmRPhase_fourth_eq_gmFiniteExpSum (W : Finset ℝ) (x : ℝ) :
+theorem gmRPhase_fourth_eq_gmFiniteExpSum :
     ((‖gmRPhase W x‖ ^ 4 : ℝ) : ℂ) =
       gmFiniteExpSum ((W ×ˢ W) ×ˢ (W ×ˢ W)) (fun _ => (1 : ℂ))
         (fun q => q.1.1 + q.1.2 - q.2.1 - q.2.2) x := by
@@ -3754,9 +3529,12 @@ theorem gmRPhase_fourth_eq_gmFiniteExpSum (W : Finset ℝ) (x : ℝ) :
   unfold gmFiniteExpSum
   simp_rw [Finset.sum_product]
   simp
+end
 
+section
+variable {T : ℝ} {W : Finset ℝ} (hBase : InBaseInterval T W)
+include T W hBase
 theorem gmRPhase_pair_frequency_le
-    {T : ℝ} {W : Finset ℝ} (hBase : InBaseInterval T W)
     (p : ℝ × ℝ) (hp : p ∈ W ×ˢ W) : |p.1 - p.2| ≤ T := by
   have hp' := Finset.mem_product.mp hp
   have h₁ := hBase p.1 hp'.1
@@ -3765,7 +3543,6 @@ theorem gmRPhase_pair_frequency_le
   constructor <;> linarith [h₁.1, h₁.2, h₂.1, h₂.2]
 
 theorem gmRPhase_quad_frequency_le
-    {T : ℝ} {W : Finset ℝ} (hBase : InBaseInterval T W)
     (q : (ℝ × ℝ) × (ℝ × ℝ)) (hq : q ∈ (W ×ˢ W) ×ˢ (W ×ˢ W)) :
     |q.1.1 + q.1.2 - q.2.1 - q.2.2| ≤ 2 * T := by
   have hq' := Finset.mem_product.mp hq
@@ -3778,11 +3555,13 @@ theorem gmRPhase_quad_frequency_le
   rw [abs_le]
   constructor <;> linarith [h₁.1, h₁.2, h₂.1, h₂.2,
     h₃.1, h₃.2, h₄.1, h₄.2]
+end
 
+section
+variable {T : ℝ} (hT : 0 < T) {W : Finset ℝ} (hBase : InBaseInterval T W) (x H : ℝ) (hH : 1 ≤ H) (q : ℕ) (hq : 2 ≤ q)
+include T hT W hBase x H hH q hq
 /-- Lemma 11.7 specialized to the literal second moment of `R`. -/
-theorem norm_gmRPhase_sq_le_localIntegral_add_tail
-    {T : ℝ} (hT : 0 < T) {W : Finset ℝ} (hBase : InBaseInterval T W)
-    (x H : ℝ) (hH : 1 ≤ H) (q : ℕ) (hq : 2 ≤ q) :
+theorem norm_gmRPhase_sq_le_localIntegral_add_tail :
     ‖gmRPhase W x‖ ^ 2 ≤
       gmAffineLocalBumpFourierSup * (T / (2 * Real.pi)) *
         (∫ y : ℝ in Set.Icc
@@ -3809,9 +3588,7 @@ theorem norm_gmRPhase_sq_le_localIntegral_add_tail
   exact hRaw
 
 /-- Lemma 11.7 specialized to the literal fourth moment of `R`. -/
-theorem norm_gmRPhase_fourth_le_localIntegral_add_tail
-    {T : ℝ} (hT : 0 < T) {W : Finset ℝ} (hBase : InBaseInterval T W)
-    (x H : ℝ) (hH : 1 ≤ H) (q : ℕ) (hq : 2 ≤ q) :
+theorem norm_gmRPhase_fourth_le_localIntegral_add_tail :
     ‖gmRPhase W x‖ ^ 4 ≤
       gmAffineLocalBumpFourierSup * (2 * T / (2 * Real.pi)) *
         (∫ y : ℝ in Set.Icc
@@ -3843,62 +3620,38 @@ theorem norm_gmRPhase_fourth_le_localIntegral_add_tail
       (W.card : ℝ) ^ 4 := by ring
   rw [hcard] at hRaw
   exact hRaw
+end
 
 /-! ### One-dimensional packing on the logarithmic ratio line -/
 
+section
+variable (S : Finset ℝ) {δ : ℝ} (hδ : 0 < δ) (hSep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|) (center r : ℝ)
+include S δ hδ hSep center r
 /-- A finite `δ`-separated subset of an interval of radius `r` has at most
 `2 * ceil (r / δ) + 1` elements.  The proof records the floor-bin injection
 used implicitly in Guth--Maynard Lemma 11.8. -/
-theorem card_filter_abs_sub_le_two_mul_ceil_add_one
-    (S : Finset ℝ) {δ : ℝ} (hδ : 0 < δ)
-    (hSep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|)
-    (center r : ℝ) (_hr : 0 ≤ r) :
+theorem card_filter_abs_sub_le_two_mul_ceil_add_one (_hr : 0 ≤ r) :
     (S.filter fun x => |x - center| ≤ r).card ≤
       2 * Nat.ceil (r / δ) + 1 := by
   let F := S.filter fun x => |x - center| ≤ r
   let f : ℝ → ℤ := fun x => ⌊(x - center) / δ⌋
   let K : ℕ := Nat.ceil (r / δ)
   have hinj : Set.InjOn f (F : Set ℝ) := by
-    intro x hx y hy hxy
-    by_contra hne
-    have hxF : x ∈ F := hx
-    have hyF : y ∈ F := hy
-    have hxS : x ∈ S := (Finset.mem_filter.mp hxF).1
-    have hyS : y ∈ S := (Finset.mem_filter.mp hyF).1
-    have hdist := hSep x hxS y hyS hne
-    have hfloorX := Int.floor_le ((x - center) / δ)
-    have hfloorY := Int.floor_le ((y - center) / δ)
-    have hfloorX' := Int.lt_floor_add_one ((x - center) / δ)
-    have hfloorY' := Int.lt_floor_add_one ((y - center) / δ)
+    pm_1196 hxS S hyS
+    pm_7316 hfloorX Int.floor_le hfloorY
+    pm_7316 hfloorX' Int.lt_floor_add_one hfloorY'
     change ⌊(x - center) / δ⌋ = ⌊(y - center) / δ⌋ at hxy
     rw [hxy] at hfloorX hfloorX'
     have hxylt : |x - y| < δ := by
       rw [abs_lt]
       constructor
-      · have h₁ : (y - center) / δ < (x - center) / δ + 1 := by
-          linarith
-        have h₂ : y - center < x - center + δ := by
-          have h := (div_lt_iff₀ hδ).mp h₁
-          calc
-            y - center < ((x - center) / δ + 1) * δ := h
-            _ = x - center + δ := by field_simp
-        linarith
-      · have h₁ : (x - center) / δ < (y - center) / δ + 1 := by
-          linarith
-        have h₂ : x - center < y - center + δ := by
-          have h := (div_lt_iff₀ hδ).mp h₁
-          calc
-            x - center < ((y - center) / δ + 1) * δ := h
-            _ = y - center + δ := by field_simp
-        linarith
+      pm_3958 y x
+      pm_3958 x y
     exact (not_lt_of_ge hdist) hxylt
-  have hcardImage : F.card = (F.image f).card := by
-    symm
-    exact Finset.card_image_iff.mpr hinj
+  pm_6734
   have hsub : F.image f ⊆ Finset.Icc (-(K : ℤ)) (K : ℤ) := by
     intro z hz
-    rw [Finset.mem_image] at hz
-    obtain ⟨x, hxF, rfl⟩ := hz
+    pm_3952 hz x hxF
     have hxAbs := (Finset.mem_filter.mp hxF).2
     rw [abs_le] at hxAbs
     have hceil : r / δ ≤ (K : ℝ) := by
@@ -3928,10 +3681,7 @@ theorem card_filter_abs_sub_le_two_mul_ceil_add_one
       omega
 
 /-- Real-valued version of the logarithmic packing bound. -/
-theorem cast_card_filter_abs_sub_le_ratio
-    (S : Finset ℝ) {δ : ℝ} (hδ : 0 < δ)
-    (hSep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y|)
-    (center r : ℝ) (hr : 0 ≤ r) :
+theorem cast_card_filter_abs_sub_le_ratio (hr : 0 ≤ r) :
     ((S.filter fun x => |x - center| ≤ r).card : ℝ) ≤
       2 * (r / δ) + 3 := by
   have hcard := card_filter_abs_sub_le_two_mul_ceil_add_one
@@ -3942,6 +3692,7 @@ theorem cast_card_filter_abs_sub_le_ratio
       2 * (Nat.ceil (r / δ) : ℝ) + 1 := by
     exact_mod_cast hcard
   exact hcardR.trans (by linarith)
+end
 
 /-! ### Reduced rational slices -/
 
@@ -3958,30 +3709,30 @@ noncomputable def gmReducedLogRatios (N d : ℕ) : Finset ℝ :=
   (gmReducedRatioPairs N d).image fun p =>
     Real.log (p.1 : ℝ) - Real.log (p.2 : ℝ)
 
-theorem gmReducedRatioPairs_fst_pos
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmReducedRatioPairs N d) :
+section
+variable {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmReducedRatioPairs N d)
+include N d p hp
+theorem gmReducedRatioPairs_fst_pos :
     0 < p.1 := by
   have hcond := (Finset.mem_filter.mp hp).2
   exact Nat.pos_of_mul_pos_right (by
     simpa [mul_comm] using (lt_of_le_of_lt (Nat.zero_le N) hcond.1))
 
-theorem gmReducedRatioPairs_snd_pos
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmReducedRatioPairs N d) :
+theorem gmReducedRatioPairs_snd_pos :
     0 < p.2 := by
   have hcond := (Finset.mem_filter.mp hp).2
   exact Nat.pos_of_mul_pos_right
     (by simpa [mul_comm] using
       (lt_of_le_of_lt (Nat.zero_le N) hcond.2.2.1))
 
-theorem gmReducedRatioPairs_coprime
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmReducedRatioPairs N d) :
+theorem gmReducedRatioPairs_coprime :
     Nat.Coprime p.1 p.2 :=
   (Finset.mem_filter.mp hp).2.2.2.2.2
 
-theorem gmReducedRatioPairs_dilate_snd_le
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmReducedRatioPairs N d) :
+theorem gmReducedRatioPairs_dilate_snd_le :
     d * p.2 ≤ 2 * N :=
   (Finset.mem_filter.mp hp).2.2.2.2.1
+end
 
 /-- A reduced positive fraction has a unique numerator/denominator pair. -/
 theorem reduced_nat_ratio_injective
@@ -4011,10 +3762,7 @@ theorem gmReducedLogRatios_image_injective
       (fun p : ℕ × ℕ => Real.log (p.1 : ℝ) - Real.log (p.2 : ℝ))
       (gmReducedRatioPairs N d : Set (ℕ × ℕ)) := by
   intro p hp q hq heq
-  have hp₁ := gmReducedRatioPairs_fst_pos hp
-  have hp₂ := gmReducedRatioPairs_snd_pos hp
-  have hq₁ := gmReducedRatioPairs_fst_pos hq
-  have hq₂ := gmReducedRatioPairs_snd_pos hq
+  pm_3959
   have hratio : (p.1 : ℝ) / p.2 = (q.1 : ℝ) / q.2 := by
     have hlog : Real.log ((p.1 : ℝ) / p.2) =
         Real.log ((q.1 : ℝ) / q.2) := by
@@ -4024,9 +3772,8 @@ theorem gmReducedLogRatios_image_injective
           (by exact_mod_cast hq₂.ne')]
       exact heq
     have hp₁R : (0 : ℝ) < p.1 := by exact_mod_cast hp₁
-    have hp₂R : (0 : ℝ) < p.2 := by exact_mod_cast hp₂
-    have hq₁R : (0 : ℝ) < q.1 := by exact_mod_cast hq₁
-    have hq₂R : (0 : ℝ) < q.2 := by exact_mod_cast hq₂
+    pm_7258
+    pm_7586 hq₁R hq₁ hq₂R hq₂
     exact Real.strictMonoOn_log.injOn
       (div_pos hp₁R hp₂R) (div_pos hq₁R hq₂R) hlog
   exact reduced_nat_ratio_injective hp₁ hp₂ hq₁ hq₂
@@ -4043,42 +3790,26 @@ theorem half_abs_sub_le_abs_log_sub
   rcases le_total x y with hxy | hyx
   · have hlog : Real.log x ≤ Real.log y := Real.strictMonoOn_log.monotoneOn hx hy hxy
     rw [abs_of_nonpos (sub_nonpos.mpr hxy), abs_of_nonpos (sub_nonpos.mpr hlog)]
-    have hbase := Real.one_sub_inv_le_log_of_pos (div_pos hy hx)
-    rw [Real.log_div hy.ne' hx.ne'] at hbase
-    have hcompare : (y - x) / 2 ≤ 1 - (y / x)⁻¹ := by
-      rw [inv_div]
-      have hid : 1 - x / y = (y - x) / y := by field_simp
-      rw [hid]
-      apply (le_div_iff₀ hy).2
-      have hprod := mul_nonneg (sub_nonneg.mpr hxy) (sub_nonneg.mpr hyTwo)
-      nlinarith
-    linarith
+    pm_4919 hy hx hy.ne' hx.ne' y x hxy hyTwo
   · have hlog : Real.log y ≤ Real.log x := Real.strictMonoOn_log.monotoneOn hy hx hyx
     rw [abs_of_nonneg (sub_nonneg.mpr hyx), abs_of_nonneg (sub_nonneg.mpr hlog)]
-    have hbase := Real.one_sub_inv_le_log_of_pos (div_pos hx hy)
-    rw [Real.log_div hx.ne' hy.ne'] at hbase
-    have hcompare : (x - y) / 2 ≤ 1 - (x / y)⁻¹ := by
-      rw [inv_div]
-      have hid : 1 - y / x = (x - y) / x := by field_simp
-      rw [hid]
-      apply (le_div_iff₀ hx).2
-      have hprod := mul_nonneg (sub_nonneg.mpr hyx) (sub_nonneg.mpr hxTwo)
-      nlinarith
-    linarith
+    pm_4919 hx hy hx.ne' hy.ne' x y hyx hxTwo
 
-theorem gmReducedRatioPairs_ratio_bounds
-    {N d : ℕ} (_hN : 0 < N) (hd : 0 < d) {p : ℕ × ℕ}
+section
+variable {N d : ℕ}
+include N d
+theorem gmReducedRatioPairs_ratio_bounds (_hN : 0 < N) (hd : 0 < d) {p : ℕ × ℕ}
     (hp : p ∈ gmReducedRatioPairs N d) :
     (1 / 2 : ℝ) < (p.1 : ℝ) / p.2 ∧ (p.1 : ℝ) / p.2 < 2 := by
   have hcond := (Finset.mem_filter.mp hp).2
   have hp₁ := gmReducedRatioPairs_fst_pos hp
   have hp₂ := gmReducedRatioPairs_snd_pos hp
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  pm_74 hdR d hd
   have haLower : (N : ℝ) < d * p.1 := by exact_mod_cast hcond.1
   have haUpper : (d : ℝ) * p.1 ≤ 2 * N := by exact_mod_cast hcond.2.1
   have hbLower : (N : ℝ) < d * p.2 := by exact_mod_cast hcond.2.2.1
   have hbUpper : (d : ℝ) * p.2 ≤ 2 * N := by exact_mod_cast hcond.2.2.2.1
-  have hp₂R : (0 : ℝ) < p.2 := by exact_mod_cast hp₂
+  pm_7258
   constructor
   · apply (lt_div_iff₀ hp₂R).2
     have hmul : (d : ℝ) * p.2 < (d : ℝ) * (2 * p.1) := by
@@ -4100,16 +3831,12 @@ theorem gmReducedRatioPairs_ratio_bounds
 /-- Distinct reduced fractions in the `d`-slice are separated by
 `d²/(4N²)`.  This is the exact arithmetic spacing statement in the proof
 of Lemma 11.8. -/
-theorem gmReducedRatioPairs_ratio_separated
-    {N d : ℕ} (hN : 0 < N) (hd : 0 < d)
+theorem gmReducedRatioPairs_ratio_separated (hN : 0 < N) (hd : 0 < d)
     {p q : ℕ × ℕ} (hp : p ∈ gmReducedRatioPairs N d)
     (hq : q ∈ gmReducedRatioPairs N d) (hne : p ≠ q) :
     (d : ℝ) ^ 2 / (4 * (N : ℝ) ^ 2) ≤
       |(p.1 : ℝ) / p.2 - (q.1 : ℝ) / q.2| := by
-  have hp₁ := gmReducedRatioPairs_fst_pos hp
-  have hp₂ := gmReducedRatioPairs_snd_pos hp
-  have hq₁ := gmReducedRatioPairs_fst_pos hq
-  have hq₂ := gmReducedRatioPairs_snd_pos hq
+  pm_3959
   have hcrossNe : p.1 * q.2 ≠ q.1 * p.2 := by
     intro hcross
     apply hne
@@ -4125,16 +3852,14 @@ theorem gmReducedRatioPairs_ratio_separated
     · have hdiff : 1 ≤ q.1 * p.2 - p.1 * q.2 := by omega
       have hdiffR : (1 : ℝ) ≤
           (q.1 * p.2 - p.1 * q.2 : ℕ) := by exact_mod_cast hdiff
-      rw [Nat.cast_sub hle, Nat.cast_mul, Nat.cast_mul] at hdiffR
-      rw [abs_of_nonpos]
+      pm_8893 hle abs_of_nonpos
       · linarith
       · exact sub_nonpos.mpr (by exact_mod_cast hle)
     · have hlt : q.1 * p.2 < p.1 * q.2 := lt_of_not_ge hle
       have hdiff : 1 ≤ p.1 * q.2 - q.1 * p.2 := by omega
       have hdiffR : (1 : ℝ) ≤
           (p.1 * q.2 - q.1 * p.2 : ℕ) := by exact_mod_cast hdiff
-      rw [Nat.cast_sub hlt.le, Nat.cast_mul, Nat.cast_mul] at hdiffR
-      rw [abs_of_nonneg]
+      pm_8893 hlt.le abs_of_nonneg
       · exact hdiffR
       · exact sub_nonneg.mpr (by exact_mod_cast hlt.le)
   have hpDen := gmReducedRatioPairs_dilate_snd_le hp
@@ -4142,11 +3867,11 @@ theorem gmReducedRatioPairs_ratio_separated
   have hpDenR : (d : ℝ) * p.2 ≤ 2 * N := by exact_mod_cast hpDen
   have hqDenR : (d : ℝ) * q.2 ≤ 2 * N := by exact_mod_cast hqDen
   have hdenPos : (0 : ℝ) < (p.2 : ℝ) * q.2 := mul_pos (by exact_mod_cast hp₂) (by exact_mod_cast hq₂)
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
+  pm_74 hNpos N hN
   have hscale : (d : ℝ) ^ 2 / (4 * (N : ℝ) ^ 2) ≤
       1 / ((p.2 : ℝ) * q.2) := by
     apply (div_le_div_iff₀ (by positivity) hdenPos).2
-    have hprod := mul_le_mul hpDenR hqDenR (by positivity) (by positivity)
+    pm_355 hprod hpDenR hqDenR
     nlinarith
   have hratio :
       |(p.1 : ℝ) / p.2 - (q.1 : ℝ) / q.2| =
@@ -4161,26 +3886,22 @@ theorem gmReducedRatioPairs_ratio_separated
 
 /-- Logarithmic version of the reduced-fraction spacing, the form consumed
 by the band-limited local sampling lemma. -/
-theorem gmReducedLogRatios_separated
-    {N d : ℕ} (hN : 0 < N) (hd : 0 < d)
+theorem gmReducedLogRatios_separated (hN : 0 < N) (hd : 0 < d)
     {x y : ℝ} (hx : x ∈ gmReducedLogRatios N d)
     (hy : y ∈ gmReducedLogRatios N d) (hne : x ≠ y) :
     (d : ℝ) ^ 2 / (8 * (N : ℝ) ^ 2) ≤ |x - y| := by
   rw [gmReducedLogRatios, Finset.mem_image] at hx hy
   obtain ⟨p, hp, rfl⟩ := hx
   obtain ⟨q, hq, hlogNe⟩ := hy
-  have hp₁ := gmReducedRatioPairs_fst_pos hp
-  have hp₂ := gmReducedRatioPairs_snd_pos hp
-  have hq₁ := gmReducedRatioPairs_fst_pos hq
-  have hq₂ := gmReducedRatioPairs_snd_pos hq
+  pm_3959
   have hpBounds := gmReducedRatioPairs_ratio_bounds hN hd hp
   have hqBounds := gmReducedRatioPairs_ratio_bounds hN hd hq
   have hpLog : Real.log (p.1 : ℝ) - Real.log (p.2 : ℝ) =
       Real.log ((p.1 : ℝ) / p.2) := by
-    rw [Real.log_div (by positivity) (by positivity)]
+    pm_3957
   have hqLog : Real.log (q.1 : ℝ) - Real.log (q.2 : ℝ) =
       Real.log ((q.1 : ℝ) / q.2) := by
-    rw [Real.log_div (by positivity) (by positivity)]
+    pm_3957
   have hpq : p ≠ q := by
     intro hpq
     subst q
@@ -4197,6 +3918,7 @@ theorem gmReducedLogRatios_separated
       ((d : ℝ) ^ 2 / (4 * (N : ℝ) ^ 2)) / 2 := by ring
   rw [hscaleEq]
   exact (div_le_div_of_nonneg_right hratio (by norm_num)).trans hlog
+end
 
 /-- Finite Fubini plus the floor-bin packing bound.  This is the exact
 bounded-overlap statement needed to sum the local reproducing intervals in
@@ -4213,9 +3935,7 @@ theorem sum_setIntegral_Icc_le_packing_mul_setIntegral
   let G : Set ℝ := Set.Icc (A - r) (B + r)
   let I : ℝ → Set ℝ := fun x => Set.Icc (x - r) (x + r)
   let K : ℝ := 2 * (r / δ) + 3
-  have hK0 : 0 ≤ K := by
-    dsimp only [K]
-    positivity
+  pm_4220 hK0 K
   have hsub (x : ℝ) (hx : x ∈ S) : I x ⊆ G := by
     intro y hy
     rw [Set.mem_Icc] at hy ⊢
@@ -4299,7 +4019,7 @@ theorem norm_gmR_reducedRatio_eq_phase
       ‖gmRPhase W (Real.log (p.1 : ℝ) - Real.log (p.2 : ℝ))‖ := by
   have hp₁ := gmReducedRatioPairs_fst_pos hp
   have hp₂ := gmReducedRatioPairs_snd_pos hp
-  have hratio : (0 : ℝ) < (p.1 : ℝ) / p.2 := by positivity
+  pm_6892 hratio
   rw [gmR_eq_gmRPhase_log hratio.ne', abs_of_pos hratio,
     Real.log_div (by positivity) (by positivity)]
 
@@ -4337,28 +4057,27 @@ theorem gmReducedLogRatios_bounds
     {N d : ℕ} (hN : 0 < N) (hd : 0 < d) {x : ℝ}
     (hx : x ∈ gmReducedLogRatios N d) :
     Real.log (1 / 2 : ℝ) ≤ x ∧ x ≤ Real.log 2 := by
-  rw [gmReducedLogRatios, Finset.mem_image] at hx
-  obtain ⟨p, hp, rfl⟩ := hx
+  pm_4080 gmReducedLogRatios hx p hp
   have hp₁ := gmReducedRatioPairs_fst_pos hp
   have hp₂ := gmReducedRatioPairs_snd_pos hp
   have hb := gmReducedRatioPairs_ratio_bounds hN hd hp
-  have hratioPos : (0 : ℝ) < (p.1 : ℝ) / p.2 := by positivity
+  pm_6892 hratioPos
   have hlog : Real.log (p.1 : ℝ) - Real.log (p.2 : ℝ) =
       Real.log ((p.1 : ℝ) / p.2) := by
-    rw [Real.log_div (by positivity) (by positivity)]
+    pm_3957
   rw [hlog]
-  have hhalfPos : (0 : ℝ) < 1 / 2 := by norm_num
-  have htwoPos : (0 : ℝ) < 2 := by norm_num
+  pm_5752 hhalfPos htwoPos
   constructor
   · exact Real.strictMonoOn_log.monotoneOn hhalfPos hratioPos hb.1.le
   · exact Real.strictMonoOn_log.monotoneOn hratioPos htwoPos hb.2.le
 
+section
+variable {ε T H : ℝ} {N d q : ℕ} {W : Finset ℝ} (hε : 0 < ε) (hT : 1 ≤ T)
+include ε T H N d q W hε hT
 /-- The exact pre-asymptotic second-moment estimate in the small-gcd
 argument.  Its two summands are respectively the packed local integral and
 the complete Schwartz tail from Lemma 11.7. -/
-theorem gmReducedRatioMoment_two_le_local_raw
-    {ε T H : ℝ} {N d q : ℕ} {W : Finset ℝ}
-    (hε : 0 < ε) (hT : 1 ≤ T) (hSep : IsSeparated 1 W)
+theorem gmReducedRatioMoment_two_le_local_raw (hSep : IsSeparated 1 W)
     (hBase : InBaseInterval T W) (hN : 0 < N) (hd : 0 < d)
     (hH : 1 ≤ H) (hq : 2 ≤ q) :
     gmReducedRatioMoment 2 N d W ≤
@@ -4371,36 +4090,17 @@ theorem gmReducedRatioMoment_two_le_local_raw
         ((gmReducedRatioPairs N d).card : ℝ) * (W.card : ℝ) ^ 2 *
           gmAffineLocalBumpFourierTailConstant q hq *
             H ^ (1 - (q : ℝ)) := by
-  let S := gmReducedLogRatios N d
-  let δ : ℝ := (d : ℝ) ^ 2 / (8 * (N : ℝ) ^ 2)
+  pm_3963
   let r : ℝ := 2 * Real.pi * H / T
-  let A : ℝ := Real.log (1 / 2 : ℝ)
-  let B : ℝ := Real.log 2
+  pm_4056 A B
   let C₀ : ℝ := gmAffineLocalBumpFourierSup * (T / (2 * Real.pi))
   let tail : ℝ := (W.card : ℝ) ^ 2 *
     gmAffineLocalBumpFourierTailConstant q hq * H ^ (1 - (q : ℝ))
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hδ : 0 < δ := by dsimp only [δ]; positivity
-  have hr : 0 ≤ r := by dsimp only [r]; positivity
-  have hAB : A ≤ B := by
-    dsimp only [A, B]
-    exact Real.strictMonoOn_log.monotoneOn (by norm_num) (by norm_num) (by norm_num)
-  have hSepLog : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y| := by
-    intro x hx y hy hxy
-    exact gmReducedLogRatios_separated hN hd hx hy hxy
-  have hBounds : ∀ x ∈ S, A ≤ x ∧ x ≤ B := by
-    intro x hx
-    exact gmReducedLogRatios_bounds hN hd hx
-  let f : ℝ → ℝ := fun y => ‖gmRPhase W y‖ ^ 2
+  pm_3960
+  pm_5044 f y gmRPhase
   have hf : Continuous f := continuous_norm_gmRPhase_pow W 2
   have hf0 : ∀ y, 0 ≤ f y := fun _ => sq_nonneg _
-  have hpack :
-      (∑ x ∈ S, ∫ y in Set.Icc (x - r) (x + r), f y) ≤
-        (2 * (r / δ) + 3) *
-          ∫ y in Set.Icc (A - r) (B + r), f y :=
-    sum_setIntegral_Icc_le_packing_mul_setIntegral
-      S hδ hSepLog f hf hf0 A B r hAB hr hBounds
-  have habWide : A - r ≤ B + r := by linarith
+  pm_3961
   have hglobal :
       (∫ y in Set.Icc (A - r) (B + r), f y) ≤
         (|(B + r) - (A - r)| +
@@ -4409,18 +4109,11 @@ theorem gmReducedRatioMoment_two_le_local_raw
       ← intervalIntegral.integral_of_le habWide]
     exact intervalIntegral_norm_gmRPhase_sq_le_epsilon
       hε hT hSep hBase (A - r) (B + r) habWide
-  have hlocal :
-      ∀ x ∈ S, f x ≤ C₀ * (∫ y in Set.Icc (x - r) (x + r), f y) + tail := by
-    intro x hx
-    simpa only [f, C₀, tail, r] using
-      norm_gmRPhase_sq_le_localIntegral_add_tail
-        hTpos hBase x H hH q hq
+  pm_3964 norm_gmRPhase_sq_le_localIntegral_add_tail
   have hC₀0 : 0 ≤ C₀ := by
     dsimp only [C₀]
     exact mul_nonneg gmAffineLocalBumpFourierSup_pos.le (div_nonneg hTpos.le (by positivity))
-  have hK0 : 0 ≤ 2 * (r / δ) + 3 := by positivity
-  rw [gmReducedRatioMoment_eq_logSum]
-  change (∑ x ∈ S, f x) ≤ _
+  pm_3962
   calc
     (∑ x ∈ S, f x) ≤
         ∑ x ∈ S, (C₀ * (∫ y in Set.Icc (x - r) (x + r), f y) + tail) := by
@@ -4438,19 +4131,13 @@ theorem gmReducedRatioMoment_two_le_local_raw
           ((|(B + r) - (A - r)| +
             4 * (1 + ε⁻¹) * 2 ^ ε * T ^ ε) * (W.card : ℝ))) +
           (S.card : ℝ) * tail := by
-      have hscaled := mul_le_mul_of_nonneg_left
-        (mul_le_mul_of_nonneg_left hglobal hK0) hC₀0
-      linarith
+      pm_8107
     _ = _ := by
-      rw [card_gmReducedLogRatios]
-      dsimp only [C₀, tail, S, δ, r, A, B]
-      ring
+      pm_1576
 
 /-- The exact fourth-moment companion to
 `gmReducedRatioMoment_two_le_local_raw`. -/
-theorem gmReducedRatioMoment_four_le_local_raw
-    {ε T H : ℝ} {N d q : ℕ} {W : Finset ℝ}
-    (hε : 0 < ε) (hT : 1 ≤ T) (hBase : InBaseInterval T W)
+theorem gmReducedRatioMoment_four_le_local_raw (hBase : InBaseInterval T W)
     (hN : 0 < N) (hd : 0 < d) (hH : 1 ≤ H) (hq : 2 ≤ q) :
     gmReducedRatioMoment 4 N d W ≤
       gmAffineLocalBumpFourierSup * (2 * T / (2 * Real.pi)) *
@@ -4463,36 +4150,17 @@ theorem gmReducedRatioMoment_four_le_local_raw
         ((gmReducedRatioPairs N d).card : ℝ) * (W.card : ℝ) ^ 4 *
           gmAffineLocalBumpFourierTailConstant q hq *
             H ^ (1 - (q : ℝ)) := by
-  let S := gmReducedLogRatios N d
-  let δ : ℝ := (d : ℝ) ^ 2 / (8 * (N : ℝ) ^ 2)
+  pm_3963
   let r : ℝ := 2 * Real.pi * H / (2 * T)
-  let A : ℝ := Real.log (1 / 2 : ℝ)
-  let B : ℝ := Real.log 2
+  pm_4056 A B
   let C₀ : ℝ := gmAffineLocalBumpFourierSup * (2 * T / (2 * Real.pi))
   let tail : ℝ := (W.card : ℝ) ^ 4 *
     gmAffineLocalBumpFourierTailConstant q hq * H ^ (1 - (q : ℝ))
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hδ : 0 < δ := by dsimp only [δ]; positivity
-  have hr : 0 ≤ r := by dsimp only [r]; positivity
-  have hAB : A ≤ B := by
-    dsimp only [A, B]
-    exact Real.strictMonoOn_log.monotoneOn (by norm_num) (by norm_num) (by norm_num)
-  have hSepLog : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → δ ≤ |x - y| := by
-    intro x hx y hy hxy
-    exact gmReducedLogRatios_separated hN hd hx hy hxy
-  have hBounds : ∀ x ∈ S, A ≤ x ∧ x ≤ B := by
-    intro x hx
-    exact gmReducedLogRatios_bounds hN hd hx
-  let f : ℝ → ℝ := fun y => ‖gmRPhase W y‖ ^ 4
+  pm_3960
+  pm_8665 f y
   have hf : Continuous f := continuous_norm_gmRPhase_pow W 4
   have hf0 : ∀ y, 0 ≤ f y := fun _ => by positivity
-  have hpack :
-      (∑ x ∈ S, ∫ y in Set.Icc (x - r) (x + r), f y) ≤
-        (2 * (r / δ) + 3) *
-          ∫ y in Set.Icc (A - r) (B + r), f y :=
-    sum_setIntegral_Icc_le_packing_mul_setIntegral
-      S hδ hSepLog f hf hf0 A B r hAB hr hBounds
-  have habWide : A - r ≤ B + r := by linarith
+  pm_3961
   have hglobal :
       (∫ y in Set.Icc (A - r) (B + r), f y) ≤
         (4 * |(B + r) - (A - r)| +
@@ -4502,18 +4170,11 @@ theorem gmReducedRatioMoment_four_le_local_raw
       ← intervalIntegral.integral_of_le habWide]
     exact intervalIntegral_norm_gmRPhase_fourth_le_energy_epsilon
       hε hT hBase (A - r) (B + r) habWide
-  have hlocal :
-      ∀ x ∈ S, f x ≤ C₀ * (∫ y in Set.Icc (x - r) (x + r), f y) + tail := by
-    intro x hx
-    simpa only [f, C₀, tail, r] using
-      norm_gmRPhase_fourth_le_localIntegral_add_tail
-        hTpos hBase x H hH q hq
+  pm_3964 norm_gmRPhase_fourth_le_localIntegral_add_tail
   have hC₀0 : 0 ≤ C₀ := by
     dsimp only [C₀]
     exact mul_nonneg gmAffineLocalBumpFourierSup_pos.le (div_nonneg (by positivity) (by positivity))
-  have hK0 : 0 ≤ 2 * (r / δ) + 3 := by positivity
-  rw [gmReducedRatioMoment_eq_logSum]
-  change (∑ x ∈ S, f x) ≤ _
+  pm_3962
   calc
     (∑ x ∈ S, f x) ≤
         ∑ x ∈ S, (C₀ * (∫ y in Set.Icc (x - r) (x + r), f y) + tail) := by
@@ -4532,13 +4193,10 @@ theorem gmReducedRatioMoment_four_le_local_raw
             8 * (1 + ε⁻¹) * 3 ^ ε) * T ^ ε *
               (ApproxAddEnergy 1 W : ℝ))) +
           (S.card : ℝ) * tail := by
-      have hscaled := mul_le_mul_of_nonneg_left
-        (mul_le_mul_of_nonneg_left hglobal hK0) hC₀0
-      linarith
+      pm_8107
     _ = _ := by
-      rw [card_gmReducedLogRatios]
-      dsimp only [C₀, tail, S, δ, r, A, B]
-      ring
+      pm_1576
+end
 
 /-! ### Exact gcd decomposition of the source ratio moment -/
 
@@ -4553,36 +4211,37 @@ noncomputable def gmGcdSliceMoment
   ∑ nm ∈ gmGcdSlice N d,
     ‖gmR W ((nm.1 : ℝ) / nm.2)‖ ^ k
 
-theorem gmGcdSlice_fst_pos
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmGcdSlice N d) : 0 < p.1 := by
+section
+variable {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmGcdSlice N d)
+include N d p hp
+theorem gmGcdSlice_fst_pos : 0 < p.1 := by
   have hp' := (Finset.mem_filter.mp hp).1
   rw [Finset.mem_product] at hp'
   exact Nat.zero_lt_of_lt (Finset.mem_Ioc.mp hp'.1).1
 
-theorem gmGcdSlice_snd_pos
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmGcdSlice N d) : 0 < p.2 := by
+theorem gmGcdSlice_snd_pos : 0 < p.2 := by
   have hp' := (Finset.mem_filter.mp hp).1
   rw [Finset.mem_product] at hp'
   exact Nat.zero_lt_of_lt (Finset.mem_Ioc.mp hp'.2).1
 
-theorem gmGcdSlice_index_pos
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmGcdSlice N d) : 0 < d := by
+theorem gmGcdSlice_index_pos : 0 < d := by
   rw [← (Finset.mem_filter.mp hp).2]
   exact Nat.gcd_pos_of_pos_left p.2 (gmGcdSlice_fst_pos hp)
+end
 
-theorem gmGcdSlice_to_reduced_mem
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmGcdSlice N d) :
+section
+variable {N d : ℕ} {p : ℕ × ℕ}
+include N d p
+theorem gmGcdSlice_to_reduced_mem (hp : p ∈ gmGcdSlice N d) :
     (p.1 / d, p.2 / d) ∈ gmReducedRatioPairs N d := by
-  have hpProd := (Finset.mem_filter.mp hp).1
-  have hpGcd := (Finset.mem_filter.mp hp).2
+  pm_317 hpProd Finset.mem_filter.mp hp hpGcd
   have hpI := Finset.mem_product.mp hpProd
   have hp₁I := Finset.mem_Ioc.mp hpI.1
   have hp₂I := Finset.mem_Ioc.mp hpI.2
   have hp₁ := gmGcdSlice_fst_pos hp
   have hp₂ := gmGcdSlice_snd_pos hp
   have hd := gmGcdSlice_index_pos hp
-  have hdDvd₁ : d ∣ p.1 := by rw [← hpGcd]; exact Nat.gcd_dvd_left _ _
-  have hdDvd₂ : d ∣ p.2 := by rw [← hpGcd]; exact Nat.gcd_dvd_right _ _
+  pm_3965
   have hmul₁ : d * (p.1 / d) = p.1 := Nat.mul_div_cancel' hdDvd₁
   have hmul₂ : d * (p.2 / d) = p.2 := Nat.mul_div_cancel' hdDvd₂
   rw [gmReducedRatioPairs, Finset.mem_filter, Finset.mem_product]
@@ -4610,8 +4269,7 @@ theorem gmGcdSlice_to_reduced_mem
     · rw [Nat.Coprime, ← hpGcd]
       exact Nat.gcd_div_gcd_div_gcd_of_pos_left hp₁
 
-theorem gmReducedRatioPairs_to_gcdSlice_mem
-    {N d : ℕ} {p : ℕ × ℕ} (hp : p ∈ gmReducedRatioPairs N d) :
+theorem gmReducedRatioPairs_to_gcdSlice_mem (hp : p ∈ gmReducedRatioPairs N d) :
     (d * p.1, d * p.2) ∈ gmGcdSlice N d := by
   have hpCond := (Finset.mem_filter.mp hp).2
   have hpCop := gmReducedRatioPairs_coprime hp
@@ -4622,6 +4280,7 @@ theorem gmReducedRatioPairs_to_gcdSlice_mem
     · exact ⟨hpCond.2.2.1, hpCond.2.2.2.1⟩
   · rw [Nat.gcd_mul_left, hpCop]
     simp
+end
 
 /-- The `gcd = d` source slice is exactly the reduced-rational slice;
 there is no floor replacement of `N/d` in this identity. -/
@@ -4636,8 +4295,7 @@ theorem gmGcdSliceMoment_eq_reduced
     exact gmGcdSlice_to_reduced_mem hp
   · intro p hp q hq heq
     have hd := gmGcdSlice_index_pos hp
-    have hpGcd := (Finset.mem_filter.mp hp).2
-    have hqGcd := (Finset.mem_filter.mp hq).2
+    pm_547 hpGcd Finset.mem_filter.mp hp hqGcd hq
     have hdDvdP₁ : d ∣ p.1 := by rw [← hpGcd]; exact Nat.gcd_dvd_left _ _
     have hdDvdP₂ : d ∣ p.2 := by rw [← hpGcd]; exact Nat.gcd_dvd_right _ _
     have hdDvdQ₁ : d ∣ q.1 := by rw [← hqGcd]; exact Nat.gcd_dvd_left _ _
@@ -4656,17 +4314,12 @@ theorem gmGcdSliceMoment_eq_reduced
     simp [Nat.mul_div_cancel_left _ hd]
   · intro p hp
     have hpGcd := (Finset.mem_filter.mp hp).2
-    have hdDvd₁ : d ∣ p.1 := by rw [← hpGcd]; exact Nat.gcd_dvd_left _ _
-    have hdDvd₂ : d ∣ p.2 := by rw [← hpGcd]; exact Nat.gcd_dvd_right _ _
+    pm_3965
     have hp₂ := gmGcdSlice_snd_pos hp
     have hcast₁ : ((p.1 / d : ℕ) : ℝ) = (p.1 : ℝ) / d := by
-      have hdPos := gmGcdSlice_index_pos hp
-      rw [Nat.cast_div hdDvd₁]
-      exact_mod_cast hdPos.ne'
+      pm_8776 hdDvd₁
     have hcast₂ : ((p.2 / d : ℕ) : ℝ) = (p.2 : ℝ) / d := by
-      have hdPos := gmGcdSlice_index_pos hp
-      rw [Nat.cast_div hdDvd₂]
-      exact_mod_cast hdPos.ne'
+      pm_8776 hdDvd₂
     congr 2
     rw [hcast₁, hcast₂]
     have hdR : (d : ℝ) ≠ 0 := by exact_mod_cast (gmGcdSlice_index_pos hp).ne'
@@ -4681,10 +4334,7 @@ theorem gmDiscreteRatioMoment_eq_sum_gcdSlices
       ∑ d ∈ Finset.Icc 1 (2 * N), gmGcdSliceMoment k N d W := by
   classical
   unfold gmDiscreteRatioMoment gmGcdSliceMoment gmGcdSlice
-  simp_rw [Finset.sum_filter]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro p hp
+  pm_224 Finset.sum_filter Finset.sum_comm p hp
   have hpI := Finset.mem_product.mp hp
   have hp₁ := Finset.mem_Ioc.mp hpI.1
   have hp₂ := Finset.mem_Ioc.mp hpI.2
@@ -4748,8 +4398,7 @@ theorem sum_Icc_one_div_sq_le_two (D : ℕ) :
           ∑ d ∈ Finset.Icc 1 D,
             if d = 0 then 0 else (1 : ℝ) / (d : ℝ) ^ 2 := by
         apply Finset.sum_congr rfl
-        intro d hd
-        have hdPos : 0 < d := (Finset.mem_Icc.mp hd).1
+        pm_7579 d hd hdPos
         simp [hdPos.ne']
       _ ≤ _ := by
         apply Finset.sum_le_sum_of_subset_of_nonneg hsub
@@ -4787,22 +4436,17 @@ theorem cast_card_gmReducedRatioPairs_le_four_mul_sq (N d : ℕ) :
     ((gmReducedRatioPairs N d).card : ℝ) ≤ 4 * (N : ℝ) ^ 2 := by
   exact_mod_cast card_gmReducedRatioPairs_le_four_mul_sq N d
 
-theorem gmSecondLocalPackingPrefactor_le
-    {T H N d : ℝ} (hT : 1 ≤ T) (hH : 0 ≤ H)
-    (hN : 0 ≤ N) (hd : 0 < d) :
+section
+variable {T H N d : ℝ} (hT : 1 ≤ T) (hH : 0 ≤ H) (hN : 0 ≤ N) (hd : 0 < d)
+include T H N d hT hH hN hd
+theorem gmSecondLocalPackingPrefactor_le :
     gmAffineLocalBumpFourierSup * (T / (2 * Real.pi)) *
         (2 * ((2 * Real.pi * H / T) / (d ^ 2 / (8 * N ^ 2))) + 3) ≤
       19 * gmAffineLocalBumpFourierSup * (T + H * N ^ 2 / d ^ 2) := by
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hpi : 0 < Real.pi := Real.pi_pos
-  have hSup : 0 ≤ gmAffineLocalBumpFourierSup :=
-    gmAffineLocalBumpFourierSup_pos.le
-  by_cases hNz : N = 0
+  pm_3967
   · subst N
     norm_num
-    have hpiHalf : (1 : ℝ) / (2 * Real.pi) ≤ 1 := by
-      apply (div_le_one (by positivity)).2
-      nlinarith [Real.pi_gt_three]
+    pm_3968
     calc
       gmAffineLocalBumpFourierSup * (T / (2 * Real.pi)) * 3 =
           gmAffineLocalBumpFourierSup * (T / (2 * Real.pi) * 3) := by ring
@@ -4826,15 +4470,8 @@ theorem gmSecondLocalPackingPrefactor_le
       field_simp
       ring
     rw [heq]
-    have hpiHalf : (1 : ℝ) / (2 * Real.pi) ≤ 1 := by
-      apply (div_le_one (by positivity)).2
-      nlinarith [Real.pi_gt_three]
-    have hcore0 : 0 ≤ H * N ^ 2 / d ^ 2 := by positivity
-    have hfirst : 16 * H * N ^ 2 / d ^ 2 ≤
-        19 * (H * N ^ 2 / d ^ 2) := by
-      calc
-        16 * H * N ^ 2 / d ^ 2 = 16 * (H * N ^ 2 / d ^ 2) := by ring
-        _ ≤ 19 * (H * N ^ 2 / d ^ 2) := by gcongr; norm_num
+    pm_3968
+    pm_3966
     have hsecond : 3 * T / (2 * Real.pi) ≤ 19 * T := by
       calc
         3 * T / (2 * Real.pi) = 3 * T * (1 / (2 * Real.pi)) := by ring
@@ -4849,23 +4486,15 @@ theorem gmSecondLocalPackingPrefactor_le
       _ = 19 * gmAffineLocalBumpFourierSup *
           (T + H * N ^ 2 / d ^ 2) := by ring
 
-theorem gmFourthLocalPackingPrefactor_le
-    {T H N d : ℝ} (hT : 1 ≤ T) (hH : 0 ≤ H)
-    (hN : 0 ≤ N) (hd : 0 < d) :
+theorem gmFourthLocalPackingPrefactor_le :
     gmAffineLocalBumpFourierSup * (2 * T / (2 * Real.pi)) *
         (2 * ((2 * Real.pi * H / (2 * T)) /
           (d ^ 2 / (8 * N ^ 2))) + 3) ≤
       19 * gmAffineLocalBumpFourierSup * (T + H * N ^ 2 / d ^ 2) := by
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hpi : 0 < Real.pi := Real.pi_pos
-  have hSup : 0 ≤ gmAffineLocalBumpFourierSup :=
-    gmAffineLocalBumpFourierSup_pos.le
-  by_cases hNz : N = 0
+  pm_3967
   · subst N
     norm_num
-    have hpiInv : (1 : ℝ) / Real.pi ≤ 1 := by
-      apply (div_le_one Real.pi_pos).2
-      nlinarith [Real.pi_gt_three]
+    pm_1303
     calc
       gmAffineLocalBumpFourierSup * (2 * T / (2 * Real.pi)) * 3 =
           gmAffineLocalBumpFourierSup * (2 * T / (2 * Real.pi) * 3) := by ring
@@ -4887,15 +4516,8 @@ theorem gmFourthLocalPackingPrefactor_le
       field_simp
       ring
     rw [heq]
-    have hpiInv : (1 : ℝ) / Real.pi ≤ 1 := by
-      apply (div_le_one Real.pi_pos).2
-      nlinarith [Real.pi_gt_three]
-    have hcore0 : 0 ≤ H * N ^ 2 / d ^ 2 := by positivity
-    have hfirst : 16 * H * N ^ 2 / d ^ 2 ≤
-        19 * (H * N ^ 2 / d ^ 2) := by
-      calc
-        16 * H * N ^ 2 / d ^ 2 = 16 * (H * N ^ 2 / d ^ 2) := by ring
-        _ ≤ 19 * (H * N ^ 2 / d ^ 2) := by gcongr; norm_num
+    pm_1303
+    pm_3966
     have hsecond : 3 * T / Real.pi ≤ 19 * T := by
       calc
         3 * T / Real.pi = 3 * T * (1 / Real.pi) := by ring
@@ -4909,6 +4531,7 @@ theorem gmFourthLocalPackingPrefactor_le
         exact mul_le_mul_of_nonneg_left (add_le_add hfirst hsecond) hSup
       _ = 19 * gmAffineLocalBumpFourierSup *
           (T + H * N ^ 2 / d ^ 2) := by ring
+end
 
 /-- The `gmSmallGcdL2Constant` definition used by the source-facing construction in `LargeValuesEnergy`. -/
 noncomputable def gmSmallGcdL2Constant (μ : ℝ) : ℝ :=
@@ -4922,21 +4545,26 @@ noncomputable def gmSmallGcdL4Constant (μ : ℝ) : ℝ :=
     (4 * (|Real.log 2 - Real.log (1 / 2 : ℝ)| + 4 * Real.pi) +
       8 * (1 + μ⁻¹) * 3 ^ μ)
 
-theorem gmSmallGcdL2Constant_pos {μ : ℝ} (hμ : 0 < μ) :
+section
+variable {μ : ℝ} (hμ : 0 < μ)
+include μ hμ
+theorem gmSmallGcdL2Constant_pos :
     0 < gmSmallGcdL2Constant μ := by
   unfold gmSmallGcdL2Constant
   have hSup := gmAffineLocalBumpFourierSup_pos
   positivity
 
-theorem gmSmallGcdL4Constant_pos {μ : ℝ} (hμ : 0 < μ) :
+theorem gmSmallGcdL4Constant_pos :
     0 < gmSmallGcdL4Constant μ := by
   unfold gmSmallGcdL4Constant
   have hSup := gmAffineLocalBumpFourierSup_pos
   positivity
+end
 
-theorem gmReducedRatioMoment_two_le_main_add_tail
-    {μ T H : ℝ} {N d q : ℕ} {W : Finset ℝ}
-    (hμ : 0 < μ) (hT : 1 ≤ T) (hSep : IsSeparated 1 W)
+section
+variable {μ T H : ℝ} {N d q : ℕ} {W : Finset ℝ} (hμ : 0 < μ) (hT : 1 ≤ T)
+include μ T H N d q W hμ hT
+theorem gmReducedRatioMoment_two_le_main_add_tail (hSep : IsSeparated 1 W)
     (hBase : InBaseInterval T W) (hN : 0 < N) (hd : 0 < d)
     (hHOne : 1 ≤ H) (hHT : H ≤ T) (hq : 2 ≤ q) :
     gmReducedRatioMoment 2 N d W ≤
@@ -4945,10 +4573,7 @@ theorem gmReducedRatioMoment_two_le_main_add_tail
         4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 2 *
           gmAffineLocalBumpFourierTailConstant q hq *
             H ^ (1 - (q : ℝ)) := by
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hH0 : 0 ≤ H := zero_le_one.trans hHOne
-  have hN0 : (0 : ℝ) ≤ N := by positivity
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  pm_3970
   have hrLe : 2 * Real.pi * H / T ≤ 2 * Real.pi := by
     rw [div_le_iff₀ hTpos]
     nlinarith [Real.pi_pos]
@@ -4970,11 +4595,9 @@ theorem gmReducedRatioMoment_two_le_main_add_tail
             hTpos.le))]
       _ ≤ |Real.log 2 - Real.log (1 / 2 : ℝ)| + 4 * Real.pi := by
         nlinarith
-  have hTpow : 1 ≤ T ^ μ := Real.one_le_rpow hT hμ.le
-  let L : ℝ := |Real.log 2 - Real.log (1 / 2 : ℝ)| + 4 * Real.pi
+  pm_3971
   let A : ℝ := 4 * (1 + μ⁻¹) * 2 ^ μ
-  have hL0 : 0 ≤ L := by dsimp only [L]; positivity
-  have hA0 : 0 ≤ A := by dsimp only [A]; positivity
+  pm_3972
   have hglobal :
       (|((Real.log 2 + 2 * Real.pi * H / T) -
           (Real.log (1 / 2 : ℝ) - 2 * Real.pi * H / T))| +
@@ -5001,19 +4624,12 @@ theorem gmReducedRatioMoment_two_le_main_add_tail
         (4 * (N : ℝ) ^ 2) * (W.card : ℝ) ^ 2 *
           gmAffineLocalBumpFourierTailConstant q hq *
             H ^ (1 - (q : ℝ)) := by
-      have hPref0 : 0 ≤ 19 * gmAffineLocalBumpFourierSup *
-          (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) := by
-        exact mul_nonneg (mul_nonneg (by norm_num) gmAffineLocalBumpFourierSup_pos.le)
-          (add_nonneg hTpos.le (by positivity))
-      have hTail0 := gmAffineLocalBumpFourierTailConstant_pos q hq
-      gcongr
+      pm_3969
     _ = _ := by
       dsimp only [gmSmallGcdL2Constant, L, A]
       ring
 
-theorem gmReducedRatioMoment_four_le_main_add_tail
-    {μ T H : ℝ} {N d q : ℕ} {W : Finset ℝ}
-    (hμ : 0 < μ) (hT : 1 ≤ T) (hBase : InBaseInterval T W)
+theorem gmReducedRatioMoment_four_le_main_add_tail (hBase : InBaseInterval T W)
     (hN : 0 < N) (hd : 0 < d) (hHOne : 1 ≤ H) (hHT : H ≤ T)
     (hq : 2 ≤ q) :
     gmReducedRatioMoment 4 N d W ≤
@@ -5023,10 +4639,7 @@ theorem gmReducedRatioMoment_four_le_main_add_tail
         4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 4 *
           gmAffineLocalBumpFourierTailConstant q hq *
             H ^ (1 - (q : ℝ)) := by
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hH0 : 0 ≤ H := zero_le_one.trans hHOne
-  have hN0 : (0 : ℝ) ≤ N := by positivity
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  pm_3970
   have hrLe : 2 * Real.pi * H / (2 * T) ≤ Real.pi := by
     rw [div_le_iff₀ (by positivity : (0 : ℝ) < 2 * T)]
     nlinarith [Real.pi_pos]
@@ -5048,11 +4661,9 @@ theorem gmReducedRatioMoment_four_le_main_add_tail
             (by positivity)))]
       _ ≤ |Real.log 2 - Real.log (1 / 2 : ℝ)| + 4 * Real.pi := by
         nlinarith [Real.pi_pos]
-  have hTpow : 1 ≤ T ^ μ := Real.one_le_rpow hT hμ.le
-  let L : ℝ := |Real.log 2 - Real.log (1 / 2 : ℝ)| + 4 * Real.pi
+  pm_3971
   let A : ℝ := 8 * (1 + μ⁻¹) * 3 ^ μ
-  have hL0 : 0 ≤ L := by dsimp only [L]; positivity
-  have hA0 : 0 ≤ A := by dsimp only [A]; positivity
+  pm_3972
   have hglobal :
       (4 * |((Real.log 2 + 2 * Real.pi * H / (2 * T)) -
           (Real.log (1 / 2 : ℝ) - 2 * Real.pi * H / (2 * T)))| +
@@ -5081,15 +4692,11 @@ theorem gmReducedRatioMoment_four_le_main_add_tail
         (4 * (N : ℝ) ^ 2) * (W.card : ℝ) ^ 4 *
           gmAffineLocalBumpFourierTailConstant q hq *
             H ^ (1 - (q : ℝ)) := by
-      have hPref0 : 0 ≤ 19 * gmAffineLocalBumpFourierSup *
-          (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) := by
-        exact mul_nonneg (mul_nonneg (by norm_num) gmAffineLocalBumpFourierSup_pos.le)
-          (add_nonneg hTpos.le (by positivity))
-      have hTail0 := gmAffineLocalBumpFourierTailConstant_pos q hq
-      gcongr
+      pm_3969
     _ = _ := by
       dsimp only [gmSmallGcdL4Constant, L, A]
       ring
+end
 
 /-- The `gmSmallGcdTailConstant` definition used by the source-facing construction in `LargeValuesEnergy`. -/
 noncomputable def gmSmallGcdTailConstant (μ : ℝ) : ℝ :=
@@ -5104,46 +4711,29 @@ noncomputable def gmSmallGcdL2SliceConstant (μ : ℝ) : ℝ :=
 noncomputable def gmSmallGcdL4SliceConstant (μ : ℝ) : ℝ :=
   gmSmallGcdL4Constant μ + 64 * gmSmallGcdTailConstant μ
 
-theorem gmSmallGcdL2SliceConstant_pos {μ : ℝ} (hμ : 0 < μ) :
+section
+variable {μ : ℝ} (hμ : 0 < μ)
+include μ hμ
+theorem gmSmallGcdL2SliceConstant_pos :
     0 < gmSmallGcdL2SliceConstant μ := by
   unfold gmSmallGcdL2SliceConstant gmSmallGcdTailConstant
-  have hmain := gmSmallGcdL2Constant_pos hμ
-  have htail := gmAffineLocalBumpFourierTailConstant_pos
-    (gmReflectionDecayOrder 8 μ) (gmReflectionDecayOrder_two_le 8 μ)
-  positivity
+  pm_6641 gmSmallGcdL2Constant_pos
 
-theorem gmSmallGcdL4SliceConstant_pos {μ : ℝ} (hμ : 0 < μ) :
+theorem gmSmallGcdL4SliceConstant_pos :
     0 < gmSmallGcdL4SliceConstant μ := by
   unfold gmSmallGcdL4SliceConstant gmSmallGcdTailConstant
-  have hmain := gmSmallGcdL4Constant_pos hμ
-  have htail := gmAffineLocalBumpFourierTailConstant_pos
-    (gmReflectionDecayOrder 8 μ) (gmReflectionDecayOrder_two_le 8 μ)
-  positivity
+  pm_6641 gmSmallGcdL4Constant_pos
+end
 
-theorem gmReducedRatioMoment_two_le_epsilon
-    {μ T : ℝ} {N d : ℕ} {W : Finset ℝ}
-    (hμ : 0 < μ) (hT : 1 ≤ T) (hSep : IsSeparated 1 W)
-    (hBase : InBaseInterval T W) (hN : 0 < N) (hNT : (N : ℝ) ≤ T)
-    (hd : 0 < d) :
+section
+variable {μ T : ℝ} {N d : ℕ} {W : Finset ℝ} (hμ : 0 < μ) (hT : 1 ≤ T) (hSep : IsSeparated 1 W) (hBase : InBaseInterval T W) (hN : 0 < N) (hNT : (N : ℝ) ≤ T) (hd : 0 < d)
+include μ T N d W hμ hT hSep hBase hN hNT hd
+theorem gmReducedRatioMoment_two_le_epsilon :
     gmReducedRatioMoment 2 N d W ≤
       gmSmallGcdL2SliceConstant μ * T ^ μ *
         (T + gmReflectionHeight T μ * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) *
           (W.card : ℝ) := by
-  let H := gmReflectionHeight T μ
-  let q := gmReflectionDecayOrder 8 μ
-  let Ctail := gmSmallGcdTailConstant μ
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hHOne : 1 ≤ H := by
-    dsimp only [H, gmReflectionHeight]
-    exact Real.one_le_rpow hT (gmReflectionEta_pos hμ).le
-  have hHT : H ≤ T := by
-    dsimp only [H, gmReflectionHeight]
-    simpa only [Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT gmReflectionEta_le_one
-  have hq : 2 ≤ q := gmReflectionDecayOrder_two_le 8 μ
-  have hCtail : 0 < Ctail := by
-    dsimp only [Ctail, gmSmallGcdTailConstant, q]
-    exact gmAffineLocalBumpFourierTailConstant_pos _ _
+  pm_3974
   have hmain := gmReducedRatioMoment_two_le_main_add_tail
     hμ hT hSep hBase hN hd hHOne hHT hq
   by_cases hWzero : W.card = 0
@@ -5151,16 +4741,8 @@ theorem gmReducedRatioMoment_two_le_epsilon
     subst W
     simp [gmReducedRatioMoment, gmR]
   have hWposNat : 0 < W.card := Nat.pos_of_ne_zero hWzero
-  have hWone : (1 : ℝ) ≤ W.card := by exact_mod_cast hWposNat
-  have hCard := gmSeparated_card_le_two_height hT hSep hBase
-  have hTailBase :
-      Ctail * H ^ (1 - (q : ℝ)) ≤ Ctail / T ^ (8 : ℝ) := by
-    have h := gmLemma11ThreeFourierError_le
-      (A := (8 : ℝ)) (ε := μ) (C := Ctail) (T := T) (M := 1)
-      (by norm_num) hμ hCtail.le hT (by simpa using hT)
-    simpa only [Nat.cast_one, one_mul, H, q] using h
-  have hNsq : (N : ℝ) ^ 2 ≤ T ^ 2 :=
-    pow_le_pow_left₀ (by positivity) hNT 2
+  pm_77 hWone W.card hWposNat
+  pm_3973
   have hWsq : (W.card : ℝ) ^ 2 ≤ (2 * T) ^ 2 :=
     pow_le_pow_left₀ (by positivity) hCard 2
   have hpower : T ^ (4 : ℕ) * (Ctail / T ^ (8 : ℝ)) ≤ Ctail := by
@@ -5178,9 +4760,7 @@ theorem gmReducedRatioMoment_two_le_epsilon
           (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) * (W.card : ℝ) := by
     have hcore : 1 ≤ T ^ μ *
         (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) * (W.card : ℝ) := by
-      have hTpow : 1 ≤ T ^ μ := Real.one_le_rpow hT hμ.le
-      have hterm0 : 0 ≤ H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2 := by positivity
-      have hsum : 1 ≤ T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2 := by linarith
+      pm_3975
       nlinarith [mul_le_mul hTpow hsum (by norm_num : (0 : ℝ) ≤ 1)
         (Real.rpow_nonneg hTpos.le μ)]
     have hpoly : 4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 2 ≤
@@ -5189,7 +4769,7 @@ theorem gmReducedRatioMoment_two_le_epsilon
         4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 2 ≤
             4 * T ^ 2 * (2 * T) ^ 2 := by gcongr
         _ = 16 * T ^ (4 : ℕ) := by ring
-    have hTailNonneg : 0 ≤ Ctail * H ^ (1 - (q : ℝ)) := by positivity
+    pm_5685
     calc
       4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 2 * Ctail *
           H ^ (1 - (q : ℝ)) =
@@ -5222,30 +4802,12 @@ theorem gmReducedRatioMoment_two_le_epsilon
       dsimp only [gmSmallGcdL2SliceConstant, Ctail, H]
       ring
 
-theorem gmReducedRatioMoment_four_le_epsilon
-    {μ T : ℝ} {N d : ℕ} {W : Finset ℝ}
-    (hμ : 0 < μ) (hT : 1 ≤ T) (hSep : IsSeparated 1 W)
-    (hBase : InBaseInterval T W) (hN : 0 < N) (hNT : (N : ℝ) ≤ T)
-    (hd : 0 < d) :
+theorem gmReducedRatioMoment_four_le_epsilon :
     gmReducedRatioMoment 4 N d W ≤
       gmSmallGcdL4SliceConstant μ * T ^ μ *
         (T + gmReflectionHeight T μ * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) *
           (ApproxAddEnergy 1 W : ℝ) := by
-  let H := gmReflectionHeight T μ
-  let q := gmReflectionDecayOrder 8 μ
-  let Ctail := gmSmallGcdTailConstant μ
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hHOne : 1 ≤ H := by
-    dsimp only [H, gmReflectionHeight]
-    exact Real.one_le_rpow hT (gmReflectionEta_pos hμ).le
-  have hHT : H ≤ T := by
-    dsimp only [H, gmReflectionHeight]
-    simpa only [Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT gmReflectionEta_le_one
-  have hq : 2 ≤ q := gmReflectionDecayOrder_two_le 8 μ
-  have hCtail : 0 < Ctail := by
-    dsimp only [Ctail, gmSmallGcdTailConstant, q]
-    exact gmAffineLocalBumpFourierTailConstant_pos _ _
+  pm_3974
   have hmain := gmReducedRatioMoment_four_le_main_add_tail
     hμ hT hBase hN hd hHOne hHT hq
   by_cases hWzero : W.card = 0
@@ -5253,15 +4815,7 @@ theorem gmReducedRatioMoment_four_le_epsilon
     subst W
     simp [gmReducedRatioMoment, gmR, ApproxAddEnergy, approximateAdditiveQuadruples]
   have hWposNat : 0 < W.card := Nat.pos_of_ne_zero hWzero
-  have hCard := gmSeparated_card_le_two_height hT hSep hBase
-  have hTailBase :
-      Ctail * H ^ (1 - (q : ℝ)) ≤ Ctail / T ^ (8 : ℝ) := by
-    have h := gmLemma11ThreeFourierError_le
-      (A := (8 : ℝ)) (ε := μ) (C := Ctail) (T := T) (M := 1)
-      (by norm_num) hμ hCtail.le hT (by simpa using hT)
-    simpa only [Nat.cast_one, one_mul, H, q] using h
-  have hNsq : (N : ℝ) ^ 2 ≤ T ^ 2 :=
-    pow_le_pow_left₀ (by positivity) hNT 2
+  pm_3973
   have hWfour : (W.card : ℝ) ^ 4 ≤ (2 * T) ^ 4 :=
     pow_le_pow_left₀ (by positivity) hCard 4
   have hpower : T ^ (6 : ℕ) * (Ctail / T ^ (8 : ℝ)) ≤ Ctail := by
@@ -5273,7 +4827,7 @@ theorem gmReducedRatioMoment_four_le_epsilon
           T ^ (8 : ℝ) * (Ctail / T ^ (8 : ℝ)) := by gcongr
       _ = Ctail := by field_simp
   have henergyOne : (1 : ℝ) ≤ ApproxAddEnergy 1 W := by
-    have hdiag := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
+    pm_6502
     have honeNat : 1 ≤ W.card ^ 2 := Nat.one_le_pow 2 W.card hWposNat
     have honeR : (1 : ℝ) ≤ (W.card ^ 2 : ℕ) := by exact_mod_cast honeNat
     have hdiagR : ((W.card ^ 2 : ℕ) : ℝ) ≤ ApproxAddEnergy 1 W := by
@@ -5285,9 +4839,7 @@ theorem gmReducedRatioMoment_four_le_epsilon
         64 * Ctail * T ^ μ *
           (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) *
             (ApproxAddEnergy 1 W : ℝ) := by
-    have hTpow : 1 ≤ T ^ μ := Real.one_le_rpow hT hμ.le
-    have hterm0 : 0 ≤ H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2 := by positivity
-    have hsum : 1 ≤ T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2 := by linarith
+    pm_3975
     have hcore : 1 ≤ T ^ μ *
         (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) *
           (ApproxAddEnergy 1 W : ℝ) := by
@@ -5300,7 +4852,7 @@ theorem gmReducedRatioMoment_four_le_epsilon
         4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 4 ≤
             4 * T ^ 2 * (2 * T) ^ 4 := by gcongr
         _ = 64 * T ^ (6 : ℕ) := by ring
-    have hTailNonneg : 0 ≤ Ctail * H ^ (1 - (q : ℝ)) := by positivity
+    pm_5685
     calc
       4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 4 * Ctail *
           H ^ (1 - (q : ℝ)) =
@@ -5336,6 +4888,7 @@ theorem gmReducedRatioMoment_four_le_epsilon
     _ = _ := by
       dsimp only [gmSmallGcdL4SliceConstant, Ctail, H]
       ring
+end
 
 /-- The `gmSmallGcdL3SliceConstant` definition used by the source-facing construction in `LargeValuesEnergy`. -/
 noncomputable def gmSmallGcdL3SliceConstant (μ : ℝ) : ℝ :=
@@ -5451,8 +5004,7 @@ theorem sum_smallGcd_local_scales_le
         ((Finset.Icc 1 D).card : ℝ) * T +
           H * (N : ℝ) ^ 2 *
             (∑ d ∈ Finset.Icc 1 D, (1 : ℝ) / (d : ℝ) ^ 2) := by
-      simp only [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul]
-      rw [Finset.mul_sum]
+      pm_210 Finset.sum_add_distrib Finset.sum_const nsmul_eq_mul Finset.mul_sum
       apply congrArg₂ (· + ·) rfl
       apply Finset.sum_congr rfl
       intro d hd
@@ -5520,10 +5072,7 @@ theorem gmSmallGcdThirdMoment_le_raw
       have hpref : 0 ≤ gmSmallGcdSumConstant μ * T ^ μ :=
         mul_nonneg (gmSmallGcdSumConstant_pos hμ).le
           (Real.rpow_nonneg (zero_le_one.trans hT) μ)
-      exact mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left hsum hpref) (Real.sqrt_nonneg _))
-        (Real.sqrt_nonneg _)
+      pm_7137 hsum
 
 /-- Guth--Maynard Lemma 11.8 in the epsilon-uniform form used by
 Proposition 11.1. -/
@@ -5545,7 +5094,7 @@ theorem gmSmallGcdThirdMoment_native
   intro N D T W hN hT hNT hSep hBase
   have hTOne : 1 ≤ T := hT
   have hTPos : 0 < T := zero_lt_one.trans_le hTOne
-  have hμ : 0 < μ := by dsimp only [μ]; positivity
+  pm_116 hμ μ
   have hraw := gmSmallGcdThirdMoment_le_raw (D := D)
     hμ hTOne hSep hBase hN hNT
   have hEta : gmReflectionEta μ ≤ μ := (gmReflectionEta_lt_eps hμ).le
@@ -5555,9 +5104,9 @@ theorem gmSmallGcdThirdMoment_native
   have hScale :
       (D : ℝ) * T + 2 * gmReflectionHeight T μ * (N : ℝ) ^ 2 ≤
         2 * T ^ μ * ((D : ℝ) * T + (N : ℝ) ^ 2) := by
-    have hDT : 0 ≤ (D : ℝ) * T := by positivity
-    have hN2 : 0 ≤ (N : ℝ) ^ 2 := sq_nonneg _
-    have hPowOne : 1 ≤ T ^ μ := Real.one_le_rpow hTOne hμ.le
+    pm_1194 hDT D T
+    pm_4166 hN2 N
+    pm_4168 hPowOne μ hTOne hμ.le
     calc
       (D : ℝ) * T + 2 * gmReflectionHeight T μ * (N : ℝ) ^ 2 ≤
           (D : ℝ) * T + 2 * T ^ μ * (N : ℝ) ^ 2 := by gcongr
@@ -5578,10 +5127,7 @@ theorem gmSmallGcdThirdMoment_native
       have hpref : 0 ≤ gmSmallGcdSumConstant μ * T ^ μ :=
         mul_nonneg (gmSmallGcdSumConstant_pos hμ).le
           (Real.rpow_nonneg hTPos.le μ)
-      exact mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left hScale hpref) (Real.sqrt_nonneg _))
-        (Real.sqrt_nonneg _)
+      pm_7137 hScale
     _ = C * T ^ (2 * μ) * ((D : ℝ) * T + (N : ℝ) ^ 2) *
           Real.sqrt (W.card : ℝ) *
             Real.sqrt (ApproxAddEnergy 1 W : ℝ) := by

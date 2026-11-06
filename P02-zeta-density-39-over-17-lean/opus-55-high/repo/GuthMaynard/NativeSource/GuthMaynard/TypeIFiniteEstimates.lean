@@ -1,6 +1,7 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalLargeValues
 public import GuthMaynard.NativeSource.GuthMaynard.TerminalTypeI
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,11 +32,10 @@ theorem norm_logarithmicPhase_prefix_le_sqrt
         unitaryPhase (logarithmicPhase t (A + 1 + n))‖ ≤
       100 * Real.sqrt t := by
   by_cases hL0 : L = 0
-  · subst L
-    simp
+  simp_all
   have hLpos : 0 < L := Nat.pos_of_ne_zero hL0
   have ht : 0 < t := lt_of_lt_of_le (by exact_mod_cast hA) hAt
-  have hlambda : 0 < t / (9 * (A : ℝ) ^ 2) := by positivity
+  pm_5199 hlambda t A
   have hcurvLower : ∀ n < L - 1,
       t / (9 * (A : ℝ) ^ 2) ≤
         (logarithmicPhase t (A + 1 + (n + 2)) -
@@ -62,8 +62,7 @@ theorem norm_logarithmicPhase_prefix_le_sqrt
     (fun n hn => by
       simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.add_assoc] using
         hcurvUpper n hn)
-  have hpred : L - 1 + 1 = L := by omega
-  rw [hpred] at hB
+  pm_4648 L hB
   have hfirst :
       (((L - 1 : ℕ) : ℝ) * (t / (A : ℝ) ^ 2) / (2 * Real.pi) + 2) ≤
         (((A - 1 : ℕ) : ℝ) * (t / (A : ℝ) ^ 2) / (2 * Real.pi) + 2) := by
@@ -82,29 +81,11 @@ theorem mediumTypeIBProcess_native
     (hNC : N < C) (hNt : (N : ℝ) ≤ t) (htN : t ≤ (N : ℝ) ^ 2) :
     ‖dirichletPoly N (classicalZetaLongLineCoeff C σ) t‖ ≤
       (N + 1 : ℝ) ^ (-σ) * (100 * Real.sqrt t) := by
-  let f : ℕ → ℝ := fun i =>
-    if N + 1 + i ≤ C then (N + 1 + i : ℝ) ^ (-σ) else 0
-  let g : ℕ → ℂ := fun i =>
-    unitaryPhase (logarithmicPhase t (N + 1 + i))
-  have hanti : ∀ i, i + 1 < N → f (i + 1) ≤ f i := by
-    intro i hi
-    dsimp only [f]
-    by_cases hnext : N + 1 + (i + 1) ≤ C
-    · have hcurrent : N + 1 + i ≤ C := by omega
-      rw [ite_eq_left hnext, ite_eq_left hcurrent]
-      apply Real.rpow_le_rpow_of_nonpos
-      · positivity
-      · exact_mod_cast (show N + 1 + i ≤ N + 1 + (i + 1) by omega)
-      · linarith
-    · rw [ite_eq_right hnext]
-      positivity
+  pm_4626
   have hBound := norm_weighted_sum_le_of_antitone f g N
     (100 * Real.sqrt t) hN
     (by
-      intro i hi
-      dsimp only [f]
-      split_ifs
-      · positivity
+      pm_8125
       · exact le_rfl)
     hanti
     (by
@@ -112,7 +93,7 @@ theorem mediumTypeIBProcess_native
       dsimp only [g]
       exact norm_logarithmicPhase_prefix_le_sqrt N j t hN hj hNt htN)
   rw [dirichletPoly_classicalZetaLongLineCoeff_eq_terminal C N σ t hN]
-  have hStart : N + 1 ≤ C := by omega
+  pm_4934 hStart N C
   simpa only [f, g, ite_eq_left hStart, Nat.cast_add, Nat.cast_one,
     Nat.cast_zero, add_zero, ite_smul, zero_smul] using hBound
 

@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.OperatorMixedTrace
 public import GuthMaynard.Improvement.MixedKernelYoung
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -25,12 +24,10 @@ theorem kernelMixed_row_bound (ν : Measure ℝ) [IsFiniteMeasure ν]
     filter_upwards [] with v
     simpa only [Real.norm_eq_abs,abs_pow,abs_norm] using pow_le_pow_left₀ (norm_nonneg _) (hKB (u-v)) 2
   have hψone (u : ℝ) : Integrable (fun v => ψ (u-v)) ν := by
-    apply (integrable_const D).mono' (by apply Measurable.aestronglyMeasurable; fun_prop)
-    filter_upwards [] with v
+    pm_7145 v
     simpa only [Real.norm_eq_abs,abs_of_nonneg (hψ0 _)] using hψD (u-v)
   have hψpair : Integrable (fun p : ℝ × ℝ => ψ (p.1-p.2)) (ν.prod ν) := by
-    apply (integrable_const D).mono' (by apply Measurable.aestronglyMeasurable; fun_prop)
-    filter_upwards [] with p
+    pm_7145 p
     simpa only [Real.norm_eq_abs,abs_of_nonneg (hψ0 _)] using hψD (p.1-p.2)
   have hpoint (u v t : ℝ) : ‖C (u-v)*K (v-t)*K (t-u)‖ ≤ L*D*B^2 := by
     simp only [norm_mul]
@@ -39,11 +36,11 @@ theorem kernelMixed_row_bound (ν : Measure ℝ) [IsFiniteMeasure ν]
         (hKB _) (norm_nonneg _) (by positivity)
       _ = _ := by ring
   have htri : Integrable (fun t : Triple => C (t.1-t.2.1)*K (t.2.1-t.2.2)*K (t.2.2-t.1)) (tripleMeasure ν) := by
-    let : IsFiniteMeasure (tripleMeasure ν) := by unfold tripleMeasure; infer_instance
-    apply (integrable_const (L*D*B^2)).mono' (by apply Measurable.aestronglyMeasurable; fun_prop)
+    pm_4552
+    pm_5704
     exact Filter.Eventually.of_forall (fun t => hpoint t.1 t.2.1 t.2.2)
   have hpair (u : ℝ) : Integrable (fun p : ℝ × ℝ => C (u-p.1)*K (p.1-p.2)*K (p.2-u)) (ν.prod ν) := by
-    apply (integrable_const (L*D*B^2)).mono' (by apply Measurable.aestronglyMeasurable; fun_prop)
+    pm_5704
     exact Filter.Eventually.of_forall (fun p => hpoint u p.1 p.2)
   have he : kernelMixed ν C K = ∫ u, ∫ v, ∫ t, C (u-v)*K (v-t)*K (t-u) ∂ν ∂ν ∂ν := by
     rw [kernelMixed,tripleMeasure,integral_prod _ htri]

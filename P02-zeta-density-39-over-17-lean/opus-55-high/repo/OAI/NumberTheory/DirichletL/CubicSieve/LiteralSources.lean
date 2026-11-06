@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.CompactProfiles
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -100,20 +101,18 @@ lemma complex_norm_mul_add_sq (a b c d : ℂ) :
   have hs := pow_le_pow_left₀ (norm_nonneg (a*c+b*d)) ht 2
   nlinarith only [hs,sq_nonneg (‖a‖*‖d‖-‖b‖*‖c‖)]
 
-lemma matrixFrobenius_nonneg (g : SL(2,ℂ)) : 0≤matrixFrobenius g := by
+lemma matrixFrobenius_nonneg (g : SL(2,ℂ)) : 0≤ matrixFrobenius g := by
   unfold matrixFrobenius rowEnergy
   positivity
 
 lemma matrixFrobenius_mul_le (g h : SL(2,ℂ)) :
-    matrixFrobenius (g*h)≤matrixFrobenius g*matrixFrobenius h := by
+    matrixFrobenius (g*h)≤ matrixFrobenius g*matrixFrobenius h := by
   have hb (i j : Fin 2) := complex_norm_mul_add_sq (g i 0) (g i 1) (h 0 j) (h 1 j)
-  simp only [matrixFrobenius,rowEnergy,complexMatrixRow,Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.mul_apply,Fin.sum_univ_two]
-  nlinarith only [hb 0 0,hb 0 1,hb 1 0,hb 1 1]
+  pm_162 matrixFrobenius rowEnergy complexMatrixRow Matrix.SpecialLinearGroup.coe_mul Matrix.mul_apply Fin.sum_univ_two
+  grind
 
 lemma matrixFrobenius_inv (g : SL(2,ℂ)) : matrixFrobenius g⁻¹=matrixFrobenius g := by
-  rw [Matrix.SpecialLinearGroup.SL2_inv_expl]
-  simp only [matrixFrobenius,rowEnergy,complexMatrixRow]
+  pm_3812 Matrix.SpecialLinearGroup.SL2_inv_expl matrixFrobenius rowEnergy complexMatrixRow
   change ‖g 1 1‖^2+‖-g 0 1‖^2+(‖-g 1 0‖^2+‖g 0 0‖^2)=_
   simp only [norm_neg]
   ring
@@ -126,7 +125,7 @@ lemma matrixFrobenius_le_displacement (g : SL(2,ℂ)) (w : HyperbolicSpace) :
     matrixFrobenius g≤hyperbolicFrobenius (g • w)*hyperbolicFrobenius w := by
   induction w using Quotient.inductionOn with
   | _ h =>
-    change matrixFrobenius g≤matrixFrobenius (g*h)*matrixFrobenius h
+    change matrixFrobenius g≤ matrixFrobenius (g*h)*matrixFrobenius h
     have hb := matrixFrobenius_mul_le (g*h) h⁻¹
     simpa only [mul_inv_cancel_right,matrixFrobenius_inv] using hb
 
@@ -150,8 +149,8 @@ instance integralSubgroupProperlyDiscontinuous (H : Subgroup (SL(2,O))) :
     have hb := matrixFrobenius_le_displacement (integralComplexMatrix (M:SL(2,O))) w
     apply hb.trans
     apply mul_le_mul
-    · exact ((le_abs_self _).trans (hD _ hu)).trans (le_max_left _ _)
-    · exact ((le_abs_self _).trans (hC _ hw)).trans (le_max_left _ _)
+    pm_7654 hD hu
+    pm_7654 hC hw
     · exact hyperbolicFrobenius_nonneg _
     · exact le_max_right _ _
 
@@ -182,21 +181,22 @@ lemma integralOrbitRel_eq (H : Subgroup (SL(2,O))) :
   ext u v
   change (∃M:H,M • u=v) ↔ ∃M:H,M • v=u
   constructor
-  · rintro ⟨M,hM⟩
-    exact ⟨M⁻¹,by rw [←hM,inv_smul_smul]⟩
-  · rintro ⟨M,hM⟩
-    exact ⟨M⁻¹,by rw [←hM,inv_smul_smul]⟩
+  pm_1572
+  pm_1572
 
 instance integralOrbitQuotientT2 (H : Subgroup (SL(2,O))) : T2Space (IntegralOrbitQuotient H) := by
   change T2Space (Quotient (integralOrbitRel H))
   rw [integralOrbitRel_eq]
   infer_instance
 
-lemma integralSubgroupFree (H : Subgroup (SL(2,O))) (hH : H≤CubicKubota.levelThree) :
+section
+variable (H : Subgroup (SL(2,O)))
+include H
+lemma integralSubgroupFree (hH : H≤CubicKubota.levelThree) :
     IsCancelSMul H HyperbolicSpace :=
   isCancelSMul_iff_eq_one_of_smul_eq.mpr (subgroup_action_free H hH)
 
-lemma integralOrbitProjection_eq_iff (H : Subgroup (SL(2,O))) (u v : HyperbolicSpace) :
+lemma integralOrbitProjection_eq_iff (u v : HyperbolicSpace) :
     integralOrbitProjection H u=integralOrbitProjection H v ↔ u∈MulAction.orbit H v := by
   constructor
   · intro he
@@ -207,20 +207,21 @@ lemma integralOrbitProjection_eq_iff (H : Subgroup (SL(2,O))) (u v : HyperbolicS
     apply Quotient.sound
     exact ⟨M,hM⟩
 
-theorem integralOrbitProjection_quotientCovering (H : Subgroup (SL(2,O)))
+theorem integralOrbitProjection_quotientCovering
     (hH : H≤CubicKubota.levelThree) : IsQuotientCoveringMap (integralOrbitProjection H) H := by
   let : IsCancelSMul H HyperbolicSpace := integralSubgroupFree H hH
   have hq : Topology.IsQuotientMap (integralOrbitProjection H) := isQuotientMap_quotient_mk'
   exact hq.isQuotientCoveringMap_of_properlyDiscontinuousSMul (integralOrbitProjection_eq_iff H _ _)
 
-lemma integralOrbitProjection_covering (H : Subgroup (SL(2,O))) (hH : H≤CubicKubota.levelThree) :
+lemma integralOrbitProjection_covering (hH : H≤CubicKubota.levelThree) :
     IsCoveringMap (integralOrbitProjection H) :=
   (integralOrbitProjection_quotientCovering H hH).isCoveringMap
 
-lemma integralOrbitProjection_openQuotient (H : Subgroup (SL(2,O))) (hH : H≤CubicKubota.levelThree) :
+lemma integralOrbitProjection_openQuotient (hH : H≤CubicKubota.levelThree) :
     IsOpenQuotientMap (integralOrbitProjection H) :=
   ⟨Quotient.mk_surjective,continuous_integralOrbitProjection H,
     (integralOrbitProjection_covering H hH).isOpenMap⟩
+end
 
 instance kernelQuotientLocallyCompact : LocallyCompactSpace (IntegralOrbitQuotient globalKubotaKernel) :=
   (integralOrbitProjection_openQuotient globalKubotaKernel globalKubotaKernel_le_levelThree).locallyCompactSpace
@@ -259,7 +260,7 @@ lemma kernelProjection_translates_disjoint (S : Set HyperbolicSpace)
   intro M N hMN
   apply Set.disjoint_left.mpr
   rintro _ ⟨w,hw,rfl⟩ ⟨u,hu,he⟩
-  have hwu : w=u := hS hw hu (by
+  have hwu  := hS hw hu (by
     calc
       integralOrbitProjection globalKubotaKernel w=
           integralOrbitProjection globalKubotaKernel (M • w) := (integralOrbitProjection_eq _ M w).symm
@@ -337,8 +338,12 @@ variable {ι : Type*}
 def first (x : GlobalSecondData ι) : GlobalFirstData ι :=
   ⟨x.cube,x.firstCommon,x.common,x.firstDivisor⟩
 @[simp] theorem append_first (x : GlobalSecondData ι) : x.first.append x.source=x := by cases x; rfl
-@[simp] theorem first_append (b : GlobalFirstData ι) (x : SecondExpansionData ι) : (b.append x).first=b := rfl
-@[simp] theorem source_append (b : GlobalFirstData ι) (x : SecondExpansionData ι) : (b.append x).source=x := rfl
+section
+variable (b : GlobalFirstData ι) (x : SecondExpansionData ι)
+include b x
+@[simp] theorem first_append : (b.append x).first=b := rfl
+@[simp] theorem source_append : (b.append x).source=x := rfl
+end
 end GlobalSecondData
 
 section

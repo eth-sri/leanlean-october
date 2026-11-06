@@ -11,30 +11,33 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
+section
+variable {f : ℝ → ℂ} {a b : ℝ}
+include f a b
 /-- A positive compactly supported cutoff vanishes at infinity faster than
 every fixed real power. -/
-theorem positive_compact_cutoff_isBigO_atTop {f : ℝ → ℂ} {a b : ℝ}
+theorem positive_compact_cutoff_isBigO_atTop
     (hs : tsupport f ⊆ Icc a b) (c : ℝ) :
     f =O[atTop] (fun x : ℝ => x^c) := by
   apply IsBigO.of_bound 0
   filter_upwards [eventually_gt_atTop b] with x hx
   have hz : f x = 0 := image_eq_zero_of_notMem_tsupport
     (fun hh => (not_le.mpr hx) (hs hh).2)
-  simp [hz]
+  simp_all
 
 /-- The same cutoff vanishes on a right neighbourhood of zero. -/
-theorem positive_compact_cutoff_isBigO_zero {f : ℝ → ℂ} {a b : ℝ}
+theorem positive_compact_cutoff_isBigO_zero
     (ha : 0 < a) (hs : tsupport f ⊆ Icc a b) (c : ℝ) :
     f =O[𝓝[>] 0] (fun x : ℝ => x^c) := by
   apply IsBigO.of_bound 0
   filter_upwards [nhdsWithin_le_nhds (Iio_mem_nhds ha)] with x hx
   have hz : f x = 0 := image_eq_zero_of_notMem_tsupport
     (fun hh => (not_le.mpr hx) (hs hh).1)
-  simp [hz]
+  simp_all
 
 /-- The actual Mellin transform is complex differentiable everywhere; its
 derivative is the Mellin transform after multiplication by the real logarithm. -/
-theorem positive_compact_cutoff_mellin_hasDerivAt {f : ℝ → ℂ} {a b : ℝ}
+theorem positive_compact_cutoff_mellin_hasDerivAt
     (hf : Continuous f) (ha : 0 < a) (hs : tsupport f ⊆ Icc a b) (s : ℂ) :
     MellinConvergent (fun y => Real.log y • f y) s ∧
       HasDerivAt (mellin f) (mellin (fun y => Real.log y • f y) s) s := by
@@ -42,10 +45,11 @@ theorem positive_compact_cutoff_mellin_hasDerivAt {f : ℝ → ℂ} {a b : ℝ}
     (positive_compact_cutoff_isBigO_atTop hs (-(s.re+1))) (by linarith)
     (positive_compact_cutoff_isBigO_zero ha hs (-(s.re-1))) (by linarith)
 
-theorem positive_compact_cutoff_mellin_differentiable {f : ℝ → ℂ} {a b : ℝ}
+theorem positive_compact_cutoff_mellin_differentiable
     (hf : Continuous f) (ha : 0 < a) (hs : tsupport f ⊆ Icc a b) :
     Differentiable ℂ (mellin f) :=
   fun s => (positive_compact_cutoff_mellin_hasDerivAt hf ha hs s).2.differentiableAt
+end
 
 theorem dampedCutoff_mellin_entire {ψ : ℝ → ℝ} {a b : ℝ}
     (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hs : tsupport ψ ⊆ Icc a b) (q : ℝ) :

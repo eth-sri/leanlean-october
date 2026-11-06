@@ -16,7 +16,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 lemma zero_mem_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (hR : 0 ≤ R) :
     (0 : Eis) ∈ childFrequencyBall a R := by
   apply (mem_childFrequencyBall a ha R 0).mpr
-  simpa using hR
+  simp_all
 
 end
 end SevenEighths.InverseMoment

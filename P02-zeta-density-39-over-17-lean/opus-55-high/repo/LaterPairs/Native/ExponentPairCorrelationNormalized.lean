@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairCorrelationAllHeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -24,7 +25,7 @@ theorem compressedHeight_main_le
     ((σ*T*r/N)/(N-r))^q*(N-r)^p ≤
       (2*σ)^q*((T/N^2)^q*N^p*r^q) := by
   have hNr : 0 < N-r := by linarith
-  have hdual : 0 < σ*T*r/N := by positivity
+  pm_6917
   have hratio : (σ*T*r/N)/(N-r) ≤ (2*σ)*(T/N^2)*r := by
     calc
       _ ≤ (σ*T*r/N)/(N/2) :=
@@ -44,7 +45,7 @@ theorem compressedHeight_inverse_le
     {σ T N r : ℝ} (hσ : 0 < σ) (hT : 0 < T)
     (hN : 0 < N) (hr : 0 < r) :
     (N-r)/(σ*T*r/N) ≤ (1/σ)*(N^2/(T*r)) := by
-  have hdual : 0 < σ*T*r/N := by positivity
+  pm_6917
   calc
     _ ≤ N/(σ*T*r/N) := div_le_div_of_nonneg_right (by linarith) hdual.le
     _ = _ := by field_simp
@@ -63,16 +64,16 @@ theorem sourceShiftCorrelation_normalized_bound
     sourceShiftCorrelation_bound_allHeights hkl hσ hε
   let M := (2*σ)^(k+ε)
   let D := 1+M+1/σ
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  pm_2825
   have hiσ : 0 < 1/σ := by positivity
-  have hD : 1 ≤ D := by dsimp [D]; linarith
-  have hMD : M ≤ D := by dsimp [D]; linarith
+  pm_1611 hD D
+  pm_182 hMD M D
   have hiD : 1/σ ≤ D := by dsimp [D]; linarith
   refine ⟨δ,hδ,P,hP,η₀,hη₀,hηhalf,B*D,by nlinarith,?_⟩
   intro F T N a L r hT hN hr hrN ha hb hF
   have hNpos : 0 < N := by linarith
   have hrpos : 0 < (r : ℝ) := Nat.cast_pos.mpr hr
-  have hhalf : (r : ℝ) ≤ N/2 := hrN.trans (by nlinarith)
+  pm_7104 hhalf
   have hbnd := hbound F T N a L r hT hN hr hrN ha hb hF
   have hmain := compressedHeight_main_le
     (show 0 ≤ k+ε by linarith [hkl.inTriangle.1])

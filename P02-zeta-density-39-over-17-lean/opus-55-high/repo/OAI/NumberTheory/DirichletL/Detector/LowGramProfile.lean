@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,7 +23,7 @@ def lowGramProfile (W1 : ℝ→ℂ) (v r : ℝ) : ℂ :=
 
 def lowGramScale (Y : ℝ) : ℂ := (Y:ℂ)⁻¹*(Real.sqrt Y:ℂ)⁻¹
 
-lemma lowGramProfile_norm (W1 : ℝ→ℂ) (v r : ℝ) (hr : 0<r) :
+lemma lowGramProfile_norm (W1 : ℝ→ℂ) (v r : ℝ) (hr : 0< r) :
     ‖lowGramProfile W1 v r‖=‖W1 r‖/r := by
   rw [lowGramProfile,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hr]
   simp only [Complex.add_re,Complex.neg_re,Complex.one_re,Complex.mul_re,
@@ -31,18 +32,18 @@ lemma lowGramProfile_norm (W1 : ℝ→ℂ) (v r : ℝ) (hr : 0<r) :
 
 lemma lowGramScale_mul_star (Y : ℝ) (hY : 0<Y) :
     lowGramScale Y*star (lowGramScale Y)=((Y^3:ℝ):ℂ)⁻¹ := by
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
-  have hs : (Real.sqrt Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hY).ne'
-  have hsquare : (Real.sqrt Y:ℂ)^2=(Y:ℂ) := by exact_mod_cast Real.sq_sqrt hY.le
-  simp only [lowGramScale,map_mul,map_inv₀,Complex.star_def,Complex.conj_ofReal,Complex.ofReal_pow]
+  pm_3058 hy Y hY.ne'
+  pm_3642 hs Y hY
+  pm_3643 hsquare Y hY.le
+  pm_382 lowGramScale map_mul map_inv₀ Complex.star_def Complex.conj_ofReal Complex.ofReal_pow
   field_simp
   ring_nf
-  rw [hsquare]
+  grind
 
 theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) :
     lowGaussColumn C W1 Y σ v s/(Real.sqrt (Ideal.absNorm s.val:ℝ):ℂ)=
-      lowGramScale Y*(lowGramCoefficient C σ s*
+      lowGramScale Y*(lowGramCoefficient C σ s *
         lowGramProfile W1 v ((Ideal.absNorm s.val:ℝ)/Y)) := by
   have hq : (0:ℝ)<Ideal.absNorm s.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)

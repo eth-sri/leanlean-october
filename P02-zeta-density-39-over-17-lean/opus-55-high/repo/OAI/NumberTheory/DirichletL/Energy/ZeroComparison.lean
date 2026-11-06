@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,19 +25,23 @@ local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
 def smallScale (b:ℝ):ℝ:=1/(2*max 1 b)
 
-lemma smallScale_pos (b:ℝ):0<smallScale b:=by unfold smallScale;positivity
+section
+variable (b:ℝ)
+include b
+lemma smallScale_pos:0< smallScale b:=by unfold smallScale;positivity
 
-lemma smallScale_le_one (b:ℝ):smallScale b≤1:=by
+lemma smallScale_le_one:smallScale b≤1:=by
   unfold smallScale
   apply (div_le_iff₀ (by positivity:0<(2:ℝ)*max 1 b)).mpr
-  linarith [le_max_left (1:ℝ) b]
+  grind
 
-lemma smallScale_strict (b:ℝ):smallScale b*b<1:=by
-  have hm:0<max 1 b:=zero_lt_one.trans_le (le_max_left _ _)
+lemma smallScale_strict:smallScale b*b<1:=by
+  have hm:0< max 1 b:=zero_lt_one.trans_le (le_max_left _ _)
   unfold smallScale
   have hb:=le_max_right (1:ℝ) b
   rw [div_mul_eq_mul_div,one_mul]
   exact (div_lt_iff₀ (mul_pos (by norm_num) hm)).mpr (by linarith)
+end
 
 def zeroData (s:Input ι):CenteredMomentEligibleEnergy.Data ι := { s.toData with
   Y₁ := smallScale s.b₁
@@ -62,7 +67,7 @@ lemma comparison_row_zero (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)
   change _*(rowTwistedSum s.η (fixedBadMask*idealGenerator R) 1 z s.W₁ s.t (smallScale s.b₁)*_*_)=0
   rw [strict_subunit_rowTwistedSum_zero s.η (fixedBadMask*idealGenerator R) 1 z
     s.W₁ s.b₁ s.t (smallScale s.b₁) (smallScale_pos _) s.support₁ (smallScale_strict _)]
-  simp only [zero_mul,mul_zero]
+  grind
 
 omit [DecidableEq ι] in
 lemma comparison_energy_zero (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)

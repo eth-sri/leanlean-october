@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -67,7 +68,7 @@ theorem normPowerProfile_source_control (a b : ℝ) (ha : 0 < a)
           (normPowerProfile W a b ha hs (W.smooth ⊤) t) ≤
         C * T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W * (1+‖t‖)^n := by
   obtain ⟨S₁,C₁,hC₁,h₁⟩ := schwartzCLM_finite_seminorm_control (fixedLogReturnCLM a b ha) S
-  obtain ⟨n,S₂,C₂,hC₂,h₂⟩ := frequencyTwist_source_control S₁
+  pm_231 n S₂ C₂ hC₂ h₂ frequencyTwist_source_control S₁
   obtain ⟨T,C₃,hC₃,h₃⟩ := schwartzCLM_finite_seminorm_control
     (CubicReflectionKernel.logPullbackCLM a b) S₂
   refine ⟨n,T,C₁*C₂*C₃,by positivity,?_⟩

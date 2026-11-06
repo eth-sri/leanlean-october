@@ -1,17 +1,18 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedSuccessorPacking
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
@@ -27,25 +28,25 @@ theorem certified_from_stages
     (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
     (ha:0<a)(hmask:0≤Bmask)(hMcap:0≤Mcap)(hκ:0≤κ)(hε:0<ε)(k:ℕ)
     (ez el eh:ℝ)
-    (hez:ez≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
-    (hel:el≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
-    (heh:eh≤stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
+    (hez:ez≤ stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
+    (hel:el≤ stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
+    (heh:eh≤ stageLoss Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1))
     (hold:CenteredMomentEnergyCappedWidthInduction.CertifiedBand (α:=α) M H hH
       W bslot a b radial Bmask L lo hi Mcap κ ε k)
     (hzero:∃J:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+      internalQ Q η₀≠0→ internalQ Q η₀≠⊤→ internalQ Q η₀≤Ideal.span {(72:O)}→
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
         ZeroAt (internalQ Q η₀) (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (lengthAt Mcap Bmask L ε (k+1))
           (bandWidth Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1)) ez Z J S C)
     (hlow:∃J:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+      internalQ Q η₀≠0→ internalQ Q η₀≠⊤→ internalQ Q η₀≤Ideal.span {(72:O)}→
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
         PositiveLowAt (α:=α) M H hH W bslot (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (lengthAt Mcap Bmask L ε (k+1)) (fineMesh Mcap Bmask L κ ε) lo hi
           (bandWidth Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1)) el κ Z η₀ Q J S C)
     (hhigh:∃J:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+      internalQ Q η₀≠0→ internalQ Q η₀≠⊤→ internalQ Q η₀≤Ideal.span {(72:O)}→
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
         PositiveHighAt (α:=α) M H hH W bslot (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (lengthAt Mcap Bmask L ε (k+1)) (fineMesh Mcap Bmask L κ ε) lo hi
@@ -53,14 +54,13 @@ theorem certified_from_stages
           (bandWidth Mcap (finalSourceCap Mcap Bmask L ε) ε (k+1)) eh κ Z η₀ Q J S C):
     CenteredMomentEnergyCappedWidthInduction.CertifiedBand (α:=α) M H hH
       W bslot a b radial Bmask L lo hi Mcap κ ε (k+1):=by
-  let Bs:=finalSourceCap Mcap Bmask L ε
-  have hBs:0≤Bs:=sourceCap_nonneg Mcap Bmask L hMcap hmask _
-  have hr:0<reserve Mcap Bs ε:=(bounds Mcap Bs κ ε hMcap hBs hκ hε).2.2.2.1
+  pm_3376
+  have hr:0< reserve Mcap Bs ε:=(bounds Mcap Bs κ ε hMcap hBs hκ hε).2.2.2.1
   have hlower:lowerAt a b Mcap ε k≤lowerAt a b Mcap ε (k+1):=
     CenteredMomentEnergyProfiles.lower_antitone a b ha (by unfold remaining;omega)
   have hlength:lengthAt Mcap Bmask L ε (k+1)≤lengthAt Mcap Bmask L ε k:=
     range_mono Mcap Bmask L hMcap hmask (by unfold remaining;omega)
-  have hloss:stageLoss Mcap Bs ε k≤stageLoss Mcap Bs ε (k+1):=by
+  have hloss:stageLoss Mcap Bs ε k≤ stageLoss Mcap Bs ε (k+1):=by
     unfold stageLoss
     rw [loss_succ]
     linarith
@@ -70,26 +70,26 @@ theorem certified_from_stages
   obtain ⟨Jh,Sh,hhigh⟩:=hhigh
   let J:=Jold+Jz+Jl+Jh
   let S:=Sold∪Sz∪Sl∪Sh
-  have hJo:Jold≤J:=by dsimp [J];omega
-  have hJz:Jz≤J:=by dsimp [J];omega
-  have hJl:Jl≤J:=by dsimp [J];omega
-  have hJh:Jh≤J:=by dsimp [J];omega
-  have hSo:Sold⊆S:=by intro x hx;simp [S,hx]
-  have hSz:Sz⊆S:=by intro x hx;simp [S,hx]
-  have hSl:Sl⊆S:=by intro x hx;simp [S,hx]
-  have hSh:Sh⊆S:=by intro x hx;simp [S,hx]
+  pm_488 hJo Jold J
+  pm_488 hJz Jz J
+  pm_488 hJl Jl J
+  pm_488 hJh Jh J
+  pm_3336 hSo Sold S
+  pm_3336 hSz Sz S
+  pm_3336 hSl Sl S
+  pm_3336 hSh Sh S
   refine ⟨J,S,?_⟩
   intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨Coz,Cop,hCoz,hCop,hold⟩:=hold η₀ Q hQM hQ0 hQt hQ72
+  pm_7298 Coz Cop hCoz hCop hold
   obtain ⟨Cz,hCz,hzero⟩:=hzero η₀ Q hQM hQ0 hQt hQ72
   obtain ⟨Cl,hCl,hlow⟩:=hlow η₀ Q hQM hQ0 hQt hQ72
   obtain ⟨Ch,hCh,hhigh⟩:=hhigh η₀ Q hQM hQ0 hQt hQ72
   let Cp:=Cop+Cl+Ch
-  have hCp:0<Cp:=by dsimp [Cp];linarith
-  have hCop':Cop≤Cp:=by dsimp [Cp];linarith
-  have hCl':Cl≤Cp:=by dsimp [Cp];linarith
-  have hCh':Ch≤Cp:=by dsimp [Cp];linarith
-  refine ⟨Cz,Cp,hCz,hCp,?_⟩
+  pm_466 hCp Cp
+  pm_844 hCop' Cop Cp
+  pm_844 hCl' Cl Cp
+  pm_844 hCh' Ch Cp
+  pm_119 Cz Cp hCz hCp
   filter_upwards [hold,hzero,hlow,hhigh] with Z hold hz hl hh
   refine ⟨hold.1,?_,?_⟩
   · exact zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ _ _ _ _ _

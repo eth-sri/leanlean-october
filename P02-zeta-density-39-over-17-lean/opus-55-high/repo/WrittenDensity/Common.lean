@@ -1,6 +1,7 @@
 module
 public import WrittenDensity.RightZero
 public import TraceAlternatives.CurrentDensityCurve
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,12 +30,10 @@ theorem density_literal {σ p ε : ℝ} (h : DensityBound σ p ε) :
         σ≤ρ.re ∧ |ρ.im|≤T) →
       ((∑ ρ∈F,analyticOrderNatAt _root_.riemannZeta ρ : ℕ):ℝ) ≤ C*T^(p+ε) := by
   obtain ⟨C,hC,h⟩ := h
-  refine ⟨C,hC,?_⟩
-  intro T hT F hF
+  pm_484 C hC T hT F hF
   have he : F=zetaZeroFinset σ (-T) T := by
     ext ρ
-    rw [hF,mem_zetaDensityFinset]
-    simp only [IsNontrivialZetaZero,and_assoc]
+    pm_326 hF mem_zetaDensityFinset IsNontrivialZetaZero and_assoc
   simpa only [he,zetaDensityCount,zetaSlabCount,zetaMultiplicity] using h T hT
 
 /-- Rational enclosures used only to compare the exact algebraic source endpoint. -/

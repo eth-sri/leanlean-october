@@ -17,16 +17,23 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def exceptionalModulus (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal) : Id :=
   jointFixedModulus S hS*C.val
-lemma exceptionalModulus_nonzero (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal) :
+section
+variable (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal)
+include S hS C
+lemma exceptionalModulus_nonzero :
     exceptionalModulus S hS C≠0 := mul_ne_zero (jointFixedModulus_nonzero S hS) C.property.1
-lemma exceptionalModulus_norm (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal) :
+lemma exceptionalModulus_norm :
     Ideal.absNorm (exceptionalModulus S hS C)=Ideal.absNorm (jointFixedModulus S hS)*Ideal.absNorm C.val :=
   map_mul Ideal.absNorm _ _
+end
 
 def ExceptionalFrequency (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal) (k : GramFrequency) : Prop :=
   ∀p∉IdealMobiusDivisorSum.primeSupport (exceptionalModulus S hS C),valuation (Ideal.span {k.val}) p%6=0
 
-lemma nonexceptional_prime (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal) (k : GramFrequency)
+section
+variable (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal)
+include S hS C
+lemma nonexceptional_prime (k : GramFrequency)
     (hk : ¬ExceptionalFrequency S hS C k) :
     ∃p : Id,Prime p ∧ p∉IdealMobiusDivisorSum.primeSupport (exceptionalModulus S hS C) ∧
       ¬6∣(normalizedFactors (Ideal.span {k.val})).count p := by
@@ -40,7 +47,7 @@ lemma nonexceptional_prime (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : Supp
   have hprime := prime_of_normalized_factor p (Multiset.count_pos.mp (Nat.pos_of_ne_zero hcount))
   exact ⟨p,hprime,hp,fun hd=>he (Nat.mod_eq_zero_of_dvd hd)⟩
 
-lemma outside_exceptional_not_dvd (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal)
+lemma outside_exceptional_not_dvd
     (p : Id) (hp : Prime p) (hout : p∉IdealMobiusDivisorSum.primeSupport (exceptionalModulus S hS C)) :
     (¬p∣jointFixedModulus S hS) ∧ (¬p∣∏i : GramPrime C,gramPrime C i) := by
   have hnot : ¬p∣exceptionalModulus S hS C := by
@@ -58,7 +65,7 @@ lemma outside_exceptional_not_dvd (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C
       Finset.prod_dvd_prod_of_dvd _ _ (fun i _=>dvd_pow_self _ (Nat.one_le_iff_ne_zero.mp (gramExponent_pos C i)))
     _=C.val := (gramPrime_product C).symm
 
-lemma outside_exceptional_good (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal)
+lemma outside_exceptional_good
     (p : Id) (hp : Prime p) (hout : p∉IdealMobiusDivisorSum.primeSupport (exceptionalModulus S hS C)) :
     λ₀∉p ∧ ringChar (O⧸p)≠2 := by
   let : p.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
@@ -66,6 +73,7 @@ lemma outside_exceptional_good (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : 
     le_trans Ideal.mul_le_left Ideal.mul_le_right
   have hh := CenteredExceptionalProfile.outside_fixed_support _ (exceptionalModulus_nonzero S hS C) hle p hp hout
   exact ⟨hh.1,ActualEisensteinCubic.quotient_char_ne_two_of_two_not_mem p hh.2.1⟩
+end
 
 end SevenEighths.ProbeGramCommon
 end

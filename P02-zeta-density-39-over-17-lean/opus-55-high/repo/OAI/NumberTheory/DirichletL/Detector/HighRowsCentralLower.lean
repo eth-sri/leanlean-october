@@ -21,7 +21,7 @@ theorem central_correction_threshold (eps : ℝ) (heps : 0<eps) :
   obtain ⟨Q0,hQ0⟩ := Filter.eventually_atTop.mp he
   refine ⟨max 480 Q0,le_max_left _ _,?_⟩
   intro Q hQ
-  exact (hQ0 Q ((le_max_right _ _).trans hQ)).le
+  grind
 
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)

@@ -10,11 +10,12 @@ public import Mathlib.Analysis.Fourier.PoissonSummation
 public import Mathlib.MeasureTheory.Measure.Haar.NormedSpace
 public import Mathlib.Analysis.Distribution.SchwartzSpace.Fourier
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Complex Set MeasureTheory
-open scoped BigOperators FourierTransform SchwartzMap ContDiff
+open Real Complex MeasureTheory
+open scoped FourierTransform SchwartzMap ContDiff
 
 noncomputable section
 namespace MathCollab.Density.Transforms
@@ -58,11 +59,7 @@ theorem fourier_scaled_modulated
         (psi (A * v) * sourcePhase (y * v))) =
         ∫ v : ℝ, (fun t : ℝ =>
           Complex.exp ((-2 * Real.pi * t * ((w - y) / A) : ℝ) * Complex.I) •
-            psi t) (A * v) := by
-      apply integral_congr_ae
-      filter_upwards with v
-      convert hpoint v using 1
-      ring_nf
+            psi t) (A * v) := by simp_all
     _ = (A⁻¹ : ℝ) • ∫ t : ℝ,
         Complex.exp ((-2 * Real.pi * t * ((w - y) / A) : ℝ) * Complex.I) •
           psi t := by
@@ -95,7 +92,7 @@ theorem scaled_modulated_poisson
       · simpa only [Complex.ofRealCLM_apply] using!
           Complex.ofRealCLM.contDiff.comp
             (show ContDiff ℝ ∞ (fun x : ℝ => 2 * Real.pi * (y * x)) by fun_prop)
-      · exact contDiff_const
+      fun_prop
   let h : SchwartzMap ℝ ℂ := hcompact.toSchwartzMap hsmooth
   calc
     ∑' ell : ℤ, psi (A * ell) * sourcePhase (y * ell) =
@@ -163,9 +160,7 @@ theorem mellinLogLift_hasCompactSupport
     (ha : 0 < a) (hb : 0 < b)
     (hsupport : ∀ x, x ∉ Set.Icc a b → f x = 0) :
     HasCompactSupport (mellinLogLift f) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (-Real.log b) (-Real.log a)))
-  intro u hu
+  pm_6843 b a
   unfold mellinLogLift
   have hexpNot : Real.exp (-u) ∉ Set.Icc a b := by
     intro hx

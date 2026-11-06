@@ -8,15 +8,13 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.DivisorWeightSource
 public import MathCollab.Density.Stronger.Atkinson.GammaQuadratic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open MathCollab.Density.Stronger.Fourth
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 
@@ -24,50 +22,40 @@ theorem hasDerivAt_zetaDivisorWeightKernel_real (q : ℂ) {w : ℂ} (hw : w ≠ 
     HasDerivAt (fun x : ℝ => zetaDivisorWeightKernel (q + (x : ℂ)) w)
       (-zetaDivisorWeightNumerator (q + (v : ℂ)) w) v := by
   have he := (((hasDerivAt_id v).ofReal_comp.const_add q).neg.mul_const w).cexp
-  have h := (he.const_mul (Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w)).div_const w
-  convert h using 1
-  · rfl
-  · unfold zetaDivisorWeightNumerator
-    norm_num
-    field_simp
+  pm_576
 
-theorem norm_zetaDivisorWeightKernel_real_sub_le {B : ℝ} (hB : 0 ≤ B)
+section
+variable {B : ℝ} (hB : 0 ≤ B)
+include B hB
+theorem norm_zetaDivisorWeightKernel_real_sub_le
     {q : ℂ} (hq : |q.im| ≤ B) (h u : ℝ) :
     ‖zetaDivisorWeightKernel (q + (h : ℂ)) (1 + (u : ℂ) * I) -
       zetaDivisorWeightKernel q (1 + (u : ℂ) * I)‖ ≤
       (625 * Real.exp (100 + B ^ 2 / 2)) * Real.exp (-q.re + |h|) *
         zetaDivisorWeightEnvelope u * |h| := by
-  let w : ℂ := 1 + (u : ℂ) * I
+  pm_4472
   have hw : w ≠ 0 := by
-    intro he
-    have := congrArg Complex.re he
-    norm_num [w] at this
+    pm_532 he w
   have hbound (v : ℝ) (hv : v ∈ Icc (-|h|) |h|) :
       ‖-zetaDivisorWeightNumerator (q + (v : ℂ)) w‖ ≤
         (625 * Real.exp (100 + B ^ 2 / 2)) * Real.exp (-q.re + |h|) * zetaDivisorWeightEnvelope u := by
     rw [norm_neg]
     have he := norm_zetaDivisorWeightNumerator_right_le hB
-      (q := q + (v : ℂ)) (by simpa using hq) u
+      (q := q + (v : ℂ)) (by simp_all) u
     simp only [add_re, ofReal_re] at he
     apply he.trans
-    have henv : 0 ≤ zetaDivisorWeightEnvelope u := by unfold zetaDivisorWeightEnvelope; positivity
-    gcongr
-    linarith [hv.1]
+    pm_7002
   have hm := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
     (fun v _ => (hasDerivAt_zetaDivisorWeightKernel_real q hw v).hasDerivWithinAt)
     hbound (convex_Icc (-|h|) |h|) (x := 0) (y := h)
-    (by constructor <;> linarith [abs_nonneg h]) ⟨neg_abs_le h, le_abs_self h⟩
-  simpa only [ofReal_zero, add_zero, sub_zero, Real.norm_eq_abs] using hm
+    (by grind) ⟨neg_abs_le h, le_abs_self h⟩
+  aesop
 
-theorem exists_norm_zetaDivisorWeight_real_sub_le {B : ℝ} (hB : 0 ≤ B) :
+theorem exists_norm_zetaDivisorWeight_real_sub_le :
     ∃ C : ℝ, 0 < C ∧ ∀ q : ℂ, |q.im| ≤ B → ∀ h : ℝ,
       ‖zetaDivisorWeight (q + (h : ℂ)) - zetaDivisorWeight q‖ ≤
         C * |h| * Real.exp |h| * Real.exp (-q.re) := by
-  let M : ℝ := 625 * Real.exp (100 + B ^ 2 / 2)
-  let J : ℝ := ∫ u : ℝ, zetaDivisorWeightEnvelope u
-  have hJ : 0 ≤ J := integral_nonneg (by intro u; unfold zetaDivisorWeightEnvelope; positivity)
-  have hM : 0 < M := by dsimp [M]; positivity
-  refine ⟨1 + M * J / (2 * Real.pi), by positivity, ?_⟩
+  pm_4367
   intro q hq h
   let e := fun u : ℝ => zetaDivisorWeightKernel (q + (h : ℂ)) (1 + (u : ℂ) * I) -
     zetaDivisorWeightKernel q (1 + (u : ℂ) * I)
@@ -86,11 +74,8 @@ theorem exists_norm_zetaDivisorWeight_real_sub_le {B : ℝ} (hB : 0 ≤ B) :
       nlinarith
     simpa only [integral_const_mul] using integral_mono hi.norm hmajor hb
   rw [heq, norm_mul]
-  have hp : ‖(1 / (2 * Real.pi) : ℂ)‖ = 1 / (2 * Real.pi) := by
-    simp [Real.norm_eq_abs, abs_of_pos Real.pi_pos]
-  rw [hp]
-  apply (mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) (by positivity)).trans
-  apply (mul_le_mul_of_nonneg_left hiBound (by positivity : 0 ≤ 1 / (2 * Real.pi))).trans
+  pm_4368
+  pm_6648 hiBound
   calc
     _ = (M * J / (2 * Real.pi)) * |h| * Real.exp |h| * Real.exp (-q.re) := by
       rw [Real.exp_add]
@@ -102,12 +87,11 @@ theorem exists_norm_zetaDivisorWeight_real_sub_le {B : ℝ} (hB : 0 ≤ B) :
 /-- Reflection controls variation on both sides of the source cutoff.
 The same constant works for all real translations and imaginary arguments
 in the fixed strip, including zero translation. -/
-theorem exists_norm_zetaDivisorWeight_real_sub_min_le {B : ℝ} (hB : 0 ≤ B) :
+theorem exists_norm_zetaDivisorWeight_real_sub_min_le :
     ∃ C : ℝ, 0 < C ∧ ∀ q : ℂ, |q.im| ≤ B → ∀ h : ℝ,
       ‖zetaDivisorWeight (q + (h : ℂ)) - zetaDivisorWeight q‖ ≤
         (C * |h| * Real.exp |h|) * min (Real.exp (-q.re)) (Real.exp q.re) := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_zetaDivisorWeight_real_sub_le hB
-  refine ⟨C, hC, ?_⟩
+  pm_1062 C hC hbound exists_norm_zetaDivisorWeight_real_sub_le hB
   intro q hq h
   have hp := hbound q hq h
   have hm := hbound (-q) (by simpa using hq) (-h)
@@ -121,8 +105,12 @@ theorem exists_norm_zetaDivisorWeight_real_sub_min_le {B : ℝ} (hB : 0 ≤ B) :
   simp only [abs_neg, neg_re, neg_neg] at hm
   rw [mul_min_of_nonneg _ _ (by positivity : 0 ≤ C * |h| * Real.exp |h|)]
   exact le_min hp hm
+end
 
-theorem abs_log_height_shift_le {T x : ℝ} (hT : 0 < T) (hx : |x| ≤ T / 2) :
+section
+variable {T x : ℝ} (hT : 0 < T)
+include T x hT
+theorem abs_log_height_shift_le (hx : |x| ≤ T / 2) :
     |Real.log (T + x) - Real.log T| ≤ 2 * |x| / T := by
   have h := abs_log_shift_sub_linear_le hT hx
   have htri := abs_add_le (Real.log (T + x) - Real.log T - x / T) (x / T)
@@ -137,15 +125,15 @@ theorem abs_log_height_shift_le {T x : ℝ} (hT : 0 < T) (hx : |x| ≤ T / 2) :
     _ ≤ 2 * (|x| / T) := by linarith
     _ = _ := by ring
 
-theorem zetaDivisorWeightArgument_height_shift {T x : ℝ} (hT : 0 < T)
+theorem zetaDivisorWeightArgument_height_shift
     (hx : 0 < T + x) (n : ℕ) :
     zetaDivisorWeightArgument (T + x) n = zetaDivisorWeightArgument T n +
       ((Real.log T - Real.log (T + x) : ℝ) : ℂ) := by
   unfold zetaDivisorWeightArgument zetaGammaLeadingLog
-  rw [Real.log_div hx.ne' (mul_ne_zero two_ne_zero Real.pi_ne_zero),
-    Real.log_div hT.ne' (mul_ne_zero two_ne_zero Real.pi_ne_zero)]
+  pm_8225 hx.ne' hT.ne'
   push_cast
   ring
+end
 
 theorem exp_zetaDivisorWeightArgument_re {T : ℝ} (hT : 0 < T) {n : ℕ} (hn : 0 < n) :
     Real.exp (zetaDivisorWeightArgument T n).re = (2 * Real.pi * (n : ℝ)) / T := by
@@ -161,8 +149,7 @@ theorem exists_norm_source_zetaDivisorWeight_height_sub_le :
       ‖zetaDivisorWeight (zetaDivisorWeightArgument (T + x) n) -
         zetaDivisorWeight (zetaDivisorWeightArgument T n)‖ ≤
       C * (|x| / T) * min (T / (2 * Real.pi * (n : ℝ))) ((2 * Real.pi * (n : ℝ)) / T) := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_zetaDivisorWeight_real_sub_min_le
-    (B := Real.pi / 2) (by positivity)
+  pm_1336 hbound exists_norm_zetaDivisorWeight_real_sub_min_le
   refine ⟨2 * C * Real.exp 1, by positivity, ?_⟩
   intro T hT x hx n hn
   have hTx : 0 < T + x := by have := neg_abs_le x; linarith

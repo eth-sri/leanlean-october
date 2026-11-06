@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSourceReflectionEstimate
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,9 +22,10 @@ open scoped NNReal
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem isExponentSumBoundNonAsymptotic_reflect_max
-    {α : ℝ≥0} {β : ℝ} (hα : (α : ℝ) ≤ 1)
-    (hβ : IsExponentSumBoundNonAsymptotic α β) :
+section
+variable {α : ℝ≥0} {β : ℝ} (hα : (α : ℝ) ≤ 1) (hβ : IsExponentSumBoundNonAsymptotic α β)
+include α β hα hβ
+theorem isExponentSumBoundNonAsymptotic_reflect_max :
     IsExponentSumBoundNonAsymptotic (1-α) (max 0 (β+1/2-(α : ℝ))) := by
   have hβnonneg : 0 ≤ β :=
     (isExponentSumBound_exponentSumGrowthExponent α).nonneg.trans
@@ -40,8 +42,7 @@ theorem isExponentSumBoundNonAsymptotic_reflect_max
   have hC₃ : 1 ≤ 3*C := by linarith
   refine ⟨δ,hδ,P,le_trans (by norm_num) hP,3*C,hC₃,?_⟩
   intro T N F a b hs
-  have hT₁ : 1 ≤ T := hC₃.trans hs.threshold_le_param
-  have hT : 0 < T := zero_lt_one.trans_le hT₁
+  pm_512 hT₁ hC₃.trans hs.threshold_le_param hT
   have hγ : 0 ≤ max 0 (β+1/2-(α : ℝ)) := le_max_left _ _
   have htarget : 1 ≤ T^(max 0 (β+1/2-(α : ℝ))+ε) :=
     Real.one_le_rpow hT₁ (by linarith)
@@ -95,11 +96,10 @@ theorem isExponentSumBoundNonAsymptotic_reflect_max
     nlinarith
 
 theorem isExponentSumBoundNonAsymptotic_reflect_nonnegative
-    {α : ℝ≥0} {β : ℝ} (hα : (α : ℝ) ≤ 1)
-    (hβ : IsExponentSumBoundNonAsymptotic α β)
     (hreflect : 0 ≤ β+1/2-(α : ℝ)) :
     IsExponentSumBoundNonAsymptotic (1-α) (β+1/2-(α : ℝ)) := by
   simpa only [max_eq_right hreflect] using
     isExponentSumBoundNonAsymptotic_reflect_max hα hβ
+end
 
 end TaoTrudgianYang2025

@@ -2,8 +2,9 @@ module
 public import GafniTao.WooleySourceMixed
 public import GafniTao.WooleyPolynomialLemma63
 public import GafniTao.WooleySection8
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source-sequence consumers for Wooley Sections 6 and 8
@@ -16,12 +17,13 @@ is the literal source mean from (3.7), (3.8), or (3.19).
 
 namespace GafniTao
 
-noncomputable section
 
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k)
+include k phi
 /-- Literal source-sequence form of the easy branch `B' ≤ nu` in Wooley
 Lemma 7.1. -/
 theorem wooleySourcePolynomial_section7_easy
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
     (p nu a b B s r gammaVal : ℕ)
     [NeZero p] [NeZero (p ^ B)]
     (hp : 2 ≤ p) (hr : 1 ≤ r) (hrk : r < k) (hnu : 1 ≤ nu)
@@ -35,8 +37,7 @@ theorem wooleySourcePolynomial_section7_easy
         wooleySourcePolynomialMixedMean phi s r p B
           (wooleySection7NextB k r b) b nu gamma := by
   have hnuNext : nu ≤ wooleySection7NextB k r b := hnua.trans haa'
-  let phiBox := wooleyBoxedPolynomialSystem phi gamma
-  let gammaBox := wooleySourceBoxCoefficients gamma
+  pm_5035
   have hfinite := wooleyPolynomial_section7_easy
     (Q := wooleySourceBoxLength gamma) (p := p) (nu := nu)
     (a := a) (b := b) (B := B) (k := k) (s := s)
@@ -51,7 +52,6 @@ theorem wooleySourcePolynomial_section7_easy
 
 /-- Source-sequence form of the two-factor Hölder estimate (8.3). -/
 theorem wooleySourcePolynomial_equation_8_3
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
     (p B r bPrime b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (hr : 1 ≤ r) (hrk : r < k) (hnuPrime : nu ≤ bPrime)
     (hnub : nu ≤ b) (gamma : WooleySourceSequence) :
@@ -63,8 +63,7 @@ theorem wooleySourcePolynomial_equation_8_3
       (wooleySourcePolynomialMixedMean
           phi (wooleyTriangular k) (r - 1) p B bPrime b nu gamma) ^
         (((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ)) := by
-  let phiBox := wooleyBoxedPolynomialSystem phi gamma
-  let gammaBox := wooleySourceBoxCoefficients gamma
+  pm_5035
   have hfinite := wooleyPolynomial_equation_8_3
     (Q := wooleySourceBoxLength gamma) (p := p) (B := B)
     (k := k) (r := r) (bPrime := bPrime) (b := b) (nu := nu)
@@ -77,7 +76,7 @@ theorem wooleySourcePolynomial_equation_8_3
     wooleySourcePolynomialMixedMean_eq_boxed
       phi (wooleyTriangular k) (r - 1) p B bPrime b nu hnuPrime hnub gamma]
     using hfinite
-
 end
+
 
 end GafniTao

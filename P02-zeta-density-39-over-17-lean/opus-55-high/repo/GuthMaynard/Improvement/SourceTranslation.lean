@@ -1,5 +1,6 @@
 module
 public import GuthMaynard.Improvement.Target
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -50,19 +51,16 @@ theorem source_large_values_translation {N T V B : ℝ}
   have hh := horigin (translatedSourceCoefficient N t₀ a) W₀
     (fun n hn => by rw [translatedSourceCoefficient_norm]; exact ha n hn)
     (by
-      intro t ht
-      obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp ht
+      pm_67 t ht s hs Finset.mem_image.mp
       obtain ⟨hlo,hhi⟩ := hW s hs
       exact ⟨by linarith,by linarith⟩)
     (by
       intro t ht u hu hne
-      obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp ht
-      obtain ⟨r,hr,rfl⟩ := Finset.mem_image.mp hu
+      pm_5095 s hs ht r hr hu
       have hsr : s ≠ r := by intro he; subst r; exact hne rfl
       simpa only [sub_sub_sub_cancel_right] using hsep s hs r hr hsr)
     (by
-      intro t ht
-      obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp ht
+      pm_67 t ht s hs Finset.mem_image.mp
       rw [boundedPolynomial_translate,sub_add_cancel]
       exact hlarge s hs)
   simpa only [hcard] using hh

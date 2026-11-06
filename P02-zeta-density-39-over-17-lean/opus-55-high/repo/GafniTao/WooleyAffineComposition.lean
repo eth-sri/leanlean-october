@@ -1,7 +1,7 @@
 module
 public import GafniTao.WooleySection7LocalIdentity
 
-@[expose] public section
+public section
 
 /-!
 # Composition of source affine pullbacks
@@ -13,7 +13,6 @@ parameter `y` modulo `h` after writing `n = q*y + xi` is the same as writing
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleyAffinePullback_comp
     (gamma : WooleySourceSequence) (q h : ℕ)
@@ -102,6 +101,5 @@ theorem wooleySourceResidueSequence_twist
   simp only [wooleySourceResidueSequence_apply, wooleySourceTwist_apply]
   by_cases hn : (n : ZMod h) = zeta <;> simp [hn]
 
-end
 
 end GafniTao

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryProfiles
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicProfiles
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,17 +14,16 @@ open Set
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeDetectorDyadicProfiles
 
-theorem compact_family_seminorm
-    (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F))
-    (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L)
-    (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
-    (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (k n : ℕ) :
+section
+variable (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F)) (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L) (J : Set (ℝ×ℝ)) (hJ : IsCompact J) (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x)
+include F hF L hL hs J hJ G hG
+theorem compact_family_seminorm (k n : ℕ) :
     ∃C : ℝ,0<C ∧ ∀p∈J,SchwartzMap.seminorm ℝ k n (G p)≤C := by
   have hc := (section_iteratedDeriv_smooth F hF n).continuous.norm
   obtain ⟨M,hM⟩ := (hJ.prod isCompact_Icc).bddAbove_image hc.continuousOn
   refine ⟨1+L^k*(|M|+1),by positivity,?_⟩
   intro p hp
-  apply SchwartzMap.seminorm_le_bound' ℝ k n _ (by positivity)
+  pm_7088 n
   intro x
   have he : (G p : ℝ→ℂ)=F p := funext (hG p)
   rw [he]
@@ -43,11 +43,7 @@ theorem compact_family_seminorm
     rw [hout,norm_zero,mul_zero]
     positivity
 
-theorem compact_family_finite_seminorm
-    (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F))
-    (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L)
-    (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
-    (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (S : Finset (ℕ×ℕ)) :
+theorem compact_family_finite_seminorm (S : Finset (ℕ×ℕ)) :
     ∃C : ℝ,0<C ∧ ∀p∈J,S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G p)≤C := by
   choose C hC hb using fun z : ℕ×ℕ=>compact_family_seminorm F hF L hL hs J hJ G hG z.1 z.2
   have hsum : 0≤∑z∈S,C z := Finset.sum_nonneg (fun z _=>(hC z).le)
@@ -59,17 +55,13 @@ theorem compact_family_finite_seminorm
   have hh := Finset.single_le_sum (fun z (_ : z∈S)=>(hC z).le) hz
   linarith
 
-theorem compact_family_frequencyTwist
-    (F : (ℝ×ℝ)→ℝ→ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F))
-    (L : ℝ) (hL : 0≤L) (hs : ∀p,Function.support (F p)⊆Icc (-L) L)
-    (J : Set (ℝ×ℝ)) (hJ : IsCompact J)
-    (G : (ℝ×ℝ)→𝓢(ℝ,ℂ)) (hG : ∀p x,G p x=F p x) (S : Finset (ℕ×ℕ)) :
+theorem compact_family_frequencyTwist (S : Finset (ℕ×ℕ)) :
     ∃n : ℕ,∃C : ℝ,0<C ∧ ∀p∈J,∀t : ℝ,
       S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (JointLogSeparation.frequencyTwist (G p) t)≤C*(1+‖t‖)^n := by
   let S' := S.biUnion (fun z=> (Finset.range (z.2+1)).image (fun i=>(z.1,i)))
   obtain ⟨B,hB,hbound⟩ := compact_family_finite_seminorm F hF L hL hs J hJ G hG S'
   let c : ℕ×ℕ→ℝ := fun z=>(2:ℝ)^z.2*(1+2*Real.pi)^z.2*((z.2+1)*B)
-  have hc (z : ℕ×ℕ) : 0≤c z := by dsimp [c];positivity
+  have hc (z : ℕ×ℕ) : 0≤ c z := by dsimp [c];positivity
   have hsum : 0≤∑z∈S,c z := Finset.sum_nonneg (fun z _=>hc z)
   refine ⟨S.sup Prod.snd,1+∑z∈S,c z,by linarith,?_⟩
   intro p hp t
@@ -88,12 +80,13 @@ theorem compact_family_frequencyTwist
     have hh := Finset.single_le_sum (fun z (_ : z∈S)=>hc z) hz
     linarith
   have he := JointLogSeparation.frequencyTwist_seminorm_polynomial (G p) t z.1 z.2
-  have hb : SchwartzMap.seminorm ℝ z.1 z.2 (JointLogSeparation.frequencyTwist (G p) t)≤c z*(1+‖t‖)^z.2 := by
+  have hb : SchwartzMap.seminorm ℝ z.1 z.2 (JointLogSeparation.frequencyTwist (G p) t)≤ c z*(1+‖t‖)^z.2 := by
     apply he.trans
     dsimp only [c]
     gcongr
   exact hb.trans (mul_le_mul hzC
     (pow_le_pow_right₀ (by linarith [norm_nonneg t]) (Finset.le_sup hz)) (by positivity) (by linarith))
+end
 
 end SevenEighths.CenteredMomentDetectorDictionary
 

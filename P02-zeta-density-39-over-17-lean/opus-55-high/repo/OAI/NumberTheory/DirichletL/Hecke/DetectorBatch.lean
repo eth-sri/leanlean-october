@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFiberPartition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,12 +15,12 @@ open HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysica
 structure Batch (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
     (U a ε tstar T allowance : ℝ) (i : ℕ) where
   rows : Finset FreeRow
-  family : FreeRow→Label→Character
+  family : FreeRow→ Label→ Character
   witness : ∀ u,SupportedWitness (family u) U a ε tstar T allowance i
   row_norm : ∀ u∈rows,((Ideal.span {u.val}).absNorm : ℝ)≤U
-  data : Label→RowData
-  reverse : Label→Bool
-  row_coeff : ∀ u∈rows,∀ j,∀ I : Ideal O,idealCoeff (family u j) I=
+  data : Label→ RowData
+  reverse : Label→ Bool
+  row_coeff : ∀ u∈rows,∀ j,∀ I : Ideal O,idealCoeff (family u j) I =
     if reverse j then starRingEnd ℂ (idealCoeff ((data j).character ⟨u.val,u.property.1⟩) I)
     else idealCoeff ((data j).character ⟨u.val,u.property.1⟩) I
   slots : Finset Slot
@@ -29,10 +30,10 @@ structure Batch (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
   external : Slot→ℂ
   mesh : ℝ
   binWidth : ℝ
-  mesh_nonneg : 0≤mesh
+  mesh_nonneg : 0≤ mesh
   binWidth_pos : 0<binWidth
   widths_pos : ∀ s∈slots,0<widths s
-  widths_mesh : ∀ s∈slots,widths s≤mesh
+  widths_mesh : ∀ s∈slots,widths s ≤ mesh
   supply : 7/37≤∑ s∈slots,widths s
 
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
@@ -53,14 +54,17 @@ def Batch.fiber (B : Batch M H Label Slot U a ε tstar T allowance i)
     B.row_coeff B.slots B.profile B.upper B.widths B.external B.mesh B.binWidth B.mesh_nonneg
     B.binWidth_pos B.widths_pos B.widths_mesh B.supply bin j J K hne
 
-theorem Batch.card_eq_sum_fibers [Fintype Label] (B : Batch M H Label Slot U a ε tstar T allowance i) :
+section
+variable [Fintype Label] (B : Batch M H Label Slot U a ε tstar T allowance i)
+include B
+theorem Batch.card_eq_sum_fibers :
     B.rows.card=∑ bin : B.Bin, ∑ j : Label, ∑ J : Fin (dyadicLength U), ∑ K : Fin (dyadicLength U),
       (B.fiberRows bin j J K).card :=
   HeckeDetectorFiberPartition.card_eq_sum_fibers B.rows B.family U a ε tstar T allowance i B.witness
     B.slots B.binWidth B.binWidth_pos B.widths
     (physical M H (fun u : FreeRow => u.val) B.profile B.upper B.widths B.external U)
 
-theorem Batch.card_bound [Fintype Label] (B : Batch M H Label Slot U a ε tstar T allowance i)
+theorem Batch.card_bound
     (C : ℝ) (exponent : B.Bin→ℝ) (hC : 0≤C) (hU : 0<U)
     (hfiber : ∀ bin j J K,∀ hne : (B.fiberRows bin j J K).Nonempty,
       ((B.fiber bin j J K hne).rows.card : ℝ)≤C*U^(exponent bin)) :
@@ -73,12 +77,7 @@ theorem Batch.card_bound [Fintype Label] (B : Batch M H Label Slot U a ε tstar 
   calc
     _ ≤ ∑ bin : B.Bin, ∑ j : Label, ∑ J : Fin (dyadicLength U), ∑ K : Fin (dyadicLength U),
         C*U^(exponent bin) := by
-      apply Finset.sum_le_sum
-      intro bin _
-      apply Finset.sum_le_sum
-      intro j _
-      apply Finset.sum_le_sum
-      intro J _
+      pm_387 Finset.sum_le_sum bin j J
       apply Finset.sum_le_sum
       intro K _
       by_cases hn : (B.fiberRows bin j J K).Nonempty
@@ -91,6 +90,7 @@ theorem Batch.card_bound [Fintype Label] (B : Batch M H Label Slot U a ε tstar 
       simp_rw [←mul_assoc]
       rw [←Finset.mul_sum]
       ring
+end
 
 end SevenEighths.HeckeDetectorBatch
 

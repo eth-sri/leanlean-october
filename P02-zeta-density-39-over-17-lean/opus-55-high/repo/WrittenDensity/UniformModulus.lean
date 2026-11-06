@@ -17,7 +17,7 @@ theorem linear_fraction_modulus {a b c d x y : ℝ}
   have hy0 : 0 < c+d*y := by linarith
   have hp : 1 ≤ (c+d*x)*(c+d*y) := by
     have h := mul_le_mul hx hy (by norm_num : (0:ℝ) ≤ 1) hx0.le
-    simpa only [one_mul] using h
+    grind
   have he : (a+b*x)/(c+d*x)-(a+b*y)/(c+d*y) =
       (a*d-b*c)*(y-x)/((c+d*x)*(c+d*y)) := by
     rw [div_sub_div _ _ hx0.ne' hy0.ne']
@@ -28,7 +28,7 @@ theorem linear_fraction_modulus {a b c d x y : ℝ}
     apply (div_le_iff₀ (mul_pos hx0 hy0)).mpr
     have hm := mul_le_mul_of_nonneg_right hp hnum
     have hm' := mul_le_mul_of_nonneg_right hp (sub_nonneg.mpr hxy)
-    nlinarith only [hm,hm',hxy]
+    grind
   rw [← he] at hh
   linarith
 

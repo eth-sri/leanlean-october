@@ -66,8 +66,10 @@ noncomputable def heathBrownPairCountTwo
             heathBrownDerivativeCoordinate f (k - 1) p.2) ≤
         4 * (((H : ℝ) ^ (k - 1))⁻¹)
 
-theorem mem_heathBrownPairCount
-    {N k H : ℕ} {f : ℝ → ℝ} {m n : ℕ} :
+section
+variable {N k H : ℕ} {f : ℝ → ℝ} {m n : ℕ}
+include N k H f m n
+theorem mem_heathBrownPairCount :
     (m, n) ∈ heathBrownPairCount N k H f ↔
       1 ≤ m ∧ m ≤ N ∧ 1 ≤ n ∧ n ≤ N ∧
       ∀ j ∈ Finset.Icc 1 (k - 1),
@@ -77,8 +79,7 @@ theorem mem_heathBrownPairCount
           2 * (((H : ℝ) ^ j)⁻¹) := by
   simp [heathBrownPairCount, and_assoc]
 
-theorem mem_heathBrownPairCountOne
-    {N k H : ℕ} {f : ℝ → ℝ} {m n : ℕ} :
+theorem mem_heathBrownPairCountOne :
     (m, n) ∈ heathBrownPairCountOne N k H f ↔
       1 ≤ m ∧ m ≤ N ∧ 1 ≤ n ∧ n ≤ N ∧
       heathBrownDistanceToInteger
@@ -90,6 +91,7 @@ theorem mem_heathBrownPairCountOne
             heathBrownDerivativeCoordinate f (k - 1) n) ≤
         2 * (((H : ℝ) ^ (k - 1))⁻¹) := by
   simp [heathBrownPairCountOne, and_assoc]
+end
 
 theorem mem_heathBrownPairCountTwo
     {N k H K : ℕ} {f : ℝ → ℝ} {m n : ℕ} :
@@ -106,9 +108,11 @@ theorem mem_heathBrownPairCountTwo
         4 * (((H : ℝ) ^ (k - 1))⁻¹) := by
   simp [heathBrownPairCountTwo, and_assoc]
 
+section
+variable {N k H : ℕ} {f : ℝ → ℝ} (hk : 3 ≤ k)
+include N k H f hk
 /-- The first source reduction, `mathcal N ≤ mathcal N_1`. -/
-theorem heathBrownPairCount_subset_pairCountOne
-    {N k H : ℕ} {f : ℝ → ℝ} (hk : 3 ≤ k) :
+theorem heathBrownPairCount_subset_pairCountOne :
     heathBrownPairCount N k H f ⊆ heathBrownPairCountOne N k H f := by
   intro p hp
   rw [mem_heathBrownPairCount] at hp
@@ -117,11 +121,11 @@ theorem heathBrownPairCount_subset_pairCountOne
   · exact hp.2.2.2.2 (k - 2) (Finset.mem_Icc.mpr ⟨by omega, by omega⟩)
   · exact hp.2.2.2.2 (k - 1) (Finset.mem_Icc.mpr ⟨by omega, le_rfl⟩)
 
-theorem heathBrownPairCount_card_le_pairCountOne_card
-    {N k H : ℕ} {f : ℝ → ℝ} (hk : 3 ≤ k) :
+theorem heathBrownPairCount_card_le_pairCountOne_card :
     (heathBrownPairCount N k H f).card ≤
       (heathBrownPairCountOne N k H f).card :=
   Finset.card_le_card (heathBrownPairCount_subset_pairCountOne hk)
+end
 
 end
 

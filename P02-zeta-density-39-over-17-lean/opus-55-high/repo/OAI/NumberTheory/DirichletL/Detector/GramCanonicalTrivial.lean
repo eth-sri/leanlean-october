@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ theorem canonical_trivial_block (a b B : ℝ) (ha : 0<a) (hb : 0≤b) (hB : 0≤
       (C : SupportedIdeal)(k : GramFrequency)(d : O)(N T v : ℝ),0<N→0≤T→
       (1+T)^A*‖canonicalLatticeBlock S hS σ C k d W U v T N‖≤
         K*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(Ideal.absNorm C.val:ℝ)*N^2 := by
-  obtain ⟨s,K,hK,hprofile⟩ := shellProfile_weighted_bound a b B ha hB A
+  pm_562 s K hK hprofile shellProfile_weighted_bound a b B ha hB A
   refine ⟨s,(1+128*b)^2*K,by positivity,?_⟩
   intro W hcompact hs hW U S hS σ C k d N T v hN hT
   let F:=shellLatticeColumns W hcompact N hN

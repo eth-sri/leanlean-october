@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.MaskDescent
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ theorem row_mask_mul (η : Character) (m r A z n : O)
     (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
     rowTwist (elementHom η) (m*r) 1 (A*z) n =
       if IsCoprime n r then rowTwist (elementHom η) m 1 (A*z) n else 0 := by
-  by_cases hs : Supported (Ideal.span {n})
+  pm_5484 hs
   · rw [rowTwist_extract_sixth_mask _ _ _ _ _ hs,
       rowTwist_extract_sixth_mask _ _ _ _ _ hs]
     change elementHom η n * (if IsCoprime (m*r) n then (1:ℂ) else 0) * _ = _

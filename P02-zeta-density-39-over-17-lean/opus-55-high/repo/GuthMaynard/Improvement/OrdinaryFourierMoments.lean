@@ -1,35 +1,30 @@
 module
 public import GuthMaynard.Improvement.OrdinaryFourierL2
 public import GuthMaynard.Improvement.SmoothingFourier
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
 
+section
+variable {μ : ℝ → ℝ} (h1 : Integrable μ) (h2 : Integrable (fun x => μ x^2))
+include μ h1 h2
 /-- Ordinary real L1/L2 input has a square-integrable literal Fourier transform. -/
-theorem ordinary_real_fourier_square_integrable {μ : ℝ → ℝ}
-    (h1 : Integrable μ) (h2 : Integrable (fun x => μ x^2)) :
+theorem ordinary_real_fourier_square_integrable :
     Integrable (fun ξ => ‖𝓕 (fun x => (μ x : ℂ)) ξ‖^2) := by
-  have hc1 := Complex.ofRealCLM.integrable_comp h1
-  have hc2 : MemLp (fun x => (μ x : ℂ)) 2 := by
-    apply (memLp_two_iff_integrable_sq_norm hc1.aestronglyMeasurable).mpr
-    simpa using h2
+  pm_4598
   exact (memLp_two_iff_integrable_sq_norm
     (ordinary_fourier_memLp hc1 hc2).aestronglyMeasurable).mp
       (ordinary_fourier_memLp hc1 hc2)
 
 /-- Exact ordinary-real Plancherel. Compact support and smoothness are unnecessary. -/
-theorem ordinary_real_fourier_integral_square {μ : ℝ → ℝ}
-    (h1 : Integrable μ) (h2 : Integrable (fun x => μ x^2)) :
+theorem ordinary_real_fourier_integral_square :
     (∫ ξ, ‖𝓕 (fun x => (μ x : ℂ)) ξ‖^2) = ∫ x, μ x^2 := by
-  have hc1 := Complex.ofRealCLM.integrable_comp h1
-  have hc2 : MemLp (fun x => (μ x : ℂ)) 2 := by
-    apply (memLp_two_iff_integrable_sq_norm hc1.aestronglyMeasurable).mpr
-    simpa using h2
+  pm_4598
   simpa using ordinary_fourier_integral_sq hc1 hc2
+end
 
 /-- The fourth moment is integrable for every nonnegative ordinary L1/L2 input. -/
 theorem ordinary_real_fourier_fourth_integrable {μ : ℝ → ℝ}
@@ -44,7 +39,7 @@ theorem ordinary_real_fourier_fourth_integrable {μ : ℝ → ℝ}
   filter_upwards [] with ξ
   simp only [Pi.pow_apply, Real.norm_eq_abs, abs_pow, abs_norm]
   have hb := fourier_nonneg_mass h0 ξ
-  have hm : 0 ≤ ∫ x, μ x := MeasureTheory.integral_nonneg h0
+  pm_4518 hm x μ MeasureTheory.integral_nonneg h0
   nlinarith [sq_nonneg (‖𝓕 (fun x => (μ x : ℂ)) ξ‖),
     mul_nonneg (sq_nonneg (‖𝓕 (fun x => (μ x : ℂ)) ξ‖))
       (show 0 ≤ (∫ x, μ x)^2 - ‖𝓕 (fun x => (μ x : ℂ)) ξ‖^2 by nlinarith [norm_nonneg (𝓕 (fun x => (μ x : ℂ)) ξ)])]

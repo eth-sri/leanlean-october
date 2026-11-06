@@ -27,20 +27,24 @@ theorem sourceControl_zero (S : Finset (ℕ×ℕ)) (hS : (0,0)∈S)
   exact (SchwartzMap.norm_le_seminorm ℝ W x).trans
     ((Seminorm.le_finset_sup_apply (p:=schwartzSeminormFamily ℝ ℝ ℂ) hS).trans_eq hW)
 
-theorem normalizedProfile_control (S) (W : 𝓢(ℝ,ℂ)) :
+section
+variable (S) (W : 𝓢(ℝ,ℂ))
+include W
+theorem normalizedProfile_control :
     sourceControl S (normalizedProfile S W)≤1 := by
   change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) ((sourceControl S W)⁻¹ • W)≤1
   rw [map_smul_eq_mul,Real.norm_of_nonneg (inv_nonneg.mpr (sourceControl_nonneg S W))]
   change (sourceControl S W)⁻¹*sourceControl S W≤1
   by_cases h : sourceControl S W=0
-  · simp [h]
-  · rw [inv_mul_cancel₀ h]
+  simp_all
+  grind
 
-theorem normalizedProfile_support (S) (W : 𝓢(ℝ,ℂ)) :
+theorem normalizedProfile_support :
     Function.support (normalizedProfile S W:ℝ→ℂ)⊆Function.support (W:ℝ→ℂ) := by
   intro x hx hw
   apply hx
   simp [normalizedProfile,smul_apply,hw]
+end
 
 theorem normalizedProfile_reconstruct (S : Finset (ℕ×ℕ)) (hS : (0,0)∈S)
     (W : 𝓢(ℝ,ℂ)) : sourceControl S W • normalizedProfile S W=W := by

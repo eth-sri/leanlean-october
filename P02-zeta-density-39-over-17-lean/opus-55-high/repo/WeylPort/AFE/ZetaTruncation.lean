@@ -3,8 +3,9 @@ module
 public import WeylPort.Analytic.ZetaContinuation
 public import WeylPort.AFE.PoissonApplications
 public import WeylPort.AFE.Objects
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 -- Lean 4.34 elaborator compatibility.
 set_option backward.isDefEq.respectTransparency false
@@ -29,16 +30,14 @@ theorem norm_zeta_sub_regularized_sum_le {N : ℕ} (hN : 0 < N) {s : ℂ}
       (N : ℝ) ^ (-s.re) * (1 / 2 + ‖s‖ / s.re) := by
   have he := Zeta0EqZeta hN hs hs1
   unfold riemannZeta0 at he
-  have hn : 0 < (N : ℝ) := by exact_mod_cast hN
+  pm_456 hn N hN
   have hi := ZetaBnd_aux1b N hN (t := s.im) hs
   rw [Complex.re_add_im] at hi
   have hid : riemannZeta s - ((∑ n ∈ Finset.range (N + 1), 1 / (n : ℂ) ^ s) +
       (N : ℂ) ^ (1 - s) / (s - 1)) = -(N : ℂ) ^ (-s) / 2 +
       s * ∫ x in Set.Ioi (N : ℝ), (⌊x⌋ + 1 / 2 - x) / (x : ℂ) ^ (s + 1) := by
     rw [← he]
-    have hd : 1 - s = -(s - 1) := by ring
-    rw [hd, neg_div_neg_eq]
-    ring
+    pm_5967 neg_div_neg_eq
   rw [hid]
   calc
     _ ≤ ‖-(N : ℂ) ^ (-s) / 2‖ +
@@ -65,8 +64,11 @@ theorem tendsto_regularized_sum {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) :
   rw [norm_sub_rev]
   simpa only [one_div] using norm_zeta_sub_regularized_sum_le hN hs hs1
 
+section
+variable (sigma t : ℝ) {x : ℝ} (hx : 0 < x)
+include sigma t x hx
 /-- The real logarithmic phase is the principal complex power, with the positive-height sign. -/
-theorem weightedWave_afe_eq_cpow (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
+theorem weightedWave_afe_eq_cpow :
     weightedWave (afePhase (t / (2 * Real.pi))) (afeWeight sigma) x =
       (x : ℂ) ^ (-(sigma : ℂ) + (t : ℂ) * Complex.I) := by
   unfold weightedWave afePhase afeWeight
@@ -77,7 +79,7 @@ theorem weightedWave_afe_eq_cpow (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
   field_simp
 
 /-- Conjugation supplies the negative sign in the actual Dirichlet term. -/
-theorem conj_weightedWave_afe (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
+theorem conj_weightedWave_afe :
     starRingEnd ℂ (weightedWave (afePhase (t / (2 * Real.pi))) (afeWeight sigma) x) =
       (x : ℂ) ^ (-((sigma : ℂ) + (t : ℂ) * Complex.I)) := by
   rw [weightedWave_afe_eq_cpow sigma t hx,
@@ -85,8 +87,9 @@ theorem conj_weightedWave_afe (sigma t : ℝ) {x : ℝ} (hx : 0 < x) :
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hx.ne'),
     ← Complex.exp_conj, ← Complex.ofReal_log hx.le]
   congr 1
-  simp only [map_mul, map_add, map_neg, Complex.conj_ofReal, Complex.conj_I]
+  pm_93 map_mul map_add map_neg Complex.conj_ofReal Complex.conj_I
   ring
+end
 
 /-- The finite Dirichlet integral has its actual antiderivative on every positive interval. -/
 theorem integral_cpow_neg {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) {s : ℂ} (hs : s ≠ 1) :
@@ -103,9 +106,7 @@ theorem integral_cpow_neg {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) {s : ℂ} (hs
   rw [integral_cpow (Or.inr ⟨hneg, h0⟩)]
   have he : -s + 1 = 1 - s := by ring
   rw [he]
-  have hd : 1 - s = -(s - 1) := by ring
-  rw [hd, div_neg]
-  ring
+  pm_5967 div_neg
 
 /-- Positive integer interval sums agree exactly with their natural-number indexing. -/
 theorem sum_int_Ioc_eq_nat_Ioc (F : ℝ → ℂ) (M N : ℕ) :
@@ -113,8 +114,7 @@ theorem sum_int_Ioc_eq_nat_Ioc (F : ℝ → ℂ) (M N : ℕ) :
       ∑ n ∈ Finset.Ioc M N, F (n : ℝ) := by
   apply Finset.sum_bij (fun (n : ℤ) _ => n.toNat)
   · intro n hn
-    simp only [Finset.mem_Ioc] at hn ⊢
-    constructor <;> omega
+    pm_5911 Finset.mem_Ioc hn
   · intro n hn m hm hnm
     simp only [Finset.mem_Ioc] at hn hm
     omega
@@ -192,8 +192,7 @@ theorem norm_afe_pole_le {sigma t a : ℝ} (ht : 0 < t) (ha : 0 < a) :
   have hn : t ≤ ‖((sigma : ℂ) + (t : ℂ) * Complex.I) - 1‖ := by
     have he := Complex.abs_im_le_norm (((sigma : ℂ) + (t : ℂ) * Complex.I) - 1)
     rwa [him, abs_of_pos ht] at he
-  have hre : (1 - ((sigma : ℂ) + (t : ℂ) * Complex.I)).re = 1 - sigma := by simp
-  rw [hre]
+  pm_5726 hre sigma Complex.I
   calc
     _ ≤ a ^ (1 - sigma) / t := div_le_div_of_nonneg_left (Real.rpow_pos_of_pos ha _).le ht hn
     _ = _ := by

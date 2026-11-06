@@ -3,19 +3,20 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceNormalizati
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 public import OAI.NumberTheory.DirichletL.Moments.SourceLowerSupport
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSourceSupport
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCanonicalFirst
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstWholeKernel
-open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
+open CenteredMomentFirstPhysicalSource
+open CenteredMomentCommonRadialData
 open CenteredMomentSourceLowerSupport CenteredMomentExceptionalAmplitudePair
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -25,7 +26,7 @@ theorem nonzero_columns (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal
     (rows:Finset O)(W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)(K K₀ H₀ A₀ B₀:ℝ)
     (hn:block η m A t S c C D hC hD E rows W V K K₀ H₀ A₀ B₀≠0):
     ∃a:columns C C hC.1 S,∃b:columns C D hD.1 S,
-      c (C*(a:Ideal O))≠0 ∧ c (D*(b:Ideal O))≠0 ∧
+      c (C*(a:Ideal O))≠0 ∧ c (D *(b:Ideal O))≠0 ∧
       V 2 (Real.log (‖eisEmbedding (element C C hC.1 S a)‖^2/A₀))≠0 ∧
       V 3 (Real.log (‖eisEmbedding (element C D hD.1 S b)‖^2/B₀))≠0 := by
   unfold block at hn
@@ -49,7 +50,7 @@ theorem nonzero_columns (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal
 
 theorem original_column_lower {ι:Type*}[Fintype ι][DecidableEq ι]
     (s:Input ι)(R seed I:Ideal O)(a₁ a₂:ℝ)(ha₁:0≤a₁)(ha₂:0≤a₂)
-    (hs₁:∀x,s.W₁ x≠0→a₁≤x)(hs₂:∀x,s.W₂ x≠0→a₂≤x)
+    (hs₁:∀x,s.W₁ x≠0→ a₁≤x)(hs₂:∀x,s.W₂ x≠0→ a₂≤x)
     (hn:CenteredMomentOriginalCommonHarmonic.coefficient s R seed I≠0):
     (∏i,s.lo i)*a₁*a₂*volume s.toData≤(I.absNorm:ℝ) := by
   have hh:=profile_column_lower R s.ν s.W s.P s.lo s.W₁ s.W₂ a₁ a₂
@@ -58,7 +59,7 @@ theorem original_column_lower {ι:Type*}[Fintype ι][DecidableEq ι]
     one_ne_zero one_ne_zero rfl s.same_product (fun i x hx=>(s.support i hx).1)
     hs₁ hs₂ (Fintype.piFinset s.pools) I (by
       simpa only [CenteredMomentOriginalCommonHarmonic.coefficient] using hn)
-  simpa only [map_one,Nat.cast_one,mul_one,div_one,volume,mul_assoc] using hh
+  pm_436 map_one Nat.cast_one mul_one div_one volume mul_assoc hh
 
 lemma log_window_upper (N H M:ℝ)(hN:0<N)(hH:0<H)
     (hlog:|Real.log (N/H)|≤M):N≤Real.exp M*H := by
@@ -70,7 +71,7 @@ lemma log_window_upper (N H M:ℝ)(hN:0<N)(hH:0<H)
 theorem block_reference_lower (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
     (rows:Finset O)(W:𝓢(ℝ,ℂ))(V:Fin 4→ℝ→ℂ)(K K₀ H₀ A₀ B₀ a T M:ℝ)
-    (hA:0<A₀)(hB:0<B₀)(hsource:∀I,c I≠0→a*T≤(I.absNorm:ℝ))
+    (hA:0<A₀)(hB:0<B₀)(hsource:∀I,c I≠0→ a*T≤(I.absNorm:ℝ))
     (hwin:∀i y,V i y≠0→|y|≤M)
     (hn:block η m A t S c C D hC hD E rows W V K K₀ H₀ A₀ B₀≠0):
     a*T≤(C.absNorm:ℝ)*Real.exp M*A₀ ∧

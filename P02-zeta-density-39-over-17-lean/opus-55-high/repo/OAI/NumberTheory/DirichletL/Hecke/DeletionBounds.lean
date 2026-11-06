@@ -1,23 +1,24 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.FiniteDeletion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDeletionBounds
 open HeckeFamily
 
 theorem constant_pow_primeSupport_bound (K ε : ℝ) (hK : 0 ≤ K) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ M : Ideal O, M ≠ ⊥ →
-      K^(IdealMobiusDivisorSum.primeSupport M).card ≤ C*(M.absNorm : ℝ)^ε := by
+      K ^(IdealMobiusDivisorSum.primeSupport M).card ≤ C*(M.absNorm : ℝ)^ε := by
   obtain ⟨n, hn⟩ := exists_nat_gt (max K 1)
-  have hn0 : 0 < (n : ℝ) := by linarith [le_max_right K 1]
+  have hn0 : 0 < (n : ℝ) := by grind
   have hKpow : K ≤ (2 : ℝ)^n := by
     have hn2 : (n : ℝ) ≤ (2 : ℝ)^n := by exact_mod_cast (show n < 2^n from Nat.lt_two_pow_self).le
-    linarith [le_max_left K 1]
+    grind
   obtain ⟨C, hC, hbound⟩ := SquarefreeDivisorBound.prime_support_subsets_bound
     (ε/(n : ℝ)) (div_pos hε hn0)
   refine ⟨C^n, by positivity, ?_⟩
@@ -38,25 +39,26 @@ theorem localBound_pos {σ : ℝ} (hσ : 0 < σ) : 0 < localBound σ := by
   unfold localBound
   exact inv_pos.mpr (sub_pos.mpr (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)))
 
-theorem term_bound {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
-    {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
+section
+variable {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N) {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re)
+include σ N hσ hN a s ha hs
+theorem term_bound :
     ‖a*(N : ℂ)^(-s)‖ ≤ (2 : ℝ)^(-σ) := by
-  rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : 0 < N), Complex.neg_re]
+  pm_6707
   apply (mul_le_of_le_one_left (Real.rpow_nonneg (by linarith) _) ha).trans
   apply (Real.rpow_le_rpow_of_exponent_le (by linarith : 1 ≤ N) (by linarith : -s.re ≤ -σ)).trans
   exact Real.rpow_le_rpow_of_nonpos (by norm_num) hN (by linarith)
 
-theorem factor_bounds {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
-    {a s : ℂ} (ha : ‖a‖ ≤ 1) (hs : σ ≤ s.re) :
+theorem factor_bounds :
     ‖EulerFactors.factor N a s‖ ≤ localBound σ ∧
       ‖(EulerFactors.factor N a s)⁻¹‖ ≤ localBound σ := by
   have hδ : (2 : ℝ)^(-σ) < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  have hδ0 : 0 ≤ (2 : ℝ)^(-σ) := Real.rpow_nonneg (by norm_num) _
+  pm_534 hδ0
   have ht := term_bound hσ hN ha hs
   have hl : 1-(2 : ℝ)^(-σ) ≤ ‖EulerFactors.factor N a s‖ := by
     have hh := norm_sub_le (1-a*(N : ℂ)^(-s)) (-a*(N : ℂ)^(-s))
     have he : (1-a*(N : ℂ)^(-s))-(-a*(N : ℂ)^(-s)) = 1 := by ring
-    rw [he, norm_one, neg_mul, norm_neg] at hh
+    pm_958 he norm_one neg_mul norm_neg hh
     change 1-(2 : ℝ)^(-σ) ≤ ‖1-a*(N : ℂ)^(-s)‖
     linarith
   constructor
@@ -70,6 +72,7 @@ theorem factor_bounds {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
   · rw [norm_inv]
     exact (inv_le_inv₀ (by linarith : 0 < ‖EulerFactors.factor N a s‖)
       (by linarith : 0 < 1-(2 : ℝ)^(-σ))).mpr hl
+end
 
 theorem factors_bound_pow (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
     (ψ : Character) {s : ℂ} (hs : σ ≤ s.re) :
@@ -122,15 +125,14 @@ theorem factors_radical_subpower_bound (σ ε : ℝ) (hσ : 0 < σ) (hε : 0 < �
       σ ≤ s.re → ‖HeckeFiniteDeletion.factors M ψ s‖ +
         ‖(HeckeFiniteDeletion.factors M ψ s)⁻¹‖ ≤ C*((radical M).absNorm : ℝ)^ε := by
   obtain ⟨C, hC, hb⟩ := factors_subpower_bound σ ε hσ hε
-  refine ⟨C, hC, ?_⟩
-  intro M ψ s hs
+  pm_486 C hC M ψ s hs
   simpa only [factors_radical] using hb (radical M) (radical_ne_zero M) ψ s hs
 
 theorem factor_bound_any_re {N : ℝ} (hN : 2 ≤ N) {a s : ℂ} (ha : ‖a‖ ≤ 1) :
     ‖EulerFactors.factor N a s‖ ≤ 2*N^(max (-s.re) 0) := by
   have hn : 1 ≤ N := by linarith
   have ht : ‖a*(N : ℂ)^(-s)‖ ≤ N^(-s.re) := by
-    rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : 0 < N), Complex.neg_re]
+    pm_6707
     exact mul_le_of_le_one_left (Real.rpow_nonneg (by linarith) _) ha
   have hpow : N^(-s.re) ≤ N^(max (-s.re) 0) :=
     Real.rpow_le_rpow_of_exponent_le hn (le_max_left _ _)
@@ -149,8 +151,7 @@ theorem factors_bound_any_re (M : Ideal O) (ψ : Character) (s : ℂ) :
   calc
     _ ≤ ∏ P ∈ SmoothMobiusCorrection.primeSet M,
         2*(P.val.absNorm : ℝ)^(max (-s.re) 0) := by
-      apply Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
-      intro P _
+      pm_5107 Finset.prod_le_prod₀ norm_nonneg P
       exact factor_bound_any_re (show (2 : ℝ) ≤ (P.val.absNorm : ℝ) by exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P)
         (idealCoeff_norm_le_one ψ P.val)
     _ = _ := by
@@ -170,7 +171,7 @@ theorem factors_any_re_subpower_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (M : Ideal O) (ψ : Character) (s : ℂ),
       ‖HeckeFiniteDeletion.factors M ψ s‖ ≤
         C*((radical M).absNorm : ℝ)^(max (-s.re) 0 + ε) := by
-  obtain ⟨C, hC, hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
+  pm_98 C hC hb SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C, hC, ?_⟩
   intro M ψ s
   have hR : 0 < ((radical M).absNorm : ℝ) := by

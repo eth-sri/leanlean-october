@@ -24,7 +24,7 @@ lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
     intro P Q h
     apply Subtype.ext
     apply Subtype.ext
-    exact congrArg (fun I : SupportedIdeal=>I.val) h
+    grind
   have he : (∑a : canonicalSlotSupport T,elementNorm a.val^(-2:ℝ))=
       ∑I∈Finset.univ.image f,ProbeGramCommon.gramIdealNorm I^(-2:ℝ) := by
     rw [Finset.sum_image (fun P _ Q _ h=>hf h)]
@@ -35,7 +35,7 @@ lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
     rw [canonicalSlotEquiv_norm]
     rfl
   rw [he]
-  exact hb _
+  grind
 
 lemma lowUnselectedWeight_norm_identity {K : ℕ} (slots : Fin K→Finset O)
     (hslots : ∀i x,x∈slots i→x≠0) (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ)

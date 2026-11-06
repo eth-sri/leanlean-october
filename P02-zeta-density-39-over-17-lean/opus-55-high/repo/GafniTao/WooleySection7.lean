@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection7Hard
 public import GafniTao.WooleySourceSections68
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Wooley Lemma 7.1
@@ -15,7 +16,6 @@ the proved easy and hard consumers respectively.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleySourcePolynomial_lemma_7_1
     {k r p : ℕ} [NeZero p]
@@ -45,12 +45,12 @@ theorem wooleySourcePolynomial_lemma_7_1
   obtain ⟨C0, hC0, B0, hcor⟩ :=
     hlower tau (epsilon ^ 2) htau (sq_pos_of_pos hepsilon)
   let C := max 1 C0
-  have hC : 1 ≤ C := le_max_left _ _
+  pm_4884 hC C
   refine ⟨C, hC, B0, ?_⟩
   intro B s a b nu c instPow hc hnu hnua hnub hab hMB hgammaK
     hPhiTau hEpsilonZero hB0Hard phi hphi gamma hgamma
   have haNext : a ≤ wooleySection7NextB k r b := by
-    have hcover := wooley_nextB_lower (k := k) (r := r) (b := b) hr
+    pm_6621 hcover
     rw [← wooleySection7NextB_eq_wooleyNextB] at hcover
     have hmul : r * a ≤ r * wooleySection7NextB k r b := hab.trans hcover
     exact Nat.le_of_mul_le_mul_left hmul (by omega)
@@ -61,12 +61,7 @@ theorem wooleySourcePolynomial_lemma_7_1
       gammaVal hpPrime.two_le hr hrk hnu hnua hnub haNext hgammaVal
       hBPrimeEasy gamma
     have hCOne : (1 : ℝ) ≤ C := le_max_left _ _
-    have hnonneg : 0 ≤ (p : ℝ) ^ (k ^ 2 * nu) *
-        wooleySourcePolynomialMixedMean phi s r p B
-          (wooleySection7NextB k r b) b nu gamma :=
-      mul_nonneg (by positivity)
-        (wooleySourcePolynomialMixedMean_nonneg phi s r p B
-          (wooleySection7NextB k r b) b nu gamma)
+    pm_2839
     calc
       wooleySourcePolynomialMixedMean phi s r p B a b nu gamma ≤
           (p : ℝ) ^ (k ^ 2 * nu) *
@@ -95,12 +90,7 @@ theorem wooleySourcePolynomial_lemma_7_1
       hgamma tau epsilon C0 hC0 B0 hcor hPhiTau hEpsilonZero
       (hB0Hard hhard)
     have hC0C : C0 ≤ C := le_max_right _ _
-    have hnonneg : 0 ≤ (p : ℝ) ^ (k ^ 2 * nu) *
-        wooleySourcePolynomialMixedMean phi s r p B
-          (wooleySection7NextB k r b) b nu gamma :=
-      mul_nonneg (by positivity)
-        (wooleySourcePolynomialMixedMean_nonneg phi s r p B
-          (wooleySection7NextB k r b) b nu gamma)
+    pm_2839
     calc
       wooleySourcePolynomialMixedMean phi s r p B a b nu gamma ≤
           C0 * (p : ℝ) ^ (k ^ 2 * nu) *
@@ -118,6 +108,5 @@ theorem wooleySourcePolynomial_lemma_7_1
               (wooleySection7NextB k r b) b nu gamma := by ring
 
 
-end
 
 end GafniTao

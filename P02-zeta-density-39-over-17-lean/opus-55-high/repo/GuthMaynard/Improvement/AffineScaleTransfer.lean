@@ -1,14 +1,13 @@
 module
 public import GuthMaynard.Improvement.MixedHeightTheorem
 public import GuthMaynard.Improvement.FourierInputClass
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 theorem fourier_sup_family_mono (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
     {T S : ℝ} (hT : 0 ≤ T) (hTS : T ≤ S) {f : 𝓢(ℝ, ℝ)}
@@ -35,24 +34,17 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   have hPp : 0 < P := zero_lt_one.trans_le hP
   refine ⟨C*P^ε*P^6,by positivity,?_⟩
   intro T R K f M₁ M₂ M₃ hT hK hKR hRT hf hs hp h₁ h₂ h₃ h₁R h₂K h₃R
-  have hTp : 0 < T := by linarith
-  have hR : 1 ≤ R := hK.trans hKR
+  pm_6304
   have hLp : 0 < L := by linarith
   let RN := ⌈L*R⌉₊
   let KN := ⌈L*K⌉₊
-  have hRN : (RN:ℝ) ≤ P*R := by
-    have hh := Nat.ceil_lt_add_one (show 0 ≤ L*R by positivity)
-    dsimp only [RN,P]
-    linarith only [hh,hR]
-  have hKN : (KN:ℝ) ≤ P*K := by
-    have hh := Nat.ceil_lt_add_one (show 0 ≤ L*K by positivity)
-    dsimp only [KN,P]
-    linarith only [hh,hK]
+  pm_5322 hRN RN R hR
+  pm_5322 hKN KN K hK
   have hKNp : 0 < KN := Nat.ceil_pos.mpr (by positivity)
   have hKNRN : KN ≤ RN := Nat.ceil_mono (by gcongr)
-  have h₁N : M₁ ≤ RN := by exact_mod_cast h₁R.trans (Nat.le_ceil _)
-  have h₂N : M₂ ≤ KN := by exact_mod_cast h₂K.trans (Nat.le_ceil _)
-  have h₃N : M₃ ≤ RN := by exact_mod_cast h₃R.trans (Nat.le_ceil _)
+  pm_8800 h₁N M₁ RN h₁R.trans
+  pm_8800 h₂N M₂ KN h₂K.trans
+  pm_8800 h₃N M₃ RN h₃R.trans
   have hTS : T ≤ P*T := le_mul_of_one_le_left hTp.le hP
   have hS : 2 ≤ P*T := hT.trans hTS
   have hRNT : (RN:ℝ) ≤ (P*T)^4 := by
@@ -65,8 +57,8 @@ theorem mixed_affine_real_scales (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   have hh := hbound (P*T) f RN KN M₁ M₂ M₃ hS hf hs
     (fourier_sup_family_to_height_mass D hD (by positivity) f hf hpS)
     hKNp hKNRN hRNT h₁ h₂ h₃ h₁N h₂N h₃N
-  have hmass : 0 ≤ ∫ x, f x := integral_nonneg hf
-  have hL2 : 0 ≤ ∫ x, f x^2 := integral_nonneg (fun _ => sq_nonneg _)
+  pm_4518 hmass x f integral_nonneg hf
+  pm_4604
   have hW : (RN:ℝ)^2*(KN:ℝ)^4*(∫ x, f x)^2+(RN:ℝ)*(KN:ℝ)^3*(∫ x, f x^2) ≤
       P^6*(R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2)) := by
     calc

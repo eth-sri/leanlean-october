@@ -24,9 +24,7 @@ lemma mixedReflectedValue_cast {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c
     (hgp : ∀ i, λ₀∉Ideal.span {p i}) (hgq : ∀ i, λ₀∉Ideal.span {q i})
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue (castControlled h D) s hq hc hgq j S W X=
-      mixedReflectedValue D s hp hc hgp j S W X := by
-  subst q
-  rfl
+      mixedReflectedValue D s hp hc hgp j S W X := by aesop
 
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)

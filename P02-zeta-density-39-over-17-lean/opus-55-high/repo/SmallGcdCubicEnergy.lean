@@ -1,11 +1,10 @@
 module
 public import SampledAdditiveMoments
 public import IntegerFourthMoment
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -20,39 +19,11 @@ theorem coprime_dyadic_cubic {T t₀ M : ℝ} (hT : 1 < T) (hM : 0 < M)
     (∑ q ∈ Q, ‖∑ t ∈ W, phase (pairRatio q) t‖^3) ≤
       (512*(1+12*Real.pi))*(T+16*Real.pi*M^2)*Real.sqrt (W.card:ℝ)*
         Real.sqrt (discreteAdditiveEnergy W:ℝ) := by
-  let x : Q → ℝ := fun q => Real.log ((q.1.1:ℝ)/q.1.2)/(2*Real.pi)
-  let δ : ℝ := 1/(16*Real.pi*M^2)
-  have hδ : 0 < δ := by dsimp [δ]; positivity
-  have hx (q : Q) : |x q| ≤ 1 := by
-    obtain ⟨h1,h2,_,hl1,hu1,hl2,hu2⟩ := hQ q q.2
-    have hh := dyadic_pair_log h1 h2 hl1 hu1 hl2 hu2
-    simp only [pairRatio,Rat.cast_div,Rat.cast_natCast] at hh
-    dsimp [x]
-    rw [abs_div,abs_of_pos (by positivity : 0 < 2*Real.pi)]
-    apply (div_le_one (by positivity : 0 < 2*Real.pi)).mpr
-    linarith [Real.pi_gt_three]
-  have hs : Pairwise (fun p q : Q => δ ≤ |x p-x q|) := by
-    intro p q hpq
-    have hp := hQ p p.2
-    have hq := hQ q q.2
-    have hgap := rational_log_separation ⟨hp.1,hp.2.1,hp.2.2.1⟩
-      ⟨hq.1,hq.2.1,hq.2.2.1⟩ (by exact fun he => hpq (Subtype.ext he))
-      hp.2.2.2.2.2.2 hq.2.2.2.2.2.2
-      (U := 2) ((div_le_iff₀ (by exact_mod_cast hp.2.1)).mpr (by linarith [hp.2.2.2.1,hp.2.2.2.2.2.1]))
-      ((div_le_iff₀ (by exact_mod_cast hq.2.1)).mpr (by linarith [hq.2.2.2.1,hq.2.2.2.2.2.1]))
-    dsimp [x,δ]
-    rw [← sub_div,abs_div,abs_of_pos (by positivity : 0 < 2*Real.pi)]
-    apply (le_div_iff₀ (by positivity : 0 < 2*Real.pi)).mpr
-    convert hgap using 1; field_simp; ring
-  have hh := sampled_character_cubic hT hδ W hW hsep x hx hs
-  have he (q : Q) : ‖centeredCharacter W t₀ (x q)‖=‖∑ t ∈ W, phase (pairRatio q) t‖ := by
-    dsimp only [x]
-    rw [centered_character_norm]
-    simp only [pairRatio,Rat.cast_div,Rat.cast_natCast]
-  simp only [he] at hh
+  pm_2758
+  pm_528 hh sampled_character_cubic hT hδ W hW hsep x hx hs
+  pm_2759
   rw [Finset.sum_coe_sort Q (fun q => ‖∑ t ∈ W, phase (pairRatio q) t‖^3)] at hh
-  have hd : δ⁻¹=16*Real.pi*M^2 := by dsimp [δ]; rw [inv_div,div_one]
-  rwa [hd] at hh
+  pm_795
 
 /-- Summing the small-gcd classes costs N^2, with no logarithmic or
 subpower loss and with the original quadruple energy retained. -/
@@ -72,9 +43,7 @@ theorem small_gcd_cubic_energy :
   have hTp : 0 < T := by linarith
   have hgeom : ∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
       N < p.1 ∧ (p.1:ℝ) ≤ 2*N ∧ N < p.2 ∧ (p.2:ℝ) ≤ 2*N := by
-    intro p hp
-    obtain ⟨h1,h2,hl1,hu1,hl2,hu2,_⟩ := hP p hp
-    exact ⟨h1,h2,hl1,hu1,hl2,hu2⟩
+    pm_3
   have hd (d : ℕ) (hd : d ∈ gcdValues P) : 0 < d ∧ (d:ℝ) < N^2/T := by
     obtain ⟨p,hp,rfl⟩ := mem_image.mp hd
     exact ⟨Nat.gcd_pos_of_pos_left _ (hP p hp).1,(hP p hp).2.2.2.2.2.2⟩
@@ -99,8 +68,7 @@ theorem small_gcd_cubic_energy :
       exact (le_div_iff₀ hTp).mp hc
     have he : (∑ d ∈ gcdValues P, (T+16*Real.pi*(N/d)^2)) =
         ((gcdValues P).card:ℝ)*T+16*Real.pi*N^2*(∑ d ∈ gcdValues P, ((d:ℝ)^2)⁻¹) := by
-      simp only [sum_add_distrib,sum_const,nsmul_eq_mul]
-      rw [mul_sum]
+      pm_487 sum_add_distrib sum_const nsmul_eq_mul mul_sum
       congr 1
       apply sum_congr rfl
       intro d _
@@ -115,7 +83,7 @@ theorem small_gcd_cubic_energy :
     _ = C*(∑ d ∈ gcdValues P, (T+16*Real.pi*(N/d)^2))*Real.sqrt (W.card:ℝ)*
         Real.sqrt (discreteAdditiveEnergy W:ℝ) := by simp only [sum_mul,mul_sum]
     _ ≤ C*((1+32*Real.pi)*N^2)*Real.sqrt (W.card:ℝ)*Real.sqrt (discreteAdditiveEnergy W:ℝ) := by
-      have hC : 0 ≤ C := by dsimp [C]; positivity
+      pm_61 hC C
       gcongr
     _ = _ := by ring
 
@@ -126,13 +94,11 @@ theorem small_gcd_cubic_sum :
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       smallGcdCubicSum N T W ≤ C*N^2*Real.sqrt (W.card:ℝ)*Real.sqrt (discreteAdditiveEnergy W:ℝ) := by
-  obtain ⟨C,hC,hbound⟩ := small_gcd_cubic_energy
-  refine ⟨C,hC,?_⟩
+  pm_155 C hC hbound small_gcd_cubic_energy
   intro T t₀ N hT hN W hW hsep
   unfold smallGcdCubicSum
   apply hbound T t₀ N hT hN _ _ W hW hsep
-  intro p hp
-  obtain ⟨hp,hg⟩ := mem_filter.mp hp
+  pm_4584 p hp hg
   obtain ⟨hp1,hp2⟩ := mem_product.mp hp
   obtain ⟨hl1,hu1⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.1).mp hp1
   obtain ⟨hl2,hu2⟩ := (GuthMaynard.Improvement.sourceRatioIndices_mem hN.le p.2).mp hp2

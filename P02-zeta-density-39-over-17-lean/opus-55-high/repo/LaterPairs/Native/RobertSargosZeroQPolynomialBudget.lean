@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ThirteenthRootScales
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -47,10 +48,9 @@ theorem zero_q_physical_polynomial_budgets {T M H Q R lam : ℝ}
   have hsecond' := mul_le_mul_of_nonneg_right hT2M hQ0
   have hroot := zero_q_twelfth_root_budget (show 0 ≤ T by linarith) hR hRmax hlam hscale
   have hx : 0 ≤ (2*R*lam)^((1:ℝ)/12) := Real.rpow_nonneg (by positivity) _
-  have hxH := mul_le_mul_of_nonneg_right hHQ hx
-  have hxQ := mul_le_mul_of_nonneg_right hroot hQ0
+  pm_268 hxH mul_le_mul_of_nonneg_right hHQ hx hxQ hroot hQ0
   constructor
   · nlinarith
-  constructor <;> nlinarith
+  grind
 
 end TaoTrudgianYang2025

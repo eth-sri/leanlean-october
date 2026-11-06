@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -18,9 +19,7 @@ open scoped ContDiff FourierTransform ComplexConjugate
 namespace TaoTrudgianYang2025
 
 theorem sargos_fourier_conj (t : ℝ) :
-    conj (𝐞 (-t) : ℂ) = (𝐞 t : ℂ) := by
-  rw [AddChar.map_neg_eq_inv,Circle.coe_inv_eq_conj]
-  simp
+    conj (𝐞 (-t) : ℂ) = (𝐞 t : ℂ) := by simp_all
 
 theorem sargos_positive_quadratic_conj (T z : ℝ) :
     conj (betaQuadraticKernel T z) = (𝐞 ((T/2)*z^2) : ℂ) := by
@@ -40,8 +39,7 @@ theorem sargos_positive_quadratic_global_remainder {W : ℝ → ℝ} {T H M₀ M
       conj ((∫ z : ℝ, (W z : ℂ)*betaQuadraticKernel T z)-
         (W 0 : ℂ)*((𝐞 (-(1 : ℝ)/8) : ℂ)/(Real.sqrt T : ℂ))) := by
     rw [map_sub,← integral_conj]
-    simp only [map_mul,map_div₀,Complex.conj_ofReal,sargos_positive_quadratic_conj,
-      neg_div,sargos_fourier_conj]
+    pm_162 map_mul map_div₀ Complex.conj_ofReal sargos_positive_quadratic_conj neg_div sargos_fourier_conj
   rw [he,Complex.norm_conj]
   exact norm_quadratic_global_remainder_le hW hT hH hs h₀ h₂ h₃
 

@@ -7,8 +7,9 @@ See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundati
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonBandSecondOrder
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonLeadingFinite
 public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Source-scale truncation of the complete actual leading series
@@ -20,7 +21,6 @@ The cutoff is of size T(L/G)^2, not the previous coarse polynomial cutoff.
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-noncomputable section
 
 open Complex
 open MathCollab.Density.Stronger.Fourth
@@ -35,12 +35,12 @@ theorem exists_norm_atkinsonLeadingTerm_band_le :
   obtain ⟨C, hC, hbound⟩ :=
     exists_norm_atkinsonPowerPair_band_secondOrder_le (1 / 4) neumannLeadingPlus neumannLeadingMinus
   let q : ℝ := Real.sqrt Real.pi / Real.pi
-  have hq : 0 < q := by dsimp [q]; positivity
+  pm_64 hq q
   refine ⟨2 * Real.pi * q * (4 * Real.pi) ^ (-(1 / 2 : ℝ)) * C, by positivity, ?_⟩
   intro T G L hT hG hGT hL hwidth n hband
   by_cases hn : n = 0
   · simp [hn, atkinsonLeadingTerm, divisorWeight, divisorDirichletTerm, LSeries.term]
-  have hn0 : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+  pm_5896 hn0 n Nat.pos_of_ne_zero hn
   have hT0 : 0 < T := by linarith
   have hnPow : (n : ℝ) ^ (-(1 / 4 : ℝ)) / n = (n : ℝ) ^ (-(5 / 4 : ℝ)) := by
     conv_lhs => rhs; rw [← Real.rpow_one (n : ℝ)]
@@ -49,14 +49,10 @@ theorem exists_norm_atkinsonLeadingTerm_band_le :
   have hTPow : T ^ (-(1 / 4 : ℝ)) / Real.sqrt T = T ^ (-(3 / 4 : ℝ)) := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_sub hT0]
     norm_num
-  have hpi : ‖(-(2 * Real.pi) : ℂ)‖ = 2 * Real.pi := by
-    simp [Real.norm_eq_abs, abs_of_pos Real.pi_pos]
-  have hqn : ‖(Real.sqrt Real.pi / Real.pi : ℂ)‖ = q := by
-    simp [q, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+  pm_325
   have hs : ‖(atkinsonBesselScale (1 / 4) n : ℂ)‖ = atkinsonBesselScale (1 / 4) n := by
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (atkinsonBesselScale_nonneg _ _)]
-  have hd := norm_divisorDirichletTerm_real (5 / 4) n
-  norm_num only [Complex.ofReal_div, Complex.ofReal_ofNat] at hd
+    pm_7548
+  pm_4377
   rw [atkinsonLeadingTerm, atkinsonLeadingIntegral, norm_mul, norm_mul, norm_mul,
     norm_mul, hpi, hqn, hs, hd]
   calc
@@ -82,12 +78,10 @@ theorem summable_atkinsonLeadingTerm_of_band {T G L : ℝ}
     Summable (atkinsonLeadingTerm T G L) := by
   obtain ⟨C, _, hbound⟩ := exists_norm_atkinsonLeadingTerm_band_le
   let N : ℕ := atkinsonSourceCutoff T G L
-  have hd := (summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm
-  have hdn := (summable_nat_add_iff N).2 hd
+  pm_4416
   apply (summable_nat_add_iff N).1
   apply Summable.of_norm_bounded (hdn.mul_left (C * G ^ 2 * L * T ^ (-(3 / 4 : ℝ))))
-  intro n
-  apply hbound T G L hT hG hGT hL hwidth (n + N)
+  pm_6518
   exact (atkinsonSourceCutoff_lower T G L).trans (by exact_mod_cast Nat.le_add_left N n)
 
 theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
@@ -97,13 +91,12 @@ theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
         C * G ^ 2 * L * T ^ (-(3 / 4 : ℝ)) := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonLeadingTerm_band_le
   let S : ℝ := ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) n‖
-  have hS : 0 ≤ S := tsum_nonneg (fun _ => norm_nonneg _)
-  refine ⟨C * (1 + S), by positivity, ?_⟩
+  pm_4414
+  pm_7004
   intro T G L hT hG hGT hL hwidth N hN
   have hs := summable_atkinsonLeadingTerm_of_band hT hG hGT hL hwidth
   have hsn := (summable_nat_add_iff N).2 hs
-  have hd := (summable_divisorDirichletTerm (s := (5 / 4 : ℂ)) (by norm_num)).norm
-  have hdn := (summable_nat_add_iff N).2 hd
+  pm_4416
   have he : atkinsonLeadingSum T G L - atkinsonLeadingFiniteSum T G L N =
       ∑' n : ℕ, atkinsonLeadingTerm T G L (n + N) := by
     have h := hs.sum_add_tsum_nat_add N
@@ -116,14 +109,13 @@ theorem exists_norm_atkinsonLeadingSum_sub_band_finite_le :
     dsimp [S]
     linarith
   let K : ℝ := C * G ^ 2 * L * T ^ (-(3 / 4 : ℝ))
-  have hK : 0 ≤ K := by dsimp [K]; positivity
+  pm_61 hK K
   rw [he]
   calc
     _ ≤ ∑' n : ℕ, ‖atkinsonLeadingTerm T G L (n + N)‖ := norm_tsum_le_tsum_norm hsn.norm
     _ ≤ ∑' n : ℕ, K * ‖divisorDirichletTerm (5 / 4) (n + N)‖ := by
       apply hsn.norm.tsum_le_tsum _ (hdn.mul_left K)
-      intro n
-      apply hbound T G L hT hG hGT hL hwidth (n + N)
+      pm_6518
       exact hN.trans (by exact_mod_cast Nat.le_add_left N n)
     _ = K * ∑' n : ℕ, ‖divisorDirichletTerm (5 / 4) (n + N)‖ := tsum_mul_left
     _ ≤ K * S := mul_le_mul_of_nonneg_left htail hK

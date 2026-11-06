@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedFourierDecay
 public import TaoTrudgianYang2025.IntegerFourierTails
 public import TaoTrudgianYang2025.BetaBufferedBoundary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,16 +27,17 @@ def modelPhaseBufferedFarTail (l r η : ℝ) (F : ℝ → ℝ) (T N : ℝ) (R : 
   ∑' q : ℤ, if R < q.natAbs then
     modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q else 0
 
-theorem modelPhaseBufferedFarTail_uniform
-    {σ : ℝ} (hσ : 0 ≤ σ) :
+section
+variable {σ : ℝ} (hσ : 0 ≤ σ)
+include σ hσ
+theorem modelPhaseBufferedFarTail_uniform :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (l r η : ℝ), 1 ≤ l → r ≤ 2 → 0 < η → η ≤ 1 →
       ∀ (F : ℝ → ℝ) (δ T N : ℝ), δ ≤ 1 →
         IsApproximateModelPhaseFunction F σ 1 δ → 0 < N →
         ∀ R : ℕ, 0 < R →
           ‖modelPhaseBufferedFarTail l r η F T N R‖ ≤
             C*(η⁻¹)^2*(1+|T|)^2/(N*(R : ℝ)) := by
-  obtain ⟨C,hC,hmode⟩ := modelPhaseBufferedFourierMode_inverse_square_bound hσ
-  refine ⟨2*C,by linarith,?_⟩
+  pm_5117 hmode modelPhaseBufferedFourierMode_inverse_square_bound hσ
   intro l r η hl hr hη hη₁ F δ T N hδ hF hN R hR
   have hs := summable_norm_modelPhaseFourierMode
     (modelPhaseBufferedCutoff_contDiff l r η)
@@ -53,8 +55,7 @@ theorem modelPhaseBufferedFarTail_uniform
   · rfl
   · ring
 
-theorem modelPhase_buffered_poisson_truncated
-    {σ : ℝ} (hσ : 0 ≤ σ) :
+theorem modelPhase_buffered_poisson_truncated :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (N η : ℝ) (a b : ℕ),
       0 < N → 0 < η → η ≤ 1 → N ≤ (a : ℝ) → (b : ℝ) ≤ 2*N →
       ∀ (F : ℝ → ℝ) (δ T : ℝ), δ ≤ 1 →
@@ -65,10 +66,9 @@ theorem modelPhase_buffered_poisson_truncated
               modelPhaseFourierMode
                 (modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η) F T N q‖ ≤
             4*N*η+2+C*(η⁻¹)^2*(1+|T|)^2/(N*(R : ℝ)) := by
-  obtain ⟨C,hC,htail⟩ := modelPhaseBufferedFarTail_uniform hσ
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC htail modelPhaseBufferedFarTail_uniform hσ
   intro N η a b hN hη hη₁ ha hb F δ T hδ hF R hR
-  let χ := modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η
+  pm_1644
   have hsource := modelPhase_buffered_poisson hF hN hη ha hb T
   have hsplit := tsum_int_eq_sum_Icc_add_far hsource.1.of_norm R
   have hfar := htail ((a : ℝ)/N) ((b : ℝ)/N) η
@@ -85,5 +85,6 @@ theorem modelPhase_buffered_poisson_truncated
       congr 1
       abel
     _ ≤ _ := (norm_add_le _ _).trans (add_le_add hsource.2 hdiff)
+end
 
 end TaoTrudgianYang2025

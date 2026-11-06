@@ -10,14 +10,13 @@ edges are proved dependencies; no point-mean or moment endpoint is assumed.
 public import MathCollab.Density.Stronger.PointMean.Reflection
 public import MathCollab.Density.Stronger.PointMean.DoubleConvolution
 public import MathCollab.Density.Stronger.PointMean.HorizontalEdges
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set MeasureTheory Filter
 open MathCollab.Density.Contour
 open scoped Interval
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem integral_exp_neg_abs_heathBrown :
@@ -31,9 +30,7 @@ theorem integrable_exp_neg_abs_heathBrown :
   let f : ℝ → ℝ := fun x => Real.exp (-|x|)
   have hpos : IntegrableOn f (Ioi 0) := by
     apply (integrableOn_exp_neg_Ioi 0).congr_fun
-      (fun x hx => by
-        dsimp only [f]
-        rw [abs_of_pos hx]) measurableSet_Ioi
+      (fun x hx => by grind) measurableSet_Ioi
   have hneg : IntegrableOn f (Iic 0) := by
     rw [← Measure.map_neg_eq_self (volume : Measure ℝ)]
     let m : MeasurableEmbedding fun x : ℝ => -x :=
@@ -43,27 +40,29 @@ theorem integrable_exp_neg_abs_heathBrown :
     exact Iff.mpr integrableOn_Ici_iff_integrableOn_Ioi hpos
   have hall := hneg.union hpos
   rw [Iic_union_Ioi] at hall
-  simpa only [IntegrableOn, Measure.restrict_univ] using hall
+  aesop
 
 theorem heathBrownStrongSingularKernel_le_exp
     {delta x : ℝ} (hdelta : 0 < delta) :
     heathBrownStrongSingularKernel delta x ≤
       delta⁻¹ * Real.exp (-|x|) := by
-  have hden : 0 < delta + |x| := by positivity
+  pm_425 hden delta x
   have hExp : Real.exp (-(4 / 3 : ℝ) * |x|) ≤ Real.exp (-|x|) := by
     apply Real.exp_le_exp.mpr
-    nlinarith [abs_nonneg x]
+    grind
   unfold heathBrownStrongSingularKernel
   calc
     Real.exp (-(4 / 3 : ℝ) * |x|) / (delta + |x|) ≤
         Real.exp (-|x|) / (delta + |x|) := by gcongr
     _ ≤ Real.exp (-|x|) / delta := by
       exact div_le_div_of_nonneg_left (Real.exp_pos _).le hdelta
-        (by linarith [abs_nonneg x])
+        (by grind)
     _ = delta⁻¹ * Real.exp (-|x|) := by field_simp
 
-theorem integrable_heathBrownStrongSingularKernel
-    {delta : ℝ} (hdelta : 0 < delta) :
+section
+variable {delta : ℝ} (hdelta : 0 < delta)
+include delta hdelta
+theorem integrable_heathBrownStrongSingularKernel :
     Integrable (heathBrownStrongSingularKernel delta) := by
   apply ((integrable_exp_neg_abs_heathBrown.const_mul delta⁻¹)).mono'
   · have hcont : Continuous (heathBrownStrongSingularKernel delta) := by
@@ -71,8 +70,7 @@ theorem integrable_heathBrownStrongSingularKernel
       apply Continuous.div
       · fun_prop
       · fun_prop
-      · intro x hx
-        exact (by positivity : 0 < delta + |x|).ne' hx
+      grind
     exact hcont.aestronglyMeasurable
   · filter_upwards with x
     rw [Real.norm_eq_abs, abs_of_nonneg (by
@@ -80,8 +78,7 @@ theorem integrable_heathBrownStrongSingularKernel
       positivity)]
     exact heathBrownStrongSingularKernel_le_exp hdelta
 
-theorem integral_heathBrownStrongSingularKernel_le
-    {delta : ℝ} (hdelta : 0 < delta) :
+theorem integral_heathBrownStrongSingularKernel_le :
     (∫ x : ℝ, heathBrownStrongSingularKernel delta x) ≤ 2 / delta := by
   calc
     (∫ x : ℝ, heathBrownStrongSingularKernel delta x) ≤
@@ -93,23 +90,16 @@ theorem integral_heathBrownStrongSingularKernel_le
     _ = delta⁻¹ * 2 := by
       rw [integral_const_mul, integral_exp_neg_abs_heathBrown]
     _ = 2 / delta := by field_simp
+end
 
 theorem norm_VIntegral'_le_intervalIntegral_norm
     (f : ℂ → ℂ) {x a b : ℝ} (hab : a ≤ b) :
     ‖VIntegral' f x a b‖ ≤
       ∫ y in a..b, ‖f ((x : ℂ) + (y : ℂ) * I)‖ := by
   have hscalar : ‖(1 / (2 * Real.pi * I) : ℂ)‖ ≤ 1 := by
-    rw [norm_div, norm_one, norm_mul, norm_mul, Complex.norm_real,
-      Complex.norm_I]
-    norm_num
-    have hpi : (1 : ℝ) ≤ Real.pi := by nlinarith [Real.pi_gt_three]
-    have hpiInv : Real.pi⁻¹ ≤ (1 : ℝ) :=
-      (inv_le_one₀ Real.pi_pos).2 hpi
-    nlinarith [mul_le_mul_of_nonneg_right hpiInv
-      (show (0 : ℝ) ≤ 1 / 2 by norm_num)]
-  unfold VIntegral' VIntegral
-  rw [norm_smul, norm_smul]
-  simp only [norm_I, one_mul]
+    pm_4452
+    grind
+  pm_8709 VIntegral' VIntegral
   calc
     ‖(1 / (2 * Real.pi * I) : ℂ)‖ *
         ‖∫ y in a..b, f ((x : ℂ) + (y : ℂ) * I)‖ ≤
@@ -132,15 +122,15 @@ theorem exists_norm_heathBrownLemmaThree_plusEdge_integrand_le :
     exists_heathBrown_Gamma_shift_kernel_strong_bound
   obtain ⟨P, hP, hPlus⟩ :=
     exists_heathBrown_offCritical_plus_strong_le
-  refine ⟨G * P, mul_pos hG hP, ?_⟩
+  pm_653 G P hG hP
   intro delta t w hdelta hdeltaUpper htw
-  have hden : 0 < delta + |w| := by positivity
+  pm_425 hden delta w
   have hGamma' :
       ‖Complex.Gamma (((delta : ℝ) : ℂ) + (w : ℂ) * I)‖ ≤
         G * Real.exp (-(4 / 3 : ℝ) * |w|) / (delta + |w|) := by
     apply (le_div_iff₀ hden).2
     simpa only [mul_comm] using (hGamma delta w hdelta hdeltaUpper).1
-  have hzeta := hPlus delta (t + w) hdelta hdeltaUpper htw
+  pm_8590 hPlus
   have harg :
       (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I) +
           (((delta : ℝ) : ℂ) + (w : ℂ) * I) =
@@ -160,8 +150,10 @@ theorem exists_norm_heathBrownLemmaThree_plusEdge_integrand_le :
       unfold heathBrownStrongSingularKernel
       ring_nf
 
-theorem integrable_heathBrownStrongLongEdgeMajorant
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+section
+variable {delta : ℝ} (hdelta : 0 < delta) (t : ℝ)
+include delta hdelta t
+theorem integrable_heathBrownStrongLongEdgeMajorant :
     Integrable (fun w : ℝ => heathBrownStrongSingularKernel delta w *
       (1 + heathBrownStrongMellinCriticalMoment delta (t + w))) := by
   convert (integrable_heathBrownStrongSingularKernel hdelta).add
@@ -170,8 +162,7 @@ theorem integrable_heathBrownStrongLongEdgeMajorant
   simp only [Pi.add_apply]
   ring
 
-theorem integral_heathBrownStrongLongEdgeMajorant_le
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integral_heathBrownStrongLongEdgeMajorant_le :
     (∫ w : ℝ, heathBrownStrongSingularKernel delta w *
       (1 + heathBrownStrongMellinCriticalMoment delta (t + w))) ≤
         ((2 + Real.pi) / delta) * (1 + heathBrownFullCriticalMoment t) := by
@@ -189,7 +180,7 @@ theorem integral_heathBrownStrongLongEdgeMajorant_le
       apply integral_congr_ae
       filter_upwards with w
       ring]
-  have hdeltaNonneg : 0 ≤ delta⁻¹ := inv_nonneg.mpr hdelta.le
+  pm_4935 hdeltaNonneg delta hdelta.le
   calc
     (∫ w : ℝ, heathBrownStrongSingularKernel delta w) +
         ∫ w : ℝ, heathBrownStrongSingularKernel delta w *
@@ -200,6 +191,7 @@ theorem integral_heathBrownStrongLongEdgeMajorant_le
       have hpi : 0 ≤ Real.pi := Real.pi_pos.le
       field_simp [hdelta.ne']
       nlinarith
+end
 
 theorem exists_norm_heathBrownLemmaThree_plusEdge_le :
     ∃ C : ℝ, 0 < C ∧ ∀ (delta t H : ℝ),
@@ -209,16 +201,10 @@ theorem exists_norm_heathBrownLemmaThree_plusEdge_le :
         (C / delta) * (1 + heathBrownFullCriticalMoment t) := by
   obtain ⟨B, hB, hPoint⟩ :=
     exists_norm_heathBrownLemmaThree_plusEdge_integrand_le
-  let C : ℝ := B * (2 + Real.pi)
-  have hC : 0 < C := mul_pos hB (by positivity)
+  pm_1182
   refine ⟨C, hC, ?_⟩
   intro delta t H hdelta hdeltaUpper hH ht
-  let F : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand
-    (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I)
-  let g : ℝ → ℝ := fun w => heathBrownStrongSingularKernel delta w *
-    (1 + heathBrownStrongMellinCriticalMoment delta (t + w))
-  have hg : Integrable g := by
-    simpa only [g] using integrable_heathBrownStrongLongEdgeMajorant hdelta t
+  pm_4433
   have hNorm := norm_VIntegral'_le_intervalIntegral_norm F
     (x := delta) (a := -H) (b := H) (by linarith)
   calc
@@ -244,15 +230,11 @@ theorem exists_norm_heathBrownLemmaThree_plusEdge_le :
       rw [intervalIntegral.integral_of_le (by linarith)]
       exact MeasureTheory.setIntegral_le_integral hg
         (Filter.Eventually.of_forall fun w => by
-          dsimp only [g]
-          have hm := heathBrownStrongMellinCriticalMoment_nonneg
-            (delta := delta) (t := t + w) hdelta
-          unfold heathBrownStrongSingularKernel
+          pm_4434
           positivity)
     _ ≤ B * (((2 + Real.pi) / delta) *
           (1 + heathBrownFullCriticalMoment t)) := by
-      gcongr
-      simpa only [g] using integral_heathBrownStrongLongEdgeMajorant_le hdelta t
+      pm_8398
     _ = (C / delta) * (1 + heathBrownFullCriticalMoment t) := by
       dsimp only [C]
       ring
@@ -273,13 +255,13 @@ theorem exists_norm_heathBrownLemmaThree_minusEdge_integrand_le :
     exists_heathBrown_offCritical_minus_strong_le
   refine ⟨G * P, D, mul_pos hG hP, hD, ?_⟩
   intro delta t w hdelta hdeltaUpper htw
-  have hden : 0 < delta + |w| := by positivity
+  pm_425 hden delta w
   have hGamma' :
       ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (w : ℂ) * I)‖ ≤
         G * Real.exp (-(4 / 3 : ℝ) * |w|) / (delta + |w|) := by
     apply (le_div_iff₀ hden).2
     simpa only [mul_comm] using (hGamma delta w hdelta hdeltaUpper).2
-  have hzeta := hMinus delta (t + w) hdelta hdeltaUpper htw
+  pm_8590 hMinus
   have harg :
       (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I) +
           (((-delta : ℝ) : ℂ) + (w : ℂ) * I) =
@@ -316,16 +298,10 @@ theorem exists_norm_heathBrownLemmaThree_minusEdge_le :
         ((C * Q) / delta) * (1 + heathBrownFullCriticalMoment t) := by
   obtain ⟨B, D, hB, hD, hPoint⟩ :=
     exists_norm_heathBrownLemmaThree_minusEdge_integrand_le
-  let C : ℝ := B * (2 + Real.pi)
-  have hC : 0 < C := mul_pos hB (by positivity)
-  refine ⟨C, D, hC, hD, ?_⟩
+  pm_1182
+  pm_505 C D hC hD
   intro delta t H Q hdelta hdeltaUpper hH ht hQ hUniform
-  let F : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand
-    (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I)
-  let g : ℝ → ℝ := fun w => heathBrownStrongSingularKernel delta w *
-    (1 + heathBrownStrongMellinCriticalMoment delta (t + w))
-  have hg : Integrable g := by
-    simpa only [g] using integrable_heathBrownStrongLongEdgeMajorant hdelta t
+  pm_4433
   have hNorm := norm_VIntegral'_le_intervalIntegral_norm F
     (x := -delta) (a := -H) (b := H) (by linarith)
   calc
@@ -347,10 +323,7 @@ theorem exists_norm_heathBrownLemmaThree_minusEdge_le :
           (by linarith [hw.1])
         have hfactor := hUniform w hw
         have hgNonneg : 0 ≤ g w := by
-          dsimp only [g]
-          have hm := heathBrownStrongMellinCriticalMoment_nonneg
-            (delta := delta) (t := t + w) hdelta
-          unfold heathBrownStrongSingularKernel
+          pm_4434
           positivity
         calc
           ‖F (((-delta : ℝ) : ℂ) + (w : ℂ) * I)‖ ≤
@@ -366,15 +339,11 @@ theorem exists_norm_heathBrownLemmaThree_minusEdge_le :
       rw [intervalIntegral.integral_of_le (by linarith)]
       exact MeasureTheory.setIntegral_le_integral hg
         (Filter.Eventually.of_forall fun w => by
-          dsimp only [g]
-          have hm := heathBrownStrongMellinCriticalMoment_nonneg
-            (delta := delta) (t := t + w) hdelta
-          unfold heathBrownStrongSingularKernel
+          pm_4434
           positivity)
     _ ≤ (B * Q) * (((2 + Real.pi) / delta) *
           (1 + heathBrownFullCriticalMoment t)) := by
-      gcongr
-      simpa only [g] using integral_heathBrownStrongLongEdgeMajorant_le hdelta t
+      pm_8398
     _ = ((C * Q) / delta) * (1 + heathBrownFullCriticalMoment t) := by
       dsimp only [C]
       ring
@@ -393,7 +362,7 @@ theorem heathBrownLemmaThree_minus_factor_le_exp_four
   have hargUpper : (t + w) / 2 + 2 ≤ t := by linarith [hw.2]
   have hlogUpper : Real.log ((t + w) / 2 + 2) ≤ Real.log t :=
     Real.log_le_log hargPos hargUpper
-  have hlogPos : 0 < Real.log t := Real.log_pos (by linarith)
+  pm_390 hlogPos t
   apply Real.exp_le_exp.mpr
   unfold heathBrownLemmaThreeDelta
   calc
@@ -422,7 +391,7 @@ theorem exists_eventually_heathBrownLemmaThree_fullMoment :
   obtain ⟨M, D, hM, hD, hMinus⟩ :=
     exists_norm_heathBrownLemmaThree_minusEdge_le
   let C : ℝ := 2 + P + M * Real.exp 4
-  have hC : 0 < C := by dsimp only [C]; positivity
+  pm_116 hC C
   refine ⟨C, hC, ?_⟩
   have hMinusFactor := eventually_heathBrownLemmaThree_minus_factor D
   filter_upwards [eventually_norm_heathBrownLemmaThree_horizontalEdges_le_one,
@@ -431,9 +400,8 @@ theorem exists_eventually_heathBrownLemmaThree_fullMoment :
       (Filter.eventually_ge_atTop (4 : ℝ)),
     Filter.eventually_ge_atTop (20 : ℝ)] with
       t hHorizontal hRadius hFactor hlog ht
-  let delta : ℝ := heathBrownLemmaThreeDelta t
-  let H : ℝ := heathBrownLemmaThreeRadius t
-  let s : ℂ := ((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I
+  pm_7273
+  pm_674 s t
   let f : ℂ → ℂ := heathBrownZetaSquareMellinIntegrand s
   let bottom : ℂ := HIntegral' f (-delta) delta (-H)
   let top : ℂ := HIntegral' f (-delta) delta H

@@ -12,13 +12,13 @@ public import MathCollab.Density.RectangleResidue
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
 public import Mathlib.Analysis.Complex.ExponentialBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Set MeasureTheory Filter
 open MathCollab.Density.Contour
 open scoped Topology Interval
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
@@ -41,7 +41,7 @@ theorem heathBrownZetaSquareMellinIntegrand_eq_gammaPoleCleared
   have hRec := Complex.Gamma_add_one w hw
   unfold heathBrownZetaSquareMellinIntegrand heathBrownGammaPoleNumerator
   rw [hRec]
-  field_simp [hw]
+  grind
 
 /-- Finite shift across Gamma's pole.  The condition `d < Re(1-s)` keeps the
 moving zeta pole strictly to the right of this rectangle. -/
@@ -53,24 +53,23 @@ theorem heathBrown_gammaPole_finite_rectangle
     RectangleIntegral' (heathBrownZetaSquareMellinIntegrand s)
         ((-delta : ℂ) - (H : ℂ) * I) ((d : ℂ) + (H : ℂ) * I) =
       riemannZeta s ^ 2 := by
-  let z : ℂ := (-delta : ℂ) - (H : ℂ) * I
-  let w : ℂ := (d : ℂ) + (H : ℂ) * I
+  pm_6897 delta
+  pm_4439 w d H
   let F : ℂ → ℂ := heathBrownGammaPoleNumerator s
-  have hzre : z.re ≤ w.re := by simp [z, w]; linarith
-  have hzim : z.im ≤ w.im := by simp [z, w]; linarith
+  pm_6550 hzre z.re w.re
+  pm_6550 hzim z.im w.im
   have hzero : Rectangle z w ∈ 𝓝 (0 : ℂ) := by
-    rw [rectangle_mem_nhds_iff, uIoo_of_le hzre, uIoo_of_le hzim,
-      mem_reProdIm, Set.mem_Ioo, Set.mem_Ioo]
-    simp [z, w, hdelta, hd, hH]
+    pm_6752
+    aesop
   have hF : DifferentiableOn ℂ F (Rectangle z w) := by
     intro u hu
     have huBounds := (mem_Rect hzre hzim u).mp hu
     have huLower : -delta ≤ u.re := by
-      have hzReal : z.re = -delta := by simp [z]
-      linarith [huBounds.1]
+      have hzReal : z.re = -delta := by aesop
+      grind
     have huUpper : u.re ≤ d := by
-      have hwReal : w.re = d := by simp [w]
-      linarith [huBounds.2.1]
+      have hwReal : w.re = d := by aesop
+      grind
     have huNegOne : -(1 : ℝ) < u.re := by linarith
     have hGamma : DifferentiableAt ℂ
         (fun v : ℂ => Complex.Gamma (v + 1)) u := by
@@ -79,7 +78,7 @@ theorem heathBrown_gammaPole_finite_rectangle
       intro m hm
       have hre := congrArg Complex.re hm
       simp at hre
-      have hmNonneg : (0 : ℝ) ≤ m := by positivity
+      pm_96 hmNonneg m
       linarith
     have hNotPole : s + u ≠ 1 := by
       intro hsu
@@ -94,7 +93,7 @@ theorem heathBrown_gammaPole_finite_rectangle
         (differentiableAt_const (c := s) |>.add differentiableAt_id)
     exact (hGamma.mul (hZeta.pow 2)).differentiableWithinAt
   have hSlope : HolomorphicOn (dslope F 0) (Rectangle z w) := by
-    change DifferentiableOn ℂ (dslope F 0) (Rectangle z w)
+    pm_1121
     exact (Complex.differentiableOn_dslope hzero).2 hF
   have hPrincipal : Set.EqOn
       ((fun u : ℂ => F u / u) - fun u => F 0 / (u - 0))
@@ -103,7 +102,7 @@ theorem heathBrown_gammaPole_finite_rectangle
     have hu0 : u ≠ 0 := hu.2
     rw [Pi.sub_apply, dslope_of_ne F hu0]
     simp only [slope, sub_zero, smul_eq_mul, vsub_eq_sub]
-    field_simp [hu0]
+    grind
   have hCleared := ResidueTheoremOnRectangleWithSimplePole
     (f := fun u : ℂ => F u / u) (g := dslope F 0)
     (p := 0) (A := F 0) hzre hzim hzero hSlope hPrincipal
@@ -137,21 +136,25 @@ noncomputable def heathBrownLemmaThreeDelta (t : ℝ) : ℝ :=
 noncomputable def heathBrownLemmaThreeRadius (t : ℝ) : ℝ :=
   Real.log t ^ (2 : ℕ)
 
-theorem heathBrownLemmaThreeDelta_pos {t : ℝ} (ht : 10 ≤ t) :
+section
+variable {t : ℝ} (ht : 10 ≤ t)
+include t ht
+theorem heathBrownLemmaThreeDelta_pos :
     0 < heathBrownLemmaThreeDelta t := by
   unfold heathBrownLemmaThreeDelta
   have := two_lt_log_of_ten_le ht
   positivity
 
-theorem heathBrownLemmaThreeDelta_lt_half {t : ℝ} (ht : 10 ≤ t) :
+theorem heathBrownLemmaThreeDelta_lt_half :
     heathBrownLemmaThreeDelta t < 1 / 2 := by
   unfold heathBrownLemmaThreeDelta
   exact one_div_lt_one_div_of_lt (by norm_num) (two_lt_log_of_ten_le ht)
 
-theorem heathBrownLemmaThreeRadius_pos {t : ℝ} (ht : 10 ≤ t) :
+theorem heathBrownLemmaThreeRadius_pos :
     0 < heathBrownLemmaThreeRadius t := by
   unfold heathBrownLemmaThreeRadius
   exact sq_pos_of_pos (by linarith [two_lt_log_of_ten_le ht])
+end
 
 /-- The exact residue identity used in the proof of Heath--Brown Lemma 3. -/
 theorem heathBrownLemmaThree_finiteRectangle (t : ℝ) (ht : 10 ≤ t) :
@@ -163,9 +166,8 @@ theorem heathBrownLemmaThree_finiteRectangle (t : ℝ) (ht : 10 ≤ t) :
         (((heathBrownLemmaThreeDelta t : ℝ) : ℂ) +
           (heathBrownLemmaThreeRadius t : ℂ) * I) =
       riemannZeta (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I) ^ 2 := by
-  let s : ℂ := ((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I
-  let delta : ℝ := heathBrownLemmaThreeDelta t
-  let H : ℝ := heathBrownLemmaThreeRadius t
+  pm_674 s t
+  pm_7273
   have hdelta : 0 < delta := heathBrownLemmaThreeDelta_pos ht
   have hdeltaHalf : delta < 1 / 2 := heathBrownLemmaThreeDelta_lt_half ht
   have hH : 0 < H := heathBrownLemmaThreeRadius_pos ht
@@ -176,7 +178,7 @@ theorem heathBrownLemmaThree_finiteRectangle (t : ℝ) (ht : 10 ≤ t) :
     (s := s) (delta := delta) (d := delta) (H := H)
     hdelta (hdeltaHalf.trans (by norm_num)) hdelta
     (by rw [hpRe]; exact hdeltaHalf) hH
-  simpa only [s, delta, H, ofReal_neg] using hrect
+  pm_99 s delta H ofReal_neg hrect
 
 /-- Expansion of the normalized source rectangle into its two horizontal
 and two vertical edges, retaining their orientations. -/
@@ -192,8 +194,7 @@ theorem heathBrownLemmaThree_rectangle_eq_edges (t : ℝ) :
         VIntegral' (heathBrownZetaSquareMellinIntegrand s) delta (-H) H -
         VIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta) (-H) H := by
   dsimp only
-  unfold RectangleIntegral' RectangleIntegral HIntegral' VIntegral'
-  simp [sub_re, sub_im, add_re, add_im, mul_re, mul_im]
+  pm_6090
   ring
 
 

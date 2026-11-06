@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.UniformEligibleEnergy
 public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,16 +17,16 @@ local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 structure Radial where
-  keep : O→Prop
+  keep : O→ Prop
   profile : 𝓢(ℝ,ℂ)
   scale : ℝ
-  scale_pos : 0<scale
+  scale_pos : 0< scale
   nonneg : ∀z:O,0≤(profile (‖ConcreteTraceCRT.eisEmbedding z‖^2/scale)).re
 
 def Radial.weight (r:Radial) (z:O) : ℝ :=
   if r.keep z then (r.profile (‖ConcreteTraceCRT.eisEmbedding z‖^2/r.scale)).re else 0
 
-lemma Radial.weight_nonneg (r:Radial) (z:O) : 0≤r.weight z := by
+lemma Radial.weight_nonneg (r:Radial) (z:O) : 0≤ r.weight z := by
   unfold Radial.weight
   split_ifs
   · exact r.nonneg z
@@ -45,35 +46,35 @@ def childEnergy (s:Data ι) (r:Radial) (D:Ideal O)
     (‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.X₁ s.X₂‖^2+
      ‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.Y₁ s.Y₂‖^2)
 
-lemma child_summable (s:Data ι) (r:Radial) (D:Ideal O)
+section
+variable (s:Data ι) (r:Radial)
+include s r
+lemma child_summable (D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) :
     Summable (fun z:O=>r.weight z*
     (‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.X₁ s.X₂‖^2+
      ‖allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P D a s.W₁ s.W₂ s.Y₁ s.Y₂‖^2)) := by
-  have hX:=allocated_positive_summable s.η s.m s.A s.t s.W₁ s.W₂ s.b₁ s.b₂ s.X₁ s.X₂
-    s.support₁ s.support₂ s.X₁_pos s.X₂_pos s.slots s.coefficient s.P D a
-    r.keep r.profile r.scale r.scale_pos
-  have hY:=allocated_positive_summable s.η s.m s.A s.t s.W₁ s.W₂ s.b₁ s.b₂ s.Y₁ s.Y₂
-    s.support₁ s.support₂ s.Y₁_pos s.Y₂_pos s.slots s.coefficient s.P D a
-    r.keep r.profile r.scale r.scale_pos
+  pm_8803 hX s.X₁ s.X₂ s.X₁_pos s.X₂_pos
+  pm_8803 hY s.Y₁ s.Y₂ s.Y₁_pos s.Y₂_pos
   convert hX.add hY using 1
   funext z
   unfold Radial.weight
-  split_ifs <;> ring
+  grind
 
-lemma finite_child_le (s:Data ι) (r:Radial) (S:Finset O) (D:Ideal O)
+lemma finite_child_le (S:Finset O) (D:Ideal O)
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2))) :
-    (finiteData s r S).childEnergy D a≤childEnergy s r D a := by
+    (finiteData s r S).childEnergy D a≤ childEnergy s r D a := by
   exact sum_le_hasSum S (fun z _=>mul_nonneg (r.weight_nonneg z)
     (add_nonneg (sq_nonneg _) (sq_nonneg _))) (child_summable s r D a).hasSum
 
-lemma energy_nonneg (s:Data ι) (r:Radial) (D:Ideal O) : 0≤energy s r D :=
+lemma energy_nonneg (D:Ideal O) : 0≤energy s r D :=
   tsum_nonneg (fun z=>mul_nonneg (r.weight_nonneg z) (sq_nonneg _))
+end
 
 theorem actual_source_from_children (N:ℕ) (hslots:Fintype.card ι≤N) (ε:ℝ) (hε:0<ε) :
     ∃C:ℝ,0<C ∧ ∀(s:Data ι) (r:Radial),∀D:Ideal O,Squarefree D → ∀E:ℝ,0≤E →
       (∀a∈s.toSource.active D,childEnergy s r D a≤E) →
-      energy s r D≤C*(Ideal.absNorm D:ℝ)^ε*s.profileFactor*E*
+      energy s r D ≤C*(Ideal.absNorm D:ℝ)^ε*s.profileFactor*E*
         ∑a∈s.toSource.active D,1/formalReductionFactor D a s.P := by
   obtain ⟨C,hC,hbound⟩:=CenteredMomentEligibleEnergy.actual_source_from_children N hslots ε hε
   refine ⟨C,hC,?_⟩

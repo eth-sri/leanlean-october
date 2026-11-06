@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalCubeReduction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ variable {ι : Type*} [Fintype ι]
 
 theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
     (n : ℕ) (hn : 0<n) (hwidth : (49/100:ℝ)≤n*e)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) (ψ : FreeRow→ι→Character) :
+    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) (ψ : FreeRow→ι→ Character) :
     ∃idx grid : FreeRow→ℕ,∀u : FreeRow,
       1 ≤ idx u ∧ idx u ≤ n ∧ grid u ≤ ⌊(49/100:ℝ)/e⌋₊ ∧
       let a : ℝ := 51/100+e*grid u
@@ -26,7 +27,7 @@ theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
       detectorMaximum (sourceDetectorFamily S hS η u (ψ u)) (3*(idx u+1:ℕ)*B)<a+2*e ∧
       (51/100<a → ∃j s,LFunction (sourceDetectorFamily S hS η u (ψ u) j) s=0 ∧
         ¬((sourceDetectorFamily S hS η u (ψ u) j).residue=1 ∧ s=1) ∧
-        a≤s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*B) := by
+        a≤ s.re ∧ s.re<a+e ∧ |s.im|≤3*idx u*B) := by
   have hex (u : FreeRow) := exists_detector_buffered_bin (sourceDetectorFamily S hS η u (ψ u)) B e hB he n hn hwidth
   choose idx grid hspec using hex
   refine ⟨idx,grid,?_⟩
@@ -51,10 +52,8 @@ theorem exists_source_cube_bin_number (e : ℝ) (he : 0<e) :
   nlinarith
 
 theorem source_cube_height_eventually (τ : ℝ) (hτ : 0<τ) :
-    ∀ᶠ Z : ℝ in atTop,1≤Z ∧ 2<Z^τ := by
-  filter_upwards [eventually_ge_atTop (1:ℝ),
-    (tendsto_rpow_atTop hτ).eventually (eventually_gt_atTop (2:ℝ))] with Z hZ hpow
-  exact ⟨hZ,hpow⟩
+    ∀ᶠ Z : ℝ in atTop,1≤Z ∧ 2<Z ^τ := by
+  pm_5560 eventually_ge_atTop hτ eventually_gt_atTop
 
 end SevenEighths.ProbeHighRowFamily
 

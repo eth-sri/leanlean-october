@@ -1,14 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceEncoding
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-noncomputable section
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -49,7 +49,7 @@ theorem actual_first_divisor_dvd_child
     primeSubsetGenerator (fun i => Ideal.span {p i}) D ∣
       ((m*b0Label p B v ε₁ ε₂)*r)*
         (((∏ i ∈ C,p i)*jLabel p B v ε₁ ε₂)*e*∏ i ∈ V,p i) := by
-  have hd := poisson_mask_generator_dvd p D (C∪B) hD
+  pm_8768 poisson_mask_generator_dvd
   rw [Finset.prod_union hCB] at hd
   have hb := cubeRadical_dvd_jLabel_b0 p B v ε₁ ε₂ hv
   change (∏ i ∈ B,p i) ∣ jLabel p B v ε₁ ε₂*b0Label p B v ε₁ ε₂ at hb
@@ -66,7 +66,7 @@ theorem actual_second_extracted_support_killed
         (((∏ j ∈ C,p j)*jLabel p B v ε₁ ε₂)*
           primeSubsetGenerator (fun j => Ideal.span {p j}) E*∏ j ∈ V,p j) ∈ Ideal.span {p i} := by
   let r := secondMaskQuotient p E G hEG
-  let e := primeSubsetGenerator (fun j => Ideal.span {p j}) E
+  pm_3818 e j E
   let T := ((m*b0Label p B v ε₁ ε₂)*r)*
     (((∏ j ∈ C,p j)*jLabel p B v ε₁ ε₂)*e*∏ j ∈ V,p j)
   have hb : (∏ j ∈ B,p j) ∣ T := by
@@ -108,15 +108,15 @@ theorem actual_second_split_fixed_family
         finiteCanonicalMarkedRow p hp hcop hg F Ψ ((m*b0Label p B v ε₁ ε₂)*r)
           (c*e*∏ i ∈ V,p i) (d*e*k) (slots\J) lists a W X := by
   dsimp only
-  let d := primeSubsetGenerator (fun i => Ideal.span {p i}) D
-  let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E
+  pm_3818 d i D
+  pm_3818 e i E
   let r := secondMaskQuotient p E G hEG
   let c := (∏ i ∈ C,p i)*jLabel p B v ε₁ ε₂
   have hd := actual_first_divisor_dvd_child p B C D V hCB hD v ε₁ ε₂ hv m r e
   have hk := actual_second_extracted_support_killed p B C G E V A hEG hA v ε₁ ε₂ hv m
   have hm : (m*b0Label p B v ε₁ ε₂*d)*r = ((m*b0Label p B v ε₁ ε₂)*r)*d := by ring
   have hX : primeProductNorm p V*X/primeProductNorm p V = X := by
-    field_simp [(primeProductNorm_pos p hp V).ne']
+    pm_7091 V
   unfold canonicalMarkedSplit
   rw [show m*b0Label p B v ε₁ ε₂*primeSubsetGenerator (fun i => Ideal.span {p i}) D *
       secondMaskQuotient p E G hEG = ((m*b0Label p B v ε₁ ε₂)*r)*d from hm]
@@ -126,7 +126,6 @@ theorem actual_second_split_fixed_family
   rw [finiteCanonicalMarkedRow_drop_puncture p hp hcop hg F Ψ _ d _ _ hd]
   rw [finiteCanonicalMarkedRow_restore_lists p hp hcop hg F A Ψ _ _ _ (slots\J) lists a W X hk]
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

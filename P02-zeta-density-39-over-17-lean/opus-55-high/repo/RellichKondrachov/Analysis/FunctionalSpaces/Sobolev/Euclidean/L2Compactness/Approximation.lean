@@ -16,6 +16,7 @@ public import Mathlib.MeasureTheory.Measure.WithDensity
 public import Mathlib.MeasureTheory.Measure.Haar.Unique
 public import Mathlib.MeasureTheory.Function.L2Space
 public import Mathlib.Probability.Moments.Variance
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -65,8 +66,10 @@ measure once `ψ ≥ 0` and `∫ ψ = 1`. -/
 noncomputable def kernelMeasure : Measure E :=
   (volume : Measure E).withDensity fun x => ENNReal.ofReal (ψ x)
 
-lemma kernelMeasure_univ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
-    (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1) :
+section
+variable (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x) (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1)
+include hψc hψcs hψ0 hψint
+lemma kernelMeasure_univ :
     kernelMeasure (E := E) ψ Set.univ = 1 := by
   have hψi : MeasureTheory.Integrable ψ (volume : Measure E) :=
     Continuous.integrable_of_hasCompactSupport (μ := (volume : Measure E)) hψc hψcs
@@ -83,18 +86,19 @@ lemma kernelMeasure_univ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (
         ∫⁻ x, ENNReal.ofReal (ψ x) ∂(volume : Measure E) := by
     simp [kernelMeasure, MeasureTheory.withDensity_apply, MeasurableSet.univ]
   -- Conclude using `∫ ψ = 1`.
-  simpa [hψint] using (hwd.trans hlin)
+  simp_all
 
 /-- The kernel measure `kernelMeasure ψ` is a probability measure when `ψ` is a continuous,
 compactly supported, nonnegative density integrating to `1`. -/
-lemma isProbabilityMeasure_kernelMeasure
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
-    (hψ0 : ∀ x, 0 ≤ ψ x)
-    (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1) :
+lemma isProbabilityMeasure_kernelMeasure :
     MeasureTheory.IsProbabilityMeasure (kernelMeasure (E := E) ψ) :=
   ⟨kernelMeasure_univ (E := E) (ψ := ψ) hψc hψcs hψ0 hψint⟩
+end
 
-lemma integral_kernelMeasure_eq_integral_smul (hψc : Continuous ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
+section
+variable (hψc : Continuous ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
+include hψc hψ0
+lemma integral_kernelMeasure_eq_integral_smul
     (g : E → ℝ) :
     (∫ x, g x ∂kernelMeasure (E := E) ψ) =
       ∫ x, (ψ x) • (g x) ∂(volume : Measure E) := by
@@ -110,23 +114,22 @@ lemma integral_kernelMeasure_eq_integral_smul (hψc : Continuous ψ) (hψ0 : ∀
   have hwd' :
       (∫ x, g x ∂kernelMeasure (E := E) ψ) =
         ∫ x, (ENNReal.ofReal (ψ x)).toReal • (g x) ∂(volume : Measure E) := by
-    simpa [kernelMeasure] using hwd
+    aesop
   -- Simplify `toReal (ofReal _)` using `ψ ≥ 0`.
   refine hwd'.trans ?_
-  refine integral_congr_ae ?_
-  refine ae_of_all _ (fun x => ?_)
+  pm_8729 x
   have hx : (ENNReal.ofReal (ψ x)).toReal = ψ x :=
     ENNReal.toReal_ofReal (hψ0 x)
   -- After rewriting `toReal (ofReal _)`, both sides are definitional.
-  simp [hx]
+  grind
 
-lemma integral_kernelMeasure_eq_integral_mul (hψc : Continuous ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
+lemma integral_kernelMeasure_eq_integral_mul
     (g : E → ℝ) :
     (∫ x, g x ∂kernelMeasure (E := E) ψ) =
       ∫ x, (ψ x) * (g x) ∂(volume : Measure E) := by
   simpa [smul_eq_mul] using integral_kernelMeasure_eq_integral_smul (E := E) (ψ := ψ) hψc hψ0 g
 
-lemma smoothFun_eq_integral_kernelMeasure (hψc : Continuous ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
+lemma smoothFun_eq_integral_kernelMeasure
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) (x : E) :
     smoothFun (E := E) (K := K) ψ u x =
       ∫ t, extendByZeroFun (E := E) (K := K) u (x - t) ∂kernelMeasure (E := E) ψ := by
@@ -138,21 +141,21 @@ lemma smoothFun_eq_integral_kernelMeasure (hψc : Continuous ψ) (hψ0 : ∀ x, 
       smoothFun (E := E) (K := K) ψ u x =
         ∫ t, (ψ t) * extendByZeroFun (E := E) (K := K) u (x - t) ∂(volume : Measure E) := by
     refine hconv.trans ?_
-    refine integral_congr_ae ?_
-    refine ae_of_all _ (fun t => ?_)
+    pm_8729 t
     -- In `ℝ`, scalar multiplication is multiplication, so we can commute the factors.
     change
       extendByZeroFun (E := E) (K := K) u (x - t) • ψ t =
         ψ t * extendByZeroFun (E := E) (K := K) u (x - t)
     rw [smul_eq_mul]
-    simp [mul_comm]
+    grind
   -- Rewrite the convolution integral as an integral against the density measure.
   have hwd :
       (∫ t, extendByZeroFun (E := E) (K := K) u (x - t) ∂kernelMeasure (E := E) ψ) =
         ∫ t, (ψ t) * extendByZeroFun (E := E) (K := K) u (x - t) ∂(volume : Measure E) := by
     exact integral_kernelMeasure_eq_integral_mul (E := E) (ψ := ψ) hψc hψ0
       (g := fun t => extendByZeroFun (E := E) (K := K) u (x - t))
-  exact hconv'.trans hwd.symm
+  grind
+end
 
 lemma sq_integral_le_integral_sq_of_isProbabilityMeasure {α : Type*} [MeasurableSpace α]
     (μ : Measure α) [MeasureTheory.IsProbabilityMeasure μ] (f : α → ℝ)
@@ -184,10 +187,9 @@ lemma norm_sq_translateL2_sub_extendByZeroL2_eq_integral_sq (t : E)
         (extendByZeroFun (E := E) (K := K) u (x - t) - extendByZeroFun (E := E) (K := K) u x) ^ 2
           ∂(volume : Measure E) := by
   classical
-  let F : (E →₂[(volume : Measure E)] ℝ) := extendByZeroL2 (E := E) (K := K) hKm u
-  let f : E → ℝ := extendByZeroFun (E := E) (K := K) u
-  have hF_ae : (F : E → ℝ) =ᵐ[(volume : Measure E)] f :=
-    extendByZeroL2_ae_eq (E := E) (K := K) (hKm := hKm) u
+  pm_2740
+  pm_2742
+  pm_2741
   -- Translate AE equality along `x ↦ x - t`.
   have hF_shift :
       (fun x : E => (F : E → ℝ) (x - t)) =ᵐ[(volume : Measure E)] fun x => f (x - t) := by
@@ -258,26 +260,26 @@ private lemma kernelMeasure_le_smul_volume (hψc : Continuous ψ) (hψcs : HasCo
   refine hle.trans ?_
   simp
 
-lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
-    (hψ0 : ∀ x, 0 ≤ ψ x) (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1) (hKm : MeasurableSet K)
+set_option hygiene false in
+macro "pb_2262" : tactic => `(tactic| (
+  have hF : MeasureTheory.MemLp (fun x : E => (F : E → ℝ) x) (2 : ℝ≥0∞) (volume : Measure E) :=
+    MeasureTheory.Lp.memLp F))
+section
+variable (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x) (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1)
+include hψc hψcs hψ0 hψint
+lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq (hKm : MeasurableSet K)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) (x : E) :
     (smoothFun (E := E) (K := K) ψ u x - extendByZeroFun (E := E) (K := K) u x) ^ 2 ≤
       ∫ t,
         (extendByZeroFun (E := E) (K := K) u (x - t) - extendByZeroFun (E := E) (K := K) u x) ^ 2
           ∂kernelMeasure (E := E) ψ := by
-  classical
-  let μ : Measure E := kernelMeasure (E := E) ψ
-  have : MeasureTheory.IsProbabilityMeasure μ :=
-    isProbabilityMeasure_kernelMeasure (E := E) (ψ := ψ) hψc hψcs hψ0 hψint
-  have : MeasureTheory.IsFiniteMeasure μ := by infer_instance
+  pm_2743
   rcases kernelMeasure_le_smul_volume (E := E) (ψ := ψ) hψc hψcs hψ0 with ⟨c, hc_top, hμle⟩
-  let f : E → ℝ := extendByZeroFun (E := E) (K := K) u
+  pm_2742
   have hf_vol : MeasureTheory.MemLp f (2 : ℝ≥0∞) (volume : Measure E) := by
     -- Use the `L²` packaging of `extendByZeroFun` and the AE bridge.
-    let F : (E →₂[(volume : Measure E)] ℝ) := extendByZeroL2 (E := E) (K := K) hKm u
-    have hF : MeasureTheory.MemLp (fun x : E => (F : E → ℝ) x) (2 : ℝ≥0∞) (volume : Measure E) :=
-      MeasureTheory.Lp.memLp F
+    pm_2740
+    pb_2262
     have hF_ae : (fun x : E => (F : E → ℝ) x) =ᵐ[(volume : Measure E)] f :=
       extendByZeroL2_ae_eq (E := E) (K := K) (hKm := hKm) u
     exact (MeasureTheory.memLp_congr_ae hF_ae).1 hF
@@ -334,28 +336,21 @@ lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
   simpa [hdiff, μ, f] using hJ
 
 lemma norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_extendByZeroL2
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
-    (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
     ‖smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u - extendByZeroL2 (E := E) (K := K) hKm u‖ ^ 2 ≤
       ∫ t,
         ‖(translateL2 (μ := (volume : Measure E)) (-t)) (extendByZeroL2 (E := E) (K := K) hKm u)
             - extendByZeroL2 (E := E) (K := K) hKm u‖ ^ 2
           ∂kernelMeasure (E := E) ψ := by
-  classical
-  let μ : Measure E := kernelMeasure (E := E) ψ
-  have : MeasureTheory.IsProbabilityMeasure μ :=
-    isProbabilityMeasure_kernelMeasure (E := E) (ψ := ψ) hψc hψcs hψ0 hψint
-  have : MeasureTheory.IsFiniteMeasure μ := by infer_instance
+  pm_2743
   have : MeasureTheory.SFinite μ := by infer_instance
-  let F : (E →₂[(volume : Measure E)] ℝ) := extendByZeroL2 (E := E) (K := K) hKm u
-  let f : E → ℝ := extendByZeroFun (E := E) (K := K) u
+  pm_2740
+  pm_2742
   let S : (E →₂[(volume : Measure E)] ℝ) := smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u
   have hS_ae :
       (S : E → ℝ) =ᵐ[(volume : Measure E)] smoothFun (E := E) (K := K) ψ u :=
     smoothL2_ae_eq (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs u
-  have hF_ae : (F : E → ℝ) =ᵐ[(volume : Measure E)] f :=
-    extendByZeroL2_ae_eq (E := E) (K := K) (hKm := hKm) u
+  pm_2741
   have hSF_ae :
       (fun x : E => (S - F) x) =ᵐ[(volume : Measure E)] fun x =>
         smoothFun (E := E) (K := K) ψ u x - f x := by
@@ -396,8 +391,7 @@ lemma norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_ex
   let h : E × E → ℝ := fun z => (f (z.1 - z.2) - f z.1) ^ 2
   have hf_mem : MeasureTheory.MemLp f (2 : ℝ≥0∞) (volume : Measure E) := by
     -- Again use the AE bridge from the `L²` packaging.
-    have hF : MeasureTheory.MemLp (fun x : E => (F : E → ℝ) x) (2 : ℝ≥0∞) (volume : Measure E) :=
-      MeasureTheory.Lp.memLp F
+    pb_2262
     exact (MeasureTheory.memLp_congr_ae hF_ae).1 hF
   have hf_sq_int : MeasureTheory.Integrable (fun x : E => (f x) ^ 2) (volume : Measure E) := by
     have hf_int :
@@ -516,6 +510,7 @@ lemma norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_ex
     exact this.trans_eq (hswap.trans hRHS_rewrite)
   -- Restore the original statement.
   simpa [S, F, μ] using hmain
+end
 
 end Volume
 

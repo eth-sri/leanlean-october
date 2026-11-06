@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.ThreeBlocks
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,9 @@ def ramifiedBlock [∀ i, (Ideal.span {p i}).IsMaximal]
   ∏ i ∈ S, unitArgumentFactor (actualSextic (Ideal.span {p i}) (hg i)) (j i)
     (Ideal.Quotient.mk _ (u.val*λ₀^m))
 
-theorem ramifiedPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem ramifiedPhase_three_blocks
     (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F) (hu : (R ∪ P) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1) (hPj : ∀ i ∈ P, j i = 0)
@@ -30,18 +33,18 @@ theorem ramifiedPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
   have hh : ramifiedBranchPhase (fun i => Ideal.span {p i}) hg j u m =
       ramifiedBlock hg j R u m * ramifiedBlock hg j P u m * ramifiedBlock hg j F u m := by
     unfold ramifiedBranchPhase ramifiedBlock
-    rw [← Finset.prod_union hRP,← Finset.prod_union hF,hu]
+    pm_8754 hRP
     rfl
   rw [hh]
   congr 2
   · apply Finset.prod_congr rfl
     intro i hi
-    rw [hRj i hi]
+    grind
   · apply Finset.prod_congr rfl
     intro i hi
-    rw [hPj i hi]
+    grind
 
-theorem modelRowPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem modelRowPhase_three_blocks
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
@@ -61,6 +64,7 @@ theorem modelRowPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [activePhase_three_blocks D hp hg hcop hprimary R P F hRP hF hu j hRj hPj,
     ramifiedPhase_three_blocks hg R P F hRP hF hu j hRj hPj]
   ring
+end
 
 end
 end SevenEighths.InverseReflectedPhase

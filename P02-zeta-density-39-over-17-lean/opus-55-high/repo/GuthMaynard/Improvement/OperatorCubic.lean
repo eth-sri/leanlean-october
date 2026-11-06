@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.OperatorKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
 open scoped InnerProductSpace
@@ -14,11 +14,12 @@ def operatorFrequency (μ ν : Measure ℝ) [IsFiniteMeasure μ]
   operatorIntegral ν (fun x => A x • operatorPhase μ (f x))
     (fun x => operatorPhase μ (f x))
 
+section
+variable (μ ν : Measure ℝ) [IsFiniteMeasure μ] [IsFiniteMeasure ν] {A : ℝ → ℂ} {f : ℝ → ℝ} {B : ℝ} (hA : Measurable A) (hf : Measurable f)
+include μ ν A f B hA hf
 /-- All analytic premises for the nuclear presentation follow from ordinary
 bounded measurable data and finite frequency/time measures. -/
-theorem operator_frequency_inputs (μ ν : Measure ℝ)
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    {A : ℝ → ℂ} {f : ℝ → ℝ} {B : ℝ} (hA : Measurable A) (hf : Measurable f)
+theorem operator_frequency_inputs
     (_hB : 0 ≤ B) (hb : ∀ x, ‖A x‖ ≤ B) :
     AEStronglyMeasurable (fun x => A x • operatorPhase μ (f x)) ν ∧
     AEStronglyMeasurable (fun x => operatorPhase μ (f x)) ν ∧
@@ -39,16 +40,14 @@ theorem operator_frequency_inputs (μ ν : Measure ℝ)
 /-- Genuine operator cubic trace equals the independently defined time
 kernel cubic. A countable Hilbert basis is explicit; no spectral basis or
 trace identity is included as a premise. -/
-theorem operator_frequency_cubic (μ ν : Measure ℝ)
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    {A : ℝ → ℂ} {f : ℝ → ℝ} {B : ℝ} (hA : Measurable A) (hf : Measurable f)
+theorem operator_frequency_cubic
     (hB : 0 ≤ B) (hb : ∀ x, ‖A x‖ ≤ B)
     {ι : Type*} [Countable ι] (b : HilbertBasis ι ℂ (Lp ℂ 2 μ)) :
     operatorDiagonalTrace b ((operatorFrequency μ ν A f)^3) =
       kernelCubic μ (frequencyKernel ν A f) := by
-  let : IsFiniteMeasure (tripleMeasure μ) := by unfold tripleMeasure; infer_instance
-  let : IsFiniteMeasure (tripleMeasure ν) := by unfold tripleMeasure; infer_instance
-  obtain ⟨hx,hy,hxy⟩ := operator_frequency_inputs μ ν hA hf hB hb
+  pm_4550
+  pm_4552
+  pm_957 hx hy hxy operator_frequency_inputs μ ν hA hf hB hb
   rw [operatorFrequency,operatorIntegral_cubic_cycle ν b hx hy hxy,
     frequencyKernel_cubic μ ν hA hf hB hb]
   let Q : Triple → ℂ := fun x => (A x.1*A x.2.1*A x.2.2)*
@@ -60,14 +59,7 @@ theorem operator_frequency_cubic (μ ν : Measure ℝ)
   change _ = ∫ x, Q x ∂tripleMeasure ν
   have hQi : Integrable Q (ν.prod (ν.prod ν)) := hQ
   rw [tripleMeasure,integral_prod _ hQi]
-  apply integral_congr_ae
-  filter_upwards [hQi.prod_right_ae] with x hxQ
-  rw [integral_prod _ hxQ]
-  apply integral_congr_ae
-  filter_upwards with y
-  apply integral_congr_ae
-  filter_upwards with z
-  simp only [inner_smul_right,operator_phase_pairing,Q]
-  ring
+  pm_878 hQi.prod_right_ae
+end
 
 end GuthMaynard.Improvement

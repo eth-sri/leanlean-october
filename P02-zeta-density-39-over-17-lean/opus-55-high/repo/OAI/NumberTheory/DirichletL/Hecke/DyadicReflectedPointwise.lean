@@ -1,11 +1,11 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical Topology ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
@@ -32,18 +32,17 @@ theorem reflected_polynomial_bound (e ε : ℝ)
       let Kr := Cr*Q^(a-1/2+6*e)*R^(6*e+2*ε)*(3+H)^2*
         (presentationComplexity (χ j) H)^ε
       ‖polynomial (χ j) false W D σ freq‖≤(1/(2*Real.pi))*
-        (C₂*D^(1/2-a-6*e)*Kr*Real.pi +
-         2*(Cn*D^(3/2 : ℝ)*Kg/(1+V)^n)*|1+a+6*e| +
-         (Cn*D^(3/2 : ℝ)*HeckeReciprocalBound.bound 2)/(1+V)^n*Real.pi) := by
-  obtain ⟨Cg,hCg,hglobal⟩ := original_upper_strip ε hε
-  obtain ⟨Cr,hCr,hreflect⟩ := buffered_reflected_line_control e ε he he' hε
-  refine ⟨Cg,Cr,hCg,hCr,?_⟩
+        (C₂*D ^(1/2-a-6*e)*Kr*Real.pi +
+         2*(Cn*D ^(3/2 : ℝ)*Kg/(1+V)^n)*|1+a+6*e| +
+         (Cn*D ^(3/2 : ℝ)*HeckeReciprocalBound.bound 2)/(1+V)^n*Real.pi) := by
+  pm_69 Cg hCg hglobal original_upper_strip ε hε
+  pm_3547 Cr hCr hreflect buffered_reflected_line_control e ε he he' hε
+  pm_119 Cg Cr hCg hCr
   intro ι _ χ hχ T a i hT ha ha' hmax j W A B hA hWs hW
     D σ freq V C₂ Cn n hD hV hfreq hC₂ hCn hm₂ hmn
   dsimp only
-  let H : ℝ := (3*i+2 : ℕ)*T
-  let Q : ℝ := (χ j).modulus.absNorm
-  let R : ℝ := (radical (χ j).modulus).absNorm
+  pm_6703
+  pm_6585 R radical
   let Kg := Cg*Q^(3/5 : ℝ)*R^(1/10+ε)*(3+H)^2
   let Kr := Cr*Q^(a-1/2+6*e)*R^(6*e+2*ε)*(3+H)^2*
     (presentationComplexity (χ j) H)^ε
@@ -84,6 +83,5 @@ theorem reflected_polynomial_bound (e ε : ℝ)
 
 end SevenEighths.HeckeDyadic
 
-end
 
 end OAI

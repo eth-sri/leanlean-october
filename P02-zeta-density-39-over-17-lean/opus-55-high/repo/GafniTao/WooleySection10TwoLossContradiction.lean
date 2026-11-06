@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection6TwoLoss
 public import GafniTao.WooleySection10Contradiction
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The Section 10 contradiction with separately quantified losses
@@ -14,7 +15,6 @@ of `epsilon` and `tau` implicit in the paper's hierarchy notation.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The numerical comparison remains contradictory when the initial and
 terminal estimates use two different nonnegative losses. -/
@@ -41,21 +41,20 @@ theorem wooley_section10_force_final_bound_twoLoss
     (N : ℝ) * Lambda / (2 * (k : ℝ)) ≤ 4 * (s : ℝ) := by
   let zeta := max eta epsilon
   have hzeta : 0 ≤ zeta := by exact le_max_of_le_left heta
-  have hetaZeta : eta ≤ zeta := le_max_left _ _
-  have hepsilonZeta : epsilon ≤ zeta := le_max_right _ _
+  pm_5146 hetaZeta eta zeta hepsilonZeta epsilon
   have hHzeta : (H : ℝ) * zeta ≤ theta := by
     dsimp only [zeta]
     rcases le_total eta epsilon with h | h
     · simpa only [max_eq_right h] using hHepsilon
     · simpa only [max_eq_left h] using hHeta
-  have hpOne : (1 : ℝ) ≤ p := by exact_mod_cast (show 1 ≤ p by omega)
+  pm_478 hpOne p
   have hinitialZeta :
       C0⁻¹ * (p : ℝ) ^
           (-((H : ℝ) * zeta) - (s : ℝ) * theta) ≤ K0 := by
     have hexp :
         -((H : ℝ) * zeta) - (s : ℝ) * theta ≤
           -((H : ℝ) * eta) - (s : ℝ) * theta := by
-      have hH0 : (0 : ℝ) ≤ H := by positivity
+      pm_96 hH0 H
       nlinarith
     exact (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_exponent_le hpOne hexp)
@@ -135,8 +134,7 @@ theorem wooleySourcePolynomial_iterationChain_contradict_twoLoss
       r a b nu Lambda gamma
   have hKnonneg : ∀ r a b, 0 ≤ K r a b := by
     intro r a b
-    exact wooleySourceNormalizedMixedMean_nonneg
-      phi p B H (wooleyTriangular k) r a b nu Lambda gamma
+    pm_6690
   obtain ⟨aFinal, bFinal, rFinal, R, Cacc, E,
     haFinal, hbFinal, hrelFinal, hrFinal, hrFinalTop,
     hRpos, hRone, hweighted, hscale, hCacc, hCaccUpper,
@@ -189,6 +187,5 @@ theorem wooleySourcePolynomial_iterationChain_contradict_twoLoss
     hterminal hHeta hHepsilon hconstants
 
 
-end
 
 end GafniTao

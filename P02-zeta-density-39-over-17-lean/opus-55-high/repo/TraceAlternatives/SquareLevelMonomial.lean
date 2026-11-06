@@ -1,6 +1,7 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,18 +24,12 @@ theorem square_level_monomial_le {q M T U D P s v r : ℝ}
       _ ≤ (2*M^2)^s := Real.rpow_le_rpow hq hqM hs
       _ = (2:ℝ)^s*M^(2*s) := by
         rw [Real.mul_rpow (by norm_num) (sq_nonneg M),← Real.rpow_natCast_mul hM.le]
-        norm_num only [Nat.cast_ofNat]
+        grind
       _ ≤ 256*M^(2*s) := by
-        apply mul_le_mul_of_nonneg_right _ (by positivity)
-        have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2) hs8
-        norm_num at hh
-        exact hh
+        pm_290 hh hs8
   have hTPow : (2*T)^v ≤ 2*T^v := by
     rw [Real.mul_rpow (by norm_num) hT.le]
-    apply mul_le_mul_of_nonneg_right _ (by positivity)
-    have hh := Real.rpow_le_rpow_of_exponent_le (by norm_num : (1:ℝ)≤2) hv1
-    norm_num at hh
-    exact hh
+    pm_290 hh hv1
   have hDPow : D^r ≤ P^10 := by
     exact (Real.rpow_le_rpow hD.le hDP hr).trans
       (by simpa only [Real.rpow_ofNat] using Real.rpow_le_rpow_of_exponent_le hP hr10)

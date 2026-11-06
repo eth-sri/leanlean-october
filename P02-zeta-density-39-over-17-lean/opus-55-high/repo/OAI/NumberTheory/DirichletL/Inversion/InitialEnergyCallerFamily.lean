@@ -1,14 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerCanonical
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFamily
 local notation "Eis" => ActualEisensteinCubic.O
@@ -39,7 +39,7 @@ theorem common_killed (G E V : Finset ι) (_hE : E⊆G) (j d t : Eis)
 theorem marked_child_original_lists (F G E V : Finset ι) (hE : E⊆G)
     (Ψ : Eis →* ℂ) (j d t h : Eis)
     (hd : Ideal.span {d}=sourceIdeal p E) (ht : Ideal.span {t}=sourceIdeal p (G\E))
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (X : ℝ) :
     (∑ N∈(F\V).powerset,
       secondChildColumn p hp hcop hg Ψ (j*t) (d*∏ i∈V,p i) (d*h)
@@ -54,24 +54,22 @@ theorem marked_child_original_lists (F G E V : Finset ι) (hE : E⊆G)
     (d*∏ i∈V,p i) (d*h) (slots\J) lists a W (X/primeProductNorm p V)
     (common_killed p G E V hE j d t hd ht)]
 
+section
+variable (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1) (G E V : Finset ι)
+include hpr G E V
 omit [DecidableEq σ] in
-theorem normalized_child_uniform
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (G E V : Finset ι) (d t : Eis)
+theorem normalized_child_uniform (d t : Eis)
     (hd : Ideal.span {d}=sourceIdeal p E) (ht : Ideal.span {t}=sourceIdeal p (G\E)) :
     ∃ u : Eisˣ, d=(u:Eis)*primaryGenerator (sourceIdeal p E) ∧
       ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis)
-        (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ) (W : ℝ→ℂ) (X : ℝ),
+        (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ) (W : ℝ→ℂ) (X : ℝ),
       finiteCanonicalMarkedRow p hp hcop hg F Ψ (j*t) (d*∏ i∈V,p i) (d*h)
         slots lists a W X =
       finiteCanonicalMarkedRow p hp hcop hg F Ψ (j*primaryGenerator (sourceIdeal p (G\E)))
         (primaryGenerator (sourceIdeal p E*sourceIdeal p V))
         (primaryGenerator (sourceIdeal p E)*((u:Eis)^5*h)) slots lists a W X := by
-  have hgen : primaryGenerator (sourceIdeal p E)≠0 := by
-    rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
-  obtain ⟨u,hu⟩ := generator_eq_unit_primary (sourceIdeal p E) d hd hgen
-  refine ⟨u,hu,?_⟩
+  pm_1503 E
+  pm_7607 d hd hgen
   intro F Ψ j h slots lists a W X
   obtain ⟨v,hv,hcol⟩ := initial_poisson_child_normalized p hp hcop hg hpr G E V Ψ j d t h hd ht
   have huv : v=u := by
@@ -83,13 +81,11 @@ theorem normalized_child_uniform
   intro N hN
   exact hcol _ N
 
-theorem fresh_initial_split_fixed_family
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (G E V : Finset ι) (hE : E⊆G) (d t : Eis)
+theorem fresh_initial_split_fixed_family (hE : E⊆G) (d t : Eis)
     (hd : Ideal.span {d}=sourceIdeal p E) (ht : Ideal.span {t}=sourceIdeal p (G\E)) :
     ∃ u : Eisˣ, d=(u:Eis)*primaryGenerator (sourceIdeal p E) ∧
       ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis)
-        (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ) (W : ℝ→ℂ) (X : ℝ),
+        (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ) (W : ℝ→ℂ) (X : ℝ),
       (∑ N∈(F\V).powerset,
         secondChildColumn p hp hcop hg Ψ (j*t) (d*∏ i∈V,p i) (d*h)
           (fun U=>primeMark slots lists a (G∪V∪U)*W (primeProductNorm p U/X)) N) =
@@ -124,9 +120,9 @@ theorem fresh_initial_split_fixed_family
       apply Finset.sum_congr rfl
       intro J hJ
       rw [hnorm F Ψ j h (slots\J) lists a W X]
+end
 
 end SevenEighths.InverseInitialEnergyCallerFamily
 
-end
 
 end OAI

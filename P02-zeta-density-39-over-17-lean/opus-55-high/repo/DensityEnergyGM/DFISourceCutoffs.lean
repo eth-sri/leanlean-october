@@ -6,6 +6,7 @@ public import Mathlib.Analysis.Normed.Group.Bounded
 public import DensityEnergyGM.DFIDelta
 public import DensityEnergyGM.DFIEstimates
 public import DensityEnergyGM.DFIEquation21
+public import GuthMaynard.AffineSource.Foundation
 
 @[expose] public section
 
@@ -32,11 +33,7 @@ noncomputable def dfiStandardRedundantBump (U : ℝ) (hU : 0 < U) :
 
 /-! ## A genuinely scale-uniform redundant-cutoff family -/
 
-/-- One fixed unit-scale bump.  Rescaling this function, rather than choosing
-a new bump at every physical scale, preserves one family of derivative
-constants. -/
-noncomputable def dfiUnitRedundantBump : ContDiffBump (0 : ℝ) :=
-  ⟨1 / 2, 1, by norm_num, by norm_num⟩
+export RiemannZeta.GuthMaynard (dfiUnitRedundantBump)
 
 /-! ## A genuinely scale-uniform equation-(9) family -/
 

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.GramMobiusPool
 public import OAI.NumberTheory.DirichletL.Detector.GramMobiusLattice
 public import OAI.NumberTheory.DirichletL.Detector.GramShell
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,16 +34,12 @@ lemma shell_window_support (W : ℝ→ℂ) (hW : HasCompactSupport W) (N : ℝ) 
     (U : SchwartzMap ℝ ℂ) (v T : ℝ) (I J : SupportedIdeal)
     (h : I∉lowGaussColumns W hW N hN ∨ J∉lowGaussColumns W hW N hN) :
     shellProfile W v U T ((Ideal.absNorm I.val:ℝ)/N) ((Ideal.absNorm J.val:ℝ)/N)=0 := by
-  rcases h with h|h
-  · apply shellProfile_zero_left
-    simpa only [lowGaussColumns_mem,not_not] using h
-  · apply shellProfile_zero_right
-    simpa only [lowGaussColumns_mem,not_not] using h
+  pm_5281 lowGaussColumns_mem
 
 theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
     (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C k : O) (hC : λ₀^2∣C-1)
     (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
+    (P : ι→ Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
     (W : ℝ→ℂ) (hW : HasCompactSupport W) (N : ℝ) (hN : 0<N)
     (U : SchwartzMap ℝ ℂ) (v T : ℝ) :
     (∑I∈lowGaussColumns W hW N hN,∑J∈lowGaussColumns W hW N hN,
@@ -51,14 +48,14 @@ theorem original_window_mobius_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
           shellProfile W v U T ((Ideal.absNorm I.val:ℝ)/N) ((Ideal.absNorm J.val:ℝ)/N) else 0)=
       ∑D∈divisorPool (lowGaussColumns W hW N hN) Subtype.val,(moebius D:ℂ)*
         ∑'n : O,∑'m : O,
-          jointExtension S hS σ C k u a b r hr P hg c (primaryGenerator D*n) (primaryGenerator D*m)*
+          jointExtension S hS σ C k u a b r hr P hg c (primaryGenerator D *n) (primaryGenerator D *m)*
             shellProfile W v U T (‖eisEmbedding n‖^2/(N/Ideal.absNorm D))
               (‖eisEmbedding m‖^2/(N/Ideal.absNorm D)) := by
   let F := lowGaussColumns W hW N hN
   let f := fun I J : SupportedIdeal=>jointExtension S hS σ C k u a b r hr P hg c
     (primaryGenerator I.val) (primaryGenerator J.val)*
       shellProfile W v U T ((Ideal.absNorm I.val:ℝ)/N) ((Ideal.absNorm J.val:ℝ)/N)
-  have hf : ∀I J,I∉F ∨ J∉F→f I J=0 := by
+  have hf : ∀I J,I∉F ∨ J∉F→ f I J=0 := by
     intro I J h
     dsimp [f]
     rw [shell_window_support W hW N hN U v T I J h,mul_zero]

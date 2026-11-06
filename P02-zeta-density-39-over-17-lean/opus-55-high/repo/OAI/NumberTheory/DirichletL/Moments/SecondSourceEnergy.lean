@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.FirstSectorEnergy
 public import OAI.NumberTheory.DirichletL.Moments.OriginalChildEnergy
 public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,8 +29,7 @@ theorem heightCoeff_mul (τ : Character) (t : ℝ) (I J : Ideal O) :
     exact_mod_cast Complex.mul_cpow_ofReal_nonneg
       (Nat.cast_nonneg (Ideal.absNorm I):(0:ℝ)≤Ideal.absNorm I)
       (Nat.cast_nonneg (Ideal.absNorm J):(0:ℝ)≤Ideal.absNorm J) (Complex.I*t)
-  simp only [heightCoeff,map_mul,Nat.cast_mul,hpow]
-  ring
+  pm_3543 heightCoeff map_mul Nat.cast_mul hpow
 
 end SevenEighths.CenteredMomentSecondSourceEnergy
 

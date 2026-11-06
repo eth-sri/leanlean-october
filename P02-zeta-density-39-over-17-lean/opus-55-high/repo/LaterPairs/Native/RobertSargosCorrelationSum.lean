@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCorrelationSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -20,9 +21,8 @@ theorem robertSargos_h_overlap_subset (H : ℕ) (r : ℤ) :
     robertSargosHOverlap H r ⊆ Finset.Icc (1:ℤ) (2*H) := by
   intro h hh
   have ht := (mem_robertSargosHOverlap H h r).mp hh
-  simp only [Finset.mem_Ico] at ht
-  simp only [Finset.mem_Icc]
-  constructor <;> omega
+  pm_415 Finset.mem_Ico ht Finset.mem_Icc
+  grind
 
 theorem robertSargos_m_overlap_subset (M H : ℕ) (h q r : ℤ)
     (hh : h ∈ robertSargosHOverlap H r) :
@@ -32,7 +32,7 @@ theorem robertSargos_m_overlap_subset (M H : ℕ) (h q r : ℤ)
   have hu := (mem_robertSargosMOverlap M m h q r).mp hm
   simp only [Finset.mem_Ico] at ht
   simp only [Finset.mem_Icc] at hu ⊢
-  constructor <;> omega
+  grind
 
 def robertSargosMixedCorrelation (f : ℝ → ℝ) (M H : ℕ) (q r : ℤ) : ℂ :=
   ∑ h ∈ robertSargosHOverlap H r, ∑ m ∈ robertSargosMOverlap M h q r,

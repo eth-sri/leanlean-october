@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FixedSquare
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -14,8 +15,10 @@ local notation "Eis" => ActualEisensteinCubic.O
 def sourceGridCoefficient (beta : Ideal Eis → Ideal Eis → ℂ)
     (t c m h : Ideal Eis) : ℂ := beta (c * m) ((c * h) * t ^ 2)
 
+section
+variable (D : Finset HybridColumnData) (t : Ideal Eis) (hD : ∀ d ∈ D, d.square = t)
+include D t hD
 theorem reconstructed_fixed_square_grid
-    (D : Finset HybridColumnData) (t : Ideal Eis) (hD : ∀ d ∈ D, d.square = t)
     (Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ)
     (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) :
     (∑ d ∈ D, ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d) =
@@ -24,10 +27,7 @@ theorem reconstructed_fixed_square_grid
   unfold maskedGridHybridRow hybridGridSupport
   rw [Finset.sum_image]
   · simp only [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro d hd
-    apply Finset.sum_congr rfl
-    intro P hP
+    pm_3397 d hd P hP
     simp only [reconstructedHybridTerm, HybridColumnData.gridIndex,
       sourceGridCoefficient, hD d hd]
     ac_rfl
@@ -35,7 +35,6 @@ theorem reconstructed_fixed_square_grid
     exact HybridColumnData.gridIndex_injective_on_square t (hD d hd) (hD e he) hg
 
 theorem reconstructed_fixed_square_energy_le
-    (D : Finset HybridColumnData) (t : Ideal Eis) (hD : ∀ d ∈ D, d.square = t)
     (rows Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ)
     (beta : Ideal Eis → Ideal Eis → ℂ) :
     (∑ k ∈ rows, ‖∑ d ∈ D, ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d‖ ^ 2) ≤
@@ -45,9 +44,10 @@ theorem reconstructed_fixed_square_energy_le
   intro k hk
   rw [reconstructed_fixed_square_grid D t hD Pset a beta k]
   by_cases hkt : IsCoprime k t
-  · simp only [hkt, ite_true, one_mul, le_refl]
+  pm_2997 hkt ite_true one_mul le_refl
   · simp only [hkt, ite_false, zero_mul, norm_zero, zero_pow (by norm_num : 2 ≠ 0)]
     exact sq_nonneg _
+end
 
 theorem finite_double_row_energy {I J : Type*} [Fintype I] [Fintype J]
     (rows : Finset (Ideal Eis)) (F : I → J → Ideal Eis → ℂ) (E : ℝ) (_hE : 0 ≤ E)
@@ -66,10 +66,7 @@ theorem finite_double_row_energy {I J : Type*} [Fintype I] [Fintype J]
     _ = ((Fintype.card I : ℝ) * (Fintype.card J : ℝ)) *
         ∑ i, ∑ j, ∑ k ∈ rows, ‖F i j k‖ ^ 2 := by
       rw [← Finset.mul_sum, Finset.sum_comm]
-      congr 1
-      apply Finset.sum_congr rfl
-      intro i hi
-      rw [Finset.sum_comm]
+      pm_739 i hi Finset.sum_comm
     _ ≤ ((Fintype.card I : ℝ) * (Fintype.card J : ℝ)) * ∑ _i : I, ∑ _j : J, E := by
       gcongr with i hi j hj
       exact hF i j
@@ -89,7 +86,7 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
       C₀ * K ^ ε * (K * (N * B) * N) ^ ε * (K + N * B) * B *
         CubicSieve.sieveNorm N (2 * L) * (columnDyadicLength K + 1 : ℝ) ^ 2 *
           (columnDyadicLength N + 1 : ℝ) ^ 2 * (columnDyadicLength B + 1 : ℝ) ^ 2 := by
-  obtain ⟨C₁, hC₁, hfixed⟩ := hybrid_fixed_square_grid_energy ε hε
+  pm_98 C₁ hC₁ hfixed hybrid_fixed_square_grid_energy ε hε
   refine ⟨256 ^ 2 * C₁, by positivity, ?_⟩
   intro K N B L hK hN hB rows S Pset a beta hrows hS hP ha hbeta
   let nset := S.image Prod.fst
@@ -99,11 +96,10 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
       (k : Ideal Eis) : ℂ :=
     ∑ t ∈ divisorDyadicBin (hybridSquarePool S) B j,
       ∑ d ∈ hybridCommonBlock S N i t, ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d
-  have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
-  have hE : 0 ≤ E := by dsimp only [E]; positivity
+  pm_3762
+  pm_82 hE E
   have hnset : ∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N := by
-    intro n hn
-    obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hn
+    pm_136 n hn p hp Finset.mem_image.mp
     exact ⟨⟨(hS p hp).1, (hS p hp).2.1⟩, (hS p hp).2.2.2.1⟩
   have hBsup : ∀ p ∈ S, (Ideal.absNorm p.2 : ℝ) ≤ B := fun p hp => (hS p hp).2.2.2.2
   have hlen : ∀ p ∈ S, (Ideal.absNorm p.1 : ℝ) ≤ N ∧ (Ideal.absNorm p.2 : ℝ) ≤ B :=
@@ -137,7 +133,7 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
         (divisorDyadicBin_bounds (hybridSquarePool S) B (hybridSquarePool_bounds S B hBsup) j t ht).1
         rows nset Pset D a (sourceGridCoefficient beta t) hrows hnset hP ha hD hβ
       apply (reconstructed_fixed_square_energy_le D t (fun d hd => (hD d hd).1) rows Pset a beta).trans
-      convert hfix using 1 ; dsimp only [E] ; ring
+      pm_7339 hfix E
     have he := hybrid_square_dyad_energy S B hBsup j rows
       (fun t k => ∑ d ∈ hybridCommonBlock S N i t,
         ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d)

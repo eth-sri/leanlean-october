@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreCorrection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,16 +32,19 @@ theorem rescaledPhaseCorrection_contDiff {H : ℝ → ℝ}
     ContDiff ℝ ∞ (rescaledPhaseCorrection H s A) :=
   contDiff_const.mul (hH.comp (contDiff_const.mul contDiff_id))
 
+set_option hygiene false in
+macro "pb_1292" : tactic => `(tactic| (
+  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
+    ENat.natCast_le_of_coe_top_le_withTop le_rfl n))
 theorem rescaledPhaseCorrection_iteratedDeriv {H : ℝ → ℝ}
     (hH : ContDiff ℝ ∞ H) (s A u : ℝ) (n : ℕ) :
     iteratedDeriv n (rescaledPhaseCorrection H s A) u =
       A^(s-1) * A^n * iteratedDeriv n H (A*u) := by
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
-    ENat.natCast_le_of_coe_top_le_withTop le_rfl n
+  pb_1292
   unfold rescaledPhaseCorrection
   rw [iteratedDeriv_const_mul_field,
     iteratedDeriv_comp_const_mul (hH.of_le hN) A]
-  simp only [mul_assoc]
+  grind
 
 theorem phaseRescalingBudget_pos (s A : ℝ) (Q : ℕ) :
     0 < phaseRescalingBudget s A Q := by
@@ -83,9 +87,6 @@ theorem referenceModelPrimitive_scaling_difference
       Real.mul_rpow hA.le hv.le]
     have hp : A^(s-1)*A^(1-s) = 1 := by
       rw [← Real.rpow_add hA,show s-1+(1-s) = 0 by ring,Real.rpow_zero]
-    calc
-      A^(s-1) * (A^(1-s)*u^(1-s)/(1-s) - A^(1-s)*v^(1-s)/(1-s)) =
-        (A^(s-1)*A^(1-s))*(u^(1-s)/(1-s)-v^(1-s)/(1-s)) := by ring
-      _ = _ := by rw [hp,one_mul]
+    grind
 
 end TaoTrudgianYang2025

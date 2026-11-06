@@ -16,7 +16,7 @@ def gaussianJointDensity (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:�
 lemma gaussianProfile_positive_smooth : ContDiffOn ℝ ∞ gaussianMellinProfile (Set.Ioi 0) := by
   intro y hy
   have hh := (gaussianProfile_scaled_smooth 1 (by norm_num) y hy).contDiffWithinAt (s:=Set.Ioi 0)
-  simpa only [one_mul] using hh
+  grind
 
 lemma gaussianLogWindow_eq_positive (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (R : ℝ) (hR : 0<R) : gaussianLogWindow V hV R=
@@ -24,8 +24,10 @@ lemma gaussianLogWindow_eq_positive (V : SchwartzMap ℝ ℂ) (hV : HasCompactSu
   ext s
   simp only [gaussianLogWindow_apply,positiveLogProfile_apply,gaussianFlow_real R hR]
 
-theorem gaussian_coupled_separation {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (a y : ι→ℝ) (V : SchwartzMap ℝ ℂ)
+section
+variable {ι : Type*} [Fintype ι] (W : ι→ℝ→ℂ)
+include ι W
+theorem gaussian_coupled_separation (a y : ι→ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (R : ℝ) (hR : 0<R)
     (hactive : (∏i,W i (y i))≠0→V (∑i,a i*y i)=1) :
     (∏i,W i (y i))*gaussianMellinProfile (R*Real.exp (∑i,a i*y i))=
@@ -35,8 +37,7 @@ theorem gaussian_coupled_separation {ι : Type*} [Fintype ι]
   rw [←gaussianLogWindow_eq_positive V hV R hR] at hh
   exact hh
 
-theorem gaussian_coupled_family {ι : Type*} [Fintype ι]
-    (W : ι→ℝ→ℂ) (a M : ι→ℝ) (hM : ∀i,0≤M i)
+theorem gaussian_coupled_family (a M : ι→ℝ) (hM : ∀i,0≤M i)
     (hwindow : ∀i y,W i y≠0→|y|≤M i) :
     ∃V : SchwartzMap ℝ ℂ,∃hV : HasCompactSupport (V:ℝ→ℂ),
       (∀R : ℝ,0<R→∀y : ι→ℝ,
@@ -63,6 +64,7 @@ theorem gaussian_coupled_family {ι : Type*} [Fintype ι]
     refine ⟨C,hC,?_⟩
     intro R hR
     exact ⟨JointLogSeparation.weighted_schwartz_integrable (gaussianJointDensity V hV R) J,hbound R hR⟩
+end
 
 end SevenEighths.ProbePhysical
 end

@@ -56,7 +56,7 @@ theorem robertSargos_displacement_joint_injective {p q : RobertSargosSevenPoint}
   calc
     p = robertSargosSevenRestore (robertSargosDisplacementPoint p) p.n₂ :=
       (robertSargos_seven_restore p).symm
-    _ = robertSargosSevenRestore (robertSargosDisplacementPoint q) q.n₂ := by rw [hd,hn]
+    _ = robertSargosSevenRestore (robertSargosDisplacementPoint q) q.n₂ := by grind
     _ = q := robertSargos_seven_restore q
 
 end TaoTrudgianYang2025

@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.DetectorPoweredPieces
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,9 +18,7 @@ theorem poweredDetectorCoefficient_subpower {δ : ℝ} (hδ : 0 < δ) :
   obtain ⟨C, hC, hd⟩ := divisor_card_subpower (show 0 < δ/8 by positivity)
   refine ⟨C^8, one_le_pow₀ hC, ?_⟩
   intro T N j k n hT hN hk hn
-  have hcard : (1 : ℝ) ≤ n.divisors.card := by
-    have hc : 0 < n.divisors.card := Finset.card_pos.mpr ⟨1, Nat.one_mem_divisors.mpr hn.ne'⟩
-    exact_mod_cast hc
+  pm_320
   calc
     _ = ‖((detectorBlockCoefficients T N j)^k) n‖ := norm_conj _
     _ ≤ (n.divisors.card : ℝ)^(2*k) := arithmeticFunction_pow_norm_le
@@ -33,10 +32,8 @@ theorem poweredDetectorCoefficient_subpower {δ : ℝ} (hδ : 0 < δ) :
 /-- The logarithmic ambient enlargement is eventually below T squared. -/
 theorem densityAmbient_eventually_le_sq :
     ∀ᶠ T : ℝ in atTop, densityAmbient T ≤ T^2 := by
-  have hl := (isLittleO_log_rpow_rpow_atTop (2 : ℝ) (show (0 : ℝ) < 1 by norm_num)).tendsto_div_nhds_zero
-  norm_num at hl
-  filter_upwards [eventually_ge_atTop (1 : ℝ),
-    hl.eventually (gt_mem_nhds (show (0 : ℝ) < 1/32 by norm_num))] with T hT hlog
+  pm_331
+  pm_1244 hlog
   have hh := (div_lt_iff₀ (by linarith : 0 < T)).mp hlog
   unfold densityAmbient
   nlinarith
@@ -50,23 +47,13 @@ theorem poweredDetectorCoefficient_eventually_le {η : ℝ} (hη : 0 < η) :
   filter_upwards [eventually_ge_atTop (1 : ℝ), densityAmbient_eventually_le_sq,
     (tendsto_rpow_atTop (show 0 < η/2 by positivity)).eventually_ge_atTop A]
     with T hT hH hlarge
-  intro N j k n hN hk hn
-  by_cases hn0 : n = 0
-  · subst n
-    simp [poweredDetectorCoefficient]
-    positivity
-  have hnpos : 0 < n := Nat.pos_of_ne_zero hn0
-  have hTpos : 0 < T := by linarith
+  pm_571 poweredDetectorCoefficient
   calc
     _ ≤ A*(n : ℝ)^(η/4) := ha T N j k n hTpos hN hk hnpos
     _ ≤ A*(T^2)^(η/4) := mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg n) (hn.trans hH) (by positivity)) (by linarith)
     _ = A*T^(η/2) := by
-      rw [← Real.rpow_natCast_mul hTpos.le]
-      congr 1
-      congr 1
-      norm_num
-      ring
+      pm_7849
     _ ≤ T^(η/2)*T^(η/2) := mul_le_mul_of_nonneg_right hlarge (by positivity)
     _ = T^η := by rw [← Real.rpow_add hTpos]; congr 1; ring
 
@@ -80,16 +67,12 @@ theorem normalizedPoweredCoefficient_eventually {η : ℝ} (hη : 0 < η) :
         ‖normalizedPoweredCoefficient η T N j k n‖ ≤ 1 := by
   filter_upwards [eventually_ge_atTop (1 : ℝ), poweredDetectorCoefficient_eventually_le hη]
     with T hT hb
-  intro N j k n hN hk hn
-  rw [normalizedPoweredCoefficient, norm_div, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_pos (Real.rpow_pos_of_pos (by linarith) _), div_le_one (by positivity)]
-  exact hb N j k n hN hk hn
+  pm_521 normalizedPoweredCoefficient
 
 theorem detectingPolynomial_normalizedPowered (η T t : ℝ) (N j k L : ℕ) :
     detectingPolynomial L (normalizedPoweredCoefficient η T N j k) t =
       detectingPolynomial L (poweredDetectorCoefficient T N j k) t/((T^η : ℝ) : ℂ) := by
-  simp only [detectingPolynomial, normalizedPoweredCoefficient, Finset.sum_div]
-  apply Finset.sum_congr rfl
+  pm_424 detectingPolynomial normalizedPoweredCoefficient Finset.sum_div Finset.sum_congr
   intro n _
   ring
 

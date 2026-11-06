@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerIntervalBoundary
 public import LaterPairs.Native.RobertSargosSymmetricATimesA
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -22,8 +23,7 @@ theorem robertSargos_m_overlap_inter (M : ℕ) (h q r : ℤ) :
       Finset.Icc (h+1-q) ((M:ℤ)-h-q) ∩
         Finset.Icc ((h+1)+r) (((M:ℤ)-h)-r) := by
   ext m
-  simp only [robertSargosMOverlap,Finset.mem_Icc,Finset.mem_inter,
-    max_le_iff,le_min_iff]
+  pm_352 robertSargosMOverlap Finset.mem_Icc Finset.mem_inter max_le_iff le_min_iff
   omega
 
 theorem norm_robertSargos_m_overlap_error (w : ℤ → ℂ) (M : ℕ) (h q r : ℤ)
@@ -46,7 +46,7 @@ theorem robertSargos_h_overlap_card (H : ℕ) (r : ℤ) :
     fun h hh => ((mem_robertSargosHOverlap H h r).mp hh).1
   have hc := Finset.card_le_card hs
   have hi : 2*(H:ℤ)-H = H := by omega
-  simpa only [Int.card_Ico,hi,Int.toNat_natCast] using hc
+  simp_all
 
 theorem norm_robertSargos_correlation_endpoint_error (f : ℝ → ℝ) (M H : ℕ)
     (q r : ℤ) :

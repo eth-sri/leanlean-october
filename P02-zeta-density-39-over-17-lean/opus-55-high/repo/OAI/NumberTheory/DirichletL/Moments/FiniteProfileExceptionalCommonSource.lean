@@ -3,22 +3,21 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommon
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonGates
 public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
 public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open CenteredMomentCommonExceptionalCost
+open CenteredMomentExceptionalMaskedSource
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
@@ -29,39 +28,37 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
     (hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hL:0≤Lbound):
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s v:Input ι)(p q:Profiles wlo whi),(∀i,v.lo i=lo i) → (∀i,v.hi i=hi i) →
-      (∀i,1≤s.P i) → (∀i,1≤v.P i) →
+      (∀i,1≤ s.P i) → (∀i,1≤v.P i) →
       s.W₁=p.profile 0 → s.W₂=p.profile 1 → v.W₁=q.profile 0 → v.W₂=q.profile 1 →
       ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O),R≠0 → seed∣C → seed∣D →
       ∀rLeft rRight:ℝ,
-      Z^rLeft≤s.X₁ → Z^rLeft≤s.X₂ → Z^rLeft≤s.Y₁ → Z^rLeft≤s.Y₂ →
-      Z^rRight≤v.X₁ → Z^rRight≤v.X₂ → Z^rRight≤v.Y₁ → Z^rRight≤v.Y₂ →
+      Z ^rLeft≤ s.X₁ → Z ^rLeft≤ s.X₂ → Z ^rLeft≤ s.Y₁ → Z ^rLeft≤ s.Y₂ →
+      Z ^rRight≤v.X₁ → Z ^rRight≤v.X₂ → Z ^rRight≤v.Y₁ → Z ^rRight≤v.Y₂ →
       ∀rows:Finset O,(∀z∈rows,z≠0) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow s.η Q fixedBadMask 1 z) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow v.η Q fixedBadMask 1 z) →
       (∀z∈rows,(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+        (Ideal.span {(72:O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z ^B) →
       (∀z∈rows,(v.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
-      ∀Ds:Finset (Ideal O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z^Lbound) →
+        (Ideal.span {(72:O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z ^B) →
+      ∀Ds:Finset (Ideal O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z ^Lbound) →
       (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
         ‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)≤
-        K*(rows.card:ℝ)*Z^(2*ε+δ-max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)*
+        K*(rows.card:ℝ)*Z ^(2*ε+δ-max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)*
           ((C.absNorm:ℝ)*D.absNorm)^θ*
           (profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
             ((C.absNorm:ℝ)*D.absNorm)):=by
-  obtain ⟨J,Sprofile,hSprofile,hJ⟩:=actual_masked_asymmetric wlo whi hwlo hwhi lo hi ε δ B Lbound hε hδ hB hL
+  pm_5523 actual_masked_asymmetric
   obtain ⟨Km,hKm,hmass⟩:=common_profile_mass (ι:=ι) θ hθ
-  refine ⟨J,Sprofile,hSprofile,?_⟩
-  intro Q hQ
-  obtain ⟨Ka,hKa,hbound⟩:=hJ Q hQ
-  refine ⟨Ka*Km,mul_pos hKa hKm,?_⟩
-  filter_upwards [hbound] with Z hZ
-  refine ⟨hZ.1,?_⟩
+  pm_2875
+  pm_3599 Ka hKa hbound hJ Q hQ
+  pm_3171 Ka Km mul_pos hKa hKm
+  pm_2985
   intro s v p q hlo hhi hsP hvP hsW₁ hsW₂ hvW₁ hvW₂ C D hC hD R seed hR hsC hsD
     rLeft rRight hsX₁ hsX₂ hsY₁ hsY₂ hvX₁ hvX₂ hvY₁ hvY₂ rows hn hsEx hvEx hsCond hvCond Ds hDs
-  let H:=Ka*(rows.card:ℝ)*Z^(2*ε+δ-max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
+  let H:=Ka*(rows.card:ℝ)*Z ^(2*ε+δ-max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
   have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hH:0≤H:=by dsimp [H];positivity
+  pm_100 hH H
   have hb (c:actualAllocations s.pools C)(d:actualAllocations v.pools D):
       (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
         ‖maskedAmplitude (commonData s C R c) L z‖*
@@ -90,10 +87,7 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
       (‖commonScalar s C R c‖*‖commonScalar v D R d‖)*
         profileMass Sprofile (commonData s C R c) (commonData v D R d) p q J):=by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro c hc
-      apply Finset.sum_congr rfl
-      intro d hd
+      pm_3397 c hc d hd
       ring
     _≤H*(Km*((C.absNorm:ℝ)*D.absNorm)^θ*
       (profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
@@ -103,6 +97,5 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 
-end
 
 end OAI

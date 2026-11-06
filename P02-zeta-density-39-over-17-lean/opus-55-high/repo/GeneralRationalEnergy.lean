@@ -1,11 +1,10 @@
 module
 public import GeneralAdjacentInterpolation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2000000
-noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
@@ -29,12 +28,10 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
   let J : ℕ := ⌈1/(η/2)⌉₊
   let D : ℝ := 1+C (K-1)+∑ n ∈ range (J+1), C n
   have hD : 1 ≤ D := by
-    have hs : 0 ≤ ∑ n ∈ range (J+1), C n := sum_nonneg (fun n _ => (hC n).le)
-    dsimp [D]
+    pm_2857
     linarith [hC (K-1)]
   have hDK : C (K-1) ≤ D := by
-    have hs : 0 ≤ ∑ n ∈ range (J+1), C n := sum_nonneg (fun n _ => (hC n).le)
-    dsimp [D]
+    pm_2857
     linarith
   have hDn (n : ℕ) (hn : n ≤ J) : C n ≤ D := by
     have hh := single_le_sum (s:=range (J+1)) (f:=C)
@@ -42,14 +39,14 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
     dsimp [D]
     linarith [hC (K-1)]
   let F : ℝ := 3+2*D*B^(η/2)
-  have hF : 0 < F := by dsimp [F]; positivity
+  pm_64 hF F
   refine ⟨F,hF,?_⟩
   intro T t₀ hT H hH hHT A hA W hW hsep
   have ht : 0 < T := by linarith
   have hh : (0:ℝ) < H := by exact_mod_cast (show 0 < H by omega)
-  have hr0 : (0:ℝ) ≤ W.card := Nat.cast_nonneg _
-  have he0 : 0 ≤ rationalEnergy A W := sum_nonneg (fun _ _ => sq_nonneg _)
-  have hTp : T^(η/2) ≤ T^η := Real.rpow_le_rpow_of_exponent_le hT.le (by linarith)
+  pm_491 hr0 W.card
+  pm_978 he0
+  pm_6398 hTp
   have hF3 : 3 ≤ F := by
     have hs : 0 ≤ 2*D*B^(η/2) := by positivity
     dsimp [F]
@@ -58,9 +55,8 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
   by_cases hs : (H:ℝ) ≤ T^(η/2)
   · have hcard : (A.card:ℝ) ≤ 3*(H:ℝ)*(H:ℝ) := by
       exact_mod_cast rational_card_le_height A H hA
-    have hnonneg₁ : 0 ≤ (H:ℝ)^2*(W.card:ℝ)^(2-1/(K:ℝ)) := by positivity
-    have hnonneg₂ : 0 ≤ (H:ℝ)*T^(1/(2*(K:ℝ)))*
-        (W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1))) := by positivity
+    pm_1089 hnonneg₁
+    pm_2858 hnonneg₂
     calc
       _ ≤ (A.card:ℝ)*(W.card:ℝ)^2 := rational_energy_trivial A W
       _ ≤ (3*(H:ℝ)*(H:ℝ))*(W.card:ℝ)^2 := by gcongr
@@ -99,9 +95,8 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
       · have hm : U^K ≤ 2*(H:ℝ)^(2*K)*(W.card:ℝ)^(2*K-1) :=
           (hscaled K hK hDK).trans (by gcongr; linarith)
         have hh' := adjacent_high_moment hK hup hh (by linarith : 0 < (W.card:ℝ)) hm
-        have h0 : 0 ≤ (H:ℝ)*(W.card:ℝ)^2 := by positivity
-        have h1 : 0 ≤ (H:ℝ)*T^(1/(2*(K:ℝ)))*
-            (W.card:ℝ)^(2-(2*(K:ℝ)+1)/(2*K*(K+1))) := by positivity
+        pm_6397 h0
+        pm_2858 h1
         linarith only [hh',h0,h1]
       · let m : ℝ := Real.log H/Real.log T
         have hlog : 0 < Real.log T := Real.log_pos hT
@@ -110,7 +105,7 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
           have hl := Real.log_le_log (Real.rpow_pos_of_pos ht _) (le_of_not_ge hs)
           rw [Real.log_rpow ht] at hl
           exact (le_div_iff₀ hlog).mpr hl
-        have hkp : (0:ℝ) < K := by exact_mod_cast (show 0 < K by omega)
+        pm_2710
         have hpow (n : ℕ) : (H:ℝ)^n=T^((n:ℝ)*m) := by
           rw [← hHm,adjacent_rpow_nat ht.le]
           congr 1
@@ -146,8 +141,8 @@ theorem rational_energy_adjacent_unrestricted {K : ℕ} (hK : 1 ≤ K)
             (show (T+(H:ℝ)^(2*(j+1)))*(W.card:ℝ)^(2*(j+1)-1) ≤
               2*(H:ℝ)^(2*(j+1))*(W.card:ℝ)^(2*(j+1)-1) by gcongr; linarith)
           simpa only [show 2*(j+1)-1=2*j+1 by omega] using hb'
-        have hh' := adjacent_pair_envelope hK hKj hup ht hh hr1 hm₁ hm₂
-        have h0 : 0 ≤ (H:ℝ)^2*(W.card:ℝ)^(2-1/(K:ℝ)) := by positivity
+        pm_528 hh' adjacent_pair_envelope hK hKj hup ht hh hr1 hm₁ hm₂
+        pm_1089 h0
         linarith only [hh',h0]
     have hh' := (div_le_iff₀ hzp).mp hu
     have hzexpr : Z=(D*B^(η/2))*T^(η/2) := by

@@ -1,5 +1,6 @@
 module
 public import RationalCyclicMoment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -57,7 +58,10 @@ theorem rational_coefficient_energy_two_weighted (A : Finset ℚ)
   norm_num only [show 2*2 = 4 by omega] at hm
   rwa [hm] at hh
 
-theorem rational_divisor_weight_subpower {η : ℝ} (hη : 0 < η) :
+section
+variable {η : ℝ} (hη : 0 < η)
+include η hη
+theorem rational_divisor_weight_subpower :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (H : ℝ), 1 ≤ H → ∀ (r : ℚ), 0 < r →
       (r.num.natAbs : ℝ) ≤ H → (r.den : ℝ) ≤ H →
       ((r.num.natAbs.divisors.card : ℝ)*(r.den.divisors.card : ℝ))^6 ≤ C*H^η := by
@@ -82,12 +86,12 @@ theorem rational_divisor_weight_subpower {η : ℝ} (hη : 0 < η) :
 /-- The first complete small-power rational coefficient-energy estimate.
 It has arbitrary complex coefficients and a constant uniform in the height
 and the set of positive reduced fractions. -/
-theorem rational_coefficient_energy_two_subpower {η : ℝ} (hη : 0 < η) :
+theorem rational_coefficient_energy_two_subpower :
     ∃ C : ℝ, 0 < C ∧ ∀ (H : ℝ), 1 ≤ H → ∀ (A : Finset ℚ),
       (∀ r ∈ A, 0 < r ∧ (r.num.natAbs : ℝ) ≤ H ∧ (r.den : ℝ) ≤ H) →
       ∀ c : ℚ → ℂ, rationalCoefficientEnergy A 2 c ≤
         C*H^η*(∑ r ∈ A, ‖c r‖^2)^2 := by
-  obtain ⟨D, hD, hd⟩ := rational_divisor_weight_subpower (show 0 < η/2 by positivity)
+  pm_8654 hd rational_divisor_weight_subpower η
   refine ⟨D^2, by positivity, ?_⟩
   intro H hH A hA c
   have he := rational_coefficient_energy_two_weighted A (fun r hr => (hA r hr).1) c
@@ -101,5 +105,6 @@ theorem rational_coefficient_energy_two_subpower {η : ℝ} (hη : 0 < η) :
     ← Real.rpow_mul (by linarith : 0 ≤ H)]
   congr 2
   ring
+end
 
 end Montgomery.RationalMoment

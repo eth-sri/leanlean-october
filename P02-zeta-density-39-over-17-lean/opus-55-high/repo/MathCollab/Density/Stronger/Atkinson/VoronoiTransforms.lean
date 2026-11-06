@@ -6,6 +6,7 @@ See third_party/twelfth/BESSEL_MELLIN_MANIFEST.json and third_party/twelfth/LICE
 Apache-2.0 attribution. No Estermann or general-modulus source closure is imported.
 -/
 public import MathCollab.Density.Stronger.PointMean.MellinShift
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ contour is shifted to the left. -/
 theorem differentiableAt_dfiPeriodicArchimedeanFactor_of_re_pos
     (q : ℕ) [NeZero q] {s : ℂ} (hs : 0 < s.re) :
     DifferentiableAt ℂ (dfiPeriodicArchimedeanFactor q) s := by
-  have hq : (q : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne q)
+  pm_7721 hq
   have hpi : (2 * Real.pi : ℂ) ≠ 0 :=
     mul_ne_zero (by norm_num) (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero)
   have hGamma : DifferentiableAt ℂ Gamma s :=
@@ -46,28 +47,17 @@ noncomputable def dfiVoronoiPlusMultiplier (q : ℕ) [NeZero q]
     (z : ℂ) : ℂ :=
   2 * (q : ℂ) * dfiPeriodicArchimedeanFactor q (1 - z) ^ 2
 
+section
+variable (q : ℕ) [NeZero q] {z : ℂ} (hz : z.re < 1)
+include q z hz
 /-- Both DFI dual multipliers are holomorphic to the left of `Re z = 1`.
 This is the analytic input for arbitrary repeated contour shifts in (29). -/
-theorem differentiableAt_dfiVoronoiMinusMultiplier_of_re_lt_one
-    (q : ℕ) [NeZero q] {z : ℂ} (hz : z.re < 1) :
-    DifferentiableAt ℂ (dfiVoronoiMinusMultiplier q) z := by
-  have hinner : DifferentiableAt ℂ (fun w : ℂ => 1 - w) z := by fun_prop
-  have hfactor := (differentiableAt_dfiPeriodicArchimedeanFactor_of_re_pos q
-    (s := 1 - z) (by simpa using sub_pos.mpr hz)).comp z hinner
-  unfold dfiVoronoiMinusMultiplier
-  exact ((differentiableAt_const (c := (q : ℂ))).mul (hfactor.pow 2)).mul
-    ((Complex.differentiableAt_exp.comp z (by fun_prop)).add
-      (Complex.differentiableAt_exp.comp z (by fun_prop)))
+theorem differentiableAt_dfiVoronoiMinusMultiplier_of_re_lt_one :
+    DifferentiableAt ℂ (dfiVoronoiMinusMultiplier q) z := by pm_4406 dfiVoronoiMinusMultiplier
 
-theorem differentiableAt_dfiVoronoiPlusMultiplier_of_re_lt_one
-    (q : ℕ) [NeZero q] {z : ℂ} (hz : z.re < 1) :
-    DifferentiableAt ℂ (dfiVoronoiPlusMultiplier q) z := by
-  have hinner : DifferentiableAt ℂ (fun w : ℂ => 1 - w) z := by fun_prop
-  have hfactor := (differentiableAt_dfiPeriodicArchimedeanFactor_of_re_pos q
-    (s := 1 - z) (by simpa using sub_pos.mpr hz)).comp z hinner
-  unfold dfiVoronoiPlusMultiplier
-  exact ((differentiableAt_const (c := (2 : ℂ))).mul
-    (differentiableAt_const (c := (q : ℂ)))).mul (hfactor.pow 2)
+theorem differentiableAt_dfiVoronoiPlusMultiplier_of_re_lt_one :
+    DifferentiableAt ℂ (dfiVoronoiPlusMultiplier q) z := by pm_4406 dfiVoronoiPlusMultiplier
+end
 
 /-- DFI's negative-sign Bessel transform in its canonical Mellin--Barnes
 form.  The source normalization is

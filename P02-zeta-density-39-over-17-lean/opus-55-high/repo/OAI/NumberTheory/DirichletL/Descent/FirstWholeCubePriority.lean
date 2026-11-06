@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,12 +12,12 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyA
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def firstWholePrioritySecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (F : Finset ι) (b : CubeCoordinates ι) (C extra : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) : ℝ :=
   let A := extra∪((if negative then b.rightDivisor else b.leftDivisor)∪C)
   (32*512)*(2:ℝ)^slots.card * ∑ r : RayCharacter×RayCharacter,∑ D∈F.powerset,
@@ -32,7 +33,7 @@ theorem first_actual_second_whole_cube_priority
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
     (F : Finset ι) (b : CubeCoordinates ι) (C extra : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) (hY : 0<Y) :
     firstCanonicalSecondEnergy p hp hg hinj F b C negative Ψ m d
       (fun U=>primeMark slots lists a (extra∪U)) selector ω X t Y ≤
@@ -46,11 +47,7 @@ theorem first_actual_second_whole_cube_priority
   simp only [mul_one] at hb
   unfold firstCanonicalSecondEnergy firstWholePrioritySecondEnergy
   simp only [Finset.mul_sum]
-  apply Finset.sum_le_sum
-  intro r hr
-  apply Finset.sum_le_sum
-  intro D hD
-  apply Finset.sum_le_sum
+  pm_201 Finset.sum_le_sum r hr D hD
   intro core hcore
   have h := mul_le_mul_of_nonneg_left (hb r D core)
     (show 0≤(32*512:ℝ)*(‖crossCoeff r.1 r.2‖*‖selector D‖)*

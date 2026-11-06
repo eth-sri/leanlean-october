@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.ScaleCaps
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,71 +8,28 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace CanonicalQuadraticSieve
 
@@ -80,12 +38,9 @@ section
 theorem hasSieveExponent_one_of_approximation
     (happrox : ∀ η : ℝ, 0<η → ∃ α : ℝ, α≤1+η ∧ HasSieveExponent α) :
     HasSieveExponent 1 := by
-  intro ε hε
-  have he : 0<ε/2 := by positivity
-  obtain ⟨α,hα,h⟩ := happrox (ε/2) he
+  pm_8416 he α hα h happrox
   obtain ⟨C,hC,hbound⟩ := h (ε/2) he
-  refine ⟨C,hC,?_⟩
-  intro M N hM hN
+  pm_484 C hC M N hM hN
   have hM0 : 0≤M := by linarith
   have hN0 : 0<N := by linarith
   have hMN : 1≤M*N := by nlinarith
@@ -114,24 +69,28 @@ theorem hasSieveExponent_one_of_approximation
 
 def bootstrapExponent (n : ℕ) : ℝ := 1+1/((n:ℝ)+1)
 
-theorem bootstrapExponent_gt_one (n : ℕ) : 1<bootstrapExponent n := by
+section
+variable (n : ℕ)
+include n
+theorem bootstrapExponent_gt_one : 1<bootstrapExponent n := by
   unfold bootstrapExponent
   have h : (0:ℝ)<1/((n:ℝ)+1) := by positivity
   linarith
 
-theorem bootstrapExponent_le_two (n : ℕ) : bootstrapExponent n≤2 := by
+theorem bootstrapExponent_le_two : bootstrapExponent n≤2 := by
   have h : 1/((n:ℝ)+1)≤(1:ℝ) := by
     apply (div_le_one (by positivity : (0:ℝ)<(n:ℝ)+1)).mpr
-    linarith [Nat.cast_nonneg (α := ℝ) n]
+    pm_5998
   unfold bootstrapExponent
   linarith
 
-theorem bootstrapExponent_step (n : ℕ) :
+theorem bootstrapExponent_step :
     bootstrapExponent (n+1) = 2-1/bootstrapExponent n := by
   unfold bootstrapExponent
   push_cast
   field_simp
   ring
+end
 
 theorem hasSieveExponent_one_of_improvement
     (himprove : ∀ α : ℝ, 1<α → α≤2 → HasSieveExponent α → HasSieveExponent (2-1/α)) :
@@ -144,8 +103,7 @@ theorem hasSieveExponent_one_of_improvement
       rw [bootstrapExponent_step]
       exact himprove _ (bootstrapExponent_gt_one n) (bootstrapExponent_le_two n) ih
   apply hasSieveExponent_one_of_approximation
-  intro η hη
-  obtain ⟨n,hnη⟩ := exists_nat_one_div_lt hη
+  pm_161 η hη n hnη exists_nat_one_div_lt
   refine ⟨bootstrapExponent n,?_,hn n⟩
   unfold bootstrapExponent
   linarith
@@ -184,11 +142,10 @@ lemma finite_centering_identity {ι : Type*} (S : Finset ι) (w R D : ι → ℂ
   intro q hq
   ring
 
-theorem maskedPoissonDifference_centered {n : Type} [Fintype n] [DecidableEq n]
-    (G : Ideal O) (hG : G≠0) (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ)
-    (M K : ℝ) (hM : 0<M) (hcols : ∀ j, Admissible (cols j))
-    (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
-    (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P∈fixedBadPrimes, P∣G) :
+section
+variable {n : Type} [Fintype n] [DecidableEq n] (G : Ideal O) (hG : G≠0) (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ) (M K : ℝ) (hM : 0<M) (hcols : ∀ j, Admissible (cols j)) (hray : ∀ j k, columnRay (cols j)=columnRay (cols k)) (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P∈fixedBadPrimes, P∣G)
+include n G hG W cols a M K hM hcols hray hGc hbad
+theorem maskedPoissonDifference_centered :
     (6:ℂ)*maskedPoissonDifference G W cols a M K =
       (∑ q∈idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*centeredRetainedDual W cols a M K q) +
       (6:ℂ)*maskedDualTailFamily G cols a W M K - centeredMaskedSource G W cols a M K +
@@ -201,11 +158,7 @@ theorem maskedPoissonDifference_centered {n : Type} [Fintype n] [DecidableEq n]
   rw [finite_centering_identity]
   ring
 
-theorem maskedPoissonDifference_norm_le {n : Type} [Fintype n] [DecidableEq n]
-    (G : Ideal O) (hG : G≠0) (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ)
-    (M K : ℝ) (hM : 0<M) (hcols : ∀ j, Admissible (cols j))
-    (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
-    (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P∈fixedBadPrimes, P∣G) :
+theorem maskedPoissonDifference_norm_le :
     ‖(6:ℂ)*maskedPoissonDifference G W cols a M K‖ ≤
       (∑ q∈idealDivisors G, ‖centeredRetainedDual W cols a M K q‖) +
       6*‖maskedDualTailFamily G cols a W M K‖ + ‖centeredMaskedSource G W cols a M K‖ +
@@ -214,11 +167,8 @@ theorem maskedPoissonDifference_norm_le {n : Type} [Fintype n] [DecidableEq n]
   rw [maskedPoissonDifference_centered G hG W cols a M K hM hcols hray hGc hbad]
   have hs : ‖∑ q∈idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*centeredRetainedDual W cols a M K q‖ ≤
       ∑ q∈idealDivisors G, ‖centeredRetainedDual W cols a M K q‖ := by
-    apply (norm_sum_le _ _).trans
-    apply Finset.sum_le_sum
-    intro q hq
-    rw [norm_mul]
-    exact mul_le_of_le_one_left (norm_nonneg _) (QuadraticInitialBound.norm_ideal_moebius_le_one q)
+    pm_3719 q hq
+    pm_3010 QuadraticInitialBound.norm_ideal_moebius_le_one q
   calc
     _ ≤ (‖∑ q∈idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*centeredRetainedDual W cols a M K q‖ +
         ‖(6:ℂ)*maskedDualTailFamily G cols a W M K‖) + ‖centeredMaskedSource G W cols a M K‖ +
@@ -240,14 +190,14 @@ theorem maskedPoissonDifference_norm_le {n : Type} [Fintype n] [DecidableEq n]
       simp only [norm_mul]
       norm_num
       gcongr
+end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 open IdealCoprimeSieveOperator
 
 theorem divisorTwist_norm_le {n : Type} (cols : n → Ideal O) (a : n → ℂ)
     (q : Ideal O) (j : n) : ‖divisorTwist cols a q j‖≤‖a j‖ := by
   rw [divisorTwist,norm_mul]
-  exact mul_le_of_le_one_right (norm_nonneg _) (quadraticRow_norm_le_one _ _)
+  pm_4925 mul_le_of_le_one_right quadraticRow_norm_le_one
 
 theorem retainedDualMajorant_coefficient_scale_le {n : Type} [Fintype n]
     (s : Finset (ℕ×ℕ)) (C : ℝ) (hC : 0≤C) (l : ℕ)
@@ -287,18 +237,16 @@ theorem centeredRetainedDual_sum_bound (l : ℕ) :
         (∑q∈idealDivisors G, ‖centeredRetainedDual W cols a M K q‖) ≤
           (idealDivisors G).card*(columnDyadicLength K+1:ℕ)*
             retainedDualMajorant s C l hexp deltaLoss hδ ε hε (2*K) N M 1 T a (quadraticTransformedSquareProfile W) := by
-  obtain ⟨s,C,hC,hbound⟩ := retained_dual_principal_global l
-  refine ⟨s,C,hC,?_⟩
+  pm_3085 s C hC hbound retained_dual_principal_global l
   intro n _ _ α hexp hα deltaLoss hδ ε hε G hG K N M T hK hN hM hT cols hc hcols hray a W
   classical
   have hqbound (q : Ideal O) (hq : q∈idealDivisors G) :
       ‖centeredRetainedDual W cols a M K q‖ ≤
         (columnDyadicLength K+1:ℕ)*
           retainedDualMajorant s C l hexp deltaLoss hδ ε hε (2*K) N M 1 T a (quadraticTransformedSquareProfile W) := by
-    have hqd := (mem_idealDivisors hG).mp hq
-    have hq0 : q≠0 := by intro hz; rw [hz,zero_dvd_iff] at hqd; exact hG hqd
+    pm_5218 hqd
     have hq1 : 1≤(Ideal.absNorm q:ℝ) := by
-      exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hq0 (Ideal.absNorm_eq_zero_iff.mp hz))
+      pm_3073 Nat.one_le_iff_ne_zero.mpr hz hq0
     have hh := hbound hexp hα deltaLoss hδ ε hε K N M (Ideal.absNorm q:ℝ) T hK hN hM
       (by linarith) hT cols hc hcols hray (divisorTwist cols a q) (quadraticTransformedSquareProfile W)
     apply hh.trans
@@ -346,14 +294,13 @@ theorem HasSieveExponent.masked_poisson_complete {α : ℝ} (hexp : HasSieveExpo
       ∀ (a : n → ℂ) (W : 𝓢(ℝ,ℂ)), W 0=0 →
         ‖(6:ℂ)*maskedPoissonDifference G W cols a M K‖ ≤
           poissonComparisonMajorant sD sS sT CD CS CT CP l A hexp deltaLoss hδ ε hε G K N M T a W := by
-  obtain ⟨sD,CD,hCD,hdual⟩ := centeredRetainedDual_sum_bound l
-  obtain ⟨sS,CS,hCS,hsource⟩ := masked_source_principal_global l
-  obtain ⟨sT,CT,hCT,htail⟩ := maskedDualTailFamily_bound A
-  obtain ⟨CP,hCP,hprincipal⟩ := hexp.actual_principal_difference deltaLoss hδ
+  pm_3008 sD CD hCD hdual centeredRetainedDual_sum_bound l
+  pm_3008 sS CS hCS hsource masked_source_principal_global l
+  pm_3008 sT CT hCT htail maskedDualTailFamily_bound A
+  pm_69 CP hCP hprincipal hexp.actual_principal_difference deltaLoss hδ
   refine ⟨sD,sS,sT,CD,CS,CT,CP,hCD,hCS,hCT,hCP,?_⟩
   intro n _ _ ε hε G hG hbad K N M T hK hN hM hT cols hc hcols hray hGc a W hW
-  have hM0 : 0<M := by linarith
-  have hN0 : 0<N := by linarith
+  pm_3007
   have hcols0 : ∀j, Admissible (cols j) := fun j => (hcols j).1
   have hcolsu : ∀j, Admissible (cols j) ∧ (Ideal.absNorm (cols j):ℝ)≤N :=
     fun j => ⟨(hcols j).1,(hcols j).2.2⟩
@@ -389,21 +336,21 @@ section
 open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
 open DivisorBlockCauchy
 
-theorem gcdRaySupport_energy_eq {n : Type} [Fintype n]
-    (cols : n → Ideal O) (a : n → ℂ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord) :
+section
+variable {n : Type} [Fintype n] (cols : n → Ideal O) (a : n → ℂ) (D : Ideal O)
+include n cols a D
+theorem gcdRaySupport_energy_eq (c : EisensteinEPrimaryPhase.Coord) :
     (∑j : gcdRaySupport cols a D c, ‖a j.val‖^2) =
       ∑j, if D∣cols j ∧ columnRay (cols j)=c then ‖a j‖^2 else 0 := by
   classical
   rw [Finset.sum_coe_sort (gcdRaySupport cols a D c) (fun j => ‖a j‖^2)]
   simp only [gcdRaySupport,Finset.sum_filter]
   apply Finset.sum_congr rfl
-  intro j _
-  by_cases hz : a j=0
+  pm_7369 j
   · simp only [hz,norm_zero,ne_eq,not_true_eq_false,and_false,ite_self,zero_pow (by decide : 2≠0)]
-  · simp only [hz,ne_eq,not_false_eq_true,and_true]
+  pm_3814 hz ne_eq not_false_eq_true and_true
 
-theorem gcdRaySupport_energy_ray_sum {n : Type} [Fintype n]
-    (cols : n → Ideal O) (a : n → ℂ) (D : Ideal O) :
+theorem gcdRaySupport_energy_ray_sum :
     (∑c : EisensteinEPrimaryPhase.Coord, ∑j : gcdRaySupport cols a D c, ‖a j.val‖^2) =
       ∑j, ‖if D∣cols j then a j else 0‖^2 := by
   classical
@@ -419,10 +366,12 @@ theorem gcdRaySupport_energy_ray_sum {n : Type} [Fintype n]
       exact ite_eq_right (Ne.symm hne)
     · simp
   · simp only [hd,false_and,ite_false,Finset.sum_const_zero,norm_zero,zero_pow (by decide : 2≠0)]
+end
 
-theorem gcdRaySupport_energy_divisor_sum {n : Type} [Fintype n]
-    (ε : ℝ) (hε : 0<ε) (S : Finset (Ideal O)) (cols : n → Ideal O)
-    (hcols : ∀j, cols j≠0) (a : n → ℂ) (X : ℝ)
+section
+variable {n : Type} [Fintype n] (ε : ℝ) (hε : 0<ε) (S : Finset (Ideal O)) (cols : n → Ideal O) (hcols : ∀j, cols j≠0) (a : n → ℂ)
+include n ε hε S cols hcols a
+theorem gcdRaySupport_energy_divisor_sum (X : ℝ)
     (hX : ∀j, a j≠0 → (Ideal.absNorm (cols j):ℝ)≤X) :
     (∑c : EisensteinEPrimaryPhase.Coord, ∑D∈S,
       ∑j : gcdRaySupport cols a D c, ‖a j.val‖^2) ≤
@@ -433,17 +382,14 @@ theorem gcdRaySupport_energy_divisor_sum {n : Type} [Fintype n]
   apply (divisor_mask_energy S cols hcols a).trans
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum
-  intro j _
-  by_cases hz : a j=0
+  pm_7369 j
   · simp only [hz,norm_zero,zero_pow (by decide : 2≠0),mul_zero,le_refl]
   · apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
     apply ((IdealDivisorBound.ideal_divisor_small_power ε hε).choose_spec.2 (cols j) (hcols j)).trans
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) (hX j hz) hε.le) (divisorConstant_pos ε hε).le
 
-theorem gcdRaySupport_weighted_sum_bound {n : Type} [Fintype n]
-    (ε : ℝ) (hε : 0<ε) (S : Finset (Ideal O)) (cols : n → Ideal O)
-    (hcols : ∀j, cols j≠0) (a : n → ℂ) (X C : ℝ) (hC : 0≤C)
+theorem gcdRaySupport_weighted_sum_bound (X C : ℝ) (hC : 0≤C)
     (hX : ∀j, a j≠0 → (Ideal.absNorm (cols j):ℝ)≤X)
     (F : Ideal O → EisensteinEPrimaryPhase.Coord → ℝ)
     (hF : ∀D∈S, ∀c, F D c≤C*∑j : gcdRaySupport cols a D c, ‖a j.val‖^2) :
@@ -458,6 +404,7 @@ theorem gcdRaySupport_weighted_sum_bound {n : Type} [Fintype n]
     _ ≤ C*((divisorConstant ε hε*X^ε)*∑j, ‖a j‖^2) :=
       mul_le_mul_of_nonneg_left (gcdRaySupport_energy_divisor_sum ε hε S cols hcols a X hX) hC
     _ = _ := by ring
+end
 
 end
 
@@ -480,12 +427,11 @@ theorem poissonComparisonMajorant_energy_factor {n : Type} [Fintype n]
         (fun _ : Unit => (1:ℂ)) W * ∑j, ‖a j‖^2 := by
   unfold poissonComparisonMajorant retainedDualMajorant sourcePrincipalMajorant
     smallPrincipalMajorant dualMiddleMajorant
-  simp only [divisorEnergyFactor_diagonal,Fintype.sum_unique,norm_one,one_pow,mul_one]
+  pm_94 divisorEnergyFactor_diagonal Fintype.sum_unique norm_one one_pow mul_one
   ring
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm b0Label jLabel)

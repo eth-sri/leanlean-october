@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownShiftRange
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Real-valued form of the elementary spacing bound
@@ -15,7 +16,6 @@ open Finset
 
 namespace GafniTao
 
-noncomputable section
 
 theorem int_Icc_floor_ceil_card_cast_le
     {a b : ℝ} (hab : a ≤ b) :
@@ -48,15 +48,14 @@ theorem heathBrown_spacing_card_cast_le
   let z : ℝ := 2 * theta / mu
   let lo : ℝ := g 1 - theta
   let hi : ℝ := g N + theta
-  have hz : 0 ≤ z := by dsimp [z]; positivity
-  have hOneI : (1 : ℝ) ∈ Set.Icc (0 : ℝ) N := by
-    exact ⟨by norm_num, by exact_mod_cast hN⟩
+  pm_61 hz z
+  pm_923
   have hNI : (N : ℝ) ∈ Set.Icc (0 : ℝ) N :=
     ⟨by positivity, le_rfl⟩
   have hmono : g 1 ≤ g N := by
     have hslope := heathBrown_lower_slope hg hgd hderivLower hOneI hNI
       (by exact_mod_cast hN)
-    have hNge : (1 : ℝ) ≤ N := by exact_mod_cast hN
+    pm_77 hNge N hN
     have hnonneg : 0 ≤ mu * ((N : ℝ) - 1) :=
       mul_nonneg hmu.le (sub_nonneg.mpr hNge)
     linarith
@@ -93,6 +92,5 @@ theorem heathBrown_spacing_card_cast_le
       dsimp [z]
 
 
-end
 
 end GafniTao

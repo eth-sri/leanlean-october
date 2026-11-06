@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaSourceTaylorPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,8 +42,7 @@ theorem positiveSlopeChartIndex_mem {d v : ℝ} (hd : 0 < d)
     (hv : v ∈ Icc (4*d) 2) :
     positiveSlopeChartIndex d v ∈ positiveSlopeChartIndices d := by
   apply Finset.mem_Icc.mpr
-  constructor
-  · exact Nat.le_floor ((le_div_iff₀ hd).mpr (by simpa using hv.1))
+  pm_8856 Nat.le_floor hd
   · exact Nat.floor_mono (div_le_div_of_nonneg_right hv.2 hd.le)
 
 theorem positiveSlopeChartScale_bounds {d : ℝ} {j : ℕ}

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.ShellDomains
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 def literalDyadicRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+    (S : Ideal Eis→ PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -24,7 +25,7 @@ def literalDyadicRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
       (CompletedHeight.normTwistedSource W θ) X u i
 
 theorem literalDyadicRow_eq_physical (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+    (S : Ideal Eis→ PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -38,9 +39,7 @@ theorem literalDyadicRow_eq_physical (F : PrimeFamily φ) (K : Ideal Eis) (hK : 
         D s hc u i.1 (fun _ => completedShellWindow) QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1)
         W θ X r aw (fun _ _ => 1) := by
   unfold literalDyadicRow weightedFinitePhysicalKernelRow CoprimeSourceIndex
-  simp only [Fintype.sum_prod_type,mul_one]
-  apply Finset.sum_congr rfl
-  intro P hP
+  pm_3526 Fintype.sum_prod_type mul_one Finset.sum_congr P hP
   have hp : QP/2≤(Ideal.absNorm (∏ j,(S P.val.val).ideal j):ℝ) ∧
       (Ideal.absNorm (∏ j,(S P.val.val).ideal j):ℝ)≤QP := by
     rw [hprod P.val.val P.val.property]

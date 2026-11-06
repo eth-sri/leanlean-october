@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,12 +22,14 @@ theorem fiber_norm_le {I : Ideal O} (hI : I ≠ 0) (p : MulFiber I) :
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI))
   exact map_dvd Ideal.absNorm ⟨p.val.2, p.property.symm⟩
 
-theorem cutoffCoefficient_small (V : ℝ → ℂ) (D : ℝ) (hD : 0 < D)
+section
+variable (V : ℝ → ℂ) (D : ℝ)
+include V D
+theorem cutoffCoefficient_small (hD : 0 < D)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
     (I : Ideal O) (hI : (Ideal.absNorm I : ℝ) ≤ D) :
     cutoffCoefficient V D I = if I = 1 then 1 else 0 := by
-  by_cases hI0 : I = 0
-  · simp [cutoffCoefficient, hI0]
+  pm_1452 hI0 I cutoffCoefficient
   · rw [cutoffCoefficient, ite_eq_right hI0]
     have heq : (fun p : MulFiber I => (moebius p.val.1 : ℂ) * V ((Ideal.absNorm p.val.1 : ℝ) / D)) =
         (fun p : MulFiber I => (moebius p.val.1 : ℂ)) := by
@@ -36,19 +39,19 @@ theorem cutoffCoefficient_small (V : ℝ → ℂ) (D : ℝ) (hD : 0 < D)
     rw [heq]
     exact mulFiber_moebius_sum I hI0
 
-theorem cutoffCoefficient_tail (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
+theorem cutoffCoefficient_tail (hD : 2 ≤ D)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
     (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (I : Ideal O) :
     cutoffCoefficient V D I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D)) =
       cutoffCoefficient V D I - if I = 1 then 1 else 0 := by
   have hD0 : 0 < D := by linarith
-  by_cases hI : (Ideal.absNorm I : ℝ) ≤ D
+  pm_5717 D
   · rw [cutoffCoefficient_small V D hD0 hV I hI]
     by_cases hI1 : I = 1
     · subst I
-      simp only [map_one, Nat.cast_one, mul_one, ite_true, one_mul, sub_self]
+      pm_316 map_one Nat.cast_one mul_one ite_true one_mul sub_self
       rw [hV _ (by positivity) ((div_le_one hD0).mpr hD), sub_self]
-    · simp only [hI1, ite_false, zero_mul, sub_zero]
+    pm_2997 hI1 ite_false zero_mul sub_zero
   · have hv : V (2 * (Ideal.absNorm I : ℝ) / D) = 0 := by
       apply hVzero
       apply (le_div_iff₀ hD0).mpr
@@ -59,6 +62,7 @@ theorem cutoffCoefficient_tail (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
       simp only [map_one, Nat.cast_one] at hI
       linarith
     rw [hv, sub_zero, mul_one, ite_eq_right hI1, sub_zero]
+end
 
 theorem weighted_fiber (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) (I : Ideal O) :
     (∑' p : MulFiber I, (moebius p.val.1 : ℂ) * V ((Ideal.absNorm p.val.1 : ℝ) / D) *
@@ -78,9 +82,10 @@ def exponentialTerm (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) (Y : 
   cutoffCoefficient V D I * IdealEuler.weighted (idealCoeff χ) s I *
     Complex.exp (-((Ideal.absNorm I : ℝ) : ℂ) / (Y : ℂ))
 
-theorem exponentialTerm_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
-    (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ) (I : Ideal O) :
+section
+variable (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D) (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1) (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ)
+include χ V D hD hV hVzero s Y
+theorem exponentialTerm_tail (I : Ideal O) :
     exponentialTerm χ V D s Y I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D)) =
       exponentialTerm χ V D s Y I - if I = 1 then Complex.exp (-1 / (Y : ℂ)) else 0 := by
   have h := cutoffCoefficient_tail V D hD hV hVzero I
@@ -92,19 +97,18 @@ theorem exponentialTerm_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 
       rw [h]
       by_cases hI : I = 1
       · subst I
-        simp only [ite_true, map_one, Nat.cast_one, Complex.ofReal_one, mul_one]
+        pm_93 ite_true map_one Nat.cast_one Complex.ofReal_one mul_one
         ring
       · simp only [hI, ite_false, sub_zero]
 
-theorem exponential_sum_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
-    (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ)
+theorem exponential_sum_tail
     (hsum : Summable (exponentialTerm χ V D s Y)) :
     (∑' I : Ideal O, exponentialTerm χ V D s Y I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D))) =
       (∑' I : Ideal O, exponentialTerm χ V D s Y I) - Complex.exp (-1 / (Y : ℂ)) := by
   simp_rw [exponentialTerm_tail χ V D hD hV hVzero s Y]
   rw [hsum.tsum_sub ((hasSum_ite_eq (1 : Ideal O) (Complex.exp (-1 / (Y : ℂ)))).summable)]
   simp only [tsum_ite_eq]
+end
 
 end SevenEighths.HeckeDetectorWitnessArithmetic
 

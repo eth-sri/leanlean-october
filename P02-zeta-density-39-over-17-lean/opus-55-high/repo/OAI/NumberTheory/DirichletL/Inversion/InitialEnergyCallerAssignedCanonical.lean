@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssignedPair
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
 open InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -23,7 +24,7 @@ theorem original_assigned_canonical_pair
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (S:Finset (Source (ι:=ι) 0))(u:Eisˣ)
-    (J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι)(a₁ a₂:σ→ι→ℂ)
+    (J₁ J₂:Finset σ)(L₁ L₂:σ→ Finset ι)(a₁ a₂:σ→ι→ℂ)
     (ha₁:∀i∈J₁,∀q∈L₁ i,‖a₁ i q‖≤1)
     (ha₂:∀i∈J₂,∀q∈L₂ i,‖a₂ i q‖≤1)
     (hdiv:∀x∈S,x.divisor⊆x.common)
@@ -48,9 +49,9 @@ theorem original_assigned_canonical_pair
           (initialChild (toTuple p (sectorSource u x))))*
         child p hp hcop hg pool Ψ₂ j slots₂ L₂ a₂ W₂ X₂
           (negativeChild (initialChild (toTuple p (sectorSource u x)))))‖≤
-      A*(Z^F*∑t∈quotientSet p (assignedSource S J₁ J₂ L₁ L₂),
+      A*(Z ^F*∑t∈quotientSet p (assignedSource S J₁ J₂ L₁ L₂),
         ((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*(Real.sqrt B₁*Real.sqrt B₂) := by
-  let T := quotientSet p (assignedSource S J₁ J₂ L₁ L₂)
+  pm_7503
   let f := child p hp hcop hg pool Ψ₁ j slots₁ L₁ a₁ W₁ X₁
   let g := child p hp hcop hg pool Ψ₂ j slots₂ L₂ a₂ W₂ X₂
   have h₁ := energy_le_moment p hp hcop hg pool Ψ₁ j slots₁ L₁ a₁ W₁ X₁
@@ -63,8 +64,8 @@ theorem original_assigned_canonical_pair
     (fun k=>g (negativeChild k))
   apply hh.trans
   calc
-    _≤A*(Real.sqrt ((Z^F*∑t∈T,((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*B₁)*
-      Real.sqrt ((Z^F*∑t∈T,((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*B₂)) :=
+    _≤A*(Real.sqrt ((Z ^F*∑t∈T,((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*B₁)*
+      Real.sqrt ((Z ^F*∑t∈T,((idealDivisors t).card:ℝ)^(J₁.card+J₂.card))*B₂)) :=
       mul_le_mul_of_nonneg_left (mul_le_mul (Real.sqrt_le_sqrt h₁)
         (Real.sqrt_le_sqrt h₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) hA
     _=_ := by

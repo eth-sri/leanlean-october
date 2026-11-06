@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawInitialGates
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,18 +21,16 @@ def shiftedExponent (_data:RowData)(U r:ℝ)(j:Ideal O) : ℝ :=
 theorem marked_shift_eventually (data:RowData)(eta:ℝ)(heta:0<eta) :
     ∀ᶠU:ℝ in atTop,1<U ∧
       ∀j∈idealDivisors (∏P∈excluded data,P),∀r:ℝ,
-        r-eta≤shiftedExponent data U r j ∧ shiftedExponent data U r j≤r ∧
+        r-eta≤ shiftedExponent data U r j ∧ shiftedExponent data U r j≤ r ∧
         U^(shiftedExponent data U r j)=U^r/(j.absNorm:ℝ) := by
   have ht:∀ᶠU:ℝ in atTop,((∏P∈excluded data,P).absNorm:ℝ)≤U^eta :=
     (tendsto_rpow_atTop heta).eventually (eventually_ge_atTop _)
-  filter_upwards [eventually_gt_atTop (1:ℝ),ht] with U hU ht
-  refine ⟨hU,?_⟩
+  pm_5065 U hU
   intro j hj r
   obtain ⟨hn,hnB⟩:=excluded_divisor_norm data j hj
   have hU0:0<U:=zero_lt_one.trans hU
   have hn0:0<(j.absNorm:ℝ):=zero_lt_one.trans_le hn
-  have hl0:0≤Real.logb U (j.absNorm:ℝ):=
-    div_nonneg (Real.log_nonneg hn) (Real.log_pos hU).le
+  pm_7895 hl0 U hU
   have hl:Real.logb U (j.absNorm:ℝ)≤eta:=
     (Real.logb_le_iff_le_rpow hU hn0).mpr (hnB.trans ht)
   refine ⟨by dsimp [shiftedExponent];linarith,by dsimp [shiftedExponent];linarith,?_⟩

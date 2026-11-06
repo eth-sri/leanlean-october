@@ -1,8 +1,8 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set Finset
 open scoped ComplexConjugate
@@ -19,10 +19,10 @@ theorem dirichlet_log_gap {m n X : ℕ} (hm : 0 < m) (hmn : m < n) (hnX : n ≤ 
   have hm0 : (0:ℝ) < m := by exact_mod_cast hm
   have hmn' : (m:ℝ) < n := by exact_mod_cast hmn
   have hn0 : (0:ℝ) < n := lt_trans hm0 hmn'
-  have hX : (n:ℝ) ≤ X := by exact_mod_cast hnX
+  pm_404 hX n X hnX
   have hh := Real.one_sub_inv_le_log_of_pos (div_pos hn0 hm0)
   rw [Real.log_div (ne_of_gt hn0) (ne_of_gt hm0),inv_div] at hh
-  have hcast : ((n-m:ℕ):ℝ) = (n:ℝ)-m := Nat.cast_sub hmn.le
+  pm_7883 n m hmn.le
   rw [hcast]
   calc
     ((n:ℝ)-m)/X ≤ ((n:ℝ)-m)/n := div_le_div_of_nonneg_left (by linarith) hn0 hX
@@ -34,7 +34,7 @@ theorem dirichletPhase_norm (n : ℕ) (t : ℝ) : ‖dirichletPhase n t‖ = 1 :
 
 theorem dirichlet_oscillatory_integral {ω a b : ℝ} (hω : ω ≠ 0) :
     ‖∫ t in a..b, Complex.exp (Complex.I * (ω:ℂ) * t)‖ ≤ 2/|ω| := by
-  have hc : Complex.I * (ω:ℂ) ≠ 0 := mul_ne_zero Complex.I_ne_zero (by exact_mod_cast hω)
+  have hc : Complex.I * (ω:ℂ) ≠ 0 := mul_ne_zero Complex.I_ne_zero (by simp_all)
   rw [integral_exp_mul_complex hc,norm_div,norm_mul,Complex.norm_I,one_mul,Complex.norm_real,Real.norm_eq_abs]
   apply div_le_div_of_nonneg_right _ (abs_nonneg ω)
   have hn (t : ℝ) : ‖Complex.exp (Complex.I * (ω:ℂ) * t)‖ = 1 := by
@@ -47,39 +47,29 @@ theorem dirichlet_distance_side (X n : ℕ) (hn : n ≤ X) (S : Finset ℕ)
     (∑ m ∈ S, ((n-m:ℕ):ℝ)⁻¹) ≤ (harmonic X:ℝ) := by
   have hinj : Set.InjOn (fun m => n-m) S := by
     intro x hx y hy he
-    have hx' := hside x hx
-    have hy' := hside y hy
+    pm_268 hx' hside x hx hy' y hy
     dsimp at he
     omega
   have himage : S.image (fun m => n-m) ⊆ Finset.Icc 1 X := by
-    intro k hk
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hk
+    pm_67 k hk m hm Finset.mem_image.mp
     have hh := hside m hm
-    exact Finset.mem_Icc.mpr ⟨by omega,by omega⟩
-  rw [harmonic_eq_sum_Icc]
-  simp only [Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
-  rw [← Finset.sum_image (f := fun k : ℕ => (k:ℝ)⁻¹) hinj]
-  exact Finset.sum_le_sum_of_subset_of_nonneg himage (fun _ _ _ => by positivity)
+    grind
+  pm_4521
 
 theorem dirichlet_distance_other_side (X n : ℕ) (S : Finset ℕ)
     (hS : S ⊆ Finset.Icc 1 X) (hside : ∀ m ∈ S, n < m) :
     (∑ m ∈ S, ((m-n:ℕ):ℝ)⁻¹) ≤ (harmonic X:ℝ) := by
   have hinj : Set.InjOn (fun m => m-n) S := by
     intro x hx y hy he
-    have hx' := hside x hx
-    have hy' := hside y hy
+    pm_268 hx' hside x hx hy' y hy
     dsimp at he
     omega
   have himage : S.image (fun m => m-n) ⊆ Finset.Icc 1 X := by
-    intro k hk
-    obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hk
+    pm_67 k hk m hm Finset.mem_image.mp
     have hh := hside m hm
     have hmX := (Finset.mem_Icc.mp (hS hm)).2
     exact Finset.mem_Icc.mpr ⟨by omega,by omega⟩
-  rw [harmonic_eq_sum_Icc]
-  simp only [Rat.cast_sum,Rat.cast_inv,Rat.cast_natCast]
-  rw [← Finset.sum_image (f := fun k : ℕ => (k:ℝ)⁻¹) hinj]
-  exact Finset.sum_le_sum_of_subset_of_nonneg himage (fun _ _ _ => by positivity)
+  pm_4521
 
 theorem dirichlet_harmonic_row {X n : ℕ} (hn : n ∈ Finset.Icc 1 X) :
     (∑ m ∈ (Finset.Icc 1 X).erase n, (|(n:ℝ)-m|)⁻¹) ≤ 2*(1+Real.log X) := by
@@ -174,15 +164,12 @@ theorem finite_symmetric_row_bound {ι : Type*} (S : Finset ι) (v : ι → ℝ)
   have hswap : (∑ n ∈ S, ∑ m ∈ S, (v m)^2*k n m) =
       ∑ n ∈ S, ∑ m ∈ S, (v n)^2*k n m := by
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro n hn
-    apply Finset.sum_congr rfl
-    intro m hm
+    pm_90 Finset.sum_congr n hn m hm
     rw [hsym m hm n hn]
   calc
     _ ≤ _ := hterm
     _ = ∑ n ∈ S, (v n)^2*(∑ m ∈ S, k n m) := by
-      simp only [div_eq_mul_inv,add_mul,Finset.sum_add_distrib,← Finset.sum_mul]
+      pm_1444 div_eq_mul_inv add_mul Finset.sum_add_distrib Finset.sum_mul
       rw [hswap]
       simp only [Finset.mul_sum]
       ring
@@ -204,12 +191,9 @@ theorem finiteDirichletPolynomial_gram (X : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
       ∑ n ∈ Finset.Icc 1 X, ∑ m ∈ Finset.Icc 1 X,
         (c n*conj (c m))*(dirichletPhase n t*conj (dirichletPhase m t)) := by
     rw [← Complex.mul_conj']
-    simp only [finiteDirichletPolynomial,map_sum,map_mul,Finset.sum_mul,Finset.mul_sum]
+    pm_94 finiteDirichletPolynomial map_sum map_mul Finset.sum_mul Finset.mul_sum
     rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro n _
-    apply Finset.sum_congr rfl
-    intro m _
+    pm_156 Finset.sum_congr n m
     ring
   have ht (n m : ℕ) : IntegrableOn
       (fun t => (c n*conj (c m))*(dirichletPhase n t*conj (dirichletPhase m t))) (Set.Icc a b) := by
@@ -217,14 +201,7 @@ theorem finiteDirichletPolynomial_gram (X : ℕ) (c : ℕ → ℂ) (a b : ℝ) :
     apply Continuous.continuousOn
     unfold dirichletPhase
     fun_prop
-  simp_rw [he]
-  rw [integral_finsetSum _ (fun n _ => integrable_finsetSum _ (fun m _ => ht n m))]
-  apply Finset.sum_congr rfl
-  intro n _
-  rw [integral_finsetSum _ (fun m _ => ht n m)]
-  apply Finset.sum_congr rfl
-  intro m _
-  rw [integral_const_mul]
+  pm_4522 Finset.sum_congr
 
 /-- Elementary Dirichlet mean value with an absolute logarithmic loss.
 The coefficients and interval location are arbitrary. -/
@@ -233,16 +210,12 @@ theorem dirichlet_mean_value (X : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a �
       ((b-a)+4*(X:ℝ)*(1+Real.log X))*(∑ n ∈ Finset.Icc 1 X, ‖c n‖^2) := by
   let S := Finset.Icc 1 X
   let k := fun n m : ℕ => if n=m then b-a else 2*(X:ℝ)/|(n:ℝ)-m|
-  have hk : ∀ n ∈ S, ∀ m ∈ S, 0 ≤ k n m := by
-    intro n _ m _
-    dsimp [k]
-    split_ifs <;> positivity
+  pm_4523
   have hsym : ∀ n ∈ S, ∀ m ∈ S, k n m=k m n := by
     intro n _ m _
     simp only [k,eq_comm,abs_sub_comm]
   have hrow : ∀ n ∈ S, (∑ m ∈ S, k n m) ≤ (b-a)+4*(X:ℝ)*(1+Real.log X) := by
-    intro n hn
-    rw [← Finset.sum_erase_add _ _ hn]
+    pm_8914 Finset.sum_erase_add
     have he : (∑ m ∈ S.erase n, k n m) =
         2*(X:ℝ)*(∑ m ∈ S.erase n, (|(n:ℝ)-m|)⁻¹) := by
       rw [Finset.mul_sum]
@@ -258,7 +231,7 @@ theorem dirichlet_mean_value (X : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a �
       ‖∫ t in Set.Icc a b, dirichletPhase n t*conj (dirichletPhase m t)‖ ≤ k n m := by
     by_cases he : n=m
     · subst m
-      simp only [k,ite_true,Complex.mul_conj',dirichletPhase_norm,one_pow,Complex.ofReal_one]
+      pm_382 k ite_true Complex.mul_conj' dirichletPhase_norm one_pow Complex.ofReal_one
       simp only [integral_const,Measure.real,Measure.restrict_apply_univ,Real.volume_Icc,ENNReal.toReal_ofReal (sub_nonneg.mpr hab),Complex.real_smul,mul_one]
       rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (sub_nonneg.mpr hab)]
     · rw [integral_Icc_eq_integral_Ioc,← intervalIntegral.integral_of_le hab]
@@ -274,9 +247,7 @@ theorem dirichlet_mean_value (X : ℕ) (c : ℕ → ℂ) {a b : ℝ} (hab : a �
     _ ≤ ∑ n ∈ S, ∑ m ∈ S, ‖c n‖*‖c m‖*k n m := by
       apply Finset.sum_le_sum
       intro n hn
-      apply (norm_sum_le _ _).trans
-      apply Finset.sum_le_sum
-      intro m hm
+      pm_244 Finset.sum_le_sum m hm
       rw [norm_mul,norm_mul,RCLike.norm_conj]
       exact mul_le_mul_of_nonneg_left (hgram n m hn hm) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ ≤ _ := finite_symmetric_row_bound S (fun n => ‖c n‖) k hk hsym hrow

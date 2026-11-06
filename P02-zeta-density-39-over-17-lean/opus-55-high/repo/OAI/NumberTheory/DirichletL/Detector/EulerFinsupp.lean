@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.IdealFactorization
 public import Mathlib.Analysis.Normed.Group.Tannery
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -49,7 +50,7 @@ lemma finitePi {α β : Type*} [Fintype α] (f : α→β→ℂ)
       (∏ i,f i (d v i))=∏ j,f (e.symm j) (v j) := by
     apply Fintype.prod_equiv e
     intro i
-    simp only [d,Equiv.arrowCongr_apply,Equiv.symm_symm,Equiv.refl_apply,e.symm_apply_apply,Function.comp_apply]
+    pm_382 d Equiv.arrowCongr_apply Equiv.symm_symm Equiv.refl_apply e.symm_apply_apply Function.comp_apply
   constructor
   · rw [←d.summable_iff]
     simpa only [Function.comp_def,hd] using h.1
@@ -64,8 +65,7 @@ lemma finiteEuler (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     (hf : ∀a,Summable (fun b=>‖f a b‖)) (S : Finset α) :
     (∑' v : {v : α→₀β // (v.support:Set α)⊆S},v.val.prod f)=
       ∏ a∈S,∑' b,f a b := by
-  let e : {v : α→₀β // (v.support:Set α)⊆S} ≃ (S→β) :=
-    (Finsupp.restrictSupportEquiv (S:Set α) β).trans Finsupp.equivFunOnFinite
+  pm_3821
   have he (v : {v : α→₀β // (v.support:Set α)⊆S}) :
       v.val.prod f=∏ a:S,f a.val (e v a) := by
     rw [←Finsupp.prod_subtypeDomain_index (p:=fun a=>a∈S) (fun a ha=>v.property ha)]
@@ -78,28 +78,20 @@ lemma finiteEuler (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
 theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     (hs : Summable (fun v : α→₀β=>‖v.prod f‖)) :
     HasProd (fun a=>∑' b,f a b) (∑' v : α→₀β,v.prod f) := by
-  have hf (a : α) : Summable (fun b=>‖f a b‖) := by
-    have hh := hs.comp_injective (Finsupp.single_injective a)
-    simpa only [Function.comp_def,Finsupp.prod_single_index (h0 a)] using hh
+  pm_3822
   have ht : Tendsto (fun S : Finset α=>∑' v : α→₀β,
       if v.support⊆S then v.prod f else 0) atTop (𝓝 (∑' v : α→₀β,v.prod f)) := by
-    apply tendsto_tsum_of_dominated_convergence hs
-    · intro v
-      apply tendsto_const_nhds.congr'
-      filter_upwards [eventually_ge_atTop v.support] with S hS
-      simp only [ite_eq_left hS]
+    pm_1573
     · apply Filter.Eventually.of_forall
       intro S v
       split_ifs
       · exact le_rfl
-      · simpa only [norm_zero] using norm_nonneg (v.prod f)
+      pm_7827
   have he (S : Finset α) : (∑' v : α→₀β,if v.support⊆S then v.prod f else 0)=
       ∏a∈S,∑' b,f a b := by
     rw [←finiteEuler f h0 hf S]
     trans ∑' v : α→₀β, {v : α→₀β | (v.support:Set α)⊆S}.indicator (fun v=>v.prod f) v
-    · apply tsum_congr
-      intro v
-      simp only [Set.indicator,Set.mem_ofPred_eq,Finset.coe_subset]
+    pm_7251
     · exact (tsum_subtype {v : α→₀β | (v.support:Set α)⊆S} (fun v=>v.prod f)).symm
   change Tendsto (fun S : Finset α=>∏a∈S,∑' b,f a b) atTop _
   simpa only [he] using ht

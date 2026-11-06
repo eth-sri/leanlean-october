@@ -1,6 +1,7 @@
 module
 public import DensityEnergyGM.SharpQuadraticLargeValues
 public import DensityEnergyGM.EnergyPowerMean
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -52,12 +53,8 @@ theorem quarter_gap_count_absorption {R S C : ℝ}
     (mul_le_mul_iff_left₀ (by positivity : 0 < R^(7/4:ℝ))).mp (by
       simpa only [mul_comm,mul_left_comm] using hbound)
   have hp := pow_le_pow_left₀ (by positivity : 0 ≤ R^(1/4:ℝ)) hh 4
-  have hleft : (R^(1/4:ℝ))^4=R := by
-    rw [← Real.rpow_mul_natCast hR.le]
-    norm_num
-  have hright : (S^(1/4:ℝ))^4=S := by
-    rw [← Real.rpow_mul_natCast hS.le]
-    norm_num
+  pm_7046 hleft R hR.le
+  pm_7046 hright S hS.le
   simpa only [hleft,mul_pow,hright] using hp
 
 end Montgomery.RationalMoment

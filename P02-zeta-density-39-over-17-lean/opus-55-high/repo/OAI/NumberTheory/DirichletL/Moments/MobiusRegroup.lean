@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SupportedCorrelation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -42,14 +43,11 @@ theorem finite_pair_mobius {α β : Type*} (S : Finset α) (T : Finset β)
         ∑ D ∈ divisorPool T B, (moebius D : ℂ) *
           (if D ∣ A i ∧ D ∣ B j then F i j else 0) := by
     have hm := congrArg (fun z : ℂ => z * F i j) (mobius_on_pool T B hB j hj (A i))
-    simpa only [ite_mul, one_mul, zero_mul, Finset.sum_mul, mul_ite, mul_zero] using hm
+    pm_546 ite_mul one_mul zero_mul Finset.sum_mul mul_ite mul_zero hm
   calc
     _ = ∑ i ∈ S, ∑ j ∈ T, ∑ D ∈ divisorPool T B, (moebius D : ℂ) *
         (if D ∣ A i ∧ D ∣ B j then F i j else 0) := by
-      apply Finset.sum_congr rfl
-      intro i hi
-      apply Finset.sum_congr rfl
-      intro j hj
+      pm_3622
       exact ht i j hj
     _ = _ := by
       simp_rw [Finset.sum_comm (s := T) (t := divisorPool T B)]
@@ -87,8 +85,7 @@ theorem finite_correlation_mobius {α β : Type*} (S : Finset α) (T : Finset β
        else 0) * (c i * star (d j)) * K i j =
       if IsCoprime (Ideal.span {a i}) (Ideal.span {b j}) then
         completeSupportExtension D E hD hE h (a i) (b j) * (c i * star (d j)) * K i j else 0 := by
-    rw [Ideal.isCoprime_span_singleton_iff]
-    by_cases hab : IsCoprime (a i) (b j)
+    pm_7690 hab
     · rw [ite_eq_left hab, ite_eq_left hab, actual_complete_common_support D E (a i) (b j)
         hD hE (ha i) (hb j) hpD hpE (hpa i) (hpb j) (hcopA i) (hcopB j) hab]
     · simp only [ite_eq_right hab, zero_mul]

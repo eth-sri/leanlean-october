@@ -20,15 +20,15 @@ lemma freePrimeRow_zero_at_prime (I Q : Ideal Eis) (hI : Supported I)
 
 lemma primaryGenerator_mem_of_ideal_dvd (P A : Ideal Eis) (hPA : P∣A) : primaryGenerator A∈P := by
   by_cases hz : primaryGenerator A=0
-  · rw [hz]
-    exact Ideal.zero_mem _
+  simp_all
   have ha0 : primaryGenerator A∈Ideal.span {primaryGenerator A} := Ideal.subset_span (by simp)
   have ha : primaryGenerator A∈A := ((primaryGenerator_spec A hz).1.le) ha0
   exact (Ideal.dvd_iff_le.mp hPA) ha
 
-lemma free_row_whole_mark_overlap {σ : Type*} [Fintype σ]
-    (I Q : Ideal Eis) (hI : Supported I) (S : PrimeFamily σ)
-    (P : FreePrimeIndex I Q) (i : σ) (heq : S.ideal i=P.val.val) (A : Ideal Eis) :
+section
+variable {σ : Type*} [Fintype σ] (I Q : Ideal Eis) (hI : Supported I) (S : PrimeFamily σ) (P : FreePrimeIndex I Q) (i : σ) (heq : S.ideal i=P.val.val)
+include σ I Q hI S P i heq
+lemma free_row_whole_mark_overlap (A : Ideal Eis) :
     freePrimeRow I hI Q (primaryGenerator A)*
       (∏ j, if S.ideal j∣A then (1:ℂ) else 0)=0 := by
   by_cases hd : S.ideal i∣A
@@ -40,9 +40,7 @@ lemma free_row_whole_mark_overlap {σ : Type*} [Fintype σ]
       rw [ite_eq_right hd]
     rw [hz,mul_zero]
 
-theorem markedCompletedT_free_overlap_zero {σ : Type*} [Fintype σ]
-    (I Q : Ideal Eis) (hI : Supported I) (S : PrimeFamily σ)
-    (P : FreePrimeIndex I Q) (i : σ) (heq : S.ideal i=P.val.val)
+theorem markedCompletedT_free_overlap_zero
     (φ : Eis→*ℂ) (W : ℝ→ℂ) (X : ℝ) :
     markedCompletedT (φ*freePrimeRow I hI Q) W X
       (fun A => ∏ j, if S.ideal j∣A then (1:ℂ) else 0)=0 := by
@@ -63,6 +61,7 @@ theorem markedCompletedT_free_overlap_zero {σ : Type*} [Fintype σ]
           (∏ j, if S.ideal j∣n*b^3 then (1:ℂ) else 0)) := by ring
         _ = 0 := by rw [hz,mul_zero]
     _ = 0 := by simp
+end
 
 end
 end SevenEighths.InverseReflectedPhase

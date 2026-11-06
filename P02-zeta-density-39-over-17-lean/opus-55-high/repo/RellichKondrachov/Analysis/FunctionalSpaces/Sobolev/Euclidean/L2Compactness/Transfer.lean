@@ -8,6 +8,7 @@ Authors: Adam Benenson
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.ArzelaAscoli
 public import Mathlib.MeasureTheory.Function.LpSpace.Basic
 public import Mathlib.Topology.MetricSpace.Pseudo.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -54,15 +55,8 @@ local instance instMeasurableNegEL2CompactnessTransfer : MeasurableNeg E := by
 
 variable {K : Set E} {ψ : E → ℝ}
 
-private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : MeasurableSet K)
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) :
-    ∀ u v : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K),
-      dist (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u)
-          (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs v) ≤
-        (MeasureTheory.measureUnivNNReal ((volume : Measure E).restrict (Kψ (K := K) (ψ := ψ)))) ^
-            ((2 : ℝ≥0∞).toReal⁻¹) *
-          dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u)
-              (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs v) := by
+set_option hygiene false in
+macro "pb_360" : tactic => `(tactic| (
   classical
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   let s : Set E := Kψ (K := K) (ψ := ψ)
@@ -74,16 +68,24 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
   have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨hs_lt_top⟩
   have : IsFiniteMeasure μs := by
     infer_instance
-  let mS : ℝ := (MeasureTheory.measureUnivNNReal μs) ^ ((2 : ℝ≥0∞).toReal⁻¹)
+  let mS : ℝ := (MeasureTheory.measureUnivNNReal μs) ^ ((2 : ℝ≥0∞).toReal⁻¹)))
+section
+variable (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
+include hK hKm hψc hψcs
+private lemma dist_smoothL2_le_mul_dist_smoothBCF :
+    ∀ u v : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K),
+      dist (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u)
+          (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs v) ≤
+        (MeasureTheory.measureUnivNNReal ((volume : Measure E).restrict (Kψ (K := K) (ψ := ψ)))) ^
+            ((2 : ℝ≥0∞).toReal⁻¹) *
+          dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u)
+              (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs v) := by
+  pb_360
   intro u v
-  set Su :=
-    smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u
-  set Sv :=
-    smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs v
-  set Bu :=
-    smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u
-  set Bv :=
-    smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs v
+  pm_7635 Su u
+  pm_7635 Sv v
+  pm_6580 Bu u
+  pm_6580 Bv v
   have hBuBv : 0 ≤ ‖Bu - Bv‖ := norm_nonneg _
   -- Work on `F := Su - Sv` and restrict to the finite-measure set `s`.
   let F : (E →₂[(volume : Measure E)] ℝ) := Su - Sv
@@ -96,23 +98,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
       (g =ᵐ[μs] fun x : E =>
         smoothFun (E := E) (K := K) ψ u x -
           smoothFun (E := E) (K := K) ψ v x) := by
-    have hsub :
-        (F : E → ℝ) =ᵐ[(volume : Measure E)] (Su : E → ℝ) - (Sv : E → ℝ) := by
-      simpa [F, g, Su, Sv] using
-        (MeasureTheory.Lp.coeFn_sub (μ := (volume : Measure E)) Su Sv)
-    have hu :
-        (Su : E → ℝ) =ᵐ[(volume : Measure E)] smoothFun (E := E) (K := K) ψ u :=
-      smoothL2_ae_eq (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs u
-    have hv :
-        (Sv : E → ℝ) =ᵐ[(volume : Measure E)] smoothFun (E := E) (K := K) ψ v :=
-      smoothL2_ae_eq (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs v
-    have hF :
-        (F : E → ℝ) =ᵐ[(volume : Measure E)]
-          fun x : E =>
-            smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x := by
-      have h := hsub.trans (hu.sub hv)
-      filter_upwards [h] with x hx
-      simpa [Pi.sub_apply] using hx
+    pm_2739
     exact MeasureTheory.ae_restrict_of_ae (μ := (volume : Measure E)) (s := s) hF
   have hFs_ae : ((Fs : E → ℝ) =ᵐ[μs] g) := by
     simpa [Fs, g] using
@@ -124,10 +110,8 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
           ‖Bu - Bv‖ := by
       intro x hx
       let x' : ↥(Kψ (K := K) (ψ := ψ)) := ⟨x, hx⟩
-      have hBu : Bu x' = smoothFun (E := E) (K := K) ψ u x := by
-        simp [Bu, x']
-      have hBv : Bv x' = smoothFun (E := E) (K := K) ψ v x := by
-        simp [Bv, x']
+      pm_6799 hBu Bu u
+      pm_6799 hBv Bv v
       have : ‖(Bu - Bv) x'‖ ≤ ‖Bu - Bv‖ :=
         (Bu - Bv).norm_coe_le_norm x'
       simpa [hBu, hBv] using this
@@ -147,18 +131,10 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
         smoothFun (E := E) (K := K) ψ u x -
           smoothFun (E := E) (K := K) ψ v x = 0 := by
     intro x hx
-    have hu_supp : Function.support (smoothFun (E := E) (K := K) ψ u) ⊆ s := by
-      exact
-        (support_smoothFun_subset_add_tsupport (E := E) (K := K) (ψ := ψ) u)
-    have hv_supp : Function.support (smoothFun (E := E) (K := K) ψ v) ⊆ s := by
-      exact
-        (support_smoothFun_subset_add_tsupport (E := E) (K := K) (ψ := ψ) v)
-    have hu0 : smoothFun (E := E) (K := K) ψ u x = 0 := by
-      have : x ∉ Function.support (smoothFun (E := E) (K := K) ψ u) := fun hx' => hx (hu_supp hx')
-      simpa [Function.support] using this
-    have hv0 : smoothFun (E := E) (K := K) ψ v x = 0 := by
-      have : x ∉ Function.support (smoothFun (E := E) (K := K) ψ v) := fun hx' => hx (hv_supp hx')
-      simpa [Function.support] using this
+    pm_1203 hu_supp u
+    pm_1203 hv_supp v
+    pm_661 hu0 u hu_supp
+    pm_661 hv0 v hv_supp
     simp [hu0, hv0]
   have hF0 :
       ∀ᵐ x ∂(volume : Measure E), x ∉ s → g x = 0 := by
@@ -167,23 +143,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
           fun x : E =>
             smoothFun (E := E) (K := K) ψ u x -
               smoothFun (E := E) (K := K) ψ v x) := by
-      have hsub :
-          (F : E → ℝ) =ᵐ[(volume : Measure E)] (Su : E → ℝ) - (Sv : E → ℝ) := by
-        simpa [F, g, Su, Sv] using
-          (MeasureTheory.Lp.coeFn_sub (μ := (volume : Measure E)) Su Sv)
-      have hu :
-          (Su : E → ℝ) =ᵐ[(volume : Measure E)] smoothFun (E := E) (K := K) ψ u :=
-        smoothL2_ae_eq (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs u
-      have hv :
-          (Sv : E → ℝ) =ᵐ[(volume : Measure E)] smoothFun (E := E) (K := K) ψ v :=
-        smoothL2_ae_eq (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs v
-      have hF :
-          (F : E → ℝ) =ᵐ[(volume : Measure E)]
-            fun x : E =>
-              smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x := by
-        have h := hsub.trans (hu.sub hv)
-        filter_upwards [h] with x hx
-        simpa [Pi.sub_apply] using hx
+      pm_2739
       simpa [g] using hF
     filter_upwards [hF_ae_full] with x hx
     intro hxnot
@@ -192,8 +152,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
     simpa [hx] using this
   have hF_ind :
       (s.indicator g =ᵐ[(volume : Measure E)] g) := by
-    filter_upwards [hF0] with x hx
-    by_cases hxmem : x ∈ s
+    pm_8548 hF0
     · simp [g, hxmem]
     · have : g x = 0 := hx hxmem
       simp [g, hxmem, this]
@@ -217,8 +176,7 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
     simpa [g] using this
   have hindicator :
       (s.indicator (fun x : E => (Fs : E → ℝ) x) =ᵐ[(volume : Measure E)] s.indicator g) := by
-    filter_upwards [hFs_on] with x hx
-    by_cases hxmem : x ∈ s
+    pm_8548 hFs_on
     · simp [hxmem, hx hxmem]
     · simp [hxmem]
   have hFext_ae' :
@@ -238,23 +196,11 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
   -- Convert to the `dist` statement.
   simpa [Su, Sv, Bu, Bv, F, dist_eq_norm, mS, mul_assoc] using hnorm_F
 
-theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : MeasurableSet K)
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ} (hR : 0 ≤ R) :
+theorem smoothL2_image_closedBall_isCompact {R : ℝ} (hR : 0 ≤ R) :
     IsCompact
         (closure
           (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs '' Metric.closedBall (0 : _) R)) := by
-  classical
-  let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
-  let s : Set E := Kψ (K := K) (ψ := ψ)
-  have hs_compact : IsCompact s := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
-  have hs : MeasurableSet s := hs_compact.measurableSet
-  have hs_lt_top : (volume : Measure E) s < (⊤ : ℝ≥0∞) :=
-    hs_compact.measure_lt_top (μ := (volume : Measure E))
-  let μs : Measure E := (volume : Measure E).restrict s
-  have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨hs_lt_top⟩
-  have : IsFiniteMeasure μs := by
-    infer_instance
-  let mS : ℝ := (MeasureTheory.measureUnivNNReal μs) ^ ((2 : ℝ≥0∞).toReal⁻¹)
+  pb_360
   have hmS : 0 ≤ mS := by
     have : 0 ≤ (MeasureTheory.measureUnivNNReal μs) := by simp
     exact Real.rpow_nonneg this _
@@ -265,8 +211,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
     smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs '' U
   let B : Set (E →₂[(volume : Measure E)] ℝ) :=
     smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs '' U
-  have hA_compact : IsCompact (closure A) :=
-    smoothBCF_image_closedBall_isCompact (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (R := R) hR
+  pm_5389 hA_compact A smoothBCF_image_closedBall_isCompact
   have hdist_smoothL2_le :=
     dist_smoothL2_le_mul_dist_smoothBCF (K := K) (ψ := ψ) hK hKm hψc hψcs
   have hTB_B : TotallyBounded B := by
@@ -374,6 +319,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
   have hcompact_closure : IsCompact (closure B) :=
     isCompact_iff_totallyBounded_isComplete.2 ⟨hTB_closure, hcomplete⟩
   simpa [B, U] using hcompact_closure
+end
 
 end Volume
 

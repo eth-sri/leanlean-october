@@ -37,6 +37,6 @@ theorem atkinsonDyadicGramBudget_le_gapBudget (N : ℕ) (W : Finset ℝ)
   intro t ht
   apply Finset.sum_le_sum
   intro u hu
-  exact hgap j (Finset.mem_range.mp hj) t ht u hu
+  grind
 
 end MathCollab.Density.Stronger.Atkinson

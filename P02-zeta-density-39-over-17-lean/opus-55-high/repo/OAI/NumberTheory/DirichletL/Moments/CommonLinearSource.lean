@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalMaskedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ def liveColumn (s:Input ι)(C R L:Ideal O)(B:actualAllocations s.pools C)(z:O):�
   let S:=liveBox s.pools B.val (alloc_ne s C B)
   rowPolynomial Finset.univ (sourceGenerator (finiteColumns S))
     (fun I:supportedColumns (finiteColumns S)=>finiteColumnCoefficient S
-      (maskedLiveProfile B.val C R L s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1) I*
+      (maskedLiveProfile B.val C R L s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1) I *
         heightCoeff s.η s.t I) z
 
 omit [DecidableEq ι] in
@@ -48,7 +49,7 @@ theorem source_column_allocation (s:Input ι)(C:Ideal O)(hC:Supported C)
   let b:=fun B:actualAllocations s.pools C=>frozenCoefficient B.val C R s.ν s.W s.P
   let d:=fun (B:actualAllocations s.pools C)(I:supportedColumns Q)=>
     finiteColumnCoefficient (liveBox s.pools B.val (alloc_ne s C B))
-      (liveProfile B.val C R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1) I*
+      (liveProfile B.val C R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1) I *
       ((if L∣(I:Ideal O) then 1 else 0)*heightCoeff s.η s.t I)
   have he (I:supportedColumns Q):
       (if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then
@@ -61,13 +62,10 @@ theorem source_column_allocation (s:Input ι)(C:Ideal O)(hC:Supported C)
     by_cases hl:L∣(I:Ideal O)
     · simp only [hl,and_true]
       rw [hc,Finset.sum_mul]
-      simp only [b,d,hl,ite_true,one_mul,mul_assoc]
-    · simp only [hl,and_false,ite_false,zero_mul,b,d,mul_zero,Finset.sum_const_zero]
+      pm_382 b d hl ite_true one_mul mul_assoc
+    pm_5827
   change rowPolynomial Finset.univ (sourceGenerator Q) _ z=_
-  rw [funext he,rowPolynomial_allocation]
-  apply Finset.sum_congr rfl
-  intro B hB
-  apply congrArg (fun w:ℂ=>b B*w)
+  pm_5525 rowPolynomial_allocation
   have hh:=live_rowPolynomial s.pools s.pools_ne (fun i J hJ=>s.prime i J hJ)
     B.val (alloc_ne s C B) C R hC (Finset.mem_filter.mp B.property).1
     (Finset.mem_filter.mp B.property).2 s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1
@@ -75,11 +73,7 @@ theorem source_column_allocation (s:Input ι)(C:Ideal O)(hC:Supported C)
   change rowPolynomial Finset.univ (sourceGenerator Q) (d B) z=_ at hh
   rw [hh]
   unfold liveColumn
-  congr 1
-  funext I
-  rw [maskedLiveProfile,column_mask]
-  dsimp only [liveProfile]
-  ring
+  pm_6695
 
 theorem live_column_rectangle (s:Input ι)(C R L:Ideal O)(B:actualAllocations s.pools C)(z:O):
     liveColumn s C R L B z=

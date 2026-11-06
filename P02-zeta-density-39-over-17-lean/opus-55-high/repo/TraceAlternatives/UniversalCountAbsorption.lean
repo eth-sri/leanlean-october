@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.SharpCountAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,15 +17,10 @@ theorem eighth_gap_count_absorption {R S C : ℝ}
     norm_num
   rw [he] at hbound
   have hh : R^(1/8:ℝ) ≤ C*S^(1/8:ℝ) :=
-    (mul_le_mul_iff_left₀ (by positivity : 0 < R^(15/8:ℝ))).mp (by
-      simpa only [mul_comm,mul_left_comm] using hbound)
+    (mul_le_mul_iff_left₀ (by positivity : 0 < R^(15/8:ℝ))).mp (by grind)
   have hp := pow_le_pow_left₀ (by positivity : 0 ≤ R^(1/8:ℝ)) hh 8
-  have hleft : (R^(1/8:ℝ))^8=R := by
-    rw [← Real.rpow_mul_natCast hR.le]
-    norm_num
-  have hright : (S^(1/8:ℝ))^8=S := by
-    rw [← Real.rpow_mul_natCast hS.le]
-    norm_num
+  pm_7043 hleft R hR.le
+  pm_7043 hright S hS.le
   simpa only [hleft,mul_pow,hright] using hp
 
 end Montgomery.RationalMoment

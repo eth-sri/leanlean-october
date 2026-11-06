@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyNormalization
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Wooley Lemma 8.2, normalized branch `r >= 2`
@@ -12,24 +13,13 @@ both quotient powers into the exact bracket notation defined in (3.24).
 
 namespace GafniTao
 
-noncomputable section
 
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k) (p B H r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)] (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k) (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime) (gamma : WooleySourceSequence) (hscale : 0 < wooleySourceNormalizationScale phi p B H (wooleyTriangular k) Delta gamma) (hD : 0 ≤ D) (hsection7 : wooleySourcePolynomialMixedMean phi (wooleyTriangular k) r p B a b nu gamma ≤ D * wooleySourcePolynomialMixedMean phi (wooleyTriangular k) r p B bPrime b nu gamma)
+include k phi p B H r a b bPrime nu Delta D hr hrk hnub hnuPrime gamma hscale hD hsection7
 /-- Direct equation-(3.24) normalization of the `r >= 2` branch of Lemma
 8.1. -/
-theorem wooleySourcePolynomial_equation_8_4_quotient
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)]
-    (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k)
-    (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime)
-    (gamma : WooleySourceSequence)
-    (hscale : 0 < wooleySourceNormalizationScale
-      phi p B H (wooleyTriangular k) Delta gamma)
-    (hD : 0 ≤ D)
-    (hsection7 :
-      wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B a b nu gamma ≤
-        D * wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B bPrime b nu gamma) :
+theorem wooleySourcePolynomial_equation_8_4_quotient :
     (wooleySourcePolynomialMixedMean
         phi (wooleyTriangular k) r p B a b nu gamma /
       wooleySourceNormalizationScale
@@ -60,25 +50,11 @@ theorem wooleySourcePolynomial_equation_8_4_quotient
       phi (wooleyTriangular k) (k - r) p B b bPrime nu gamma
   · exact wooleySourcePolynomialMixedMean_nonneg
       phi (wooleyTriangular k) (r - 1) p B bPrime b nu gamma
-  · rw [wooley_section8_raw_complement hrk]
-    ring
+  grind
 
 /-- Wooley equation (8.4) in the literal bracket normalization (3.24),
 with the exact Lemma-7.1 multiplier `D` still visible. -/
-theorem wooleySourcePolynomial_equation_8_4
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)]
-    (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k)
-    (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime)
-    (gamma : WooleySourceSequence)
-    (hscale : 0 < wooleySourceNormalizationScale
-      phi p B H (wooleyTriangular k) Delta gamma)
-    (hD : 0 ≤ D)
-    (hsection7 :
-      wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B a b nu gamma ≤
-        D * wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B bPrime b nu gamma) :
+theorem wooleySourcePolynomial_equation_8_4 :
     wooleySourceNormalizedMixedMean
         phi p B H (wooleyTriangular k) r a b nu Delta gamma ≤
       D ^ wooleyNormalizationExponent k r *
@@ -88,14 +64,12 @@ theorem wooleySourcePolynomial_equation_8_4
         (wooleySourceNormalizedMixedMean
           phi p B H (wooleyTriangular k) (r - 1) bPrime b nu Delta gamma) ^
             (1 - 1 / (r : ℝ)) := by
-  let Z := wooleySourceNormalizationScale
-    phi p B H (wooleyTriangular k) Delta gamma
+  pm_7207
   let X := wooleySourcePolynomialMixedMean
     phi (wooleyTriangular k) (k - r) p B b bPrime nu gamma
   let Y := wooleySourcePolynomialMixedMean
     phi (wooleyTriangular k) (r - 1) p B bPrime b nu gamma
-  let u : ℝ := 1 / ((k - r + 1 : ℕ) : ℝ)
-  let v : ℝ := ((k - r : ℕ) : ℝ) / ((k - r + 1 : ℕ) : ℝ)
+  pm_2799
   let e : ℝ := wooleyNormalizationExponent k r
   have hq := wooleySourcePolynomial_equation_8_4_quotient
     phi p B H r a b bPrime nu Delta D hr hrk hnub hnuPrime gamma
@@ -138,12 +112,14 @@ theorem wooleySourcePolynomial_equation_8_4
       (1 - 1 / (r : ℝ))
   change _ ≤ D ^ e * (X / Z) ^ (u * e) * (Y / Z) ^ (v * e) at hq
   simpa only [hx, hy] using hq
+end
 
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k) (p B H a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
+include k phi p B H a b nu
 /-- The normalized `r=1` conclusion before the Section-6 estimate for the
 conditioned mean is inserted. -/
 theorem wooleySourcePolynomial_equation_8_5_pre
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Delta D : ℝ) (hk : 2 ≤ k)
     (hnub : nu ≤ b) (hnukb : nu ≤ k * b)
     (gamma : WooleySourceSequence)
@@ -166,14 +142,12 @@ theorem wooleySourcePolynomial_equation_8_5_pre
           wooleySourceNormalizationScale
             phi p B H (wooleyTriangular k) Delta gamma) ^
               (1 - 1 / (k : ℝ)) := by
-  let Z := wooleySourceNormalizationScale
-    phi p B H (wooleyTriangular k) Delta gamma
+  pm_7207
   let X := wooleySourcePolynomialMixedMean
     phi (wooleyTriangular k) (k - 1) p B b (k * b) nu gamma
-  let Y := wooleySourcePolynomialConditionedMean
-    (wooleyTriangular k) (p ^ B) (p ^ b) phi gamma
+  pm_7637 Y b
   let u : ℝ := 1 / (k : ℝ)
-  let v : ℝ := 1 - 1 / (k : ℝ)
+  pm_5500 k
   have hraw := wooleySourcePolynomial_equation_8_2_of_section7_mul
     phi p B a b nu hk hnub hnukb gamma D hD hsection7
   have huv : u + v = 1 := by dsimp [u, v]; ring
@@ -202,8 +176,6 @@ theorem wooleySourcePolynomial_equation_8_5_pre
 ratio.  The next module derives that ratio from Wooley (6.4), (6.5), and
 the hierarchy instead of taking it as an asymptotic convention. -/
 theorem wooleySourcePolynomial_equation_8_5_of_ratio
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H a b nu : ℕ) [NeZero p] [NeZero (p ^ B)]
     (Delta D E : ℝ) (hk : 2 ≤ k)
     (hnub : nu ≤ b) (hnukb : nu ≤ k * b)
     (gamma : WooleySourceSequence)
@@ -229,8 +201,8 @@ theorem wooleySourcePolynomial_equation_8_5_of_ratio
   have hpre := wooleySourcePolynomial_equation_8_5_pre
     phi p B H a b nu Delta D hk hnub hnukb gamma hscale hD hsection7
   have hv : 0 ≤ 1 - 1 / (k : ℝ) := by
-    have hkR : (2 : ℝ) ≤ k := by exact_mod_cast hk
-    have hkPos : (0 : ℝ) < k := by positivity
+    pm_279 hkR k hk
+    pm_117 hkPos k
     rw [sub_nonneg, div_le_iff₀ hkPos]
     linarith
   have hratio0 : 0 ≤
@@ -245,8 +217,8 @@ theorem wooleySourcePolynomial_equation_8_5_of_ratio
     (Real.rpow_nonneg
       (wooleySourceNormalizedMixedMean_nonneg
         phi p B H (wooleyTriangular k) (k - 1) b (k * b) nu Delta gamma) _)))
-
-
 end
+
+
 
 end GafniTao

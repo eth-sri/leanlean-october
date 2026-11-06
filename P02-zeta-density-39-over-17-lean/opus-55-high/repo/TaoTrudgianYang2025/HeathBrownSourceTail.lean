@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.HeathBrownPhysicalPhase
 public import Mathlib.Algebra.BigOperators.Intervals
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,10 @@ def heathBrownCharacterSum (L : ℕ) (f : ℝ → ℝ) : ℂ :=
 def heathBrownSourceTail (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) : ℂ :=
   ∑ n ∈ Finset.Icc 1 L, oscillatory F T N ((a : ℝ)+n)
 
-theorem exponentialSumAt_first_add_heathBrownTail
-    (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) :
+section
+variable (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ)
+include F T N a L
+theorem exponentialSumAt_first_add_heathBrownTail :
     exponentialSumAt F T N a (a+L) =
       oscillatory F T N a + heathBrownSourceTail F T N a L := by
   induction L with
@@ -45,20 +48,17 @@ theorem exponentialSumAt_first_add_heathBrownTail
     rw [hsum,htail,ih]
     simp only [Nat.cast_add,Nat.cast_one,add_assoc]
 
-theorem norm_exponentialSumAt_le_one_add_heathBrownTail
-    (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) :
+theorem norm_exponentialSumAt_le_one_add_heathBrownTail :
     ‖exponentialSumAt F T N a (a+L)‖ ≤ 1+‖heathBrownSourceTail F T N a L‖ := by
   rw [exponentialSumAt_first_add_heathBrownTail]
-  exact (norm_add_le _ _).trans_eq (by rw [norm_oscillatory])
+  pm_6595 norm_add_le
+end
 
 theorem heathBrownCharacterSum_neg (L : ℕ) (f : ℝ → ℝ) :
     heathBrownCharacterSum L (fun x => -f x) =
       starRingEnd ℂ (heathBrownCharacterSum L f) := by
-  unfold heathBrownCharacterSum
-  rw [map_sum]
-  apply Finset.sum_congr rfl
-  intro n _
-  rw [AddChar.map_neg_eq_inv,Circle.coe_inv_eq_conj]
+  pm_5313 heathBrownCharacterSum map_sum n
+  simp_all
 
 theorem norm_heathBrownSourceTail_eq_signed_characterSum
     (F : ℝ → ℝ) (T N σ : ℝ) (a L p : ℕ) :

@@ -1,14 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.Poisson
 public import OAI.NumberTheory.DirichletL.Descent.Completion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -52,9 +53,7 @@ theorem secondChildSum_marked_canonical
         (c * e * ∏ i ∈ V, p i) (d * e * k)
         (slots \ J) (fun i => lists i \ (A ∪ V)) a W (X / primeProductNorm p V) := by
   unfold secondChildSum finiteCanonicalMarkedRow fixedChildRow
-  simp only [Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pm_3006
   intro N hN
   have hd : Disjoint V N := Finset.disjoint_left.mpr (fun i hi hn =>
     (Finset.mem_sdiff.mp (Finset.mem_powerset.mp hN hn)).2 hi)
@@ -62,8 +61,7 @@ theorem secondChildSum_marked_canonical
     rw [primeProductNorm_union p V N hd]
     simp only [div_div_eq_mul_div]
     ring
-  have hmark := primeMark_priority slots lists a (A ∪ V) N
-  simp only [primeMark_residual_lists] at hmark
+  pm_8829 hmark V N
   simp only [secondChildColumn, ← Finset.union_assoc, hn]
   rw [hmark]
   simp only [Finset.sum_mul, Finset.mul_sum]
@@ -90,9 +88,7 @@ theorem finiteCanonicalMarkedRow_restore_lists
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots (fun i => lists i \ B) a W X =
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a W X := by
   unfold finiteCanonicalMarkedRow fixedChildRow
-  apply Finset.sum_congr rfl
-  intro U hU
-  by_cases hd : Disjoint B U
+  pm_6532 U hU hd B
   · have he : U \ B = U := Finset.sdiff_eq_self_of_disjoint hd.symm
     simp only [secondChildColumn, ← primeMark_residual_lists, he]
   · obtain ⟨i, hiB, hiU⟩ := Finset.not_disjoint_iff.mp hd
@@ -109,10 +105,7 @@ theorem secondChildSum_marked_fixed_pool
       finiteCanonicalMarkedRow p hp hcop hg F Ψ (m * r)
         (c * e * ∏ i ∈ V, p i) (d * e * k)
         (slots \ J) (fun i => lists i \ A) a W (X / primeProductNorm p V) := by
-  rw [secondChildSum_marked_canonical]
-  apply Finset.sum_congr rfl
-  intro J hJ
-  congr 1
+  pm_5314 secondChildSum_marked_canonical J hJ
   have hV (i : ι) (hi : i ∈ V) : (m * r) * (c * e * ∏ j ∈ V, p j) ∈ Ideal.span {p i} :=
     Ideal.mem_span_singleton.mpr (dvd_mul_of_dvd_right
       (dvd_mul_of_dvd_right (Finset.dvd_prod_of_mem p hi) (c * e)) (m * r))

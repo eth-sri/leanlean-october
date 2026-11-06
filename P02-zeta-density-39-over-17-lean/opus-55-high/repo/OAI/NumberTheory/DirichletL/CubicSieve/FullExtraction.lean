@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Elements
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -48,8 +49,8 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
     obtain ⟨u, hu⟩ := element_cubic_extraction z (hR z hz)
     obtain ⟨e, he⟩ := badPart_sector (firstPart I)
     obtain ⟨f, hf⟩ := badPart_sector (secondPart I)
-    let a : firstImage R := ⟨goodPart (firstPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
-    let b : secondImage R := ⟨goodPart (secondPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
+    pm_8178 a firstImage firstPart
+    pm_8178 b secondImage secondPart
     let c : cubeImage R := ⟨cubePart I, Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
     refine Finset.mem_image.mpr ⟨((u, e, f, c), b, a), Finset.mem_univ _, ?_⟩
     change primaryGenerator (goodPart (firstPart I)) *
@@ -72,8 +73,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
   have hcard : Fintype.card D = 96 * (cubeImage R).card := by
     have hu : Fintype.card Oˣ = 6 := by
       simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
-    simp only [D, Fintype.card_prod, Fintype.card_coe, hu,
-      CanonicalQuadraticSieve.fixedBadPrimes_powerset_card]
+    pm_188 D Fintype.card_prod Fintype.card_coe hu CanonicalQuadraticSieve.fixedBadPrimes_powerset_card
     omega
   have heq : (∑ p : T, E (reconstruct p)) =
       ∑ l : D, ∑ k : secondImage R, ∑ i : firstImage R,

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramShell
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,9 +13,7 @@ open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma nonzero_norm_one_le (z : O) (hz : z≠0) : (1:ℝ)≤‖eisEmbedding z‖^2 := by
-  rw [eisEmbedding_norm_sq_eq_absNorm_span]
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hz))
+  pm_6813 eisEmbedding_norm_sq_eq_absNorm_span hz
 
 theorem annular_element_count (F : Finset O) (b N : ℝ) (hb : 0≤b) (hN : 0≤N)
     (hzero : ∀z∈F,z≠0) (hbound : ∀z∈F,‖eisEmbedding z‖^2≤b*N) :

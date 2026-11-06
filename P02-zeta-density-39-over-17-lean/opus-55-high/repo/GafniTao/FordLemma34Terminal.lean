@@ -1,10 +1,10 @@
 module
 public import Mathlib
 public import GafniTao.FordVinogradovIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 open MeasureTheory Finset
-open scoped BigOperators
 namespace GafniTao
 noncomputable section
 def fordLambda34 (s k : ℕ) (delta : ℝ) : ℝ :=
@@ -25,8 +25,7 @@ theorem card_fordPowerSolution (s k Q : ℕ) :
   rw [Fintype.card_subtype]
   congr 1
   ext xy
-  simp only [Finset.mem_filter, Finset.mem_product, Finset.mem_univ,
-    true_and, sub_eq_zero]
+  pm_503 Finset.mem_filter Finset.mem_product Finset.mem_univ true_and sub_eq_zero
 
 end
 end GafniTao

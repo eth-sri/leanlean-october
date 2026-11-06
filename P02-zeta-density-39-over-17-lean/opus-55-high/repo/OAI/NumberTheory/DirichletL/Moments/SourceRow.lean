@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
 public import OAI.NumberTheory.DirichletL.Moments.RowNorm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,21 +15,24 @@ open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRow
 open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
-theorem rowWeight_split (η : Character) (m A z : O) (t : ℝ) (I : Ideal O) :
+section
+variable (η : Character) (m A z : O) (t : ℝ)
+include η m A z t
+theorem rowWeight_split (I : Ideal O) :
     rowWeight η m A z t I = rowWeight η m A 1 t I*idealRowHom z I := by
   change (idealCoeff η I*idealRowHom (m^6*(A*z)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t) =
     ((idealCoeff η I*idealRowHom (m^6*(A*1)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t))*idealRowHom z I
   rw [mul_one,← mul_assoc,idealRowHom_argument_mul]
   ring
 
-theorem rowWeight_zero_of_not_supported (η : Character) (m A z : O) (t : ℝ)
+theorem rowWeight_zero_of_not_supported
     (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) (I : Ideal O) (hI : ¬Supported I) :
     rowWeight η m A z t I=0 := by
   by_cases h0 : I=0
-  · rw [h0,map_zero]
+  grind
   let n := idealGenerator I
   have hn : n ≠ 0 := idealGenerator_ne_zero I h0
-  have hs : Ideal.span {n}=I := span_idealGenerator I
+  pm_6531 I span_idealGenerator
   have hz := rowTwist_zero_of_not_supported (HeckeRowClosure.elementHom η) m 1 (A*z) n
     hmLam hm2 (hs ▸ hI)
   have he : rowTwist (HeckeRowClosure.elementHom η) m 1 (A*z) n =
@@ -37,7 +41,8 @@ theorem rowWeight_zero_of_not_supported (η : Character) (m A z : O) (t : ℝ)
     rw [one_pow,mul_one,hs,← idealCoeff_span η hn,hs]
   rw [he] at hz
   change (idealCoeff η I*idealRowHom (m^6*(A*z)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t)=0
-  rw [hz,zero_mul]
+  grind
+end
 
 def supportedColumns (S : Finset (Ideal O)) : Finset (Ideal O) := S.filter Supported
 
@@ -70,7 +75,7 @@ theorem finite_hecke_sum_eq_rowPolynomial (η : Character) (m A z : O) (t : ℝ)
     intro I hI hn
     by_contra hs
     exact hn (by rw [rowWeight_zero_of_not_supported η m A z t hmLam hm2 I hs,mul_zero])
-  rw [he,← Finset.sum_coe_sort (supportedColumns S) (fun I => c I*rowWeight η m A z t I)]
+  rw [he,← Finset.sum_coe_sort (supportedColumns S) (fun I=> c I*rowWeight η m A z t I)]
   unfold rowPolynomial
   apply Finset.sum_congr rfl
   intro I hI

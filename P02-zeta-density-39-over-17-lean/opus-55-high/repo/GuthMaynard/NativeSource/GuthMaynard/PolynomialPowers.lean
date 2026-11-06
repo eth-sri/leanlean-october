@@ -8,11 +8,11 @@ public import GuthMaynard.NativeSource.GuthMaynard.Asymptotics
 public import GuthMaynard.NativeSource.GuthMaynard.Pigeonhole
 public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -37,11 +37,7 @@ lemma pow_coeff_subset (N k m : ℕ) (hm : 0 < m) :
   rw [mem_Ioc] at hpx ⊢
   rcases hpx with ⟨hpx1, hpx2⟩
   constructor
-  · by_cases hN : N = 0
-    · rw [hN] at hpx1 hpx2
-      linarith
-    · have hN_pos : N ≥ 1 := Nat.pos_of_ne_zero hN
-      linarith
+  grind
   · have hdvd : p x ∣ ∏ y : Fin k, p y := dvd_prod_of_mem (fun y => p y) (mem_univ x)
     rw [hp_prod] at hdvd
     exact Nat.le_of_dvd hm hdvd
@@ -85,9 +81,12 @@ lemma powCoeff_product_mem_support (N k : ℕ) (p : Fin k → ℕ)
 noncomputable def wideDirichletPoly (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) : ℂ :=
   ∑ m ∈ Finset.Ioc Q (2 ^ k * Q), a m * (m : ℂ) ^ (-t * I)
 
+section
+variable (Q k : ℕ) (a : ℕ → ℂ)
+include Q k a
 /-- The wide powered support is the disjoint union of exactly `k` ordinary
 dyadic blocks. -/
-theorem wideDirichletPoly_eq_sum_blocks (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+theorem wideDirichletPoly_eq_sum_blocks (t : ℝ) :
     wideDirichletPoly Q k a t =
       ∑ r ∈ Finset.range k, dirichletPoly (2 ^ r * Q) a t := by
   induction k with
@@ -110,7 +109,7 @@ theorem wideDirichletPoly_eq_sum_blocks (Q k : ℕ) (a : ℕ → ℂ) (t : ℝ) 
       ring_nf
 
 /-- One dyadic block carries at least the average of the sum of block norms. -/
-theorem exists_large_dyadic_block (Q k : ℕ) (a : ℕ → ℂ) (t V : ℝ)
+theorem exists_large_dyadic_block (t V : ℝ)
     (hk : 0 < k) (hV : V ≤ ‖wideDirichletPoly Q k a t‖) :
     ∃ r ∈ Finset.range k,
       V / k ≤ ‖dirichletPoly (2 ^ r * Q) a t‖ := by
@@ -121,6 +120,7 @@ theorem exists_large_dyadic_block (Q k : ℕ) (a : ℕ → ℂ) (t V : ℝ)
   exact pigeonhole_real_sum k
     (fun r => ‖dirichletPoly (2 ^ r * Q) a t‖) V
     (hV.trans hTriangle) hk
+end
 
 /-- Simultaneous block-and-ordinate pigeonholing. The chosen block is fixed on
 the output subset, which is essential before invoking a large-values or
@@ -140,14 +140,10 @@ theorem exists_dyadic_block_and_subset
   let index (t : ℝ) : ℕ :=
     if ht : t ∈ W then Classical.choose (hEach t ht) else 0
   have hIndexMem : ∀ t ∈ W, index t ∈ Finset.range k := by
-    intro t ht
-    simp only [index, dite_eq_left ht]
-    exact (Classical.choose_spec (hEach t ht)).1
+    pm_4788 index
   have hIndexLarge : ∀ t ∈ W,
       V / k ≤ ‖dirichletPoly (2 ^ index t * Q) a t‖ := by
-    intro t ht
-    simp only [index, dite_eq_left ht]
-    exact (Classical.choose_spec (hEach t ht)).2
+    pm_6417 index
   have hCard : W.card = ∑ r ∈ Finset.range k,
       (W.filter fun t => index t = r).card := by
     exact Finset.card_eq_sum_card_fiberwise hIndexMem

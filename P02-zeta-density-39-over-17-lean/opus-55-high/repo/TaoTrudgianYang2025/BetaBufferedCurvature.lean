@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.PhaseWeightedCurvature
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaStationaryPoint
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,7 +30,7 @@ theorem norm_modelPhaseBufferedNormalizedMode_curvature
     (hT : 0 < T) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) :
     ‖modelPhaseNormalizedMode (modelPhaseBufferedCutoff l r η) F T q‖ ≤
       4*(2/Real.pi+2)/Real.sqrt (T*modelPhaseCurvatureLower σ) := by
-  by_cases hab : l+η ≤ r-η
+  pm_8304
   · let φ : ℝ → ℝ := modelPhaseFrequencyPhase F T 1 q
     have hφ : ∀ u ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ 2 φ u := by
       intro u hu
@@ -51,25 +52,18 @@ theorem norm_modelPhaseBufferedNormalizedMode_curvature
       have h := mul_le_mul_of_nonneg_left
         (approximateModelPhase_curvature_deriv_bounds hσ hδ hF hu).1 hT.le
       linarith
-    have hsub : Icc (l+η) (r-η) ⊆ Ioo (1 : ℝ) 2 := by
-      intro u hu
-      constructor <;> linarith [hu.1,hu.2]
+    pm_1649
     have h := IntervalC1Bound.fourierChar_of_negative_curvature
       (intervalC1Bound_modelPhaseBufferedCutoff (l := l) (r := r) hη hab) hab
         (mul_pos hT (modelPhaseCurvatureLower_pos hσ)) isOpen_Ioo hsub hφ hcurv
     have hs : Function.support (fun u => (modelPhaseBufferedCutoff l r η u : ℂ)*
         (𝐞 (T*F u-q*u) : ℂ)) ⊆ Ioc (l+η) (r-η) := by
-      intro u hu
-      have hχ : modelPhaseBufferedCutoff l r η u ≠ 0 := by
-        intro hz
-        exact hu (by simp only [hz,Complex.ofReal_zero,zero_mul])
-      have hh := modelPhaseBufferedCutoff_support_open hη hχ
-      exact ⟨hh.1,hh.2.le⟩
+      pm_1648
     unfold modelPhaseNormalizedMode
     rw [← intervalIntegral.integral_eq_integral_of_support_subset hs]
     simpa only [φ,modelPhaseFrequencyPhase,div_one,show (2 : ℝ)*2 = 4 by norm_num] using h
   · have hz := modelPhaseBufferedCutoff_eq_zero_of_overlap hη (le_of_not_ge hab)
-    simp only [modelPhaseNormalizedMode,hz,Complex.ofReal_zero,zero_mul,integral_zero,norm_zero]
+    pm_382 modelPhaseNormalizedMode hz Complex.ofReal_zero zero_mul integral_zero norm_zero
     positivity
 
 theorem norm_modelPhaseBufferedFourierMode_curvature
@@ -96,7 +90,7 @@ theorem modelPhaseBufferedFourierMode_uniform_curvature {σ : ℝ} (hσ : 0 < σ
           C*N/Real.sqrt T := by
   let C := 4*(2/Real.pi+2)/Real.sqrt (modelPhaseCurvatureLower σ)
   have hc := modelPhaseCurvatureLower_pos hσ
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_64 hC C
   refine ⟨C,hC,?_⟩
   intro l r η hl hr hη F δ T N q hδ hF hT hN
   have h := norm_modelPhaseBufferedFourierMode_curvature

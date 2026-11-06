@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,10 +28,7 @@ theorem density_finite_sum {ι κ : Type*} [Fintype ι] (s : Finset κ)
     ∫ z : Frequency × (ι → ℝ),D z * ∑ k ∈ s,c k*pureProfileMode a₁ a₂ ak (y k) z.1 z.2 := by
   simp only [← integral_const_mul]
   rw [← integral_finsetSum s (fun k hk => (integrable_density_mode D hD a₁ a₂ ak (y k)).const_mul (c k))]
-  apply integral_congr_ae
-  filter_upwards with z
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
+  pm_1326 z
   intro k hk
   ring
 

@@ -12,6 +12,7 @@ public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.Tran
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.FrechetKolmogorov
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.Kernels
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.L2Compactness.TranslationIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -113,12 +114,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
         Metric.closedBall
           (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) ((volume : Measure E).restrict K))
           C := by
-    intro u hu
-    rcases hu with ⟨x, hx, hxEq⟩
-    have hx' : ‖(x : H1vol)‖ ≤ (1 : ℝ) := by
-      -- `h1On` inherits the ambient norm, so this is definitional.
-      change ‖x‖ ≤ (1 : ℝ)
-      simpa only [Metric.mem_closedBall,dist_zero_right x] using hx
+    pm_2738 hu hx'
     have hTx' : ‖T x‖ ≤ C := by
       have hTx : ‖T x‖ ≤ C * ‖(x : H1vol)‖ := by
         have h :=
@@ -146,17 +142,13 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
                     - L2Compactness.extendByZeroL2 (E := E) (K := K) hKm u‖ ^ 2
               ∂L2Compactness.kernelMeasure (E := E) ψ ≤ (ε / 2) ^ 2 := by
     intro ε hε
-    have hδ : 0 < ε / 2 := by linarith
+    pm_5913 hδ ε
     rcases
         L2Compactness.exists_kernel_tsupport_subset_ball_integral_eq_one
           (E := E) (deltaLoss := ε / 2) hδ with
       ⟨ψ, hψc, hψcs, hψ0, hψint, hψsupp⟩
     refine ⟨ψ, hψc, hψcs, hψ0, hψint, ?_⟩
-    intro u huA
-    rcases huA with ⟨x, hx, hxEq⟩
-    have hxH1 : ‖(x : H1vol)‖ ≤ (1 : ℝ) := by
-      change ‖x‖ ≤ (1 : ℝ)
-      simpa only [Metric.mem_closedBall,dist_zero_right x] using hx
+    pm_2738 huA hxH1
     have hmod :
         ∀ t : E, t ∈ Metric.ball (0 : E) (ε / 2) →
           ‖(translateL2 (μ := (volume : Measure E)) (-t)) (T x) - T x‖ ≤ ε / 2 := by
@@ -188,7 +180,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
         refine (mul_le_mul_of_nonneg_right ht' (norm_nonneg _)).trans ?_
         refine mul_le_mul_of_nonneg_left hgrad_le_one (by linarith)
       simpa [mul_one] using this
-    have hη : 0 ≤ ε / 2 := le_of_lt hδ
+    pm_8915 hδ
     have hbound :=
       L2Compactness.integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
         (E := E) (ψ := ψ) hψc hψcs hψ0 hψint (deltaLoss := ε / 2) (η := ε / 2) hη hψsupp (T x) hmod

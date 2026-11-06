@@ -4,12 +4,11 @@ public import TraceAlternatives.UniversalCountTraceExpansion
 public import TraceAlternatives.UniversalCountAbsorption
 public import TraceAlternatives.UniversalLowAbsorption
 public import TraceAlternatives.UniversalTraceExpansion
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
 open Finset GuthMaynard.Improvement GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -30,17 +29,16 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∀ t ∈ W, N^σ*T^(-2*δ) ≤ ‖boundedPolynomial N b t‖) →
       (W.card:ℝ) ≤ C*T^(3*a*(1-σ)+144*δ) := by
-  obtain ⟨A,hA,hQuad⟩ := finite_quadratic_large_value_universal MathCollab.Density.comparisonCutoff hδ
-  obtain ⟨C,hC,hEnergy⟩ := discrete_energy_five_term_native δ hδ
+  pm_69 A hA hQuad finite_quadratic_large_value_universal MathCollab.Density.comparisonCutoff hδ
+  pm_69 C hC hEnergy discrete_energy_five_term_native δ hδ
   let B := (2*A)*(1+15*(1+C))
-  have hB : 0 < B := by dsimp [B]; positivity
+  pm_64 hB B
   let T₀ : ℝ := max 2 ((2*A)^200)
-  have hT₀ : 2 ≤ T₀ := le_max_left _ _
+  pm_6551 hT₀ T₀
   refine ⟨1+B^8,T₀,by positivity,hT₀,?_⟩
   intro T t₀ N hTall hlo hhi b hb W hW hSep hLarge
   have hT : 2 ≤ T := hT₀.trans hTall
-  have hTp : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
+  pm_34 hTp T hT1
   have hN1 : 1 ≤ N := (Real.one_le_rpow hT1 (show 0 ≤ a by linarith)).trans hlo
   have hNp : 0 < N := by linarith
   obtain ⟨x,ell,hNx,hxa,hNL,hLT,hLs,hEll,hBase⟩ :=
@@ -57,9 +55,9 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
   let V := N^σ*T^(-2*δ)
   let S := T^(3*a*(1-σ))
   let R : ℝ := W.card
-  have hVp : 0 < V := by dsimp [V]; positivity
-  have hSp : 0 < S := by dsimp [S]; positivity
-  have hpδ : 1 ≤ T^δ := Real.one_le_rpow hT1 hδ.le
+  pm_64 hVp V
+  pm_64 hSp S
+  pm_153 hpδ T δ hT1 hδ.le
   have hOut : 1 ≤ 1+B^8 := by linarith [pow_nonneg hB.le 8]
   by_cases hRsmall : R ≤ S
   · have hPow : S ≤ T^(3*a*(1-σ)+144*δ) :=
@@ -76,7 +74,7 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
       rw [← gm_amplitude_log_identity hTp,hNx]
       exact he)
   let X := S^(1/8:ℝ)*R^(15/8:ℝ)*V^4
-  have hX : 0 < X := by dsimp [X]; positivity
+  pm_64 hX X
   have hTrace' : (∑ j : Fin 3, N^3*T^(universalTraceA j)*(T^ell)^(universalTraceB j)*
       R^(universalTraceG j)*(discreteAdditiveEnergy W:ℝ)^(universalTraceD j)) ≤
       15*(1+C)*T^δ*(T^(16*δ)*X) := by
@@ -117,8 +115,7 @@ theorem universal_polynomial_count_loss {σ a δ : ℝ}
           (sq_nonneg S) (by positivity)
       _ = _ := by dsimp [X]; ring
   have hPow : T^δ*T^δ*T^(16*δ)=T^(18*δ) := by
-    rw [← Real.rpow_add hTp,← Real.rpow_add hTp]
-    congr 1
+    pm_7732
     ring
   have hRaw : R^2*V^4 ≤ B*T^(18*δ)*X := by
     calc

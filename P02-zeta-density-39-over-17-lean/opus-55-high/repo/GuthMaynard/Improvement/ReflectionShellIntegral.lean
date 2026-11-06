@@ -2,9 +2,9 @@ module
 public import GuthMaynard.Improvement.ReflectionMellinIntegral
 public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import GuthMaynard.Improvement.CubicTimeMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
@@ -19,7 +19,7 @@ theorem reflection_shell_integral (w : MathCollab.Density.ReflectionCutoff)
       (∫ t, ‖centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L (t-u)‖^2 ∂ν) ≤
         (1000/Real.pi^2)*MathCollab.Density.mellinMass w^2*(L^2/H)*B+
           2*(K*L/L^A)^2*ν.real univ := by
-  obtain ⟨K,hK,hpoint⟩ := centeredKernel_reflection_shell w hA
+  pm_69 K hK hpoint centeredKernel_reflection_shell w hA
   refine ⟨K,hK,?_⟩
   intro ν _ L H u B hL hH hsupport hB
   let F := fun t => ∫ r, ‖MathCollab.Density.mellinLine (fun x => (w x:ℂ)) r‖*
@@ -52,10 +52,8 @@ theorem reflection_shell_density_energy {μ : ℝ → ℝ} (hm : Measurable μ)
       ∂(timeMeasure μ).restrict (Icc (u+H) (u+2*H))) ≤
       ∫ t in Icc (u+H) (u+2*H), ‖boundedPolynomial N a t‖^2*
         ‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2 := by
-  rw [timeMeasure,restrict_withDensity measurableSet_Icc,
-    integral_withDensity_eq_integral_toReal_smul hm.ennreal_ofReal
-      (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top))]
-  simp only [ENNReal.toReal_ofReal (h0 _),smul_eq_mul]
+  pm_6900 measurableSet_Icc
+  pm_8122
   apply integral_mono_of_nonneg
     (Filter.Eventually.of_forall (fun t => mul_nonneg (h0 t) (sq_nonneg _)))
     (reflected_band_product_integrable hN hL H r u a)
@@ -82,7 +80,7 @@ theorem reflection_shell_density (w : MathCollab.Density.ReflectionCutoff)
         (1000/Real.pi^2)*MathCollab.Density.mellinMass w^2*(L^2/H)*
           reflectionShellMeanBudget C η N L H+
           2*(K*L/L^A)^2*((timeMeasure μ).restrict (Icc (u+H) (u+2*H))).real univ := by
-  obtain ⟨K,hK,hshell⟩ := reflection_shell_integral w hA
+  pm_69 K hK hshell reflection_shell_integral w hA
   obtain ⟨C,hC,hmean⟩ := reflected_band_mean_value hη
   refine ⟨K,C,hK,hC,?_⟩
   intro N L H u hN hL hH a ha μ hm hi h0 hμ

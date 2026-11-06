@@ -2,6 +2,7 @@ module
 public import MathCollab.Density.ZetaCounting
 public import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 public import Mathlib.Analysis.Calculus.Deriv.Star
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,33 +12,39 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 
+set_option hygiene false in
+macro "pb_1997" : tactic => `(tactic| (
+  have ht : Tendsto (fun z : ℂ => conj z) (𝓝 (conj ρ)) (𝓝 ρ) := by
+    simpa only [ContinuousAt, conj_conj] using Complex.continuous_conj.continuousAt (x := conj ρ)))
 /-- Conjugating both the argument and value preserves complex analyticity. -/
 theorem analyticAt_conj_conj_local {g : ℂ → ℂ} {ρ : ℂ} (hg : AnalyticAt ℂ g ρ) :
     AnalyticAt ℂ (fun z => conj (g (conj z))) (conj ρ) := by
   apply Complex.analyticAt_iff_eventually_differentiableAt.mpr
-  have ht : Tendsto (fun z : ℂ => conj z) (𝓝 (conj ρ)) (𝓝 ρ) := by
-    simpa only [ContinuousAt, conj_conj] using Complex.continuous_conj.continuousAt (x := conj ρ)
+  pb_1997
   filter_upwards [ht.eventually (Complex.analyticAt_iff_eventually_differentiableAt.mp hg)] with z hz
   exact differentiableAt_conj_conj_iff.mpr hz
 
-theorem isNontrivialZetaZero_conj {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
+section
+variable {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ)
+include ρ hρ
+theorem isNontrivialZetaZero_conj :
     IsNontrivialZetaZero (conj ρ) := by
   refine ⟨?_, by simpa using hρ.2.1, by simpa using hρ.2.2⟩
   rw [riemannZeta_conj, hρ.1, map_zero]
 
 /-- Actual analytic multiplicity, not just the set of zeros, is preserved. -/
-theorem zetaMultiplicity_conj {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
+theorem zetaMultiplicity_conj :
     zetaMultiplicity (conj ρ) = zetaMultiplicity ρ := by
   have hc := isNontrivialZetaZero_conj hρ
-  obtain ⟨g, hg, hg0, he⟩ := zetaMultiplicity_local_factorization hρ
+  pm_269 g hg hg0 he zetaMultiplicity_local_factorization hρ
   apply (analyticOn_riemannZeta (conj ρ) (nontrivialZetaZero_ne_one hc)).analyticOrderNatAt_eq_iff
     (zeta_analyticOrder_ne_top (nontrivialZetaZero_ne_one hc)) |>.mpr
-  refine ⟨fun z => conj (g (conj z)), analyticAt_conj_conj_local hg, by simpa using hg0, ?_⟩
-  have ht : Tendsto (fun z : ℂ => conj z) (𝓝 (conj ρ)) (𝓝 ρ) := by
-    simpa only [ContinuousAt, conj_conj] using Complex.continuous_conj.continuousAt (x := conj ρ)
+  refine ⟨fun z => conj (g (conj z)), analyticAt_conj_conj_local hg, by simp_all, ?_⟩
+  pb_1997
   filter_upwards [ht.eventually he] with z hz
   have hh := congrArg (starRingEnd ℂ) hz
-  simpa only [riemannZeta_conj, conj_conj, map_mul, map_pow, map_sub, smul_eq_mul] using hh
+  pm_546 riemannZeta_conj conj_conj map_mul map_pow map_sub smul_eq_mul hh
+end
 
 /-- Conjugation bijects the literal closed slabs, with both endpoints retained. -/
 theorem zetaSlabCount_conj (σ a b : ℝ) :
@@ -46,16 +53,16 @@ theorem zetaSlabCount_conj (σ a b : ℝ) :
   unfold zetaSlabCount
   apply Finset.sum_bij (fun ρ _ => conj ρ)
   · intro ρ hρ
-    obtain ⟨hz, hσ, hlo, hhi⟩ := mem_zetaZeroFinset.mp hρ
-    exact mem_zetaZeroFinset.mpr ⟨isNontrivialZetaZero_conj hz, by simpa using hσ,
+    pm_269 hz hσ hlo hhi mem_zetaZeroFinset.mp hρ
+    exact mem_zetaZeroFinset.mpr ⟨isNontrivialZetaZero_conj hz, by simp_all,
       by simp only [conj_im]; linarith, by simp only [conj_im]; linarith⟩
   · intro ρ hρ z hz he
     exact (starRingEnd ℂ).injective he
   · intro ρ hρ
     refine ⟨conj ρ, ?_, by simp⟩
-    obtain ⟨hz, hσ, hlo, hhi⟩ := mem_zetaZeroFinset.mp hρ
-    exact mem_zetaZeroFinset.mpr ⟨isNontrivialZetaZero_conj hz, by simpa using hσ,
-      by simp only [conj_im]; linarith, by simp only [conj_im]; linarith⟩
+    pm_269 hz hσ hlo hhi mem_zetaZeroFinset.mp hρ
+    exact mem_zetaZeroFinset.mpr ⟨isNontrivialZetaZero_conj hz, by simp_all,
+      by simp_all, by simp_all⟩
   · intro ρ hρ
     exact (zetaMultiplicity_conj (mem_zetaZeroFinset.mp hρ).1).symm
 
@@ -65,7 +72,7 @@ theorem zetaSlabCount_split_le (σ a b c : ℝ) :
   classical
   have hs : zetaZeroFinset σ a c ⊆ zetaZeroFinset σ a b ∪ zetaZeroFinset σ b c := by
     intro ρ hρ
-    obtain ⟨hz, hσ, hlo, hhi⟩ := mem_zetaZeroFinset.mp hρ
+    pm_269 hz hσ hlo hhi mem_zetaZeroFinset.mp hρ
     by_cases hb : ρ.im ≤ b
     · exact Finset.mem_union_left _ (mem_zetaZeroFinset.mpr ⟨hz,hσ,hlo,hb⟩)
     · exact Finset.mem_union_right _ (mem_zetaZeroFinset.mpr ⟨hz,hσ,(not_le.mp hb).le,hhi⟩)

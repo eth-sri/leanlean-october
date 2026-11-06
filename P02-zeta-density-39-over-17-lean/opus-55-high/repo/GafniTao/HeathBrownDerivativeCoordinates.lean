@@ -2,7 +2,7 @@ module
 public import GafniTao.HeathBrownBlockParameter
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
 
-@[expose] public section
+public section
 
 /-!
 # Derivatives of Heath-Brown's normalized coordinates
@@ -14,7 +14,6 @@ phase.  Factorials are retained literally.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem deriv_heathBrownDerivativeCoordinate
     (f : ℝ → ℝ) (j : ℕ) (x : ℝ) :
@@ -23,29 +22,30 @@ theorem deriv_heathBrownDerivativeCoordinate
   unfold heathBrownDerivativeCoordinate
   rw [deriv_div_const, ← iteratedDeriv_succ]
 
-theorem deriv_heathBrownDerivativeCoordinate_last
-    {f : ℝ → ℝ} {k : ℕ} (hk : 1 ≤ k) (x : ℝ) :
+section
+variable {f : ℝ → ℝ} {k : ℕ} (hk : 1 ≤ k)
+include f k hk
+theorem deriv_heathBrownDerivativeCoordinate_last (x : ℝ) :
     deriv (fun y => heathBrownDerivativeCoordinate f (k - 1) y) x =
       iteratedDeriv k f x / ((k - 1).factorial : ℝ) := by
   rw [deriv_heathBrownDerivativeCoordinate]
   congr 2
   omega
 
-theorem heathBrownDerivativeCoordinate_last_lower
-    {f : ℝ → ℝ} {k : ℕ} (hk : 1 ≤ k) {lambda x : ℝ}
+theorem heathBrownDerivativeCoordinate_last_lower {lambda x : ℝ}
     (hlower : lambda ≤ iteratedDeriv k f x) :
     lambda / ((k - 1).factorial : ℝ) ≤
       deriv (fun y => heathBrownDerivativeCoordinate f (k - 1) y) x := by
   rw [deriv_heathBrownDerivativeCoordinate_last hk]
   exact div_le_div_of_nonneg_right hlower (by positivity)
 
-theorem heathBrownDerivativeCoordinate_last_upper
-    {f : ℝ → ℝ} {k : ℕ} (hk : 1 ≤ k) {A lambda x : ℝ}
+theorem heathBrownDerivativeCoordinate_last_upper {A lambda x : ℝ}
     (hupper : iteratedDeriv k f x ≤ A * lambda) :
     deriv (fun y => heathBrownDerivativeCoordinate f (k - 1) y) x ≤
       A * lambda / ((k - 1).factorial : ℝ) := by
   rw [deriv_heathBrownDerivativeCoordinate_last hk]
   exact div_le_div_of_nonneg_right hupper (by positivity)
+end
 
 /-- Instantiation of the close-pair lemma with the source value
 `mu = lambda/(k-1)!`. -/
@@ -80,6 +80,5 @@ theorem heathBrownPairCountTwo_source_separation
       field_simp
 
 
-end
 
 end GafniTao

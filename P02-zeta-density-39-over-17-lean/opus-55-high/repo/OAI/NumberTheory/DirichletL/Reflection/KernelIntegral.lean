@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.KernelWeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ lemma reflected_density_integrable (U W : ℝ→ℂ) (hU : Measurable U)
   apply hi.mono' hm.aestronglyMeasurable
   apply Filter.Eventually.of_forall
   intro t
-  exact le_mul_of_one_le_left (norm_nonneg _) (one_le_pow₀ (by linarith [norm_nonneg t]))
+  exact le_mul_of_one_le_left (norm_nonneg _) (one_le_pow₀ (by simp_all))
 
 lemma kernel_mode_integrable (density : ℝ→ℂ) (hi : Integrable density)
     (windows : Fin 4→ℝ→ℂ) (QK QP Qn Qb k p n b : ℝ) :
@@ -35,7 +36,7 @@ lemma kernel_mode_integrable (density : ℝ→ℂ) (hi : Integrable density)
     (‖windows 2 (Real.log (n/Qn))‖*‖windows 3 (Real.log (b/Qb))‖)) hc.aestronglyMeasurable
   apply Filter.Eventually.of_forall
   intro t
-  exact le_of_eq (by simp only [kernelDualWeight,norm_mul,kernelCoordinateWeight_norm])
+  pm_3030 le_of_eq kernelDualWeight norm_mul kernelCoordinateWeight_norm
 
 theorem kernel_finite_contraction {κ : Type*} (source : Finset κ) (coeff value : κ→ℂ)
     (density : ℝ→ℂ) (hi : Integrable density) (scalar : ℂ)
@@ -64,7 +65,7 @@ theorem kernel_finite_contraction {κ : Type*} (source : Finset κ) (coeff value
   apply congrArg (fun z : ℂ => scalar*z)
   rw [← integral_const_mul]
   apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun t => by dsimp only; ring)
+  exact Filter.Eventually.of_forall (fun t => by grind)
 
 end
 end SevenEighths.InverseReflectedPhase

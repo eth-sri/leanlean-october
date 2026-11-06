@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownLemmaOneCompact
 public import GafniTao.HeathBrownInteriorShift
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Monotonicity of the source-scale majorant
@@ -13,10 +14,11 @@ are nondecreasing in the length because their `N` exponents are nonnegative.
 
 namespace GafniTao
 
-noncomputable section
 
-theorem heathBrownThreeTerm_mono
-    {M N k : ℕ} (hM : 1 ≤ M) (hMN : M ≤ N) (hk : 2 ≤ k)
+section
+variable {M N k : ℕ} (hM : 1 ≤ M) (hMN : M ≤ N)
+include M N k hM hMN
+theorem heathBrownThreeTerm_mono (hk : 2 ≤ k)
     {lambda : ℝ} (hlambda : 0 < lambda) :
     heathBrownThreeTerm M k lambda ≤
       heathBrownThreeTerm N k lambda := by
@@ -25,10 +27,10 @@ theorem heathBrownThreeTerm_mono
     (heathBrownCriticalReciprocal_pos hk).le
   have hrHalf : r ≤ 1 / 2 :=
     heathBrownCriticalReciprocal_le_half hk
-  have hM0 : (0 : ℝ) ≤ M := by positivity
-  have hMNReal : (M : ℝ) ≤ N := by exact_mod_cast hMN
-  have hFirstExp : 0 ≤ 1 - r := by linarith
-  have hLastExp : 0 ≤ 1 - 2 * r := by linarith
+  pm_96 hM0 M
+  pm_106 hMNReal M N hMN
+  pm_7905 hFirstExp r
+  pm_8549 hLastExp
   have hfirst :
       (M : ℝ) ^ (1 - r) ≤ (N : ℝ) ^ (1 - r) :=
     Real.rpow_le_rpow hM0 hMNReal hFirstExp
@@ -46,8 +48,7 @@ theorem heathBrownThreeTerm_mono
   dsimp only
   linarith
 
-theorem heathBrown_sourceScale_main_mono
-    {M N k : ℕ} (hM : 1 ≤ M) (hMN : M ≤ N) (hk : 3 ≤ k)
+theorem heathBrown_sourceScale_main_mono (hk : 3 ≤ k)
     {A lambda epsilon C : ℝ}
     (hlambda : 0 < lambda) (hepsilon : 0 < epsilon)
     (hconstant : 0 ≤ heathBrownLemmaOneSourceConstant k A C epsilon) :
@@ -55,8 +56,8 @@ theorem heathBrown_sourceScale_main_mono
         (M : ℝ) ^ epsilon * heathBrownThreeTerm M k lambda ≤
       heathBrownLemmaOneSourceConstant k A C epsilon *
         (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda := by
-  have hM0 : (0 : ℝ) ≤ M := by positivity
-  have hMNReal : (M : ℝ) ≤ N := by exact_mod_cast hMN
+  pm_96 hM0 M
+  pm_106 hMNReal M N hMN
   have hpow := Real.rpow_le_rpow hM0 hMNReal hepsilon.le
   have hthree := heathBrownThreeTerm_mono hM hMN
     (by omega : 2 ≤ k) hlambda
@@ -65,8 +66,8 @@ theorem heathBrown_sourceScale_main_mono
   simpa only [mul_assoc] using
     (mul_le_mul_of_nonneg_left
       (mul_le_mul hpow hthree hthreeM0 (by positivity)) hconstant)
-
-
 end
+
+
 
 end GafniTao

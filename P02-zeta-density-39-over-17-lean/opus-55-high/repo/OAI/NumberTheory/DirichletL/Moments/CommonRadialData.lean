@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.RadialSourceDictionary
 public import OAI.NumberTheory.DirichletL.Moments.ActiveCanonicalSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,7 +35,7 @@ structure Input (ι:Type*) [Fintype ι] extends Data ι where
   lower_le : ∀i,lower≤lo i
   upper_ge : ∀i,hi i≤upper
 
- def Input.pools (s:Input ι) : (ι⊕Fin 2)→Finset (Ideal O) :=
+ def Input.pools (s:Input ι) : (ι⊕Fin 2)→ Finset (Ideal O) :=
   Sum.elim s.slots (fun j=>if j=0 then s.plain₁ else s.plain₂)
 
 omit [DecidableEq ι] in
@@ -99,14 +100,13 @@ lemma alloc_norm_pos (s:Input ι) (C:Ideal O) (B:actualAllocations s.pools C)
 
 omit [DecidableEq ι] in
 lemma common_profile_le (s:Input ι) (C R:Ideal O) (B:actualAllocations s.pools C) :
-    (commonData s C R B).profileFactor≤s.toData.profileFactor := by
+    (commonData s C R B).profileFactor≤ s.toData.profileFactor := by
   unfold Data.profileFactor
   change (2*(max 1 s.b₁*max 1 s.b₂))*(∏i:liveIndices B.val,s.M i.val)^2≤_
   rw [Finset.prod_coe_sort]
   apply mul_le_mul_of_nonneg_left _ (by positivity)
   apply pow_le_pow_left₀ (Finset.prod_nonneg (fun i _=>zero_le_one.trans (s.M_ge_one i)))
-  exact Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.subset_univ _)
-    (fun i _=>zero_le_one.trans (s.M_ge_one i)) (fun i _ _=>s.M_ge_one i)
+  pm_1028
 
 end SevenEighths.CenteredMomentCommonRadialData
 

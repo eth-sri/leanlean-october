@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeIndexed
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrime
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
-    (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B) :
+    (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤ r) (hB : 0≤B) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) (T : Finset PrimeIdeal)
       (hT : ∀P∈T,Supported P.val ∧ (4:ℝ)≤P.val.absNorm)
       (Y : ℝ),1≤Y → ∀(W : ℝ→ℂ),Function.support W⊆Set.Icc a b →
@@ -27,7 +28,7 @@ theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
     heps ha hb (by norm_num) hB (by norm_num)
   refine ⟨C,hC,?_⟩
   intro η u T hT Y hY W hWS hWB x w z hx hw hz
-  let f : T→Ideal O := fun P=>P.val.val
+  let f : T→ Ideal O := fun P=>P.val.val
   have hf : Function.Injective f := by
     intro P Q h
     apply Subtype.ext
@@ -39,7 +40,7 @@ theorem continued_selected_slot_bound (eps a b r B : ℝ) (heps : 0<eps)
     have hh := continuedCompensatedLocal_bound η u P.val (hT P.val P.property).1
       (hT P.val P.property).2 x w z hx hw (by rw [hz];exact hr)
     apply hh.trans
-    by_cases hp : f P∣Ideal.span {u.val}
+    pm_8373
     · simp only [show P.val.val=f P from rfl,ite_eq_left hp]
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
       exact Real.rpow_le_rpow_of_exponent_le (by have := (hT P.val P.property).2;change 1≤(P.val.val.absNorm:ℝ);linarith)

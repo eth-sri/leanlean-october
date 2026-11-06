@@ -14,12 +14,4 @@ namespace GuthMaynard.NativeMomentBase
 def point (σ t : ℝ) : ℂ :=
   (σ : ℂ) + (t : ℂ) * I
 
-@[simp]
-lemma point_re (σ t : ℝ) : (point σ t).re = σ := by
-  simp [point]
-
-@[simp]
-lemma point_im (σ t : ℝ) : (point σ t).im = t := by
-  simp [point]
-
 end GuthMaynard.NativeMomentBase

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorSimultaneous
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,15 +29,13 @@ lemma denominator_lower {x : ℝ} (hx : x≤1/2) : 37/18≤denominator x := by
 
 theorem crossing_bounds {x t : ℝ} (hx : 0≤x) (hx' : x≤1/2)
     (ht : 1≤t) (ht' : t≤3/2) :
-    23/37≤crossing x t ∧ crossing x t≤1 ∧
+    23/37≤ crossing x t ∧ crossing x t≤1 ∧
       1/3≤t-crossing x t ∧ t-crossing x t≤1/2 := by
-  have hd : 0<denominator x := lt_of_lt_of_le (by norm_num) (denominator_lower hx')
+  pm_6460
   have hp : 0≤2-8*x/9 := by linarith
-  have hpt := mul_le_mul_of_nonneg_left ht hp
-  have hpt' := mul_le_mul_of_nonneg_left ht' hp
+  pm_194 hpt mul_le_mul_of_nonneg_left ht hp hpt' ht'
   have hm : 0≤1-x := by linarith
-  have hmt := mul_le_mul_of_nonneg_left ht hm
-  have hmt' := mul_le_mul_of_nonneg_left ht' hm
+  pm_194 hmt mul_le_mul_of_nonneg_left ht hm hmt' ht'
   have he : t-crossing x t=((1-x)*t+5*x/9)/denominator x := by
     unfold crossing
     apply (eq_div_iff hd.ne').mpr
@@ -48,32 +47,30 @@ theorem crossing_bounds {x t : ℝ} (hx : 0≤x) (hx' : x≤1/2)
     nlinarith
   · unfold denominator
     nlinarith
-  · rw [he]
-    apply (le_div_iff₀ hd).mpr
-    unfold denominator
-    nlinarith
-  · rw [he]
-    apply (div_le_iff₀ hd).mpr
-    unfold denominator
-    nlinarith
+  pm_8262 le_div_iff₀
+  pm_8262 div_le_iff₀
 
-lemma inverse_at_crossing (δ x t : ℝ) (hd : denominator x≠0) :
+section
+variable (δ x t : ℝ) (hd : denominator x≠0)
+include δ x t hd
+lemma inverse_at_crossing :
     inverseExponent δ x (crossing x t)=shortExponent δ x t := by
   unfold inverseExponent crossing shortExponent primeWeight
   field_simp
   unfold denominator
   ring
 
-lemma plain_at_crossing (δ x t : ℝ) (hd : denominator x≠0) :
+lemma plain_at_crossing :
     plainExponent δ x t (crossing x t)=shortExponent δ x t := by
   unfold plainExponent crossing shortExponent primeWeight
   field_simp
   unfold denominator
   ring
+end
 
 theorem selected_short_bound {δ x t r : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2) :
-    (r≤crossing x t → plainExponent δ x t r≤shortExponent δ x t) ∧
-      (crossing x t≤r → inverseExponent δ x r≤shortExponent δ x t) := by
+    (r≤ crossing x t → plainExponent δ x t r≤ shortExponent δ x t) ∧
+      (crossing x t≤ r → inverseExponent δ x r≤ shortExponent δ x t) := by
   have hd : denominator x≠0 := ne_of_gt (lt_of_lt_of_le (by norm_num) (denominator_lower hx'))
   constructor
   · intro hr
@@ -88,14 +85,14 @@ theorem selected_short_bound {δ x t r : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' 
     nlinarith [mul_nonneg hδ (sub_nonneg.mpr hh)]
 
 lemma short_ge_base {δ x t : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2)
-    (ht : t≤3/2) : 1-δ≤shortExponent δ x t := by
-  have hd : 0<denominator x := lt_of_lt_of_le (by norm_num) (denominator_lower hx')
+    (ht : t≤3/2) : 1-δ≤ shortExponent δ x t := by
+  pm_6460
   have hp : 0≤primeWeight x := mul_nonneg (by linarith) (by linarith)
   unfold shortExponent
   exact le_add_of_nonneg_right (mul_nonneg (div_nonneg (mul_nonneg hδ hp) hd.le) (by linarith))
 
 theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
-    (hm : 1/3-γ≤m) (hm' : m≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hγ : 0≤γ) :
+    (hm : 1/3-γ≤ m) (hm' : m≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hγ : 0≤γ) :
     2*q*(1-2*m)*(2/9-1/(9/2+12*Δ))≤Δ/4+2*γ := by
   have hd : 0<9/2+12*Δ := by linarith
   have hden : (16 : ℝ)≤(9/2)*(9/2+12*Δ) := by nlinarith
@@ -112,8 +109,8 @@ theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
 
 theorem plain_capacity_comparison {δ x Δ t r m γ : ℝ}
     (hδ : 0≤δ) (hδ' : δ≤1) (hx : 0≤x) (hx' : x≤1/2)
-    (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hm : 1/3-γ≤m) (hm' : m≤1/2)
-    (hγ : 0≤γ) (hlength : t-r-γ≤m) :
+    (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hm : 1/3-γ≤ m) (hm' : m≤1/2)
+    (hγ : 0≤γ) (hlength : t-r-γ≤ m) :
     1-2*δ*m-2*(δ*x)*(1-2*m)/(9/2+12*Δ)≤plainExponent δ x t r+Δ/4+4*γ := by
   have hq : 0≤δ*x := mul_nonneg hδ hx
   have hq' : δ*x≤1/2 := (mul_le_mul hδ' hx' hx (by norm_num)).trans_eq (by ring)

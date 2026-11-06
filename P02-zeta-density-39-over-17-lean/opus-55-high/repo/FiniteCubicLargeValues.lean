@@ -1,5 +1,6 @@
 module
 public import FiniteCenteredCubic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,31 +28,25 @@ theorem finite_cubic_large_value_bound (w : MathCollab.Density.ComparisonCutoff)
         N^4*T*Real.sqrt (W.card:ℝ)*Real.sqrt (discreteAdditiveEnergy W:ℝ)+
         N^4*L*(W.card:ℝ)^2) := by
   have hδ : 0 < η/2 := by positivity
-  obtain ⟨A,hA,hamp⟩ := finite_signed_amplified_moment w hδ
-  obtain ⟨B,hB,hcubic⟩ := centered_matrix_cubic_bound w.toReflectionCutoff hδ
-  obtain ⟨D,hD,hmix⟩ := centered_mixed_trace_short_range w.toReflectionCutoff hK hδ
+  pm_69 A hA hamp finite_signed_amplified_moment w hδ
+  pm_69 B hB hcubic centered_matrix_cubic_bound w.toReflectionCutoff hδ
+  pm_114 D hD hmix centered_mixed_trace_short_range w.toReflectionCutoff hK hδ
   refine ⟨A*(1+B+D),by positivity,?_⟩
   intro T t₀ N L hT hN hNL hLl hLu a ha W V hV hR hlen hW hlarge hsep
-  have hT1 : 1 ≤ T := by linarith
-  have hTp : 0 < T := by linarith
-  have hNp : 0 < N := by linarith
-  have hLp : 0 < L := hNp.trans_le hNL
-  have hL1 : 1 ≤ L := hN.trans hNL
-  have hamp' := hamp T N L (by linarith) hN hNL hLu a ha W V hV hlarge hsep
-  have hc := hcubic T L t₀ hT hLl hLu W hW hsep
+  pm_4572
+  pm_4498
+  pm_432
   have hm := hmix T t₀ L (by linarith) hL1 W hR hlen hW hsep
   have hm' : ‖Matrix.trace (cutoffContinuousMatrix w.toReflectionCutoff L W*
       cutoffCenteredMatrix w.toReflectionCutoff L W^2)‖ ≤ D*T^(η/2)*L^2*(W.card:ℝ)^2 := by
     simpa only [pow_two,mul_assoc] using hm
-  let R : ℝ := W.card
-  let E : ℝ := discreteAdditiveEnergy W
+  pm_2721
   let X := (N*L)^3+(N^4*T^2/L)*R*Real.sqrt R+
     N^4*T*Real.sqrt R*Real.sqrt E+N^4*L*R^2
-  have hR0 : 0 ≤ R := Nat.cast_nonneg _
-  have hE0 : 0 ≤ E := Nat.cast_nonneg _
-  have hX : 0 ≤ X := by dsimp [X]; positivity
-  have hTe : 1 ≤ T^(η/2) := Real.one_le_rpow hT1 hδ.le
-  have hp : T^(η/2)*T^(η/2)=T^η := by rw [← Real.rpow_add hTp]; congr 1; ring
+  pm_2722 hR0 hE0
+  pm_4556
+  pm_966 hTe hT1
+  pm_199 hp T η hTp
   have hsum : (N*L)^3+(N^4/L)*
       ((Matrix.trace (cutoffCenteredMatrix w.toReflectionCutoff L W^3)).re+
         (Matrix.trace (cutoffContinuousMatrix w.toReflectionCutoff L W*
@@ -60,30 +55,16 @@ theorem finite_cubic_large_value_bound (w : MathCollab.Density.ComparisonCutoff)
     calc
       _ ≤ (N*L)^3+(N^4/L)*(B*T^(η/2)*(T^2*R*Real.sqrt R+T*L*Real.sqrt R*Real.sqrt E)+
           D*T^(η/2)*L^2*R^2) := by
-        apply add_le_add le_rfl
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        exact add_le_add ((Complex.re_le_norm _).trans hc) ((Complex.re_le_norm _).trans hm')
+        pm_789
       _ ≤ T^(η/2)*(N*L)^3+(N^4/L)*(B*T^(η/2)*(T^2*R*Real.sqrt R+T*L*Real.sqrt R*Real.sqrt E)+
           D*T^(η/2)*L^2*R^2) := by
-        exact add_le_add (by simpa only [one_mul] using
-          mul_le_mul_of_nonneg_right hTe (show 0 ≤ (N*L)^3 by positivity)) le_rfl
+        pm_790
       _ = T^(η/2)*((N*L)^3+B*((N^4*T^2/L)*R*Real.sqrt R+
           N^4*T*Real.sqrt R*Real.sqrt E)+D*(N^4*L*R^2)) := by field_simp; ring
       _ ≤ (1+B+D)*T^(η/2)*X := by
-        have h₁ : 0 ≤ (N*L)^3 := by positivity
-        have h₂ : 0 ≤ (N^4*T^2/L)*R*Real.sqrt R+N^4*T*Real.sqrt R*Real.sqrt E := by positivity
+        pm_350
         have h₃ : 0 ≤ N^4*L*R^2 := by positivity
-        have hcoef₁ : 1 ≤ 1+B+D := by linarith
-        have hcoef₂ : B ≤ 1+B+D := by linarith
-        have hcoef₃ : D ≤ 1+B+D := by linarith
-        have hb := add_le_add (add_le_add (mul_le_mul_of_nonneg_right hcoef₁ h₁)
-          (mul_le_mul_of_nonneg_right hcoef₂ h₂)) (mul_le_mul_of_nonneg_right hcoef₃ h₃)
-        have hh := mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hTp.le (η/2))
-        dsimp [X]
-        nlinarith only [hh]
-  calc
-    _ ≤ _ := hamp'
-    _ ≤ A*T^(η/2)*((1+B+D)*T^(η/2)*X) := mul_le_mul_of_nonneg_left hsum (by positivity)
-    _ = (A*(1+B+D))*T^η*X := by rw [← hp]; ring
+        pm_192
+  pm_227
 
 end Montgomery.RationalMoment

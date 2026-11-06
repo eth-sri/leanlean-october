@@ -1,19 +1,19 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceProfileBudget
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
 open CenteredMomentFiniteProfileExceptional
 
 lemma control_mono {S T:Finset (ℕ×ℕ)}(h:S⊆T)(W:𝓢(ℝ,ℂ)):
-    sourceControl S W≤sourceControl T W:=Seminorm.le_def.mp (Finset.sup_mono h) W
+    sourceControl S W≤ sourceControl T W:=Seminorm.le_def.mp (Finset.sup_mono h) W
 
 theorem reference_envelopes (a b:ℝ)(ha:0<a)
     (S T Slong:Finset (ℕ×ℕ))(degree n nlong:ℕ)(Cref Dchild Dref:ℝ)
@@ -31,7 +31,7 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
   let U:=((Ta∪T)∪Slong)∪{(0,0)}
   let J:=degree+4*na+2*n+2*nlong
   let C:=1+Ca^2*2^(4*na)+Cref*Dchild+Dref
-  have hC:0<C:=by dsimp only [C];positivity
+  pm_568 hC C
   refine ⟨J,U,C,hC,?_⟩
   intro W₁ W₂ hs₁ hs₂ t height hheight
   dsimp only
@@ -40,11 +40,11 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
   have hH:1≤H:=by dsimp only [H];linarith [abs_nonneg t]
   have hH0:0≤H:=zero_le_one.trans hH
   have hA:0≤A:=mul_nonneg (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
-  have haU:Ta⊆U:=by intro x hx;simp [U,hx]
-  have hTU:T⊆U:=by intro x hx;simp [U,hx]
-  have hlU:Slong⊆U:=by intro x hx;simp [U,hx]
-  have hzU:(0,0)∈U:=by simp [U]
-  have hz:(schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁≤sourceControl U W₁:=
+  pm_3336 haU Ta U
+  pm_3336 hTU T U
+  pm_3336 hlU Slong U
+  pm_7703 hzU
+  have hz:(schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁≤ sourceControl U W₁:=
     Seminorm.le_def.mp (Finset.le_sup hzU) W₁
   have hp:(independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S≤Ca*A*(2*H)^(2*na):=by
     apply (hprof W₁ W₂ hs₁ hs₂ t t).trans
@@ -60,7 +60,7 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
     · positivity
   have hd:(independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S^2*H^degree≤
       (Ca^2*2^(4*na))*A^2*H^J:=by
-    have hsq:=pow_le_pow_left₀ (Profiles.control_nonneg _ _) hp 2
+    pm_8918 hsq
     have hmul:=mul_le_mul_of_nonneg_right hsq (pow_nonneg hH0 degree)
     have hid:(Ca*A*(2*H)^(2*na))^2*H^degree=
         (Ca^2*2^(4*na))*A^2*H^(degree+4*na):=by
@@ -106,6 +106,5 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
 
 end SevenEighths.CenteredMomentEnergyReferenceProfileBudget
 
-end
 
 end OAI

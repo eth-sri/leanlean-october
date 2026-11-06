@@ -1,14 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Growth
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-noncomputable section
+open scoped Classical
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
@@ -18,8 +18,7 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     elementSieveNorm M N ≤ (384*128^2 : ℝ) * A *
       (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2 *
       (M*N)^ε * (M^(1/3 : ℝ)*N + M^ξ) := by
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
+  pm_3779
   let R := elementRange M
   have hRne : R.Nonempty := by
     refine ⟨1, ?_⟩
@@ -34,12 +33,11 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
   obtain ⟨X,Y,hX,hY,hXY,he⟩ := full_element_dyadic_extraction R hRne M N hR
     (fun j : idealRange N => j.val) Subtype.val_injective
     (fun j => mem_idealRange.mp j.property) a
-  have hX0 : 0 < X := by linarith
-  have hY0 : 0 < Y := by linarith
+  pm_72 hX0 X hY0 Y
   have hXM : X ≤ M := by nlinarith [sq_nonneg (Y-1)]
   have hYM : Y ≤ M := by nlinarith [sq_nonneg (Y-1)]
   let B := A*(M*N)^ε
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  pm_3236
   have hb (U : ℝ) (hU : 1 ≤ U) (hUM : U ≤ M) :
       sieveNorm (2*U) N ≤ B*(U^ξ+N+(U*N)^(2/3 : ℝ)) := by
     apply (hB1 U hU).trans
@@ -53,12 +51,10 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     · convert mul_le_mul_of_nonneg_left (hb X hX hXM) hY0.le using 1; ring
     · convert mul_le_mul_of_nonneg_left (hb Y hY hYM) hX0.le using 1; ring
   have hopt := extraction_min_two_power M N X Y ξ hM hN0.le hX hY hXY hξ
-  have hH : 0 ≤ (M/(X*Y^2))^(1/3 : ℝ) := Real.rpow_nonneg (by positivity) _
+  pm_3806
   have hi (z : O) : (∑ j : idealRange N, a j * elementCharacter j.val (mem_idealRange.mp j.property).1.2 z) =
       ∑ j : idealRange N, cubicRow j.val z * a j := by
-    apply Finset.sum_congr rfl
-    intro j hj
-    exact mul_comm _ _
+    pm_8454 j hj
   simp_rw [hi] at he
   have hE : 0 ≤ ∑ j : idealRange N, ‖a j‖^2 := by positivity
   have hh := mul_le_mul_of_nonneg_right
@@ -77,18 +73,17 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ M N : ℝ, 1 ≤ M → 1 ≤ N →
       elementSieveNorm M N ≤ C*(M*N)^ε*(M^(1/3 : ℝ)*N + M^ξ) := by
-  obtain ⟨A,hA,hb⟩ := h.doubled (ε/2) (by positivity)
+  pm_657 A hA hb h.doubled
   let D : ℝ := 2 + 1/((ε/4)*Real.log 2)
   have hD : 0 < D := by
     dsimp [D]
     have : 0 < Real.log 2 := Real.log_pos (by norm_num)
     positivity
-  refine ⟨(384*128^2 : ℝ)*A*D^2, by positivity, ?_⟩
+  refine ⟨(384*128^2 : ℝ)*A*D ^2, by positivity, ?_⟩
   intro M N hM hN
-  have hM0 : 0 < M := by linarith
-  have hN0 : 0 < N := by linarith
+  pm_3779
   have hlog := CanonicalQuadraticSieve.columnDyadicLength_small_power (ε/4) (by positivity) M hM
-  have hLP : (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2 ≤ D^2*M^(ε/2) := by
+  have hLP : (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2 ≤ D ^2*M^(ε/2) := by
     have hh := pow_le_pow_left₀ (by positivity) hlog 2
     rw [mul_pow, ← Real.rpow_mul_natCast hM0.le] at hh
     have he : (ε/4)*(2:ℕ) = ε/2 := by push_cast; ring
@@ -97,11 +92,11 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
   have hMP : M^(ε/2) ≤ (M*N)^(ε/2) := Real.rpow_le_rpow hM0.le
     (by nlinarith) (by positivity)
   have hprod : (CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2 * (M*N)^(ε/2) ≤
-      D^2*(M*N)^ε := by
+      D ^2*(M*N)^ε := by
     calc
-      _ ≤ (D^2*M^(ε/2))*(M*N)^(ε/2) :=
+      _ ≤ (D ^2*M^(ε/2))*(M*N)^(ε/2) :=
         mul_le_mul_of_nonneg_right hLP (Real.rpow_nonneg (by positivity) _)
-      _ ≤ (D^2*(M*N)^(ε/2))*(M*N)^(ε/2) :=
+      _ ≤ (D ^2*(M*N)^(ε/2))*(M*N)^(ε/2) :=
         mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hMP (sq_nonneg _))
           (Real.rpow_nonneg (by positivity) _)
       _ = _ := by
@@ -117,11 +112,10 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
     _ = ((384*128^2 : ℝ)*A)*
         ((CanonicalQuadraticSieve.columnDyadicLength M + 1 : ℝ)^2*(M*N)^(ε/2))*
         (M^(1/3 : ℝ)*N+M^ξ) := by ring
-    _ ≤ ((384*128^2 : ℝ)*A)*(D^2*(M*N)^ε)*(M^(1/3 : ℝ)*N+M^ξ) :=
+    _ ≤ ((384*128^2 : ℝ)*A)*(D ^2*(M*N)^ε)*(M^(1/3 : ℝ)*N+M^ξ) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hprod (by positivity)) (by positivity)
     _ = _ := by ring
 
-end
 end SevenEighths.CubicSieve
 
 end OAI

@@ -34,7 +34,7 @@ theorem actual_large_bins_aggregate
         (progressingCubes S D H₀ (activeCubeLogBin S D b X j))
         Ψ m (idealGenerator I) z W X H₀ slots lists a) R≤E := by
     by_cases hn:(progressingCubes S D H₀ (activeCubeLogBin S D b X j)).Nonempty
-    · exact hbin j hj hn
+    grind
     · rw [Finset.not_nonempty_iff_eq_empty.mp hn]
       simpa only [markedReopenedCubeBin,Finset.sum_empty,rowFamilyEnergy,
         nonzeroRowMajorantSum,norm_zero,zero_pow (by decide:2≠0),Complex.ofReal_zero,

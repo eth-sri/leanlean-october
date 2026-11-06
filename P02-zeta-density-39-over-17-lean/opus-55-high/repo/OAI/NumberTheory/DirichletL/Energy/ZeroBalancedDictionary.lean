@@ -25,21 +25,11 @@ variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "zeroInput"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂
 
-theorem balanced_eq_positive_empty (η₀:Character)(θ:Fin 0→RayQuotient.Characters M H)
-    (w σ freq:Fin 0→ℝ):
-    zeroInput=CenteredMomentEnergyPositiveHighSource.balancedInput M H hH η₀ θ
-      (fun _=>0) continuous_const 1 1 0 0 (by norm_num)
-      (by simp [Function.support]) w σ freq (fun i=>Fin.elim0 i)
-      s p ha t X₁ X₂ hX₁ hX₂:=by
-  unfold CenteredMomentEnergyZeroReferencePhysical.balancedInput
-    CenteredMomentEnergyPositiveHighSource.balancedInput input naturalInput naturalData completeInput
-  congr 5 <;> exact Subsingleton.elim _ _
-
 variable (η₀:Character)(θ:Fin 0→RayQuotient.Characters M H)(w σ freq:Fin 0→ℝ)
 def positiveEmptyInput : Input (Fin 0):=
   CenteredMomentEnergyPositiveHighSource.balancedInput M H hH η₀ θ
   (fun _=>0) continuous_const 1 1 0 0 (by norm_num)
-  (by simp [Function.support]) w σ freq (fun i=>Fin.elim0 i)
+  (by simp_all) w σ freq (fun i=>Fin.elim0 i)
   s p ha t X₁ X₂ hX₁ hX₂
 
 local notation "positiveInput"=>positiveEmptyInput M H hH s p ha t X₁ X₂ hX₁ hX₂ η₀ θ w σ freq
@@ -52,11 +42,11 @@ theorem declared_capacity (hZ:1<Z):
     volume zeroInput≤Z^Mdecl:=by
   have hlog (X:ℝ)(hX:0<X):Real.logb Z X≤length Z X:=by
     rw [CenteredMomentEnergyReferenceLowBranchGeometry.length_eq_max_log Z X hZ hX]
-    exact le_max_right _ _
+    grind
   have hV:Real.logb Z (volume zeroInput)≤length Z X₁+length Z X₂:=by
     rw [CenteredMomentEnergyZeroReferencePhysical.balanced_volume,
       Real.logb_mul hX₁.ne' hX₂.ne']
-    exact add_le_add (hlog X₁ hX₁) (hlog X₂ hX₂)
+    grind
   have hdecl:=hV.trans (le_max_right s.width (length Z X₁+length Z X₂))
   refine ⟨hdecl,CenteredMomentEnergyPositiveHighParameters.actual_width_le s hZ,
     CenteredMomentEnergyPositiveHighParameters.actual_conductor_scale s hZ,?_⟩
@@ -69,7 +59,7 @@ lemma declared_capacity_upper (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
     unfold length
     exact (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le (le_max_left 1 X))).mpr
       (max_le (Real.one_le_rpow hZ.le hL) hcap)
-  exact max_le_max hs (by linarith [hlen X₁ hc₁,hlen X₂ hc₂])
+  grind
 
 end SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
 

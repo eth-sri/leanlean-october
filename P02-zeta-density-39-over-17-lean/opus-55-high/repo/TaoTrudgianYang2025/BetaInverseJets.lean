@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaInverseExpressions
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,8 +35,10 @@ theorem contDiffAt_iteratedDeriv_infty {F : ℝ → ℝ} {u : ℝ}
       rw [iteratedDeriv_succ]
       exact hn.derivWithin (by simp)
 
-theorem approximateModelPhase_iteratedDeriv_contDiffAt
-    {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
+section
+variable {σ δ : ℝ}
+include σ δ
+theorem approximateModelPhase_iteratedDeriv_contDiffAt {P : ℕ} {F : ℝ → ℝ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (n : ℕ) :
     ContDiffAt ℝ ∞ (iteratedDeriv n F) u := by
@@ -45,14 +48,13 @@ theorem approximateModelPhase_iteratedDeriv_contDiffAt
       rw [iteratedDeriv_succ]
       exact hn.derivWithin (by simp)
 
-theorem modelPhaseInverseJet_hasDerivAt
-    {σ δ : ℝ} {F : ℝ → ℝ}
+theorem modelPhaseInverseJet_hasDerivAt {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) (j : ℕ) :
     HasDerivAt (fun w => modelPhaseInverseJet F w j)
       (inversePhaseEval (inversePhaseAtomDerivative j) (modelPhaseInverseJet F v)) v := by
-  have hi := (modelPhaseInverseSlope_hasStrictDerivAt hσ hδ hF hv).hasDerivAt
+  pm_8036
   have hu := modelPhaseInverseSlope_mem hv
   match j with
   | 0 => exact hi
@@ -76,8 +78,7 @@ theorem modelPhaseInverseJet_hasDerivAt
       · simp only [inversePhaseEval, inversePhaseAtomDerivative, modelPhaseInverseJet,
           iteratedDeriv_succ]
 
-theorem inversePhaseEval_modelPhaseInverseJet_hasDerivAt
-    {σ δ : ℝ} {F : ℝ → ℝ}
+theorem inversePhaseEval_modelPhaseInverseJet_hasDerivAt {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) (e : InversePhaseExpression) :
@@ -89,8 +90,7 @@ theorem inversePhaseEval_modelPhaseInverseJet_hasDerivAt
   | add e f he hf => exact he.add hf
   | mul e f he hf => exact he.mul hf
 
-theorem iteratedDeriv_modelPhaseInverseSlope_formula
-    {σ δ : ℝ} {F : ℝ → ℝ}
+theorem iteratedDeriv_modelPhaseInverseSlope_formula {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) (n : ℕ) :
@@ -103,24 +103,24 @@ theorem iteratedDeriv_modelPhaseInverseSlope_formula
       have he : iteratedDeriv n (modelPhaseInverseSlope F) =ᶠ[𝓝 v]
           (fun w => inversePhaseEval (inversePhaseDerivativeExpression n)
             (modelPhaseInverseJet F w)) := by
-        filter_upwards [(modelPhaseSlopeRange_isOpen hσ hδ hF).mem_nhds hv] with w hw
+        pm_7160
         exact hn hw
       rw [he.deriv_eq,
         (inversePhaseEval_modelPhaseInverseJet_hasDerivAt hσ hδ hF hv
           (inversePhaseDerivativeExpression n)).deriv]
       rfl
 
-theorem iteratedDeriv_modelPhaseLegendreDual_formula
-    {σ δ : ℝ} {F : ℝ → ℝ}
+theorem iteratedDeriv_modelPhaseLegendreDual_formula {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     {v : ℝ} (hv : v ∈ modelPhaseSlopeRange F) (n : ℕ) :
     iteratedDeriv (n+1) (modelPhaseLegendreDual F) v =
       inversePhaseEval (inversePhaseDerivativeExpression n) (modelPhaseInverseJet F v) := by
   have he : deriv (modelPhaseLegendreDual F) =ᶠ[𝓝 v] modelPhaseInverseSlope F := by
-    filter_upwards [(modelPhaseSlopeRange_isOpen hσ hδ hF).mem_nhds hv] with w hw
+    pm_7160
     exact deriv_modelPhaseLegendreDual hσ hδ hF hw
   rw [iteratedDeriv_succ', he.iteratedDeriv_eq n]
   exact iteratedDeriv_modelPhaseInverseSlope_formula hσ hδ hF hv n
+end
 
 end TaoTrudgianYang2025

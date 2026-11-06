@@ -1,14 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CuspCongruence
 public import OAI.NumberTheory.DirichletL.Descent.MarkedStratum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open CompletedGauss CubicEisenstein ConcreteTraceCRT
+open scoped Classical
+open CubicEisenstein ConcreteTraceCRT
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -27,9 +28,10 @@ def localActiveWeight (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
     (A : Finset ι) (v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ) : ℂ :=
   ∏ i : A, finiteAdditiveFourierCoeff (quotientTrace (p i.val) (hp i.val)) (F i.val) (v i)
 
-theorem primeFunction_fourier_by_active
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (n : Eis) :
+section
+variable (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal] (hp : ∀ i, p i ≠ 0)
+include p hp
+theorem primeFunction_fourier_by_active (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ) (n : Eis) :
     (∏ i, F i (Ideal.Quotient.mk _ n)) =
       ∑ A : Finset ι, localInactiveWeight p hp F A *
         ∑ v : ∀ i : A, (Eis ⧸ Ideal.span {p i.val})ˣ,
@@ -46,9 +48,7 @@ theorem primeFunction_fourier_by_active
       (fun i => GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive (p i) (hp i)) F
       (fun i => Ideal.Quotient.mk _ n)
 
-theorem activeStratum_function_multiplier
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
+theorem activeStratum_function_multiplier (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
     (F : ∀ i, (Eis ⧸ Ideal.span {p i}) → ℂ)
     {N a0 c0 : Eis} {mode : Bool}
     (D : ∀ A : Finset ι, ControlledStratumArithmetic (fun i : A => p i.val) N a0 c0 mode)
@@ -73,11 +73,9 @@ theorem activeStratum_function_multiplier
   simp_rw [hlocal]
   rw [primeFunction_fourier_by_active p hp F n]
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro A hA
-  apply Finset.sum_congr rfl
-  intro v hv
+  pm_3397 A hA v hv
   ring
+end
 
 def fixedActiveFunctionWeight
     (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -119,10 +117,7 @@ theorem fixedActiveFunction_multiplier
               (activeStratumDatum p hp hprimary (D h) (hN h) (G h).denominator_ne_zero
                 (G h).primary (G h).shape A v).point)) := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro A hA
-      apply Finset.sum_congr rfl
-      intro v hv
+      pm_3397 A hA v hv
       ring
     _ = _ := by
       rw [activeStratum_function_multiplier p hp hprimary F (D h) (hN h)

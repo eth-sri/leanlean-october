@@ -9,6 +9,7 @@ and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixGapBound
 public import WeylPort.GrowthAlgebra
 public import Mathlib.Data.Nat.Log
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -50,14 +51,13 @@ theorem eventually_atkinsonSourceCutoff_small {δ : ℝ} (hδ : 0 < δ) :
   intro G hG
   have hG0 : 0 < G := (Real.rpow_pos_of_pos (by linarith : 0 < T) δ).trans_le hG
   apply atkinsonSourceCutoff_le_small hT hG0 (Real.log_nonneg (by linarith))
-  simpa only [pow_one] using hlog.trans hG
+  grind
 
 theorem atkinsonSourceCutoff_log_mono_height {t u G : ℝ}
     (ht : 1 ≤ t) (htu : t ≤ u) (hG : 0 < G) :
     atkinsonSourceCutoff t G (Real.log t) ≤ atkinsonSourceCutoff u G (Real.log u) := by
   apply Nat.ceil_mono
-  have ht0 : 0 < t := by linarith
-  have hu0 : 0 < u := ht0.trans_le htu
+  pm_4945 ht0 t hu0 u ht0.trans_le htu
   have hlog : Real.log t ≤ Real.log u := Real.log_le_log ht0 htu
   have hratio := div_le_div_of_nonneg_right hlog hG.le
   have hs := pow_le_pow_left₀ (div_nonneg (Real.log_nonneg ht) hG.le) hratio 2
@@ -67,7 +67,7 @@ theorem atkinsonSourceCutoff_log_mono_height {t u G : ℝ}
 theorem atkinson_doubled_height_half_power {H δ : ℝ} (hH : 2 ≤ H) (hδ : 0 < δ) :
     (2*H)^(δ/2) ≤ H^δ := by
   have hH0 : 0 < H := by linarith
-  rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hH0.le]
+  pm_7402 hH0.le
   calc
     (2:ℝ)^(δ/2)*H^(δ/2) ≤ H^(δ/2)*H^(δ/2) :=
       mul_le_mul_of_nonneg_right
@@ -82,7 +82,7 @@ theorem exists_atkinsonPhysicalCutoff_prefix_geometry {δ : ℝ} (hδ : 0 < δ) 
   refine ⟨max 40000 A,le_max_left _ _,?_⟩
   intro H G hH hG
   have hlarge : 40000 ≤ H := (le_max_left _ _).trans hH
-  have hAH : A ≤ H := (le_max_right _ _).trans hH
+  pm_207 hAH A H le_max_right hH
   have hwidth := (atkinson_doubled_height_half_power (by linarith : 2 ≤ H) hδ).trans hG
   have hcut := hA (2*H) (by linarith) G hwidth
   linarith
@@ -102,13 +102,12 @@ theorem exists_atkinsonPhysicalPrefixGramMax_le_gap {δ : ℝ} (hδ : 0 < δ) :
       ∀ j : ℕ, j < Nat.clog 2 (atkinsonSourceCutoff (2*H) G (Real.log (2*H))) →
       ∀ t u : ℝ, H ≤ t → t ≤ 2*H → H ≤ u → u ≤ 2*H →
         atkinsonPrefixGramMax (2^j) (2^j) t u ≤ atkinsonPrefixGapMajorant (2^j) (2^j) t u := by
-  obtain ⟨A,hA,hcut⟩ := exists_atkinsonPhysicalCutoff_prefix_geometry hδ
-  refine ⟨A,hA,?_⟩
+  pm_102 A hA hcut exists_atkinsonPhysicalCutoff_prefix_geometry hδ
   intro H G hH hG j hj t u ht htU hu huU
-  have hH0 : 0 < H := by linarith [hA.trans hH]
+  have hH0 : 0 < H := by grind
   have hend := atkinson_dyadic_prefix_geometry (hcut H G hH hG) hj
   exact atkinsonPrefixGramMax_le_gap (lt_min (hH0.trans_le ht) (hH0.trans_le hu))
     (pow_pos (by norm_num) _) (le_min (hend.trans ht) (hend.trans hu))
-    (max_le (by linarith [le_min ht hu]) (by linarith [le_min ht hu]))
+    (max_le (by grind) (by grind))
 
 end MathCollab.Density.Stronger.Atkinson

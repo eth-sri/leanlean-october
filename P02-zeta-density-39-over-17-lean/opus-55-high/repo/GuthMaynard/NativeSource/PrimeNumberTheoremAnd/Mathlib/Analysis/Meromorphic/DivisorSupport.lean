@@ -47,35 +47,6 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] {U K : Set 𝕜} {z : �
 ## Finiteness of the divisor support on compact subsets of the domain
 -/
 
-lemma divisor_support_inter_compact_finite (f : 𝕜 → E) {U K : Set 𝕜}
-    (hK : IsCompact K) (hKU : K ⊆ U) :
-    (K ∩ (MeromorphicOn.divisor f U).support).Finite := by
-  classical
-  set D : Function.locallyFinsuppWithin U ℤ := MeromorphicOn.divisor f U
-  have hloc :
-      ∀ x ∈ K, ∃ V : Set 𝕜, V ∈ 𝓝 x ∧ Set.Finite (V ∩ D.support) := by
-    intro x hxK
-    rcases D.supportLocallyFiniteWithinDomain x (hKU hxK) with ⟨V, hV, hfin⟩
-    exact ⟨V, hV, hfin⟩
-  choose V hVnhds hVfin using hloc
-  rcases hK.elim_nhds_subcover' (U := fun x hx => V x hx) (hU := fun x hx => hVnhds x hx) with
-    ⟨t, ht⟩
-  have hsub :
-      K ∩ D.support ⊆ ⋃ x ∈ t, (V (x : 𝕜) x.2 ∩ D.support) := by
-    intro y hy
-    rcases hy with ⟨hyK, hyS⟩
-    have hycov : y ∈ ⋃ x ∈ t, V (x : 𝕜) x.2 := ht hyK
-    rcases Set.mem_iUnion.1 hycov with ⟨x, hycov'⟩
-    rcases Set.mem_iUnion.1 hycov' with ⟨hxT, hyV⟩
-    refine Set.mem_iUnion.2 ⟨x, Set.mem_iUnion.2 ?_⟩
-    exact ⟨hxT, ⟨hyV, hyS⟩⟩
-  have hfinU : Set.Finite (⋃ x ∈ t, (V (x : 𝕜) x.2 ∩ D.support)) := by
-    classical
-    refine (t.finite_toSet).biUnion ?_
-    intro x hx
-    simpa using (hVfin (x : 𝕜) x.2)
-  exact hfinU.subset hsub
-
 /-!
 ## Local singleton balls and enumerations of the divisor support
 -/

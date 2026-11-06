@@ -2,9 +2,9 @@ module
 public import GuthMaynard.Improvement.DirichletProductEnergy
 public import GuthMaynard.Improvement.Target
 public import MathCollab.Density.Reflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Finset
 open scoped ComplexConjugate
@@ -69,10 +69,7 @@ theorem reflected_band_polynomial {L : ℝ} (hL : 0 < L) (H r u t : ℝ) :
 theorem boundedPolynomial_integer_phase {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ) (t : ℝ) :
     boundedPolynomial N a t = MathCollab.Density.dirichletPhase N (-t)*
       (∑ n ∈ sourceRatioIndices N, a n*dirichletPhase n t) := by
-  unfold boundedPolynomial sourceRatioIndices
-  rw [mul_sum]
-  apply sum_congr rfl
-  intro n hn
+  pm_315 boundedPolynomial sourceRatioIndices mul_sum sum_congr n hn
   have hn0 : (0:ℝ) < n := hN.trans ((sourceRatioIndices_mem hN.le n).mp hn).1
   unfold MathCollab.Density.dirichletPhase dirichletPhase
   rw [Real.log_div hn0.ne' hN.ne']
@@ -85,8 +82,11 @@ theorem boundedPolynomial_integer_phase {N : ℝ} (hN : 0 < N) (a : ℕ → ℂ)
       ring
     _ = _ := by ring
 
+section
+variable {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
+include N L hN hL
 /-- Actual norm product, with no oscillatory factor discarded except unit global phases. -/
-theorem reflected_band_product_norm {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
+theorem reflected_band_product_norm
     (H r u t : ℝ) (a : ℕ → ℂ) :
     ‖boundedPolynomial N a t‖^2*‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2 =
       ‖finiteDirichletPolynomial (⌊2*N⌋₊*reflectedBandLength L H)
@@ -100,13 +100,13 @@ theorem reflected_band_product_norm {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
   rw [hs,hb,← mul_pow,← norm_mul,dirichlet_product_polynomial hN.le]
 
 /-- The actual shell integrand is integrable, for every Mellin parameter and translate. -/
-theorem reflected_band_product_integrable {N L : ℝ} (hN : 0 < N) (hL : 0 < L)
+theorem reflected_band_product_integrable
     (H r u : ℝ) (a : ℕ → ℂ) :
     IntegrableOn (fun t => ‖boundedPolynomial N a t‖^2*
       ‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2) (Set.Icc (u+H) (u+2*H)) := by
   have he := funext (fun t => reflected_band_product_norm hN hL H r u t a)
-  rw [he]
-  exact finiteDirichletPolynomial_integrable _ _ _ _
+  pm_8455 he finiteDirichletPolynomial_integrable
+end
 
 /-- Actual reflected mean value. The constant depends on eta alone, before
 all scales, Mellin parameters, translates and bounded source coefficients. -/
@@ -118,12 +118,9 @@ theorem reflected_band_mean_value {η : ℝ} (hη : 0 < η) :
       (∫ t in Set.Icc (u+H) (u+2*H), ‖boundedPolynomial N a t‖^2*
         ‖MathCollab.Density.bandPhaseSum L H (t-u) r‖^2) ≤
         C*(H+4*(Y:ℝ)*(1+Real.log Y))*(1+2*N*X)^η*(N+1)*X := by
-  obtain ⟨C,hC,henergy⟩ := dirichlet_product_energy_subpower hη
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC henergy dirichlet_product_energy_subpower hη
   intro N L H r u hN hL hH a ha
-  dsimp only
-  let X := reflectedBandLength L H
-  let Y := ⌊2*N⌋₊*X
+  pm_6092
   let c := dirichletProductCoefficient N X a (reflectedBandCoefficient L H r u)
   have hmv := dirichlet_mean_value Y c (show u+H ≤ u+2*H by linarith)
   have he := henergy N hN.le X a (reflectedBandCoefficient L H r u) (Finset.Icc 1 Y) ha

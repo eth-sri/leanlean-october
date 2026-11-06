@@ -1,10 +1,10 @@
 module
 public import TraceAlternatives.WeakCountMonomial
 public import DensityEnergyGM.SharpCountTraceExpansion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1800000
 noncomputable section
 namespace Montgomery.RationalMoment
@@ -38,10 +38,7 @@ theorem universal_weak_level_profile {T M R E K U mass : ℝ}
   have hCase1 (hh : mass^2 ≤ 3*E*K*B1) :
       U^2*mass ≤ (1+3*K)*universalShortSublinearProfile T M R E := by
     have hSq' : mass^2 ≤ (3*K)*E*M^(4:ℝ)*T^(0:ℝ)*U^(-(4:ℝ)) := by
-      convert hh using 1
-      dsimp only [B1]
-      norm_num only [Real.rpow_zero,Real.rpow_ofNat,mul_one]
-      ring
+      pm_758 B1
     have hBound := weak_count_monomial_bound hR hE hC hM hT hU hmass
       (by norm_num : (4:ℝ)≤(4:ℝ)) hmassR hSq'
     have hNorm : U^2*mass ≤ (3*K)^(1/2:ℝ)*(M^2*E^(1/2:ℝ)) := by
@@ -52,16 +49,11 @@ theorem universal_weak_level_profile {T M R E K U mass : ℝ}
       _ ≤ (3*K)^(1/2:ℝ)*(M^2*E^(1/2:ℝ)) := hNorm
       _ ≤ (1+3*K)*(M^2*E^(1/2:ℝ)) := mul_le_mul_of_nonneg_right hCoeff hF1
       _ ≤ _ := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        unfold universalShortSublinearProfile
-        linarith
+        pm_5995
   have hCase2 (hh : mass^2 ≤ 3*E*K*B2) :
       U^2*mass ≤ (1+3*K)*universalShortSublinearProfile T M R E := by
     have hSq' : mass^2 ≤ (3*K)*E*M^(16/3:ℝ)*T^(2/3:ℝ)*U^(-(8:ℝ)) := by
-      convert hh using 1
-      dsimp only [B2]
-      norm_num only [Real.rpow_zero,Real.rpow_ofNat,mul_one]
-      ring
+      pm_758 B2
     have hBound := weak_count_monomial_bound hR hE hC hM hT hU hmass
       (by norm_num : (4:ℝ)≤(8:ℝ)) hmassR hSq'
     have hNorm : U^2*mass ≤ (3*K)^(1/4:ℝ)*(T^(1/6:ℝ)*M^(4/3:ℝ)*R*E^(1/4:ℝ)) := by
@@ -72,16 +64,11 @@ theorem universal_weak_level_profile {T M R E K U mass : ℝ}
       _ ≤ (3*K)^(1/4:ℝ)*(T^(1/6:ℝ)*M^(4/3:ℝ)*R*E^(1/4:ℝ)) := hNorm
       _ ≤ (1+3*K)*(T^(1/6:ℝ)*M^(4/3:ℝ)*R*E^(1/4:ℝ)) := mul_le_mul_of_nonneg_right hCoeff hF2
       _ ≤ _ := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        unfold universalShortSublinearProfile
-        linarith
+        pm_5995
   have hCase3 (hh : mass^2 ≤ 3*E*K*B3) :
       U^2*mass ≤ (1+3*K)*universalShortSublinearProfile T M R E := by
     have hSq' : mass^2 ≤ (3*K)*E*M^(72/5:ℝ)*T^(3/5:ℝ)*U^(-(96/5:ℝ)) := by
-      convert hh using 1
-      dsimp only [B3]
-      norm_num only [Real.rpow_zero,Real.rpow_ofNat,mul_one]
-      ring
+      pm_758 B3
     have hBound := weak_count_monomial_bound hR hE hC hM hT hU hmass
       (by norm_num : (4:ℝ)≤(96/5:ℝ)) hmassR hSq'
     have hNorm : U^2*mass ≤ (3*K)^(5/48:ℝ)*(T^(1/16:ℝ)*M^(3/2:ℝ)*R^(19/12:ℝ)*E^(5/48:ℝ)) := by
@@ -92,9 +79,7 @@ theorem universal_weak_level_profile {T M R E K U mass : ℝ}
       _ ≤ (3*K)^(5/48:ℝ)*(T^(1/16:ℝ)*M^(3/2:ℝ)*R^(19/12:ℝ)*E^(5/48:ℝ)) := hNorm
       _ ≤ (1+3*K)*(T^(1/16:ℝ)*M^(3/2:ℝ)*R^(19/12:ℝ)*E^(5/48:ℝ)) := mul_le_mul_of_nonneg_right hCoeff hF3
       _ ≤ _ := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        unfold universalShortSublinearProfile
-        linarith
+        pm_5995
   by_cases h1 : mass^2 ≤ 3*E*K*B1
   · exact hCase1 h1
   by_cases h2 : mass^2 ≤ 3*E*K*B2
@@ -102,6 +87,6 @@ theorem universal_weak_level_profile {T M R E K U mass : ℝ}
   have h3 : mass^2 ≤ 3*E*K*B3 := by
     change mass^2 ≤ E*K*(B1+B2+B3) at hSq
     nlinarith only [hSq,lt_of_not_ge h1,lt_of_not_ge h2]
-  exact hCase3 h3
+  grind
 
 end Montgomery.RationalMoment

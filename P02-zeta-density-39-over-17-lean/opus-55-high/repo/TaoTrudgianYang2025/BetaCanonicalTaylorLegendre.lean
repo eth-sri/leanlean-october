@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaLegendreTaylorExtension
 public import TaoTrudgianYang2025.BetaPhaseNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,7 +42,7 @@ theorem canonicalTaylorLegendrePhase_agrees
     taylorPastedExtension (anchoredLegendreError F σ w) (Q+1) _ _ h v = _
   rw [taylorPastedExtension_agrees _ (Q+1) hh hplateau]
   unfold anchoredLegendreError
-  nlinarith only [he]
+  grind
 
 theorem canonicalTaylorLegendrePhase_uniformity
     {σ A : ℝ} (hσ : 0 < σ) (hA : 0 < A) (hA₂ : A ≤ 2)
@@ -65,11 +66,11 @@ theorem canonicalTaylorLegendrePhase_uniformity
   have hd : 0 < δ := lt_min
     (lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one)
     (lt_min (lt_min (by positivity) zero_lt_one) (div_pos hε (mul_pos hB hCpos)))
-  have hsmall : δ ≤ min (modelPhaseCurvatureLower σ) 1 := min_le_left _ _
+  pm_7967 hsmall
   have hpos : δ ≤ min ((2 : ℝ)^(-σ)/2) 1 :=
     (min_le_right _ _).trans (min_le_left _ _)
   have hbudget : δ ≤ ε/(B*C) := (min_le_right _ _).trans (min_le_right _ _)
-  refine ⟨δ,hd,hsmall,hpos,?_⟩
+  pm_119 δ hd hsmall hpos
   intro F hF w hw h hh hh₁ hgap
   obtain ⟨hsmooth,_,hjets⟩ := hext F δ hsmall hpos hF w hw h hh hh₁ hgap
   apply referencePlusCorrection_approximate

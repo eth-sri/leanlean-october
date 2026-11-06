@@ -7,18 +7,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialPhysicalReassembly
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes
+open InverseInitialEnergyCallerSource
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem initialColumn_zero_common (Ψ:O→*ℂ)(j d h:O)(H:Finset ι→ℂ)
+section
+variable (Ψ:O→*ℂ)
+include Ψ
+theorem initialColumn_zero_common(j d h:O)(H:Finset ι→ℂ)
     (G U:Finset ι)(hd:¬Disjoint G U):
     initialColumn p hp hcop hg Ψ j (∏i∈G,p i) d h H U=0:=by
   obtain ⟨i,hiG,hiU⟩:=Finset.not_disjoint_iff.mp hd
@@ -28,19 +31,20 @@ theorem initialColumn_zero_common (Ψ:O→*ℂ)(j d h:O)(H:Finset ι→ℂ)
     simp only [rowCoprimeMask,ite_eq_left hh]
   simp only [initialColumn,hm,mul_zero,zero_mul]
 
-theorem physicalTerm_zero_left_common (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)
+theorem physicalTerm_zero_left_common(j:O)(σ:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(G E V N M:Finset ι)(h:O)(ρ:SecondRayIndex)
     (hd:¬Disjoint G (V∪N)):
     physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m ⟨G,E,V,N,M,h⟩ ρ=0:=by
   simp only [physicalTerm,initialColumn_zero_common p hp hcop hg _ _ _ _ _ _ _ hd,
     star_zero,mul_zero,zero_mul]
 
-theorem physicalTerm_zero_right_common (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)
+theorem physicalTerm_zero_right_common(j:O)(σ:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(G E V N M:Finset ι)(h:O)(ρ:SecondRayIndex)
     (hd:¬Disjoint G (V∪M)):
     physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m ⟨G,E,V,N,M,h⟩ ρ=0:=by
   simp only [physicalTerm,initialColumn_zero_common p hp hcop hg _ _ _ _ _ _ _ hd,
     mul_zero,zero_mul]
+end
 
 private theorem missing_residual_common (pool G V N:Finset ι)
     (hN:N∈(pool\V).powerset)(hn:N∉((pool\G)\V).powerset):¬Disjoint G (V∪N):=by
@@ -115,7 +119,10 @@ theorem finiteSource_sum {A:Type*}[AddCommMonoid A]
   rw [finiteSource,Finset.sum_image (fun _ _ _ _ he=>sourceOfCode_injective he)]
   simp only [sourceCodes,Finset.sum_sigma,Finset.sum_product,sourceOfCode]
 
-theorem mem_finiteSource (pool:Finset ι)(T:Finset O)(x:Source (ι:=ι) 0):
+section
+variable (pool:Finset ι) (T:Finset O)
+include pool T
+theorem mem_finiteSource(x:Source (ι:=ι) 0):
     x∈finiteSource pool T ↔ x.common⊆pool ∧ x.divisor⊆x.common ∧
       x.overlap⊆pool\x.common ∧ x.frequency∈T:=by
   constructor
@@ -131,15 +138,16 @@ theorem mem_finiteSource (pool:Finset ι)(T:Finset O)(x:Source (ι:=ι) 0):
       funext i
       exact Fin.elim0 i
 
-theorem finiteSource_divisor (pool:Finset ι)(T:Finset O):
+theorem finiteSource_divisor:
     ∀x∈finiteSource pool T,x.divisor⊆x.common:=by
   intro x hx
   exact (mem_finiteSource pool T x).mp hx |>.2.1
 
-theorem finiteSource_nonzero (pool:Finset ι)(T:Finset O)(hT:(0:O)∉T):
+theorem finiteSource_nonzero(hT:(0:O)∉T):
     ∀x∈finiteSource pool T,x.frequency≠0:=by
   intro x hx he
   exact hT (he ▸ ((mem_finiteSource pool T x).mp hx).2.2.2)
+end
 
 theorem finite_physical_reassembly
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))

@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaCutoffEstimates
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,20 +21,15 @@ open scoped ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem anchoredLegendreError_contDiffAt
-    {σ δ w v : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hp : 0 < v) :
+section
+variable {σ δ w v : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hv : v ∈ modelPhaseSlopeRange F) (hp : 0 < v)
+include σ δ w v F hσ hδ hF hv hp
+theorem anchoredLegendreError_contDiffAt :
     ContDiffAt ℝ ∞ (anchoredLegendreError F σ w) v :=
   ((modelPhaseLegendreDual_contDiffAt hσ hδ hF hv).sub
     (referenceModelPrimitive_contDiffAt σ⁻¹ hp)).sub contDiffAt_const
 
-theorem anchoredLegendreError_iteratedDeriv
-    {σ δ w v : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hp : 0 < v) (n : ℕ) :
+theorem anchoredLegendreError_iteratedDeriv (n : ℕ) :
     iteratedDeriv (n+1) (anchoredLegendreError F σ w) v =
       iteratedDeriv (n+1) (modelPhaseLegendreDual F) v -
         iteratedDeriv n (modelPhase σ⁻¹) v := by
@@ -45,5 +41,6 @@ theorem anchoredLegendreError_iteratedDeriv
   rw [iteratedDeriv_fun_sub (hG.sub hR) contDiffAt_const,
     iteratedDeriv_fun_sub hG hR, referenceModelPrimitive_iteratedDeriv σ⁻¹ hp n]
   simp [iteratedDeriv_const]
+end
 
 end TaoTrudgianYang2025

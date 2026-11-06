@@ -7,6 +7,7 @@ Apache-2.0 attribution. No Voronoi identity or analytic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
 public import Mathlib.NumberTheory.Harmonic.EulerMascheroni
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -50,7 +51,7 @@ theorem intervalC1Bound_source_log {T : ℝ} (hT : 16 ≤ T) :
     exact ⟨by positivity [Real.log_nonneg hx1],
       by linarith [Real.log_le_log (by linarith : 0 < x) hx.2]⟩
   · intro x hx
-    have hx0 : 0 < x := by linarith [hx.1]
+    pm_1211 hx0
     rw [((Real.hasDerivAt_log hx0.ne').add_const
       (2 * Real.eulerMascheroniConstant)).deriv]
     positivity

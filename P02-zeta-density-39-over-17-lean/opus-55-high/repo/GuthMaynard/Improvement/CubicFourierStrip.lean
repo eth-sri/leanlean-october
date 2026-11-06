@@ -2,10 +2,9 @@ module
 public import GuthMaynard.Improvement.CubicMaskedStrip
 public import GuthMaynard.Improvement.CubicStripIntegral
 public import GuthMaynard.Improvement.RatioFourierInput
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -14,8 +13,7 @@ theorem ratio_box_input_coordinates {a b v y : ℝ} (ha : 0 < a) (ha1 : a ≤ 1)
     (hv : v ∈ Icc a b) (hy : y ∈ Icc a b) :
     v ∈ Icc (a/b) (b/a) ∧ y ∈ Icc (a/b) (b/a) ∧ y/v ∈ Icc (a/b) (b/a) := by
   have hb : 0 < b := lt_of_lt_of_le zero_lt_one hb1
-  have hvp : 0 < v := ha.trans_le hv.1
-  have hyp : 0 < y := ha.trans_le hy.1
+  pm_6305
   have hcover : ∀ z ∈ Icc a b, z ∈ Icc (a/b) (b/a) := by
     intro z hz
     constructor
@@ -37,13 +35,9 @@ theorem ratioFourier_mask_domination (μ : ℝ → ℝ) {a b v y : ℝ}
       (mellinFrequency ⁻¹' A).indicator (ratioFourierInput μ (a/b) (b/a)) v *
       (mellinFrequency ⁻¹' D).indicator (ratioFourierInput μ (a/b) (b/a)) y *
       (mellinFrequency ⁻¹' D).indicator (ratioFourierInput μ (a/b) (b/a)) (y/v) := by
-  have hvp : 0 < v := ha.trans_le hv.1
-  have hyp : 0 < y := ha.trans_le hy.1
+  pm_6305
   obtain ⟨hvi,hyi,hyvi⟩ := ratio_box_input_coordinates ha ha1 hb1 hv hy
-  have hfreq : mellinFrequency v-mellinFrequency y = -mellinFrequency (y/v) := by
-    unfold mellinFrequency
-    rw [Real.log_div hyp.ne' hvp.ne']
-    ring
+  pm_6806 hfreq hyp.ne' hvp.ne'
   have hn (E : Set ℝ) (z : ℝ) : 0 ≤ (mellinFrequency ⁻¹' E).indicator (ratioFourierInput μ (a/b) (b/a)) z :=
     indicator_nonneg (fun _ _ => ratioFourierInput_nonneg _ _ _ _) _
   by_cases hA : -mellinFrequency v ∈ A
@@ -59,11 +53,11 @@ theorem ratioFourier_mask_domination (μ : ℝ → ℝ) {a b v y : ℝ}
         rw [ratioFourierProduct_norm μ hvp hyp,ratioFourierInput_on hvi,ratioFourierInput_on hyi,ratioFourierInput_on hyvi]
         exact le_of_eq (by ring)
       · simp only [ratioMaskProduct,Set.indicator_of_notMem hC,mul_zero,norm_zero,mul_zero]
-        exact mul_nonneg (mul_nonneg (hn A v) (hn D y)) (hn D (y/v))
+        pm_4588
     · simp only [ratioMaskProduct,Set.indicator_of_notMem hB,mul_zero,zero_mul,norm_zero,mul_zero]
-      exact mul_nonneg (mul_nonneg (hn A v) (hn D y)) (hn D (y/v))
+      pm_4588
   · simp only [ratioMaskProduct,Set.indicator_of_notMem hA,zero_mul,norm_zero,mul_zero]
-    exact mul_nonneg (mul_nonneg (hn A v) (hn D y)) (hn D (y/v))
+    pm_4588
 
 /-- Uniform scalar control of the genuine strip integral, used solely to
 justify integration in the positive compact ratio variable. -/
@@ -71,11 +65,9 @@ theorem cubicStripMass_le_square {r : ℝ → ℝ} (hr : Measurable r)
     (hr2 : Integrable (fun x => r x^2)) (hr0 : ∀ x, 0 ≤ r x)
     (L H : ℝ) (m : ℤ × (ℤ × ℤ)) {v : ℝ} (hv : 0 < v) :
     cubicStripMass r L H m v ≤ Real.sqrt v*(∫ y, r y^2) := by
-  have hp := (memLp_two_iff_integrable_sq hr.aestronglyMeasurable).mpr hr2
-  have hpv := (memLp_two_iff_integrable_sq (hr.comp (measurable_id.div_const v)).aestronglyMeasurable).mpr (hr2.comp_div hv.ne')
-  have hint := hp.integrable_mul hpv
+  pm_5273 hv.ne' hint
   have hcs := integral_cauchy_schwarz_nonneg hp hpv hr0 (fun _ => hr0 _)
-  have hmass : 0 ≤ ∫ y, r y^2 := integral_nonneg (fun _ => sq_nonneg _)
+  pm_5238 hmass y r
   have hchange : (∫ y, r (y/v)^2) = v*(∫ y, r y^2) := by
     simpa only [abs_of_pos hv,smul_eq_mul] using Measure.integral_comp_div (fun y => r y^2) v
   dsimp only [Function.comp_apply,id_eq] at hcs
@@ -87,15 +79,12 @@ theorem cubicStripMass_le_square {r : ℝ → ℝ} (hr : Measurable r)
   rw [heq] at hcs
   exact (setIntegral_le_integral hint (Filter.Eventually.of_forall (fun y => mul_nonneg (hr0 y) (hr0 _)))).trans hcs
 
+section
+variable {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b) {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C) (hD : MeasurableSet D) (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D) (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ)
+include μ hm h0 h1 h2 a b ha ha1 hb1 A B C D hA hB hC hD hAsym hDsym hBD hCD L H
 /-- Actual near-strip Fourier mass is bounded by the actual transverse
 strip integral, with all existence facts derived from the ordinary density. -/
-theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
-    {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
-    {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B)
-    (hC : MeasurableSet C) (hD : MeasurableSet D)
-    (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D)
-    (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ) (m : ℤ × (ℤ × ℤ)) :
+theorem fourier_near_strip_integral (m : ℤ × (ℤ × ℤ)) :
     let r₀ := ratioFourierInput μ (a/b) (b/a)
     let r := (mellinFrequency ⁻¹' D).indicator r₀
     let first := (mellinFrequency ⁻¹' A).indicator r₀
@@ -103,13 +92,11 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
     IntegrableOn (fun v => first v*cubicStripMass r L H m v) (Icc a b) ∧
     (∫ p in Icc a b ×ˢ Icc a b, maskedRadialNearMass μ A B C L H m p) ≤
       ∫ v in Icc a b, first v*cubicStripMass r L H m v := by
-  let r₀ := ratioFourierInput μ (a/b) (b/a)
-  let r := (mellinFrequency ⁻¹' D).indicator r₀
-  let first := (mellinFrequency ⁻¹' A).indicator r₀
+  pm_4589
   dsimp only
   have hb : 0 < b := lt_of_lt_of_le zero_lt_one hb1
   have hab : a ≤ b := ha1.trans hb1
-  have hc : 0 < a/b := div_pos ha hb
+  pm_6528 hc a b ha hb
   have hcd : a/b ≤ b/a := by apply (div_le_div_iff₀ hb ha).mpr; nlinarith
   have hfreq : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
   have hAP : MeasurableSet (mellinFrequency ⁻¹' A) := hA.preimage hfreq
@@ -117,14 +104,14 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
   have hr₀ : Measurable r₀ := ratioFourierInput_measurable h1 _ _
   have hr : Measurable r := hr₀.indicator hDP
   have hfirst : Measurable first := hr₀.indicator hAP
-  have hr₀2 : Integrable (fun v => r₀ v^2) := ratioFourierInput_square_integrable hc hcd h1 h2
+  pm_6901 hr₀2
   have hr2 : Integrable (fun v => r v^2) := by
     have heq : (fun v => r v^2) = (mellinFrequency ⁻¹' D).indicator (fun v => r₀ v^2) := by
       funext v; by_cases hv : v ∈ mellinFrequency ⁻¹' D <;> simp [r,hv]
     rw [heq]; exact hr₀2.indicator hDP
   have hr0 : ∀ v, 0 ≤ r v := fun _ => indicator_nonneg (fun _ _ => ratioFourierInput_nonneg _ _ _ _) _
   have hf0 : ∀ v, 0 ≤ first v := fun _ => indicator_nonneg (fun _ _ => ratioFourierInput_nonneg _ _ _ _) _
-  have hmass : 0 ≤ ∫ t, μ t := integral_nonneg h0
+  pm_4517
   have hfirstbound : ∀ v, first v ≤ ∫ t, μ t := by
     intro v; by_cases hv : v ∈ mellinFrequency ⁻¹' A
     · rw [show first v = r₀ v from indicator_of_mem hv _]; exact ratioFourierInput_le_mass h0 _ _ _
@@ -132,15 +119,11 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
   have hnearMeas : Measurable (maskedRadialNearMass μ A B C L H m) := by
     apply Measurable.ite (measurableSet_le (by fun_prop) measurable_const)
       ((ratioFourierProduct_measurable h1).norm.mul (ratioMaskProduct_measurable hA hB hC).norm) measurable_const
-  have hnear0 : ∀ p, 0 ≤ maskedRadialNearMass μ A B C L H m p := by
-    intro p; unfold maskedRadialNearMass; split_ifs <;> positivity
+  pm_836
   have hnearB : ∀ p, ‖maskedRadialNearMass μ A B C L H m p‖ ≤ (∫ t, μ t)^3 := by
     intro p
     rw [Real.norm_eq_abs,abs_of_nonneg (hnear0 p)]
-    unfold maskedRadialNearMass
-    split_ifs
-    · exact (mul_le_of_le_one_right (norm_nonneg _) (ratioMaskProduct_norm_le_one A B C p)).trans (ratioFourierProduct_bound hm h0 h1 p)
-    · positivity
+    pm_5303 h1
   have hnearI : IntegrableOn (maskedRadialNearMass μ A B C L H m) (Icc a b ×ˢ Icc a b) :=
     (integrableOn_const (isCompact_Icc.prod isCompact_Icc).measure_lt_top.ne (C := (∫ t, μ t)^3)).mono'
       hnearMeas.aestronglyMeasurable (Filter.Eventually.of_forall hnearB)
@@ -165,9 +148,7 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
     have hvp : 0 < v := ha.trans_le hv.1
     let Z := {y : ℝ | |L*((m.1:ℝ)*v+(m.2.1:ℝ)*y+(m.2.2:ℝ))| ≤ H}
     have hZ : MeasurableSet Z := by apply measurableSet_le <;> fun_prop
-    have hp := (memLp_two_iff_integrable_sq hr.aestronglyMeasurable).mpr hr2
-    have hpv := (memLp_two_iff_integrable_sq (hr.comp (measurable_id.div_const v)).aestronglyMeasurable).mpr (hr2.comp_div hvp.ne')
-    have hprod := hp.integrable_mul hpv
+    pm_5273 hvp.ne' hprod
     have hiUpper := (hprod.indicator hZ).const_mul (first v)
     have hiNear : IntegrableOn (fun y => maskedRadialNearMass μ A B C L H m (v,y)) (Icc a b) :=
       (integrableOn_const isCompact_Icc.measure_lt_top.ne (C := (∫ t, μ t)^3)).mono'
@@ -207,22 +188,14 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
 
 /-- Finite actual near-mode mass transfers to the outer first-mask strip
 sum. No shell, sign, nonzero-mode, or width restriction is needed here. -/
-theorem fourier_near_strip_sum {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
-    {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
-    {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B)
-    (hC : MeasurableSet C) (hD : MeasurableSet D)
-    (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D)
-    (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ) (S : Finset (ℤ × (ℤ × ℤ))) :
+theorem fourier_near_strip_sum (S : Finset (ℤ × (ℤ × ℤ))) :
     let r₀ := ratioFourierInput μ (a/b) (b/a)
     let r := (mellinFrequency ⁻¹' D).indicator r₀
     let first := (mellinFrequency ⁻¹' A).indicator r₀
     IntegrableOn (fun v => first v * ∑ m ∈ S, cubicStripMass r L H m v) (Icc a b) ∧
     (∑ m ∈ S, ∫ p in Icc a b ×ˢ Icc a b, maskedRadialNearMass μ A B C L H m p) ≤
       ∫ v in Icc a b, first v * ∑ m ∈ S, cubicStripMass r L H m v := by
-  let r₀ := ratioFourierInput μ (a/b) (b/a)
-  let r := (mellinFrequency ⁻¹' D).indicator r₀
-  let first := (mellinFrequency ⁻¹' A).indicator r₀
+  pm_4589
   have hmode := fun m => fourier_near_strip_integral hm h0 h1 h2 ha ha1 hb1
     hA hB hC hD hAsym hDsym hBD hCD L H m
   have hi : ∀ m ∈ S, IntegrableOn (fun v => first v*cubicStripMass r L H m v) (Icc a b) :=
@@ -233,5 +206,6 @@ theorem fourier_near_strip_sum {μ : ℝ → ℝ} (hm : Measurable μ)
       _ ≤ ∑ m ∈ S, ∫ v in Icc a b, first v*cubicStripMass r L H m v :=
         Finset.sum_le_sum (fun m _ => (hmode m).2.2)
       _ = _ := by rw [← integral_finsetSum S hi]; simp only [Finset.mul_sum, first, r, r₀]
+end
 
 end GuthMaynard.Improvement

@@ -7,6 +7,7 @@ Mathlib/PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonReducedSource
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonMainIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,14 +34,12 @@ theorem exists_zetaSquareLocalMean_le_atkinson_minus {δ : ℝ} (hδ : 0 < δ) :
       (∫ t in T - G..T + G, zetaMomentCriticalNorm t ^ 2) ≤
         2 * Real.exp 1 * (zetaAtkinsonBesselMinus T G (Real.log T)).re +
           C * G * Real.log T := by
-  obtain ⟨C, hC, B, hB, hsource⟩ := exists_zetaSquareLocalMean_le_atkinson_reduced hδ
-  obtain ⟨D, hD, B₁, hB₁, hmain⟩ := exists_zetaAtkinsonVoronoiMain_log_bound hδ
-  refine ⟨C + 2 * Real.exp 1 * D, by positivity, max B B₁, hB.trans (le_max_left _ _), ?_⟩
-  intro T G hT hlower hupper
-  have hm := hsource T G ((le_max_left _ _).trans hT) hlower hupper
-  have hk := hmain T G ((le_max_right _ _).trans hT) hlower hupper
-  have hkr := (Complex.re_le_norm (zetaAtkinsonVoronoiMain T G (Real.log T))).trans hk
-  have hscaled := mul_le_mul_of_nonneg_left hkr (by positivity : 0 ≤ 2 * Real.exp 1)
+  pm_206 C hC B hB hsource exists_zetaSquareLocalMean_le_atkinson_reduced hδ
+  pm_206 D hD B₁ hB₁ hmain exists_zetaAtkinsonVoronoiMain_log_bound hδ
+  pm_4362
+  pm_6117 hk hmain le_max_right
+  pm_7440 zetaAtkinsonVoronoiMain
+  pm_4360 hscaled hkr
   simp only [Complex.add_re] at hm
   nlinarith
 

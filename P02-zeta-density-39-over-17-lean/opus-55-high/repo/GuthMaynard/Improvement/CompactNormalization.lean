@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.CompactKernel
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -21,7 +20,7 @@ theorem smooth_support_interval {κ g : ℝ → ℝ} {a b h x : ℝ}
       have hh := abs_le.mp (le_of_not_gt hn)
       exact hx ⟨by linarith [hy.1], by linarith [hy.2]⟩
     simp [hκ (x-y) ht]
-  · simp [hg y hy]
+  simp_all
 
 theorem scaled_compactKernel_zero {δ x : ℝ} (hδ : 0 < δ)
     (hx : 2*δ < |x|) : scaledKernel compactKernel δ x = 0 := by
@@ -42,8 +41,7 @@ theorem compact_smoothing_mass_le {g : ℝ → ℝ} {a b δ U : ℝ}
   have hF0 : ∀ x, 0 ≤ F x := smooth_nonneg
     (scaledKernel_nonneg compactKernel_nonneg hδ) hg0
   have hz : ∀ x, x ∉ Set.Icc (a-2*δ) (b+2*δ) → F x = 0 := by
-    intro x hx
-    exact smooth_support_interval (fun t ht => scaled_compactKernel_zero hδ ht) hs hx
+    pm_6756
   have hi : (∫ x in Set.Icc (a-2*δ) (b+2*δ), F x) = ∫ x, g x := by
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero hz]
     exact smooth_mass (scaledKernel_integrable compactKernel_integrable hδ) hg

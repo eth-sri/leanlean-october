@@ -22,7 +22,10 @@ def typedPrimePool (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (S : Finset (Ideal O)) (a b x : ℝ) : Finset PrimeIdeal :=
   (CenteredMomentPrimePool.primePool M H S a b x).subtype Prime
 
-theorem typedPrimePool_card (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+section
+variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+include M H
+theorem typedPrimePool_card
     (S : Finset (Ideal O)) (a b x : ℝ) :
     (typedPrimePool M H S a b x).card=
       (CenteredMomentPrimePool.primePool M H S a b x).card := by
@@ -33,7 +36,7 @@ theorem typedPrimePool_card (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
   exact ((PNT.AnnularPrimeMass.mem_annularPrimeIdeals _ _ _ _ _).mp
     (Finset.mem_sdiff.mp hP).1).2.1
 
-theorem typedPrimePool_norm (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+theorem typedPrimePool_norm
     (S : Finset (Ideal O)) (a b x : ℝ) (ha : 0≤a) (hab : a≤b) (hx : 0<x)
     (P : PrimeIdeal) (hP : P∈typedPrimePool M H S a b x) :
     (P.val.absNorm : ℝ)≤x*b := by
@@ -42,7 +45,6 @@ theorem typedPrimePool_norm (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (Finset.mem_sdiff.mp hh).1).2
 
 theorem eventually_fixed_ray_amplification
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
     (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
     (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y, 0≤φ y) (hφne : φ≠0)
@@ -82,6 +84,7 @@ theorem eventually_fixed_ray_amplification
       ‖polynomial (data.character ⟨u.val,u.property.1⟩) true W D 0 0‖^2))*Real.log x := by
         field_simp
     _ ≤ _ := mul_le_mul_of_nonneg_right hh hlog.le
+end
 
 end SevenEighths.HeckeInverseAmplification
 

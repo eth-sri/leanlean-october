@@ -9,7 +9,7 @@ This file contains chain rules that are useful in the exponential-sums developme
 currently available in Mathlib in the required two-set form.
 -/
 
-@[expose] public section
+public section
 
 namespace Expdb
 

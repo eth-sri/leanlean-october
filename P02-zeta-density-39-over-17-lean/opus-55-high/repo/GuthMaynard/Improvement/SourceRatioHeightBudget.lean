@@ -1,8 +1,8 @@
 module
 public import GuthMaynard.Improvement.SourceRatioAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -18,8 +18,7 @@ theorem sourceHeight_bounds {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T) :
   refine ⟨hY,min_le_left _ _,?_⟩
   have hh : (max 2 (Real.sqrt T))^2 ≤ 2*T := by
     by_cases h : 2 ≤ Real.sqrt T
-    · rw [max_eq_right h,Real.sq_sqrt (by linarith : 0 ≤ T)]
-      linarith
+    grind
     · rw [max_eq_left (by linarith)]
       nlinarith
   have hY0 : 0 ≤ sourceHeight N T := by linarith
@@ -31,11 +30,10 @@ theorem sourceHeight_sqrt_le_of_lt {N T : ℝ}
   have he : sourceHeight N T=max 2 (Real.sqrt T) := by
     unfold sourceHeight at h ⊢
     rcases min_choice (2*N) (max 2 (Real.sqrt T)) with he | he
-    · rw [he] at h
-      exact False.elim (lt_irrefl _ h)
-    · exact he
+    grind
+    grind
   rw [he]
-  exact le_max_right _ _
+  grind
 
 /-- Actual least dyadic cover. Minimality yields the strict factor-two
 overshoot and correctly makes the full-height case have zero shells. -/
@@ -49,7 +47,7 @@ theorem source_least_height_cover {X Y : ℝ} (hY : 0 < Y) (hYX : Y ≤ X) :
   have hcover : X ≤ (2:ℝ)^J*Y := Nat.find_spec hex
   have hmin : ∀ j < J, (2:ℝ)^j*Y < X := by
     intro j hj
-    exact lt_of_not_ge (Nat.find_min hex hj)
+    aesop
   have hbound : (2:ℝ)^J*Y < 2*X := by
     cases hj : J with
     | zero => simp only [pow_zero,one_mul]; linarith
@@ -57,24 +55,25 @@ theorem source_least_height_cover {X Y : ℝ} (hY : 0 < Y) (hYX : Y ≤ X) :
       have hh := hmin j (by omega)
       rw [pow_succ]
       nlinarith
-  refine ⟨J,hcover,hmin,hbound,?_⟩
+  pm_119 J hcover hmin hbound
   constructor
   · intro hj
     simp only [hj,pow_zero,one_mul] at hcover
     exact le_antisymm hYX hcover
-  · intro he
-    have hh : Nat.find hex ≤ 0 := Nat.find_min' hex (by simp [he])
-    exact Nat.le_zero.mp hh
+  aesop
 
+section
+variable (Y : ℝ) (J : ℕ)
+include Y J
 /-- Exact positive geometric sum for the actual shell heights. -/
-theorem source_height_geometric_sum (Y : ℝ) (J : ℕ) :
+theorem source_height_geometric_sum :
     (∑ j ∈ range J, (2:ℝ)^j*Y) = ((2:ℝ)^J-1)*Y := by
   induction J with
   | zero => simp
   | succ J ih => rw [sum_range_succ,ih,pow_succ]; ring
 
 /-- Exact reciprocal geometric sum; no logarithmic shell-count loss. -/
-theorem source_height_inverse_sum (Y : ℝ) (J : ℕ) :
+theorem source_height_inverse_sum :
     (∑ j ∈ range J, ((2:ℝ)^j*Y)⁻¹) = 2*Y⁻¹*(1-((2:ℝ)⁻¹)^J) := by
   induction J with
   | zero => simp
@@ -82,9 +81,13 @@ theorem source_height_inverse_sum (Y : ℝ) (J : ℕ) :
     rw [sum_range_succ,ih,pow_succ]
     simp only [mul_inv_rev,inv_pow]
     ring
+end
 
+section
+variable {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
+include N T hN hT
 /-- The high-height derivative loss is sqrt(T), whenever high shells exist. -/
-theorem source_high_height_budget {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
+theorem source_high_height_budget
     (hhigh : sourceHeight N T < 2*N) :
     N*T/sourceHeight N T ≤ N*Real.sqrt T := by
   have hY := (sourceHeight_bounds hN hT).1
@@ -97,7 +100,7 @@ theorem source_high_height_budget {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
 
 /-- One least cover simultaneously supplies both shell budgets and the
 empty-high-range conclusion, with absolute constants 4 and 2. -/
-theorem source_height_shell_budgets {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T) :
+theorem source_height_shell_budgets :
     ∃ J : ℕ, 2*N ≤ (2:ℝ)^J*sourceHeight N T ∧
       (∀ j < J, (2:ℝ)^j*sourceHeight N T < 2*N) ∧
       (J=0 ↔ sourceHeight N T=2*N) ∧
@@ -106,7 +109,7 @@ theorem source_height_shell_budgets {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T) :
   obtain ⟨hY,hYN,_⟩ := sourceHeight_bounds hN hT
   obtain ⟨J,hcover,hmin,hbound,hzero⟩ := source_least_height_cover
     (by linarith : 0 < sourceHeight N T) hYN
-  refine ⟨J,hcover,hmin,hzero,?_,?_⟩
+  pm_841 J hcover hmin hzero
   · rw [source_height_geometric_sum]
     nlinarith
   · rw [source_height_inverse_sum]
@@ -114,11 +117,12 @@ theorem source_height_shell_budgets {N T : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T) :
     have hy : 0 ≤ (sourceHeight N T)⁻¹ := by positivity
     rw [div_eq_mul_inv]
     nlinarith [mul_nonneg (mul_nonneg (by norm_num : (0:ℝ) ≤ 2) hy) hp]
+end
 
 theorem source_log_mass_ge_one {N : ℝ} (hN : 2 ≤ N) : 1 ≤ Real.log (2*N) := by
   have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ)<2)
   norm_num at hh
-  have hlog : Real.log 4 ≤ Real.log (2*N) := Real.log_le_log (by norm_num) (by linarith)
+  pm_6205 hlog
   have he : Real.log 4=2*Real.log 2 := by
     have hx := Real.log_mul (by norm_num : (2:ℝ) ≠ 0) (by norm_num : (2:ℝ) ≠ 0)
     norm_num at hx
@@ -134,8 +138,7 @@ theorem source_sampling_low_scalar {N T c M : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
       Real.sqrt ((2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M) ≤
       (8*Real.sqrt (Real.pi*(1+c)))*N*Real.sqrt (T*Real.log (2*N))*Real.sqrt M := by
   have hlog : 0 ≤ Real.log (2*N) := (by norm_num : (0:ℝ) ≤ 1).trans (source_log_mass_ge_one hN)
-  have hT0 : 0 ≤ T := by linarith
-  have hN0 : 0 ≤ N := by linarith
+  pm_255 hT0 T hN0 N
   have hp : 0 ≤ Real.pi*(1+c) := by positivity
   have hY := (sourceHeight_bounds hN hT).2.2
   have hK : (2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M ≤
@@ -144,7 +147,7 @@ theorem source_sampling_low_scalar {N T c M : ℝ} (hN : 2 ≤ N) (hT : 2 ≤ T)
     nlinarith [mul_le_mul_of_nonneg_left hY (show 0 ≤ 2*Real.pi by positivity)]
   have hW : 0 ≤ 16*N^2*Real.log (2*N) := by positivity
   have hK0 : 0 ≤ (2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M := by positivity
-  apply (sq_le_sq₀ (by positivity) (by positivity)).mp
+  pm_4563
   rw [mul_pow,Real.sq_sqrt hW,Real.sq_sqrt hK0]
   calc
     _ ≤ (16*N^2*Real.log (2*N))*(4*Real.pi*(1+c)*T*M) := mul_le_mul_of_nonneg_left hK hW
@@ -163,10 +166,10 @@ theorem source_sampling_scalar_budget (c : ℝ) (hc : 0 ≤ c) :
           16*Real.pi*c*(N*T/sourceHeight N T)*Real.sqrt M) ≤
         C*(N^2*I+N*Real.sqrt (T*Real.log (2*N))*Real.sqrt M) := by
   let C := 64*Real.pi+8*Real.sqrt (Real.pi*(1+c))+16*Real.pi*c
-  refine ⟨C,by dsimp [C]; positivity,?_⟩
+  pm_345 C
   intro N T M I hN hT hM hI
   let Z := N*Real.sqrt (T*Real.log (2*N))*Real.sqrt M
-  have hZ : 0 ≤ Z := by dsimp [Z]; positivity
+  pm_61 hZ Z
   have hX : 0 ≤ N^2*I := by positivity
   have hl : Real.sqrt (16*N^2*Real.log (2*N))*
       Real.sqrt ((2*Real.pi*(sourceHeight N T)^2+4*Real.pi*c*T)*M) ≤

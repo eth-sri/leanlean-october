@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀ i,p i≠0)
+variable {ι : Type*} [DecidableEq ι] (p : ι→ O) (hp : ∀ i,p i≠0)
 
 include hp in
 theorem cube_whole_support_norm (b : CubeCoordinates ι) :
@@ -27,13 +28,12 @@ theorem cube_whole_support_norm (b : CubeCoordinates ι) :
   have hn := Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hne))
     (Ideal.absNorm_dvd_absNorm_of_le (Ideal.dvd_iff_le.mp hd))
   have he : (Ideal.absNorm (sourceIdeal p b.support):ℝ)=primeProductNorm p b.support := by
-    simpa only [sourceIdeal,primeProductNorm,map_prod] using
-      (eisEmbedding_norm_sq_eq_absNorm_span (∏i∈b.support,p i)).symm
+    pm_5979 b.support
   have hh : primeProductNorm p b.support≤
       ‖eisEmbedding (primeProduct p b.support (fun i=>b.leftExponent i+b.rightExponent i))‖^2 := by
     rw [eisEmbedding_norm_sq_eq_absNorm_span,←he]
     exact_mod_cast hn
-  simpa only [primeProduct_add,map_mul,norm_mul,mul_pow] using hh
+  pm_89 primeProduct_add map_mul norm_mul mul_pow hh
 
 include hp in
 theorem cube_whole_support_dyad (b : CubeCoordinates ι) (B : ℝ) (hB : 0≤B)

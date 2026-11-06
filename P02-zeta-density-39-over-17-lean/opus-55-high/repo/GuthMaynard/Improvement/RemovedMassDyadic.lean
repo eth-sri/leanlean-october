@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.SourceTailConditional
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -59,8 +58,7 @@ theorem source_removed_mass_dyadic {β : ℝ → ℝ} (hβm : Measurable β)
         by_cases ht : 2^j*U < ‖D t‖ <;> simp only [Set.indicator_apply, Set.mem_ofPred_eq, ht, reduceIte, mul_zero]
         ring
     _ = _ := by
-      rw [integral_finsetSum _ (fun j _ => hi j)]
-      apply Finset.sum_congr rfl
+      pm_7961 j
       intro j _
       rw [integral_const_mul]
 

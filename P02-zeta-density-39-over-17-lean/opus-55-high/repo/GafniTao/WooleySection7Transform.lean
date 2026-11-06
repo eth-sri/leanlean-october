@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleySection7Translated
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ translation parameter is left visible for the later modular matrix inverse.
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -60,12 +60,14 @@ theorem wooleySection7_column_exponent_add
       gamma * (wooleySection7Node k r l + 1) ≤
         c + gamma * (k + 1) :=
     (Nat.mul_le_mul_left gamma hj).trans (Nat.le_add_left _ _)
-  exact Nat.add_sub_of_le hmul
+  grind
 
+section
+variable {k r p c a gamma : ℕ}
+include k r p c a gamma
 /-- Exact column divisibility in (7.10).  This is an equality of integral
 polynomials, so no division by a zero divisor is hidden in the notation. -/
-theorem wooleySection7TranslatedTop_eq_columnFactor_mul
-    {k r p c a gamma : ℕ} (hrk : r ≤ k) (hgamma : gamma ≤ a)
+theorem wooleySection7TranslatedTop_eq_columnFactor_mul (hrk : r ≤ k) (hgamma : gamma ≤ a)
     (omega h : ℤ) (hsep : h = omega * (p : ℤ) ^ gamma)
     (psi : Fin r → Polynomial ℤ) (l : Fin r) :
     wooleySection7TranslatedDilatedPolynomial p a h
@@ -80,7 +82,7 @@ theorem wooleySection7TranslatedTop_eq_columnFactor_mul
       C ((p : ℤ) ^ gamma) * g = C ((p : ℤ) ^ a) * X + C h := by
     exact wooleySection7_primePower_mul_affineCore hgamma omega h hsep
   have hhpow : h = (p : ℤ) ^ gamma * omega := by
-    rw [hsep, mul_comm]
+    grind
   have hexp :
       gamma * j + (c + gamma * (k + 1) - gamma * j) =
         c + gamma * (k + 1) := by
@@ -130,8 +132,7 @@ theorem wooleySection7TranslatedTop_eq_columnFactor_mul
 /-- Low coefficient of the normalized column, with the coprime powers kept
 on the two sides.  This integral identity is the denominator-free form of
 the Laurent coefficient display following (7.10). -/
-theorem wooleySection7ColumnNormalizedPolynomial_coeff
-    {k r p c a gamma : ℕ} (hp : p ≠ 0) (hrk : r ≤ k)
+theorem wooleySection7ColumnNormalizedPolynomial_coeff (hp : p ≠ 0) (hrk : r ≤ k)
     (hgamma : gamma ≤ a) (omega h : ℤ) (homega : omega ≠ 0)
     (hsep : h = omega * (p : ℤ) ^ gamma) (hh : h ≠ 0)
     (psi : Fin r → Polynomial ℤ) (i l : Fin r) :
@@ -188,8 +189,7 @@ theorem wooleySection7ColumnNormalizedPolynomial_coeff
   nlinarith
 
 /-- The normalized column has zero constant term. -/
-theorem wooleySection7ColumnNormalizedPolynomial_coeff_zero
-    {k r p c a gamma : ℕ} (hp : p ≠ 0) (hrk : r ≤ k)
+theorem wooleySection7ColumnNormalizedPolynomial_coeff_zero (hp : p ≠ 0) (hrk : r ≤ k)
     (hgamma : gamma ≤ a) (omega h : ℤ)
     (hsep : h = omega * (p : ℤ) ^ gamma)
     (psi : Fin r → Polynomial ℤ) (l : Fin r) :
@@ -212,8 +212,7 @@ theorem wooleySection7ColumnNormalizedPolynomial_coeff_zero
 
 /-- Every coefficient above the first `r` degrees retains the full tail
 valuation after the column factor has been removed. -/
-theorem wooleySection7ColumnNormalizedPolynomial_high_coeff_dvd
-    {k r p c a gamma : ℕ} (hp : p ≠ 0) (hrk : r ≤ k)
+theorem wooleySection7ColumnNormalizedPolynomial_high_coeff_dvd (hp : p ≠ 0) (hrk : r ≤ k)
     (hgamma : gamma ≤ a) (hgammaK : gamma * k ≤ a)
     (omega h : ℤ) (hsep : h = omega * (p : ℤ) ^ gamma)
     (psi : Fin r → Polynomial ℤ) (l : Fin r) (n : ℕ)
@@ -258,6 +257,7 @@ theorem wooleySection7ColumnNormalizedPolynomial_high_coeff_dvd
   rw [← hexp, pow_add, Int.mul_dvd_mul_iff_left
     (pow_ne_zero _ (by exact_mod_cast hp))] at htailDiv
   exact htailDiv
+end
 
 /-- A polynomial whose constant coefficient vanishes and whose coefficients
 above degree `r` share a scalar factor has an exact positive-low-part plus
@@ -269,15 +269,13 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalarTail
     ∃ Xi : Polynomial ℤ,
       f = (∑ i : Fin r, C (f.coeff ((i : ℕ) + 1)) *
               X ^ ((i : ℕ) + 1)) + C z * Xi := by
-  let low : Polynomial ℤ :=
-    ∑ i : Fin r, C (f.coeff ((i : ℕ) + 1)) * X ^ ((i : ℕ) + 1)
+  pm_680 r
   have hlowCoeff (n : ℕ) :
       low.coeff n =
         ∑ i : Fin r,
           (C (f.coeff ((i : ℕ) + 1)) * X ^ ((i : ℕ) + 1)).coeff n := by
     dsimp [low]
-    rw [← lcoeff_apply, map_sum]
-    simp only [lcoeff_apply]
+    pm_2830
   have hdiv : C z ∣ f - low := by
     rw [C_dvd_iff_dvd_coeff]
     intro n
@@ -295,16 +293,7 @@ theorem wooleyPolynomial_exists_positiveLow_add_scalarTail
       have hsum : low.coeff n = f.coeff n := by
         rw [hlowCoeff]
         simp only [coeff_C_mul, coeff_X_pow]
-        rw [Finset.sum_eq_single i]
-        · simp [hi]
-        · intro b hb hbi
-          have hne : (b : ℕ) + 1 ≠ n := by
-            intro heq
-            apply hbi
-            apply Fin.ext
-            omega
-          simp [Ne.symm hne]
-        · simp
+        pm_5318 b hb hbi hne
       rw [hsum, sub_self]
       exact dvd_zero z
     · have hlt : r < n := Nat.lt_of_not_ge hnr
@@ -391,10 +380,8 @@ theorem wooleySection7_inverse_combination_low_coefficient
       if i = d then
         (p : ZMod (p ^ L)) ^ ((a - gamma) * ((d : ℕ) + 1))
       else 0 := by
-  let Omega := wooleySection7OmegaMatrix (p := p) (c := c)
-    hrk h hh psi
-  have hentry := congrArg
-    (fun M : Matrix (Fin r) (Fin r) (ZMod (p ^ L)) => M i d) hG
+  pm_6247
+  pm_6327 M r L
   have hmatrix :
       (∑ l : Fin r, G i l * (Omega d l : ZMod (p ^ L))) =
         if i = d then 1 else 0 := by
@@ -439,9 +426,7 @@ theorem wooleySection7_inverse_combination_low_coefficient
       (omegaInv : ZMod (p ^ L)) ^ ((d : ℕ) + 1) *
         (∑ l : Fin r, G i l * (Omega d l : ZMod (p ^ L))) *
         (p : ZMod (p ^ L)) ^ ((a - gamma) * ((d : ℕ) + 1)) by
-      rw [Finset.mul_sum, Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro l hl
+      pm_266 Finset.mul_sum Finset.sum_mul Finset.sum_congr l hl
       ring]
   rw [hmatrix]
   by_cases hid : i = d
@@ -478,9 +463,10 @@ def wooleySection7TransformedPolynomial
         wooleySection7ColumnNormalizedPolynomial
           k r p c a gamma omega h psi l
 
-theorem wooleySection7TransformedPolynomial_coeff_low
-    {k r p c a gamma L : ℕ} (hp : p ≠ 0) (hrk : r ≤ k)
-    (hgamma : gamma ≤ a) (omega h omegaInv : ℤ)
+section
+variable {k r p c a gamma L : ℕ} (hp : p ≠ 0) (hrk : r ≤ k) (hgamma : gamma ≤ a)
+include k r p c a gamma L hp hrk hgamma
+theorem wooleySection7TransformedPolynomial_coeff_low (omega h omegaInv : ℤ)
     (homega : omega ≠ 0) (hsep : h = omega * (p : ℤ) ^ gamma)
     (hh : h ≠ 0) (psi : Fin r → Polynomial ℤ)
     (G : Matrix (Fin r) (Fin r) (ZMod (p ^ L)))
@@ -499,16 +485,13 @@ theorem wooleySection7TransformedPolynomial_coeff_low
       else 0 := by
   unfold wooleySection7TransformedPolynomial
   rw [coeff_C_mul]
-  rw [← lcoeff_apply, map_sum]
-  simp only [lcoeff_apply]
+  pm_2830
   simp only [coeff_C_mul, Int.cast_mul, Int.cast_pow]
   push_cast
   exact wooleySection7_inverse_combination_low_coefficient
     hp hrk hgamma omega h omegaInv homega hsep hh psi G hG hInv i d
 
-theorem wooleySection7TransformedPolynomial_coeff_zero
-    {k r p c a gamma L : ℕ} (hp : p ≠ 0) (hrk : r ≤ k)
-    (hgamma : gamma ≤ a) (omega h omegaInv : ℤ)
+theorem wooleySection7TransformedPolynomial_coeff_zero (omega h omegaInv : ℤ)
     (hsep : h = omega * (p : ℤ) ^ gamma)
     (psi : Fin r → Polynomial ℤ)
     (G : Matrix (Fin r) (Fin r) (ZMod (p ^ L))) (i : Fin r) :
@@ -517,17 +500,14 @@ theorem wooleySection7TransformedPolynomial_coeff_zero
   unfold wooleySection7TransformedPolynomial
   rw [coeff_C_mul]
   apply mul_eq_zero_of_right
-  rw [← lcoeff_apply, map_sum]
-  simp only [lcoeff_apply]
+  pm_2830
   apply Finset.sum_eq_zero
   intro l hl
   simp only [coeff_C_mul]
   simp [wooleySection7ColumnNormalizedPolynomial_coeff_zero
     hp hrk hgamma omega h hsep psi l]
 
-theorem wooleySection7TransformedPolynomial_high_coeff_dvd
-    {k r p c a gamma L : ℕ} (hp : p ≠ 0) (hrk : r ≤ k)
-    (hgamma : gamma ≤ a) (hgammaK : gamma * k ≤ a)
+theorem wooleySection7TransformedPolynomial_high_coeff_dvd (hgammaK : gamma * k ≤ a)
     (omega h omegaInv : ℤ) (hsep : h = omega * (p : ℤ) ^ gamma)
     (psi : Fin r → Polynomial ℤ)
     (G : Matrix (Fin r) (Fin r) (ZMod (p ^ L))) (i : Fin r)
@@ -538,8 +518,7 @@ theorem wooleySection7TransformedPolynomial_high_coeff_dvd
   unfold wooleySection7TransformedPolynomial
   rw [coeff_C_mul]
   apply dvd_mul_of_dvd_right
-  rw [← lcoeff_apply, map_sum]
-  simp only [lcoeff_apply]
+  pm_2830
   apply dvd_sum
   intro l hl
   simp only [coeff_C_mul]
@@ -554,9 +533,7 @@ theorem wooleySection7TransformedPolynomial_high_coeff_dvd
   exact dvd_mul_of_dvd_right
     (dvd_trans (pow_dvd_pow (p : ℤ) hle) hdiv) _
 
-theorem wooleySection7TransformedPolynomial_exists_commonTail
-    {k r p c a gamma L : ℕ} (hp : p ≠ 0) (hrk : r ≤ k)
-    (hgamma : gamma ≤ a) (hgammaK : gamma * k ≤ a)
+theorem wooleySection7TransformedPolynomial_exists_commonTail (hgammaK : gamma * k ≤ a)
     (omega h omegaInv : ℤ) (hsep : h = omega * (p : ℤ) ^ gamma)
     (psi : Fin r → Polynomial ℤ)
     (G : Matrix (Fin r) (Fin r) (ZMod (p ^ L))) (i : Fin r) :
@@ -573,6 +550,7 @@ theorem wooleySection7TransformedPolynomial_exists_commonTail
       hp hrk hgamma omega h omegaInv hsep psi G i
   · exact wooleySection7TransformedPolynomial_high_coeff_dvd
       hp hrk hgamma hgammaK omega h omegaInv hsep psi G i
+end
 
 /-- The positive-degree truncation used to separate the modular inverse
 errors from the genuinely high-degree tail. -/
@@ -617,8 +595,7 @@ theorem wooleySection7TransformedLow_map_eq_monomial
             ((d : ℕ) + 1) : ℤ) : ZMod (p ^ L)) *
           X ^ ((d : ℕ) + 1) := by
       unfold wooleySection7TransformedLow
-      simp only [Polynomial.map_sum, Polynomial.map_mul, Polynomial.map_C,
-        Polynomial.map_pow, Polynomial.map_X]
+      pm_503 Polynomial.map_sum Polynomial.map_mul Polynomial.map_C Polynomial.map_pow Polynomial.map_X
       apply Finset.sum_congr rfl
       intro d hd
       rfl
@@ -633,11 +610,7 @@ theorem wooleySection7TransformedLow_map_eq_monomial
     _ = C ((p : ZMod (p ^ L)) ^
           ((a - gamma) * ((i : ℕ) + 1))) *
         X ^ ((i : ℕ) + 1) := by
-      rw [Finset.sum_eq_single i]
-      · simp
-      · intro d hd hdi
-        simp [Ne.symm hdi]
-      · simp
+      pm_6037
 
 /-- A polynomial vanishing after reduction modulo `p^L` is coefficientwise
 divisible by the corresponding integral prime power. -/
@@ -714,11 +687,10 @@ theorem wooleySection7_tail_exponent_eq
       (a - gamma) * ((i : ℕ) + 1) +
         (a - (k - r) * gamma) +
         (r - ((i : ℕ) + 1)) * (a - gamma) := by
-  have hi : (i : ℕ) + 1 ≤ r := i.isLt
+  pm_5223 hi i r i.isLt
   have hkr : k - r + r = k := Nat.sub_add_cancel hrk
   have hkgamma : (k - r) * gamma ≤ a := by
-    have : (k - r) * gamma ≤ k * gamma :=
-      Nat.mul_le_mul_right gamma (Nat.sub_le k r)
+    pm_6847 gamma
     exact this.trans (by simpa [Nat.mul_comm] using hgammaK)
   have hA : gamma + (a - gamma) = a := Nat.add_sub_of_le hgamma
   have hS : (k - r) * gamma + (a - (k - r) * gamma) = a :=

@@ -5,6 +5,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroQColumnBudget
 public import LaterPairs.Native.RobertSargosZeroQFloorBudgets
 public import LaterPairs.Native.RobertSargosZeroQWeighted
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -35,9 +36,7 @@ theorem robertSargos_zero_q_physical_a_times_a
     robertSargos_zero_q_floor_budgets M H hlam hsmall hM hH
   have hrow := robertSargos_zero_q_weighted_column_bound
     f M H ⌊lam^(-(1:ℝ)/13)⌋₊ hR hC hlam hsmall hM hH hRmax hf hlo hhi
-  have hm := mul_le_mul_of_nonneg_left hrow
-    (show 0 ≤ 8*(M:ℝ)*H/
-      ((⌊lam^(-(3:ℝ)/13)⌋₊:ℝ)*(⌊lam^(-(1:ℝ)/13)⌋₊:ℝ)) by positivity)
+  pm_319 hm
   exact hm.trans (zero_q_a_times_a_column_budget
     (Nat.cast_nonneg M) (by exact_mod_cast hQ) (by exact_mod_cast hR) hC hdiag herr hroot)
 

@@ -1,15 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAssembly
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
+open CanonicalRowCompletion CanonicalQuadraticSieve
 open CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly
 open CenteredMomentGaussEnergy RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
@@ -44,13 +45,9 @@ theorem first_divisor_pair {α β : Type*} (L : Ideal O)
     · simp only [hi,hj,and_self,ite_true,divisorCoefficient,star_mul,rayCharacter_inverse_star]
       rw [firstExtension_separated e r (a i) (b j) ρ (ha i) (hb j)]
       simp only [Finset.mul_sum,Finset.sum_mul,star_mul,rayCharacter_inverse_star]
-      apply Finset.sum_congr rfl
-      intro χ hχ
-      apply Finset.sum_congr rfl
-      intro ξ hξ
+      pm_3397 χ hχ ξ hξ
       ring
-    · simp only [hi,hj,and_false,ite_false,divisorCoefficient,ite_true,zero_mul,star_zero,
-        mul_zero,Finset.sum_const_zero]
+    pm_1279
   · simp only [hi,false_and,ite_false,divisorCoefficient,zero_mul,mul_zero,Finset.sum_const_zero]
 
 theorem finite_first_children {α β : Type*} (S : Finset α) (T : Finset β)
@@ -63,7 +60,7 @@ theorem finite_first_children {α β : Type*} (S : Finset α) (T : Finset β)
     (∑ i∈S,∑ j∈T,(if IsCoprime (a i) (b j) then originalPhase e r ρ (a i) (b j) else 0)*
       (c i*star (d j))*(gaussRow (a i) (ha i) h*star (gaussRow (b j) (hb j) (-h)))*K i j) =
     ∑ L∈divisorPool T (fun j => Ideal.span {b j}),
-      (UniqueFactorizationMonoid.moebius L:ℂ)*ρ e*
+      (UniqueFactorizationMonoid.moebius L:ℂ)*ρ e *
         ∑ χ : RayCharacter,∑ ξ : RayCharacter,
           pairCoeff firstPhaseTable χ ξ*∑ i∈S,∑ j∈T,
             ((divisorCoefficient L a (fun i => c i*leftCoefficient e r ρ (a i)) χ i*gaussRow (a i) (ha i) h)*
@@ -75,8 +72,7 @@ theorem finite_first_children {α β : Type*} (S : Finset α) (T : Finset β)
       if IsCoprime (Ideal.span {a i}) (Ideal.span {b j}) then
         firstExtension e r ρ (a i) (b j)*(c i*star (d j))*
           (gaussRow (a i) (ha i) h*star (gaussRow (b j) (hb j) (-h)))*K i j else 0 := by
-    rw [Ideal.isCoprime_span_singleton_iff]
-    by_cases hc : IsCoprime (a i) (b j)
+    pm_7690 hc
     · simp only [hc,ite_true,originalPhase_eq e r (a i) (b j) ρ hρ (ha i) (hb j) (hpa i) (hpb j) hc]
     · simp only [hc,ite_false,zero_mul]
   simp_rw [ht]

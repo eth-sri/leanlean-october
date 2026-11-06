@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.ThetaLocalRows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,25 +8,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic ShortDraftLatticeCount
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 
 open Filter Asymptotics
 
@@ -35,12 +30,11 @@ end TargetLocalReduction
 
 namespace ActualEisensteinCubic
 
-open AddChar MulChar
+open MulChar
 
 end ActualEisensteinCubic
 
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
 
 namespace ShortDraftHeckeBridge
 
@@ -68,25 +62,14 @@ theorem pair_inverse_euler_identity
     (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r)
     (s : ℂ) (hs : 1 < s.re) :
     χ.LFunction s * ψ.LFunction s * LSeries (pairInverseCoeff χ ψ) s = 1 := by
-  have hχsum : LSeriesSummable (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s := by
-    exact DirichletCharacter.LSeriesSummable_mul χ
-      (ArithmeticFunction.LSeriesSummable_moebius_iff.mpr hs)
-  have hψsum : LSeriesSummable (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s := by
-    exact DirichletCharacter.LSeriesSummable_mul ψ
-      (ArithmeticFunction.LSeriesSummable_moebius_iff.mpr hs)
+  pm_5570 hχsum χ
+  pm_5570 hψsum ψ
   rw [pairInverseCoeff, LSeries_convolution' hχsum hψsum,
     χ.LFunction_eq_LSeries hs, ψ.LFunction_eq_LSeries hs]
-  have hχ := DirichletCharacter.LSeries.mul_mu_eq_one χ hs
-  have hψ := DirichletCharacter.LSeries.mul_mu_eq_one ψ hs
-  change LSeries (χ ·) s * LSeries (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s = 1 at hχ
-  change LSeries (ψ ·) s * LSeries (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s = 1 at hψ
-  calc
-    LSeries (χ ·) s * LSeries (ψ ·) s *
-      (LSeries (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s *
-        LSeries (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s) =
-      (LSeries (χ ·) s * LSeries (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s) *
-      (LSeries (ψ ·) s * LSeries (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s) := by ring
-    _ = 1 := by rw [hχ, hψ]; ring
+  pm_194 hχ DirichletCharacter.LSeries.mul_mu_eq_one χ hs hψ ψ
+  pm_5571 χ hχ
+  pm_5571 ψ hψ
+  grind
 
 end ShortDraftHeckeBridge
 private theorem pairing_algebra
@@ -100,57 +83,36 @@ private theorem pairing_algebra
     (-g1) * star G * t⁻¹ = (alpha * star g2) * t⁻¹ ∧
     (-star gm) * star G * t⁻¹ = star eps * (alpha * star g2) * t⁻¹ := by
   have h2 : g2 = -(star g1) * alpha * G := by
-    calc
-      g2 = (g1 * star g1) * g2 := by rw [hg1]; ring
-      _ = star g1 * (g1 * g2) := by ring
-      _ = star g1 * (-alpha * G) := by rw [hprod]
-      _ = _ := by ring
+    grind
   have hA : star alpha * g2 = (-star g1) * G := by
     rw [h2]
-    calc
-      star alpha * (-(star g1) * alpha * G) =
-          (alpha * star alpha) * ((-star g1) * G) := by ring
-      _ = (-star g1) * G := by rw [halpha]; ring
+    grind
   have hm : gm = eps * star g1 := by
-    calc
-      gm = (g1 * star g1) * gm := by rw [hg1]; ring
-      _ = star g1 * (g1 * gm) := by ring
-      _ = eps * star g1 := by rw [hpair]; ring
+    grind
   have hB : (-gm) * G = eps * (star alpha * g2) := by
     rw [hm, hA]
     ring
   have hC : (-g1) * star G = alpha * star g2 := by
-    have h := congrArg (fun z : ℂ => star z) hA
+    pm_8264 hA
     simp only [star_mul, star_neg, star_star] at h
-    calc
-      (-g1) * star G = star G * (-g1) := by ring
-      _ = star g2 * alpha := h.symm
-      _ = alpha * star g2 := by ring
+    grind
   have hD : (-star gm) * star G = star eps * (alpha * star g2) := by
-    have h := congrArg (fun z : ℂ => star z) hB
-    simpa only [star_mul, star_neg, star_star, mul_comm, mul_left_comm, mul_assoc] using h
-  exact ⟨by rw [hA], by rw [hB], by rw [hC], by rw [hD]⟩
+    pm_8264 hB
+    pm_546 star_mul star_neg star_star mul_comm mul_left_comm mul_assoc h
+  grind
 
 namespace ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
 open scoped ComplexConjugate
 
-private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
-    (hprimary : lambda ^ 2 ∣ p - 1) :
+section
+variable (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0) (hprimary : lambda ^ 2 ∣ p - 1)
+include P hgood hchar p hP hp hprimary
+private theorem breveGamma1_mul_star_one :
     breveGamma1 P hgood p hP hp * star (breveGamma1 P hgood p hP hp) = 1 := by
-  subst P
-  let χ := canonicalSextic (Ideal.span {p}) hgood
-  let ψ := eisTraceModChar ShortDraftTrace.breveE
-    ConcreteBreveE.breveE_period_coordinates p hp
+  pm_3424
   let s : ℝ := ‖eisEmbedding p‖
-  have hψ : ψ.IsPrimitive :=
-    eisTraceModChar_breveE_primitive (Ideal.span {p}) p rfl hp
-  have hχ1 : χ ≠ 1 := by
-    simpa only [pow_one] using
-      (canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
-        (by decide : (1 : ℕ) ≠ 0) (by decide : (1 : ℕ) < 6))
+  pm_3422
   have hnormO := primary_generator_mul_conj_eq_card
     (Ideal.span {p}) hgood p rfl hprimary
   have hnormC := congrArg eisEmbedding hnormO
@@ -176,11 +138,7 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
   rw [← starRingEnd_apply, Complex.mul_conj', hnorm]
   norm_num
 
-theorem first_poisson_prime_sign_pairing
-    (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
-    (hprimary : lambda ^ 2 ∣ p - 1) (h : O) :
+theorem first_poisson_prime_sign_pairing (h : O) :
     let alpha : ℂ := eisEmbedding p / (‖eisEmbedding p‖ : ℂ)
     let g1 := breveGamma1 P hgood p hP hp
     let g2 := breveGamma2 P hgood p hP hp
@@ -223,10 +181,10 @@ theorem first_poisson_prime_sign_pairing
     (canonicalSextic P hgood (Ideal.Quotient.mk P (-1 : O)))
     (canonicalSextic P hgood (Ideal.Quotient.mk P h))
     ha hg1 hprod' hpair
+end
 
 end ActualEisensteinCubic
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 

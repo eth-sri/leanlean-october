@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.LargeValuesOptimization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,22 +11,25 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 
+section
+variable {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε)
+include κ ε hκ hε
 /-- The fixed packet target, with the epsilon constant chosen before every configuration. -/
-theorem large_values_data {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
+theorem large_values_data :
     ∃ C : ℝ, 0 < C ∧ ∀ d : LargeValueData κ,
       (d.W.card : ℝ) ≤ C*d.T^ε*((d.N : ℝ)^2/d.V^2+
         (d.N : ℝ)^3*Real.sqrt d.T/d.V^4) := by
-  obtain ⟨A, T₀, hA, hT₀, hlarge⟩ := large_values_with_divisors hκ
-  obtain ⟨D, hD, hdiv⟩ := divisorMaximum_subpower (show 0 < ε/2 by positivity)
+  pm_206 A T₀ hA hT₀ hlarge large_values_with_divisors hκ
+  pm_8654 hdiv divisorMaximum_subpower ε
   let C := A*D^2+T₀+1
   have hDp : 0 < D := by linarith
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_4312
   refine ⟨C, hC, ?_⟩
   intro d
-  have hT : 0 < d.T := by linarith [d.T_ge_two]
+  pm_4273
   have hT1 : 1 ≤ d.T := by linarith [d.T_ge_two]
   have hV := d.V_pos
-  have hpow1 : 1 ≤ d.T^ε := Real.one_le_rpow hT1 hε.le
+  pm_153 hpow1 d.T ε hT1 hε.le
   have hF : 0 ≤ (d.N : ℝ)^2/d.V^2+(d.N : ℝ)^3*Real.sqrt d.T/d.V^4 := by positivity
   by_cases hW : d.W.Nonempty
   · by_cases hbig : T₀ ≤ d.T
@@ -57,7 +61,7 @@ theorem large_values_data {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
       have hi := mul_le_mul_of_nonneg_right hcoef (mul_nonneg (Real.rpow_nonneg hT.le ε) hF)
       nlinarith
     · have hvn := d.height_le_length hW
-      have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
+      pm_4269
       have hF1 : 1 ≤ (d.N : ℝ)^2/d.V^2+(d.N : ℝ)^3*Real.sqrt d.T/d.V^4 := by
         have hh : (1 : ℝ) ≤ (d.N : ℝ)^2/d.V^2 := (le_div_iff₀ (by positivity)).2 (by nlinarith)
         have hi : 0 ≤ (d.N : ℝ)^3*Real.sqrt d.T/d.V^4 := by positivity
@@ -75,7 +79,7 @@ theorem large_values_data {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
     positivity
 
 /-- Draft Theorem 1.3 with all original hypotheses exposed and no cutoff or smallness premise. -/
-theorem large_values {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
+theorem large_values :
     ∃ C : ℝ, 0 < C ∧ ∀ (T V : ℝ) (N : ℕ) (a : ℕ → ℂ) (W : Finset ℝ),
       2 ≤ T → 0 < N → 0 < V → T^(1/3 : ℝ) ≤ (N : ℝ) → (N : ℝ) ≤ T →
       (N : ℝ)^(3/4+κ) ≤ V →
@@ -84,13 +88,13 @@ theorem large_values {κ ε : ℝ} (hκ : 0 < κ) (hε : 0 < ε) :
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∀ t ∈ W, V ≤ ‖detectingPolynomial N a t‖) →
       (W.card : ℝ) ≤ C*T^ε*((N : ℝ)^2/V^2+(N : ℝ)^3*Real.sqrt T/V^4) := by
-  obtain ⟨C, hC, hbound⟩ := large_values_data hκ hε
-  refine ⟨C, hC, ?_⟩
+  pm_4289 C hC hbound large_values_data hκ hε
   intro T V N a W hT hN hV hlow hhigh hheight ha hloc hsep hlarge
   obtain ⟨t₀, ht₀⟩ := hloc
   exact hbound
     { T := T, N := N, V := V, a := a, W := W, t₀ := t₀
       T_ge_two := hT, N_pos := hN, V_pos := hV, scale_lower := hlow, scale_upper := hhigh
       height := hheight, coefficients := ha, location := ht₀, separated := hsep, large := hlarge }
+end
 
 end MathCollab.Density

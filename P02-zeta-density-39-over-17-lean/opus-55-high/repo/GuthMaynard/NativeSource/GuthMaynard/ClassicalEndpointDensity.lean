@@ -2,12 +2,13 @@ module
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointSlab
 public import GuthMaynard.NativeSource.GuthMaynard.MediumTypeIEndpoint
 public import GuthMaynard.NativeSource.GuthMaynard.TypeIIFourthMomentReduction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Asymptotics Filter Topology
 open Complex Finset MeasureTheory Real Set
-open scoped BigOperators ContDiff FourierTransform SchwartzMap
+open scoped ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
 
@@ -36,7 +37,7 @@ theorem classicalMHHExponent_le_endpoint_of_short_gap
     (hcert : EndpointScaleCertificate σ τ₀)
     (hτ₀ : τ₀ < τ) (hτ : τ ≤ 11 / 10) :
     classicalMHHExponent σ τ ≤ (3 * (1 - σ) / τ₀) * τ := by
-  have hOneSigma : 0 < 1 - σ := by linarith
+  pm_7900 hOneSigma σ
   have hτ₀Upper : τ₀ < 11 / 10 := hτ₀.trans_le hτ
   have hTarget : (5 / 2) * (1 - σ) ≤
       (3 * (1 - σ) / τ₀) * τ := by
@@ -47,18 +48,13 @@ theorem classicalMHHExponent_le_endpoint_of_short_gap
           have hnonneg : 0 ≤ (1 - σ) * τ₀ :=
             mul_nonneg hOneSigma.le hcert.tau0_pos.le
           nlinarith
-        _ < 3 * (1 - σ) * τ := by
-          exact mul_lt_mul_of_pos_left hτ₀ (by positivity)).le
+        _ < 3 * (1 - σ) * τ := by simp_all).le
   have hCore : classicalMHHExponent σ τ ≤ (5 / 2) * (1 - σ) := by
     rw [classicalMHHExponent, max_le_iff]
     constructor
     · nlinarith
-    · by_cases hGap : 1 / 5 ≤ 1 - σ
-      · exact (min_le_left _ _).trans (by linarith)
-      · exact (min_le_right _ _).trans (by
-          have hGap' : 1 - σ < 1 / 5 := lt_of_not_ge hGap
-          linarith)
-  exact hCore.trans hTarget
+    grind
+  grind
 
 /-- Power form of the preceding short-gap exponent comparison at the actual
 finite Type-I length. -/
@@ -73,13 +69,12 @@ theorem rpow_classicalMHHExponent_le_endpoint_of_short_gap
       T ^ (3 * (1 - σ) / τ₀) := by
   let tau := typeILogarithmicScale T Q
   have hExp := classicalMHHExponent_le_endpoint_of_short_gap
-    hσUpper hcert (by simpa only [tau] using hτ₀)
-      (by simpa only [tau] using hτ)
-  have hQOne : (1 : ℝ) ≤ Q := by exact_mod_cast hQ.le
+    hσUpper hcert (by aesop)
+      (by grind)
+  pm_4739
   calc
     (Q : ℝ) ^ classicalMHHExponent σ tau ≤
-        (Q : ℝ) ^ ((3 * (1 - σ) / τ₀) * tau) := by
-      exact Real.rpow_le_rpow_of_exponent_le hQOne hExp
+        (Q : ℝ) ^ ((3 * (1 - σ) / τ₀) * tau) := by aesop
     _ = ((Q : ℝ) ^ tau) ^ (3 * (1 - σ) / τ₀) := by
       rw [mul_comm, Real.rpow_mul (by positivity)]
     _ = T ^ (3 * (1 - σ) / τ₀) := by
@@ -116,23 +111,17 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
           typeILogarithmicScale T (2 ^ r * Y) ≤ 11 / 10 →
           (zeroCountRect σ 1 T (2 * T) : ℝ) ≤
             C * T ^ ε * T ^ (3 * (1 - σ) / τ₀) := by
-  intro ε hε
-  have hσ : 0 < σ := by linarith
+  pm_4766
   let εs : ℝ := ε / 100
-  have hεs : 0 < εs := by dsimp only [εs]; positivity
+  pm_4775
   let d := classicalEndpointLossParameter σ τ₀ εs
-  have hdSpec := classicalEndpointLossParameter_spec hσLower hσUpper hcert.tau0_pos hεs
-  dsimp only at hdSpec
-  rcases hdSpec with ⟨hd, hdEps, hdEpsTau, _hdReflected, _hdHalfGap, _hdUpperGap, _hdSigma,
-    hdSmall, _hdHalf, hdOne, _hdSigmaStrict⟩
-  let s : ℝ := d ^ 2
-  let u : ℝ := d ^ 4
-  have hs : 0 < s := by dsimp only [s]; positivity
-  have hu : 0 < u := by dsimp only [u]; positivity
+  pm_4777
+  pm_4771 hdEps hdEpsTau _hdHalfGap hdSmall hdOne _hdSigmaStrict
+  pm_4764
+  pm_4760
+  pm_4762
   have huLeD : u ≤ d := by
-    dsimp only [u]
-    have hdSq : d ^ 2 ≤ d := by
-      nlinarith [mul_nonneg hd.le (sub_nonneg.mpr hdOne)]
+    pm_5799 hdSq
     have hdFourth : (d ^ 2) ^ 2 ≤ d ^ 2 := by
       nlinarith [mul_nonneg (sq_nonneg d) (sub_nonneg.mpr hdSq)]
     calc
@@ -151,86 +140,41 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
     eventually_endpoint_loss_bundle_le typeIDirectPowerLossConstant K d u τ₀ ε 1
       typeIDirectPowerLossConstant_pos.le hK.le hd hu hcert.tau0_pos hε
       (by omega) hdEpsFull huEpsTau
-  obtain ⟨Tscale, hTscale, hScale⟩ := eventually_typeI_logarithmic_scale_upper s hs
-  have hdOneStrict : d < 1 := by
-    have hDen : 0 < 1000 * (1 + τ₀) := by nlinarith [hcert.tau0_pos]
-    have hSmallStrict : 1 / (1000 * (1 + τ₀)) < 1 := by
-      rw [div_lt_one hDen]
-      nlinarith [hcert.tau0_pos]
-    exact hdSmall.trans_lt hSmallStrict
-  obtain ⟨Thalf, hThalf, hHalf⟩ := eventually_rpow_le_half_self d hdOneStrict
+  pm_4770
+  pm_4759
   let T₀ := max Tloss (max Tscale Thalf)
-  refine ⟨Closs, hCloss, T₀, hTloss.trans (le_max_left _ _), ?_⟩
-  intro T hT
-  dsimp only
+  pm_4769
   intro r hr W hSep hLarge hRange hCount hTau0 hTauUpper
-  have hTLoss : Tloss ≤ T := (le_max_left _ _).trans hT
-  have hRest : max Tscale Thalf ≤ T := (le_max_right _ _).trans hT
-  have hTScale : Tscale ≤ T := (le_max_left _ _).trans hRest
-  have hTHalf : Thalf ≤ T := (le_max_right _ _).trans hRest
-  have hTEight : 8 ≤ T := hTloss.trans hTLoss
-  have hTPos : 0 < T := by linarith
-  have hDisp : T ^ d ≤ T / 2 := hHalf T hTHalf
-  let Y := ⌊T ^ s⌋₊
-  let A := ⌊sharpZetaCutoff T⌋₊
+  pm_4763
+  pm_6523
   let N := 2 ^ r * Y
   have hNOne : 1 < N := by
     have hscaleAt := hScale T r hTScale
     simpa only [Y, N] using hscaleAt.1
-  have hN : 0 < N := lt_trans Nat.zero_lt_one hNOne
-  by_cases hW : W.Nonempty
+  pm_896
   · obtain ⟨t, ht⟩ := hW
     let L : ℝ := ((3 / 4) * (T ^ (-u) / 2)) / Nat.clog 2 A
     have hAOne : 1 < A := by
       dsimp only [A]
-      apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
-      apply Nat.le_floor
-      exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
-        (four_mul_lt_sharpZetaCutoff T).le
+      pm_4735
     have hNC : N < A := by
-      have hLPos : 0 < L := by
-        dsimp only [L]
-        have hClog : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hAOne
-        positivity
+      pm_4765
       exact typeI_start_lt_cutoff_of_positive_large_value A N σ t L hLPos
         (by simpa only [L, N, Y, A, u, s] using hLarge t ht)
-    have hBase : (1 : ℝ) < N := by exact_mod_cast hNOne
+    pm_4728 hBase N hNOne
     have hTauTwo : typeILogarithmicScale T N ≤ 2 :=
       hTauUpper.trans (by norm_num)
     have hTN : T ≤ (N : ℝ) ^ (2 : ℕ) := by
-      simpa only [Real.rpow_two] using
-        (Real.logb_le_iff_le_rpow hBase hTPos).mp hTauTwo
-    let P : ℝ := 1 + classicalTypeIIPowerLoss
-      typeIDirectPowerLossConstant u T 1 N
-    have hP : 1 ≤ P := by
-      dsimp only [P, classicalTypeIIPowerLoss]
-      apply le_add_of_nonneg_right
-      have hLog : 0 ≤ Real.log T := Real.log_nonneg (by linarith)
-      exact mul_nonneg
-        (mul_nonneg
-          (mul_nonneg typeIDirectPowerLossConstant_pos.le
-            (Real.rpow_nonneg (by positivity) _)) (by norm_num))
-        (by simpa using mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) hLog)
-    have hPDirect := typeIDirectThresholdLoss_le_classicalTypeIIPowerLoss
-      (A := A) (N := N) (d := u) hTEight hu.le hNOne
-        (by dsimp only [A]; exact le_rfl) hTN
-    have hPDirectPos : 0 < typeIDirectThresholdLoss T A u := by
-      unfold typeIDirectThresholdLoss
-      positivity
-    have hThresholdDirect := typeI_direct_normalized_threshold_lower
-      (d := u) (N := N) (σ := σ) hTPos hAOne
+      pm_8595 hTPos
+    pm_4761
     have hThreshold : (N : ℝ) ^ σ / P ≤ (N : ℝ) ^ σ * L := by
       calc
         (N : ℝ) ^ σ / P ≤
             (N : ℝ) ^ σ / typeIDirectThresholdLoss T A u := by
-          exact div_le_div_of_nonneg_left (Real.rpow_nonneg (by positivity) _)
-            hPDirectPos (by simpa only [P] using hPDirect)
+          pm_5707
         _ ≤ (N : ℝ) ^ σ * L := by
           simpa only [L, u] using hThresholdDirect
-    have hLPos : 0 < L := by
-      dsimp only [L]
-      have hClog : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hAOne
-      positivity
+    pm_4765
     have hMHHAt := hMHH A N σ d T L W hσ.le hN (by linarith)
       hLPos hDisp hSep (by simpa only [L, N, Y, A, u, s] using hRange)
       (by simpa only [L, N, Y, A, u, s] using hLarge)
@@ -248,8 +192,7 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
         have hLower : 2 * τ₀ / 3 < typeILogarithmicScale T N := by
           nlinarith [hcert.tau0_pos, hTau0]
         exact hLower.le)
-    have hTargetNonneg : 0 ≤ T ^ (3 * (1 - σ) / τ₀) :=
-      Real.rpow_nonneg hTPos.le _
+    pm_4767
     have hEndpoint' :
         (zeroCountRect σ 1 T (2 * T) : ℝ) ≤
           ((4 * Nat.clog 2 ⌊sharpZetaCutoff T⌋₊ *
@@ -262,7 +205,7 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
             ((2 * ⌈T ^ d⌉₊ + 1) * classicalLocalMultiplicityCap T) : ℕ) : ℝ) *
             1 * (K * (1 + (((harmonic N : ℚ) : ℝ)))) *
               (6 * P ^ (6 : ℕ)) ≤ Closs * T ^ ε := by
-      simpa only [d, u, P, Nat.cast_one] using hLossAt
+      pm_99 d u P Nat.cast_one hLossAt
     calc
       (zeroCountRect σ 1 T (2 * T) : ℝ) ≤ _ := hEndpoint'
       _ = (((4 * Nat.clog 2 ⌊sharpZetaCutoff T⌋₊ *
@@ -273,14 +216,7 @@ theorem actual_typeI_short_gap_dichotomy_witness_consumer
         mul_le_mul_of_nonneg_right hLossAt' hTargetNonneg
   · have hWCard : W.card = 0 := Finset.card_eq_zero.mpr
       (Finset.not_nonempty_iff_eq_empty.mp hW)
-    have hZero : zeroCountRect σ 1 T (2 * T) = 0 := by
-      rw [hWCard, mul_zero] at hCount
-      omega
-    rw [hZero]
-    norm_num
-    exact mul_nonneg
-      (mul_nonneg hCloss.le (Real.rpow_nonneg hTPos.le _))
-      (Real.rpow_nonneg hTPos.le _)
+    pm_4768
 
 /-- Assembly of the real detector dichotomy once the narrower medium
 reflection consumer is available.  The proof invokes the detector itself,
@@ -295,23 +231,21 @@ theorem classical_endpoint_positive_slab_of_medium_native
     ClassicalEndpointPositiveSlabDensity σ τ₀ := by
   intro ε hε
   let εs : ℝ := ε / 100
-  have hεs : 0 < εs := by dsimp only [εs]; positivity
+  pm_4775
   let d := classicalEndpointLossParameter σ τ₀ εs
-  have hdSpec := classicalEndpointLossParameter_spec hσLower hσUpper hcert.tau0_pos hεs
-  dsimp only at hdSpec
-  rcases hdSpec with ⟨hd, _hdEps, _hdEpsTau, _hdReflected, _hdGap, _hdUpperGap, _hdSigma,
-    _hdSmall, _hdHalf, hdOne, hdSigmaStrict⟩
+  pm_4777
+  pm_4771 _hdEps _hdEpsTau _hdGap _hdSmall hdOne hdSigmaStrict
   have hdTwo : 0 < d ^ 2 := by dsimp only [d]; positivity
   have hdFour : 0 < d ^ 4 := by dsimp only [d]; positivity
   have hdSqOne : d ^ 2 ≤ 1 := by
-    have hdLeOne : d ≤ 1 := by simpa only [d] using hdOne
+    pm_7014
     nlinarith [sq_nonneg d]
   have hOrder : d ^ 4 / 2 ≤ d ^ 2 := by
-    have hdSqNonneg : 0 ≤ d ^ 2 := sq_nonneg d
+    pm_4913 hdSqNonneg d
     have hdFourthLe : d ^ 4 ≤ d ^ 2 := by nlinarith [sq_nonneg (d ^ 2)]
     linarith
   have hdFourSigma : d ^ 4 < σ := by
-    have hdLeOne : d ≤ 1 := by simpa only [d] using hdOne
+    pm_7014
     have hdFourthLe : d ^ 4 ≤ d := by nlinarith
     exact hdFourthLe.trans_lt (by simpa only [d] using hdSigmaStrict)
   obtain ⟨Tdich, hTdich, hDich⟩ := classical_typeI_typeII_dichotomy_native
@@ -329,8 +263,7 @@ theorem classical_endpoint_positive_slab_of_medium_native
   obtain ⟨Cs, hCs, Ts, hTs, hShort⟩ :=
     actual_typeI_short_gap_dichotomy_witness_consumer
       hσLower hσUpper hcert ε hε
-  obtain ⟨Cm, hCm, Tm, hTm, hMediumAt⟩ :=
-    hMedium hσLower hσUpper hcert ε hε
+  pm_5305 Cm hCm Tm hTm hMediumAt hMedium hσLower
   obtain ⟨Ci, hCi, Ti, hTi, hTypeII⟩ :=
     actual_typeII_dichotomy_witness_consumer
       hσLower hσUpper hcert εs hεs
@@ -339,32 +272,28 @@ theorem classical_endpoint_positive_slab_of_medium_native
     (max Tdich (max Tb (max Tp (max Tl (max Ts (max Tm Ti))))))
   apply IsBigO.of_bound C
   filter_upwards [eventually_ge_atTop T₀] with T hT
-  have hT8 : 8 ≤ T := (le_max_left _ _).trans hT
-  have hTPos : 0 < T := by linarith
-  have hTOne : 1 ≤ T := by linarith
+  pm_5456 hT8 le_max_left hT
+  pm_4185
   have hRest : max Tdich (max Tb (max Tp (max Tl (max Ts (max Tm Ti))))) ≤ T :=
     (le_max_right _ _).trans hT
-  have hTDich : Tdich ≤ T := (le_max_left _ _).trans hRest
+  pm_4630 hTDich Tdich le_max_left hRest
   have hRest₁ : max Tb (max Tp (max Tl (max Ts (max Tm Ti)))) ≤ T :=
     (le_max_right _ _).trans hRest
-  have hTB : Tb ≤ T := (le_max_left _ _).trans hRest₁
-  have hRest₂ : max Tp (max Tl (max Ts (max Tm Ti))) ≤ T :=
-    (le_max_right _ _).trans hRest₁
-  have hTP : Tp ≤ T := (le_max_left _ _).trans hRest₂
-  have hRest₃ : max Tl (max Ts (max Tm Ti)) ≤ T :=
-    (le_max_right _ _).trans hRest₂
-  have hTL : Tl ≤ T := (le_max_left _ _).trans hRest₃
-  have hRest₄ : max Ts (max Tm Ti) ≤ T := (le_max_right _ _).trans hRest₃
-  have hTS : Ts ≤ T := (le_max_left _ _).trans hRest₄
-  have hRest₅ : max Tm Ti ≤ T := (le_max_right _ _).trans hRest₄
-  have hTM : Tm ≤ T := (le_max_left _ _).trans hRest₅
-  have hTI : Ti ≤ T := (le_max_right _ _).trans hRest₅
+  pm_4630 hTB Tb le_max_left hRest₁
+  pm_5711 hRest₂ Tp Tl Ts Tm Ti hRest₁
+  pm_4630 hTP Tp le_max_left hRest₂
+  pm_838 hRest₃ Tl Ts Tm Ti hRest₂
+  pm_4630 hTL Tl le_max_left hRest₃
+  pm_5098 hRest₄ Ts Tm Ti hRest₃
+  pm_4630 hTS Ts le_max_left hRest₄
+  pm_4639 hRest₅ Tm Ti hRest₄
+  pm_4630 hTM Tm le_max_left hRest₅
+  pm_4630 hTI Ti le_max_right hRest₅
   have hEpsMono : T ^ εs ≤ T ^ ε := by
     apply Real.rpow_le_rpow_of_exponent_le hTOne
     dsimp only [εs]
     linarith
-  have hTargetNonneg : 0 ≤ T ^ (3 * (1 - σ) / τ₀) :=
-    Real.rpow_nonneg hTPos.le _
+  pm_4767
   have hCbC : Cb ≤ C := le_max_left _ _
   have hCpC : Cp ≤ C := le_max_of_le_right (le_max_left _ _)
   have hClC : Cl ≤ C :=
@@ -372,12 +301,8 @@ theorem classical_endpoint_positive_slab_of_medium_native
   have hCsC : Cs ≤ C :=
     le_max_of_le_right (le_max_of_le_right
       (le_max_of_le_right (le_max_left _ _)))
-  have hCmC : Cm ≤ C :=
-    le_max_of_le_right (le_max_of_le_right
-      (le_max_of_le_right (le_max_of_le_right (le_max_left _ _))))
-  have hCiC : Ci ≤ C :=
-    le_max_of_le_right (le_max_of_le_right
-      (le_max_of_le_right (le_max_of_le_right (le_max_right _ _))))
+  pm_8185 hCmC Cm le_max_left
+  pm_8185 hCiC Ci le_max_right
   have hCnonneg : 0 ≤ C := hCb.le.trans hCbC
   have hPowerTargetNonneg :
       0 ≤ T ^ ε * T ^ (3 * (1 - σ) / τ₀) :=
@@ -408,18 +333,12 @@ theorem classical_endpoint_positive_slab_of_medium_native
     simpa only [norm_zero] using mul_nonneg hCnonneg
       (norm_nonneg (T ^ ε * |T ^ (3 * (1 - σ) / τ₀)|))
   · rcases hTypeI with ⟨r, hr, W, hSep, hLarge, hLong, hRange, hCount⟩
-    let Y := ⌊T ^ (d ^ 2)⌋₊
-    let A := ⌊sharpZetaCutoff T⌋₊
+    pm_5708
     let τ := typeILogarithmicScale T (2 ^ r * Y)
     have hBound : (zeroCountRect σ 1 T (2 * T) : ℝ) ≤
         C * T ^ ε * T ^ (3 * (1 - σ) / τ₀) := by
       by_cases hLowScale : τ < 2 * τ₀ / 3
-      · have h := hLow T hTL r (by simpa only [A] using hr) W hSep
-            (by simpa only [d, Y, A] using hLarge)
-            (by simpa only [d] using hRange)
-            (by simpa only [d, A] using hCount)
-            (by simpa only [τ, Y] using hLowScale)
-        exact hLiftConstant hClC h
+      pm_4722 hLow hTL hLowScale hClC
       · have hTauLower : 2 * τ₀ / 3 ≤ τ := le_of_not_gt hLowScale
         by_cases hBasicScale : τ ≤ τ₀
         · have h := hBasic T hTB r (by simpa only [A] using hr) W hSep
@@ -431,12 +350,7 @@ theorem classical_endpoint_positive_slab_of_medium_native
           exact hLiftConstant hCbC (hLiftSmall hCb.le h)
         · have hTau0 : τ₀ < τ := lt_of_not_ge hBasicScale
           by_cases hRaised : 4 * τ₀ / 3 ≤ τ
-          · have h := hPowered T hTP r (by simpa only [A] using hr) W hSep
-                (by simpa only [d, Y, A] using hLarge)
-                (by simpa only [d] using hRange)
-                (by simpa only [d, A] using hCount)
-                (by simpa only [τ, Y] using hRaised)
-            exact hLiftConstant hCpC h
+          pm_4722 hPowered hTP hRaised hCpC
           · have hGapUpper : τ < 4 * τ₀ / 3 := lt_of_not_ge hRaised
             by_cases hShortScale : τ ≤ 11 / 10
             · have h := hShort T hTS r (by simpa only [A] using hr) W hSep
@@ -455,11 +369,7 @@ theorem classical_endpoint_positive_slab_of_medium_native
                 (by simpa only [τ, Y] using lt_of_not_ge hShortScale)
                 (by simpa only [τ, Y] using hGapUpper)
               exact hLiftConstant hCmC h
-    have hCountNonneg : (0 : ℝ) ≤
-        (zeroCountRect σ 1 T (2 * T) : ℝ) := Nat.cast_nonneg _
-    simp only [Real.norm_eq_abs, abs_abs]
-    rw [abs_of_nonneg hCountNonneg, abs_of_nonneg hTargetNonneg,
-      abs_of_nonneg hPowerTargetNonneg]
+    pm_4721
     simpa only [mul_assoc] using hBound
   · have hTypeIIAlt' :
         let X := ⌊T ^ (d ^ 4 / 2)⌋₊
@@ -475,7 +385,7 @@ theorem classical_endpoint_positive_slab_of_medium_native
               ((2 * ⌈T ^ d⌉₊ + 1) * classicalLocalMultiplicityCap T) *
                 W.card) := by
       dsimp only
-      rcases hTypeIIAlt with ⟨r, hr, W, hSep, hLarge, hRange, hCount⟩
+      pm_7153 hTypeIIAlt
       refine ⟨r, hr, W, hSep, ?_, hRange, hCount⟩
       intro t ht
       simpa only [show (3 / 4 : ℝ) * (3 / 4) = 9 / 16 by norm_num] using
@@ -483,11 +393,7 @@ theorem classical_endpoint_positive_slab_of_medium_native
     have h := hTypeII T hTI (by
         simpa only [d] using hTypeIIAlt')
     have h' := hLiftSmall hCi.le h
-    have hCountNonneg : (0 : ℝ) ≤
-        (zeroCountRect σ 1 T (2 * T) : ℝ) := Nat.cast_nonneg _
-    simp only [Real.norm_eq_abs, abs_abs]
-    rw [abs_of_nonneg hCountNonneg, abs_of_nonneg hTargetNonneg,
-      abs_of_nonneg hPowerTargetNonneg]
+    pm_4721
     simpa only [mul_assoc] using hLiftConstant hCiC h'
 
 /-- Native classical endpoint density on the positive slab.  The proof term

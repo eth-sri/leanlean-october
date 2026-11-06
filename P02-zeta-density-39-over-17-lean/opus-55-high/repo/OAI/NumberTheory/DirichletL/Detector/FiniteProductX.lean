@@ -1,16 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.FiniteProductBounds
 public import OAI.NumberTheory.DirichletL.Hecke.Reciprocal
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
-open Complex Set MeasureTheory
+open scoped Classical Topology
+open Complex MeasureTheory
 namespace SevenEighths.ProbeFiniteProductX
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
+open CompletedGauss ProbePhysical ProbeEuler ProbeLocal
 open HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
@@ -25,9 +26,7 @@ lemma marked_differentiableAt_x (η : Character) (P : PrimeIdeal) (x w z : ℂ)
     (actualAPhase η (primaryGenerator P.val)) z
   have hd' := coordD_differentiable (Ideal.absNorm P.val) hQ0 (idealCoeff η P.val) 1
   have hk := coordK_differentiable (Ideal.absNorm P.val) hQ0 (idealCoeff η P.val) w
-  unfold idealMarkedClosed markedFactor
-  dsimp only
-  fun_prop (disch := aesop)
+  pm_5627
 
 theorem local_analytic_x (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (P : PrimeIdeal) (hP : P.val ∉ S) (w z : ℂ)
@@ -39,31 +38,24 @@ theorem local_analytic_x (η : Character) (S : Finset Id) (hS : CorrectionTail S
   have hc := unramifiedClosed_analytic_x (Ideal.absNorm P.val)
     (actualAPhase η (primaryGenerator P.val)) (idealCoeff η P.val) 1 w z hQ
     (actualAPhase_norm_le_one η _) (idealCoeff_norm_le_one η _) (by simp) hz
-  apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
-  intro x hx
+  pm_5048 x hx
   have hd := open_region_denominators (Ideal.absNorm P.val)
     (actualAPhase η (primaryGenerator P.val)) (idealCoeff η P.val) 1 x z hQ
     (actualAPhase_norm_le_one η _) (idealCoeff_norm_le_one η _) (by simp) hx.le hz
-  have hm := marked_differentiableAt_x η P x w z hQ hx.le hz
+  pm_528 hm marked_differentiableAt_x η P x w z hQ hx.le hz
   have hcc : DifferentiableAt ℂ (fun x => idealClosedCorrection η P x w z) x :=
     (hc x hx).differentiableAt
   have hh := correction_ne_zero η S hS P hP x w z hx.le hw hz
   have hd' := coordD_differentiable (Ideal.absNorm P.val) hQ0 (idealCoeff η P.val) 1
-  apply DifferentiableAt.differentiableWithinAt
-  unfold localMultiplier compensatedReplacement
-  dsimp only
-  fun_prop (disch := first | assumption | exact hd.2.2 | exact Or.inl hn)
+  pm_3874
 
 theorem slot_analytic_x {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
     (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (w z : ℂ)
     (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
     AnalyticOnNhd ℂ (fun x => slotMultiplier η J T b x w z) {x : ℂ | 7/8 < x.re} := by
-  apply J.analyticOnNhd_fun_prod
-  intro j hj
-  apply (T j).analyticOnNhd_fun_sum
-  intro P hp
-  exact analyticOnNhd_const.mul (local_analytic_x η S hS P (hT j hj P hp) w z hw hz)
+  pm_893
+  pm_7025 local_analytic_x w z hw hz
 
 def continuedSourceMultiplier {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -74,16 +66,18 @@ def continuedSourceMultiplier {ι : Type*} (η : Character) (S : Finset Id)
       HeckeReciprocal.reciprocal (η.excludePrimes S hS) x *
       globalClosedCorrection η S x w z * slotMultiplier η J T b x w z
 
-theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id)
+include ι η S
+theorem continued_source_analytic_x
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ)
     (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
     AnalyticOnNhd ℂ (fun x => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z x w z)
       {x : ℂ | max (7/8 : ℝ) HeckeZeroSupremum.beta < x.re} := by
-  have hn : (Z:ℂ) ≠ 0 := by exact_mod_cast hZ.ne'
-  apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
-  intro x hx
+  pm_356 hn Z hZ.ne'
+  pm_5048 x hx
   have hx' : (7/8 : ℝ)<x.re := lt_of_le_of_lt (le_max_left _ _) hx
   have hβ : HeckeZeroSupremum.beta<x.re := lt_of_le_of_lt (le_max_right _ _) hx
   have hH := (globalClosedCorrection_analytic_x η S hS.tail w z hw hz x hx').differentiableAt
@@ -91,9 +85,9 @@ theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id
   have hR := HeckeReciprocal.reciprocal_differentiableAt (η.excludePrimes S hS.prime) hβ
   apply DifferentiableAt.differentiableWithinAt
   unfold continuedSourceMultiplier
-  fun_prop (disch := first | assumption | exact Or.inl hn)
+  pm_533 hn
 
-theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
+theorem continued_source_eq_raw
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ)
     (hx0 : x≠0) (hx1 : x≠1) :
@@ -103,17 +97,18 @@ theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
   simp only [continuedSourceMultiplier,sourceMultiplier,
     HeckeReciprocal.reciprocal_eq_inv _ hx0 hx1,div_eq_mul_inv]
 
-theorem continued_source_differentiable_strip {ι : Type*} (η : Character) (S : Finset Id)
+theorem continued_source_differentiable_strip
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ)
     (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) {a c : ℝ}
     (ha : 7/8<a) (hβ : HeckeZeroSupremum.beta<a) :
     DifferentiableOn ℂ (fun x => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z x w z)
-      {x : ℂ | a≤x.re ∧ x.re≤c} := by
+      {x : ℂ | a≤x.re ∧ x.re≤ c} := by
   apply (continued_source_analytic_x η S hS J T b hT W0 W1 X Y Z hZ w z hw hz).differentiableOn.mono
   intro x hx
   exact lt_of_lt_of_le (max_lt ha hβ) hx.1
+end
 
 end SevenEighths.ProbeFiniteProductX
 end

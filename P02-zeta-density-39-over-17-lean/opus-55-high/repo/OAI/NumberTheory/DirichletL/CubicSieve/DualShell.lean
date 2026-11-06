@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.DualCoefficients
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,7 +40,7 @@ theorem cubic_dual_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
           C * (elementSieveNorm K N *
             (IdealCoprimeSieveOperator.supportConstant ε hε * N ^ ε) *
               ((2 / N) * ∑ j, ‖a j‖ ^ 2)) := by
-  obtain ⟨C, hC, hb⟩ := cubic_frequency_shell_bound W A
+  pm_98 C hC hb cubic_frequency_shell_bound W A
   refine ⟨C, hC, ?_⟩
   intro m n _ _ _ _ ε hε M K N hM hK hN rows cols hr hc hrows hcols a
   have he := cubicDualCoefficient_energy cols (fun j => (hcols j).1) a N hN

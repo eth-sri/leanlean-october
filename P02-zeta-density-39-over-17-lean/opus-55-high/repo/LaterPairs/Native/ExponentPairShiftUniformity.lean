@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairShiftModel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -64,10 +65,10 @@ theorem aProcessShiftPhase_uniform_model {σ : ℝ}
   have hB : 0 < B := zero_lt_one.trans_le (aProcessShiftJetBudget_ge_one σ P)
   let δ := σ*ε/2
   let η₀ := min (1/2 : ℝ) (ε/(2*B))
-  have hd : 0 < δ := by dsimp [δ]; positivity
+  pm_64 hd δ
   have he : 0 < η₀ := by dsimp [η₀]; exact lt_min (by norm_num) (by positivity)
   have hehalf : η₀ ≤ (1/2 : ℝ) := min_le_left _ _
-  refine ⟨δ,η₀,hd,he,hehalf,?_⟩
+  pm_164 δ η₀ hd he hehalf
   intro F η hF hη hη₀
   have hη₁ : η < 1 := by linarith
   apply approximateModelPhase_of_interior_bounds

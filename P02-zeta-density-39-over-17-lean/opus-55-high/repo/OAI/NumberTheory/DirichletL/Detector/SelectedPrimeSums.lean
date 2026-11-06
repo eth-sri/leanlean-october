@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedActual
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeSelectedPrimeSums
 local notation "O" => ActualEisensteinCubic.O
 
@@ -29,9 +30,8 @@ lemma finite_ideal_count (S : Finset (Ideal O)) (H : ℝ) (hH : 0≤H)
 lemma ramified_card_bound (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ, 0<C ∧ ∀ (U : Ideal O), U≠0 → ∀S : Finset (Ideal O),
       ((S.filter (fun P=>P∣U)).card:ℝ)≤C*(Ideal.absNorm U:ℝ)^eps := by
-  obtain ⟨C,hC,hb⟩ := IdealDivisorBound.ideal_divisor_small_power eps heps
-  refine ⟨C,hC,?_⟩
-  intro U hU S
+  pm_69 C hC hb IdealDivisorBound.ideal_divisor_small_power eps heps
+  pm_3532 C hC U hU S
   apply (show ((S.filter (fun P=>P∣U)).card:ℝ)≤(IdealMobiusDivisorSum.idealDivisors U).card from ?_).trans (hb U hU)
   exact_mod_cast Finset.card_le_card (show S.filter (fun P=>P∣U)⊆IdealMobiusDivisorSum.idealDivisors U from by
     intro P hP
@@ -45,7 +45,7 @@ lemma annularPower_nonneg (a b r : ℝ) (ha : 0<a) : 0≤annularPower a b r :=
 lemma annular_rpow (a b P q r : ℝ) (ha : 0<a) (hb : 0<b) (hP : 0<P)
     (hqa : a*P≤q) (hqb : q≤b*P) : q^r≤annularPower a b r*P^r := by
   have hq : 0<q := (mul_pos ha hP).trans_le hqa
-  by_cases hr : 0≤r
+  by_cases hr : 0≤ r
   · calc
       q^r≤(b*P)^r := Real.rpow_le_rpow hq.le hqb hr
       _=b^r*P^r := Real.mul_rpow hb.le hP.le
@@ -62,24 +62,20 @@ theorem annular_slot_majorant (eps a b r d : ℝ) (heps : 0<eps)
       (∀I∈S,a*P≤(Ideal.absNorm I:ℝ) ∧ (Ideal.absNorm I:ℝ)≤b*P) →
       (∑I∈S,(Ideal.absNorm I:ℝ)^(r-1)*(if I∣U then (Ideal.absNorm I:ℝ)^d else 1))
         ≤C*(Ideal.absNorm U:ℝ)^eps*P^r := by
-  obtain ⟨D,hD,hdiv⟩ := ramified_card_bound eps heps
+  pm_69 D hD hdiv ramified_card_bound eps heps
   let A := annularPower a b (r-1)
   let B := annularPower a b (r-1+d)
   have hA : 0≤A := annularPower_nonneg a b _ ha
   have hB : 0≤B := annularPower_nonneg a b _ ha
-  refine ⟨1+128*b*A+D*B,by positivity,?_⟩
+  refine ⟨1+128*b*A+D *B,by positivity,?_⟩
   intro U hU P hP S hS hSP
   have hP0 : 0<P := by linarith
-  have hU1 : (1:ℝ)≤Ideal.absNorm U := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hU)
+  pm_5466 hU1 U hU
   have hUpow : 1≤(Ideal.absNorm U:ℝ)^eps := Real.one_le_rpow hU1 heps.le
   have hq (I : Ideal O) (hI : I∈S) : 0<(Ideal.absNorm I:ℝ) :=
     (mul_pos ha hP0).trans_le (hSP I hI).1
   have hc := finite_ideal_count S (b*P) (by positivity) hS (fun I hI=>(hSP I hI).2)
-  have heP : P*P^(r-1)=P^r := by
-    calc
-      _=P^(1:ℝ)*P^(r-1) := by rw [Real.rpow_one]
-      _=P^r := by rw [←Real.rpow_add hP0];congr 1;ring
+  pm_517 r hP0
   have hfirst : (∑I∈S,(Ideal.absNorm I:ℝ)^(r-1))≤128*b*A*P^r := by
     calc
       _≤∑_I∈S,A*P^(r-1) := Finset.sum_le_sum (fun I hI=>annular_rpow a b P _ _ ha hb hP0 (hSP I hI).1 (hSP I hI).2)
@@ -88,7 +84,7 @@ theorem annular_slot_majorant (eps a b r d : ℝ) (heps : 0<eps)
       _=128*b*A*(P*P^(r-1)) := by ring
       _=128*b*A*P^r := by rw [heP]
   have hsecond : (∑I∈S.filter (fun I=>I∣U),(Ideal.absNorm I:ℝ)^(r-1+d))≤
-      D*B*(Ideal.absNorm U:ℝ)^eps*P^r := by
+      D *B*(Ideal.absNorm U:ℝ)^eps*P^r := by
     have hpP : P^(r-1+d)≤P^r := Real.rpow_le_rpow_of_exponent_le hP (by linarith)
     calc
       _≤∑_I∈S.filter (fun I=>I∣U),B*P^(r-1+d) := by
@@ -96,10 +92,10 @@ theorem annular_slot_majorant (eps a b r d : ℝ) (heps : 0<eps)
         intro I hI
         exact annular_rpow a b P _ _ ha hb hP0 (hSP I (Finset.mem_filter.mp hI).1).1 (hSP I (Finset.mem_filter.mp hI).1).2
       _=((S.filter (fun I=>I∣U)).card:ℝ)*(B*P^(r-1+d)) := by simp
-      _≤(D*(Ideal.absNorm U:ℝ)^eps)*(B*P^r) := by
+      _≤(D *(Ideal.absNorm U:ℝ)^eps)*(B*P^r) := by
         gcongr
         exact hdiv U hU S
-      _=D*B*(Ideal.absNorm U:ℝ)^eps*P^r := by ring
+      _=D *B*(Ideal.absNorm U:ℝ)^eps*P^r := by ring
   have hsum : (∑I∈S,(Ideal.absNorm I:ℝ)^(r-1)*(if I∣U then (Ideal.absNorm I:ℝ)^d else 1))≤
       (∑I∈S,(Ideal.absNorm I:ℝ)^(r-1))+
         ∑I∈S.filter (fun I=>I∣U),(Ideal.absNorm I:ℝ)^(r-1+d) := by
@@ -129,7 +125,7 @@ theorem weighted_slot_bound (eps a b r d B K : ℝ) (heps : 0<eps)
   intro U hU P hP S hS W hWS hWB G hG z hz
   have hP0 : 0<P := by linarith
   let T := S.filter (fun I=>W ((Ideal.absNorm I:ℝ)/P)≠0)
-  have hTS : T⊆S := Finset.filter_subset _ _
+  pm_4982 hTS T S
   have hbounds (I : Ideal O) (hI : I∈T) : a*P≤(Ideal.absNorm I:ℝ) ∧ (Ideal.absNorm I:ℝ)≤b*P := by
     have ht := hWS (show (Ideal.absNorm I:ℝ)/P∈Function.support W from (Finset.mem_filter.mp hI).2)
     exact ⟨(le_div_iff₀ hP0).mp ht.1,(div_le_iff₀ hP0).mp ht.2⟩

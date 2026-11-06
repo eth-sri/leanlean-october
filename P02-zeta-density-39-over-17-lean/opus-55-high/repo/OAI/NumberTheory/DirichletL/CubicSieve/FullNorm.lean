@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
@@ -40,13 +41,7 @@ theorem element_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N : ℝ) (hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
-    squaredNorm (fun i j => cubicRow (cols j) (rows i)) ≤ elementSieveNorm M N := by
-  let r : m → elementRange M := fun i => ⟨rows i, (mem_elementRange M (rows i)).mpr (hrows i)⟩
-  let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
-  have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
-  have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
-  have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (elementMatrix M N)
-  exact pow_le_pow_left₀ (norm_nonneg _) h 2
+    squaredNorm (fun i j => cubicRow (cols j) (rows i)) ≤ elementSieveNorm M N := by pf_165 elementRange ((mem_elementRange M (rows i)).mpr) elementMatrix
 
 lemma sieveNorm_le_elementSieveNorm (M N : ℝ) : sieveNorm M N ≤ elementSieveNorm M N := by
   apply element_family_squared_norm_le
@@ -79,28 +74,20 @@ theorem element_coprime_bilinear_bound {m n : Type*} [Fintype m] [Fintype n]
     (fun j => primaryGenerator_ne_zero_ideal _ (hcols j).1.2)
     N N hN hN (fun j => (hcols j).2) (fun j => (hcols j).2)
     (fun i j => cubicRow (cols j) (rows i)) (fun i j => cubicRow (cols j) (rows i)) a b
-  have hn := element_family_squared_norm_le rows cols hr hc M N hrows hcols
+  pm_528 hn element_family_squared_norm_le rows cols hr hc M N hrows hcols
   have hfac : 0 ≤ IdealCoprimeSieveOperator.supportConstant ε hε * N ^ ε :=
     mul_nonneg (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le (Real.rpow_nonneg hN _)
   apply hb.trans
   apply mul_le_mul
-  · exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hn hfac) (by positivity)
-  · exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hn hfac) (by positivity)
+  pm_7761
+  pm_7761
   · positivity
   · exact mul_nonneg (mul_nonneg (elementSieveNorm_nonneg _ _) hfac) (by positivity)
 
 theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     elementSieveNorm M N ≤ QuadraticInitialBound.initialSieveConstant * (M + (⌈N⌉₊ : ℝ) ^ 2) := by
   let F := idealRange N
-  have hF : ∀ I ∈ F, Admissible I := fun I hI => (mem_idealRange.mp hI).1
-  have hFp : ∀ I ∈ F, I ≠ ⊥ := fun I hI => primaryGenerator_ne_zero_ideal I (hF I hI).2
-  have hFg : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P :=
-    fun I hI P hP => (primaryPrime_spec P
-      (primaryPrime_factor_ne_zero I P (hF I hI).2 hP)).2.1
-  have hnat : 1 ≤ ⌈N⌉₊ := Nat.one_le_ceil_iff.mpr (by linarith)
-  have hnorm : ∀ I ∈ F, Ideal.absNorm I ≤ ⌈N⌉₊ := by
-    intro I hI
-    exact Nat.cast_le.mp ((mem_idealRange.mp hI).2.trans (Nat.le_ceil N))
+  pm_3820
   have hR : ∀ z ∈ elementRange M, ‖eisEmbedding z‖ ^ 2 ≤ M := by
     intro z hz
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
@@ -118,8 +105,7 @@ theorem elementSieveNorm_initial (M N : ℝ) (hM : 1 ≤ M) (hN : 1 ≤ N) :
     intro J hJ
     change aext J.val * (idealSexticRow F hFp hFg J.val z) ^ 2 =
       eisEmbedding (CubicJacobiGlobal.idealSymbol J.val z) * a J
-    rw [idealSymbol_eq_idealSexticRow_sq F hFp hFg J.val J.property (hF J.val J.property).1 z]
-    simp only [aext, dite_eq_left J.property]
+    pm_1301
     exact mul_comm _ _
   have he := ideal_initial_cubic_sieve F hFp hFg
     (fun I hI => (hF I hI).1) ⌈N⌉₊ hnat hnorm aext M hM (elementRange M) hR

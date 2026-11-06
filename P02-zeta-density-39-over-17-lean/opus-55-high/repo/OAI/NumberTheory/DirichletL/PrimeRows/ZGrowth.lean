@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWGrowth
 public import OAI.NumberTheory.DirichletL.Hecke.StripActual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,16 +21,15 @@ theorem physicalRow_first_z_bounded (eps : ℝ)
     (hxw : 1+eps≤x.re+w.re) :
     ∃C : ℝ,0≤C ∧ ∀z : ℂ,(17/50:ℝ)≤z.re →
       ‖physicalCompensatedRow S hS T hT η u x w z‖≤C := by
-  obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
+  pm_3447
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
-  let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm x.re
+  pm_5770 x.re
   let L : ℝ := HeckeReciprocalBound.bound 2*
     ‖HeckeOrigin.continued (rowCharacter S hS.prime u) w‖*
     ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖
   have hLb : 0≤HeckeReciprocalBound.bound 2 := by unfold HeckeReciprocalBound.bound; positivity
-  have hL : 0≤L := by dsimp [L];positivity
-  have hA (P : T) : 0≤A P := selectedFirstBound_nonneg _ _ (by positivity)
-  have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
+  pm_3395 hL L
+  pm_3446
   refine ⟨L*(Ch*N)*(∏P:T,A P),by dsimp [N];positivity,?_⟩
   intro z hz
   have hl : ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖≤HeckeReciprocalBound.bound 2 :=
@@ -40,8 +40,7 @@ theorem physicalRow_first_z_bounded (eps : ℝ)
       (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
       (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
       ((P.val.val.absNorm:ℂ)^(-w))‖≤∏P:T,A P := by
-    rw [norm_prod]
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
+    pm_3448
     intro P hP
     exact continuedCompensatedLocal_first_bound η u P.val _
       (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) x.re x w z hx le_rfl

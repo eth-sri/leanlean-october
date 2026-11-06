@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.WindowFourier
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,16 +11,18 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation
 noncomputable section
 
-theorem inverseNormWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
+section
+variable (V : ℝ → ℂ)
+include V
+theorem inverseNormWindow_contDiff (hV : ContDiff ℝ ∞ V) :
     ContDiff ℝ ∞ (inverseNormWindow V) := by
   unfold inverseNormWindow
   have hn : ∀ y : ℝ, (Real.exp y : ℂ) ≠ 0 := by
     intro y
-    exact_mod_cast Real.exp_ne_zero y
-  simpa only [div_eq_mul_inv, Pi.inv_apply, Function.comp_apply, Complex.ofRealCLM_apply] using
-    hV.mul ((Complex.ofRealCLM.contDiff.comp Real.contDiff_exp).inv hn)
+    simp_all
+  pm_6411 Real.contDiff_exp
 
-theorem inverseRootWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
+theorem inverseRootWindow_contDiff (hV : ContDiff ℝ ∞ V) :
     ContDiff ℝ ∞ (inverseRootWindow V) := by
   unfold inverseRootWindow
   have hs : ContDiff ℝ ∞ (fun y : ℝ => Real.sqrt (Real.exp y)) :=
@@ -27,20 +30,20 @@ theorem inverseRootWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
   have hn : ∀ y : ℝ, (Real.sqrt (Real.exp y) : ℂ) ≠ 0 := by
     intro y
     exact_mod_cast ne_of_gt (Real.sqrt_pos.2 (Real.exp_pos y))
-  simpa only [div_eq_mul_inv, Pi.inv_apply, Function.comp_apply, Complex.ofRealCLM_apply] using
-    hV.mul ((Complex.ofRealCLM.contDiff.comp hs).inv hn)
+  pm_6411 hs
 
-theorem inverseNormWindow_compact (V : ℝ → ℂ) (hV : HasCompactSupport V) :
+theorem inverseNormWindow_compact (hV : HasCompactSupport V) :
     HasCompactSupport (inverseNormWindow V) := by
   apply hV.mono
   intro y hy
   exact (div_ne_zero_iff.mp hy).1
 
-theorem inverseRootWindow_compact (V : ℝ → ℂ) (hV : HasCompactSupport V) :
+theorem inverseRootWindow_compact (hV : HasCompactSupport V) :
     HasCompactSupport (inverseRootWindow V) := by
   apply hV.mono
   intro y hy
   exact (div_ne_zero_iff.mp hy).1
+end
 
 theorem secondRootWindows_smooth_compact (V : Fin 6 → ℝ → ℂ)
     (hV : ∀ i, ContDiff ℝ ∞ (V i)) (hS : ∀ i, HasCompactSupport (V i)) :

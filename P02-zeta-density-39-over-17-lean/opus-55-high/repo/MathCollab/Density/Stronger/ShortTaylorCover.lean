@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.ShortFixedFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,14 +24,7 @@ def smoothTaylorMember (σ δ T : ℝ) (p : ℤ × ℕ × ℕ) (t : ℝ) : ℂ :
 theorem smoothTaylorIndices_card_le_log {σ T : ℝ}
     (hD : ((smoothScaleIndices (detectorY σ T*(Real.log T)^2)).card : ℝ) ≤ 6*Real.log T)
     (hlog : 1 ≤ Real.log T) :
-    ((smoothTaylorIndices σ T).card : ℝ) ≤ 144*(Real.log T)^2 := by
-  have hJ := detectorTaylorCutoff_le_log hlog
-  have h0 : 0 ≤ Real.log T := by linarith
-  calc
-    _ = ((smoothScaleIndices (detectorY σ T*(Real.log T)^2)).card : ℝ)*
-        (2*(detectorTaylorCutoff T+1 : ℕ)) := by simp [smoothTaylorIndices]
-    _ ≤ (6*Real.log T)*(2*(12*Real.log T)) := by push_cast; gcongr
-    _ = _ := by ring
+    ((smoothTaylorIndices σ T).card : ℝ) ≤ 144*(Real.log T)^2 := by pm_4477 σ
 
 theorem shortTaylor_cutoff_error_eventually :
     ∀ᶠ T : ℝ in atTop, 1 ≤ T ∧ 1 ≤ Real.log T ∧
@@ -39,8 +33,7 @@ theorem shortTaylor_cutoff_error_eventually :
   norm_num at ht
   filter_upwards [eventually_ge_atTop (1 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1,
     ht.eventually (gt_mem_nhds (show (0 : ℝ) < 1/288 by norm_num))] with T hT hlog hh
-  refine ⟨hT, hlog, ?_⟩
-  have hTpos : 0 < T := by linarith
+  pm_8517 hT hlog
   have hlo : Real.log T < T/288 := (div_lt_iff₀ hTpos).mp hh |>.trans_eq (by ring)
   rw [Real.rpow_neg_one]
   apply (le_div_iff₀ (by positivity : 0 < 96*Real.log T)).mpr
@@ -70,7 +63,7 @@ theorem smooth_short_Taylor_cover {σ δ : ℝ} (hσ : 3/4 < σ) :
   have hN : (2 : ℝ)^j ≤ T^2 := hhi.trans (by
     rw [← Real.rpow_natCast T 2]
     exact Real.rpow_le_rpow_of_exponent_le hT (by norm_num; linarith))
-  have hY : 0 < detectorY σ T := Real.rpow_pos_of_pos hTpos _
+  pm_5306 hY detectorY σ hTpos
   have hD : 0 < 24*Real.log T := by positivity
   have hs : 3*T^(-1 : ℝ) ≤ 1/(4*(24*Real.log T)) := by convert hsmall using 1; ring
   obtain ⟨hjpos, e, he, r, hr, hh⟩ := exists_smoothBlock_Taylor_member hY hT hD
@@ -101,13 +94,7 @@ theorem smooth_long_or_short_Taylor_cover {σ δ : ℝ}
         (smoothHalfScale p.1 p.2.1 : ℝ) ≤ T^(smoothingExponent σ/2) ∧
         (smoothHalfScale p.1 p.2.1 : ℝ)^σ/(192*Real.log T) ≤
           ‖smoothTaylorMember σ δ T p ρ.im‖) := by
-  filter_upwards [smoothDetector_eventually_large hσ hδ hδ', smooth_short_Taylor_cover (δ := δ) hσ]
-    with T hdet hshort
-  intro ρ hβ hβ' hγ hγ' hzero
-  obtain ⟨j, hj, hlo, hh⟩ := hdet ρ hβ hβ' hγ hγ' hzero
-  by_cases hs : (2 : ℝ)^j ≤ T^(smoothingExponent σ/2)
-  · obtain ⟨p, hp, _, hp0, hp1, hp2⟩ := hshort ρ j hβ hβ'.le hj hlo hs hh
-    exact Or.inr ⟨p, hp, hp0, hp1, hp2⟩
-  · exact Or.inl ⟨j, hj, lt_of_not_ge hs, hh⟩
+  pm_7095 hσ
+  pm_4478 σ
 
 end MathCollab.Density.Stronger

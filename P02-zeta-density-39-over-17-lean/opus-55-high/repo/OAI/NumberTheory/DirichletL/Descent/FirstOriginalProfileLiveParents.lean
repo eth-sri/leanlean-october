@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 public import OAI.NumberTheory.DirichletL.Descent.OriginalCellPriority
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,15 +15,15 @@ open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlob
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 
-lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+lemma refined_parent_source (p : ι→ O) [∀i,(Ideal.span {p i}).IsMaximal]
     (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l j : ℕ) :
+    (selector : FirstOriginalOuter ι→ Finset ι→ℂ) (k : SourceIndex) (l j : ℕ) :
     globalParentSource (originalSubsetSource (refinedOuter p pool Q k (labelGate p j)))
       pool (originalSelector (fun x=>commonSelector p (selector x) l))=
       InverseFirstGlobalCaps.labelParentCell p pool Q selector k l j := by
   ext x
   rw [InverseFirstGlobalCaps.labelParentCell,Finset.mem_filter,InverseFirstGlobalCaps.mem_parentCell]
-  simp only [globalParentSource,Finset.mem_biUnion,originalSubsetSource,Finset.mem_image,Finset.mem_filter]
+  pm_94 globalParentSource Finset.mem_biUnion originalSubsetSource Finset.mem_image Finset.mem_filter
   constructor
   · rintro ⟨y,⟨o,ho,rfl⟩,D,⟨hD,hs⟩,rfl⟩
     have ho' := Finset.mem_filter.mp ho
@@ -36,12 +37,12 @@ lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
     · simpa only [originalOuterCell_eq_caps] using ho
     · simpa [labelGate,fillFirstQuotient,toOriginal,ofOriginal] using hj
 
-theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+theorem refined_child_priority (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (om : ℝ→ℂ) (X t Y : ℝ) (hY : 0<Y) :
     refinedChildEnergy p hp hg hinj pool Q k l (labelGate p j) negative Ψ m
       (fun v U=>primeMark slots lists a (v.support∪U)) om X t Y ≤

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem eulerBound_summable {b : ℝ} (hb : 1<b) :
     · rw [CubicEisenstein.fullIdealWeight, ite_eq_right_iff.mpr (fun h => (hI h).elim)]
       simp
   have hf := (IdealLogDerivative.mangoldt_weighted_summable_norm
-    (IdealEuler.normWeight 0) ha (b : ℂ) (by simpa using hb)).comp_injective
+    (IdealEuler.normWeight 0) ha (b : ℂ) (by simp_all)).comp_injective
       (Subtype.val_injective : Function.Injective (fun I : NonzeroIdeal => I.val))
   convert hf using 1
   ext I
@@ -38,7 +39,7 @@ theorem eulerBound_summable {b : ℝ} (hb : 1<b) :
   simp
 
 theorem series_norm_le (χ : Character) {b : ℝ} (hb : 1<b)
-    {s : ℂ} (hs : b≤s.re) : ‖series χ s‖ ≤ eulerBound b := by
+    {s : ℂ} (hs : b≤ s.re) : ‖series χ s‖ ≤ eulerBound b := by
   rw [series_eq_tsum χ (hb.trans_le hs)]
   have hbound (I : NonzeroIdeal) :
       ‖coefficient χ I.val * (norm I : ℂ)^(-s)‖ ≤
@@ -48,8 +49,7 @@ theorem series_norm_le (χ : Character) {b : ℝ} (hb : 1<b)
       unfold HeckeDyadic.norm
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr I.property)
     have hc : ‖coefficient χ I.val‖ ≤ IdealMangoldt.value I.val := by
-      rw [coefficient, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-        abs_of_nonneg (IdealMangoldt.value_nonneg _)]
+      pm_5113 coefficient norm_mul IdealMangoldt.value_nonneg
       exact mul_le_of_le_one_right (IdealMangoldt.value_nonneg _) (idealCoeff_norm_le_one χ _)
     rw [Complex.norm_cpow_eq_rpow_re_of_pos (norm_pos I), Complex.neg_re]
     exact mul_le_mul hc (Real.rpow_le_rpow_of_exponent_le hn (neg_le_neg hs))

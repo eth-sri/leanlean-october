@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownBlockEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ close-pair count, with no unspecified cutoff.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -36,7 +36,7 @@ theorem heathBrownBlockProducts_pairwiseDisjoint (N K : ℕ) :
   have hmJ := (Finset.mem_product.mp hpJ).1
   have hidxI := (mem_heathBrownBlock.mp hmI).2.2
   have hidxJ := (mem_heathBrownBlock.mp hmJ).2.2
-  exact hij (hidxI.symm.trans hidxJ)
+  grind
 
 theorem heathBrown_sameBlock_kernel_sum_eq
     (N K : ℕ) (B C : ℝ) (g₁ g₂ : ℕ → ℝ) :
@@ -74,8 +74,10 @@ theorem heathBrown_kernel_support
       heathBrownDistanceToInteger_lt_of_hat_pos hC hpos.2⟩
   · exact False.elim ((not_lt_of_ge (heathBrownHat_nonneg B x)) hneg.1)
 
-theorem heathBrown_sameBlock_mem_pairCountTwo_of_kernel_ne_zero
-    {N k H K : ℕ} {f : ℝ → ℝ} {p : ℕ × ℕ}
+section
+variable {N k H K : ℕ} {f : ℝ → ℝ}
+include N k H K f
+theorem heathBrown_sameBlock_mem_pairCountTwo_of_kernel_ne_zero {p : ℕ × ℕ}
     (hH : 0 < H)
     (hp : p ∈ heathBrownSameBlockPairs N K)
     (hkernel : heathBrownPairKernel k H f p ≠ 0) :
@@ -83,8 +85,7 @@ theorem heathBrown_sameBlock_mem_pairCountTwo_of_kernel_ne_zero
   unfold heathBrownSameBlockPairs at hp
   rw [Finset.mem_biUnion] at hp
   rcases hp with ⟨i, hi, hp⟩
-  have hm := (Finset.mem_product.mp hp).1
-  have hn := (Finset.mem_product.mp hp).2
+  pm_317 hm Finset.mem_product.mp hp hn
   have hm' := mem_heathBrownBlock.mp hm
   have hn' := mem_heathBrownBlock.mp hn
   have hclose := heathBrownBlock_pair_source_distance hm hn
@@ -93,11 +94,9 @@ theorem heathBrown_sameBlock_mem_pairCountTwo_of_kernel_ne_zero
   have hwidth₂ : 0 < 4 * (((H : ℝ) ^ (k - 1))⁻¹) := by positivity
   have hsupp := heathBrown_kernel_support hwidth₁ hwidth₂ hkernel
   rw [mem_heathBrownPairCountTwo]
-  exact ⟨hm'.1, hm'.2.1, hn'.1, hn'.2.1, hclose,
-    hsupp.1.le, hsupp.2.le⟩
+  grind
 
 theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
-    {N k H K : ℕ} {f : ℝ → ℝ}
     (hH : 0 < H) :
     (∑ p ∈ heathBrownSameBlockPairs N K,
         heathBrownPairKernel k H f p) ≤
@@ -137,20 +136,18 @@ theorem heathBrown_sameBlock_kernel_sum_le_pairCountTwo
 /-- The finite localization conclusion in Heath-Brown Section 3.  The factor
 four is the exact loss from the chosen half-width majorant. -/
 theorem heathBrownPairCountOne_card_le_four_mul_block_mul_pairCountTwo
-    {N k H K : ℕ} {f : ℝ → ℝ}
     (hH : 0 < H) (hK : 0 < K)
     (hwidth₁ : 4 * (((H : ℝ) ^ (k - 2))⁻¹) ≤ 1 / 2)
     (hwidth₂ : 4 * (((H : ℝ) ^ (k - 1))⁻¹) ≤ 1 / 2) :
     ((heathBrownPairCountOne N k H f).card : ℝ) ≤
       4 * K * (heathBrownPairCountTwo N k H K f).card := by
-  let B : ℝ := 4 * (((H : ℝ) ^ (k - 2))⁻¹)
+  pm_5786 B
   let C : ℝ := 4 * (((H : ℝ) ^ (k - 1))⁻¹)
   let g₁ : ℕ → ℝ := fun n => heathBrownDerivativeCoordinate f (k - 2) n
   let g₂ : ℕ → ℝ := fun n => heathBrownDerivativeCoordinate f (k - 1) n
-  have hB : 0 < B := by dsimp [B]; positivity
-  have hC : 0 < C := by dsimp [C]; positivity
-  have hmajor := heathBrownPairCountOne_quarter_le_kernel_sum
-    (N := N) (k := k) (f := f) hH
+  pm_64 hB B
+  pm_64 hC C
+  pm_734 hmajor heathBrownPairCountOne_quarter_le_kernel_sum N k f hH
   have hblock := heathBrown_full_kernel_sum_le_blocks
     (N := N) (K := K) hK hB (by simpa [B] using hwidth₁)
       hC (by simpa [C] using hwidth₂) g₁ g₂
@@ -185,6 +182,7 @@ theorem heathBrownPairCountOne_card_le_four_mul_block_mul_pairCountTwo
       _ ≤ (K : ℝ) * (heathBrownPairCountTwo N k H K f).card :=
         mul_le_mul_of_nonneg_left hsame (Nat.cast_nonneg K)
   nlinarith
+end
 
 
 end

@@ -2,19 +2,19 @@ module
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonPairPrefixGram
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSeparatedReciprocal
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-! Summation of actual Atkinson prefix Gram rows with general exponent pairs. -/
 
-noncomputable section
-open RiemannZeta.GuthMaynard
-open scoped BigOperators
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
-theorem ExponentPair.atkinson_pair_gram_row {k l ε : ℝ}
-    (hpair : ExponentPair k l) (hε : 0 < ε) :
+section
+variable {k l ε : ℝ} (hpair : ExponentPair k l) (hε : 0 < ε)
+include k l ε hpair hε
+theorem ExponentPair.atkinson_pair_gram_row :
     ∃ η : ℝ, 0 < η ∧ ∃ C : ℝ, 1 ≤ C ∧
       ∀ (H G L t : ℝ) (M : ℕ) (W : Finset ℝ),
         0 < H → 0 < G → 0 < M → IsSeparated G W → t ∈ W →
@@ -25,10 +25,10 @@ theorem ExponentPair.atkinson_pair_gram_row {k l ε : ℝ}
             ((L/Real.sqrt (H*(M : ℝ)))^(k+ε)*(M : ℝ)^(l+ε))+
           (2*C*Real.sqrt (H*(M : ℝ))/G)*(harmonic (Nat.ceil (L/G)) : ℝ) := by
   classical
-  obtain ⟨η,hη,C,hC,hbound⟩ := hpair.atkinson_prefixGramMax_bound hε
+  pm_231 η hη C hC hbound hpair.atkinson_prefixGramMax_bound hε
   refine ⟨η,hη,C,hC,?_⟩
   intro H G L t M W hH hG hM hsep ht hrange hdiam hsmall
-  have hMp : (0 : ℝ) < M := by exact_mod_cast hM
+  pm_74 hMp M hM
   have hR : 0 < Real.sqrt (H*(M : ℝ)) := by positivity
   have hL : 0 ≤ L := by simpa using hdiam t ht
   let S := W.erase t
@@ -71,8 +71,7 @@ theorem ExponentPair.atkinson_pair_gram_row {k l ε : ℝ}
   dsimp [X] at hsum
   linarith
 
-theorem ExponentPair.atkinson_pair_gram_double_sum {k l ε : ℝ}
-    (hpair : ExponentPair k l) (hε : 0 < ε) :
+theorem ExponentPair.atkinson_pair_gram_double_sum :
     ∃ η : ℝ, 0 < η ∧ ∃ C : ℝ, 1 ≤ C ∧
       ∀ (H G L : ℝ) (M : ℕ) (W : Finset ℝ),
         0 < H → 0 < G → 0 < M → IsSeparated G W →
@@ -83,7 +82,7 @@ theorem ExponentPair.atkinson_pair_gram_double_sum {k l ε : ℝ}
             ((L/Real.sqrt (H*(M : ℝ)))^(k+ε)*(M : ℝ)^(l+ε))+
           (2*C*Real.sqrt (H*(M : ℝ))/G)*(W.card : ℝ)*
             (harmonic (Nat.ceil (L/G)) : ℝ) := by
-  obtain ⟨η,hη,C,hC,hrow⟩ := hpair.atkinson_pair_gram_row hε
+  pm_231 η hη C hC hrow hpair.atkinson_pair_gram_row hε
   refine ⟨η,hη,C,hC,?_⟩
   intro H G L M W hH hG hM hsep hrange hdiam hsmall
   calc
@@ -93,5 +92,6 @@ theorem ExponentPair.atkinson_pair_gram_double_sum {k l ε : ℝ}
       Finset.sum_le_sum (fun t ht => hrow H G L t M W
         hH hG hM hsep ht hrange (hdiam t ht) hsmall)
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]; ring
+end
 
 end TaoTrudgianYang2025

@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosConjugateAveraging
 public import LaterPairs.Native.RobertSargosCorrelationSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -26,13 +27,11 @@ theorem robertSargos_centered_phase_inner (f : ℝ → ℝ) (M : ℕ) (m h : ℤ
       else 0 := by
   by_cases hm : m ∈ Finset.Icc h ((M:ℤ)-h-1)
   · have hp : m+h ∈ Finset.Ico (0:ℤ) M := by
-      simp only [Finset.mem_Icc] at hm
-      simp only [Finset.mem_Ico]
-      constructor <;> omega
+      pm_415 Finset.mem_Icc hm Finset.mem_Ico
+      grind
     have hn : m-h ∈ Finset.Ico (0:ℤ) M := by
-      simp only [Finset.mem_Icc] at hm
-      simp only [Finset.mem_Ico]
-      constructor <;> omega
+      pm_415 Finset.mem_Icc hm Finset.mem_Ico
+      grind
     rw [ite_eq_left hm,sargosPaddedSequence_eq _ _ hp,sargosPaddedSequence_eq _ _ hn,
       real_inner_comm,real_inner_eq_re_inner ℂ,RCLike.inner_apply]
     change (fordAdditiveCharacter (f ((m+h:ℤ)+1)) *
@@ -43,7 +42,7 @@ theorem robertSargos_centered_phase_inner (f : ℝ → ℝ) (M : ℕ) (m h : ℤ
     have hplus : (m:ℝ)+h+1 = (m:ℝ)+1+h := by ring
     have hminus : (m:ℝ)-h+1 = (m:ℝ)+1-h := by ring
     simp only [Int.cast_add,Int.cast_sub,hplus,hminus]
-    simp only [sub_eq_add_neg]
+    grind
   · rw [ite_eq_right hm]
     by_cases hp : m+h ∈ Finset.Ico (0:ℤ) M
     · have hn : m-h ∉ Finset.Ico (0:ℤ) M := by
@@ -69,20 +68,17 @@ theorem robertSargos_centered_phase_sum (f : ℝ → ℝ) (M : ℕ) (h : ℤ)
       (fun m => m ∈ Finset.Icc h ((M:ℤ)-h-1)) = Finset.Icc h ((M:ℤ)-h-1) := by
     apply Finset.filter_mem_eq_of_subset
     intro m hm
-    simp only [Finset.mem_Icc] at hm
-    simp only [Finset.mem_Ico]
+    pm_415 Finset.mem_Icc hm Finset.mem_Ico
     constructor <;> omega
   rw [he]
-  apply Finset.sum_bij (fun m _ => m+1)
+  pm_8040
   · intro m hm
-    simp only [Finset.mem_Icc] at hm ⊢
-    constructor <;> omega
+    pm_5911 Finset.mem_Icc hm
   · intro m _ n _ he'
     omega
   · intro m hm
     refine ⟨m-1,?_,by omega⟩
-    simp only [Finset.mem_Icc] at hm ⊢
-    constructor <;> omega
+    pm_5911 Finset.mem_Icc hm
   · intro m _
     simp only [Int.cast_add,Int.cast_one]
 

@@ -1,16 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussianCompletedSlots
 public import OAI.NumberTheory.DirichletL.Detector.LowCompletion
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical ContDiff Topology SchwartzMap
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow CanonicalQuadraticSieve RayFourExpansion
+open ProbeCompleted CanonicalQuadraticSieve RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -20,7 +20,7 @@ lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
       gaussianAnnulus x*(∏i,W i (q i))*gaussianMellinProfile (R*x/(∏i,q i))=
         ∫t : ℝ,Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x*
           (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→ Id) (Ψ : α→ O→*ℂ)
     (Z : ℝ) (hZ : 0<Z) (j : ℕ) (q : α→ι→ℝ) (hq : ∀k∈F,∀i,0<q k i) :
     (∑k∈F,a k*(∏i,W i (q k i))*correctedCompletedT S (D k) (Ψ k)
       (gaussianDyadicProfile (Z*∏i,q k i) j) ((2:ℝ)^j))=
@@ -34,8 +34,7 @@ lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
           gaussianJointDensity V hV ((2:ℝ)^j/Z) t) := by
     simpa only [mul_assoc] using (gaussian_selected_completed_integrable W (q k) _ S (D k) (Ψ k) _ (by positivity)).const_mul _
   simp_rw [Finset.sum_mul]
-  rw [integral_finsetSum _ (fun k _=>hi k)]
-  apply Finset.sum_congr rfl
+  pm_1328 k hi
   intro k hk
   have hh := gaussian_selected_completed W V hV hsep S (D k) (Ψ k) Z hZ j (q k) (hq k hk)
   calc
@@ -44,7 +43,7 @@ lemma gaussian_selected_tuple_sum {ι α : Type*} [Fintype ι]
     _ = a k*∫t : ℝ,correctedCompletedT S (D k) (Ψ k)
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) ((2:ℝ)^j)*
       (∏i,W i (q k i)*logPhase (-t) (Real.log (q k i)))*
-        gaussianJointDensity V hV ((2:ℝ)^j/Z) t := by rw [hh]
+        gaussianJointDensity V hV ((2:ℝ)^j/Z) t := by grind
     _ = _ := by
       rw [←integral_const_mul]
       apply integral_congr_ae
@@ -77,7 +76,7 @@ theorem gaussian_selected_tuple_reassembly {ι α : Type*} [Fintype ι]
       gaussianAnnulus x*(∏i,W i (q i))*gaussianMellinProfile (R*x/(∏i,q i))=
         ∫t : ℝ,Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x*
           (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→ Id) (Ψ : α→ O→*ℂ)
     (hΨ : ∀k∈F,∀n,‖Ψ k n‖≤1) (Z : ℝ) (hZ : 0<Z)
     (q : α→ι→ℝ) (hq : ∀k∈F,∀i,0<q k i) :
     (∑k∈F,a k*(∏i,W i (q k i))*correctedCompletedT S (D k) (Ψ k)
@@ -105,6 +104,5 @@ theorem gaussian_selected_tuple_reassembly {ι α : Type*} [Fintype ι]
       exact gaussian_selected_tuple_sum W V hV hsep F a S D Ψ Z hZ j q hq
 
 end SevenEighths.ProbePhysical
-end
 
 end OAI

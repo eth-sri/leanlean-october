@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.HighSeries
 public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
 public import OAI.NumberTheory.DirichletL.IdealEuler
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,39 +35,28 @@ lemma primaryGenerator_coprime (I J : Id) (hI : Supported I) (hJ : Supported J)
   apply (Ideal.isCoprime_span_singleton_iff _ _).mp
   rwa [span_primaryGenerator_of_supported I hI,span_primaryGenerator_of_supported J hJ]
 
-lemma completed_block_dvd_cube (I J K L : Id) : I*J^3*K ∣ (I*J*K*L)^3 := by
-  refine ⟨I^2*K^2*L^3,?_⟩
+section
+variable (I J K L : Id)
+include I J K L
+lemma completed_block_dvd_cube : I*J ^3*K ∣ (I*J*K*L)^3 := by
+  refine ⟨I ^2*K ^2*L^3,?_⟩
   ring
 
-lemma first_block_dvd (I J K L : Id) : I ∣ I*J*K*L := by
+lemma first_block_dvd : I ∣ I*J*K*L := by
   refine ⟨J*K*L,?_⟩
   ring
 
-lemma last_block_dvd (I J K L : Id) : L ∣ I*J*K*L := by
-  refine ⟨I*J*K,?_⟩
-  ring
+lemma last_block_dvd : L ∣ I*J*K*L := by simp_all
+end
 
 theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
     bareIdealHighCoefficient η 1 (I*I') (J*J') (K*K') (L*L') =
       bareIdealHighCoefficient η 1 I J K L * bareIdealHighCoefficient η 1 I' J' K' L' := by
-  have hII := hcop.mono (first_block_dvd I J K L) (first_block_dvd I' J' K' L')
-  by_cases h : highSupport I J K L ∧ highSupport I' J' K' L'
+  pm_3906
   · have hprod := (highSupport_mul I J K L I' J' K' L' hII).mpr h
-    rcases h with ⟨h,h'⟩
-    have hsA := (supported_mul_iff (I*J^3) K).mpr
-      ⟨(supported_mul_iff I (J^3)).mpr ⟨h.2.1,supported_pow h.2.2.1 3⟩,h.2.2.2.1⟩
-    have hsB := (supported_mul_iff (I'*J'^3) K').mpr
-      ⟨(supported_mul_iff I' (J'^3)).mpr ⟨h'.2.1,supported_pow h'.2.2.1 3⟩,h'.2.2.2.1⟩
-    have hc3 : IsCoprime ((I*J*K*L)^3) ((I'*J'*K'*L')^3) := hcop.pow_left.pow_right
-    have hab := primaryGenerator_coprime _ _ hsA hsB
-      (hc3.mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
-    have hba := primaryGenerator_coprime _ _ h'.2.2.2.2 hsA
-      (hcop.symm.pow_right.mono (last_block_dvd I' J' K' L') (completed_block_dvd_cube I J K L))
-    have hab' := primaryGenerator_coprime _ _ h.2.2.2.2 hsB
-      (hcop.pow_right.mono (last_block_dvd I J K L) (completed_block_dvd_cube I' J' K' L'))
-    simp only [primaryGenerator_mul,primaryGenerator_pow] at hab hba hab'
+    pm_3904
     have he := bareSourceCoefficient_product_frequency η I I'
       ⟨h.1,supported_primaryGenerator_ne_zero I h.2.1⟩
       ⟨h'.1,supported_primaryGenerator_ne_zero I' h'.2.1⟩
@@ -89,18 +79,11 @@ theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     unfold bareIdealHighCoefficient
     rw [dite_eq_left hprod,dite_eq_left h,dite_eq_left h']
     simp only [primaryGenerator_mul,one_mul]
-    dsimp only at he
-    convert he using 1 ; ring_nf
+    pm_8388
   · have hprod := mt (highSupport_mul I J K L I' J' K' L' hII).mp h
     unfold highSupport at hprod
     unfold bareIdealHighCoefficient
-    rw [dite_eq_right hprod]
-    by_cases hi : highSupport I J K L
-    · have hj : ¬highSupport I' J' K' L' := fun hj=>h ⟨hi,hj⟩
-      unfold highSupport at hj
-      rw [dite_eq_right hj,mul_zero]
-    · unfold highSupport at hi
-      rw [dite_eq_right hi,zero_mul]
+    pm_3905
 
 lemma fullIdealWeight_mul (s : ℂ) (I J : Id) :
     fullIdealWeight s (I*J)=fullIdealWeight s I*fullIdealWeight s J :=

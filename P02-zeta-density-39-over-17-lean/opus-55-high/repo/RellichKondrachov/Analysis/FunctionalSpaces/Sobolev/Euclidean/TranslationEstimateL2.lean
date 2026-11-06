@@ -9,6 +9,7 @@ public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.Tran
 public import RellichKondrachov.Analysis.FunctionalSpaces.Sobolev.Euclidean.TranslationEstimate
 public import Mathlib.MeasureTheory.Integral.MeanInequalities
 public import Mathlib.MeasureTheory.Measure.Prod
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -81,7 +82,7 @@ private lemma lintegral_rpow_two_le_lintegral_rpow_two
   have h :
       (∫⁻ t, g t ∂(μI : Measure ℝ)) ≤
         (∫⁻ t, g t ^ (2 : ℝ) ∂(μI : Measure ℝ)) ^ (1 / (2 : ℝ)) := by
-    simpa [h1, mul_one] using hHolder
+    grind
   -- Raise to the power `2` and simplify `((A)^(1/2))^2 = A`.
   have h' :=
     ENNReal.rpow_le_rpow h (show (0 : ℝ) ≤ (2 : ℝ) by norm_num)
@@ -94,8 +95,16 @@ private lemma lintegral_rpow_two_le_lintegral_rpow_two
         (1 / (2 : ℝ)) (2 : ℝ)).symm))
 
 omit [IsFiniteMeasureOnCompacts μ] in
+set_option hygiene false in
+macro "pb_2509" : tactic => `(tactic| (
+  have hpow : Measurable fun r : ℝ≥0∞ => r ^ (2 : ℝ) :=
+    (ENNReal.continuous_rpow_const (y := (2 : ℝ))).measurable))
+section
+variable (a : E) (f : ↥(C1c (E := E)))
+include a f
+omit [IsFiniteMeasureOnCompacts μ] in
 /-- `L²` translation estimate for `C¹_c` functions under a right-invariant measure. -/
-private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
+private lemma lintegral_enorm_sub_sq_le :
     (∫⁻ x, ‖f.1 (x + a) - f.1 x‖ₑ ^ (2 : ℝ) ∂μ) ≤
       ‖a‖ₑ ^ (2 : ℝ) * (∫⁻ x, ‖grad (E := E) f.1 x‖ₑ ^ (2 : ℝ) ∂μ) := by
   -- Pointwise: Cauchy–Schwarz in `t`, then Tonelli in `(x,t)`.
@@ -118,10 +127,10 @@ private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
       refine lintegral_rpow_two_le_lintegral_rpow_two (g := fun t : ℝ =>
         ‖grad (E := E) f.1 (x + t • a)‖ₑ) ?_
       -- measurability from continuity of `grad`.
-      have hgrad : Continuous (grad (E := E) f.1) := continuous_grad (E := E) (f := f.1) f.2.1
+      pm_2746
       have hline : Continuous fun t : ℝ => x + t • a := by
         fun_prop
-      exact (hgrad.comp hline).measurable.enorm.aemeasurable
+      fun_prop
     -- Combine and rewrite.
     calc
       ‖f.1 (x + a) - f.1 x‖ₑ ^ (2 : ℝ)
@@ -147,13 +156,12 @@ private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
   have hmeas :
       AEMeasurable
         F (μ.prod (μI : Measure ℝ)) := by
-    have hgrad : Continuous (grad (E := E) f.1) := continuous_grad (E := E) (f := f.1) f.2.1
+    pm_2746
     have hcont : Continuous fun z : E × ℝ => z.1 + z.2 • a := by
       fun_prop
     have hbase : Measurable fun z : E × ℝ => ‖grad (E := E) f.1 (z.1 + z.2 • a)‖ₑ := by
       exact (hgrad.comp hcont).measurable.enorm
-    have hpow : Measurable fun r : ℝ≥0∞ => r ^ (2 : ℝ) :=
-      (ENNReal.continuous_rpow_const (y := (2 : ℝ))).measurable
+    pb_2509
     exact (hpow.comp hbase).aemeasurable
   have hTonelli :
       (∫⁻ x, ∫⁻ t, ‖grad (E := E) f.1 (x + t • a)‖ₑ ^ (2 : ℝ) ∂(μI : Measure ℝ) ∂μ) =
@@ -181,10 +189,9 @@ private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
     refine MeasureTheory.lintegral_congr fun t => ?_
     -- Change of variables `x ↦ x + t•a`.
     have hmeas' : Measurable fun x : E => ‖grad (E := E) f.1 x‖ₑ ^ (2 : ℝ) := by
-      have hgrad : Continuous (grad (E := E) f.1) := continuous_grad (E := E) (f := f.1) f.2.1
+      pm_2746
       have hbase : Measurable fun x : E => ‖grad (E := E) f.1 x‖ₑ := hgrad.measurable.enorm
-      have hpow : Measurable fun r : ℝ≥0∞ => r ^ (2 : ℝ) :=
-        (ENNReal.continuous_rpow_const (y := (2 : ℝ))).measurable
+      pb_2509
       exact hpow.comp hbase
     simpa [Function.comp, add_assoc] using
       (MeasureTheory.measurePreserving_add_right μ (t • a)).lintegral_comp (μ := μ) (ν := μ)
@@ -222,15 +229,15 @@ private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
                   ∫⁻ t, ‖grad (E := E) f.1 (x + t • a)‖ₑ ^ (2 : ℝ) ∂(μI : Measure ℝ)) hInner)
       _ = ‖a‖ₑ ^ (2 : ℝ) *
             (∫⁻ t, ∫⁻ x, ‖grad (E := E) f.1 (x + t • a)‖ₑ ^ (2 : ℝ) ∂μ ∂(μI : Measure ℝ)) := by
-            exact congrArg (fun z => ‖a‖ₑ ^ (2 : ℝ) * z) hTonelli
+            pm_627 hTonelli
       _ = ‖a‖ₑ ^ (2 : ℝ) *
             (∫⁻ t, (∫⁻ x, ‖grad (E := E) f.1 x‖ₑ ^ (2 : ℝ) ∂μ) ∂(μI : Measure ℝ)) := by
-            exact congrArg (fun z => ‖a‖ₑ ^ (2 : ℝ) * z) hShift
+            pm_627 hShift
       _ = ‖a‖ₑ ^ (2 : ℝ) * (∫⁻ x, ‖grad (E := E) f.1 x‖ₑ ^ (2 : ℝ) ∂μ) := by
-            exact congrArg (fun z => ‖a‖ₑ ^ (2 : ℝ) * z) hEval
+            pm_627 hEval
   exact hInt
 
-lemma enorm_translateL2_sub_toL2_le (a : E) (f : ↥(C1c (E := E))) :
+lemma enorm_translateL2_sub_toL2_le :
     ‖translateL2 (μ := μ) (F := ℝ) a (toL2 (μ := μ) (E := E) f) -
         toL2 (μ := μ) (E := E) f‖ₑ ≤
       ‖a‖ₑ * ‖toL2Grad (μ := μ) (E := E) f‖ₑ := by
@@ -342,7 +349,7 @@ lemma enorm_translateL2_sub_toL2_le (a : E) (f : ↥(C1c (E := E))) :
   simpa [hL2, hGrad] using hCore
 
 /-- Real-norm form of `enorm_translateL2_sub_toL2_le`. -/
-lemma norm_translateL2_sub_toL2_le (a : E) (f : ↥(C1c (E := E))) :
+lemma norm_translateL2_sub_toL2_le :
     ‖translateL2 (μ := μ) (F := ℝ) a (toL2 (μ := μ) (E := E) f) -
         toL2 (μ := μ) (E := E) f‖ ≤
       ‖a‖ * ‖toL2Grad (μ := μ) (E := E) f‖ := by
@@ -363,6 +370,7 @@ lemma norm_translateL2_sub_toL2_le (a : E) (f : ↥(C1c (E := E))) :
         (‖a‖ₑ * ‖toL2Grad (μ := μ) (E := E) f‖ₑ).toReal := by
     exact (ENNReal.toReal_le_toReal hA_ne_top hB_ne_top).2 h
   simpa only [ENNReal.toReal_mul, toReal_enorm] using h'
+end
 
 end
 

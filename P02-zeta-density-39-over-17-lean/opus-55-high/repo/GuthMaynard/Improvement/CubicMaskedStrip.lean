@@ -1,9 +1,9 @@
 module
 public import GuthMaynard.Improvement.CubicMaskedRadial
 public import GuthMaynard.Improvement.CubicModeCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
@@ -25,7 +25,7 @@ theorem masked_radial_discard_integral_bound {a : ℝ → ℂ} (ha : ContDiff �
   obtain ⟨C,hC,hb⟩ := radial_uniform_power_decay ha hlu hs v₀ v₁ y₀ y₁ n
   refine ⟨C,hC,?_⟩
   intro L H m μ A B Cmask hH hA hB hCmask hm h0 hi
-  have hmass : 0 ≤ ∫ t, μ t := integral_nonneg h0
+  pm_4517
   have hmeas : Measurable (radialDiscard a μ L H m) := by
     unfold radialDiscard
     apply Measurable.ite (measurableSet_lt measurable_const (by fun_prop))
@@ -38,8 +38,7 @@ theorem masked_radial_discard_integral_bound {a : ℝ → ℂ} (ha : ContDiff �
     · have hh := hb p.1 hp.1 p.2 hp.2 (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))
       have hpow := pow_le_pow_left₀ hH.le hx.le n
       have hr : ‖radialKernel a L m p‖ ≤ C/H^n := by
-        rw [radialKernel,radial_integral_fourier]
-        apply (le_div_iff₀ (pow_pos hH n)).mpr
+        pm_6686
         nlinarith [mul_le_mul_of_nonneg_right hpow (norm_nonneg (𝓕 (radialAmplitude a p.1 p.2) (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))))]
       rw [norm_mul]
       exact mul_le_mul hr (ratioFourierProduct_bound hm h0 hi p) (norm_nonneg _) (by positivity)
@@ -52,7 +51,7 @@ theorem masked_radial_discard_integral_bound {a : ℝ → ℂ} (ha : ContDiff �
     intro p hp
     rw [norm_mul]
     exact (mul_le_of_le_one_right (norm_nonneg _) (ratioMaskProduct_norm_le_one A B Cmask p)).trans (hpoint p hp)
-  have hfinite : volume (Icc v₀ v₁ ×ˢ Icc y₀ y₁) < ⊤ := (isCompact_Icc.prod isCompact_Icc).measure_lt_top
+  pm_6204 hfinite
   have hInt : IntegrableOn (fun p => radialDiscard a μ L H m p*ratioMaskProduct A B Cmask p) (Icc v₀ v₁ ×ˢ Icc y₀ y₁) :=
     (integrableOn_const hfinite.ne).mono' hmasked.aestronglyMeasurable
       (ae_restrict_of_forall_mem (measurableSet_Icc.prod measurableSet_Icc) hmaskedpoint)
@@ -87,22 +86,17 @@ theorem masked_radial_near_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   obtain ⟨Cnear,hCnear,hb⟩ := radial_uniform_power_decay ha hlu hs v₀ v₁ y₀ y₁ 0
   refine ⟨Cnear,hCnear,?_⟩
   intro L H m μ A B C hA hB hC hm h0 hi
-  have hmass : 0 ≤ ∫ t, μ t := integral_nonneg h0
-  have hQ : volume (Icc v₀ v₁ ×ˢ Icc y₀ y₁) < ⊤ := (isCompact_Icc.prod isCompact_Icc).measure_lt_top
-  have hset : MeasurableSet {p : ℝ × ℝ | |L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ))| ≤ H} := by
-    apply measurableSet_le <;> fun_prop
+  pm_4517
+  pm_6204 hQ
+  pm_482 hset
   have hrm := ratioFourierProduct_measurable hi
   have hmaskm := ratioMaskProduct_measurable hA hB hC
   have hnm : Measurable (maskedRadialNearMass μ A B C L H m) :=
     Measurable.ite hset (hrm.norm.mul hmaskm.norm) measurable_const
-  have hnear0 : ∀ p, 0 ≤ maskedRadialNearMass μ A B C L H m p := by
-    intro p; unfold maskedRadialNearMass; split_ifs <;> positivity
+  pm_836
   have hnearBound : ∀ p, maskedRadialNearMass μ A B C L H m p ≤ (∫ t, μ t)^3 := by
     intro p
-    unfold maskedRadialNearMass
-    split_ifs
-    · exact (mul_le_of_le_one_right (norm_nonneg _) (ratioMaskProduct_norm_le_one A B C p)).trans (ratioFourierProduct_bound hm h0 hi p)
-    · positivity
+    pm_5303 hi
   have hni : IntegrableOn (maskedRadialNearMass μ A B C L H m) (Icc v₀ v₁ ×ˢ Icc y₀ y₁) :=
     (integrableOn_const hQ.ne (C := (∫ t, μ t)^3)).mono' hnm.aestronglyMeasurable
       (Filter.Eventually.of_forall (fun p => by rw [Real.norm_eq_abs,abs_of_nonneg (hnear0 p)]; exact hnearBound p))
@@ -112,7 +106,7 @@ theorem masked_radial_near_bound {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       ‖maskedRadialNear a μ A B C L H m p‖ ≤ Cnear*maskedRadialNearMass μ A B C L H m p := by
     intro p hp
     have hk : ‖radialKernel a L m p‖ ≤ Cnear := by
-      have hh := hb p.1 hp.1 p.2 hp.2 (L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ)))
+      pm_5176 hh hb
       rw [radialKernel,radial_integral_fourier]
       simpa only [pow_zero,one_mul] using hh
     unfold maskedRadialNear maskedRadialNearMass
@@ -135,7 +129,7 @@ theorem masked_radial_near_discard (a : ℝ → ℂ) (μ : ℝ → ℝ) (A B C :
     radialKernel a L m p*ratioFourierProduct μ p*ratioMaskProduct A B C p =
       maskedRadialNear a μ A B C L H m p + radialDiscard a μ L H m p*ratioMaskProduct A B C p := by
   unfold maskedRadialNear radialDiscard
-  by_cases h : |L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ))| ≤ H
+  pm_1238 h
   · simp only [ite_eq_left h,ite_eq_right (not_lt_of_ge h),zero_mul,add_zero]
   · simp only [ite_eq_right h,ite_eq_left (lt_of_not_ge h),zero_add]
 

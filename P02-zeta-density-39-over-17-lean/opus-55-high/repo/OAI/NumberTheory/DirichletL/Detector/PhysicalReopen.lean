@@ -16,13 +16,13 @@ local notation "O" => ActualEisensteinCubic.O
 lemma supportedElement_ne_zero (s : O) (hs : Supported (Ideal.span {s})) : s≠0 := by
   intro h
   apply hs.1
-  simp [h]
+  simp_all
 
 lemma finite_support_tsum_comm {α β : Type*} (f : α → β → ℂ) (S : Finset α)
     (hz : ∀ a, a∉S → ∀ b, f a b=0) (hs : ∀ a∈S, Summable (f a)) :
     (∑' a, ∑' b, f a b) = ∑' b, ∑' a, f a b := by
   calc
-    _ = ∑ a∈S, ∑' b, f a b := tsum_eq_sum (fun a ha => by simp only [hz a ha, tsum_zero])
+    _ = ∑ a∈S, ∑' b, f a b := tsum_eq_sum (fun a ha => by simp_all)
     _ = ∑' b, ∑ a∈S, f a b := (Summable.tsum_finsetSum hs).symm
     _ = _ := by
       apply tsum_congr
@@ -44,8 +44,8 @@ theorem physical_spectral_reopen (η : HeckeFamily.Character) (C : CalibrationDa
   have hfin := elementWindow_finite_support W hW K hK
   have hzero : ∀ m, m∉hfin.toFinset → ∀ p, F m p=0 := by
     intro m hm p
-    have hz : W (elementNorm m/K)=0 := by simpa only [Set.Finite.mem_toFinset, Function.mem_support, not_not] using hm
-    simp only [F, hz, mul_zero, zero_mul]
+    have hz : W (elementNorm m/K)=0 := by simp_all
+    grind
   have hsum (m : O) : Summable (F m) :=
     (spectralRow_summable S D (rowCoefficient η C.Xi s hs m)
       (rowCoefficient_norm_le_one η C.Xi C.Xi_norm_le_one s hs m) t ht).mul_left _

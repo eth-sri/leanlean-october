@@ -39,7 +39,7 @@ theorem heightCoeff_eq_fixed_rowWeight (τ : Character) (t : ℝ)
   rw [ite_eq_left hc.symm] at hs
   change idealCoeff τ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)=
     ((idealCoeff τ I*idealRowHom (fixedBadMask^6*(1*1)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t))
-  simp only [mul_one,hs]
+  grind
 
 end SevenEighths.CenteredMomentSecondHeightFamily
 

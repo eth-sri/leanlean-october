@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosGcdFiberCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -20,11 +21,9 @@ theorem robertSargos_gcd_scale_bound {R H Q δ η j k : ℝ}
     ((R/j)*(H/j)*(max 1 (Q/k)))^(1+η)*(1+δ*max 1 (Q/k)) ≤
       4*(2:ℝ)^η*(R*H*Q)^(1+η)*(1+δ*Q)/(j*k) := by
   have hRp : 0 < R := by linarith
-  have hHp : 0 < H := by linarith
-  have hQp : 0 < Q := by linarith
-  have hjp : 0 < j := by linarith
-  have hkp : 0 < k := by linarith
-  have hBp : 0 < R*H*Q := by positivity
+  pm_2549
+  pm_72 hjp j hkp k
+  pm_655 hBp R H Q
   have hnp : 0 < (R/j)*(H/j)*(max 1 (Q/k)) := by positivity
   have hq : max 1 (Q/k) ≤ 2*Q/k := by
     apply max_le

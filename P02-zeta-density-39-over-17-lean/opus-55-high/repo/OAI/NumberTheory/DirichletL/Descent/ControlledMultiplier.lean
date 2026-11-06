@@ -1,14 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ActiveReflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
+open CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -68,9 +69,7 @@ theorem controlled_local_multiplier (D : ControlledStratumArithmetic p N a0 c0 m
         finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i)) (F i) v *
           frequencyMultiplier (actualSextic (Ideal.span {p i}) (hg i))
             (quotientTrace (p i) (hp i)) (D.sigma i) (D.epsilon i) (Ideal.Quotient.mk _ x) v := by
-  rw [Fintype.prod_sum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro v hv
+  pm_3419 Fintype.prod_sum Finset.mul_sum v hv
   rw [mul_assoc, controlled_phase_product D hN hr hbase hp hc0 hcop hg v x]
   simp only [fullLocalFourierWeight, Finset.prod_mul_distrib]
   ring

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.PowerfulBudget
 public import OAI.NumberTheory.DirichletL.Reflection.RowReindex
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,12 +15,12 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (Z : ℝ),2≤Z → ∀ (parents : Finset (Ideal Eis)) (Q : Ideal Eis),
-      (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^L) → Q≠0 → (Ideal.absNorm Q:ℝ)≤Z^L →
+      (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z ^L) → Q≠0 → (Ideal.absNorm Q:ℝ)≤Z ^L →
       ∀ (E : ℝ) (f : Ideal Eis→ℝ),0≤E →
       (∀ J∈parents,(∑ I∈representativeRowFiber parents J Q,f I)≤
         E*(Ideal.absNorm (rowPowerfulPart J):ℝ)^(-(1/2:ℝ))) →
-      (∑ I∈parents,f I)≤C*Z^ε*E := by
-  obtain ⟨C,hC,hbudget⟩ := InverseReflectedPhasePowerfulBudget.row_mask_powerful_budget L ε hL hε
+      (∑ I∈parents,f I)≤C*Z ^ε*E := by
+  pm_97 C hC hbudget InverseReflectedPhasePowerfulBudget.row_mask_powerful_budget L ε hL hε
   refine ⟨C,hC,?_⟩
   intro Z hZ parents Q hparents hQ hQN E f hE hf
   have hb := hbudget Z hZ parents Q hparents hQ hQN
@@ -35,15 +36,13 @@ theorem completed_representative_aggregation (L ε : ℝ) (hL : 0≤L) (hε : 0<
       exact mul_nonneg hE (Real.rpow_nonneg (Nat.cast_nonneg _) _)
   rw [←sum_completedRowFibers parents Q f]
   calc
-    _ ≤ ∑ A∈parents.image rowPowerfulPart,∑ _T∈parents.image (fun I => rowMaskPart I Q),
+    _ ≤ ∑ A∈parents.image rowPowerfulPart,∑ _T∈parents.image (fun I=> rowMaskPart I Q),
           E*(Ideal.absNorm A:ℝ)^(-(1/2:ℝ)) :=
       Finset.sum_le_sum (fun A _ => Finset.sum_le_sum (fun T _ => hblocks A T))
-    _ = (((parents.image (fun I => rowMaskPart I Q)).card:ℝ)*
+    _ = (((parents.image (fun I=> rowMaskPart I Q)).card:ℝ)*
           (∑ A∈parents.image rowPowerfulPart,(Ideal.absNorm A:ℝ)^(-(1/2:ℝ))))*E := by
       simp only [Finset.sum_const,nsmul_eq_mul]
-      rw [Finset.mul_sum,Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro A hA
+      pm_3813 Finset.mul_sum Finset.sum_mul Finset.sum_congr A hA
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_right hb hE
 end

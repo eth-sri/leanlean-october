@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.MobiusRegroup
 public import OAI.NumberTheory.DirichletL.Moments.FixedRay
 public import OAI.NumberTheory.DirichletL.Moments.RowNorm
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,13 +42,9 @@ theorem divisor_pair_separation {α β : Type*} (L : Ideal O) (a : α → O) (b 
     · simp only [hi,hj,and_self,ite_true,divisorCoefficient,star_mul,rayCharacter_inverse_star]
       rw [completeSupportExtension_separated D E h (a i) (b j) hD hE (ha i) (hb j)]
       simp only [Finset.mul_sum, Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro χ _
-      apply Finset.sum_congr rfl
-      intro ξ _
+      pm_156 Finset.sum_congr χ ξ
       ring
-    · simp only [hi,hj,and_false,ite_false,divisorCoefficient,ite_true,zero_mul,star_zero,
-        mul_zero,Finset.sum_const_zero]
+    pm_1279
   · simp only [hi,false_and,ite_false,divisorCoefficient,zero_mul,Finset.sum_const_zero,mul_zero]
 
 theorem pair_ray_fubini {α β γ δ : Type*} [Fintype γ] [Fintype δ]
@@ -57,12 +54,10 @@ theorem pair_ray_fubini {α β γ δ : Type*} [Fintype γ] [Fintype δ]
       ∑ χ : γ, ∑ ξ : δ, A χ ξ * ∑ i ∈ S, ∑ j ∈ T, (L i χ * R j ξ) * K i j := by
   simp only [Finset.mul_sum]
   rw [Finset.sum_comm (s := S)]
-  simp_rw [Finset.sum_comm (s := S) (t := Finset.univ)]
-  rw [Finset.sum_comm (s := T)]
-  apply Finset.sum_congr rfl
+  pm_584 S Finset.univ
+  pm_1214 T
   intro χ _
-  rw [Finset.sum_comm (s := T)]
-  apply Finset.sum_congr rfl
+  pm_1214 T
   intro ξ _
   rw [Finset.sum_comm]
   simp only [mul_assoc]

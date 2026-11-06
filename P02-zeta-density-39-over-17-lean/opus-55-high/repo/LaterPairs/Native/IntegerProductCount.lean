@@ -4,6 +4,7 @@ public import GuthMaynard.AffineSource.Foundation
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveDivisorGrowth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -28,7 +29,7 @@ theorem positive_integer_product_pairs_card_le
     constructor
     · rw [← hprod p hp,Int.natAbs_mul]
       exact dvd_mul_right _ _
-    · exact Int.natAbs_ne_zero.mpr hm
+    grind
   · intro p hp q hq he
     have hfirst : p.1 = q.1 := by
       rcases Int.natAbs_eq_natAbs_iff.mp he with heq | hneg
@@ -48,8 +49,7 @@ theorem exists_positive_integer_product_pairs_bound (ε : ℝ) (hε : 0 < ε) :
       m ≠ 0 → (m.natAbs:ℝ) ≤ M →
       (∀ p ∈ S, 0 < p.1) → (∀ p ∈ S, p.1*p.2 = m) →
       (S.card:ℝ) ≤ C*M^ε := by
-  obtain ⟨C,hC,hdiv⟩ := RiemannZeta.GuthMaynard.divisorCountBound_native ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hdiv RiemannZeta.GuthMaynard.divisorCountBound_native ε hε
   intro S m M hm hM hpos hprod
   calc
     _ ≤ (m.natAbs.divisors.card:ℝ) := by

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionChoices
 public import OAI.NumberTheory.DirichletL.Moments.RetainedComparisonEnergy
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionApproximation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ lemma normalized_zero (G:𝓢(ℝ,ℂ)) (B:ℕ) (s:ℝ) :
     normalizedReflected CenteredMomentReflectedAnnuli.logWindow G B 0 s 0=
       (fun x=>(annulus x:ℂ)*((1+s)^B:ℂ)*paperRadialFourier G (s*x)) := by
   funext x
-  simp only [normalizedReflected,heightScale,pow_zero,div_one,twisted_zero,actual_log_window]
+  pm_382 normalizedReflected heightScale pow_zero div_one twisted_zero actual_log_window
   push_cast
   rfl
 
@@ -37,7 +38,7 @@ lemma retained_zero (χ ψ:Character) (G:𝓢(ℝ,ℂ)) (X R:ℝ) :
 theorem actual_retained_uniform_energy (epsilon : ℝ)
     (hepsilon : 0<epsilon) (B J : ℕ) (hB : 2≤B) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],
-      ∀(G : ι→𝓢(ℝ,ℂ))(χ ψ : ι→Character)(P : ι→ℂ)(X R ly omega : ι→ℝ)
+      ∀(G : ι→𝓢(ℝ,ℂ))(χ ψ : ι→ Character)(P : ι→ℂ)(X R ly omega : ι→ℝ)
         (Wshort : ℝ→ℂ)(c d lo hi low high D E Rcap : ℝ),
       (∀i,0<X i) → 0≤d → Function.support Wshort⊆Set.Icc c d → ContDiff ℝ ∞ Wshort →
       lo≤hi → low≤high → (∀i,ly i∈Set.Icc low high) →
@@ -54,10 +55,10 @@ theorem actual_retained_uniform_energy (epsilon : ℝ)
           ≤E*(1+‖v‖)^(2*J)) →
       (∑i,‖retainedSchwartz (χ i) (ψ i) (G i) (X i) (R i)*
         polynomial (χ i) false Wshort (Real.exp (ly i)) 0 (omega i)*P i‖^2)≤
-        C*Rcap^epsilon*D^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
-  obtain ⟨H,Cp,hCp,hp⟩ := actual_independent_choices B J
-  obtain ⟨Cw,hCw,hw⟩ := actual_retained_weighted_energy epsilon hepsilon
-  refine ⟨H,Cw*Cp,mul_pos hCw hCp,?_⟩
+        C*Rcap^epsilon*D ^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
+  pm_205 H Cp hCp hp actual_independent_choices B J
+  pm_69 Cw hCw hw actual_retained_weighted_energy epsilon hepsilon
+  pm_3528 H Cw Cp hCw hCp
   intro ι _ G χ ψ P X R ly omega Wshort c d lo hi low high D E Rcap
     hX hd hshort hshortsmooth hlh hlw hly hgeom hD hE hGD hRcap hcap henergy
   let α (i : ι) := Index (sourcePrimes (χ i) (ψ i))
@@ -73,7 +74,7 @@ theorem actual_retained_uniform_energy (epsilon : ℝ)
   let P' (i : ι) := polynomial (χ i) false Wshort (Real.exp (ly i)) 0 (omega i)*P i
   have hselected (u : ∀i,α i) :
       (∑i,‖retainedColumn (χ i) (ψ i) (G i) (X i) (R i) 0 (hX i) B 0 (P' i) (u i)‖^2)≤
-        Cp*D^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
+        Cp*D ^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
     simpa only [retainedColumn,P',Y,s,keep,normalized_zero,mul_assoc] using hchoice u
   have hh := hw χ ψ (fun i=>(G i:ℝ→ℂ)) X R (fun _=>0) hX (fun _=>B) 0 P' (fun _=>hB)
     0 Rcap _ le_rfl (fun _=>by simp) hRcap hcap hselected

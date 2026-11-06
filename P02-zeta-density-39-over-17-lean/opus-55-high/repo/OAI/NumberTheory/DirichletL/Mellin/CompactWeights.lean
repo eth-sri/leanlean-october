@@ -78,9 +78,7 @@ noncomputable def positiveExtension (y : ℝ) : ℝ :=
 theorem positiveExtension_smooth : ContDiff ℝ (↑(⊤ : ℕ∞)) positiveExtension := by
   unfold positiveExtension
   have ht : ContDiff ℝ (↑(⊤ : ℕ∞)) (fun y : ℝ => 2 * y - 1) := by fun_prop
-  exact contDiff_const.add
-    ((contDiff_id.sub contDiff_const).mul
-      ((Real.smoothTransition.contDiff (n := ⊤)).comp ht))
+  fun_prop
 
 theorem positiveExtension_pos (y : ℝ) : 0 < positiveExtension y := by
   unfold positiveExtension
@@ -95,7 +93,7 @@ theorem positiveExtension_pos (y : ℝ) : 0 < positiveExtension y := by
     · have hle := Real.smoothTransition.le_one (2 * y - 1)
       have hnonneg := Real.smoothTransition.nonneg (2 * y - 1)
       have hprod : (1 - y) * Real.smoothTransition (2 * y - 1) ≤ 1 - y := by
-        exact (mul_le_mul_of_nonneg_left hle (by linarith)).trans_eq (mul_one _)
+        simp_all
       nlinarith
 
 theorem positiveExtension_eq (y : ℝ) (hy : 1 ≤ y) :

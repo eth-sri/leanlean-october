@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.LocalProductAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,15 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace TraceLambdaPhase
@@ -52,7 +50,7 @@ end TraceLambdaPhase
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
+open EisensteinEmbedding ConcreteTraceCRT TraceLambdaPhase
 
 end ActualEisensteinCubic
 
@@ -65,7 +63,7 @@ namespace ActualEisensteinCubic
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE TraceLambdaPhase
+open EisensteinEmbedding ConcreteTraceCRT TraceLambdaPhase
 
 end
 
@@ -81,7 +79,7 @@ theorem finiteSquarefreeRow_sixth_power
       if ∃ i ∈ S, a ∈ P i then 0 else 1 := by
   classical
   simp only [finiteSquarefreeRow]
-  by_cases hex : ∃ i ∈ S, a ∈ P i
+  pm_1327 hex a
   · obtain ⟨i, hi, hai⟩ := hex
     rw [ite_eq_left ⟨i, hi, hai⟩]
     apply Finset.prod_eq_zero hi
@@ -93,36 +91,27 @@ theorem finiteSquarefreeRow_sixth_power
     rw [canonicalSextic_sixth_power_mask]
     simp [show a ∉ P i by intro hai; exact hex ⟨i, hi, hai⟩]
 
-theorem finiteSquarefreeRow_difference
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
+section
+variable {ι N : Type*} [DecidableEq N] (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hgood : ∀ i, lambda ∉ P i) (columns : Finset N) (support : N → Finset ι) (weight : N → ℂ) (a : O)
+include ι N P hgood columns support weight a
+theorem finiteSquarefreeRow_difference :
     (∑ n ∈ columns, weight n) -
       (∑ n ∈ columns,
         weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6)) =
       ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), weight n := by
   classical
   rw [← Finset.sum_sub_distrib]
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [finiteSquarefreeRow_sixth_power]
+  pm_223 Finset.sum_filter n hn finiteSquarefreeRow_sixth_power
   by_cases h : ∃ i ∈ support n, a ∈ P i <;> simp [h]
 
-theorem finiteSquarefreeRow_difference_norm
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
+theorem finiteSquarefreeRow_difference_norm :
     ‖(∑ n ∈ columns, weight n) -
       (∑ n ∈ columns,
         weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6))‖ ≤
       ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), ‖weight n‖ := by
   rw [finiteSquarefreeRow_difference]
   exact norm_sum_le _ _
+end
 
 end ActualEisensteinCubic
 
@@ -174,7 +163,7 @@ noncomputable def breveGaussianFourTerms (a b : ℤ) : ℂ :=
 theorem breveGaussianFourTerms_formula (a b : ℤ) :
     breveGaussianFourTerms a b =
       (1 + Complex.I ^ (-b) + Complex.I ^ a + Complex.I ^ (b-a)) / 2 := by
-  let c : ℂ := (a : ℂ) + (b : ℂ) * omega3
+  pm_256 c a b omega3
   have hfirst : ShortDraftTrace.breveE (((-c) / eisLam) / 4) =
       Complex.I ^ (-b) := by
     have hc : -c = ((-a : ℤ) : ℂ) + ((-b : ℤ) : ℂ) * omega3 := by

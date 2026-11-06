@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleySection7Congruence
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,6 @@ translated-and-dilated displacement used by the equation-(7.12) theorem.
 -/
 
 open Finset Polynomial
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -54,7 +54,7 @@ theorem wooleySection7NormalSystem_eval_progression_dvd
   have hfirst : (p : ℤ) ^ (b * d) ∣
       ((p : ℤ) ^ b * t) ^ d := by
     rw [mul_pow, pow_mul]
-    exact dvd_mul_right _ _
+    simp_all
   have htailPow : (p : ℤ) ^ (b * d) ∣
       ((p : ℤ) ^ b * t) ^ (k + 1) := by
     have hle : b * d ≤ b * (k + 1) :=
@@ -74,9 +74,9 @@ theorem wooleySection7NormalSystem_eval_progression_dvd
     rw [hz]
     ring
   unfold wooleySection7NormalSystem
-  simp only [eval_add, eval_pow, eval_X, eval_mul, eval_C]
+  pm_93 eval_add eval_pow eval_X eval_mul eval_C
   dsimp only [d] at hfirst htail ⊢
-  exact dvd_add hfirst (by simpa only [mul_assoc] using htail)
+  exact dvd_add hfirst (by grind)
 
 /-- Every equal-length tuple displacement on the right progression has the
 same divisibility. -/
@@ -126,7 +126,7 @@ theorem wooleySection7_original_implies_top_congruences
   intro l
   let j : Fin k :=
     ⟨wooleySection7Node k r l, wooleySection7Node_succ_le hrk l⟩
-  let M := (k - r + 1) * b
+  pm_4916 M
   let leftDisp : ℤ := wooleyIntegerTupleDisplacement R
     (fun x => (wooleySection7NormalSystem k p c psi j).eval
       ((p : ℤ) ^ a * leftPoint x + h)) leftXY

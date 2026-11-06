@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosWeightedBoundary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -21,12 +22,8 @@ theorem sum_signed_shift_axes (F : ℤ → ℤ → ℝ) (Q R : ℕ)
         (∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F 0 r)+
           ∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0,
             ∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F q r := by
-  have hq0 : (0:ℤ) ∈ Finset.Ioo (-(Q:ℤ)) Q := by
-    simp only [Finset.mem_Ioo]
-    constructor <;> omega
-  have hr0 : (0:ℤ) ∈ Finset.Ioo (-(R:ℤ)) R := by
-    simp only [Finset.mem_Ioo]
-    constructor <;> omega
+  pm_6133 hq0 Q
+  pm_6133 hr0 R
   have he (q : ℤ) : (∑ r ∈ Finset.Ioo (-(R:ℤ)) R, F q r) =
       (∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0, F q r)+F q 0 :=
     (Finset.sum_erase_add _ _ hr0).symm

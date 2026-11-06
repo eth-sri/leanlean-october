@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PrimePhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,7 +38,7 @@ lemma reciprocitySign_one_left (a : O) (ha : EisensteinEPrimaryPhase.odd (residu
       quadraticRaySign (1, 0) r = 1 := by decide
   unfold reciprocitySign
   rw [residue_one_mod_four]
-  exact_mod_cast ht (residue a) ha
+  simp_all
 
 lemma reciprocitySign_mul_left (a b c : O) :
     reciprocitySign (a * b) c = reciprocitySign a c * reciprocitySign b c := by
@@ -58,13 +59,15 @@ lemma reciprocitySign_pow_right (a b : O)
 lemma G_one : G (1 : O) = 1 := by
   have hq : quadraticRayValue (residue (1 : O)) = 1 := by
     rw [residue_one_mod_four]
-    change breveGaussianFourTerms 1 0 = 1
-    rw [breveGaussianFourTerms_formula]
+    pm_8383
     norm_num
   have he := G_cube (1 : O) odd_residue_one (cubicTwo_isUnit_of_odd 1 odd_residue_one)
-  simpa only [one_pow, hq] using he
+  simp_all
 
-theorem G_pow (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (n : ℕ) :
+section
+variable (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
+include a ha
+theorem G_pow (n : ℕ) :
     G (a ^ n) = G a ^ n * reciprocitySign a a ^ (n.choose 2) := by
   induction n with
   | zero => simp [G_one]
@@ -74,20 +77,20 @@ theorem G_pow (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (n : ℕ) :
       pow_add, pow_succ]
     ring
 
-theorem reciprocitySign_cube_self (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) :
+theorem reciprocitySign_cube_self :
     reciprocitySign (a ^ 3) (a ^ 3) = reciprocitySign a a := by
   rw [reciprocitySign_cube_right (a ^ 3) a (odd_residue_pow a ha 3) ha,
     reciprocitySign_symm, reciprocitySign_cube_right a a ha ha]
 
-theorem G_cube_power (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a)) (l : ℕ) :
+theorem G_cube_power (l : ℕ) :
     G (a ^ (3 * l)) = G (a ^ 3) ^ l * reciprocitySign a a ^ (l.choose 2) := by
   rw [pow_mul, G_pow (a ^ 3) (odd_residue_pow a ha 3), reciprocitySign_cube_self a ha]
 
-theorem G_completed_prime_power (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
+theorem G_completed_prime_power
     (e l : ℕ) (he : e ≤ 1) :
     G (a ^ (e + 3 * l)) =
       G a ^ e * G (a ^ 3) ^ l * reciprocitySign a a ^ (e * l + l.choose 2) := by
-  have hc : e = 0 ∨ e = 1 := by omega
+  pm_7057 hc e
   rcases hc with rfl | rfl
   · simpa only [zero_add, zero_mul, pow_zero, one_mul] using G_cube_power a ha l
   · rw [pow_add, pow_one, G_mul a (a ^ (3 * l)) ha (odd_residue_pow a ha _),
@@ -95,6 +98,7 @@ theorem G_completed_prime_power (a : O) (ha : EisensteinEPrimaryPhase.odd (resid
       reciprocitySign_cube_right a a ha ha]
     simp only [pow_one, one_mul, pow_add]
     ring
+end
 
 end SevenEighths.ProbePhase
 end

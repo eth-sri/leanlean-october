@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.FullDyadic
 public import OAI.NumberTheory.DirichletL.Reflection.PhysicalIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,11 +33,10 @@ lemma shell_windows_one (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
   · exact completedShellWindow_log _ _ (hnorm n.val hn.1) (by positivity) hn.2.1 hn.2.2
   · exact completedShellWindow_log _ _ (hnorm b.val hb.1) (by positivity) hb.2.1 hb.2.2
 
-theorem literalRawSeries_eq_shell_source (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ→ℕ)
-    (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (u : Eisˣ) (i : ℕ×ℕ×ℕ) (n : dualIdealDyad i.2.2) (b : dualIdealDyad i.2.1)
+section
+variable (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) (jF : φ→ℕ) (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0) (u : Eisˣ) (i : ℕ×ℕ×ℕ)
+include F K hK S jF D s hc u i
+theorem literalRawSeries_eq_shell_source (n : dualIdealDyad i.2.2) (b : dualIdealDyad i.2.1)
     (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
     (hKr : QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK)
     (hPr : QP/2≤(Ideal.absNorm (∏ i,S.ideal i):ℝ) ∧ (Ideal.absNorm (∏ i,S.ideal i):ℝ)≤QP)
@@ -63,11 +63,7 @@ theorem literalRawSeries_eq_shell_source (F : PrimeFamily φ) (K : Ideal Eis) (h
       fun h => hp ⟨⟨h.1,h.2.1⟩,h.2.2⟩
     simp only [ite_eq_right hp,literalRawSeries,rawDualKernelTerm,literalRawCoefficient,ite_eq_right hp',zero_mul]
 
-theorem literalDyadicBlock_eq_shell_source (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : PrimeFamily σ) (jF : φ→ℕ)
-    (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
-    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (u : Eisˣ) (i : ℕ×ℕ×ℕ) (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
+theorem literalDyadicBlock_eq_shell_source (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
     (hKr : QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK)
     (hPr : QP/2≤(Ideal.absNorm (∏ i,S.ideal i):ℝ) ∧ (Ideal.absNorm (∏ i,S.ideal i):ℝ)≤QP)
     (W : ℝ→ℂ) (θ X : ℝ) :
@@ -77,11 +73,9 @@ theorem literalDyadicBlock_eq_shell_source (F : PrimeFamily φ) (K : Ideal Eis) 
         if CubicSieve.Admissible n.val ∧ primaryGenerator b.val≠0 then
           actualKernelSourceTerm F K hK S jF D s hc u i.1 n.val b.val
             (fun _ => completedShellWindow) QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1) W θ X else 0 := by
-  apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro b hb
+  pm_3397 n hn b hb
   exact literalRawSeries_eq_shell_source F K hK S jF D s hc u i n b QK QP hQK hQP hKr hPr W θ X
+end
 end
 end SevenEighths.InverseReflectedPhase
 

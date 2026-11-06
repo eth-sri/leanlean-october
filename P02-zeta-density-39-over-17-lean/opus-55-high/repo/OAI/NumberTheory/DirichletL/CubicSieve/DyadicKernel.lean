@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.PoissonSource
 public import OAI.NumberTheory.DirichletL.CubicSieve.QuantitativePassage
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,74 +9,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FirstPassCubeLabels
@@ -104,34 +61,21 @@ lemma multiplicityRow_support (B : Finset ι) (v : ι→₀ℕ) (hv : v.support�
     multiplicityRow (fun i=>Ideal.span {p i}) hg B v z =
       multiplicityRow (fun i=>Ideal.span {p i}) hg v.support v z := by
   unfold multiplicityRow
-  symm
-  apply Finset.prod_subset hv
-  intro i hi hn
-  have hv0 : v i=0 := by simpa only [Finsupp.mem_support_iff,not_not] using hn
-  simp only [hv0,pow_zero]
+  pm_3781
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 open ActualEisensteinCubic
 
-def completedDualScale (X r C K U B : ℝ) (D E : Ideal O) : ℝ :=
-  r^3*(Ideal.absNorm D:ℝ)*(Ideal.absNorm E:ℝ)^3*U*B^3*X/(K^2*C^2)
-
 end CompletedGauss
 
-open scoped BigOperators
 namespace CompletedDyadic
 
 def ramifiedScale (ρ q : ℝ) (m : ℕ) : ℝ := ρ*q^m
 
 theorem ramifiedScale_pos (ρ q : ℝ) (hρ : 0<ρ) (hq : 0<q) (m : ℕ) :
-    0<ramifiedScale ρ q m := by unfold ramifiedScale; positivity
-
-def normMajorant (deltaLoss A K t r H U B : ℝ) : ℝ :=
-  K^deltaLoss/(r*Real.sqrt H)*
-    (Real.sqrt K*B^(deltaLoss-1/2)*U^deltaLoss+B^deltaLoss*U^(deltaLoss+1/2))/(1+t*r^3*B^3*U)^A
+    0< ramifiedScale ρ q m := by unfold ramifiedScale; positivity
 
 end CompletedDyadic
 
@@ -142,14 +86,14 @@ theorem finite_tsum_energy_bound {κ α : Type*} [Fintype κ]
     (hbound : ∀i,(∑k,‖f i k‖^2)≤(g i)^2) :
     (∀k,Summable (fun i => ‖f i k‖)) ∧
     (∑k,‖∑'i,f i k‖^2)≤(∑'i,g i)^2 := by
-  let e := PiLp.continuousLinearEquiv 2 ℂ (fun _ : κ => ℂ)
+  pm_3725
   let F : α→EuclideanSpace ℂ κ := fun i => e.symm (f i)
   have hF (i : α) : ‖F i‖≤g i := by
-    apply (sq_le_sq₀ (norm_nonneg _) (hg0 i)).mp
+    pm_7533
     rw [EuclideanSpace.norm_sq_eq]
     exact hbound i
   have hpoint (k : κ) (i : α) : ‖f i k‖≤g i := by
-    apply (sq_le_sq₀ (norm_nonneg _) (hg0 i)).mp
+    pm_7533
     exact (Finset.single_le_sum (fun j _ => sq_nonneg ‖f i j‖) (Finset.mem_univ k)).trans
       (hbound i)
   have hsum (k : κ) : Summable (fun i => ‖f i k‖) :=

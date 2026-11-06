@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.PhaseSecondDerivativeIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,14 +30,9 @@ theorem IntervalC1Bound.fourierChar_of_negative_curvature
       2*M*(2/Real.pi+2)/Real.sqrt m := by
   have h := IntervalC1Bound.integral_mul_of_primitive_bound hf hab hJ hsub
     (k := fun x => (𝐞 (φ x) : ℂ))
-    (by
-      intro x hx
-      have hc := (hφ x hx).continuousAt
-      simp only [Real.fourierChar_apply]
-      fun_prop)
+    (by fun_prop)
     (B := (2/Real.pi+2)/Real.sqrt m) (by
-      intro x hx
-      have hs : Icc a x ⊆ J := fun y hy => hsub ⟨hy.1,hy.2.trans hx.2⟩
+      pm_5968 hs
       exact norm_fourierCharIntegral_le_of_negative_curvature hx.1 hm
         (fun y hy => hφ y (hs hy)) (fun y hy => hcurv y (hs hy)))
   convert h using 1

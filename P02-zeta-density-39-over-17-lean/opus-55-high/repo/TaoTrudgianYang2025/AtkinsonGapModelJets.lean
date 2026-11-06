@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.AtkinsonGapNormalization
 public import Mathlib.Topology.UniformSpace.HeineCantor
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,10 @@ open scoped ContDiff Topology
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson
 
-theorem contDiffAt_atkinsonGapSlopeProfile_jet (n : ℕ)
+section
+variable (n : ℕ)
+include n
+theorem contDiffAt_atkinsonGapSlopeProfile_jet
     {q r x : ℝ} (hr : 0 < r) (hx : 0 < x)
     (hqr : 0 < r+q*x) (hqx : 0 < 1+q*x) :
     ContDiffAt ℝ ∞
@@ -47,14 +51,14 @@ theorem contDiffAt_atkinsonGapSlopeProfile_jet (n : ℕ)
     have he := hd.clm_apply (contDiffAt_const (c := (1 : ℝ)))
     simpa only [iteratedDeriv_succ,fderiv_apply_one_eq_deriv] using he
 
-theorem atkinsonGapSlopeProfile_jet_zero (n : ℕ) (r x : ℝ) :
+theorem atkinsonGapSlopeProfile_jet_zero (r x : ℝ) :
     iteratedDeriv n (atkinsonGapSlopeProfile 0 r) x =
       iteratedDeriv n (fun y : ℝ => 1/Real.sqrt y) x := by
   congr 1
   funext y
   exact atkinsonGapSlopeProfile_zero r y
 
-theorem atkinsonGapSlopeProfile_uniform_jet (n : ℕ) {ε : ℝ} (hε : 0 < ε) :
+theorem atkinsonGapSlopeProfile_uniform_jet {ε : ℝ} (hε : 0 < ε) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ q r x : ℝ, |q| < δ →
       r ∈ Icc (1 : ℝ) 2 → x ∈ Icc (1 : ℝ) 2 →
       |iteratedDeriv n (atkinsonGapSlopeProfile q r) x-
@@ -72,17 +76,16 @@ theorem atkinsonGapSlopeProfile_uniform_jet (n : ℕ) {ε : ℝ} (hε : 0 < ε) 
       (by simpa using (show 0 < r by linarith [hr.1]))
       (by norm_num)).continuousAt
   have hu := hS.uniformContinuousAt_of_continuousAt f hc (Metric.dist_mem_uniformity hε)
-  obtain ⟨δ,hδ,hbound⟩ := Metric.uniformity_basis_dist.mem_iff.mp hu
-  refine ⟨δ,hδ,?_⟩
+  pm_102 δ hδ hbound Metric.uniformity_basis_dist.mem_iff.mp hu
   intro q r x hq hr hx
   have hdist : dist ((0 : ℝ),r,x) (q,r,x) < δ := by
-    simpa only [dist_prod_same_right,Real.dist_eq,zero_sub,abs_neg] using hq
+    pm_89 dist_prod_same_right Real.dist_eq zero_sub abs_neg hq
   have h := @hbound (((0 : ℝ),r,x),(q,r,x)) hdist
     (show ((0 : ℝ),r,x) ∈ S from ⟨rfl,hr,hx⟩)
   change dist (iteratedDeriv n (atkinsonGapSlopeProfile 0 r) x)
     (iteratedDeriv n (atkinsonGapSlopeProfile q r) x) < ε at h
-  rw [atkinsonGapSlopeProfile_jet_zero] at h
-  simpa only [Real.dist_eq,abs_sub_comm] using h
+  pm_455 atkinsonGapSlopeProfile_jet_zero h Real.dist_eq abs_sub_comm
+end
 
 theorem atkinsonGapSlopeProfile_uniform_finite_jets (P : ℕ)
     {ε : ℝ} (hε : 0 < ε) :

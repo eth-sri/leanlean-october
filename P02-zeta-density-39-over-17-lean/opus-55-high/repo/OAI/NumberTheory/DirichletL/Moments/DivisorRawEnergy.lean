@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRaw
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -60,9 +61,8 @@ theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
     convert hh using 1 ; ring
   have hraw : 0 < rawRemaining D a T P := mul_pos (div_pos hT (selectedNorm_pos D a))
     (Finset.prod_pos (fun i _ => hP i))
-  have hformal : 0 < formalReductionFactor D a P := mul_pos (selectedNorm_pos D a)
-    (Finset.prod_pos (fun i _ => hP i))
-  have htotal : 0 < T*∏ i,P i := mul_pos hT (Finset.prod_pos (fun i _ => hP i))
+  pm_5423 hformal
+  pm_1024
   have hres : ‖residualCenteredRow η m A z t S β P D a W₁ W₂ X₁ X₂ Y₁ Y₂ T‖^2 =
       ‖L‖^2/rawRemaining D a T P := by
     unfold residualCenteredRow centeredSlotRow

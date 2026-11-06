@@ -1,5 +1,6 @@
 module
 public import ThirdWindow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,9 +27,7 @@ theorem third_monomial_budgets {σ a p α δ T N : ℝ}
     N^9*T^((9:ℝ)/4) ≤ Q^2*S^((29:ℝ)/12)*V^14 ∧
     N^4*T ≤ Q*S^((5:ℝ)/4)*V^6 ∧
     N^4*L*T^((1:ℝ)/8) ≤ Q*S^((49:ℝ)/40)*V^6 := by
-  have hTp : 0 < T := by linarith
-  have ht : 0 < Real.log T := Real.log_pos hT
-  let x : ℝ := Real.logb T N
+  pm_920
   have hNx : T^x=N := Real.rpow_logb hTp (by linarith) hN
   have hxa : a ≤ x := by
     have hh := Real.log_le_log (Real.rpow_pos_of_pos hTp a) hlo
@@ -40,27 +39,20 @@ theorem third_monomial_budgets {σ a p α δ T N : ℝ}
     exact (div_le_iff₀ ht).mpr hh
   let l := thirdAmplifierExponent σ p x
   let L := T^l
-  have hLp : 0 < L := by dsimp [L]; positivity
+  pm_64 hLp L
   obtain ⟨hb0,hb1,hb5,hb9,hb3,hb4,hb6,hb7,hb8⟩ := hw.budgets x hxa hxα
   have hxl : x ≤ l := le_max_left _ _
   have hll : (5/6:ℝ) ≤ l := (le_max_left _ _).trans (le_max_right _ _)
   have hbl : 2+(4-6*σ)*x-3*p/2 ≤ l := (le_max_right _ _).trans (le_max_right _ _)
-  refine ⟨L,?_,?_,?_,?_⟩
+  pm_8753 L
   · rw [← hNx]
     exact Real.rpow_le_rpow_of_exponent_le hT.le hxl
   · exact Real.rpow_le_rpow_of_exponent_le hT.le (by linarith)
-  · exact (Real.rpow_le_rpow_of_exponent_le hT.le hb0).trans_eq (Real.rpow_one T)
-  have hlogN : Real.log N=x*Real.log T := by rw [← hNx,Real.log_rpow hTp]
-  have hlogL : Real.log L=l*Real.log T := Real.log_rpow hTp l
-  have hd := mul_nonneg hδ ht.le
+  pm_419 hb0
   have hm (q : ℝ) (hq : 0 ≤ q) : 0 ≤ q*Real.log T := mul_nonneg hq ht.le
   dsimp only
-  refine ⟨?_,?_,?_,?_,?_,?_,?_,?_,?_⟩
-  all_goals
-    apply (Real.log_le_log_iff (by positivity) (by positivity)).mp
-    simp (disch := positivity) only [Real.log_mul,Real.log_div,Real.log_pow,Real.log_rpow]
-    norm_num only [Nat.cast_ofNat]
-    simp only [hlogN,hlogL]
+  pm_469
+  pm_441
   · have hh := hm _ (show 0 ≤ p+(2*σ-1)*x-l by linarith only [hb1])
     nlinarith only [hh,hd]
   · have hh := hm _ (show 0 ≤ l-(2+(4-6*σ)*x-3*p/2) by linarith only [hbl])

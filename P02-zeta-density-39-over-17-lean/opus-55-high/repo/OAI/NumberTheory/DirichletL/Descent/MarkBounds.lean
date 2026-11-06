@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,11 +18,14 @@ local notation "Eis" => ActualEisensteinCubic.O
     (IdealMobiusDivisorSum.primeSupport (Ideal.span {∏ i ∈ U, p i})).card = U.card := by
   have hc : Pairwise (Function.onFun IsCoprime (fun i : U => Ideal.span {p i.val})) := by
     intro i j hij
-    exact hcop (fun he => hij (Subtype.ext he))
+    aesop
   have he := Fintype.card_congr (productPrimeIndexEquiv (fun i : U => p i.val) hc)
   simpa only [Finset.prod_coe_sort, PrimeIndex, Fintype.card_coe, CompletedGauss.primeSupport, IdealMobiusDivisorSum.primeSupport] using he.symm
 
-theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem finite_primeMark_small_power :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
       (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -29,7 +33,7 @@ theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) → ∀ U : Finset ι,
       ‖primeMark slots lists a U‖ ≤ C * (primeProductNorm p U)^ε := by
-  obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
+  pm_69 C hC hb SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha U
   have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
@@ -41,7 +45,7 @@ theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
   rw [hn] at hh
   exact (primeMark_norm_le_divisor_count slots lists a U hslots ha).trans hh
 
-theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
+theorem finite_primeMark_extracted_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
       (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -49,7 +53,7 @@ theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) → ∀ A U : Finset ι,
       ‖primeMark slots lists a (A ∪ U)‖ ≤ (2:ℝ)^A.card * C * (primeProductNorm p U)^ε := by
-  obtain ⟨C,hC,hb⟩ := SquarefreeDivisorBound.prime_support_subsets_bound ε hε
+  pm_69 C hC hb SquarefreeDivisorBound.prime_support_subsets_bound ε hε
   refine ⟨C,hC,?_⟩
   intro ι σ _ _ p hp _ hcop slots lists a hslots ha A U
   have hI : (Ideal.span {∏ i ∈ U, p i} : Ideal Eis) ≠ 0 :=
@@ -65,6 +69,7 @@ theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
     _ = (2:ℝ)^A.card * (2:ℝ)^U.card := pow_add _ _ _
     _ ≤ (2:ℝ)^A.card * (C * (primeProductNorm p U)^ε) := mul_le_mul_of_nonneg_left hh (by positivity)
     _ = _ := by ring
+end
 
 end
 end SevenEighths.InverseMoment

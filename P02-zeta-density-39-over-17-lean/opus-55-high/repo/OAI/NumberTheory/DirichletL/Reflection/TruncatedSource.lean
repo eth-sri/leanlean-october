@@ -47,7 +47,7 @@ lemma tsum_sub_finset_eq_tail {α : Type*} (f : α→ℂ) (hf : Summable f) (A :
         intro i
         by_cases hi : i∈A <;> simp [hi]
   rw [ht] at hh
-  exact eq_sub_of_add_eq' hh |>.symm
+  grind
 
 end
 end SevenEighths.InverseReflectedPhase

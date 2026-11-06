@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosATimesA
 public import LaterPairs.Native.SargosSourceDifferencing
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -26,7 +27,10 @@ theorem robertSargos_sum_one_based {A : Type*} [AddCommMonoid A]
     omega
   simpa only [he] using sargos_sum_Ico_add_one f M
 
-theorem robertSargos_padded_source_plane (a : ℤ → ℤ → ℂ) (M H : ℕ)
+section
+variable (a : ℤ → ℤ → ℂ) (M H : ℕ)
+include a M H
+theorem robertSargos_padded_source_plane
     (ha : ∀ m h : ℤ, m ∉ Finset.Icc (1:ℤ) M ∨ h ∉ Finset.Icc (1:ℤ) H →
       a m h = 0) (m h : ℤ) :
     robertSargosPaddedPlane (fun n k => a (n+1) (k+1)) M H m h = a (m+1) (h+1) := by
@@ -34,23 +38,21 @@ theorem robertSargos_padded_source_plane (a : ℤ → ℤ → ℂ) (M H : ℕ)
   · by_cases hh : h ∈ Finset.Ico (0:ℤ) H
     · simp only [robertSargosPaddedPlane,ite_eq_left hm,ite_eq_left hh]
     · have hh' : h+1 ∉ Finset.Icc (1:ℤ) H := by
-        simp only [Finset.mem_Ico] at hh
-        simp only [Finset.mem_Icc]
+        pm_415 Finset.mem_Ico hh Finset.mem_Icc
         omega
       simp only [robertSargosPaddedPlane,ite_eq_left hm,ite_eq_right hh,ha _ _ (Or.inr hh')]
   · have hm' : m+1 ∉ Finset.Icc (1:ℤ) M := by
-      simp only [Finset.mem_Ico] at hm
-      simp only [Finset.mem_Icc]
+      pm_415 Finset.mem_Ico hm Finset.mem_Icc
       omega
     simp only [robertSargosPaddedPlane,ite_eq_right hm,ha _ _ (Or.inl hm')]
 
-theorem robertSargos_source_plane_sum (a : ℤ → ℤ → ℂ) (M H : ℕ) :
+theorem robertSargos_source_plane_sum :
     (∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a (m+1) (h+1)) =
       ∑ m ∈ Finset.Icc (1:ℤ) M, ∑ h ∈ Finset.Icc (1:ℤ) H, a m h := by
   simp_rw [robertSargos_sum_one_based]
   exact robertSargos_sum_one_based (fun m => ∑ h ∈ Finset.Icc (1:ℤ) H, a m h) M
 
-theorem robertSargos_source_plane_correlation (a : ℤ → ℤ → ℂ) (M H : ℕ)
+theorem robertSargos_source_plane_correlation
     (ha : ∀ m h : ℤ, m ∉ Finset.Icc (1:ℤ) M ∨ h ∉ Finset.Icc (1:ℤ) H →
       a m h = 0) (q r : ℤ) :
     robertSargosPlaneCorrelation (fun m h => a (m+1) (h+1)) M H q r =
@@ -67,6 +69,7 @@ theorem robertSargos_source_plane_correlation (a : ℤ → ℤ → ℂ) (M H : �
   simp only [hi]
   exact robertSargos_sum_one_based
     (fun m => ∑ h ∈ Finset.Icc (1:ℤ) H, ⟪a (m+q) h,a m (h+r)⟫_ℝ) M
+end
 
 theorem robertSargos_source_a_times_a (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     (hQ : 0 < Q) (hR : 0 < R) (hQM : Q ≤ M) (hRH : R ≤ H)

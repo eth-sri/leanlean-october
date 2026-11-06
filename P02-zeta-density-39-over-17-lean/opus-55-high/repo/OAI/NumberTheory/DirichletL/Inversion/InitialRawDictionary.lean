@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialConjugateEnergy
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicBridge
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowSpecialization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,21 +21,20 @@ def twistedProfile (W : ℝ → ℂ) (σ freq : ℝ) (x : ℝ) : ℂ :=
 
 theorem finite_source_cover (W : ℝ → ℂ) (D b : ℝ) (hD : 0<D)
     (hW : ∀x,W x≠0 → x≤b) (I : Ideal O) (hI : I≠0)
-    (hi : W ((I.absNorm:ℝ)/D)≠0) : I∈idealsUpTo ⌈D*b⌉₊ := by
-  apply mem_idealsUpTo.mpr
-  refine ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI),?_⟩
+    (hi : W ((I.absNorm:ℝ)/D)≠0) : I∈idealsUpTo ⌈D *b⌉₊ := by
+  pm_6162 hI
   have hb := (div_le_iff₀ hD).mp (hW _ hi)
-  have hn : (I.absNorm:ℝ)≤(⌈D*b⌉₊:ℝ) := by
+  have hn : (I.absNorm:ℝ)≤(⌈D *b⌉₊:ℝ) := by
     calc
-      (I.absNorm:ℝ)≤D*b := by simpa only [mul_comm] using hb
-      _≤(⌈D*b⌉₊:ℝ) := Nat.le_ceil _
+      (I.absNorm:ℝ)≤D *b := by grind
+      _≤(⌈D *b⌉₊:ℝ) := Nat.le_ceil _
   exact_mod_cast hn
 
 theorem normalization_eq (Z r : ℝ) (hZ : 0<Z) :
-    ((Z^r:ℝ):ℂ)^(-(1/2:ℂ))=((Z^(-r/2):ℝ):ℂ) := by
+    ((Z ^r:ℝ):ℂ)^(-(1/2:ℂ))=((Z ^(-r/2):ℝ):ℂ) := by
   have he : (-(1/2:ℂ))=((-(1/2:ℝ)):ℂ) := by norm_num
   calc
-    _ = (((Z^r)^(-(1/2:ℝ)):ℝ):ℂ) := by
+    _ = (((Z ^r)^(-(1/2:ℝ)):ℝ):ℂ) := by
       simpa only [Complex.ofReal_neg,Complex.ofReal_div,Complex.ofReal_one,
         Complex.ofReal_ofNat] using (Complex.ofReal_cpow
           (Real.rpow_nonneg hZ.le r) (-(1/2:ℝ))).symm
@@ -46,18 +46,17 @@ theorem normalization_eq (Z r : ℝ) (hZ : 0<Z) :
 theorem inverse_eq_initial_source (η : Ideal O →* ℂ) (χ : Character) (u : O)
     (hrow : ∀I,idealCoeff χ I=η I*CanonicalRowCompletion.idealRowHom u I)
     (W : ℝ → ℂ) (Z r σ freq : ℝ) (hZ : 0<Z) (S : Finset (Ideal O))
-    (hcover : ∀I:Ideal O,I≠0 → W ((I.absNorm:ℝ)/Z^r)≠0 → I∈S) :
-    polynomial χ true W (Z^r) σ freq=
+    (hcover : ∀I:Ideal O,I≠0 → W ((I.absNorm:ℝ)/Z ^r)≠0 → I∈S) :
+    polynomial χ true W (Z ^r) σ freq=
       originalTotalPolynomial S 1 η (fun _=>1)
         (twistedProfile W σ freq) Z r 0 u := by
-  rw [polynomial_eq_finite χ true W (Z^r) σ freq S hcover,normalization_eq Z r hZ]
+  rw [polynomial_eq_finite χ true W (Z ^r) σ freq S hcover,normalization_eq Z r hZ]
   unfold originalTotalPolynomial
   simp only [add_zero,map_one,mul_one]
-  apply congrArg (fun x:ℂ=>((Z^(-r/2):ℝ):ℂ)*x)
+  apply congrArg (fun x:ℂ=>((Z ^(-r/2):ℝ):ℂ)*x)
   apply Finset.sum_congr rfl
   intro I hI
-  simp only [coefficient,ite_true,hrow,heckeIdealCharacter_apply,
-    twistedProfile]
+  pm_1443 coefficient ite_true hrow heckeIdealCharacter_apply twistedProfile
   ring
 
 theorem originalTotal_supported_source (S : Finset (Ideal O)) (P : Ideal O)
@@ -83,7 +82,7 @@ theorem fixedBase_row (η χ : Character) (m f z : O)
     idealCoeff χ I=fixedBase η m f I*CanonicalRowCompletion.idealRowHom z I := by
   rw [HeckeRowClosure.idealCoeff_eq_row η χ m f z hrow,
     CanonicalRowCompletion.idealRowHom_argument_mul]
-  change idealCoeff η I*(CanonicalRowCompletion.idealRowHom (m^6*f^4) I*
+  change idealCoeff η I*(CanonicalRowCompletion.idealRowHom (m^6*f^4) I *
     CanonicalRowCompletion.idealRowHom z I)=
     (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*f^4) I)*
     CanonicalRowCompletion.idealRowHom z I
@@ -98,7 +97,7 @@ theorem fixedBase_zero_unsupported (η : Character) (m f : O)
     rw [map_zero,zero_mul]
   let n := ConcretePrimeRowBridge.idealGenerator I
   have hn : n≠0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hi
-  have hs : Ideal.span {n}=I := ConcretePrimeRowBridge.span_idealGenerator I
+  pm_6531 I ConcretePrimeRowBridge.span_idealGenerator
   have he := CanonicalRowCompletion.rowTwist_zero_of_not_supported
     (elementHom η) m f 1 n hmLam hm2 (by rwa [hs])
   change elementCoeff η n*CanonicalRowCompletion.idealRowHom (m^6*f^4*1)

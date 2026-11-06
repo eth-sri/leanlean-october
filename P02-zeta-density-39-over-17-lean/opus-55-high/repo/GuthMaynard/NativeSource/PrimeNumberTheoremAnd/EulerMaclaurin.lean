@@ -39,7 +39,10 @@ lemma integral_deriv_mul_add_const (c : 𝕜) (hab : a ≤ b) (h_int : IntervalI
   rw [intervalIntegral.integral_mul_deriv_eq_deriv_mul this hf_diff (by simp) h_int]
   simp
 
-lemma intervalIntegrable_deriv_mul_B1 (ha : 0 ≤ a) (hab : a ≤ b) (h_cont : ContinuousOn (deriv f) [[a, b]]) :
+section
+variable (ha : 0 ≤ a) (hab : a ≤ b)
+include ha hab
+lemma intervalIntegrable_deriv_mul_B1 (h_cont : ContinuousOn (deriv f) [[a, b]]) :
     IntervalIntegrable (fun t ↦ deriv f t * B1 t) volume a b := by
   refine IntervalIntegrable.continuousOn_mul ?_ h_cont
   rw [intervalIntegrable_iff']
@@ -49,7 +52,7 @@ lemma intervalIntegrable_deriv_mul_B1 (ha : 0 ≤ a) (hab : a ≤ b) (h_cont : C
   norm_cast
   exact abs_B1_le_half (by linarith)
 
-lemma integral_deriv_mul_floor_add_one (ha : 0 ≤ a) (hab : a ≤ b)
+lemma integral_deriv_mul_floor_add_one
     (hf_diff : ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) (h_cont : ContinuousOn (deriv f) [[a, b]]) :
     ∫ t in a..b, deriv f t * (⌊t⌋₊ + 1) = (b + 1 / 2) * f b - (a + 1 / 2) * f a - (∫ t in a..b, f t) - ∫ t in a..b, deriv f t * B1 t := by
   calc
@@ -65,7 +68,7 @@ lemma integral_deriv_mul_floor_add_one (ha : 0 ≤ a) (hab : a ≤ b)
     conv => lhs; arg 1; arg 1; ext; rw [mul_comm]
     rw [integral_deriv_mul_add_const _ hab h_cont.intervalIntegrable hf_diff]
 
-theorem sum_eq_integral_add_integral_deriv (ha : 0 ≤ a) (hab : a ≤ b)
+theorem sum_eq_integral_add_integral_deriv
     (hf_diff : ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t)
     (h_cont : ContinuousOn (deriv f) [[a, b]]) :
     ∑ k ∈ Ioc ⌊a⌋₊ ⌊b⌋₊, f k =
@@ -78,5 +81,6 @@ theorem sum_eq_integral_add_integral_deriv (ha : 0 ≤ a) (hab : a ≤ b)
   unfold B1
   push_cast
   ring
+end
 
 end GuthMaynard.NativePNT

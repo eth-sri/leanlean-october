@@ -1,5 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.IdealGenerators
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,66 +9,32 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 
 namespace ConcretePrimeRowBridge
 open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT
 
 end ConcretePrimeRowBridge
 
-open scoped BigOperators Classical
 namespace ActualEisensteinCubic
 
 def activeSupport {α : Type*} [DecidableEq α] (S T : Finset α) : Finset α :=
@@ -79,41 +47,41 @@ def activeExponent {α : Type*} [DecidableEq α]
     (S T : Finset α) (i : activeSupport S T) : ℕ :=
   if i.val ∈ S \ T then 5 else 1
 
-theorem activeExponent_ne_zero {α : Type*} [DecidableEq α]
+section
+variable {α : Type*} [DecidableEq α]
+include α
+theorem activeExponent_ne_zero
     (S T : Finset α) (i : activeSupport S T) : activeExponent S T i ≠ 0 := by
   unfold activeExponent
-  split_ifs <;> decide
+  grind
 
-theorem activeExponent_lt_six {α : Type*} [DecidableEq α]
+theorem activeExponent_lt_six
     (S T : Finset α) (i : activeSupport S T) : activeExponent S T i < 6 := by
   unfold activeExponent
-  split_ifs <;> decide
+  grind
 
-theorem activePrimes_injective {α : Type*} [DecidableEq α]
+theorem activePrimes_injective
     (P : α → Ideal O) (hinj : Function.Injective P) (S T : Finset α) :
     Function.Injective (activePrimes P S T) := by
   intro a b h
   apply Subtype.ext
-  exact hinj h
+  grind
 
-theorem activePrimes_pairwise_isCoprime {α : Type*} [DecidableEq α]
+theorem activePrimes_pairwise_isCoprime
     (P : α → Ideal O) [∀ i, (P i).IsMaximal]
     (hinj : Function.Injective P) (S T : Finset α) :
     Pairwise (Function.onFun IsCoprime (activePrimes P S T)) := by
   intro a b hab
   exact Ideal.isCoprime_of_isMaximal (fun h => hab (activePrimes_injective P hinj S T h))
 
-theorem finiteSexticRow_activeSupport {α : Type*} [DecidableEq α]
+theorem finiteSexticRow_activeSupport
     (P : α → Ideal O) [∀ i, (P i).IsMaximal]
     (hgood : ∀ i, lambda ∉ P i) (S T : Finset α) (u : O) :
     finiteSexticRow (activePrimes P S T) (fun i => hgood i.val) (activeExponent S T) u =
       star (finiteSquarefreeRow P hgood (S \ T) u) *
         finiteSquarefreeRow P hgood (T \ S) u := by
   classical
-  have hd : Disjoint (S \ T) (T \ S) := by
-    apply Finset.disjoint_left.mpr
-    intro i hi hj
-    exact (Finset.mem_sdiff.mp hi).2 (Finset.mem_sdiff.mp hj).1
+  pm_1405
   have hpow5 (i : α) :
       (canonicalSextic (P i) (hgood i) ^ 5) (Ideal.Quotient.mk (P i) u) =
         star (canonicalSextic (P i) (hgood i) (Ideal.Quotient.mk (P i) u)) := by
@@ -132,15 +100,13 @@ theorem finiteSexticRow_activeSupport {α : Type*} [DecidableEq α]
   rw [Finset.prod_union hd]
   simp only [finiteSquarefreeRow, star_prod]
   congr 1
-  · apply Finset.prod_congr rfl
-    intro i hi
-    rw [ite_eq_left hi, hpow5]
+  simp_all
   · apply Finset.prod_congr rfl
     intro i hi
     have hnot : i ∉ S \ T := fun h => Finset.disjoint_left.mp hd h hi
     rw [ite_eq_right hnot, pow_one]
 
-theorem finiteSquarefreeRow_pair_activeSupport {α : Type*} [DecidableEq α]
+theorem finiteSquarefreeRow_pair_activeSupport
     (P : α → Ideal O) [∀ i, (P i).IsMaximal]
     (hgood : ∀ i, lambda ∉ P i) (S T : Finset α) (u : O) :
     star (finiteSquarefreeRow P hgood S u) * finiteSquarefreeRow P hgood T u =
@@ -150,6 +116,7 @@ theorem finiteSquarefreeRow_pair_activeSupport {α : Type*} [DecidableEq α]
   rw [finiteSexticRow_activeSupport P hgood S T u]
   have hk := finiteSquarefreeRow_pair_kernel P hgood S T u
   simpa only [mul_assoc] using hk
+end
 
 open ConcreteTraceCRT EisensteinSchwartzPoisson
 
@@ -159,8 +126,6 @@ namespace ConcretePrimeRowBridge
 open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
 
 end ConcretePrimeRowBridge
-
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 
@@ -187,17 +152,20 @@ end IdealGaussCRT
 
 namespace FiniteGaussPhase
 
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
 def cofactor {ι : Type*} [Fintype ι] (p : ι → O) (i : ι) : O :=
   ∏ k ∈ Finset.univ.erase i, p k
 
-theorem prime_mul_cofactor {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*}
+include ι
+theorem prime_mul_cofactor [Fintype ι]
     (p : ι → O) (i : ι) : p i * cofactor p i = ∏ k, p k :=
   Finset.mul_prod_erase Finset.univ p (Finset.mem_univ i)
 
-theorem span_finset_prod {ι : Type*} (s : Finset ι) (p : ι → O) :
+theorem span_finset_prod (s : Finset ι) (p : ι → O) :
     Ideal.span {∏ i ∈ s, p i} = ∏ i ∈ s, Ideal.span {p i} := by
   classical
   induction s using Finset.induction_on with
@@ -206,11 +174,12 @@ theorem span_finset_prod {ι : Type*} (s : Finset ι) (p : ι → O) :
     rw [Finset.prod_insert ha, Finset.prod_insert ha,
       ← Ideal.span_singleton_mul_span_singleton, ih]
 
-theorem cofactor_coprime {ι : Type*} [Fintype ι]
+theorem cofactor_coprime [Fintype ι]
     (p : ι → O) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (i : ι) : IsCoprime (Ideal.span {p i}) (Ideal.span {cofactor p i}) := by
   rw [cofactor, span_finset_prod]
   exact IsCoprime.prod_right (fun k hk => hcop (Ne.symm (Finset.mem_erase.mp hk).1))
+end
 
 def productElementCRT {ι : Type*} [Fintype ι]
     (p : ι → O) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) :
@@ -218,16 +187,17 @@ def productElementCRT {ι : Type*} [Fintype ι]
   (Ideal.quotEquivOfEq (span_finset_prod Finset.univ p)).trans
     (IdealGaussCRT.quotientProdEquivPi (fun i => Ideal.span {p i}) hcop)
 
-@[simp] theorem productElementCRT_mk {ι : Type*} [Fintype ι]
-    (p : ι → O) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+section
+variable {ι : Type*} [Fintype ι] (p : ι → O)
+include ι p
+@[simp] theorem productElementCRT_mk (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (a : O) (i : ι) :
     productElementCRT p hcop (Ideal.Quotient.mk (Ideal.span {∏ k, p k}) a) i =
       Ideal.Quotient.mk (Ideal.span {p i}) a := by
   simp only [productElementCRT, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk,
     IdealGaussCRT.quotientProdEquivPi_mk]
 
-theorem productElementCRT_axis {ι : Type*} [Fintype ι]
-    (p : ι → O) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+theorem productElementCRT_axis (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (i : ι) (u v : O) (hbez : u * p i + v * cofactor p i = 1) (x : O) :
     (productElementCRT p hcop).symm (Pi.single i (Ideal.Quotient.mk (Ideal.span {p i}) x)) =
       Ideal.Quotient.mk (Ideal.span {∏ k, p k}) (x * v * cofactor p i) := by
@@ -250,8 +220,7 @@ theorem productElementCRT_axis {ι : Type*} [Fintype ι]
       Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hd)
     simp only [Pi.single_eq_of_ne hk, map_mul, hz, mul_zero]
 
-theorem coordinate_trace_character {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
+theorem coordinate_trace_character (hp : ∀ i, p i ≠ 0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (i : ι) (u v : O) (hbez : u * p i + v * cofactor p i = 1) :
     IdealGaussCRT.coordinateAddChar (fun i => O ⧸ Ideal.span {p i}) (productElementCRT p hcop)
@@ -277,8 +246,7 @@ theorem coordinate_trace_character {ι : Type*} [Fintype ι]
   simp only [map_mul]
   field_simp
 
-theorem gauss_sum_product_element {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
+theorem gauss_sum_product_element (hp : ∀ i, p i ≠ 0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     [Fintype (O ⧸ Ideal.span {∏ i, p i})] [∀ i, Fintype (O ⧸ Ideal.span {p i})]
     (χ : ∀ i, MulChar (O ⧸ Ideal.span {p i}) ℂ) :
@@ -295,12 +263,13 @@ theorem gauss_sum_product_element {ι : Type*} [Fintype ι]
   obtain ⟨u, v, hbez⟩ := IdealGaussCRT.bezout_of_principal_coprime (cofactor_coprime p hcop i)
   rw [coordinate_trace_character p hp hcop i u v hbez]
   exact IdealGaussCRT.gauss_shift_bezout_left hbez (χ i) _
+end
 
 def normalizedProductTraceGauss {ι : Type*} [Fintype ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (χ : ∀ i, MulChar (O ⧸ Ideal.span {p i}) ℂ) : ℂ := by
-  let hpall : (∏ i, p i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+  pm_1562
   letI : Finite (O ⧸ Ideal.span {∏ i, p i}) := finite_quotient_span hpall
   letI : Fintype (O ⧸ Ideal.span {∏ i, p i}) := Fintype.ofFinite _
   exact (∑ x : O ⧸ Ideal.span {∏ i, p i},
@@ -308,18 +277,17 @@ def normalizedProductTraceGauss {ι : Type*} [Fintype ι]
       eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates
         (∏ i, p i) hpall x) / (‖eisEmbedding (∏ i, p i)‖ : ℂ)
 
-theorem normalizedProductTraceGauss_crt {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (χ : ∀ i, MulChar (O ⧸ Ideal.span {p i}) ℂ) :
+section
+variable {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (χ : ∀ i, MulChar (O ⧸ Ideal.span {p i}) ℂ)
+include ι p hp hcop χ
+theorem normalizedProductTraceGauss_crt :
     normalizedProductTraceGauss p hp hcop χ =
       ∏ i, χ i (Ideal.Quotient.mk (Ideal.span {p i}) (cofactor p i)) *
         ConcreteBreveE.normalizedTraceGauss (p i) (hp i) (χ i) := by
-  let hpall : (∏ i, p i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
-  let : Finite (O ⧸ Ideal.span {∏ i, p i}) := finite_quotient_span hpall
-  let : Fintype (O ⧸ Ideal.span {∏ i, p i}) := Fintype.ofFinite _
+  pm_1562
+  pm_3508
   let (i : ι) : Finite (O ⧸ Ideal.span {p i}) := finite_quotient_span (hp i)
-  let (i : ι) : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
+  pm_8649 Fintype O Fintype.ofFinite
   have hn : (‖eisEmbedding (∏ i, p i)‖ : ℂ) = ∏ i, (‖eisEmbedding (p i)‖ : ℂ) := by
     rw [map_prod, norm_prod]
     norm_cast
@@ -333,10 +301,7 @@ theorem normalizedProductTraceGauss_crt {ι : Type*} [Fintype ι]
   change (_ * _) / _ = _ * (_ / _)
   ring
 
-theorem normalizedProductTraceGauss_cross_factors {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (χ : ∀ i, MulChar (O ⧸ Ideal.span {p i}) ℂ) :
+theorem normalizedProductTraceGauss_cross_factors :
     normalizedProductTraceGauss p hp hcop χ =
       (∏ i, ∏ k ∈ Finset.univ.erase i, χ i (Ideal.Quotient.mk (Ideal.span {p i}) (p k))) *
         ∏ i, ConcreteBreveE.normalizedTraceGauss (p i) (hp i) (χ i) := by
@@ -345,6 +310,7 @@ theorem normalizedProductTraceGauss_cross_factors {ι : Type*} [Fintype ι]
   apply Finset.prod_congr rfl
   intro i _
   simp only [cofactor, map_prod]
+end
 
 def canonicalProductGauss {ι : Type*} [Fintype ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0)
@@ -353,11 +319,10 @@ def canonicalProductGauss {ι : Type*} [Fintype ι]
     (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) : ℂ :=
   normalizedProductTraceGauss p hp hcop (fun i => canonicalSextic (Ideal.span {p i}) (hgood i) ^ j i)
 
-theorem canonicalProductGauss_cross_factors {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) :
+section
+variable {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hgood : ∀ i, lambda ∉ Ideal.span {p i})
+include ι p hp hcop hgood
+theorem canonicalProductGauss_cross_factors (j : ι → ℕ) :
     canonicalProductGauss p hp hcop hgood j =
       (∏ i, ∏ k ∈ Finset.univ.erase i,
         (canonicalSextic (Ideal.span {p i}) (hgood i) ^ j i)
@@ -366,11 +331,7 @@ theorem canonicalProductGauss_cross_factors {ι : Type*} [Fintype ι]
           (canonicalSextic (Ideal.span {p i}) (hgood i) ^ j i) :=
   normalizedProductTraceGauss_cross_factors p hp hcop _
 
-theorem canonicalProductGauss_constant_power {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ℕ) (hj : j ≠ 0) :
+theorem canonicalProductGauss_constant_power (j : ℕ) (hj : j ≠ 0) :
     canonicalProductGauss p hp hcop hgood (fun _ => j) =
       (∏ i, ∏ k ∈ Finset.univ.erase i,
         canonicalSextic (Ideal.span {p i}) (hgood i)
@@ -379,8 +340,7 @@ theorem canonicalProductGauss_constant_power {ι : Type*} [Fintype ι]
           (canonicalSextic (Ideal.span {p i}) (hgood i) ^ j) := by
   rw [canonicalProductGauss_cross_factors]
   simp only [MulChar.pow_apply' _ hj, Finset.prod_pow]
-
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+end
 
 def angularFactor (a : O) : ℂ := eisEmbedding a / (‖eisEmbedding a‖ : ℂ)
 
@@ -396,9 +356,10 @@ def canonicalCrossFactor {ι : Type*} [Fintype ι]
     canonicalSextic (Ideal.span {p i}) (hgood i)
       (Ideal.Quotient.mk (Ideal.span {p i}) (p k))
 
-theorem prime_generator_not_mem_other {ι : Type*} [Fintype ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+section
+variable {ι : Type*} [Fintype ι] (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+include ι p hcop
+theorem prime_generator_not_mem_other
     (i k : ι) (hik : i ≠ k) : p k ∉ Ideal.span {p i} := by
   intro h
   have hle : Ideal.span {p k} ≤ Ideal.span {p i} :=
@@ -407,9 +368,7 @@ theorem prime_generator_not_mem_other {ι : Type*} [Fintype ι]
   rw [sup_eq_left.mpr hle] at ht
   exact (inferInstance : (Ideal.span {p i}).IsMaximal).ne_top ht
 
-theorem canonicalCrossFactor_pow_six {ι : Type*} [Fintype ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+theorem canonicalCrossFactor_pow_six
     (hgood : ∀ i, lambda ∉ Ideal.span {p i}) :
     canonicalCrossFactor p hgood ^ 6 = 1 := by
   unfold canonicalCrossFactor
@@ -423,6 +382,7 @@ theorem canonicalCrossFactor_pow_six {ι : Type*} [Fintype ι]
     (Ne.symm (Finset.mem_erase.mp hk).1)
   simpa only [map_pow, ite_eq_right hnot] using
     (canonicalSextic_sixth_power_mask (Ideal.span {p i}) (hgood i) (p k))
+end
 
 def canonicalProductCoefficient {ι : Type*} [Fintype ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0)
@@ -451,14 +411,8 @@ theorem product_moebius_eq_sign {ι : Type*} [Fintype ι]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) :
     (UniqueFactorizationMonoid.moebius (Ideal.span {∏ i, p i}) : ℂ) =
       (-1 : ℂ) ^ Fintype.card ι := by
-  have hinj : Function.Injective (fun i => Ideal.span {p i}) := by
-    intro i k h
-    by_contra hik
-    have ht := (hcop hik).sup_eq
-    rw [h, sup_idem] at ht
-    exact (inferInstance : (Ideal.span {p k}).IsMaximal).ne_top ht
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
+  pm_587 h hik
+  pm_3509
   rw [span_finset_prod]
   simpa only [Finset.card_univ] using
     prime_product_moebius (fun i => Ideal.span {p i}) hprime hinj Finset.univ
@@ -472,15 +426,18 @@ def canonicalProductG {ι : Type*} [Fintype ι]
       (Ideal.Quotient.mk (Ideal.span {p i}) (4 : O)))⁻¹ *
     canonicalProductGauss p hp hcop hgood (fun _ => 3)
 
-theorem norm_angularFactor (a : O) (ha : a ≠ 0) : ‖angularFactor a‖ = 1 := by
-  rw [angularFactor, norm_div, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (norm_nonneg _)]
+section
+variable (a : O) (ha : a ≠ 0)
+include a ha
+theorem norm_angularFactor : ‖angularFactor a‖ = 1 := by
+  pm_5113 angularFactor norm_div norm_nonneg
   exact div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero ha))
 
-theorem angularFactor_mul_star (a : O) (ha : a ≠ 0) :
+theorem angularFactor_mul_star :
     angularFactor a * star (angularFactor a) = 1 := by
   rw [← starRingEnd_apply, Complex.mul_conj', norm_angularFactor a ha]
   norm_num
+end
 
 theorem norm_canonicalProductGauss {ι : Type*} [Fintype ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0)
@@ -490,13 +447,9 @@ theorem norm_canonicalProductGauss {ι : Type*} [Fintype ι]
     (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
     (j : ι → ℕ) (hj0 : ∀ i, j i ≠ 0) (hj6 : ∀ i, j i < 6) :
     ‖canonicalProductGauss p hp hcop hgood j‖ = 1 := by
-  let c := ∏ i, p i
-  have hc : c ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
-  let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
-  let (i : ι) : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
-  let (i : ι) : Field (O ⧸ Ideal.span {p i}) := Ideal.Quotient.field _
-  let e := productElementCRT p hcop
+  pm_1289
+  pm_3431
+  pm_3510
   let χ : ∀ i, MulChar (O ⧸ Ideal.span {p i}) ℂ := fun i =>
     canonicalSextic (Ideal.span {p i}) (hgood i) ^ j i
   let ψ := eisTraceModChar ShortDraftTrace.breveE
@@ -512,12 +465,10 @@ theorem norm_canonicalProductGauss {ι : Type*} [Fintype ι]
     symm
     simpa only [Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
       using eisEmbedding_norm_sq_eq_absNorm_span c
-  rw [hcard] at hnormsq
-  have hnorm := (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp hnormsq
+  pm_1563
   change ‖(∑ x : O ⧸ Ideal.span {c}, (∏ i, χ i (e x i)) * ψ x) /
     (‖eisEmbedding c‖ : ℂ)‖ = 1
-  rw [norm_div, hnorm, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (norm_nonneg _)]
+  pm_5113 norm_div hnorm norm_nonneg
   exact div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hc))
 
 end FiniteGaussPhase

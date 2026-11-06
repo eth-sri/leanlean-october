@@ -26,7 +26,7 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
   have hc : IsCoprime (P^k) (v (Sum.inl i)) := hd.2.pow_left
   have hh := supportExtract_of_disjoint (v (Sum.inl i)) (primeSupport (P^k))
     ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff (pow_ne_zero k hP) hd.1).mpr hc).symm
-  exact he.symm.trans hh
+  grind
 
  theorem allocation_plain_product (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (P : Ideal O) (hP : P≠0) (k : ℕ)

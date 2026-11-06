@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSelectedUnramified
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsRegion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ local notation "O" => ActualEisensteinCubic.O
 lemma elementCoeff_zero_or_norm_one (eta : HeckeFamily.Character) (p : O) :
     HeckeFamily.elementCoeff eta p=0 ∨ ‖HeckeFamily.elementCoeff eta p‖=1 := by
   by_cases h : HeckeFamily.elementCoeff eta p=0
-  · exact Or.inl h
+  grind
   · right
     let : Finite (O ⧸ eta.modulus) := Ring.HasFiniteQuotients.finiteQuotient eta.modulus_ne_bot
     let : Fintype (O ⧸ eta.modulus) := Fintype.ofFinite _

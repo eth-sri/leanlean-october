@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalPool
 public import OAI.NumberTheory.DirichletL.Descent.ActiveReflection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,11 +18,7 @@ theorem markedCompletedT_twist_congr_primary (Ψ Φ : Eis→*ℂ)
     (h : ∀ n : Eis, λ₀^2∣n-1 → Ψ n=Φ n) (W : ℝ→ℂ) (X : ℝ) (d : Ideal Eis→ℂ) :
     markedCompletedT Ψ W X d=markedCompletedT Φ W X d := by
   unfold markedCompletedT
-  apply tsum_congr
-  intro I
-  apply tsum_congr
-  intro J
-  rw [summand,summand,columnWeight_congr_primary Ψ Φ h,cubeWeight_congr_primary Ψ Φ h]
+  pm_1284
 
 theorem actual_marked_row_fixed_factor {m f z : Eis} (D : GoodMaskRowData m f z)
     (Ψ : Eis→*ℂ) (Q : Ideal Eis) (hmLam : λ₀∣m) (hm2 : (2:Eis)∣m)
@@ -45,9 +42,7 @@ def markedSumSlots {ι σ : Type*} [Fintype ι] [Fintype σ] : Finset (ι⊕σ) 
 lemma actual_sextic_power_congr (P Q : Ideal Eis) [P.IsMaximal] [Q.IsMaximal]
     (hP : λ₀∉P) (hQ : λ₀∉Q) (hPQ : P=Q) (j : ℕ) (n : Eis) :
     (actualSextic P hP^j) (Ideal.Quotient.mk P n)=
-      (actualSextic Q hQ^j) (Ideal.Quotient.mk Q n) := by
-  subst Q
-  rfl
+      (actualSextic Q hQ^j) (Ideal.Quotient.mk Q n) := by aesop
 
 lemma unmarked_sum_twist {ι σ : Type*} [Fintype ι] [Fintype σ]
     (G : PrimeFamily ι) (S : PrimeFamily σ) (j : ι→ℕ) (n : Eis) :

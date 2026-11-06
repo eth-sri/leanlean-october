@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownLemmaOneFinite
 public import GafniTao.HeathBrownRefinedCountFinal
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Heath-Brown Lemma 1: insertion of the two source estimates
@@ -19,7 +20,6 @@ open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
 
 /-- Insert a concrete critical VMVT estimate and a concrete bound for
 `mathcal N` into the literal majorant produced by the coefficient-cell
@@ -56,7 +56,7 @@ theorem heathBrownIntegratedMajorant_le_of_bounds
     apply ENNReal.ofReal_le_ofReal
     gcongr
   have hInterior : ((N - H : ℕ) : ℝ) ≤ N := by
-    exact_mod_cast Nat.sub_le N H
+    simp_all
   have hInteriorE :
       ENNReal.ofReal
           (((N - H : ℕ) : ℝ) *
@@ -67,9 +67,9 @@ theorem heathBrownIntegratedMajorant_le_of_bounds
             (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))) := by
     apply ENNReal.ofReal_le_ofReal
     gcongr
-  have hsReal : (1 : ℝ) ≤ s := by exact_mod_cast hs
+  pm_77 hsReal s hs
   have hLastExponent : 0 ≤ 1 - 1 / (s : ℝ) := by
-    rw [sub_nonneg, div_le_one (by positivity : (0 : ℝ) < s)]
+    pm_1455 sub_nonneg div_le_one s
     exact hsReal
   unfold heathBrownIntegratedMajorant
   gcongr
@@ -88,15 +88,14 @@ theorem heathBrownCriticalMoment_bound
   rw [heathBrownCriticalMoment_lambda (by omega) epsilon] at h
   exact h
 
+section
+variable {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ} (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda) (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4) (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
+include N k f A lambda epsilon C hk hN hA hlambda hlambdaOne hsmall hlargeH
 /-- Fully source-linked insertion at Heath-Brown's critical moment.  The
 right side still displays the exact VMVT coefficient, Lemma 2 coefficient,
 cell volume, and endpoint count; subsequent algebra may absorb only these
 visible factors. -/
 theorem heathBrownIntegratedMajorant_le_critical
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
     (hVMVT : FordVinogradovMomentBound
       (heathBrownCriticalMoment k) (k - 1) C epsilon)
     (hcoordLow : ContinuousOn
@@ -131,8 +130,7 @@ theorem heathBrownIntegratedMajorant_le_critical
         ENNReal.ofReal ((N : ℝ) * V) ^ (1 - 1 / (s : ℝ)) := by
   dsimp only
   have hs : 1 ≤ heathBrownCriticalMoment k := by
-    unfold heathBrownCriticalMoment
-    apply (Nat.le_div_iff_mul_le (by omega : 0 < 2)).2
+    pm_6941
     exact Nat.mul_le_mul (by omega) (by omega)
   apply heathBrownIntegratedMajorant_le_of_bounds hs
   · exact heathBrownCriticalMoment_bound (by omega) (by omega) hVMVT
@@ -146,10 +144,6 @@ coefficient-cell volume, and the common-range endpoint error separate.  Thus
 the subsequent source-scale algebra cannot accidentally absorb a term that
 has not first been bounded. -/
 theorem heathBrown_lemma_one_assembled_critical
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
     (hHN : heathBrownHChoice k A lambda ≤ N)
     (hVMVT : FordVinogradovMomentBound
       (heathBrownCriticalMoment k) (k - 1) C epsilon)
@@ -209,8 +203,7 @@ theorem heathBrown_lemma_one_assembled_critical
     (N := N) (k := k) (H := heathBrownHChoice k A lambda)
     (s := heathBrownCriticalMoment k) (by omega) (by omega) hHN
     (mul_nonneg hA.le hlambda.le) (by
-      unfold heathBrownCriticalMoment
-      apply (Nat.le_div_iff_mul_le (by omega : 0 < 2)).2
+      pm_6941
       exact Nat.mul_le_mul (by omega) (by omega)) hlocal
   have hins := heathBrownIntegratedMajorant_le_critical
     (N := N) (k := k) (f := f) (A := A) (lambda := lambda)
@@ -235,8 +228,8 @@ theorem heathBrown_lemma_one_assembled_critical
                 heathBrownCriticalMoment k)⁻¹)) *
           ENNReal.ofReal ((heathBrownHChoice k A lambda : ℝ) ^ 2) := hpre
     _ ≤ _ := by gcongr
-
-
 end
+
+
 
 end GafniTao

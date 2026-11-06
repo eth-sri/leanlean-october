@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionScale
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,12 +15,12 @@ open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
 open CenteredMomentUniformReflectionScale
 
 theorem actual_independent_choices (B J : ℕ) :
-    ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],∀{α : ι→Type},
-      ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)(s X : ∀i,α i→ℝ)(keep : ∀i,α i→Prop)
+    ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type}[Fintype ι],∀{α : ι→ Type},
+      ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→ Character)(P : ι→ℂ)(s X : ∀i,α i→ℝ)(keep : ∀i,α i→ Prop)
         (ly omega : ι→ℝ)(Wshort : ℝ→ℂ)(c d lo hi low high D E : ℝ),
       0≤d → Function.support Wshort⊆Set.Icc c d → ContDiff ℝ ∞ Wshort →
       lo≤hi → low≤high → (∀i,ly i∈Set.Icc low high) →
-      (∀i u,0<s i u) → (∀i u,keep i u → 0<X i u ∧ Real.log (X i u)∈Set.Icc lo hi) → 0<D → 0≤E →
+      (∀i u,0< s i u) → (∀i u,keep i u → 0<X i u ∧ Real.log (X i u)∈Set.Icc lo hi) → 0<D → 0≤E →
       (∀i,H.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G i)≤D) →
       (∀v : ℝ,∀j k : Fin 2,∀x∈Set.Icc lo hi,∀y∈Set.Icc low high,
         (∑i,‖polynomial (χ i) false (scaleTest (fun z : ℝ=>(annulus z:ℂ)) j)
@@ -31,8 +32,8 @@ theorem actual_independent_choices (B J : ℕ) :
         (fun x=>(annulus x:ℂ)*((1+s i (u i))^B:ℂ)*paperRadialFourier (G i) (s i (u i)*x))
         (X i (u i)) 0 0*
         polynomial (χ i) false Wshort (Real.exp (ly i)) 0 (omega i)*P i else 0‖^2)≤
-        C*D^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
-  obtain ⟨H,C,hC,hb⟩ := actual_rowwise_scales B J
+        C*D ^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
+  pm_205 H C hC hb actual_rowwise_scales B J
   refine ⟨H,C,hC,?_⟩
   intro ι _ α G χ P s X keep ly omega Wshort c d lo hi low high D E
     hd hshort hshortsmooth hlh hlw hly hspos hgeom hD hE hGD henergy u
@@ -57,9 +58,7 @@ theorem actual_independent_choices (B J : ℕ) :
       exact sq_nonneg _
   have hh := hb G χ P' (fun i=>s i (u i)) lx ly omega Wshort c d lo hi low high D E
     hd hshort hshortsmooth hlh hlw hlx hly (fun i=>hspos i (u i)) hD hE hGD he
-  convert hh using 1
-  apply Finset.sum_congr rfl
-  intro i hi
+  pm_4983 hh i hi
   dsimp only [lx,P']
   split_ifs with hk
   · rw [Real.exp_log (hgeom i (u i) hk).1]

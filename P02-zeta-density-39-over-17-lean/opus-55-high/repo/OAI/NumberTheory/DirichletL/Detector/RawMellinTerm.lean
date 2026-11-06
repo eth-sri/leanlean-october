@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.InitialSubseries
 public import OAI.NumberTheory.DirichletL.Detector.ContourShear
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ def rawPhysicalMellinTerm (η : HeckeFamily.Character) (C : CalibrationData)
     (S : Finset (Ideal O)) (D I J K : Ideal O) (hK : Supported K)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (H : O) (t w z : ℂ) : ℂ :=
   physicalMellinCoefficientTerm η C S D I J (primaryGenerator K)
-    ((supported_span_primaryGenerator_iff K).mpr hK) X H t z *fullIdealWeight w K*
+    ((supported_span_primaryGenerator_iff K).mpr hK) X H t z *fullIdealWeight w K *
     (Y:ℂ)^(w-1)*(Z:ℂ)^t*Complex.exp (t^2)*mellin (paperRadialFourier W0) z*mellin W1 w
 
 theorem rawPhysicalMellinTerm_eq_source (η : HeckeFamily.Character)
@@ -30,8 +31,7 @@ theorem rawPhysicalMellinTerm_eq_source (η : HeckeFamily.Character)
         fullHighCoefficient S D η (fun h=>star ((calibrationForSet S hS).residueMonoid h.val))
           (t+1-z) w z (rawHighEmbedding (H,((I,J),K))) := by
   have hcs : IsCoprime (calibrationForSet S hS).generator (primaryGenerator K) := by
-    apply calibrationForSet_coprime_of_excluded S hS
-    rw [(primaryGenerator_spec K (supported_primaryGenerator_ne_zero K hK)).1]
+    pm_8664 K hK
     exact hKS
   unfold rawPhysicalMellinTerm
   rw [physicalMellinCoefficientTerm_eq_guarded η S hS hbad D I J (primaryGenerator K)

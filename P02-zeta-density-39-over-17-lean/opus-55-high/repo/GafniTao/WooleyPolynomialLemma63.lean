@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyPolynomialInitial
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Polynomial-system form of Wooley Lemma 6.3
@@ -12,11 +13,9 @@ mixed means used by the Section 7 induction.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleyPolynomial_mixed_one_point_refinement
     {Q p nu theta qB k s : ℕ} [NeZero p] [NeZero qB]
@@ -117,14 +116,13 @@ theorem wooleyPolynomial_mixed_one_point_refinement
       rw [← hpow]
       simp_rw [Finset.mul_sum, Finset.sum_mul]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro xi' hxi'
-      apply Finset.sum_congr rfl
-      intro eta' heta'
+      pm_90 Finset.sum_congr xi' hxi' eta' heta'
       ring
 
+section
+variable {Q p nu theta B k s : ℕ} [NeZero p] [NeZero (p ^ B)]
+include Q p nu theta B k s
 theorem wooleyPolynomial_mixed_one_refinement
-    {Q p nu theta B k s : ℕ} [NeZero p] [NeZero (p ^ B)]
     (phi : WooleyPolynomialSystem k) (hnu : nu ≤ theta) (hs : 2 ≤ s)
     (gamma : Fin Q → ℂ) :
     wooleyPolynomialMixedGridMean phi s 1 p B nu nu nu gamma ≤
@@ -144,7 +142,7 @@ theorem wooleyPolynomial_mixed_one_refinement
       ∑ xi : ZMod (p ^ d),
         ∑ eta : ZMod (p ^ d) with wooleyResiduesSeparated nu xi eta,
           V d xi eta alpha
-  let gridScale : ℝ := (((p ^ B) ^ k : ℕ) : ℝ)⁻¹
+  pm_2840 gridScale
   have haggregate (d : ℕ) :
       ∑ xi : ZMod (p ^ d),
         ∑ eta : ZMod (p ^ d) with wooleyResiduesSeparated nu xi eta,
@@ -173,10 +171,7 @@ theorem wooleyPolynomial_mixed_one_refinement
                     phi (p ^ B) gamma alpha xi‖ ^ 2 *
                   ‖wooleyPolynomialNormalizedResidueGridSum
                     phi (p ^ B) gamma alpha eta‖ ^ (2 * (s - 1)))) := by
-      simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      ring
+      pm_5620
     simp_rw [hlocal]
     rw [show
       (∑ xi : ZMod (p ^ d),
@@ -191,10 +186,7 @@ theorem wooleyPolynomial_mixed_one_refinement
       intro xi hxi
       rw [Finset.sum_comm]]
     rw [Finset.sum_comm]
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro alpha halpha
-    rw [Finset.mul_sum]
+    pm_2846 Finset.mul_sum Finset.sum_congr alpha halpha
     apply Finset.sum_congr rfl
     intro xi hxi
     rw [Finset.mul_sum]
@@ -234,10 +226,7 @@ theorem wooleyPolynomial_mixed_one_refinement
                 V theta xi eta alpha := by
         rw [← wooley_sum_refinement_pairs hnu
           (fun xi eta => V theta xi eta alpha)]
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro xi hxi
-        rw [Finset.mul_sum]
+        pm_2846 Finset.mul_sum Finset.sum_congr xi hxi
   have hP : P nu ≤ (p ^ (theta - nu) : ℝ) ^ s * P theta := by
     dsimp [P]
     calc
@@ -263,10 +252,8 @@ theorem wooleyPolynomial_mixed_one_refinement
   split_ifs with hmass
   · simp
   · rw [haggregate nu, haggregate theta]
-    have hscale : 0 ≤ gridScale := by
-      dsimp [gridScale]
-      positivity
-    have hinv : 0 ≤ (wooleyWeightedMassSq gamma)⁻¹ ^ 2 := sq_nonneg _
+    pm_165 hscale gridScale
+    pm_1474 wooleyWeightedMassSq
     calc
       (wooleyWeightedMassSq gamma)⁻¹ ^ 2 * (gridScale * P nu) ≤
           (wooleyWeightedMassSq gamma)⁻¹ ^ 2 *
@@ -278,7 +265,6 @@ theorem wooleyPolynomial_mixed_one_refinement
 
 /-- Polynomial-system Lemma 6.3 as a consumer of its initial-condition bound. -/
 theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
-    {Q p nu theta B k s : ℕ} [NeZero p] [NeZero (p ^ B)]
     {C : ℝ} (phi : WooleyPolynomialSystem k) (hC : 0 ≤ C)
     (hnu : nu ≤ theta) (hs : 2 ≤ s) (gamma : Fin Q → ℂ)
     (hinitial :
@@ -335,7 +321,7 @@ theorem wooleyPolynomial_lemma_6_3_of_initial_conditioning
               wooleyPolynomialMixedGridMean
                 phi s 1 p B theta theta nu gamma := by rw [mul_pow]; ring
         _ = _ := by rw [hpowers]
-
 end
+
 
 end GafniTao

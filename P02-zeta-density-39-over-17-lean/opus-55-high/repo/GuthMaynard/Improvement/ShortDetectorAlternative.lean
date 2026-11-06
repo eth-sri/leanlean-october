@@ -2,13 +2,12 @@ module
 public import GuthMaynard.Improvement.ShortDetectorIdentity
 public import GuthMaynard.Improvement.ShortDetectorResidue
 public import GuthMaynard.Improvement.ShortFiniteDetector
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Complex MeasureTheory Set Filter MathCollab.Density
-open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+open Complex MeasureTheory Filter MathCollab.Density
+open scoped Topology
 namespace GuthMaynard.Improvement
 
 /-- Actual zero detection below three quarters. A single eventual height
@@ -31,7 +30,7 @@ theorem short_detector_eventually_alternative :
   have hYpos : 0 < H^(1/2:ℝ) := by linarith
   have hK : 1 < shortDetectorCutoff H := by
     have hk : H^(1/2:ℝ)*(Real.log H)^2 ≤ (shortDetectorCutoff H:ℝ) := Nat.le_ceil _
-    have hs : 16 ≤ (Real.log H)^2 := by nlinarith
+    pm_8289 H
     have hr : (1:ℝ) < shortDetectorCutoff H := by nlinarith
     exact_mod_cast hr
   have hd := shortFiniteDetector_decomposition hH hK (show 0 ≤ ρ.re by linarith)
@@ -56,9 +55,8 @@ theorem short_detector_eventually_alternative :
         (∑' n : ℕ, detectorTerm ρ (2*H^((100:ℝ)⁻¹)) (H^(1/2:ℝ))
           (n+shortDetectorCutoff H)) := by rw [← hd]; ring
     rw [he]
-    exact (norm_sub_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
-  rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)] at hnorm
-  have ht := htail ρ (by linarith)
+    pm_395 norm_sub_le
+  pm_1434
   have hr := hres ρ hβ hβ'.le hγ hγ'
   have hm : ‖smoothedDetector ρ (2*H^((100:ℝ)⁻¹)) (1/(H^(1/2:ℝ)))‖ ≤
       ‖detectorResidue ρ (2*H^((100:ℝ)⁻¹)) (H^(1/2:ℝ))‖ +
@@ -68,6 +66,6 @@ theorem short_detector_eventually_alternative :
   by_contra hn
   push Not at hn
   simp only [one_div] at ht hr hm hnorm hn
-  linarith [hn.1, hn.2]
+  grind
 
 end GuthMaynard.Improvement

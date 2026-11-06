@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.IdealEuler
 public import Mathlib.NumberTheory.LSeries.PrimesInAP
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,9 +28,12 @@ lemma idealRowHom_unit_eq_of_norm_mod_seven (P : Ideal O) [P.IsMaximal]
     dsimp [Nat.ModEq]
     omega
   have he := pow_eq_pow_of_modEq hm (unit_pow_six u)
-  simpa only [pow_one] using congrArg eisEmbedding he
+  grind
 
-lemma prime_norm_good {p : ℕ} (_hp : p.Prime) (hp3 : 3 < p)
+section
+variable {p : ℕ}
+include p
+lemma prime_norm_good (_hp : p.Prime) (hp3 : 3 < p)
     (P : Ideal O) (hP : Ideal.absNorm P = p) : lambda ∉ P := by
   intro hl
   have hd := Ideal.absNorm_dvd_absNorm_of_le
@@ -39,7 +43,7 @@ lemma prime_norm_good {p : ℕ} (_hp : p.Prime) (hp3 : 3 < p)
   have := Nat.le_of_dvd (by decide : 0 < 3) hd
   omega
 
-lemma prime_norm_ringChar {p : ℕ} (hp : p.Prime)
+lemma prime_norm_ringChar (hp : p.Prime)
     (P : Ideal O) [P.IsMaximal] (hP : Ideal.absNorm P = p) :
     ringChar (O ⧸ P) = p := by
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
@@ -50,11 +54,11 @@ lemma prime_norm_ringChar {p : ℕ} (hp : p.Prime)
   let : CharP (O ⧸ P) p := charP_of_card_eq_prime hcard
   exact ringChar.eq (O ⧸ P) p
 
-lemma exists_primeIdeal_norm {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
+lemma exists_primeIdeal_norm (hp : p.Prime) (hmod : p % 3 = 1) :
     ∃ P : Ideal O, P.IsMaximal ∧ Ideal.absNorm P = p := by
   have hc := ShortDraftHeckeBridge.split_count_of_mod_one hp hmod
   have hne : ((Ideal.span {(p : ℤ)}).primesOver O).Nonempty := by
-    exact Set.nonempty_of_ncard_ne_zero (by rw [hc]; decide)
+    exact Set.nonempty_of_ncard_ne_zero (by grind)
   obtain ⟨P, hP⟩ := hne
   let : P.IsPrime := hP.1
   let : P.LiesOver (Ideal.span {(p : ℤ)}) := hP.2
@@ -62,8 +66,9 @@ lemma exists_primeIdeal_norm {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
   have hP0 : P ≠ 0 := by
     intro hz
     rw [hz, map_zero] at hn
-    exact hp.ne_zero hn.symm
+    grind
   exact ⟨P, hP.1.isMaximal hP0, hn⟩
+end
 
 theorem exists_prime_unit_embedding (S : Finset (Ideal O)) (B : ℕ) :
     ∃ P : Ideal O, P.IsMaximal ∧ P ∉ S ∧ B < Ideal.absNorm P ∧
@@ -74,7 +79,7 @@ theorem exists_prime_unit_embedding (S : Finset (Ideal O)) (B : ℕ) :
   have hp36 : p % 36 = 7 := by simpa only [Nat.ModEq, Nat.reduceMod] using hmod
   have hp3 : 3 < p := lt_of_le_of_lt ((le_max_right B 3).trans (le_max_left _ _)) hpB
   have hpmod : p % 3 = 1 := by omega
-  obtain ⟨P, hmax, hn⟩ := exists_primeIdeal_norm hp hpmod
+  pm_98 P hmax hn exists_primeIdeal_norm hp hpmod
   let : P.IsMaximal := hmax
   have hg : lambda ∉ P := prime_norm_good hp hp3 P hn
   have hodd : ringChar (O ⧸ P) ≠ 2 := by

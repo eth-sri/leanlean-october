@@ -33,14 +33,14 @@ def comparisonCutoff : ComparisonCutoff := by
     rw [Metric.mem_closedBall, Real.dist_eq] at hx
     have hh := abs_le.mp hx
     dsimp [f] at hh
-    constructor <;> linarith
+    grind
   · intro x
     exact f.nonneg
   · intro x hx
     apply f.one_of_mem_closedBall
     rw [Metric.mem_closedBall, Real.dist_eq]
     change |x - 5/2| ≤ 3/2
-    exact abs_le.mpr ⟨by linarith [hx.1], by linarith [hx.2]⟩
+    grind
 
 /-- Uniform quadratic decay of the continuous cutoff term, internalized from Mellin decay. -/
 theorem cutoffIntegral_quadratic_decay (w : ReflectionCutoff) :

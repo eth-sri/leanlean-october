@@ -15,8 +15,7 @@ def firstRootScale (s : Fin 9 → ℝ) : ℝ :=
 theorem firstRootScale_pos (s : Fin 9 → ℝ) (hs : ∀ i, 0 < s i) :
     0 < firstRootScale s := by
   unfold firstRootScale
-  exact mul_pos (mul_pos (mul_pos (mul_pos (hs 3) (Real.sqrt_pos.2 (hs 4)))
-    (hs 5)) (Real.sqrt_pos.2 (hs 7))) (Real.sqrt_pos.2 (hs 8))
+  simp_all
 
 theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (V : Fin 9 → ℝ → ℂ) (s q : Fin 9 → ℝ)
@@ -51,7 +50,7 @@ theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   rw [hdC]
   have hDc : (firstRootScale s:ℂ) ≠ 0 :=
     Complex.ofReal_ne_zero.mpr (firstRootScale_pos s hs).ne'
-  field_simp [hDc]
+  grind
 
 end
 end SevenEighths.InverseMoment

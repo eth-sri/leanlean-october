@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.CubicStripGeometry
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -23,8 +22,7 @@ theorem inverse_ratio_integral {q : ℝ → ℝ} (hq : Integrable q)
     simpa only [smul_eq_mul] using
       (integrableOn_image_iff_integrableOn_abs_deriv_smul measurableSet_Icc hd hinj q).mp hq.integrableOn
   have hnorm : ∀ᵐ v ∂volume.restrict (Icc a b), ‖v^2‖ ≤ b^2 := by
-    filter_upwards [ae_restrict_mem measurableSet_Icc] with v hv
-    rw [Real.norm_eq_abs,abs_of_nonneg (sq_nonneg v)]
+    pm_7146 sq_nonneg
     exact pow_le_pow_left₀ (ha.trans_le hv.1).le hv.2 2
   have heq (v : ℝ) (hv : v ∈ Icc a b) :
       v^2*(|-(v^2)⁻¹| *q v⁻¹) = q (1/v) := by

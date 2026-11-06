@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosInitialDyadicLog
 public import LaterPairs.Native.RobertSargosSmallBlock
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -35,7 +36,7 @@ theorem robertSargos_initial_small_or_large_block
   · left
     have hblock := robertSargos_small_symmetric_block f M k hC hk hlam hlamSmall
       hsmall hM hf hlo hhi
-    have hHr : (0:ℝ) < H := by exact_mod_cast (by omega : 0 < H)
+    pm_5063 hHr H
     have hlog : 0 ≤ Real.log H/Real.log 2 :=
       div_nonneg (Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ H)))
         (Real.log_nonneg (by norm_num))

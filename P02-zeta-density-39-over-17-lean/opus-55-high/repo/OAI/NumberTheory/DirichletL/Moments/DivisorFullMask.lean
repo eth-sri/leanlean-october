@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRows
 public import Mathlib.Algebra.FiniteSupport.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,11 +35,11 @@ theorem rectangle_hasFiniteSupport (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X�
   intro v hv
   constructor
   · by_contra hn
-    simp only [Set.mem_union,Function.mem_support,not_or,not_not] at hn
-    exact hv (by simp only [idealRectangle,hn.1,hn.2,zero_mul,sub_self])
+    pm_423 Set.mem_union Function.mem_support not_or not_not hn
+    pm_7120 zero_mul
   · by_contra hn
-    simp only [Set.mem_union,Function.mem_support,not_or,not_not] at hn
-    exact hv (by simp only [idealRectangle,hn.1,hn.2,mul_zero,sub_self])
+    pm_423 Set.mem_union Function.mem_support not_or not_not hn
+    pm_7120 mul_zero
 
 theorem rectangle_tsum_sum {α : Type*} [Fintype α]
     (f : α → Ideal O → Ideal O → ℂ)
@@ -74,13 +75,13 @@ theorem full_mask_eq_allocated_rectangles (η : Character) (m A z : O) (t : ℝ)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) :
     (∑ v : (i : ι) → S i,(∏ i,β i (v i))*
       ∑' I : Ideal O,∑' J : Ideal O,
-        (if D∣(∏ i,(v i:Ideal O))*I*J then (1:ℂ) else 0)*
+        (if D ∣(∏ i,(v i:Ideal O))*I*J then (1:ℂ) else 0)*
           rowWeight η m A z t ((∏ i,(v i:Ideal O))*I*J)*
           idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ I J) =
       ∑ a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)),
         allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂ := by
   have he (v : (i : ι) → S i) (I J : Ideal O) :
-      (if D∣(∏ i,(v i:Ideal O))*I*J then (1:ℂ) else 0) =
+      (if D ∣(∏ i,(v i:Ideal O))*I*J then (1:ℂ) else 0) =
         ∑ a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)),
           allocationTerm D Finset.univ (factorTuple (fun i => v i) I J) a := by
     rw [← factorTuple_product]

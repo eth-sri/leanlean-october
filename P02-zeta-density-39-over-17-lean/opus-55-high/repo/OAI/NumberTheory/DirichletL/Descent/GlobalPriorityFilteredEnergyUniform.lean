@@ -6,19 +6,18 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesGeometry
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
 public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns InverseSecondFibers
+open InverseWholePriorityRetainedSource RayFourExpansion
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_moving_radius_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -160,6 +159,5 @@ theorem global_priority_filtered_moving_radius_uniform_types
 
 end SevenEighths.InverseMoment
 
-end
 
 end OAI

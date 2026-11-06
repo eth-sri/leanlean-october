@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRawEnergy
 public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentRetainedEnergy
 open CenteredMomentHeckeSlots CenteredMomentHeckeHeight CenteredMomentRetainedProfile
 open CenteredMomentDivisorRawEnergy HeckeFamily
@@ -35,7 +36,7 @@ theorem retained_rectangle_raw_energy (η : Character) (m A z : O) (W₁ W₂ : 
       ((rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂)*
         ∏ i,rowSlot η m A z (S i) (β i) t)‖^2 =
       (clippedScale X₁*clippedScale X₂/T)*‖retainedPositiveRow η m A z W₁ W₂ S β P t X₁ X₂‖^2 := by
-  have hp : 0 < ∏ i,P i := Finset.prod_pos (fun i _ => hP i)
+  pm_8643 hp P hP
   have hc₁ : 0 < clippedScale X₁ := zero_lt_one.trans_le (clippedScale_ge_one _)
   have hc₂ : 0 < clippedScale X₂ := zero_lt_one.trans_le (clippedScale_ge_one _)
   unfold retainedPositiveRow positiveSlotRow

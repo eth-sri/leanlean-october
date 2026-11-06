@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralExpansion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,9 +31,8 @@ theorem three_branch_bound {N : ℕ} (L R E : ℝ)
     L*‖∏j : Fin N, (A j+B j+T j)‖≤R*(E+2)^N*(∏j : Fin N, y j)*(∏j : Fin N,p j) := by
   have hnorm : ‖∏j : Fin N, (A j+B j+T j)‖≤∏j : Fin N,((‖A j‖+‖B j‖)+‖T j‖) := by
     rw [norm_prod]
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
-    intro j _
-    exact (norm_add_le _ _).trans (add_le_add (norm_add_le _ _) le_rfl)
+    pm_5771 j
+    pm_395 norm_add_le
   have hc := coupled_product_bound L R (fun j=>‖A j‖+‖B j‖) (fun j=>‖T j‖) y
     (fun j=>add_nonneg (norm_nonneg _) (norm_nonneg _)) hT
   have hpoint (j : Fin N) : (‖A j‖+‖B j‖)+y j≤y j*((E+2)*p j) := by

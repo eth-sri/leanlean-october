@@ -48,9 +48,6 @@ structure Branch (Z:ℝ) where
   hkind:kind≤2
   hwσ:w≤7*σ/3
 
-def removedWidth {Z:ℝ}(s:Branch Z):ℝ:=
-  Real.logb Z ((commonPart s.I s.J).absNorm:ℝ)+s.w
-
 def saving {Z:ℝ}(s:Branch Z):ℝ:=
   let c:=Real.logb Z ((commonPart s.I s.J).absNorm:ℝ)
   let d:=Real.logb Z ((commonPart s.J s.I).absNorm:ℝ)

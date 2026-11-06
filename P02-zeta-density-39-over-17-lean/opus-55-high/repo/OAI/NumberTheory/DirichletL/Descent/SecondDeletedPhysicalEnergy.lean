@@ -2,14 +2,15 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedAllIntegral
 public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingPhysical
 public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical ContDiff
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -27,7 +28,7 @@ theorem actual_second_deleted_physical_energy
     (hs : ActualSecondSourceConditions p source) :
     ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-        (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
+        (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→ Finset ι)
         (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (G E V B X Y R L : ℝ)
         (U : Fin 6 → ℝ → ℂ) (density : Frequency × (Fin 6 → ℝ) → ℂ)
         (w : MarkedSecondSource ι Jo 0 → ℂ)
@@ -36,7 +37,7 @@ theorem actual_second_deleted_physical_energy
       (∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient) →
       0 < G → 0 < E → 0 < V → 0 < B → 0 < X → Integrable density →
       (∀ y : Fin 6 → ℝ,(Real.exp (-6*L):ℂ)*secondPoissonProfile (fun x => star (W₁ x)) W₂ Φ U
-        (Y*B/(E*V^2*X^2)) y = ∫ t : Frequency × (Fin 6 → ℝ),density t*
+        (Y*B/(E*V ^2*X^2)) y = ∫ t : Frequency × (Fin 6 → ℝ),density t*
           pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope y t.1 t.2) →
       (∀ x ∈ source,x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R) →
       (∀ x ∈ source,∀ N ∈ (pool\x.second.overlap).powerset,
@@ -73,7 +74,7 @@ theorem actual_second_deleted_physical_energy
         ((36*(2:ℝ)^slots₁.card*(2:ℝ)^slots₂.card*A*
           ∑ γ∈actualSecondTriples p 1 1 source,tripleDivisorWeight K γ)*
           ∫ t : Frequency × (Fin 6 → ℝ),tripleHeight J t.1*coordinateHeight J t.2*‖density t‖) := by
-  obtain ⟨sector,hsector⟩ := actual_second_varying_balanced_profile_children p hp hcop hg hpr (σ:=σ) source hs
+  pm_629 actual_second_varying_balanced_profile_children
   intro pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂ W₁ W₂ ω₁ ω₂ Φ G E V B X Y R L
     U density w labels K J A hd₁ hd₂ hG hE hV hB hX hDensity hsep hrows hω₁ hω₂ hcut
     hΨ hw ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hWeighted hleft hright
@@ -99,8 +100,7 @@ theorem actual_second_deleted_physical_energy
     rw [←Real.exp_add]
     ring_nf
     exact Real.exp_zero
-  have hn := congrArg norm he
-  conv_lhs at hn => rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.exp_pos _)]
+  pm_1298
   conv_rhs at hn => rw [norm_mul]
   have hn' := congrArg (fun a : ℝ => Real.exp (6*L)*a) hn
   rw [←mul_assoc,hexp,one_mul] at hn'

@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.ReflectionSignedShell
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -23,11 +22,10 @@ theorem reflection_signed_shell_budget (w : MathCollab.Density.ReflectionCutoff)
   obtain ⟨η,D,hη,hD,hraw⟩ := reflected_band_raw_budget hε hA hp
   obtain ⟨K,B,hK,hB,hshell⟩ := reflection_both_shell_density w hq hη
   let F := (1000/Real.pi^2)*MathCollab.Density.mellinMass w^2*B
-  have hF : 0 ≤ F := by dsimp [F]; positivity
+  pm_61 hF F
   refine ⟨K,1+F*D,hK,by positivity,?_⟩
   intro N L H u hN hNL hH hupper a ha μ hm hi h0 hμ S hS
-  have hN0 : 0 < N := by linarith
-  have hL : 0 < L := hN0.trans_le hNL
+  pm_4533
   have hh := hshell N L H u hN0 hL hH a ha μ hm hi h0 hμ S hS
   have hb : (1000/Real.pi^2)*MathCollab.Density.mellinMass w^2*(L^2/H)*
       reflectionShellMeanBudget B η N L H ≤ (F*D)*N^ε*L*N*H := by

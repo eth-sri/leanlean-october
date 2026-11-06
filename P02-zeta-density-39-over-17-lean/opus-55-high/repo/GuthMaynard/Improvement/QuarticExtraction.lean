@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.QuarticMomentExtraction
 public import GuthMaynard.Improvement.QuarticBadCells
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -26,14 +25,13 @@ theorem quartic_extraction {ε : ℝ} (hε : 0 < ε) (q : ℕ) :
   obtain ⟨B,hB,hb⟩ := quartic_moment_extraction q
   obtain ⟨D,hD,hd⟩ := quartic_bad_cells_bound hε
   let C := B+3*D+1
-  have hC : 0 < C := by dsimp [C]; positivity
-  have hBC : B ≤ C := by dsimp [C]; linarith
+  pm_4312
+  pm_182 hBC B C
   have hDC : 3*D ≤ C := by dsimp [C]; linarith
   refine ⟨C,hC,?_⟩
   intro N T R U V M hN hNT hTN hR hRT hU hV hsmall a W ha hsep hw hv hM
   have hT : 0 < T := by linarith
-  have hm : 0 ≤ M := (integral_nonneg (fun t => sq_nonneg
-    (sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t))).trans hM
+  pm_4585
   have hsmallB : B*N^4/R^q ≤ V^4/2 := by
     apply le_trans _ hsmall
     exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hBC (by positivity)) (by positivity)

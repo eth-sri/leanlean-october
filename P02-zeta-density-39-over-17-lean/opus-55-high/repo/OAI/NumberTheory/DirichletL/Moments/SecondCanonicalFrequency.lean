@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondCanonical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,24 +16,27 @@ open CenteredMomentPartition CenteredMomentSupport CenteredMomentSupportedCorrel
 open CenteredMomentCorrelation CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
-theorem commonFrequencyGenerator_ne_zero (C D : Ideal O) (hC : Supported C) :
-    commonFrequencyGenerator C D≠0 := by
+section
+variable (C D : Ideal O) (hC : Supported C)
+include C D hC
+theorem commonFrequencyGenerator_ne_zero :
+    commonFrequencyGenerator C D ≠0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro P hP
   exact pow_ne_zero _ (supported_element_ne_zero _ (commonPrime_supported C D hC P))
 
-theorem commonFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem commonFrequencyGenerator_dvd (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) :
-    commonFrequencyGenerator C D∣primaryGenerator C ∧
-    commonFrequencyGenerator C D∣primaryGenerator D := by
+    commonFrequencyGenerator C D ∣primaryGenerator C ∧
+    commonFrequencyGenerator C D ∣primaryGenerator D := by
   rw [←left_generator_product C D hC hCD,←right_generator_product C D hC hD hCD]
   constructor
-  · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (min_le_left _ _))
-  · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (min_le_right _ _))
+  pm_7117 min_le_left
+  pm_7117 min_le_right
 
-theorem idealCorrelation_zero_outside_common (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem idealCorrelation_zero_outside_common (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (j : O) (hj : ¬commonFrequencyGenerator C D∣j) : idealCorrelation C D hC hD j=0 := by
+    (j : O) (hj : ¬commonFrequencyGenerator C D ∣j) : idealCorrelation C D hC hD j=0 := by
   have hd := commonFrequencyGenerator_dvd C D hC hD hCD
   let := finite_quotient_span (supported_primaryGenerator_ne_zero C hC)
   let := finite_quotient_span (supported_primaryGenerator_ne_zero D hD)
@@ -40,6 +44,7 @@ theorem idealCorrelation_zero_outside_common (C D : Ideal O) (hC : Supported C) 
   let : Fintype (O⧸Ideal.span {primaryGenerator D}) := Fintype.ofFinite _
   unfold idealCorrelation actualCorrelation
   exact fullModulusCorrelation_eq_zero_of_common_not_dvd _ _ _ _ _ _ hd.1 hd.2 hj
+end
 
 def canonicalPartition (C D : Ideal O) (U : Finset (CommonIndex C D)) (w : O) : Prop :=
   actualUnitSet (commonPrime C D) (leftExponent C D) (rightExponent C D) w=U
@@ -52,13 +57,12 @@ theorem actual_ideal_partition_scalar (C D : Ideal O) (hC : Supported C) (hD : S
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
     (U : Finset (CommonIndex C D)) (w : O) :
     ‖canonicalPartitionScalar C D U w*
-      idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)‖≤1 := by
-  let (P : CommonIndex C D) : (Ideal.span {commonPrime C D P}).IsMaximal := by
-    rw [commonPrime_span C D hC P];infer_instance
+      idealCorrelation C D hC hD (commonFrequencyGenerator C D *w)‖≤1 := by
+  pm_2866
   have hg (P : CommonIndex C D) : goodLambda∉Ideal.span {commonPrime C D P} := by
-    rw [commonPrime_span C D hC P];exact common_good C D hC P
+    pm_7977 common_good
   have hc (P : CommonIndex C D) : ringChar (O⧸Ideal.span {commonPrime C D P})≠2 := by
-    rw [commonPrime_span C D hC P];exact common_odd C D hC P
+    pm_7977 common_odd
   have hp : canonicalPartition C D U w→∀ i∈U,
       leftExponent C D i=rightExponent C D i ∧ ¬6∣leftExponent C D i ∧
         ¬commonPrime C D i∣dividedFrequency (commonPrime C D) (leftExponent C D) (rightExponent C D) w i := by

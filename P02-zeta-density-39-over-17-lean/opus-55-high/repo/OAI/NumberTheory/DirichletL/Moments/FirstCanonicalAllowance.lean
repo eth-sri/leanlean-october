@@ -16,7 +16,10 @@ open CenteredMomentSecondCanonical CenteredMomentFirstCanonicalFamily
 open CenteredMomentRankinRadical CenteredMomentCommonAllowance
 local notation "O" => ActualEisensteinCubic.O
 
-theorem activeConductor_span_product (I J : Ideal O) :
+section
+variable (I J : Ideal O)
+include I J
+theorem activeConductor_span_product :
     Ideal.span {activeConductor I J} =
       ∏ P ∈ activeSupport (Finset.univ : Finset (CommonIndex I J))
         (leftExponent I J) (rightExponent I J), P.val := by
@@ -24,21 +27,22 @@ theorem activeConductor_span_product (I J : Ideal O) :
   exact Finset.prod_coe_sort (s := ActiveIndex I J)
     (f := fun P : CommonIndex I J => P.val)
 
-theorem active_generator_ideal_product (I J : Ideal O) (hI : Supported I) :
+theorem active_generator_ideal_product (hI : Supported I) :
     (∏ P ∈ activeSupport (Finset.univ : Finset (CommonIndex I J))
       (leftExponent I J) (rightExponent I J), Ideal.span {commonPrime I J P}) =
       Ideal.span {activeConductor I J} := by
   simp_rw [commonPrime_span I J hI]
   exact (activeConductor_span_product I J).symm
 
-theorem common_ideal_product (I J : Ideal O) :
+theorem common_ideal_product :
     (∏ P : CommonIndex I J, P.val) = commonRadical I J := by
   exact Finset.prod_coe_sort (s := commonSupport I J) (f := fun P : Ideal O => P)
 
-theorem common_generator_ideal_product (I J : Ideal O) (hI : Supported I) :
+theorem common_generator_ideal_product (hI : Supported I) :
     (∏ P : CommonIndex I J, Ideal.span {commonPrime I J P}) = commonRadical I J := by
   simp_rw [commonPrime_span I J hI]
   exact common_ideal_product I J
+end
 
 theorem actual_canonical_common_support_allowance
     (C D : Ideal O) (hC : Supported C) (hD : Supported D)

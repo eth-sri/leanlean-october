@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedFirst
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,8 +29,7 @@ lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
   rw [div_eq_mul_inv,norm_mul]
   calc
     _ ≤ ((‖B-q‖*‖1-V‖*‖1-W‖*‖M‖)+‖q‖*‖1-V*W‖)*2 := by
-      apply mul_le_mul _ hi (norm_nonneg _) (by positivity)
-      simpa only [norm_mul] using norm_sub_le ((B-q)*(1-V)*(1-W)*M) (q*(1-V*W))
+      pm_427 M
     _ ≤ ((E+A)*2*(1+A)*388+A*(1+A))*2 := by
       have hbq : ‖B-q‖≤E+A := (norm_sub_le B q).trans (add_le_add hB hq)
       gcongr
@@ -38,7 +38,7 @@ lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
 def selectedFirstBound (Q R : ℝ) : ℝ :=
   2*((Q^R+Q^(1/100:ℝ))*2*(1+Q^(1/100:ℝ))*388+Q^(1/100:ℝ)*(1+Q^(1/100:ℝ)))
 
-lemma selectedFirstBound_nonneg (Q R : ℝ) (hQ : 0≤Q) : 0≤selectedFirstBound Q R := by
+lemma selectedFirstBound_nonneg (Q R : ℝ) (hQ : 0≤Q) : 0≤ selectedFirstBound Q R := by
   unfold selectedFirstBound
   positivity
 
@@ -49,8 +49,8 @@ theorem continuedCompensatedLocal_first_bound (η : Character) (u : FreeRow) (P 
     ‖continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))‖≤
         selectedFirstBound P.val.absNorm R := by
-  have hQ0 : (0:ℝ)<P.val.absNorm := by linarith
-  have hQ1 : (1:ℝ)≤P.val.absNorm := by linarith
+  pm_3486
+  pm_7515
   have hV := first_region_V_half _ hQ z hz
   have hD : ‖coordD P.val.absNorm (idealCoeff η P.val) (idealRowHom u.val P.val) x‖≤1/2 :=
     (coordD_norm_le _ hQ0 _ _ x (idealCoeff_norm_le_one η _) (idealRowHom_norm u.val _)).trans

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalRows
 public import OAI.NumberTheory.DirichletL.Detector.GaussianDensityBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ local notation "Id" => Ideal O
 lemma physicalRows_common_finset {α : Type*} (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
     (F : Finset α) (X Y : α→ℝ) (hX : ∀k∈F,0<X k) (hY : ∀k∈F,0<Y k) :
-    ∃R : Finset PhysicalRowIndex,∀k∈F,∀r,r∉R→physicalRowWeight C W0 W1 (X k) (Y k) r=0 := by
+    ∃R : Finset PhysicalRowIndex,∀k∈F,∀r,r∉R→ physicalRowWeight C W0 W1 (X k) (Y k) r=0 := by
   have hf (k : {k // k∈F}) := physicalRowWeight_finite_support C W0 W1 hW0 hW1
     (X k.val) (Y k.val) (hX k.val k.property) (hY k.val k.property)
   let R := F.attach.biUnion (fun k=>(hf k).toFinset)
@@ -25,7 +26,7 @@ lemma physicalRows_common_finset {α : Type*} (C : CalibrationData) (W0 W1 : ℝ
   intro k hk r hr
   by_contra hn
   apply hr
-  exact Finset.mem_biUnion.mpr ⟨⟨k,hk⟩,by simp,by simpa only [Set.Finite.mem_toFinset,Function.mem_support] using hn⟩
+  aesop
 
 theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
@@ -35,7 +36,7 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
           (∏i,W i (q i)*logPhase (-t) (Real.log (q i)))*gaussianJointDensity V hV R t)
     (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (F : Finset α) (a : α→ℂ) (D : α→Id) (X Y : α→ℝ)
+    (F : Finset α) (a : α→ℂ) (D : α→ Id) (X Y : α→ℝ)
     (hX : ∀k∈F,0<X k) (hY : ∀k∈F,0<Y k) (Z : ℝ) (hZ : 0<Z)
     (q : α→ι→ℝ) (hq : ∀k∈F,∀i,0<q k i) :
     (∑k∈F,a k*(∏i,W i (q k i))*markedPhysicalProbe η C (D k) W0 W1
@@ -65,27 +66,14 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
         rw [markedPhysicalProbe_eq_gaussian_rows η C (D k) W0 W1 hW0 hW1
           (X k) (Y k) _ (hX k hk) (hY k hk) (mul_pos hZ (Finset.prod_pos (fun i _=>hq k hk i))),hs k hk]
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro r hr
-        dsimp [A]
-        ring
+        pm_8102
     _ = _ := hh
     _ = _ := by
       apply tsum_congr
       intro j
-      apply integral_congr_ae
-      apply Filter.Eventually.of_forall
-      intro t
-      dsimp only
-      congr 1
-      rw [Finset.sum_product]
-      apply Finset.sum_congr rfl
-      intro k hk
+      pm_5862
       rw [hs k hk,Finset.mul_sum,Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro r hr
-      dsimp [A]
-      ring
+      pm_8102
 
 end SevenEighths.ProbePhysical
 end

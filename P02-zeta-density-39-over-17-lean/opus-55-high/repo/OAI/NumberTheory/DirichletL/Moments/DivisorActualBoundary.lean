@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DivisorWitness
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,8 +31,10 @@ theorem selected_log_identity (D : Ideal O)
   rw [Finset.sum_sub_distrib]
   ring
 
-theorem nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
+section
+variable (η : Character) (m A z : O) (t : ℝ) (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
+include η m A z t S hS
+theorem nonzero_row_formal_boundary
     (β : ι → Ideal O → ℂ) (W : ι → ℝ → ℂ) (lo hi P : ι → ℝ)
     (hlo : ∀ i,0 < lo i) (hP : ∀ i,0 < P i)
     (hW : ∀ i,Function.support (W i) ⊆ Set.Icc (lo i) (hi i))
@@ -46,8 +49,7 @@ theorem nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
     W₁ W₂ X₁ X₂ Y₁ Y₂ hne
   have hv (i : ι) : (v i:Ideal O) ≠ 0 := (hS i (v i) (v i).property).ne_zero
   have hb := actualExtracted_norm_boundary D hD a (fun i => v i) hv I J ha
-  have hND : (0:ℝ) < Ideal.absNorm D := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
+  pm_5463 hND D hD.ne_zero
   have hl := Real.logb_le_logb_of_le hZ hND hb
   rw [selected_log_identity D a (fun i => v i) hv P hP Z] at hl
   have hr : |∑ i∈frozenIndices D a,Real.logb Z ((Ideal.absNorm (v i:Ideal O):ℝ)/P i)| ≤
@@ -63,8 +65,7 @@ theorem nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
   have hh := (le_abs_self (∑ i∈frozenIndices D a,Real.logb Z ((Ideal.absNorm (v i:Ideal O):ℝ)/P i))).trans hr
   linarith
 
-theorem original_nonzero_row_formal_boundary (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
+theorem original_nonzero_row_formal_boundary
     (ν : ι → Ideal O → ℂ) (W : ι → ℝ → ℂ) (lo hi P : ι → ℝ)
     (hlo : ∀ i,0 < lo i) (hP : ∀ i,0 < P i)
     (hW : ∀ i,Function.support (W i) ⊆ Set.Icc (lo i) (hi i))
@@ -72,11 +73,12 @@ theorem original_nonzero_row_formal_boundary (η : Character) (m A z : O) (t : �
     (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ Z : ℝ) (hZ : 1 < Z)
     (hne : allocatedRectangle η m A z t S
-      (fun i I => ν i I*W i ((Ideal.absNorm I:ℝ)/P i)) D a W₁ W₂ X₁ X₂ Y₁ Y₂ ≠ 0) :
+      (fun i I=> ν i I*W i ((Ideal.absNorm I:ℝ)/P i)) D a W₁ W₂ X₁ X₂ Y₁ Y₂ ≠ 0) :
     Real.logb Z (Ideal.absNorm D:ℝ) ≤ Real.logb Z (formalReductionFactor D a P)+
       (∑ i,logWindow (lo i) (hi i))/Real.log Z :=
   nonzero_row_formal_boundary η m A z t S hS _ W lo hi P hlo hP hW
     (fun _i _I h => (mul_ne_zero_iff.mp h).2) D hD a W₁ W₂ X₁ X₂ Y₁ Y₂ Z hZ hne
+end
 
 end SevenEighths.CenteredMomentDivisorActualBoundary
 

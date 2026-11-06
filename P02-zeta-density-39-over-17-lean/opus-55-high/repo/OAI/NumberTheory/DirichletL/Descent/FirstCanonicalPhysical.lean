@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedColumns
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalCommon
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -26,7 +27,7 @@ theorem canonical_residual_mul_test (b : CubeCoordinates ι) (C : Finset ι) (ne
   ring
 
 theorem actual_first_kernel_window_transport
-    (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
+    (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→ Bool)
     (C₁ C₂ A₁ A₂ : Finset ι→ℂ) (V₁ V₂ : ℝ→ℂ)
     (hC₁ : ∀ N∈F.powerset,C₁ N=A₁ N*star (V₁ (columnLog p 1 N)))
     (hC₂ : ∀ N∈F.powerset,C₂ N=A₂ N*V₂ (columnLog p 1 N))
@@ -35,14 +36,11 @@ theorem actual_first_kernel_window_transport
     ∑ N∈F.powerset,∑ Q∈F.powerset,if Disjoint N Q then
       canonicalPairMode p hp hcop hg N Q B v ε₁ ε₂ A₁ A₂ W V₁ V₂ 1 1 K d h else 0 := by
   unfold actualFirstKernel
-  apply Finset.sum_congr rfl
-  intro N hN
-  apply Finset.sum_congr rfl
-  intro Q hQ
+  pm_3397 N hN Q hQ
   by_cases hd : Disjoint N Q
   · simp only [hd,ite_true,canonicalPairMode,threeGaussRowFactor,hC₁ N hN,hC₂ Q hQ,star_mul,star_star]
     ring
-  · simp only [hd,ite_false]
+  grind
 
 theorem canonical_first_kernel_physical
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -69,10 +67,7 @@ theorem canonical_first_kernel_physical
         (fun x=>star (W₁ x)) W₂ Φ A₁ A₂ (primeProductNorm p C)
         (primeProductNorm p (cubeActiveSupport b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit)) K d h := by
   intro F A₁ A₂ B₁ B₂
-  have hdis : Disjoint F (b.support∪C) := by
-    apply Finset.disjoint_left.mpr
-    intro i hi hi2
-    exact (Finset.mem_sdiff.mp hi).2 hi2
+  pm_6367 F C
   have hwindow (negative : Bool) (Ψ : O→*ℂ) (m : O) (H : Finset ι→ℂ) (W : ℝ→ℂ)
       (N : Finset ι) (hN : N∈F.powerset) :
       canonicalCubeResidual p hg b C negative Ψ m f (fun U=>H U*W (primeProductNorm p U)) N =

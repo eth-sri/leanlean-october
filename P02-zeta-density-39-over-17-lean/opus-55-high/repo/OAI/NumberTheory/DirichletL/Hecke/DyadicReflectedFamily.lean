@@ -2,12 +2,12 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflection
 public import OAI.NumberTheory.DirichletL.Hecke.Conjugation
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical Topology ComplexConjugate
 open Complex Set
 namespace SevenEighths.HeckeDyadicReflection
@@ -15,11 +15,10 @@ open HeckeFamily HeckePresentation HeckeFiniteDeletion
 
 theorem family_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ η : Character,
     FiniteFourier.IsPrimitiveOnIdeals η.residue → η.residue≠1 →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction η s‖≤C*(η.modulus.absNorm : ℝ)^(1/2-s.re)*(3+|s.im|)^2*
       ‖LFunction η (1-conj s)‖ := by
-  obtain ⟨C,hC,hbound⟩ := primitive_reflected_bound
-  refine ⟨C,hC,?_⟩
+  pm_155 C hC hbound primitive_reflected_bound
   intro η hp hη s hl hr
   have h := hbound (generator η) (principalResidue η) (principalResidue_unit η)
     (principalResidue_primitive η hp) (principalResidue_ne_one η hη) s hl hr
@@ -33,32 +32,30 @@ theorem family_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ η : Character,
   simpa only [HeckeStripActual.conductor,span_generator] using h
 
 theorem LFunction_eq_of_mask_entire (χ ψ : Character) (hχ : χ.residue≠1)
-    (hmask : ∀ J : Ideal O, idealCoeff χ J=
+    (hmask : ∀ J : Ideal O, idealCoeff χ J =
       if IsCoprime J χ.modulus then idealCoeff ψ J else 0) (s : ℂ) :
     LFunction χ s=LFunction ψ s*factors χ.modulus ψ s := by
-  have hψ : ψ.residue≠1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  pm_3133 principal_iff_of_mask
   have ha := LFunction_entire_nonprincipal χ hχ
   have hb : Differentiable ℂ (fun z => LFunction ψ z*factors χ.modulus ψ z) :=
     (LFunction_entire_nonprincipal ψ hψ).mul (factors_differentiable _ _)
   have he : LFunction χ=(fun z => LFunction ψ z*factors χ.modulus ψ z) := by
-    apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr ha).eq_of_eventuallyEq
-      (Complex.analyticOnNhd_univ_iff_differentiable.mpr hb) (z₀ := (2 : ℂ))
-    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ)<(2 : ℂ).re)] with z hz
+    pm_519 ha hb
+    pm_800
     exact LFunction_eq_of_mask_right χ ψ hmask hz
   exact congr_fun he s
 
 theorem original_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ χ ψ : Character,
     FiniteFourier.IsPrimitiveOnIdeals ψ.residue → χ.residue≠1 →
-    (∀ J : Ideal O, idealCoeff χ J=
+    (∀ J : Ideal O, idealCoeff χ J =
       if IsCoprime J χ.modulus then idealCoeff ψ J else 0) →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction χ s‖≤C*(ψ.modulus.absNorm : ℝ)^(1/2-s.re)*(3+|s.im|)^2*
       ‖LFunction χ (1-conj s)‖*
       (‖factors χ.modulus ψ s‖*‖(factors χ.modulus ψ (1-conj s))⁻¹‖) := by
-  obtain ⟨C,hC,hbound⟩ := family_reflected_bound
-  refine ⟨C,hC,?_⟩
+  pm_155 C hC hbound family_reflected_bound
   intro χ ψ hp hχ hmask s hl hr
-  have hψ : ψ.residue≠1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
+  pm_3133 principal_iff_of_mask
   have h := hbound ψ hp hψ s hl hr
   have hd : factors χ.modulus ψ (1-conj s)≠0 := factors_ne_zero _ _ (by simp; linarith)
   have he : LFunction ψ (1-conj s)=LFunction χ (1-conj s)*(factors χ.modulus ψ (1-conj s))⁻¹ := by
@@ -74,16 +71,16 @@ theorem original_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ χ ψ : Character,
 
 theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ χ : Character, χ.residue≠1 →
-    ∀ s : ℂ, -(1/10 : ℝ)≤s.re → s.re≤1/2 →
+    ∀ s : ℂ, -(1/10 : ℝ)≤ s.re → s.re≤1/2 →
     ‖LFunction χ s‖≤C*(χ.modulus.absNorm : ℝ)^(1/2-s.re)*
       ((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+2*ε)*
       (3+|s.im|)^2*‖LFunction χ (1-conj s)‖ := by
   obtain ⟨Cg,hCg,hreflect⟩ := original_reflected_bound
-  obtain ⟨Cl,hCl,hleft⟩ := HeckeDeletionBounds.factors_any_re_subpower_bound ε hε
+  pm_69 Cl hCl hleft HeckeDeletionBounds.factors_any_re_subpower_bound ε hε
   obtain ⟨Cr,hCr,hright⟩ := HeckeDeletionBounds.factors_radical_subpower_bound (1/2) ε (by norm_num) hε
   refine ⟨Cg*Cl*Cr,by positivity,?_⟩
   intro χ hχ s hl hr
-  obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
+  pm_3134
   have hR : 0<((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ) := by
     exact_mod_cast Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
       (HeckeDeletionBounds.radical_ne_zero χ.modulus))
@@ -125,6 +122,5 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
 
 end SevenEighths.HeckeDyadicReflection
 
-end
 
 end OAI

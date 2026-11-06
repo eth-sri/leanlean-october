@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleySection7MomentIdentity
 public import Mathlib.LinearAlgebra.Matrix.Block
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,6 @@ unit over every residue ring.
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -31,38 +31,39 @@ def wooleyPolynomialTranslationMatrix (k q : ℕ) (eta : ℤ) :
         (eta : ZMod q) ^ ((j : ℕ) - (i : ℕ))
     else 0
 
-theorem wooleyPolynomialTranslationMatrix_blockTriangular
-    (k q : ℕ) (eta : ℤ) :
+section
+variable (k q : ℕ) (eta : ℤ)
+include k q eta
+theorem wooleyPolynomialTranslationMatrix_blockTriangular :
     (wooleyPolynomialTranslationMatrix k q eta).BlockTriangular id := by
   intro i j hji
   unfold wooleyPolynomialTranslationMatrix
   rw [ite_eq_right]
-  exact Nat.not_le_of_gt hji
+  grind
 
-@[simp] theorem wooleyPolynomialTranslationMatrix_diag
-    (k q : ℕ) (eta : ℤ) (i : Fin k) :
+@[simp] theorem wooleyPolynomialTranslationMatrix_diag (i : Fin k) :
     wooleyPolynomialTranslationMatrix k q eta i i = 1 := by
   simp [wooleyPolynomialTranslationMatrix]
 
-theorem wooleyPolynomialTranslationMatrix_det
-    (k q : ℕ) (eta : ℤ) :
+theorem wooleyPolynomialTranslationMatrix_det :
     (wooleyPolynomialTranslationMatrix k q eta).det = 1 := by
   rw [Matrix.det_of_isUpperTriangular
     (wooleyPolynomialTranslationMatrix_blockTriangular k q eta)]
   simp
 
-theorem wooleyPolynomialTranslationMatrix_isUnit
-    (k q : ℕ) (eta : ℤ) :
+theorem wooleyPolynomialTranslationMatrix_isUnit :
     IsUnit (wooleyPolynomialTranslationMatrix k q eta) := by
   rw [Matrix.isUnit_iff_isUnit_det,
     wooleyPolynomialTranslationMatrix_det]
   exact isUnit_one
+end
 
+section
+variable {k p c : ℕ} {phi : WooleyPolynomialSystem k} (hphi : phi.Spaced p c) (hc : 1 ≤ c) (eta : ℤ)
+include k p c phi hphi hc eta
 /-- Modulo `p`, translating a `p^c`-spaced system with `c ≥ 1` gives exactly
 the triangular translation matrix on its positive coefficients. -/
-theorem wooleyAffinePolynomialSystem_lowMatrixMod_prime
-    {k p c : ℕ} {phi : WooleyPolynomialSystem k}
-    (hphi : phi.Spaced p c) (hc : 1 ≤ c) (eta : ℤ) :
+theorem wooleyAffinePolynomialSystem_lowMatrixMod_prime :
     wooleyPolynomialSystemLowMatrixMod
         (wooleyAffinePolynomialSystem phi 1 eta) p =
       wooleyPolynomialTranslationMatrix k p eta := by
@@ -71,11 +72,7 @@ theorem wooleyAffinePolynomialSystem_lowMatrixMod_prime
   unfold wooleyPolynomialSystemLowMatrixMod
     wooleyPolynomialSystemLowMatrix
   rw [wooleyPolynomialLowPart_coeff (by omega)]
-  unfold wooleyAffinePolynomialSystem
-  rw [htail j]
-  simp only [add_comp, pow_comp, X_comp, C_comp, mul_comp]
-  norm_num only [map_one, one_mul]
-  rw [coeff_add, coeff_X_add_C_pow, coeff_C_mul]
+  pm_2849
   have hpPow : (p : ZMod p) ^ c = 0 := by
     rw [ZMod.natCast_self, zero_pow (by omega)]
   push_cast
@@ -90,18 +87,18 @@ theorem wooleyAffinePolynomialSystem_lowMatrixMod_prime
     simp
 
 /-- The translated positive low matrix is invertible modulo `p`. -/
-theorem wooleyAffinePolynomialSystem_lowMatrixMod_prime_isUnit
-    {k p c : ℕ} {phi : WooleyPolynomialSystem k}
-    (hphi : phi.Spaced p c) (hc : 1 ≤ c) (eta : ℤ) :
+theorem wooleyAffinePolynomialSystem_lowMatrixMod_prime_isUnit :
     IsUnit (wooleyPolynomialSystemLowMatrixMod
       (wooleyAffinePolynomialSystem phi 1 eta) p) := by
   rw [wooleyAffinePolynomialSystem_lowMatrixMod_prime hphi hc]
   exact wooleyPolynomialTranslationMatrix_isUnit k p eta
+end
 
+section
+variable {k p c B : ℕ} {phi : WooleyPolynomialSystem k} (hphi : phi.Spaced p c) (hc : 1 ≤ c) (eta : ℤ)
+include k p c B phi hphi hc eta
 /-- Invertibility modulo the prime lifts to every working prime power. -/
-theorem wooleyAffinePolynomialSystem_lowMatrixMod_primePower_isUnit
-    {k p c B : ℕ} {phi : WooleyPolynomialSystem k}
-    (hphi : phi.Spaced p c) (hc : 1 ≤ c) (eta : ℤ) :
+theorem wooleyAffinePolynomialSystem_lowMatrixMod_primePower_isUnit :
     IsUnit (wooleyPolynomialSystemLowMatrixMod
       (wooleyAffinePolynomialSystem phi 1 eta) (p ^ B)) := by
   let A : Matrix (Fin k) (Fin k) ℤ :=
@@ -115,8 +112,7 @@ theorem wooleyAffinePolynomialSystem_lowMatrixMod_primePower_isUnit
     rw [wooleyIntMatrixMod_det]
     rw [← Matrix.isUnit_iff_isUnit_det]
     exact hunitpMatrix
-  have hcoprime : IsCoprime (p : ℤ) A.det :=
-    (ZMod.coe_int_isUnit_iff_isCoprime A.det p).mp hunitpDet
+  pm_8463 A.det hunitpDet
   have hunitPowDet : IsUnit (A.det : ZMod (p ^ B)) :=
     (ZMod.coe_int_isUnit_iff_isCoprime A.det (p ^ B)).mpr (by
       simpa only [Int.natCast_pow] using hcoprime.pow_left (m := B))
@@ -127,9 +123,7 @@ theorem wooleyAffinePolynomialSystem_lowMatrixMod_primePower_isUnit
 
 /-- The transpose convention is the one used for row operations on source
 equations. -/
-theorem wooleyAffinePolynomialSystem_exists_lowMatrix_leftInverse
-    {k p c B : ℕ} {phi : WooleyPolynomialSystem k}
-    (hphi : phi.Spaced p c) (hc : 1 ≤ c) (eta : ℤ) :
+theorem wooleyAffinePolynomialSystem_exists_lowMatrix_leftInverse :
     ∃ G : Matrix (Fin k) (Fin k) (ZMod (p ^ B)),
       G * Matrix.transpose
         (wooleyPolynomialSystemLowMatrixMod
@@ -139,13 +133,9 @@ theorem wooleyAffinePolynomialSystem_exists_lowMatrix_leftInverse
   have hunitT : IsUnit (Matrix.transpose
       (wooleyPolynomialSystemLowMatrixMod
         (wooleyAffinePolynomialSystem phi 1 eta) (p ^ B))) := by
-    rw [Matrix.isUnit_iff_isUnit_det, Matrix.det_transpose,
-      ← Matrix.isUnit_iff_isUnit_det]
-    exact hunit
-  obtain ⟨u, hu⟩ := hunitT
-  refine ⟨(↑u⁻¹ : Matrix (Fin k) (Fin k) (ZMod (p ^ B))), ?_⟩
-  rw [← hu]
-  exact Units.inv_mul u
+    pm_8067
+  pm_969 k B
+end
 
 /-- Translation does not create a degree-above-`k` coefficient outside the
 original `p^c`-divisible tail. -/
@@ -156,11 +146,7 @@ theorem WooleyPolynomialSystem.Spaced.affine_one_high_coeff_dvd
     (p : ℤ) ^ c ∣
       (wooleyAffinePolynomialSystem phi 1 eta j).coeff n := by
   obtain ⟨tail, htail⟩ := hphi
-  unfold wooleyAffinePolynomialSystem
-  rw [htail j]
-  simp only [add_comp, pow_comp, X_comp, C_comp, mul_comp]
-  norm_num only [map_one, one_mul]
-  rw [coeff_add, coeff_X_add_C_pow, coeff_C_mul]
+  pm_2849
   have hjlt : (j : ℕ) + 1 < n := by omega
   rw [Nat.choose_eq_zero_of_lt hjlt]
   simp only [Nat.cast_zero]

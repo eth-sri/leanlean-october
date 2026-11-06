@@ -31,9 +31,8 @@ theorem max_signal_exponents (β ω σ c : ℝ) :
       β + c - continuationMargin β ω σ := by
   unfold continuationMargin
   rcases le_total (β - 7 / 8 - ω) σ with h | h
-  · rw [min_eq_left h, max_eq_left (by linarith)]
-    linarith
-  · rw [min_eq_right h, max_eq_right (by linarith)]
+  grind
+  grind
 
 theorem exists_gt_supremum_sub {S : Set ℝ} (hne : S.Nonempty)
     (hbounded : BddAbove S) {ε : ℝ} (hε : 0 < ε) :
@@ -48,9 +47,8 @@ theorem exists_gt_supremum_sub_of_insert {S : Set ℝ} {a ε : ℝ}
   obtain ⟨x, hx, hlt⟩ :=
     exists_gt_supremum_sub (Set.insert_nonempty a S) hbounded hε
   rcases Set.mem_insert_iff.mp hx with hxa | hxS
-  · subst x
-    exact False.elim ((not_lt_of_ge ha) hlt)
-  · exact ⟨x, hxS, hlt⟩
+  grind
+  grind
 
 end
 

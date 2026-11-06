@@ -8,6 +8,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerWeight
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNaturalGaussianProfile
 public import MathCollab.Density.Stronger.Atkinson.ZetaBandPhysicalDerivatives
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -58,10 +59,9 @@ theorem exists_intervalC2Bound_atkinsonPowerWeight_root_natural (α : ℝ) :
       1 ≤ L → 8 * L ≤ G →
       IntervalC2Bound (fun y => atkinsonPowerWeight T G L α (y ^ 2))
         (Real.sqrt T / 4) (Real.sqrt T) (C * G * T ^ (-α)) (G / Real.sqrt T) := by
-  obtain ⟨C, hC, hbound⟩ := exists_intervalC2Bound_atkinsonPowerWeight_normalized_natural α
-  refine ⟨C, hC, ?_⟩
+  pm_1062 C hC hbound exists_intervalC2Bound_atkinsonPowerWeight_normalized_natural α
   intro T G L hT hG hGT hL hwidth
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  pm_4891 hs T hT
   have h := (hbound T G L hT hG hGT hL hwidth).comp_div hs
   have he : (fun y => atkinsonPowerWeight T G L α (T * (y / Real.sqrt T) ^ 2)) =
       fun y => atkinsonPowerWeight T G L α (y ^ 2) := by

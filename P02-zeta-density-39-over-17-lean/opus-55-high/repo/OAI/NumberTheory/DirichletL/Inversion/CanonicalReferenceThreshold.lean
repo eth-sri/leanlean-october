@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -59,12 +60,8 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
       dsimp [R]
       linarith [le_abs_self hi, abs_nonneg Alog, abs_nonneg window]
     exact hhi.trans ((by linarith [Real.add_one_le_exp R] : R ≤ Real.exp R).trans hpow)
-  · apply (Real.exp_le_exp.mpr ?_).trans hpow
-    dsimp [R]
-    linarith [le_abs_self Alog, abs_nonneg hi, abs_nonneg window]
-  · apply (Real.exp_le_exp.mpr ?_).trans hpow
-    dsimp [R]
-    linarith [le_abs_self window, abs_nonneg hi, abs_nonneg Alog]
+  pm_6836 Alog window
+  pm_6836 window Alog
 
 end SevenEighths.InverseMoment
 

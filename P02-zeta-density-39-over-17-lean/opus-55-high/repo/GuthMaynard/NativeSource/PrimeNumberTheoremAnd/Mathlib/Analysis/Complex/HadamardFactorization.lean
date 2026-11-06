@@ -47,24 +47,6 @@ open Filter Topology Set Complex
 
 open scoped BigOperators Topology
 
-/-- The denominator in the Hadamard quotient construction, centered at `c`. -/
-noncomputable def centeredHadamardDenom (m : ℕ) (c : ℂ) (f : ℂ → ℂ) (z : ℂ) : ℂ :=
-  (z - c) ^ (analyticOrderNatAt f c) *
-    divisorCanonicalProduct m (fun w : ℂ => f (w + c)) (Set.univ : Set ℂ) (z - c)
-
-@[simp]
-theorem centeredHadamardDenom_center_eq_one {m : ℕ} {c : ℂ} {f : ℂ → ℂ}
-    (h : analyticOrderNatAt f c = 0) :
-    centeredHadamardDenom m c f c = 1 := by
-  simp [centeredHadamardDenom, h, sub_self, divisorCanonicalProduct_zero, pow_zero]
-
-@[simp]
-theorem centeredHadamardDenom_center_eq_zero {m : ℕ} {c : ℂ} {f : ℂ → ℂ}
-    (h : analyticOrderNatAt f c ≠ 0) : centeredHadamardDenom m c f c = 0 := by
-  have hn : 0 < analyticOrderNatAt f c := by
-    exact Nat.pos_of_ne_zero h
-  simp [centeredHadamardDenom, sub_self, zero_pow hn.ne']
-
 /-!
 ## Boundedness on compact annuli (away from `z₀`)
 

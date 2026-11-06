@@ -3,10 +3,9 @@ module
 TypeIIFourthMomentReduction. Weighted overlap reuses audited Density.Packing;
 no donor zero-family, tail assumption, or7/10 restriction is imported. -/
 public import GuthMaynard.Improvement.ShortGammaPacking
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
@@ -18,15 +17,15 @@ theorem short_setIntegral_comp_add_Icc (f : ℝ → ℝ) (u R : ℝ) :
       fun v => (Icc (u-R) (u+R)).indicator f (v+u) := by
     funext v
     by_cases hv : v ∈ Icc (-R) R
-    · have ht : v+u ∈ Icc (u-R) (u+R) := ⟨by linarith [hv.1],by linarith [hv.2]⟩
+    · have ht : v+u ∈ Icc (u-R) (u+R) := ⟨by grind,by grind⟩
       simp only [indicator_of_mem hv,indicator_of_mem ht]
       congr 1
       ring
     · have ht : v+u ∉ Icc (u-R) (u+R) := by
         intro ht
         apply hv
-        exact ⟨by linarith [ht.1],by linarith [ht.2]⟩
-      simp only [indicator_of_notMem hv,indicator_of_notMem ht]
+        grind
+      simp_all
   rw [he]
   exact integral_add_right_eq_self _ u
 
@@ -45,7 +44,7 @@ theorem short_typeII_window_packing :
   let F := fun t => (shortTwistedNorm H t)^4
   let q := fun u t : ℝ => K/(1+|t-u|)^2
   have hf : Continuous F := (shortTwistedNorm_continuous H).pow 4
-  have hf0 (t : ℝ) : 0 ≤ F t := by dsimp [F]; positivity
+  pm_7925 hf0 t
   have hq (u : ℝ) : Continuous (q u) := by
     dsimp [q]
     exact continuous_const.div ((continuous_const.add (continuous_id.sub continuous_const).abs).pow 2)

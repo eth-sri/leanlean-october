@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceSourceEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem padded_source_energy
       FactorsModulo (fixedBaseConductor q) (elementCharacter (conjugateIdealCharacter χ)) →
       (∀I,¬InverseInitialExcludedPool.outside (reflectionExcludedPrimes q) I →
         conjugateIdealCharacter χ I=0) →
-    ∀r rr:ℝ,0≤r → r-eta≤rr → rr≤r →
+    ∀r rr:ℝ,0≤ r → r-eta≤ rr → rr≤ r →
       r+2*(∑i,ell i)<1 → 2*r+8*(∑i,ell i)<3 →
     ∀rows:Finset O,(∀u∈rows,‖eisEmbedding u‖^2≤U) → ∀θ:ℝ,
       (∑u∈rows,‖∑x:Tuple L,(∏i,coeff i (x i).val)*
@@ -50,20 +51,19 @@ theorem padded_source_energy
   have hev:∀ᶠU:ℝ in atTop,(2:ℝ)^K≤U^eta:=
     (tendsto_rpow_atTop heta).eventually (eventually_ge_atTop _)
   obtain ⟨Uscale,hscale⟩:=eventually_atTop.mp hev
-  refine ⟨eta,heta,degree,?_⟩
-  intro q hq
-  obtain ⟨C,U₀,hC,hU₀,henergy⟩:=henergy q hq
-  refine ⟨C,max U₀ Uscale,hC,lt_max_of_lt_left hU₀,?_⟩
+  pm_253 eta heta degree q hq
+  pm_3744 C U₀ hC hU₀ henergy
+  pm_8001 Uscale
   intro U hU ι inst dec hK L ell coeff hell hp hs hdis hratio hc hout primeW hprimeW hlive
     χ hχ hperiod hzero r rr hr hrlo hrhi hfirst hsecond rows hrows θ
-  have hU0:U₀≤U:=(le_max_left _ _).trans hU
+  pm_5224 hU0 U₀ U hU
   have hUone:1<U:=hU₀.trans_le hU0
-  have hs0:0≤∑i,ell i:=Finset.sum_nonneg (fun i _=>hell i)
+  pm_744 hs0 ell hell
   have hG (J:Finset ι):0≤∑i∈J,ell i:=Finset.sum_nonneg (fun i _=>hell i)
   have hGmax (J:Finset ι):(∑i∈J,ell i)≤∑i,ell i:=
     Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _) (fun i _ _=>hell i)
   have hcap (J:Finset ι):
-      0≤1+ρ ∧ 1+ρ≤2 ∧ -2≤rr+(∑i,ell i)-2*(∑i∈J,ell i) ∧
+      0≤1+ρ ∧ 1+ρ≤2 ∧ -2≤ rr+(∑i,ell i)-2*(∑i∈J,ell i) ∧
       rr+2*(∑i,ell i)≤1+ρ-2*gap ∧
       2*rr+8*(∑i,ell i)≤3*(1+ρ)-2*gap ∧ rr+(∑i,ell i)+7*eta≤2 :=
     InverseInitialMarkedReserve.shifted_capacity ρ gap eta r rr _ _ hρ hρmax hgapρ

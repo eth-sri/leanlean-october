@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyAffineComposition
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Reverse orthogonality in Wooley equation (7.21)
@@ -15,7 +16,6 @@ literally the original mixed residue moment at
 
 namespace GafniTao
 
-noncomputable section
 
 /-- Equation (7.21), with the same lower system `Psi` simultaneously for all
 refined residue classes.  Zero-mass classes are excluded here; their weighted
@@ -82,21 +82,10 @@ theorem wooley_equation_7_21_native
             (eta : ZMod (p ^ b)) := by
   let : NeZero (p ^ wooleySection7BPrimeNat k r a b gammaVal) :=
     ⟨pow_ne_zero _ hpPrime.ne_zero⟩
-  let : NeZero (p ^ H) := ⟨pow_ne_zero _ hpPrime.ne_zero⟩
-  obtain ⟨Psi, hPsi, huniform⟩ :=
-    wooley_exists_uniform_shifted_normalized_identity
-      hpPrime hc hr hrk hkp hMB hgammaK hBPrime
-        omegaVal xi eta homega hcop hsep hdiff phi hphi
-  have hleftBase : wooleySourceMassSq
-      (wooleyAffinePullback gamma (p ^ a)
-        (pow_pos hpPrime.pos a) xi) ≠ 0 := by
-    rw [wooleySourceMassSq_affinePullback]
-    simpa using hxiMass
-  have hrightBase : wooleySourceMassSq
-      (wooleyAffinePullback gamma (p ^ b)
-        (pow_pos hpPrime.pos b) eta) ≠ 0 := by
-    rw [wooleySourceMassSq_affinePullback]
-    simpa using hetaMass
+  pm_7205
+  pm_5951 huniform wooley_exists_uniform_shifted_normalized_identity
+  pm_7311 hleftBase a xi hxiMass
+  pm_7311 hrightBase b eta hetaMass
   have horiginal := huniform (wooleyTriangular r)
     (s - wooleyTriangular r)
     (wooleyAffinePullback gamma (p ^ a) (pow_pos hpPrime.pos a) xi)
@@ -110,9 +99,7 @@ theorem wooley_equation_7_21_native
   let leftRestricted := wooleySourceResidueSequence leftBase (p ^ H) zeta
   let right := wooleyAffinePullback gamma (p ^ b)
     (pow_pos hpPrime.pos b) eta
-  have hzetaInt :
-      ((((zeta.val : ℕ) : ℤ) : ZMod (p ^ H))) = zeta := by
-    simpa only [Int.cast_natCast] using ZMod.natCast_zmod_val zeta
+  pm_2820
   have hkappaMassProd := hkappaMass
   rw [pow_add] at hkappaMassProd
   have hleft : wooleySourceMassSq leftRestricted ≠ 0 := by
@@ -150,6 +137,5 @@ theorem wooley_equation_7_21_native
   rw [pow_add]
 
 
-end
 
 end GafniTao

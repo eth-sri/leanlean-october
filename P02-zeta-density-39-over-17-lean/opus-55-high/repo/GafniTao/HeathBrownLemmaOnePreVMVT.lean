@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownCellAveraging
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ count, and coefficient-cell volume.
 -/
 
 open Finset MeasureTheory
-open scoped BigOperators ENNReal
+open scoped ENNReal
 
 namespace GafniTao
 
@@ -56,10 +57,8 @@ theorem heathBrown_centerWeyl_sum_preVMVT
             (heathBrownCoefficientCenter k f n)‖ ≤
       (1 + ENNReal.ofReal (2 * Real.pi * ((k : ℝ) ^ 2 / H)) * Q) *
         heathBrownIntegratedMajorant N k H s f := by
-  have hcell := heathBrown_cellwise_center_lintegral_le
-    (N := N) (k := k) (H := H) (Q := Q) hH hQ hQH f
-  have hQmajor := heathBrownIntegratedWeyl_le_majorant
-    (N := N) (k := k) (H := H) (s := s) hH hQH hs f
+  pm_8795 hcell heathBrown_cellwise_center_lintegral_le Q hQ hQH
+  pm_8795 hQmajor heathBrownIntegratedWeyl_le_majorant s hQH hs
   have hjmajor (j : ℕ) (hj : j ∈ Finset.Ico 1 Q) :
       heathBrownIntegratedWeyl N k H j f ≤
         heathBrownIntegratedMajorant N k H s f :=

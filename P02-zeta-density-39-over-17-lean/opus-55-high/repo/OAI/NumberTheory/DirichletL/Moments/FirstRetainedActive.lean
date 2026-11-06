@@ -40,11 +40,8 @@ local notation "O"=>ActualEisensteinCubic.O
   apply Finset.sum_congr rfl
   intro I hI
   by_cases hi:β I=0
-  · simp [hi]
-  · rw [ite_eq_left hi]
-    apply Finset.sum_congr rfl
-    intro J hJ
-    by_cases hj:β J=0 <;> simp [hj]
+  simp_all
+  grind
 
 end SevenEighths.CenteredMomentFirstRetainedActive
 

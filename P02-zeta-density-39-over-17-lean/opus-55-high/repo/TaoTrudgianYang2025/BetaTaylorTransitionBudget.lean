@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorCutoffBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,13 +30,12 @@ theorem smoothTransition_taylor_remainder_uniform_jets (Q : ℕ) :
         |iteratedDeriv n (fun y => Real.smoothTransition (s*y/h+t)*
           (f y-finiteTaylorPolynomial f Q a y)) x| ≤ C*M := by
   obtain ⟨B,hB,hjets⟩ := smoothTransition_finite_jet_bound Q
-  have hpow : 1 ≤ (2 : ℝ)^Q := one_le_pow₀ (by norm_num)
+  pm_5252 hpow Q
   refine ⟨(2 : ℝ)^Q*B,by nlinarith,?_⟩
   intro f a x h s t M hh hh₁ hs hx hf hb n hn
   let χ : ℝ → ℝ := fun y => Real.smoothTransition (s*y/h+t)
   have hχ : ContDiff ℝ ∞ χ := Real.smoothTransition.contDiff.comp (by fun_prop)
-  have hN : (n : WithTop ℕ∞) ≤ ∞ :=
-    ENat.natCast_le_of_coe_top_le_withTop le_rfl n
+  pb_1292
   have hχb : ∀ i ≤ n, |iteratedDeriv i χ x| ≤ B*(h⁻¹)^i := by
     intro i hi
     have he : χ = fun y => Real.smoothTransition ((s/h)*y+t) := by
@@ -53,10 +53,10 @@ theorem smoothTransition_taylor_remainder_uniform_jets (Q : ℕ) :
     simpa only [mul_comm] using h
   have hrem := abs_iteratedDeriv_cutoff_taylor_remainder_le hn hh hx
     (hχ.contDiffAt.of_le hN) hf hχb hb
-  have hM : 0 ≤ M := (abs_nonneg _).trans (hb a left_mem_uIcc)
+  pm_1620
   have hsmall : h^(Q+1-n) ≤ 1 := pow_le_one₀ hh.le hh₁
   have hcoeff : 0 ≤ (2 : ℝ)^n*B*M := by positivity
-  have hmono := pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hn
+  pm_662 hmono hn
   calc
     _ ≤ (2 : ℝ)^n*B*M*h^(Q+1-n) := hrem
     _ ≤ (2 : ℝ)^n*B*M := (mul_le_mul_of_nonneg_left hsmall hcoeff).trans_eq (mul_one _)

@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaReflectionEnvelope
 public import TaoTrudgianYang2025.BetaClosedDuality
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem exponentPairLine_reflected_le {k l α : ℝ}
   have h := mul_nonneg (show 0 ≤ 2*α-1 by linarith)
     (show 0 ≤ l-k-1/2 by linarith)
   unfold exponentPairLine
-  nlinarith only [h]
+  grind
 
 theorem exponentPair_of_beta_bound_half {k l : ℝ}
     (htri : InExponentPairTriangle k l) (hslope : 1/2 ≤ l-k)
@@ -37,17 +38,15 @@ theorem exponentPair_of_beta_bound_half {k l : ℝ}
   apply (exponentPair_iff_beta_bound htri).mpr
   intro α hα
   by_cases hhalf : (α:ℝ) ≤ 1/2
-  · exact hbeta α hhalf
-  · have hαNN : α ≤ 1 := by exact_mod_cast hα
-    let γ : ℝ≥0 := 1-α
+  grind
+  · have hαNN : α ≤ 1 := by simp_all
+    pm_8305
     have hγreal : (γ:ℝ) = 1-(α:ℝ) := NNReal.coe_sub hαNN
     have hγhalf : (γ:ℝ) ≤ 1/2 := by rw [hγreal]; linarith
     have hγ : (γ:ℝ) ≤ 1 := by linarith
-    have hγNN : γ ≤ 1 := by exact_mod_cast hγ
+    have hγNN : γ ≤ 1 := by aesop
     have hdouble : (1-γ:ℝ≥0) = α := by
-      apply NNReal.coe_injective
-      rw [NNReal.coe_sub hγNN,hγreal]
-      norm_num
+      pm_8306
     have hinput : IsExponentSumBoundNonAsymptotic γ (exponentPairLine k l γ) :=
       exponentSumGrowthExponent_le_iff_nonAsymptotic.mp (hbeta γ hγhalf)
     have hlinepos : 0 ≤ exponentPairLine k l γ := by

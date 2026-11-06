@@ -34,7 +34,7 @@ local notation "O"=>HeckeFamily.O
     (dyadicRows_norm rows n z hz).1
   intro he
   simp only [he,normValue_eq_embedding,map_zero,norm_zero,zero_pow (by decide : 2≠0)] at hn
-  exact (lt_irrefl 0) hn
+  grind
 
  theorem dyadicRows_power_cap (rows:Finset O)(n:Fin 4→ℤ)(Z:ℝ)(hZ:1<Z)
     (z:O)(hz:z∈dyadicRows rows n):
@@ -52,9 +52,8 @@ local notation "O"=>HeckeFamily.O
   apply Finset.sum_congr rfl
   intro z hz
   by_cases hd:dyadicWeight (n 1) (normValue z)=0
-  · simp only [hd,ne_eq,not_true_eq_false,mul_zero,zero_mul,
-      Complex.ofReal_zero,Finset.sum_const_zero,ite_self]
-  · simp only [hd,ne_eq,not_false_eq_true,ite_true]
+  simp_all
+  grind
 
  theorem physicalBlock_live_dyadic_rows (η:Character)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)
     (C D:Ideal O)(hC:Supported C)(hD:Supported D)(U:Finset (CommonIndex C D))

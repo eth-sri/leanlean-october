@@ -8,6 +8,7 @@ The literal classical Bessel kernel, principal half-power branches and
 actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannLaplaceAmplitude
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,7 +30,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem neumann_cpow_positive_real_mul {r : ℝ} (hr : 0 < r) {z : ℂ}
     (hz : z ≠ 0) (s : ℂ) :
     ((r : ℂ) * z) ^ s = (r : ℂ) ^ s * z ^ s := by
-  have hr0 : (r : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hr.ne'
+  pm_115 hr0 r Complex.ofReal_ne_zero.mpr hr.ne'
   rw [Complex.cpow_def_of_ne_zero (mul_ne_zero hr0 hz),
     Complex.log_ofReal_mul hr hz, Complex.ofReal_log hr.le,
     add_mul, Complex.exp_add, ← Complex.cpow_def_of_ne_zero hr0,
@@ -51,7 +52,10 @@ theorem continuous_neumannLaplaceAmplitude : Continuous neumannLaplaceAmplitude 
   exact hpow.continuousAt.comp
       (f := fun v : ℝ => 1 + (v : ℂ) * I) (by fun_prop)
 
-theorem neumannContourKernel_unit_ray (x : ℝ) {t : ℝ} (ht : 0 < t) :
+section
+variable (x : ℝ) {t : ℝ}
+include x t
+theorem neumannContourKernel_unit_ray (ht : 0 < t) :
     neumannContourKernel x (1 + (t : ℂ) * I) =
       Complex.exp (I * (x : ℂ)) * neumannRayCoefficient * neumannLaplaceIntegrand x t := by
   have hm : 1 - (1 + (t : ℂ) * I) = (t : ℂ) * (-I) := by ring
@@ -64,8 +68,7 @@ theorem neumannContourKernel_unit_ray (x : ℝ) {t : ℝ} (ht : 0 < t) :
     norm_num at hh
   have hpow : (t : ℂ) ^ (-(1 / 2 : ℂ)) = ((t ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) := by
     have h := Complex.ofReal_cpow ht.le (-(1 / 2 : ℝ))
-    norm_num only [Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one,
-      Complex.ofReal_ofNat] at h
+    pm_8588 h
     exact h.symm
   have he : Complex.exp (I * (x : ℂ) * (1 + (t : ℂ) * I)) =
       Complex.exp (I * (x : ℂ)) * (Real.exp (-x * t) : ℝ) := by
@@ -74,7 +77,7 @@ theorem neumannContourKernel_unit_ray (x : ℝ) {t : ℝ} (ht : 0 < t) :
       push_cast
       calc
         _ = I * (x : ℂ) + (x : ℂ) * t * (I * I) := by ring
-        _ = _ := by rw [I_mul_I]; ring
+        _ = _ := by simp_all
     rw [harg, Complex.exp_add, ← Complex.ofReal_exp]
   unfold neumannContourKernel
   have htwo := neumann_cpow_positive_real_mul (by norm_num : (0 : ℝ) < 2) hp0 (-(1 / 2 : ℂ))
@@ -85,22 +88,20 @@ theorem neumannContourKernel_unit_ray (x : ℝ) {t : ℝ} (ht : 0 < t) :
   push_cast
   ring
 
-theorem norm_neumannLaplaceIntegrand_le (x : ℝ) {t : ℝ} (ht : 0 ≤ t) :
+theorem norm_neumannLaplaceIntegrand_le (ht : 0 ≤ t) :
     ‖neumannLaplaceIntegrand x t‖ ≤ t ^ (-(1 / 2 : ℝ)) * Real.exp (-x * t) := by
   rw [neumannLaplaceIntegrand, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (by positivity : 0 ≤ t ^ (-(1 / 2 : ℝ)) * Real.exp (-x * t))]
   exact mul_le_of_le_one_right (by positivity) (norm_neumannLaplaceAmplitude_le_one _)
+end
 
 theorem integrableOn_neumannLaplaceIntegrand {x : ℝ} (hx : 0 < x) :
     IntegrableOn (neumannLaplaceIntegrand x) (Ioi 0) := by
-  have hi : IntegrableOn (fun t : ℝ => t ^ (-(1 / 2 : ℝ)) * Real.exp (-x * t)) (Ioi 0) := by
-    simpa only [Real.rpow_one] using
-      integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num : -1 < -(1 / 2 : ℝ))
-        (by norm_num : 0 < (1 : ℝ)) hx
+  pm_4369
   have hm : AEStronglyMeasurable (neumannLaplaceIntegrand x) (volume.restrict (Ioi 0)) := by
     unfold neumannLaplaceIntegrand
     apply AEStronglyMeasurable.mul
-    · exact (Complex.measurable_ofReal.comp (by fun_prop)).aestronglyMeasurable
+    fun_prop
     · exact (continuous_neumannLaplaceAmplitude.comp (by fun_prop)).aestronglyMeasurable
   apply hi.mono' hm
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht

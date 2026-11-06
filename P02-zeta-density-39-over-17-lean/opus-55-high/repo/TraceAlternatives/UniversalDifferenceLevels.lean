@@ -1,12 +1,11 @@
 module
 public import DensityEnergyGM.DifferencePeaks
 public import TraceAlternatives.UniversalSquareLevelCount
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
 open Finset GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
@@ -32,31 +31,23 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
                   (2*T)^(2/3:ℝ)*(M : ℝ) ^ (16 / 3 : ℝ) * U ^ (-8 : ℝ) +
                   (2*T)^(3/5:ℝ)*(M : ℝ) ^ (72 / 5 : ℝ) * U ^ (-96/5 : ℝ)) := by
   classical
-  obtain ⟨C₀, D, hC₀, hD, hJ⟩ := universal_square_level_count ε hε
-  refine ⟨3 * C₀, D, by positivity, hD, ?_⟩
-  intro M T a W hM hT hMT ha hBase
+  pm_4083 C₀ D hC₀ hD hJ universal_square_level_count ε hε
+  pm_6359 D hD
   have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTone
-  obtain ⟨p, hrep⟩ := exists_difference_peak_representatives W
-    (fun t => ‖dirichletPoly M a t‖)
+  pm_643
   refine ⟨p, hrep, ?_⟩
   intro U hU hCut
   let S := (differenceFloorSupport W).filter fun j =>
     U ≤ ‖dirichletPoly M a ((p j).1 - (p j).2)‖
   let color : ℤ → ℕ := fun j => (j % 3).toNat
   let y : ℤ → ℝ := fun j => (p j).1 - (p j).2 + T
-  have hsupport : ∀ j ∈ S, j ∈ differenceFloorSupport W :=
-    fun j hj => (Finset.mem_filter.mp hj).1
+  pm_1538
   have hcolor : ∀ j ∈ S, color j ∈ Finset.range 3 := by
     intro j hj
-    have hnonneg := Int.emod_nonneg j (by norm_num : (3 : ℤ) ≠ 0)
+    pm_5395 hnonneg j
     have hlt := Int.emod_lt_of_pos j (by norm_num : (0 : ℤ) < 3)
-    rw [Finset.mem_range]
-    change (j % 3).toNat < 3
-    omega
-  have hcounts : S.card = ∑ r ∈ Finset.range 3,
-      ((S.filter fun j => color j = r).card) :=
-    Finset.card_eq_sum_card_fiberwise hcolor
+    pm_5499 Finset.mem_range
+  pm_918
   have hEach : ∀ r ∈ Finset.range 3,
       (((S.filter fun j => color j = r).card) : ℝ) ≤
         C₀ * (2 * T) ^ ε *
@@ -67,10 +58,7 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
     let A := S.filter fun j => color j = r
     let Y := A.image y
     have hA : ∀ j ∈ A, j ∈ S := fun j hj => (Finset.mem_filter.mp hj).1
-    have hfloor : ∀ j ∈ A, ⌊y j - T⌋ = j := by
-      intro j hj
-      have h := (hrep j (hsupport j (hA j hj))).2.1
-      simpa only [y, add_sub_cancel_right, differenceFloor] using h
+    pm_367
     have hyinj : Set.InjOn y A := by
       intro i hi j hj heq
       have h := congrArg (fun x : ℝ => ⌊x - T⌋) heq
@@ -78,21 +66,18 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
     have hcardY : Y.card = A.card := Finset.card_image_of_injOn hyinj
     have hSepY : IsSeparated 1 Y := by
       intro x hx z hz hne
-      obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hx
-      obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hz
+      pm_384 i hi Finset.mem_image.mp hx j hj hz
       have hneij : i ≠ j := by intro h; subst j; exact hne rfl
-      have hci := (Finset.mem_filter.mp hi).2
-      have hcj := (Finset.mem_filter.mp hj).2
+      pm_547 hci Finset.mem_filter.mp hi hcj hj
       have hmod : i % 3 = j % 3 := by
-        have hinonneg := Int.emod_nonneg i (by norm_num : (3 : ℤ) ≠ 0)
-        have hjnonneg := Int.emod_nonneg j (by norm_num : (3 : ℤ) ≠ 0)
+        pm_5395 hinonneg i
+        pm_5395 hjnonneg j
         dsimp only [color] at hci hcj
         omega
       have h := difference_floor_residue_separated (hfloor i hi) (hfloor j hj) hmod hneij
       simpa only [Real.dist_eq, sub_sub_sub_cancel_right] using h
     have hBaseY : InBaseInterval (2 * T) Y := by
-      intro z hz
-      obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hz
+      pm_136 z hz j hj Finset.mem_image.mp
       have hp := (hrep j (hsupport j (hA j hj))).1
       obtain ⟨hp1, hp2⟩ := Finset.mem_product.mp hp
       have ht := hBase (p j).1 hp1
@@ -101,12 +86,8 @@ theorem universal_difference_cell_level_count (ε : ℝ) (hε : 0 < ε) :
       exact ⟨by linarith [ht.1, hu.2], by linarith [ht.2, hu.1]⟩
     have hLargeY : ∀ z ∈ Y,
         U ≤ ‖dirichletPoly M (phaseShiftCoeffs (-T) a) z‖ := by
-      intro z hz
-      obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hz
-      have h := (Finset.mem_filter.mp (hA j hj)).2
-      dsimp only [y]
-      rw [← dirichletPoly_difference_eq_translated]
-      exact h
+      pm_136 z hz j hj Finset.mem_image.mp
+      pm_1273
     have hcount := hJ M (2 * T) U (phaseShiftCoeffs (-T) a) Y hM
       (by linarith) (by linarith) hU hCut
       (by intro n hn; rw [norm_phaseShiftCoeffs]; exact ha n hn)

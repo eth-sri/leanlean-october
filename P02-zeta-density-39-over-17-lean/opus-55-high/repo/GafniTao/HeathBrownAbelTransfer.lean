@@ -1,7 +1,7 @@
 module
 public import GafniTao.HeathBrownSourceAbel
 
-@[expose] public section
+public section
 
 /-!
 # Heath-Brown's source Abel transfer
@@ -11,12 +11,10 @@ source sum.  The error weight is `e(g_n(h))`, with `g_n` defined from the
 literal Taylor polynomial; no abstract bounded coefficient replaces it.
 -/
 
-open Finset Set
-open scoped BigOperators
+open Finset
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownPhase_taylorError_mul_polynomial
     (k : ℕ) (f : ℝ → ℝ) (n x : ℝ) :
@@ -25,7 +23,7 @@ theorem heathBrownPhase_taylorError_mul_polynomial
         heathBrownPhase (heathBrownTaylorPolynomial k f n x) := by
   rw [← heathBrownPhase_add]
   unfold heathBrownTaylorError
-  rw [sub_add_cancel]
+  grind
 
 theorem heathBrown_shifted_source_sum_eq_weighted_polynomial
     (k H : ℕ) (f : ℝ → ℝ) (n : ℝ) :
@@ -37,11 +35,13 @@ theorem heathBrown_shifted_source_sum_eq_weighted_polynomial
   intro h hh
   exact heathBrownPhase_taylorError_mul_polynomial k f n h
 
+section
+variable {k H : ℕ} (hk : 2 ≤ k)
+include k H hk
 /-- Pointwise variation bound on a genuine source edge.  This is separated
 from the uniform-maximum form so the subsequent proof can retain each
 polynomial partial sum individually. -/
-theorem norm_heathBrownTaylorError_weight_succ_sub_le_source
-    {k H : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ}
+theorem norm_heathBrownTaylorError_weight_succ_sub_le_source {f : ℝ → ℝ}
     {n A lambda : ℝ}
     (hfat : ContDiffAt ℝ (k - 2 : ℕ) (deriv f) n)
     (hfd : ∀ x ∈ Set.Icc (1 : ℝ) H,
@@ -80,8 +80,7 @@ theorem norm_heathBrownTaylorError_weight_succ_sub_le_source
 /-- Exact partial-sum form of the first Abel transfer in Heath-Brown Lemma 1.
 Unlike the convenient uniform-`R` corollary above, this form preserves every
 partial sum and hence introduces no spurious factor `H`. -/
-theorem heathBrown_shifted_source_sum_norm_le_partial
-    {k H : ℕ} (hk : 2 ≤ k) (hH : 1 ≤ H) {f : ℝ → ℝ}
+theorem heathBrown_shifted_source_sum_norm_le_partial (hH : 1 ≤ H) {f : ℝ → ℝ}
     {n A lambda : ℝ}
     (hfat : ContDiffAt ℝ (k - 2 : ℕ) (deriv f) n)
     (hfd : ∀ x ∈ Set.Icc (1 : ℝ) H,
@@ -106,7 +105,7 @@ theorem heathBrown_shifted_source_sum_norm_le_partial
         intro j hj
         exact norm_heathBrownTaylorError_weight_succ_sub_le_source
           hk hfat hfd hfon hderiv hj))
-
 end
+
 
 end GafniTao

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.RayFamily
 public import OAI.NumberTheory.DirichletL.PrimeCounting.RayAsymptotic
 public import OAI.NumberTheory.DirichletL.PrimeCounting.IdealPrimeMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ theorem analytic_family : PNT.RayAsymptotic.AnalyticFamily M
     rcases hpole with hχ | hs1
     · exact (HeckeRayFamily.character_entire M χ hχ).analyticAt s
     · apply Complex.analyticAt_iff_eventually_differentiableAt.mpr
-      have hs0 : s ≠ 0 := by intro h; norm_num [h] at hs
+      pm_3116 hs0 s hs
       filter_upwards [isOpen_ne.mem_nhds hs0, isOpen_ne.mem_nhds hs1] with z hz0 hz1
       exact LFunction_differentiableAt _ hz0 (Or.inl hz1)
   · intro χ s hs hpole

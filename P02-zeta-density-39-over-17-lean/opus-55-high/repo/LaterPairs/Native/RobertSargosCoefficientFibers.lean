@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosFixedCoefficientLoss
 public import LaterPairs.Native.RobertSargosPrimitiveProjection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -24,8 +25,7 @@ theorem exists_robertSargos_coefficient_fiber_bound (ε : ℝ) (hε : 0 < ε) :
       (∀ p ∈ S, p.r = r ∧ p.h₁ = h₁ ∧ p.h₂ = h₂) →
       (S.card:ℝ) ≤ C*H^ε*(1+δ*Q^2/H) := by
   classical
-  obtain ⟨C,hC,hbound⟩ := exists_robertSargos_fixed_coeff_bound ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hbound exists_robertSargos_fixed_coeff_bound ε hε
   intro S R H Q δ r h₁ h₂ hH hQ hδ hRH hmem hfix
   by_cases hs : S.Nonempty
   · obtain ⟨p₀,hp₀⟩ := hs
@@ -50,38 +50,30 @@ theorem exists_robertSargos_coefficient_fiber_bound (ε : ℝ) (hε : 0 < ε) :
         have he₃ := congrArg (fun z : ℤ × ℤ × ℤ => z.2.2) he
         exact Prod.ext he₃ (Prod.ext he₂ he₁)
     have hTq₁ : ∀ t ∈ T, |(t.2.1:ℝ)| ∈ Set.Icc Q (2*Q) := by
-      intro t ht
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp ht
+      pm_2285
       exact (hmem p hp).q₁_support
     have hTq₂ : ∀ t ∈ T, Q ≤ |(t.1:ℝ)| := by
-      intro t ht
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp ht
+      pm_2285
       exact (hmem p hp).q₂_support.1
     have hTs : ∀ t ∈ T, 0 < t.2.1*t.1 := by
-      intro t ht
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp ht
+      pm_2285
       exact (hmem p hp).same_sign
     have hTp : ∀ t ∈ T, Int.gcd (Int.gcd t.2.2 t.2.1 : ℤ) t.1 = 1 := by
-      intro t ht
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp ht
+      pm_2285
       exact (hmem p hp).coordinate_primitive
     have hTl : ∀ t ∈ T, r*t.2.2+h₁*t.2.1-h₂*t.1 = 0 := by
-      intro t ht
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp ht
+      pm_2285
       simpa only [f,(hfix p hp).1,(hfix p hp).2.1,(hfix p hp).2.2] using
         (hmem p hp).linear
     have hTn : ∀ t ∈ T, |robertSargosReduced r t.2.1 t.1 h₁ h₂ t.2.2| ≤ δ*H*Q^2 := by
-      intro t ht
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp ht
+      pm_2285
       simpa only [f,(hfix p hp).1,(hfix p hp).2.1,(hfix p hp).2.2] using
         (hmem p hp).near
     have hb := hbound T r h₁ h₂ H Q δ hc hr hH hQ hδ hrH hh₁ hh₂
       hTq₁ hTq₂ hTs hTp hTl hTn
     have hcard : T.card = S.card := Finset.card_image_of_injOn hinj
     rwa [hcard] at hb
-  · rw [Finset.not_nonempty_iff_eq_empty.mp hs]
-    simp only [Finset.card_empty,Nat.cast_zero]
-    positivity
+  pm_257 hs Finset.card_empty
 
 end TaoTrudgianYang2025
 

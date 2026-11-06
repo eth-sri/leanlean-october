@@ -7,7 +7,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Literal supremum norm for ordinary real inputs. For the compact smooth
 inputs of the endpoint, boundedness and agreement with the Schwartz

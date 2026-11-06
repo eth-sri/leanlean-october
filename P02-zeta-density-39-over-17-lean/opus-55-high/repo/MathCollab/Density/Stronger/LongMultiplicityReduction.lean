@@ -1,12 +1,12 @@
 module
 public import MathCollab.Density.Stronger.ShortZeroCount
 public import MathCollab.Density.Stronger.LongMeanCounting
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Complex Set Filter MeasureTheory
-open scoped BigOperators Topology
-set_option autoImplicit false
+open Real Complex Filter MeasureTheory
+open scoped Topology
 set_option maxHeartbeats 1000000
 noncomputable section
 namespace MathCollab.Density.Stronger
@@ -30,28 +30,19 @@ theorem smooth_zeroCount_partition (η σ δ T : ℝ) :
     (f := zetaMultiplicity)
   omega
 
+section
+variable {σ δ η : ℝ} (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η)
+include σ δ η hσ hσ' hδ hδ' hη
 /-- One critical-mean constant precedes the height and every complementary zero. -/
-theorem smoothLongZeroFinset_eventually_detects_mean {σ δ η : ℝ}
-    (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
+theorem smoothLongZeroFinset_eventually_detects_mean :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop, ∀ ρ ∈ smoothLongZeroFinset η σ δ T,
       (detectorY σ T)^((σ-1/2)/2) ≤
-        48*C*Real.sqrt (detectorX δ T)*Real.log T*weightedCriticalMean 128 ρ.im := by
-  obtain ⟨C, hC, hcover⟩ := smooth_long_mean_or_short_powered_cover hσ hσ' hδ hδ' hη 128 (by norm_num)
-  refine ⟨C, hC, ?_⟩
-  filter_upwards [eventually_ge_atTop (0 : ℝ), hcover] with T hT hc
-  intro ρ hρ
-  obtain ⟨hzmem, hnot⟩ := Finset.mem_sdiff.mp hρ
-  obtain ⟨hz, hβ, hγ, hγ'⟩ := mem_zetaZeroFinset.mp hzmem
-  have habs : |ρ.im| = ρ.im := abs_of_nonneg (hT.trans hγ)
-  rcases hc ρ hβ hz.2.2 (by rwa [habs]) (by rwa [habs]) hz.1 with hmean | hshort
-  · exact hmean
-  · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hzmem, hshort⟩))
+        48*C*Real.sqrt (detectorX δ T)*Real.log T*weightedCriticalMean 128 ρ.im := by pm_4457 hσ hσ'
 
 /-- Unconditional restoration of the complementary analytic-multiplicity count
 from separated long detectors. The right side is the literal physical twelfth
 moment, not a supplied moment bound. -/
-theorem smoothLongZeroCount_physical_moment_reduction {σ δ η : ℝ}
-    (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
+theorem smoothLongZeroCount_physical_moment_reduction :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop,
       (smoothLongZeroCount η σ δ T : ℝ)*(detectorY σ T)^(6*σ-3) ≤
         C*(detectorX δ T)^6*(Real.log T)^13*
@@ -62,15 +53,14 @@ theorem smoothLongZeroCount_physical_moment_reduction {σ δ η : ℝ}
   let A : ℝ := Real.pi^11*separationMass
   let B : ℝ := 2*(12 : ℝ)^12*Real.pi^12
   have hA : 0 ≤ A := mul_nonneg (by positivity) separationMass_nonneg
-  have hB : 0 ≤ B := by dsimp [B]; positivity
+  pm_61 hB B
   let C : ℝ := 4*Cb*(48*Cm)^12*(A+B+1)
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_4312
   refine ⟨C, hC, ?_⟩
   filter_upwards [eventually_ge_atTop (2 : ℝ), hmean] with T hT hm
-  have hTpos : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
+  pm_34 hTpos T hT1
   have hlog : 0 ≤ Real.log T := Real.log_nonneg hT1
-  have hlog2 : 0 ≤ Real.log (2*T) := Real.log_nonneg (by linarith)
+  pm_233 hlog2 T
   have hlogs : Real.log (2*T) ≤ 2*Real.log T := by
     rw [Real.log_mul (by norm_num) hTpos.ne']
     have hh := Real.log_le_log (by norm_num : (0 : ℝ) < 2) hT
@@ -88,17 +78,15 @@ theorem smoothLongZeroCount_physical_moment_reduction {σ δ η : ℝ}
     (smoothLongZeroFinset η σ δ T) (fun ρ => (zetaMultiplicity ρ : ℝ)) (by positivity : 0 ≤ Cb*Real.log (2*T)) hbin
   let U := R.image Complex.im
   have hUslab : ∀ u ∈ U, u ∈ Set.Icc T (2*T) := by
-    intro u hu
-    obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp hu
+    pm_136 u hu ρ hρ Finset.mem_image.mp
     have hz := mem_zetaZeroFinset.mp (smoothLongZeroFinset_subset η σ δ T (hR hρ))
     exact ⟨hz.2.2.1, hz.2.2.2⟩
   have hUmean : ∀ u ∈ U, (detectorY σ T)^((σ-1/2)/2) ≤
       48*Cm*Real.sqrt (detectorX δ T)*Real.log T*weightedCriticalMean 128 u := by
-    intro u hu
-    obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp hu
+    pm_136 u hu ρ hρ Finset.mem_image.mp
     exact hm ρ (hR hρ)
-  have hX : 0 ≤ detectorX δ T := Real.rpow_nonneg hTpos.le _
-  have hY : 0 < detectorY σ T := Real.rpow_pos_of_pos hTpos _
+  pm_7330 hX hTpos.le
+  pm_5306 hY detectorY σ hTpos
   have hphysical := long_mean_count_le_physical_moment hT1 hX hY hsep hUslab hUmean
   let I : ℝ := ∫ t in Set.Icc 0 (3*T), zetaMomentCriticalNorm t^12
   have hI : 0 ≤ I := integral_nonneg (fun t => by positivity)
@@ -128,5 +116,6 @@ theorem smoothLongZeroCount_physical_moment_reduction {σ δ η : ℝ}
     _ ≤ (4*Cb*(48*Cm)^12)*(detectorX δ T)^6*(Real.log T)^13*
         ((A+B+1)*(I+T^(-113 : ℝ))) := mul_le_mul_of_nonneg_left hmoment (by positivity)
     _ = _ := by dsimp [C, I]; ring
+end
 
 end MathCollab.Density.Stronger

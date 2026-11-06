@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankCapChildren
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,17 +20,17 @@ theorem actual_live_bin_rank_children
     (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
     (Z N V M cutoff eta L b window bW Qwidth z c eps A Mnext Fnext cnext tau:ℝ)
     (j:ℕ)(hZ:1<Z)(hL:1≤L)(heta:0≤eta)(heta1:eta≤1)
-    (hcut:0<cutoff)(hsmall:eta≤cutoff/32)(hV:0≤V)(hparentcap:N+V≤L)
-    (hbW:bW≤Z^eta)(hlog:1≤eta*Real.log Z)(hexp:Real.exp 1≤Z^eta)
-    (hbin:2≤Z^eta)(hb:1≤b)(hbt:b≤Z^(6*eta))(hwindow:Real.exp window≤Z^(4*eta))
-    (hne:(progressingCubes S D (Z^(cutoff-V)) (activeCubeLogBin S D bW (Z^N) j)).Nonempty)
+    (hcut:0< cutoff)(hsmall:eta≤ cutoff/32)(hV:0≤V)(hparentcap:N+V≤L)
+    (hbW:bW≤Z ^eta)(hlog:1≤eta*Real.log Z)(hexp:Real.exp 1≤Z ^eta)
+    (hbin:2≤Z ^eta)(hb:1≤b)(hbt:b≤Z ^(6*eta))(hwindow:Real.exp window≤Z ^(4*eta))
+    (hne:(progressingCubes S D (Z ^(cutoff-V)) (activeCubeLogBin S D bW (Z ^N) j)).Nonempty)
     (base Ψ:O→*ℂ)(hΨ:CanonicalCoefficientClass.IsBaseRayTwist base Ψ)(m:O)(hm:m≠0)
     (hparent:CanonicalMargins (N+V) M Qwidth z c)
-    (hpuncture:(Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Qwidth)
-    (hMc:M-3*(cutoff/2)/2≤Mnext)(hFc:N+V+15*eta≤Fnext)(hcc:cnext≤c-7*eta)
+    (hpuncture:(Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z ^Qwidth)
+    (hMc:M-3*(cutoff/2)/2≤Mnext)(hFc:N+V+15*eta≤Fnext)(hcc:cnext≤ c-7*eta)
     {σ:Type}[DecidableEq σ](slots:Finset σ)
-    (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
+    (lists:σ→ Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
+    (a:σ→ primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
     (ω₁ ω₂:𝓢(ℝ,ℂ))(K degree:ℕ):
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad;
@@ -41,14 +42,13 @@ theorem actual_live_bin_rank_children
     ∀k:SourceIndex,∀l jj:ℕ,∀negative:Bool,
       ChildBounds (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
         (poolPrimary_good F hF) Finset.univ
-        (progressingCubes S D (Z^(cutoff-V)) (activeCubeLogBin S D bW (Z^N) j))
+        (progressingCubes S D (Z ^(cutoff-V)) (activeCubeLogBin S D bW (Z ^N) j))
         k l jj negative Ψ m slots lists a ω₁ ω₂
         Z M (N-3*actualCubeLength Z j) (actualCubeLength Z j) V eta tau window b eps A K degree :=by
   dsimp only
   intro h₁ h₂ k l jj negative
-  let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  pm_7531
+  pm_3759
   obtain ⟨hel,hr,hrL,helL,hFL,hgap,hqn⟩:=actual_long_bin_geometry S D hbad bW Z N V cutoff eta L j
     hZ hL heta1 hV hparentcap hbW hlog hne
   have hs:(N-3*actualCubeLength Z j)+3*actualCubeLength Z j+V=N+V:=by ring
@@ -62,8 +62,8 @@ theorem actual_live_bin_rank_children
   intro v hv
   apply (hqn v hv).2.trans
   calc
-    _≤Z^eta*Z^(actualCubeLength Z j):=mul_le_mul_of_nonneg_right hexp (Real.rpow_nonneg (by linarith) _)
-    _=Z^(actualCubeLength Z j+eta):=by rw [Real.rpow_add (by linarith : 0<Z)];ring
+    _≤Z ^eta*Z ^(actualCubeLength Z j):=mul_le_mul_of_nonneg_right hexp (Real.rpow_nonneg (by linarith) _)
+    _=Z ^(actualCubeLength Z j+eta):=by rw [Real.rpow_add (by linarith : 0<Z)];ring
 
 end SevenEighths.InverseMoment
 

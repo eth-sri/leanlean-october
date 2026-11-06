@@ -16,23 +16,18 @@ noncomputable section
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
-theorem integer_interval_contraction_subset (S : Finset ℤ) (a b r : ℤ)
+section
+variable (S : Finset ℤ) (a b r : ℤ)
+include S a b r
+theorem integer_interval_contraction_subset
     (hr : 0 ≤ r) :
-    S ∩ Finset.Icc (a+r) (b-r) ⊆ S ∩ Finset.Icc a b := by
-  intro m hm
-  simp only [Finset.mem_inter,Finset.mem_Icc] at hm ⊢
-  exact ⟨hm.1,by omega,by omega⟩
+    S ∩ Finset.Icc (a+r) (b-r) ⊆ S ∩ Finset.Icc a b := by grind
 
-theorem integer_interval_contraction_boundary (S : Finset ℤ) (a b r : ℤ) :
+theorem integer_interval_contraction_boundary :
     (S ∩ Finset.Icc a b) \ (S ∩ Finset.Icc (a+r) (b-r)) ⊆
-      Finset.Ico a (a+r) ∪ Finset.Ioc (b-r) b := by
-  intro m hm
-  simp only [Finset.mem_sdiff,Finset.mem_inter,Finset.mem_Icc] at hm
-  simp only [Finset.mem_union,Finset.mem_Ico,Finset.mem_Ioc]
-  have hn : ¬ (a+r ≤ m ∧ m ≤ b-r) := fun ht => hm.2 ⟨hm.1.1,ht⟩
-  omega
+      Finset.Ico a (a+r) ∪ Finset.Ioc (b-r) b := by grind
 
-theorem integer_interval_contraction_card (S : Finset ℤ) (a b r : ℤ)
+theorem integer_interval_contraction_card
     (hr : 0 ≤ r) :
     (((S ∩ Finset.Icc a b) \ (S ∩ Finset.Icc (a+r) (b-r))).card : ℝ) ≤
       2*(r:ℝ) := by
@@ -49,9 +44,12 @@ theorem integer_interval_contraction_card (S : Finset ℤ) (a b r : ℤ)
       (r.toNat:ℝ)+(r.toNat:ℝ) := by exact_mod_cast hc
   rw [hcast] at hc'
   linarith
+end
 
-theorem norm_integer_interval_contraction (w : ℤ → ℂ) (S : Finset ℤ)
-    (a b r : ℤ) (hr : 0 ≤ r) (hw : ∀ m ∈ S, ‖w m‖ ≤ 1) :
+section
+variable (w : ℤ → ℂ) (S : Finset ℤ) (a b r : ℤ)
+include w S a b r
+theorem norm_integer_interval_contraction (hr : 0 ≤ r) (hw : ∀ m ∈ S, ‖w m‖ ≤ 1) :
     ‖(∑ m ∈ S ∩ Finset.Icc a b, w m) -
       ∑ m ∈ S ∩ Finset.Icc (a+r) (b-r), w m‖ ≤ 2*(r:ℝ) := by
   rw [← Finset.sum_sdiff_eq_sub (integer_interval_contraction_subset S a b r hr)]
@@ -62,13 +60,12 @@ theorem norm_integer_interval_contraction (w : ℤ → ℂ) (S : Finset ℤ)
         (1:ℝ) := by
       apply Finset.sum_le_sum
       intro m hm
-      exact hw m (Finset.mem_inter.mp (Finset.mem_sdiff.mp hm).1).1
+      grind
     _ ≤ 2*(r:ℝ) := by
       simpa only [Finset.sum_const,nsmul_eq_mul,mul_one] using
         integer_interval_contraction_card S a b r hr
 
-theorem norm_integer_interval_endpoint_shift (w : ℤ → ℂ) (S : Finset ℤ)
-    (a b r : ℤ) (hw : ∀ m ∈ S, ‖w m‖ ≤ 1) :
+theorem norm_integer_interval_endpoint_shift (hw : ∀ m ∈ S, ‖w m‖ ≤ 1) :
     ‖(∑ m ∈ S ∩ Finset.Icc (a+r) (b-r), w m) -
       ∑ m ∈ S ∩ Finset.Icc a b, w m‖ ≤ 2*|(r:ℝ)| := by
   by_cases hr : 0 ≤ r
@@ -81,5 +78,6 @@ theorem norm_integer_interval_endpoint_shift (w : ℤ → ℂ) (S : Finset ℤ)
     rw [ha,hb] at hs
     simpa only [Int.cast_neg,abs_of_neg (show (r:ℝ) < 0 by exact_mod_cast
       (show r < 0 by omega))] using hs
+end
 
 end TaoTrudgianYang2025

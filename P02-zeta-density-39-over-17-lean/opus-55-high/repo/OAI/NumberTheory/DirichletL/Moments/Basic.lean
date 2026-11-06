@@ -8,12 +8,13 @@ public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Algebra.Group.Commute.Units
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
-open scoped BigOperators NNReal
+open scoped NNReal
 namespace SevenEighths.CenteredMoment
 noncomputable section
 
@@ -24,21 +25,6 @@ structure MaskedCharacter (M R : Type*) [CommMonoid M] [CommRing R] where
   character : MulChar R ℂ
   keep : M → Prop
   keep_mul : ∀ a b, keep (a * b) ↔ keep a ∧ keep b
-
-def ofResidueMask {S : Type*} [CommRing S] (ρ : M →* R)
-    (χ : MulChar R ℂ) (puncture : M →* S) : MaskedCharacter M R where
-  residue := ρ
-  character := χ
-  keep a := IsUnit (puncture a)
-  keep_mul a b := by
-    rw [map_mul]
-    exact (Commute.all _ _).isUnit_mul_iff
-
-@[simp] theorem ofResidueMask_keep_one {S : Type*} [CommRing S]
-    (ρ : M →* R) (χ : MulChar R ℂ) (puncture : M →* S) :
-    (ofResidueMask ρ χ puncture).keep 1 := by
-  change IsUnit (puncture 1)
-  simp only [map_one, isUnit_one]
 
 def MaskedCharacter.value (d : MaskedCharacter M R) (a : M) : ℂ :=
   @ite ℂ (d.keep a) (Classical.propDecidable _) (d.character (d.residue a)) 0
@@ -52,19 +38,8 @@ def MaskedCharacter.value (d : MaskedCharacter M R) (a : M) : ℂ :=
 def normTwist (N : M →* ℝ≥0) (t : ℝ) (a : M) : ℂ :=
   ((N a : ℝ) : ℂ) ^ (Complex.I * t)
 
-@[simp] theorem normTwist_mul (N : M →* ℝ≥0) (t : ℝ) (a b : M) :
-    normTwist N t (a * b) = normTwist N t a * normTwist N t b := by
-  simp only [normTwist, map_mul, NNReal.coe_mul, Complex.ofReal_mul]
-  exact Complex.mul_cpow_ofReal_nonneg (N a).coe_nonneg (N b).coe_nonneg _
-
 def coefficient (d : MaskedCharacter M R) (N : M →* ℝ≥0) (t : ℝ) (a : M) : ℂ :=
   d.value a * normTwist N t a
-
-@[simp] theorem coefficient_mul (d : MaskedCharacter M R) (N : M →* ℝ≥0)
-    (t : ℝ) (a b : M) :
-    coefficient d N t (a * b) = coefficient d N t a * coefficient d N t b := by
-  simp only [coefficient, MaskedCharacter.value_mul, normTwist_mul]
-  ring
 
 def volumeTerm (c I : ℂ) (t X : ℝ) : ℂ :=
   c * (X : ℂ) ^ (1 + Complex.I * t) * I
@@ -81,19 +56,19 @@ theorem volume_products_eq (c I₁ I₂ : ℂ) (t X₁ X₂ Y₁ Y₂ : ℝ)
       ← Complex.mul_cpow_ofReal_nonneg hY₁ hY₂, ← Complex.ofReal_mul,
       ← Complex.ofReal_mul, hscale]
   unfold volumeTerm
-  calc
-    _ = c ^ 2 * I₁ * I₂ *
-      ((X₁ : ℂ) ^ (1 + Complex.I * t) * (X₂ : ℂ) ^ (1 + Complex.I * t)) := by ring
-    _ = _ := by rw [hpow]; ring
+  grind
 
-theorem centered_error_identity (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
+section
+variable (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
+include A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂
+theorem centered_error_identity
     (hmain : a₁ * a₂ = b₁ * b₂) :
     A₁ * A₂ - B₁ * B₂ =
       (A₁ - a₁) * A₂ + a₁ * (A₂ - a₂) -
         (B₁ - b₁) * B₂ - b₁ * (B₂ - b₂) := by
   linear_combination hmain
 
-theorem norm_centered_le (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
+theorem norm_centered_le
     (hmain : a₁ * a₂ = b₁ * b₂) :
     ‖A₁ * A₂ - B₁ * B₂‖ ≤
       ‖A₁ - a₁‖ * ‖A₂‖ + ‖a₁‖ * ‖A₂ - a₂‖ +
@@ -108,10 +83,9 @@ theorem norm_centered_le (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
     _ ≤ ((‖(A₁ - a₁) * A₂‖ + ‖a₁ * (A₂ - a₂)‖) +
         ‖(B₁ - b₁) * B₂‖) + ‖b₁ * (B₂ - b₂)‖ :=
       add_le_add (add_le_add (norm_add_le _ _) le_rfl) le_rfl
-    _ = _ := by simp only [norm_mul]
+    _ = _ := by simp_all
 
 theorem norm_centered_le_of_approx
-    (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
     (X₁ X₂ Y₁ Y₂ C E : ℝ)
     (hmain : a₁ * a₂ = b₁ * b₂)
     (hE : 0 ≤ E)
@@ -126,6 +100,7 @@ theorem norm_centered_le_of_approx
   have h₄ := mul_le_mul hB₂ hvb₁ (norm_nonneg b₁) hE
   have h := norm_centered_le A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ hmain
   nlinarith
+end
 
 theorem scale_le_product_div {X Y T L : ℝ}
     (hX : 0 ≤ X) (hL : 0 < L) (hY : L ≤ Y) (hprod : X * Y = T) :
@@ -139,12 +114,8 @@ theorem sum_scales_le {X₁ X₂ Y₁ Y₂ T L : ℝ}
     (hY₁ : L ≤ Y₁) (hY₂ : L ≤ Y₂)
     (hprodX : X₁ * X₂ = T) (hprodY : Y₁ * Y₂ = T) :
     X₁ + X₂ + Y₁ + Y₂ ≤ 4 * (T / L) := by
-  have a := scale_le_product_div (le_trans hL.le hX₁) hL hX₂ hprodX
-  have b := scale_le_product_div (le_trans hL.le hX₂) hL hX₁
-    (by simpa only [mul_comm] using hprodX)
-  have c := scale_le_product_div (le_trans hL.le hY₁) hL hY₂ hprodY
-  have d := scale_le_product_div (le_trans hL.le hY₂) hL hY₁
-    (by simpa only [mul_comm] using hprodY)
+  pm_8140 a hX₁ hX₂ hprodX b
+  pm_8140 c hY₁ hY₂ hprodY d
   linarith
 
 theorem centered_saving_of_approx
@@ -177,10 +148,7 @@ theorem normalized_centered_saving (D : ℂ) (T L C E : ℝ)
     _ ≤ (Real.sqrt T)⁻¹ * (4 * E * C * (T / L)) :=
       mul_le_mul_of_nonneg_left hbound (inv_nonneg.mpr hs.le)
     _ = 4 * E * C * ((T / Real.sqrt T) / L) := by ring
-    _ = _ := by
-      have hdiv : T / Real.sqrt T = Real.sqrt T :=
-        (div_eq_iff hs.ne').mpr (Real.mul_self_sqrt hT.le).symm
-      rw [hdiv]
+    _ = _ := by grind
 
 end
 end SevenEighths.CenteredMoment

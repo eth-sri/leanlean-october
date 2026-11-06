@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRo
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
-def actualLongCoefficient {ι:Type*}(p:ι→O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)
+def actualLongCoefficient {ι:Type*}(p:ι→ O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)
     (I:Ideal O)(v:ι→₀ℕ) : ℂ :=
   separatedCubeCoefficient
     (fun u:ι→₀ℕ=>reopenedCubeCoefficient H₀ (rowTwist Ψ m (idealGenerator I) 1)
@@ -21,12 +22,12 @@ def actualLongCoefficient {ι:Type*}(p:ι→O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)
     (fun u:ι→₀ℕ=>(Ideal.absNorm (Ideal.span {primeProduct p u.support u}):ℝ)) B ξ v
 
 theorem actualLongCoefficient_uniform (eps:ℝ)(heps:0<eps) :
-    ∃C:ℝ,0<C ∧ ∀{ι:Type*}(p:ι→O)(_hp:∀i,p i≠0)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)
+    ∃C:ℝ,0<C ∧ ∀{ι:Type*}(p:ι→ O)(_hp:∀i,p i≠0)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)
       (m:O)(H₀ B ξ:ℝ)(I:Ideal O)(v:ι→₀ℕ),0<B→
       B≤‖ConcreteTraceCRT.eisEmbedding (primeProduct p v.support v)‖^2→
       ‖ConcreteTraceCRT.eisEmbedding (primeProduct p v.support v)‖^2≤Real.exp 1*B→
       ‖actualLongCoefficient p Ψ m H₀ B ξ I v‖≤C*(Real.exp 1*B)^eps := by
-  obtain ⟨C,hC,hbound⟩:=reopenedCubeCoefficient_small_power eps heps
+  pm_3599 C hC hbound reopenedCubeCoefficient_small_power eps heps
   refine ⟨C*Real.exp (1/2),mul_pos hC (Real.exp_pos _),?_⟩
   intro ι p hp Ψ hΨ m H₀ B ξ I v hB hlo hhi
   have hne:Ideal.span {primeProduct p v.support v}≠0 := by

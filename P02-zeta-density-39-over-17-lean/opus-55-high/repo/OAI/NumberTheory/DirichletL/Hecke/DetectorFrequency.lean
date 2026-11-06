@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierWitness
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesCutoffs
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorCoefficientBounds
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,33 +31,30 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
           (67108864*U^42)*Cn/F^n + C₀*
             ‖phasePolynomial (expandedSet U)
                 (inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) Dstar ((2 : ℝ)^j) s)
-                (fun I => Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^j)) t *
+                (fun I=> Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^j)) t *
               phasePolynomial (expandedSet U)
                 (plainCoefficient χ (DyadicTransfer.annularCutoff cutoff) ((2 : ℝ)^k) s)
-                (fun I => Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^k)) t‖ := by
+                (fun I=> Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^k)) t‖ := by
   obtain ⟨C₀,hC₀,hb₀⟩ := uniform_fourier_moment Ω cutoff cutoff hΩc hΩ L hL hwindow 0
   obtain ⟨Cn,hCn,hbn⟩ := uniform_fourier_moment Ω cutoff cutoff hΩc hΩ L hL hwindow n
   refine ⟨1+C₀,Cn,by linarith,hCn,?_⟩
   intro U Dstar F hU hDstar hF χ s hs j k
-  let D : ℝ := (2 : ℝ)^j
-  let N : ℝ := (2 : ℝ)^k
+  pm_5030 D j
+  pm_5030 N k
   let a := inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) Dstar D s
   let b := plainCoefficient χ (DyadicTransfer.annularCutoff cutoff) N s
   let x := fun I : Ideal O => Real.log ((Ideal.absNorm I : ℝ)/D)
   let y := fun I : Ideal O => Real.log ((Ideal.absNorm I : ℝ)/N)
   let g := logSource Ω cutoff cutoff hΩc hΩ (cutoff.smooth ⊤) (cutoff.smooth ⊤)
-    (2*D*N/Dstar) (D*N/U^20) (D*N/U^21)
+    (2*D *N/Dstar) (D *N/U^20) (D *N/U^21)
   have hUpos : 0 < U := by linarith
-  have hD : 0 < D := by dsimp [D]; positivity
-  have hN : 0 < N := by dsimp [N]; positivity
+  pm_64 hD D
+  pm_64 hN N
   have heq : dyadicBlock χ cutoff cutoff Dstar (U^20) (U^21) s j k =
       ∑ I ∈ expandedSet U, ∑ J ∈ expandedSet U, a I*b J*g (x I+y J) := by
     rw [dyadicBlock_eq_fourier_rectangle χ cutoff cutoff Dstar (U^20) (U^21)
       (by positivity) cutoff_zero s j k]
-    apply Finset.sum_congr rfl
-    intro I hI
-    apply Finset.sum_congr rfl
-    intro J hJ
+    pm_3397 I hI J hJ
     exact actual_pair_profile χ Ω cutoff cutoff (DyadicTransfer.annularCutoff cutoff)
       (DyadicTransfer.annularCutoff cutoff) Dstar D N (U^20) (U^21) hD hN s I J
       (fourierSet_nonzero _ I hI) (fourierSet_nonzero _ J hJ)
@@ -65,10 +63,10 @@ theorem dyadic_frequency_bound (Ω : ℝ → ℂ)
   refine ⟨t,ht,?_⟩
   rw [heq]
   have hg₀ : (∫ t : ℝ, ‖(𝓕 g) t‖) ≤ C₀ := by
-    simpa only [pow_zero,one_mul] using hb₀ (2*D*N/Dstar) (D*N/U^20) (D*N/U^21)
+    simpa only [pow_zero,one_mul] using hb₀ (2*D *N/Dstar) (D *N/U^20) (D *N/U^21)
       (by positivity) (by positivity) (by positivity)
   have hgn : (∫ t : ℝ, (1+‖t‖)^n*‖(𝓕 g) t‖) ≤ Cn :=
-    hbn (2*D*N/Dstar) (D*N/U^20) (D*N/U^21) (by positivity) (by positivity) (by positivity)
+    hbn (2*D *N/Dstar) (D *N/U^20) (D *N/U^21) (by positivity) (by positivity) (by positivity)
   have hmass := coefficient_mass χ cutoff cutoff_norm_le U Dstar D N hU s hs
   apply hb.trans
   apply add_le_add

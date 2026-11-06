@@ -53,16 +53,16 @@ theorem norm_zetaAbelFractKernel_le (u : ℝ) (hu : 1 ≤ u) (s : ℂ) :
       _ = ‖(u : ℂ) ^ (-s - 1)‖ := one_mul _
   have hb : ‖(u : ℂ) ^ (-s - 1)‖ = u ^ (-s.re - 1) := by
     have hre : (-s - 1).re = -s.re - 1 := by
-      simp [sub_eq_add_neg]
+      simp_all
     simpa [hre] using Complex.norm_cpow_eq_rpow_re_of_pos hu0 (-s - 1)
-  exact hle.trans_eq hb
+  grind
 
 namespace ZetaAbelFractKernel
 
 lemma aestronglyMeasurable (s : ℂ) (S : Set ℝ) (_ : MeasurableSet S) :
     AEStronglyMeasurable (fun u => zetaAbelFractKernel s u) (volume.restrict S) := by
   refine (measurable_fract.complex_ofReal.mul ?_).aestronglyMeasurable
-  simpa using Complex.measurable_ofReal.pow_const (-s - 1)
+  fun_prop
 
 lemma intervalIntegrable (s : ℂ) {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
     IntervalIntegrable (fun u => zetaAbelFractKernel s u) volume a b := by
@@ -80,9 +80,9 @@ lemma intervalIntegrable (s : ℂ) {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
     simpa [μ, g, IntegrableOn] using
       (Complex.continuousOn_ofReal_cpow (ha := one_pos.trans_le ha)).norm.integrableOn_compact
         isCompact_Icc
-  have hf0 : Integrable (fun _ : ℝ => (0 : ℂ)) μ := by simp [μ]
+  have hf0 : Integrable (fun _ : ℝ => (0 : ℂ)) μ := by simp_all
   exact (intervalIntegrable_iff_integrableOn_Icc_of_le hab).2 <|
     integrable_of_norm_sub_le hmeas hf0 hg
-      (hbound_ae.mono fun u hu => by simpa [sub_eq_add_neg, μ, g] using hu)
+      (hbound_ae.mono fun u hu => by simp_all)
 
 end ZetaAbelFractKernel

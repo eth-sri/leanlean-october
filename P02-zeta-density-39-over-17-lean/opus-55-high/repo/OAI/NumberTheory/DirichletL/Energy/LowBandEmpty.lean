@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowEmpty
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,28 +28,27 @@ theorem positive_low_zero
     ZeroLowAt (internalQ Q η₀) a b bΦ Bmask L Mcap ε Z degree S C:=by
   intro s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ hsmall
   let T:Finset α:=∅
-  let θ:T→RayQuotient.Characters M H:=fun i=>False.elim (Finset.notMem_empty _ i.property)
+  let θ:T→ RayQuotient.Characters M H:=fun i=>False.elim (Finset.notMem_empty _ i.property)
   let w:T→ℝ:=fun _=>0
-  have hcap:length Z X₁+length Z X₂+6*κ*(∑i:T,w i)≤s.width:=by
-    simp only [T,w,Finset.sum_const_zero,mul_zero,add_zero]
+  have hcap:length Z X₁+length Z X₂+6*κ*(∑i:T,w i)≤ s.width:=by
+    pm_94 T w Finset.sum_const_zero mul_zero add_zero
     linarith [s.width_nonneg]
   have hl:length Z X₁+length Z X₂+(∑i:T,w i)≤5*s.width/6:=by
-    simpa only [w,Finset.sum_const_zero,add_zero] using hsmall
+    simp_all
   have hh:=h T θ w w w t 0 (fun _=>le_rfl)
     (fun i=>False.elim (Finset.notMem_empty _ i.property))
     (fun i=>False.elim (Finset.notMem_empty _ i.property))
     (fun i=>False.elim (Finset.notMem_empty _ i.property)) le_rfl
-    (fun _=>by simp [w]) s hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hl
+    (fun _=>by grind) s hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hl
   have hid:energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
-      (fun i:T=>CenteredMomentPrimeSlot.primePool M H bslot (Z^(w i)))
-      (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
-        HeckePrimeAnnular.annularWeight Wslot (Z^(w i)) (w i) (w i) I)
-      (fun i=>Z^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale=
+      (fun i:T=>CenteredMomentPrimeSlot.primePool M H bslot (Z ^(w i)))
+      (fun i I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I *
+        HeckePrimeAnnular.annularWeight Wslot (Z ^(w i)) (w i) (w i) I)
+      (fun i=>Z ^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale=
       s.plainEnergy p t X₁ X₂:=by
-    simp only [T,energy,positiveSlotRow,NaturalState.plainEnergy,Finset.univ_eq_empty,
-      Finset.prod_empty,mul_one]
+    aesop
   rw [hid] at hh
-  simpa only [add_zero,Real.norm_eq_abs] using hh
+  simp_all
 
 end SevenEighths.CenteredMomentEnergyLowBandEmpty
 

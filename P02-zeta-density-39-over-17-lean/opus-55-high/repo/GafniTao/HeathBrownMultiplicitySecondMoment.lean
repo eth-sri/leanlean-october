@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownMultiplicity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ module identifies those intersections with Heath-Brown's `mathcal N`.
 -/
 
 open Finset Set MeasureTheory
-open scoped BigOperators ENNReal
+open scoped ENNReal
 
 namespace GafniTao
 
@@ -60,10 +61,7 @@ theorem heathBrownNu_sq_eq_pair_sum
         ∑ m ∈ heathBrownInteriorIndices N H,
           ∑ n ∈ heathBrownInteriorIndices N H,
             heathBrownCellIntersectionIndicator k H f (m, n) α := by
-      apply Finset.sum_congr rfl
-      intro m hm
-      apply Finset.sum_congr rfl
-      intro n hn
+      pm_90 Finset.sum_congr m hm n hn
       exact heathBrownCellIndicator_mul_cellIndicator k H f m n α
     _ = _ := by
       simpa only [Finset.product_eq_sprod] using
@@ -72,20 +70,19 @@ theorem heathBrownNu_sq_eq_pair_sum
           (heathBrownInteriorIndices N H)
           (fun p => heathBrownCellIntersectionIndicator k H f p α)).symm
 
-theorem integrable_heathBrownCellIntersectionIndicator
-    (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ) :
+section
+variable (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ)
+include k H f p
+theorem integrable_heathBrownCellIntersectionIndicator :
     Integrable (heathBrownCellIntersectionIndicator k H f p)
       (heathBrownCoefficientMeasure k) := by
-  let : IsFiniteMeasure (heathBrownCoefficientMeasure k) := by
-    unfold heathBrownCoefficientMeasure
-    infer_instance
+  pm_7779
   unfold heathBrownCellIntersectionIndicator
   exact (integrable_const (1 : ℝ)).indicator
     ((measurableSet_heathBrownCoefficientCell k H f p.1).inter
       (measurableSet_heathBrownCoefficientCell k H f p.2))
 
-theorem integral_heathBrownCellIntersectionIndicator
-    (k H : ℕ) (f : ℝ → ℝ) (p : ℕ × ℕ) :
+theorem integral_heathBrownCellIntersectionIndicator :
     ∫ α, heathBrownCellIntersectionIndicator k H f p α
         ∂(heathBrownCoefficientMeasure k) =
       (heathBrownCoefficientMeasure k).real
@@ -95,6 +92,7 @@ theorem integral_heathBrownCellIntersectionIndicator
   exact integral_indicator_one
     ((measurableSet_heathBrownCoefficientCell k H f p.1).inter
       (measurableSet_heathBrownCoefficientCell k H f p.2))
+end
 
 theorem integral_heathBrownNu_sq_eq_intersections
     (N k H : ℕ) (f : ℝ → ℝ) :
@@ -118,9 +116,7 @@ theorem integral_heathBrownNu_sq_le_overlap_count
         (heathBrownCoefficientMeasure k).real
           (heathBrownCoefficientCell k H f 1) := by
   classical
-  let : IsFiniteMeasure (heathBrownCoefficientMeasure k) := by
-    unfold heathBrownCoefficientMeasure
-    infer_instance
+  pm_7779
   rw [integral_heathBrownNu_sq_eq_intersections]
   let S := (heathBrownInteriorIndices N H).product (heathBrownInteriorIndices N H)
   let P := heathBrownOverlappingCellPairs N k H f
@@ -129,9 +125,7 @@ theorem integral_heathBrownNu_sq_le_overlap_count
   have hmeasure (n : ℕ) :
       μ.real (heathBrownCoefficientCell k H f n) = V := by
     unfold V μ heathBrownCoefficientMeasure
-    have hn := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (n : ℝ)
-    have h1 := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (1 : ℝ)
-    simpa only [Measure.real] using congrArg ENNReal.toReal (hn.trans h1.symm)
+    pm_2804
   have hterm (p : ℕ × ℕ) (hp : p ∈ S) :
       μ.real (heathBrownCoefficientCell k H f p.1 ∩
           heathBrownCoefficientCell k H f p.2) ≤

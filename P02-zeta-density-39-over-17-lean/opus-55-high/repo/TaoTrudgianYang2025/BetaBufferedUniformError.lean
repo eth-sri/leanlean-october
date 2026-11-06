@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedLogBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -40,26 +41,24 @@ theorem modelPhase_buffered_source_uniform_error
   let A₀ := 4+6*E
   let B₀ := 3+2*E*(σ+1)+F₀*(1+Real.log K)
   let M := max 1 (max A₀ (max B₀ (3*F₀)))
-  have hM₁ : 1 ≤ M := le_max_left _ _
-  have hMA : A₀ ≤ M := (le_max_left _ _).trans (le_max_right _ _)
+  pm_4884 hM₁ M
+  pm_1612 hMA A₀ M le_max_left le_max_right
   have hMB : B₀ ≤ M := (le_max_left _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
   have hMF : 3*F₀ ≤ M := (le_max_right _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
   refine ⟨M,hM₁,?_⟩
   intro N T a b hN hT ha hb hflat F δ hδ hF
-  have hNpos : 0 < N := zero_lt_one.trans_le hN
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
+  pm_1610 hNpos N hN hTpos T hT
   have hη : 0 < (Real.sqrt T)⁻¹ := inv_pos.mpr (Real.sqrt_pos.mpr hTpos)
   have hF₁ := approximateModelPhase_mono hF bufferedLocalStationaryOrder_pos le_rfl
   have hs := hsource N T a b hNpos hT ha hb hflat F δ hδ hF
-  let A := modelPhaseCoreLower σ δ T N
-  let B := modelPhaseCoreUpper δ T N
-  let L := modelPhaseBufferedSupportLower F ((b : ℝ)/N) ((Real.sqrt T)⁻¹) T N
-  let U := modelPhaseBufferedSupportUpper F ((a : ℝ)/N) ((Real.sqrt T)⁻¹) T N
-  let P := modelPhaseBufferedPlateauLower F ((b : ℝ)/N) ((Real.sqrt T)⁻¹) T N
-  let Q := modelPhaseBufferedPlateauUpper F ((a : ℝ)/N) ((Real.sqrt T)⁻¹) T N
+  pm_6909
+  pm_1613 L modelPhaseBufferedSupportLower b
+  pm_1613 U modelPhaseBufferedSupportUpper a
+  pm_1613 P modelPhaseBufferedPlateauLower b
+  pm_1613 Q modelPhaseBufferedPlateauUpper a
   let R : ℕ := ⌈C*T*(1+T)^2/N⌉₊+A.natAbs+B.natAbs+1
   let G := Real.log K+3*Real.log (T+1)
-  have hK : 1 ≤ K := by dsimp [K]; linarith
+  pm_1611 hK K
   have hfar := modelPhaseSharpFarLengths_le_polynomial hσ.le
     (approximateModelPhase_tolerance_nonneg hF) (hδ.trans (min_le_right _ _))
     hTpos.le hN (zero_le_one.trans hC)
@@ -78,16 +77,10 @@ theorem modelPhase_buffered_source_uniform_error
     log_nat_le_polynomial_budget hK hTpos.le (hinner.2.2.trans hscale)
   have hfarlog : (4/Real.pi)*(2+Real.log ((A+(R : ℤ)).toNat : ℝ)+
       Real.log (((R : ℤ)-B).toNat : ℝ)) ≤ (8/Real.pi)*(1+G) := by
-    calc
-      _ ≤ (4/Real.pi)*(2+G+G) :=
-        mul_le_mul_of_nonneg_left (by linarith) (by positivity)
-      _ = _ := by ring
+    pm_1609
   have houterlog : (4/Real.pi)*(2+Real.log ((L-A).toNat : ℝ)+
       Real.log ((B-U).toNat : ℝ)) ≤ (8/Real.pi)*(1+G) := by
-    calc
-      _ ≤ (4/Real.pi)*(2+G+G) :=
-        mul_le_mul_of_nonneg_left (by linarith) (by positivity)
-      _ = _ := by ring
+    pm_1609
   have hmidlog : D*(1+Real.log ((Q-P-1).toNat : ℝ)) ≤ D*(1+G) :=
     mul_le_mul_of_nonneg_left (add_le_add le_rfl hlogI) (zero_le_one.trans hD)
   have hbound :
@@ -102,7 +95,7 @@ theorem modelPhase_buffered_source_uniform_error
     dsimp [A₀,B₀,F₀,G,K]
     ring
   apply hbound.trans
-  have hx : 0 ≤ N/Real.sqrt T := by positivity
+  pm_1357
   have hy : 0 ≤ Real.log (T+1) := Real.log_nonneg (by linarith)
   calc
     _ ≤ M*(N/Real.sqrt T)+M+M*Real.log (T+1) :=

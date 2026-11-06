@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowGramPoisson
 public import OAI.NumberTheory.DirichletL.Moments.SecondDiagonal
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,10 @@ def lowGramZeroMode (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupp
     secondZeroEnergy (lowGaussColumns W1 hW1 Y hY) (fun s=>primaryGenerator s.val)
       (fun s=>(supported_span_primaryGenerator_iff s.val).mpr s.property) (lowGaussColumn C W1 Y σ v)
 
-lemma lowGramZeroMode_eq_source (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) :
+section
+variable (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ)
+include C W1 hW1 Y hY σ v U Q
+lemma lowGramZeroMode_eq_source :
     lowGramZeroMode C W1 hW1 Y hY σ v U Q=
       ((Q/Y^3:ℝ):ℂ)*
         ∑s∈lowGaussColumns W1 hW1 Y hY,∑t∈lowGaussColumns W1 hW1 Y hY,
@@ -33,10 +36,7 @@ lemma lowGramZeroMode_eq_source (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : Ha
             ((supported_span_primaryGenerator_iff t.val).mpr t.property) 0*paperRadialFourier U 0 := by
   unfold lowGramZeroMode secondZeroEnergy
   simp_rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro s hs
-  apply Finset.sum_congr rfl
-  intro t ht
+  pm_3397 s hs t ht
   have hes := congrArg Ideal.absNorm ((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1)
   have het := congrArg Ideal.absNorm ((primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1)
   rw [hes,het]
@@ -46,8 +46,7 @@ lemma lowGramZeroMode_eq_source (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : Ha
         actualCorrelation (primaryGenerator s.val) (primaryGenerator t.val) _ _ 0*paperRadialFourier U 0 := by ring
     _ = _ := by rw [lowGram_pair_prefactor C W1 Y hY σ v Q s t];ring
 
-lemma lowGramZeroMode_bound (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
-    (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0≤Q) :
+lemma lowGramZeroMode_bound (hQ : 0≤Q) :
     ‖lowGramZeroMode C W1 hW1 Y hY σ v U Q‖≤
       Q*‖paperRadialFourier U 0‖*∑s∈lowGaussColumns W1 hW1 Y hY,‖lowGaussColumn C W1 Y σ v s‖^2 := by
   rw [lowGramZeroMode,norm_mul,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hQ]
@@ -61,6 +60,7 @@ lemma lowGramZeroMode_bound (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCom
     have het := (primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1
     rw [←hes,←het]
     exact congrArg (fun z : O=>Ideal.span {z}) h
+end
 
 theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
     ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀hS : ∀P∈S,P.IsMaximal,
@@ -69,7 +69,7 @@ theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
       ∀Y : ℝ,∀hY : 1≤Y,∀σ : RayRing,∀v : ℝ,∀U : SchwartzMap ℝ ℂ,∀Q : ℝ,0≤Q→
       ‖lowGramZeroMode (calibrationForSet S hS) W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY) σ v U Q‖≤
         C*‖paperRadialFourier U 0‖*Q/Y := by
-  obtain ⟨C,hC,hb⟩ := lowGaussColumn_l2_bound a b B ha hB
+  pm_3547 C hC hb lowGaussColumn_l2_bound a b B ha hB
   refine ⟨C,hC,?_⟩
   intro S hS W1 hW1 hWS hWB Y hY σ v U Q hQ
   apply (lowGramZeroMode_bound (calibrationForSet S hS) W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY) σ v U Q hQ).trans

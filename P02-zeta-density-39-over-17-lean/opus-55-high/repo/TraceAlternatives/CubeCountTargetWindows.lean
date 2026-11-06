@@ -1,5 +1,6 @@
 module
 public import TraceAlternatives.CubeCountBudgets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,21 +26,15 @@ theorem cubeTraceEnergyMargin_row3 {σ x : ℝ}
     (hx : 31544/(107010*σ-33609) ≤ x)
     (hx' : x ≤ 3*(31544/(107010*σ-33609))/2) (j : Fin 2) (i : Fin 5) :
     0 ≤ cubeTraceEnergyMargin σ (31544/(107010*σ-33609)) x j i := by
-  have hd : 0 < 107010*σ-33609 := by linarith
+  pm_493
   apply cubeTraceEnergyMargin_of_endpoints j i hx hx'
   · have he := cubeTraceEnergyMargin_affine_length σ 31544 107010 33609 1 hd.ne' j i
-    simp only [one_mul] at he
-    rw [he]
-    apply div_nonneg _ hd.le
-    fin_cases j <;> fin_cases i <;>
-      norm_num [cubeTraceA,cubeTraceB,cubeTraceG,cubeTraceD,gmEnergyU,gmEnergyV,gmEnergyW,gmEnergyR] <;>
-      linarith
+    pm_429
+    pm_2736
   · have he := cubeTraceEnergyMargin_affine_length σ 31544 107010 33609 (3/2) hd.ne' j i
     have hm : 3*(31544/(107010*σ-33609))/2 = (3/2)*(31544/(107010*σ-33609)) := by ring
     rw [hm,he]
     apply div_nonneg _ hd.le
-    fin_cases j <;> fin_cases i <;>
-      norm_num [cubeTraceA,cubeTraceB,cubeTraceG,cubeTraceD,gmEnergyU,gmEnergyV,gmEnergyW,gmEnergyR] <;>
-      linarith
+    pm_2736
 
 end Montgomery.RationalMoment

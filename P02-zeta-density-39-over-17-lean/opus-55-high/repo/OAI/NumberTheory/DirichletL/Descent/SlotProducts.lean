@@ -30,7 +30,7 @@ theorem slotTupleProduct_injective_on
   have hij : i = j := by
     by_contra hne
     exact Finset.disjoint_left.mp (hL hne) (hpL i) (hpq.symm ▸ hqL j)
-  simpa only [← hij] using hpq
+  grind
 
 omit [DecidableEq ι] in
 theorem slotTupleProduct_admissible

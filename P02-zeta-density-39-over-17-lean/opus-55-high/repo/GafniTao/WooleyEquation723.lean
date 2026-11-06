@@ -1,7 +1,7 @@
 module
 public import GafniTao.WooleyRefinementTower
 
-@[expose] public section
+public section
 
 /-!
 # Wooley equation (7.23)
@@ -13,11 +13,9 @@ with no spurious fiber cardinality.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooley_equation_7_23_native
     {k r p c a b B nu s : ℕ}
@@ -164,6 +162,5 @@ theorem wooley_equation_7_23_native
       rfl
 
 
-end
 
 end GafniTao

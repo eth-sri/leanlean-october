@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownPolynomialPhase
 public import Mathlib.Analysis.Calculus.Taylor
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The Lagrange remainder used in Heath-Brown Lemma 1
@@ -13,22 +14,21 @@ factorial.  A later entry bridge supplies these local regularity hypotheses
 from the source assumptions after the two endpoint ranges are separated.
 -/
 
-open Set
 
 namespace GafniTao
 
-noncomputable section
 
-theorem iteratedDeriv_pred_deriv
-    {k : ℕ} (hk : 1 ≤ k) (f : ℝ → ℝ) :
+section
+variable {k : ℕ}
+include k
+theorem iteratedDeriv_pred_deriv (hk : 1 ≤ k) (f : ℝ → ℝ) :
     iteratedDeriv (k - 1) (deriv f) = iteratedDeriv k f := by
   rw [← iteratedDeriv_succ']
   congr 1
   omega
 
 /-- Exact Taylor--Lagrange identity for `f'` on `[n,n+x]`. -/
-theorem exists_heathBrown_deriv_taylor_remainder
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x : ℝ}
+theorem exists_heathBrown_deriv_taylor_remainder (hk : 2 ≤ k) {f : ℝ → ℝ} {n x : ℝ}
     (hx : 0 < x)
     (hf : ContDiffOn ℝ (k - 1 : ℕ) (deriv f) (Set.Icc n (n + x))) :
     ∃ ξ ∈ Set.Ioo n (n + x),
@@ -36,13 +36,9 @@ theorem exists_heathBrown_deriv_taylor_remainder
           taylorWithinEval (deriv f) (k - 2) (Set.Icc n (n + x)) n (n + x) =
         iteratedDeriv k f ξ * x ^ (k - 1) / (k - 1).factorial := by
   have hne : n ≠ n + x := by linarith
-  have huIcc : Set.uIcc n (n + x) = Set.Icc n (n + x) := by
-    rw [Set.uIcc_of_le]
-    linarith
-  have huIoo : Set.uIoo n (n + x) = Set.Ioo n (n + x) := by
-    rw [Set.uIoo_of_le]
-    linarith
-  have horder : k - 2 + 1 = k - 1 := by omega
+  pm_8427 huIcc Set.uIcc Set.Icc Set.uIcc_of_le
+  pm_8427 huIoo Set.uIoo Set.Ioo Set.uIoo_of_le
+  pm_553 horder
   have hf' : ContDiffOn ℝ (k - 2 + 1 : ℕ) (deriv f)
       (Set.Icc n (n + x)) := by
     simpa only [horder] using hf
@@ -59,8 +55,7 @@ theorem exists_heathBrown_deriv_taylor_remainder
     ring
 
 /-- Norm form of the preceding exact remainder identity. -/
-theorem norm_heathBrown_deriv_taylor_remainder_le
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x A lambda : ℝ}
+theorem norm_heathBrown_deriv_taylor_remainder_le (hk : 2 ≤ k) {f : ℝ → ℝ} {n x A lambda : ℝ}
     (hx : 0 < x)
     (hf : ContDiffOn ℝ (k - 1 : ℕ) (deriv f) (Set.Icc n (n + x)))
     (hderiv : ∀ ξ ∈ Set.Ioo n (n + x),
@@ -80,8 +75,7 @@ theorem norm_heathBrown_deriv_taylor_remainder_le
 
 /-- Uniform source form on `0 < x ≤ H`; discarding the positive factorial
 only weakens the exact Lagrange bound. -/
-theorem norm_heathBrown_deriv_taylor_remainder_le_scale
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x A lambda H : ℝ}
+theorem norm_heathBrown_deriv_taylor_remainder_le_scale (hk : 2 ≤ k) {f : ℝ → ℝ} {n x A lambda H : ℝ}
     (hx : 0 < x) (hxH : x ≤ H)
     (hf : ContDiffOn ℝ (k - 1 : ℕ) (deriv f) (Set.Icc n (n + x)))
     (hderiv : ∀ ξ ∈ Set.Ioo n (n + x),
@@ -111,8 +105,8 @@ theorem norm_heathBrown_deriv_taylor_remainder_le_scale
       A * lambda * x ^ (k - 1) := hraw.trans hdiv
     _ ≤ A * lambda * H ^ (k - 1) := by
       gcongr
-
-
 end
+
+
 
 end GafniTao

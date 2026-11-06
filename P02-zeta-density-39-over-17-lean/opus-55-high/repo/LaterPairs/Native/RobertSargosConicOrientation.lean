@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCoefficientGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -20,12 +21,12 @@ theorem robertSargosReduced_swap {r q₁ q₂ h₁ h₂ d : ℝ}
     robertSargosReduced r q₂ q₁ h₂ h₁ (-d) =
       -robertSargosReduced r q₁ q₂ h₁ h₂ d := by
   dsimp [robertSargosReduced]
-  linear_combination 2*d*hlin
+  grind
 
 theorem robertSargos_safe_pivot {q₁ q₂ d : ℝ} (hsign : 0 < q₁*q₂) :
     0 ≤ q₁*d ∨ 0 ≤ q₂*(-d) := by
   by_cases h : 0 ≤ q₁*d
-  · exact Or.inl h
+  grind
   right
   have hn : q₁*d < 0 := lt_of_not_ge h
   rcases mul_pos_iff.mp hsign with hp | hm
@@ -42,9 +43,7 @@ theorem robertSargos_coefficient_linear_source_gap {r q₁ q₂ h₁ h₂ d R H 
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
     |h₁/h₂-q₂/q₁| ≤ 9*R/H := by
-  have hdisp := robertSargos_displacement_same_sign hH hQ hh₁ hh₂ hq₁ hq₂
-    hsign hlin hnear
-  have hd : |d| ≤ 9*Q := by nlinarith
+  pm_1003
   have hb := robertSargos_coefficient_linear_ratio_gap hH hQ hr hd hh₂.1 hq₁.1 hlin
   calc
     _ ≤ R*(9*Q)/(H*Q) := hb

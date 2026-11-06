@@ -14,7 +14,10 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-lemma calibration_nonzero_supported (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
+section
+variable (S : Finset (Ideal O))
+include S
+lemma calibration_nonzero_supported (hS : ∀P∈S,P.IsMaximal)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (a : O)
     (ha : (calibrationForSet S hS).residueMonoid a≠0) : Supported (Ideal.span {a}) := by
   have hu := (calibrationForSet S hS).residue.apply_ne_zero_iff.mp ha
@@ -29,13 +32,14 @@ lemma calibration_nonzero_supported (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
     exact havoid (Ideal.span {(2:O)}) (hbad (by simp [CanonicalQuadraticSieve.fixedBadPrimes]))
       (Ideal.mem_span_singleton.mpr hd)
 
-theorem calibrated_row_nonprincipal (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem calibrated_row_nonprincipal (hS : ∀P∈S,Prime P)
     (hmax : ∀P∈S,P.IsMaximal) (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
     (u : FreeRow) (hu : u.val≠1)
     (hcal : (calibrationForSet S hmax).residueMonoid u.val≠0) :
     (rowCharacter S hS u).residue≠1 := fun hp=>hu
       (rowCharacter_principal_supported_eq_one S hS hbad u
         (calibration_nonzero_supported S hmax hbad u.val hcal) hp)
+end
 
 end SevenEighths.ProbeHighRowFamily
 

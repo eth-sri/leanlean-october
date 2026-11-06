@@ -24,10 +24,8 @@ lemma allowance_nonneg (δ m:ℝ)(hδ:0≤δ):0≤allowance δ m:=
 lemma padded_width (δ m:ℝ):1+allowance δ m=max 1 (2*m)+δ:=by
   unfold allowance
   by_cases hm:1≤2*m
-  · rw [max_eq_right hm,max_eq_right (by linarith:0≤2*m-1)]
-    ring
-  · rw [max_eq_left (le_of_not_ge hm),max_eq_left (by linarith:2*m-1≤0)]
-    ring
+  grind
+  grind
 
 lemma padded_modulus (η:Character)(U δ m:ℝ)(hU:1≤U)
     (hη:(η.modulus.absNorm:ℝ)≤U^δ):

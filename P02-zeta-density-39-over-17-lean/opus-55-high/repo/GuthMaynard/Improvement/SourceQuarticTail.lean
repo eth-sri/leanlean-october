@@ -1,6 +1,7 @@
 module
 public import GuthMaynard.Improvement.SourceQuarticKernel
 public import GuthMaynard.Improvement.ReflectionNearRow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -8,20 +9,22 @@ noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
+section
+variable (q : ℕ)
+include q
 /-- Actual finite polynomial-weighted L1 moments of the fixed kernel. -/
-theorem source_quartic_weight_moment (q : ℕ) :
+theorem source_quartic_weight_moment :
     Integrable (fun s => |s|^q*sourceQuarticWeight s) := by
   simpa only [Real.norm_eq_abs,sourceQuarticWeight] using
     sourceReproducingKernel.integrable_pow_mul volume q
 
 /-- Arbitrary rapid integral-tail decay, from the actual Schwartz moments. -/
-theorem source_quartic_weight_tail (q : ℕ) :
+theorem source_quartic_weight_tail :
     ∃ C : ℝ, 0 < C ∧ ∀ R : ℝ, 0 < R →
       (∫ s in {s : ℝ | R < |s|}, sourceQuarticWeight s) ≤ C/R^q := by
   let M := ∫ s, |s|^q*sourceQuarticWeight s
   have hM : 0 ≤ M := integral_nonneg (fun s => mul_nonneg (pow_nonneg (abs_nonneg _) _) (norm_nonneg _))
-  refine ⟨M+1,by positivity,?_⟩
-  intro R hR
+  pm_8278 M
   have hi : Integrable sourceQuarticWeight := sourceReproducingKernel.integrable.norm
   have hm : MeasurableSet {s : ℝ | R < |s|} := by measurability
   have hpoint (s : ℝ) (hs : s ∈ {s : ℝ | R < |s|}) :
@@ -40,17 +43,15 @@ theorem source_quartic_weight_tail (q : ℕ) :
 
 /-- Actual quartic polynomial tails; coefficient bounds are used only to
 majorize the finite source pointwise, never to assert global L4. -/
-theorem source_quartic_polynomial_tail (q : ℕ) :
+theorem source_quartic_polynomial_tail :
     ∃ C : ℝ, 0 < C ∧ ∀ N R w : ℝ, 2 ≤ N → 0 < R →
       ∀ a : ℕ → ℂ, (∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1) →
       (∫ t in {t : ℝ | R < |t-w|}, sourceQuarticWeight (t-w)*‖boundedPolynomial N a t‖^4) ≤
         C*N^4/R^q := by
-  obtain ⟨C,hC,h⟩ := source_quartic_weight_tail q
-  refine ⟨16*C,by positivity,?_⟩
+  pm_7066 source_quartic_weight_tail q
   intro N R w hN hR a ha
-  have hi : Integrable (fun t => sourceQuarticWeight (t-w)) :=
-    (sourceReproducingKernel.integrable.comp_sub_right w).norm
-  have hS : MeasurableSet {t : ℝ | R < |t-w|} := by measurability
+  pm_5701
+  pm_6651 hS
   have ht : (∫ t in {t : ℝ | R < |t-w|}, sourceQuarticWeight (t-w)) =
       ∫ s in {s : ℝ | R < |s|}, sourceQuarticWeight s := by
     rw [← integral_indicator hS,← integral_indicator (show MeasurableSet {s : ℝ | R < |s|} by measurability)]
@@ -66,5 +67,6 @@ theorem source_quartic_polynomial_tail (q : ℕ) :
     _ = (∫ t in {t : ℝ | R < |t-w|}, sourceQuarticWeight (t-w))*(16*N^4) := integral_mul_const _ _
     _ ≤ (C/R^q)*(16*N^4) := by rw [ht]; exact mul_le_mul_of_nonneg_right (h R hR) (by positivity)
     _ = _ := by ring
+end
 
 end GuthMaynard.Improvement

@@ -1,6 +1,7 @@
 module
 public import MathCollab.Density.ZeroSeparation
 public import MathCollab.Density.LargeValues
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,43 +31,18 @@ theorem zetaSlab_large_values_cover_indexed {ι : Type*} {κ ε : ℝ} (hκ : 0 
       (zetaSlabCount σ lo hi : ℝ) ≤ C*B*H^ε*
         ∑ j ∈ J, ((N j : ℝ)^2/(V j)^2+(N j : ℝ)^3*Real.sqrt H/(V j)^4) := by
   classical
-  obtain ⟨C, hC, hLV⟩ := large_values hκ hε
+  pm_98 C hC hLV large_values hκ hε
   refine ⟨2*C, by positivity, ?_⟩
   intro σ lo hi H B J N V coeff hH hB hhi hlocal hadm hcover
   obtain ⟨R, hR, hcard, hsep, hcount⟩ := zetaSlab_separated_representatives σ lo hi hB hlocal
-  let W := R.image Complex.im
-  let Wj := fun j => W.filter (fun t => V j ≤ ‖detectingPolynomial (N j) (coeff j) t‖)
-  let F := fun j => (N j : ℝ)^2/(V j)^2+(N j : ℝ)^3*Real.sqrt H/(V j)^4
+  pm_4292
   have hWj : ∀ j ∈ J, ((Wj j).card : ℝ) ≤ C*H^ε*F j := by
-    intro j hj
-    obtain ⟨hN, hV, hlow, hhigh, hheight, hc⟩ := hadm j hj
-    apply hLV H (V j) (N j) (coeff j) (Wj j) hH hN hV hlow hhigh hheight hc
+    pm_4293
     · refine ⟨lo, ?_⟩
-      intro t ht
-      obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp (Finset.mem_filter.mp ht).1
+      pm_6294
       have hz := mem_zetaZeroFinset.mp (hR hρ)
       exact ⟨hz.2.2.1, hz.2.2.2.trans hhi⟩
-    · intro t ht u hu htu
-      exact hsep t (Finset.mem_filter.mp ht).1 u (Finset.mem_filter.mp hu).1 htu
-    · intro t ht
-      exact (Finset.mem_filter.mp ht).2
-  have hsub : W ⊆ J.biUnion Wj := by
-    intro t ht
-    obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp ht
-    obtain ⟨j, hj, hdetect⟩ := hcover ρ (hR hρ)
-    exact Finset.mem_biUnion.mpr ⟨j, hj, Finset.mem_filter.mpr
-      ⟨Finset.mem_image.mpr ⟨ρ, hρ, rfl⟩, hdetect⟩⟩
-  have hc : (W.card : ℝ) ≤ ∑ j ∈ J, ((Wj j).card : ℝ) := by
-    exact_mod_cast (Finset.card_le_card hsub).trans (Finset.card_biUnion_le)
-  have hsum : (W.card : ℝ) ≤ C*H^ε*∑ j ∈ J, F j := by
-    calc
-      _ ≤ ∑ j ∈ J, ((Wj j).card : ℝ) := hc
-      _ ≤ ∑ j ∈ J, C*H^ε*F j := Finset.sum_le_sum hWj
-      _ = _ := by rw [Finset.mul_sum]
-  rw [← hcard] at hcount
-  calc
-    _ ≤ 2*B*(W.card : ℝ) := hcount
-    _ ≤ 2*B*(C*H^ε*∑ j ∈ J, F j) := mul_le_mul_of_nonneg_left hsum (by positivity)
-    _ = _ := by dsimp [F]; ring
+    pm_4294
+  pm_4291
 
 end MathCollab.Density

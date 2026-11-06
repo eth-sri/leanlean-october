@@ -1,6 +1,7 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,8 +20,8 @@ theorem min_le_geometric_power {A D θ : ℝ}
   by_cases hDz : D=0
   · rw [hDz,min_eq_right hA]
     positivity
-  have hAp : 0 < A := lt_of_le_of_ne hA (Ne.symm hAz)
-  have hDp : 0 < D := lt_of_le_of_ne hD (Ne.symm hDz)
+  pm_485 hAp A lt_of_le_of_ne hA Ne.symm hAz
+  pm_485 hDp D lt_of_le_of_ne hD Ne.symm hDz
   by_cases hAD : A ≤ D
   · rw [min_eq_left hAD]
     calc
@@ -41,11 +42,11 @@ theorem weak_power_square_mass_bound {A D U p θ mass : ℝ}
   have hMin := min_le_geometric_power hA
     (mul_nonneg hD (Real.rpow_nonneg hU.le (-p))) hθ hθ1
   have hh := mul_le_mul_of_nonneg_left ((le_min hMassA hMassD).trans hMin) (sq_nonneg U)
-  have hExp : (-p)*θ = -2 := by nlinarith only [hpθ]
+  have hExp : (-p)*θ = -2 := by grind
   rw [Real.mul_rpow hD (Real.rpow_nonneg hU.le (-p)),← Real.rpow_mul hU.le,hExp] at hh
   have hId : U^2*(A^(1-θ)*(D^θ*U^(-2:ℝ))) = A^(1-θ)*D^θ := by
     rw [Real.rpow_neg hU.le,Real.rpow_two]
     field_simp
-  exact hh.trans_eq hId
+  grind
 
 end Montgomery.RationalMoment

@@ -1,9 +1,7 @@
 module
 public import GuthMaynard.Improvement.AmplifierOperator
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open InnerProductSpace
 open scoped InnerProductSpace
 namespace GuthMaynard.Improvement

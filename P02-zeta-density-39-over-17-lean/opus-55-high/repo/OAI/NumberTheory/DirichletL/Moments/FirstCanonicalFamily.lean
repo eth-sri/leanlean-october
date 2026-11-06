@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.FirstFamily
 public import OAI.NumberTheory.DirichletL.Moments.CanonicalFirst
 public import OAI.NumberTheory.DirichletL.Moments.Primitive
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,24 +23,26 @@ theorem supported_of_dvd (A B : Ideal O) (hB : Supported B) (hd : A∣B) : Suppo
   rw [hQ] at hB
   exact ((supported_mul_iff A Q).mp hB).1
 
-theorem activeConductor_supported (I J : Ideal O) (hI : Supported I) :
+section
+variable (I J : Ideal O)
+include I J
+theorem activeConductor_supported (hI : Supported I) :
     Supported (Ideal.span {activeConductor I J}) :=
   supported_of_dvd _ _ (commonPart_supported I J hI) (activeConductor_span_dvd I J)
 
-theorem subsetGenerator_span_dvd (I J : Ideal O) (E : Finset (CommonIndex I J)) :
-    Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) E}∣commonPart I J := by
+theorem subsetGenerator_span_dvd (E : Finset (CommonIndex I J)) :
+    Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E}∣commonPart I J := by
   rw [primeSubsetGenerator,span_idealGenerator]
   refine (Finset.prod_dvd_prod_of_subset E Finset.univ
-    (fun P : CommonIndex I J => P.val) (Finset.subset_univ _)).trans ?_
+    (fun P : CommonIndex I J=> P.val) (Finset.subset_univ _)).trans ?_
   rw [commonPart_left_product]
-  apply Finset.prod_dvd_prod_of_dvd
-  intro P hP
-  simpa only [pow_one] using pow_dvd_pow P.val (leftExponent_pos I J P)
+  pm_760 leftExponent_pos
 
-theorem subsetGenerator_supported (I J : Ideal O) (hI : Supported I)
+theorem subsetGenerator_supported (hI : Supported I)
     (E : Finset (CommonIndex I J)) :
-    Supported (Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) E}) :=
+    Supported (Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E}) :=
   supported_of_dvd _ _ (commonPart_supported I J hI) (subsetGenerator_span_dvd I J E)
+end
 
 def canonicalActiveCharacter (I J : Ideal O) (hI : Supported I) :
     MulChar (Residue (activeConductor I J)) ℂ :=
@@ -50,11 +53,14 @@ def canonicalActiveCharacter (I J : Ideal O) (hI : Supported I) :
       finiteSexticRow (activePrime I J) (activeGood I J hI) (activeExponent I J) n :=
   primitiveCharacter_mk _ _ _ _ n
 
-theorem exists_canonical_first_pair (η : Character) (m : O) (hm : m≠0)
+section
+variable (η : Character) (m : O)
+include η m
+theorem exists_canonical_first_pair (hm : m≠0)
     (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
     (I J : Ideal O) (hI : Supported I) (E : Finset (CommonIndex I J))
     (ξ₁ ξ₂ : RayCharacter) :
-    let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
+    let e := primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E
     let r := activeConductor I J
     let ρ := finiteSexticRow (activePrime I J) (activeGood I J hI) (activeExponent I J)
     let M := η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*Ideal.span {e*r}
@@ -65,14 +71,14 @@ theorem exists_canonical_first_pair (η : Character) (m : O) (hm : m≠0)
         elementCoeff τ₂ n=elementCoeff η n*coprimalityMask m n*rightCoefficient e r ρ n*rayCharacter ξ₂ n) := by
   dsimp only
   obtain ⟨τ₁,hM₁,_,h₁⟩ := exists_first_character η m
-    (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E) (activeConductor I J) hm
+    (primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E) (activeConductor I J) hm
     (subsetGenerator_supported I J hI E) (activeConductor_supported I J hI) hmLam hm2
     (canonicalActiveCharacter I J hI) ξ₁
   obtain ⟨τ₂,hM₂,_,h₂⟩ := exists_first_character η m
-    (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E) (activeConductor I J) hm
+    (primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E) (activeConductor I J) hm
     (subsetGenerator_supported I J hI E) (activeConductor_supported I J hI) hmLam hm2
     (canonicalActiveCharacter I J hI)⁻¹ ξ₂
-  refine ⟨τ₁,τ₂,hM₁,hM₂,?_,?_⟩
+  pm_841 τ₁ τ₂ hM₁ hM₂
   · intro n hn hp
     rw [h₁ n hn hp,canonicalActiveCharacter_mk,leftCoefficient]
     ring
@@ -81,14 +87,15 @@ theorem exists_canonical_first_pair (η : Character) (m : O) (hm : m≠0)
     rw [h₂ n hn hp,← MulChar.star_apply',canonicalActiveCharacter_mk,rightCoefficient]
     ring
 
-theorem first_displayed_norm (η : Character) (m : O) (I J : Ideal O)
+theorem first_displayed_norm (I J : Ideal O)
     (E : Finset (CommonIndex I J)) :
     (η.modulus*Ideal.span {m}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) E*activeConductor I J}).absNorm =
+      Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E*activeConductor I J}).absNorm =
     η.modulus.absNorm*(Ideal.span {m}).absNorm*(Ideal.span {(72:O)}).absNorm*
       ((∏ P∈E,P.val).absNorm*(Ideal.span {activeConductor I J}).absNorm) := by
   rw [← Ideal.span_singleton_mul_span_singleton,primeSubsetGenerator,span_idealGenerator]
   simp only [map_mul]
+end
 
 end SevenEighths.CenteredMomentFirstCanonicalFamily
 

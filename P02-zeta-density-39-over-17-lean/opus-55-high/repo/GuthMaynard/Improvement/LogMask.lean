@@ -1,15 +1,16 @@
 module
 public import Mathlib
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
+section
+variable {w h : ℝ → ℝ}
+include w h
 /-- Log-coordinate transfer for any nonnegative integrable density. The
 constant is the exact bound on the weighted Jacobian v*w(v). -/
-theorem log_weight_integral {w h : ℝ → ℝ} {B : ℝ}
+theorem log_weight_integral {B : ℝ}
     (hw : Measurable w) (hw0 : ∀ v, 0 ≤ w v)
     (_hB : 0 ≤ B) (hbound : ∀ v, 0 < v → v*w v ≤ B)
     (hz : ∀ v, v ≤ 0 → w v = 0) (hh : Integrable h) (hh0 : ∀ u, 0 ≤ h u) :
@@ -29,11 +30,11 @@ theorem log_weight_integral {w h : ℝ → ℝ} {B : ℝ}
       (fun v => w v*h (Real.log v)) := by
     funext v
     by_cases hv : 0 < v
-    · simp [hv]
-    · simp [hv,hz v (le_of_not_gt hv)]
+    simp_all
+    simp_all
   have hfull : Integrable (fun v => w v*h (Real.log v)) := by
     have := hio.integrable_indicator measurableSet_Ioi
-    rwa [heq] at this
+    grind
   refine ⟨hfull,?_⟩
   have hid := integral_comp_exp (fun v => w v*h (Real.log v))
   rw [← integral_indicator measurableSet_Ioi,heq] at hid
@@ -47,7 +48,7 @@ theorem log_weight_integral {w h : ℝ → ℝ} {B : ℝ}
 
 /-- Every measurable mask retains its own mass under log coordinates.
 No boundary assumption, positive-mass assumption, or division by mass. -/
-theorem log_mask_integral {w h : ℝ → ℝ} {B : ℝ} {A : Set ℝ}
+theorem log_mask_integral {B : ℝ} {A : Set ℝ}
     (hw : Measurable w) (hw0 : ∀ v, 0 ≤ w v)
     (hB : 0 ≤ B) (hbound : ∀ v, 0 < v → v*w v ≤ B)
     (hz : ∀ v, v ≤ 0 → w v = 0) (hA : MeasurableSet A)
@@ -62,7 +63,7 @@ theorem log_mask_integral {w h : ℝ → ℝ} {B : ℝ} {A : Set ℝ}
 
 /-- Explicit fixed-cutoff Jacobian constant for the manuscript's ratio
 masks. Apply to h=|F|²,w=omega and h=|F|⁴,w=omega². -/
-theorem log_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set ℝ}
+theorem log_compact_mask_integral {a b W : ℝ} {A : Set ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hW : 0 ≤ W)
     (hw : Measurable w) (hw0 : ∀ v, 0 ≤ w v) (hwW : ∀ v, w v ≤ W)
     (hs : ∀ v, v ∉ Icc a b → w v = 0) (hA : MeasurableSet A)
@@ -78,5 +79,6 @@ theorem log_compact_mask_integral {w h : ℝ → ℝ} {a b W : ℝ} {A : Set ℝ
       exact mul_nonneg hb hW
   · intro v hv
     exact hs v (fun hx => by linarith [hx.1])
+end
 
 end GuthMaynard.Improvement

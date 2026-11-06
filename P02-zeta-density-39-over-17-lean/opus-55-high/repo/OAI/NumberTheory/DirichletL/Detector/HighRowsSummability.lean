@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsSeries
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsDiagonal
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,32 +13,32 @@ namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
-lemma geometric_indicator_summable (V A : ℂ) (hV : ‖V‖<1) (p : ℕ→Prop) :
-    Summable (fun m=>(if p m then A else 0)*V^m) := by
+lemma geometric_indicator_summable (V A : ℂ) (hV : ‖V‖<1) (p : ℕ→ Prop) :
+    Summable (fun m=>(if p m then A else 0)*V ^m) := by
   convert (((hasSum_geometric_of_norm_lt_one hV).summable.mul_left A).indicator {m | p m}) using 1
   funext m
-  by_cases hm : p m <;> simp [hm]
+  aesop
 
 lemma gaussValuationTable_geometric_summable (Q G V : ℂ) (hV : ‖V‖<1)
     (r n : ℕ) (j : ℕ→ℕ) :
-    Summable (fun m=>gaussValuationTable Q G r n (j m)*V^m) := by
+    Summable (fun m=>gaussValuationTable Q G r n (j m)*V ^m) := by
   by_cases hr : 6∣r
   · have ha := geometric_indicator_summable V (Q^(n+1)) hV (fun m=>n+1≤j m)
     have hb := geometric_indicator_summable V (Q^n) hV (fun m=>n≤j m)
     convert ha.sub hb using 1
     funext m
     simp only [gaussValuationTable,ite_eq_left hr,sub_mul]
-    split_ifs <;> rfl
+    grind
   · convert geometric_indicator_summable V (Q^n*G) hV (fun m=>j m=n) using 1
     funext m
     simp only [gaussValuationTable,ite_eq_right hr]
-    split_ifs <;> rfl
+    grind
 
 theorem positiveScalar_geometric_summable (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
     (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (n k : ℕ) (j : ℕ→ℕ) (V : ℂ) (hV : ‖V‖<1) :
-    Summable (fun m=>positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) n k (j m)*V^m) := by
+    Summable (fun m=>positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) n k (j m)*V ^m) := by
   simp only [positiveScalar_actual_table p hp hg hc]
   by_cases hk : k=0
   · simp only [ite_eq_left hk]
@@ -58,7 +59,10 @@ variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
 include hc
 
-theorem rowMarkedTerm_frequency_summable (eta a X W V rho : ℂ) (hV : ‖V‖<1)
+section
+variable (eta a X W V rho : ℂ)
+include eta a X W V rho
+theorem rowMarkedTerm_frequency_summable (hV : ‖V‖<1)
     (j e l k : ℕ) : Summable (fun m=>rowMarkedTerm p hp hg eta a X W V rho j e l k m) := by
   by_cases ht : e+3*l=0
   · simp only [rowMarkedTerm,ite_eq_left ht,summable_zero]
@@ -72,14 +76,14 @@ theorem rowMarkedTerm_frequency_summable (eta a X W V rho : ℂ) (hV : ‖V‖<1
     funext m
     ring
 
-theorem rowMarkedTerm_zero_lower_edge (eta a X W V rho : ℂ)
+theorem rowMarkedTerm_zero_lower_edge
     (j e l k : ℕ) (hj : j<6) (ht : 0<e+3*l) :
     rowMarkedTerm p hp hg eta a X W V rho j e (l+2) k 0=0 := by
   unfold rowMarkedTerm
   rw [ite_eq_right (by omega),positiveScalar_zero_below p hp hg hc _ _ _ (by omega),
     rowWeightedScalar_zero]
 
-theorem rowMarkedFamily_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
+theorem rowMarkedFamily_hasSum (hρ : rho^6=1)
     (hV : ‖V‖<1) (hR : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1)
     (j e l k : ℕ) (hj : j<6) (ht : 0<e+3*l) :
     HasSum (fun r=>∑' m,rowMarkedTerm p hp hg eta a X W V rho j e (l+2*r) k m)
@@ -87,13 +91,14 @@ theorem rowMarkedFamily_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
         (1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
   apply diagonal_recurrence_hasSum
   · intro r m
-    rw [show l+2*(r+1)=(l+2*r)+2 by omega]
+    pm_1169
     exact rowMarkedTerm_step p hp hg hc eta a X W V rho hρ j e (l+2*r) k m (by omega)
   · intro r
-    rw [show l+2*(r+1)=(l+2*r)+2 by omega]
+    pm_1169
     exact rowMarkedTerm_zero_lower_edge p hp hg hc eta a X W V rho j e (l+2*r) k hj (by omega)
   · simpa only [mul_zero,add_zero] using rowMarkedTerm_frequency_summable p hp hg hc eta a X W V rho hV j e l k
   · exact hR
+end
 
 end SevenEighths.ProbeEuler
 end

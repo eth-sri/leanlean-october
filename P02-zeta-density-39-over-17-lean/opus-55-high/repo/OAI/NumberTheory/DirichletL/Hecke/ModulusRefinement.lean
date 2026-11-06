@@ -16,18 +16,20 @@ def Character.refineModulus (η : Character) (M : Ideal O) (hM : M ≠ ⊥)
   Character.ofResidue M hM (ResidueCharacter.inflate hle η.residue)
     (ResidueCharacter.inflate_global_units hle η.residue η.unit_trivial)
 
-theorem elementCoeff_refineModulus (η : Character) (M : Ideal O) (hM : M ≠ ⊥)
-    (hle : M ≤ η.modulus) (n : O) :
+section
+variable (η : Character) (M : Ideal O) (hM : M ≠ ⊥) (hle : M ≤ η.modulus)
+include η M hM hle
+theorem elementCoeff_refineModulus (n : O) :
     elementCoeff (η.refineModulus M hM hle) n =
       if IsUnit (Ideal.Quotient.mk M n) then elementCoeff η n else 0 :=
   ResidueCharacter.inflate_mk hle η.residue n
 
-theorem idealCoeff_refineModulus (η : Character) (M : Ideal O) (hM : M ≠ ⊥)
-    (hle : M ≤ η.modulus) (I : Ideal O) :
+theorem idealCoeff_refineModulus (I : Ideal O) :
     idealCoeff (η.refineModulus M hM hle) I =
       if IsCoprime I M then idealCoeff η I else 0 :=
   IdealCharacter.ofResidue_source_mask M η.modulus _ _ _ _
     (ResidueCharacter.inflate_mk hle η.residue) I
+end
 
 theorem idealCoeff_source_mask (η : Character) (I : Ideal O) :
     idealCoeff η I = if IsCoprime I η.modulus then idealCoeff η I else 0 := by
@@ -44,22 +46,24 @@ def Character.excludePrimes (η : Character) (S : Finset (Ideal O))
     (mul_ne_zero η.modulus_ne_bot (Finset.prod_ne_zero_iff.mpr (fun P hP => (hS P hP).ne_zero)))
     Ideal.mul_le_left
 
-theorem idealCoeff_excludePrimes (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (I : Ideal O) :
+section
+variable (η : Character) (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (I : Ideal O)
+include η S hS I
+theorem idealCoeff_excludePrimes :
     idealCoeff (η.excludePrimes S hS) I =
       if ∀ P ∈ S, IsCoprime I P then idealCoeff η I else 0 := by
   rw [Character.excludePrimes, idealCoeff_refineModulus, IsCoprime.mul_right_iff,
     IsCoprime.prod_right_iff]
   by_cases hη : IsCoprime I η.modulus
-  · simp only [hη, true_and]
+  grind
   · have hz : idealCoeff η I = 0 := by simpa only [hη, ite_false] using idealCoeff_source_mask η I
-    simp [hη, hz]
+    grind
 
-theorem excludePrimes_mask (η : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (I : Ideal O) :
+theorem excludePrimes_mask :
     idealCoeff (η.excludePrimes S hS) I =
       if IsCoprime I (η.excludePrimes S hS).modulus then idealCoeff η I else 0 :=
   idealCoeff_refineModulus η _ _ _ I
+end
 
 end SevenEighths.HeckeFamily
 

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.SecondModeParentLists
 public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingSupported
 public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ theorem actual_second_deleted_mode_branch_energy
     (hs : ActualSecondSourceConditions p source)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ J₁ J₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
+    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→ Finset ι)
     (hd₁ : ∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨
       (Ideal.span {p i}:Ideal Eis)∣x.quotient)
     (hd₂ : ∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨
@@ -67,10 +68,7 @@ theorem actual_second_deleted_mode_branch_energy
     K ho hJ₁ hJ₂ phase hphase
     (secondModeRight p hp hcop hg pool Ψ m z (slots₂\J₂) lists₂ a₂ ω₂ X t)
     (secondModeLeft p hp hcop hg pool Ψ m z (slots₁\J₁) lists₁ a₁ ω₁ X t)
-  apply le_trans (le_of_eq ?_) he
-  congr 1
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_6960
   rw [secondModeBranch_parent_lists_restore p hp hcop hg hpr x (hs.admissible x hx)
     (hs.second_divisor x hx) u v (deleted₁ x) (deleted₂ x) (hd₁ x hx) (hd₂ x hx)]
   dsimp only [phase]

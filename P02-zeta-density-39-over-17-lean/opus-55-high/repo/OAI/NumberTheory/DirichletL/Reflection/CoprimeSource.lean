@@ -43,9 +43,7 @@ theorem weightedPhysicalReflectedRow_eq_coprime_source
     intro n hn
     exact (Finset.sum_coe_sort bset (fun b : Ideal Eis =>
       r K*aw P.val*w n b*actualMixedCoefficient F K hK (S P.val) jF (D P hP) s hc u m n b)).symm
-  · intro P hP
-    simp only [Set.mem_ofPred_eq] at hP
-    simp only [dite_eq_right hP,mul_zero,Finset.sum_const_zero]
+  simp_all
 
 end
 end SevenEighths.InverseReflectedPhase

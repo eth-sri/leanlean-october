@@ -13,7 +13,10 @@ open ActualEisensteinCubic ProbeEuler ProbeEulerFinsupp
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-lemma source_idealHighLocalFactor_ne_zero (S : Finset Id) (hS : SourceExclusions S)
+section
+variable (S : Finset Id) (hS : SourceExclusions S)
+include S hS
+lemma source_idealHighLocalFactor_ne_zero
     (η : HeckeFamily.Character) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     idealHighLocalFactor η P.val x w z≠0 := by
@@ -40,7 +43,7 @@ lemma source_idealHighLocalFactor_ne_zero (S : Finset Id) (hS : SourceExclusions
   · exact factor_ne_zero_of_defect _ ((idealClosedCorrection_bound η P (hS.tail.norm_four P hP)
       x w z (by linarith) (by linarith) (by linarith)).trans (hS.tail.half ⟨P,hP⟩))
 
-theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions S)
+theorem markedIdealHighSeries_eq_product
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     markedIdealHighSeries S (∏P∈T,P.val) η 1 x w z=
@@ -71,6 +74,7 @@ theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions 
     funext P
     exact (heq P).symm
   exact (markedIdealHighSeries_hasProd S hS.prime T η x w z hx hw hz).unique he'
+end
 
 end SevenEighths.ProbePhysical
 end

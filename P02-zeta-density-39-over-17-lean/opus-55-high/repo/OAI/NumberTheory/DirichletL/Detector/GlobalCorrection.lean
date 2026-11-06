@@ -3,13 +3,14 @@ public import OAI.NumberTheory.DirichletL.Detector.GlobalHolomorphic
 public import OAI.NumberTheory.DirichletL.Detector.HighEulerRational
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalProduct
 public import OAI.NumberTheory.DirichletL.Hecke.Euler
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ProbeEuler CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
@@ -54,13 +55,13 @@ lemma idealClosedCorrection_bound (η : HeckeFamily.Character) (P : PrimeIdeal)
     (hx : 7/8≤x.re) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
     ‖idealClosedCorrection η P x w z-1‖≤globalPrimeDefectBound P := by
   apply unramifiedClosed_open_region_bound
-  · exact_mod_cast hP
+  simp_all
   · exact actualAPhase_norm_le_one η _
   · exact HeckeFamily.idealCoeff_norm_le_one η P.val
   · simp
-  · exact hx
-  · exact hw
-  · exact hz
+  grind
+  grind
+  grind
 
 theorem globalClosedCorrection_bound (η : HeckeFamily.Character) (S : Finset Id)
     (hS : CorrectionTail S) (x w z : ℂ)
@@ -78,58 +79,45 @@ lemma globalClosedCorrection_multipliable (η : HeckeFamily.Character) (S : Fins
   let B := fun P : {P : PrimeIdeal // P.val∉S}=>globalPrimeDefectBound P.val
   have hB (P) : ‖F P-1‖≤B P :=
     idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw hz
-  refine ⟨Complex.exp (∑' P,Complex.log (F P)),?_⟩
-  apply ((log_summable_of_defect F B hS.summable hB hS.half).of_norm.hasSum.cexp).congr
-  intro T
-  apply Finset.prod_congr rfl
-  intro P hP
-  exact Complex.exp_log (factor_ne_zero_of_defect _ ((hB P).trans (hS.half P)))
+  pm_3892
 
-theorem globalClosedCorrection_analytic_x (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (w z : ℂ) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
+section
+variable (η : HeckeFamily.Character) (S : Finset Id) (hS : CorrectionTail S)
+include η S hS
+theorem globalClosedCorrection_analytic_x (w z : ℂ) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
     AnalyticOnNhd ℂ (fun x=>globalClosedCorrection η S x w z) {x : ℂ|7/8<x.re} := by
   apply normalProduct_analytic _ _ _ (Complex.isOpen_re_gt _) hS.summable
   · intro P
     apply unramifiedClosed_analytic_x
-    · exact_mod_cast hS.norm_four P.val P.property
-    · exact actualAPhase_norm_le_one η _
-    · exact HeckeFamily.idealCoeff_norm_le_one η _
-    · simp
+    pm_3893
     · exact hz
   · intro P x hx
-    exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx.le hw hz
+    pm_7040 hx.le hw hz
   · exact hS.half
 
-theorem globalClosedCorrection_analytic_w (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (x z : ℂ) (hx : 7/8≤x.re) (hz : 4/25≤z.re) :
+theorem globalClosedCorrection_analytic_w (x z : ℂ) (hx : 7/8≤x.re) (hz : 4/25≤z.re) :
     AnalyticOnNhd ℂ (fun w=>globalClosedCorrection η S x w z) {w : ℂ|9/10<w.re} := by
   apply normalProduct_analytic _ _ _ (Complex.isOpen_re_gt _) hS.summable
   · intro P
     apply unramifiedClosed_analytic_w
-    · exact_mod_cast hS.norm_four P.val P.property
-    · exact actualAPhase_norm_le_one η _
-    · exact HeckeFamily.idealCoeff_norm_le_one η _
-    · simp
+    pm_3893
     · exact hx
     · exact hz
   · intro P w hw
-    exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw.le hz
+    pm_7040 hx hw.le hz
   · exact hS.half
 
-theorem globalClosedCorrection_analytic_z (η : HeckeFamily.Character) (S : Finset Id)
-    (hS : CorrectionTail S) (x w : ℂ) (hx : 7/8≤x.re) (hw : 9/10≤w.re) :
+theorem globalClosedCorrection_analytic_z (x w : ℂ) (hx : 7/8≤x.re) (hw : 9/10≤w.re) :
     AnalyticOnNhd ℂ (fun z=>globalClosedCorrection η S x w z) {z : ℂ|4/25<z.re} := by
   apply normalProduct_analytic _ _ _ (Complex.isOpen_re_gt _) hS.summable
   · intro P
     apply unramifiedClosed_analytic_z
-    · exact_mod_cast hS.norm_four P.val P.property
-    · exact actualAPhase_norm_le_one η _
-    · exact HeckeFamily.idealCoeff_norm_le_one η _
-    · simp
+    pm_3893
     · exact hx
   · intro P z hz
-    exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw hz.le
+    pm_7040 hx hw hz.le
   · exact hS.half
+end
 
 theorem exists_uniform_global_cutoff :
     ∃N : ℕ,4≤N ∧ ∀S : Finset Id,
@@ -137,8 +125,7 @@ theorem exists_uniform_global_cutoff :
   have ht := (tendsto_order.1 (tendsto_tsum_compl_atTop_zero globalPrimeDefectBound)).2 (1/6) (by norm_num)
   obtain ⟨F,hF⟩ := ht.exists
   let N := max 4 (F.sup (fun P=>Ideal.absNorm P.val))
-  refine ⟨N,le_max_left _ _,?_⟩
-  intro S hS
+  pm_7517
   let T := {P : PrimeIdeal // P.val∉S}
   have hnot (P : T) : P.val∉F := by
     intro hm
@@ -150,7 +137,7 @@ theorem exists_uniform_global_cutoff :
   constructor
   · intro P hP
     have hn : ¬Ideal.absNorm P.val≤N := fun hn=>hP (hS P hn)
-    exact (le_max_left _ _).trans (Nat.le_of_lt (Nat.lt_of_not_ge hn))
+    pm_7233
   · apply le_trans ?_ hF.le
     exact Summable.tsum_le_tsum_of_inj inc hi
       (fun P _=>globalPrimeDefectBound_nonneg P.val) (fun _=>le_rfl)

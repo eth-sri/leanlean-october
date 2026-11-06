@@ -30,14 +30,12 @@ theorem retained_geometry (R : ℝ) (G V z : O)
   rw [normValue_mul] at hrow
   have hn:=normValue_ge_one z hz
   have hr:=retainedWeight_enclosure R _ hne
-  refine ⟨by linarith,hg,hv,hz,hn,hrow,hn.trans hrow⟩
+  grind
 
-theorem retained_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
-    (hU : U≠0)
-    (hN : τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*U.absNorm*
-      (Ideal.span {V}).absNorm)
-    (R Z : ℝ) (hZ : 1<Z)
-    (hne : retainedWeight R (normValue ((G*V)*z))≠0) :
+section
+variable (η τ : Character) (G V z : O) (U : Ideal O) (hU : U≠0) (hN : τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*U.absNorm* (Ideal.span {V}).absNorm) (R Z : ℝ) (hZ : 1<Z) (hne : retainedWeight R (normValue ((G*V)*z))≠0)
+include η τ G V z U hU hN R Z hZ hne
+theorem retained_log_budget :
     Real.logb Z (max 1 (4*R/(normValue G*normValue V)))+
       Real.logb Z (τ.modulus.absNorm:ℝ)≤
       Real.logb Z R+Real.logb Z (η.modulus.absNorm:ℝ)-Real.logb Z (normValue G)+
@@ -55,12 +53,7 @@ theorem retained_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
     Real.logb_mul hg.ne' hv.ne',Real.logb_mul (by norm_num : (4:ℝ)≠0) hF]
   linarith
 
-theorem retained_row_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
-    (hU : U≠0)
-    (hN : τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*U.absNorm*
-      (Ideal.span {V}).absNorm)
-    (R Z : ℝ) (hZ : 1<Z)
-    (hne : retainedWeight R (normValue ((G*V)*z))≠0) :
+theorem retained_row_log_budget :
     Real.logb Z (normValue z)+Real.logb Z (τ.modulus.absNorm:ℝ)≤
       Real.logb Z R+Real.logb Z (η.modulus.absNorm:ℝ)-Real.logb Z (normValue G)+
         Real.logb Z (U.absNorm:ℝ)+Real.logb Z (4*(fixedFactor:ℝ)) := by
@@ -68,6 +61,7 @@ theorem retained_row_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
   have hh:=Real.logb_le_logb_of_le hZ (normValue_pos z hz) (hn.trans (le_max_right 1 _))
   have hb:=retained_log_budget η τ G V z U hU hN R Z hZ hne
   linarith
+end
 
 theorem exists_retained_width_family (η : Character) (χ : RayCharacter)
     (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :

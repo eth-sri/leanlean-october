@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Twist
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,7 @@ open CenteredMomentPrimary CenteredMomentTwist
 
 lemma normalized_height_le (t : ℝ) : ‖t / (2 * Real.pi)‖ ≤ ‖t‖ := by
   rw [norm_div, Real.norm_of_nonneg (by positivity : 0 ≤ 2 * Real.pi)]
-  exact div_le_self (norm_nonneg _) (by linarith [Real.pi_gt_three])
+  pm_7489
 
 end SevenEighths.CenteredMomentHeight
 end

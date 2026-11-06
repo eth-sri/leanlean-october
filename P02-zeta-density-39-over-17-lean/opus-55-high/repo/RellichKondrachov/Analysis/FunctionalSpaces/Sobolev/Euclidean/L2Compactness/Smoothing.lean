@@ -63,7 +63,7 @@ private lemma hasCompactSupport_indicator_of_isCompact (s : Set E) (hs : IsCompa
   -- `tsupport (s.indicator f)` is closed and contained in the compact set `s`.
   refine hs.of_isClosed_subset (isClosed_tsupport _) ?_
   have : tsupport (s.indicator f) ⊆ closure s := tsupport_indicator_subset_closure (E := E) s f
-  simpa [hs_closed.closure_eq] using this
+  simp_all
 
 end
 
@@ -94,6 +94,11 @@ lemma hasCompactSupport_extendByZeroFun (hK : IsCompact K)
   simpa [extendByZeroFun] using
     (hasCompactSupport_indicator_of_isCompact (E := E) (s := K) hK (f := fun x => u x))
 
+set_option hygiene false in
+macro "pb_1652" : tactic => `(tactic| (
+  simpa [extendByZeroFun] using
+    (MeasureTheory.memLp_indicator_iff_restrict (μ := (volume : Measure E)) (p := (2 : ℝ≥0∞))
+        (s := K) (f := fun x : E => u x) hKm).2 hu))
 /-- `extendByZeroFun` packaged as an element of `L²(volume)`. -/
 noncomputable def extendByZeroL2 (hKm : MeasurableSet K)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
@@ -103,41 +108,24 @@ noncomputable def extendByZeroL2 (hKm : MeasurableSet K)
     MeasureTheory.Lp.memLp u
   have hm :
       MeasureTheory.MemLp (extendByZeroFun (K := K) u) (2 : ℝ≥0∞) (volume : Measure E) := by
-    simpa [extendByZeroFun] using
-      (MeasureTheory.memLp_indicator_iff_restrict (μ := (volume : Measure E)) (p := (2 : ℝ≥0∞))
-          (s := K) (f := fun x : E => u x) hKm).2 hu
+    pb_1652
   exact hm.toLp (extendByZeroFun (K := K) u)
 
-lemma extendByZeroL2_ae_eq (hKm : MeasurableSet K)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
+section
+variable (hKm : MeasurableSet K) (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))
+include hKm u
+lemma extendByZeroL2_ae_eq :
     (extendByZeroL2 (E := E) (K := K) hKm u : E → ℝ) =ᵐ[(volume : Measure E)]
       extendByZeroFun (E := E) (K := K) u := by
   classical
   simp [extendByZeroL2, MeasureTheory.MemLp.coeFn_toLp]
 
-lemma extendByZeroL2_eq_extendByZeroₗᵢ (hKm : MeasurableSet K)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
+lemma extendByZeroL2_eq_extendByZeroₗᵢ :
     extendByZeroL2 (E := E) (K := K) hKm u =
       (MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
-        (s := K) hKm) u := by
-  classical
-  let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
-  refine MeasureTheory.Lp.ext ?_
-  have h1 :
-      (extendByZeroL2 (E := E) (K := K) hKm u : E → ℝ) =ᵐ[(volume : Measure E)]
-        extendByZeroFun (E := E) (K := K) u :=
-    extendByZeroL2_ae_eq (E := E) (K := K) hKm u
-  have h2 :
-      ((MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
-        (s := K) hKm) u : E → ℝ) =ᵐ[(volume : Measure E)]
-        extendByZeroFun (E := E) (K := K) u := by
-    exact
-      (MeasureTheory.Lp.extendByZeroₗᵢ_ae_eq (μ := (volume : Measure E)) (E := ℝ)
-        (p := (2 : ℝ≥0∞)) (s := K) hKm u)
-  exact h1.trans h2.symm
+        (s := K) hKm) u := by aesop
 
-lemma norm_extendByZeroL2 (hKm : MeasurableSet K)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
+lemma norm_extendByZeroL2 :
     ‖extendByZeroL2 (E := E) (K := K) hKm u‖ = ‖u‖ := by
   classical
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
@@ -149,6 +137,7 @@ lemma norm_extendByZeroL2 (hKm : MeasurableSet K)
     _ = ‖u‖ :=
       (MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
         (s := K) hKm).norm_map u
+end
 variable (ψ : E → ℝ)
 
 /-- Smoothing by convolution with a fixed kernel `ψ`, applied to the zero-extension from `K`. -/
@@ -166,9 +155,7 @@ lemma continuous_smoothFun
         (2 : ℝ≥0∞) (volume : Measure E) := by
     have hu : MeasureTheory.MemLp (fun x : E => u x) (2 : ℝ≥0∞) (volume.restrict K) :=
       MeasureTheory.Lp.memLp u
-    simpa [extendByZeroFun] using
-      (MeasureTheory.memLp_indicator_iff_restrict (μ := (volume : Measure E)) (p := (2 : ℝ≥0∞))
-          (s := K) (f := fun x : E => u x) hKm).2 hu
+    pb_1652
   have hf_loc :
       MeasureTheory.LocallyIntegrable (extendByZeroFun (K := K) u)
         (volume : Measure E) := by

@@ -2,13 +2,13 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskExpansion
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentReflectionMass
 open CenteredMomentReflectionDeletion UniqueFactorizationMonoid
@@ -77,10 +77,7 @@ lemma slot_majorant_mass (R:Finset (Ideal O))(hR:∀I∈R,Prime I)
     (one_add_sum_weight R).trans (deletion_le_euler R hR)
   have hp (i:α)(hi:i∈F):1+(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I)≤
       max 1 (Real.sqrt (max 1 (b i))*M i)*(∏I∈R,localMass I):=by
-    have h1:=le_max_left 1 (Real.sqrt (max 1 (b i))*M i)
-    have h2:=le_max_right 1 (Real.sqrt (max 1 (b i))*M i)
-    have hs:0≤∑I∈R,weight I:=Finset.sum_nonneg (fun I _=>weight_nonneg I)
-    nlinarith
+    pm_2904 h1 h2
   calc
     _≤∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i)*(∏I∈R,localMass I):=
       Finset.prod_le_prod₀ (fun i hi=>add_nonneg zero_le_one
@@ -98,9 +95,8 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
   obtain ⟨Cc,hCc,hcard⟩:=powerset_square_subpower (eps/2) (by linarith)
   let delta:=eps/(2*((F.card:ℝ)+1))
   have hd:0<delta:=div_pos heps (by positivity)
-  obtain ⟨Ce,hCe,heuler⟩:=euler_mass_subpower delta hd
-  let A:ℝ:=∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i)
-  have hA:0<A:=Finset.prod_pos (fun i _=>lt_of_lt_of_le zero_lt_one (le_max_left _ _))
+  pm_3599 Ce hCe heuler euler_mass_subpower delta hd
+  pm_2905
   refine ⟨Cc*A*Ce^F.card,by positivity,?_⟩
   intro R hR t ht
   have hsum:(∑D₁∈R.powerset,∑D₂∈R.powerset,∑J∈F.powerset,
@@ -149,6 +145,5 @@ theorem weighted_uniform_mass_subpower (F:Finset α)(b M:α→ℝ)(hM:∀i∈F,0
 
 end SevenEighths.CenteredMomentEnergyReferenceDeletionBudget
 
-end
 
 end OAI

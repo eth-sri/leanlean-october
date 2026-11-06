@@ -1,16 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstWholeAssembly
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedChild
+public import OAI.NumberTheory.DirichletL.Moments.SecondDescent
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildBound
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly
+open CanonicalQuadraticSieve CenteredMomentFirstAssembly
 open CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
@@ -18,11 +19,7 @@ local notation "O" => ActualEisensteinCubic.O
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
     (r : ℝ) (hr : 0 ≤ r) (B : α → ℝ)
     (hB : ∀ i ∈ S, r*‖f i‖ ≤ B i) :
-    r*‖∑ i ∈ S, a i*f i‖ ≤ ∑ i ∈ S, ‖a i‖*B i := by
-  calc
-    _ ≤ r*∑ i ∈ S, ‖a i*f i‖ := mul_le_mul_of_nonneg_left (norm_sum_le _ _) hr
-    _ = ∑ i ∈ S, ‖a i‖*(r*‖f i‖) := by simp only [Finset.mul_sum,norm_mul]; congr 1; funext i; ring
-    _ ≤ _ := Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (hB i hi) (norm_nonneg _))
+    r*‖∑ i ∈ S, a i*f i‖ ≤ ∑ i ∈ S, ‖a i‖*B i := by pm_2939
 
 theorem finite_first_ray_divisor_bound (L : Finset (Ideal O))
     (F : Ideal O → RayCharacter → RayCharacter → ℂ)
@@ -31,32 +28,7 @@ theorem finite_first_ray_divisor_bound (L : Finset (Ideal O))
     (hF : ∀ I ∈ L, ∀ χ ξ, r*‖F I χ ξ‖ ≤ C*(B₁ I*B₂ I)) :
     r*‖∑ I ∈ L, (UniqueFactorizationMonoid.moebius I : ℂ)*
       ∑ χ : RayCharacter, ∑ ξ : RayCharacter, pairCoeff (firstPhaseTable) χ ξ * F I χ ξ‖ ≤
-      (256*C)*∑ I ∈ L, ‖(UniqueFactorizationMonoid.moebius I : ℂ)‖*(B₁ I*B₂ I) := by
-  have he (I : Ideal O) (hI : I ∈ L) :
-      r*‖∑ χ : RayCharacter, ∑ ξ : RayCharacter,
-        pairCoeff (firstPhaseTable) χ ξ*F I χ ξ‖ ≤ (256*C)*(B₁ I*B₂ I) := by
-    calc
-      _ ≤ ∑ χ : RayCharacter, ∑ ξ : RayCharacter,
-          ‖pairCoeff (firstPhaseTable) χ ξ‖*(C*(B₁ I*B₂ I)) := by
-        have h := weighted_norm_sum Finset.univ (fun _ : RayCharacter => (1 : ℂ))
-          (fun χ => ∑ ξ : RayCharacter, pairCoeff (firstPhaseTable) χ ξ*F I χ ξ) r hr
-          (fun χ => ∑ ξ : RayCharacter, ‖pairCoeff (firstPhaseTable) χ ξ‖*(C*(B₁ I*B₂ I)))
-          (fun χ _ => weighted_norm_sum Finset.univ _ _ r hr _ (fun ξ _ => hF I hI χ ξ))
-        simpa only [one_mul,norm_one] using h
-      _ = (∑ χ : RayCharacter, ∑ ξ : RayCharacter, ‖pairCoeff (firstPhaseTable) χ ξ‖)*
-          (C*(B₁ I*B₂ I)) := by simp only [Finset.sum_mul]
-      _ ≤ _ := by
-        have h := mul_le_mul_of_nonneg_right (firstPhaseTable_mass)
-          (mul_nonneg hC (mul_nonneg (hB₁ I hI) (hB₂ I hI)))
-        convert h using 1 ; ring
-  have h := weighted_norm_sum L (fun I => (UniqueFactorizationMonoid.moebius I : ℂ))
-    (fun I => ∑ χ : RayCharacter, ∑ ξ : RayCharacter, pairCoeff (firstPhaseTable) χ ξ*F I χ ξ)
-    r hr (fun I => (256*C)*(B₁ I*B₂ I)) he
-  convert h using 1
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro I hI
-  ring
+      (256*C)*∑ I ∈ L, ‖(UniqueFactorizationMonoid.moebius I : ℂ)‖*(B₁ I*B₂ I) := by pf_53 firstPhaseTable firstPhaseTable_mass
 
 theorem first_row_children {α β : Type*} (rows : Finset O) (S : Finset α) (T : Finset β)
     (a : α → O) (b : β → O)
@@ -77,21 +49,13 @@ theorem first_row_children {α β : Type*} (rows : Finset O) (S : Finset α) (T 
                   gaussRow (b j) (hb j) (-z)))*K z i j := by
   simp_rw [finite_first_children S T a b ha hb hpa hpb c d e r ρ hρ]
   simp only [Finset.mul_sum]
-  rw [Finset.sum_comm (s:=rows)]
-  apply Finset.sum_congr rfl
+  pm_1216 rows
   intro L hL
-  rw [Finset.sum_comm (s:=rows)]
-  apply Finset.sum_congr rfl
+  pm_1216 rows
   intro χ hχ
   rw [Finset.sum_comm (s:=rows)]
-  apply Finset.sum_congr rfl
-  intro ξ hξ
-  apply Finset.sum_congr rfl
-  intro z hz
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_3397 ξ hξ z hz
+  pm_3622
   ring
 
 theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -129,7 +93,7 @@ theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ �
         C*∑ L∈divisorPool T (fun j => Ideal.span {b j}),
           ‖(UniqueFactorizationMonoid.moebius L:ℂ)‖*(B₁ L*B₂ L) := by
   obtain ⟨C,hC,hbound⟩ := whole_kernel_reflected_gauss_child_bound W V M hM hV A J₁ J₂
-  refine ⟨256*C,mul_nonneg (by norm_num) hC,?_⟩
+  pm_688
   intro R hR α β rows S T a b ha hb hpa hpb c d e r ρ hρ hρe q u v ρ₀ x hq hV₀ hV₁ U K hK hU hmajor
     B₁ B₂ hB₁ hB₂ hleft hright
   rw [first_row_children rows S T a b ha hb hpa hpb c d e r ρ hρ]
@@ -145,6 +109,5 @@ theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ �
 
 end SevenEighths.CenteredMomentFirstChildBound
 
-end
 
 end OAI

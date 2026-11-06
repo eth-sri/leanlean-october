@@ -7,78 +7,32 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic
+open ActualEisensteinCubic
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
+open NumberField
+open Filter Asymptotics NumberField
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open MeasureTheory
+open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
+open ActualEisensteinCubic CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma fixedThetaTwist_mul (φ χ:Eis→*ℂ) (n:Eis) :
@@ -103,18 +57,20 @@ namespace CompletedGauss
 
 section
 open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma admissiblePrimeGood (K:Ideal Eis) (hK:Admissible K) (P:PrimeIndex K) : lambda∉P.val :=
+section
+variable (K:Ideal Eis) (hK:Admissible K)
+include K hK
+lemma admissiblePrimeGood (P:PrimeIndex K) : lambda∉P.val :=
   (hK.2.2 P.val (Multiset.mem_toFinset.mp P.property)).1
 
-theorem quadraticRow_eq_primeIndex (K:Ideal Eis) (hK:Admissible K) (x:Eis) :
+theorem quadraticRow_eq_primeIndex (x:Eis) :
     quadraticRow K x=finiteSexticRow (fun P:PrimeIndex K=>P.val)
       (admissiblePrimeGood K hK) (fun _=>3) x := by
   have hs:∀I∈({K}:Finset (Ideal Eis)),Admissible I:=by
     intro I hI
-    simpa only [Finset.mem_singleton.mp hI] using hK
+    grind
   have heq:primePool ({K}:Finset (Ideal Eis))=primeSupport K:=by
     simp [primePool,primeSupport]
   let e:primePool ({K}:Finset (Ideal Eis))≃PrimeIndex K:={
@@ -128,6 +84,7 @@ theorem quadraticRow_eq_primeIndex (K:Ideal Eis) (hK:Admissible K) (x:Eis) :
     finiteSexticRow,MulChar.pow_apply' _ (by decide : (3:ℕ)≠0)]
   congr 1
   exact Fintype.prod_equiv e _ _ (fun P=>rfl)
+end
 
 theorem completedLocalExponent_residual (I F Q:Ideal Eis) (hFQ:F∣Q)
     (P:PrimeIndex (rowResidualPart I Q)) : completedLocalExponent I F P.val=1 := by
@@ -143,36 +100,40 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
+open ActualEisensteinCubic CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss
 
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 
 namespace CompletedGauss.FreeReflection
 
 section
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 def pool (I Q Q0:Ideal Eis) : Finset (Ideal Eis) :=
   (completedReflectionPool I Q).filter (fun P=>¬Q0≤P)
 
-lemma pool_subset (I Q Q0:Ideal Eis) : pool I Q Q0⊆completedReflectionPool I Q :=
+section
+variable (I Q Q0:Ideal Eis)
+include I Q Q0
+lemma pool_subset : pool I Q Q0⊆completedReflectionPool I Q :=
   Finset.filter_subset _ _
-lemma pool_maximal (I Q Q0:Ideal Eis) (P:pool I Q Q0) : P.val.IsMaximal :=
+lemma pool_maximal (P:pool I Q Q0) : P.val.IsMaximal :=
   completedReflectionPool_maximal I Q ⟨P.val,pool_subset I Q Q0 P.property⟩
-lemma pool_good (I Q Q0:Ideal Eis) (P:pool I Q Q0) : lambda∉P.val :=
+lemma pool_good (P:pool I Q Q0) : lambda∉P.val :=
   completedReflectionPool_good I Q ⟨P.val,pool_subset I Q Q0 P.property⟩
-lemma pool_odd (I Q Q0:Ideal Eis) (P:pool I Q Q0) : ringChar (Eis⧸P.val)≠2 :=
+lemma pool_odd (P:pool I Q Q0) : ringChar (Eis⧸P.val)≠2 :=
   completedReflectionPool_odd I Q ⟨P.val,pool_subset I Q Q0 P.property⟩
-lemma pool_divides (I Q Q0:Ideal Eis) (hI:I≠0) (hQ:Q≠0) (P:pool I Q Q0) : P.val∣I*Q :=
+lemma pool_divides (hI:I≠0) (hQ:Q≠0) (P:pool I Q Q0) : P.val∣I*Q :=
   completedReflectionPool_divides I Q hI hQ ⟨P.val,pool_subset I Q Q0 P.property⟩
-lemma pool_nonresidual (I Q Q0:Ideal Eis) (P:pool I Q Q0) : ¬P.val∣rowResidualPart I Q :=
+lemma pool_nonresidual (P:pool I Q Q0) : ¬P.val∣rowResidualPart I Q :=
   completedReflectionPool_nonresidual I Q ⟨P.val,pool_subset I Q Q0 P.property⟩
-lemma pool_free (I Q Q0:Ideal Eis) (P:pool I Q Q0) : ¬Q0≤P.val :=
+lemma pool_free (P:pool I Q Q0) : ¬Q0≤P.val :=
   (Finset.mem_filter.mp P.property).2
+end
 
 lemma pool_eq_on_fiber (I J Q Q0:Ideal Eis) (hI:I≠0) (hJ:J≠0) (hQ:Q≠0)
     (hA:rowPowerfulPart I=rowPowerfulPart J) (hT:rowMaskPart I Q=rowMaskPart J Q) :
@@ -183,19 +144,19 @@ lemma pool_eq_on_fiber (I J Q Q0:Ideal Eis) (hI:I≠0) (hJ:J≠0) (hQ:Q≠0)
 end
 
 section
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end
 
 section
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end
 section
 
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 local instance poolMaximal (I Q Q0:Ideal Eis) (P:pool I Q Q0) : P.val.IsMaximal :=
   pool_maximal I Q Q0 P
@@ -206,7 +167,7 @@ noncomputable local instance poolFintype (I Q Q0:Ideal Eis) (P:pool I Q Q0) : Fi
 
 end
 
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss.FreeReflection

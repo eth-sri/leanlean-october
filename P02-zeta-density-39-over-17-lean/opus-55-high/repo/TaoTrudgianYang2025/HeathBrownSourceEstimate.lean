@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.HeathBrownSourceTail
 public import TaoTrudgianYang2025.HeathBrownPhysicalMajorant
 public import GafniTao.HeathBrownKthDerivativeSetup
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -46,9 +47,9 @@ theorem source_exponentialSum_heathBrown_bound_of_derivative
   have hA : 0 < A := div_pos (by
     have hcoef := modelPhaseJetCoefficient_nonneg σ p
     linarith) hc
-  obtain ⟨C,hC,hsource⟩ := hHB k A η hk hA hη
+  pm_957 C hC hsource hHB k A η hk hA hη
   let B := c^(heathBrownDerivativeExponent k)+1+c^(-heathBrownInverseExponent k)
-  have hB : 0 < B := by dsimp only [B]; positivity
+  pm_116 hB B
   let K := 1+C*B
   have hK : 1 ≤ K := by
     dsimp only [K]
@@ -64,7 +65,7 @@ theorem source_exponentialSum_heathBrown_bound_of_derivative
     have hb' : (a : ℝ)+(L : ℝ) ≤ 2*N := by simpa only [Nat.cast_add] using hb
     have hLN : (L : ℝ) ≤ N := by linarith
     let lambda := c*T/N^k
-    have hlambda : 0 < lambda := by dsimp only [lambda]; positivity
+    pm_1626
     let f := heathBrownPhysicalPhase F T N a (modelPhaseJetSign σ p)
     have hf := heathBrownPhysicalPhase_contDiffOn hF.1 hNpos ha hb' T (modelPhaseJetSign σ p)
     have hderiv : ∀ x ∈ Ioo (0 : ℝ) (L : ℝ),

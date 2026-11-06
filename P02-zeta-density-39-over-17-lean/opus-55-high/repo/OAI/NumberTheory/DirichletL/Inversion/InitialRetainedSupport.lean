@@ -18,8 +18,10 @@ variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,goodLambda∉Ideal.span {p i})
 
-theorem live_cutoffs (hpr:∀i,goodLambda^2∣p i-1)
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+section
+variable (hpr:∀i,goodLambda^2∣p i-1) (Ψ:O→*ℂ) (j:O) (σ:Finset ι→ℂ) (W₁ W₂:ℝ→ℂ) (Φ:𝓢(ℝ,ℂ))
+include hpr Ψ j σ W₁ W₂ Φ
+theorem live_cutoffs
     (Z D m:ℝ)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)
     (hne:physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0):
     W₁ (coordinates p x 0*coordinates p x 2*coordinates p x 4/Z^D)≠0 ∧
@@ -30,8 +32,7 @@ theorem live_cutoffs (hpr:∀i,goodLambda^2∣p i-1)
   exact ⟨(mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hk).1).1).2,
     (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hk).1).2⟩
 
-theorem live_whole_columns (hpr:∀i,goodLambda^2∣p i-1)
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+theorem live_whole_columns
     (Z D m b:ℝ)(hZ:0<Z)(hs₁:Function.support W₁⊆Set.Iic b)
     (hs₂:Function.support W₂⊆Set.Iic b)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)
     (hne:physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0):
@@ -40,6 +41,7 @@ theorem live_whole_columns (hpr:∀i,goodLambda^2∣p i-1)
   obtain ⟨h₁,h₂⟩:=live_cutoffs p hp hcop hg hpr Ψ j σ W₁ W₂ Φ Z D m x hx ρ hne
   exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ D)).mp (hs₁ h₁),
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ D)).mp (hs₂ h₂)⟩
+end
 
 include hp in
 omit [DecidableEq ι] [∀i,(Ideal.span {p i}).IsMaximal] in

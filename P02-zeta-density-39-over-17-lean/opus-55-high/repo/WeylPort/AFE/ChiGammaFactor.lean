@@ -19,27 +19,29 @@ namespace DhimanKadiriQuesadaHerrera2026
 open Complex
 open scoped ComplexConjugate
 
+section
+variable (s : ℂ)
+include s
 /-- Principal powers on the negative imaginary axis have the explicit phase used by the AFE. -/
-theorem cpow_two_pi_div_I (s : ℂ) :
+theorem cpow_two_pi_div_I :
     (2 * (Real.pi : ℂ) / I) ^ (s - 1) =
       (2 * (Real.pi : ℂ)) ^ (s - 1) *
         exp (-(Real.pi : ℂ) / 2 * I * (s - 1)) := by
   have hb : 2 * (Real.pi : ℂ) ≠ 0 := mul_ne_zero (by norm_num)
     (ofReal_ne_zero.mpr Real.pi_ne_zero)
   have hid : 2 * (Real.pi : ℂ) / I = ((2 * Real.pi : ℝ) : ℂ) * (-I) := by
-    simp [div_eq_mul_inv, Complex.inv_I]
+    simp_all
   rw [hid, cpow_def_of_ne_zero (mul_ne_zero (by exact_mod_cast Real.two_pi_pos.ne')
     (neg_ne_zero.mpr I_ne_zero)), log_ofReal_mul Real.two_pi_pos
       (neg_ne_zero.mpr I_ne_zero), log_neg_I, add_mul, exp_add]
   rw [cpow_def_of_ne_zero hb]
   congr 1
-  · rw [show 2 * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by push_cast; ring,
+  · rw [show 2 * (Real.pi : ℂ) = ((2 * Real.pi : ℝ) : ℂ) by simp_all,
       ← ofReal_log Real.two_pi_pos.le]
-  · congr 1
-    ring
+  grind
 
 /-- The exact identity underlying Lemma 7, before division by its nonzero factor. -/
-theorem gamma_factor_mul_one_sub_exp (s : ℂ) :
+theorem gamma_factor_mul_one_sub_exp :
     (Gamma (1 - s) * (2 * (Real.pi : ℂ) / I) ^ (s - 1)) *
       (1 - exp ((Real.pi : ℂ) * s * I)) = chi s := by
   have he : exp (-(Real.pi : ℂ) / 2 * I * (s - 1)) =
@@ -53,10 +55,10 @@ theorem gamma_factor_mul_one_sub_exp (s : ℂ) :
     congr 1
     ring
   rw [cpow_two_pi_div_I, he, chi_eq_two_mul, Complex.sin]
-  linear_combination -Gamma (1 - s) * (2 * (Real.pi : ℂ)) ^ (s - 1) * I * heprod
+  grind
 
 /-- The norm of the exponential denominator term records the signed height exactly. -/
-theorem norm_exp_pi_mul_I (s : ℂ) :
+theorem norm_exp_pi_mul_I :
     ‖exp ((Real.pi : ℂ) * s * I)‖ = Real.exp (-Real.pi * s.im) := by
   rw [norm_exp]
   congr 1
@@ -65,7 +67,7 @@ theorem norm_exp_pi_mul_I (s : ℂ) :
   ring
 
 /-- The denominator remains uniformly separated from zero for either sign of height. -/
-theorem one_sub_exp_neg_abs_le_norm (s : ℂ) :
+theorem one_sub_exp_neg_abs_le_norm :
     1 - Real.exp (-Real.pi * |s.im|) ≤ ‖1 - exp ((Real.pi : ℂ) * s * I)‖ := by
   rcases le_total 0 s.im with hs | hs
   · rw [abs_of_nonneg hs]
@@ -78,14 +80,17 @@ theorem one_sub_exp_neg_abs_le_norm (s : ℂ) :
     have hn := Real.add_one_le_exp (Real.pi * s.im)
     rw [neg_mul_neg]
     linarith
+end
 
 /-- The relative error is an actual complex number with the exact source denominator. -/
 noncomputable def gammaChiError (s : ℂ) : ℂ :=
   exp ((Real.pi : ℂ) * s * I) / (1 - exp ((Real.pi : ℂ) * s * I))
 
+section
+variable {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀) (ht : t₀ ≤ |s.im|)
+include s t₀ ht₀ ht
 /-- The denominator lower bound uses the positive threshold, independently of the height sign. -/
-theorem gammaChi_denominator_bound {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem gammaChi_denominator_bound :
     0 < 1 - Real.exp (-Real.pi * t₀) ∧
       1 - Real.exp (-Real.pi * t₀) ≤ ‖1 - exp ((Real.pi : ℂ) * s * I)‖ := by
   have he : Real.exp (-Real.pi * t₀) < 1 := by
@@ -94,12 +99,11 @@ theorem gammaChi_denominator_bound {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
   refine ⟨by linarith, ?_⟩
   have hm : Real.exp (-Real.pi * |s.im|) ≤ Real.exp (-Real.pi * t₀) := by
     apply Real.exp_le_exp.mpr
-    nlinarith [Real.pi_pos]
+    simp_all
   linarith [one_sub_exp_neg_abs_le_norm s]
 
 /-- Lemma 7's printed signed-height error bound is valid for both signs of the height. -/
-theorem norm_gammaChiError_le {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem norm_gammaChiError_le :
     ‖gammaChiError s‖ ≤ Real.exp (-Real.pi * s.im) /
       (1 - Real.exp (-Real.pi * t₀)) := by
   obtain ⟨hp, hle⟩ := gammaChi_denominator_bound ht₀ ht
@@ -107,8 +111,7 @@ theorem norm_gammaChiError_le {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
   exact div_le_div_of_nonneg_left (Real.exp_pos _).le hp hle
 
 /-- Lemma 7 is an exact identity plus a separately proved relative-error estimate. -/
-theorem gamma_factor_eq_chi_mul_one_add {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem gamma_factor_eq_chi_mul_one_add :
     Gamma (1 - s) * (2 * (Real.pi : ℂ) / I) ^ (s - 1) =
       chi s * (1 + gammaChiError s) := by
   have hd : 1 - exp ((Real.pi : ℂ) * s * I) ≠ 0 := by
@@ -125,5 +128,6 @@ theorem gamma_factor_eq_chi_mul_one_add {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀
       _ = _ := by rw [sub_add_cancel, one_div]
   rw [he, ← div_eq_mul_inv]
   exact (eq_div_iff hd).mpr (gamma_factor_mul_one_sub_exp s)
+end
 
 end DhimanKadiriQuesadaHerrera2026

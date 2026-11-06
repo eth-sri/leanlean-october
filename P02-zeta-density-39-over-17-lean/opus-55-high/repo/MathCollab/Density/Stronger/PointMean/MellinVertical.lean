@@ -12,6 +12,7 @@ public import MathCollab.Density.Stronger.PointMean.GammaKernel
 public import MathCollab.Density.AbelZetaGrowth
 public import MathCollab.Density.GammaMellin
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,12 +34,12 @@ theorem exists_heathBrown_Gamma_shift_kernel_bound :
   have h := heathBrown_Gamma_shift_kernel_strong_bound (v := v) hδ (by linarith)
   have he : 144 * Real.exp (-(4 / 3 : ℝ) * |v|) ≤ 144 * Real.exp (-|v|) := by
     gcongr
-    linarith [abs_nonneg v]
-  exact ⟨h.1.trans he, h.2.trans he⟩
+    grind
+  grind
 
 private theorem integrable_Gamma_two_vertical_for_zetaSquare :
     Integrable (fun t : ℝ => Complex.Gamma ((2 : ℂ) + (t : ℂ) * I)) := by
-  exact GammaMellin.verticalIntegrable_Gamma (by norm_num : (0 : ℝ) < 2)
+  pm_7274
 
 theorem ford_norm_eq_re_of_nonneg {z : ℂ} (hz : 0 ≤ z) :
     ‖z‖ = z.re := by
@@ -51,8 +52,8 @@ theorem ford_norm_riemannZeta_le_real
     {sigma t : ℝ} (hsigma : 1 < sigma) :
     ‖riemannZeta ((sigma : ℂ) + Complex.I * t)‖ ≤
       ‖riemannZeta (sigma : ℂ)‖ := by
-  let s : ℂ := (sigma : ℂ) + Complex.I * t
-  have hs : 1 < s.re := by simp [s, hsigma]
+  pm_7590 s Complex.I t
+  have hs : 1 < s.re := by aesop
   have hsumS : LSeriesSummable (1 : ℕ → ℂ) s :=
     LSeriesSummable_one_iff.mpr hs
   have hsumSigma : LSeriesSummable (1 : ℕ → ℂ) (sigma : ℂ) :=
@@ -166,7 +167,7 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
       ((a : ℂ) + (v : ℂ) * I)
   let B : ℝ := |s.re + a| + |s.im| + 2
   let M : ℝ := 100 * G
-  let g : ℝ → ℝ := fun v => M * (|v| ^ 2 * Real.exp (-|v|))
+  pm_5586 v
   have hBone : 1 ≤ B := by
     dsimp only [B]
     linarith [abs_nonneg (s.re + a), abs_nonneg s.im]
@@ -184,45 +185,10 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
       rw [abs_of_pos hvPos]
       exact hv.le
     have hheight : 1 ≤ |s.im + v| := by
-      have htri := abs_sub_abs_le_abs_sub v (-s.im)
-      rw [abs_neg, sub_neg_eq_add] at htri
+      pm_5400 v s.im
       rw [add_comm]
       linarith [abs_nonneg (s.re + a)]
-    have hzetaRe : (1 / 4 : ℝ) ≤
-        (s + ((a : ℂ) + (v : ℂ) * I)).re := by
-      simp only [add_re, ofReal_re, mul_re, I_re, ofReal_im, I_im,
-        mul_zero, zero_mul, sub_self, add_zero]
-      exact hsRe
-    have hzeta := norm_riemannZeta_le_five_mul_norm hzetaRe
-      (by simpa using hheight)
-    have hnorm :
-        ‖s + ((a : ℂ) + (v : ℂ) * I)‖ ≤ 2 * |v| := by
-      calc
-        ‖s + ((a : ℂ) + (v : ℂ) * I)‖ ≤
-            |(s + ((a : ℂ) + (v : ℂ) * I)).re| +
-              |(s + ((a : ℂ) + (v : ℂ) * I)).im| :=
-          Complex.norm_le_abs_re_add_abs_im _
-        _ = |s.re + a| + |s.im + v| := by congr 1 <;> simp
-        _ ≤ |s.re + a| + (|s.im| + |v|) := by
-          gcongr
-          exact abs_add_le _ _
-        _ ≤ 2 * |v| := by linarith
-    have hzeta' :
-        ‖riemannZeta (s + ((a : ℂ) + (v : ℂ) * I))‖ ≤
-          5 * (2 * |v|) :=
-      hzeta.trans (mul_le_mul_of_nonneg_left hnorm (by norm_num))
-    change ‖heathBrownZetaSquareMellinIntegrand s
-      ((a : ℂ) + (v : ℂ) * I)‖ ≤ g v
-    rw [heathBrownZetaSquareMellinIntegrand, norm_mul, norm_pow]
-    dsimp only [g, M]
-    calc
-      ‖Complex.Gamma ((a : ℂ) + (v : ℂ) * I)‖ *
-          ‖riemannZeta (s + ((a : ℂ) + (v : ℂ) * I))‖ ^ 2 ≤
-        (G * Real.exp (-|v|)) * (5 * (2 * |v|)) ^ 2 := by
-          exact mul_le_mul (hGamma v)
-            (pow_le_pow_left₀ (norm_nonneg _) hzeta' 2)
-            (by positivity) (by positivity)
-      _ = 100 * G * (|v| ^ 2 * Real.exp (-|v|)) := by ring
+    pm_4449
   have hNeg : IntegrableOn f (Iio (-B)) := by
     apply hg.integrableOn.mono' hCont.aestronglyMeasurable
     filter_upwards [ae_restrict_mem measurableSet_Iio] with v hv
@@ -232,46 +198,11 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
       change v < -(|s.re + a| + |s.im| + 2) at hv
       linarith
     have hheight : 1 ≤ |s.im + v| := by
-      have htri := abs_sub_abs_le_abs_sub v (-s.im)
-      rw [abs_neg, sub_neg_eq_add] at htri
+      pm_5400 v s.im
       have hlower : |v| - |s.im| ≤ |v + s.im| := htri
       rw [add_comm] at hlower
       linarith [abs_nonneg (s.re + a)]
-    have hzetaRe : (1 / 4 : ℝ) ≤
-        (s + ((a : ℂ) + (v : ℂ) * I)).re := by
-      simp only [add_re, ofReal_re, mul_re, I_re, ofReal_im, I_im,
-        mul_zero, zero_mul, sub_self, add_zero]
-      exact hsRe
-    have hzeta := norm_riemannZeta_le_five_mul_norm hzetaRe
-      (by simpa using hheight)
-    have hnorm :
-        ‖s + ((a : ℂ) + (v : ℂ) * I)‖ ≤ 2 * |v| := by
-      calc
-        ‖s + ((a : ℂ) + (v : ℂ) * I)‖ ≤
-            |(s + ((a : ℂ) + (v : ℂ) * I)).re| +
-              |(s + ((a : ℂ) + (v : ℂ) * I)).im| :=
-          Complex.norm_le_abs_re_add_abs_im _
-        _ = |s.re + a| + |s.im + v| := by congr 1 <;> simp
-        _ ≤ |s.re + a| + (|s.im| + |v|) := by
-          gcongr
-          exact abs_add_le _ _
-        _ ≤ 2 * |v| := by linarith
-    have hzeta' :
-        ‖riemannZeta (s + ((a : ℂ) + (v : ℂ) * I))‖ ≤
-          5 * (2 * |v|) :=
-      hzeta.trans (mul_le_mul_of_nonneg_left hnorm (by norm_num))
-    change ‖heathBrownZetaSquareMellinIntegrand s
-      ((a : ℂ) + (v : ℂ) * I)‖ ≤ g v
-    rw [heathBrownZetaSquareMellinIntegrand, norm_mul, norm_pow]
-    dsimp only [g, M]
-    calc
-      ‖Complex.Gamma ((a : ℂ) + (v : ℂ) * I)‖ *
-          ‖riemannZeta (s + ((a : ℂ) + (v : ℂ) * I))‖ ^ 2 ≤
-        (G * Real.exp (-|v|)) * (5 * (2 * |v|)) ^ 2 := by
-          exact mul_le_mul (hGamma v)
-            (pow_le_pow_left₀ (norm_nonneg _) hzeta' 2)
-            (by positivity) (by positivity)
-      _ = 100 * G * (|v| ^ 2 * Real.exp (-|v|)) := by ring
+    pm_4449
   have hMid : IntegrableOn f (Icc (-B) B) :=
     hCont.continuousOn.integrableOn_Icc
   have hNegClosed : IntegrableOn f (Iic (-B)) :=
@@ -291,72 +222,62 @@ private theorem integrable_heathBrownZetaSquareMellinIntegrand_of_exp
   have hAll := hLeft.union hPos
   have hAllSet : Iic B ∪ Ioi B = Set.univ := by
     ext v
-    simp only [mem_union, mem_Iic, mem_Ioi, mem_univ, iff_true]
+    pm_93 mem_union mem_Iic mem_Ioi mem_univ iff_true
     exact le_or_gt v B
   rwa [hAllSet] at hAll
 
-theorem integrable_heathBrownZetaSquareMellinIntegrand_plus
-    {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
-    (hdeltaUpper : delta ≤ 1 / 4) (hsRe : 1 / 4 ≤ s.re + delta)
+section
+variable {s : ℂ} {delta : ℝ} (hdelta : 0 < delta) (hdeltaUpper : delta ≤ 1 / 4)
+include s delta hdelta hdeltaUpper
+theorem integrable_heathBrownZetaSquareMellinIntegrand_plus (hsRe : 1 / 4 ≤ s.re + delta)
     (hpole : s.re + delta ≠ 1) :
     Integrable (fun v : ℝ =>
       heathBrownZetaSquareMellinIntegrand s
         ((delta : ℂ) + (v : ℂ) * I)) := by
-  obtain ⟨C, hC, hKernel⟩ := exists_heathBrown_Gamma_shift_kernel_bound
-  let G : ℝ := C / delta
-  have hG : 0 ≤ G := by dsimp only [G]; positivity
+  pm_4450
   have hGamma : ∀ v : ℝ,
       ‖Complex.Gamma ((delta : ℂ) + (v : ℂ) * I)‖ ≤
         G * Real.exp (-|v|) := by
     intro v
     have hk := (hKernel delta v hdelta hdeltaUpper).1
-    dsimp only [G]
-    rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hdelta).2
+    pm_7008
     calc
       ‖Complex.Gamma ((delta : ℂ) + (v : ℂ) * I)‖ * delta =
           delta * ‖Complex.Gamma ((delta : ℂ) + (v : ℂ) * I)‖ := by ring
       _ ≤
           (delta + |v|) * ‖Complex.Gamma
             ((delta : ℂ) + (v : ℂ) * I)‖ := by
-        exact mul_le_mul_of_nonneg_right
-          (by linarith [abs_nonneg v]) (norm_nonneg _)
+        pm_7275
       _ ≤ C * Real.exp (-|v|) := hk
   apply integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     (s := s) (a := delta) (G := G) (by linarith) hdelta.ne'
     hsRe hpole hG hGamma
 
-theorem integrable_heathBrownZetaSquareMellinIntegrand_minus
-    {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
-    (hdeltaUpper : delta ≤ 1 / 4) (hsRe : 1 / 4 ≤ s.re - delta)
+theorem integrable_heathBrownZetaSquareMellinIntegrand_minus (hsRe : 1 / 4 ≤ s.re - delta)
     (hpole : s.re - delta ≠ 1) :
     Integrable (fun v : ℝ =>
       heathBrownZetaSquareMellinIntegrand s
         (((-delta : ℝ) : ℂ) + (v : ℂ) * I)) := by
-  obtain ⟨C, hC, hKernel⟩ := exists_heathBrown_Gamma_shift_kernel_bound
-  let G : ℝ := C / delta
-  have hG : 0 ≤ G := by dsimp only [G]; positivity
+  pm_4450
   have hGamma : ∀ v : ℝ,
       ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ ≤
         G * Real.exp (-|v|) := by
     intro v
     have hk := (hKernel delta v hdelta hdeltaUpper).2
-    dsimp only [G]
-    rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ hdelta).2
+    pm_7008
     calc
       ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ * delta =
           delta * ‖Complex.Gamma (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ := by ring
       _ ≤
           (delta + |v|) * ‖Complex.Gamma
             (((-delta : ℝ) : ℂ) + (v : ℂ) * I)‖ := by
-        exact mul_le_mul_of_nonneg_right
-          (by linarith [abs_nonneg v]) (norm_nonneg _)
+        pm_7275
       _ ≤ C * Real.exp (-|v|) := hk
   apply integrable_heathBrownZetaSquareMellinIntegrand_of_exp
     (s := s) (a := -delta) (G := G) (by linarith) (by linarith)
     (by simpa [sub_eq_add_neg] using hsRe)
     (by simpa [sub_eq_add_neg] using hpole) hG hGamma
+end
 
 theorem integrable_heathBrownZetaSquareMellinIntegrand_right
     {s : ℂ} (hs : 0 ≤ s.re) :

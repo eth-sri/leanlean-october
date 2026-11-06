@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.ClippingProfiles
 public import OAI.NumberTheory.DirichletL.Descent.SecondFreshMeasure
 public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
 open SevenEighths.InverseMoment
 
@@ -24,7 +25,10 @@ def clippedTwist (g : 𝓢(ℝ, ℂ)) (c θ : ℝ) : 𝓢(ℝ, ℂ) :=
 def sourceDensity (g : 𝓢(ℝ, ℂ)) (c θ t : ℝ) : ℂ :=
   logPhase (t-θ) (Real.log c) * (𝓕 g) (t-θ)
 
-theorem fourier_clippedTwist (g : 𝓢(ℝ, ℂ)) (c θ t : ℝ) :
+section
+variable (g : 𝓢(ℝ, ℂ))
+include g
+theorem fourier_clippedTwist (c θ t : ℝ) :
     (𝓕 (clippedTwist g c θ)) t = sourceDensity g c θ t := by
   rw [SchwartzMap.fourier_coe]
   have he : (clippedTwist g c θ : ℝ → ℂ) =
@@ -32,20 +36,21 @@ theorem fourier_clippedTwist (g : 𝓢(ℝ, ℂ)) (c θ t : ℝ) :
   rw [he, InverseClippingProfiles.fourier_translated_twist]
   rfl
 
-theorem sourceDensity_norm (g : 𝓢(ℝ, ℂ)) (c θ t : ℝ) :
+theorem sourceDensity_norm (c θ t : ℝ) :
     ‖sourceDensity g c θ t‖ = ‖(𝓕 g) (t-θ)‖ := by
   simp [sourceDensity, logPhase_norm]
 
-theorem sourceDensity_moment_uniform (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
+theorem sourceDensity_moment_uniform (J : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ c θ : ℝ,
       Integrable (fun t : ℝ => (1+‖t‖)^J * ‖sourceDensity g c θ t‖) ∧
       (∫ t : ℝ, (1+‖t‖)^J * ‖sourceDensity g c θ t‖) ≤
         C*(1+‖θ‖)^(InverseClippingProfiles.momentOrder J) := by
-  obtain ⟨C, hC, hb⟩ := InverseClippingProfiles.translated_twist_moment_uniform g J
+  pm_98 C hC hb InverseClippingProfiles.translated_twist_moment_uniform g J
   refine ⟨C, hC, ?_⟩
   intro c θ
   simpa only [InverseClippingProfiles.fourier_translated_twist, sourceDensity,
     SchwartzMap.fourier_coe] using hb (Real.log c) θ
+end
 
 def clippedSource (W : ℝ → ℂ) (c θ x : ℝ) : ℂ :=
   logPhase θ (Real.log x) * W (c*x)
@@ -57,7 +62,7 @@ theorem clipped_log_source (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
       clippedSource W c θ (Real.exp y) := by
   simp only [clippedTwist_apply, CubicReflectionKernel.logSchwartz_apply,
     clippedSource, Real.log_exp, Real.exp_add, Real.exp_log hc]
-  rw [mul_comm (Real.exp y) c]
+  grind
 
 def rootExponent (y : Fin 6 → ℝ) : ℝ := -y 1-y 2-(y 4+y 5)/2
 
@@ -70,9 +75,10 @@ def familyDensity (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ
   (Real.exp (-3*L) : ℂ) * fullProfileDensity g
     (𝓕 (clippedTwist g₁ c₁ θ₁)) (𝓕 (clippedTwist g₂ c₂ θ₂)) b₃ p
 
-theorem familyDensity_weighted_integrable
-    (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (c₁ c₂ θ₁ θ₂ L : ℝ) (J : ℕ) :
+section
+variable (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ)) (c₁ c₂ θ₁ θ₂ L : ℝ) (J : ℕ)
+include g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ L J
+theorem familyDensity_weighted_integrable :
     Integrable (fun p : Frequency × (Fin 6 → ℝ) =>
       tripleHeight J p.1 * coordinateHeight J p.2 *
         ‖familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ L p‖) := by
@@ -80,13 +86,9 @@ theorem familyDensity_weighted_integrable
     (𝓕 (clippedTwist g₁ c₁ θ₁)) (𝓕 (clippedTwist g₂ c₂ θ₂)) b₃ J).const_mul
       (Real.exp (-3*L)) using 1
   funext p
-  simp only [familyDensity, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-    abs_of_pos (Real.exp_pos _)]
-  ring
+  pm_6268
 
-theorem familyDensity_weighted_integral
-    (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
-    (c₁ c₂ θ₁ θ₂ L : ℝ) (J : ℕ) :
+theorem familyDensity_weighted_integral :
     (∫ p : Frequency × (Fin 6 → ℝ),
       tripleHeight J p.1 * coordinateHeight J p.2 *
         ‖familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ L p‖) =
@@ -101,15 +103,14 @@ theorem familyDensity_weighted_integral
       Real.exp (-3*L) * (tripleHeight J p.1 * coordinateHeight J p.2 *
         ‖fullProfileDensity g (𝓕 (clippedTwist g₁ c₁ θ₁))
           (𝓕 (clippedTwist g₂ c₂ θ₂)) b₃ p‖) := by
-    simp only [familyDensity, norm_mul, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_pos (Real.exp_pos _)]
-    ring
+    pm_6268
   simp_rw [he]
   rw [integral_const_mul, InverseMoment.fullProfileDensity_weighted_integral]
   simp only [tripleHeight]
   rw [tripleCoefficient_weighted_integral]
   simp only [fourier_clippedTwist]
   ring
+end
 
 def logFamilyProfile (g₁ g₂ : 𝓢(ℝ, ℂ)) (Φ : 𝓢(ℝ, ℂ))
     (V : Fin 6 → ℝ → ℂ) (c₁ c₂ θ₁ θ₂ R L : ℝ) (y : Fin 6 → ℝ) : ℂ :=
@@ -144,8 +145,8 @@ theorem family_common_measure
     all_goals first | exact hy | exact (div_ne_zero_iff.mp hy).1
   obtain ⟨C₃, hC₃, hsep⟩ := paperRadialFourier_log_separation_envelope
     Φ (secondRootWindows V) secondKernelSlope M hM hb A J
-  obtain ⟨C₁, hC₁, h₁⟩ := sourceDensity_moment_uniform g₁ J
-  obtain ⟨C₂, hC₂, h₂⟩ := sourceDensity_moment_uniform g₂ J
+  pm_98 C₁ hC₁ h₁ sourceDensity_moment_uniform g₁ J
+  pm_98 C₂ hC₂ h₂ sourceDensity_moment_uniform g₂ J
   let D : ℝ := ∏ i, ∫ u : ℝ, (1+‖u‖)^J *
     ‖(𝓕 (secondRootSchwartz V hV hS i)) u‖
   have hD : 0 ≤ D := Finset.prod_nonneg (fun i _ => integral_nonneg (fun u => by positivity))
@@ -203,29 +204,31 @@ theorem clippedSource_conjugate (W : ℝ → ℂ) (c θ x : ℝ) :
   simp only [clippedSource, star_mul, SecondPassIntegration.logPhase_conjugate]
   ring
 
-def columnCenter (D B v : ℝ) : ℝ := D-B-v
-def prefactorCenter (m D B θ : ℝ) : ℝ := m-2*D+B-θ
-def radialCenter (m H θ D B : ℝ) : ℝ := m+H-θ-2*(D-B)
+def columnCenter (D B v : ℝ) : ℝ := D -B-v
+def prefactorCenter (m D B θ : ℝ) : ℝ := m-2*D +B-θ
+def radialCenter (m H θ D B : ℝ) : ℝ := m+H-θ-2*(D -B)
 
-theorem original_column_scale {Z : ℝ} (hZ : 0 < Z) (D B v : ℝ) :
-    Z^B * Z^v * Z^(columnCenter D B v) = Z^D := by
-  rw [← Real.rpow_add hZ, ← Real.rpow_add hZ]
-  congr 1
+section
+variable {Z : ℝ} (hZ : 0 < Z)
+include Z hZ
+theorem original_column_scale (D B v : ℝ) :
+    Z ^B * Z ^v * Z ^(columnCenter D B v) = Z ^D := by
+  pm_344 hZ
   unfold columnCenter
   ring
 
-theorem initial_prefactor_scale {Z : ℝ} (hZ : 0 < Z) (D B v m θ : ℝ) :
-    Z^(-D) * Z^m / (Z^θ * Z^v * Z^(columnCenter D B v)) =
-      Z^(prefactorCenter m D B θ) := by
+theorem initial_prefactor_scale (D B v m θ : ℝ) :
+    Z ^(-D) * Z ^m / (Z ^θ * Z ^v * Z ^(columnCenter D B v)) =
+      Z ^(prefactorCenter m D B θ) := by
   rw [← Real.rpow_add hZ, ← Real.rpow_add hZ, ← Real.rpow_add hZ,
     ← Real.rpow_sub hZ]
   congr 1
   unfold columnCenter prefactorCenter
   ring
 
-theorem initial_radial_scale {Z : ℝ} (hZ : 0 < Z) (D B v m θ H : ℝ) :
-    Z^m * Z^H / (Z^θ * (Z^v)^2 * (Z^(columnCenter D B v))^2) =
-      Z^(radialCenter m H θ D B) := by
+theorem initial_radial_scale (D B v m θ H : ℝ) :
+    Z ^m * Z ^H / (Z ^θ * (Z ^v)^2 * (Z ^(columnCenter D B v))^2) =
+      Z ^(radialCenter m H θ D B) := by
   simp only [pow_two]
   rw [← Real.rpow_add hZ, ← Real.rpow_add hZ, ← Real.rpow_add hZ,
     ← Real.rpow_add hZ, ← Real.rpow_add hZ, ← Real.rpow_sub hZ]
@@ -233,52 +236,56 @@ theorem initial_radial_scale {Z : ℝ} (hZ : 0 < Z) (D B v m θ H : ℝ) :
   unfold columnCenter radialCenter
   ring
 
-theorem initial_normalization_scalar {Z : ℝ} (hZ : 0 < Z) (κ η : ℝ) :
-    Z^(κ+3*η) * Real.exp (-3*(η*Real.log Z)) = Z^κ := by
-  have he : Real.exp (-3*(η*Real.log Z)) = Z^(-3*η) := by
+theorem initial_normalization_scalar (κ η : ℝ) :
+    Z ^(κ+3*η) * Real.exp (-3*(η*Real.log Z)) = Z ^κ := by
+  have he : Real.exp (-3*(η*Real.log Z)) = Z ^(-3*η) := by
     rw [Real.rpow_def_of_pos hZ]
     congr 1
     ring
   rw [he, ← Real.rpow_add hZ]
   congr 1
   ring
+end
 
 def physicalKernel (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (Z D m : ℝ) (q : Fin 6 → ℝ) : ℂ :=
-  ((Z^(-D)*Z^m/(q 1*q 2*Real.sqrt (q 4*q 5)) : ℝ) : ℂ) *
-    W₁ (q 0*q 2*q 4/Z^D) * W₂ (q 0*q 2*q 5/Z^D) *
-      paperRadialFourier Φ (Z^m*q 3/(q 1*(q 2)^2*q 4*q 5))
+  ((Z ^(-D)*Z ^m/(q 1*q 2*Real.sqrt (q 4*q 5)) : ℝ) : ℂ) *
+    W₁ (q 0*q 2*q 4/Z ^D) * W₂ (q 0*q 2*q 5/Z ^D) *
+      paperRadialFourier Φ (Z ^m*q 3/(q 1*(q 2)^2*q 4*q 5))
 
-theorem physicalKernel_eq_secondNorm (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
+section
+variable (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
+include W₁ W₂ Φ
+theorem physicalKernel_eq_secondNorm
     (Z D m : ℝ) (q : Fin 6 → ℝ) (hq : ∀ i, 0 < q i) :
     physicalKernel W₁ W₂ Φ Z D m q =
-      ((Z^(-D)*Z^m : ℝ) : ℂ) *
-        secondNormProfile (fun x => W₁ (x/Z^D)) (fun x => W₂ (x/Z^D))
-          Φ (fun _ _ => 1) (Z^m) q := by
+      ((Z ^(-D)*Z ^m : ℝ) : ℂ) *
+        secondNormProfile (fun x => W₁ (x/Z ^D)) (fun x => W₂ (x/Z ^D))
+          Φ (fun _ _ => 1) (Z ^m) q := by
   unfold physicalKernel secondNormProfile
   rw [Real.sqrt_mul (hq 4).le]
-  simp only [Finset.prod_const_one, one_mul, Complex.ofReal_div, Complex.ofReal_mul]
-  ring
+  pm_3523 Finset.prod_const_one one_mul Complex.ofReal_div Complex.ofReal_mul
 
-theorem physicalKernel_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
+theorem physicalKernel_nominal
     {Z : ℝ} (hZ : 0 < Z) (D B v m θ H : ℝ)
     (q : Fin 6 → ℝ) (hq : ∀ i, 0 < q i) :
     physicalKernel W₁ W₂ Φ Z D m q =
-      (Z^(prefactorCenter m D B θ) : ℝ) *
-        secondNormProfile W₁ W₂ Φ (fun _ _ => 1) (Z^(radialCenter m H θ D B))
-          (secondRelativeNorm q (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v))) := by
+      (Z ^(prefactorCenter m D B θ) : ℝ) *
+        secondNormProfile W₁ W₂ Φ (fun _ _ => 1) (Z ^(radialCenter m H θ D B))
+          (secondRelativeNorm q (Z ^B) (Z ^θ) (Z ^v) (Z ^H) (Z ^(columnCenter D B v))) := by
   have hn := secondNormProfile_nominal W₁ W₂ Φ
-    (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v)) (Z^m)
+    (Z ^B) (Z ^θ) (Z ^v) (Z ^H) (Z ^(columnCenter D B v)) (Z ^m)
     (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
     (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
     (Real.rpow_pos_of_pos hZ _) q hq
   rw [original_column_scale hZ D B v, initial_radial_scale hZ D B v m θ H] at hn
   rw [physicalKernel_eq_secondNorm W₁ W₂ Φ Z D m q hq, hn]
-  change ((Z^(-D)*Z^m : ℝ) : ℂ) *
-      (((Z^θ*Z^v*Z^(columnCenter D B v) : ℝ) : ℂ)⁻¹ * _) = _
+  change ((Z ^(-D)*Z ^m : ℝ) : ℂ) *
+      (((Z ^θ*Z ^v*Z ^(columnCenter D B v) : ℝ) : ℂ)⁻¹ * _) = _
   rw [← mul_assoc, ← Complex.ofReal_inv, ← Complex.ofReal_mul,
     ← div_eq_mul_inv, initial_prefactor_scale hZ D B v m θ]
   rfl
+end
 
 theorem normalizedProfile_eq_family (W₁ W₂ : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hs₁ : Function.support W₁ ⊆ Set.Icc a b) (hs₂ : Function.support W₂ ⊆ Set.Icc a b)
@@ -304,14 +311,14 @@ theorem fresh_profile_restore (W₁ W₂ w₁ w₂ : ℝ → ℂ) (Φ : 𝓢(ℝ
   unfold normalizedProfile
   rw [secondPoissonProfile_log W₁ W₂ Φ V R x hx]
   by_cases h1 : W₁ (x 0*x 2*x 4) = 0
-  · simp only [secondNormProfile, h1, mul_zero, zero_mul, zero_div]
+  pm_3429 secondNormProfile h1 mul_zero zero_mul zero_div
   by_cases h2 : W₂ (x 0*x 2*x 5) = 0
-  · simp only [secondNormProfile, h2, mul_zero, zero_mul, zero_div]
+  pm_3429 secondNormProfile h2 mul_zero zero_mul zero_div
   have hv := hV (by rw [hw₁ h1]; exact one_ne_zero) (by rw [hw₂ h2]; exact one_ne_zero)
   simp only [secondNormProfile, hv, hw₁ h1, hw₂ h2, Finset.prod_const_one, one_mul]
 
 def relativeNorm (q : Fin 6 → ℝ) (Z D B v θ H : ℝ) : Fin 6 → ℝ :=
-  secondRelativeNorm q (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v))
+  secondRelativeNorm q (Z ^B) (Z ^θ) (Z ^v) (Z ^H) (Z ^(columnCenter D B v))
 
 def relativeLog (q : Fin 6 → ℝ) (Z D B v θ H : ℝ) (i : Fin 6) : ℝ :=
   Real.log (relativeNorm q Z D B v θ H i)
@@ -334,22 +341,22 @@ theorem initial_kernel_restore (W₁ W₂ w₁ w₂ : ℝ → ℂ) (Φ : 𝓢(�
     (hV : w₁ (relativeNorm q Z D B v θ H 4) ≠ 0 →
       w₂ (relativeNorm q Z D B v θ H 5) ≠ 0 → ∀ i, V i (relativeLog q Z D B v θ H i) = 1) :
     physicalKernel W₁ W₂ Φ Z D m q =
-      (Z^(prefactorCenter m D B θ + 3*η) : ℝ) *
+      (Z ^(prefactorCenter m D B θ + 3*η) : ℝ) *
         (w₁ (relativeNorm q Z D B v θ H 4)*w₂ (relativeNorm q Z D B v θ H 5)) *
-        normalizedProfile W₁ W₂ Φ V (Z^(radialCenter m H θ D B))
+        normalizedProfile W₁ W₂ Φ V (Z ^(radialCenter m H θ D B))
           (η*Real.log Z) (relativeLog q Z D B v θ H) := by
   rw [physicalKernel_nominal W₁ W₂ Φ hZ D B v m θ H q hq]
-  have hs := fresh_profile_restore W₁ W₂ w₁ w₂ Φ V (Z^(radialCenter m H θ D B))
+  have hs := fresh_profile_restore W₁ W₂ w₁ w₂ Φ V (Z ^(radialCenter m H θ D B))
     (η*Real.log Z) (relativeNorm q Z D B v θ H)
     (relativeNorm_pos q hq hZ D B v θ H) hw₁ hw₂ hV
-  have hn : ((Z^(prefactorCenter m D B θ) : ℝ) : ℂ) =
-      (Z^(prefactorCenter m D B θ+3*η) : ℝ) * (Real.exp (-3*(η*Real.log Z)) : ℂ) := by
+  have hn : ((Z ^(prefactorCenter m D B θ) : ℝ) : ℂ) =
+      (Z ^(prefactorCenter m D B θ+3*η) : ℝ) * (Real.exp (-3*(η*Real.log Z)) : ℂ) := by
     rw [← Complex.ofReal_mul, initial_normalization_scalar hZ]
   rw [show relativeLog q Z D B v θ H =
     (fun i => Real.log (relativeNorm q Z D B v θ H i)) by rfl]
   rw [hn, mul_assoc]
   simpa only [mul_assoc, relativeNorm] using congrArg
-    (fun z : ℂ => (Z^(prefactorCenter m D B θ+3*η) : ℝ) * z) hs
+    (fun z : ℂ => (Z ^(prefactorCenter m D B θ+3*η) : ℝ) * z) hs
 
 def PhysicalIdentityAt (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (V : Fin 6 → ℝ → ℂ) (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
@@ -365,7 +372,7 @@ def PhysicalIdentityAt (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
       w₂ (relativeNorm q Z D B v θ H 5) ≠ 0 →
       ∀ i, V i (relativeLog q Z D B v θ H i) = 1) →
     physicalKernel (clippedSource W₁ c₁ θ₁) (clippedSource W₂ c₂ θ₂) Φ Z D m q =
-      (Z^(prefactorCenter m D B θ + 3*η) : ℝ) *
+      (Z ^(prefactorCenter m D B θ + 3*η) : ℝ) *
         (w₁ (relativeNorm q Z D B v θ H 4)*w₂ (relativeNorm q Z D B v θ H 5)) *
         ∫ p : Frequency × (Fin 6 → ℝ),
           familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) p *
@@ -388,7 +395,7 @@ theorem initial_physical_family_common_measure
       Integrable (fun p : Frequency × (Fin 6 → ℝ) =>
         tripleHeight J p.1 * coordinateHeight J p.2 *
           ‖familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) p‖) ∧
-      (1+Z^(radialCenter m H θ D B))^A * (∫ p : Frequency × (Fin 6 → ℝ),
+      (1+Z ^(radialCenter m H θ D B))^A * (∫ p : Frequency × (Fin 6 → ℝ),
         tripleHeight J p.1 * coordinateHeight J p.2 *
           ‖familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) p‖) ≤
         C * ((1+‖θ₁‖)^(InverseClippingProfiles.momentOrder J) *
@@ -400,7 +407,7 @@ theorem initial_physical_family_common_measure
     Φ V M hV hS hM hbox A J
   refine ⟨C, hC, ?_⟩
   intro Z D B v m θ H η hZ hL
-  obtain ⟨b₃, hb₃⟩ := hsep (Z^(radialCenter m H θ D B)) (Real.rpow_pos_of_pos hZ _)
+  obtain ⟨b₃, hb₃⟩ := hsep (Z ^(radialCenter m H θ D B)) (Real.rpow_pos_of_pos hZ _)
   refine ⟨b₃, ?_⟩
   intro c₁ c₂ θ₁ θ₂ hc₁ hc₂
   obtain ⟨he, hi, hbound⟩ := hb₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) hL
@@ -410,16 +417,16 @@ theorem initial_physical_family_common_measure
     normalizedProfile_eq_family W₁ W₂ a b ha hs₁ hs₂ hW₁ hW₂ Φ V hc₁ hc₂, he]
 
 theorem clipped_column_ratio {Z : ℝ} (hZ : 0 < Z) (N q : ℝ) :
-    q / Z^N = Z^(max 0 N-N) * (q / Z^(max 0 N)) := by
+    q / Z ^N = Z ^(max 0 N-N) * (q / Z ^(max 0 N)) := by
   rw [Real.rpow_sub hZ]
   field_simp [ne_of_gt (Real.rpow_pos_of_pos hZ N),
     ne_of_gt (Real.rpow_pos_of_pos hZ (max 0 N))]
 
 theorem clipped_column_source_identity (w : ℝ → ℂ) {Z q : ℝ}
     (hZ : 0 < Z) (hq : 0 < q) (N θ : ℝ) :
-    logPhase θ (Real.log (q/Z^N)) * w (q/Z^N) =
-      logPhase θ (Real.log (Z^(max 0 N-N))) *
-        clippedSource w (Z^(max 0 N-N)) θ (q/Z^(max 0 N)) := by
+    logPhase θ (Real.log (q/Z ^N)) * w (q/Z ^N) =
+      logPhase θ (Real.log (Z ^(max 0 N-N))) *
+        clippedSource w (Z ^(max 0 N-N)) θ (q/Z ^(max 0 N)) := by
   rw [clipped_column_ratio hZ N q]
   rw [Real.log_mul (ne_of_gt (Real.rpow_pos_of_pos hZ _))
     (ne_of_gt (div_pos hq (Real.rpow_pos_of_pos hZ _))), logPhase_add]

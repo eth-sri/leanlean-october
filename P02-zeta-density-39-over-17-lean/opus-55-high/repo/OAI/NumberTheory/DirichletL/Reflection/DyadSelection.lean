@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.TupleDyads
 public import OAI.NumberTheory.DirichletL.Reflection.TupleMembers
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] [DecidableEq σ] {N a c : Eis} {mode : Bool}
 variable (G : PrimeFamily φ) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
-    (tuples : Finset (σ→Ideal Eis)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
+    (tuples : Finset (σ→ Ideal Eis)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
     (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i) (Hrow Hslot : ℝ)
 
 omit [DecidableEq σ] in
@@ -44,8 +45,7 @@ lemma dyadicTupleControlled_at (i : Fin (columnDyadicLength Hrow+1)) (j : Fin (c
       ⟨p.val,activeTupleDyad_subset tuples Hslot j p.property⟩ hp=C i j K p hp := by
   rcases K with ⟨K,hK⟩
   rcases p with ⟨p,hpT⟩
-  have hi := (Finset.mem_filter.mp hK).2
-  have hj := (Finset.mem_filter.mp hpT).2
+  pm_547 hi Finset.mem_filter.mp hK hj hpT
   subst i
   subst j
   rfl

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PrincipalNormalizer
 public import OAI.NumberTheory.DirichletL.Detector.FiniteProductBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -40,21 +41,21 @@ theorem normalized_actual_window_residue {κ : Type*}
       (∀j∈S,∀p∈T j,0≤W j ((Ideal.absNorm p.val : ℝ)/scale j)) →
       (∀j∈S,∀p∈T j,P≤(Ideal.absNorm p.val : ℝ)) →
       (∀j∈S,∀p∈T j,IsCoprime p.val η.modulus) →
-      (∀j∈S,0<slotMass T (residueWeights W scale) j) → 1≤Z →
+      (∀j∈S,0< slotMass T (residueWeights W scale) j) → 1≤Z →
       let B := windowMultiplier η S T (fun j t => (W j t : ℂ)) scale
       let normer := sourceResidueConstant W0 W1 (∏p∈E,p) *
         (Probe.principalScalar S Z (1/6) (slotMass T (residueWeights W scale)) : ℂ)
       normer≠0 ∧
       Integrable (fun t : ℝ => fixedPrincipalResidue (∏p∈E,p)^2/6 *
-        sourceMultiplier W0 W1 (Z^(17/48 : ℝ)) Y Z (η.excludePrimes E hE.prime)
+        sourceMultiplier W0 W1 (Z ^(17/48 : ℝ)) Y Z (η.excludePrimes E hE.prime)
           ((a : ℂ)+t*I) (globalClosedCorrection η E ((a : ℂ)+t*I))
           (B ((a : ℂ)+t*I)) 1 (1/6)) ∧
       ‖sourceResidueIntegral W0 W1 (∏p∈E,p) (η.excludePrimes E hE.prime)
-          a (Z^(17/48 : ℝ)) Y Z (globalClosedCorrection η E) B / normer -
+          a (Z ^(17/48 : ℝ)) Y Z (globalClosedCorrection η E) B / normer -
           signal (η.excludePrimes E hE.prime) (sourceCorrection η E) (-11/16) Z‖ ≤
-        D*Z^(a-11/16)*P^(-(7/8 : ℝ)) := by
+        D *Z ^(a-11/16)*P^(-(7/8 : ℝ)) := by
   dsimp only
-  let : NeZero (∏p∈E,p) := ⟨fixedPrimeProduct_ne_zero E hE.prime⟩
+  pm_465 p E hE.prime
   obtain ⟨D,hD,hbound⟩ := exists_normalized_actual_source_bound E hE η ha ha2 hβ S
   refine ⟨D,hD,?_⟩
   intro W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1

@@ -1,6 +1,7 @@
 module
 public import RationalGcdDecomposition
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,16 +14,18 @@ open Finset
 namespace Montgomery.RationalMoment
 variable {ι τ : Type*}
 
-theorem square_sum_expansion (A : Finset ι) (f : ι → ℂ) :
+section
+variable (A : Finset ι)
+include A
+theorem square_sum_expansion (f : ι → ℂ) :
     ((‖∑ n ∈ A, f n‖ ^ 2 : ℝ) : ℂ) =
       ∑ n ∈ A, ∑ m ∈ A, f n * star (f m) := by
   have hh := Complex.mul_conj' (∑ n ∈ A, f n)
   rw [starRingEnd_apply, ← Complex.ofReal_pow] at hh
   rw [← hh]
-  simp only [star_sum, sum_mul, mul_sum]
-  rw [sum_comm]
+  pm_210 star_sum sum_mul mul_sum sum_comm
 
-theorem gram_energy_identity (A : Finset ι) (W : Finset τ)
+theorem gram_energy_identity (W : Finset τ)
     (K : ι → τ → ℂ) (a : ι → ℂ) :
     ((∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ A, a n * K n t * star (K n u)‖ ^ 2 : ℝ) : ℂ) =
       ∑ n ∈ A, ∑ m ∈ A, (a n * star (a m)) *
@@ -37,27 +40,17 @@ theorem gram_energy_identity (A : Finset ι) (W : Finset τ)
     _ = ∑ n ∈ A, ∑ t ∈ W, ∑ m ∈ A, ∑ u ∈ W,
         (a n * K n t * star (K n u)) * star (a m * K m t * star (K m u)) := by
       rw [sum_comm]
-      apply sum_congr rfl
-      intro n _
-      apply sum_congr rfl
-      intro t _
+      pm_156 sum_congr n t
       rw [sum_comm]
     _ = _ := by
-      apply sum_congr rfl
-      intro n _
-      rw [sum_comm]
-      apply sum_congr rfl
-      intro m _
-      apply sum_congr rfl
-      intro t _
-      apply sum_congr rfl
-      intro u _
+      pm_150 sum_congr n sum_comm m
+      pm_156 sum_congr t u
       simp only [star_mul, star_star]
       ring
 
 /-- Coefficients of modulus at most one cannot increase this difference
 energy beyond the corresponding sum over all ordered frequency pairs. -/
-theorem gram_energy_le (A : Finset ι) (W : Finset τ)
+theorem gram_energy_le (W : Finset τ)
     (K : ι → τ → ℂ) (a : ι → ℂ) (ha : ∀ n ∈ A, ‖a n‖ ≤ 1) :
     (∑ t ∈ W, ∑ u ∈ W, ‖∑ n ∈ A, a n * K n t * star (K n u)‖ ^ 2) ≤
       ∑ n ∈ A, ∑ m ∈ A, ‖∑ t ∈ W, K n t * star (K m t)‖ ^ 2 := by
@@ -66,18 +59,15 @@ theorem gram_energy_le (A : Finset ι) (W : Finset τ)
   have he : E = ‖(E : ℂ)‖ := by simp [Real.norm_eq_abs, abs_of_nonneg hE]
   change E ≤ _
   rw [he, show (E : ℂ) = _ from gram_energy_identity A W K a]
-  apply (norm_sum_le _ _).trans
-  apply sum_le_sum
-  intro n hn
-  apply (norm_sum_le _ _).trans
-  apply sum_le_sum
-  intro m hm
+  pm_244 sum_le_sum n hn
+  pm_244 sum_le_sum m hm
   rw [norm_mul, norm_mul, norm_star, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (sq_nonneg _)]
   have hab : ‖a n‖ * ‖a m‖ ≤ 1 := by
     nlinarith [ha n hn, ha m hm, norm_nonneg (a n), norm_nonneg (a m),
       mul_nonneg (sub_nonneg.mpr (ha n hn)) (sub_nonneg.mpr (ha m hm))]
-  exact (mul_le_mul_of_nonneg_right hab (sq_nonneg _)).trans_eq (one_mul _)
+  pm_5506 hab
+end
 
 theorem phase_time_difference (r t u : ℝ) :
     phase r t * star (phase r u) = phase r (t - u) := by
@@ -111,10 +101,7 @@ theorem dirichlet_difference_energy_le (A : Finset ℕ)
     _ ≤ ∑ n ∈ A, ∑ m ∈ A, ‖∑ t ∈ W, phase n t * star (phase m t)‖ ^ 2 := by
       simpa only [mul_assoc, phase_time_difference] using hh
     _ = _ := by
-      apply sum_congr rfl
-      intro n hn
-      apply sum_congr rfl
-      intro m hm
+      pm_90 sum_congr n hn m hm
       congr 2
       apply sum_congr rfl
       intro t _

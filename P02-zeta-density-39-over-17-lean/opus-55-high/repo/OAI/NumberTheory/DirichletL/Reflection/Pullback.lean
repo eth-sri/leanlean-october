@@ -16,9 +16,7 @@ variable {ι κ : Type*} [Fintype ι] [Fintype κ] {p : ι→Eis} {q : κ→Eis}
 
 omit [Fintype ι] [Fintype κ] in
 lemma pullback_generator_eq (e : κ≃ι) (h : (fun k => p (e k))=q) :
-    (fun i => q (e.symm i))=p := by
-  rw [← h]
-  simp only [Equiv.apply_symm_apply]
+    (fun i => q (e.symm i))=p := by grind
 
 def pullbackControlled (e : κ≃ι) (h : (fun k => p (e k))=q)
     (D : ControlledStratumArithmetic q N a c mode) :
@@ -43,7 +41,7 @@ theorem mixedReflectedValue_pullback
   unfold pullbackControlled
   rw [mixedReflectedValue_cast _ _ s (fun i => hq (e.symm i)) hp hc
     (fun i => hgq (e.symm i)) hgp]
-  have hj : (fun i => j (e (e.symm i)))=j := by funext i; simp only [Equiv.apply_symm_apply]
+  have hj : (fun i => j (e (e.symm i)))=j := by funext i; grind
   have he := mixedReflectedValue_reindex D e.symm s hq hc hgq
     (fun k => j (e k)) (reindexMarks e S) W X
   rw [hj,reindexMarks_symm] at he

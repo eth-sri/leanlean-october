@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairOptimizedSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,7 +24,10 @@ open Expdb
 
 namespace TaoTrudgianYang2025
 
-theorem InExponentPairTriangle.aProcess {k l : ℝ}
+section
+variable {k l : ℝ}
+include k l
+theorem InExponentPairTriangle.aProcess
     (h : InExponentPairTriangle k l) :
     InExponentPairTriangle (k/(2*k+2)) (l/(2*k+2)+1/2) := by
   have hk := h.1
@@ -38,13 +42,12 @@ theorem InExponentPairTriangle.aProcess {k l : ℝ}
     exact (div_le_iff₀ hd).mpr (by linarith)
   exact ⟨div_nonneg hk hd.le,hkhalf,by linarith,by linarith,by linarith⟩
 
-theorem isExponentPairEstimateNonAsymptotic_aProcess
-    {k l : ℝ} (hkl : ExponentPair k l) :
+theorem isExponentPairEstimateNonAsymptotic_aProcess (hkl : ExponentPair k l) :
     IsExponentPairEstimateNonAsymptotic (k/(2*k+2)) (l/(2*k+2)+1/2) := by
   intro ε hε σ hσ
   obtain ⟨δ,hδ,P,hP,D,hD,hbound⟩ := source_exponentialSum_aProcess_bound hkl hσ hε
   let C := D+5
-  have hC : 1 ≤ C := by dsimp [C]; linarith
+  pm_1608
   have hCD : D ≤ C^2 := by dsimp [C]; nlinarith
   have hC₅ : 5 ≤ C := by dsimp [C]; linarith
   have ht := hkl.inTriangle.aProcess
@@ -53,7 +56,7 @@ theorem isExponentPairEstimateNonAsymptotic_aProcess
   have hN := hsetup.one_le_scale
   have hNpos := zero_lt_one.trans_le hN
   have hNT := hsetup.scale_le_param
-  have hratio : 1 ≤ T/N := (le_div_iff₀ hNpos).mpr (by simpa using hNT)
+  pm_6237
   let Y := (T/N)^(k/(2*k+2)+ε)*N^(l/(2*k+2)+1/2+ε)
   have hY : 1 ≤ Y := by
     have h₁ := Real.one_le_rpow hratio (show 0 ≤ k/(2*k+2)+ε by linarith [ht.1])
@@ -81,9 +84,10 @@ theorem isExponentPairEstimateNonAsymptotic_aProcess
   · rw [exponentialSumAt_of_lt (by omega) F T N,norm_zero]
     exact mul_nonneg (zero_le_one.trans hC) (zero_le_one.trans hY)
 
-theorem ExponentPair.aProcess {k l : ℝ} (h : ExponentPair k l) :
+theorem ExponentPair.aProcess (h : ExponentPair k l) :
     ExponentPair (k/(2*k+2)) (l/(2*k+2)+1/2) :=
   ⟨h.inTriangle.aProcess,isExponentPairEstimate_iff_nonAsymptotic.mpr
     (isExponentPairEstimateNonAsymptotic_aProcess h)⟩
+end
 
 end TaoTrudgianYang2025

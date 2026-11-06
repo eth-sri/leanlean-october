@@ -1,9 +1,9 @@
 module
 public import CompactSmoothingEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform Convolution
@@ -13,18 +13,18 @@ def energyBox : ℝ → ℂ := (Icc (-(1/64:ℝ)) (1/64)).indicator (fun _ => (3
 
 theorem energy_box_integrable : Integrable energyBox := by
   apply (integrable_indicator_iff measurableSet_Icc).mpr
-  exact integrableOn_const isCompact_Icc.measure_lt_top.ne
+  simp_all
 
 theorem energy_box_bound (t : ℝ) : ‖energyBox t‖ ≤ 32 := by
   unfold energyBox
-  by_cases h : t ∈ Icc (-(1/64:ℝ)) (1/64)
-  · rw [indicator_of_mem h]; norm_num
-  · rw [indicator_of_notMem h]; norm_num
+  pm_1 h
+  simp_all
+  simp_all
 
 theorem energy_box_support (t : ℝ) (ht : (1/64:ℝ) < |t|) : energyBox t=0 := by
   have hn : t ∉ Icc (-(1/64:ℝ)) (1/64) := by
     intro h
-    exact not_le.mpr ht (abs_le.mpr h)
+    grind
   exact indicator_of_notMem hn _
 
 theorem energy_box_mass : (∫ t, energyBox t)=1 ∧ (∫ t, ‖energyBox t‖)=1 := by
@@ -34,7 +34,7 @@ theorem energy_box_mass : (∫ t, energyBox t)=1 ∧ (∫ t, ‖energyBox t‖)=
     norm_num
   · have he : (fun t => ‖energyBox t‖) = (Icc (-(1/64:ℝ)) (1/64)).indicator (fun _ => (32:ℝ)) := by
       funext t
-      by_cases h : t ∈ Icc (-(1/64:ℝ)) (1/64)
+      pm_1 h
       · simp only [energyBox,indicator_of_mem h]; norm_num
       · simp only [energyBox,indicator_of_notMem h]; norm_num
     rw [he,integral_indicator measurableSet_Icc,setIntegral_const,
@@ -116,8 +116,7 @@ theorem energy_pair_box_bound (t : ℝ) : ‖energyPairBox t‖ ≤ 32 := by
           (c := 32) (Filter.Eventually.of_forall (fun x => energy_box_bound (t-x)))).norm
       · exact energy_box_integrable.norm.mul_const 32
       · filter_upwards with x
-        rw [norm_mul]
-        exact mul_le_mul_of_nonneg_left (energy_box_bound _) (norm_nonneg _)
+        pm_6343 mul_le_mul_of_nonneg_left energy_box_bound
     _ = 32 := by rw [integral_mul_const,energy_box_mass.2]; norm_num
 
 theorem energy_pair_box_support (t : ℝ) (ht : (1/32:ℝ) < |t|) : energyPairBox t=0 := by

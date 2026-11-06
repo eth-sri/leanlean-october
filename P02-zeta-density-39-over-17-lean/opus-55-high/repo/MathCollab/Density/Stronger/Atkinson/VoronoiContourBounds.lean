@@ -9,17 +9,18 @@ public import MathCollab.Density.Stronger.Atkinson.OrdinaryDivisorResidue
 public import MathCollab.Density.Stronger.Atkinson.VoronoiZetaGrowth
 public import Mathlib.MeasureTheory.Integral.Asymptotics
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set MeasureTheory Filter Topology Asymptotics
 open MathCollab.Density.Contour
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem DFIVoronoiTestFunction.exists_ordinaryDivisorMellin_strip_decay
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+theorem DFIVoronoiTestFunction.exists_ordinaryDivisorMellin_strip_decay :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ : ℝ, -(1/2 : ℝ) ≤ σ → σ ≤ 3/2 → ∀ u : ℝ,
       1 ≤ |u| → ‖ordinaryDivisorMellinIntegrand g ((σ : ℂ)+(u : ℂ)*I)‖ ≤
         C / (1+|u|)^2 := by
@@ -28,15 +29,14 @@ theorem DFIVoronoiTestFunction.exists_ordinaryDivisorMellin_strip_decay
   intro σ hσ hσ' u hu
   have hz := norm_riemannZeta_voronoi_strip hσ hσ' hu
   have hm := hmel σ hσ hσ' u
-  apply (le_div_iff₀ (by positivity : 0 < (1+|u|)^2)).mpr
+  pm_569 u
   rw [ordinaryDivisorMellinIntegrand, norm_mul, norm_pow]
   calc
     _ ≤ (240*(1+|u|)^2)^2 * ‖mellin g ((σ : ℂ)+(u : ℂ)*I)‖ * (1+|u|)^2 := by gcongr
     _ = 240^2 * ((1+|u|)^6 * ‖mellin g ((σ : ℂ)+(u : ℂ)*I)‖) := by ring
     _ ≤ 240^2 * D := by gcongr
 
-theorem DFIVoronoiTestFunction.continuous_ordinaryDivisorMellin_vertical
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {σ : ℝ} (hσ : σ ≠ 1) :
+theorem DFIVoronoiTestFunction.continuous_ordinaryDivisorMellin_vertical {σ : ℝ} (hσ : σ ≠ 1) :
     Continuous (fun u : ℝ => ordinaryDivisorMellinIntegrand g ((σ : ℂ)+(u : ℂ)*I)) := by
   apply continuous_iff_continuousAt.mpr
   intro u
@@ -50,6 +50,7 @@ theorem DFIVoronoiTestFunction.continuous_ordinaryDivisorMellin_vertical
       (g := riemannZeta ^ 2 * mellin g)
       (((differentiableAt_riemannZeta hz).pow 2).mul
         (hg.differentiable_mellin _)).continuousAt hv
+end
 
 /-- Explicit analytic helper: a continuous function with a quadratic tail is integrable. -/
 theorem integrable_of_continuous_quadratic_tail {f : ℝ → ℂ} (hf : Continuous f)
@@ -66,20 +67,21 @@ theorem integrable_of_continuous_quadratic_tail {f : ℝ → ℂ} (hf : Continuo
     exact hb u (by rw [abs_of_nonpos (by linarith)]; linarith)
   · exact integrable_inv_one_add_sq.integrableAtFilter atBot
   · apply IsBigO.of_bound C
-    filter_upwards [eventually_ge_atTop (1 : ℝ)] with u hu
+    pm_359 u hu
     exact hb u (by rw [abs_of_nonneg (by linarith)]; exact hu)
   · exact integrable_inv_one_add_sq.integrableAtFilter atTop
 
-theorem DFIVoronoiTestFunction.integrable_ordinaryDivisorMellin_vertical
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {σ : ℝ}
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+theorem DFIVoronoiTestFunction.integrable_ordinaryDivisorMellin_vertical {σ : ℝ}
     (hσ : -(1/2 : ℝ) ≤ σ) (hσ' : σ ≤ 3/2) (hne : σ ≠ 1) :
     Integrable (fun u : ℝ => ordinaryDivisorMellinIntegrand g ((σ : ℂ)+(u : ℂ)*I)) := by
   obtain ⟨C,hC,hdecay⟩ := hg.exists_ordinaryDivisorMellin_strip_decay
   exact integrable_of_continuous_quadratic_tail
     (hg.continuous_ordinaryDivisorMellin_vertical hne) hC (hdecay σ hσ hσ')
 
-theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits :
     Tendsto (fun H : ℝ => HIntegral' (ordinaryDivisorMellinIntegrand g) (-1/2) (3/2) H)
         atTop (𝓝 0) ∧
       Tendsto (fun H : ℝ => HIntegral' (ordinaryDivisorMellinIntegrand g) (-1/2) (3/2) (-H))
@@ -97,26 +99,21 @@ theorem DFIVoronoiTestFunction.ordinaryDivisor_horizontal_limits
         exact hdecay x hx'.1 hx'.2 H hH)
     convert hInt using 1 <;> norm_num [HIntegral]
   have hEnv : Tendsto (fun H : ℝ => C/(1+|H|)^2*2) atTop (𝓝 0) := by
-    have ha : Tendsto (fun H : ℝ => |H|) atTop atTop :=
-      tendsto_atTop_mono' atTop (Eventually.of_forall fun H => le_abs_self H) tendsto_id
-    have hd : Tendsto (fun H : ℝ => (1+|H|)^2) atTop atTop :=
-      (tendsto_pow_atTop (by norm_num : (2 : ℕ) ≠ 0)).comp (tendsto_const_nhds.add_atTop ha)
-    have h := (tendsto_const_nhds (x := C)).div_atTop hd
+    pm_193
     simpa using h.mul_const 2
   have htop : Tendsto (fun H : ℝ => HIntegral (ordinaryDivisorMellinIntegrand g) (-1/2) (3/2) H)
       atTop (𝓝 0) := by
-    rw [tendsto_zero_iff_norm_tendsto_zero]
-    apply squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) _ hEnv
-    filter_upwards [eventually_ge_atTop (1 : ℝ)] with H hH
+    pm_6749
+    pm_359 H hH
     exact hbound H (by rw [abs_of_nonneg (by linarith)]; exact hH)
   have hbottom : Tendsto (fun H : ℝ => HIntegral (ordinaryDivisorMellinIntegrand g) (-1/2) (3/2) (-H))
       atTop (𝓝 0) := by
-    rw [tendsto_zero_iff_norm_tendsto_zero]
-    apply squeeze_zero' (Eventually.of_forall fun _ => norm_nonneg _) _ hEnv
-    filter_upwards [eventually_ge_atTop (1 : ℝ)] with H hH
+    pm_6749
+    pm_359 H hH
     simpa only [abs_neg] using hbound (-H) (by rw [abs_neg, abs_of_nonneg (by linarith)]; exact hH)
   constructor
-  · simpa [HIntegral'] using htop.const_smul (1/(2*Real.pi*I) : ℂ)
-  · simpa [HIntegral'] using hbottom.const_smul (1/(2*Real.pi*I) : ℂ)
+  pm_376 htop.const_smul
+  pm_376 hbottom.const_smul
+end
 
 end MathCollab.Density.Stronger.Atkinson

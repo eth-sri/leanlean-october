@@ -7,12 +7,11 @@ The direct Gamma estimate uses the proved GammaStrip Apache-2.0 infrastructure
 adapted from Conor Grogan f369f267b4dcfebf010c8e7baa2c9602e2960eba.
 -/
 public import MathCollab.Density.Stronger.Atkinson.VoronoiZetaGrowth
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Complex Set MeasureTheory Filter Topology
-set_option autoImplicit false
-noncomputable section
+open Complex MeasureTheory Filter Topology
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem norm_Gamma_voronoi_extended_strip {a t : ℝ}
@@ -36,9 +35,7 @@ theorem norm_Gamma_voronoi_extended_strip {a t : ℝ}
       linarith
     have hn : 1 ≤ 6*‖z‖ := by
       have h := Complex.re_le_norm z
-      simp only [z, add_re, ofReal_re, mul_re, ofReal_im, I_re, I_im,
-        mul_zero, zero_mul, sub_zero, add_zero] at h
-      linarith
+      pm_6567 z add_re sub_zero
     have hg := norm_Gamma_voronoi_strip_sharp (a := a+1) (t := t)
       (by linarith) (by linarith)
     have hrec : Gamma (((a+1 : ℝ) : ℂ) + (t : ℂ)*I) = z*Gamma z := by
@@ -53,8 +50,10 @@ theorem norm_Gamma_voronoi_extended_strip {a t : ℝ}
     change ‖Gamma z‖ ≤ 72*E
     nlinarith [norm_nonneg (Gamma z)]
 
-theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+section
+variable (q : ℕ) [NeZero q] {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16)
+include q z hlo hhi
+theorem norm_dfiPeriodicArchimedeanFactor_strip_le :
     ‖dfiPeriodicArchimedeanFactor q (1-z)‖ ≤
       72*(q:ℝ)*(1+|z.im|)*Real.exp (-(Real.pi*|z.im|)/2) := by
   have hq : 1 ≤ (q:ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne q)
@@ -64,7 +63,7 @@ theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
     simpa using Real.rpow_le_rpow_of_exponent_le hq (show ((1-z)-1).re ≤ 1 by
       simp only [sub_re, one_re]; linarith)
   have hpp : ‖(2*Real.pi:ℂ)^(-(1-z))‖ ≤ 1 := by
-    rw [show (2*Real.pi:ℂ) = ((2*Real.pi:ℝ):ℂ) by push_cast; rfl,
+    rw [show (2*Real.pi:ℂ) = ((2*Real.pi:ℝ):ℂ) by simp_all,
       Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
     apply Real.rpow_le_one_of_one_le_of_nonpos
     · nlinarith [Real.pi_gt_three]
@@ -73,7 +72,7 @@ theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
     (by simp only [sub_re, one_re]; linarith)
     (by simp only [sub_re, one_re]; linarith)
   rw [Complex.re_add_im] at hG
-  simp only [sub_im, one_im, zero_sub, abs_neg] at hG
+  pm_298 sub_im one_im zero_sub abs_neg hG
   unfold dfiPeriodicArchimedeanFactor
   rw [norm_mul, norm_mul]
   calc
@@ -82,8 +81,7 @@ theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
         (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+theorem norm_dfiVoronoiMinusMultiplier_strip_le :
     ‖dfiVoronoiMinusMultiplier q z‖ ≤
       10368*(q:ℝ)^3*(1+|z.im|)^2 := by
   have hbranch : ‖cexp (Real.pi*I*(1-z)) + cexp (-Real.pi*I*(1-z))‖ ≤
@@ -116,8 +114,7 @@ theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
       rw [show (2:ℝ)*(-(Real.pi*|z.im|)/2)+Real.pi*|z.im| = 0 by ring,
         Real.exp_zero, mul_one]
 
-theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+theorem norm_dfiVoronoiPlusMultiplier_strip_le :
     ‖dfiVoronoiPlusMultiplier q z‖ ≤
       10368*(q:ℝ)^3*(1+|z.im|)^2 := by
   have hF := norm_dfiPeriodicArchimedeanFactor_strip_le q hlo hhi
@@ -132,5 +129,6 @@ theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
   calc
     _ ≤ 2*(q:ℝ)*(72*(q:ℝ)*(1+|z.im|))^2 := by gcongr
     _ = _ := by ring
+end
 
 end MathCollab.Density.Stronger.Atkinson

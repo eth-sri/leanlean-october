@@ -2,11 +2,11 @@ module
 public import MathCollab.Density.FixedBandError
 public import MathCollab.Density.CompletePairs
 public import Mathlib.Data.Nat.Log
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Real Complex Set
-open scoped BigOperators
 
 noncomputable section
 namespace MathCollab.Density
@@ -19,8 +19,7 @@ theorem mem_reflectionNatBand (L H : ℝ) (m : ℕ) :
   constructor
   · exact fun hm => (Finset.mem_filter.mp hm).2
   · intro hm
-    apply Finset.mem_filter.mpr
-    refine ⟨Finset.mem_Icc.mpr ⟨by have := hm.1; omega, ?_⟩, hm⟩
+    pm_6293
     have hh := hm.2.2.trans (Nat.le_ceil (4*H/(Real.pi*L)))
     exact_mod_cast hh
 
@@ -29,20 +28,20 @@ theorem sum_reflectionBand_eq_nat {E : Type*} [AddCommMonoid E]
     (∑ m ∈ reflectionBand L H, f m) = ∑ m ∈ reflectionNatBand L H, f (m : ℤ) := by
   apply Finset.sum_bij (fun m _ => m.toNat)
   · intro m hm
-    have hb := (mem_reflectionBand L H m).1 hm
+    pm_8941 mem_reflectionBand
     apply (mem_reflectionNatBand L H _).2
     simpa only [Int.toNat_of_nonneg hb.1.le] using hb
   · intro m hm n hn he
-    have hm0 := ((mem_reflectionBand L H m).1 hm).1.le
-    have hn0 := ((mem_reflectionBand L H n).1 hn).1.le
+    pm_7591 hm0 m hm
+    pm_7591 hn0 n hn
     have hh := congrArg (fun x : ℕ => (x : ℤ)) he
-    simpa only [Int.toNat_of_nonneg hm0, Int.toNat_of_nonneg hn0] using hh
+    grind
   · intro n hn
     refine ⟨(n : ℤ), (mem_reflectionBand L H _).2 ((mem_reflectionNatBand L H n).1 hn), ?_⟩
     simp
   · intro m hm
-    have hm0 := ((mem_reflectionBand L H m).1 hm).1.le
-    simp only [Int.toNat_of_nonneg hm0]
+    pm_7591 hm0 m hm
+    grind
 
 def dyadicExponents (L H : ℝ) : Finset ℕ := (reflectionNatBand L H).image Nat.log2
 
@@ -52,7 +51,7 @@ theorem log2_block_bounds {m : ℕ} (hm : 0 < m) : 2^m.log2 ≤ m ∧ m < 2*(2^m
   constructor
   · exact (Nat.le_log2 hm.ne').1 le_rfl
   · have hh := (Nat.log2_lt hm.ne').1 (Nat.lt_succ_self m.log2)
-    simpa only [pow_succ, mul_comm] using hh
+    grind
 
 theorem mem_dyadicExponents (L H : ℝ) (j : ℕ) :
     j ∈ dyadicExponents L H ↔ ∃ m ∈ reflectionNatBand L H, m.log2 = j := by
@@ -62,7 +61,7 @@ theorem dyadicExponent_scale_bounds {L H : ℝ} (hL : 0 < L) (_hH : 0 < H)
     {j : ℕ} (hj : j ∈ dyadicExponents L H) :
     H/(40*Real.pi*L) ≤ (2 : ℝ)^j ∧ (2 : ℝ)^j ≤ 4*H/(Real.pi*L) := by
   obtain ⟨m, hm, he⟩ := (mem_dyadicExponents L H j).1 hj
-  have hb := (mem_reflectionNatBand L H m).1 hm
+  pm_8941 mem_reflectionNatBand
   have hmpos : 0 < m := by have := hb.1; omega
   have hbounds := log2_block_bounds hmpos
   rw [he] at hbounds
@@ -74,9 +73,12 @@ theorem dyadicExponent_scale_bounds {L H : ℝ} (hL : 0 < L) (_hH : 0 < H)
   · have hh := (div_le_iff₀ (by positivity : 0 < 20*Real.pi*L)).1 hlo
     apply (div_le_iff₀ (by positivity : 0 < 40*Real.pi*L)).2
     nlinarith [mul_lt_mul_of_pos_right hmhi (show 0 < 20*Real.pi*L by positivity)]
-  · exact hmlo.trans hhi
+  grind
 
-theorem dyadicExponents_card_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H) :
+section
+variable {L H : ℝ} (hL : 0 < L) (hH : 0 < H)
+include L H hL hH
+theorem dyadicExponents_card_le :
     (dyadicExponents L H).card ≤ 10 := by
   by_cases hn : (dyadicExponents L H).Nonempty
   · let j₀ := (dyadicExponents L H).min' hn
@@ -92,24 +94,24 @@ theorem dyadicExponents_card_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H) :
       have hhj := (dyadicExponent_scale_bounds hL hH hj).2
       have hh₀ := (dyadicExponent_scale_bounds hL hH hj₀).1
       have he : 4*H/(Real.pi*L) = 160*(H/(40*Real.pi*L)) := by field_simp; ring
-      rw [he] at hhj
-      rw [pow_add] at hp
+      pm_4303 he hhj pow_add hp
       norm_num at hp
-      have hpos : 0 < (2 : ℝ)^j₀ := by positivity
+      pm_393 hpos j₀
       nlinarith
     exact (Finset.card_le_card hs).trans (by simp; omega)
-  · simp only [Finset.not_nonempty_iff_eq_empty.mp hn, Finset.card_empty, Nat.zero_le]
+  simp_all
 
-theorem reflectionBlocks_card_le {L H : ℝ} (hL : 0 < L) (hH : 0 < H) :
+theorem reflectionBlocks_card_le :
     (reflectionBlocks L H).card ≤ 10 :=
   Finset.card_image_le.trans (dyadicExponents_card_le hL hH)
 
-theorem reflectionBlock_scale_bounds {L H : ℝ} (hL : 0 < L) (hH : 0 < H)
+theorem reflectionBlock_scale_bounds
     {M : ℕ} (hM : M ∈ reflectionBlocks L H) :
     0 < M ∧ H/(40*Real.pi*L) ≤ (M : ℝ) ∧ (M : ℝ) ≤ 4*H/(Real.pi*L) := by
   obtain ⟨j, hj, rfl⟩ := Finset.mem_image.mp hM
   have hh := dyadicExponent_scale_bounds hL hH hj
   exact ⟨by positivity, by exact_mod_cast hh.1, by exact_mod_cast hh.2⟩
+end
 
 theorem log2_eq_iff_block {m j : ℕ} (hm : 0 < m) :
     m.log2 = j ↔ 2^j ≤ m ∧ m < 2*(2^j) := by
@@ -138,11 +140,7 @@ theorem natBand_filter_log2 (L H : ℝ) (j : ℕ) :
 
 theorem dirichletPhase_add (x a b : ℝ) :
     dirichletPhase x (a+b) = dirichletPhase x a * dirichletPhase x b := by
-  unfold dirichletPhase
-  rw [← Complex.exp_add]
-  congr 1
-  push_cast
-  ring
+  pm_5155 dirichletPhase Complex.exp_add
 
 theorem dirichletPhase_mul {x y : ℝ} (hx : 0 < x) (hy : 0 < y) (v : ℝ) :
     dirichletPhase (x*y) v = dirichletPhase x v * dirichletPhase y v := by

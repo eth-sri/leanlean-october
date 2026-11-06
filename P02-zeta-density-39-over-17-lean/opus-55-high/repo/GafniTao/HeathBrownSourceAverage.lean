@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownShiftAverage
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,6 @@ therefore proves the paper's `O(H^2)` remainder with constant one.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -34,28 +34,23 @@ theorem heathBrownSourceShiftSum_eq_interval
   unfold heathBrownSourceShiftSum
   rw [← Finset.image_add_right_Icc 1 (N - H) h, Finset.sum_image]
   intro a ha b hb hab
-  exact Nat.add_right_cancel hab
+  grind
 
-theorem heathBrown_source_shift_interval_subset
-    {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) :
-    Finset.Icc (1 + h) (N - H + h) ⊆ Finset.Icc 1 N := by
-  intro m hm
-  simp only [Finset.mem_Icc] at hm ⊢
-  constructor
-  · omega
-  · omega
+section
+variable {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H)
+include N H h hHN hh
+theorem heathBrown_source_shift_interval_subset :
+    Finset.Icc (1 + h) (N - H + h) ⊆ Finset.Icc 1 N := by grind
 
-theorem heathBrown_source_shift_omitted_card
-    {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) :
+theorem heathBrown_source_shift_omitted_card :
     (Finset.Icc 1 N \ Finset.Icc (1 + h) (N - H + h)).card = H := by
-  let S := Finset.Icc 1 N
-  let T := Finset.Icc (1 + h) (N - H + h)
+  pm_1543
   have hTS : T ⊆ S := by
-    exact heathBrown_source_shift_interval_subset hHN hh
+    grind
   have hinter : T ∩ S = T := Finset.inter_eq_left.mpr hTS
   have hcardS : S.card = N := by
     dsimp only [S]
-    simp [Nat.card_Icc]
+    simp_all
   have hcardT : T.card = N - H := by
     dsimp only [T]
     simp [Nat.card_Icc]
@@ -64,13 +59,11 @@ theorem heathBrown_source_shift_omitted_card
   omega
 
 /-- A fixed source shift omits at most `H` unit-modulus summands. -/
-theorem norm_heathBrownExponentialSum_sub_sourceShift_le
-    {N H h : ℕ} (hHN : H ≤ N) (hh : h ≤ H) (f : ℝ → ℝ) :
+theorem norm_heathBrownExponentialSum_sub_sourceShift_le (f : ℝ → ℝ) :
     ‖heathBrownExponentialSum N f -
         heathBrownSourceShiftSum N H f h‖ ≤ H := by
   rw [heathBrownSourceShiftSum_eq_interval]
-  let S := Finset.Icc 1 N
-  let T := Finset.Icc (1 + h) (N - H + h)
+  pm_1543
   let a : ℕ → ℂ := fun m => heathBrownPhase (f (m : ℝ))
   have hTS : T ⊆ S := heathBrown_source_shift_interval_subset hHN hh
   have hsplit := Finset.sum_sdiff hTS (f := a)
@@ -87,6 +80,7 @@ theorem norm_heathBrownExponentialSum_sub_sourceShift_le
       simp
     _ = H := by
       exact_mod_cast heathBrown_source_shift_omitted_card hHN hh
+end
 
 /-- Exact finite identity behind the `O(H^2)` term. -/
 theorem heathBrown_source_average_sub_eq

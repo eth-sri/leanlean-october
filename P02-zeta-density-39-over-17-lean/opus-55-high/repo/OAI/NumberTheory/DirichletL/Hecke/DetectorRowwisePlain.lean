@@ -1,12 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseMarked
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwisePlain
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorRowwisePolynomial
@@ -15,7 +15,7 @@ lemma norm_sum_sq_le (u v : ℂ) : ‖u+v‖^2≤2*(‖u‖^2+‖v‖^2) := by
   have h := norm_add_le u v
   nlinarith [norm_nonneg (u+v),norm_nonneg u,norm_nonneg v,sq_nonneg (‖u‖-‖v‖)]
 
-theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
+theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→ Character)
     (W : ℝ→ℂ) (D : ℝ) (hD : 0<D) (S : Finset (Ideal O))
     (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S)
     (P : ι→ℂ) (a b c d E : ℝ) (hab : a≤b) (hcd : c≤d) (hE : 0≤E)
@@ -32,27 +32,18 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
     if n=0 then Q 0 i x y*Q 0 i x y*P i
     else if n=1 then 2*Q 0 i x y*Q 1 i x y*P i
     else 2*(Q 1 i x y*Q 1 i x y+Q 0 i x y*Q 2 i x y)*P i
-  have hc1 := logProfile_cover W D S hc
-  have hc2 := logProfile_cover (logProfile W) D S hc1
+  pm_6051
   have cq (n : ℕ) (i : ι) (hn : n≤2) : Continuous (Function.uncurry (Q n i)) := by
     interval_cases n
-    · exact polynomial_continuous (χ i) false W D hD S hc
-    · exact polynomial_continuous (χ i) false (logProfile W) D hD S hc1
-    · exact polynomial_continuous (χ i) false (logProfile (logProfile W)) D hD S hc2
+    pm_3135 false
   have qx (n : ℕ) (i : ι) (x y : ℝ) (hn : n≤1) :
       HasDerivAt (fun u => Q n i u y) (-Q (n+1) i x y) x := by
-    interval_cases n
-    · exact polynomial_sigma_deriv (χ i) false W D x y hD S hc
-    · exact polynomial_sigma_deriv (χ i) false (logProfile W) D x y hD S hc1
+    pm_1225 polynomial_sigma_deriv
   have qy (n : ℕ) (i : ι) (x y : ℝ) (hn : n≤1) :
       HasDerivAt (Q n i x) (I*Q (n+1) i x y) y := by
-    interval_cases n
-    · exact polynomial_freq_deriv (χ i) false W D x y hD S hc
-    · exact polynomial_freq_deriv (χ i) false (logProfile W) D x y hD S hc1
+    pm_1225 polynomial_freq_deriv
   have cm (n : ℕ) (i : ι) (hn : n≤2) : Continuous (Function.uncurry (M n i)) := by
-    have c0 := cq 0 i (by norm_num)
-    have c1 := cq 1 i (by norm_num)
-    have c2 := cq 2 i (by norm_num)
+    pm_5352 cq
     change Continuous (fun p : ℝ×ℝ => M n i p.1 p.2)
     change Continuous (fun p : ℝ×ℝ => Q 0 i p.1 p.2) at c0
     change Continuous (fun p : ℝ×ℝ => Q 1 i p.1 p.2) at c1
@@ -60,22 +51,10 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
     interval_cases n <;> dsimp [M] <;> fun_prop
   have dx (n : ℕ) (i : ι) (x y : ℝ) (hn : n≤1) :
       HasDerivAt (fun u => M n i u y) (-M (n+1) i x y) x := by
-    interval_cases n
-    · convert ((qx 0 i x y (by norm_num)).mul (qx 0 i x y (by norm_num))).mul_const (P i) using 1
-      · ext u; simp [M]
-      · simp [M]; ring
-    · convert (((qx 0 i x y (by norm_num)).mul (qx 1 i x y (by norm_num))).const_mul 2).mul_const (P i) using 1
-      · ext u; dsimp [M]; ring
-      · simp [M]; ring
+    pm_3132 qx
   have dy (n : ℕ) (i : ι) (x y : ℝ) (hn : n≤1) :
       HasDerivAt (M n i x) (I*M (n+1) i x y) y := by
-    interval_cases n
-    · convert ((qy 0 i x y (by norm_num)).mul (qy 0 i x y (by norm_num))).mul_const (P i) using 1
-      · ext u; simp [M]
-      · simp [M]; ring
-    · convert (((qy 0 i x y (by norm_num)).mul (qy 1 i x y (by norm_num))).const_mul 2).mul_const (P i) using 1
-      · ext u; dsimp [M]; ring
-      · simp [M]; ring
+    pm_3132 qy
   have he (n : ℕ) (hn : n≤2) (x : ℝ) (hx : x∈Icc a b) (y : ℝ) (hy : y∈Icc c d) :
       ∑ i∈rows, ‖M n i x y‖^2≤16*E := by
     have e00 := henergy 0 0 (by norm_num) x hx y hy
@@ -115,6 +94,5 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
 
 end SevenEighths.HeckeDetectorRowwisePlain
 
-end
 
 end OAI

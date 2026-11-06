@@ -31,7 +31,7 @@ theorem integral_inverseMorse_window
       ∫ z in (-H)..H, ((deriv (modelPhaseMorseInverse F v) z : ℝ) : ℂ)*
         g (modelPhaseMorseInverse F v z) := by
   have hs' : uIcc (-H) H ⊆ modelPhaseMorseRange F v := by
-    rwa [uIcc_of_le (by linarith : -H ≤ H)]
+    simp_all
   have hd : ∀ z ∈ uIcc (-H) H, HasDerivAt (modelPhaseMorseInverse F v)
       (deriv (modelPhaseMorseInverse F v) z) z := fun z hz => (modelPhaseMorseInverse_hasStrictDerivAt hσ hδ hF hv (hs' hz)).hasDerivAt.differentiableAt.hasDerivAt
   have hc : ContinuousOn (deriv (modelPhaseMorseInverse F v)) (uIcc (-H) H) := by
@@ -42,7 +42,7 @@ theorem integral_inverseMorse_window
     rintro u ⟨z,hz,rfl⟩
     exact modelPhaseMorseInverse_mem (hs' hz)
   have he := intervalIntegral.integral_deriv_smul_comp' hd hc (hg.mono hi)
-  simpa only [Function.comp_def,Complex.real_smul] using he.symm
+  simp_all
 
 theorem modelPhaseMorse_window_integral
     {χ F : ℝ → ℝ} {σ δ v H : ℝ}

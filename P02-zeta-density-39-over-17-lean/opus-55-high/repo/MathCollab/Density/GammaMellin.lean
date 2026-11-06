@@ -8,14 +8,13 @@ public import Mathlib.Analysis.MellinInversion
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
 public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Set MeasureTheory Real Complex
 open scoped Interval
 
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.GammaMellin
 
 theorem norm_Gamma_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
@@ -32,21 +31,19 @@ theorem norm_Gamma_le_realGamma_re {s : ℂ} (hs : 0 < s.re) :
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
       rw [norm_mul, Complex.norm_real,
         Complex.norm_cpow_eq_rpow_re_of_pos hx]
-      simp [abs_of_pos (Real.exp_pos (-x))]
+      simp_all
     _ = Real.Gamma s.re := (Real.Gamma_eq_integral hs).symm
 
+section
+variable {sigma t : ℝ} (hsigma : 0 < sigma)
+include sigma t hsigma
 /-- Two Gamma recurrences give a quadratic vertical bound on every positive
 vertical line. -/
-theorem im_sq_mul_norm_Gamma_vertical_le
-    {sigma t : ℝ} (hsigma : 0 < sigma) :
+theorem im_sq_mul_norm_Gamma_vertical_le :
     t ^ 2 * ‖Complex.Gamma ((sigma : ℂ) + t * Complex.I)‖ ≤
       Real.Gamma (sigma + 2) := by
-  let z : ℂ := (sigma : ℂ) + t * Complex.I
-  have hz : z ≠ 0 := by
-    intro hz0
-    have hre := congrArg Complex.re hz0
-    simp [z] at hre
-    linarith
+  pm_7590 z t Complex.I
+  pm_447 hz0 hre
   have hzadd : z + 1 ≠ 0 := by
     intro hz0
     have hre := congrArg Complex.re hz0
@@ -62,14 +59,12 @@ theorem im_sq_mul_norm_Gamma_vertical_le
       Complex.Gamma (z + 2) = Complex.Gamma ((z + 1) + 1) := by ring_nf
       _ = (z + 1) * Complex.Gamma (z + 1) :=
         Complex.Gamma_add_one (z + 1) hzadd
-      _ = (z + 1) * z * Complex.Gamma z := by
-        rw [Complex.Gamma_add_one z hz]
-        simp only [mul_assoc]
+      _ = (z + 1) * z * Complex.Gamma z := by grind
   have hproduct :
       ‖z + 1‖ * ‖z‖ * ‖Complex.Gamma z‖ ≤
         Real.Gamma (sigma + 2) := by
     rw [hrec, norm_mul, norm_mul] at hGamma
-    have hre : (z + 2).re = sigma + 2 := by simp [z]
+    have hre : (z + 2).re = sigma + 2 := by aesop
     rw [hre] at hGamma
     exact hGamma
   have himz : |t| ≤ ‖z‖ := by
@@ -82,29 +77,28 @@ theorem im_sq_mul_norm_Gamma_vertical_le
   exact (mul_le_mul_of_nonneg_right himsq (norm_nonneg _)).trans hproduct
 
 /-- An integrable Cauchy majorant for Gamma on a positive vertical line. -/
-theorem norm_Gamma_vertical_le_inv_one_add_sq
-    {sigma t : ℝ} (hsigma : 0 < sigma) :
+theorem norm_Gamma_vertical_le_inv_one_add_sq :
     ‖Complex.Gamma ((sigma : ℂ) + t * Complex.I)‖ ≤
       (Real.Gamma sigma + Real.Gamma (sigma + 2)) * (1 + t ^ 2)⁻¹ := by
-  let z : ℂ := (sigma : ℂ) + t * Complex.I
-  have hzre : z.re = sigma := by simp [z]
+  pm_7590 z t Complex.I
+  have hzre : z.re = sigma := by aesop
   have hzero := norm_Gamma_le_realGamma_re
-    (s := z) (by simpa [hzre] using hsigma)
+    (s := z) (by grind)
   rw [hzre] at hzero
   have hsquare := im_sq_mul_norm_Gamma_vertical_le hsigma (t := t)
-  have hden : 0 < 1 + t ^ 2 := by positivity
+  pm_5769 t
   change ‖Complex.Gamma z‖ ≤
     (Real.Gamma sigma + Real.Gamma (sigma + 2)) / (1 + t ^ 2)
   rw [le_div_iff₀ hden]
-  calc
-    ‖Complex.Gamma z‖ * (1 + t ^ 2) =
-        ‖Complex.Gamma z‖ + t ^ 2 * ‖Complex.Gamma z‖ := by ring
-    _ ≤ Real.Gamma sigma + Real.Gamma (sigma + 2) :=
-      add_le_add hzero hsquare
+  grind
+end
 
+section
+variable {sigma : ℝ} (hsigma : 0 < sigma)
+include sigma hsigma
 /-- Gamma is vertically integrable on every line `Re s = sigma > 0`.
 Mathlib does not currently expose this specialization directly. -/
-theorem verticalIntegrable_Gamma {sigma : ℝ} (hsigma : 0 < sigma) :
+theorem verticalIntegrable_Gamma :
     Complex.VerticalIntegrable Complex.Gamma sigma := by
   let C : ℝ := Real.Gamma sigma + Real.Gamma (sigma + 2)
   have hmajor : Integrable (fun t : ℝ => C * (1 + t ^ 2)⁻¹) :=
@@ -125,27 +119,29 @@ theorem verticalIntegrable_Gamma {sigma : ℝ} (hsigma : 0 < sigma) :
 
 /-- The exponentially decaying profile is Mellin convergent in every positive
 strip. -/
-theorem mellinConvergent_exp_neg {sigma : ℝ} (hsigma : 0 < sigma) :
+theorem mellinConvergent_exp_neg :
     MellinConvergent (fun x : ℝ => (Real.exp (-x) : ℂ)) (sigma : ℂ) := by
   have h := Complex.GammaIntegral_convergent (s := (sigma : ℂ)) (by simpa using hsigma)
   simpa only [MellinConvergent, smul_eq_mul, mul_comm] using h
 
 /-- The Mellin transform of `exp(-x)` is vertically integrable on a positive
 line, via its pointwise identification with Gamma there. -/
-theorem verticalIntegrable_mellin_exp_neg {sigma : ℝ} (hsigma : 0 < sigma) :
+theorem verticalIntegrable_mellin_exp_neg :
     Complex.VerticalIntegrable
       (mellin fun x : ℝ => (Real.exp (-x) : ℂ)) sigma := by
   have hGamma := verticalIntegrable_Gamma hsigma
   apply hGamma.congr
   filter_upwards [] with t
   rw [← Complex.GammaIntegral_eq_mellin]
-  have hsline : 0 < (((sigma : ℂ) + t * Complex.I).re) := by
-    simpa using hsigma
+  pm_1310
   exact Complex.Gamma_eq_integral hsline
+end
 
+section
+variable {sigma x : ℝ} (hsigma : 0 < sigma) (hx : 0 < x)
+include sigma x hsigma hx
 /-- Exact inverse Mellin formula with the `GammaIntegral` presentation. -/
-theorem mellinInv_GammaIntegral_eq_exp_neg
-    {sigma x : ℝ} (hsigma : 0 < sigma) (hx : 0 < x) :
+theorem mellinInv_GammaIntegral_eq_exp_neg :
     mellinInv sigma Complex.GammaIntegral x = (Real.exp (-x) : ℂ) := by
   rw [Complex.GammaIntegral_eq_mellin]
   exact mellinInv_mellin_eq sigma (fun y : ℝ => (Real.exp (-y) : ℂ)) hx
@@ -156,11 +152,9 @@ theorem mellinInv_GammaIntegral_eq_exp_neg
 
 /-- Exact inverse Mellin formula with the meromorphic Gamma function used in
 Appendix (A.4). -/
-theorem mellinInv_Gamma_eq_exp_neg
-    {sigma x : ℝ} (hsigma : 0 < sigma) (hx : 0 < x) :
+theorem mellinInv_Gamma_eq_exp_neg :
     mellinInv sigma Complex.Gamma x = (Real.exp (-x) : ℂ) := by
-  have hGI := mellinInv_GammaIntegral_eq_exp_neg hsigma hx
-  rw [mellinInv] at hGI
+  pm_126 hGI mellinInv_GammaIntegral_eq_exp_neg hsigma hx mellinInv
   rw [mellinInv]
   have hInt :
       (∫ t : ℝ, (x : ℂ) ^ (-(sigma + t * Complex.I)) •
@@ -169,16 +163,14 @@ theorem mellinInv_Gamma_eq_exp_neg
           Complex.GammaIntegral (sigma + t * Complex.I) := by
     apply integral_congr_ae
     filter_upwards [] with t
-    have hsline : 0 < (((sigma : ℂ) + t * Complex.I).re) := by
-      simpa using hsigma
+    pm_1310
     rw [Complex.Gamma_eq_integral hsline]
   rw [hInt]
   exact hGI
 
 /-- The inverse Mellin theorem expanded with the exact number-theoretic
 `1/(2*pi)` vertical-line normalization. -/
-theorem exp_neg_eq_gamma_vertical_integral
-    {sigma x : ℝ} (hsigma : 0 < sigma) (hx : 0 < x) :
+theorem exp_neg_eq_gamma_vertical_integral :
     (Real.exp (-x) : ℂ) =
       (((1 / (2 * Real.pi) : ℝ) : ℂ) *
         ∫ t : ℝ, Complex.Gamma ((sigma : ℂ) + t * Complex.I) *
@@ -187,13 +179,14 @@ theorem exp_neg_eq_gamma_vertical_integral
   rw [mellinInv] at h
   convert h
   simp [smul_eq_mul, mul_comm]
+end
 
 /-- Reversing a positive real quotient turns the negative Mellin exponent
 into the positive exponent used in Appendix (A.4). -/
 theorem cpow_neg_div_eq_reverse_cpow
     {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) (z : ℂ) :
     ((x / Y : ℝ) : ℂ) ^ (-z) = ((Y / x : ℝ) : ℂ) ^ z := by
-  have hxy : 0 < x / Y := div_pos hx hY
+  pm_5440 hxy x Y hx hY
   have harg : (((x / Y : ℝ) : ℂ)).arg ≠ Real.pi := by
     rw [Complex.arg_ofReal_of_nonneg hxy.le]
     exact ne_of_lt Real.pi_pos

@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerQuadrupleCount
 public import LaterPairs.Native.RobertSargosPrimitiveSystem
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -25,8 +26,10 @@ theorem robertSargos_product_key_injective {p q : RobertSargosPoint}
   cases q
   simp_all [robertSargosProductKey]
 
+section
+variable (S : Finset RobertSargosPoint) {R H Q δ : ℝ}
+include S R H Q δ
 theorem robertSargos_product_image_card_le_box
-    (S : Finset RobertSargosPoint) {R H Q δ : ℝ}
     (hR : 0 ≤ R) (hH : 0 < H) (hQ : 0 < Q) (hδ : 0 ≤ δ)
     (hmem : ∀ p ∈ S, RobertSargosPrimitiveSystem R H Q δ p) :
     ((S.image robertSargosProductKey).card:ℝ) ≤
@@ -53,14 +56,11 @@ theorem robertSargos_product_image_card_le_box
   ring
 
 theorem robertSargos_product_image_card_le
-    (S : Finset RobertSargosPoint) {R H Q δ : ℝ}
     (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q) (hδ : 1 ≤ δ)
     (hmem : ∀ p ∈ S, RobertSargosPrimitiveSystem R H Q δ p) :
     ((S.image robertSargosProductKey).card:ℝ) ≤ 570*δ*R*H*Q^2 := by
-  have hR0 : 0 ≤ R := by linarith
-  have hH0 : 0 ≤ H := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
-  have hδ0 : 0 ≤ δ := by linarith
+  pm_255 hR0 R hH0 H
+  pm_255 hQ0 Q hδ0 δ
   have hδQ : 1 ≤ δ*Q := one_le_mul_of_one_le_of_one_le hδ hQ
   have hlast : 2*(δ+8)*Q+1 ≤ 19*δ*Q := by
     have hm := mul_le_mul_of_nonneg_right hδ hQ0
@@ -76,5 +76,6 @@ theorem robertSargos_product_image_card_le
           (by linarith) (by positivity) (by positivity))
         hlast (by positivity) (by positivity)
     _ = _ := by ring
+end
 
 end TaoTrudgianYang2025

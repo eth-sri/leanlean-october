@@ -1,6 +1,7 @@
 module
 public import DensityEnergyGM.DifferenceLevelCount
 public import DensityEnergyGM.FiniteLayerCake
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,7 @@ theorem sum_differenceFloor_values (W : Finset ℝ) (g : ℤ → ℝ) :
       ∑ j ∈ differenceFloorSupport W, (differenceFloorCount W j : ℝ) * g j := by
   have hmaps : ∀ q ∈ differenceOrdinatePairs W,
       differenceFloor q ∈ differenceFloorSupport W := by
-    intro q hq
-    exact Finset.mem_image.mpr ⟨q, hq, rfl⟩
+    pm_4831 q hq
   have h := Finset.sum_fiberwise_of_maps_to' hmaps g
   simpa only [Finset.sum_const, nsmul_eq_mul, differenceFloorCount] using h.symm
 

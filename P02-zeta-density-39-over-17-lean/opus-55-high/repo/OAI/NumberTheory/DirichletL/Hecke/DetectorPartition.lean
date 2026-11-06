@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessArithmetic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.HeckeDetectorPartition
 open DyadicTransfer
 
@@ -17,7 +18,7 @@ theorem partition (V : ℝ → ℂ)
     (∑ j ∈ Finset.range (J+1), annularCutoff V ((n : ℝ)/(2 : ℝ)^j)) = 1 := by
   rw [partial_partition]
   rw [hsmall _ (by positivity) ((div_le_one (by positivity)).mpr hJ)]
-  rw [hlarge _ (by exact_mod_cast (show 2 ≤ 2*n by omega))]
+  rw [hlarge _ (by simp_all)]
   ring
 
 theorem finite_pair_reassembly {A : Type*} (S : Finset A) (a : A → ℂ)
@@ -59,7 +60,7 @@ theorem annular_support (V : ℝ → ℂ)
     (x : ℝ) (hx : 0 ≤ x) (j : ℕ)
     (hne : annularCutoff V (x/(2 : ℝ)^j) ≠ 0) :
     (2 : ℝ)^j / 2 < x ∧ x < 2*(2 : ℝ)^j := by
-  have hp : 0 < (2 : ℝ)^j := by positivity
+  pm_393 hp j
   have hy : 0 ≤ x/(2 : ℝ)^j := div_nonneg hx hp.le
   have hlo : 1/2 < x/(2 : ℝ)^j := by
     by_contra h
@@ -85,7 +86,7 @@ theorem norm_le_last_scale (X : ℝ) (hX : 0 < X) : X ≤ (2 : ℝ)^(length X) :
 
 theorem length_bound (X : ℝ) (hX : 1 ≤ X) :
     (length X : ℝ) + 1 < Real.logb 2 X + 2 := by
-  have hlog : 0 ≤ Real.logb 2 X := Real.logb_nonneg (by norm_num) hX
+  pm_8882 X hX
   have h := Nat.ceil_lt_add_one hlog
   change (⌈Real.logb 2 X⌉₊ : ℝ) + 1 < _
   linarith
@@ -101,12 +102,12 @@ theorem pair_scale_bounds (V T : ℝ → ℂ)
     (hfirst : V (x/D) ≠ 0)
     (hproduct : 1 - V (2*(x*y)/D) ≠ 0)
     (hterminal : T (x*y/U) ≠ 0) :
-    (2 : ℝ)^j < 4*D ∧ D/8 < (2 : ℝ)^j*(2 : ℝ)^k ∧
+    (2 : ℝ)^j < 4*D ∧ D /8 < (2 : ℝ)^j*(2 : ℝ)^k ∧
       (2 : ℝ)^j*(2 : ℝ)^k < 8*U := by
   obtain ⟨hjlo,hjhi⟩ := annular_support V hsmall hlarge x hx j hj
   obtain ⟨hklo,hkhi⟩ := annular_support V hsmall hlarge y hy k hk
-  have hJ : 0 < (2 : ℝ)^j := by positivity
-  have hK : 0 < (2 : ℝ)^k := by positivity
+  pm_393 hJ j
+  pm_393 hK k
   have hxd : x < 2*D := by
     by_contra h
     apply hfirst
@@ -123,11 +124,11 @@ theorem pair_scale_bounds (V T : ℝ → ℂ)
     apply hterm
     exact (le_div_iff₀ hU).mpr (le_of_not_gt h)
   have hlo : (2 : ℝ)^j*(2 : ℝ)^k/4 < x*y := by
-    have h1 := mul_lt_mul_of_pos_right hjlo (show 0 < y by linarith)
+    pm_8559 hjlo
     have h2 := mul_lt_mul_of_pos_left hklo (show 0 < (2 : ℝ)^j/2 by positivity)
     nlinarith
   have hhi : x*y < 4*((2 : ℝ)^j*(2 : ℝ)^k) := by
-    have h1 := mul_lt_mul_of_pos_right hjhi (show 0 < y by linarith)
+    pm_8559 hjhi
     have h2 := mul_lt_mul_of_pos_left hkhi (show 0 < 2*(2 : ℝ)^j by positivity)
     nlinarith
   constructor

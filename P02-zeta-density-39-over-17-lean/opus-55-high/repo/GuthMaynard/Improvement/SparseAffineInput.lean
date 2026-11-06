@@ -1,6 +1,7 @@
 module
-public import GuthMaynard.AffineSource.LargeValuesAffineHeight
+public import DensityEnergyGM.LargeValuesAffineHeight
 public import GuthMaynard.Improvement.CompactNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -8,7 +9,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform Convolution ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- The verified height-family endpoint extended to all T>=2 using its actual
 finite affine baseline on the bounded initial height interval. -/
@@ -21,15 +22,14 @@ theorem sparse_affine_all_heights (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 �
   obtain ⟨C,T₀,hC,hT₀,h⟩ := gmAffine_proposition9_1_height_family_native D hD hε
   refine ⟨C+36992*T₀^8,by positivity,?_⟩
   intro T f M hT hf hs hp hM hMT
-  have hL2 : 0 ≤ ∫ x, f x^2 := integral_nonneg (fun _ => sq_nonneg _)
+  pm_4604
   have hW : 0 ≤ (M:ℝ)^6*(∫ x, f x)^2+(M:ℝ)^4*(∫ x, f x^2) := by positivity
   have hTp : 0 < T := by linarith
-  have hTe : 1 ≤ T^ε := Real.one_le_rpow (by linarith) hε.le
+  pm_549 hTe T ε hε.le
   by_cases hlarge : T₀ ≤ T
   · exact (h hlarge f hf hs hp hM hMT).trans (by gcongr; exact le_add_of_nonneg_right (by positivity))
   · have hsmall : T ≤ T₀ := le_of_lt (lt_of_not_ge hlarge)
-    have hf2 : Integrable (fun x => f x^2) :=
-      (memLp_two_iff_integrable_sq f.continuous.aestronglyMeasurable).1 (f.memLp 2)
+    pm_4603
     have hm2 : (M:ℝ)^2 ≤ T₀^8 := by
       calc
         _ ≤ (T₀^4)^2 := by gcongr; exact hMT.trans (by gcongr)

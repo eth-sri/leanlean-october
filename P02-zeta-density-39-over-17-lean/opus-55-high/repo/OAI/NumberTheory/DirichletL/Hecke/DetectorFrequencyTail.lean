@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFrequency
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,8 +35,8 @@ theorem exists_frequency_tail_order (τ : ℝ) (hτ : 0 < τ) :
       (fun U : ℝ => (625*(Real.logb 2 U)^2)*((67108864*U^42)*C/(U^τ)^n))
       atTop (𝓝 0) := by
     apply (show Tendsto (fun U : ℝ => (625*67108864*C)*
-      ((Real.logb 2 U)^2/U^(τ*(n : ℝ)-42))) atTop (𝓝 0) by simpa using ht).congr'
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with U hU
+      ((Real.logb 2 U)^2/U^(τ*(n : ℝ)-42))) atTop (𝓝 0) by grind).congr'
+    pm_414 eventually_gt_atTop U hU
     rw [Real.rpow_sub hU,Real.rpow_mul_natCast hU.le,
       show (42 : ℝ)=((42 : ℕ) : ℝ) by norm_num,Real.rpow_natCast]
     field_simp

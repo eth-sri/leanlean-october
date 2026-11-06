@@ -38,7 +38,7 @@ theorem actual_error_reference_cap (ρ υ:Character)(χ:RayFourExpansion.RayChar
       ((childCharacter ρ χ).modulus.absNorm:ℝ)*(Ideal.span {fixedBadMask}).absNorm*
         (Ideal.span {(72:O)}).absNorm*Z^(errorMoving p Z (n+1)):=by
     rw [←radicalBound_error_power (childCharacter ρ χ) fixedBadMask p hp Z hZ n hn]
-    exact_mod_cast hυ
+    simp_all
   have hr:((childCharacter ρ χ).modulus.absNorm:ℝ)≤
       (ρ.modulus.absNorm:ℝ)*(Ideal.span {(12:O)}).absNorm:=by exact_mod_cast hray
   calc

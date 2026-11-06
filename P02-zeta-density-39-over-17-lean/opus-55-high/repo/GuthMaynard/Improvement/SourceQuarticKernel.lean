@@ -1,10 +1,10 @@
 module
 public import GuthMaynard.Improvement.SourceReproducingKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped FourierTransform SchwartzMap
 namespace GuthMaynard.Improvement
 
@@ -15,7 +15,7 @@ def sourceQuarticWeight (t : ℝ) : ℝ := ‖sourceReproducingKernel t‖
 theorem source_quartic_weight_decay (q : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ t, sourceQuarticWeight t ≤ C/(1+|t|)^q := by
   let C := 2^q*(Finset.Iic (q,0)).sup (fun m => SchwartzMap.seminorm ℝ m.1 m.2) sourceReproducingKernel
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  pm_61 hC C
   refine ⟨C+1,by positivity,?_⟩
   intro t
   have hh := SchwartzMap.one_add_le_sup_seminorm_apply (𝕜 := ℝ)
@@ -38,7 +38,7 @@ theorem source_quartic_weight_overlap :
   intro W hW t
   calc
     _ ≤ ∑ w ∈ W, D/(1+|t-w|)^2 := Finset.sum_le_sum (fun w _ => hd (t-w))
-    _ = D*(∑ w ∈ W, 1/(1+|t-w|)^2) := by rw [Finset.mul_sum]; simp only [mul_one_div]
+    _ = D*(∑ w ∈ W, 1/(1+|t-w|)^2) := by rw [Finset.mul_sum]; grind
     _ ≤ D*MathCollab.Density.separationMass :=
       mul_le_mul_of_nonneg_left (MathCollab.Density.separated_decay_row hW t) hD.le
     _ ≤ _ := by linarith
@@ -48,8 +48,7 @@ kernel and finite-sum boundedness, with no global L1 claim for D. -/
 theorem source_quartic_weighted_integrable (N : ℝ) (a : ℕ → ℂ) (w : ℝ) (q : ℕ) :
     Integrable (fun t => sourceQuarticWeight (t-w)*‖boundedPolynomial N a t‖^q) := by
   obtain ⟨hc,hb⟩ := boundedPolynomial_regular N a
-  have hi : Integrable (fun t => sourceQuarticWeight (t-w)) :=
-    (sourceReproducingKernel.integrable.comp_sub_right w).norm
+  pm_5701
   apply hi.mul_bdd (hc.norm.pow q).aestronglyMeasurable (c := (∑ n ∈ sourceRatioIndices N, ‖a n‖)^q)
   filter_upwards with t
   simp only [Pi.pow_apply,Real.norm_eq_abs,abs_pow,abs_norm]
@@ -62,8 +61,7 @@ theorem boundedPolynomial_quartic_reproduce {N : ℝ} (hN : 0 < N)
     ‖boundedPolynomial N a w‖^4 ≤ (∫ s, sourceQuarticWeight s)^3*
       ∫ t, sourceQuarticWeight (t-w)*‖boundedPolynomial N a t‖^4 := by
   obtain ⟨hc,hb⟩ := boundedPolynomial_regular N a
-  have hi : Integrable (fun t => sourceReproducingKernel (t-w)) :=
-    sourceReproducingKernel.integrable.comp_sub_right w
+  pm_6241
   have hfirst := MathCollab.Density.norm_integral_mul_sq_le hi hc.aestronglyMeasurable hb
   rw [← boundedPolynomial_reproduce hN a w] at hfirst
   have hmass : (∫ t, sourceQuarticWeight (t-w)) = ∫ t, sourceQuarticWeight t :=

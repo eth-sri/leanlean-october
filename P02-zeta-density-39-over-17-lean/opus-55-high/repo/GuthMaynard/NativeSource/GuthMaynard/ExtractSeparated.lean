@@ -5,11 +5,11 @@ public import GuthMaynard.NativeSource.GuthMaynard.Pigeonhole
 public import GuthMaynard.NativeSource.GuthMaynard.DirichletPolynomial
 public import GuthMaynard.NativeSource.GuthMaynard.Separated
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroDetector
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Finset
-open scoped BigOperators
 open Classical
 
 namespace GuthMaynard.NativeMoment
@@ -44,8 +44,8 @@ theorem shifted_bin_weight_le_of_unit_bin_weight {α : Type*} [DecidableEq α]
       intro x hx
       simp only [Finset.mem_filter, Finset.mem_image]
       constructor
-      · exact fun h => h.2
-      · exact fun hz => ⟨⟨x, hx, rfl⟩, hz⟩
+      grind
+      grind
     rw [hFilter] at hFiber
     exact hFiber
   have hFloors : ∀ x ∈ A, ⌊ordinate x⌋ ∈ J := by
@@ -81,9 +81,7 @@ theorem shifted_bin_weight_le_of_unit_bin_weight {α : Type*} [DecidableEq α]
         ≤ ∑ _j ∈ J, L := by
       apply Finset.sum_le_sum
       intro j hj
-      apply le_trans (Finset.sum_le_sum_of_subset ?_) (hLocal j)
-      intro x hx
-      rw [Finset.mem_filter] at hx ⊢
+      pm_6653 j
       refine ⟨(Finset.mem_filter.mp hx.1).1, ?_⟩
       exact Int.floor_eq_iff.mp hx.2
     _ = J.card * L := by simp
@@ -104,12 +102,9 @@ theorem weighted_finite_pigeonhole {α κ : Type*} [DecidableEq α] [DecidableEq
     exact ⟨scale x, hScale x hx⟩
   let fiberWeight (j : κ) : ℕ :=
     ∑ x ∈ S.filter (fun y => scale y = j), weight x
-  obtain ⟨j, hj, hmax⟩ := Finset.exists_max_image J fiberWeight hJ
+  pm_837 j hj hmax Finset.exists_max_image J fiberWeight hJ
   refine ⟨j, hj, ?_⟩
-  have hAll : S.filter (fun x => scale x ∈ J) = S :=
-    Finset.filter_eq_self.mpr hScale
-  have hFiber := Finset.sum_fiberwise_eq_sum_filter S J scale weight
-  rw [hAll] at hFiber
+  pm_8410 x scale J hScale weight
   rw [← hFiber]
   calc
     ∑ k ∈ J, fiberWeight k ≤ ∑ _k ∈ J, fiberWeight j := by
@@ -152,21 +147,12 @@ theorem finite_weighted_extract_separated {α κ : Type*}
   obtain ⟨W, hWA, hSeparated, hWeight⟩ :=
     weighted_separated_selection (A.image (shift j)) shiftedWeight L hSelectLocal
   refine ⟨j, hj, W, hSeparated, ?_, ?_, ?_⟩
-  · intro t ht
-    have htA := hWA ht
-    rw [Finset.mem_image] at htA
-    rcases htA with ⟨x, hx, rfl⟩
-    exact hLarge j hj x (Finset.mem_filter.mp hx).1 (Finset.mem_filter.mp hx).2
-  · intro t ht
-    have htA := hWA ht
-    rw [Finset.mem_image] at htA
-    rcases htA with ⟨x, hx, rfl⟩
-    exact hInterval j hj x (Finset.mem_filter.mp hx).1 (Finset.mem_filter.mp hx).2
+  pm_4850 hLarge
+  pm_4850 hInterval
   · have hFiber : ∑ t ∈ A.image (shift j), shiftedWeight t = ∑ x ∈ A, weight x := by
       have hAll : A.filter (fun x => shift j x ∈ A.image (shift j)) = A := by
         apply Finset.filter_eq_self.mpr
-        intro x hx
-        exact Finset.mem_image.mpr ⟨x, hx, rfl⟩
+        pm_4831 x hx
       have hFiberwise := Finset.sum_fiberwise_eq_sum_filter A (A.image (shift j)) (shift j) weight
       rw [hAll] at hFiberwise
       exact hFiberwise

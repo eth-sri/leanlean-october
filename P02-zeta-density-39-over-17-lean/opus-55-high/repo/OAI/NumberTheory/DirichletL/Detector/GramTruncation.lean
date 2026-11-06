@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramSourceDivisors
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,9 +19,9 @@ def sourceTruncation (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
   ((Q/Y^3:ℝ):ℂ)*∑C∈F,∑k∈E,originalCommonBlock S hS σ C k W hW Y Q hY U v
 
 def sourceCanonicalSum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (F : Finset SupportedIdeal) (E : SupportedIdeal→Finset GramFrequency) (W : ℝ→ℂ) (hW : HasCompactSupport W)
+    (F : Finset SupportedIdeal) (E : SupportedIdeal→ Finset GramFrequency) (W : ℝ→ℂ) (hW : HasCompactSupport W)
     (Y Q : ℝ) (hY : 0<Y) (U : SchwartzMap ℝ ℂ) (v : ℝ) : ℂ :=
-  ((Q/Y^3:ℝ):ℂ)*∑C∈F,∑D∈sourceDivisorUnion F W hW Y hY,sourceMobiusWeight W hW Y hY C D*
+  ((Q/Y^3:ℝ):ℂ)*∑C∈F,∑D∈sourceDivisorUnion F W hW Y hY,sourceMobiusWeight W hW Y hY C D *
     ∑k∈E C,canonicalLatticeBlock S hS σ C k (primaryGenerator D.val) W U v
       ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/((Y^2/Q)/gramIdealNorm C)) (Y/(gramIdealNorm C*gramIdealNorm D))
 
@@ -49,12 +50,7 @@ lemma sourceCanonicalSum_split (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ :
       sourceCanonicalSum S hS σ F (exceptionalFrequencies S hS E) W hW Y Q hY U v+
       sourceCanonicalSum S hS σ F (nonexceptionalFrequencies S hS E) W hW Y Q hY U v := by
   unfold sourceCanonicalSum exceptionalFrequencies nonexceptionalFrequencies
-  rw [←mul_add,←Finset.sum_add_distrib]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro C hC
-  rw [←Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
+  pm_6581 C hC
   intro D hD
   rw [←mul_add,Finset.sum_filter_add_sum_filter_not]
 

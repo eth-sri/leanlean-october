@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.HighKernelGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,75 +8,32 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 section
 open CubicKubota
@@ -93,7 +51,7 @@ lemma continuous_complexSL_mul (g : SL(2,ℂ)) :
   apply Continuous.subtype_mk
   change Continuous (fun h : SL(2,ℂ) =>
     (g : Matrix (Fin 2) (Fin 2) ℂ)*(h : Matrix (Fin 2) (Fin 2) ℂ))
-  exact continuous_const.mul continuous_complexSL_coe
+  fun_prop
 
 lemma continuous_coordinateSection : Continuous coordinateSection := by
   apply Continuous.subtype_mk
@@ -101,16 +59,14 @@ lemma continuous_coordinateSection : Continuous coordinateSection := by
   intro i
   apply continuous_pi
   intro j
-  have hroot : Continuous (fun w : UpperCoordinates => (Real.sqrt w.1.2 : ℂ)) :=
-    Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp
-      (continuous_snd.comp continuous_subtype_val))
+  pm_1043
   have hne : ∀w : UpperCoordinates,(Real.sqrt w.1.2 : ℂ)≠0 := fun w =>
     Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr w.2).ne'
   fin_cases i <;> fin_cases j
-  · exact hroot
-  · exact (continuous_fst.comp continuous_subtype_val).div hroot hne
+  simp_all
+  fun_prop
   · exact continuous_const
-  · exact hroot.inv₀ hne
+  fun_prop
 
 lemma continuous_hyperbolicProjection :
     Continuous (fun g : SL(2,ℂ) => (g : HyperbolicSpace)) :=
@@ -143,14 +99,18 @@ abbrev IntegralOrbitQuotient (H : Subgroup (SL(2,O))) := Quotient (integralOrbit
 def integralOrbitProjection (H : Subgroup (SL(2,O))) :
     HyperbolicSpace → IntegralOrbitQuotient H := Quotient.mk _
 
-lemma continuous_integralOrbitProjection (H : Subgroup (SL(2,O))) :
+section
+variable (H : Subgroup (SL(2,O)))
+include H
+lemma continuous_integralOrbitProjection :
     Continuous (integralOrbitProjection H) := continuous_quotient_mk'
 
-lemma integralOrbitProjection_eq (H : Subgroup (SL(2,O))) (h : H) (w : HyperbolicSpace) :
+lemma integralOrbitProjection_eq (h : H) (w : HyperbolicSpace) :
     integralOrbitProjection H (integralComplexMatrix (h:SL(2,O)) • w)=
       integralOrbitProjection H w := by
   apply Eq.symm
   exact Quotient.sound ⟨h,rfl⟩
+end
 
 end
 
@@ -228,7 +188,7 @@ namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap FourierTransform
 open MeasureTheory
 
 section

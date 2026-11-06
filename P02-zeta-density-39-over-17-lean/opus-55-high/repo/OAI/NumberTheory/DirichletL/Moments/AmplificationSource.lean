@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationAllocation
 public import OAI.NumberTheory.DirichletL.Moments.LiveDomain
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,7 @@ local notation "O" => ActualEisensteinCubic.O
   apply Complex.ofReal_ne_zero.mpr
   apply Real.sqrt_ne_zero'.mpr
   apply pow_pos
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr hp))
+  simp_all
 
 theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i}))
@@ -37,10 +37,7 @@ theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
           (fun i => if multiplicity p (a i)=n+1 then
             c i*residualCharacter p (n+1)
               (primeRemainder p hp (a i) (supported_element_ne_zero _ (ha i))) else 0) h := by
-  unfold amplificationError gaussPolynomial
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i hi
+  pm_315 amplificationError gaussPolynomial Finset.mul_sum Finset.sum_congr i hi
   dsimp only
   by_cases hv : multiplicity p (a i)=n+1
   · simp only [ite_eq_left hv]
@@ -60,20 +57,20 @@ theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
       exact hh.trans (by ring)
     rw [he']
     ring
-  · simp only [ite_eq_right hv,zero_mul,mul_zero]
+  grind
 
 theorem source_error_shortening (S : Finset (Ideal O)) (c : Ideal O → ℂ)
     (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
     (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) :
     amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => c I)
-      (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h =
+      (fun I=> multiplicity p (sourceGenerator S I)) p (n+1) h =
       (primeRoot p (n+1)*errorScalar p hp.ne_zero n h)*
         gaussPolynomial Finset.univ
           (fun I : supportedColumns S => primeRemainder p hp (sourceGenerator S I)
             (supported_element_ne_zero _ (sourceGenerator_supported S I)))
-          (fun I => primeRemainder_supported p hp (sourceGenerator S I) (sourceGenerator_supported S I))
-          (fun I => if multiplicity p (sourceGenerator S I)=n+1 then
+          (fun I=> primeRemainder_supported p hp (sourceGenerator S I) (sourceGenerator_supported S I))
+          (fun I=> if multiplicity p (sourceGenerator S I)=n+1 then
             c I*residualCharacter p (n+1)
               (primeRemainder p hp (sourceGenerator S I)
                 (supported_element_ne_zero _ (sourceGenerator_supported S I))) else 0) h := by

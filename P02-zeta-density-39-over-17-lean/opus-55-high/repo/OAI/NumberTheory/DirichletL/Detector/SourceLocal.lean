@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SpectralWeights
 public import OAI.NumberTheory.DirichletL.Detector.ZeroIndex
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
@@ -32,7 +33,7 @@ lemma sourcePrincipalTerm_pos (eta a x w z : ℂ) (e l k m : ℕ) (ht : e+3*l≠
         (coordV (Ideal.absNorm (Ideal.span {p})) z) e l k m := by
   unfold sourcePrincipalTerm
   rw [sourceWeightedScalar_actual p hp hg]
-  simp only [sourceScalar, ht, ite_false, principalMarkedTerm, coordV, Complex.ofReal_natCast]
+  pm_316 sourceScalar ht ite_false principalMarkedTerm coordV Complex.ofReal_natCast
 
 lemma sourcePrincipalTerm_zero (eta a x w z : ℂ) (k m : ℕ) :
     sourcePrincipalTerm p hp hg eta a x w z 0 0 k m =
@@ -49,6 +50,7 @@ def sourcePrincipalSeries (eta a x w z : ℂ) : ℂ :=
   ∑ e : Fin 2, ∑' l, ∑' k, ∑' m, sourcePrincipalTerm p hp hg eta a x w z e.val l k m
 
 include hc in
+include hc in
 lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
     (hV : ‖coordV (Ideal.absNorm (Ideal.span {p})) z‖<1)
     (hR : ‖coordR (Ideal.absNorm (Ideal.span {p})) (a^2) x z‖<1)
@@ -58,12 +60,8 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
       principalFullSeries p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) := by
   dsimp only
   simp only [Complex.ofReal_natCast]
-  let X : ℂ := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)
-  let W : ℂ := (Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)
-  let V : ℂ := coordV (Ideal.absNorm (Ideal.span {p})) z
-  have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
+  pm_3848
+  pm_942
   have hr : ‖evenRatio (Ideal.absNorm (Ideal.span {p})) a X V‖<1 := by
     have he := evenRatio_eq_coordR _ hQ a x z
     simp only [Complex.ofReal_natCast] at he

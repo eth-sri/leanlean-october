@@ -1,5 +1,6 @@
 module
 public import TaoTrudgianYang2025.HeathBrownModelJets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,12 +26,15 @@ def heathBrownBetaBound (k : ℕ) (α : ℝ) : ℝ :=
     (max (-α/((k : ℝ)*(k-1)))
       (-2*α/((k : ℝ)*(k-1))-2*(1-(k : ℝ)*α)/((k : ℝ)^2*(k-1))))
 
-theorem heathBrownDerivativeExponent_bounds {k : ℕ} (hk : 3 ≤ k) :
+section
+variable {k : ℕ} (hk : 3 ≤ k)
+include k hk
+theorem heathBrownDerivativeExponent_bounds :
     0 < heathBrownDerivativeExponent k ∧
       (k : ℝ)*heathBrownDerivativeExponent k ≤ 1 ∧
       heathBrownDerivativeExponent k ≤ 1/6 := by
-  have hkr : (3 : ℝ) ≤ k := by exact_mod_cast hk
-  have hp : (0 : ℝ) < k := by linarith
+  pm_5012 hkr k hk
+  pm_389 hp k
   have hm : (0 : ℝ) < k-1 := by linarith
   unfold heathBrownDerivativeExponent
   refine ⟨by positivity,?_,?_⟩
@@ -40,28 +44,26 @@ theorem heathBrownDerivativeExponent_bounds {k : ℕ} (hk : 3 ≤ k) :
   · apply (div_le_iff₀ (mul_pos hp hm)).mpr
     nlinarith
 
-theorem heathBrownInverseExponent_identity {k : ℕ} (hk : 3 ≤ k) :
+theorem heathBrownInverseExponent_identity :
     (k : ℝ)*heathBrownInverseExponent k = 2*heathBrownDerivativeExponent k := by
-  have hp : (0 : ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  pm_117 hp k
   unfold heathBrownInverseExponent heathBrownDerivativeExponent
   field_simp
 
-theorem heathBrownBetaBound_eq_max {k : ℕ} (hk : 3 ≤ k) (α : ℝ) :
+theorem heathBrownBetaBound_eq_max (α : ℝ) :
     heathBrownBetaBound k α =
       max (heathBrownDerivativeExponent k+α*(1-(k : ℝ)*heathBrownDerivativeExponent k))
         (max (α*(1-heathBrownDerivativeExponent k)) (α-heathBrownInverseExponent k)) := by
-  have hp : (k : ℝ) ≠ 0 := by exact_mod_cast (show k ≠ 0 by omega)
+  pm_300 hp k
   have hm : (k : ℝ)-1 ≠ 0 := by
-    have hkr : (3 : ℝ) ≤ k := by exact_mod_cast hk
+    pm_5012 hkr k hk
     linarith
   unfold heathBrownBetaBound heathBrownDerivativeExponent heathBrownInverseExponent
   rw [add_max,add_max]
   congr 1
   · ring
-  · congr 1
-    · ring
-    · field_simp
-      ring
+  grind
+end
 
 theorem heathBrown_physical_monomial {c T N : ℝ}
     (hc : 0 < c) (hT : 0 < T) (hN : 0 < N)

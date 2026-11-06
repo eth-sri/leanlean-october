@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedRetainedGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,6 +22,16 @@ open scoped ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
+set_option hygiene false in
+macro "pb_973" : tactic => `(tactic| (
+  obtain ⟨B,hB⟩ := isCompact_Icc.exists_bound_of_continuousOn hd
+  refine ⟨max 1 B,le_max_left _ _,?_⟩
+  intro x hx y hy
+  have h := Convex.norm_image_sub_le_of_norm_deriv_le
+    (fun z hz => (hf z hz).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0))
+    (fun z hz => (hB z hz).trans (le_max_right 1 B))
+    (convex_Icc l r) hy hx
+  simp_all))
 theorem real_rpow_lipschitz_on_positive_compact
     {l r : ℝ} (hl : 0 < l) (p : ℝ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ x ∈ Icc l r, ∀ y ∈ Icc l r,
@@ -31,14 +42,7 @@ theorem real_rpow_lipschitz_on_positive_compact
   have hd : ContinuousOn (deriv (fun z : ℝ => z^p)) (Icc l r) := by
     intro x hx
     exact ((hf x hx).derivWithin (m := ∞) (by simp)).continuousAt.continuousWithinAt
-  obtain ⟨B,hB⟩ := isCompact_Icc.exists_bound_of_continuousOn hd
-  refine ⟨max 1 B,le_max_left _ _,?_⟩
-  intro x hx y hy
-  have h := Convex.norm_image_sub_le_of_norm_deriv_le
-    (fun z hz => (hf z hz).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0))
-    (fun z hz => (hB z hz).trans (le_max_right 1 B))
-    (convex_Icc l r) hy hx
-  simpa only [Real.norm_eq_abs] using h
+  pb_973
 
 theorem modelPhaseInverseSlope_expanded_model_error
     {σ : ℝ} (hσ : 0 < σ) :
@@ -47,7 +51,7 @@ theorem modelPhaseInverseSlope_expanded_model_error
       IsApproximateModelPhaseFunction F σ P δ →
       ∀ v ∈ modelPhaseSlopeRange F,
         |modelPhaseInverseSlope F v-v^(-σ⁻¹)| ≤ C*δ := by
-  have hbase : 0 < (2 : ℝ)^(-σ) := Real.rpow_pos_of_pos (by norm_num) _
+  pm_6175 hbase
   obtain ⟨C,hC,hLip⟩ := real_rpow_lipschitz_on_positive_compact
     (r := 2) (show 0 < (2 : ℝ)^(-σ)/2 by positivity) (-σ⁻¹)
   refine ⟨C,hC,?_⟩

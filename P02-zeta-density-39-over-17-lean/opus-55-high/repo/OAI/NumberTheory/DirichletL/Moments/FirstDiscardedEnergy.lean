@@ -1,41 +1,43 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscarded
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstDiscardedEnergy
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson ConcretePrimeRowBridge
-open CenteredMomentFirstReduced CenteredMomentSectorLocalization CenteredMomentCorrelation
+open CenteredMomentFirstReduced CenteredMomentSectorLocalization
 open CenteredMomentCommonSupport CenteredMomentCanonicalFirst CenteredMomentSupportedCorrelation
 open CenteredMomentFirstScale CenteredMomentFirstDiscarded CenteredMomentActive
 open CenteredMomentCompleteCommon IdealMobiusDivisorSum
 local notation "O" => ActualEisensteinCubic.O
 
-theorem tripleRow_norm_le_one (a b r : O) (ha : a≠0) (hb : b≠0)
+section
+variable (a b r : O) (ha : a≠0) (hb : b≠0)
+include a b r ha hb
+theorem tripleRow_norm_le_one
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
     (G : Residue r → ℂ) (hG : ∀ x,‖G x‖≤1) (z : O) :
     ‖tripleRow a b r χa χb G z‖≤1 := by
   let := finite_quotient_span ha
   let := finite_quotient_span hb
-  let : Fintype (Residue a) := Fintype.ofFinite _
-  let : Fintype (Residue b) := Fintype.ofFinite _
+  pm_2956
   rw [tripleRow,norm_mul,norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _)
     ((mul_le_of_le_one_left (norm_nonneg _)
       (QuadraticInitialBound.norm_finite_character_le_one χa _)).trans
       (QuadraticInitialBound.norm_finite_character_le_one χb _))).trans (hG _)
 
-theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
+theorem tripleFourier_norm_le_full (hr : r≠0)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
     (G : Residue r → ℂ) (hG : ∀ x,‖G x‖≤1) (h : O) :
     ‖tripleFourier a b r ha hb hr χa χb G h‖≤normValue (a*(b*r)) := by
-  let := finite_quotient_span (mul_ne_zero ha (mul_ne_zero hb hr))
-  let : Fintype (Residue (a*(b*r))) := Fintype.ofFinite _
+  pm_2902
   rw [tripleFourier,tsum_fintype]
   calc
     _ ≤ ∑ x : Residue (a*(b*r)),‖tripleResidue a b r χa χb G x*
@@ -47,6 +49,7 @@ theorem tripleFourier_norm_le_full (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r
       rw [norm_mul,(quotientTrace _ _).norm_apply,mul_one,tripleResidue_mk]
       exact tripleRow_norm_le_one a b r ha hb χa χb G hG z
     _ = _ := by simp [normValue,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
+end
 
 theorem activeFunction_norm_le_one (I J : Ideal O) (hI : CanonicalQuadraticSieve.Supported I)
     (x : Residue (activeConductor I J)) : ‖activeFunction I J hI x‖≤1 := by
@@ -73,9 +76,8 @@ theorem scaled_discarded_triple_bound (A : ℕ) :
           tripleFourier a b r ha hb hr χa χb G h*
           paperRadialFourier W ((k/normValue (a*(b*r)))*normValue h)‖ ≤
       k*(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
-        ((min 1 (kernelReference Tsec H))^2*(1+Z^(ξ/4))^A) := by
-  obtain ⟨s,C,hC,ht⟩ := actual_discarded_lattice_tail A
-  refine ⟨s,C,hC,?_⟩
+        ((min 1 (kernelReference Tsec H))^2*(1+Z ^(ξ/4))^A) := by
+  pm_3085 s C hC ht actual_discarded_lattice_tail A
   intro W Tsec Z Csec H ξ k hT hZ hCs hk hthreshold a b r ha hb hr χa χb G hG hscale
   have hN : 0<normValue (a*(b*r)) := norm_pos _
     (Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero ha (mul_ne_zero hb hr)))
@@ -83,19 +85,19 @@ theorem scaled_discarded_triple_bound (A : ℕ) :
     hT hZ hCs hthreshold hscale hN.le (tripleFourier a b r ha hb hr χa χb G)
     (tripleFourier_norm_le_full a b r ha hb hr χa χb G hG)
   rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (div_pos hk hN)]
-  apply (mul_le_mul_of_nonneg_left hh (div_pos hk hN).le).trans_eq
+  pm_8739 hk
   field_simp
 
 def canonicalDiscardedTerm (I J : Ideal O)
     (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
     (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
-  let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
+  let e := primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E
   let a := residualGenerator I J
   let b := residualGenerator J I
   let r := activeConductor I J
   let k := K/normValue e
   (UniqueFactorizationMonoid.moebius (∏ P∈E,P.val):ℂ)*
-    tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e*
+    tripleRow a b r (residualCharacter I J hI) (residualCharacter J I hJ)⁻¹ (activeFunction I J hI) e *
     (((k/normValue (a*(b*r)):ℝ):ℂ)*∑' h : O,
       (discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
         tripleFourier a b r (supported_element_ne_zero _ (residualGenerator_supported I J hI))
@@ -106,7 +108,7 @@ def canonicalDiscardedTerm (I J : Ideal O)
 theorem canonical_kernel_scale (I J : Ideal O)
     (hI : CanonicalQuadraticSieve.Supported I) (hJ : CanonicalQuadraticSieve.Supported J)
     (E : Finset (CommonIndex I J)) (K : ℝ) :
-    (K/normValue (primeSubsetGenerator (fun P : CommonIndex I J => P.val) E))/
+    (K/normValue (primeSubsetGenerator (fun P : CommonIndex I J=> P.val) E))/
       normValue (residualGenerator I J*(residualGenerator J I*activeConductor I J)) =
       K/((Ideal.absNorm (∏ P∈E,P.val):ℝ)*(Ideal.absNorm (Ideal.span {activeConductor I J}):ℝ)*
         (Ideal.absNorm (CenteredMomentCompleteCommon.residualPart I J):ℝ)*
@@ -128,15 +130,14 @@ theorem canonical_discarded_term_bound (A : ℕ) :
       (2*HN/Real.log Z+Real.log (4*Csec)/Real.log Z<ξ/4) →
       ‖canonicalDiscardedTerm I J hI hJ E W K Tsec Z ξ‖ ≤
       K*(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
-        ((min 1 (kernelReference Tsec HN))^2*(1+Z^(ξ/4))^A) := by
-  obtain ⟨s,C,hC,ht⟩ := scaled_discarded_triple_bound A
-  refine ⟨s,C,hC,?_⟩
+        ((min 1 (kernelReference Tsec HN))^2*(1+Z ^(ξ/4))^A) := by
+  pm_3085 s C hC ht scaled_discarded_triple_bound A
   intro W I J hI hJ E K X HN Tsec Z Csec ξ hK hX hZ hCs hi hj hsec hthreshold
-  let e := primeSubsetGenerator (fun P : CommonIndex I J => P.val) E
+  pm_6952
   have he : e≠0 := primeSubsetGenerator_ne_zero _ _
   have hE : (∏ P∈E,P.val)≠(0:Ideal O) := by
     have hh := Ideal.span_singleton_eq_bot.not.mpr he
-    simpa only [e,primeSubsetGenerator,span_idealGenerator,Ideal.zero_eq_bot] using hh
+    pm_89 e primeSubsetGenerator span_idealGenerator Ideal.zero_eq_bot hh
   have hNe : 0<normValue e := norm_pos _ (Ideal.span_singleton_eq_bot.not.mpr he)
   have hNe1 : 1≤normValue e := by
     change (1:ℝ)≤(Ideal.absNorm (Ideal.span {e}):ℝ)
@@ -161,8 +162,7 @@ theorem canonical_discarded_term_bound (A : ℕ) :
       (tripleRow_norm_le_one _ _ _ (supported_element_ne_zero _ (residualGenerator_supported I J hI))
         (supported_element_ne_zero _ (residualGenerator_supported J I hJ)) _ _ _ (activeFunction_norm_le_one I J hI) e)
   change ‖_ * _‖≤_
-  rw [norm_mul]
-  apply (mul_le_mul hm hb (norm_nonneg _) zero_le_one).trans
+  pm_8685 hm zero_le_one
   rw [one_mul]
   exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hkK (by positivity)) (by positivity)
 

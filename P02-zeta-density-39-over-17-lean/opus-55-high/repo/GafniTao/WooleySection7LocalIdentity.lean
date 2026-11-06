@@ -3,6 +3,7 @@ public import GafniTao.WooleySection7ShiftedMoment
 public import GafniTao.WooleySection7Coefficient
 public import GafniTao.WooleyPadicSeparation
 public import GafniTao.WooleySourceMixed
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -120,10 +121,7 @@ theorem wooley_equation_7_19_outer_native
                       (fun n => wooleySourcePolynomialPhase leftPhi alpha n)) *
                   ‖wooleySourceNormalizedPolynomialSum rightPhi right alpha‖ ^
                     (2 * S) := by
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro alpha halpha
-        ring
+        pm_4886 alpha halpha
       rw [hsum]
       ring
     _ = C * loss *

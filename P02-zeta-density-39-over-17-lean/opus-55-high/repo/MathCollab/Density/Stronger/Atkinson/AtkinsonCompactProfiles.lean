@@ -10,6 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorWeightSmooth
 public import MathCollab.Density.Stronger.Fourth.GammaShiftLog
 public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
 public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeRescaled
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -62,10 +63,10 @@ theorem exists_intervalC2Bound_atkinsonPowerRootProfile (α : ℝ) :
       IntervalC2Bound (fun u => atkinsonPowerProfile α (u ^ 2)) (1 / 4) 1 C 1 := by
   apply exists_intervalC2Bound_fixed
   intro u hu
-  have hu0 : 0 < u := by linarith [hu.1]
+  have hu0 : 0 < u := by grind
   have hw : ContDiff ℝ 2 zetaDivisorWeight :=
     contDiff_zetaDivisorWeight.of_le (le_of_lt (WithTop.coe_lt_coe.mpr (ENat.natCast_lt_top 2)))
-  have hcast : ContDiff ℝ 2 (fun x : ℝ => (x : ℂ)) := Complex.ofRealCLM.contDiff
+  pm_5806
   unfold atkinsonPowerProfile zetaMainMellinProfile
   fun_prop (disch := positivity)
 

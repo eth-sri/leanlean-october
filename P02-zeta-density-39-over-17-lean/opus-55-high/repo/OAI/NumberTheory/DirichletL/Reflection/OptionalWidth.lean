@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalWidth
 public import OAI.NumberTheory.DirichletL.Reflection.PoolArithmetic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ theorem original_optional_terminal_saving
     (hpower : rowPowerfulPart J=rowPowerfulPart I)
     (hmask : rowMaskPart J (B*F*R)=rowMaskPart I (B*F*R))
     (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
-    (e : A→Fin 3)
+    (e : A→ Fin 3)
     (Z F₀ N V M z₀ c cstar O₀ H za Nstar hhat v ell el d η τ π Ck CO CH Cf : ℝ)
     (hZ : 1 < Z) (hCk : 0 < Ck) (hCO : 0 < CO) (hCH : 0 < CH) (hCf : 0 < Cf)
     (hk : (Ideal.absNorm I : ℝ) ≤ Ck * Z ^ M)
@@ -39,8 +40,8 @@ theorem original_optional_terminal_saving
       (normWidth Z (frozenExtracted ((poolPrimeFamily J (B*F*R) Q₀).restrict A) (fun a : A => completedLocalExponent J F a.val.val) e 2))
       za v ell el (terminalDualWidth Z H za Nstar ((poolPrimeFamily J (B*F*R) Q₀).restrict A).ideal (fun a : A => completedLocalExponent J F a.val.val) e) + O₀/2 + π ≤
         F₀ - cstar / 4 := by
-  let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
-  let j := fun a : A => completedLocalExponent J F a.val.val
+  pm_3298
+  pm_8620 j a a.val.val
   have hQ : B*F*R≠0 := mul_ne_zero (mul_ne_zero hB hF) hR
   have hj : (fun i => completedLocalExponent I F (G.ideal i))=j := by
     funext i

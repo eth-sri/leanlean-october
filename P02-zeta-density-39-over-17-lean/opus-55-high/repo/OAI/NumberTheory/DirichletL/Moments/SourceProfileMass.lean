@@ -21,7 +21,7 @@ local notation "O" => ActualEisensteinCubic.O
     apply Ideal.Quotient.eq.mpr
     rw [Ideal.span_singleton_one]
     trivial
-  rw [he,map_one]
+  grind
 
  theorem idealWeight_mod_one (χ : MulChar (O ⧸ Ideal.span {(1:O)}) ℂ) (R I : Ideal O) :
     CenteredMomentRectangle.idealWeight 1 χ R 0 I=(if IsCoprime I R then 1 else 0) := by

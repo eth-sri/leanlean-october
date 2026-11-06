@@ -1,16 +1,18 @@
 module
 public import GuthMaynard.Improvement.RadialRemainder
 public import GuthMaynard.Improvement.LogMask
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped FourierTransform ComplexConjugate
 namespace GuthMaynard.Improvement
 
+section
+variable (μ : ℝ → ℝ)
+include μ
 /-- Reflection symmetry for the literal Fourier integral of a real density. -/
-theorem realDensity_fourier_conj (μ : ℝ → ℝ) (ξ : ℝ) :
+theorem realDensity_fourier_conj (ξ : ℝ) :
     𝓕 (fun t => (μ t:ℂ)) (-ξ) = conj (𝓕 (fun t => (μ t:ℂ)) ξ) := by
   have hp : ∀ s : ℝ, conj (phase s) = phase (-s) := by
     intro s
@@ -27,29 +29,27 @@ theorem realDensity_fourier_conj (μ : ℝ → ℝ) (ξ : ℝ) :
   congr 2
   ring
 
-theorem realDensity_fourier_norm_neg (μ : ℝ → ℝ) (ξ : ℝ) :
+theorem realDensity_fourier_norm_neg (ξ : ℝ) :
     ‖𝓕 (fun t => (μ t:ℂ)) (-ξ)‖ = ‖𝓕 (fun t => (μ t:ℂ)) ξ‖ := by
   rw [realDensity_fourier_conj,RCLike.norm_conj]
 
 /-- Exact normalization of the three magnitudes used in the transverse
 argument. Neither the first Fourier factor nor its mask is enlarged. -/
-theorem ratioFourierProduct_norm (μ : ℝ → ℝ) {v y : ℝ} (hv : 0 < v) (hy : 0 < y) :
+theorem ratioFourierProduct_norm {v y : ℝ} (hv : 0 < v) (hy : 0 < y) :
     ‖ratioFourierProduct μ (v,y)‖ =
       ‖𝓕 (fun t => (μ t:ℂ)) (mellinFrequency v)‖ *
       ‖𝓕 (fun t => (μ t:ℂ)) (mellinFrequency (y/v))‖ *
       ‖𝓕 (fun t => (μ t:ℂ)) (mellinFrequency y)‖ := by
-  have he : mellinFrequency v-mellinFrequency y = -mellinFrequency (y/v) := by
-    unfold mellinFrequency
-    rw [Real.log_div hy.ne' hv.ne']
-    ring
+  pm_6806 he hy.ne' hv.ne'
   simp only [ratioFourierProduct,norm_mul,he,realDensity_fourier_norm_neg]
 
 /-- The exceptional Fourier set is symmetric without assumptions on its
 boundary or positive measure. -/
-theorem realDensity_level_symmetry (μ : ℝ → ℝ) (Λ ξ : ℝ) :
+theorem realDensity_level_symmetry (Λ ξ : ℝ) :
     (Λ < ‖𝓕 (fun t => (μ t:ℂ)) (-ξ)‖) ↔
       (Λ < ‖𝓕 (fun t => (μ t:ℂ)) ξ‖) := by
   rw [realDensity_fourier_norm_neg]
+end
 
 /-- Logarithmic mask transfer in the exact mathlib Fourier normalization.
 The original measurable Fourier mask A is retained on the right. -/

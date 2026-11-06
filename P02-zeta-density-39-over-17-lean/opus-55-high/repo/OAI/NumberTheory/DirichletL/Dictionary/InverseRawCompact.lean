@@ -1,21 +1,24 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawEnergy
 public import OAI.NumberTheory.DirichletL.Moments.OriginalReflectionErrorMass
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseRawCompact
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment FourierBridge HeckePrimeAnnular
 open CenteredMomentOriginalReflectionErrorMass CenteredMomentCounting
-open ActualEisensteinCubic ConcreteTraceCRT
+open ActualEisensteinCubic
 
 local notation "O" => HeckeFamily.O
 
-lemma inverse_polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : ℝ) :
+section
+variable (χ : Character) (W : ℝ→ℂ)
+include χ W
+lemma inverse_polynomial_all_ideals (D freq : ℝ) :
     polynomial χ true W D 0 freq =
       (D:ℂ)^(-(1/2:ℂ))*∑'I:Ideal O,coefficient χ true I*annularWeight W D 0 freq I := by
   unfold polynomial
@@ -24,12 +27,10 @@ lemma inverse_polynomial_all_ideals (χ : Character) (W : ℝ→ℂ) (D freq : �
       ∑'I:Ideal O,coefficient χ true I*annularWeight W D 0 freq I := by
     apply tsum_subtype_eq_of_support_subset (s:={I:Ideal O|I≠0})
       (f:=fun I:Ideal O=>coefficient χ true I*annularWeight W D 0 freq I)
-    intro I hI hz
-    subst I
-    exact hI (by simp only [coefficient_zero,zero_mul])
-  simpa only [summand,HeckeDyadic.norm,annularWeight,mul_assoc] using he
+    pm_5256 coefficient_zero zero_mul
+  pm_89 summand HeckeDyadic.norm annularWeight mul_assoc he
 
-theorem inverse_polynomial_bound (χ : Character) (W : ℝ→ℂ) (b B D freq : ℝ)
+theorem inverse_polynomial_bound (b B D freq : ℝ)
     (hB : 0≤B) (hD : 0<D) (hW : ∀x,‖W x‖≤B)
     (hs : Function.support W⊆Set.Iic b) :
     ‖polynomial χ true W D 0 freq‖≤(128*max 1 b*B)*Real.sqrt D := by
@@ -41,20 +42,18 @@ theorem inverse_polynomial_bound (χ : Character) (W : ℝ→ℂ) (b B D freq : 
       rw [coefficient_zero,zero_mul])
     (by
       intro I
-      by_cases hI:I=0
-      · subst I
-        simpa only [coefficient_zero,zero_mul,norm_zero] using hB
-      rw [norm_mul,annularWeight_zero_norm W D freq hD I hI]
+      pm_1239 coefficient_zero
       exact (mul_le_mul (coefficient_norm_le χ true I) (hW _) (norm_nonneg _) zero_le_one).trans_eq
         (one_mul B))
     (by
       intro I hne
       have hw : W ((I.absNorm:ℝ)/D)≠0 := by
         intro hz
-        exact hne (by simp only [annularWeight,hz,zero_mul,mul_zero])
+        pm_399 hne annularWeight hz zero_mul mul_zero
       exact ((div_le_iff₀ hD).mp (hs hw)).trans
         (mul_le_mul_of_nonneg_right (le_max_right 1 b) hD.le))
   convert hh using 1; ring
+end
 
 lemma childLogTest_norm (W : ℝ→ℂ) (s x : ℝ) :
     ‖childLogTest W s x‖=‖W x‖ := by
@@ -73,15 +72,14 @@ theorem inverse_reference_bound (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
   · intro x hx
     have hw : W x≠0 := by
       intro hz
-      exact hx (by simp only [childLogTest,hz,zero_mul])
+      pm_3030 hx childLogTest hz zero_mul
     exact (hs hw).2
 
 theorem nonzero_element_rows_card (rows : Finset NonzeroElement) (H : ℝ) (hH : 1≤H)
     (hrows : ∀v∈rows,((Ideal.span {v.val}).absNorm:ℝ)≤H) :
     (rows.card:ℝ)≤128*H := by
   have hh:=DescentFiberCost.finite_element_count_real (rows.image Subtype.val) H hH (by
-    intro z hz
-    obtain ⟨v,hv,rfl⟩:=Finset.mem_image.mp hz
+    pm_1192 z hz v hv
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
     exact hrows v hv)
   rw [Finset.card_image_of_injective _ Subtype.val_injective] at hh
@@ -89,7 +87,7 @@ theorem nonzero_element_rows_card (rows : Finset NonzeroElement) (H : ℝ) (hH :
 
 theorem reference_energy_linear (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Set.Icc a b) :
-    ∃K:ℝ,0<K ∧ ∀(χ:NonzeroElement→Character) (rows:Finset NonzeroElement)
+    ∃K:ℝ,0<K ∧ ∀(χ:NonzeroElement→ Character) (rows:Finset NonzeroElement)
       (s H D:ℝ),1≤H → 0<D →
       (∀v∈rows,((Ideal.span {v.val}).absNorm:ℝ)≤H) →
       (∑v∈rows,‖polynomial (χ v) true (childLogTest W s) D 0 0‖^2)≤K*H*D := by
@@ -107,14 +105,14 @@ theorem reference_energy_linear (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
       (nonzero_element_rows_card rows H hH hrows) (by positivity)
     _=(128*A^2)*H*D := by ring
 
-lemma scale_le_rows (c H D : ℝ) (hc : 0≤c) (hH : 1≤H)
-    (_hD : 0<D) (hDH : D^(1+c)≤H) : D≤H := by
-  by_cases hD1:D≤1
+lemma scale_le_rows (c H D : ℝ) (hc : 0≤ c) (hH : 1≤H)
+    (_hD : 0<D) (hDH : D ^(1+c)≤H) : D ≤H := by
+  by_cases hD1:D ≤1
   · exact hD1.trans hH
   · have hd : 1≤D := le_of_not_ge hD1
     calc
-      D=D^(1:ℝ) := (Real.rpow_one D).symm
-      _≤D^(1+c) := Real.rpow_le_rpow_of_exponent_le hd (by linarith)
+      D =D ^(1:ℝ) := (Real.rpow_one D).symm
+      _≤D ^(1+c) := Real.rpow_le_rpow_of_exponent_le hd (by linarith)
       _≤H := hDH
 
 lemma raw_majorant_ge_linear (C C0 H D κ s : ℝ) (J : ℕ)
@@ -133,8 +131,8 @@ lemma raw_majorant_ge_linear (C C0 H D κ s : ℝ) (J : ℕ)
 theorem rawMoment_of_large_rows_ge_one (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Set.Icc a b) (H0 : ℝ) (hH0 : 1≤H0) :
     ∃C0:ℝ,0<C0 ∧ ∀(data:RowData) (c κ C:ℝ) (J:ℕ),
-      0≤c → 0≤κ → 0≤C →
-      (∀(s H D:ℝ),H0≤H → 1≤D → D^(1+c)≤H →
+      0≤ c → 0≤κ → 0≤C →
+      (∀(s H D:ℝ),H0≤H → 1≤D → D ^(1+c)≤H →
         ∀rows:Finset NonzeroElement,
           (∀v∈rows,((Ideal.span {v.val}).absNorm:ℝ)≤H) →
           (∑v∈rows,‖polynomial (data.character v) true (childLogTest W s) D 0 0‖^2)≤
@@ -143,7 +141,7 @@ theorem rawMoment_of_large_rows_ge_one (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha
   obtain ⟨K,hK,hbound⟩:=reference_energy_linear W a b ha hs
   refine ⟨K*H0,by positivity,?_⟩
   intro data c κ C J hc hκ hC hlarge s H D hH hD hDH rows hrows
-  have hsmall (hDH0:D≤H0) :
+  have hsmall (hDH0:D ≤H0) :
       (∑v∈rows,‖polynomial (data.character v) true (childLogTest W s) D 0 0‖^2)≤
         ((C+K*H0)*(1+‖s‖)^(2*J))*H*(H*max 1 D)^κ := by
     calc
@@ -153,7 +151,7 @@ theorem rawMoment_of_large_rows_ge_one (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha
       _≤_ := raw_majorant_ge_linear C (K*H0) H D κ s J hC (by positivity) hH hκ
   by_cases hHH0:H≤H0
   · exact hsmall ((scale_le_rows c H D hc hH hD hDH).trans hHH0)
-  by_cases hD1:D≤1
+  by_cases hD1:D ≤1
   · exact hsmall (hD1.trans hH0)
   · apply (hlarge s H D (le_of_not_ge hHH0) (le_of_not_ge hD1) hDH rows hrows).trans
     gcongr
@@ -161,6 +159,5 @@ theorem rawMoment_of_large_rows_ge_one (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha
 
 end SevenEighths.DetectorDictionaryInverseRawCompact
 
-end
 
 end OAI

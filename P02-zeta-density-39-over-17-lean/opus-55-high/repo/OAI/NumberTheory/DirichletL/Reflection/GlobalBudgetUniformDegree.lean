@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.GlobalBudget
 public import OAI.NumberTheory.DirichletL.Reflection.FullBudgetUniformDegree
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
-noncomputable section
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
@@ -30,27 +30,27 @@ theorem original_global_full_budget_uniform_degree
     ∀ (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
       (Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot : ℝ),
       Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<Cf → 0<X → 0<QK → 0<QP →
-      (Ideal.absNorm I:ℝ)≤Ck*Z^M →
-      Z^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
-      Z^H/CH≤(Ideal.absNorm (rowResidualPart I (B*F*R)):ℝ) →
-      (Ideal.absNorm F:ℝ)≤Cf*Z^V →
+      (Ideal.absNorm I:ℝ)≤Ck*Z ^M →
+      Z ^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
+      Z ^H/CH≤(Ideal.absNorm (rowResidualPart I (B*F*R)):ℝ) →
+      (Ideal.absNorm F:ℝ)≤Cf*Z ^V →
       Real.log (CH*Ck*CO)/Real.log Z≤η →
       Real.log (widthConstant B Ck CO CH Cf)/Real.log Z≤η →
       CanonicalMargins F₀ M (normWidth Z R) z₀ margin → F₀=N+V →
       Nstar=N-3*hhat → V≤d → hhat≤d+η →
       H=Real.logb Z QK → za=Real.logb Z (QP/2) → Nstar=Real.logb Z X →
       0≤M → 0≤O₀ → 0≤za → za≤z₀ →
-      0<cstar → cstar/2≤margin → d≤cstar/200 →
-      η≤cstar/1000 → δ+η≤cstar/1000 → π≤cstar/1000 →
-      QK≤Z^Lrow → (QP/2)≤Z^Lslot →
+      0< cstar → cstar/2≤ margin → d≤ cstar/200 →
+      η≤ cstar/1000 → δ+η≤ cstar/1000 → π≤ cstar/1000 →
+      QK≤Z ^Lrow → (QP/2)≤Z ^Lslot →
       Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
-      X⁻¹≤Z^Lcap → QK≤Z^Lcap → QP≤Z^Lcap → -saving≤F₀-3*cstar/16-O₀/2 →
+      X⁻¹≤Z ^Lcap → QK≤Z ^Lcap → QP≤Z ^Lcap → -saving≤F₀-3*cstar/16-O₀/2 →
       let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
       let j := fun b : A => completedLocalExponent J F b.val.val
-      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lcap →
-      (familyRawScale G s X QK QP)⁻¹≤Z^Lscale →
-      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lpool → κ+ρ*Lpool≤cstar/16 →
-    ∀ (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z ^Lcap →
+      (familyRawScale G s X QK QP)⁻¹≤Z ^Lscale →
+      (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z ^Lpool → κ+ρ*Lpool≤ cstar/16 →
+    ∀ (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis→ PrimeFamily σ)
       (hrows : ∀ K∈rows,Admissible K),
       (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
       (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
@@ -68,34 +68,23 @@ theorem original_global_full_budget_uniform_degree
       (∀ K∈rows,‖r K‖≤1) → (∀ P∈Pset,‖aw P‖≤1) →
       (∑ K : rows,‖literalWholeRow G K.val (hrows K.val K.property) S j Pset
         (D K) s hc₀ W θ X r aw‖^2)≤
-        C*(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2) := by
-  obtain ⟨degree,hu⟩ := original_sector_full_budget_uniform_degree
-    ε hε lo hi hlo W hWs hW ρ hρ η hηpos κ δ Lscale Lpool hκ hδL hLpool Lcap saving hδ
-  refine ⟨degree,?_⟩
-  intro Nlevel a c₀ mode _ s hc₀ hNlevel hbase hac
-  obtain ⟨C,Z₀,hC,hZ₀,henergy⟩ := hu (Nlevel:=Nlevel) (a:=a) (c₀:=c₀) (mode:=mode) s hc₀ hNlevel hbase hac
+        C*(1+‖θ‖)^degree*Z ^(F₀-3*cstar/16-O₀/2) := by
+  pm_3319 original_sector_full_budget_uniform_degree
+  pm_3318
   let q := (Fintype.card (Eis⧸Ideal.span {Nlevel^2}):ℝ)
   have hq : 0≤q := Nat.cast_nonneg _
   refine ⟨q^3*C+1,Z₀,by positivity,hZ₀,?_⟩
-  intro σ _ J I F B R Q₀ hJ hI hF hB hR hpower hmask A
-    Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot
-    hZ hCk hCO hCH hCf hX hQK hQP hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
-    heH heza heN hM hO hz hzcap hc hmargin hd hη hτ hπ hrowcap hslotcap hconst hbudget hXi hKcap hPcap hexp
-  dsimp only
+  pb_949
   intro hFcap hscap hpool hsmall rows Pset S hrows hGN hGchar hrowcop hprod hScop hSN hSchar
-  let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
-  let j := fun b : A => completedLocalExponent J F b.val.val
-  have hpair := (poolPrimeFamily J (B*F*R) Q₀).restrict_pairwise (poolPrimeFamily_pairwise J (B*F*R) Q₀) A
-  obtain ⟨D,hD⟩ := exists_global_sector_completion G rows Pset S hrows s hc₀ hNlevel hbase hac hpair hGN
-    hrowcop hprod hScop (fun P hP b => hSN P hP (Sum.inr b))
-  refine ⟨D,?_⟩
-  intro θ r aw hqk hqp hKr hPr hr haw
-  have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
+  pm_3298
+  pm_3268
+  pm_3269 hpair
+  pm_498
+  pm_3317
+  pm_213 hzpos hZ₀
   have hs := literal_global_sector_energy G rows Pset S hrows j D s hc₀ W θ X r aw
-    (C*(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2)) (by
-      intro r₀ p₀
-      obtain ⟨E,hE⟩ := hD r₀ p₀
-      refine ⟨E,hE,?_⟩
+    (C*(1+‖θ‖)^degree*Z ^(F₀-3*cstar/16-O₀/2)) (by
+      pm_5673
       exact henergy J I F B R Q₀ hJ hI hF hB hR hpower hmask A
         Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot
         hZ hCk hCO hCH hCf hX hQK hQP hk hpow hrow hf hlogH hlogT hinv hF₀ hscale hV hh
@@ -113,10 +102,9 @@ theorem original_global_full_budget_uniform_degree
         (fun K hK => hr K (Finset.mem_filter.mp hK).1)
         (fun P hP => haw P (Finset.mem_filter.mp hP).1))
   apply hs.trans
-  change q^3*(C*(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2))≤_
-  have hp : 0≤(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2) := by positivity
+  change q^3*(C*(1+‖θ‖)^degree*Z ^(F₀-3*cstar/16-O₀/2))≤_
+  have hp : 0≤(1+‖θ‖)^degree*Z ^(F₀-3*cstar/16-O₀/2) := by positivity
   nlinarith only [hp]
-end
 end SevenEighths.InverseReflectedPhase
 
 end OAI

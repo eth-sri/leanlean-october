@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.MarkedTwists
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,15 +28,16 @@ theorem markTwist_periodic (p : ι → Eis) (S T : Finset ι) (hTS : T ⊆ S) :
   apply Finset.prod_congr rfl
   intro i hi
   apply coprimalityMask_periodic (p i) x y
-  apply Ideal.mem_span_singleton.mpr
-  exact (Finset.dvd_prod_of_mem p (hTS hi)).trans (Ideal.mem_span_singleton.mp hxy)
+  pm_8703 hTS hi
 
 def markedThetaQuotient (p : ι → Eis) (S : Finset ι) (Ψ : Eis →* ℂ) (c : Eis)
     (x : Eis ⧸ Ideal.span {c}) : ℂ :=
   fixedThetaQuotient Ψ c x * ∏ i ∈ S, if p i ∣ Quotient.out x then 1 else 0
 
-theorem markedThetaQuotient_twists (p : ι → Eis) (S : Finset ι)
-    (hp : ∀ i ∈ S, Prime (p i)) (Ψ : Eis →* ℂ) (c : Eis)
+section
+variable (p : ι → Eis) (S : Finset ι) (hp : ∀ i ∈ S, Prime (p i)) (Ψ : Eis →* ℂ)
+include p S hp Ψ
+theorem markedThetaQuotient_twists (c : Eis)
     (x : Eis ⧸ Ideal.span {c}) :
     markedThetaQuotient p S Ψ c x =
       ∑ T ∈ S.powerset, (-1 : ℂ) ^ T.card * fixedThetaQuotient (markTwist p T * Ψ) c x := by
@@ -45,19 +47,15 @@ theorem markedThetaQuotient_twists (p : ι → Eis) (S : Finset ι)
     change (if p i ∣ Quotient.out x then (1 : ℂ) else 0) =
       1 - (if IsCoprime (p i) (Quotient.out x) then 1 else 0)
     rw [(hp i hi).coprime_iff_not_dvd]
-    by_cases h : p i ∣ Quotient.out x <;> simp [h]
+    grind
   unfold markedThetaQuotient
   rw [Finset.prod_congr rfl hmark, Finset.prod_sub]
-  simp only [Finset.prod_const_one, mul_one, Finset.mul_sum]
-  apply Finset.sum_congr rfl
+  pm_424 Finset.prod_const_one mul_one Finset.mul_sum Finset.sum_congr
   intro T hT
   rw [show markTwist p T * Ψ = Ψ * markTwist p T from mul_comm _ _]
-  simp only [fixedThetaQuotient, fixedThetaTwist_mul, markTwist, MonoidHom.finsetProd_apply]
-  ring
+  pm_3523 fixedThetaQuotient fixedThetaTwist_mul markTwist MonoidHom.finsetProd_apply
 
-theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
-    (hp : ∀ i ∈ S, Prime (p i))
-    (Ψ : Eis →* ℂ) (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
+theorem markedCompletedT_canonical_reflection (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
     (Q : Ideal Eis) (hperiod : CanonicalCoefficientClass.FactorsModulo Q Ψ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
     (hcQ : Ideal.span {c} ≤ Ideal.span {(9 : Eis)} * (Q * Ideal.span {∏ i ∈ S, p i}))
@@ -88,8 +86,7 @@ theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
     unfold finiteAdditiveFourierCoeff
     simp_rw [markedThetaQuotient_twists p S hp Ψ c]
     simp only [Finset.sum_mul]
-    rw [Finset.sum_comm]
-    simp only [Finset.sum_div, Finset.mul_sum, mul_div_assoc, mul_assoc]
+    pm_214 Finset.sum_comm Finset.sum_div Finset.mul_sum mul_div_assoc mul_assoc
   rw [markedCompletedT_prime_product_twists S p hp Ψ W hWcompact X hX]
   change (∑ T ∈ S.powerset, (-1 : ℂ) ^ T.card * completedT (markTwist p T * Ψ) W X) = _
   calc
@@ -105,11 +102,9 @@ theorem markedCompletedT_canonical_reflection (p : ι → Eis) (S : Finset ι)
       simp_rw [hcoeff]
       simp only [Finset.mul_sum, Finset.sum_mul]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro h hh
-      apply Finset.sum_congr rfl
-      intro T hT
+      pm_3397 h hh T hT
       ring
+end
 
 end
 end SevenEighths.InverseMoment

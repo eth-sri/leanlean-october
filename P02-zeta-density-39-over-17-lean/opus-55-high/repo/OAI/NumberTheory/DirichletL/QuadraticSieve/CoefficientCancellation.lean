@@ -1,5 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.RayCharacters
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,84 +9,41 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-
-open scoped BigOperators Classical
 
 namespace MixedCrossSeparation
 open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
 
-theorem norm_localCoefficient (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
-    (hg : lambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
+section
+variable (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal] (hg : lambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+include p hp hg hc
+theorem norm_localCoefficient :
     ‖localCoefficient p hp hg‖ = 1 := by
   rw [localCoefficient, norm_mul, norm_star, norm_angularFactor p hp,
     norm_localGauss p hp hg hc 2 (by decide) (by decide), one_mul]
 
-theorem local_coefficient_cancel (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
-    (hg : lambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+theorem local_coefficient_cancel
     (hpr : lambda ^ 2 ∣ p - 1) :
     localCoefficient p hp hg * convertedLocal p hp hg false = localG p hp hg ∧
       star (localCoefficient p hp hg) * convertedLocal p hp hg true =
@@ -117,8 +76,12 @@ theorem local_coefficient_cancel (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaxi
           _ = canonicalSextic (Ideal.span {p}) hg (Ideal.Quotient.mk (Ideal.span {p}) (-1 : O)) *
               (localG p hp hg * star (localG p hp hg)) := by rw [hG]
           _ = _ := by ring
+end
 
-theorem canonicalProductG_crt {ι : Type*} [Fintype ι]
+section
+variable {ι : Type*} [Fintype ι]
+include ι
+theorem canonicalProductG_crt
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) :
@@ -138,7 +101,7 @@ theorem canonicalProductG_crt {ι : Type*} [Fintype ι]
         ∏ i, localGauss (p i) (hp i) (hg i) 3)
   ring
 
-theorem convertedColumnBlock_univ {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem convertedColumnBlock_univ [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (b : Bool) :
     convertedColumnBlock p hp hg Finset.univ b =
@@ -152,7 +115,7 @@ theorem convertedColumnBlock_univ {ι : Type*} [Fintype ι] [DecidableEq ι]
   ext k
   simp
 
-theorem coefficient_cancel_univ_false {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem coefficient_cancel_univ_false [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
@@ -172,7 +135,7 @@ theorem coefficient_cancel_univ_false {ι : Type*} [Fintype ι] [DecidableEq ι]
       congr 1
       exact Finset.prod_congr rfl (fun i _ => (local_coefficient_cancel (p i) (hp i) (hg i) (hc i) (hpr i)).1)
 
-theorem coefficient_cancel_univ_true {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem coefficient_cancel_univ_true [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i})
@@ -208,13 +171,14 @@ theorem coefficient_cancel_univ_true {ι : Type*} [Fintype ι] [DecidableEq ι]
       congr 1
       exact Finset.prod_congr rfl (fun i _ => (local_coefficient_cancel (p i) (hp i) (hg i) (hc i) (hpr i)).2)
     _ = _ := by rw [Finset.prod_mul_distrib]; ring
+end
 
 theorem columnPrimeCoprime {ι : Type*} (p : ι → O)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (S : Finset ι) :
     Pairwise (Function.onFun IsCoprime (fun i : S => Ideal.span {p i.val})) := by
   intro i j hij
-  exact hcop (fun h => hij (Subtype.ext h))
+  pm_3042 hcop h hij Subtype.ext
 
 def columnCoefficient {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -240,30 +204,21 @@ theorem convertedColumnBlock_subtype {ι : Type*} [DecidableEq ι]
   have he : (Finset.univ : Finset S).image Subtype.val = S := by ext; simp
   simpa only [he] using h
 
-theorem columnCoefficient_cancel_false {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) :
+section
+variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hg : ∀ i, lambda ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι)
+include ι p hp hcop hg hc hpr S
+theorem columnCoefficient_cancel_false :
     columnCoefficient p hp hcop hg S * convertedColumnBlock p hp hg S false =
       columnG p hp hcop hg S := by
-  have h := coefficient_cancel_univ_false (fun i : S => p i.val) (fun i => hp i.val)
-    (columnPrimeCoprime p hcop S) (fun i => hg i.val) (fun i => hc i.val) (fun i => hpr i.val)
+  pm_3048 coefficient_cancel_univ_false
   rw [convertedColumnBlock_subtype] at h
   exact h
 
-theorem columnCoefficient_cancel_true {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) :
+theorem columnCoefficient_cancel_true :
     star (columnCoefficient p hp hcop hg S) * convertedColumnBlock p hp hg S true =
       finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (-1) *
         star (columnG p hp hcop hg S) := by
-  have h := coefficient_cancel_univ_true (fun i : S => p i.val) (fun i => hp i.val)
-    (columnPrimeCoprime p hcop S) (fun i => hg i.val) (fun i => hc i.val) (fun i => hpr i.val)
+  pm_3048 coefficient_cancel_univ_true
   have hprod : (∏ i : S, canonicalSextic (Ideal.span {p i.val}) (hg i.val)
       (Ideal.Quotient.mk (Ideal.span {p i.val}) (-1 : O))) =
         finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (-1) := by
@@ -272,10 +227,10 @@ theorem columnCoefficient_cancel_true {ι : Type*} [DecidableEq ι]
         (Ideal.Quotient.mk (Ideal.span {p i}) (-1 : O))))
   rw [convertedColumnBlock_subtype, hprod] at h
   exact h
+end
 
 end MixedCrossSeparation
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace FirstCauchyArithmetic
 open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase MixedGaussConversion
 open MixedCrossSeparation GaussGeneratorTransport ConcretePrimeRowBridge EisensteinSchwartzPoisson
@@ -323,10 +278,9 @@ theorem active_productGauss_eq_mobius_converted
     rw [he]
     exact moebius_mixed_gauss_conversion q (fun i => hp i.val) hq (fun i => hg i.val)
       (fun i => hc i.val) (fun i => hpr i.val) (fun i => decide (i.val ∈ S \ T))
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
-  have hs := supportMobius_sq (fun i => Ideal.span {p i}) hprime hinj S
-  have ht := supportMobius_sq (fun i => Ideal.span {p i}) hprime hinj T
+  pm_3509
+  pm_5889 hs supportMobius_sq hprime hinj S
+  pm_5889 ht supportMobius_sq hprime hinj T
   calc
     _ = (supportMobius (fun i => Ideal.span {p i}) S * supportMobius (fun i => Ideal.span {p i}) S) *
       (supportMobius (fun i => Ideal.span {p i}) T * supportMobius (fun i => Ideal.span {p i}) T) *
@@ -348,9 +302,9 @@ def activeGaussRowFactor
 
 end FirstCauchyArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace QuadraticInitialBound
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
 def pvSeminorms : Finset (ℕ × ℕ) :=
@@ -366,14 +320,18 @@ theorem pvConstant_pos : 0 < pvConstant :=
 def pvControl (W : 𝓢(ℝ, ℂ)) : ℝ :=
   pvConstant * pvSeminorms.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
 
-theorem pvControl_nonneg (W : 𝓢(ℝ, ℂ)) : 0 ≤ pvControl W :=
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+theorem pvControl_nonneg : 0 ≤ pvControl W :=
   mul_nonneg pvConstant_pos.le (apply_nonneg _ _)
 
-theorem pv_lattice_bound (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t) :
+theorem pv_lattice_bound (t : ℝ) (ht : 0 < t) :
     t * (∑' h : {h : O // h ≠ 0},
       ‖paperRadialFourier W (t * ‖eisEmbedding h.val‖ ^ 2)‖) ≤ pvControl W :=
   (Classical.choose_spec
     (Classical.choose_spec paperRadialFourier_nonzero_lattice_uniform)).2 W t ht
+end
 
 theorem norm_finite_character_le_one {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (r : R) : ‖χ r‖ ≤ 1 := by
@@ -381,15 +339,14 @@ theorem norm_finite_character_le_one {R : Type*} [CommRing R] [Fintype R]
   · obtain ⟨u, rfl⟩ := hr
     simpa only [MulChar.coe_equivToUnitHom] using
       (Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)).le
-  · rw [MulChar.map_nonunit χ hr, norm_zero]
-    exact zero_le_one
+  pm_8923 hr
 
 theorem finiteSexticRow_norm_le_one {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hg : ∀ i, lambda ∉ P i) (j : ι → ℕ) (a : O) :
     ‖finiteSexticRow P hg j a‖ ≤ 1 := by
-  let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _
-  let (i : ι) : Field (O ⧸ P i) := Ideal.Quotient.field _
+  pm_3407
+  pm_3049
   rw [finiteSexticRow, norm_prod]
   calc
     _ ≤ ∏ i : ι, (1 : ℝ) := Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
@@ -405,20 +362,7 @@ theorem canonical_polya_vinogradov {ι : Type*} [Fintype ι] [Nonempty ι]
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     ‖∑' z : O, finiteSexticRow P hg j z * W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤
       pvControl W * ‖eisEmbedding (finitePrimeModulus P)‖ := by
-  let c := finitePrimeModulus P
-  let q := ‖eisEmbedding c‖
-  have hq : 0 < q := norm_pos_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P))
-  let t := M / q ^ 2
-  have ht : 0 < t := div_pos hM (sq_pos_of_pos hq)
-  let F : O → ℂ := fun h => star (finiteSexticRow P hg j h) *
-    paperRadialFourier W (t * ‖eisEmbedding h‖ ^ 2)
-  have hF (h : O) : ‖F h‖ ≤ ‖paperRadialFourier W (t * ‖eisEmbedding h‖ ^ 2)‖ := by
-    dsimp only [F]
-    rw [norm_mul, norm_star]
-    exact mul_le_of_le_one_left (norm_nonneg _) (finiteSexticRow_norm_le_one P hg j h)
-  have hs := paperRadialFourier_lattice_summable_norm W t ht
-  have hFs : Summable (fun h : O => ‖F h‖) :=
-    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hF hs
+  pm_3050
   have hzero : F 0 = 0 := by simp only [F, finiteSexticRow_zero, star_zero, zero_mul]
   have heq : (∑' h : O, F h) = ∑' h : {h : O // h ≠ 0}, F h := by
     symm
@@ -427,29 +371,13 @@ theorem canonical_polya_vinogradov {ι : Type*} [Fintype ι] [Nonempty ι]
       hz
     subst h
     exact hh hzero
-  have hn : ‖∑' h : O, F h‖ ≤
-      ∑' h : {h : O // h ≠ 0}, ‖paperRadialFourier W (t * ‖eisEmbedding h.val‖ ^ 2)‖ := by
-    rw [heq]
-    exact (norm_tsum_le_tsum_norm (hFs.subtype _)).trans
-      ((hFs.subtype _).tsum_le_tsum (fun h => hF h) (hs.subtype _))
-  have hbound : t * ‖∑' h : O, F h‖ ≤ pvControl W :=
-    (mul_le_mul_of_nonneg_left hn ht.le).trans (pv_lattice_bound W t ht)
+  pm_3052
   rw [canonical_radial_poisson_normalized P hcop hg hc j hj0 hj6 W M hM]
-  have hargs (h : O) : M * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2 =
-      t * ‖eisEmbedding h‖ ^ 2 := by dsimp [t, q]; ring
-  change ‖((M : ℂ) * canonicalNormalizedGauss P hcop hg j / (q : ℂ)) *
-    ∑' h : O, star (finiteSexticRow P hg j h) *
-      paperRadialFourier W (M * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2)‖ ≤ _
-  simp_rw [hargs]
-  change ‖((M : ℂ) * canonicalNormalizedGauss P hcop hg j / (q : ℂ)) * ∑' h : O, F h‖ ≤ _
+  pm_3051
   rw [norm_mul, norm_div, norm_mul, norm_canonicalNormalizedGauss P hcop hg hc j hj0 hj6,
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos hM, mul_one,
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos hq]
-  change M / q * ‖∑' h : O, F h‖ ≤ pvControl W * q
-  calc
-    _ = q * (t * ‖∑' h : O, F h‖) := by dsimp [t]; field_simp
-    _ ≤ q * pvControl W := mul_le_mul_of_nonneg_left hbound hq.le
-    _ = _ := mul_comm _ _
+  pm_3053
 
 theorem norm_ideal_moebius_le_one (I : Ideal O) :
     ‖(UniqueFactorizationMonoid.moebius I : ℂ)‖ ≤ 1 := by
@@ -480,13 +408,7 @@ theorem canonical_masked_polya_vinogradov
       rw [norm_mul, norm_mul]
       have hp := canonical_polya_vinogradov Q hcop hg hc j hj0 hj6 W _
         (primeSubset_reducedScale_pos P E hM)
-      have hmul : ‖(UniqueFactorizationMonoid.moebius (∏ i ∈ E, P i) : ℂ)‖ *
-          ‖finiteSexticRow Q hg j (primeSubsetGenerator P E)‖ ≤ 1 := by
-        calc
-          _ ≤ 1 * 1 := mul_le_mul (norm_ideal_moebius_le_one _)
-            (finiteSexticRow_norm_le_one Q hg j _) (norm_nonneg _) zero_le_one
-          _ = 1 := one_mul _
-      exact (mul_le_of_le_one_left (norm_nonneg _) hmul).trans hp
+      pm_3054
     _ = _ := by simp only [Finset.sum_const, Finset.card_powerset, nsmul_eq_mul, Nat.cast_pow, Nat.cast_ofNat]
 
 end QuadraticInitialBound

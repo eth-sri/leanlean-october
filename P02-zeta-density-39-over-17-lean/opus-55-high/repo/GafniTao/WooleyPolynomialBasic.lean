@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleyPolynomialSystem
 public import GafniTao.WooleyEquation39
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Basic identities for Wooley polynomial systems
@@ -13,31 +14,24 @@ shape enters only in the congruence extraction of Section 7.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
+section
+variable {Q k qH qB : ℕ} (phi : WooleyPolynomialSystem k) [NeZero qB] (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB) (xi : ZMod qH)
+include Q k qH qB phi gamma alpha xi
 theorem wooleyPolynomialResidueGridSum_eq_zero_of_massSq_eq_zero
-    {Q k qH qB : ℕ} (phi : WooleyPolynomialSystem k) [NeZero qB]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB) (xi : ZMod qH)
     (hmass : wooleyWeightedResidueMassSq gamma xi = 0) :
     wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha xi = 0 := by
   have hterm : ∀ n ∈ wooleyResidueClass Q qH xi, ‖gamma n‖ ^ 2 = 0 := by
-    apply (Finset.sum_eq_zero_iff_of_nonneg
-      (fun _ _ => sq_nonneg _)).mp
-    simpa [wooleyWeightedResidueMassSq] using hmass
+    pm_7483
+    aesop
   unfold wooleyPolynomialWeightedResidueGridSum
-  apply Finset.sum_eq_zero
-  intro n hn
-  have hnzero : ‖gamma n‖ = 0 := (sq_eq_zero_iff).mp (hterm n hn)
-  rw [norm_eq_zero] at hnzero
-  simp [hnzero]
+  pm_2835
+  grind
 
-theorem wooleyPolynomial_sqrt_mass_mul_normalizedResidueGridSum
-    {Q k qH qB : ℕ} (phi : WooleyPolynomialSystem k) [NeZero qB]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB) (xi : ZMod qH) :
+theorem wooleyPolynomial_sqrt_mass_mul_normalizedResidueGridSum :
     (Real.sqrt (wooleyWeightedResidueMassSq gamma xi) : ℂ) *
         wooleyPolynomialNormalizedResidueGridSum phi qB gamma alpha xi =
       wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha xi := by
@@ -50,11 +44,12 @@ theorem wooleyPolynomial_sqrt_mass_mul_normalizedResidueGridSum
         (Ne.symm hmass)
     simp [wooleyPolynomialNormalizedResidueGridSum, hmass,
       Real.sqrt_ne_zero'.mpr hmassPos]
+end
 
-theorem wooleyPolynomial_sum_weightedResidueGridSum
-    {Q k qB qH : ℕ} (phi : WooleyPolynomialSystem k)
-    [NeZero qB] [NeZero qH] (gamma : Fin Q → ℂ)
-    (alpha : Fin k → ZMod qB) :
+section
+variable {Q k qB qH : ℕ} (phi : WooleyPolynomialSystem k) [NeZero qB] [NeZero qH] (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
+include Q k qB qH phi gamma alpha
+theorem wooleyPolynomial_sum_weightedResidueGridSum :
     ∑ xi : ZMod qH,
         wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha xi =
       wooleyPolynomialWeightedGridSum phi qB gamma alpha := by
@@ -67,9 +62,6 @@ theorem wooleyPolynomial_sum_weightedResidueGridSum
       gamma n * wooleyPolynomialGridPhase phi qB Q alpha n)]
 
 theorem wooleyPolynomial_normalizedGridSum_decomposition
-    {Q k qB qH : ℕ} (phi : WooleyPolynomialSystem k)
-    [NeZero qB] [NeZero qH] (gamma : Fin Q → ℂ)
-    (alpha : Fin k → ZMod qB)
     (hmass : wooleyWeightedMassSq gamma ≠ 0) :
     wooleyPolynomialNormalizedGridSum phi qB gamma alpha =
       ((Real.sqrt (wooleyWeightedMassSq gamma) : ℂ)⁻¹) *
@@ -81,12 +73,13 @@ theorem wooleyPolynomial_normalizedGridSum_decomposition
     phi gamma alpha]
   rw [wooleyPolynomial_sum_weightedResidueGridSum phi gamma alpha]
   simp [wooleyPolynomialNormalizedGridSum, hmass]
+end
 
+section
+variable {Q k qB qH s : ℕ} (phi : WooleyPolynomialSystem k) [NeZero qB] [NeZero qH] (gamma : Fin Q → ℂ)
+include Q k qB qH s phi gamma
 /-- Polynomial-system equation (3.9), with the exact normalization. -/
-theorem wooleyPolynomial_equation_3_9
-    {Q k qB qH s : ℕ} (phi : WooleyPolynomialSystem k)
-    [NeZero qB] [NeZero qH]
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
+theorem wooleyPolynomial_equation_3_9 (alpha : Fin k → ZMod qB)
     (hs : 1 ≤ s) (hmass : wooleyWeightedMassSq gamma ≠ 0) :
     ‖wooleyPolynomialNormalizedGridSum phi qB gamma alpha‖ ^ (2 * s) ≤
       (qH : ℝ) ^ s * (wooleyWeightedMassSq gamma)⁻¹ *
@@ -102,8 +95,7 @@ theorem wooleyPolynomial_equation_3_9
     wooleyWeightedResidueMassSq gamma xi *
       ‖wooleyPolynomialNormalizedResidueGridSum
         phi qB gamma alpha xi‖ ^ (2 * s)
-  have hM : 0 < M := lt_of_le_of_ne
-    (wooleyWeightedMassSq_nonneg gamma) (Ne.symm hmass)
+  pm_2836
   have hdecomp := wooleyPolynomial_normalizedGridSum_decomposition
     (qH := qH) phi gamma alpha hmass
   have hholder := wooley_weighted_complex_sum_pow_le
@@ -136,10 +128,7 @@ theorem wooleyPolynomial_equation_3_9
     _ = _ := by rfl
 
 /-- Polynomial-system equation (3.10). -/
-theorem wooleyPolynomial_equation_3_10
-    {Q k qB qH s : ℕ} (phi : WooleyPolynomialSystem k)
-    [NeZero qB] [NeZero qH]
-    (gamma : Fin Q → ℂ) (hs : 1 ≤ s) :
+theorem wooleyPolynomial_equation_3_10 (hs : 1 ≤ s) :
     wooleyPolynomialWeightedGridMean phi s qB gamma ≤
       (qH : ℝ) ^ s *
         wooleyPolynomialConditionedGridMean phi s qB qH gamma := by
@@ -178,13 +167,10 @@ theorem wooleyPolynomial_equation_3_10
                       phi qB gamma alpha xi‖ ^ (2 * s))) := by
         simp_rw [Finset.mul_sum]
         rw [Finset.sum_comm]
-        apply Finset.sum_congr rfl
-        intro xi hxi
-        apply Finset.sum_congr rfl
-        intro alpha halpha
+        pm_90 Finset.sum_congr xi hxi alpha halpha
         ac_rfl
-
-
 end
+
+
 
 end GafniTao

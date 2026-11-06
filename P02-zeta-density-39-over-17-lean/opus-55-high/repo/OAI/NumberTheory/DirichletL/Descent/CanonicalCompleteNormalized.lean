@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongNormalization
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalPunctureMaskEnergy
 public import OAI.NumberTheory.DirichletL.Descent.CompletedReopening
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,17 +17,17 @@ open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseIni
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→ Finset ι)(a:σ→ι→ℂ)
     (labels:Finset (Ideal O))(hlabels:∀I∈labels,primaryGenerator I≠0)
     (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z F R:ℝ)(hZ:0<Z) :
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels
       (nonzeroChildFrequencyBall 1 R) weight W X Z F=
-    Z^(-F)*(∑I∈labels,weight I*∑k∈nonzeroChildFrequencyBall 1 R,
+    Z ^(-F)*(∑I∈labels,weight I*∑k∈nonzeroChildFrequencyBall 1 R,
       ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m (idealGenerator I) k slots lists a W X‖^2) := by
-  have hn:‖((Z^(-F/2):ℝ):ℂ)‖^2=Z^(-F) := by
+  have hn:‖((Z ^(-F/2):ℝ):ℂ)‖^2=Z ^(-F) := by
     rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.rpow_pos_of_pos hZ _),
       ←Real.rpow_mul_natCast hZ.le]
     congr 1
@@ -42,21 +43,20 @@ theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][De
 theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
     (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
     (Ψ:O→*ℂ)(m:O)(slots:Finset σ)
-    (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
+    (lists:σ→ Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
+    (a:σ→ primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
     (labels:Finset (Ideal O))(hlabels:∀I∈labels,Supported I)
     (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z Fexp R:ℝ)(hZ:0<Z) :
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
-    Z^(-Fexp)*(∑I∈labels,weight I*∑k∈nonzeroChildFrequencyBall 1 R,
+    Z ^(-Fexp)*(∑I∈labels,weight I*∑k∈nonzeroChildFrequencyBall 1 R,
       ‖outsideCanonicalMarkedRow S D hbad Ψ m (idealGenerator I) k slots lists a W X‖^2)=
     normalizedColumnEnergy (poolPrimary F) (poolPrimary_ne_zero F hF)
       (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m slots lists a labels
       (nonzeroChildFrequencyBall 1 R) weight W X Z Fexp := by
-  let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
+  pm_7531
   let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
   dsimp only

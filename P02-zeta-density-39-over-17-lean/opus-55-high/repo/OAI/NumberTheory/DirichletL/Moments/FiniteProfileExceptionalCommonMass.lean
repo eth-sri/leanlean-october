@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonAsymmetric
 public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,10 +16,10 @@ open CenteredMomentExceptionalAmplitudePair CenteredMomentAllocatedDetectorAmpli
 open CenteredMomentCommonExceptionalMass CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι] {wlo whi:ℝ}
-lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D R:Ideal O)(hC:C≠0)(hD:D≠0)
+lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D R:Ideal O)(hC:C≠0)(hD:D ≠0)
     (B:actualAllocations s.pools C)(E:actualAllocations v.pools D)(p q:Profiles wlo whi)(J:ℕ):
     (‖commonScalar s C R B‖*‖commonScalar v D R E‖)*
-      profileMass Sprofile (commonData s C R B) (commonData v D R E) p q J≤
+      profileMass Sprofile (commonData s C R B) (commonData v D R E) p q J ≤
         profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
           ((Ideal.absNorm C:ℝ)*Ideal.absNorm D):=by
   have hs:=scalar_profile_volume s C R hC B
@@ -31,10 +32,10 @@ lemma common_pair_profile_bound (Sprofile:Finset (ℕ×ℕ)) (s v:Input ι)(C D 
     (show 0≤p.control Sprofile*q.control Sprofile*(1+‖s.t‖)^J*(1+‖v.t‖)^J from
       mul_nonneg (mul_nonneg (mul_nonneg (Profiles.control_nonneg p Sprofile)
         (Profiles.control_nonneg q Sprofile)) (by positivity)) (by positivity))
-  convert hh using 1 <;> dsimp only [profileMass,commonData] <;> ring
+  pm_7584 hh profileMass commonData
 
 theorem common_profile_mass (δ:ℝ)(hδ:0<δ):
-    ∃K:ℝ,0<K ∧ ∀(Sprofile:Finset (ℕ×ℕ))(s v:Input ι)(C D R:Ideal O),C≠0 → D≠0 → ∀(p q:Profiles wlo whi)(J:ℕ),
+    ∃K:ℝ,0<K ∧ ∀(Sprofile:Finset (ℕ×ℕ))(s v:Input ι)(C D R:Ideal O),C≠0 → D ≠0 → ∀(p q:Profiles wlo whi)(J:ℕ),
       (∑B:actualAllocations s.pools C,∑E:actualAllocations v.pools D,
         (‖commonScalar s C R B‖*‖commonScalar v D R E‖)*
           profileMass Sprofile (commonData s C R B) (commonData v D R E) p q J)≤
@@ -42,7 +43,7 @@ theorem common_profile_mass (δ:ℝ)(hδ:0<δ):
           (profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
             ((Ideal.absNorm C:ℝ)*Ideal.absNorm D)):=by
   obtain ⟨K,hK,hcard⟩:=actualAllocations_small_power (ι:=ι⊕Fin 2) δ hδ
-  refine ⟨K^2,sq_pos_of_pos hK,?_⟩
+  refine ⟨K ^2,sq_pos_of_pos hK,?_⟩
   intro Sprofile s v C D R hC hD p q J
   let A:=profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
     ((Ideal.absNorm C:ℝ)*Ideal.absNorm D)

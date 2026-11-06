@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LocalWeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,9 +23,7 @@ lemma localCubePhase_step_two (C omega : ℂ) (hC : C^2=omega) (ho : omega^2=1)
   have ht : omega^(2*(3*k+e+l)+1)=omega := by
     rw [pow_add,pow_mul omega 2,ho,one_pow,pow_one,one_mul]
   rw [he,pow_add omega _ (2*(3*k+e+l)+1),ht]
-  calc
-    _ = C^l*omega^((e+3*l)*k+e*l+l.choose 2)*omega^2 := by ring
-    _ = _ := by rw [ho,mul_one]
+  grind
 
 theorem weightedScalar_step_two (Q eta a G1 C omega X W V scalar : ℂ)
     (hQ : Q≠0) (hC : C^2=omega) (ho : omega^2=1) (e l k m : ℕ) :
@@ -35,7 +34,7 @@ theorem weightedScalar_step_two (Q eta a G1 C omega X W V scalar : ℂ)
   rw [pow_add (a*X^3/Q) l 2,pow_succ V m]
   have hbase : (a*X^3/Q)^2*Q^6=a^2*Q^4*X^6 := by
     field_simp
-  linear_combination (-eta*X/G1)^e*(a*X^3/Q)^l*localCubePhase C omega e l k*scalar*W^k*V^m*V*hbase
+  grind
 
 def rowWeightedScalar (Q eta a G1 C omega X W V rho scalar : ℂ) (e l k m : ℕ) : ℂ :=
   (rho^k/rho^(e+3*l))*weightedScalar Q eta a G1 C omega X W V scalar e l k m
@@ -49,13 +48,13 @@ theorem rowWeightedScalar_parameters (Q eta a G1 C omega X W V rho scalar : ℂ)
     rowWeightedScalar Q eta a G1 C omega X W V rho scalar e l k m=
       weightedScalar Q (eta/rho) (a/rho^3) G1 C omega X (rho*W) V scalar e l k m := by
   unfold rowWeightedScalar weightedScalar
-  simp only [pow_add,pow_mul,mul_pow,div_eq_mul_inv,mul_inv_rev,inv_pow]
+  pm_382 pow_add pow_mul mul_pow div_eq_mul_inv mul_inv_rev inv_pow
   ring
 
 theorem evenRatio_unit (Q a X V rho : ℂ) (hρ : rho^6=1) :
     evenRatio Q (a/rho^3) X V=evenRatio Q a X V := by
   unfold evenRatio
-  rw [div_pow,←pow_mul,show 3*2=6 by decide,hρ,div_one]
+  grind
 
 theorem rowWeightedScalar_step_two (Q eta a G1 C omega X W V rho scalar : ℂ)
     (hQ : Q≠0) (hC : C^2=omega) (ho : omega^2=1) (hρ : rho^6=1) (e l k m : ℕ) :

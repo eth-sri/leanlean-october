@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Oscillatory
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem norm_gmReflectionIntegral_le_six_div_sqrt {tau a b : ℝ}
   let s := Real.sqrt (2 * Real.pi * a)
   let L := (tau - s) / (2 * Real.pi)
   let R := (tau + s) / (2 * Real.pi)
-  have hc : 0 < 2 * Real.pi := by positivity
+  pm_4895 hc Real.pi
   have hs : 0 < s := Real.sqrt_pos.2 (mul_pos hc ha)
   have hs2 : s ^ 2 = 2 * Real.pi * a := Real.sq_sqrt (mul_pos hc ha).le
   have hL : 2 * Real.pi * L = tau - s := by
@@ -34,23 +35,19 @@ theorem norm_gmReflectionIntegral_le_six_div_sqrt {tau a b : ℝ}
   have h26 : 2 / s ≤ 6 / s := div_le_div_of_nonneg_right (by norm_num) hs.le
   by_cases hbL : b ≤ L
   · have hgap : s ≤ tau - 2 * Real.pi * b := by nlinarith
-    exact (norm_gmReflectionIntegral_le_left hab ha (by linarith)).trans
-      ((div_le_div_of_nonneg_left (by norm_num) hs hgap).trans h26)
+    pm_5794 norm_gmReflectionIntegral_le_left
   by_cases hRa : R ≤ a
   · have hgap : s ≤ 2 * Real.pi * a - tau := by nlinarith
-    exact (norm_gmReflectionIntegral_le_right hab ha (by linarith)).trans
-      ((div_le_div_of_nonneg_left (by norm_num) hs hgap).trans h26)
+    pm_5794 norm_gmReflectionIntegral_le_right
   have hLb : L ≤ b := le_of_lt (lt_of_not_ge hbL)
   have haR : a ≤ R := le_of_lt (lt_of_not_ge hRa)
   let u := max a L
   let v := min b R
-  have hau : a ≤ u := le_max_left _ _
-  have huL : L ≤ u := le_max_right _ _
+  pm_5146 hau a u huL L
   have hvb : v ≤ b := min_le_left _ _
   have hvR : v ≤ R := min_le_right _ _
   have huv : u ≤ v := max_le (le_min hab haR) (le_min hLb hLR)
-  have hu : 0 < u := ha.trans_le hau
-  have hv : 0 < v := hu.trans_le huv
+  pm_4278 hu u ha.trans_le hau hv v hu.trans_le huv
   have hleft : ‖gmReflectionIntegral tau a u‖ ≤ 2 / s := by
     by_cases hLa : L ≤ a
     · have hua : u = a := max_eq_left hLa

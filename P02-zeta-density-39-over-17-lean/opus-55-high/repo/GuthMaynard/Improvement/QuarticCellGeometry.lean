@@ -1,9 +1,9 @@
 module
 public import GuthMaynard.Improvement.SourceQuarticKernel
 public import GuthMaynard.Improvement.SeparatedLevelVolume
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
@@ -25,33 +25,12 @@ theorem occupiedRealCells_card {S : Set ℝ} {a b B : ℝ}
     ((occupiedRealCells S a b).card:ℝ) ≤ 2*B := by
   classical
   let K := occupiedRealCells S a b
-  have hex : ∀ k : ℤ, ∃ x : ℝ, k ∈ K → x ∈ S ∧ ⌊x⌋ = k := by
-    intro k
-    by_cases hk : k ∈ K
-    · obtain ⟨x,hx,he⟩ := (Finset.mem_filter.mp hk).2
-      exact ⟨x,fun _ => ⟨hx,he⟩⟩
-    · exact ⟨0,fun h => (hk h).elim⟩
-  choose f hf using hex
-  obtain ⟨J,hJK,hcount,hpar⟩ := MathCollab.Density.occupied_bins_parity K
-  have hfJ : ∀ k ∈ J, f k ∈ S ∧ ⌊f k⌋ = k := fun k hk => hf k (hJK hk)
+  pm_4600
   have hinj : Set.InjOn f (J : Set ℤ) := by
     intro k hk l hl he
     rw [← (hfJ k hk).2,← (hfJ l hl).2,he]
-  have hb := hcard (J.image f) (by
-    intro x hx
-    obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-    exact (hfJ k hk).1) (by
-    intro x hx y hy hxy
-    obtain ⟨k,hk,rfl⟩ := Finset.mem_image.mp hx
-    obtain ⟨l,hl,rfl⟩ := Finset.mem_image.mp hy
-    apply MathCollab.Density.same_parity_bins_separated
-    · rw [(hfJ k hk).2,(hfJ l hl).2]
-      intro he
-      exact hxy (congrArg f he)
-    · rw [(hfJ k hk).2,(hfJ l hl).2]
-      exact hpar k hk l hl)
-  rw [Finset.card_image_of_injOn hinj] at hb
-  have hc : (K.card:ℝ) ≤ 2*(J.card:ℝ) := by exact_mod_cast hcount
+  pm_4601
+  pm_373 hc K.card J.card hcount
   linarith
 
 /-- The actual finite set deleted near occupied cells. -/
@@ -74,8 +53,7 @@ theorem quarticDeleted_card {W : Finset ℝ} (hsep : MathCollab.Density.oneSepar
     have hv : MathCollab.Density.oneSeparated V := MathCollab.Density.oneSeparated_subset hsep (Finset.filter_subset _ _)
     have hd := MathCollab.Density.intervalSpan_le_of_forall (by positivity : 0 ≤ 2*(R+1)) (U := V) (by
       intro t ht u hu
-      have ht' := (Finset.mem_filter.mp ht).2
-      have hu' := (Finset.mem_filter.mp hu).2
+      pm_547 ht' Finset.mem_filter.mp ht hu' hu
       have hh := abs_sub_le t (k:ℝ) u
       rw [abs_sub_comm (k:ℝ) u] at hh
       linarith)

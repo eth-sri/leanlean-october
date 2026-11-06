@@ -7,6 +7,7 @@ residue machinery retains its upstream Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.MellinEntire
 public import MathCollab.Density.DetectorContour
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,27 +30,31 @@ def smoothDetectorResidue (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) : ℂ :=
   (N : ℂ)^(1-ρ) * mellin (fun y => (dampedCutoff ψ q y : ℂ)) (1-ρ) *
     zetaMollifier X 1
 
-theorem smoothContourNumerator_div_eq_kernel (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ)
+section
+variable (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ)
+include ψ ρ X N q
+theorem smoothContourNumerator_div_eq_kernel
     {s : ℂ} (hs : s ≠ 1-ρ) :
     smoothContourNumerator ψ ρ X N q s / (s-(1-ρ)) =
       smoothDetectorKernel ψ ρ X N q s := by
   have hp : ρ+s ≠ 1 := by intro h; apply hs; linear_combination h
   unfold smoothContourNumerator smoothDetectorKernel
   rw [shiftedRegularizedZeta_eq hp]
-  field_simp [sub_ne_zero.mpr hs]
+  grind
 
-theorem smoothContourNumerator_at_pole (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) :
+theorem smoothContourNumerator_at_pole :
     smoothContourNumerator ψ ρ X N q (1-ρ) = smoothDetectorResidue ψ ρ X N q := by
   have hp : ρ+(1-ρ) = 1 := by ring
   simp [smoothContourNumerator, smoothDetectorResidue, shiftedRegularizedZeta,
     hp, regularizedRiemannZeta]
+end
 
 theorem smoothContourNumerator_differentiable {ψ : ℝ → ℝ} {a b : ℝ}
     (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hs : tsupport ψ ⊆ Icc a b)
     (ρ : ℂ) (X q : ℝ) {N : ℝ} (hN : 0 < N) :
     Differentiable ℂ (smoothContourNumerator ψ ρ X N q) := by
   intro s
-  have hBase : (N : ℂ) ≠ 0 := by exact_mod_cast hN.ne'
+  pm_146 hBase N hN.ne'
   have hPow : DifferentiableAt ℂ (fun z : ℂ => (N : ℂ)^z) s :=
     differentiableAt_id.const_cpow (Or.inl hBase)
   have hMellin := (dampedCutoff_mellin_entire hψ ha hs q s (mem_univ s)).differentiableAt
@@ -68,7 +73,7 @@ theorem entire_div_sub_rectangle {F : ℂ → ℂ} (hF : Differentiable ℂ F)
     (Complex.differentiableOn_dslope hp).2 hF.differentiableOn
   apply ResidueTheoremOnRectangleWithSimplePole hzRe hzIm hp hg
   intro s hs
-  have hsp : s ≠ p := by simpa using hs.2
+  have hsp : s ≠ p := by grind
   change F s/(s-p) - F p/(s-p) = dslope F p s
   rw [← sub_div, ← sub_smul_dslope F p s, smul_eq_mul,
     mul_div_cancel_left₀ _ (sub_ne_zero.mpr hsp)]
@@ -85,17 +90,13 @@ theorem smoothDetector_finite_rectangle_residue {ψ : ℝ → ℝ} {a b : ℝ}
   let z : ℂ := (l : ℂ)-(R : ℂ)*I
   let w : ℂ := ((1/2 : ℝ) : ℂ)+(R : ℂ)*I
   let p : ℂ := 1-ρ
-  have hRpos : 0 < R := lt_of_le_of_lt (abs_nonneg _) hR
-  have hγLower := (abs_lt.mp hR).1
-  have hγUpper := (abs_lt.mp hR).2
+  pm_4257
   have hzRe : z.re ≤ w.re := by simp [z,w,l]; linarith
   have hzIm : z.im ≤ w.im := by simp [z,w]; linarith
   have hpInterior : Rectangle z w ∈ 𝓝 p := by
-    rw [rectangle_mem_nhds_iff, Set.uIoo_of_le hzRe, Set.uIoo_of_le hzIm,
-      mem_reProdIm, Set.mem_Ioo, Set.mem_Ioo]
-    constructor
+    pm_4254
     · simp [p,z,w,l]
-      constructor <;> linarith
+      grind
     · simp [p,z,w]
       constructor <;> linarith
   have hcontour := entire_div_sub_rectangle

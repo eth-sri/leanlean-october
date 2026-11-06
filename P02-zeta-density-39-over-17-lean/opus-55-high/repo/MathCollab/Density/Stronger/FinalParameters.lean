@@ -19,6 +19,6 @@ theorem exists_stronger_loss_parameters {σ ε : ℝ} (hσ : 3/4 < σ) (hε : 0 
   have hηa : η ≤ ε/24 := min_le_left _ _
   have hηb : η ≤ (σ-3/4)/16 := min_le_right _ _
   have hc := smoothingExponent_lt_one hσ
-  refine ⟨δ,η,(1-smoothingExponent σ)/16,hδ,hδ'.le,hδ'',hη,?_,?_,?_,?_⟩ <;> linarith
+  grind
 
 end MathCollab.Density.Stronger

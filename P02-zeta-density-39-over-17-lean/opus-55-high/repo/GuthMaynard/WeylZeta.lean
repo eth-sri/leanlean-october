@@ -1,10 +1,10 @@
 module
 public import GuthMaynard.WeylExplicit
+public import GuthMaynard.NativeSource.GuthMaynard.WeylZeta
 
 @[expose] public section
 
-open Complex Finset Set
-open scoped BigOperators
+open Complex Finset
 
 namespace RiemannZeta.GuthMaynard
 
@@ -16,66 +16,7 @@ prefixes to monotone nonnegative weights.  It is then applied to the actual
 `n^(-1/2-it)` critical-line weight.
 -/
 
-theorem norm_weighted_sum_le_of_antitone
-    (f : Nat -> Real) (g : Nat -> Complex) (N : Nat) (B : Real)
-    (hN : 0 < N)
-    (hf : forall i, i < N -> 0 <= f i)
-    (hanti : forall i, i + 1 < N -> f (i + 1) <= f i)
-    (hpartial : forall j, j <= N -> ‖∑ i ∈ Finset.range j, g i‖ <= B) :
-    ‖∑ i ∈ Finset.range N, f i • g i‖ <= f 0 * B := by
-  have hparts := Finset.sum_Ico_by_parts f g hN
-  rw [Finset.range_eq_Ico]
-  calc
-    ‖∑ i ∈ Finset.Ico 0 N, f i • g i‖ =
-        ‖f (N - 1) • (∑ i ∈ Finset.range N, g i) -
-          f 0 • (∑ i ∈ Finset.range 0, g i) -
-          ∑ i ∈ Finset.Ico 0 (N - 1),
-            (f (i + 1) - f i) • (∑ j ∈ Finset.range (i + 1), g j)‖ :=
-      congrArg norm hparts
-    _ = ‖(f (N - 1) : Complex) * (∑ i ∈ Finset.range N, g i) -
-        ∑ i ∈ Finset.Ico 0 (N - 1),
-          ((f (i + 1) - f i : Real) : Complex) *
-            (∑ j ∈ Finset.range (i + 1), g j)‖ := by
-      simp only [Finset.sum_range_zero, Complex.real_smul, mul_zero, sub_zero]
-    _ <= ‖(f (N - 1) : Complex) * (∑ i ∈ Finset.range N, g i)‖ +
-        ‖∑ i ∈ Finset.Ico 0 (N - 1),
-          ((f (i + 1) - f i : Real) : Complex) * (∑ j ∈ Finset.range (i + 1), g j)‖ :=
-      norm_sub_le _ _
-    _ <= f (N - 1) * B +
-        ∑ i ∈ Finset.Ico 0 (N - 1), (f i - f (i + 1)) * B := by
-      apply add_le_add
-      · rw [norm_mul, norm_real, Real.norm_eq_abs,
-          abs_of_nonneg (hf (N - 1) (by omega))]
-        exact mul_le_mul_of_nonneg_left (hpartial N le_rfl) (hf (N - 1) (by omega))
-      · calc
-          ‖∑ i ∈ Finset.Ico 0 (N - 1),
-              ((f (i + 1) - f i : Real) : Complex) *
-                (∑ j ∈ Finset.range (i + 1), g j)‖ <=
-              ∑ i ∈ Finset.Ico 0 (N - 1),
-                ‖((f (i + 1) - f i : Real) : Complex) *
-                  (∑ j ∈ Finset.range (i + 1), g j)‖ := norm_sum_le _ _
-          _ <= ∑ i ∈ Finset.Ico 0 (N - 1), (f i - f (i + 1)) * B := by
-            apply Finset.sum_le_sum
-            intro i hi
-            have hi' := Finset.mem_Ico.mp hi
-            rw [norm_mul, norm_real, Real.norm_eq_abs,
-              abs_of_nonpos (sub_nonpos.mpr (hanti i (by omega)))]
-            rw [neg_sub]
-            exact mul_le_mul_of_nonneg_left (hpartial (i + 1) (by omega))
-              (sub_nonneg.mpr (hanti i (by omega)))
-    _ = f 0 * B := by
-      have htel : ∑ i ∈ Finset.Ico 0 (N - 1), (f i - f (i + 1)) =
-          f 0 - f (N - 1) := by
-        rw [Nat.Ico_zero_eq_range, Finset.sum_range_sub']
-      rw [← Finset.sum_mul, htel]
-      ring
-
-theorem logarithmicSum_eq_sum_range (t : Real) (A N : Nat) :
-    logarithmicSum t A (A + N) =
-      ∑ n ∈ Finset.range N, unitaryPhase (logarithmicPhase t (A + n)) := by
-  unfold logarithmicSum phaseSum
-  rw [Finset.sum_Ico_eq_sum_range]
-  simp only [Nat.add_sub_cancel_left, Nat.cast_add]
+export GuthMaynard.NativeMoment (norm_weighted_sum_le_of_antitone logarithmicSum_eq_sum_range)
 
 /-- The actual critical-line Dirichlet block on `[A, A + N)`. -/
 noncomputable def criticalLineWeylBlock (Y : Real) (A N : Nat) : Complex :=
@@ -83,7 +24,10 @@ noncomputable def criticalLineWeylBlock (Y : Real) (A N : Nat) : Complex :=
     (1 / Real.sqrt (A + n) : Real) •
       unitaryPhase (logarithmicPhase (Y ^ 3) (A + n))
 
-theorem criticalLineTerm_eq_cpow (Y : Real) (m : Nat) (hm : 0 < m) :
+section
+variable (Y : Real)
+include Y
+theorem criticalLineTerm_eq_cpow (m : Nat) (hm : 0 < m) :
     (1 / Real.sqrt m : Real) • unitaryPhase (logarithmicPhase (Y ^ 3) m) =
       (m : Complex) ^ (-((1 / 2 : Complex) + (Y ^ 3 : Complex) * I)) := by
   have hw : (1 / Real.sqrt m : Real) =
@@ -97,8 +41,7 @@ theorem criticalLineTerm_eq_cpow (Y : Real) (m : Nat) (hm : 0 < m) :
   push_cast
   ring
 
-theorem criticalLineWeylBlock_eq_cpow
-    (Y : Real) (A N : Nat) (hA : 0 < A) :
+theorem criticalLineWeylBlock_eq_cpow (A N : Nat) (hA : 0 < A) :
     criticalLineWeylBlock Y A N =
       ∑ n ∈ Finset.range N,
         (A + n : Complex) ^ (-((1 / 2 : Complex) + (Y ^ 3 : Complex) * I)) := by
@@ -109,8 +52,7 @@ theorem criticalLineWeylBlock_eq_cpow
 
 /-- Abel summation transfers the uniform prefix Weyl estimate to the genuine
 `n^(-1/2-it)` critical-line weight. -/
-theorem norm_criticalLineWeylBlock_le
-    (Y : Real) (A N : Nat) (hY : 1 <= Y) (hA : 0 < A) (hN : 0 < N)
+theorem norm_criticalLineWeylBlock_le (A N : Nat) (hY : 1 <= Y) (hA : 0 < A) (hN : 0 < N)
     (hYA : Y <= A) (hAY : (A : Real) ^ 2 <= Y ^ 3) (hNA : N <= A) :
     ‖criticalLineWeylBlock Y A N‖ <= 30 * Real.sqrt Y := by
   let f : Nat -> Real := fun n => 1 / Real.sqrt (A + n)
@@ -144,5 +86,6 @@ theorem norm_criticalLineWeylBlock_le
     field_simp [hsqrtA.ne']
   rw [hsimplify] at hweighted
   exact hweighted
+end
 
 end RiemannZeta.GuthMaynard

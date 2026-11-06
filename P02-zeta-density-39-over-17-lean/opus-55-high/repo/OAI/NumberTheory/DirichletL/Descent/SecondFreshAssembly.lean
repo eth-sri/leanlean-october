@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
 public import OAI.NumberTheory.DirichletL.Descent.SecondFreshMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -48,10 +49,7 @@ theorem actual_second_full_mode_columns (F : Finset ι) (x : SecondProfileData �
           logPhase (h 4) (Real.log (primeProductNorm p N/X₀)) *
           logPhase (h 5) (Real.log (primeProductNorm p M/X₀))) := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro N hN
-      apply Finset.sum_congr rfl
-      intro M hM
+      pm_3808
       have hm : pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope
           (secondRelativeLog (secondActualNorms p x N M) G₀ E₀ V₀ K₀ X₀) v.1 v.2 =
           O * logPhase (h 4) (Real.log (primeProductNorm p N/X₀)) *

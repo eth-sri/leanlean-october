@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerIntervalCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -34,19 +35,16 @@ theorem integer_affine_band_pairs_card_le
     let Y := T.image Prod.snd
     have hinj : Set.InjOn (Prod.snd : ℤ × ℤ → ℤ) T := by
       intro p hp q hq he
-      exact Prod.ext ((Finset.mem_filter.mp hp).2.trans
-        (Finset.mem_filter.mp hq).2.symm) he
+      pm_8858 hp hq
     have hcard : Y.card = T.card := Finset.card_image_of_injOn hinj
     have hmem : ∀ n ∈ Y, |(n:ℝ)-(2*d+(x:ℝ))| ≤ B := by
-      intro n hn
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hn
+      pm_1672
       rw [abs_sub_comm,← (Finset.mem_filter.mp hp).2]
       exact hband p (Finset.mem_filter.mp hp).1
     have hb := integer_card_le_of_abs_sub_le Y hB hmem
     rwa [hcard] at hb
   have hmaps : Set.MapsTo (Prod.fst : ℤ × ℤ → ℤ) S X := by
-    intro p hp
-    exact Finset.mem_image.mpr ⟨p,hp,rfl⟩
+    pm_1673
   have hcardR : (S.card:ℝ) =
       ∑ x ∈ X, ((S.filter (fun p => p.1 = x)).card:ℝ) := by
     exact_mod_cast Finset.card_eq_sum_card_fiberwise hmaps
@@ -66,8 +64,7 @@ theorem integer_fixed_displacement_band_card_le
     (S.card:ℝ) ≤ (4*Q+1)*(2*B+1) := by
   classical
   have hinj : Set.InjOn (Prod.snd : ℤ × ℤ × ℤ → ℤ × ℤ) S := by
-    intro p hp q hq he
-    exact Prod.ext ((hd p hp).trans (hd q hq).symm) he
+    pm_7062 Prod.ext hd
   have hcard := Finset.card_image_of_injOn hinj
   have hb := integer_affine_band_pairs_card_le (S.image Prod.snd)
     (d := (d:ℝ)) hQ hB

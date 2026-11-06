@@ -2,11 +2,10 @@ module
 public import CenteredShortTrace
 public import MathCollab.Density.ComparisonCutoff
 public import MathCollab.Density.Packing
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
@@ -38,19 +37,14 @@ theorem matrix_mixed_trace_schur {ι : Type*} [Fintype ι] [DecidableEq ι]
   have hsum (f g : ι → ι → ι → ℝ) :
       (∑ i, ∑ j, ∑ k, (f i j k+g i j k)/2) =
         ((∑ i, ∑ j, ∑ k, f i j k)+(∑ i, ∑ j, ∑ k, g i j k))/2 := by
-    simp only [div_eq_mul_inv,add_mul,Finset.sum_add_distrib,← Finset.sum_mul]
+    pm_1444 div_eq_mul_inv add_mul Finset.sum_add_distrib Finset.sum_mul
   rw [he]
   calc
     _ ≤ ∑ i, ∑ j, ∑ k, ‖C i j*H j k*H k i‖ :=
       (norm_sum_le _ _).trans (sum_le_sum (fun _ _ =>
         (norm_sum_le _ _).trans (sum_le_sum (fun _ _ => norm_sum_le _ _))))
     _ ≤ ∑ i, ∑ j, ∑ k, (‖C i j‖*‖H j k‖^2+‖C i j‖*‖H k i‖^2)/2 := by
-      apply sum_le_sum
-      intro i _
-      apply sum_le_sum
-      intro j _
-      apply sum_le_sum
-      intro k _
+      pm_387 sum_le_sum i j k
       simp only [norm_mul]
       nlinarith [mul_nonneg (norm_nonneg (C i j)) (sq_nonneg (‖H j k‖-‖H k i‖))]
     _ = ((∑ i, ∑ j, ∑ k, ‖C i j‖*‖H j k‖^2)+
@@ -102,24 +96,9 @@ theorem centered_mixed_trace_short_range (w : MathCollab.Density.ReflectionCutof
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       ‖Matrix.trace (cutoffContinuousMatrix w L W*cutoffCenteredMatrix w L W*
         cutoffCenteredMatrix w L W)‖ ≤ C*T^η*L^2*(W.card:ℝ)^2 := by
-  obtain ⟨B,hB,hschur⟩ := cutoff_continuous_schur w
-  obtain ⟨C,hC,hbound⟩ := centered_energy_short_range (reflectionSquare w) hK hη
-  refine ⟨1+B*C,by positivity,?_⟩
+  pm_2777 centered_energy_short_range
   intro T t₀ L hT hL W hR hlen hW hsep
-  have hLp : 0 ≤ L := by linarith
-  obtain ⟨hrow,hcol⟩ := hschur L hLp W hsep
-  have hh := matrix_mixed_trace_schur (cutoffContinuousMatrix w L W) (cutoffCenteredMatrix w L W)
-    (mul_nonneg hB hLp) hrow hcol
-  have he : (∑ t : W, ∑ u : W, ‖cutoffCenteredMatrix w L W t u‖^2) =
-      ∑ t ∈ W, ∑ u ∈ W, ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2 := by
-    simp only [cutoff_centered_entry]
-    rw [Finset.sum_coe_sort W (fun t => ∑ u : W,
-      ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-(u:ℝ))‖^2)]
-    apply sum_congr rfl
-    intro t _
-    exact Finset.sum_coe_sort W (fun u =>
-      ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2)
-  rw [he] at hh
+  pm_2776
   calc
     _ ≤ (B*L)*(∑ t ∈ W, ∑ u ∈ W, ‖MathCollab.Density.hKernel (reflectionSquare w) L (t-u)‖^2) := hh
     _ ≤ (B*L)*(C*T^η*L*(W.card:ℝ)^2) := by

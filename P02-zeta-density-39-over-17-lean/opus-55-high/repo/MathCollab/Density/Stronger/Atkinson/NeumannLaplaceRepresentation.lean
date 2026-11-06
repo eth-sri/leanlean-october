@@ -9,6 +9,7 @@ actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannSchlafliEntry
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,7 +37,10 @@ theorem neumann_sine_integral_eq_cosine (x : ℝ) :
     (a := (0 : ℝ)) (b := Real.pi / 2) (Real.pi / 2)
   simpa only [Real.cos_pi_div_two_sub, sub_self, sub_zero] using h
 
-theorem neumann_schlafli_complex_identity {x : ℝ} (hx : 0 < x) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+theorem neumann_schlafli_complex_identity :
     (∫ u in (0 : ℝ)..Real.pi / 2, Complex.exp (I * (x : ℂ) * Real.cos u)) =
       I * neumannVerticalIntegral x 0 - I * neumannVerticalIntegral x 1 := by
   let a : ℝ → ℝ := fun H => Real.pi / 2 - H⁻¹
@@ -52,16 +56,16 @@ theorem neumann_schlafli_complex_identity {x : ℝ} (hx : 0 < x) :
   have heq : ∀ᶠ H : ℝ in atTop,
       (∫ u in (0 : ℝ)..a H, Complex.exp (I * (x : ℂ) * Real.sin u)) =
         I * neumannVerticalIntegral x 0 - I * neumannVerticalIntegral x (Real.sin (a H)) := by
-    filter_upwards [eventually_ge_atTop (1 : ℝ)] with H hH
+    pm_359 H hH
     have hH0 : 0 < H := by linarith
     have hInv : H⁻¹ ≤ 1 := (inv_le_one₀ hH0).2 hH
     have ha0 : 0 ≤ a H := by dsimp [a]; linarith [Real.pi_gt_three]
-    have ha1 : a H < Real.pi / 2 := by dsimp [a]; linarith [inv_pos.mpr hH0]
-    have hs0 := Real.sin_nonneg_of_nonneg_of_le_pi ha0 (by linarith [Real.pi_pos])
+    have ha1 : a H < Real.pi / 2 := by dsimp [a]; simp_all
+    have hs0 := Real.sin_nonneg_of_nonneg_of_le_pi ha0 (by grind)
     have hs1 : Real.sin (a H) < 1 := by
       have h := Real.sin_lt_sin_of_lt_of_le_pi_div_two
-        (by linarith [Real.pi_pos] : -(Real.pi / 2) ≤ a H) (le_refl (Real.pi / 2)) ha1
-      simpa only [Real.sin_pi_div_two] using h
+        (by grind : -(Real.pi / 2) ≤ a H) (le_refl (Real.pi / 2)) ha1
+      simp_all
     rw [← neumannContourKernel_angular_change x ha0 ha1]
     exact neumannContourKernel_infinite_rectangle hx hs0 hs1
   have hid : (∫ u in (0 : ℝ)..Real.pi / 2, Complex.exp (I * (x : ℂ) * Real.sin u)) =
@@ -69,7 +73,7 @@ theorem neumann_schlafli_complex_identity {x : ℝ} (hx : 0 < x) :
     tendsto_nhds_unique hl (hr.congr' (heq.mono (fun _ h => h.symm)))
   rwa [neumann_sine_integral_eq_cosine] at hid
 
-theorem dfiBesselY0_eq_neumannVerticalIntegral {x : ℝ} (hx : 0 < x) :
+theorem dfiBesselY0_eq_neumannVerticalIntegral :
     dfiBesselY0 x = -(2 / Real.pi) * (neumannVerticalIntegral x 1).re := by
   have h := congrArg Complex.im (neumann_schlafli_complex_identity hx)
   rw [neumannVerticalIntegral_zero_eq_tail] at h
@@ -85,5 +89,6 @@ theorem dfiBesselY0_eq_neumannVerticalIntegral {x : ℝ} (hx : 0 < x) :
   simp only [sub_im, mul_im, I_re, I_im, ofReal_im, ofReal_re, zero_mul, one_mul, zero_add] at h
   rw [dfiBesselY0, h]
   ring
+end
 
 end MathCollab.Density.Stronger.Atkinson

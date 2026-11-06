@@ -14,8 +14,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
-theorem sum_range_mul_blocks {A : Type*} [AddCommMonoid A]
-    (f : ℕ → A) (K L : ℕ) :
+section
+variable {A : Type*} [AddCommMonoid A] (f : ℕ → A)
+include A f
+theorem sum_range_mul_blocks (K L : ℕ) :
     (∑ n ∈ Finset.range (K*L), f n) =
       ∑ k ∈ Finset.range K, ∑ j ∈ Finset.range L, f (k*L+j) := by
   induction K with
@@ -23,13 +25,13 @@ theorem sum_range_mul_blocks {A : Type*} [AddCommMonoid A]
   | succ K ih =>
       rw [Nat.succ_mul,Finset.sum_range_add,ih,Finset.sum_range_succ]
 
-theorem sum_range_euclidean_blocks {A : Type*} [AddCommMonoid A]
-    (f : ℕ → A) (N L : ℕ) :
+theorem sum_range_euclidean_blocks (N L : ℕ) :
     (∑ n ∈ Finset.range N, f n) =
       (∑ k ∈ Finset.range (N/L), ∑ j ∈ Finset.range L, f (k*L+j))+
         ∑ j ∈ Finset.range (N%L), f ((N/L)*L+j) := by
   conv_lhs => rw [← Nat.div_add_mod' N L]
   rw [Finset.sum_range_add,sum_range_mul_blocks]
+end
 
 theorem norm_sum_range_of_block_bounds
     (f : ℕ → ℂ) (N L : ℕ) {B : ℝ}

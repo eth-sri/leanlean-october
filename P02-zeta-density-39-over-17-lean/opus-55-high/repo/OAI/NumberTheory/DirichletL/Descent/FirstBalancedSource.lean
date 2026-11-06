@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlocks
 public import OAI.NumberTheory.DirichletL.Descent.FirstProfileUniform
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open JointLogSeparation MeasureTheory
-noncomputable section
 
 theorem first_fresh_physical_profile
     (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (V : Fin 9 → ℝ → ℂ)
@@ -29,16 +29,12 @@ theorem first_fresh_physical_profile
         pureProfileMode firstLeftSlope firstRightSlope firstKernelSlope (firstRelativeLog q s) z.1 z.2 := by
   by_cases hw₁ : ω₁ (q 7/s 7) = 0
   · have hh : W₁ (q 0*q 2*q 5*q 7/(s 0*s 2*s 5*s 7)) = 0 := by
-      by_contra hn
-      have := hω₁ hn
-      simp only [hw₁,zero_ne_one] at this
-    simp only [firstNormProfile,hh,hw₁,mul_zero,zero_mul,zero_div]
+      pm_8889 hω₁ hw₁
+    pm_382 firstNormProfile hh hw₁ mul_zero zero_mul zero_div
   by_cases hw₂ : ω₂ (q 8/s 8) = 0
   · have hh : W₂ (q 1*q 2*q 5*q 8/(s 1*s 2*s 5*s 8)) = 0 := by
-      by_contra hn
-      have := hω₂ hn
-      simp only [hw₂,zero_ne_one] at this
-    simp only [firstNormProfile,hh,hw₂,mul_zero,zero_mul,zero_div]
+      pm_8889 hω₂ hw₂
+    pm_382 firstNormProfile hh hw₂ mul_zero zero_mul zero_div
   have hcut' := hcut hw₁ hw₂
   have hnom := firstNormProfile_nominal W₁ W₂ Φ (fun _ _ => 1) s q hspos hq K
   have hfull : normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1)
@@ -64,22 +60,16 @@ theorem first_fresh_physical_profile
       firstNormProfile (fun x => W₁ (x/(s 0*s 2*s 5*s 7)))
         (fun x => W₂ (x/(s 1*s 2*s 5*s 8))) Φ (fun _ _ => 1) K q := by
     by_cases h1 : W₁ (q 0*q 2*q 5*q 7/(s 0*s 2*s 5*s 7)) = 0
-    · simp only [firstNormProfile,h1,mul_zero,zero_mul,zero_div]
+    pm_3816 firstNormProfile h1 mul_zero zero_mul zero_div
     by_cases h2 : W₂ (q 1*q 2*q 5*q 8/(s 1*s 2*s 5*s 8)) = 0
-    · simp only [firstNormProfile,h2,mul_zero,zero_mul,zero_div]
-    simp only [hω₁ h1,hω₂ h2,one_mul]
-  calc
-    _ = (firstRootScale s:ℂ)⁻¹*(ω₁ (q 7/s 7)*ω₂ (q 8/s 8))*
-        (normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1)
-          (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) (fun i => q i/s i)) := by
-      conv_lhs => rw [hm,hnom]
-      ring
-    _ = _ := by rw [hfull]
+    pm_3816 firstNormProfile h2 mul_zero zero_mul zero_div
+    pm_8078
+  grind
 
 theorem first_balanced_density_integrable (g : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) :
     Integrable (InverseMomentFirstProfileUniform.density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L) := by
-  exact (full_density_integrable _ _ _ _).const_mul _
+  pm_8382
 
 open ActualEisensteinCubic FirstPassCubeLabels
 local notation "Eis" => ActualEisensteinCubic.O
@@ -144,7 +134,6 @@ theorem actual_first_balanced_block (F : Finset ι) (selector : Finset ι → �
     (by simpa [firstCommonNorms] using hω₂ j hj hn)
     (by simpa [firstCommonNorms] using hcut j hj hn)
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleySection4Arithmetic
 public import GafniTao.WooleyExponent
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Wooley Lemma 4.1
@@ -14,11 +15,9 @@ an externally supplied estimate.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The local progression estimate underlying Lemma 4.1.  This theorem keeps
 the uniform critical-exponent estimate explicit so that its finite sum
@@ -57,10 +56,7 @@ theorem wooleySourcePolynomial_lemma_4_1_local
     xi.val
   let B' := B - k * h
   have hs : 1 ≤ wooleyTriangular k := by
-    unfold wooleyTriangular
-    have hkpos : 0 < k := by omega
-    have htwo : 2 ≤ k * (k + 1) := by nlinarith
-    omega
+    pm_2832
   obtain ⟨Psi, hPsi, h412⟩ := wooleySourcePolynomial_equation_4_12
     hpPrime hc hkhB hs phi hphi xi.val
   have hPsiPhi : Psi.InPhiTau p B' tau := by
@@ -68,7 +64,7 @@ theorem wooleySourcePolynomial_lemma_4_1_local
     dsimp [B']
     rw [Nat.cast_sub hkhB]
     have hkhNonneg : (0 : ℝ) ≤ k * h := by positivity
-    have hhNonneg : (0 : ℝ) ≤ h := by positivity
+    pm_96 hhNonneg h
     push_cast at hphiScale ⊢
     nlinarith
   have hgammaXi : gammaXi.Admissible := by
@@ -116,10 +112,7 @@ theorem wooleySourcePolynomial_lemma_4_1_local
           (p ^ B) (p ^ B') (p ^ (H - h)) (wooleyTriangular k) gammaXi := by
       rw [hceil]
       unfold wooleySection4ConditionedInsertedAverage
-      simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro alpha halpha
-      ring
+      pm_5620
     _ = C * (((p ^ (H - h) : ℕ) : ℝ) ^ Lambda) *
         wooleySourcePolynomialConditionedMean (wooleyTriangular k) (p ^ B)
           (p ^ (H - h)) theta gammaXi := by rw [hconditioned]
@@ -151,7 +144,7 @@ theorem wooleySourcePolynomial_lemma_4_1
     (show wooleyCriticalExponent k p <
         wooleyCriticalExponent k p + epsilon by linarith)
   obtain ⟨C, hC, Bcrit, huniform⟩ := hcritical tau htau
-  obtain ⟨N₁ : ℕ, hN₁⟩ := exists_nat_ge (1 / tau)
+  pm_8875 N₁ hN₁
   obtain ⟨N₂ : ℕ, hN₂⟩ :=
     exists_nat_ge (((Bcrit + k : ℕ) : ℝ) / delta)
   refine ⟨C, hC, max N₁ N₂, ?_⟩
@@ -159,13 +152,13 @@ theorem wooleySourcePolynomial_lemma_4_1
   have hBN₁ : N₁ ≤ B := le_trans (le_max_left _ _) hB
   have hBN₂ : N₂ ≤ B := le_trans (le_max_right _ _) hB
   have htauB : (1 : ℝ) ≤ tau * B := by
-    have hN₁B : (N₁ : ℝ) ≤ B := by exact_mod_cast hBN₁
+    pm_106 hN₁B N₁ B hBN₁
     have htauNonzero : tau ≠ 0 := ne_of_gt htau
     have : 1 / tau ≤ (B : ℝ) := hN₁.trans hN₁B
     rw [div_le_iff₀ htau] at this
     simpa only [one_mul, mul_comm] using this
   have hdeltaB : ((Bcrit + k : ℕ) : ℝ) ≤ delta * B := by
-    have hN₂B : (N₂ : ℝ) ≤ B := by exact_mod_cast hBN₂
+    pm_106 hN₂B N₂ B hBN₂
     have : ((Bcrit + k : ℕ) : ℝ) / delta ≤ (B : ℝ) :=
       hN₂.trans hN₂B
     rw [div_le_iff₀ (lt_trans htau htauDelta)] at this
@@ -188,7 +181,7 @@ theorem wooleySourcePolynomial_lemma_4_1
   by_cases hmass : wooleySourceMassSq gamma = 0
   · simp [wooleySourcePolynomialConditionedMean, hmass]
   · have hH : h ≤ B ⌈/⌉ k := by
-      have hH0 : (0 : ℝ) ≤ (B ⌈/⌉ k : ℕ) := by positivity
+      pm_5658
       have hdeltaPos : 0 < delta := lt_trans htau htauDelta
       have : (h : ℝ) ≤ (B ⌈/⌉ k : ℕ) := by nlinarith
       exact_mod_cast this
@@ -237,10 +230,7 @@ theorem wooleySourcePolynomial_lemma_4_1
                   (wooleyAffinePolynomialSystem phi (p ^ h) xi.val)
                   (wooleyAffinePullback gamma (p ^ h)
                     (pow_pos hpPositive h) xi.val)) := by
-          rw [Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro xi hxi
-          ring
+          pm_4886 xi hxi
         _ = C * (((p ^ (B ⌈/⌉ k - h) : ℕ) : ℝ) ^
               (wooleyCriticalExponent k p + epsilon)) *
             (wooleySourceMassSq gamma *
@@ -256,6 +246,5 @@ theorem wooleySourcePolynomial_lemma_4_1
       (lt_of_le_of_ne (wooleySourceMassSq_nonneg gamma) (Ne.symm hmass))
 
 
-end
 
 end GafniTao

@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BetaClosedSlope
 public import TaoTrudgianYang2025.BetaDiscreteCurvature
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,14 +24,12 @@ theorem modelPhaseClosedSlope_positive_bounds {σ δ : ℝ} {P : ℕ} {F : ℝ �
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     {u : ℝ} (hu : u ∈ phaseInterval) :
     (2 : ℝ)^(-σ)/2 ≤ modelPhaseClosedSlope F u ∧ modelPhaseClosedSlope F u ≤ 2 := by
-  have he := modelPhaseClosedSlope_model_error hF hu
-  rw [abs_le] at he
+  pm_126 he modelPhaseClosedSlope_model_error hF hu abs_le
   have hlo := Real.rpow_le_rpow_of_nonpos (zero_lt_one.trans_le hu.1) hu.2
     (neg_nonpos.mpr hσ.le)
   have hhi := Real.rpow_le_one_of_one_le_of_nonpos hu.1 (neg_nonpos.mpr hσ.le)
-  have hd₀ := hδ.trans (min_le_left _ _)
-  have hd₁ := hδ.trans (min_le_right _ _)
-  constructor <;> linarith
+  pm_1650
+  grind
 
 theorem betaModelSample_firstDifference_bounds
     {σ δ T N A : ℝ} {F : ℝ → ℝ} {P L : ℕ}
@@ -44,12 +43,8 @@ theorem betaModelSample_firstDifference_bounds
         -Real.pi*(2 : ℝ)^(-σ)*T/N := by
   have hinside (x : ℝ) (hx : x ∈ Icc (n : ℝ) (n+1)) :
       (A+x)/N ∈ Ioo (1 : ℝ) 2 := by
-    have hn' : (n : ℝ) ≤ L := by exact_mod_cast hn
-    constructor
-    · apply (lt_div_iff₀ hN).mpr
-      linarith [hx.1,(Nat.cast_nonneg n : (0 : ℝ) ≤ n)]
-    · apply (div_lt_iff₀ hN).mpr
-      linarith [hx.2]
+    pm_106 hn' n L hn
+    pm_5804
   obtain ⟨x,hx,he⟩ := exists_hasDerivAt_eq_slope
     (betaModelSample F T N A)
     (fun y => (-2*Real.pi*T/N)*deriv F ((A+y)/N))
@@ -64,6 +59,6 @@ theorem betaModelSample_firstDifference_bounds
   have hlo := mul_le_mul_of_nonneg_left hb.1 hf
   have hhi := mul_le_mul_of_nonneg_left hb.2 hf
   ring_nf at he hlo hhi ⊢
-  constructor <;> linarith
+  grind
 
 end TaoTrudgianYang2025

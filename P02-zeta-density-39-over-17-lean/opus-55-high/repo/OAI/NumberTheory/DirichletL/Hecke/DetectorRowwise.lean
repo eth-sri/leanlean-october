@@ -2,12 +2,11 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCount
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.HeckeDetectorRowwise
 
@@ -28,12 +27,15 @@ theorem norm_sq_le_anchor_integral (F F' : ℝ→ℂ)
       nlinarith [sq_nonneg (‖F t‖-‖F' t‖)])
   simp only [Pi.pow_apply] at hh
   have hm := intervalIntegral.integral_mono_interval (μ:=volume) (le_refl a) hx.1 hx.2
-    (Filter.Eventually.of_forall (fun t => show 0≤G t by dsimp [G]; positivity))
+    (Filter.Eventually.of_forall (fun t => show 0≤G t by positivity))
     (hG.intervalIntegrable a b)
   change ‖F x‖^2≤‖F a‖^2+∫ t in a..b, G t
   linarith
 
-theorem rowwise_energy {ι : Type*} (rows : Finset ι) (F F' : ι→ℝ→ℂ)
+section
+variable {ι : Type*} (rows : Finset ι)
+include ι rows
+theorem rowwise_energy (F F' : ι→ℝ→ℂ)
     (hF : ∀ i∈rows, Continuous (F i)) (hF' : ∀ i∈rows, Continuous (F' i))
     (hd : ∀ i∈rows, ∀ x, HasDerivAt (F i) (F' i x) x)
     (a b E : ℝ) (hab : a≤b) (choice : ι→ℝ)
@@ -59,7 +61,7 @@ theorem rowwise_energy {ι : Type*} (rows : Finset ι) (F F' : ι→ℝ→ℂ)
   have ha := henergy a ⟨le_refl a,hab⟩
   nlinarith
 
-theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
+theorem rowwise_energy_two
     (F : Fin 2→Fin 2→ι→ℝ→ℝ→ℂ)
     (hcont : ∀ j k i, i∈rows → Continuous (Function.uncurry (F j k i)))
     (hdx : ∀ k i, i∈rows → ∀ x y,
@@ -89,9 +91,9 @@ theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
     (fun i hi => cx 0 0 i hi (py i)) (fun i hi => cx 1 0 i hi (py i))
     (fun i hi x => hdx 0 i hi x (py i)) a b ((1+2*(d-c))*E) hab px hpx
     (he 0) (he 1)
+end
 
 end SevenEighths.HeckeDetectorRowwise
 
-end
 
 end OAI

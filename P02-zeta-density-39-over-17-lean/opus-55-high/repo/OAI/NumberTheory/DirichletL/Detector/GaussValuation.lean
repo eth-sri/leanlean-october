@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.PrimePower
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,8 +11,10 @@ namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
-theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+section
+variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
+include p hp
+theorem primePowerGauss_at_pow_nonprincipal
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (hχ : χ ≠ 1) (n j : ℕ) :
     primePowerGauss p hp.ne_zero χ n (p ^ j) =
       if j = n then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n * primeGauss p hp.ne_zero χ 1
@@ -20,19 +23,17 @@ theorem primePowerGauss_at_pow_nonprincipal (p : O) (hp : Prime p)
   · subst j
     rw [ite_eq_left rfl]
     simpa only [mul_one] using primePowerGauss_lift p hp.ne_zero χ n 1
-  rw [ite_eq_right he]
-  rcases lt_or_gt_of_ne he with hjn | hnj
+  pm_6777 he hjn hnj
   · apply primePowerGauss_zero_off_support
     rw [pow_dvd_pow_iff hp.ne_zero hp.not_isUnit]
     omega
   · have hle : n ≤ j := Nat.le_of_lt hnj
-    have heq : p ^ j = p ^ n * p ^ (j - n) := by rw [← pow_add, Nat.add_sub_of_le hle]
+    pm_819
     rw [heq]
     apply primePowerGauss_nonprincipal_extra_divisibility p hp.ne_zero χ hχ
     exact dvd_pow_self p (by omega)
 
-theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem primePowerGauss_at_pow_principal
     (hψ : quotientTrace p hp.ne_zero ≠ 1) (n j : ℕ) :
     primePowerGauss p hp.ne_zero 1 n (p ^ j) =
       (if n + 1 ≤ j then (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ (n + 1) else 0) -
@@ -55,12 +56,13 @@ theorem primePowerGauss_at_pow_principal (p : O) (hp : Prime p)
       ite_eq_left (le_refl n), zero_sub, mul_neg_one] using
       primePowerGauss_principal p hp.ne_zero hψ n 1
   · have hle : n ≤ j := by omega
-    have heq : p ^ j = p ^ n * p ^ (j - n) := by rw [← pow_add, Nat.add_sub_of_le hle]
+    pm_819
     have hd : p ∣ p ^ (j - n) := dvd_pow_self p (by omega)
     rw [heq, primePowerGauss_principal, ite_eq_left hd, ite_eq_left (by omega : n + 1 ≤ j),
       ite_eq_left hle, hcard, pow_succ]
     ring
     exact hψ
+end
 
 end SevenEighths.ProbePrimePower
 end

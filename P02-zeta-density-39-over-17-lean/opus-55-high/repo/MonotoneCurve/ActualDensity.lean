@@ -1,5 +1,6 @@
 module
 public import ExtendedHB.CurrentCurve
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,8 +19,7 @@ theorem seven_eighths_right_uniform {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨C, hC, h⟩ :=
     Montgomery.RationalMoment.RightDetector.Physical.density_sharp_row8
       (σ := (7/8 : ℝ)) (by norm_num) le_rfl hε
-  refine ⟨C, hC, ?_⟩
-  intro σ hσ T hT
+  pm_486 C hC σ hσ T hT
   have hm : (zetaDensityCount σ T : ℝ) ≤ (zetaDensityCount (7/8) T : ℝ) := by
     exact_mod_cast zetaDensityCount_mono hσ (le_refl T)
   apply hm.trans

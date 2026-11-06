@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.BetaModelJetEstimates
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -27,18 +28,19 @@ namespace TaoTrudgianYang2025
 def aProcessShiftPoint (η t u : ℝ) : ℝ :=
   (1-η)*u+(1+t)*η
 
-theorem aProcessShiftPoint_mem_Icc {η t u : ℝ}
-    (hη : 0 ≤ η) (hη₁ : η ≤ 1) (ht : t ∈ Icc (0 : ℝ) 1)
+section
+variable {η t u : ℝ} (hη : 0 ≤ η)
+include η t u hη
+theorem aProcessShiftPoint_mem_Icc (hη₁ : η ≤ 1) (ht : t ∈ Icc (0 : ℝ) 1)
     (hu : u ∈ Icc (1 : ℝ) 2) :
     aProcessShiftPoint η t u ∈ Icc (1 : ℝ) 2 := by
-  have hleft := mul_nonneg (by linarith : 0 ≤ 1-η) (by linarith [hu.1] : 0 ≤ u-1)
-  have hright := mul_nonneg (by linarith : 0 ≤ 1-η) (by linarith [hu.2] : 0 ≤ 2-u)
+  have hleft := mul_nonneg (by linarith : 0 ≤ 1-η) (by grind : 0 ≤ u-1)
+  have hright := mul_nonneg (by linarith : 0 ≤ 1-η) (by grind : 0 ≤ 2-u)
   have htη := mul_nonneg ht.1 hη
-  have htcη := mul_nonneg (by linarith [ht.2] : 0 ≤ 1-t) hη
+  have htcη := mul_nonneg (by grind : 0 ≤ 1-t) hη
   constructor <;> dsimp [aProcessShiftPoint] <;> nlinarith
 
-theorem aProcessShiftPoint_mem_Ioo {η t u : ℝ}
-    (hη : 0 ≤ η) (hη₁ : η < 1) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem aProcessShiftPoint_mem_Ioo (hη₁ : η < 1) (ht : t ∈ Icc (0 : ℝ) 1)
     (hu : u ∈ Ioo (1 : ℝ) 2) :
     aProcessShiftPoint η t u ∈ Ioo (1 : ℝ) 2 := by
   have hleft := mul_pos (by linarith : 0 < 1-η) (by linarith [hu.1] : 0 < u-1)
@@ -47,14 +49,14 @@ theorem aProcessShiftPoint_mem_Ioo {η t u : ℝ}
   have htcη := mul_nonneg (by linarith [ht.2] : 0 ≤ 1-t) hη
   constructor <;> dsimp [aProcessShiftPoint] <;> nlinarith
 
-theorem aProcessShiftPoint_distance {η t u : ℝ}
-    (hη : 0 ≤ η) (ht : t ∈ Icc (0 : ℝ) 1)
+theorem aProcessShiftPoint_distance (ht : t ∈ Icc (0 : ℝ) 1)
     (hu : u ∈ Icc (1 : ℝ) 2) :
     |aProcessShiftPoint η t u-u| ≤ η := by
   have hlo := mul_nonneg (by linarith [ht.1,hu.2] : 0 ≤ 2+t-u) hη
   have hhi := mul_nonneg (by linarith [ht.2,hu.1] : 0 ≤ u-t) hη
   rw [abs_le]
   constructor <;> dsimp [aProcessShiftPoint] <;> nlinarith
+end
 
 def aProcessShiftPhase (F : ℝ → ℝ) (σ η u : ℝ) : ℝ :=
   (F (aProcessShiftPoint η 0 u)-F (aProcessShiftPoint η 1 u))/(σ*η)
@@ -76,8 +78,7 @@ theorem aProcessShiftPhase_iteratedDerivWithin {F : ℝ → ℝ} {η u : ℝ}
       (1-η)^n/(σ*η) *
         (iteratedDerivWithin n F phaseInterval (aProcessShiftPoint η 0 u)-
          iteratedDerivWithin n F phaseInterval (aProcessShiftPoint η 1 u)) := by
-  have hf : ContDiffOn ℝ n F phaseInterval :=
-    hF.of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl n)
+  pm_6910
   have hc (t : ℝ) (ht : t ∈ Icc (0 : ℝ) 1) :
       ContDiffOn ℝ n (fun u => F (aProcessShiftPoint η t u)) phaseInterval := by
     apply hf.comp (by unfold aProcessShiftPoint; fun_prop)

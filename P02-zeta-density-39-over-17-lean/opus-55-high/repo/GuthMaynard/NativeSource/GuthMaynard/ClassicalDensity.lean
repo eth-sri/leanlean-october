@@ -8,11 +8,13 @@ public import Mathlib.NumberTheory.LSeries.ZetaZeros
 public import GuthMaynard.NativeSource.GuthMaynard.DyadicTransfer
 public import GuthMaynard.NativeSource.GuthMaynard.InghamBound
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroCount
+public import MathCollab.Density.MollifierDirichlet
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset Filter MeromorphicOn Topology
-open scoped ArithmeticFunction.Moebius BigOperators
+open scoped ArithmeticFunction.Moebius
 
 namespace GuthMaynard.NativeMoment
 
@@ -33,38 +35,23 @@ noncomputable def truncatedMoebius (X : ℕ) : ArithmeticFunction ℂ where
     truncatedMoebius X n = if n ∈ Icc 1 X then
       ((ArithmeticFunction.moebius n : ℤ) : ℂ) else 0 := rfl
 
-theorem truncatedMoebius_hasFiniteSupport (X : ℕ) :
+section
+variable (X : ℕ)
+include X
+theorem truncatedMoebius_hasFiniteSupport :
     Function.HasFiniteSupport (truncatedMoebius X) := by
-  apply Set.Finite.subset (Icc 1 X).finite_toSet
-  intro n hn
-  simp only [Function.mem_support, ne_eq] at hn
-  by_contra hnMem
-  have hnMem' : n ∉ Icc 1 X := by simpa using hnMem
-  exact hn (by rw [truncatedMoebius_apply, ite_eq_right hnMem'])
+  pm_1344 X
 
-theorem truncatedMoebius_LSeriesSummable (X : ℕ) (s : ℂ) :
-    LSeriesSummable (truncatedMoebius X) s := by
-  unfold LSeriesSummable
-  exact summable_of_hasFiniteSupport <|
-    (truncatedMoebius_hasFiniteSupport X).subset (by
-      intro n hn
-      simp only [Function.mem_support, ne_eq] at hn ⊢
-      contrapose! hn
-      rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-      simp [hn])
+theorem truncatedMoebius_LSeriesSummable (s : ℂ) :
+    LSeriesSummable (truncatedMoebius X) s := by pm_4271
 
 /-- The finite-sum definition of the mollifier agrees exactly with its
 L-series representation. -/
-theorem zetaMollifier_eq_LSeries (X : ℕ) (s : ℂ) :
+theorem zetaMollifier_eq_LSeries (s : ℂ) :
     zetaMollifier X s = LSeries (truncatedMoebius X) s := by
   rw [zetaMollifier, LSeries, tsum_eq_sum (s := Icc 1 X)]
-  · apply Finset.sum_congr rfl
-    intro n hn
-    rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-    simp only [truncatedMoebius_apply, ite_eq_left hn]
-  · intro n hn
-    rw [LSeries.term_def₀ (truncatedMoebius X).map_zero]
-    simp [hn]
+  pm_4272
+end
 
 /-- Ingham's zero-containing auxiliary function
 `1 - (ζ M_X - 1)^2 = (2 - ζ M_X) ζ M_X`.  The factored definition makes the
@@ -72,22 +59,6 @@ zeta-zero multiplicity transparent. -/
 noncomputable def inghamZeroDetector (X : ℕ) (s : ℂ) : ℂ :=
   (2 - riemannZeta s * zetaMollifier X s) *
     (riemannZeta s * zetaMollifier X s)
-
-/-- There are no zeta zeros in a rectangle whose real interval is the
-singleton `{1}`. -/
-theorem zerosInRect_one_eq_empty (T₁ T₂ : ℝ) :
-    zerosInRect 1 1 T₁ T₂ = ∅ := by
-  apply Finset.eq_empty_iff_forall_notMem.mpr
-  intro s hs
-  rw [zerosInRect, Set.Finite.mem_toFinset, Set.mem_inter_iff] at hs
-  rcases hs with ⟨hsRect, hsZero⟩
-  rw [mem_ZeroRectangle] at hsRect
-  exact riemannZeta_ne_zero_of_one_le_re hsRect.1 hsZero
-
-/-- The symmetric zeta-zero count vanishes identically at `σ = 1`. -/
-@[simp] theorem N_one (T : ℝ) : N 1 T = 0 := by
-  rw [N, zeroCountRect, zerosInRect_one_eq_empty]
-  simp
 
 /-- All zeta zeros in one unit-height bin of a positive dyadic slab. -/
 noncomputable def zeroUnitBin (σ T : ℝ) (z : ℤ) : Finset ℂ :=
@@ -108,16 +79,8 @@ theorem zeroUnitBin_multiplicity_le_jensen (σ T : ℝ) (z : ℤ)
   · change ((∑ ρ ∈ S, analyticVanishingOrder riemannZeta ρ : ℕ) : ℝ) ≤ _
     rw [hSEmpty]
     simp only [Finset.sum_empty, Nat.cast_zero]
-    have hLogDen : 0 < Real.log ((7 / 4 : ℝ) / (8 / 5 : ℝ)) := by
-      apply Real.log_pos
-      norm_num
-    have hM : 1 ≤ 100 * T ^ (3 : ℝ) := by
-      norm_num [Real.rpow_natCast]
-      have hT2 : 1 ≤ T ^ (2 : ℕ) := by nlinarith
-      calc
-        1 ≤ 100 * T := by nlinarith
-        _ ≤ 100 * T * T ^ (2 : ℕ) := by nlinarith
-        _ = 100 * T ^ (3 : ℕ) := by ring
+    pm_4720
+    pm_4719
     have hRatio : 1 ≤ (100 * T ^ (3 : ℝ)) / (0.6 : ℝ) := by
       norm_num at hM ⊢
       nlinarith
@@ -193,13 +156,7 @@ theorem zeroUnitBin_multiplicity_le_jensen (σ T : ℝ) (z : ℤ)
         simp only [V, Metric.mem_closedBall, dist_self]
         norm_num) hcOrder S
       (by simpa [V] using hSU)
-    have hM : 1 ≤ 100 * T ^ (3 : ℝ) := by
-      norm_num [Real.rpow_natCast]
-      have hT2 : 1 ≤ T ^ (2 : ℕ) := by nlinarith
-      calc
-        1 ≤ 100 * T := by nlinarith
-        _ ≤ 100 * T * T ^ (2 : ℕ) := by nlinarith
-        _ = 100 * T ^ (3 : ℕ) := by ring
+    pm_4719
     have hUAnalyticAbs : AnalyticOnNhd ℂ riemannZeta
         (Metric.closedBall c |(7 / 4 : ℝ)|) := by
       simpa [U, abs_of_pos (by norm_num : (0 : ℝ) < 7 / 4)] using hUAnalytic
@@ -212,9 +169,7 @@ theorem zeroUnitBin_multiplicity_le_jensen (σ T : ℝ) (z : ℤ)
     rw [abs_of_pos (by norm_num : (0 : ℝ) < 8 / 5)] at hJensen
     change ((∑ ρ ∈ S, analyticVanishingOrder riemannZeta ρ : ℕ) : ℝ) ≤ _
     refine hBridge.trans (le_trans (by simpa [c, V] using hJensen) ?_)
-    have hLogDen : 0 < Real.log ((7 / 4 : ℝ) / (8 / 5 : ℝ)) := by
-      apply Real.log_pos
-      norm_num
+    pm_4720
     apply div_le_div_of_nonneg_right _ hLogDen.le
     have hMPos : 0 < 100 * T ^ (3 : ℕ) := by positivity
     have hcNormPos : 0 < ‖riemannZeta c‖ := norm_pos_iff.mpr hcNe
@@ -232,7 +187,7 @@ theorem zeroCountRect_dyadic_le_jensen (σ T : ℝ)
       (T + 2) *
         (Real.log ((100 * T ^ (3 : ℝ)) / (0.6 : ℝ)) /
           Real.log ((7 / 4 : ℝ) / (8 / 5 : ℝ))) := by
-  let S := zerosInRect σ 1 T (2 * T)
+  pm_7860
   let bins : Finset ℤ := Finset.Icc ⌊T⌋ ⌊2 * T⌋
   let floorIm : ℂ → ℤ := fun ρ => ⌊ρ.im⌋
   let mult : ℂ → ℕ := fun ρ => analyticVanishingOrder riemannZeta ρ
@@ -244,10 +199,7 @@ theorem zeroCountRect_dyadic_le_jensen (σ T : ℝ)
     change floorIm ρ ∈ Finset.Icc ⌊T⌋ ⌊2 * T⌋
     rw [Finset.mem_Icc]
     exact ⟨Int.floor_mono hρ.1.2.2.1, Int.floor_mono hρ.1.2.2.2⟩
-  have hAll : S.filter (fun ρ => floorIm ρ ∈ bins) = S :=
-    Finset.filter_eq_self.mpr hFloorMem
-  have hFiber := Finset.sum_fiberwise_eq_sum_filter S bins floorIm mult
-  rw [hAll] at hFiber
+  pm_8410 ρ floorIm bins hFloorMem mult
   have hEach : ∀ z ∈ bins,
       ((∑ ρ ∈ S.filter (fun w => floorIm w = z), mult ρ : ℕ) : ℝ) ≤
         Real.log ((100 * T ^ (3 : ℝ)) / (0.6 : ℝ)) /
@@ -314,9 +266,7 @@ theorem zeroCountRect_dyadic_le_jensen (σ T : ℝ)
     have hUpper : (⌊2 * T⌋ : ℝ) ≤ 2 * T := Int.floor_le (2 * T)
     have hLower : T - 1 < (⌊T⌋ : ℝ) := Int.sub_one_lt_floor T
     linarith
-  have hLogDen : 0 < Real.log ((7 / 4 : ℝ) / (8 / 5 : ℝ)) := by
-    apply Real.log_pos
-    norm_num
+  pm_4720
   have hM : 1 ≤ (100 * T ^ (3 : ℝ)) / (0.6 : ℝ) := by
     have hTPos : 0 < T := by linarith
     have : 1 ≤ 100 * T ^ (3 : ℝ) := by
@@ -324,15 +274,15 @@ theorem zeroCountRect_dyadic_le_jensen (σ T : ℝ)
       nlinarith [sq_nonneg T]
     norm_num at this ⊢
     nlinarith
-  have hJNonneg : 0 ≤
-      Real.log ((100 * T ^ (3 : ℝ)) / (0.6 : ℝ)) /
-        Real.log ((7 / 4 : ℝ) / (8 / 5 : ℝ)) :=
-    div_nonneg (Real.log_nonneg hM) hLogDen.le
+  pm_847 hJNonneg hM hLogDen.le
   exact hTotal.trans (mul_le_mul_of_nonneg_right hCard hJNonneg)
 
+section
+variable (σ : ℝ) (hσLower : 1 / 2 ≤ σ)
+include σ hσLower
 /-- The full positive dyadic zeta-zero count is `T^(1+ε)`-bounded uniformly
 for every fixed vertical line at or to the right of the critical line. -/
-theorem dyadic_zero_count_epsilon_one (σ : ℝ) (hσLower : 1 / 2 ≤ σ) :
+theorem dyadic_zero_count_epsilon_one :
     EpsilonPowerBound
       (fun T => (zeroCountRect σ 1 T (2 * T) : ℝ))
       (fun T => T ^ (1 : ℝ)) := by
@@ -346,7 +296,7 @@ theorem dyadic_zero_count_epsilon_one (σ : ℝ) (hσLower : 1 / 2 ≤ σ) :
   have hC : 0 < C := div_pos (by norm_num) (mul_pos hD hε)
   apply Asymptotics.IsBigO.of_bound C
   filter_upwards [Filter.eventually_ge_atTop (max (Real.exp 2) 8)] with T hT
-  have hTEight : 8 ≤ T := (le_max_right _ _).trans hT
+  pm_5456 hTEight le_max_right hT
   have hTExp : Real.exp 2 ≤ T := (le_max_left _ _).trans hT
   have hTPos : 0 < T := by linarith
   have hTNonneg : 0 ≤ T := hTPos.le
@@ -370,8 +320,7 @@ theorem dyadic_zero_count_epsilon_one (σ : ℝ) (hσLower : 1 / 2 ≤ σ) :
       Real.log ((100 * T ^ (3 : ℝ)) / (0.6 : ℝ)) / D ≤
         100 * Real.log T / D :=
     div_le_div_of_nonneg_right hNumerator hD.le
-  have hLogPow : Real.log T ≤ T ^ ε / ε :=
-    Real.log_le_rpow_div hTNonneg hε
+  pm_8602 hLogPow ε hTNonneg hε
   have hRaw := zeroCountRect_dyadic_le_jensen σ T hσLower hTEight
   have hCount : (zeroCountRect σ 1 T (2 * T) : ℝ) ≤
       C * (T ^ ε * T) := by
@@ -400,9 +349,10 @@ theorem dyadic_zero_count_epsilon_one (σ : ℝ) (hσLower : 1 / 2 ≤ σ) :
 
 /-- The coarse exponent-one estimate for the full symmetric count, obtained
 from the dyadic Jensen bound. -/
-theorem global_zero_count_epsilon_one (σ : ℝ) (hσLower : 1 / 2 ≤ σ) :
+theorem global_zero_count_epsilon_one :
     EpsilonPowerBound (fun T => (N σ T : ℝ)) (fun T => T ^ (1 : ℝ)) :=
   dyadicToGlobalZeroCount σ 1 (by norm_num) (dyadic_zero_count_epsilon_one σ hσLower)
+end
 
 /-- The `σ = 1/2` endpoint required by Ingham's density theorem. -/
 theorem ingham_zero_density_at_half_native :

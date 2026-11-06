@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.ShellSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,34 +21,31 @@ def reflectedBDyad (j : ℕ) : Finset (Ideal Eis) :=
 
 lemma reflectedNDyad_bounds (k : ℕ) : ∀ n∈reflectedNDyad k,
     CubicSieve.Admissible n ∧ (2:ℝ)^k/2≤(Ideal.absNorm n:ℝ) ∧ (Ideal.absNorm n:ℝ)≤(2:ℝ)^k := by
-  intro n hn
-  exact ⟨(Finset.mem_filter.mp hn).2,(dualIdealDyad_bounds k n (Finset.mem_filter.mp hn).1).2⟩
+  pm_8626 n hn k
 
 lemma reflectedBDyad_bounds (j : ℕ) : ∀ b∈reflectedBDyad j,
     primaryGenerator b≠0 ∧ (2:ℝ)^j/2≤(Ideal.absNorm b:ℝ) ∧ (Ideal.absNorm b:ℝ)≤(2:ℝ)^j := by
-  intro b hb
-  exact ⟨(Finset.mem_filter.mp hb).2,(dualIdealDyad_bounds j b (Finset.mem_filter.mp hb).1).2⟩
+  pm_8626 b hb j
 
-lemma double_sum_coe (A B : Finset (Ideal Eis)) (f : Ideal Eis→Ideal Eis→ℂ) :
+lemma double_sum_coe (A B : Finset (Ideal Eis)) (f : Ideal Eis→ Ideal Eis→ℂ) :
     (∑ n : A, ∑ b : B, f n.val b.val)=∑ n∈A, ∑ b∈B, f n b := by
   rw [Finset.sum_coe_sort A (fun n : Ideal Eis => ∑ b : B, f n b.val)]
   apply Finset.sum_congr rfl
   intro n hn
   exact Finset.sum_coe_sort B (f n)
 
-lemma sum_dual_mask (j k : ℕ) (f : Ideal Eis→Ideal Eis→ℂ) :
+lemma sum_dual_mask (j k : ℕ) (f : Ideal Eis→ Ideal Eis→ℂ) :
     (∑ n : dualIdealDyad k, ∑ b : dualIdealDyad j,
       if CubicSieve.Admissible n.val ∧ primaryGenerator b.val≠0 then f n.val b.val else 0)=
       ∑ n : reflectedNDyad k, ∑ b : reflectedBDyad j, f n.val b.val := by
   rw [double_sum_coe (dualIdealDyad k) (dualIdealDyad j)
     (fun n b => if CubicSieve.Admissible n ∧ primaryGenerator b≠0 then f n b else 0),
     double_sum_coe (reflectedNDyad k) (reflectedBDyad j) f]
-  simp only [reflectedNDyad,reflectedBDyad,Finset.sum_filter]
-  apply Finset.sum_congr rfl
+  pm_335 reflectedNDyad reflectedBDyad Finset.sum_filter
   intro n hn
   by_cases hn' : CubicSieve.Admissible n
   · simp only [hn',true_and,ite_eq_left]
-  · simp only [hn',false_and,ite_false,Finset.sum_const_zero]
+  pm_3814 hn' false_and ite_false Finset.sum_const_zero
 
 theorem literalDyadicBlock_eq_filtered_source (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
     (S : PrimeFamily σ) (jF : φ→ℕ)

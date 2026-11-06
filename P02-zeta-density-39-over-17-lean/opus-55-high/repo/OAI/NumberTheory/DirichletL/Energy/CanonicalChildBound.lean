@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.AllocatedHomogeneous
 public import OAI.NumberTheory.DirichletL.Energy.ChildState
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,7 +34,7 @@ theorem actual_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     (ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)
     (hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
-    ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→RayQuotient.Characters M H,
+    ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→ RayQuotient.Characters M H,
     ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z →
     ∀εchild:ℝ,∀(Q:Ideal O),Q≤M →
     ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
@@ -41,7 +42,7 @@ theorem actual_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
@@ -50,7 +51,7 @@ theorem actual_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     ∀(τ:Character)(dyad:Fin 4→ℤ),∀_hn:1≤CenteredMomentSectorLocalization.dyadicScale (dyad 1),
     Real.logb Z (CenteredMomentSectorLocalization.dyadicScale (dyad 1))+
       Real.logb Z (τ.modulus.absNorm:ℝ)≤Mcap →
-    ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z^L → X₂≤Z^L →
+    ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z ^L → X₂≤Z ^L →
     ∀F₁ F₂:Finset (Ideal O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
     let d:=commonData (withHeight src τ v) C R B
     allocatedEnergy τ (CenteredMomentSecondNonexceptionalChosenBlock.canonicalRadial τ (internalQ Q η₀) dyad) D alloc
@@ -61,26 +62,20 @@ theorem actual_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
         (p.control T)^2*
         (1+(|v|+height))^(dc+degree+4*n)*
         ((τ.modulus.absNorm:ℝ)*CenteredMomentSectorLocalization.dyadicScale (dyad 1))*
-        Z^(εchild+εremove+
+        Z ^(εchild+εremove+
           CenteredMomentLiveCapacity.excess (originalImage src C B D alloc J) w
             (length Z (scale D alloc X₁ 0 F₁)) (length Z (scale D alloc X₂ 1 F₂)) (Real.logb Z (CenteredMomentSectorLocalization.dyadicScale (dyad 1))+Real.logb Z (τ.modulus.absNorm:ℝ)) κ/6+κ*mesh) := by
   obtain ⟨n,T,dc,Cc,hCc,hbound⟩:=actual_clipped_homogeneous_bands (α:=α) M H hH W aslot bslot
     Mcap 2 Lslot εremove lo hi κ a b haPlain L hL degree S ha hWs hW hMcap (by norm_num)
     hLs hε hbeta hκ
-  refine ⟨n,T,dc,Cc,hCc,?_⟩
-  intro η₀ θ
-  obtain ⟨Z₀,hZ₀,hbound⟩:=hbound η₀ θ
-  refine ⟨Z₀,hZ₀,?_⟩
-  intro Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
-    w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
-    src hmatch C R B D alloc J τ dyad hn hwidth p X₁ X₂ hX₁ hX₂ hc₁ hc₂ F₁ F₂ hF₁ hF₂
+  pm_3335
   have hZ1:1<Z:=hZ₀.trans_le hZ
   let st:=canonicalState Z 0 hZ1 τ (internalQ Q η₀) 1 one_ne_zero (by simp) dyad hn
   have he:=hbound Z hZ 0 εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
     src hmatch C R B D alloc J st rfl rfl hwidth p X₁ X₂ hX₁ hX₂ hc₁ hc₂ F₁ F₂ hF₁ hF₂
   have hpow:=canonicalState_power Z 0 hZ1 τ (internalQ Q η₀) 1 one_ne_zero (by simp) dyad hn
-  change Z^st.width=(τ.modulus.absNorm:ℝ)*CenteredMomentSectorLocalization.dyadicScale (dyad 1) at hpow
+  change Z ^st.width=(τ.modulus.absNorm:ℝ)*CenteredMomentSectorLocalization.dyadicScale (dyad 1) at hpow
   dsimp only at he ⊢
   have heq:st.width+εchild+εremove+
       CenteredMomentLiveCapacity.excess (originalImage src C B D alloc J) w

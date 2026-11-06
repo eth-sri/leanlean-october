@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.CubicScaledStrip
 public import GuthMaynard.Improvement.RatioFourierInput
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
@@ -34,9 +33,9 @@ theorem cubic_fourier_moments (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   let K := 2*Real.pi*d
   let J := 1+K
   have hd : 0 < d := hc.trans_le hcd
-  have hK : 0 ≤ K := by dsimp [K]; positivity
-  have hJ : 0 < J := by dsimp [J]; positivity
-  have hKJ : K ≤ J := by dsimp [J]; linarith
+  pm_61 hK K
+  pm_64 hJ J
+  pm_182 hKJ K J
   have hrootK : Real.sqrt K ≤ J := by
     apply (Real.sqrt_le_iff).mpr
     exact ⟨hJ.le,by dsimp [J]; nlinarith [sq_nonneg K]⟩
@@ -51,7 +50,7 @@ theorem cubic_fourier_moments (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   have hA₀ : MeasurableSet A₀ := hA.preimage hmf
   have hD₀ : MeasurableSet D₀ := hD.preimage hmf
   have hm₀ : Measurable r₀ := ratioFourierInput_measurable h1 c d
-  have hsq₀ : Integrable (fun v => r₀ v^2) := ratioFourierInput_square_integrable hc hcd h1 h2
+  pm_6901 hsq₀
   have hfour₀ : Integrable (fun v => r₀ v^4) := ratioFourierInput_fourth_integrable hc hcd h0 h1 h2
   have hmem₀ : MemLp r₀ 2 := (memLp_two_iff_integrable_sq hm₀.aestronglyMeasurable).mpr hsq₀
   have hnon₀ : ∀ v, 0 ≤ r₀ v := ratioFourierInput_nonneg μ c d
@@ -71,9 +70,9 @@ theorem cubic_fourier_moments (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
   let FA := ∫ ξ in A, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2
   let FD := ∫ ξ in D, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2
   let ED := ∫ ξ in D, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^4
-  have hFA : 0 ≤ FA := integral_nonneg (fun _ => sq_nonneg _)
-  have hFD : 0 ≤ FD := integral_nonneg (fun _ => sq_nonneg _)
-  have hED : 0 ≤ ED := integral_nonneg (fun _ => by positivity)
+  pm_4586 hFA FA
+  pm_4586 hFD FD
+  pm_8870 hED ED
   have hmA : (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b)) ≤ K*FA := by
     calc
       _ = ∫ v in Icc a b, A₀.indicator (fun v => r₀ v^2) v := (integral_indicator hA₀).symm
@@ -89,18 +88,12 @@ theorem cubic_fourier_moments (a b c d : ℝ) (ha : 0 < a) (hab : a ≤ b)
     rw [hpow 4 (by norm_num),integral_indicator hD₀]
     exact ratioFourierInput_masked_fourth hc hcd hD h0 h1 h2
   have hrootA : Real.sqrt (∫ v in A₀, r₀ v^2 ∂volume.restrict (Icc a b)) ≤ J*Real.sqrt FA := by
-    calc
-      _ ≤ Real.sqrt (K*FA) := Real.sqrt_le_sqrt hmA
-      _ = Real.sqrt K*Real.sqrt FA := Real.sqrt_mul hK _
-      _ ≤ _ := mul_le_mul_of_nonneg_right hrootK (Real.sqrt_nonneg _)
+    pm_5339 FA hmA
   have hrootD : Real.sqrt (∫ v, r v^4) ≤ J*Real.sqrt ED := by
-    calc
-      _ ≤ Real.sqrt (K*ED) := Real.sqrt_le_sqrt heD
-      _ = Real.sqrt K*Real.sqrt ED := Real.sqrt_mul hK _
-      _ ≤ _ := mul_le_mul_of_nonneg_right hrootK (Real.sqrt_nonneg _)
+    pm_5339 ED heD
   have hmD' : (∫ v, r v^2) ≤ J*FD := hmD.trans (mul_le_mul_of_nonneg_right hKJ hFD)
   have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
+  pm_4573
   calc
     _ ≤ C*T^ε*(J*Real.sqrt FA)*(T^2*(J*FD)+T*L*(J*Real.sqrt ED)) := by gcongr
     _ = _ := by dsimp only [FA,FD,ED]; ring

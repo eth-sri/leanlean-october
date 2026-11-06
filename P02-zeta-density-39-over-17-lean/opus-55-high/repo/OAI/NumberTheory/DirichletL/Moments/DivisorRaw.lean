@@ -26,8 +26,10 @@ theorem split_slot_product {M : Type*} [CommMonoid M] (D : Ideal O)
     (∏ i∈frozenIndices D a,f i)*(∏ i∈liveIndices D a,f i)=∏ i,f i :=
   Finset.prod_filter_mul_prod_filter_not _ _ _
 
-theorem selected_live_slot (η : Character) (m A z : O) (t : ℝ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+section
+variable (η : Character) (m A z : O) (t : ℝ) (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+include η m A z t D a
+theorem selected_live_slot
     (i : ι) (hi : i ∈ liveIndices D a) (S : Finset (Ideal O)) (β : Ideal O → ℂ) :
     rowSlot η m A z S (fun I => if selectedSlot D a i∣I then β I else 0) t =
       rowSlot η m A z S β t := by
@@ -35,8 +37,7 @@ theorem selected_live_slot (η : Character) (m A z : O) (t : ℝ)
     (Finset.not_nonempty_iff_eq_empty.mp (Finset.mem_filter.mp hi).2)
   simp only [selectedSlot,he,one_dvd,ite_true]
 
-theorem selected_frozen_slot_bound (η : Character) (m A z : O) (t : ℝ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+theorem selected_frozen_slot_bound
     (i : ι) (hi : i ∈ frozenIndices D a) (S : Finset (Ideal O))
     (hS : ∀ I∈S,Prime I) (β : Ideal O → ℂ) (M : ℝ) (hM : 0 ≤ M)
     (hβ : ∀ I∈S,‖β I‖ ≤ M) :
@@ -46,8 +47,7 @@ theorem selected_frozen_slot_bound (η : Character) (m A z : O) (t : ℝ)
     (IdealMobiusDivisorSum.support_prime P.property) (Finset.dvd_prod_of_mem _ hP)
     S hS β M hM hβ
 
-theorem selected_slot_product_bound (η : Character) (m A z : O) (t : ℝ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+theorem selected_slot_product_bound
     (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
     (β : ι → Ideal O → ℂ) (M : ι → ℝ) (hM : ∀ i,0 ≤ M i)
     (hβ : ∀ i,∀ I∈S i,‖β i I‖ ≤ M i) :
@@ -64,6 +64,7 @@ theorem selected_slot_product_bound (η : Character) (m A z : O) (t : ℝ)
     rw [selected_live_slot η m A z t D a i hi]
   · exact Finset.prod_nonneg (fun _ _ => norm_nonneg _)
   · exact Finset.prod_nonneg (fun i _ => hM i)
+end
 
 def selectedNorm (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2))) : ℝ :=
   (Ideal.absNorm (selectedPlain D a 0):ℝ)*(Ideal.absNorm (selectedPlain D a 1):ℝ)

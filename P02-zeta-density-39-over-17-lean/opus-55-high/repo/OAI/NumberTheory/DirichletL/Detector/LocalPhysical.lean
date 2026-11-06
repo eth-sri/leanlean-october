@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
 public import OAI.NumberTheory.DirichletL.Detector.ScalarTable
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,10 @@ open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCom
 open CubicEisenstein GaussianShiftedPartition ProbePrimePower ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
-lemma outerQuotient_prime_power (p : O) [(Ideal.span {p}:Ideal O).IsMaximal]
+section
+variable (p : O)
+include p
+lemma outerQuotient_prime_power [(Ideal.span {p}:Ideal O).IsMaximal]
     (hg : goodLambda∉Ideal.span {p}) (k : ℕ) (hk : k≠0) (d : O ⧸ Ideal.span {p^k}) :
     outerQuotient (p^k) d =
       (actualSextic (Ideal.span {p}) hg ^ k)
@@ -21,7 +25,7 @@ lemma outerQuotient_prime_power (p : O) [(Ideal.span {p}:Ideal O).IsMaximal]
   unfold outerQuotient
   rw [← Ideal.span_singleton_pow, map_pow, idealRowHom_prime _ _ hg, MulChar.pow_apply' _ hk]
 
-lemma sexticGauss_prime_power (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
+lemma sexticGauss_prime_power (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
     (hg : goodLambda∉Ideal.span {p}) (n : ℕ) (H : O) :
     sexticGauss (p^(n+1)) (pow_ne_zero _ hp.ne_zero) H =
       primePowerGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg^(n+1)) n H := by
@@ -37,9 +41,9 @@ lemma sexticGauss_prime_power (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).I
     rw [(Ideal.Quotient.mk (Ideal.span {p^(n+1)})).map_mul, representative_spec]
   rw [he, primePowerGauss_eq_quotientFourier]
   apply quotientFourier_congr
-  exact pow_succ' p n
+  grind
 
-theorem bareCongruenceCoefficient_prime_power_pos (p : O) (hp : Prime p)
+theorem bareCongruenceCoefficient_prime_power_pos (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
     (n k j : ℕ) (hk : k≠0) :
     bareCongruenceCoefficient (p^(n+1)) (p^k) (pow_ne_zero _ hp.ne_zero) (p^j) =
@@ -52,11 +56,10 @@ theorem bareCongruenceCoefficient_prime_power_pos (p : O) (hp : Prime p)
   split_ifs with hd
   · rw [rawFourier_outer, sexticGauss_prime_power p hp hg]
   · ring
+end
 
 lemma sexticGauss_one (H : O) : sexticGauss 1 one_ne_zero H=1 := by
-  let : Subsingleton (O ⧸ Ideal.span {(1:O)}) := by
-    rw [Ideal.span_singleton_one]
-    infer_instance
+  let : Subsingleton (O ⧸ Ideal.span {(1:O)}) := by simp_all
   let : Unique (O ⧸ Ideal.span {(1:O)}) := uniqueOfSubsingleton 0
   let : Fintype (O ⧸ Ideal.span {(1:O)}) := Fintype.ofFinite _
   unfold sexticGauss
@@ -67,20 +70,24 @@ lemma sexticGauss_one (H : O) : sexticGauss 1 one_ne_zero H=1 := by
   have ht (d : O ⧸ Ideal.span {(1:O)}) :
       quotientTrace 1 one_ne_zero (Ideal.Quotient.mk _ H*d)=1 := by
     rw [Subsingleton.elim (Ideal.Quotient.mk _ H*d) 0, AddChar.map_zero_eq_one]
-  simp only [ht, tsum_fintype, Finset.sum_const, Finset.card_univ, Fintype.card_unique, one_smul]
+  simp_all
 
-lemma barePhysicalFourier_outer_one (A : O) (hA : A≠0) (H : O) :
+section
+variable (A : O) (hA : A≠0) (H : O)
+include A hA H
+lemma barePhysicalFourier_outer_one :
     barePhysicalFourier A 1 hA one_ne_zero H = sexticGauss A hA H := by
   unfold barePhysicalFourier
   rw [elementFourier_congr (A*1) A (mul_ne_zero hA one_ne_zero) hA _ H (mul_one A)]
   simp only [sexticGauss_one, mul_one]
   rfl
 
-lemma bareCongruenceCoefficient_outer_one (A : O) (hA : A≠0) (H : O) :
+lemma bareCongruenceCoefficient_outer_one :
     bareCongruenceCoefficient A 1 hA H=sexticGauss A hA H := by
   have he := barePhysicalFourier_eq A 1 hA one_ne_zero H
   rw [barePhysicalFourier_outer_one] at he
   simpa only [Ideal.span_singleton_one, ← Ideal.one_eq_top, map_one, Nat.cast_one, one_mul] using he.symm
+end
 
 theorem bareCongruenceCoefficient_prime_power (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (n k j : ℕ) :

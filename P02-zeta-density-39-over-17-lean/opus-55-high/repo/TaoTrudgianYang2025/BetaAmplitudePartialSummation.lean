@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaStationaryMain
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,8 +28,7 @@ def modelPhaseStationaryBlock (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) : ℂ :=
 theorem modelPhaseStationaryBlock_eq_range (F : ℝ → ℝ) (T N : ℝ) (a L : ℕ) :
     modelPhaseStationaryBlock F T N a L =
       ∑ i ∈ Finset.range (L+1), modelPhaseStationaryMainTerm F T N ((a : ℝ)+i) := by
-  rw [modelPhaseStationaryBlock,RiemannZeta.GuthMaynard.sum_Icc_eq_shifted_range _ a (a+L)
-    (Nat.le_add_right a L)]
-  simp only [Nat.add_sub_cancel_left,Nat.cast_add]
+  pm_7101 modelPhaseStationaryBlock
+  grind
 
 end TaoTrudgianYang2025

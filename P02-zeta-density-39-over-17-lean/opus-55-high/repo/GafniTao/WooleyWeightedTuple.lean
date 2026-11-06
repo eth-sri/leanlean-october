@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleyOrthogonalityInsertion
 public import GafniTao.WooleySourceMean
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ same theorem applies to Wooley's original residue sum, the translated
 -/
 
 open Finset
-open scoped BigOperators ComplexConjugate
+open scoped ComplexConjugate
 
 namespace GafniTao
 
@@ -47,10 +48,7 @@ theorem wooley_weighted_sum_abs_pow_expand
   rw [Fintype.sum_pow]
   rw [← map_pow, Fintype.sum_pow, map_sum]
   rw [Finset.sum_mul_sum, Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro x hx
-  apply Finset.sum_congr rfl
-  intro y hy
+  pm_90 Finset.sum_congr x hx y hy
   simp only [wooleyTupleCoefficient, wooleyTuplePhase]
   rw [Finset.prod_mul_distrib]
   simp only [map_prod, map_mul]

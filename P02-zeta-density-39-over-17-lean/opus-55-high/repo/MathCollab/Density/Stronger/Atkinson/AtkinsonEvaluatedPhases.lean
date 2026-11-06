@@ -8,6 +8,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSignedSaddleProfile
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryMain
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,8 +29,7 @@ theorem exp_negative_saddle_mul_fresnel (f : ℝ) :
     Complex.exp (((-f - Real.pi / 4 : ℝ) : ℂ) * I) *
       Complex.exp (((-Real.pi / 4 : ℝ) : ℂ) * I) = (-I) * Complex.exp ((-f : ℂ) * I) := by
   have hquarter : Complex.exp (((-Real.pi / 2 : ℝ) : ℂ) * I) = -I := by
-    simpa only [Complex.ofReal_div, Complex.ofReal_neg, Complex.ofReal_ofNat] using
-      Complex.exp_neg_pi_div_two_mul_I
+    simp_all
   rw [← hquarter, ← Complex.exp_add, ← Complex.exp_add]
   congr 1
   push_cast
@@ -42,8 +42,7 @@ theorem atkinsonStationaryMain_sqrt {T : ℝ} (hT : 0 < T)
         Complex.exp ((atkinsonCentralPhase T : ℂ) * I) * (-1 : ℂ) ^ n *
           Complex.exp ((atkinsonSourcePhase T n : ℂ) * I)) /
             (Real.sqrt (2 * atkinsonSaddleCurvature T (Real.sqrt n)) : ℂ) := by
-  rw [atkinsonStationaryMain_eq_phase hT, atkinsonRootKernel_at_saddle hT,
-    exp_zetaAtkinsonPhase_saddle_sqrt hT n]
+  pm_8783 exp_zetaAtkinsonPhase_saddle_sqrt
   change 2 * atkinsonPowerWeight T G L α (zetaAtkinsonSaddle T (Real.sqrt n)) * _ * _ = _
   rw [atkinsonPowerWeight_at_saddle hT G L α n]
   calc
@@ -61,8 +60,7 @@ theorem atkinsonStationaryMain_neg_sqrt {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0)
         Complex.exp ((atkinsonCentralPhase T : ℂ) * I) * (-1 : ℂ) ^ n *
           Complex.exp ((-atkinsonSourcePhase T n : ℂ) * I)) /
             (Real.sqrt (2 * atkinsonSaddleCurvature T (-Real.sqrt n)) : ℂ) := by
-  rw [atkinsonStationaryMain_eq_phase hT, atkinsonRootKernel_at_saddle hT,
-    exp_zetaAtkinsonPhase_saddle_neg_sqrt hT n]
+  pm_8783 exp_zetaAtkinsonPhase_saddle_neg_sqrt
   change 2 * atkinsonPowerWeight T G L α (zetaAtkinsonSaddle T (-Real.sqrt n)) * _ * _ = _
   rw [atkinsonPowerWeight_at_neg_saddle hT hG L α n]
   calc

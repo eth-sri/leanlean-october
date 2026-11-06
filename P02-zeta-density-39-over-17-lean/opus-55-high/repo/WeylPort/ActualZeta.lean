@@ -1,6 +1,7 @@
 module
 public import WeylPort.AFE.UniformError
 public import WeylPort.ShortSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,8 +14,7 @@ namespace WeylPort
 /-- The AFE's literal sharp sum is the verified critical Dirichlet polynomial. -/
 theorem norm_sharpZetaSum_critical (t x : ℝ) :
     ‖sharpZetaSum (criticalPoint t) x‖ =
-      ‖∑ n ∈ Ico 1 (⌊x⌋₊+1), criticalTerm t n‖ := by
-  simp only [sharpZetaSum,zetaTerm,criticalPoint,criticalTerm,Ico_add_one_right_eq_Icc]
+      ‖∑ n ∈ Ico 1 (⌊x⌋₊+1), criticalTerm t n‖ := by aesop
 
 /-- The dual sharp sum has the same norm, including the floor cutoff. -/
 theorem norm_sharpZetaSum_dual (t y : ℝ) :
@@ -23,9 +23,12 @@ theorem norm_sharpZetaSum_dual (t y : ℝ) :
   simpa only [sharpZetaSum,zetaTerm,neg_sub,Ico_add_one_right_eq_Icc] using
     norm_dual_critical_sum t ⌊y⌋₊
 
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
 /-- The actual zeta bound follows from the proved AFE with no analytic hypotheses.
 The epsilon threshold precedes the height; both cutoff choices are internal. -/
-theorem eventually_norm_riemannZeta_critical_lt_rpow {ε : ℝ} (hε : 0 < ε) :
+theorem eventually_norm_riemannZeta_critical_lt_rpow :
     ∀ᶠ t : ℝ in atTop, ‖riemannZeta (criticalPoint t)‖ < t^(1/6+ε:ℝ) := by
   have ha : 0 < (1/6+ε:ℝ) := by linarith
   have hc := (tendsto_rpow_atTop ha).eventually
@@ -33,14 +36,13 @@ theorem eventually_norm_riemannZeta_critical_lt_rpow {ε : ℝ} (hε : 0 < ε) :
   filter_upwards [eventually_actual_zeta_short_afe,
     eventually_mul_norm_critical_sum_le_rpow 4 (by norm_num) hε,
     hc, eventually_ge_atTop (1:ℝ)] with t hafe hs hC ht
-  obtain ⟨A,M,hA,hM,hR,hfloor⟩ := hafe
+  pm_563 A M hA hM hR hfloor hafe
   let x : ℝ := (A:ℝ)+1/2
-  let y : ℝ := t/(2*Real.pi*x)
-  have hfx : ⌊x⌋₊ = A := (Nat.floor_eq_iff (by dsimp [x]; positivity)).mpr
-    (by dsimp [x]; constructor <;> linarith)
+  pm_7156
+  have hfx : ⌊x⌋₊ = A := (Nat.floor_eq_iff (by grind)).mpr
+    (by grind)
   have hfy : ⌊y⌋₊ = M := hfloor
-  have hsA := hs A hA
-  have hsM := hs M hM
+  pm_268 hsA hs A hA hsM M hM
   have hid : riemannZeta (criticalPoint t) =
       afeRemainder (criticalPoint t) x y + sharpZetaSum (criticalPoint t) x +
         chi (criticalPoint t)*sharpZetaSum (1-criticalPoint t) y := by
@@ -57,11 +59,12 @@ theorem eventually_norm_riemannZeta_critical_lt_rpow {ε : ℝ} (hε : 0 < ε) :
   nlinarith
 
 /-- An explicit quantifier-order interface for sufficiently large positive heights. -/
-theorem exists_riemannZeta_critical_lt_sixth_power {ε : ℝ} (hε : 0 < ε) :
+theorem exists_riemannZeta_critical_lt_sixth_power :
     ∃ T₀ : ℝ, 1 ≤ T₀ ∧ ∀ t : ℝ, T₀ ≤ t →
       ‖riemannZeta (criticalPoint t)‖ < t^(1/6+ε:ℝ) := by
   obtain ⟨T,hT⟩ := eventually_atTop.mp (eventually_norm_riemannZeta_critical_lt_rpow hε)
   exact ⟨max 1 T,le_max_left _ _,fun t ht => hT t ((le_max_right _ _).trans ht)⟩
+end
 
 /-- Reflection gives equality of actual zeta norms at opposite heights. -/
 theorem norm_riemannZeta_critical_neg (t : ℝ) :
@@ -76,9 +79,7 @@ theorem continuous_riemannZeta_critical :
   apply continuous_iff_continuousAt.mpr
   intro t
   have hne : criticalPoint t ≠ 1 := by
-    intro he
-    have := congrArg Complex.re he
-    norm_num [criticalPoint] at this
+    pm_532 he criticalPoint
   exact (differentiableAt_riemannZeta hne).continuousAt.comp hc.continuousAt
 
 /-- Classical Weyl growth for actual zeta, including compact small heights and both signs. -/
@@ -89,7 +90,7 @@ theorem exists_riemannZeta_critical_weyl_all_heights {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨B,hB⟩ := (isCompact_Icc : IsCompact (Set.Icc (0:ℝ) T)).exists_bound_of_continuousOn
     continuous_riemannZeta_critical.continuousOn
   let C := max 1 B
-  have hC : 1 ≤ C := le_max_left _ _
+  pm_4884 hC C
   have ha : 0 ≤ (1/6+ε:ℝ) := by linarith
   refine ⟨C,by linarith,?_⟩
   intro t

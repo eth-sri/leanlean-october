@@ -2,38 +2,39 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionTailMass
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
 public import OAI.NumberTheory.DirichletL.Moments.TwistedReflection
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedReflection
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
 open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
+open CenteredMomentSectorLocalization
+open CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
 open EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
-local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
     (hw : ∀x,0≤w x ∧ w x≤1) : DecayTwo (fun x=>(w x:ℂ)*F x) := by
-  obtain ⟨D,hD,hb⟩ := hF
-  refine ⟨D,hD,?_⟩
+  pm_155 D hD hb hF
   intro x hx
   rw [norm_mul,Complex.norm_real,Real.norm_of_nonneg (hw x).1]
   apply (mul_le_mul_of_nonneg_left
     (mul_le_of_le_one_left (norm_nonneg _) (hw x).2) (sq_nonneg x)).trans (hb x hx)
 
-lemma column_retained_discarded (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
+section
+variable (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
+include η F hF
+lemma column_retained_discarded
     (R Y : ℝ) (hY : 0<Y) :
     HeckeDyadic.polynomial η false F Y 0 0=
       HeckeDyadic.polynomial η false (fun x=>(retainedWeight R x:ℂ)*F x) Y 0 0+
       HeckeDyadic.polynomial η false (fun x=>(discardedWeight R x:ℂ)*F x) Y 0 0 := by
-  have hr := plain_summable η _ (masked_decayTwo F hF _ (retainedWeight_bounds R)) Y hY
-  have hd := plain_summable η _ (masked_decayTwo F hF _ (discardedWeight_bounds R)) Y hY
+  pm_8213 hr retainedWeight_bounds
+  pm_8213 hd discardedWeight_bounds
   simp only [CenteredMomentReflectionDeletion.norm] at hr hd
   rw [polynomial_plain _ _ _ hY,polynomial_plain _ _ _ hY,polynomial_plain _ _ _ hY,
     ←mul_add,←hr.tsum_add hd]
@@ -44,7 +45,7 @@ lemma column_retained_discarded (η : Character) (F : ℝ→ℂ) (hF : DecayTwo 
   simp only [CenteredMomentReflectionDeletion.norm] at hp ⊢
   rw [←mul_add,←add_mul,←Complex.ofReal_add,hp,Complex.ofReal_one,one_mul]
 
-lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
+lemma bounded_columns :
     ∃C : ℝ,0≤C ∧ ∀Y U : ℝ,0<Y → Y≤U →
       ‖HeckeDyadic.polynomial η false F Y 0 0‖≤C*U^(3/2:ℝ) := by
   obtain ⟨D,hD,hF⟩ := hF
@@ -52,9 +53,9 @@ lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
   refine ⟨C*D,by positivity,?_⟩
   intro Y U hY hYU
   apply (hb η F D Y hD hY hF).trans
-  rw [normalized_power_eq Y hY 2]
-  norm_num only [Nat.cast_ofNat,show (2:ℝ)-1/2=3/2 by norm_num]
+  pm_708
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hY.le hYU (by norm_num)) (by positivity)
+end
 
 lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (η ηi χ : Character) (F : ℝ→ℂ) (hF : DecayTwo F) (Q X : ℝ)
@@ -62,7 +63,7 @@ lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     Summable (fun H : SmoothIdeal S=>coefficient η ηi S D H*
       HeckeDyadic.polynomial χ false F
         (Q*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)) 0 0) := by
-  obtain ⟨C,hC,hb⟩ := bounded_columns χ F hF
+  pm_114 C hC hb bounded_columns χ F hF
   obtain ⟨K,hK,hKb⟩ := coefficient_column_bound 1 (by norm_num)
   let U := Q*(Ideal.absNorm (∏P∈S,P):ℝ)/X
   have hu : 0<U := div_pos (mul_pos hQ (subset_product_norm_pos S hS)) hX
@@ -89,8 +90,8 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
             ∑D∈S.powerset,∑'H : SmoothIdeal S,coefficient ψ ψ.inverse S D H*
             HeckeDyadic.polynomial χ.inverse false
               (fun x=>(discardedWeight R x:ℂ)*paperRadialFourier W x) (Y D H) 0 0) := by
-  obtain ⟨ψ,G,hp,hnp,hG,hcap,heq⟩ := original_inverse_reflection χ hn
-  refine ⟨ψ,G,hp,hnp,hG,hcap,?_⟩
+  pm_371 ψ G hp hnp hG hcap heq original_inverse_reflection χ hn
+  pm_211 ψ G hp hnp hG hcap
   intro W X R hX
   dsimp only
   rw [heq W X hX]
@@ -99,13 +100,10 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
   apply Finset.sum_congr rfl
   intro D hD
   have hS := redundantSet_prime χ.modulus ψ.modulus
-  have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+  pm_2879
   have hF := reflected_decayTwo W
-  have hr := reflected_column_summable _ hS ψ ψ.inverse χ.inverse _
-    (masked_decayTwo _ hF _ (retainedWeight_bounds R)) _ X hQ hX D hD
-  have hd := reflected_column_summable _ hS ψ ψ.inverse χ.inverse _
-    (masked_decayTwo _ hF _ (discardedWeight_bounds R)) _ X hQ hX D hD
+  pm_6143 hr retainedWeight_bounds
+  pm_6143 hd discardedWeight_bounds
   rw [←hr.tsum_add hd]
   apply tsum_congr
   intro H
@@ -118,6 +116,5 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
 
 end SevenEighths.CenteredMomentRetainedReflection
 
-end
 
 end OAI

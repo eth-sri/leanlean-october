@@ -4,6 +4,7 @@ public import Expdb.Basic.PowerAsymptotics
 public import Expdb.ExponentialSums.LogPhase
 public import Expdb.ExponentialSums.FixedExponentialSum
 public import Mathlib.Order.Interval.Finset.Nat
+import WeylPort.Analytic.RealLaplace
 
 /-!
 # Exponential sum growth exponents
@@ -79,13 +80,13 @@ The candidate set is upward closed, nonempty, and bounded below.
 theorem IsExponentSumBound.mono {α : ℝ≥0} {β γ : ℝ}
     (hβ : IsExponentSumBound α β) (hβγ : β ≤ γ) :
     IsExponentSumBound α γ := by
-  intro N T F a b hN hT hTunbounded hNT hF hab
+  pm_2747
   exact (hβ N T F a b hN hT hTunbounded hNT hF hab).mono
     (Filter.Eventually.of_forall hT) hβγ
 
 /-! ### Nonemptiness and lower bound -/
 
-private lemma norm_exponentialSum_le_three_mul
+lemma norm_exponentialSum_le_three_mul
     (F : VariableFunction (VariableObject.fixed ℝ) ℝ)
     (T N : VariableObject ℝ) (a b : VariableObject ℕ)
     (hN : ∀ i, 1 ≤ N i)
@@ -98,7 +99,7 @@ private lemma norm_exponentialSum_le_three_mul
     _ ≤ (b i : ℝ) + 1 := by
       rw [Nat.card_Icc]
       exact_mod_cast Nat.sub_le _ _
-    _ ≤ 3 * N i := by linarith [hab i |>.2, hN i]
+    _ ≤ 3 * N i := by grind
 
 /-- The triangle inequality gives the admissible exponent `α`. -/
 theorem isExponentSumBound_self (α : ℝ≥0) :
@@ -110,12 +111,12 @@ theorem isExponentSumBound_self (α : ℝ≥0) :
   calc
     ‖exponentialSum F T N a b i‖ ≤ 3 * N i :=
       norm_exponentialSum_le_three_mul F T N a b hN hab i
-    _ = 3 * T i ^ exponent i := by rw [hi]
+    _ = 3 * T i ^ exponent i := by grind
     _ = 3 * ‖T i ^ exponent i‖ := by
       rw [Real.norm_eq_abs,
         abs_of_nonneg (Real.rpow_nonneg (le_trans zero_le_one (hT i)) _)]
 
-private lemma exponentSumBounds_nonempty (α : ℝ≥0) :
+lemma exponentSumBounds_nonempty (α : ℝ≥0) :
     (exponentSumBounds α).Nonempty :=
   ⟨α, isExponentSumBound_self α⟩
 
@@ -129,7 +130,7 @@ theorem IsExponentSumBound.nonneg
   have hT : ∀ i, 1 ≤ T i := by
     intro i
     dsimp [T]
-    have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
+    pm_322 hi i
     linarith
   have hTunbounded : T.IsUnbounded := by
     apply (VariableObject.isUnbounded_iff_tendsto_atTop
@@ -138,41 +139,41 @@ theorem IsExponentSumBound.nonneg
   have hN : ∀ i, 1 ≤ N i := fun i ↦ Real.one_le_rpow (hT i) α.property
   have hNT : IsPowerAsymptotic N T (α : ℝ) := by
     refine ⟨VariableObject.fixed (α : ℝ), IsEqUpToInfinitesimal.refl _, ?_⟩
-    exact Filter.Eventually.of_forall fun _ ↦ rfl
+    aesop
   have ha : ∀ i, N i ≤ (a i : ℝ) ∧ (a i : ℝ) ≤ 2 * N i := by
     intro i
     have hN0 : 0 ≤ N i := zero_le_one.trans (hN i)
     refine ⟨Nat.le_ceil _, ?_⟩
-    exact (Nat.ceil_lt_add_one hN0).le.trans (by linarith [hN i])
+    exact (Nat.ceil_lt_add_one hN0).le.trans (by grind)
   have hbound :=
     hβ N T logPhase a a hN hT hTunbounded hNT
       isModelPhaseFunction_log ha
   apply exponent_le_of_isPowerBounded_of_eventually_norm_ge_rpow
     hT hTunbounded hbound zero_lt_one
-  exact Filter.Eventually.of_forall fun i ↦ by simp
+  simp_all
 
-private lemma exponentSumBounds_bddBelow {α : ℝ≥0} :
+lemma exponentSumBounds_bddBelow {α : ℝ≥0} :
     BddBelow (exponentSumBounds α) :=
   ⟨0, fun _ hβ ↦ hβ.nonneg⟩
 
 /-! ## The least admissible exponent -/
 
-private lemma exists_isExponentSumBound_lt_add
+lemma exists_isExponentSumBound_lt_add
     (α : ℝ≥0) {ε : ℝ} (hε : 0 < ε) :
     ∃ β : ℝ, IsExponentSumBound α β ∧
       β < exponentSumGrowthExponent α + ε := by
   let S : Set ℝ := exponentSumBounds α
   have hS : S.Nonempty := exponentSumBounds_nonempty α
   have hinf_lt : sInf S < sInf S + ε := by linarith
-  obtain ⟨β, hβ, hβlt⟩ := exists_lt_of_csInf_lt hS hinf_lt
+  pm_98 β hβ hβlt exists_lt_of_csInf_lt hS hinf_lt
   change IsExponentSumBound α β at hβ
   refine ⟨β, hβ, ?_⟩
-  simpa [S, exponentSumGrowthExponent] using hβlt
+  aesop
 
 /-- By underspill, the infimum of the admissible exponents is itself admissible. -/
 theorem isExponentSumBound_exponentSumGrowthExponent (α : ℝ≥0) :
     IsExponentSumBound α (exponentSumGrowthExponent α) := by
-  intro N T F a b hN hT hTunbounded hNT hF hab
+  pm_2747
   apply (isPowerBounded_iff_forall_pos
     (exponentialSum F T N a b) T (exponentSumGrowthExponent α)
     hT hTunbounded).2
@@ -187,8 +188,7 @@ theorem isExponentSumBound_exponentSumGrowthExponent (α : ℝ≥0) :
   refine hβbound.trans (Asymptotics.IsBigO.of_bound 1 ?_)
   exact Filter.Eventually.of_forall fun i ↦ by
     have hT0 : 0 ≤ T i := le_trans zero_le_one (hT i)
-    rw [one_mul, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hT0 _),
-      Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hT0 _)]
+    pm_1541
     apply Real.rpow_le_rpow_of_exponent_le (hT i)
     linarith
 

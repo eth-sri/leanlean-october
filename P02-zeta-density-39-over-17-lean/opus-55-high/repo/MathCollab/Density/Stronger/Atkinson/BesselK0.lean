@@ -8,6 +8,7 @@ Apache-2.0 attribution. No Estermann or general-modulus source closure is import
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Series
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,9 +37,11 @@ theorem one_add_sq_div_two_le_cosh (t : ℝ) :
   norm_num [Finset.sum_range_succ] at hpartial ⊢
   exact hpartial
 
+section
+variable {x : ℝ}
+include x
 /-- Gaussian domination of the positive-sign Bessel integrand. -/
-theorem dfiBesselK0_integrand_le_gaussian
-    {x : ℝ} (hx : 0 ≤ x) (t : ℝ) :
+theorem dfiBesselK0_integrand_le_gaussian (hx : 0 ≤ x) (t : ℝ) :
     Real.exp (-x * Real.cosh t) ≤ Real.exp (-(x / 2) * t ^ 2) := by
   apply Real.exp_le_exp.mpr
   have hcosh := one_add_sq_div_two_le_cosh t
@@ -50,31 +53,26 @@ theorem dfiBesselK0_integrand_le_gaussian
 
 /-- The defining integral of `dfiBesselK0` is absolutely integrable for a
 positive argument. -/
-theorem integrableOn_dfiBesselK0_integrand {x : ℝ} (hx : 0 < x) :
+theorem integrableOn_dfiBesselK0_integrand (hx : 0 < x) :
     IntegrableOn (fun t : ℝ => Real.exp (-x * Real.cosh t)) (Set.Ioi 0) := by
   have hgauss : IntegrableOn
       (fun t : ℝ => Real.exp (-(x / 2) * t ^ 2)) (Set.Ioi 0) := by
     exact (integrable_exp_neg_mul_sq (by positivity : 0 < x / 2)).integrableOn
   refine hgauss.mono' ?_ ?_
-  · exact (Real.continuous_exp.comp
-      (continuous_const.mul Real.continuous_cosh)).aestronglyMeasurable
+  fun_prop
   · filter_upwards with t
     rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     exact dfiBesselK0_integrand_le_gaussian hx.le t
 
 /-- DFI's source-strength trivial bound `K₀(x) ≪ x⁻¹ᐟ²`, with an explicit
 The constant. -/
-theorem abs_dfiBesselK0_le {x : ℝ} (hx : 0 < x) :
+theorem abs_dfiBesselK0_le (hx : 0 < x) :
     |dfiBesselK0 x| ≤ Real.sqrt (Real.pi / (x / 2)) / 2 := by
   have hInt := integrableOn_dfiBesselK0_integrand hx
   have hGauss : IntegrableOn
       (fun t : ℝ => Real.exp (-(x / 2) * t ^ 2)) (Set.Ioi 0) :=
     (integrable_exp_neg_mul_sq (by positivity : 0 < x / 2)).integrableOn
-  have hnonneg : 0 ≤ dfiBesselK0 x := by
-    unfold dfiBesselK0
-    exact integral_nonneg fun _ => (Real.exp_pos _).le
-  rw [abs_of_nonneg hnonneg]
-  unfold dfiBesselK0
+  pm_7371 dfiBesselK0
   calc
     ∫ t in Set.Ioi (0 : ℝ), Real.exp (-x * Real.cosh t) ≤
         ∫ t in Set.Ioi (0 : ℝ), Real.exp (-(x / 2) * t ^ 2) := by
@@ -83,9 +81,9 @@ theorem abs_dfiBesselK0_le {x : ℝ} (hx : 0 < x) :
     _ = Real.sqrt (Real.pi / (x / 2)) / 2 := integral_gaussian_Ioi (x / 2)
 
 /-- A simpler power form of the preceding estimate. -/
-theorem abs_dfiBesselK0_le_two_div_sqrt {x : ℝ} (hx : 0 < x) :
+theorem abs_dfiBesselK0_le_two_div_sqrt (hx : 0 < x) :
     |dfiBesselK0 x| ≤ 2 / Real.sqrt x := by
-  have hsqrtPos : 0 < Real.sqrt x := Real.sqrt_pos.2 hx
+  pm_4891 hsqrtPos x hx
   have hquotPos : 0 ≤ Real.pi / (x / 2) := by positivity
   have hsquareA : Real.sqrt (Real.pi / (x / 2)) ^ 2 =
       Real.pi / (x / 2) := Real.sq_sqrt hquotPos
@@ -97,7 +95,7 @@ theorem abs_dfiBesselK0_le_two_div_sqrt {x : ℝ} (hx : 0 < x) :
       (Real.sqrt (Real.pi / (x / 2)) * Real.sqrt x) ^ 2 =
         2 * Real.pi := by
     rw [mul_pow, hsquareA, hsquareX]
-    field_simp [hx.ne']
+    grind
   have hprod :
       Real.sqrt (Real.pi / (x / 2)) * Real.sqrt x ≤ 4 := by
     nlinarith
@@ -106,6 +104,7 @@ theorem abs_dfiBesselK0_le_two_div_sqrt {x : ℝ} (hx : 0 < x) :
   rw [show 2 / Real.sqrt x * 2 = 4 / Real.sqrt x by ring]
   apply (le_div_iff₀ hsqrtPos).2
   exact hprod
+end
 
 
 end MathCollab.Density.Stronger.Atkinson

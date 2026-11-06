@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawFourier
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,10 +15,10 @@ open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns
 open InverseInitialOverlapFourier FourierBridge HeckeInverseAmplification
 
 theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
-    (χ : ι→Character) (inv : Bool) (A : ι→ℂ)
+    (χ : ι→ Character) (inv : Bool) (A : ι→ℂ)
     (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
     (hs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
-    (Wref : ℝ→ℂ) (b c θ D E : ℝ) (J : ℕ) (hc : 0<c) (hD : 0<D) (hE : 0≤E)
+    (Wref : ℝ→ℂ) (b c θ D E : ℝ) (J : ℕ) (hc : 0< c) (hD : 0<D) (hE : 0≤E)
     (hWref : ∀x,Wref x≠0 → x≤b)
     (hagree : ∀y,0<y → Wref y*W (c*y)=W (c*y))
     (he : ∀s, (∑i∈rows,‖polynomial (χ i) inv (childLogTest Wref s) D 0 0*A i‖^2)
@@ -25,8 +26,7 @@ theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     (∑i∈rows,‖polynomial (χ i) inv (clippedTest W c θ) D 0 0*A i‖^2)≤
       E*(1+‖θ‖)^(2*J)*
         (∫v:ℝ,(1+‖v‖)^J*‖(𝓕 (CubicReflectionKernel.logSchwartz W lo hi hlo hs hW)) v‖)^2 := by
-  let g:=CubicReflectionKernel.logSchwartz W lo hi hlo hs hW
-  let B:=density g (Real.log c)
+  pm_6886 B
   let φ : rows→ℝ→ℂ:=fun i v=>polynomial (χ i) inv (childLogTest Wref (θ+v)) D 0 0*A i
   have hint (i : rows) : Integrable (fun v:ℝ=>B v*φ i v) := by
     simpa only [B,φ,mul_assoc] using
@@ -38,16 +38,14 @@ theorem polynomial_clipped_energy {ι : Type*} (rows : Finset ι)
     apply (he (θ+v)).trans
     have hh : 1+‖θ+v‖≤(1+‖θ‖)*(1+‖v‖) := by
       have hn:=norm_add_le θ v
-      nlinarith [mul_nonneg (norm_nonneg θ) (norm_nonneg v)]
+      pm_385 mul_nonneg norm_nonneg θ v
     calc
       _≤E*((1+‖θ‖)*(1+‖v‖))^(2*J):=
         mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hh _) hE
       _= _:=by rw [mul_pow,pow_mul];ring
   have hden : Integrable (fun v:ℝ=>(1+‖v‖)^J*‖B v‖) := by
     simpa only [B,density_norm] using AnalyticBridge.schwartz_fourier_one_plus_integrable g J
-  have hh:=CenteredMomentHeckeWindowEnergy.finite_weighted_integral_energy B φ
-    (fun v:ℝ=>(1+‖v‖)^J) (by intro v;positivity)
-    (E*(1+‖θ‖)^(2*J)) (by positivity) hden hint hbound
+  pm_1323 B φ v
   have heq (i : rows) : (∫v:ℝ,B v*φ i v)=
       polynomial (χ i) inv (clippedTest W c θ) D 0 0*A i := by
     rw [polynomial_clipped_fourier (χ i) inv W lo hi hlo hs hW Wref b c θ D hc hD hWref hagree,

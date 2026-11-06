@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.UnitRows
 public import OAI.NumberTheory.DirichletL.Eisenstein.CuspHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,85 +9,40 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped Classical Topology ContDiff MatrixGroups
 
 lemma axisLaplacian_const_add (c : ℂ) (f : SpatialCoordinates→ℂ) (p : SpatialCoordinates) :
     axisLaplacian (fun q => c+f q) p=axisLaplacian f p := by
   unfold axisLaplacian axisSlice
-  simp only [deriv_const_add,deriv_const_add']
+  simp_all
 
 lemma fullCuspProfileField_summable (F : ℝ→ℝ) (hF : ∀v≤1,F v=0)
     (p : SpatialCoordinates) (hp : 0<p 2) :
@@ -112,13 +68,17 @@ def cuspBarrierField (a b : ℝ) (p : SpatialCoordinates) : ℝ :=
 def cuspBarrierDefectField (a b : ℝ) (p : SpatialCoordinates) : ℝ :=
   -1+fullCuspProfileField (cuspBarrierDefectProfile a b) p
 
-lemma cuspBarrierField_eq (a b : ℝ) (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (a b : ℝ) (p : SpatialCoordinates) (hp : 0<p 2)
+include a b p hp
+lemma cuspBarrierField_eq :
     cuspBarrierField a b p=cuspBarrier a b (upperPoint (spatialHorizontal p) (p 2) hp) := by
   rw [cuspBarrierField,cuspBarrier,fullCuspProfileField_eq _ p hp]
 
-lemma cuspBarrierDefectField_eq (a b : ℝ) (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma cuspBarrierDefectField_eq :
     cuspBarrierDefectField a b p=cuspBarrierDefect a b (upperPoint (spatialHorizontal p) (p 2) hp) := by
   rw [cuspBarrierDefectField,cuspBarrierDefect,fullCuspProfileField_eq _ p hp]
+end
 
 lemma cuspBarrierField_laplace_defect (a b : ℝ) (ha : 1<a) (hab : a<b)
     (p : SpatialCoordinates) (hp : 0<p 2) :
@@ -136,13 +96,15 @@ lemma cuspBarrierField_laplace_defect (a b : ℝ) (ha : 1<a) (hab : a<b)
     (fun v hv => cuspBarrierProfile_laplacian_zero a b v ha hab hv) p hp
   simp only [cuspBarrierField,Complex.ofReal_add,Complex.ofReal_one,axisLaplacian_const_add]
   rw [hh,hid,fullCuspProfileField_add _ _ hD hF p hp]
-  simp only [cuspBarrierDefectField,Complex.ofReal_add,Complex.ofReal_neg,Complex.ofReal_one]
-  ring
+  pm_3543 cuspBarrierDefectField Complex.ofReal_add Complex.ofReal_neg Complex.ofReal_one
 
 def kernelBarrierPotential (a b : ℝ) (q : KernelQuotient) : ℝ :=
   1+kernelQuotientBarrierDefect a b q/kernelQuotientBarrier a b q
 
-lemma kernelBarrierPotential_lower (a b : ℝ) (ha : 1<a) (hab : a<b) :
+section
+variable (a b : ℝ)
+include a b
+lemma kernelBarrierPotential_lower (ha : 1<a) (hab : a<b) :
     ∃K : Set KernelQuotient,IsCompact K ∧ ∃C : ℝ,0≤C ∧
       ∀q,1-C*(K.indicator (fun _ => (1:ℝ))) q≤kernelBarrierPotential a b q := by
   let D := kernelQuotientBarrierDefect a b
@@ -169,25 +131,21 @@ lemma kernelBarrierPotential_lower (a b : ℝ) (ha : 1<a) (hab : a<b) :
     change 1≤1+D q/kernelQuotientBarrier a b q
     rw [hz,zero_div,add_zero]
 
-lemma cuspBarrier_euclidean_eq (a b : ℝ) (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma cuspBarrier_euclidean_eq (p : EuclideanSpatial) (hp : 0<p 2) :
     cuspBarrier a b (euclideanToHyperbolic p)=cuspBarrierField a b p.ofLp := by
-  rw [cuspBarrierField_eq a b p.ofLp hp,euclideanToHyperbolic_positive p hp]
-  congr 1
-  simp only [spatialHorizontal,mul_comm]
+  pm_6409 cuspBarrierField_eq
 
-lemma cuspBarrierDefect_euclidean_eq (a b : ℝ) (p : EuclideanSpatial) (hp : 0<p 2) :
+lemma cuspBarrierDefect_euclidean_eq (p : EuclideanSpatial) (hp : 0<p 2) :
     cuspBarrierDefect a b (euclideanToHyperbolic p)=cuspBarrierDefectField a b p.ofLp := by
-  rw [cuspBarrierDefectField_eq a b p.ofLp hp,euclideanToHyperbolic_positive p hp]
-  congr 1
-  simp only [spatialHorizontal,mul_comm]
+  pm_6409 cuspBarrierDefectField_eq
 
-lemma kernelQuotientBarrier_laplace_defect (a b : ℝ) (ha : 1<a) (hab : a<b)
+lemma kernelQuotientBarrier_laplace_defect (ha : 1<a) (hab : a<b)
     (p : EuclideanSpatial) (hp : 0<p 2) :
     positiveEuclideanLaplacian
       (fun q => (kernelQuotientBarrier a b (kernelEuclideanProjection q):ℂ)) p=
         ((kernelQuotientBarrier a b (kernelEuclideanProjection p)+
           kernelQuotientBarrierDefect a b (kernelEuclideanProjection p):ℝ):ℂ) := by
-  have hf : ∀q,0<q 2→ContDiffAt ℝ ∞
+  have hf : ∀q,0<q 2→ ContDiffAt ℝ ∞
       (fun q => (kernelQuotientBarrier a b (kernelEuclideanProjection q):ℂ)) q :=
     fun q hq => Complex.ofRealCLM.contDiff.contDiffAt.comp q
       (cuspBarrier_euclidean_contDiffAt a b ha.le hab q hq)
@@ -203,14 +161,18 @@ lemma kernelQuotientBarrier_laplace_defect (a b : ℝ) (ha : 1<a) (hab : a<b)
     cuspBarrierDefect a b (euclideanToHyperbolic p):ℝ):ℂ)
   rw [cuspBarrier_euclidean_eq a b p hp,cuspBarrierDefect_euclidean_eq a b p hp,Complex.ofReal_add]
   exact sub_eq_iff_eq_add.mp hh |>.trans (add_comm _ _)
+end
 
 end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Classical Topology ContDiff Manifold
 
-lemma kernelBarrierPotential_continuous (a b : ℝ) (ha : 1<a) (hab : a<b) :
+section
+variable (a b : ℝ) (ha : 1<a) (hab : a<b)
+include a b ha hab
+lemma kernelBarrierPotential_continuous :
     Continuous (kernelBarrierPotential a b) := by
   apply continuous_const.add
   exact (kernelQuotientBarrierDefect_continuous a b ha hab).div
@@ -218,7 +180,7 @@ lemma kernelBarrierPotential_continuous (a b : ℝ) (ha : 1<a) (hab : a<b) :
       have hq := kernelQuotientBarrier_one_le a b ha.le hab q
       linarith)
 
-lemma kernelBarrierPotential_equation (a b : ℝ) (ha : 1<a) (hab : a<b)
+lemma kernelBarrierPotential_equation
     (p : EuclideanSpatial) (hp : 0<p 2) :
     positiveEuclideanLaplacian
       (fun q => (kernelQuotientBarrier a b (kernelEuclideanProjection q):ℂ)) p=
@@ -230,6 +192,7 @@ lemma kernelBarrierPotential_equation (a b : ℝ) (ha : 1<a) (hab : a<b)
     have hq := kernelQuotientBarrier_one_le a b ha.le hab (kernelEuclideanProjection p)
     linarith
   rw [kernelBarrierPotential,add_mul,one_mul,div_mul_cancel₀ _ hn]
+end
 
 lemma kernelSmoothTest_weighted_mass_integrable (V : KernelQuotient→ℝ) (hV : Continuous V)
     (f : kernelSmoothTests) :
@@ -247,7 +210,10 @@ end
 
 open scoped ComplexConjugate
 
-theorem ground_state_square_completion (a b : ℝ) (ha : a ≠ 0) (z d : ℂ) :
+section
+variable (a b : ℝ) (ha : a ≠ 0) (z d : ℂ)
+include a b ha z d
+theorem ground_state_square_completion :
     ‖d‖^2 - b*((2*(conj z*d).re*a - ‖z‖^2*b)/a^2) =
       ‖d - (b/a : ℝ)*z‖^2 := by
   simp only [Complex.sq_norm, Complex.normSq_apply, Complex.sub_re, Complex.sub_im,
@@ -256,10 +222,11 @@ theorem ground_state_square_completion (a b : ℝ) (ha : a ≠ 0) (z d : ℂ) :
   field_simp
   ; ring
 
-theorem ground_state_directional_inequality (a b : ℝ) (ha : a ≠ 0) (z d : ℂ) :
+theorem ground_state_directional_inequality :
     b*((2*(conj z*d).re*a - ‖z‖^2*b)/a^2) ≤ ‖d‖^2 := by
   have hh := ground_state_square_completion a b ha z d
   nlinarith [sq_nonneg ‖d - (b/a : ℝ)*z‖]
+end
 
 end CubicEisenstein
 
@@ -267,7 +234,7 @@ namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 open MeasureTheory
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct)
@@ -277,7 +244,7 @@ open RayFourExpansion (RayCharacter)
 end
 
 section
-open ActualEisensteinCubic FirstPassCubeLabels
+open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -288,7 +255,7 @@ open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog)
 open JointLogSeparation (frequencyTwist)
 
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
+variable {ι : Type*} [DecidableEq ι] (p : ι→ ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})
@@ -303,7 +270,7 @@ end
 
 open ActualEisensteinCubic
 
-variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
+variable {ι : Type*} [DecidableEq ι] (p : ι→ ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,lambda∉Ideal.span {p i})

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedDualSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 

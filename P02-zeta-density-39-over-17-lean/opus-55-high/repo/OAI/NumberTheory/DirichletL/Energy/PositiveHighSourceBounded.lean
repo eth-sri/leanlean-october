@@ -5,26 +5,25 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionSymmetric
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLiveBounded
 public import OAI.NumberTheory.DirichletL.Energy.FixedRadialReduction
 public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSourceBounded
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLiveBounded CenteredMomentEnergyOriginalSource
+open CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyReferenceLiveBounded
 open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
@@ -44,9 +43,9 @@ theorem actual_positive_source_entry
     (Wslot:ℝ→ ℂ)(aslot bslot lo hi:ℝ)
     (haslot:0<aslot)(hsSlot:Function.support Wslot⊆Set.Icc aslot bslot)(hcSlot:Continuous Wslot)
     (a b bΦ rho ε Mcap Bmask εdiag ξ saving:ℝ)
-    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
+    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0< rho)(hε:0<ε)
     (hM:0≤Mcap)(hBmask:0≤Bmask)(hbslot:0≤bslot)(hεdiag:0<εdiag)(hξ:0<ξ):
-    ∃d xi L:ℝ,0<d ∧ 0<xi ∧ xi≤rho/100 ∧ Mcap+Bmask+xi≤L ∧ L≤Mcap+Bmask+rho/100 ∧
+    ∃d xi L:ℝ,0<d ∧ 0<xi ∧ xi≤ rho/100 ∧ Mcap+Bmask+xi≤L ∧ L≤Mcap+Bmask+rho/100 ∧
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ ℂ)⊆Set.Icc (-1) (bΦ+1) ∧
       (∀x,0≤(Ψ x).re) ∧
     ∃Sdiag Stail:Finset (ℕ×ℕ),∃Cdiag Ctail:ℝ,0<Cdiag ∧0<Ctail ∧
@@ -58,10 +57,10 @@ theorem actual_positive_source_entry
       ∀(θ:α→ RayQuotient.Characters M H)(w σ freq:α→ ℝ)(t height:ℝ),
       (∀i,0≤w i)→ (∀i,w i≤Lslot)→ ∀hσlo:(∀i,lo≤σ i),∀hσhi:(∀i,σ i≤hi),
       0≤height→ (∀i,|freq i|≤height)→ 3/4≤κ→
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤s.width→ s.width≤Mcap→
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀→ rho≤ s.width→ s.width≤Mcap→
       ∀(p:Profiles a b)(X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂),
       5*s.width/6≤length Z X₁+length Z X₂+(∑i,w i)→
-      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width→
+      length Z X₁+length Z X₂+6*κ*(∑i,w i)≤ s.width→
       let inp:=balancedInput M H hH η₀ θ Wslot hcSlot aslot bslot lo hi haslot hsSlot
         w σ freq (fun i=>⟨hσlo i,hσhi i⟩) s p ha t X₁ X₂ hX₁ hX₂;
       energy s.character s.mask 1 t (p.profile 0) (p.profile 1) inp.slots inp.toData.coefficient inp.P
@@ -72,24 +71,18 @@ theorem actual_positive_source_entry
         physicalMass inp s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z ξ/
           CenteredMomentAmplificationChildInput.volume inp+
         Cdiag*(plainControl inp (p.profile 0) (p.profile 1))^2*
-          Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z^εdiag+
+          Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z ^εdiag+
         Ctail*(plainControl inp (p.profile 0) (p.profile 1))^2*
-          Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z^(-saving))+
+          Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z ^(-saving))+
       2*C*(K+1)*diagonalControl s.radial.profile*(sourceControl U (p.profile 0)*sourceControl U (p.profile 1))^2*
-        (1+|t|+height)^J*Z^(s.width+e+ε):=by
-  obtain ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,hstage⟩:=original_reference_power_live (α:=α)
-    M H hH Wslot aslot bslot lo hi haslot hsSlot hcSlot
-    a b bΦ rho ε Mcap Bmask ha hlo hhi hbΦ hrho hε hM hBmask
+        (1+|t|+height)^J*Z ^(s.width+e+ε):=by
+  pm_7292 d xi L hd hxi hxirho hL hLupper hstage original_reference_power_live
   obtain ⟨Ψ,hsΨ,hnΨ,Sdiag,Stail,Cdiag,Ctail,hCd,hCt,hred⟩:=actual_original_reduction
     (ι:=α) bΦ hbΦ (fun _=>bslot) a b Mcap εdiag ξ saving (fun _=>hbslot) ha (by linarith) hM hεdiag hξ
   refine ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,Ψ,hsΨ,hnΨ,Sdiag,Stail,Cdiag,Ctail,hCd,hCt,?_⟩
-  intro degree S
-  obtain ⟨J,U,C,hC,hbound⟩:=hstage degree S
-  refine ⟨J,U,C,hC,?_⟩
-  filter_upwards [hbound,hred] with Z hz hr
-  refine ⟨hz.1,?_⟩
-  intro e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
-    s hQ hslo hs p X₁ X₂ hX₁ hX₂ hlarge hcap
+  pm_3371
+  pm_6715
+  pm_3370
   let inp:=balancedInput M H hH η₀ θ Wslot hcSlot aslot bslot lo hi haslot hsSlot
     w σ freq (fun i=>⟨hσlo i,hσhi i⟩) s p ha t X₁ X₂ hX₁ hX₂
   rcases hz.2 e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
@@ -105,16 +98,16 @@ theorem actual_positive_source_entry
         inp.W₁ inp.W₂ inp.slots inp.toData.coefficient inp.P inp.Y₁ inp.Y₂
         s.radial.keep s.radial.profile s.radial.scale≤
         C*(K+1)*diagonalControl s.radial.profile*(sourceControl U (p.profile 0)*sourceControl U (p.profile 1))^2*
-          (1+|t|+height)^J*Z^(s.width+e+ε):=hreference
+          (1+|t|+height)^J*Z ^(s.width+e+ε):=hreference
     apply hphysical.trans
     have hh:=add_le_add_left (mul_le_mul_of_nonneg_left href' (by norm_num : (0:ℝ)≤2))
       (2*diagonalControl s.radial.profile*(
         physicalMass inp s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z ξ/
           CenteredMomentAmplificationChildInput.volume inp+
         Cdiag*(plainControl inp (p.profile 0) (p.profile 1))^2*
-          Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z^εdiag+
+          Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z ^εdiag+
         Ctail*(plainControl inp (p.profile 0) (p.profile 1))^2*
-          Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z^(-saving)))
+          Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z ^(-saving)))
     convert hh using 1 <;> ring
 end SevenEighths.CenteredMomentEnergyPositiveHighSourceBounded
 

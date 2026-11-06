@@ -62,7 +62,7 @@ lemma sourceRadial_eq_canonical {η:Character}{C D:Ideal O}{hC:Supported C}{hD:S
       (fun z=>z≠0 ∧ ¬CenteredExceptionalProfile.FixedInducingRow (τ χ) Q fixedBadMask 1 z):=by
     funext z
     exact propext (h.nonexceptional_iff χ Q m z hm hml hm2)
-  simp only [canonicalRadial,he]
+  aesop
 
 end SevenEighths.CenteredMomentSecondNonexceptionalChosenBlock
 

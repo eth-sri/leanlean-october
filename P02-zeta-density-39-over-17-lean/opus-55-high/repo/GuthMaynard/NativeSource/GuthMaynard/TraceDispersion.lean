@@ -1,11 +1,11 @@
 module
 public import Mathlib.Algebra.Order.Chebyshev
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesMatrix
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Finset
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -17,8 +17,10 @@ Guth--Maynard Lemma 4.2.  It is a direct finite Jensen inequality, proved here
 over the reals before the spectral specialization.
 -/
 
-theorem sixthMoment_dispersion_nonneg {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (hs : s.Nonempty) :
+section
+variable {ι : Type*} [DecidableEq ι] (s : Finset ι) (x : ι → ℝ)
+include ι s x
+theorem sixthMoment_dispersion_nonneg (hs : s.Nonempty) :
     0 ≤ (∑ i ∈ s, x i ^ 6) -
       (∑ i ∈ s, x i ^ 2) ^ 3 / (s.card : ℝ) ^ 2 := by
   have hJensen := pow_sum_le_card_mul_sum_pow
@@ -32,12 +34,11 @@ theorem sixthMoment_dispersion_nonneg {ι : Type*} [DecidableEq ι]
   rw [sub_nonneg]
   rw [div_le_iff₀ hcard]
   rw [hpow] at hJensen
-  simpa only [mul_comm] using hJensen
+  grind
 
 /-- Jensen on the complement of one selected coordinate, with the ambient
 cardinality in the denominator. -/
-theorem sixthMoment_tail_lower {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (j : ι) :
+theorem sixthMoment_tail_lower (j : ι) :
     (∑ i ∈ s.erase j, x i ^ 2) ^ 3 ≤
       (s.card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 := by
   have hJensen := pow_sum_le_card_mul_sum_pow
@@ -52,19 +53,14 @@ theorem sixthMoment_tail_lower {ι : Type*} [DecidableEq ι]
     (∑ i ∈ s.erase j, x i ^ 2) ^ 3
         ≤ ((s.erase j).card : ℝ) ^ 2 *
           ∑ i ∈ s.erase j, (x i ^ 2) ^ 3 := hJensen
-    _ = ((s.erase j).card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 := by
-      congr 1
-      apply Finset.sum_congr rfl
-      intro i hi
-      ring
+    _ = ((s.erase j).card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 := by grind
     _ ≤ (s.card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 :=
       mul_le_mul_of_nonneg_right hcard hsum
 
 /-- The sixth-power form of Guth--Maynard equation (4.3).  Taking sixth and
 square roots of its two branches gives the scalar inequality used in Lemma
 4.2. -/
-theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (j : ι) (hj : j ∈ s) :
+theorem coordinate_sixth_le_trace_dispersion_max (j : ι) (hj : j ∈ s) :
     x j ^ 6 ≤ max
       (4 * ((∑ i ∈ s, x i ^ 6) -
         (∑ i ∈ s, x i ^ 2) ^ 3 / (s.card : ℝ) ^ 2))
@@ -79,21 +75,21 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
   have hs : s.Nonempty := ⟨j, hj⟩
   have hK : 0 < K := by
     dsimp [K]
-    exact_mod_cast Finset.card_pos.mpr hs
+    simp_all
   have hKsq : 0 < K ^ 2 := by positivity
-  have hS : 0 ≤ S := by dsimp [S]; positivity
-  have hy : 0 ≤ y := by dsimp [y]; positivity
-  have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hR : 0 ≤ R := by dsimp [R]; positivity
+  pm_61 hS S
+  pm_61 hy y
+  pm_61 hB B
+  pm_61 hR R
   have hA : 0 ≤ A := by
     dsimp [A, Q, S, K]
     exact sixthMoment_dispersion_nonneg s x hs
   have hsumTwo : B + y = S := by
     dsimp [B, y, S]
-    exact Finset.sum_erase_add s (fun i => x i ^ 2) hj
+    simp_all
   have hsumSix : R + x j ^ 6 = Q := by
     dsimp [R, Q]
-    exact Finset.sum_erase_add s (fun i => x i ^ 6) hj
+    simp_all
   have hyCube : y ^ 3 = x j ^ 6 := by dsimp [y]; ring
   have htail : B ^ 3 ≤ K ^ 2 * R := by
     simpa only [B, K, R] using sixthMoment_tail_lower s x j
@@ -138,6 +134,7 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
         _ = K ^ 2 * (4 * A) := by rw [← hAeq]; ring
     have hbranch : x j ^ 6 ≤ 4 * A := by simpa only [hyCube] using hbranchY
     exact hbranch.trans (le_max_left _ _)
+end
 
 /-- Sampling-matrix specialization of the sixth-power form of
 Guth--Maynard Lemma 4.2.  The two sums are respectively the first and cubic
@@ -154,18 +151,10 @@ theorem gmMatrix_singularValue_sixth_le_dispersion_max
         (8 * (∑ i : GMRow W,
             (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i) ^ 3 /
             (W.card : ℝ) ^ 3) := by
-  let s : Finset (GMRow W) := Finset.univ
-  let x : GMRow W → ℝ := gmMatrixSingularValue cutoff N W
+  pm_1581
   have hj : j ∈ s := Finset.mem_univ j
   have hbound := coordinate_sixth_le_trace_dispersion_max s x j hj
-  have hsquare : ∀ i : GMRow W, x i ^ 2 =
-      (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by
-    intro i
-    exact gmMatrixSingularValue_sq cutoff N W i
-  have hsixth : ∀ i : GMRow W, x i ^ 6 =
-      (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i ^ 3 := by
-    intro i
-    exact gmMatrixSingularValue_sixth cutoff N W i
+  pm_4717
   simpa only [s, x, Finset.sum_const_zero, Finset.filter_true_of_mem,
     Finset.sum_filter, Finset.card_univ, Fintype.card_coe,
     hsquare, hsixth] using hbound

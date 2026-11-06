@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.ExponentPairLowFrequency
 public import TaoTrudgianYang2025.ExponentPairTransition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,12 +32,11 @@ theorem ExponentPair.allPositiveHeight_bound
   let ds : ℝ := min ((2 : ℝ)^(-σ)/2) 1
   let dc : ℝ := min (modelPhaseCurvatureLower σ) 1
   let δ := min d (min ds dc)
-  have hds : 0 < ds := by dsimp [ds]; positivity
+  pm_64 hds ds
   have hdc : 0 < dc := lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one
   have hδ : 0 < δ := lt_min hd (lt_min hds hdc)
-  have hδd : δ ≤ d := min_le_left _ _
-  have hδs : δ ≤ ds := (min_le_right _ _).trans (min_le_left _ _)
-  have hδc : δ ≤ dc := (min_le_right _ _).trans (min_le_right _ _)
+  pm_7582 hδd d hδs ds
+  pm_372 hδc δ dc min_le_right
   let C₀ := modelPhaseFirstDerivativeConstant σ
   let C₁ := 3*modelPhaseSumConstant σ*(4 : ℝ)^(k+ε)
   have hC₀ : 0 < C₀ := modelPhaseFirstDerivativeConstant_pos _
@@ -44,12 +44,12 @@ theorem ExponentPair.allPositiveHeight_bound
     (modelPhaseSumConstant_pos hσ)) (Real.rpow_pos_of_pos (by norm_num) _)
   let C := 3*B+11+C₀+C₁
   have hC : 1 ≤ C := by dsimp [C]; linarith
-  have hCB : B ≤ C := by dsimp [C]; linarith
+  pm_182 hCB B C
   have hCsmall : 2*B+1 ≤ C := by dsimp [C]; linarith
   have hC₉ : 9 ≤ C := by dsimp [C]; linarith
-  have hCC₀ : C₀ ≤ C := by dsimp [C]; linarith
-  have hCC₁ : C₁ ≤ C := by dsimp [C]; linarith
-  refine ⟨δ,hδ,P,hP,C,hC,?_⟩
+  pm_182 hCC₀ C₀ C
+  pm_182 hCC₁ C₁ C
+  pm_211 δ hδ P hP C hC
   intro T N F a b hT hN ha hb hF
   have hNpos := zero_lt_one.trans_le hN
   have hmain : 0 ≤ (T/N)^(k+ε)*N^(l+ε) := by positivity
@@ -75,7 +75,7 @@ theorem ExponentPair.allPositiveHeight_bound
       have hh : ‖exponentialSumAt F T N a b‖ ≤ C := hcard.trans (by linarith)
       exact hh.trans (le_mul_of_one_le_right (zero_le_one.trans hC) (by linarith))
   · have hTN : T ≤ N := le_of_not_ge hNT
-    have hratio₁ : 1 ≤ N/T := (le_div_iff₀ hT).mpr (by simpa using hTN)
+    pm_4971 hratio₁ N T le_div_iff₀ hT hTN
     by_cases hlow : T ≤ N/4
     · have hh := norm_exponentialSumAt_le_firstDerivative hσ hT hNpos hδs hδc
         hF₁ ha hb hlow

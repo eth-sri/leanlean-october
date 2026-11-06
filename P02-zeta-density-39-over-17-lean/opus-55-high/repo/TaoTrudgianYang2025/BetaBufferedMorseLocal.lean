@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaMorseWeightJets
 public import TaoTrudgianYang2025.BetaBufferedCutoff
 public import TaoTrudgianYang2025.BetaQuadraticLocalRemainder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,10 +21,11 @@ open Set Expdb Filter MeasureTheory
 open scoped ContDiff Topology FourierTransform
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem modelPhaseMorseWindow_mem_and_inverse
-    {F : ℝ → ℝ} {σ δ v d H z : ℝ}
+section
+variable {F : ℝ → ℝ}
+include F
+theorem modelPhaseMorseWindow_mem_and_inverse {σ δ v d H z : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hd : 0 < d)
@@ -33,13 +35,12 @@ theorem modelPhaseMorseWindow_mem_and_inverse
     (hz : z ∈ Icc (-H) H) :
     z ∈ modelPhaseMorseRange F v ∧
       |modelPhaseMorseInverse F v z-modelPhaseInverseSlope F v| < d := by
-  let u₀ := modelPhaseInverseSlope F v
-  have hu₀ : u₀ ∈ Ioo (1 : ℝ) 2 := modelPhaseInverseSlope_mem hv
-  have ha : u₀-d ∈ Ioo (1 : ℝ) 2 := ⟨hl,by dsimp [u₀]; linarith⟩
-  have hb : u₀+d ∈ Ioo (1 : ℝ) 2 := ⟨by dsimp [u₀]; linarith,hr⟩
+  pm_1638
+  have ha : u₀-d ∈ Ioo (1 : ℝ) 2 := ⟨hl,by grind⟩
+  have hb : u₀+d ∈ Ioo (1 : ℝ) 2 := ⟨by grind,hr⟩
   have hs : Icc (u₀-d) (u₀+d) ⊆ Ioo (1 : ℝ) 2 := by
     intro u hu
-    exact ⟨ha.1.trans_le hu.1,hu.2.trans_lt hb.2⟩
+    grind
   have hm := modelPhaseMorseCoordinate_strictMonoOn hσ hδ hF hv
   have hwa : modelPhaseMorseCoordinate F v (u₀-d) < 0 := by
     simpa only [u₀,modelPhaseMorseCoordinate_at_inverse] using
@@ -58,18 +59,16 @@ theorem modelPhaseMorseWindow_mem_and_inverse
   have hz' : z ∈ modelPhaseMorseRange F v := by
     obtain ⟨u,hu,he⟩ := intermediate_value_Icc (show u₀-d ≤ u₀+d by linarith) hc
       (show z ∈ Icc (modelPhaseMorseCoordinate F v (u₀-d))
-        (modelPhaseMorseCoordinate F v (u₀+d)) by constructor <;> linarith [hz.1,hz.2])
+        (modelPhaseMorseCoordinate F v (u₀+d)) by grind)
     exact ⟨u,hs hu,he⟩
   refine ⟨hz',?_⟩
-  have hb' := (modelPhaseMorseCoordinate_bounds hσ hδ hF hv
-    (modelPhaseMorseInverse_mem hz')).1
+  pm_7033 hb' modelPhaseMorseCoordinate_bounds hz'
   rw [modelPhaseMorseCoordinate_inverse hz'] at hb'
   have hcpos := Real.sqrt_pos.mpr (modelPhaseCurvatureLower_pos hσ)
   have habs : |z| ≤ H := abs_le.mpr hz
   nlinarith
 
-theorem iteratedDeriv_bufferedMorseWeight_of_flat
-    {F : ℝ → ℝ} {σ δ v z l r η : ℝ}
+theorem iteratedDeriv_bufferedMorseWeight_of_flat {σ δ v z l r η : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v)
@@ -86,8 +85,7 @@ theorem iteratedDeriv_bufferedMorseWeight_of_flat
   filter_upwards [hn] with x hx
   simp only [modelPhaseMorseAmplitude,modelPhaseBufferedCutoff_one hη hx.1.le hx.2.le,one_mul]
 
-theorem bufferedMorseWeight_local_jet_bound
-    {F : ℝ → ℝ} {σ δ v l r η d H z : ℝ} {P : ℕ}
+theorem bufferedMorseWeight_local_jet_bound {σ δ v l r η d H z : ℝ} {P : ℕ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F)
@@ -108,6 +106,7 @@ theorem bufferedMorseWeight_local_jet_bound
     (show l+2*η < modelPhaseMorseInverse F v z by linarith [hi'.1])
     (show modelPhaseMorseInverse F v z < r-2*η by linarith [hi'.2]) n]
   exact modelPhaseMorseInverse_iteratedDeriv_bound hσ hδ hF hv hz' (n+1) hP
+end
 
 def bufferedLocalStationaryOrder : ℕ :=
   morseInverseDerivativeOrder 1+morseInverseDerivativeOrder 3+morseInverseDerivativeOrder 4
@@ -117,15 +116,10 @@ theorem bufferedLocalStationaryOrder_pos : 1 ≤ bufferedLocalStationaryOrder :=
   unfold bufferedLocalStationaryOrder
   omega
 
-theorem bufferedMorseWeight_local_window_remainder
-    {F : ℝ → ℝ} {σ δ v l r η d H T : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ bufferedLocalStationaryOrder δ)
-    (hv : v ∈ modelPhaseSlopeRange F)
-    (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) (hd : 0 < d)
-    (hleft : l+2*η+d ≤ modelPhaseInverseSlope F v)
-    (hright : modelPhaseInverseSlope F v+d ≤ r-2*η)
-    (hH : 0 < H) (hsmall : H < Real.sqrt (modelPhaseCurvatureLower σ)*d)
+section
+variable {F : ℝ → ℝ} {σ δ v l r η d H T : ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ bufferedLocalStationaryOrder δ) (hv : v ∈ modelPhaseSlopeRange F) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) (hd : 0 < d) (hleft : l+2*η+d ≤ modelPhaseInverseSlope F v) (hright : modelPhaseInverseSlope F v+d ≤ r-2*η) (hH : 0 < H)
+include F σ δ v l r η d H T hσ hδ hF hv hη hl hr hd hleft hright hH
+theorem bufferedMorseWeight_local_window_remainder (hsmall : H < Real.sqrt (modelPhaseCurvatureLower σ)*d)
     (hT : 0 < T) :
     ‖(∫ z in (-H)..H,
       (modelPhaseMorseWeight (modelPhaseBufferedCutoff l r η) F v z : ℂ)*
@@ -156,15 +150,7 @@ theorem bufferedMorseWeight_local_window_remainder
   have h := norm_quadratic_window_remainder_le_local hW hT hH h₀ h₂ h₃
   simpa only [hzero] using h
 
-theorem bufferedMorseWeight_local_window_remainder_inverse
-    {F : ℝ → ℝ} {σ δ v l r η d H T : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ bufferedLocalStationaryOrder δ)
-    (hv : v ∈ modelPhaseSlopeRange F)
-    (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) (hd : 0 < d)
-    (hleft : l+2*η+d ≤ modelPhaseInverseSlope F v)
-    (hright : modelPhaseInverseSlope F v+d ≤ r-2*η)
-    (hH : 0 < H) (hH₁ : H ≤ 1)
+theorem bufferedMorseWeight_local_window_remainder_inverse (hH₁ : H ≤ 1)
     (hsmall : H < Real.sqrt (modelPhaseCurvatureLower σ)*d)
     (hT : 0 < T) :
     ‖(∫ z in (-H)..H,
@@ -181,5 +167,6 @@ theorem bufferedMorseWeight_local_window_remainder_inverse
   apply h.trans
   convert div_le_div_of_nonneg_right hc hT.le using 1
   ring
+end
 
 end TaoTrudgianYang2025

@@ -1,6 +1,7 @@
 module
 public import TraceAlternatives.UniversalCountMonomials
 public import DensityEnergyGM.SharpCountTraceExpansion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -25,7 +26,7 @@ theorem universalTraceEnergy_common_bound {T R E C σ a x δ ell η : ℝ}
   have hS : 0 < T^(3*a*(1-σ)) := by positivity
   have hR : 0 < R := hS.trans_le hSR
   let M := T^(16*δ)*(T^(3*a*(1-σ)))^(1/8:ℝ)*R^(15/8:ℝ)*(T^(σ*x-2*δ))^4
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  pm_61 hM M
   have hj (j : Fin 3) : (T^x)^3*T^(universalTraceA j)*(T^ell)^(universalTraceB j)*
       R^(universalTraceG j)*E^(universalTraceD j) ≤ (1+C)*T^η*(5*M) := by
     have hd : 0 < universalTraceD j := by fin_cases j <;> norm_num [universalTraceD]
@@ -33,7 +34,7 @@ theorem universalTraceEnergy_common_bound {T R E C σ a x δ ell η : ℝ}
     have hExp := gmEnergy_fractional_expansion hTp.le (by positivity) (by positivity)
       hR.le hE hC hd hd1 hEnergy
     let F := (T^x)^3*T^(universalTraceA j)*(T^ell)^(universalTraceB j)*R^(universalTraceG j)
-    have hF : 0 ≤ F := by dsimp [F]; positivity
+    pm_61 hF F
     have hCoeff : C^(universalTraceD j)*T^(η*universalTraceD j) ≤ (1+C)*T^η := by
       apply mul_le_mul (fractional_constant_le_one_add hC hd.le hd1)
         (Real.rpow_le_rpow_of_exponent_le hT (by nlinarith)) (by positivity) (by positivity)

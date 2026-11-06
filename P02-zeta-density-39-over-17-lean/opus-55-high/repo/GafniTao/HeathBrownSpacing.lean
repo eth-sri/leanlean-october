@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownKthDerivativeSetup
 public import Mathlib.Algebra.Order.Round
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -38,10 +39,10 @@ theorem heathBrownDistanceToInteger_eq_abs_of_abs_le_half
     heathBrownDistanceToInteger x = |x| := by
   rcases lt_or_eq_of_le (le_trans (le_abs_self x) hx) with hlt | heq
   · have hlo : -(1 / 2 : ℝ) ≤ x := by
-      exact (neg_le_of_abs_le hx)
+      grind
     have hround : round x = 0 := by
       rw [round_eq_zero_iff]
-      exact ⟨hlo, hlt⟩
+      grind
     simp [heathBrownDistanceToInteger, hround]
   · have hxhalf : x = (1 : ℝ) / 2 := heq
     subst x
@@ -68,7 +69,7 @@ theorem mem_heathBrownSpacingSet
   · intro hn
     obtain ⟨hn,hbound⟩ := Finset.mem_filter.mp hn
     obtain ⟨hlo,hhi⟩ := Finset.mem_Icc.mp hn
-    exact ⟨hlo,hhi,hbound⟩
+    aesop
   · rintro ⟨hlo,hhi,hbound⟩
     exact Finset.mem_filter.mpr ⟨Finset.mem_Icc.mpr ⟨hlo,hhi⟩,hbound⟩
 
@@ -87,15 +88,13 @@ theorem heathBrown_same_round_upper_difference
   rw [hmiddle] at htriangle
   linarith
 
+section
+variable {N : ℕ} {g : ℝ → ℝ} {mu theta : ℝ} (hmuPos : 0 < mu) (hg : ContinuousOn g (Set.Icc 0 (N : ℝ))) (hgd : DifferentiableOn ℝ g (Set.Ioo 0 (N : ℝ))) (hderivLower : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), mu ≤ deriv g x)
+include N g mu theta hmuPos hg hgd hderivLower
 /-- Two counted points in one nearest-integer fiber have source-index
 separation at most `2 theta / mu`.  This is the exact finite packing input
 to Heath-Brown's Lemma `space`. -/
 theorem heathBrown_same_round_index_separation
-    {N : ℕ} {g : ℝ → ℝ} {mu theta : ℝ}
-    (hmuPos : 0 < mu)
-    (hg : ContinuousOn g (Set.Icc 0 (N : ℝ)))
-    (hgd : DifferentiableOn ℝ g (Set.Ioo 0 (N : ℝ)))
-    (hderivLower : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), mu ≤ deriv g x)
     {m n : ℕ} (hm : m ∈ heathBrownSpacingSet N g theta)
     (hn : n ∈ heathBrownSpacingSet N g theta)
     (hmn : m ≤ n) (hround : round (g m) = round (g n)) :
@@ -125,11 +124,6 @@ theorem heathBrown_same_round_index_separation
 /-- Exact nearest-integer fiber bound.  The `max 0` makes the statement
 total; a nonempty fiber itself forces `theta >= 0`. -/
 theorem heathBrown_spacing_fiber_card_le
-    {N : ℕ} {g : ℝ → ℝ} {mu theta : ℝ}
-    (hmuPos : 0 < mu)
-    (hg : ContinuousOn g (Set.Icc 0 (N : ℝ)))
-    (hgd : DifferentiableOn ℝ g (Set.Ioo 0 (N : ℝ)))
-    (hderivLower : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), mu ≤ deriv g x)
     (q : ℤ) :
     ((heathBrownSpacingSet N g theta).filter
       (fun n : ℕ => round (g (n : ℝ)) = q)).card ≤
@@ -172,15 +166,14 @@ theorem heathBrown_spacing_fiber_card_le
         rw [max_eq_right hRnonneg]
   · have : F = ∅ := Finset.not_nonempty_iff_eq_empty.mp hF
     simp only [this, Finset.card_empty, Nat.zero_le]
+end
 
+section
+variable {N : ℕ} {g : ℝ → ℝ} {mu theta : ℝ} (hN : 1 ≤ N) (hmuPos : 0 < mu) (hg : ContinuousOn g (Set.Icc 0 (N : ℝ))) (hgd : DifferentiableOn ℝ g (Set.Ioo 0 (N : ℝ))) (hderivLower : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), mu ≤ deriv g x)
+include N g mu theta hN hmuPos hg hgd hderivLower
 /-- Every nearest integer arising from a counted source point lies in the
 explicit floor/ceiling interval determined by the two endpoint values. -/
 theorem heathBrown_spacing_round_mem_endpoint_interval
-    {N : ℕ} {g : ℝ → ℝ} {mu theta : ℝ}
-    (hN : 1 ≤ N) (hmuPos : 0 < mu)
-    (hg : ContinuousOn g (Set.Icc 0 (N : ℝ)))
-    (hgd : DifferentiableOn ℝ g (Set.Ioo 0 (N : ℝ)))
-    (hderivLower : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), mu ≤ deriv g x)
     {n : ℕ} (hn : n ∈ heathBrownSpacingSet N g theta) :
     round (g n) ∈
       Finset.Icc ⌊g 1 - theta⌋ ⌈g N + theta⌉ := by
@@ -188,8 +181,7 @@ theorem heathBrown_spacing_round_mem_endpoint_interval
   have htheta : 0 ≤ theta := (abs_nonneg _).trans hn.2.2
   have h1n : (1 : ℕ) ≤ n := hn.1
   have hnN : n ≤ N := hn.2.1
-  have hOneI : (1 : ℝ) ∈ Set.Icc (0 : ℝ) N := by
-    exact ⟨by norm_num, by exact_mod_cast hN⟩
+  pm_923
   have hnI : (n : ℝ) ∈ Set.Icc (0 : ℝ) N := by
     exact ⟨by positivity, by exact_mod_cast hnN⟩
   have hNI : (N : ℝ) ∈ Set.Icc (0 : ℝ) N := by
@@ -199,9 +191,9 @@ theorem heathBrown_spacing_round_mem_endpoint_interval
   have hmonoN := heathBrown_lower_slope hg hgd hderivLower hnI hNI
     (by exact_mod_cast hnN)
   have hmuOne : 0 ≤ mu * ((n : ℝ) - 1) := by
-    exact mul_nonneg hmuPos.le (sub_nonneg.mpr (by exact_mod_cast h1n))
+    pm_8917 h1n
   have hmuN : 0 ≤ mu * ((N : ℝ) - n) := by
-    exact mul_nonneg hmuPos.le (sub_nonneg.mpr (by exact_mod_cast hnN))
+    pm_8917 hnN
   have hgOne : g 1 ≤ g n := by linarith
   have hgN : g n ≤ g N := by linarith
   have hroundLower : g n - theta ≤ (round (g n) : ℝ) := by
@@ -222,12 +214,7 @@ theorem heathBrown_spacing_round_mem_endpoint_interval
 
 /-- Fully finite form of Heath-Brown's elementary spacing lemma before
 simplifying the floor/ceiling factors into Vinogradov notation. -/
-theorem heathBrown_spacing_card_le_exact
-    {N : ℕ} {g : ℝ → ℝ} {mu theta : ℝ}
-    (hN : 1 ≤ N) (hmuPos : 0 < mu)
-    (hg : ContinuousOn g (Set.Icc 0 (N : ℝ)))
-    (hgd : DifferentiableOn ℝ g (Set.Ioo 0 (N : ℝ)))
-    (hderivLower : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), mu ≤ deriv g x) :
+theorem heathBrown_spacing_card_le_exact :
     (heathBrownSpacingSet N g theta).card ≤
       (⌊max 0 (2 * theta / mu)⌋₊ + 1) *
         (Finset.Icc ⌊g 1 - theta⌋ ⌈g N + theta⌉).card := by
@@ -240,6 +227,7 @@ theorem heathBrown_spacing_card_le_exact
       hderivLower hn
   · intro q hq
     exact heathBrown_spacing_fiber_card_le hmuPos hg hgd hderivLower q
+end
 
 end
 

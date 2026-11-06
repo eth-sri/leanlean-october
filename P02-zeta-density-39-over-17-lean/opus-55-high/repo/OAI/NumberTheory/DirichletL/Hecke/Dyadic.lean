@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,10 @@ theorem norm_pos (I : NonzeroIdeal) : 0 < norm I := by
 def coefficient (χ : Character) (inverse : Bool) (I : Ideal O) : ℂ :=
   if inverse then (UniqueFactorizationMonoid.moebius I : ℂ)*idealCoeff χ I else idealCoeff χ I
 
-theorem coefficient_norm_le (χ : Character) (inverse : Bool) (I : Ideal O) :
+section
+variable (χ : Character) (inverse : Bool)
+include χ inverse
+theorem coefficient_norm_le (I : Ideal O) :
     ‖coefficient χ inverse I‖ ≤ 1 := by
   cases inverse
   · exact idealCoeff_norm_le_one χ I
@@ -34,11 +38,12 @@ theorem coefficient_norm_le (χ : Character) (inverse : Bool) (I : Ideal O) :
     exact (mul_le_of_le_one_left (norm_nonneg _) (CubicEisenstein.norm_ideal_moebius_le_one I)).trans
       (idealCoeff_norm_le_one χ I)
 
-@[simp] theorem coefficient_zero (χ : Character) (inverse : Bool) : coefficient χ inverse 0 = 0 := by
+@[simp] theorem coefficient_zero : coefficient χ inverse 0 = 0 := by
   cases inverse
   · exact idealCoeff_zero χ
   · change (UniqueFactorizationMonoid.moebius (0 : Ideal O) : ℂ)*idealCoeff χ 0 = 0
-    rw [idealCoeff_zero, mul_zero]
+    grind
+end
 
 def shift (σ ω : ℝ) : ℂ := (σ : ℂ)-(ω : ℂ)*Complex.I
 
@@ -72,18 +77,16 @@ theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.r
       ∑' I : Ideal O, coefficient χ inverse I * CubicEisenstein.fullIdealWeight s I := by
     rw [← he]
     apply tsum_congr
-    intro I
-    have hI : I.val ≠ 0 := I.property
+    pm_8352
     rw [CubicEisenstein.fullIdealWeight, ite_eq_right hI]
     simp only [norm, Complex.ofReal_natCast]
   rw [hc]
   cases inverse
   · exact LFunction_eq_series χ hs
   · have h0 : s ≠ 0 := by intro h; norm_num [h] at hs
-    have h1 : s ≠ 1 := by intro h; norm_num [h] at hs
+    pm_3117 h1 s hs
     change HeckeReciprocal.reciprocal χ s = _
-    rw [HeckeReciprocal.reciprocal_eq_inv χ h0 h1, LFunction_eq_series χ hs,
-      ← IdealEuler.inverseSeries_eq_inv _ (idealCoeff_norm_le_one χ) s hs]
+    pm_8629 h0 h1 hs
     apply tsum_congr
     intro I
     simp only [coefficient,  ite_true, IdealEuler.weighted,

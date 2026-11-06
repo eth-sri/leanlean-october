@@ -20,7 +20,7 @@ lemma lowCalibrationGood_dvd (C : CalibrationData)
   have hh := D.numeratorFactor
   simp only [one_pow,one_mul] at hh
   change C.generator=D.numeratorUnit.val*λ₀^D.numeratorLambda*(2:O)^D.numeratorTwo*D.numeratorGood at hh
-  exact hh.trans (by ring)
+  grind
 
 theorem lowBaseModulus_coprime (η : HeckeFamily.Character) (C : CalibrationData)
     (D : GoodMaskRowData C.generator 1 C.generator)

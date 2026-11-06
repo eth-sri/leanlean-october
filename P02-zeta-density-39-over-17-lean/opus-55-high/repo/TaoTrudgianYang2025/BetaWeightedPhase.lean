@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaWeightedPrimitive
 public import TaoTrudgianYang2025.AtkinsonFirstDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -56,13 +57,11 @@ theorem IntervalC1Bound.fourierChar_of_slope_gap
       simp only [Real.fourierChar_apply]
       fun_prop)
     (B := 1/(lam*Real.pi)) (by
-      intro x hx
-      have hsubx : Icc a x ⊆ J := fun y hy => hsub ⟨hy.1,hy.2.trans hx.2⟩
+      pm_5968 hsubx
       apply norm_fourierCharIntegral_le_of_slope_gap hx.1 hlam
         (fun y hy => hφ y (hsubx hy))
         (fun y hy z hz hyz => hmono (hsubx hy) (hsubx hz) hyz)
-      rcases hgap with hp | hn
-      · exact Or.inl (fun y hy => hp y (hsubx hy))
+      pm_6382 hsubx
       · exact Or.inr (fun y hy => hn y (hsubx hy)))
   convert h using 1
   ring

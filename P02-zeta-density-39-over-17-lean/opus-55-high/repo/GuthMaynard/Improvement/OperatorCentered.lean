@@ -1,9 +1,9 @@
 module
 public import GuthMaynard.Improvement.OperatorCubic
 public import GuthMaynard.Improvement.CenteredKernelBridge
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
 open scoped InnerProductSpace
@@ -82,16 +82,10 @@ theorem operator_centered_frequencyKernel {a : ℝ → ℝ} (ha : Measurable a)
   have he (x : ℝ) (hx : x ∈ Icc l u) : F x = -(((L*a x:ℝ):ℂ)*phase (s*mellinFrequency x)) := by
     have hx0 : 0 < x := hl.trans_le hx.1
     simp [F,operatorCenteredAmplitude,operatorCenteredFrequency,not_lt.mpr hx0.le,abs_of_pos hx0]
-  have hFi : IntegrableOn F (Icc l u) := hj.neg.integrableOn.congr (by
-    filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
-    exact (he x hx).symm)
-  change (∫ x, F x ∂operatorCenteredMeasure l u L) = _
-  rw [operator_centered_measure_integral F l u L hFi]
+  pm_4525
   have hsum : (∑ m ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋, F (-((m:ℝ)/L))) =
       ∑ m ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋, logModulated (fun x => (a x:ℂ)) s ((m:ℝ)/L) := by
-    apply Finset.sum_congr rfl
-    intro m hm
-    have hp := operator_centered_sample_pos hl hL hm
+    pm_7555
     rw [logModulated_eq_phase]
     simp [F,operatorCenteredAmplitude,operatorCenteredFrequency,neg_neg,neg_lt_zero.mpr hp,abs_neg,abs_of_pos hp]
   rw [hsum]
@@ -107,10 +101,12 @@ theorem operator_centered_frequencyKernel {a : ℝ → ℝ} (ha : Measurable a)
   rw [integral_const_mul]
   ring
 
+section
+variable (μ : Measure ℝ) [IsFiniteMeasure μ] {a : ℝ → ℝ}
+include μ a
 /-- The positive-measure signed-amplitude presentation is exactly the
 constructed finite discrete operator minus its continuous correction. -/
-theorem operator_centered_eq (μ : Measure ℝ) [IsFiniteMeasure μ]
-    {a : ℝ → ℝ} (hi : Integrable a) {l u L : ℝ} (hl : 0 < l) (hL : 0 < L)
+theorem operator_centered_eq (hi : Integrable a) {l u L : ℝ} (hl : 0 < l) (hL : 0 < L)
     (hs : ∀ x, x ∉ Icc l u → a x = 0) :
     operatorFrequency μ (operatorCenteredMeasure l u L) (operatorCenteredAmplitude a L)
       operatorCenteredFrequency = operatorDiscrete μ a L l u-operatorContinuous μ a L := by
@@ -126,16 +122,10 @@ theorem operator_centered_eq (μ : Measure ℝ) [IsFiniteMeasure μ]
     intro v
     simp [F,J,operatorCenteredAmplitude,operatorCenteredFrequency,
       not_lt.mpr hx0.le,abs_of_pos hx0,rankOne_apply,smul_smul]
-  have hFi : IntegrableOn F (Icc l u) := hj.neg.integrableOn.congr (by
-    filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
-    exact (he x hx).symm)
-  change (∫ x, F x ∂operatorCenteredMeasure l u L) = _
-  rw [operator_centered_measure_integral F l u L hFi]
+  pm_4525
   have hsum : (∑ m ∈ Finset.Icc ⌈l*L⌉ ⌊u*L⌋, F (-((m:ℝ)/L))) =
       operatorDiscrete μ a L l u := by
-    apply Finset.sum_congr rfl
-    intro m hm
-    have hp := operator_centered_sample_pos hl hL hm
+    pm_7555
     apply ContinuousLinearMap.ext
     intro v
     simp only [F,operatorCenteredAmplitude,operatorCenteredFrequency,
@@ -154,8 +144,7 @@ theorem operator_centered_eq (μ : Measure ℝ) [IsFiniteMeasure μ]
 
 /-- Actual centered operator cubic trace equals the literal centered time
 kernel cubic. Only a given countable Hilbert basis remains explicit. -/
-theorem operator_centered_cubic (μ : Measure ℝ) [IsFiniteMeasure μ]
-    {a : ℝ → ℝ} (ha : Measurable a) (hi : Integrable a)
+theorem operator_centered_cubic (ha : Measurable a) (hi : Integrable a)
     {l u L B : ℝ} (hl : 0 < l) (hL : 0 < L) (hB : 0 ≤ B)
     (hb : ∀ x, |a x| ≤ B) (hs : ∀ x, x ∉ Icc l u → a x = 0)
     {ι : Type*} [Countable ι] (b : HilbertBasis ι ℂ (Lp ℂ 2 μ)) :
@@ -170,5 +159,6 @@ theorem operator_centered_cubic (μ : Measure ℝ) [IsFiniteMeasure μ]
     funext s
     exact operator_centered_frequencyKernel ha hi hl hL hs s
   simpa only [hk] using htrace
+end
 
 end GuthMaynard.Improvement

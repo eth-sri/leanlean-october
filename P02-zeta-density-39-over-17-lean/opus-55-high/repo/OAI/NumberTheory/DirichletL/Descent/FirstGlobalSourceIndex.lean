@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedPhysicalSplit
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -43,12 +44,12 @@ lemma retained_cutoff_enlargement (E : O) (hE : E≠0) (R Y : ℝ) (hRY : R≤Y)
       have hout : h∉childFrequencyBall E R := fun hm=>hn (Finset.mem_erase.mpr ⟨hne,hm⟩)
       simp [hout])
 
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def firstOriginalWeight (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
     (k : FirstOriginalOuter ι) (x : Ideal O×O) : ℂ :=
   reopenedPairCoefficient β k.1 k.2.1 x.1 *
     (UniqueFactorizationMonoid.moebius (∏i∈k.2.2,Ideal.span {p i}):ℂ) *
@@ -56,7 +57,7 @@ def firstOriginalWeight (β : Ideal O→(ι→₀ℕ)→ℂ)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma firstOriginalWeight_norm_le (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
     (k : FirstOriginalOuter ι) (x : Ideal O×O) :
     ‖firstOriginalWeight p β R k x‖≤‖reopenedPairCoefficient β k.1 k.2.1 x.1‖ := by
   unfold firstOriginalWeight
@@ -69,8 +70,8 @@ lemma firstOriginalWeight_norm_le (β : Ideal O→(ι→₀ℕ)→ℂ)
 theorem original_retained_global_index
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O)) (hlabels : ∀I∈labels,I≠0)
     (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
-    (mark : (ι→₀ℕ)→Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
+    (mark : (ι→₀ℕ)→ Finset ι→ℂ) (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
     (hRY : ∀k∈firstOriginalOuter pool Q,∀f∈labels,R k.1 k.2.1 f k.2.2≤Y) :
     reopenedPhysicalSourceSum pool Q labels β (fun b C I=>
       reopenedPhysicalRetained p hp hcop hg pool b C Ψ m I mark W Φ K (R b C I)) =
@@ -82,20 +83,15 @@ theorem original_retained_global_index
         W W Φ K (primeSubsetGenerator (fun i=>Ideal.span {p i}) x.1.2.2) x.2.2 := by
   simp only [firstGlobalRetainedSource,firstOriginalOuter,Finset.sum_sigma,sum_firstRetainedSource]
   unfold reopenedPhysicalSourceSum reopenedPhysicalRetained
-  apply Finset.sum_congr rfl
-  intro b hb
-  apply Finset.sum_congr rfl
-  intro C hC
-  simp only [Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pm_3397 b hb C hC
+  pm_3006
   intro D hD
   apply Finset.sum_congr rfl
   intro f hf
   have hE := firstPhysicalMultiplier_ne_zero p hp b.support b.leftExponent b.rightExponent
     b.leftBit b.rightBit f (hlabels f hf)
   have hRY' := hRY ⟨b,⟨C,D⟩⟩ ((mem_firstOriginalOuter pool Q _).mpr ⟨hb,hC,hD⟩) f hf
-  rw [show reopenedPhysicalCutoff p b f (R b C f) D=
+  rw [show reopenedPhysicalCutoff p b f (R b C f) D =
     childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit f) (R b C f D) from rfl]
   rw [retained_cutoff_enlargement _ hE _ Y hRY']
   apply Finset.sum_congr rfl

@@ -10,6 +10,7 @@ public import MathCollab.Density.Stronger.PointMean.DoublePole
 public import MathCollab.Density.Stronger.PointMean.FiniteRectangle
 public import MathCollab.Density.Stronger.Fourth.GammaShiftLog
 public import MathCollab.Density.AbelZetaGrowth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,7 +31,7 @@ theorem riemannZetaPoleRemoved_zero : riemannZetaPoleRemoved 0 = 1 := by
 
 theorem riemannZetaPoleRemoved_eq_mul_riemannZeta {u : ℂ} (hu : u ≠ 0) :
     riemannZetaPoleRemoved u = u * riemannZeta (1 + u) := by
-  have h : 1 + u ≠ 1 := by simpa using hu
+  have h : 1 + u ≠ 1 := by grind
   simp [riemannZetaPoleRemoved, regularizedRiemannZeta, Function.update_of_ne h]
 
 theorem differentiable_riemannZetaPoleRemoved : Differentiable ℂ riemannZetaPoleRemoved := by
@@ -64,7 +65,7 @@ theorem heathBrownZetaSquareMellinIntegrand_eq_poleCleared
   change Complex.Gamma w * riemannZeta (1 + u) ^ 2 =
     Complex.Gamma w * riemannZetaPoleRemoved u ^ 2 / u ^ 2
   rw [hpole]
-  field_simp [hu]
+  grind
 
 theorem differentiableOn_heathBrownMovingPoleNumerator
     (s : ℂ) :
@@ -107,7 +108,7 @@ theorem heathBrownMovingPoleResidue_eq
       (HasDerivAt.sub_const p (hasDerivAt_id p))
   have hRemovedAt : HasDerivAt riemannZetaPoleRemoved
       (deriv riemannZetaPoleRemoved 0) (p - p) := by
-    simpa using hRemoved0
+    grind
   have hRemoved : HasDerivAt
       (fun w : ℂ => riemannZetaPoleRemoved (w - p))
       (deriv riemannZetaPoleRemoved 0) p := by
@@ -150,16 +151,15 @@ theorem heathBrown_movingPole_finite_rectangle
         ((d : ℂ) - (H : ℂ) * I) ((c : ℂ) + (H : ℂ) * I) =
       heathBrownMovingPoleResidue s := by
   let z : ℂ := (d : ℂ) - (H : ℂ) * I
-  let w : ℂ := (c : ℂ) + (H : ℂ) * I
+  pm_4439 w c H
   let p : ℂ := heathBrownMovingPole s
   let N : ℂ → ℂ := heathBrownMovingPoleNumerator s
   have hzre : z.re ≤ w.re := by
     simp [z, w]
     linarith
-  have hzim : z.im ≤ w.im := by simp [z, w]; linarith
+  pm_6550 hzim z.im w.im
   have hpInterior : Rectangle z w ∈ 𝓝 p := by
-    rw [rectangle_mem_nhds_iff, uIoo_of_le hzre, uIoo_of_le hzim,
-      mem_reProdIm, Set.mem_Ioo, Set.mem_Ioo]
+    pm_6752
     constructor
     · simp [z, w, p]
       exact ⟨hdp, hpc⟩

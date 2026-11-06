@@ -1,5 +1,6 @@
 module
 public import TraceAlternatives.CubeReflectionSecond
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,8 +19,7 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
         MathCollab.Density.localReflectionEnergy L H W ≤
           C*T^η*cubeLocalReflectionBudget T L H W.card (discreteAdditiveEnergy W) := by
   obtain ⟨C,hC,hBound⟩ := reflection_complete_pair_energy_cube hη
-  refine ⟨120*C,by positivity,?_⟩
-  intro T t₀ L H hT hL hH hHT W hW _hSep
+  pm_508 _hSep
   have hTp : 0<T := by linarith
   have hRoot : 0<Real.sqrt T := Real.sqrt_pos.mpr hTp
   have hLp : 0<L := hRoot.trans_le hL
@@ -34,7 +34,7 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
   open MathCollab.Density in
   have hBlock (M : ℕ) (hM : M∈reflectionBlocks L H) :
       (∑' j : ℤ,completePairEnergy M (localSet W H j)) ≤ 12*(C*T^η*S) := by
-    obtain ⟨hM0,_,hMhi⟩ := reflectionBlock_scale_bounds hLp hH hM
+    pm_5763 hLp
     have hMU : (M:ℝ)≤2*X := by
       apply hMhi.trans
       dsimp [X]
@@ -42,13 +42,11 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
       apply (div_le_div_iff₀ (by positivity : 0<Real.pi*L) hLp).mpr
       nlinarith [Real.pi_gt_three,mul_pos hH hLp]
     have hMT : (M:ℝ)≤4*Real.sqrt T := by linarith
-    have h := hBound T t₀ hT M hM0 hMT W hW
-    have hSq : (M:ℝ)^2≤4*X^2 := by
-      have hh := pow_le_pow_left₀ (Nat.cast_nonneg M : (0:ℝ)≤M) hMU 2
-      nlinarith
+    pm_528 h hBound T t₀ hT M hM0 hMT W hW
+    pm_497
     have hMono : ((M:ℝ)^2+T^(1/3:ℝ)*M)*
         (W.card:ℝ)^(2/3:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/3:ℝ) ≤ 4*S := by
-      have hLin := mul_le_mul_of_nonneg_left hMU (Real.rpow_nonneg hTp.le (1/3:ℝ))
+      pm_7684 hMU
       have hQuad : (M:ℝ)^2+T^(1/3:ℝ)*M ≤ 4*(X^2+T^(1/3:ℝ)*X) := by
         nlinarith [mul_nonneg (Real.rpow_nonneg hTp.le (1/3:ℝ)) hX.le]
       calc
@@ -60,17 +58,7 @@ theorem reflection_local_energy_cube {η : ℝ} (hη : 0 < η) :
           (W.card:ℝ)^(2/3:ℝ)*(discreteAdditiveEnergy W:ℝ)^(1/3:ℝ)) := by
       convert h using 1
       ring
-    exact (reflection_local_pair_le_three hH M W).trans
-      ((mul_le_mul_of_nonneg_left
-        (hGrouped.trans (mul_le_mul_of_nonneg_left hMono (by positivity)))
-        (by norm_num : (0:ℝ)≤3)).trans_eq (by ring))
-  open MathCollab.Density in
-  calc
-    localReflectionEnergy L H W ≤ ∑ _M∈reflectionBlocks L H,12*(C*T^η*S) := sum_le_sum hBlock
-    _ = ((reflectionBlocks L H).card:ℝ)*(12*(C*T^η*S)) := by simp
-    _ ≤ 10*(12*(C*T^η*S)) := by
-      apply mul_le_mul_of_nonneg_right _ (by positivity)
-      exact_mod_cast reflectionBlocks_card_le hLp hH
-    _ = _ := by ring
+    pm_2726
+  pm_163
 
 end Montgomery.RationalMoment

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.PoissonTails
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,10 @@ def childFrequencyBall (a : Eis) (R : ℝ) : Finset Eis :=
   (secondFrequencyCutoff (‖eisEmbedding a‖^2) R).filter
     (fun k => ‖eisEmbedding (a*k)‖^2 ≤ R)
 
-lemma mem_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis) :
+section
+variable (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis)
+include a ha R k
+lemma mem_childFrequencyBall :
     k ∈ childFrequencyBall a R ↔ ‖eisEmbedding (a*k)‖^2 ≤ R := by
   have hn : 0 < ‖eisEmbedding a‖^2 := sq_pos_of_pos
     (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero ha))
@@ -24,16 +28,20 @@ lemma mem_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis) :
   refine ⟨fun h => h.2, fun h => ⟨?_,h⟩⟩
   apply mem_secondFrequencyCutoff
   apply (le_div_iff₀ hn).mpr
-  simpa only [map_mul, norm_mul, mul_pow, mul_comm] using h
+  pm_99 map_mul norm_mul mul_pow mul_comm h
 
-lemma outside_childFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis)
+lemma outside_childFrequencyBall
     (hk : k ∉ childFrequencyBall a R) : R < ‖eisEmbedding (a*k)‖^2 :=
   lt_of_not_ge (fun h => hk ((mem_childFrequencyBall a ha R k).mpr h))
+end
 
 def nonzeroChildFrequencyBall (a : Eis) (R : ℝ) : Finset Eis :=
   (childFrequencyBall a R).erase 0
 
-lemma mem_nonzeroChildFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis) :
+section
+variable (a : Eis) (ha : a ≠ 0) (R : ℝ)
+include a ha R
+lemma mem_nonzeroChildFrequencyBall (k : Eis) :
     k ∈ nonzeroChildFrequencyBall a R ↔
       0 < ‖eisEmbedding (a*k)‖^2 ∧ ‖eisEmbedding (a*k)‖^2 ≤ R := by
   have hn : 0 < ‖eisEmbedding (a*k)‖^2 ↔ k ≠ 0 := by
@@ -44,14 +52,15 @@ lemma mem_nonzeroChildFrequencyBall (a : Eis) (ha : a ≠ 0) (R : ℝ) (k : Eis)
   simp only [nonzeroChildFrequencyBall, Finset.mem_erase,
     mem_childFrequencyBall a ha, hn]
 
-lemma nonzeroChildFrequencyBall_empty (a : Eis) (ha : a ≠ 0) (R : ℝ) (hR : R < 1) :
+lemma nonzeroChildFrequencyBall_empty (hR : R < 1) :
     nonzeroChildFrequencyBall a R = ∅ := by
   apply Finset.eq_empty_iff_forall_notMem.mpr
   intro k hk
   have hm := (mem_nonzeroChildFrequencyBall a ha R k).mp hk
-  have hk0 : k ≠ 0 := by intro hk; simp [hk] at hm
+  pm_3256 hk0 k hk hm
   exact (not_le_of_gt hR) ((EisensteinSchwartzPoisson.one_le_eisenstein_norm_sq
     (a*k) (mul_ne_zero ha hk0)).trans hm.2)
+end
 
 end
 end SevenEighths.InverseMoment

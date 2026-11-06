@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.FrequencySupport
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalReopen
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,8 +19,7 @@ lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
     (b h : O) (hcop : IsCoprime b s) :
     sexticGauss s (supportedElement_ne_zero s hs) (b*h) =
       (idealRowHom b (Ideal.span {s}))⁻¹ * sexticGauss s (supportedElement_ne_zero s hs) h := by
-  let := finite_quotient_span (supportedElement_ne_zero s hs)
-  let : Fintype (Residue s) := Fintype.ofFinite _
+  pm_511 finite_quotient_span supportedElement_ne_zero s hs Residue
   let χ := supportedModulusCharacter s hs
   let ψ := quotientTrace s (supportedElement_ne_zero s hs)
   let u := residueUnit s b hcop.symm
@@ -28,7 +28,7 @@ lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
     χ, supportedModulusCharacter_mk] at he
   rw [← residueGauss_supported_mk s hs (b*h), ← residueGauss_supported_mk s hs h]
   simp only [residueGauss, tsum_fintype, map_mul]
-  simpa only [ψ, mul_assoc, mul_comm, mul_left_comm] using he
+  pm_99 ψ mul_assoc mul_comm mul_left_comm he
 
 lemma movingQuotient_unit_scale (A s : O) (hs : Supported (Ideal.span {s}))
     (b : O) (hcop : IsCoprime b s) (x : Residue (A*s)) :
@@ -94,12 +94,10 @@ theorem actualCongruenceCoefficient_calibration_factor (S : Finset (Ideal O))
         idealRowHom C.generator (Ideal.span {A}) * (idealRowHom C.generator (Ideal.span {s}))⁻¹) *
       bareCongruenceCoefficient A s hA H := by
   dsimp only
-  have he := actualPhysicalFourier_calibration_factor S hS A s hA hs hcop H
+  pm_528 he actualPhysicalFourier_calibration_factor S hS A s hA hs hcop H
   dsimp only at he
   rw [actualPhysicalFourier_eq, barePhysicalFourier_eq] at he
-  have hn : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
-    exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
-      (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero s hs))
+  pm_3847 hn s hs
   apply mul_left_cancel₀ hn
   rw [he]
   ring

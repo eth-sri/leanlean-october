@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.TailIntegral
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstTransport
 public import OAI.NumberTheory.DirichletL.PrimeRows.CoarseAmplitude
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,14 +20,14 @@ theorem uniform_original_x_height_tail (K : ℕ)
     (hfirst : FirstTail (1/4) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (N : ℕ) (r : ℝ) (hr : (17/50:ℝ)≤r) (hr1 : r≤1) :
+    (N : ℕ) (r : ℝ) (hr : (17/50:ℝ)≤ r) (hr1 : r≤1) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
-      ∀(P : Fin K→PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,∀υ∈Icc (-(1/100:ℝ)) (1/2),∀X Y Z : ℝ,0<X → 0<Y → 0<Z →
+      ∀(P : Fin K→ PrimeIdeal),Function.Injective P → ∀hPS : ∀j,(P j).val∉S,∀υ∈Icc (-(1/100:ℝ)) (1/2),∀X Y Z : ℝ,0<X → 0<Y → 0<Z →
       ∀H : ℝ,0≤H →
       (∫p : HeightSpace in {t : HeightSpace | |t.1.1|≤H}ᶜ,
-        ‖continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r p‖ ∂heightMeasure)≤
-        C*contourArithmeticCost η u P*(X^(1/2-r)*Z^(2+r-1)*Y^(υ-1))/(1+H)^N := by
-  obtain ⟨A0,hA0,hrow0⟩ := rowAmplitudeOnLines_first_polynomial K S hS hfirst hmax
+        ‖continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r p‖ ∂ heightMeasure)≤
+        C*contourArithmeticCost η u P*(X^(1/2-r)*Z ^(2+r-1)*Y^(υ-1))/(1+H)^N := by
+  pm_3547 A0 hA0 hrow0 rowAmplitudeOnLines_first_polynomial K S hS hfirst hmax
   obtain ⟨D,hD,hprofile⟩ := source_profile_arithmetic_tails W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     2 2 r r (-(1/100)) (1/2) (by linarith) 2 N
   refine ⟨9*A0*D,by positivity,?_⟩
@@ -49,8 +50,8 @@ theorem uniform_original_x_height_tail (K : ℕ)
     (9*A) (by positivity) X Y Z hX hY hZ G hG.aestronglyMeasurable hb
   have ht' : Integrable (continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r) heightMeasure ∧
       ∀T : ℝ,0≤T →
-      (∫p : HeightSpace in outsideBox T,‖continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r p‖ ∂heightMeasure)≤
-        (9*A)*D*(X^(1/2-r)*Z^(2+r-1)*Y^(υ-1))/(1+T)^N := by
+      (∫p : HeightSpace in outsideBox T,‖continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r p‖ ∂ heightMeasure)≤
+        (9*A)*D *(X^(1/2-r)*Z ^(2+r-1)*Y^(υ-1))/(1+T)^N := by
     have hfun : continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 2 υ r=
         (fun p : HeightSpace=>sourceMellinWeight W0 W1 X Y Z ((2:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((r:ℂ)+p.1.2*I)*G p) := by
       funext p

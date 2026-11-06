@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,16 +19,16 @@ theorem scaleSupport_cover (W : ℝ→ℂ) (a b upper l : ℝ) (hb : 0≤b)
     (hWs : Function.support W⊆Icc a b) (hl : l≤upper) :
     ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/Real.exp l)≠0 → J∈scaleSupport upper b := by
   intro J hJ hw
-  apply mem_idealsUpTo.mpr
-  refine ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hJ),?_⟩
+  pm_6162 hJ
   have hh := (div_le_iff₀ (Real.exp_pos l)).mp (hWs hw).2
   have hm := mul_le_mul_of_nonneg_right (Real.exp_le_exp.mpr hl) hb
   have hn : (J.absNorm : ℝ)≤Real.exp upper*b := by nlinarith
   exact_mod_cast hn.trans (Nat.le_ceil _)
 
-theorem rowwise_scales {ι : Type*} (rows : Finset ι) (χ : ι→Character)
-    (W : ℝ→ℂ) (a b : ℝ) (hb : 0≤b) (hWs : Function.support W⊆Icc a b)
-    (hW : ContDiff ℝ ∞ W) (lo hi E : ℝ) (hlh : lo≤hi) (l : ι→ℝ)
+section
+variable {ι : Type*} (rows : Finset ι) (χ : ι→ Character) (W : ℝ→ℂ) (a b : ℝ) (hb : 0≤b) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (lo hi E : ℝ) (hlh : lo≤hi)
+include ι rows χ W a b hb hWs hW lo hi E hlh
+theorem rowwise_scales (l : ι→ℝ)
     (hl : ∀ i∈rows, l i∈Icc lo hi)
     (h0 : ∀ t∈Icc lo hi, ∑ i∈rows, ‖polynomial (χ i) true W (Real.exp t) 0 0‖^2≤E)
     (h1 : ∀ t∈Icc lo hi, ∑ i∈rows,
@@ -48,14 +49,10 @@ theorem rowwise_scales {ι : Type*} (rows : Finset ι) (χ : ι→Character)
     lo hi E hlh l hl
     (fun t ht => by simpa only [eq0 _ t ht] using h0 t ht)
     (fun t ht => by simpa only [eq1 _ t ht] using h1 t ht)
-  convert hh using 1
-  apply Finset.sum_congr rfl
-  intro i hi
+  pm_4983 hh i hi
   rw [eq0 i (l i) (hl i hi)]
 
-theorem exists_scale_majorant {ι : Type*} (rows : Finset ι) (χ : ι→Character)
-    (W : ℝ→ℂ) (a b : ℝ) (hb : 0≤b) (hWs : Function.support W⊆Icc a b)
-    (hW : ContDiff ℝ ∞ W) (lo hi E : ℝ) (hlh : lo≤hi)
+theorem exists_scale_majorant
     (h0 : ∀ t∈Icc lo hi, ∑ i∈rows, ‖polynomial (χ i) true W (Real.exp t) 0 0‖^2≤E)
     (h1 : ∀ t∈Icc lo hi, ∑ i∈rows,
       ‖polynomial (χ i) true (scaleProfile W) (Real.exp t) 0 0‖^2≤E) :
@@ -76,6 +73,7 @@ theorem exists_scale_majorant {ι : Type*} (rows : Finset ι) (χ : ι→Charact
       scaleSum_eq_polynomial (χ i) W S (t i) (scaleSupport_cover W a b hi (t i) hb hWs (ht i).2)] at hh
     exact hh
   · exact rowwise_scales rows χ W a b hb hWs hW lo hi E hlh t (fun i hi => ht i) h0 h1
+end
 
 end SevenEighths.HeckeInverseAmplification
 

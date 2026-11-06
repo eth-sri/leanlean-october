@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.LogPoissonTail
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
@@ -13,9 +12,7 @@ theorem choose_log_poisson_order {η : ℝ} (hη : 0 < η) :
       T^2*T^(j+2)/(T^(1+η))^j ≤ T^(-200:ℝ) := by
   let j := ⌈204/η⌉₊
   have hj : (204:ℝ) ≤ (j:ℝ)*η := (div_le_iff₀ hη).mp (Nat.le_ceil _)
-  refine ⟨j,?_⟩
-  intro T hT
-  have hTp : 0 < T := by linarith
+  pm_7147 j
   rw [← Real.rpow_natCast (T^(1+η)) j,← Real.rpow_mul hTp.le,
     ← Real.rpow_natCast T 2,← Real.rpow_natCast T (j+2),
     ← Real.rpow_add hTp,← Real.rpow_sub hTp]
@@ -38,15 +35,14 @@ theorem log_poisson_negligible {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
   obtain ⟨C,hC,h⟩ := logModulated_poisson_tail ha hl hlu hs j
   refine ⟨4*C*(1+c)^(j+2),by positivity,?_⟩
   intro T L s α hT hL hLT hst
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := by linarith
+  pm_4599
   have hHp : 0 < T^(1+η) := Real.rpow_pos_of_pos hTp _
   obtain ⟨hi,hb⟩ := h s L α (T^(1+η)) hLp hHp.le
   refine ⟨hi,?_⟩
   have htime : 1+|s| ≤ (1+c)*T := by nlinarith
   have hspace : (1+L⁻¹)^2 ≤ 4 := by
-    have hh : L⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL
-    have hh0 : 0 ≤ L⁻¹ := inv_nonneg.mpr hLp.le
+    pm_8946 hh
+    pm_4935 hh0 L hLp.le
     nlinarith
   calc
     _ = L*‖∑' m : ℤ, poissonRemainder (logModulated a s) L α (T^(1+η)) m‖ := by

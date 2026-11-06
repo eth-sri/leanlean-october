@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondReducedEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,35 +19,30 @@ open CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors
 open CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
-theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (t : ℝ)
+section
+variable (η τ : Character) (χ : RayCharacter) (A : O) (C : Ideal O) (hC : Supported C) (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ, heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I)) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O)
+include η τ χ A C hC hτ S β L
+theorem masked_divisor_coefficient (t : ℝ)
     (I : sectorPool C hC.1 S) :
     divisorCoefficient L (sectorElement C hC.1 S)
       (movingCoefficient A (sectorElement C hC.1 S)
-        (fun J:sectorPool C hC.1 S=>β (C*J)*heightCoeff η t J)) χ I=
+        (fun J:sectorPool C hC.1 S=>β (C*J)*heightCoeff η t J)) χ I =
       (if L∣(I:Ideal O) then β (C*I) else 0)*heightCoeff τ t I := by
   have hi : IsCoprime C (I:Ideal O) := (Finset.mem_filter.mp I.property).2
   rw [divisorCoefficient,movingCoefficient,sectorElement_span,
     hτ I (sectorPool_supported C hC.1 S I) hi t]
   dsimp only [sectorElement]
-  split_ifs <;> ring
+  grind
 
-theorem masked_child_energy (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (t : ℝ)
-    (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ)) (H : ℝ) :
+theorem masked_child_energy (t : ℝ)
+    (keep : O→ Prop) (Φ : 𝓢(ℝ,ℂ)) (H : ℝ) :
     restrictedEnergy keep Finset.univ (sectorElement C hC.1 S)
       (divisorCoefficient L (sectorElement C hC.1 S)
         (movingCoefficient A (sectorElement C hC.1 S)
           (fun J:sectorPool C hC.1 S=>β (C*J)*heightCoeff η t J)) χ) Φ H=
     sourceRestrictedEnergy keep (residualPool C hC.1 S)
       (fun I=>if IsCoprime C I ∧ L∣I then β (C*I) else 0) (heightCoeff τ t) Φ H := by
-  have he := funext (masked_divisor_coefficient η τ χ A C hC hτ S β L t)
+  pm_7118 he
   rw [he]
   unfold restrictedEnergy sourceRestrictedEnergy
   apply tsum_congr
@@ -57,14 +53,10 @@ theorem masked_child_energy (η τ : Character) (χ : RayCharacter) (A : O)
       (fun I : supportedColumns (residualPool C hC.1 S)=>
         (if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then β (C*I) else 0)*heightCoeff τ t I) := by
     funext I
-    split_ifs <;> simp_all
-  rw [hc]
+    grind
+  grind
 
-theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (keep : O→Prop)
+theorem original_window_from_masked_source (keep : O→ Prop)
     (t θ X : ℝ) (hX : 0<X) (J : ℕ)
     (Φ : 𝓢(ℝ,ℂ)) (H : ℝ) (hH : 0<H)
     (hΦ : ∀z:O,0≤(Φ (‖ConcreteTraceCRT.eisEmbedding z‖^2/H)).re)
@@ -74,11 +66,11 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
       (heightCoeff τ v) Φ H≤E*(1+‖v‖)^(2*J)) :
     restrictedEnergy keep Finset.univ (sectorElement C hC.1 S)
       (fun I=>divisorCoefficient L (sectorElement C hC.1 S)
-        (movingCoefficient A (sectorElement C hC.1 S) (fun I=>β (C*I)*heightCoeff η t I)) χ I*
+        (movingCoefficient A (sectorElement C hC.1 S) (fun I=>β (C*I)*heightCoeff η t I)) χ I *
         columnPhase logAnnulus (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X)) θ) Φ H≤
-      (E*heightCost t θ^(2*J))*(∫w:ℝ,(1+‖w‖)^J*
+      (E*heightCost t θ^(2*J))*(∫w:ℝ,(1+‖w‖)^J *
         ‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth w‖)^2 := by
-  have hc := funext (masked_divisor_coefficient η τ χ A C hC hτ S β L t)
+  pm_7118 hc
   change restrictedEnergy keep Finset.univ (sectorElement C hC.1 S)
     (fun I=>(divisorCoefficient L (sectorElement C hC.1 S)
       (movingCoefficient A (sectorElement C hC.1 S) (fun I=>β (C*I)*heightCoeff η t I)) χ) I*_) Φ H≤_
@@ -93,6 +85,7 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
   rw [←masked_child_energy η τ χ A C hC hτ S β L v keep Φ H] at hs
   rw [funext (masked_divisor_coefficient η τ χ A C hC hτ S β L v)] at hs
   simpa only [sectorElement_span] using hs
+end
 
 end SevenEighths.CenteredMomentSecondMaskedWindow
 

@@ -1,6 +1,8 @@
 module
 public import OAI.NumberTheory.DirichletL.TraceConductor
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,11 +10,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical FourierTransform
+open scoped Classical FourierTransform
 
 namespace SevenEighths.GaussianTheta
 
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 
 open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT EisensteinSchwartzPoisson
 
@@ -30,7 +32,7 @@ theorem coordinate_norm_sq (x y : ℝ) :
     Complex.ofReal_re, Complex.ofReal_im, omega3_re, omega3_im, zero_mul, zero_add,
     add_zero, sub_zero]
   unfold RankTwoEisShift.Q
-  nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)]
+  grind
 
 theorem exists_coordinate (w : ℂ) : ∃ x y : ℝ, w = coordinate x y := by
   let v := (basisEquiv omega3 omega3_im_ne_zero).symm w
@@ -48,7 +50,7 @@ theorem coordinate_dual_phase (x y : ℝ) (p : ℤ × ℤ) :
   unfold RankTwoEisShift.dualPhase
   congr 1
   have hs : (Real.sqrt 3 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
+    simp_all
   push_cast
   field_simp
   ring
@@ -58,8 +60,7 @@ theorem gaussian_coordinate_shift (a x y : ℝ) (p : ℤ × ℤ) :
       coordinate x y) = RankTwoEisShift.shifted a x y p := by
   have he : eisEmbedding (ActualEisensteinCoordinates.eval p.1 p.2) + coordinate x y =
       coordinate ((p.1 : ℝ) + x) ((p.2 : ℝ) + y) := by
-    rw [eisEmbedding_eval]
-    simp only [coordinate, Complex.ofReal_add, Complex.ofReal_intCast]
+    pm_3514 eisEmbedding_eval coordinate Complex.ofReal_add Complex.ofReal_intCast
     ring
   rw [he]
   unfold gaussian RankTwoEisShift.shifted
@@ -68,7 +69,10 @@ theorem gaussian_coordinate_shift (a x y : ℝ) (p : ℤ × ℤ) :
   push_cast
   ring
 
-theorem gaussian_dual_coordinate (a : ℝ) (p : ℤ × ℤ) :
+section
+variable (a : ℝ)
+include a
+theorem gaussian_dual_coordinate (p : ℤ × ℤ) :
     gaussian a (eisEmbedding (dualFrequencyEquiv p)) =
       Complex.exp (((-Real.pi * a * RankTwoPoisson.eisQ (p.1, -p.2) : ℝ) : ℂ)) := by
   unfold gaussian
@@ -78,19 +82,19 @@ theorem gaussian_dual_coordinate (a : ℝ) (p : ℤ × ℤ) :
   push_cast
   ring
 
-theorem shifted_prefactor (a : ℝ) (ha : 0 < a) :
+theorem shifted_prefactor (ha : 0 < a) :
     (1 / (a : ℂ) ^ (1 / 2 : ℂ)) *
       (1 / (((3 * a / 4 : ℝ) : ℂ)) ^ (1 / 2 : ℂ)) =
       ((2 / (Real.sqrt 3 * a) : ℝ) : ℂ) := by
   have h := EisensteinGaussianPrefactor.complex_eta_times_prefactor a 1 ha (by norm_num)
   simp only [mul_one] at h
-  have ha0 : (a : ℂ) ≠ 0 := by exact_mod_cast ha.ne'
+  pm_146 ha0 a ha.ne'
   apply (mul_left_cancel₀ ha0)
   rw [← mul_assoc, h]
   push_cast
   field_simp
 
-theorem shifted_lattice_poisson (a : ℝ) (ha : 0 < a) (w : ℂ) :
+theorem shifted_lattice_poisson (ha : 0 < a) (w : ℂ) :
     (∑' z : O, gaussian a (eisEmbedding z + w)) =
       ((2 / (Real.sqrt 3 * a) : ℝ) : ℂ) *
         ∑' h : O, paperE (w * eisEmbedding h) *
@@ -118,7 +122,7 @@ theorem shifted_lattice_poisson (a : ℝ) (ha : 0 < a) (w : ℂ) :
       rw [coordinate_dual_phase, gaussian_dual_coordinate]
       exact mul_comm _ _
 
-theorem gaussian_mul (a : ℝ) (z w : ℂ) :
+theorem gaussian_mul (z w : ℂ) :
     gaussian a (z * w) = gaussian (a * ‖z‖ ^ 2) w := by
   unfold gaussian
   rw [norm_mul]
@@ -126,9 +130,10 @@ theorem gaussian_mul (a : ℝ) (z w : ℂ) :
   push_cast
   ring
 
-theorem gaussian_summable (a : ℝ) (ha : 0 < a) :
+theorem gaussian_summable (ha : 0 < a) :
     Summable (fun z : O => gaussian a (eisEmbedding z)) := by
   exact eis_gaussian_summable ha
+end
 
 theorem paperE_norm (z : ℂ) : ‖paperE z‖ = 1 := by
   rw [paperE_eq_exp, Complex.norm_exp]
@@ -137,15 +142,14 @@ theorem paperE_norm (z : ℂ) : ‖paperE z‖ = 1 := by
 theorem weighted_gaussian_summable {R : Type*} [Fintype R]
     (q : O → R) (P : R → ℂ) (a : ℝ) (ha : 0 < a) :
     Summable (fun z : O => P (q z) * gaussian a (eisEmbedding z)) := by
-  let C : ℝ := ∑ r : R, ‖P r‖
+  pm_7220
   have hP (r : R) : ‖P r‖ ≤ C :=
     Finset.single_le_sum (fun r _ => norm_nonneg (P r)) (Finset.mem_univ r)
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun z => norm_nonneg _) _
     ((gaussian_summable a ha).norm.mul_left C)
   intro z
-  rw [norm_mul]
-  exact mul_le_mul_of_nonneg_right (hP _) (norm_nonneg _)
+  pm_6343 mul_le_mul_of_nonneg_right hP
 
 theorem gaussian_coset_poisson (a : ℝ) (ha : 0 < a) (c : O) (hc : c ≠ 0) (r : O) :
     (∑' z : O, gaussian a (eisEmbedding (r + c * z))) =
@@ -245,25 +249,25 @@ theorem parameter_pos (t : ℝ) (ht : 0 < t) : 0 < parameter c t := by
     (mul_pos (Real.sqrt_pos.mpr (by norm_num))
       (norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))))
 
-theorem parameter_dual (t : ℝ) (ht : 0 < t) :
+section
+variable (t : ℝ) (ht : 0 < t)
+include t ht
+theorem parameter_dual :
     4 / (3 * (parameter c t * ‖eisEmbedding c‖ ^ 2)) = parameter c (1 / t) := by
-  have hn : ‖eisEmbedding c‖ ≠ 0 := norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hs : Real.sqrt 3 ≠ 0 := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
-  unfold parameter
-  field_simp
+  pm_3229
   ring_nf
   norm_num [Real.sq_sqrt]
 
-theorem parameter_prefactor (t : ℝ) (ht : 0 < t) :
+theorem parameter_prefactor :
     2 / (Real.sqrt 3 * (parameter c t * ‖eisEmbedding c‖ ^ 2)) =
       1 / (‖eisEmbedding c‖ * t) := by
-  have hn : ‖eisEmbedding c‖ ≠ 0 := norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hs : Real.sqrt 3 ≠ 0 := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
-  unfold parameter
-  field_simp
+  pm_3229
+end
 
-theorem theta_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) (ht : 0 < t) :
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (hχ : FiniteFourier.IsPrimitiveOnIdeals χ)
+include χ hχ
+theorem theta_functional_equation (t : ℝ) (ht : 0 < t) :
     theta c χ t = (TraceCharacter.normalizedGauss c χ / (t : ℂ)) *
       theta c χ⁻¹ (1 / t) := by
   have hp := primitive_gaussian_poisson c χ hχ (parameter c t) (parameter_pos c t ht)
@@ -277,18 +281,17 @@ theorem theta_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   push_cast
   ring
 
-theorem theta_inversion (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) (ht : 0 < t) :
+theorem theta_inversion (t : ℝ) (ht : 0 < t) :
     theta c χ (1 / t) = (TraceCharacter.normalizedGauss c χ * (t : ℂ)) * theta c χ⁻¹ t := by
   have h := theta_functional_equation c χ hχ (1 / t) (one_div_pos.mpr ht)
-  simpa only [one_div, Complex.ofReal_inv, inv_inv, div_inv_eq_mul, one_mul] using h
+  pm_383 one_div Complex.ofReal_inv inv_inv div_inv_eq_mul one_mul h
 
-theorem theta_root_nonzero (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : FiniteFourier.IsPrimitiveOnIdeals χ) : TraceCharacter.normalizedGauss c χ ≠ 0 := by
+theorem theta_root_nonzero : TraceCharacter.normalizedGauss c χ ≠ 0 := by
   have h := TraceCharacter.normalizedGauss_norm c χ hχ
   intro hz
   rw [hz, norm_zero] at h
   exact zero_ne_one h
+end
 
 end SevenEighths.GaussianTheta
 

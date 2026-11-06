@@ -24,7 +24,10 @@ def parentLower (s:Input α)(Z:ℝ):ℝ:=
   min (min (Real.logb Z s.X₁) (Real.logb Z s.X₂))
     (min (Real.logb Z s.Y₁) (Real.logb Z s.Y₂))
 
-theorem parent_lower_scales (s:Input α)(Z:ℝ)(hZ:1<Z):
+section
+variable (s:Input α)
+include s
+theorem parent_lower_scales(Z:ℝ)(hZ:1<Z):
     Z^(parentLower s Z)≤s.X₁ ∧ Z^(parentLower s Z)≤s.X₂ ∧
     Z^(parentLower s Z)≤s.Y₁ ∧ Z^(parentLower s Z)≤s.Y₂:=by
   have h (X:ℝ)(hX:0<X)(hx:parentLower s Z≤Real.logb Z X):Z^(parentLower s Z)≤X:=by
@@ -36,7 +39,7 @@ theorem parent_lower_scales (s:Input α)(Z:ℝ)(hZ:1<Z):
     h _ s.Y₁_pos ((min_le_right _ _).trans (min_le_left _ _)),
     h _ s.Y₂_pos ((min_le_right _ _).trans (min_le_right _ _))⟩
 
-theorem main_minimum_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
+theorem main_minimum_lower(C R:Ideal O)(hC:C≠0)
     (B:actualAllocations s.pools C)(τ:Character)(t Z:ℝ)(hZ:1<Z):
     let d:=child s C R B τ t
     let r:=parentLower s Z-Real.logb Z (C.absNorm:ℝ)
@@ -44,7 +47,7 @@ theorem main_minimum_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
   have h:=parent_lower_scales s Z hZ
   exact child_lower s C R hC B τ t Z (parentLower s Z) hZ h.1 h.2.1 h.2.2.1 h.2.2.2
 
-theorem active_error_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
+theorem active_error_lower(C R:Ideal O)(hC:C≠0)
     (B:actualAllocations s.pools C)(τ:Character)(t:ℝ)(p:O)(hp:p≠0)(k:ℕ)
     (Bp:actualAllocations (activeInput (child s C R B τ t)).pools ((Ideal.span {p})^k))
     (υ:Character)(v Z r:ℝ)(hZ:1<Z)
@@ -62,7 +65,7 @@ theorem active_error_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
     rfl
   simpa only [he] using hh
 
-theorem error_minimum_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
+theorem error_minimum_lower(C R:Ideal O)(hC:C≠0)
     (B:actualAllocations s.pools C)(τ:Character)(t:ℝ)(p:O)(hp:p≠0)(k:ℕ)
     (Bp:actualAllocations (activeInput (child s C R B τ t)).pools ((Ideal.span {p})^k))
     (υ:Character)(v Z:ℝ)(hZ:1<Z):
@@ -72,6 +75,7 @@ theorem error_minimum_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
   have h:=parent_lower_scales s Z hZ
   exact active_error_lower s C R hC B τ t p hp k Bp υ v Z (parentLower s Z) hZ
     h.1 h.2.1 h.2.2.1 h.2.2.2
+end
 
 end SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
 

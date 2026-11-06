@@ -5,6 +5,7 @@ Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3
 See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ReciprocalSecondDerivativeBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,8 +32,7 @@ theorem hasDerivAt_atkinsonRootKernel (T b : ℝ) {y : ℝ} (hy : 0 < y) :
   have h := (((hasDerivAt_atkinsonRootPhase T b hy).ofReal_comp).const_mul
     (2 * Real.pi * I)).cexp
   convert h using 1
-  · unfold atkinsonRootKernel
-    ring
+  aesop
   · unfold atkinsonRootKernel
     push_cast
     ring
@@ -71,15 +71,13 @@ theorem IntervalC2Bound.atkinsonRoot_secondOrder {f : ℝ → ℂ} {T b a c M R 
     (fun y hy => by
       rw [uIcc_of_le hac] at hy
       exact hasDerivAt_atkinsonRootKernel T b (ha.trans_le hy.1)) hdi hki
-  have hwa : w a = 0 := by simp only [w, hfa, zero_mul]
-  have hwc : w c = 0 := by simp only [w, hfc, zero_mul]
+  pm_1449 hwa w a hfa
+  pm_1449 hwc w c hfc
   have he : (∫ y in a..c,
       w y * (k * (atkinsonRootSlope T b y : ℂ) * atkinsonRootKernel T b y)) =
         k * ∫ y in a..c, f y * atkinsonRootKernel T b y := by
     rw [← intervalIntegral.integral_const_mul]
-    apply intervalIntegral.integral_congr
-    intro y hy
-    rw [uIcc_of_le hac] at hy
+    pm_445 intervalIntegral.integral_congr y hy uIcc_of_le hac
     calc
       _ = k * (f y * atkinsonRootKernel T b y) *
           ((((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ) * (atkinsonRootSlope T b y : ℂ)) := by

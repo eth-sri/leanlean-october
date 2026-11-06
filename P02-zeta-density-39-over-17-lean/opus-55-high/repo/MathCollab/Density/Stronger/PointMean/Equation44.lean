@@ -8,6 +8,7 @@ The repository's literal actual-zeta norm and oneSeparated predicate are used.
 -/
 public import MathCollab.Density.Stronger.PointMean.Native
 public import MathCollab.Density.Stronger.PointMean.IntegralOverlap
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,8 +34,7 @@ theorem heathBrown_equation44_of_lemmaThree
         V ^ (2 : ℕ) * (W.card : ℝ) ≤
           C * Real.log T *
             ((W.card : ℝ) + 4 * (∫ u in center - G..center + G, zetaMomentCriticalNorm u ^ (2 : ℕ))) := by
-  obtain ⟨C, hC, hpoint⟩ := hLemmaThree
-  refine ⟨C, hC, ?_⟩
+  pm_157 C hC hpoint hLemmaThree
   intro T V center G L W hT hV hG hL hSep hRange hLow hHigh
     hLogRadius hFit hLarge
   let q : ℝ → ℝ := fun t ↦
@@ -46,10 +46,10 @@ theorem heathBrown_equation44_of_lemmaThree
     have htRange := hRange t ht
     have htTen : 10 ≤ t := by linarith
     have htT : t ≤ T := by linarith
-    have htPos : 0 < t := lt_of_lt_of_le (by norm_num) htTen
-    have hTPos : 0 < T := lt_of_lt_of_le (by norm_num) hT
-    have hlogt : 0 ≤ Real.log t := Real.log_nonneg (by linarith)
-    have hlogT : 0 ≤ Real.log T := Real.log_nonneg (by linarith)
+    pm_4843 htPos t lt_of_lt_of_le htTen
+    pm_4843 hTPos T lt_of_lt_of_le hT
+    pm_301 hlogt t
+    pm_301 hlogT T
     have hlogMono : Real.log t ≤ Real.log T := Real.log_le_log htPos htT
     have hqNonneg : 0 ≤ q t := by
       dsimp [q]

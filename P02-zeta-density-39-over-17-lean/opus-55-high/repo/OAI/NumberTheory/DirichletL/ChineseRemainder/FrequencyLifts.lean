@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Cusp.ResiduePhases
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,76 +8,31 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace ShortDraftCRT
 open ActualEisensteinCubic FiniteGaussPhase ConcreteTraceCRT CubicEisenstein
@@ -84,9 +40,9 @@ local notation "Eis" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι]
 
 omit [Fintype ι] in
-theorem exists_strong_unit_frequency_lifts (M:Eis) (p:ι→Eis)
+theorem exists_strong_unit_frequency_lifts (M:Eis) (p:ι→ Eis)
     (hM:∀i,IsCoprime M (p i)) (x:∀i,(Eis⧸Ideal.span {p i})ˣ) :
-    ∃h:ι→Eis,(∀i,M^2∣h i) ∧
+    ∃h:ι→ Eis,(∀i,M^2∣h i) ∧
       (∀i,Ideal.Quotient.mk (Ideal.span {p i}) (h i)=(x i:Eis⧸Ideal.span {p i})) ∧
       ∀i,IsCoprime (h i) (p i) := by
   have hx (i:ι) := exists_frequency_lift (M^2) (p i)
@@ -97,14 +53,13 @@ theorem exists_strong_unit_frequency_lifts (M:Eis) (p:ι→Eis)
       _=Ideal.Quotient.mk (Ideal.span {p i}) (Quotient.out (x i:Eis⧸Ideal.span {p i})) :=
         Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr (hd i))
       _=x i:=Ideal.Quotient.mk_out _
-  refine ⟨h,hh,he,?_⟩
-  intro i
+  pm_1445 h hh he i
   apply IsCoprime.symm
   apply (isUnit_quotient_span_iff (p i) (h i)).mp
   rw [he]
-  exact (x i).isUnit
+  simp_all
 
-theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→Eis)
+theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→ Eis)
     (hc:c≠0) (hp:∀i,p i≠0) :
     eisEmbedding (finiteCrossNumerator a c l p h)/eisEmbedding (c*∏i,p i)=
       eisEmbedding a/eisEmbedding c+eisEmbedding l^2*
@@ -114,9 +69,7 @@ theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→Eis)
   have hRC:=eisEmbedding_ne_zero hR
   have hs:eisEmbedding (∑i,h i*cofactor p i)/eisEmbedding (∏i,p i)=
       ∑i,eisEmbedding (h i)/eisEmbedding (p i) := by
-    rw [map_sum,Finset.sum_div]
-    apply Finset.sum_congr rfl
-    intro i hi
+    pm_3813 map_sum Finset.sum_div Finset.sum_congr i hi
     have hpi:=eisEmbedding_ne_zero (hp i)
     have hr:eisEmbedding (p i)*eisEmbedding (cofactor p i)=eisEmbedding (∏i,p i) := by
       rw [←map_mul,prime_mul_cofactor]
@@ -125,11 +78,10 @@ theorem finiteCrossNumerator_fraction (a c l:Eis) (p h:ι→Eis)
     linear_combination eisEmbedding (h i)*hr
   simp only [finiteCrossNumerator,map_add,map_mul,map_pow]
   rw [←hs]
-  field_simp [hcC,hRC]
+  grind
 
 end ShortDraftCRT
 
-open scoped BigOperators Classical
 
 namespace IdealGaussCRT
 open CubicEisenstein
@@ -155,11 +107,13 @@ lemma sum_nonzero_ite {F : Type*} [Field F] [Fintype F] (f:F→ℂ) :
     _ = _ := (Equiv.sum_comp unitsEquivNeZero (fun x:{x:F//x≠0}=>f x)).symm
 
 def activeStratum {ι : Type*} [Fintype ι]
-    (F : ι→Type*) [∀i,Field (F i)] [∀i,Fintype (F i)] (A:Finset ι) :
+    (F : ι→ Type*) [∀i,Field (F i)] [∀i,Fintype (F i)] (A:Finset ι) :
     Finset (∀i,F i) := Finset.univ.filter (fun h=>∀i,h i≠0↔i∈A)
 
-theorem sum_active_stratum {ι : Type*} [Fintype ι]
-    (F : ι→Type*) [∀i,Field (F i)] [∀i,Fintype (F i)]
+section
+variable {ι : Type*} [Fintype ι] (F : ι→ Type*) [∀i,Field (F i)] [∀i,Fintype (F i)]
+include ι F
+theorem sum_active_stratum
     (A:Finset ι) (f:∀i,F i→ℂ) :
     (∑h∈activeStratum F A,∏i,f i (h i))=
       (∏i∈A,∑u:(F i)ˣ,f i (u:F i))*
@@ -185,8 +139,7 @@ theorem sum_active_stratum {ι : Type*} [Fintype ι]
   have hn : (Finset.univ:Finset ι).filter (fun i=>i∉A)=(Finset.univ:Finset ι)\A := by ext i;simp
   rw [ha,hn]
 
-theorem sum_by_active_strata {ι : Type*} [Fintype ι]
-    (F : ι→Type*) [∀i,Field (F i)] [∀i,Fintype (F i)]
+theorem sum_by_active_strata
     (weight:(∀i,F i)→ℂ) :
     (∑h:∀i,F i,weight h)=
       ∑A∈(Finset.univ:Finset ι).powerset,∑h∈activeStratum F A,weight h := by
@@ -209,6 +162,7 @@ theorem sum_by_active_strata {ι : Type*} [Fintype ι]
     simp only [hbad,ite_false]
   · intro hnot
     exact (hnot (Finset.mem_powerset.mpr (Finset.filter_subset _ _))).elim
+end
 
 end FixedRayActiveSet
 
@@ -264,8 +218,7 @@ lemma sourceCuspPhaseNumerator_embedding (j:Fin 3) (u h:Eis)
       -eisLam^4*cuspFrequency h*(eisEmbedding u)^2/(sourceCuspScale j:ℂ) := by
   by_cases hj:j=0
   · subst j
-    simp only [sourceCuspPhaseNumerator,ite_true,map_mul,map_pow,
-      ramifiedEmbedding_traceLambda,cuspFrequency,sourceCuspScale]
+    pm_437 sourceCuspPhaseNumerator ite_true map_mul map_pow ramifiedEmbedding_traceLambda cuspFrequency sourceCuspScale
     norm_num only [Matrix.cons_val_zero,Complex.ofReal_one,div_one]
     field_simp [eisLam_ne_zero]
     linear_combination (eisEmbedding h*(eisEmbedding u)^2)*TraceLambdaPhase.eisLam_sq
@@ -396,7 +349,7 @@ theorem idealRowHom_two_formula (n:Eis) (hn:lambda^2∣n-1)
     (hs:Supported (Ideal.span {n})) :
     idealRowHom (2:Eis) (Ideal.span {n})=twoSupplement n := by
   have hn0:n≠0:=by intro hz;apply hs.1;simp [hz]
-  obtain ⟨s,hprod,hfactors⟩:=exists_primary_prime_factorization n hn0 hn
+  pm_3529 s hprod hfactors exists_primary_prime_factorization n hn0 hn
   rw [←hprod] at hs ⊢
   clear hprod hn hn0 n
   induction s using Multiset.induction_on with
@@ -427,13 +380,10 @@ def supportedIdealRow (a:Eis) : Eis→*ℂ where
       ite_eq_left hs,map_one]
   map_mul' x y := by
     rw [←Ideal.span_singleton_mul_span_singleton,supported_mul_iff,map_mul]
-    by_cases hx:Supported (Ideal.span {x}) <;> by_cases hy:Supported (Ideal.span {y}) <;> simp [hx,hy]
+    pm_810
 
 lemma supportedIdealRow_norm (a n:Eis) : ‖supportedIdealRow a n‖≤1 := by
-  change ‖if _ then _ else _‖≤_
-  split_ifs
-  · exact idealRowHom_norm _ _
-  · simp
+  pm_6067
 
 lemma exists_supported_primary_unit (x:Eis) (hx:Supported (Ideal.span {x})) :
     ∃u:Eisˣ,lambda^2∣u.val*x-1 := by
@@ -441,8 +391,7 @@ lemma exists_supported_primary_unit (x:Eis) (hx:Supported (Ideal.span {x})) :
   have hp:=primaryGenerator_spec (Ideal.span {x}) hg
   have ha:Associated x (primaryGenerator (Ideal.span {x})):=
     Ideal.span_singleton_eq_span_singleton.mp hp.1.symm
-  obtain ⟨u,hu⟩:=ha
-  refine ⟨u,?_⟩
+  pm_7227
   have he:u.val*x=primaryGenerator (Ideal.span {x}):=by simpa only [mul_comm] using hu
   rw [he]
   exact hp.2
@@ -468,7 +417,7 @@ theorem supportedIdealRow_lambda_periodic :
     have he:=idealRowHom_lambda_mod_thirty_six (u.val*x) (u.val*y) hux huy
       (by rwa [hsp]) (by rwa [hsp]) h36
     simpa only [hsp] using he
-  · rw [ite_eq_right hx,ite_eq_right (fun hy=>hx (hs.mpr hy))]
+  pm_6281
 
 lemma supportedIdealRow_lambda_primary (n:Eis) (hs:Supported (Ideal.span {n})) :
     supportedIdealRow lambda n=idealRowHom lambda (Ideal.span {n}) := by
@@ -502,7 +451,7 @@ theorem exists_supported_numerator_factorization (x:Eis) (hx:x≠0) :
     rwa [he] at hh
   have hnot2:¬(2:Eis)∣r:=by
     intro h2
-    exact hrnot (by simpa only [neg_dvd] using h2)
+    pm_3535 hrnot neg_dvd h2
   have hnotlambda:¬lambda∣r:=by
     intro hLam
     have hsub:lambda∣r-1:=(dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans hprimary
@@ -537,8 +486,10 @@ def reciprocityPhaseMonoid (r:Eis) (hr:Supported (Ideal.span {r})) : Eis→*ℂ 
 def numeratorBadTwist (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r})) : Eis→*ℂ :=
   unitSupplement u * supportedIdealRow lambda^a * twoSupplement^b * reciprocityPhaseMonoid r hr
 
-lemma numeratorBadTwist_norm (u:Eisˣ) (a b:ℕ) (r:Eis)
-    (hr:Supported (Ideal.span {r})) (n:Eis) : ‖numeratorBadTwist u a b r hr n‖≤1 := by
+section
+variable (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r}))
+include u a b r hr
+lemma numeratorBadTwist_norm (n:Eis) : ‖numeratorBadTwist u a b r hr n‖≤1 := by
   change ‖((unitSupplement u n * (supportedIdealRow lambda n)^a) * (twoSupplement n)^b) *
     sexticReciprocityPhase r n‖≤1
   simp only [norm_mul,norm_pow]
@@ -552,8 +503,7 @@ lemma numeratorBadTwist_norm (u:Eisˣ) (a b:ℕ) (r:Eis)
     ((mul_le_of_le_one_left (pow_nonneg (norm_nonneg _) _)
     ((mul_le_of_le_one_left (pow_nonneg (norm_nonneg _) _) hu).trans ha)).trans hb)).trans hrn
 
-lemma numeratorBadTwist_periodic (u:Eisˣ) (a b:ℕ) (r:Eis)
-    (hr:Supported (Ideal.span {r})) :
+lemma numeratorBadTwist_periodic :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {(72:Eis)}) (numeratorBadTwist u a b r hr) := by
   intro x y hxy
   have h72:(72:Eis)∣x-y:=Ideal.mem_span_singleton.mp hxy
@@ -568,18 +518,23 @@ lemma numeratorBadTwist_periodic (u:Eisˣ) (a b:ℕ) (r:Eis)
       sexticReciprocityPhase r y
   rw [unitSupplement_periodic u x y h36,supportedIdealRow_lambda_periodic x y h36,
     twoSupplement_periodic x y h8,sexticReciprocityPhase_congr_right r x y h4]
+end
 
 def movingNumeratorRow (r:Eis) (hr:Supported (Ideal.span {r})) : Eis→*ℂ where
   toFun n:=idealRowHom n (Ideal.span {r})
   map_one' := idealRowHom_one_supported _ hr
   map_mul' a b := idealRowHom_argument_mul a b _
 
-lemma movingNumeratorRow_norm (r:Eis) (hr:Supported (Ideal.span {r})) (n:Eis) :
+section
+variable (r:Eis) (hr:Supported (Ideal.span {r}))
+include r hr
+lemma movingNumeratorRow_norm (n:Eis) :
     ‖movingNumeratorRow r hr n‖≤1 := idealRowHom_norm n _
 
-lemma movingNumeratorRow_periodic (r:Eis) (hr:Supported (Ideal.span {r})) :
+lemma movingNumeratorRow_periodic :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {r}) (movingNumeratorRow r hr) :=
   idealRowHom_congr_mod _
+end
 
 theorem idealRowHom_factor_numerator (u:Eisˣ) (a b:ℕ) (r n:Eis)
     (hr:Supported (Ideal.span {r})) (hpr:lambda^2∣r-1)

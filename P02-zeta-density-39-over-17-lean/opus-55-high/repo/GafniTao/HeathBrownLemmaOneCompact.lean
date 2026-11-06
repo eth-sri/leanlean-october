@@ -1,7 +1,7 @@
 module
 public import GafniTao.HeathBrownLemmaOneSourceScale
 
-@[expose] public section
+public section
 
 /-!
 # Heath-Brown Lemma 1 on a compact interior interval
@@ -13,7 +13,6 @@ the derivative-pair count, and the exact finite averaging argument.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem norm_heathBrownExponentialSum_le_sourceScale_of_vmvt
     {U : Set ℝ} (hU : IsOpen U)
@@ -44,6 +43,5 @@ theorem norm_heathBrownExponentialSum_le_sourceScale_of_vmvt
     hk hN hA hlambda hepsilon hsmall hHN hC)
 
 
-end
 
 end GafniTao

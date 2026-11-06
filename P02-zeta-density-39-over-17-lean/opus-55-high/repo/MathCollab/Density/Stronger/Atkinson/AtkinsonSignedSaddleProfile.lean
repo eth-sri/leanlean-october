@@ -23,7 +23,10 @@ def atkinsonSaddleProfile (T G L α b : ℝ) : ℂ :=
       (zetaDivisorBandCutoff T G L (zetaAtkinsonSaddle T b) : ℂ) *
         zetaSquareReflectedGammaPhase T
 
-theorem atkinsonRootKernel_at_saddle {T : ℝ} (hT : 0 < T) (b : ℝ) :
+section
+variable {T : ℝ} (hT : 0 < T)
+include T hT
+theorem atkinsonRootKernel_at_saddle (b : ℝ) :
     atkinsonRootKernel T b (atkinsonSaddleRoot (T / (2 * Real.pi)) b) =
       Complex.exp ((zetaAtkinsonPhase T b (zetaAtkinsonSaddle T b) : ℂ) * I) := by
   rw [zetaAtkinsonSaddle, zetaAtkinsonPhase_sq T b (atkinsonSaddleRoot_pos (by positivity) b)]
@@ -32,11 +35,12 @@ theorem atkinsonRootKernel_at_saddle {T : ℝ} (hT : 0 < T) (b : ℝ) :
   push_cast
   ring
 
-theorem atkinsonPowerWeight_at_saddle {T : ℝ} (hT : 0 < T) (G L α : ℝ) (n : ℕ) :
+theorem atkinsonPowerWeight_at_saddle (G L α : ℝ) (n : ℕ) :
     atkinsonPowerWeight T G L α (zetaAtkinsonSaddle T (Real.sqrt n)) =
       atkinsonSaddleProfile T G L α (Real.sqrt n) * atkinsonSaddleGaussian T G n := by
   unfold atkinsonPowerWeight atkinsonSaddleProfile
   rw [zetaGaussianQuadraticIntegral_at_saddle hT G n]
+end
 
 theorem atkinsonPowerWeight_at_neg_saddle {T G : ℝ} (hT : 0 < T) (hG : G ≠ 0)
     (L α : ℝ) (n : ℕ) :

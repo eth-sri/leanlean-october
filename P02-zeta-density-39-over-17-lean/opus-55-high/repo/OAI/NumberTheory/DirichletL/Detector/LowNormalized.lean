@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowWindowBound
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,28 +29,23 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
     (hp0 : ∀y,0≤(W0 y).re) (hp1 : ∀y,0≤(W1 y).re) (hn0 : W0≠0) (hn1 : W1≠0) :
     letI : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
     ∀η : HeckeFamily.Character,∃C : ℝ,0<C ∧ ∀ᶠZ : ℝ in atTop,
-      let Yp := fun j=>Z^(ell j)
+      let Yp := fun j=>Z ^(ell j)
       let T := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
       let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
       let normer := sourceResidueConstant W0 W1 (∏P∈S,P)*
         (Probe.principalScalar Finset.univ Z (1/6) (slotMass T (residueWeights W Yp)) : ℂ)
       normer≠0 ∧
       ‖compensatedPhysicalProbe η (calibrationForSet S hmax) W0 W1
-        (fun j=>canonicalSlotSupport (T j)) WC Yp (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z/normer‖≤
-        C*Z^(3/16+loss) := by
-  let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
-  let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
-  have hWC (j : Fin K) : Function.support (WC j)⊆Set.Icc a b := by
-    intro y hy
-    apply Set.Ioo_subset_Icc_self (hsupp j _)
-    intro hz
-    exact hy (by dsimp [WC];rw [hz];simp)
-  have hWCB (j : Fin K) (y : ℝ) : ‖WC j y‖≤B := by
-    simpa only [WC,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hWB j y).1] using (hWB j y).2
+        (fun j=>canonicalSlotSupport (T j)) WC Yp (Z ^(17/48:ℝ)) (Z ^(23/48:ℝ)) Z/normer‖≤
+        C*Z ^(3/16+loss) := by
+  pm_3918
+  pm_348 K
+  pm_5031 hWC Set.Icc Set.Ioo_subset_Icc_self hz
+  pm_133 K B
   have hW1' : Function.support W1⊆Set.Icc a1 (max b1 (a1+1)) := by
     intro y hy
     exact ⟨(hW1 hy).1,(hW1 hy).2.trans (le_max_left _ _)⟩
-  have hab1 : a1<max b1 (a1+1) := lt_of_lt_of_le (by linarith) (le_max_right _ _)
+  have hab1 : a1< max b1 (a1+1) := lt_of_lt_of_le (by linarith) (le_max_right _ _)
   obtain ⟨Cn,hCn,hnorm⟩ := ProbeHighRowFamily.actual_ray_normalizer_inverse M H hH S hS a b ha hab
     ell hell hsum W hW hcompact hsupp (fun j y=>(hWB j y).1) hne W0 W1 a0 b0 a1 b1 ha0 ha1
     hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1 (loss/2) (by positivity)
@@ -62,13 +58,12 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
     (SchwartzMap.norm_le_seminorm ℝ W0) (SchwartzMap.norm_le_seminorm ℝ W1) η
   refine ⟨Cp*Cn,by positivity,?_⟩
   filter_upwards [hprobe,hnorm,eventually_gt_atTop (0:ℝ)] with Z hp hn hZ
-  dsimp only at hn ⊢
-  refine ⟨hn.1,?_⟩
+  pm_5624
   rw [div_eq_mul_inv,norm_mul]
   calc
-    _≤(Cp*Z^(3/16+loss/2))*(Cn*Z^(loss/2)) :=
+    _≤(Cp*Z ^(3/16+loss/2))*(Cn*Z ^(loss/2)) :=
       mul_le_mul hp hn.2 (norm_nonneg _) (by positivity)
-    _=(Cp*Cn)*Z^(3/16+loss) := by
+    _=(Cp*Cn)*Z ^(3/16+loss) := by
       rw [mul_mul_mul_comm,←Real.rpow_add hZ]
       congr 2
       ring

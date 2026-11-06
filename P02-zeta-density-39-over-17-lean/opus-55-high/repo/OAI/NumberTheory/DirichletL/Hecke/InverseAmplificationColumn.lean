@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRows
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ open HeckeFamily HeckeDyadic
 
 theorem prime_reciprocal_identity (χ ψ : Character) (P : SmoothMobiusCorrection.PrimeIdeal)
     (hm : idealCoeff ψ=IdealEuler.deletePrimes {P} (idealCoeff χ))
-    {s : ℂ} (hs : 1<s.re) :
+    {s : ℂ} (hs : 1< s.re) :
     series χ true s=(1-idealCoeff χ P.val*(P.val.absNorm : ℂ)^(-s))*series ψ true s := by
   have hL : LFunction ψ s=LFunction χ s*(1-idealCoeff χ P.val*(P.val.absNorm : ℂ)^(-s)) := by
     rw [LFunction_eq_series ψ hs,LFunction_eq_series χ hs,hm,
@@ -24,27 +25,24 @@ theorem prime_reciprocal_identity (χ ψ : Character) (P : SmoothMobiusCorrectio
       (1-idealCoeff χ P.val*CubicEisenstein.fullIdealWeight s P.val)=_
     rw [CubicEisenstein.fullIdealWeight,ite_eq_right P.property.ne_zero]
   have h0 : s≠0 := by intro h; norm_num [h] at hs
-  have h1 : s≠1 := by intro h; norm_num [h] at hs
+  pm_7800
   simp only [series,ite_true,HeckeReciprocal.reciprocal_eq_inv χ h0 h1,
     HeckeReciprocal.reciprocal_eq_inv ψ h0 h1]
-  have hχ := LFunction_ne_zero_of_one_lt_re χ hs
-  have hψ := LFunction_ne_zero_of_one_lt_re ψ hs
+  pm_194 hχ LFunction_ne_zero_of_one_lt_re χ hs hψ ψ
   apply (mul_right_cancel₀ hψ)
   rw [mul_assoc,inv_mul_cancel₀ hψ,mul_one,hL]
-  rw [←mul_assoc,inv_mul_cancel₀ hχ,one_mul]
+  grind
 
 lemma rescaled_power (D N : ℝ) (hD : 0<D) (hN : 0<N) (w : ℂ) :
     (D : ℂ)^(w-(1/2 : ℂ))*(N : ℂ)^(-w)=
-      (N : ℂ)^(-(1/2 : ℂ))*((D/N : ℝ) : ℂ)^(w-(1/2 : ℂ)) := by
+      (N : ℂ)^(-(1/2 : ℂ))*((D /N : ℝ) : ℂ)^(w-(1/2 : ℂ)) := by
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hD.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hN.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hN.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (div_pos hD hN).ne')]
   rw [←Complex.ofReal_log hD.le,←Complex.ofReal_log hN.le,
     ←Complex.ofReal_log (div_pos hD hN).le,Real.log_div hD.ne' hN.ne']
-  rw [←Complex.exp_add,←Complex.exp_add]
-  congr 1
-  push_cast
+  pm_8072
   ring
 
 theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.PrimeIdeal)
@@ -53,7 +51,7 @@ theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.Pr
     (hW : ContDiff ℝ ∞ W) (D σ freq : ℝ) (hD : 0<D) :
     polynomial χ true W D σ freq=polynomial ψ true W D σ freq-
       idealCoeff χ P.val*(P.val.absNorm : ℂ)^(-(1/2 : ℂ))*
-        polynomial ψ true W (D/(P.val.absNorm : ℝ)) σ freq := by
+        polynomial ψ true W (D /(P.val.absNorm : ℝ)) σ freq := by
   let N : ℝ := P.val.absNorm
   have hN : 0<N := by
     dsimp [N]
@@ -62,7 +60,7 @@ theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.Pr
   have he (t : ℝ) : integrand χ true W D σ freq (((2-σ : ℝ) : ℂ)+t*I)=
       integrand ψ true W D σ freq (((2-σ : ℝ) : ℂ)+t*I)-
       (idealCoeff χ P.val*(N : ℂ)^(-(1/2 : ℂ)))*
-        integrand ψ true W (D/N) σ freq (((2-σ : ℝ) : ℂ)+t*I) := by
+        integrand ψ true W (D /N) σ freq (((2-σ : ℝ) : ℂ)+t*I) := by
     let w : ℂ := (((2-σ : ℝ) : ℂ)+t*I)+shift σ freq
     have hw : 1<w.re := by dsimp [w]; simp
     have hr := prime_reciprocal_identity χ ψ P hm hw
@@ -72,21 +70,18 @@ theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.Pr
     rw [hr]
     change mellin W _*(D : ℂ)^(w-(1/2 : ℂ))*
       ((1-idealCoeff χ P.val*(N : ℂ)^(-w))*series ψ true w)=_
-    calc
-      _ = mellin W _*(D : ℂ)^(w-(1/2 : ℂ))*series ψ true w-
-          idealCoeff χ P.val*mellin W _*((D : ℂ)^(w-(1/2 : ℂ))*(N : ℂ)^(-w))*series ψ true w := by ring
-      _ = _ := by rw [hp]; ring
+    grind
   have hI := integrand_vertical_integrable ψ true W a b ha hWs hW D (2-σ) σ freq hD hc
-  have hJ := integrand_vertical_integrable ψ true W a b ha hWs hW (D/N) (2-σ) σ freq (div_pos hD hN) hc
+  have hJ := integrand_vertical_integrable ψ true W a b ha hWs hW (D /N) (2-σ) σ freq (div_pos hD hN) hc
   rw [polynomial_mellin χ true W a b ha hWs hW D (2-σ) σ freq hD hc,
     polynomial_mellin ψ true W a b ha hWs hW D (2-σ) σ freq hD hc,
-    polynomial_mellin ψ true W a b ha hWs hW (D/(P.val.absNorm : ℝ)) (2-σ) σ freq (div_pos hD hN) hc]
+    polynomial_mellin ψ true W a b ha hWs hW (D /(P.val.absNorm : ℝ)) (2-σ) σ freq (div_pos hD hN) hc]
   change (1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand χ true W D σ freq (((2-σ : ℝ) : ℂ)+t*I))=_
   simp_rw [he]
   rw [integral_sub hI (hJ.const_mul _),integral_const_mul]
   change _=(1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand ψ true W D σ freq (((2-σ : ℝ) : ℂ)+t*I))-
     idealCoeff χ P.val*(N : ℂ)^(-(1/2 : ℂ))*
-      ((1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand ψ true W (D/N) σ freq (((2-σ : ℝ) : ℂ)+t*I)))
+      ((1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand ψ true W (D /N) σ freq (((2-σ : ℝ) : ℂ)+t*I)))
   ring
 
 end SevenEighths.HeckeInverseAmplification

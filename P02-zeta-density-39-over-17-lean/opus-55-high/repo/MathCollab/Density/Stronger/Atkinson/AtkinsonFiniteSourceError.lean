@@ -6,6 +6,7 @@ See third_party/twelfth/ATKINSON_FINITE_ERROR_MANIFEST.json. Mathlib/PNT foundat
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationarySumScale
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,8 +17,10 @@ open Complex Filter
 open MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem exists_atkinsonStationary_finite_log_error {δ ε : ℝ}
-    (hδ : 0 < δ) (hε : 0 < ε) (hεmax : ε ≤ 1/4) :
+section
+variable {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 < ε)
+include δ ε hδ hε
+theorem exists_atkinsonStationary_finite_log_error (hεmax : ε ≤ 1/4) :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) → T^(1/4 : ℝ) ≤ G →
       ‖atkinsonLeadingFiniteSum T G (Real.log T) (atkinsonSourceCutoff T G (Real.log T)) -
@@ -33,10 +36,10 @@ theorem exists_atkinsonStationary_finite_log_error {δ ε : ℝ}
       eventually_zeta_source_log_window_scales hδ,eventually_atkinsonSourceCutoff_small hδ]
       with T hsupport hscale hcut
     intro G hlower hupper hquarter
-    have hT : 1 ≤ T := by linarith [hsupport.1]
+    pm_7852
     have hT0 : 0 < T := by linarith
     obtain ⟨hG0,hlog0,hwidth,_⟩ := hsupport.2 G hlower
-    have hG1 : 1 ≤ G := (Real.one_le_rpow hT (by norm_num : (0:ℝ) ≤ 1/4)).trans hquarter
+    pm_5433 hquarter
     have hGS : G ≤ Real.sqrt T := hupper.trans (by
       rw [Real.sqrt_eq_rpow]
       exact Real.rpow_le_rpow_of_exponent_le hT (by linarith))
@@ -50,25 +53,23 @@ theorem exists_atkinsonStationary_finite_log_error {δ ε : ℝ}
     convert h using 1 <;> ring
   obtain ⟨B,hB⟩ := eventually_atTop.mp hev
   refine ⟨37*C,by positivity,max 40000 B,le_max_left _ _,?_⟩
-  intro T G hT hlower hupper hquarter
-  exact hB T ((le_max_right _ _).trans hT) G hlower hupper hquarter
+  pm_5986 hB
 
-theorem exists_atkinsonStationary_finite_power_error {δ ε : ℝ}
-    (hδ : 0 < δ) (hε : 0 < ε) :
+theorem exists_atkinsonStationary_finite_power_error :
     ∃ C : ℝ, 0 < C ∧ ∃ T₀ : ℝ, 40000 ≤ T₀ ∧ ∀ T G : ℝ,
       T₀ ≤ T → T^δ ≤ G → G ≤ T^(1/2-δ) → T^(1/4 : ℝ) ≤ G →
       ‖atkinsonLeadingFiniteSum T G (Real.log T) (atkinsonSourceCutoff T G (Real.log T)) -
         atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤ C*T^(1/4+ε) := by
   let e : ℝ := min (ε/2) (1/4)
-  have he : 0 < e := lt_min (by positivity) (by norm_num)
-  have hemax : e ≤ 1/4 := min_le_right _ _
+  pm_251 he e
+  pm_5315 hemax e min_le_right
   have heε : e ≤ ε/2 := min_le_left _ _
   have hη : 0 < ε-e := by linarith
   obtain ⟨C,hC,B,hB,hbound⟩ := exists_atkinsonStationary_finite_log_error hδ he hemax
   obtain ⟨D,hD⟩ := eventually_atTop.mp (eventually_const_log_pow_le_rpow 1 (by norm_num) 2 hη)
-  refine ⟨C,hC,max B D,hB.trans (le_max_left _ _),?_⟩
+  pm_1071 B D hB.trans
   intro T G hT hlower hupper hquarter
-  have hTB : B ≤ T := (le_max_left _ _).trans hT
+  pm_207 hTB B T le_max_left hT
   have hT0 : 0 < T := by linarith
   have hlog := hD T ((le_max_right _ _).trans hT)
   simp only [one_mul] at hlog
@@ -79,5 +80,6 @@ theorem exists_atkinsonStationary_finite_power_error {δ ε : ℝ}
       rw [mul_assoc,← Real.rpow_add hT0]
       congr 2
       ring
+end
 
 end MathCollab.Density.Stronger.Atkinson

@@ -6,6 +6,7 @@ Narrow extraction only; see third_party/twelfth/ATKINSON_CUTOFF_C2_MANIFEST.json
 The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.IntervalSecondDerivativeBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -42,13 +43,10 @@ theorem iteratedDeriv_two_comp_real {f : ℝ → ℂ} {g : ℝ → ℝ} {x : ℝ
       hg.continuousAt.eventually (hf.eventually (by norm_num))] with y hgy hfy
     exact (hfy.differentiableAt (by norm_num)).hasDerivAt.scomp
       y (hgy.differentiableAt (by norm_num)).hasDerivAt |>.deriv
-  have hdg := ((hg.derivWithin (m := 1) (by norm_num)).differentiableAt
-    (by norm_num)).hasDerivAt
-  have hdf := ((hf.derivWithin (m := 1) (by norm_num)).differentiableAt
-    (by norm_num)).hasDerivAt
+  pm_6844 hdg hg.derivWithin
+  pm_6844 hdf hf.derivWithin
   have h := hdg.smul (hdf.scomp x (hg.differentiableAt (by norm_num)).hasDerivAt)
-  rw [iteratedDeriv_succ, iteratedDeriv_one, he.deriv_eq]
-  convert h.deriv using 1
+  pm_7329 he.deriv_eq h.deriv
   · rfl
   · simp only [iteratedDeriv_succ, iteratedDeriv_zero, real_smul, Complex.ofReal_pow,
       Function.comp_apply]
@@ -100,7 +98,7 @@ theorem exists_real_profile_derivative_bound {v : ℝ → ℝ} {a b : ℝ}
     have he := iteratedDeriv_ofReal_fun ((hv u hu).of_le (by norm_num : (1 : WithTop ℕ∞) ≤ 2))
     simp only [iteratedDeriv_one] at he
     have hb := hm.deriv_le u hu
-    rw [he, Complex.norm_real, Real.norm_eq_abs, mul_one] at hb
+    pm_958 he Complex.norm_real Real.norm_eq_abs mul_one hb
     exact hb
   have hv2 (u : ℝ) (hu : u ∈ Icc a b) : |iteratedDeriv 2 v u| ≤ M := by
     have he := iteratedDeriv_ofReal_fun (hv u hu)

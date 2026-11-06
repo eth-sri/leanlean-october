@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalChildren
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
 open InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
 local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+variable {ι:Type*}[DecidableEq ι](p:ι→ O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 variable (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
 
@@ -27,7 +28,7 @@ lemma canonical_source_prime_supported (i:ι):Supported (Ideal.span {p i}) :=by
   subst P
   exact ⟨hg i,hc i⟩
 
-lemma canonical_supported_prod {α:Type*}(S:Finset α)(f:α→Ideal O)
+lemma canonical_supported_prod {α:Type*}(S:Finset α)(f:α→ Ideal O)
     (hf:∀i∈S,Supported (f i)):Supported (∏i∈S,f i) :=by
   classical
   induction S using Finset.induction_on with
@@ -69,8 +70,7 @@ lemma actual_second_label_supported {Jo Jn:ℕ}(x:MarkedSecondSource ι Jo Jn):
 include hp hg hc in
 theorem actual_cell_labels_supported {Jo Jn:ℕ}(S:Finset (MarkedSecondSource ι Jo Jn))(d:BlockIndex):
     ∀I∈actualCellLabels p S d,Supported I :=by
-  intro I hI
-  obtain ⟨x,hx,rfl⟩:=Finset.mem_image.mp hI
+  pm_1192 I hI x hx
   exact actual_second_label_supported p hp hg hc x
 
 include hp hg hc in

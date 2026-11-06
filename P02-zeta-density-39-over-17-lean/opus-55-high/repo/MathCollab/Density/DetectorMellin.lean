@@ -7,12 +7,12 @@ variable x are independent real parameters. No upstream project imports.
 public import MathCollab.Density.MollifierDirichlet
 public import MathCollab.Density.GammaMellin
 public import Mathlib.NumberTheory.LSeries.MellinEqDirichlet
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex MeasureTheory Set Filter
-open scoped ArithmeticFunction.Moebius BigOperators Topology
-set_option autoImplicit false
+open scoped ArithmeticFunction.Moebius Topology
 noncomputable section
 namespace MathCollab.Density
 
@@ -30,7 +30,7 @@ theorem integrable_tsum_of_summable_integral_norm
       dsimp [enorm]
       rw [lintegral_coe_eq_integral _ (hFint n).norm, ENNReal.coe_nnreal_eq,
         coe_nnnorm, Real.norm_of_nonneg (integral_nonneg fun x => norm_nonneg (F n x))]
-      simp only [coe_nnnorm]
+      simp_all
     rw [funext hEach]
     exact ENNReal.tsum_coe_ne_top_iff_summable.2 <|
       NNReal.summable_coe.1 hFsum.abs
@@ -67,22 +67,22 @@ theorem norm_mollifier_LSeries_term_le_cutoff {ρ : ℂ} (X : ℝ) (n : ℕ)
   split_ifs with hn
   · positivity
   · have hnOneNat : 1 ≤ n := Nat.one_le_iff_ne_zero.mpr hn
-    have hnOne : (1 : ℝ) ≤ n := by exact_mod_cast hnOneNat
+    pm_77 hnOne n hnOneNat
     have hPow : 1 ≤ (n : ℝ) ^ ρ.re := Real.one_le_rpow hnOne hρ
     exact (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hPow)).2
       ((norm_mollifierDirichletCoeff_le_cutoff X n).trans
         (by nlinarith [show (0 : ℝ) ≤ ⌊X⌋₊ by positivity]))
 
+section
+variable {ρ : ℂ} {X x : ℝ} (hx : 0 < x) (hρ : 0 ≤ ρ.re)
+include ρ X x hx hρ
 /-- Absolute convergence of the smoothed detector at every positive smoothing
 parameter, uniformly for `Re ρ ≥ 0`. -/
-theorem summable_smoothedDetector {ρ : ℂ} {X x : ℝ}
-    (hx : 0 < x) (hρ : 0 ≤ ρ.re) :
+theorem summable_smoothedDetector :
     Summable (fun n : ℕ =>
       LSeries.term (mollifierDirichletCoeff X) ρ n *
         Complex.exp (-((n : ℝ) * x))) := by
-  have hGeom : Summable (fun n : ℕ => Real.exp (-(n : ℝ) * x)) := by
-    simpa [mul_comm, mul_left_comm, mul_assoc] using
-      (Real.summable_exp_nat_mul_iff.mpr (show -x < 0 by linarith))
+  pm_4306 x
   apply Summable.of_norm
   refine (hGeom.mul_left (⌊X⌋₊ : ℝ)).of_nonneg_of_le
     (fun n => norm_nonneg _) ?_
@@ -97,36 +97,37 @@ theorem summable_smoothedDetector {ρ : ℂ} {X x : ℝ}
   rw [← hExpEq]
   apply mul_le_mul_of_nonneg_right
     (norm_mollifier_LSeries_term_le_cutoff X n hρ)
-  exact (Real.exp_pos (-((n : ℝ) * x))).le
+  positivity
 
-theorem hasSum_smoothedDetector {ρ : ℂ} {X x : ℝ}
-    (hx : 0 < x) (hρ : 0 ≤ ρ.re) :
+theorem hasSum_smoothedDetector :
     HasSum (fun n : ℕ =>
       LSeries.term (mollifierDirichletCoeff X) ρ n *
         Complex.exp (-((n : ℝ) * x)))
       (smoothedDetector ρ X x) := by
   exact (summable_smoothedDetector (X := X) hx hρ).hasSum
+end
 
-theorem norm_LSeries_term_div_rpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ) :
+section
+variable (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ)
+include f ρ s n
+theorem norm_LSeries_term_div_rpow_eq_add :
     ‖LSeries.term f ρ n‖ / (n : ℝ) ^ s.re =
       ‖LSeries.term f (ρ + s) n‖ := by
-  rcases eq_or_ne n 0 with rfl | hn
-  · simp
-  · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+  pm_4961
+  · have hnPos : (0 : ℝ) < n := by positivity
     rw [LSeries.norm_term_eq, LSeries.norm_term_eq, ite_eq_right hn, ite_eq_right hn]
     rw [add_re, Real.rpow_add hnPos]
-    field_simp [ne_of_gt (Real.rpow_pos_of_pos hnPos ρ.re),
-      ne_of_gt (Real.rpow_pos_of_pos hnPos s.re)]
+    grind
 
-theorem Gamma_mul_term_div_cpow_eq_add (f : ℕ → ℂ) (ρ s : ℂ) (n : ℕ) :
+theorem Gamma_mul_term_div_cpow_eq_add :
     Complex.Gamma s * LSeries.term f ρ n / (n : ℝ) ^ s =
       Complex.Gamma s * LSeries.term f (ρ + s) n := by
-  rcases eq_or_ne n 0 with rfl | hn
-  · simp
+  pm_4961
   · have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast hn
     rw [LSeries.term_of_ne_zero hn, LSeries.term_of_ne_zero hn]
     rw [Complex.ofReal_natCast, Complex.cpow_add _ _ hnC]
     field_simp [Complex.cpow_ne_zero_iff.mpr (Or.inl hnC)]
+end
 
 set_option maxHeartbeats 800000 in
 /-- Mellin transformation of the smoothed detector on every line where the
@@ -183,47 +184,31 @@ theorem norm_mollifier_LSeries_le_cutoff_pSeries {z : ℂ} {X : ℝ}
     (hz : 6 / 5 ≤ z.re) :
     ‖LSeries (mollifierDirichletCoeff X) z‖ ≤
       (⌊X⌋₊ : ℝ) * detectorPSeries := by
-  let f : ℕ → ℂ := mollifierDirichletCoeff X
-  have hAbs : 1 < z.re := by linarith
-  have hLS : LSeriesSummable f z :=
-    mollifierDirichletCoeff_LSeriesSummable X hAbs
-  have hNorm : Summable (fun n : ℕ => ‖LSeries.term f z n‖) :=
-    summable_norm_iff.mpr hLS
+  pm_4308
   have hTerm (n : ℕ) : ‖LSeries.term f z n‖ ≤
       (⌊X⌋₊ : ℝ) * (n : ℝ) ^ (-(6 / 5 : ℝ)) := by
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp
+    pm_4961
     · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-      have hnOne : (1 : ℝ) ≤ n := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hn
+      pm_7032 hnOne n Nat.one_le_iff_ne_zero.mpr
       have hDen : (n : ℝ) ^ (6 / 5 : ℝ) ≤ (n : ℝ) ^ z.re :=
         Real.rpow_le_rpow_of_exponent_le hnOne hz
-      rw [LSeries.norm_term_eq, ite_eq_right hn]
-      rw [Real.rpow_neg hnPos.le]
-      have hCoeff := norm_mollifierDirichletCoeff_le_cutoff X n
-      have hLeft : ‖f n‖ / (n : ℝ) ^ z.re ≤
-          (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re := by
-        exact div_le_div_of_nonneg_right hCoeff (Real.rpow_nonneg hnPos.le _)
+      pm_4307
       have hRight : (⌊X⌋₊ : ℝ) / (n : ℝ) ^ z.re ≤
           (⌊X⌋₊ : ℝ) / (n : ℝ) ^ (6 / 5 : ℝ) := by
-        exact div_le_div_of_nonneg_left (by positivity) (Real.rpow_pos_of_pos hnPos _)
-          hDen
+        pm_7850
       exact hLeft.trans hRight
   calc
     ‖LSeries f z‖ ≤ ∑' n : ℕ, ‖LSeries.term f z n‖ :=
       norm_tsum_le_tsum_norm hNorm
     _ ≤ ∑' n : ℕ, (⌊X⌋₊ : ℝ) *
         (n : ℝ) ^ (-(6 / 5 : ℝ)) := by
-      exact hNorm.tsum_le_tsum hTerm
-        (summable_detectorPSeries.mul_left (⌊X⌋₊ : ℝ))
+      pm_8291 summable_detectorPSeries.mul_left
     _ = (⌊X⌋₊ : ℝ) * detectorPSeries := by
       rw [detectorPSeries, tsum_mul_left]
 
 set_option maxHeartbeats 800000 in
-/-- The Mellin transform of the smoothed detector is genuinely integrable on
-the right line `Re s = 1/2`, uniformly for the zero-density range `Re ρ ≥ 3/4`. -/
-theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
-    (hρ : 3 / 4 ≤ ρ.re) :
-    VerticalIntegrable (mellin (smoothedDetector ρ X)) (1 / 2 : ℝ) := by
+set_option hygiene false in
+macro "pf_33" x1:ident x2:term:max x3:term:max x4:ident : tactic => `(tactic| (
   let line : ℝ → ℂ := fun u => ((1 / 2 : ℝ) : ℂ) + (u : ℂ) * I
   let g : ℝ → ℂ := fun u => Complex.Gamma (line u) *
     (riemannZeta (ρ + line u) *
@@ -257,7 +242,7 @@ theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
       dsimp [line]; fun_prop)
   have hgCont : Continuous g := by
     exact hGammaCont.mul (hZetaCont.mul hMollCont)
-  let C : ℝ := (⌊X⌋₊ : ℝ) * detectorPSeries
+  let C : ℝ := (⌊X⌋₊ : ℝ) * $x1:ident
   have hDom : MeasureTheory.Integrable (fun u : ℝ =>
       C * ‖Complex.Gamma (line u)‖) := by
     have hGammaInt : MeasureTheory.Integrable
@@ -267,9 +252,9 @@ theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
   have hg : MeasureTheory.Integrable g := by
     refine MeasureTheory.Integrable.mono' hDom hgCont.aestronglyMeasurable ?_
     filter_upwards with u
-    have hzRe : 6 / 5 ≤ (ρ + line u).re := by simp [line]; linarith
+    have hzRe : $x2:term / $x3:term ≤ (ρ + line u).re := by simp [line]; linarith
     have hAbs : 1 < (ρ + line u).re := by linarith
-    have hLSeries := norm_mollifier_LSeries_le_cutoff_pSeries (X := X) hzRe
+    have hLSeries := $x4:ident (X := X) hzRe
     have hProduct := riemannZeta_mul_zetaMollifier_eq_LSeries
       X hAbs
     dsimp [g]
@@ -285,7 +270,14 @@ theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
   rw [mellin_smoothedDetector_eq (X := X) hρNonneg hsRe hAbs]
   dsimp [g]
   rw [riemannZeta_mul_zetaMollifier_eq_LSeries
-    X hAbs]
+    X hAbs]))
+set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 800000 in
+/-- The Mellin transform of the smoothed detector is genuinely integrable on
+the right line `Re s = 1/2`, uniformly for the zero-density range `Re ρ ≥ 3/4`. -/
+theorem verticalIntegrable_mellin_smoothedDetector {ρ : ℂ} {X : ℝ}
+    (hρ : 3 / 4 ≤ ρ.re) :
+    VerticalIntegrable (mellin (smoothedDetector ρ X)) (1 / 2 : ℝ) := by pf_33 detectorPSeries 6 5 norm_mollifier_LSeries_le_cutoff_pSeries
 
 set_option maxHeartbeats 800000 in
 /-- The smoothed detector is continuous at every positive smoothing
@@ -300,11 +292,9 @@ theorem continuousAt_smoothedDetector {ρ : ℂ} {X x : ℝ}
       Complex.exp (-((n : ℝ) * y))
   let majorant : ℕ → ℝ := fun n =>
     (⌊X⌋₊ : ℝ) * Real.exp (-((n : ℝ) * x₀))
-  have hx₀ : 0 < x₀ := by dsimp [x₀]; linarith
+  pm_358 hx₀ x₀
   have hMajorant : Summable majorant := by
-    have hGeom : Summable (fun n : ℕ => Real.exp (-(n : ℝ) * x₀)) := by
-      simpa [mul_comm, mul_left_comm, mul_assoc] using
-        (Real.summable_exp_nat_mul_iff.mpr (show -x₀ < 0 by linarith))
+    pm_4306 x₀
     simpa [majorant] using hGeom.mul_left (⌊X⌋₊ : ℝ)
   have hTermCont (n : ℕ) : ContinuousOn (term n) (Set.Ici x₀) := by
     apply Continuous.continuousOn
@@ -312,7 +302,7 @@ theorem continuousAt_smoothedDetector {ρ : ℂ} {X x : ℝ}
     fun_prop
   have hBound (n : ℕ) (y : ℝ) (hy : y ∈ Set.Ici x₀) :
       ‖term n y‖ ≤ majorant n := by
-    have hnNonneg : (0 : ℝ) ≤ n := by positivity
+    pm_96 hnNonneg n
     have hArg : -((n : ℝ) * y) ≤ -((n : ℝ) * x₀) := by
       have := hy
       simp only [Set.mem_Ici] at this
@@ -343,100 +333,19 @@ theorem continuousAt_smoothedDetector {ρ : ℂ} {X x : ℝ}
   exact hContinuousOn.continuousAt hNhd
 
 set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 800000 in
 /-- Absolute convergence in the Mellin variable on `Re s = 1/2`.  The key
 summability exponent is `Re ρ + 1/2 > 1`; this is exactly why the detector
 works uniformly in the repaired zero-density range `Re ρ ≥ 3/4`. -/
 theorem mellinConvergent_smoothedDetector {ρ : ℂ} {X : ℝ}
     (hρ : 3 / 4 ≤ ρ.re) :
-    MellinConvergent (smoothedDetector ρ X) ((1 / 2 : ℝ) : ℂ) := by
-  let f : ℕ → ℂ := mollifierDirichletCoeff X
-  let s : ℂ := ((1 / 2 : ℝ) : ℂ)
-  let a : ℕ → ℂ := fun n => LSeries.term f ρ n
-  let term : ℕ → ℝ → ℂ := fun n t =>
-    a n * ((t : ℂ) ^ (s - 1) * Real.exp (-(n : ℝ) * t))
-  have hs : 0 < s.re := by simp [s]
-  have hAbs : 1 < (ρ + s).re := by simp [s]; linarith
-  have hLS : LSeriesSummable f (ρ + s) :=
-    mollifierDirichletCoeff_LSeriesSummable X hAbs
-  have hSumNorm : Summable (fun n => ‖a n‖ / (n : ℝ) ^ s.re) := by
-    have hNorm : Summable (fun n => ‖LSeries.term f (ρ + s) n‖) :=
-      summable_norm_iff.mpr hLS
-    exact hNorm.congr fun n => by
-      simpa [a] using (norm_LSeries_term_div_rpow_eq_add f ρ s n).symm
-  have hTermInt (n : ℕ) : MeasureTheory.IntegrableOn (term n) (Set.Ioi 0) := by
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [term, a, LSeries.term]
-    · have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-      have hGamma := Complex.GammaIntegral_convergent hs
-      rw [← mul_zero (n : ℝ),
-        ← integrableOn_Ioi_comp_mul_left_iff _ _ hnPos] at hGamma
-      refine (MeasureTheory.IntegrableOn.congr_fun
-        (hGamma.const_mul (1 / (((n : ℝ) : ℂ) ^ (s - 1)))) ?_ measurableSet_Ioi).const_mul (a n)
-      intro t ht
-      change 1 / (((n : ℝ) : ℂ) ^ (s - 1)) *
-          ((Real.exp (-((n : ℝ) * t)) : ℂ) *
-            ((((n : ℝ) * t : ℝ) : ℂ) ^ (s - 1))) =
-        (t : ℂ) ^ (s - 1) * (Real.exp (-(n : ℝ) * t) : ℂ)
-      rw [mul_comm (Real.exp _ : ℂ), ← mul_assoc, neg_mul, Complex.ofReal_mul]
-      rw [Complex.mul_cpow_ofReal_nonneg hnPos.le ht.le, ← mul_assoc, one_div,
-        inv_mul_cancel₀, one_mul]
-      rw [Ne, Complex.cpow_eq_zero_iff, not_and_or]
-      exact Or.inl (Complex.ofReal_ne_zero.mpr hnPos.ne')
-  have hTermSum : Summable (fun n => ∫ t in Set.Ioi 0, ‖term n t‖) := by
-    apply Summable.of_norm
-    convert! hSumNorm.mul_left (Real.Gamma s.re) using 2 with n
-    simp_rw [term, norm_mul (a n), integral_const_mul]
-    rw [← mul_div_assoc, mul_comm (Real.Gamma _), mul_div_assoc,
-      norm_mul ‖a n‖, norm_norm]
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [a, LSeries.term]
-    congr 1
-    have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-    have hReal := Real.integral_rpow_mul_exp_neg_mul_Ioi hs hnPos
-    simp_rw [← neg_mul (n : ℝ), one_div, Real.inv_rpow hnPos.le,
-      ← div_eq_inv_mul] at hReal
-    rw [Real.norm_of_nonneg (integral_nonneg fun _ => norm_nonneg _), ← hReal]
-    refine setIntegral_congr_fun measurableSet_Ioi (fun t ht => ?_)
-    rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, Real.abs_exp,
-      norm_cpow_eq_rpow_re_of_pos ht, Complex.sub_re, Complex.one_re]
-  have hSeriesInt : MeasureTheory.IntegrableOn (fun t => ∑' n, term n t) (Set.Ioi 0) :=
-    integrable_tsum_of_summable_integral_norm hTermInt hTermSum
-  rw [MellinConvergent]
-  apply hSeriesInt.congr_fun
-  · intro t ht
-    have htPos : 0 < t := ht
-    have hSeries := hasSum_smoothedDetector (X := X) htPos (by linarith : 0 ≤ ρ.re)
-    have hMul := hSeries.mul_left ((t : ℂ) ^ (s - 1))
-    calc
-      ∑' n, term n t = ∑' n,
-          (t : ℂ) ^ (s - 1) *
-            (LSeries.term (mollifierDirichletCoeff X) ρ n *
-              Complex.exp (-((n : ℝ) * t))) := by
-        apply tsum_congr
-        intro n
-        dsimp [term, a, f]
-        rw [Complex.ofReal_exp]
-        push_cast
-        ring_nf
-      _ = (t : ℂ) ^ (s - 1) * smoothedDetector ρ X t := by
-        simpa [Complex.ofReal_exp] using hMul.tsum_eq
-  · exact measurableSet_Ioi
+    MellinConvergent (smoothedDetector ρ X) ((1 / 2 : ℝ) : ℂ) := by pm_4309
 
 /-- Exact inversion for an arbitrary positive smoothing variable. -/
 theorem smoothedDetector_eq_mellinInv {ρ : ℂ} {X x : ℝ}
     (hx : 0 < x) (hρ : 3/4 ≤ ρ.re) :
     smoothedDetector ρ X x = mellinInv (1/2 : ℝ)
-      (fun s => Complex.Gamma s * LSeries (mollifierDirichletCoeff X) (ρ+s)) x := by
-  have hInv := mellinInv_mellin_eq (1/2 : ℝ) (smoothedDetector ρ X) hx
-    (mellinConvergent_smoothedDetector hρ)
-    (verticalIntegrable_mellin_smoothedDetector hρ)
-    (continuousAt_smoothedDetector hx (by linarith : 0 ≤ ρ.re))
-  rw [← hInv, mellinInv, mellinInv]
-  congr 1
-  apply integral_congr_ae
-  filter_upwards with u
-  rw [mellin_smoothedDetector_eq (by linarith : 0 ≤ ρ.re) (by norm_num)
-    (by simp; linarith)]
+      (fun s => Complex.Gamma s * LSeries (mollifierDirichletCoeff X) (ρ+s)) x := by pm_4310 mellinConvergent_smoothedDetector verticalIntegrable_mellin_smoothedDetector
 
 /-- The literal Gamma-zeta-mollifier contour kernel, with independent X and Y. -/
 def detectorKernel (ρ : ℂ) (X Y : ℝ) (s : ℂ) : ℂ :=
@@ -448,20 +357,6 @@ theorem smoothedDetector_eq_rightContour {ρ : ℂ} {X Y : ℝ}
     (hY : 0 < Y) (hρ : 3/4 ≤ ρ.re) :
     smoothedDetector ρ X (1/Y) =
       (((1/(2*Real.pi) : ℝ) : ℂ) * ∫ u : ℝ,
-        detectorKernel ρ X Y (((1/2 : ℝ) : ℂ)+(u : ℂ)*I)) := by
-  rw [smoothedDetector_eq_mellinInv (one_div_pos.mpr hY) hρ,
-    mellinInv, Complex.real_smul]
-  congr 1
-  apply integral_congr_ae
-  filter_upwards with u
-  let s : ℂ := ((1/2 : ℝ) : ℂ)+(u : ℂ)*I
-  have hAbs : 1 < (ρ+s).re := by simp [s]; linarith
-  have hPow : ((1/Y : ℝ) : ℂ)^(-s) = (Y : ℂ)^s := by
-    simpa using GammaMellin.cpow_neg_div_eq_reverse_cpow (x := 1) (by norm_num) hY s
-  change ((1/Y : ℝ) : ℂ)^(-s) *
-    (Complex.Gamma s * LSeries (mollifierDirichletCoeff X) (ρ+s)) = detectorKernel ρ X Y s
-  rw [hPow, ← riemannZeta_mul_zetaMollifier_eq_LSeries X hAbs]
-  unfold detectorKernel
-  ring
+        detectorKernel ρ X Y (((1/2 : ℝ) : ℂ)+(u : ℂ)*I)) := by pm_4311 smoothedDetector_eq_mellinInv
 
 end MathCollab.Density

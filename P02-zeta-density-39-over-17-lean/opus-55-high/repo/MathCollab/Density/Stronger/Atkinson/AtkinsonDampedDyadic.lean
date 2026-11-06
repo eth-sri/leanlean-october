@@ -56,6 +56,6 @@ theorem atkinsonFullDyadicPhaseBound_le_undamped {T : ℝ} (hT : 0 < T) (G : ℝ
     _ ≤ (((2^j:ℕ):ℝ)^(-(1/4:ℝ))*1)*atkinsonPhaseBlockMax T (2^j) (2^j) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left he (Real.rpow_nonneg (Nat.cast_nonneg _) _))
         (atkinsonPhaseBlockMax_nonneg _ _ _)
-    _ = _ := by rw [mul_one]
+    _ = _ := by grind
 
 end MathCollab.Density.Stronger.Atkinson

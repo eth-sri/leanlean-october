@@ -2,20 +2,24 @@ module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Moments.Basic
 public import Mathlib.Analysis.Normed.Ring.Finite
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open scoped ContDiff
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentLattice
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open QuadraticInitialBound
 
-theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
+section
+variable (W : 𝓢(ℝ, ℂ))
+include W
+theorem radial_zero_mode_error (t : ℝ) (ht : 0 < t)
     (A : O → ℂ) (B : ℝ) (hB : 0 ≤ B) (hA : ∀ h, ‖A h‖ ≤ B) :
     ‖t • (∑' h : O, A h * paperRadialFourier W (t * ‖eisEmbedding h‖ ^ 2)) -
       t • (A 0 * paperRadialFourier W 0)‖ ≤ B * pvControl W := by
@@ -28,16 +32,14 @@ theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
   have hFs : Summable (fun h : O => ‖F h‖) :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hF (hs.mul_left B)
   have hsplit := hFs.of_norm.tsum_eq_add_tsum_ite 0
-  have hzero : F 0 = A 0 * paperRadialFourier W 0 := by simp only [F, map_zero, norm_zero, zero_pow (by decide : 2 ≠ 0), mul_zero]
+  have hzero : F 0 = A 0 * paperRadialFourier W 0 := by aesop
   have htail : (∑' h : O, if h = 0 then 0 else F h) =
       ∑' h : {h : O // h ≠ 0}, F h := by
     rw [← tsum_subtype_eq_of_support_subset (s := {h : O | h ≠ 0}) (by
       intro h hh hz
       subst h
       exact hh (by simp))]
-    apply tsum_congr
-    intro h
-    simp only [ite_eq_right h.property]
+    pm_8340
   have heq : (∑' h : O, F h) - F 0 = ∑' h : {h : O // h ≠ 0}, F h := by
     rw [hsplit, htail]
     ring
@@ -60,7 +62,7 @@ theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
         ‖paperRadialFourier W (t * ‖eisEmbedding h.val‖ ^ 2)‖) := by ring
     _ ≤ B * pvControl W := mul_le_mul_of_nonneg_left (pv_lattice_bound W t ht) hB
 
-theorem periodic_lattice_volume_error (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X)
+theorem periodic_lattice_volume_error (X : ℝ) (hX : 0 < X)
     (c : O) (hc : c ≠ 0) (P : O ⧸ Ideal.span {c} → ℂ) :
     letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
     letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
@@ -85,13 +87,14 @@ theorem periodic_lattice_volume_error (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X
     intro r _
     rw [norm_mul, ψ.norm_apply, mul_one]
   have hA0 : A 0 = ∑ r : O ⧸ Ideal.span {c}, P r := by
-    simp only [A, map_zero, zero_mul, AddChar.map_zero_eq_one, mul_one]
+    pm_93 A map_zero zero_mul AddChar.map_zero_eq_one mul_one
   have hnorm : 0 < ‖eisEmbedding c‖ ^ 2 := sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hc))
   have h := radial_zero_mode_error W (X / ‖eisEmbedding c‖ ^ 2)
     (div_pos hX hnorm) A B hB hA
   rw [actual_radial_paper_poisson_trace W X hX c hc P]
   rw [hA0] at h
-  simpa only [A, B, ψ, div_mul_eq_mul_div] using h
+  pm_99 A B ψ div_mul_eq_mul_div h
+end
 
 theorem logPhase_eq_normPower (t x : ℝ) (hx : 0 < x) :
     FourierBridge.logPhase (t / (2 * Real.pi)) (Real.log x) =

@@ -2,10 +2,10 @@ module
 public import IntegerFourthMoment
 public import ProductFourthMoment
 public import RationalDifferenceEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -45,8 +45,7 @@ theorem sparse_cyclic_fourth_moment {ι : Type*} [Fintype ι]
   have he : Function.Injective e := by
     intro i j hij
     apply hv
-    funext k
-    exact congrArg Subtype.val (congrFun hij k)
+    pm_5459 k hij
   have hprod := product_fourth_bound d
     (fun (_ : Fin d) (_ : ZMod N) => (N : ℝ)⁻¹)
     (fun (_ : Fin d) (n : A) => integerFourthWeight n.val)
@@ -58,17 +57,20 @@ theorem sparse_cyclic_fourth_moment {ι : Type*} [Fintype ι]
     (fun i : Fin d → A => ∏ j, integerFourthWeight (i j).val)
     (fun i x => ∏ j, cyclicPhase (i j).val (x j)) hprod c
 
-theorem cyclicPhase_add {N : ℕ} [NeZero N] (m n : ℤ) (x : ZMod N) :
+section
+variable {N : ℕ} [NeZero N]
+include N
+theorem cyclicPhase_add (m n : ℤ) (x : ZMod N) :
     cyclicPhase (m+n) x = cyclicPhase m x*cyclicPhase n x := by
   simp only [cyclicPhase, Int.cast_add, add_mul, AddChar.map_add_eq_mul]
 
-theorem cyclicPhase_star {N : ℕ} [NeZero N] (n : ℤ) (x : ZMod N) :
+theorem cyclicPhase_star (n : ℤ) (x : ZMod N) :
     star (cyclicPhase n x) = cyclicPhase (-n) x := by
   rw [cyclicPhase, cyclicPhase, Int.cast_neg, neg_mul, AddChar.map_neg_eq_inv]
   simp only [ZMod.stdAddChar_apply, ← Circle.coe_inv, Circle.coe_inv_eq_conj]
   rfl
 
-theorem cyclicPhase_orthogonal {N : ℕ} [NeZero N] (m n : ℤ)
+theorem cyclicPhase_orthogonal (m n : ℤ)
     (hN : (m-n).natAbs < N) :
     (∑ x : ZMod N, (((N : ℝ)⁻¹ : ℝ) : ℂ)*cyclicPhase m x*star (cyclicPhase n x)) =
       if m = n then 1 else 0 := by
@@ -79,7 +81,7 @@ theorem cyclicPhase_orthogonal {N : ℕ} [NeZero N] (m n : ℤ)
     simp [cyclicPhase, ZMod.card, NeZero.ne N]
   · rw [cyclicPhase_mean_zero (sub_ne_zero.mpr h) hN, mul_zero, ite_eq_right h]
 
-theorem productCyclicPhase_orthogonal {N : ℕ} [NeZero N] {d : ℕ}
+theorem productCyclicPhase_orthogonal {d : ℕ}
     (v w : Fin d → ℤ) (hN : ∀ j, (v j-w j).natAbs < N) :
     (∑ x : Fin d → ZMod N, ((∏ _j : Fin d, (N : ℝ)⁻¹ : ℝ) : ℂ)*
       productCyclicPhase v x*star (productCyclicPhase w x)) =
@@ -96,6 +98,7 @@ theorem productCyclicPhase_orthogonal {N : ℕ} [NeZero N] {d : ℕ}
   · rw [ite_eq_right h]
     obtain ⟨j, hj⟩ := Function.ne_iff.mp h
     exact prod_eq_zero (mem_univ j) (ite_eq_right hj)
+end
 
 /-- Exact Parseval identity for a finite orthonormal character family. -/
 theorem finite_character_parseval {ι τ : Type*} [DecidableEq ι]
@@ -110,15 +113,8 @@ theorem finite_character_parseval {ι τ : Type*} [DecidableEq ι]
   calc
     _ = ∑ i ∈ A, ∑ j ∈ A, (c i*star (c j)) *
         (∑ x ∈ X, (w x : ℂ)*χ i x*star (χ j x)) := by
-      apply sum_congr rfl
-      intro i _
-      rw [sum_comm]
-      apply sum_congr rfl
-      intro j _
-      rw [mul_sum]
-      apply sum_congr rfl
-      intro x _
-      simp only [star_mul]
+      pm_150 sum_congr i sum_comm j
+      pm_8413 x star_mul
       ring
     _ = ∑ i ∈ A, ((‖c i‖^2 : ℝ) : ℂ) := by
       apply sum_congr rfl

@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,13 +38,12 @@ theorem iteratedDeriv_modelPhaseBufferedCutoff
         Real.smoothTransition ((-η⁻¹)*x+(r/η-1)) := by
     funext x
     unfold modelPhaseBufferedCutoff
-    congr 2 <;> ring
+    grind
   rw [heq,iteratedDeriv_fun_mul (by fun_prop) (by fun_prop)]
   apply Finset.sum_congr rfl
   intro j _
   rw [iteratedDeriv_smoothTransition_affine,iteratedDeriv_smoothTransition_affine]
-  rw [show η⁻¹*u+(-l/η-1) = (u-l)/η-1 by ring,
-    show (-η⁻¹)*u+(r/η-1) = (r-u)/η-1 by ring]
+  grind
 
 theorem abs_iteratedDeriv_modelPhaseBufferedCutoff_le
     {M η : ℝ} (hM : 0 ≤ M) (hη : 0 < η)
@@ -81,8 +81,7 @@ theorem abs_iteratedDeriv_modelPhaseBufferedCutoff_le
             _ = (n.choose j : ℝ)*(M^2*((η⁻¹)^j*(η⁻¹)^(n-j))) := by ring
             _ = _ := by rw [hp]
     _ = (2 : ℝ)^n*M^2*(η⁻¹)^n := by
-      rw [← Finset.sum_mul,← Nat.cast_sum,Nat.sum_range_choose,Nat.cast_pow,Nat.cast_ofNat]
-      ring
+      pm_6907
 
 theorem modelPhaseBufferedCutoff_uniform_ordered_jets (Q : ℕ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (l r η u : ℝ), 0 < η →

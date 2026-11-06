@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Static
 public import OAI.NumberTheory.DirichletL.Descent.Hybrid
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ theorem marked_bracket_cube (P : Ideal Eis) [P.IsMaximal]
     simpa only [map_pow] using canonicalSextic_sixth_power_mask P hg b
   have h6' : (actualSextic P hg (Ideal.Quotient.mk P b))^6 = 0 ∨
       (actualSextic P hg (Ideal.Quotient.mk P b))^6 = 1 := by
-    rw [h6]; split_ifs <;> simp
+    rw [h6]; grind
   let ψ : Eis →* ℂ := (actualSextic P hg).toMonoidHom.comp (Ideal.Quotient.mk P).toMonoidHom
   have he := InverseMoment.inverse_square_cube_mask ψ n b h6'
   change ((actualSextic P hg) (Ideal.Quotient.mk P (n*b^3)))⁻¹^2 =
@@ -37,11 +38,12 @@ theorem marked_bracket_cube (P : Ideal Eis) [P.IsMaximal]
   simp only [inv_pow] at he
   rw [he,rootCard_eq_sqrt_absNorm,idealRowHom_prime n P hg,h6,
     SixthPowerAverage.prime_coprime_span_iff]
-  by_cases hb : b ∈ P <;> simp [hb]
+  grind
 
-theorem marked_bracket_product {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (n b : Eis) :
+section
+variable {ι : Type*} [Fintype ι] (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal] (hg : ∀ i, λ₀ ∉ P i)
+include ι P hg
+theorem marked_bracket_product (n b : Eis) :
     (∏ i, bracket (actualSextic (P i) (hg i)) 0 (Ideal.Quotient.mk (P i) (n*b^3))) =
       (Real.sqrt (Ideal.absNorm (∏ i, P i) : ℝ) : ℂ)⁻¹ *
       (idealRowHom n (∏ i, P i))⁻¹^2 *
@@ -50,7 +52,7 @@ theorem marked_bracket_product {ι : Type*} [Fintype ι]
   rw [Finset.prod_mul_distrib,Finset.prod_mul_distrib]
   have hn : (∏ i, (Real.sqrt (Ideal.absNorm (P i) : ℝ) : ℂ)⁻¹) =
       (Real.sqrt (Ideal.absNorm (∏ i, P i) : ℝ) : ℂ)⁻¹ := by
-    rw [map_prod,Nat.cast_prod,Real.sqrt_prod,Complex.ofReal_prod,Finset.prod_inv_distrib]
+    pm_3681 map_prod Nat.cast_prod Real.sqrt_prod Complex.ofReal_prod Finset.prod_inv_distrib
     intro i hi
     positivity
   have hc : (∏ i, (idealRowHom n (P i))⁻¹^2) = (idealRowHom n (∏ i, P i))⁻¹^2 := by
@@ -68,9 +70,7 @@ theorem marked_bracket_product {ι : Type*} [Fintype ι]
       exact Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)
   rw [hn,hc,hm]
 
-theorem marked_bracket_hybrid {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
+theorem marked_bracket_hybrid (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
     (∏ i, bracket (actualSextic (P i) (hg i)) 0
       (Ideal.Quotient.mk (P i) (primaryGenerator n*(primaryGenerator b)^3))) =
       (Real.sqrt (Ideal.absNorm (∏ i, P i) : ℝ) : ℂ)⁻¹ *
@@ -78,6 +78,7 @@ theorem marked_bracket_hybrid {ι : Type*} [Fintype ι]
       (if IsCoprime (∏ i, P i) b then 1 else 0) := by
   rw [marked_bracket_product,InverseMoment.inverseCubicKernel_eq_inverse_square,
     (primaryGenerator_spec b hb).1]
+end
 
 end
 end SevenEighths.InverseReflectedPhase

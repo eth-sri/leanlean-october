@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySection7Transform
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The hard congruence implication in Wooley Section 7
@@ -13,14 +14,14 @@ valuations to the common modulus in (7.12).  Both losses remain explicit.
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
-theorem wooleyIntegerTupleDisplacement_add
-    {I : Type*} (R : ℕ) (f g : I → ℤ)
+section
+variable {I : Type*} (R : ℕ)
+include I R
+theorem wooleyIntegerTupleDisplacement_add (f g : I → ℤ)
     (xy : WooleyFiniteTuple R I × WooleyFiniteTuple R I) :
     wooleyIntegerTupleDisplacement R (fun x => f x + g x) xy =
       wooleyIntegerTupleDisplacement R f xy +
@@ -28,13 +29,13 @@ theorem wooleyIntegerTupleDisplacement_add
   simp only [wooleyIntegerTupleDisplacement, Finset.sum_add_distrib]
   ring
 
-theorem wooleyIntegerTupleDisplacement_smul
-    {I : Type*} (R : ℕ) (z : ℤ) (f : I → ℤ)
+theorem wooleyIntegerTupleDisplacement_smul (z : ℤ) (f : I → ℤ)
     (xy : WooleyFiniteTuple R I × WooleyFiniteTuple R I) :
     wooleyIntegerTupleDisplacement R (fun x => z * f x) xy =
       z * wooleyIntegerTupleDisplacement R f xy := by
   simp only [wooleyIntegerTupleDisplacement, ← Finset.mul_sum]
   ring
+end
 
 theorem wooleyIntegerTupleDisplacement_sum
     {I J : Type*} [Fintype J] (R : ℕ) (f : J → I → ℤ)
@@ -48,10 +49,12 @@ theorem wooleyIntegerTupleDisplacement_sum
   have hright :
       (∑ i : Fin R, ∑ j : J, f j (xy.2 i)) =
         ∑ j : J, ∑ i : Fin R, f j (xy.2 i) := Finset.sum_comm
-  rw [hleft, hright, Finset.sum_sub_distrib]
+  simp_all
 
-theorem wooleyIntegerTupleDisplacement_polynomial_add
-    {I : Type*} (R : ℕ) (f g : Polynomial ℤ) (point : I → ℤ)
+section
+variable {I : Type*}
+include I
+theorem wooleyIntegerTupleDisplacement_polynomial_add (R : ℕ) (f g : Polynomial ℤ) (point : I → ℤ)
     (xy : WooleyFiniteTuple R I × WooleyFiniteTuple R I) :
     wooleyIntegerTupleDisplacement R
         (fun x => (f + g).eval (point x)) xy =
@@ -61,8 +64,7 @@ theorem wooleyIntegerTupleDisplacement_polynomial_add
     wooleyIntegerTupleDisplacement_add R
       (fun x => f.eval (point x)) (fun x => g.eval (point x)) xy
 
-theorem wooleyIntegerTupleDisplacement_polynomial_C_mul
-    {I : Type*} (R : ℕ) (z : ℤ) (f : Polynomial ℤ)
+theorem wooleyIntegerTupleDisplacement_polynomial_C_mul (R : ℕ) (z : ℤ) (f : Polynomial ℤ)
     (point : I → ℤ)
     (xy : WooleyFiniteTuple R I × WooleyFiniteTuple R I) :
     wooleyIntegerTupleDisplacement R
@@ -75,8 +77,7 @@ theorem wooleyIntegerTupleDisplacement_polynomial_C_mul
 
 /-- A top-row congruence yields a normalized-column congruence at the weakest
 common column modulus. -/
-theorem wooleySection7_top_implies_normalized_column
-    {I : Type*} {k r p c a gamma M R : ℕ}
+theorem wooleySection7_top_implies_normalized_column {k r p c a gamma M R : ℕ}
     (hp : p ≠ 0) (hrk : r ≤ k) (hgamma : gamma ≤ a)
     (hgammaM : gamma * k ≤ M) (omega h : ℤ)
     (hsep : h = omega * (p : ℤ) ^ gamma)
@@ -116,15 +117,13 @@ theorem wooleySection7_top_implies_normalized_column
       (p : ℤ) ^ (gamma * j) * 1 *
         wooleyIntegerTupleDisplacement R
           (fun x => qpoly.eval (point x)) xy := by
-    rw [hdisp] at htop
-    simpa only [mul_one] using htop
+    pm_293 hdisp htop mul_one
   exact wooleySection7_primePower_unit_cancel_to_common
     hp (by simp) he hgammaM hdiv
 
 /-- Linear combinations used by the inverse matrix preserve the common
 normalized-column modulus. -/
-theorem wooleySection7_normalized_columns_imply_transformed
-    {I : Type*} {k r p c a gamma L R : ℕ}
+theorem wooleySection7_normalized_columns_imply_transformed {k r p c a gamma L R : ℕ}
     (omega h omegaInv : ℤ) (psi : Fin r → Polynomial ℤ)
     (G : Matrix (Fin r) (Fin r) (ZMod (p ^ L))) (i : Fin r)
     (point : I → ℤ)
@@ -155,10 +154,7 @@ theorem wooleySection7_normalized_columns_imply_transformed
       simpa only [eval_mul, eval_C] using
         (eval_finsetSum (Finset.univ : Finset (Fin r))
           (fun l => C (z l) * qpoly l) (point x))
-    simp_rw [heval]
-    rw [wooleyIntegerTupleDisplacement_sum]
-    apply Finset.sum_congr rfl
-    intro l hl
+    pm_224 heval wooleyIntegerTupleDisplacement_sum l hl
     exact wooleyIntegerTupleDisplacement_smul R (z l)
       (fun x => (qpoly l).eval (point x)) xy
   have hwhole :
@@ -182,8 +178,7 @@ theorem wooleySection7_normalized_columns_imply_transformed
 /-- Cancelling the row valuation in a transformed polynomial gives a lower
 equation at the common residual modulus.  The `p^L` lift error vanishes
 exactly and costs no additional depth. -/
-theorem wooleySection7_transformed_implies_lower_displacement
-    {I : Type*} {p r a gamma L R : ℕ}
+theorem wooleySection7_transformed_implies_lower_displacement {p r a gamma L R : ℕ}
     (hp : p ≠ 0) (hcommon : r * (a - gamma) ≤ L)
     (i : Fin r) (W Psi Error : Polynomial ℤ)
     (point : I → ℤ)
@@ -215,10 +210,9 @@ theorem wooleySection7_transformed_implies_lower_displacement
       (p : ℤ) ^ ((a - gamma) * ((i : ℕ) + 1)) *
         wooleyIntegerTupleDisplacement R
           (fun x => Psi.eval (point x)) xy := by
-    have hsub := dvd_sub hWdiv hErrorDiv
-    rw [hdisp] at hsub
+    pm_126 hsub dvd_sub hWdiv hErrorDiv hdisp
     simpa only [add_sub_cancel_right] using hsub
-  have hi : (i : ℕ) + 1 ≤ r := i.isLt
+  pm_5223 hi i r i.isLt
   have he : (a - gamma) * ((i : ℕ) + 1) ≤
       r * (a - gamma) := by
     simpa [Nat.mul_comm] using Nat.mul_le_mul_left (a - gamma) hi
@@ -229,6 +223,7 @@ theorem wooleySection7_transformed_implies_lower_displacement
     simpa only [mul_one] using hrowDiv
   exact wooleySection7_primePower_unit_cancel_to_common
     hp (by simp) he hcommon hrowDiv'
+end
 
 /-- Complete algebraic passage from the top congruences (7.10) to a spaced
 lower system.  The conclusion records the exact residual depth before the
@@ -258,8 +253,7 @@ theorem wooleySection7_top_congruences_exist_lower_system
             (fun x => (Psi i).eval (point x)) xy := by
   classical
   let L := M - gamma * k
-  let Omega := wooleySection7OmegaMatrix (p := p) (c := c)
-    hrk h hh psi
+  pm_6247
   have hOmega : ∀ i l,
       (Omega i l : ZMod p) =
         (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) :
@@ -322,16 +316,10 @@ theorem wooley_section7_common_depth_eq_BPrimeNat
     ((((k - r + 1) * b - gamma * k) - r * (a - gamma))) =
       wooleySection7BPrimeNat k r a b gamma := by
   let bp := wooleySection7BPrimeNat k r a b gamma
-  let M := (k - r + 1) * b
+  pm_4916 M
   have hsum : bp + r * a + (k - r) * gamma = M := by
     simpa only [bp, M] using wooley_section7_BPrimeNat_add hBPrime
-  have hgammaR : gamma * r + (a - gamma) * r = a * r := by
-    rw [← Nat.add_mul, Nat.add_sub_of_le hgamma]
-  have hsplit : gamma * k = gamma * (k - r) + gamma * r := by
-    have hkr : (k - r) + r = k := Nat.sub_add_cancel hrk.le
-    calc
-      gamma * k = gamma * ((k - r) + r) := by rw [hkr]
-      _ = _ := Nat.mul_add _ _ _
+  pm_2801
   have hdecomp :
       M = gamma * k + r * (a - gamma) + bp := by
     rw [hsplit]
@@ -339,14 +327,10 @@ theorem wooley_section7_common_depth_eq_BPrimeNat
       M = bp + r * a + (k - r) * gamma := hsum.symm
       _ = gamma * (k - r) + gamma * r +
           r * (a - gamma) + bp := by
-        rw [Nat.mul_comm (k - r) gamma]
-        have hgammaR' : gamma * r + r * (a - gamma) = r * a := by
-          simpa [Nat.mul_comm] using hgammaR
-        omega
+        pm_2802
   dsimp only [M, bp] at hdecomp ⊢
   rw [hdecomp]
   omega
 
-end
 
 end GafniTao

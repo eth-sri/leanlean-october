@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem exists_primitive_reciprocal_reduction (σ ε : ℝ) (hσ : 0 < σ) (hε 
   refine ⟨C, hC, ?_⟩
   intro χ
   obtain ⟨ψ, _, hp, hn, hm⟩ := exists_primitive_character χ
-  refine ⟨ψ, hp, hn, hm, ?_⟩
+  pm_505 ψ hp hn hm
   intro s hs
   rw [reciprocal_eq_of_mask χ ψ hm (hσ.trans_le hs), norm_mul]
   have hf := hb χ.modulus ψ s hs

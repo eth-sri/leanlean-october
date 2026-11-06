@@ -16,20 +16,23 @@ local notation "Id" => Ideal O
 
 lemma physicalElementNorm_pos (a : O) (ha : a≠0) : 0<elementNorm a := by
   unfold elementNorm
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr ha))
+  simp_all
 
-lemma elementNorm_slotProduct {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
+section
+variable {K : ℕ} (p : Fin K→O)
+include K p
+lemma elementNorm_slotProduct (J : Finset (Fin K)) :
     elementNorm (slotProduct p J)=∏i∈J,elementNorm (p i) := by
   induction J using Finset.induction_on with
   | empty => simp [slotProduct,elementNorm_one]
   | @insert i J hi ih => simpa only [slotProduct,Finset.prod_insert hi,elementNorm_mul] using congrArg (fun x=>elementNorm (p i)*x) ih
 
-lemma slotProduct_nonzero {K : ℕ} (p : Fin K→O) (hp : ∀i,p i≠0) (J : Finset (Fin K)) :
+lemma slotProduct_nonzero (hp : ∀i,p i≠0) (J : Finset (Fin K)) :
     slotProduct p J≠0 := Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
 
-lemma slotProduct_norm_pos {K : ℕ} (p : Fin K→O) (hp : ∀i,p i≠0) (J : Finset (Fin K)) :
+lemma slotProduct_norm_pos (hp : ∀i,p i≠0) (J : Finset (Fin K)) :
     0<elementNorm (slotProduct p J) := physicalElementNorm_pos _ (slotProduct_nonzero p hp J)
+end
 
 def compensationSubsetCoefficient {K : ℕ} (η : HeckeFamily.Character)
     (p : Fin K→O) (J : Finset (Fin K)) : ℂ :=
@@ -43,13 +46,14 @@ def compensationSubsetProbe {K : ℕ} (η : HeckeFamily.Character) (C : Calibrat
       (X/elementNorm (slotProduct p J)) (Y/elementNorm (slotProduct p J))
       (Z*elementNorm (slotProduct p (Finset.univ\J)))
 
-lemma compensatedTuple_eq_subsets {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (p : Fin K→O) (X Y Z : ℝ) :
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ)
+include K η C W0 W1
+lemma compensatedTuple_eq_subsets (p : Fin K→O) (X Y Z : ℝ) :
     compensatedTuple η C W0 W1 p X Y Z=
       ∑J∈(Finset.univ : Finset (Fin K)).powerset,compensationSubsetProbe η C W0 W1 p J X Y Z := rfl
 
-lemma compensatedPhysicalProbe_eq_subsets {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slotPrimes : Fin K→Finset O)
+lemma compensatedPhysicalProbe_eq_subsets (slotPrimes : Fin K→Finset O)
     (W : Fin K→ℝ→ℂ) (P : Fin K→ℝ) (X Y Z : ℝ) :
     compensatedPhysicalProbe η C W0 W1 slotPrimes W P X Y Z=
       ∑J∈(Finset.univ : Finset (Fin K)).powerset,
@@ -59,6 +63,7 @@ lemma compensatedPhysicalProbe_eq_subsets {K : ℕ} (η : HeckeFamily.Character)
   unfold compensatedPhysicalProbe
   simp_rw [compensatedTuple_eq_subsets,Finset.mul_sum]
   exact Finset.sum_comm
+end
 
 end SevenEighths.ProbePhysical
 end

@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Amplification
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationLocal
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
@@ -30,8 +31,10 @@ theorem gauss_unit_scale_norm (a : O) (ha : Supported (Ideal.span {a}))
     exact FiniteRayExpansion.norm_char_unit _ u
   rw [sexticGauss_unit_scale a ha b h hcop,norm_mul,norm_inv,hn,inv_one,one_mul]
 
-theorem primeGauss_actual_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
+section
+variable (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+include p hp hg hc
+theorem primeGauss_actual_norm_sq :
     ‖primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1‖^2 =
       (Ideal.absNorm (Ideal.span {p}) : ℝ) := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
@@ -41,9 +44,8 @@ theorem primeGauss_actual_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMax
     intro he
     have ho := CenteredMomentCanonical.actualSextic_order_six (Ideal.span {p}) hg hc
     rw [he,orderOf_one] at ho
-    norm_num at ho
-  have ht : (CubicEisenstein.quotientTrace p hp.ne_zero).IsPrimitive :=
-    GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp.ne_zero
+    grind
+  pm_8422 ht CubicEisenstein.quotientTrace hp.ne_zero
   have he : primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 =
       gaussSum (actualSextic (Ideal.span {p}) hg) (CubicEisenstein.quotientTrace p hp.ne_zero) := by
     simp [primeGauss,tsum_fintype,gaussSum]
@@ -51,36 +53,32 @@ theorem primeGauss_actual_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMax
   norm_cast
   rw [Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
 
-theorem centralLocal_six (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
+theorem centralLocal_six :
     centralLocal p hp.ne_zero 5 (p^6) = 1 - (Ideal.absNorm (Ideal.span {p}) : ℂ)⁻¹ := by
   rw [centralLocal,gauss_prime_power_six p hp hg hc]
   simp only [ite_true]
-  have hn : (Ideal.absNorm (Ideal.span {p}) : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
-  field_simp
-  ring
+  pm_925
 
-theorem centralLocal_seven (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
+theorem centralLocal_seven :
     centralLocal p hp.ne_zero 6 (p^6) =
       primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 /
         (Ideal.absNorm (Ideal.span {p}) : ℂ) := by
   rw [centralLocal,gauss_prime_power_six p hp hg hc]
   simp only [show ¬(6:ℕ)=5 by decide,ite_false,ite_true]
-  have hn : (Ideal.absNorm (Ideal.span {p}) : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
-  field_simp
-  ring
+  pm_925
+end
 
-theorem centralLocal_unit_norm (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
+section
+variable (p : O) (hp : Prime p)
+include p hp
+theorem centralLocal_unit_norm (hs : Supported (Ideal.span {p}))
     (n : ℕ) (h k : O) (hph : ¬p ∣ h) :
     ‖centralLocal p hp.ne_zero n (h*k)‖ = ‖centralLocal p hp.ne_zero n k‖ := by
   unfold centralLocal
   rw [norm_div,norm_div,gauss_unit_scale_norm _ (supported_power p hs (n+1)) h k
     ((hp.irreducible.coprime_iff_not_dvd.mpr hph).symm.pow_right)]
 
-theorem centralLocal_one_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+theorem centralLocal_one_norm_sq [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (h : O) (hph : ¬p ∣ h) :
     ‖centralLocal p hp.ne_zero 0 h‖^2 = (Ideal.absNorm (Ideal.span {p}) : ℝ)⁻¹ := by
@@ -88,21 +86,17 @@ theorem centralLocal_one_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaxi
     gauss_prime_power_one p hp hg hc]
   simp only [ite_true,zero_add,pow_one,norm_div,Complex.norm_natCast,div_pow,
     primeGauss_actual_norm_sq p hp hg hc]
-  have hn : (Ideal.absNorm (Ideal.span {p}) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
-  field_simp
+  pm_1403
 
-theorem centralLocal_seven_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+theorem centralLocal_seven_norm_sq [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (h : O) (hph : ¬p ∣ h) :
     ‖centralLocal p hp.ne_zero 6 (h*p^6)‖^2 = (Ideal.absNorm (Ideal.span {p}) : ℝ)⁻¹ := by
   rw [centralLocal_unit_norm p hp hs 6 h (p^6) hph,centralLocal_seven p hp hg hc,
     norm_div,Complex.norm_natCast,div_pow,primeGauss_actual_norm_sq p hp hg hc]
-  have hn : (Ideal.absNorm (Ideal.span {p}) : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr
-    (Ideal.absNorm_eq_zero_iff.not.mpr hs.1)
-  field_simp
+  pm_1403
 
-theorem centralLocal_six_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+theorem centralLocal_six_norm_sq [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
     (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (h : O) (hph : ¬p ∣ h) :
     ‖centralLocal p hp.ne_zero 5 (h*p^6)‖^2 =
@@ -110,6 +104,7 @@ theorem centralLocal_six_norm_sq (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaxi
   rw [centralLocal_unit_norm p hp hs 5 h (p^6) hph,centralLocal_six p hp hg hc]
   rw [← Complex.ofReal_natCast,← Complex.ofReal_inv,← Complex.ofReal_one,← Complex.ofReal_sub,
     Complex.norm_real,Real.norm_eq_abs,sq_abs]
+end
 
 end SevenEighths.CenteredMomentAmplificationLocal
 

@@ -5,6 +5,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveDivisorGrowth
 public import LaterPairs.Native.RobertSargosSameSignCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -16,16 +17,19 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
-theorem exists_robertSargos_fixed_coeff_divisor_bound (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem exists_robertSargos_fixed_coeff_divisor_bound :
     ∃ C : ℝ, 0 < C ∧ ∀ (n : ℕ) (H Q δ : ℝ),
       0 < n → 0 < H → (n:ℝ) ≤ H → 0 ≤ δ →
       2*(n.divisors.card:ℝ)+
         64*δ*Q^2/(H*(n:ℝ))*(∑ g ∈ n.divisors, (g:ℝ)) ≤
       C*H^ε*(1+δ*Q^2/H) := by
-  obtain ⟨D,hD,hdiv⟩ := RiemannZeta.GuthMaynard.divisorCountBound_native ε hε
+  pm_69 D hD hdiv RiemannZeta.GuthMaynard.divisorCountBound_native ε hε
   refine ⟨64*D,by positivity,?_⟩
   intro n H Q δ hn hH hnH hδ
-  have hnp : (0:ℝ) < n := by exact_mod_cast hn
+  pm_4473 hnp n hn
   have ht : (n.divisors.card:ℝ) ≤ D*H^ε :=
     (hdiv n hn).trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow hnp.le hnH hε.le) hD.le)
@@ -43,7 +47,7 @@ theorem exists_robertSargos_fixed_coeff_divisor_bound (ε : ℝ) (hε : 0 < ε) 
       mul_le_mul_of_nonneg_right ht (by positivity)
     _ = _ := by ring
 
-theorem exists_robertSargos_fixed_coeff_bound (ε : ℝ) (hε : 0 < ε) :
+theorem exists_robertSargos_fixed_coeff_bound :
     ∃ C : ℝ, 0 < C ∧
       ∀ (S : Finset (ℤ × ℤ × ℤ)) (r h₁ h₂ : ℤ) (H Q δ : ℝ),
       Int.gcd (Int.gcd r h₁ : ℤ) h₂ = 1 → r ≠ 0 →
@@ -56,16 +60,14 @@ theorem exists_robertSargos_fixed_coeff_bound (ε : ℝ) (hε : 0 < ε) :
       (∀ p ∈ S, r*p.2.2+h₁*p.2.1-h₂*p.1 = 0) →
       (∀ p ∈ S, |robertSargosReduced r p.2.1 p.1 h₁ h₂ p.2.2| ≤ δ*H*Q^2) →
       (S.card:ℝ) ≤ C*H^ε*(1+δ*Q^2/H) := by
-  obtain ⟨C,hC,hdiv⟩ := exists_robertSargos_fixed_coeff_divisor_bound ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hdiv exists_robertSargos_fixed_coeff_divisor_bound ε hε
   intro S r h₁ h₂ H Q δ hc hr hH hQ hδ hrH hh₁ hh₂ hq₁ hq₂ hs hp hl hn
-  have hrc : (r.natAbs:ℝ) = |(r:ℝ)| := by
-    simpa only [Int.cast_natCast,Int.cast_abs] using
-      congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs r)
+  pm_1662
   have hrH' : (r.natAbs:ℝ) ≤ H := by rw [hrc]; linarith
   have hb := robertSargos_primitive_fixed_coeff_card_le S hc hr hH hQ hδ hrH
     hh₁ hh₂ hq₁ hq₂ hs hp hl hn
   rw [← hrc] at hb
   exact hb.trans (hdiv r.natAbs H Q δ (Int.natAbs_pos.mpr hr) hH hrH' hδ)
+end
 
 end TaoTrudgianYang2025

@@ -8,6 +8,7 @@ Mathlib and the nonstationary foundations retain their Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCarrierCoefficients
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerIntegral
 public import MathCollab.Density.Stronger.Atkinson.NeumannRemainderSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,15 +36,17 @@ theorem neumannTwoTerm_complex_exp (z : ℝ) :
 theorem atkinson_bessel_argument_rpow {x : ℝ} (hx : 0 < x) {n : ℕ} (hn : 0 < n) (α : ℝ) :
     (4 * Real.pi * Real.sqrt (x * n)) ^ (-2 * α) =
       atkinsonBesselScale α n * x ^ (-α) := by
-  have hn0 : (0 : ℝ) < n := by positivity
+  pm_117 hn0 n
   rw [Real.mul_rpow (by positivity : 0 ≤ 4 * Real.pi) (Real.sqrt_nonneg _),
     Real.sqrt_eq_rpow, ← Real.rpow_mul (by positivity : 0 ≤ x * n)]
   rw [show (1 / 2 : ℝ) * (-2 * α) = -α by ring, Real.mul_rpow hx.le hn0.le]
   unfold atkinsonBesselScale
   ring
 
-theorem atkinsonPowerIntegrand_bessel {T G L x : ℝ} (hx : 0 < x)
-    {n : ℕ} (hn : 0 < n) (α s : ℝ) :
+section
+variable {T G L x : ℝ} (hx : 0 < x) {n : ℕ} (hn : 0 < n)
+include T G L x hx n hn
+theorem atkinsonPowerIntegrand_bessel (α s : ℝ) :
     zetaAtkinsonDivisorTest T G L x *
       (((4 * Real.pi * Real.sqrt (x * n)) ^ (-2 * α) : ℝ) : ℂ) *
         Complex.exp (((s * (4 * Real.pi * Real.sqrt (x * n)) : ℝ) : ℂ) * I) =
@@ -59,8 +62,7 @@ theorem atkinsonPowerIntegrand_bessel {T G L x : ℝ} (hx : 0 < x)
   push_cast
   ring
 
-theorem zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L x : ℝ} (hx : 0 < x)
-    {n : ℕ} (hn : 0 < n) :
+theorem zetaAtkinsonTwoTermIntegrand_eq_carriers :
     zetaAtkinsonTwoTermIntegrand T G L n x =
       (Real.sqrt Real.pi / Real.pi : ℂ) *
         ((atkinsonBesselScale (1 / 4) n : ℂ) *
@@ -77,8 +79,7 @@ theorem zetaAtkinsonTwoTermIntegrand_eq_carriers {T G L x : ℝ} (hx : 0 < x)
     show (-2 : ℝ) * (1 / 4) = -(1 / 2) by norm_num,
     show (-2 : ℝ) * (3 / 4) = -(3 / 2) by norm_num] at hp hm hcp hcm
   rw [zetaAtkinsonTwoTermIntegrand, neumannTwoTerm_complex_exp]
-  linear_combination (Real.sqrt Real.pi / Real.pi : ℂ) *
-    (neumannLeadingPlus * hp + neumannLeadingMinus * hm -
-      neumannCorrectionPlus / 8 * hcp - neumannCorrectionMinus / 8 * hcm)
+  grind
+end
 
 end MathCollab.Density.Stronger.Atkinson

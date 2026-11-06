@@ -2,30 +2,30 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalWindow
 public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalScalar
 public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptional
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondIdealBlockBound
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport CenteredMomentSupportedCorrelation
+open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
+open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
 open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
+open CenteredMomentChildAssembly CenteredMomentMobiusRegroup
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem logAnnulus_enclosure (x : ℝ) (hx : logAnnulus x≠0) : |x|≤Real.log 4 := by
   have hh := logAnnulus_support hx
-  exact abs_le.mpr ⟨hh.1,hh.2.trans (Real.log_nonneg (by norm_num))⟩
+  grind
 
 theorem actual_nonexceptional_block_bound (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) :
-    ∃ B : ℝ,0≤B ∧ ∀ r : ℝ,0<r →
+    ∃ B : ℝ,0≤B ∧ ∀ r : ℝ,0< r →
       ∀ (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ)
         (C D : Ideal O) (hC : Supported C) (hD : Supported D),
       primeSupport C=primeSupport D →
@@ -33,9 +33,9 @@ theorem actual_nonexceptional_block_bound (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
         (ρ x : O→ℝ) (u : sectorPool C hC.1 S→ℝ) (v : sectorPool D hD.1 S→ℝ)
         (Q : Ideal O) (m : O) (χ₀ : RayCharacter),
       Q≤Ideal.span {(72:O)} → ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
-      let A := commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
+      let A := commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U
       let c := fun I : sectorPool C hC.1 S=>β (C*I)*heightCoeff η t I
-      let d := fun J : sectorPool D hD.1 S=>β (D*J)*heightCoeff η t J
+      let d := fun J : sectorPool D hD.1 S=>β (D *J)*heightCoeff η t J
       (∀ z∈rows,nonexceptional η χ₀ Q m A z) →
       ∀ (Φ : 𝓢(ℝ,ℂ)) (H : ℝ),0<H →
       (∀ z : O,0≤(Φ (normValue z/H)).re) →
@@ -56,7 +56,7 @@ theorem actual_nonexceptional_block_bound (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
       (1+r)^decay*‖∑ z∈rows,retainedScalar C D U R z*
         ∑ I : sectorPool C hC.1 S,∑ J : sectorPool D hD.1 S,
           (if IsCoprime (I:Ideal O) (J:Ideal O) then
-            idealCorrelation (C*I) (D*J)
+            idealCorrelation (C*I) (D *J)
               ((supported_mul_iff _ _).mpr ⟨hC,sectorPool_supported C hC.1 S I⟩)
               ((supported_mul_iff _ _).mpr ⟨hD,sectorPool_supported D hD.1 S J⟩) (A*z) else 0)*
             (c I*star (d J))*wholeKernel W (fun _=>logAnnulus) r (ρ z) (x z) (u I) (v J)‖≤
@@ -65,15 +65,11 @@ theorem actual_nonexceptional_block_bound (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
   obtain ⟨B,hB,hbound⟩ := whole_kernel_nonexceptional_second_bound W (fun _=>logAnnulus)
     (fun _=>Real.log 4) (fun _=>Real.log_nonneg (by norm_num)) (fun _ x hx=>logAnnulus_enclosure x hx)
     decay J₁ J₂
-  refine ⟨B,hB,?_⟩
-  intro r hr η t S β C D hC hD hCD U R rows ρ x u v Q m χ₀ hQ hmLam hm2
-  dsimp only
+  pm_2988
   intro hrows Φ H hH hΦ hmajor E₁ E₂ hE₁ hE₂ hleft hright
-  have hcopD (J : sectorPool D hD.1 S) :
-      IsCoprime (primaryGenerator C*primaryGenerator D) (sectorElement D hD.1 S J) := by
-    simpa only [mul_comm] using sectorElement_coprime D C hD hC hCD.symm S J
+  pm_2906 hcopD
   have he := hbound r hr rows Finset.univ Finset.univ (primaryGenerator C) (primaryGenerator D)
-    (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)
+    (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U)
     (sectorElement C hC.1 S) (sectorElement D hD.1 S)
     ((supported_span_primaryGenerator_iff C).mpr hC) ((supported_span_primaryGenerator_iff D).mpr hD)
     (sectorElement_supported C hC.1 S) (sectorElement_supported D hD.1 S)
@@ -82,7 +78,7 @@ theorem actual_nonexceptional_block_bound (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
     (sectorElement_primary C hC.1 S) (sectorElement_primary D hD.1 S)
     (sectorElement_coprime C D hC hD hCD S) hcopD
     (retainedScalar C D U R) (fun I=>β (C*I)*heightCoeff η t I)
-    (fun J=>β (D*J)*heightCoeff η t J) u v ρ x η χ₀ Q m hQ hmLam hm2 hrows
+    (fun J=>β (D *J)*heightCoeff η t J) u v ρ x η χ₀ Q m hQ hmLam hm2 hrows
     (fun z _=>actual_retained_scalar_norm C D hC hD hCD U R z)
     (fun z _=>logAnnulus_norm _) (fun z _=>logAnnulus_norm _)
     Φ H hH (by simpa only [normValue_eq_embedding] using hΦ)
@@ -93,11 +89,9 @@ theorem actual_nonexceptional_block_bound (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ :
       IsCoprime (sectorElement C hC.1 S I) (sectorElement D hD.1 S J) ↔
         IsCoprime (I:Ideal O) (J:Ideal O) := by
     rw [←Ideal.isCoprime_span_singleton_iff,sectorElement_span,sectorElement_span]
-  simp_rw [hcop,sectorElement_span] at he
-  simpa only [idealCorrelation,primaryGenerator_mul,sectorElement] using he
+  pm_6047
 
 end SevenEighths.CenteredMomentSecondIdealBlockBound
 
-end
 
 end OAI

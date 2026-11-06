@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.OutsideIdeals
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,73 +8,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace InitialMeanSquare
 
 section
@@ -83,7 +40,7 @@ open FirstPassCubeLabels (columnLog)
 end
 
 open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open ConcreteTraceCRT (eisEmbedding)
@@ -96,12 +53,13 @@ end
 
 end InitialMeanSquare
 
-open scoped BigOperators
 namespace FiniteOverlapDecomposition
 variable {ι : Type*} [DecidableEq ι]
 
-theorem sum_powerset_split {β : Type*} [AddCommMonoid β]
-    (F B : Finset ι) (hB : B⊆F) (f : Finset ι→β) :
+section
+variable {β : Type*} [AddCommMonoid β] (F B : Finset ι) (hB : B⊆F)
+include β F B hB
+theorem sum_powerset_split (f : Finset ι→β) :
     (∑S∈F.powerset,f S)=∑A∈B.powerset,∑U∈(F\B).powerset,f (A∪U) := by
   have hsplit (S : Finset ι) : S∩B∪S\B=S := by
     ext i
@@ -110,34 +68,21 @@ theorem sum_powerset_split {β : Type*} [AddCommMonoid β]
   have he : (∑S∈F.powerset,f S)=
       ∑AU∈B.powerset ×ˢ (F\B).powerset,f (AU.1∪AU.2) := by
     apply Finset.sum_bij (fun S _ => (S∩B,S\B))
-    · intro S hS
-      rw [Finset.mem_product,Finset.mem_powerset,Finset.mem_powerset]
-      refine ⟨Finset.inter_subset_right,?_⟩
-      intro i hi
-      exact Finset.mem_sdiff.mpr ⟨(Finset.mem_powerset.mp hS) (Finset.mem_sdiff.mp hi).1,(Finset.mem_sdiff.mp hi).2⟩
-    · intro S hS T hT he
-      have hi := congrArg (fun AU : Finset ι×Finset ι => AU.1∪AU.2) he
-      simpa only [hsplit] using hi
+    grind
+    grind
     · intro AU hAU
       rcases Finset.mem_product.mp hAU with ⟨hA,hU⟩
       have hAB := Finset.mem_powerset.mp hA
       have hUFB := Finset.mem_powerset.mp hU
       refine ⟨AU.1∪AU.2,Finset.mem_powerset.mpr (Finset.union_subset (hAB.trans hB) (hUFB.trans Finset.sdiff_subset)),?_⟩
       apply Prod.ext <;> ext i
-      · have h1 : i∈AU.1 → i∈B := fun hi => hAB hi
-        have h2 : i∈AU.2 → i∉B := fun hi => (Finset.mem_sdiff.mp (hUFB hi)).2
-        simp only [Finset.mem_inter,Finset.mem_union]
-        tauto
-      · have h1 : i∈AU.1 → i∈B := fun hi => hAB hi
-        have h2 : i∈AU.2 → i∉B := fun hi => (Finset.mem_sdiff.mp (hUFB hi)).2
-        simp only [Finset.mem_sdiff,Finset.mem_union]
-        tauto
+      pm_3161 Finset.mem_inter
+      pm_3161 Finset.mem_sdiff
     · intro S hS
       rw [hsplit]
   simpa only [Finset.sum_product] using he
 
-theorem sum_pair_split_cube {β : Type*} [AddCommMonoid β]
-    (F B : Finset ι) (hB : B⊆F) (f : Finset ι→Finset ι→β) :
+theorem sum_pair_split_cube (f : Finset ι→Finset ι→β) :
     (∑S∈F.powerset,∑T∈F.powerset,f S T)=
       ∑A₂∈B.powerset,∑A₁∈B.powerset,∑C∈(F\B).powerset,
         ∑N∈((F\B)\C).powerset,∑P∈((F\B)\C).powerset,
@@ -146,15 +91,12 @@ theorem sum_pair_split_cube {β : Type*} [AddCommMonoid β]
   apply Finset.sum_congr rfl
   intro A₂ hA₂
   simp_rw [sum_powerset_split F B hB]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro A₁ hA₁
-  rw [sum_pair_eq_overlap]
+  pm_223 Finset.sum_comm A₁ hA₁ sum_pair_eq_overlap
   simp only [Finset.union_assoc]
+end
 
 end FiniteOverlapDecomposition
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open MixedCrossSeparation (columnCoefficient)
@@ -180,7 +122,7 @@ theorem canonicalSourceCoefficient_union
         multiplicativeCoreColumn p Ψ m (fun U => H (D∪U)) S *
         finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (∏i∈D,p i)^4 *
         finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S f^4) := by
-  have hA := columnCoefficient_union_row_four p hp hcop hg hpr S D hd.symm
+  pm_528 hA columnCoefficient_union_row_four p hp hcop hg hpr S D hd.symm
   rw [Finset.union_comm S D] at hA
   simp only [canonicalSourceCoefficient,hA,Finset.prod_union hd,map_mul,
     row_union _ hg D S hd,mask_union _ hg D S hd,mul_pow,multiplicativeCoreColumn]
@@ -202,10 +144,10 @@ theorem canonicalCube_pair_row
       (C∪cubePrincipalSupport B v₁ v₂ ε₁ ε₂) z *
     blockRow p hg ((N∪P)∪cubeActiveSupport B (fun i => v₁ i+v₂ i) ε₁ ε₂)
       (threeBlockExponent N P (fun i => v₁ i+v₂ i) ε₁ ε₂) z := by
-  have hA₁C : Disjoint (B.filter fun i => ε₁ i) C := hCB.symm.mono_left (Finset.filter_subset _ _)
-  have hA₂C : Disjoint (B.filter fun i => ε₂ i) C := hCB.symm.mono_left (Finset.filter_subset _ _)
-  have hA₁P : Disjoint (B.filter fun i => ε₁ i) P := hPB.symm.mono_left (Finset.filter_subset _ _)
-  have hA₂N : Disjoint (B.filter fun i => ε₂ i) N := hNB.symm.mono_left (Finset.filter_subset _ _)
+  pm_4986 hA₁C ε₁ C hCB.symm.mono_left
+  pm_4986 hA₂C ε₂ C hCB.symm.mono_left
+  pm_4986 hA₁P ε₁ P hPB.symm.mono_left
+  pm_4986 hA₂N ε₂ N hNB.symm.mono_left
   have hCp : Disjoint C (cubePrincipalSupport B v₁ v₂ ε₁ ε₂) :=
     hCB.mono_right (Finset.filter_subset _ _)
   have hsel : cubePairRow (fun i => Ideal.span {p i}) hg B v₁ v₂ ε₁ ε₂ z =
@@ -245,10 +187,8 @@ theorem canonicalSourceCoefficient_cube_split
           (multiplicativeCoreColumn p Ψ m (fun U => H ((A∪C)∪U)))
           (∏i∈C,p i) f S) := by
   dsimp only
-  have hAC : Disjoint (B.filter fun i => if negative then ε₂ i else ε₁ i) C :=
-    hCB.symm.mono_left (Finset.filter_subset _ _)
-  have hAS : Disjoint (B.filter fun i => if negative then ε₂ i else ε₁ i) S :=
-    hSB.symm.mono_left (Finset.filter_subset _ _)
+  pm_7053 hAC C hCB.symm.mono_left
+  pm_7053 hAS S hSB.symm.mono_left
   rw [canonicalSourceCoefficient_union p hp hcop hg hpr Ψ m f H _ S
     (Finset.disjoint_union_left.mpr ⟨hAS,hSC.symm⟩)]
   have hA : (∏i∈B.filter (fun i => if negative then ε₂ i else ε₁ i),p i) =
@@ -265,7 +205,7 @@ theorem canonicalSourceCoefficient_cube_split
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
@@ -290,11 +230,10 @@ lemma canonicalPairMode_summable (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂
     (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
     (X₁ X₂ K : ℝ) (hK : 0<K) (d : O) (hd : d≠0) :
     Summable (canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d) := by
-  let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
+  pm_891
   let e := threeBlockExponent N P v ε₁ ε₂
-  let t := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
-  have ht : 0<t := div_pos hK (mul_pos
-    (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))) (primeProductNorm_pos p hp S))
+  pm_7413 t
+  pm_5749 ht t
   have hs : Summable (fun h : O => paperRadialFourier W (t*‖eisEmbedding h‖^2)*star (blockRow p hg S e h)) := by
     apply Summable.of_norm
     apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _
@@ -348,18 +287,9 @@ theorem canonicalPair_first_poisson
       ∑'h:O,canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K
         (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) h := by
   have he : ∀i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂,threeBlockExponent N P v ε₁ ε₂ i≠0 := by
-    intro i hi
-    by_cases hn:i∈N
-    · simp [threeBlockExponent,hn]
-    by_cases hp':i∈P
-    · simp [threeBlockExponent,hn,hp']
-    · have hiC:i∈cubeActiveSupport B v ε₁ ε₂ := by simpa [hn,hp'] using hi
-      simp only [threeBlockExponent,ite_eq_right hn,ite_eq_right hp']
-      exact (ZMod.val_eq_zero _).not.mpr (Finset.mem_filter.mp hiC).2
+    pm_3162
   have he6 : ∀i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂,threeBlockExponent N P v ε₁ ε₂ i<6 := by
-    intro i hi
-    unfold threeBlockExponent
-    split_ifs <;> first | omega | exact ZMod.val_lt _
+    pm_7216
   rw [masked_block_radial_poisson_product p hp hinj hcop hg hc M _ _ he he6 W K hK]
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -417,21 +347,16 @@ theorem disjointCanonicalSource_poisson
         (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) h := by
   simp_rw [tsum_actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK _
     (primeSubsetGenerator_ne_zero _ _)]
-  simp only [Finset.mul_sum]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pm_3006
   intro N hN
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro P hP
-  by_cases hNP : Disjoint N P
+  pm_6532 P hP hNP N
   · simp only [hNP,ite_true]
     exact canonicalPair_first_poisson p hp hcop hg hinj hc M N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK
-  · simp only [hNP,ite_false,mul_zero,Finset.sum_const_zero]
+  pm_3814 hNP ite_false mul_zero Finset.sum_const_zero
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FirstPassCubeLabels
@@ -475,17 +400,21 @@ def canonicalCubeBeforePoisson (pool : Finset ι) (b : CubeCoordinates ι) (C : 
       (canonicalCubeResidual p hg b C false Ψ₂ m₂ f H₂)
       W (fun _=>1) (fun _=>1) 1 1 K
 
-lemma cube_filter_left (b : CubeCoordinates ι) (hb : b.Admissible) :
+section
+variable (b : CubeCoordinates ι) (hb : b.Admissible)
+include b hb
+lemma cube_filter_left :
     b.support.filter (fun i=>b.leftBit i)=b.leftDivisor := by
   ext i
   simp only [CubeCoordinates.leftBit,Finset.mem_filter,decide_eq_true_eq]
   exact and_iff_right_of_imp (fun hi=>hb.1 hi)
 
-lemma cube_filter_right (b : CubeCoordinates ι) (hb : b.Admissible) :
+lemma cube_filter_right :
     b.support.filter (fun i=>b.rightBit i)=b.rightDivisor := by
   ext i
   simp only [CubeCoordinates.rightBit,Finset.mem_filter,decide_eq_true_eq]
   exact and_iff_right_of_imp (fun hi=>hb.2 hi)
+end
 
 theorem canonicalCubeSourcePair_factor
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -513,7 +442,7 @@ theorem canonicalCubeSourcePair_factor
   have hz (z : O) := canonicalCube_pair_row p hg b.support C N P b.leftExponent b.rightExponent
     b.leftBit b.rightBit b.support_pos hCB hNC hPC hNB hPB hNP z
   simp only [cube_filter_left b hb,cube_filter_right b hb] at hz
-  simp only [canonicalCubeSourcePair,hN,hP,star_mul,canonicalCubeOuter,canonicalCubeResidual]
+  pm_382 canonicalCubeSourcePair hN hP star_mul canonicalCubeOuter canonicalCubeResidual
   simp only [Bool.false_eq_true,ite_true,ite_false]
   simp_rw [hz]
   ring
@@ -524,8 +453,10 @@ def canonicalCubeCorrelation (pool B : Finset ι) (v₁ v₂ : ι→ℕ)
   ∑S∈pool.powerset,∑T∈pool.powerset,
     canonicalCubeSourcePair p hp hcop hg B S T v₁ v₂ Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K
 
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
 theorem canonicalCubeCorrelation_eq_blocks
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hpr : ∀i,lambda^2∣p i-1) (pool : Finset ι) (v₁ v₂ : ι→₀ℕ)
     (hB : v₁.support∪v₂.support⊆pool)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
@@ -536,10 +467,7 @@ theorem canonicalCubeCorrelation_eq_blocks
           canonicalCubeBeforePoisson p hp hcop hg pool ⟨v₁,v₂,A₁,A₂⟩ C Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K := by
   unfold canonicalCubeCorrelation
   rw [FiniteOverlapDecomposition.sum_pair_split_cube pool _ hB]
-  apply Finset.sum_congr rfl
-  intro A₂ hA₂
-  apply Finset.sum_congr rfl
-  intro A₁ hA₁
+  pm_3397 A₂ hA₂ A₁ hA₁
   apply Finset.sum_congr rfl
   intro C hC
   let b : CubeCoordinates ι:=⟨v₁,v₂,A₁,A₂⟩
@@ -547,32 +475,23 @@ theorem canonicalCubeCorrelation_eq_blocks
   have hCB : Disjoint C b.support := Finset.disjoint_left.mpr (fun i hiC hiB =>
     (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hC) hiC)).2 hiB)
   have hpool : (pool\(v₁.support∪v₂.support))\C=pool\(b.support∪C) := by
-    ext i
-    simp only [CubeCoordinates.support,b,Finset.mem_sdiff,Finset.mem_union]
+    pm_187 i CubeCoordinates.support b Finset.mem_sdiff Finset.mem_union
     tauto
   rw [hpool]
   change _=canonicalCubeBeforePoisson p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K
   simp only [canonicalCubeBeforePoisson,disjointCanonicalSource,Finset.mul_sum,one_mul]
-  apply Finset.sum_congr rfl
-  intro N hN
-  apply Finset.sum_congr rfl
-  intro P hP
+  pm_3397 N hN P hP
   by_cases hNP : Disjoint N P
   · simp only [hNP,ite_true]
-    have hNC : Disjoint N C:=Finset.disjoint_left.mpr (fun i hiN hiC =>
-      (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hN) hiN)).2 (Finset.mem_union_right _ hiC))
-    have hPC : Disjoint P C:=Finset.disjoint_left.mpr (fun i hiP hiC =>
-      (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hP) hiP)).2 (Finset.mem_union_right _ hiC))
-    have hNB : Disjoint N b.support:=Finset.disjoint_left.mpr (fun i hiN hiB =>
-      (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hN) hiN)).2 (Finset.mem_union_left _ hiB))
-    have hPB : Disjoint P b.support:=Finset.disjoint_left.mpr (fun i hiP hiB =>
-      (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hP) hiP)).2 (Finset.mem_union_left _ hiB))
+    pm_4917 hNC N C hiN hiC hN Finset.mem_union_right
+    pm_4917 hPC P C hiP hiC hP Finset.mem_union_right
+    pm_4917 hNB N b.support hiN hiB hN Finset.mem_union_left
+    pm_4917 hPB P b.support hiP hiB hP Finset.mem_union_left
     simpa only [mul_assoc,b,CubeCoordinates.support] using canonicalCubeSourcePair_factor p hp hcop hg hinj hpr b hb C N P
       hCB hNC hPC hNB hPB hNP Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K
   · simp only [hNP,ite_false,mul_zero]
 
 theorem canonicalCubeBeforePoisson_eq_all_modes
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
     (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ)
@@ -589,9 +508,12 @@ theorem canonicalCubeBeforePoisson_eq_all_modes
           (primeSubsetGenerator (fun i=>Ideal.span {p i}) D) h := by
   unfold canonicalCubeBeforePoisson
   rw [disjointCanonicalSource_poisson p hp hcop hg hinj hc _ _ _ _ _ _ _ _ _ _ _ _ _ _ hK]
+end
 
+section
+variable (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+include hc
 lemma canonicalSourceCoefficient_norm_le_one
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (Ψ:O→*ℂ) (hΨ:∀u,‖Ψ u‖≤1) (m f:O) (S:Finset ι) :
     ‖canonicalSourceCoefficient p hp hcop hg Ψ m f (fun _=>1) S‖≤1 := by
   have hm : ‖rowCoprimeMask (fun i=>Ideal.span {p i}) S m‖≤1 := by
@@ -609,7 +531,6 @@ lemma canonicalSourceCoefficient_norm_le_one
     _ = 1 := by norm_num
 
 lemma canonicalCubeOuter_norm_le_one
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
     (b:CubeCoordinates ι) (C:Finset ι) (Ψ₁ Ψ₂:O→*ℂ)
     (hΨ₁:∀u,‖Ψ₁ u‖≤1) (hΨ₂:∀u,‖Ψ₂ u‖≤1) (m₁ m₂ f:O) :
     ‖canonicalCubeOuter p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ f‖≤1 := by
@@ -617,6 +538,7 @@ lemma canonicalCubeOuter_norm_le_one
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (canonicalSourceCoefficient_norm_le_one p hp hcop hg hc Ψ₁ hΨ₁ m₁ f _)).trans
     (canonicalSourceCoefficient_norm_le_one p hp hcop hg hc Ψ₂ hΨ₂ m₂ f _)
+end
 
 end SecondPassArithmetic
 

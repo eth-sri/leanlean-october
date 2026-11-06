@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFrequencyTail
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorLower
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,10 +17,10 @@ local notation "O" => HeckeFamily.O
 def phaseProduct (χ : Character) (D U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ) : ℂ :=
   phasePolynomial (expandedSet U)
     (inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) D ((2 : ℝ)^j) s)
-    (fun I => Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^j)) t *
+    (fun I=> Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^j)) t *
   phasePolynomial (expandedSet U)
     (plainCoefficient χ (DyadicTransfer.annularCutoff cutoff) ((2 : ℝ)^k) s)
-    (fun I => Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^k)) t
+    (fun I=> Real.log ((Ideal.absNorm I : ℝ)/(2 : ℝ)^k)) t
 
 theorem exists_common_frequency_witness (R θ τ : ℝ) (hR : 0 ≤ R)
     (hθ : 0 ≤ θ) (hθ' : θ < 3/4) (hτ : 0 < τ) :
@@ -31,7 +32,7 @@ theorem exists_common_frequency_witness (R θ τ : ℝ) (hR : 0 ≤ R)
         ∃ k ∈ Finset.range (length (⌈2*U^21⌉₊ : ℝ)+1),
           ∃ t : ℝ, ‖t‖ ≤ U^τ ∧
             1 ≤ C*(Real.logb 2 U)^2*‖phaseProduct χ D U ρ j k t‖ ∧
-            (2 : ℝ)^j < 4*D ∧ D/8 < (2 : ℝ)^j*(2 : ℝ)^k ∧
+            (2 : ℝ)^j < 4*D ∧ D /8 < (2 : ℝ)^j*(2 : ℝ)^k ∧
             (2 : ℝ)^j*(2 : ℝ)^k < 8*U^21 := by
   obtain ⟨Ω,hΩc,hΩ,hwindow,hΩone⟩ := exists_product_log_cutoff
   obtain ⟨n,hn⟩ := exists_frequency_tail_order τ hτ
@@ -44,9 +45,8 @@ theorem exists_common_frequency_witness (R θ τ : ℝ) (hR : 0 ≤ R)
   obtain ⟨UL,hUL⟩ := exists_dyadic_zero_witness R θ hR hθ hθ'
   refine ⟨2500*C₀,max 2 (max UF UL),by positivity,?_⟩
   intro U hU χ hχ D hD hDU hQ ρ hρ hzero hheight
-  have hU2 : 2 ≤ U := (le_max_left _ _).trans hU
-  have hU1 : 1 ≤ U := by linarith
-  have hUpos : 0 < U := by linarith
+  pm_225 hU2 U le_max_left hU
+  pm_178 hU1 U hUpos
   obtain ⟨j,hj,k,hk,hblock,hsupport⟩ :=
     hUL U ((le_max_right UF UL).trans ((le_max_right 2 _).trans hU))
       χ hχ cutoff cutoff cutoff_norm_le cutoff_norm_le cutoff_one cutoff_zero cutoff_one cutoff_zero

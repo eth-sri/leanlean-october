@@ -1,5 +1,6 @@
 module
 public import TaoTrudgianYang2025.HeathBrownModelJetCore
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,44 +32,47 @@ theorem modelPhaseJetCoefficient_pos {σ : ℝ} (hσ : 0 < σ) (p : ℕ) :
   rw [descPochhammer_eval_eq_prod_range]
   apply Finset.prod_ne_zero_iff.mpr
   intro i _
-  have hi : (0 : ℝ) ≤ i := Nat.cast_nonneg i
+  pm_322 hi i
   linarith
 
-theorem modelPhaseJetSign_abs (σ : ℝ) (p : ℕ) :
+section
+variable (σ : ℝ) (p : ℕ)
+include σ p
+theorem modelPhaseJetSign_abs :
     |modelPhaseJetSign σ p| = 1 := by
   unfold modelPhaseJetSign
-  split <;> norm_num
+  grind
 
-theorem modelPhaseJetSign_coefficient (σ : ℝ) (p : ℕ) :
+theorem modelPhaseJetSign_coefficient :
     modelPhaseJetSign σ p * (descPochhammer ℝ p).eval (-σ) =
       modelPhaseJetCoefficient σ p := by
   unfold modelPhaseJetSign modelPhaseJetCoefficient
   split
-  · rename_i h
-    simp only [one_mul,abs_of_nonneg h]
-  · rename_i h
-    simp only [neg_mul,one_mul,abs_of_neg (lt_of_not_ge h)]
+  grind
+  grind
+end
 
-theorem modelPhaseJetLower_pos {σ : ℝ} (hσ : 0 < σ) (p : ℕ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+theorem modelPhaseJetLower_pos (p : ℕ) :
     0 < modelPhaseJetLower σ p := by
   unfold modelPhaseJetLower
   exact div_pos (mul_pos (modelPhaseJetCoefficient_pos hσ p)
     (Real.rpow_pos_of_pos (by norm_num) _)) (by norm_num)
 
-theorem modelPhase_signed_referenceJet_bounds {σ : ℝ} (hσ : 0 < σ)
+theorem modelPhase_signed_referenceJet_bounds
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (p : ℕ) :
     2*modelPhaseJetLower σ p ≤ modelPhaseJetSign σ p *
         iteratedDeriv p (modelPhase σ) u ∧
       modelPhaseJetSign σ p * iteratedDeriv p (modelPhase σ) u ≤
         modelPhaseJetCoefficient σ p := by
-  have hc : ContDiffAt ℝ p (modelPhase σ) u :=
-    Real.contDiffAt_rpow_const_of_ne (zero_lt_one.trans hu.1).ne'
+  pm_977 hc
   have he := iteratedDerivWithin_modelPhase σ p ⟨hu.1.le,hu.2.le⟩
-  rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hc
-    ⟨hu.1.le,hu.2.le⟩] at he
+  pm_6807 hc he
   rw [he,← mul_assoc,modelPhaseJetSign_coefficient]
   have hneg : -σ-(p : ℝ) ≤ 0 := by
-    have hp : (0 : ℝ) ≤ p := Nat.cast_nonneg p
+    pm_322 hp p
     linarith
   have hlo := Real.rpow_le_rpow_of_nonpos (zero_lt_one.trans hu.1) hu.2.le hneg
   have hhi := Real.rpow_le_one_of_one_le_of_nonpos hu.1.le hneg
@@ -78,6 +82,7 @@ theorem modelPhase_signed_referenceJet_bounds {σ : ℝ} (hσ : 0 < σ)
     dsimp only [modelPhaseJetLower]
     linarith
   · simpa only [mul_one] using mul_le_mul_of_nonneg_left hhi hcoef
+end
 
 theorem approximateModelPhase_signedJet_bounds
     {σ δ : ℝ} {P : ℕ} {F : ℝ → ℝ}
@@ -94,8 +99,7 @@ theorem approximateModelPhase_signedJet_bounds
     exact he
   rw [abs_le] at hs
   have hb := modelPhase_signed_referenceJet_bounds hσ hu p
-  have hd₀ := hδ.trans (min_le_left _ _)
-  have hd₁ := hδ.trans (min_le_right _ _)
+  pm_4998 hd₀ hδ.trans hd₁
   constructor <;> linarith
 
 end TaoTrudgianYang2025

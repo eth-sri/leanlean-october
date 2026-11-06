@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownCellVolume
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ whose derivative-coefficient cell contains `alpha`.
 -/
 
 open Finset Set MeasureTheory
-open scoped BigOperators ENNReal
+open scoped ENNReal
 
 namespace GafniTao
 
@@ -42,7 +43,7 @@ noncomputable def heathBrownNu
 theorem heathBrownCellIndicator_nonneg
     (k H n : ℕ) (f : ℝ → ℝ) (α : HeathBrownCoefficientTorus k) :
     0 ≤ heathBrownCellIndicator k H f n α := by
-  by_cases hα : α ∈ heathBrownCoefficientCell k H f n
+  pm_5997
   · simp [heathBrownCellIndicator, hα]
   · simp [heathBrownCellIndicator, hα]
 
@@ -94,12 +95,10 @@ theorem integral_heathBrownNu
         (heathBrownCoefficientMeasure k).real
           (heathBrownCoefficientCell k H f 1) := by
     unfold heathBrownCoefficientMeasure
-    have hn := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (n : ℝ)
-    have h1 := measure_heathBrownCoefficientCell (k := k) (H := H) hH f (1 : ℝ)
-    simpa only [Measure.real] using congrArg ENNReal.toReal (hn.trans h1.symm)
+    pm_2804
   simp_rw [hmeasure]
   rw [Finset.sum_const, card_heathBrownInteriorIndices]
-  simp [nsmul_eq_mul]
+  grind
 
 end
 

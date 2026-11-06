@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RadialExchange
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationSupport
+public import OAI.NumberTheory.DirichletL.Detector.GaussianCompensation
 
 @[expose] public section
 
@@ -14,10 +15,7 @@ open ActualEisensteinCubic EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-lemma elementNorm_pos (a : O) (ha : a≠0) : 0<elementNorm a := by
-  unfold elementNorm
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr ha))
+alias elementNorm_pos := OAI.SevenEighths.ProbePhysical.physicalElementNorm_pos
 
 lemma actualCongruenceCoefficient_zero_frequency (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty) (A s : O) (hA : A≠0) (hs : s≠0)
@@ -27,7 +25,7 @@ lemma actualCongruenceCoefficient_zero_frequency (S : Finset Id)
   intro hc
   have hz := (calibrationForSet_coprime_iff S hS 0).mp hc
   obtain ⟨P,hP⟩ := hSne
-  exact hz P hP P.zero_mem
+  simp_all
 
 theorem actualFrequency_mellin_nonzero (C : CalibrationData) (A s : O)
     (hA : A≠0) (hs : s≠0) (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
@@ -46,7 +44,7 @@ theorem actualFrequency_mellin_nonzero (C : CalibrationData) (A s : O)
       exact div_pos (mul_pos hK (elementNorm_pos H.val H.property))
         (elementNorm_pos _ (mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs)))
     (actualFrequency_moment_summable C A s hA hs K hK σ hσ)
-  simpa only [Complex.ofReal_mul,Complex.ofReal_div] using he
+  simp_all
 
 theorem actualFrequency_mellin (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty)
     (A s : O) (hA : A≠0) (hs : s≠0)

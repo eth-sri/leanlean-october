@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Canonical
 public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,10 +23,10 @@ theorem local_pair_reduction (P : Ideal O) [P.IsMaximal]
       (actualSextic P hg ^ netExponent c d) x := by
   have h6 : actualSextic P hg ^ 6 = 1 := by
     rw [← actualSextic_order_six P hg hchar]
-    exact pow_orderOf_eq_one _
+    simp_all
   have h5 : actualSextic P hg ^ 5 = (actualSextic P hg)⁻¹ := by
     apply eq_inv_of_mul_eq_one_left
-    simpa only [← pow_succ] using h6
+    aesop
   rw [MulChar.star_apply', ← MulChar.mul_apply]
   congr 1
   unfold netExponent
@@ -63,7 +64,10 @@ theorem principal_product_eq_mask {ι : Type*}
 
 variable {ι : Type*}
 
-theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+section
+variable (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+include P
+theorem common_ideal_pair_active
     (hg : ∀ i, goodLambda ∉ P i) (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2)
     (B : Finset ι) (c d : ι → ℕ)
     (hc : ∀ i ∈ B, c i ≠ 0) (hd : ∀ i ∈ B, d i ≠ 0) (z : O) :
@@ -94,12 +98,13 @@ theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
   congr 1
   exact (Finset.prod_coe_sort (s := activeSupport B c d) (f := f)).symm
 
-theorem activePrimes_pairwise_coprime (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+theorem activePrimes_pairwise_coprime
     (hinj : Function.Injective P) (B : Finset ι) (c d : ι → ℕ) :
     Pairwise (Function.onFun IsCoprime (fun i : activeSupport B c d => P i.val)) := by
   intro i j hij
   apply Ideal.isCoprime_of_isMaximal
   exact fun he => hij (Subtype.ext (hinj he))
+end
 
 open ConcreteTraceCRT EisensteinSchwartzPoisson
 

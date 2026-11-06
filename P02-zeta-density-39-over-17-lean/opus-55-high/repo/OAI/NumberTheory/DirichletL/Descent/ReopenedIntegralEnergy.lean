@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedCommonMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,35 +13,30 @@ open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem varying_separated_canonical_integrable
-    (pool : Finset ι) (Q : Finset (ι →₀ ℕ)) (β : (ι →₀ ℕ) → ℂ)
-    (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→Finset ι→ℂ) (Ψ : O →* ℂ) (m f z : O)
+section
+variable (pool : Finset ι) (Q : Finset (ι →₀ ℕ))
+include pool Q
+theorem varying_separated_canonical_integrable (β : (ι →₀ ℕ) → ℂ)
+    (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→ Finset ι→ℂ) (Ψ : O →* ℂ) (m f z : O)
     (b V : 𝓢(ℝ,ℂ)) (B ell : ℝ) :
     Integrable (fun ξ : ℝ => b ξ *
       varyingReopenedRow p hp hcop hg pool Q (separatedCubeCoefficient β n B ξ)
         Ψ m f (fun v T => mark v T*frequencyTwist V ξ (columnLog p ell T)) z) := by
-  let A : (ι →₀ ℕ) → Finset ι → ℂ := fun v T =>
-    multiplicityRow (fun i => Ideal.span {p i}) hg pool v z ^ 3 *
-      canonicalSourceCoefficient p hp hcop hg Ψ m f (fun _ => 1) T *
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg T z*mark v T
+  pm_3738
   have hi := reopening_finite_sum_integrable Q pool.powerset β A n (primeProductNorm p) B ell b V
   convert hi using 1
   funext ξ
   rw [varyingReopenedRow_integrand p hp hcop hg]
   simp only [A,Finset.mul_sum,columnLog]
-  apply Finset.sum_congr rfl
-  intro v hv
-  apply Finset.sum_congr rfl
-  intro T hT
+  pm_3397 v hv T hT
   ring
 
-theorem varying_separated_canonical_family_energy
-    (pool : Finset ι) (Q : Finset (ι →₀ ℕ)) (labels : Finset (Ideal O))
-    (β : Ideal O → (ι →₀ ℕ) → ℂ) (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→Finset ι→ℂ)
+theorem varying_separated_canonical_family_energy (labels : Finset (Ideal O))
+    (β : Ideal O → (ι →₀ ℕ) → ℂ) (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→ Finset ι→ℂ)
     (Ψ : O →* ℂ) (m : O) (b V : 𝓢(ℝ,ℂ))
     (B ell K E : ℝ) (d : ℕ) (hB : 0 < B) (hell : 0 < ell) (hK : 0 < K) (hE : 0 ≤ E)
     (hbound : ∀ ξ : ℝ,
@@ -68,6 +64,7 @@ theorem varying_separated_canonical_family_energy
       abs_of_pos (mul_pos hB (Real.sqrt_pos.mpr hell)),inv_pow,mul_pow,Real.sq_sqrt hell.le]
   rw [rowFamilyEnergy_const_mul labels _ K hK, hn]
   convert mul_le_mul_of_nonneg_left hm (by positivity : 0 ≤ (B^2*ell)⁻¹) using 1 ; ring
+end
 
 end
 end SevenEighths.InverseMoment

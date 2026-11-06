@@ -12,7 +12,10 @@ namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeRowClosure ProbePhysical
 local notation "O" => HeckeFamily.O
 
-theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal O) :
+section
+variable (χ : Character) (u : FreeRow) (I : Ideal O)
+include χ u I
+theorem momentData_product_raw :
     idealCoeff ((momentData χ).character (momentElement u)) I=
       idealCoeff (χ.product (rawRow u)) I := by
   have he : idealCoeff ((momentData χ).character (momentElement u))=
@@ -21,15 +24,16 @@ theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal O) :
     intro P
     rw [momentData_coeff,idealCoeff_product,rawRow_coeff,fixedSourcePrincipal_prime]
     simp
-  exact congrArg (fun f : Ideal O→*₀ℂ=>f I) he
+  grind
 
-theorem inverse_row_twist_moment_coeff (χ : Character) (u : FreeRow) (I : Ideal O) :
+theorem inverse_row_twist_moment_coeff :
     idealCoeff ((rawRow u).inverse.product χ) I=
       conj (idealCoeff ((momentData χ.inverse).character (momentElement u)) I) := by
   rw [momentData_product_raw,idealCoeff_product,idealCoeff_product,
     idealCoeff_inverse_conj,idealCoeff_inverse_conj,map_mul]
   simp only [starRingEnd_self_apply]
   ring
+end
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

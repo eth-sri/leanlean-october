@@ -30,10 +30,6 @@ theorem sum_third_derivative_correlation_majorant
     (show 0 ≤ C*N*Real.sqrt μ by positivity)
   have hi := mul_le_mul_of_nonneg_left (sum_shift_inverse_sqrt_le H)
     (show 0 ≤ 2/Real.sqrt μ by positivity)
-  calc
-    _ ≤ 12*(C*N*Real.sqrt μ*((H:ℝ)*Real.sqrt H)+
-        (2/Real.sqrt μ)*(2*Real.sqrt H)) :=
-      mul_le_mul_of_nonneg_left (add_le_add hs hi) (by norm_num)
-    _ = _ := by ring
+  grind
 
 end TaoTrudgianYang2025

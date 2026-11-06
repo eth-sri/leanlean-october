@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.RamifiedSixBranches
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,85 +10,40 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
+open scoped Classical Topology MatrixGroups InnerProductSpace
 
 local notation "O" => ActualEisensteinCubic.O
 
-lemma integralConjugatePullback_inverse_left {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
-    (hH : H≤CubicKubota.levelThree) (hJ : J≤CubicKubota.levelThree)
-    (F : IntegralQuotientL2 H) :
+section
+variable {H J : Subgroup (SL(2,ActualEisensteinCubic.O))} (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g) (hH : H≤CubicKubota.levelThree) (hJ : J≤CubicKubota.levelThree) (F : IntegralQuotientL2 H)
+include H J e g he hH hJ F
+lemma integralConjugatePullback_inverse_left :
     integralConjugatePullback e g he hH hJ
       (integralConjugatePullback e.symm g⁻¹ (integralCoverIntertwines_inverse e g he) hJ hH F)=F := by
   apply Lp.ext
@@ -99,10 +55,7 @@ lemma integralConjugatePullback_inverse_left {H J : Subgroup (SL(2,ActualEisenst
   dsimp only [Function.comp_def] at hqi
   rw [hq,hqi,integralConjugateMap_inverse]
 
-lemma integralConjugatePullback_pairing {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (e : H≃*J) (g : SL(2,ℂ)) (he : IntegralCoverIntertwines e g)
-    (hH : H≤CubicKubota.levelThree) (hJ : J≤CubicKubota.levelThree)
-    (F : IntegralQuotientL2 H) (G : IntegralQuotientL2 J) :
+lemma integralConjugatePullback_pairing (G : IntegralQuotientL2 J) :
     ⟪F,integralConjugatePullback e g he hH hJ G⟫_ℂ=
       ⟪integralConjugatePullback e.symm g⁻¹ (integralCoverIntertwines_inverse e g he) hJ hH F,G⟫_ℂ := by
   calc
@@ -111,6 +64,7 @@ lemma integralConjugatePullback_pairing {H J : Subgroup (SL(2,ActualEisensteinCu
       integralConjugatePullback e g he hH hJ G⟫_ℂ := by
         rw [integralConjugatePullback_inverse_left]
     _ = _ := LinearIsometry.inner_map_map _ _ _
+end
 
 theorem kernelCorrespondenceL2_pairing {H J : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤globalKubotaKernel) (hJK : J≤globalKubotaKernel)
@@ -131,7 +85,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 section
 
@@ -142,7 +96,7 @@ lemma continuous_period_integral {X:Type*} [TopologicalSpace X]
   rw [continuous_iff_continuousAt]
   intro x0
   obtain ⟨U,hUc,hUn⟩:=exists_compact_mem_nhds x0
-  let radius:ℝ:=∑i,‖periodBasis i‖
+  pm_7819
   obtain ⟨C,hC⟩:=(hUc.prod (isCompact_closedBall (0:ℂ) radius)).bddAbove_image hf.norm.continuousOn
   apply continuousAt_of_dominated
   · filter_upwards with x using (show Continuous (f x) from hf.comp (continuous_const.prodMk continuous_id)).aestronglyMeasurable
@@ -157,8 +111,10 @@ lemma continuous_period_integral {X:Type*} [TopologicalSpace X]
 def continuousCuspSlice (f:HyperbolicSpace→ℂ) (freq:ℂ) (v:ℝ) :ℂ:=
   (∫z in periodDomain,f (cuspCoordinateLift (v,z))*ShortDraftTrace.breveE (-freq*z))/(v:ℂ)^3
 
-lemma continuousCuspSlice_integrable (f:HyperbolicSpace→ℂ) (hf:Continuous f)
-    (freq:ℂ) (a b:ℝ) (ha:0<a) :
+section
+variable (f:HyperbolicSpace→ℂ) (hf:Continuous f) (freq:ℂ) (a b:ℝ) (ha:0<a)
+include f hf freq a b ha
+lemma continuousCuspSlice_integrable :
     IntegrableOn (continuousCuspSlice f freq) (Set.Icc a b) volume := by
   let g:HyperbolicSpace→ℂ:=fun w=>f w*arbitraryCuspWeightedPhase 1 freq w
   have hg:Continuous g:=hf.mul (arbitraryCuspWeightedPhase_continuous 1 freq)
@@ -168,18 +124,16 @@ lemma continuousCuspSlice_integrable (f:HyperbolicSpace→ℂ) (hf:Continuous f)
   filter_upwards [ae_restrict_mem measurableSet_Icc] with v hv
   have hp:0<v:=ha.trans_le hv.1
   rw [integral_div,continuousCuspSlice]
-  apply congrArg (fun c:ℂ=>c/(v:ℂ)^3)
+  pm_7377 c
   apply integral_congr_ae
   exact Eventually.of_forall (fun z=>by
     dsimp only [g]
-    rw [arbitraryCuspWeightedPhase,cuspCoordinateLift_positive v z hp,
-      hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint]
+    pm_7522
     simp)
 
-lemma continuousCuspSlice_continuousOn (f:HyperbolicSpace→ℂ) (hf:Continuous f)
-    (freq:ℂ) (a b:ℝ) (ha:0<a) :
+lemma continuousCuspSlice_continuousOn :
     ContinuousOn (continuousCuspSlice f freq) (Set.Icc a b) := by
-  let coord:(ℝ × ℂ)→UpperCoordinates:=fun q=>⟨(q.2,max a q.1),ha.trans_le (le_max_left _ _)⟩
+  let coord:(ℝ × ℂ)→ UpperCoordinates:=fun q=>⟨(q.2,max a q.1),ha.trans_le (le_max_left _ _)⟩
   have hc:Continuous coord:=by
     apply Continuous.subtype_mk
     exact continuous_snd.prodMk (continuous_const.max continuous_fst)
@@ -193,23 +147,20 @@ lemma continuousCuspSlice_continuousOn (f:HyperbolicSpace→ℂ) (hf:Continuous 
   have hnum:ContinuousOn (fun v:ℝ=>∫z in periodDomain,f (cuspCoordinateLift (v,z))*
       ShortDraftTrace.breveE (-freq*z)) (Set.Icc a b):=by
     apply hi.continuousOn.congr
-    intro v hv
-    have hp:0<v:=ha.trans_le hv.1
+    pm_3586 hp
     simp only [max_eq_right hv.1,cuspCoordinateLift_positive v _ hp]
   exact hnum.div (Complex.continuous_ofReal.pow 3).continuousOn
     (fun v hv=>pow_ne_zero 3 (Complex.ofReal_ne_zero.mpr (ha.trans_le hv.1).ne'))
 
-lemma continuousCuspSlice_test (f:HyperbolicSpace→ℂ) (hf:Continuous f) (freq:ℂ)
-    (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunction ℝ ℂ) :
-    (∫w in cuspPeriodStrip a b,f w*arbitraryCuspWeightedPhase ρ freq w∂hyperbolicVolume)=
+lemma continuousCuspSlice_test (ρ:BoundedContinuousFunction ℝ ℂ) :
+    (∫w in cuspPeriodStrip a b,f w*arbitraryCuspWeightedPhase ρ freq w∂ hyperbolicVolume)=
       ∫v in Set.Icc a b,ρ v*continuousCuspSlice f freq v := by
   have hg:Continuous (fun w=>f w*arbitraryCuspWeightedPhase ρ freq w):=
     hf.mul (arbitraryCuspWeightedPhase_continuous ρ freq)
   rw [cuspPeriodStrip_integral_coordinates_of_pos a b ha _ hg.aestronglyMeasurable
     (cuspCoordinateLift_weighted_integrable_of_pos a b ha _ hg)]
   apply setIntegral_congr_fun measurableSet_Icc
-  intro v hv
-  have hp:0<v:=ha.trans_le hv.1
+  pm_3586 hp
   dsimp only
   rw [continuousCuspSlice,←mul_div_assoc]
   congr 1
@@ -217,15 +168,15 @@ lemma continuousCuspSlice_test (f:HyperbolicSpace→ℂ) (hf:Continuous f) (freq
   apply integral_congr_ae
   exact Eventually.of_forall (fun z=>by
     dsimp only
-    rw [arbitraryCuspWeightedPhase,cuspCoordinateLift_positive v z hp,
-      hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint]
+    pm_7522
     ring)
+end
 
 theorem continuousCuspSlice_eq_of_tests (f:HyperbolicSpace→ℂ) (hf:Continuous f)
     (freq:ℂ) (g:ℝ→ℂ)
-    (hg:∀a b:ℝ,0<a→ContinuousOn g (Set.Icc a b))
+    (hg:∀a b:ℝ,0<a→ ContinuousOn g (Set.Icc a b))
     (ht:∀a b:ℝ,∀_ha:0<a,∀ρ:BoundedContinuousFunction ℝ ℂ,
-      (∫w in cuspPeriodStrip a b,f w*arbitraryCuspWeightedPhase ρ freq w∂hyperbolicVolume)=
+      (∫w in cuspPeriodStrip a b,f w*arbitraryCuspWeightedPhase ρ freq w∂ hyperbolicVolume)=
         ∫v in Set.Icc a b,ρ v*g v) (v:ℝ) (hv:0<v) :
     continuousCuspSlice f freq v=g v := by
   have ha:0<v/2:=half_pos hv
@@ -252,7 +203,7 @@ theorem ramifiedSource_fourier_all_heights (side:Bool) (h:Eis)
   let R:=ramifiedArithmeticResidue side h hf
   let g:ℝ→ℂ:=fun v=>R*(v:ℂ)^(-(4/3:ℂ)-1)*
     sourceFourierKernel (4/3) (ninthCuspFrequency h*v)
-  have hg:∀a b:ℝ,0<a→ContinuousOn g (Set.Icc a b):=by
+  have hg:∀a b:ℝ,0<a→ ContinuousOn g (Set.Icc a b):=by
     intro a b ha x hx
     have hp:0<x:=ha.trans_le hx.1
     exact ((continuousAt_const.mul
@@ -261,7 +212,7 @@ theorem ramifiedSource_fourier_all_heights (side:Bool) (h:Eis)
           ((Complex.continuous_ofReal.const_mul (ninthCuspFrequency h)).continuousAt))).continuousWithinAt
   have ht:∀a b:ℝ,∀ha:0<a,∀ρ:BoundedContinuousFunction ℝ ℂ,
       (∫w in cuspPeriodStrip a b,ramifiedSourceFunction (ramifiedCuspRoot side:Eis) w*
-        arbitraryCuspWeightedPhase ρ (ninthCuspFrequency h) w∂hyperbolicVolume)=
+        arbitraryCuspWeightedPhase ρ (ninthCuspFrequency h) w∂ hyperbolicVolume)=
           ∫x in Set.Icc a b,ρ x*g x:=by
     intro a b ha ρ
     rw [ramifiedSource_height_residue_integral side h hf a b ha ρ,
@@ -271,14 +222,10 @@ theorem ramifiedSource_fourier_all_heights (side:Bool) (h:Eis)
   have he:=continuousCuspSlice_eq_of_tests
     (ramifiedSourceFunction (ramifiedCuspRoot side:Eis)) (ramifiedSourceFunction_continuous _)
     (ninthCuspFrequency h) g hg ht v hv
-  have hvn:(v:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hv.ne'
-  have hp:(v:ℂ)^(-(4/3:ℂ)-1)=(v:ℂ)^(2/3:ℂ)/(v:ℂ)^3:=by
-    rw [show -(4/3:ℂ)-1=(2/3:ℂ)-3 by ring,Complex.cpow_sub _ _ hvn]
-    congr 1
-    exact Complex.cpow_natCast _ 3
+  pm_3552
   dsimp only [continuousCuspSlice,g,R] at he
   simp only [cuspCoordinateLift_positive v _ hv,hp] at he
-  apply (div_left_inj' (pow_ne_zero 3 hvn)).mp
+  pm_8377
   convert he using 1 ;ring
 
 end
@@ -288,7 +235,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 lemma continuous_period_fourier_bound (f:ℂ→ℂ) (hf:Continuous f) :
     ∃C:ℝ,0≤C∧∀freq:ℂ,‖∫z in periodDomain,f z*ShortDraftTrace.breveE (-freq*z)‖≤C := by
-  let radius:ℝ:=∑i,‖periodBasis i‖
+  pm_7819
   obtain ⟨B,hB⟩:=(isCompact_closedBall (0:ℂ) radius).bddAbove_image hf.norm.continuousOn
   refine ⟨max 0 B*(volume.restrict periodDomain).real Set.univ,mul_nonneg (le_max_left _ _) (measureReal_nonneg),?_⟩
   intro freq
@@ -301,7 +248,7 @@ lemma continuous_period_fourier_bound (f:ℂ→ℂ) (hf:Continuous f) :
   exact ⟨z,by simpa only [Metric.mem_closedBall,dist_zero_right,radius] using norm_mem_periodDomain z hz,rfl⟩
 
 theorem continuous_fourier_bessel_subexponential (f:ℝ→ℂ→ℂ) (c:Eis→ℂ)
-    (hf:∀v:ℝ,0<v→Continuous (f v))
+    (hf:∀v:ℝ,0<v→ Continuous (f v))
     (hfour:∀v:ℝ,∀_hv:0<v,∀h:Eis,h≠0→
       (∫z in periodDomain,f v z*ShortDraftTrace.breveE (-cuspFrequency h*z))=
         ((9*Real.sqrt 3/2:ℝ):ℂ)*c h*(v:ℂ)*
@@ -310,7 +257,7 @@ theorem continuous_fourier_bessel_subexponential (f:ℝ→ℂ→ℂ) (c:Eis→�
     ∃C:ℝ,0≤C∧∀h:Eis,h≠0→‖c h‖≤C*Real.exp (ε*‖cuspFrequency h‖) := by
   let v:ℝ:=ε/(9*Real.pi)
   have hv:0<v:=div_pos hε (by positivity)
-  let area:ℂ:=((9*Real.sqrt 3/2:ℝ):ℂ)
+  pm_6887 area
   have harea:0<‖area‖:=norm_pos_iff.mpr cusp_volume_ne_zero
   obtain ⟨B,hB,hbound⟩:=continuous_period_fourier_bound (f v) (hf v hv)
   let D:ℝ:=‖area‖*v*cubicBesselLowerConstant
@@ -330,7 +277,7 @@ theorem continuous_fourier_bessel_subexponential (f:ℝ→ℂ→ℂ) (c:Eis→�
 
   have hb:=hbound (cuspFrequency h)
   rw [hfour v hv h hh,norm_mul,norm_mul,norm_mul,Complex.norm_of_nonneg hv.le] at hb
-  have hm:‖c h‖*(D*Real.exp (-(ε*‖cuspFrequency h‖)))≤B:=by
+  have hm:‖c h‖*(D *Real.exp (-(ε*‖cuspFrequency h‖)))≤B:=by
     calc
       _ = (‖area‖*‖c h‖*v)*(cubicBesselLowerConstant*Real.exp (-(ε*‖cuspFrequency h‖))) := by dsimp [D];ring
       _ ≤ (‖area‖*‖c h‖*v)*‖schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)‖ :=
@@ -339,7 +286,7 @@ theorem continuous_fourier_bessel_subexponential (f:ℝ→ℂ→ℂ) (c:Eis→�
   have hexp:0<Real.exp (-(ε*‖cuspFrequency h‖)):=Real.exp_pos _
   apply (le_div_iff₀ (mul_pos hD hexp)).mpr at hm
   calc
-    _ ≤ B/(D*Real.exp (-(ε*‖cuspFrequency h‖))) := hm
+    _ ≤ B/(D *Real.exp (-(ε*‖cuspFrequency h‖))) := hm
     _ = (B/D)*Real.exp (ε*‖cuspFrequency h‖) := by rw [Real.exp_neg];field_simp
 
 theorem continuous_periodic_eq_bessel (c:SubexponentialBesselCoefficients)
@@ -366,28 +313,27 @@ section
 open ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma ninthCuspFrequency_three (h:Eis) :
+section
+variable (h:Eis)
+include h
+lemma ninthCuspFrequency_three :
     3*ninthCuspFrequency h=cuspFrequency h := by
   unfold ninthCuspFrequency cuspFrequency
   ring
 
-lemma sourceFourierKernel_cubic_amplitude (h:Eis) (hh:h≠0) (v:ℝ) (hv:0<v) :
+lemma sourceFourierKernel_cubic_amplitude (hh:h≠0) (v:ℝ) (hv:0<v) :
     (v:ℂ)^(2/3:ℂ)*sourceFourierKernel (4/3) (cuspFrequency h*v)=
       cubicBesselNormalizer h*(v:ℂ)*schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v) := by
-  have hvn:(v:ℂ)≠0:=Complex.ofReal_ne_zero.mpr hv.ne'
-  have hp:(v:ℂ)^(-(4/3:ℂ)-1)=(v:ℂ)^(2/3:ℂ)/(v:ℂ)^3:=by
-    rw [show -(4/3:ℂ)-1=(2/3:ℂ)-3 by ring,Complex.cpow_sub _ _ hvn]
-    congr 1
-    exact Complex.cpow_natCast _ 3
+  pm_3552
   have he:=sourceFourierKernel_cubic_height h hh v hv
   rw [hp] at he
-  apply (div_left_inj' (pow_ne_zero 3 hvn)).mp
+  pm_8377
   calc
     _ = ((v:ℂ)^(2/3:ℂ)/(v:ℂ)^3)*sourceFourierKernel (4/3) (cuspFrequency h*v) := by ring
     _ = _ := he
     _ = _ := by field_simp
 
-lemma ramified_kernel_scaled_bessel (h:Eis) (hh:h≠0) (v:ℝ) (hv:0<v) :
+lemma ramified_kernel_scaled_bessel (hh:h≠0) (v:ℝ) (hv:0<v) :
     ((3*v:ℝ):ℂ)^(2/3:ℂ)*sourceFourierKernel (4/3) (ninthCuspFrequency h*(3*v:ℝ))=
       (3:ℂ)^(2/3:ℂ)*cubicBesselNormalizer h*(v:ℂ)*
         schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v) := by
@@ -400,6 +346,7 @@ lemma ramified_kernel_scaled_bessel (h:Eis) (hh:h≠0) (v:ℝ) (hv:0<v) :
       Complex.mul_cpow_ofReal_nonneg (a:=3) (b:=v) (by norm_num) hv.le (2/3:ℂ)
   rw [hfreq,hp,mul_assoc,sourceFourierKernel_cubic_amplitude h hh v hv]
   ring
+end
 
 end
 
@@ -416,7 +363,10 @@ def ramifiedBesselValue (side:Bool) (h:Eis) :ℂ:=
       ((9*Real.sqrt 3/2:ℝ):ℂ)
   else 0
 
-lemma ramifiedScaledRow_continuous (side:Bool) (v:ℝ) (hv:0<v) :
+section
+variable (side:Bool) (v:ℝ) (hv:0<v)
+include side v hv
+lemma ramifiedScaledRow_continuous :
     Continuous (ramifiedScaledRow side v) := by
   have hp:0<3*v:=by positivity
   have he:ramifiedScaledRow side v=(fun z=>ramifiedSourceFunction (ramifiedCuspRoot side:Eis)
@@ -426,22 +376,22 @@ lemma ramifiedScaledRow_continuous (side:Bool) (v:ℝ) (hv:0<v) :
   rw [he]
   exact (ramifiedSource_height_continuous side (3*v) hp).comp (continuous_const.mul continuous_id)
 
-lemma ramifiedScaledRow_periodic (side:Bool) (v:ℝ) (hv:0<v) (n:Eis) (z:ℂ) :
+lemma ramifiedScaledRow_periodic (n:Eis) (z:ℂ) :
     ramifiedScaledRow side v (z+3*eisEmbedding n)=ramifiedScaledRow side v z := by
   have hp:0<3*v:=by positivity
   have he:=ramifiedScaledMode_periodic side 0 (3*v) hp n z
   simpa only [ramifiedScaledMode,cuspFrequency,map_zero,zero_div,neg_zero,zero_mul,
     AddChar.map_zero_eq_one,mul_one,ramifiedScaledRow,cuspCoordinateLift_positive (3*v) _ hp] using he
 
-lemma ramifiedScaledRow_zero (side:Bool) (v:ℝ) (hv:0<v) :
+lemma ramifiedScaledRow_zero :
     (∫z in periodDomain,ramifiedScaledRow side v z)=0 := by
   have hp:0<3*v:=by positivity
-  simp only [ramifiedScaledRow,cuspCoordinateLift_positive (3*v) _ hp]
+  pm_7240
   cases side
   · simpa [ramifiedCuspRoot,ramifiedOmegaUnit_val] using ramifiedSource_zero_mode10 (3*v) hp
   · simpa [ramifiedCuspRoot,Units.val_pow_eq_pow_val,ramifiedOmegaUnit_val] using ramifiedSource_zero_mode19 (3*v) hp
 
-lemma ramifiedScaledRow_fourier (side:Bool) (v:ℝ) (hv:0<v) (h:Eis) :
+lemma ramifiedScaledRow_fourier (h:Eis) :
     (∫z in periodDomain,ramifiedScaledRow side v z*ShortDraftTrace.breveE (-cuspFrequency h*z))=
       ((9*Real.sqrt 3/2:ℝ):ℂ)*(if h=0 then 0 else ramifiedBesselValue side h*(v:ℂ)*
         schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)) := by
@@ -452,7 +402,7 @@ lemma ramifiedScaledRow_fourier (side:Bool) (v:ℝ) (hv:0<v) (h:Eis) :
     simpa only [ite_true,mul_zero] using ramifiedScaledRow_zero side v hv
   have hp:0<3*v:=by positivity
   rw [ite_eq_right hh]
-  simp only [ramifiedScaledRow,cuspCoordinateLift_positive (3*v) _ hp]
+  pm_7240
   by_cases hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit side)
   · rw [ramifiedSource_scaled_fourier_active side h hf (3*v) hp,
       ramifiedSource_fourier_all_heights side h hf (3*v) hp,
@@ -462,6 +412,7 @@ lemma ramifiedScaledRow_fourier (side:Bool) (v:ℝ) (hv:0<v) (h:Eis) :
   · rw [ramifiedSource_scaled_fourier_off_support side h hf (3*v) hp,
       ramifiedBesselValue,dite_eq_right hf]
     ring
+end
 
 lemma ramifiedBesselValue_subexponential (side:Bool) (ε:ℝ) (hε:0<ε) :
     ∃C:ℝ,0≤C∧∀h:Eis,h≠0→‖ramifiedBesselValue side h‖≤C*Real.exp (ε*‖cuspFrequency h‖) := by
@@ -493,8 +444,7 @@ theorem ramifiedSource_cubic_decay (side:Bool) (a:ℝ) (ha:0<a) :
   have he:=ramifiedScaledRow_eq_bessel side (v/3) hp (z/3)
   have hb:=hbound (v/3) hp (z/3) (by linarith)
   rw [←he] at hb
-  have hv3:3*(v/3)=v:=by ring
-  have hz3:(3:ℂ)*(z/3)=z:=by ring
+  pm_3553
   simp only [ramifiedScaledRow,hv3,hz3,cuspCoordinateLift_positive v z hv] at hb
   calc
     _ ≤ C/(v/3)^3 := hb
@@ -508,8 +458,7 @@ lemma ramifiedSource_eq_series (side:Bool) (v:ℝ) (hv:0<v) (z:ℂ) :
     ramifiedSourceFunction (ramifiedCuspRoot side:Eis) (upperPoint z v hv)=
       (ramifiedBesselCoefficients side).series (v/3,z/3) := by
   have he:=ramifiedScaledRow_eq_bessel side (v/3) (by positivity) (z/3)
-  have hv3:3*(v/3)=v:=by ring
-  have hz3:(3:ℂ)*(z/3)=z:=by ring
+  pm_3553
   simpa only [ramifiedScaledRow,hv3,hz3,cuspCoordinateLift_positive v z hv,
     SubexponentialBesselCoefficients.fullFunction,zero_mul,zero_add,
     SubexponentialBesselCoefficients.function,hyperbolicHeight_upperPoint,
@@ -518,30 +467,29 @@ lemma ramifiedSource_eq_series (side:Bool) (v:ℝ) (hv:0<v) (z:ℂ) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
+open scoped Classical Topology MatrixGroups Pointwise Manifold ContDiff ENNReal InnerProductSpace
 open Finset AddChar MulChar EisensteinEmbedding
 
-lemma coverGradientAt_add (F G : EuclideanSpatial→ℂ) (p : EuclideanSpatial)
-    (hF : DifferentiableAt ℝ F p) (hG : DifferentiableAt ℝ G p) :
+section
+variable (F G : EuclideanSpatial→ℂ) (p : EuclideanSpatial) (hF : DifferentiableAt ℝ F p) (hG : DifferentiableAt ℝ G p)
+include F G p hF hG
+lemma coverGradientAt_add :
     coverGradientAt (F+G) p=coverGradientAt F p+coverGradientAt G p := by
-  apply (WithLp.equiv 2 (Fin 3→ℂ)).injective
-  funext j
+  pm_3724
   simp only [coverGradientAt,fderiv_add hF hG,WithLp.equiv_apply,WithLp.ofLp_add,
     Pi.add_apply,_root_.add_apply,mul_add]
 
-lemma coverGradientAt_sub (F G : EuclideanSpatial→ℂ) (p : EuclideanSpatial)
-    (hF : DifferentiableAt ℝ F p) (hG : DifferentiableAt ℝ G p) :
+lemma coverGradientAt_sub :
     coverGradientAt (F-G) p=coverGradientAt F p-coverGradientAt G p := by
-  apply (WithLp.equiv 2 (Fin 3→ℂ)).injective
-  funext j
+  pm_3724
   simp only [coverGradientAt,fderiv_sub hF hG,WithLp.equiv_apply,WithLp.ofLp_sub,
     Pi.sub_apply,_root_.sub_apply,mul_sub]
+end
 
 lemma coverGradientAt_smul (c : ℂ) (F : EuclideanSpatial→ℂ) (p : EuclideanSpatial)
     (hF : DifferentiableAt ℝ F p) :
     coverGradientAt (c•F) p=c•coverGradientAt F p := by
-  apply (WithLp.equiv 2 (Fin 3→ℂ)).injective
-  funext j
+  pm_3724
   simp only [coverGradientAt,fderiv_const_smul hF,WithLp.equiv_apply,WithLp.ofLp_smul,
     Pi.smul_apply,_root_.smul_apply,smul_eq_mul,mul_left_comm]
 
@@ -587,7 +535,7 @@ lemma coverDirichletPair_comp (g : SL(2,ℂ)) (F G : EuclideanSpatial→ℂ)
     coverEnergyDensity_comp g _ p hp (hF.sub (hG.const_smul _))]
 
 lemma coverDirichletPair_sum_right {ι : Type*} (s : Finset ι)
-    (F : EuclideanSpatial→ℂ) (G : ι→EuclideanSpatial→ℂ) (p : EuclideanSpatial)
+    (F : EuclideanSpatial→ℂ) (G : ι→ EuclideanSpatial→ℂ) (p : EuclideanSpatial)
     (hG : ∀i∈s,DifferentiableAt ℝ (G i) p) :
     coverDirichletPair F (fun x=>∑i∈s,G i x) p=∑i∈s,coverDirichletPair F (G i) p := by
   simp only [coverDirichletPair,coverGradientAt_sum s G p hG,inner_sum]

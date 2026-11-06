@@ -2,10 +2,10 @@ module
 public import WeightedFourthMoment
 public import Mathlib.Analysis.Fourier.ZMod
 public import Mathlib.Analysis.PSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
@@ -25,8 +25,7 @@ theorem int_reciprocal_square_budget (A : Finset ℤ)
     (∑ n ∈ A, (n : ℝ)⁻¹ ^ 2) ≤ 4 := by
   let B := A.image Int.natAbs
   have hB : ∀ n ∈ B, n ≠ 0 := by
-    intro n hn
-    obtain ⟨m, hm, rfl⟩ := mem_image.mp hn
+    pm_136 n hn m hm mem_image.mp
     exact Int.natAbs_ne_zero.mpr (hA m hm)
   have hb := nat_reciprocal_square_budget B hB
   let P := B.image (fun n : ℕ => (n : ℤ))
@@ -42,9 +41,7 @@ theorem int_reciprocal_square_budget (A : Finset ℤ)
   have hp : (∑ n ∈ P, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
     rw [show P = B.image (fun n : ℕ => (n : ℤ)) from rfl, sum_image]
     · simp only [Int.cast_natCast, inv_pow]
-    · intro a _ b _ hab
-      change (a : ℤ) = (b : ℤ) at hab
-      exact_mod_cast hab
+    pm_8809 a b hab
   have hq : (∑ n ∈ Q, (n : ℝ)⁻¹ ^ 2) = ∑ n ∈ B, ((n : ℝ)^2)⁻¹ := by
     rw [show Q = B.image (fun n : ℕ => -(n : ℤ)) from rfl, sum_image]
     · simp only [Int.cast_neg, Int.cast_natCast, inv_neg, neg_sq, inv_pow]
@@ -72,10 +69,13 @@ theorem integerFourthWeight_nonneg (n : ℤ) : 0 ≤ integerFourthWeight n := by
 def cyclicPhase {N : ℕ} [NeZero N] (n : ℤ) (x : ZMod N) : ℂ :=
   ZMod.stdAddChar ((n : ZMod N)*x)
 
-theorem cyclicPhase_norm {N : ℕ} [NeZero N] (n : ℤ) (x : ZMod N) : ‖cyclicPhase n x‖ = 1 := by
+section
+variable {N : ℕ} [NeZero N]
+include N
+theorem cyclicPhase_norm (n : ℤ) (x : ZMod N) : ‖cyclicPhase n x‖ = 1 := by
   simp only [cyclicPhase, ZMod.stdAddChar_apply, Circle.norm_coe]
 
-theorem cyclicPhase_mean_zero {N : ℕ} [NeZero N] {n : ℤ}
+theorem cyclicPhase_mean_zero {n : ℤ}
     (hn : n ≠ 0) (hN : n.natAbs < N) :
     (∑ x : ZMod N, cyclicPhase n x) = 0 := by
   have hcast : (n : ZMod N) ≠ 0 := by
@@ -88,7 +88,7 @@ theorem cyclicPhase_mean_zero {N : ℕ} [NeZero N] {n : ℤ}
 
 /-- A genuine finite cyclic Laurent-polynomial estimate, with mean zero
 and the reciprocal-square budget proved internally. -/
-theorem cyclic_fourth_moment {N : ℕ} [NeZero N] (A : Finset ℤ)
+theorem cyclic_fourth_moment (A : Finset ℤ)
     (hzero : 0 ∈ A) (hN : ∀ n ∈ A, n.natAbs < N) (c : ℤ → ℂ) :
     (∑ x : ZMod N, (N : ℝ)⁻¹ * ‖∑ n ∈ A, c n*cyclicPhase n x‖^4) ≤
       (∑ n ∈ A, integerFourthWeight n * ‖c n‖^2)^2 := by
@@ -121,5 +121,6 @@ theorem cyclic_fourth_moment {N : ℕ} [NeZero N] (A : Finset ℤ)
   rw [hw]
   convert hh using 1
   norm_num
+end
 
 end Montgomery.RationalMoment

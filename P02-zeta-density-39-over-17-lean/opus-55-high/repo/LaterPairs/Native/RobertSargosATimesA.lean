@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPlaneWeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -21,7 +22,7 @@ theorem robertSargos_a_times_a_exact (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     (hQ : 0 < Q) (hR : 0 < R) :
     ‖∑ m ∈ Finset.Ico (0:ℤ) M, ∑ h ∈ Finset.Ico (0:ℤ) H, a m h‖^2 ≤
       (((M:ℝ)+Q)*((H:ℝ)+R)/((Q:ℝ)*R))*robertSargosWeightedCorrelations a M H Q R := by
-  have hp : 0 < (Q:ℝ)*R := by positivity
+  pm_6918
   have ht := robertSargos_plane_averaging a M H Q R
   rw [robertSargos_plane_weighted_gram a M H Q R hQ hR] at ht
   simp only [Nat.cast_mul,Nat.cast_add] at ht
@@ -40,8 +41,8 @@ theorem robertSargos_a_times_a (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
   apply mul_le_mul_of_nonneg_right _
     (robertSargos_weighted_correlations_nonneg a M H Q R hQ hR)
   apply div_le_div_of_nonneg_right _ (by positivity)
-  have hqm : (Q:ℝ) ≤ M := by exact_mod_cast hQM
-  have hrh : (R:ℝ) ≤ H := by exact_mod_cast hRH
+  pm_404 hqm Q M hQM
+  pm_404 hrh R H hRH
   calc
     ((M:ℝ)+Q)*((H:ℝ)+R) ≤ (2*(M:ℝ))*(2*(H:ℝ)) :=
       mul_le_mul (by linarith) (by linarith) (by positivity) (by positivity)

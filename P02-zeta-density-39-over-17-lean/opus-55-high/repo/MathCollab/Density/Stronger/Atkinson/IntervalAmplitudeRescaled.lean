@@ -7,6 +7,7 @@ Provenance: third_party/twelfth/ATKINSON_RESIDUAL_VARIATION_MANIFEST.json.
 Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,15 +22,15 @@ theorem exists_intervalC1Bound_rescaled {f : ℝ → ℂ}
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T →
       IntervalC1Bound (fun x => f (x / T)) (T / 16) T C := by
   have hfc : ContinuousOn f (Icc (1 / 16 : ℝ) 1) :=
-    fun x hx => (hf x (by linarith [hx.1])).continuousAt.continuousWithinAt
+    fun x hx => (hf x (by grind)).continuousAt.continuousWithinAt
   have hdc : ContinuousOn (deriv f) (Icc (1 / 16 : ℝ) 1) := fun x hx =>
     ((hf x (by linarith [hx.1])).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
   obtain ⟨M, hM⟩ := isCompact_Icc.exists_bound_of_continuousOn hfc
   obtain ⟨N, hN⟩ := isCompact_Icc.exists_bound_of_continuousOn hdc
   let C : ℝ := 1 + |M| + |N|
-  have hC : 0 < C := by dsimp [C]; positivity
-  have hMC : M ≤ C := by dsimp [C]; linarith [le_abs_self M, abs_nonneg N]
-  have hNC : N ≤ C := by dsimp [C]; linarith [le_abs_self N, abs_nonneg M]
+  pm_64 hC C
+  pm_8631 hMC M N
+  pm_8631 hNC N M
   refine ⟨C, hC, ?_⟩
   intro T hT
   have hscale (x : ℝ) (hx : x ∈ Icc (T / 16) T) : x / T ∈ Icc (1 / 16 : ℝ) 1 := by
@@ -45,8 +46,7 @@ theorem exists_intervalC1Bound_rescaled {f : ℝ → ℂ}
   have hdi : IntervalIntegrable (deriv (fun x => f (x / T))) volume (T / 16) T := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le (by linarith : T / 16 ≤ T)]
-    intro x hx
-    exact ((hs x hx).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
+    pm_4373
   refine ⟨hC.le, hs, fun x hx => (hM (x / T) (hscale x hx)).trans hMC, ?_⟩
   calc
     _ ≤ ∫ x in (T / 16)..T, C / T := by

@@ -7,18 +7,20 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.DivisorWeightKernel
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Fourth
 open MathCollab.Density.Contour
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem zetaDivisorWeight_finiteRectangle (q : ℂ) {H : ℝ} (hH : 0 < H) :
+section
+variable (q : ℂ)
+include q
+theorem zetaDivisorWeight_finiteRectangle {H : ℝ} (hH : 0 < H) :
     RectangleIntegral' (zetaDivisorWeightKernel q)
       ((-1 : ℂ) - (H : ℂ) * I) ((1 : ℂ) + (H : ℂ) * I) = 1 := by
   change RectangleIntegral' (fun u => zetaDivisorWeightNumerator q u / u) _ _ = 1
@@ -27,33 +29,26 @@ theorem zetaDivisorWeight_finiteRectangle (q : ℂ) {H : ℝ} (hH : 0 < H) :
   let w : ℂ := 1 + (H : ℂ) * I
   have hzero : Rectangle z w ∈ 𝓝 (0 : ℂ) := by
     rw [rectangle_mem_nhds_iff, mem_reProdIm,
-      uIoo_of_le (by simp [z, w] : z.re ≤ w.re),
+      uIoo_of_le (by aesop : z.re ≤ w.re),
       uIoo_of_le (by simp [z, w]; linarith : z.im ≤ w.im)]
-    simp [z, w, hH]
+    aesop
   have hdslope : HolomorphicOn (dslope F 0) (Rectangle z w) := by
-    change DifferentiableOn ℂ (dslope F 0) (Rectangle z w)
+    pm_1121
     rw [differentiableOn_dslope hzero]
     exact (differentiable_zetaDivisorWeightNumerator q).differentiableOn
-  have hprincipal : Set.EqOn
-      ((fun u : ℂ => F u / u) - fun u => F 0 / (u - 0))
-      (dslope F 0) (Rectangle z w \ {0}) := by
-    intro u hu
-    have hu0 : u ≠ 0 := hu.2
-    rw [Pi.sub_apply, dslope_of_ne F hu0]
-    simp only [slope, sub_zero, smul_eq_mul, vsub_eq_sub]
-    field_simp
+  pm_4466
   have h := ResidueTheoremOnRectangleWithSimplePole
     (f := fun u : ℂ => F u / u) (g := dslope F 0) (p := 0) (A := F 0)
-    (zRe_le_wRe := by simp [z, w]) (zIm_le_wIm := by simp [z, w]; linarith)
+    (zRe_le_wRe := by aesop) (zIm_le_wIm := by simp [z, w]; linarith)
     hzero hdslope hprincipal
-  simpa only [F, z, w, zetaDivisorWeightNumerator_zero] using h
+  pm_99 F z w zetaDivisorWeightNumerator_zero h
 
-theorem norm_zetaDivisorWeightKernel_horizontal_le (q : ℂ)
+theorem norm_zetaDivisorWeightKernel_horizontal_le
     {H x : ℝ} (hH : 1 ≤ H) (hx : |x| ≤ 1) :
     ‖zetaDivisorWeightKernel q ((x : ℂ) + (H : ℂ) * I)‖ ≤
       (625 * Real.exp (100 + |q.re| + q.im ^ 2 / 2)) *
         Real.exp (-99 * H ^ 2) * (2 + H) ^ 8 := by
-  let w : ℂ := (x : ℂ) + (H : ℂ) * I
+  pm_256 w x H I
   have hH0 : 0 ≤ H := by linarith
   have hw : ‖w‖ ≤ 2 + H := by
     have h := norm_add_le (x : ℂ) ((H : ℂ) * I)
@@ -67,11 +62,11 @@ theorem norm_zetaDivisorWeightKernel_horizontal_le (q : ℂ)
     simp only [w, add_im, ofReal_im, mul_im, ofReal_re, I_im, mul_one, I_re, mul_zero,
       add_zero, zero_add, abs_of_nonneg hH0] at h
     linarith
-  have hxsq : x ^ 2 ≤ 1 := by nlinarith [sq_abs x, abs_nonneg x]
+  have hxsq : x ^ 2 ≤ 1 := by simp_all
   have hqx : -q.re * x ≤ |q.re| := by
     calc
       _ ≤ |-q.re * x| := le_abs_self _
-      _ = |q.re| * |x| := by rw [abs_mul, abs_neg]
+      _ = |q.re| * |x| := by grind
       _ ≤ _ := by nlinarith [abs_nonneg q.re]
   have he : (100 * w ^ 2).re + (-q * w).re ≤
       (100 + |q.re| + q.im ^ 2 / 2) - 99 * H ^ 2 := by
@@ -92,10 +87,10 @@ theorem norm_zetaDivisorWeightKernel_horizontal_le (q : ℂ)
         (100 + |q.re| + q.im ^ 2 / 2) + (-99 * H ^ 2) by ring, Real.exp_add]
       ring
 
-theorem tendsto_zetaDivisorWeight_horizontal_zero (q : ℂ) :
+theorem tendsto_zetaDivisorWeight_horizontal_zero :
     Tendsto (fun H : ℝ => HIntegral' (zetaDivisorWeightKernel q) (-1) 1 H) atTop (𝓝 0) := by
   let C : ℝ := 625 * Real.exp (100 + |q.re| + q.im ^ 2 / 2)
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_64 hC C
   have hExp : Tendsto (fun H : ℝ => Real.exp (-(1 / 2 : ℝ) * H)) atTop (𝓝 0) :=
     Real.tendsto_exp_atBot.comp
       (tendsto_id.const_mul_atTop_of_neg (by norm_num : (-(1 / 2 : ℝ)) < 0))
@@ -134,7 +129,7 @@ theorem tendsto_zetaDivisorWeight_horizontal_zero (q : ℂ) :
   unfold HIntegral'
   simpa using htop.const_smul (1 / (2 * Real.pi * I))
 
-theorem hIntegral_zetaDivisorWeight_bottom (q : ℂ) (H : ℝ) :
+theorem hIntegral_zetaDivisorWeight_bottom (H : ℝ) :
     HIntegral (zetaDivisorWeightKernel q) (-1) 1 (-H) =
       -HIntegral (zetaDivisorWeightKernel (-q)) (-1) 1 H := by
   have hpoint (x : ℝ) :
@@ -153,7 +148,7 @@ theorem hIntegral_zetaDivisorWeight_bottom (q : ℂ) (H : ℝ) :
         (a := (-1 : ℝ)) (b := 1)
       simpa only [neg_neg] using congrArg Neg.neg h
 
-theorem vIntegral_zetaDivisorWeight_left (q : ℂ) (H : ℝ) :
+theorem vIntegral_zetaDivisorWeight_left (H : ℝ) :
     VIntegral (zetaDivisorWeightKernel q) (-1) (-H) H =
       -VIntegral (zetaDivisorWeightKernel (-q)) 1 (-H) H := by
   have hpoint (y : ℝ) :
@@ -176,7 +171,7 @@ theorem vIntegral_zetaDivisorWeight_left (q : ℂ) (H : ℝ) :
   rw [hraw]
   simp
 
-theorem zetaDivisorWeight_truncated_reflection (q : ℂ) {H : ℝ} (hH : 0 < H) :
+theorem zetaDivisorWeight_truncated_reflection {H : ℝ} (hH : 0 < H) :
     VIntegral' (zetaDivisorWeightKernel q) 1 (-H) H +
       VIntegral' (zetaDivisorWeightKernel (-q)) 1 (-H) H -
       HIntegral' (zetaDivisorWeightKernel q) (-1) 1 H -
@@ -196,7 +191,7 @@ theorem zetaDivisorWeight_truncated_reflection (q : ℂ) {H : ℝ} (hH : 0 < H) 
     ring] at hrect
   exact hrect
 
-theorem tendsto_zetaDivisorWeight_vertical (q : ℂ) :
+theorem tendsto_zetaDivisorWeight_vertical :
     Tendsto (fun H : ℝ => VIntegral' (zetaDivisorWeightKernel q) 1 (-H) H)
       atTop (𝓝 (zetaDivisorWeight q)) := by
   have h := (intervalIntegral_tendsto_integral (integrable_zetaDivisorWeightKernel_right q)
@@ -212,15 +207,16 @@ theorem tendsto_zetaDivisorWeight_vertical (q : ℂ) :
 
 /-- The small-argument estimate comes from the actual residue and both
 complete vertical contours, not a declared cutoff convention. -/
-theorem zetaDivisorWeight_add_neg (q : ℂ) : zetaDivisorWeight q + zetaDivisorWeight (-q) = 1 := by
+theorem zetaDivisorWeight_add_neg : zetaDivisorWeight q + zetaDivisorWeight (-q) = 1 := by
   have h := (((tendsto_zetaDivisorWeight_vertical q).add (tendsto_zetaDivisorWeight_vertical (-q))).sub
     (tendsto_zetaDivisorWeight_horizontal_zero q)).sub (tendsto_zetaDivisorWeight_horizontal_zero (-q))
   simp only [sub_zero] at h
   have hconst : Tendsto (fun _ : ℝ => (1 : ℂ)) atTop (𝓝 (zetaDivisorWeight q + zetaDivisorWeight (-q))) := by
     apply h.congr'
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with H hH
+    pm_414 eventually_gt_atTop H hH
     exact zetaDivisorWeight_truncated_reflection q hH
   exact tendsto_nhds_unique hconst tendsto_const_nhds
+end
 
 /-- Bounded on the small side and exponentially decaying on the large
 side, uniformly across the entire specified horizontal strip. -/

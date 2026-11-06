@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedActiveSets
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ lemma joined_inactive_weight (P : PrimeFamily ι) (S : PrimeFamily σ)
     | inl i => exact hj i
     | inr i => norm_num
   rw [mixed_inactive_weight (P.sum S) ho _ hj']
-  apply Finset.prod_congr (by ext i; simp only [Finset.mem_sdiff,Finset.mem_univ])
+  pm_3320 i
   intro i hi
   cases i <;> simp [markedSumSlots,joinedInactiveCoefficient,PrimeFamily.sum]
   rfl
@@ -58,8 +59,7 @@ theorem joined_inactive_three_blocks {α β : Type*} [Fintype α] [Fintype β]
     simp [joinedInactiveCoefficient,he a]
   have h := inactive_weight_three_blocks e (joinedInactiveCoefficient P S j) hz F
   refine Eq.trans ?_ h
-  apply Finset.sum_congr (by ext A; simp only [Finset.mem_univ])
-  intro A hA
+  pm_5733 A hA
   congr 1
   exact joined_inactive_weight P S hP hS j hj A
 end

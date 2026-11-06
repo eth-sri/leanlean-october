@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownFactorAlignment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,10 @@ noncomputable def heathBrownLemmaOneGoodConstant
     (k : ℕ) (A C epsilon : ℝ) : ℝ :=
   1 + 2 * heathBrownLemmaOneFourTermConstant k A C epsilon
 
-theorem heathBrownThirdTerm_le_threeTerm
-    {N k : ℕ} (hN : 1 ≤ N) {lambda : ℝ} (hlambda : 0 < lambda) :
+section
+variable {N k : ℕ} (hN : 1 ≤ N)
+include N k hN
+theorem heathBrownThirdTerm_le_threeTerm {lambda : ℝ} (hlambda : 0 < lambda) :
     heathBrownThirdTerm N k lambda ≤ heathBrownThreeTerm N k lambda := by
   unfold heathBrownThirdTerm heathBrownThreeTerm
   dsimp only
@@ -36,8 +39,7 @@ theorem heathBrownThirdTerm_le_threeTerm
       (N : ℝ) * lambda ^ heathBrownCriticalReciprocal k := by positivity
   linarith
 
-theorem heathBrownFourTerm_le_two_threeTerm
-    {N k : ℕ} (hN : 1 ≤ N) (hk : 3 ≤ k)
+theorem heathBrownFourTerm_le_two_threeTerm (hk : 3 ≤ k)
     {lambda : ℝ} (hlambda : 0 < lambda)
     (hthird : heathBrownThirdTerm N k lambda ≤ N) :
     heathBrownFourTerm N k lambda ≤
@@ -51,6 +53,7 @@ theorem heathBrownFourTerm_le_two_threeTerm
       simpa only [heathBrownThirdTerm] using hthirdThree)
   unfold heathBrownFourTerm
   linarith
+end
 
 theorem heathBrownLemmaOneGoodConstant_pos
     {k : ℕ} {A C epsilon : ℝ}
@@ -87,9 +90,7 @@ theorem norm_heathBrownExponentialSum_le_factor_good_of_vmvt
       hk hN hA hlambda hlambdaOne hepsilon hsmall hlargeH hHN hf hkBounds hC hVMVT
     have hfourTerms := heathBrownFourTerm_le_two_threeTerm
       hNOne hk hlambda hthird
-    have hCfour0 : 0 ≤
-        heathBrownLemmaOneFourTermConstant k A C epsilon :=
-      (heathBrownLemmaOneFourTermConstant_pos hk hA hC hepsilon).le
+    pm_8834 hCfour0 heathBrownLemmaOneFourTermConstant heathBrownLemmaOneFourTermConstant_pos
     have hproduct0 : 0 ≤
         (N : ℝ) ^ epsilon * heathBrownThreeTerm N k lambda :=
       mul_nonneg (by positivity)
@@ -117,10 +118,7 @@ theorem norm_heathBrownExponentialSum_le_factor_good_of_vmvt
   · have hthirdStrict : (N : ℝ) < heathBrownThirdTerm N k lambda :=
       lt_of_not_ge hthird
     have htrivial := norm_heathBrownExponentialSum_le N f
-    have hthree := heathBrownThirdTerm_le_threeTerm (k := k) hNOne hlambda
-    have hNone : (1 : ℝ) ≤ (N : ℝ) ^ epsilon :=
-      Real.one_le_rpow (by exact_mod_cast hNOne) hepsilon.le
-    have hthree0 := (heathBrownThreeTerm_pos (k := k) hNOne hlambda).le
+    pm_849 hthree hNOne
     calc
       ‖heathBrownExponentialSum N f‖ ≤ (N : ℝ) := by exact_mod_cast htrivial
       _ ≤ heathBrownThreeTerm N k lambda := hthirdStrict.le.trans hthree

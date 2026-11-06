@@ -5,6 +5,7 @@ McColm's MIT-0 attribution; Mathlib dependencies retain Apache-2.0 attribution.
 See third_party/twelfth/NATIVE_ENDPOINTS_MANIFEST.json.
 -/
 public import MathCollab.Density.Stronger.NativePeaks
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem zeta_twelfth_physical_native :
     ∀ ε : ℝ, 0 < ε → ∃ K : ℝ, 0 < K ∧ ∀ᶠ T : ℝ in atTop,
       (∫ t in Icc 0 (3*T), zetaMomentCriticalNorm t^12) ≤ K*T^(2+ε) := by
   intro ε hε
-  obtain ⟨D, hD, hdyadic⟩ := zeta_twelfth_dyadic_native ε hε
+  pm_98 D hD hdyadic zeta_twelfth_dyadic_native ε hε
   exact zeta_twelfth_physical_of_dyadic hε hD.le hdyadic
 
 end MathCollab.Density.Stronger

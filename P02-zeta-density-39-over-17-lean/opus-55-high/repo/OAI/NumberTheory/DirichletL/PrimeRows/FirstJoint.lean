@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWGrowth
 public import OAI.NumberTheory.DirichletL.Hecke.StripActual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,30 +20,23 @@ theorem calibrated_physicalRow_first_joint_growth
     ∃C : ℝ,0≤C ∧ ∀x w z : ℂ,x.re=2 → -(1/100:ℝ)≤w.re → (17/50:ℝ)≤z.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
         physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|w.im|)^2 := by
-  obtain ⟨Cn,hCn,hn⟩ := calibrated_numerator_first_growth S hS hmax u hu
-  obtain ⟨Ch,hCh,hh⟩ := unselectedCorrection_first_subpower 1 (by norm_num)
+  pm_3449
+  pm_3447
   let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
-  let A : T→ℝ := fun P=>selectedFirstBound P.val.val.absNorm 2
-  let L : ℝ := HeckeReciprocalBound.bound 2
-  have hL : 0≤L := by dsimp [L,HeckeReciprocalBound.bound];positivity
-  have hA (P : T) : 0≤A P := selectedFirstBound_nonneg _ _ (by positivity)
-  have hprod : 0≤∏P:T,A P := Finset.prod_nonneg (fun P _=>hA P)
+  pm_1113
+  pm_3461
+  pm_3446
   refine ⟨L*L*Cn*(Ch*N)*(∏P:T,A P),by dsimp [N];positivity,?_⟩
   intro x w z hx hw hz
   have hn' := hn w hw
-  have hh' : ‖continuedCorrection (markExclusions S T) (markedSourceExclusions S hS T) η u x w z‖≤Ch*N := by
-    simpa only [Real.rpow_one] using hh (1/4) S hS hfirst T η u x w z (by rw [hx];norm_num) hw hz
-      (by rw [hx];linarith)
-  have hl : ‖LFunction (fixedSourcePrincipal S hS.prime) (6*z)‖≤L :=
-    HeckeStripActual.LFunction_norm_le _ (by norm_num) (by simp only [Complex.mul_re];norm_num;linarith)
-  have hrec : ‖HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x‖≤L :=
-    HeckeReciprocalBound.reciprocal_norm_le _ (by norm_num) (by rw [hx])
+  pm_3462
+  pm_3460
+  pm_3465
   have hg : ‖∏P∈T.attach,continuedCompensatedLocal η u P.val
       (outside_prime_supported S hS.bad P.val (hT P.val P.property)) x w z
       (star (idealCoeff η P.val.val)*(P.val.val.absNorm:ℂ)^x)
       ((P.val.val.absNorm:ℂ)^(-w))‖≤∏P:T,A P := by
-    rw [norm_prod]
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
+    pm_3448
     intro P hP
     exact continuedCompensatedLocal_first_bound η u P.val _
       (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) 2 x w z
@@ -60,11 +54,9 @@ theorem calibrated_physicalRow_first_joint_growth
   rw [heq,norm_mul,norm_mul,norm_mul]
   calc
     _ ≤ (L*L)*(Cn*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := by
-      apply mul_le_mul _ hg (norm_nonneg _) (by dsimp [N];positivity)
-      apply mul_le_mul _ hh' (norm_nonneg _) (by positivity)
-      apply mul_le_mul _ hn' (norm_nonneg _) (mul_nonneg hL hL)
-      rw [norm_mul]
-      exact mul_le_mul hl hrec (norm_nonneg _) hL
+      pm_3463
+      pm_7516
+      pm_3464
     _ = _ := by ring
 
 end SevenEighths.ProbeHighRowFamily

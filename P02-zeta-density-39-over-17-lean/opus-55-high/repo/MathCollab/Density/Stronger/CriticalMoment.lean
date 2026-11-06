@@ -7,12 +7,12 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.TruncatedLayerCake
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open MeasureTheory Filter Set
 open scoped Interval ENNReal Topology
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -37,29 +37,32 @@ theorem continuous_zetaMomentCriticalNorm : Continuous zetaMomentCriticalNorm :=
 def pointValueSuperlevel (H V : ℝ) : Set ℝ :=
   {t | H ≤ t ∧ t ≤ 2*H ∧ V ≤ zetaMomentCriticalNorm t}
 
-theorem isClosed_pointValueSuperlevel (H V : ℝ) :
+section
+variable (H V : ℝ)
+include H V
+theorem isClosed_pointValueSuperlevel :
     IsClosed (pointValueSuperlevel H V) := by
   have hs : IsClosed (Icc H (2*H) ∩ {t | V ≤ zetaMomentCriticalNorm t}) :=
     isClosed_Icc.inter
     (isClosed_le continuous_const continuous_zetaMomentCriticalNorm)
   convert hs using 1
-  ext t
-  simp only [pointValueSuperlevel,Set.mem_ofPred_eq,Set.mem_inter_iff,Set.mem_Icc]
+  pm_187 t pointValueSuperlevel Set.mem_ofPred_eq Set.mem_inter_iff Set.mem_Icc
   tauto
 
-theorem measurableSet_pointValueSuperlevel (H V : ℝ) :
+theorem measurableSet_pointValueSuperlevel :
     MeasurableSet (pointValueSuperlevel H V) :=
   (isClosed_pointValueSuperlevel H V).measurableSet
 
 
-theorem pointValueSuperlevel_subset_Icc (H V : ℝ) :
+theorem pointValueSuperlevel_subset_Icc :
     pointValueSuperlevel H V ⊆ Icc H (2*H) :=
   fun _ ht => ⟨ht.1,ht.2.1⟩
 
-theorem integrableOn_zeta_twelfth_pointValueSuperlevel (H V : ℝ) :
+theorem integrableOn_zeta_twelfth_pointValueSuperlevel :
     IntegrableOn (fun t => zetaMomentCriticalNorm t^12) (pointValueSuperlevel H V) :=
   ((continuous_zetaMomentCriticalNorm.pow 12).continuousOn.integrableOn_Icc).mono_set
     (pointValueSuperlevel_subset_Icc H V)
+end
 
 theorem pointValue_power_tail_measure_le {H V s C : ℝ}
     (hV : 0 < V) (hs : 0 < s) (hC : 0 ≤ C)
@@ -78,19 +81,19 @@ theorem pointValue_power_tail_measure_le {H V s C : ℝ}
       exact (measure_mono inter_subset_right).trans (hcount V le_rfl)
     · have hVs : V^12 ≤ s := (lt_of_not_ge hsmall).le
       let U : ℝ := s^((12:ℝ)⁻¹)
-      have hU : 0 < U := by dsimp only [U]; positivity
+      pm_116 hU U
       have hUpow : U^12 = s := Real.rpow_inv_natCast_pow hs.le (by norm_num)
       have hVU : V ≤ U := le_of_pow_le_pow_left₀ (by norm_num : (12:ℕ) ≠ 0)
-        hU.le (by simpa only [hUpow] using hVs)
+        hU.le (by grind)
       have hsub : {t | s ≤ zetaMomentCriticalNorm t^12} ∩
           pointValueSuperlevel H V ⊆ pointValueSuperlevel H U := by
         intro t ht
         refine ⟨ht.2.1,ht.2.2.1,?_⟩
         apply le_of_pow_le_pow_left₀ (by norm_num : (12:ℕ) ≠ 0)
           (show 0 ≤ zetaMomentCriticalNorm t from norm_nonneg _)
-        simpa only [Set.mem_ofPred_eq, hUpow] using ht.1
+        grind
       rw [max_eq_right hVs]
-      exact (measure_mono hsub).trans (by simpa only [hUpow] using hcount U hVU)
+      exact (measure_mono hsub).trans (by grind)
   have ht := ENNReal.toReal_mono ENNReal.ofReal_ne_top hmeasure
   rw [ENNReal.toReal_ofReal (div_nonneg hC ((pow_nonneg hV.le 12).trans (le_max_left _ _)))] at ht
   exact ht
@@ -116,8 +119,7 @@ theorem zeta_twelfth_low_integral_le_fourth (H V : ℝ) :
       V^8*(∫ t in Icc H (2*H), zetaMomentCriticalNorm t^4) := by
   have h4 : IntegrableOn (fun t => zetaMomentCriticalNorm t^4) (Icc H (2*H)) :=
     (continuous_zetaMomentCriticalNorm.pow 4).continuousOn.integrableOn_Icc
-  have h12 : IntegrableOn (fun t => zetaMomentCriticalNorm t^12) (Icc H (2*H)) :=
-    (continuous_zetaMomentCriticalNorm.pow 12).continuousOn.integrableOn_Icc
+  pm_833
   have hpoint : ∀ t ∈ Icc H (2*H) \ pointValueSuperlevel H V,
       zetaMomentCriticalNorm t^12 ≤ V^8*zetaMomentCriticalNorm t^4 := by
     intro t ht
@@ -149,12 +151,10 @@ theorem zeta_twelfth_integral_le_high_add_fourth {H V : ℝ}
     (∫ t in H..2*H, zetaMomentCriticalNorm t^12) ≤
       (∫ t in pointValueSuperlevel H V, zetaMomentCriticalNorm t^12) +
         V^8*(∫ t in H..2*H, zetaMomentCriticalNorm t^4) := by
-  have h12 : IntegrableOn (fun t => zetaMomentCriticalNorm t^12) (Icc H (2*H)) :=
-    (continuous_zetaMomentCriticalNorm.pow 12).continuousOn.integrableOn_Icc
+  pm_833
   have he := setIntegral_sdiff (measurableSet_pointValueSuperlevel H V) h12
     (pointValueSuperlevel_subset_Icc H V)
-  have hlow := zeta_twelfth_low_integral_le_fourth H V
-  rw [he] at hlow
+  pm_126 hlow zeta_twelfth_low_integral_le_fourth H V he
   rw [intervalIntegral.integral_of_le (by linarith),
     intervalIntegral.integral_of_le (by linarith),← integral_Icc_eq_integral_Ioc,
     ← integral_Icc_eq_integral_Ioc]

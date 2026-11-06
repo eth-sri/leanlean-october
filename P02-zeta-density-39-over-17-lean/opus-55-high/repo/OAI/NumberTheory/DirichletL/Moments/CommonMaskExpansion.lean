@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonMaskExpansion
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
@@ -23,19 +24,21 @@ def profileSlot (χ : Character) (pool : Finset (Ideal O))
 lemma outside_prime (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
     (I : Ideal O) (hI : Prime I) : outside R I ↔ I∉R := by
   constructor
-  · intro h hi
-    exact h I hi dvd_rfl
+  aesop
   · intro h J hj hd
     have he : J=I := (prime_dvd_prime_iff_eq (hR J hj) hI).mp hd
-    exact h (he ▸ hj)
+    grind
 
-lemma deleted_prime (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
+section
+variable (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
+include χ R hR
+lemma deleted_prime
     (I : Ideal O) (hI : Prime I) :
     idealCoeff (χ.excludePrimes R hR) I = if I∈R then 0 else idealCoeff χ I := by
   have h:=deleted_coefficient χ R hR ⟨I,hI.ne_zero⟩
   simpa only [outside_prime R hR I hI,ite_not] using h
 
-theorem naturalSlot_delete (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I∈R,Prime I)
+theorem naturalSlot_delete
     (pool : Finset (Ideal O)) (hp : ∀ I∈pool,Prime I) (β : Ideal O→ℂ) (P : ℝ) :
     naturalSlot (χ.excludePrimes R hR) pool β P =
       naturalSlot χ pool β P - naturalSlot χ (pool∩R) β P := by
@@ -46,7 +49,8 @@ theorem naturalSlot_delete (χ : Character) (R : Finset (Ideal O)) (hR : ∀ I�
   apply Finset.sum_congr rfl
   intro I hi
   rw [deleted_prime χ R hR I (hp I hi)]
-  by_cases h:I∈R <;> simp [h]
+  grind
+end
 
 lemma prod_sub_expansion {α : Type*} [DecidableEq α] (F : Finset α) (a b : α→ℂ) :
     (∏i∈F,(a i-b i))=∑J∈F.powerset,(-1:ℂ)^J.card*(∏i∈J,b i)*(∏i∈F\J,a i) := by
@@ -63,15 +67,15 @@ def plainCoefficient (χ : Character) (D : Finset (Ideal O)) : ℂ :=
 variable {α : Type*} [DecidableEq α]
 
 def signedCoefficient (χ : Character) (R D₁ D₂ : Finset (Ideal O))
-    (J : Finset α) (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) : ℂ :=
+    (J : Finset α) (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P : α→ℝ) : ℂ :=
   plainCoefficient χ D₁*plainCoefficient χ D₂*(-1:ℂ)^J.card*
     ∏i∈J,naturalSlot χ (pool i∩R) (β i) (P i)
 
 theorem simultaneous_deletion (χ : Character) (R : Finset (Ideal O))
     (hR : ∀ I∈R,Prime I) (W₁ W₂ : 𝓢(ℝ,ℂ)) (X₁ X₂ : ℝ)
     (hX₁ : 0<X₁) (hX₂ : 0<X₂) (F : Finset α)
-    (pool : α→Finset (Ideal O)) (hp : ∀i∈F,∀I∈pool i,Prime I)
-    (β : α→Ideal O→ℂ) (P : α→ℝ) :
+    (pool : α→ Finset (Ideal O)) (hp : ∀i∈F,∀I∈pool i,Prime I)
+    (β : α→ Ideal O→ℂ) (P : α→ℝ) :
     HeckeDyadic.polynomial (χ.excludePrimes R hR) false W₁ X₁ 0 0 *
       HeckeDyadic.polynomial (χ.excludePrimes R hR) false W₂ X₂ 0 0 *
       (∏i∈F,naturalSlot (χ.excludePrimes R hR) (pool i) (β i) (P i)) =
@@ -89,11 +93,7 @@ theorem simultaneous_deletion (χ : Character) (R : Finset (Ideal O))
   rw [normalized_finite_deletion_moebius χ R hR W₁ (schwartz_decayTwo W₁) X₁ hX₁,
     normalized_finite_deletion_moebius χ R hR W₂ (schwartz_decayTwo W₂) X₂ hX₂,hs]
   rw [Finset.sum_mul_sum,Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro D₁ hD₁
-  rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro D₂ hD₂
+  pm_3170 D₁ hD₁ Finset.sum_mul D₂ hD₂
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro J hJ
@@ -104,18 +104,15 @@ def slotMass (R pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) : ℝ :=
   (Real.sqrt P)⁻¹ * ∑I∈pool∩R,‖β I‖
 
 lemma slotMass_nonneg (R pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :
-    0≤slotMass R pool β P := by unfold slotMass;positivity
+    0≤ slotMass R pool β P := by unfold slotMass;positivity
 
 lemma naturalSlot_norm (χ : Character) (R pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P : ℝ) :
-    ‖naturalSlot χ (pool∩R) β P‖≤slotMass R pool β P := by
+    ‖naturalSlot χ (pool∩R) β P‖≤ slotMass R pool β P := by
   rw [naturalSlot,norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,
     abs_of_nonneg (Real.sqrt_nonneg _)]
   apply mul_le_mul_of_nonneg_left _ (inv_nonneg.mpr (Real.sqrt_nonneg _))
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro I hi
-  rw [norm_mul]
-  exact mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one χ I)
+  pm_3719 I hi
+  pm_514 idealCoeff_norm_le_one χ I
 
 lemma plainCoefficient_norm (χ : Character) (D : Finset (Ideal O))
     (hD : ∀I∈D,Prime I) : ‖plainCoefficient χ D‖≤weight (∏I∈D,I) := by
@@ -132,9 +129,8 @@ lemma slot_point_mass (I : Ideal O) (hI : Prime I) (β : Ideal O→ℂ)
   by_cases hz : β I=0
   · simp only [hz,norm_zero,mul_zero]
     exact mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) hM) (weight_nonneg _)
-  have hN : (0:ℝ)<I.absNorm := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI.ne_zero)
-  have hB : 0≤max 1 b := le_trans zero_le_one (le_max_left _ _)
+  pm_5723 hN I.absNorm hI.ne_zero
+  have hB : 0≤ max 1 b := le_trans zero_le_one (le_max_left _ _)
   have hsqrt : Real.sqrt (I.absNorm:ℝ)≤Real.sqrt (max 1 b)*Real.sqrt P := by
     rw [←Real.sqrt_mul hB]
     exact Real.sqrt_le_sqrt ((hs hz).trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hP.le))
@@ -187,15 +183,15 @@ lemma euler_ge_one (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I) :
     (deletion_le_euler R hR)
 
 def coefficientMajorant (R D₁ D₂ : Finset (Ideal O)) (J : Finset α)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) : ℝ :=
+    (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P : α→ℝ) : ℝ :=
   weight (∏I∈D₁,I)*weight (∏I∈D₂,I)*∏i∈J,slotMass R (pool i) (β i) (P i)
 
 omit [DecidableEq α] in
 lemma signedCoefficient_norm (χ : Character) (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I)
     (D₁ D₂ : Finset (Ideal O)) (hD₁ : D₁⊆R) (hD₂ : D₂⊆R) (J : Finset α)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) :
-    ‖signedCoefficient χ R D₁ D₂ J pool β P‖≤coefficientMajorant R D₁ D₂ J pool β P := by
-  simp only [signedCoefficient,norm_mul,norm_pow,norm_neg,norm_one,one_pow,mul_one,norm_prod]
+    (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P : α→ℝ) :
+    ‖signedCoefficient χ R D₁ D₂ J pool β P‖≤ coefficientMajorant R D₁ D₂ J pool β P := by
+  pm_403 signedCoefficient norm_mul norm_pow norm_neg norm_one one_pow mul_one norm_prod
   apply mul_le_mul
   · exact mul_le_mul (plainCoefficient_norm χ D₁ (fun I hi=>hR I (hD₁ hi)))
       (plainCoefficient_norm χ D₂ (fun I hi=>hR I (hD₂ hi))) (norm_nonneg _) (weight_nonneg _)
@@ -219,13 +215,13 @@ lemma uniformMajorant_nonneg (R D₁ D₂ : Finset (Ideal O)) (J : Finset α)
 omit [DecidableEq α] in
 lemma signedCoefficient_uniform (χ : Character) (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I)
     (D₁ D₂ : Finset (Ideal O)) (hD₁ : D₁⊆R) (hD₂ : D₂⊆R) (J : Finset α)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P b M : α→ℝ)
+    (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P b M : α→ℝ)
     (hp : ∀i∈J,∀I∈pool i,Prime I) (hP : ∀i∈J,0<P i) (hM : ∀i∈J,0≤M i)
     (hβ : ∀i∈J,∀I∈pool i,‖β i I‖≤M i)
     (hs : ∀i∈J,∀I∈pool i,β i I≠0 → (I.absNorm:ℝ)≤b i*P i) :
     ‖signedCoefficient χ R D₁ D₂ J pool β P‖≤uniformMajorant R D₁ D₂ J b M := by
   apply (signedCoefficient_norm χ R hR D₁ D₂ hD₁ hD₂ J pool β P).trans
-  apply mul_le_mul_of_nonneg_left _ (mul_nonneg (weight_nonneg _) (weight_nonneg _))
+  pm_6562 mul_le_mul_of_nonneg_left weight_nonneg
   exact Finset.prod_le_prod₀ (fun i _=>slotMass_nonneg _ _ _ _)
     (fun i hi=>slotMass_bound R (pool i) (hp i hi) (β i) (P i) (b i) (M i)
       (hP i hi) (hM i hi) (hβ i hi) (hs i hi))
@@ -252,10 +248,7 @@ lemma uniformMajorant_mass_le (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I)
       1+(Real.sqrt (max 1 (b i))*M i)*(∑I∈R,weight I)≤
         max 1 (Real.sqrt (max 1 (b i))*M i)*(∏I∈R,localMass I) := by
     have ha:1+∑I∈R,weight I≤∏I∈R,localMass I:=(one_add_sum_weight R).trans (deletion_le_euler R hR)
-    have hb:=le_max_left 1 (Real.sqrt (max 1 (b i))*M i)
-    have hc:=le_max_right 1 (Real.sqrt (max 1 (b i))*M i)
-    have hs:0≤∑I∈R,weight I:=Finset.sum_nonneg (fun I _=>weight_nonneg I)
-    nlinarith
+    pm_2904 hb hc
   calc
     _≤(∏I∈R,localMass I)^2*
         ∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i)*(∏I∈R,localMass I) := by
@@ -271,6 +264,7 @@ lemma uniformMajorant_mass_le (R : Finset (Ideal O)) (hR : ∀I∈R,Prime I)
       · exact sq_nonneg _
     _=_ := by rw [Finset.prod_mul_distrib,Finset.prod_const,pow_add];ring
 
+
 omit [DecidableEq α] in
 
 theorem uniform_mass_subpower (F : Finset α) (b M : α→ℝ) (hM : ∀i∈F,0≤M i)
@@ -282,17 +276,14 @@ theorem uniform_mass_subpower (F : Finset α) (b M : α→ℝ) (hM : ∀i∈F,0�
   have hn:(0:ℝ)<n:=by dsimp [n];positivity
   let δ:ℝ:=ε/n
   have hδ:0<δ:=div_pos hε hn
-  obtain ⟨C₀,hC₀,hbound⟩:=euler_mass_subpower δ hδ
-  let A:ℝ:=∏i∈F,max 1 (Real.sqrt (max 1 (b i))*M i)
-  have hA:0<A:=Finset.prod_pos (fun i _=>lt_of_lt_of_le zero_lt_one (le_max_left _ _))
+  pm_3599 C₀ hC₀ hbound euler_mass_subpower δ hδ
+  pm_2905
   refine ⟨A*C₀^n,mul_pos hA (pow_pos hC₀ n),?_⟩
   intro R hR
   have he:0≤∏I∈R,localMass I:=(euler_ge_one R hR).trans' zero_le_one
   have hr:0≤(Ideal.absNorm (∏I∈R,I):ℝ):=Nat.cast_nonneg _
   have hpow:((Ideal.absNorm (∏I∈R,I):ℝ)^δ)^n=(Ideal.absNorm (∏I∈R,I):ℝ)^ε := by
-    rw [←Real.rpow_natCast,←Real.rpow_mul hr]
-    congr 1
-    dsimp [δ]
+    pm_7980 hr
     exact div_mul_cancel₀ _ hn.ne'
   calc
     _≤A*(∏I∈R,localMass I)^n:=uniformMajorant_mass_le R hR F b M hM

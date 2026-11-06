@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosComplementaryCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -14,14 +15,14 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_conic_count_algebra {R H Q δ : ℝ}
-    (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q)
-    (hδ : 0 ≤ δ) (hQH : Q ≤ H) (hδR : δ ≤ R/H) :
+section
+variable {R H Q δ : ℝ} (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q) (hδ : 0 ≤ δ) (hQH : Q ≤ H)
+include R H Q δ hR hH hQ hδ hQH
+theorem robertSargos_conic_count_algebra (hδR : δ ≤ R/H) :
     Q*(1+(δ*Q+99*R*Q/H))*(Q+8*H^2*δ) ≤
       1000*(R*H*Q)*(1+δ*Q) := by
   have hHp : 0 < H := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
-  have hR0 : 0 ≤ R := by linarith
+  pm_255 hQ0 Q hR0 R
   have hRH : H ≤ R*H := le_mul_of_one_le_left hHp.le hR
   have hq : Q ≤ R*H := hQH.trans hRH
   have h1 : Q^2 ≤ R*H*Q := by nlinarith only [mul_le_mul_of_nonneg_right hq hQ0]
@@ -36,10 +37,7 @@ theorem robertSargos_conic_count_algebra {R H Q δ : ℝ}
       (show 0 ≤ 8*H*Q by positivity)]
   have hb : 1+(δ*Q+99*R*Q/H) ≤ 100*(1+R*Q/H) := by
     have hm := mul_le_mul_of_nonneg_right hδR hQ0
-    have he : (R/H)*Q = R*Q/H := by ring
-    rw [he] at hm
-    rw [show 99*R*Q/H = 99*(R*Q/H) from by ring]
-    linarith
+    pm_1674
   have hid : Q*(1+R*Q/H)*(Q+8*H^2*δ) =
       Q^2+R*Q^3/H+8*δ*H^2*Q+8*δ*R*H*Q^2 := by
     field_simp
@@ -48,7 +46,7 @@ theorem robertSargos_conic_count_algebra {R H Q δ : ℝ}
       10*(R*H*Q)*(1+δ*Q) := by
     rw [hid]
     have hpos : 0 ≤ δ*R*H*Q^2 := by positivity
-    nlinarith only [h1,h2,h3,hpos]
+    grind
   calc
     _ ≤ Q*(100*(1+R*Q/H))*(Q+8*H^2*δ) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hQ0) (by positivity)
@@ -57,26 +55,21 @@ theorem robertSargos_conic_count_algebra {R H Q δ : ℝ}
       mul_le_mul_of_nonneg_left hsmall (by norm_num)
     _ = _ := by ring
 
-theorem robertSargos_linear_count_algebra {R H Q δ : ℝ}
-    (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q)
-    (hδ : 0 ≤ δ) (hQH : Q ≤ H) (hRδ : R/H ≤ δ) :
+theorem robertSargos_linear_count_algebra (hRδ : R/H ≤ δ) :
     Q*(1+(δ*Q+99*R*Q/H))*(Q+72*H*R) ≤
       7300*(R*H*Q)*(1+δ*Q) := by
-  have hHp : 0 < H := by linarith
-  have hQ0 : 0 ≤ Q := by linarith
+  pm_254 hHp H hQ0 Q
   have hRH : H ≤ R*H := le_mul_of_one_le_left hHp.le hR
   have hb : 1+(δ*Q+99*R*Q/H) ≤ 100*(1+δ*Q) := by
     have hm := mul_le_mul_of_nonneg_right hRδ hQ0
-    have he : (R/H)*Q = R*Q/H := by ring
-    rw [he] at hm
-    rw [show 99*R*Q/H = 99*(R*Q/H) from by ring]
-    linarith
+    pm_1674
   have hl : Q+72*H*R ≤ 73*R*H := by nlinarith only [hQH,hRH]
   calc
     _ ≤ (Q*(100*(1+δ*Q)))*(73*R*H) :=
       mul_le_mul (mul_le_mul_of_nonneg_left hb hQ0) hl
         (by positivity) (by positivity)
     _ = _ := by ring
+end
 
 theorem robertSargos_frequency_loss_algebra {R H Q δ ε K W : ℝ}
     (hR : 1 ≤ R) (hH : 1 ≤ H) (hQ : 1 ≤ Q)
@@ -84,7 +77,7 @@ theorem robertSargos_frequency_loss_algebra {R H Q δ ε K W : ℝ}
     (hbound : W ≤ K*(R*H*Q)*(1+δ*Q)) :
     Q^ε*W ≤ K*(R*H*Q)^(1+ε)*(1+δ*Q) := by
   have hQ0 : 0 ≤ Q := by linarith
-  have hB : 0 < R*H*Q := by positivity
+  pm_655 hB R H Q
   have hQB : Q ≤ R*H*Q := by
     have hRH : 1 ≤ R*H := one_le_mul_of_one_le_of_one_le hR hH
     nlinarith only [mul_le_mul_of_nonneg_right hRH hQ0]

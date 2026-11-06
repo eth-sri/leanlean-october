@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.CubeBlocks
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,73 +8,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace InitialMeanSquare
 
 section
@@ -112,7 +69,7 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory LineDeriv
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv
+open scoped Classical Topology SchwartzMap LineDeriv
 
 abbrev EuclideanL2 := Lp ℂ 2 (volume : Measure EuclideanSpatial)
 abbrev EuclideanGradientL2 := PiLp 2 (fun _ : Fin 3 => EuclideanL2)
@@ -164,7 +121,7 @@ lemma schwartz_mem_euclideanWeakGradientGraph (f : 𝓢(EuclideanSpatial,ℂ)) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv
+open scoped Classical Topology SchwartzMap LineDeriv
 
 abbrev EuclideanH1Ambient := WithLp 2 (EuclideanL2 × EuclideanGradientL2)
 
@@ -199,10 +156,7 @@ lemma euclideanH1Embedding_eq_zero (u : EuclideanH1) (hu : euclideanH1Embedding 
   · exact euclideanWeakGradientGraph_unique u.1.ofLp u.2 hu
 
 lemma euclideanH1Embedding_injective : Function.Injective euclideanH1Embedding := by
-  intro u v huv
-  apply sub_eq_zero.mp
-  apply euclideanH1Embedding_eq_zero
-  rw [map_sub,huv,sub_self]
+  pm_7696 euclideanH1Embedding_eq_zero
 
 lemma euclideanH1_norm_sq (u : EuclideanH1) :
     ‖u‖^2=‖euclideanH1Embedding u‖^2+‖euclideanH1Gradient u‖^2 :=
@@ -210,7 +164,6 @@ lemma euclideanH1_norm_sq (u : EuclideanH1) :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
 namespace InitialMeanSquare
 open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
 open CompletedGauss FirstCauchyArithmetic ShortDraftHeckeBridge
@@ -222,17 +175,19 @@ def normCharacter {q : ℕ} (χ : DirichletCharacter ℂ q) : O→*ℂ where
     rw [←Ideal.span_singleton_mul_span_singleton]
     simp
 
-lemma pool_support_product (F : Finset (Ideal O)) (S : Finset (primePool F)) :
+section
+variable (F : Finset (Ideal O))
+include F
+lemma pool_support_product (S : Finset (primePool F)) :
     idealSupport F (∏i∈S,i.val)=S := by
-  have hp (i : primePool F) : Prime i.val :=
-    Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance
+  pm_6265
   have hn : (∏i∈S,i.val)≠(0:Ideal O) :=
     Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
   ext i
   rw [mem_idealSupport_iff,UniqueFactorizationMonoid.mem_normalizedFactors_iff hn]
   simp only [family_prime_dvd_product_iff _ Subtype.val_injective S i,hp,true_and]
 
-theorem sum_selected_ideals (F : Finset (Ideal O)) (hF : ∀I∈F,Squarefree I)
+theorem sum_selected_ideals (hF : ∀I∈F,Squarefree I)
     (a : Ideal O→ℂ) :
     (∑I∈F,a I)=∑S∈(Finset.univ:Finset (primePool F)).powerset,
       if (∏i∈S,i.val)∈F then a (∏i∈S,i.val) else 0 := by
@@ -250,13 +205,14 @@ theorem sum_selected_ideals (F : Finset (Ideal O)) (hF : ∀I∈F,Squarefree I)
     rwa [idealSupport_product_eq F hI (hF I hI)]
   · intro S hS
     rfl
+end
 
 def selectedIdealTest (F : Finset (Ideal O)) (W : ℕ→ℂ) (S : Finset (primePool F)) : ℂ :=
   if (∏i∈S,i.val)∈F then W (Ideal.absNorm (∏i∈S,i.val)) else 0
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap FourierTransform
 open MeasureTheory
 namespace InitialMeanSquare
 open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation

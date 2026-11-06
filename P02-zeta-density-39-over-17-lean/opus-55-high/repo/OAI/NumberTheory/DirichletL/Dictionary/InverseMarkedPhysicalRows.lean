@@ -2,20 +2,20 @@ module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceDeleted
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedUniform
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceShift
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
 open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
 open HeckeDetectorCoefficientTransfer HeckeDetectorPhysicalSelection
-open InverseInitialPhysicalSlots InverseInitialRawDictionary InverseInitialDetectorSource
 open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseRawInitialGates
-open InverseInitialExcludedPeriod CanonicalRowCompletion IdealMobiusDivisorSum InverseMoment
+open IdealMobiusDivisorSum InverseMoment
 local notation "O"=>HeckeFamily.O
 
  def actualRow (u:FreeRow):NonzeroElement:=⟨u.val,u.property.1⟩
@@ -50,8 +50,8 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
  theorem fiber_rows_le_deleted_sources
     (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finset Slot)
     (W:ℝ→ℂ)(σ freq bW:ℝ)(lower:Slot→ℝ)(hU:1<U)
-    (hW:∀x,W x≠0→x≤bW)
-    (hV:∀s∈selected,∀x,F.profile s x≠0→x∈Set.Icc (lower s) (F.upper s))
+    (hW:∀x,W x≠0→ x≤bW)
+    (hV:∀s∈selected,∀x,F.profile s x≠0→ x∈Set.Icc (lower s) (F.upper s))
     (hlarge:∀s∈selected,((deletedBase F.rowData).modulus.absNorm:ℝ)<lower s*U^(F.widths s)):
     (∑u∈F.rows,‖polynomial (F.family u F.label) true W (U^F.r) σ freq*
       F.physicalProduct selected u‖^2)≤
@@ -66,7 +66,7 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
   let mark:NonzeroElement→ℂ:=fun u=>∏s:selected,
     HeckePrimeRow.canonicalPrimeAmplitude M H u.val (F.profile s) (F.upper s)
       (U^(F.widths s)) (F.external s)
-  have hw:∀x,orientedProfile F.reverse W x≠0→x≤bW:=by
+  have hw:∀x,orientedProfile F.reverse W x≠0→ x≤bW:=by
     intro x hx
     apply hW x
     intro hz
@@ -88,11 +88,7 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
     (orientedProfile F.reverse W) (U^F.r) σ (orientedFrequency F.reverse freq) bW
     (Real.rpow_pos_of_pos hU0 _) hw mark).trans_eq
   congr 1
-  apply Finset.sum_congr rfl
-  intro j hj
-  rw [actual_rows_sum]
-  apply Finset.sum_congr rfl
-  intro u hu
+  pm_3170 j hj actual_rows_sum u hu
   have hjpos:0<(j.absNorm:ℝ):=zero_lt_one.trans_le (excluded_divisor_norm F.rowData j hj).1
   have hr:U^(shiftedExponent F.rowData U F.r j)=U^F.r/(j.absNorm:ℝ):=
     by rw [shiftedExponent,Real.rpow_sub hU0,Real.rpow_logb hU0 (ne_of_gt hU) hjpos]
@@ -108,8 +104,8 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
  theorem fiber_child_rows_le_deleted_sources
     (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finset Slot)
     (W:ℝ→ℂ)(v bW:ℝ)(lower:Slot→ℝ)(hU:1<U)
-    (hW:∀x,W x≠0→x≤bW)
-    (hV:∀s∈selected,∀x,F.profile s x≠0→x∈Set.Icc (lower s) (F.upper s))
+    (hW:∀x,W x≠0→ x≤bW)
+    (hV:∀s∈selected,∀x,F.profile s x≠0→ x∈Set.Icc (lower s) (F.upper s))
     (hlarge:∀s∈selected,((deletedBase F.rowData).modulus.absNorm:ℝ)<lower s*U^(F.widths s)):
     (∑u∈F.rows,‖polynomial (F.family u F.label) true (childLogTest W v) (U^F.r) 0 0*
       F.physicalProduct selected u‖^2)≤
@@ -120,13 +116,13 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
             (fun s:selected=>F.profile s) U (shiftedExponent F.rowData U F.r j)
             0 0 bW (fun s:selected=>F.upper s) (fun s:selected=>F.widths s)
             (fun s:selected=>F.external s) u.val‖^2:=by
-  have hw:∀x,childLogTest W v x≠0→x≤bW:=by
+  have hw:∀x,childLogTest W v x≠0→ x≤bW:=by
     intro x hx
     apply hW x
     intro hz
-    exact hx (by simp only [childLogTest,hz,zero_mul])
+    pm_3030 hx childLogTest hz zero_mul
   have hh:=fiber_rows_le_deleted_sources F selected (childLogTest W v) 0 0 bW lower hU hw hV hlarge
-  simpa only [oriented_child,orientedFrequency,neg_zero,ite_self] using hh
+  pm_89 oriented_child orientedFrequency neg_zero ite_self hh
 
 end SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
 

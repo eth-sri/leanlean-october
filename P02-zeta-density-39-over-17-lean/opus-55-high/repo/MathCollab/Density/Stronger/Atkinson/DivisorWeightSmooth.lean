@@ -9,6 +9,7 @@ No upstream project or Architect module is imported.
 public import MathCollab.Density.Stronger.Atkinson.DivisorWeightKernel
 public import Mathlib.Analysis.Calculus.ParametricIntegral
 public import Mathlib.Analysis.Complex.CauchyIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,12 +26,7 @@ theorem hasDerivAt_zetaDivisorWeightKernel_complex (q : ℂ) {w : ℂ} (hw : w �
     HasDerivAt (fun z : ℂ => zetaDivisorWeightKernel z w)
       (-zetaDivisorWeightNumerator q w) q := by
   have he := ((hasDerivAt_id q).neg.mul_const w).cexp
-  have h := (he.const_mul (Complex.exp (100 * w ^ 2) * hughesYoungAuxiliaryZero w)).div_const w
-  convert h using 1
-  · rfl
-  · unfold zetaDivisorWeightNumerator
-    norm_num
-    field_simp
+  pm_576
 
 theorem norm_zetaDivisorWeightNumerator_local_le (q₀ : ℂ) {q : ℂ}
     (hq : q ∈ Metric.ball q₀ 1) (u : ℝ) :
@@ -38,18 +34,14 @@ theorem norm_zetaDivisorWeightNumerator_local_le (q₀ : ℂ) {q : ℂ}
       (625 * Real.exp (100 + (|q₀.im| + 1) ^ 2 / 2)) *
         Real.exp (-q₀.re + 1) * zetaDivisorWeightEnvelope u := by
   have hdist : ‖q - q₀‖ < 1 := by simpa only [Metric.mem_ball, dist_eq_norm] using hq
-  have hre : |q.re - q₀.re| < 1 := by
-    exact (Complex.abs_re_le_norm (q - q₀)).trans_lt hdist
-  have him : |q.im - q₀.im| < 1 := by
-    exact (Complex.abs_im_le_norm (q - q₀)).trans_lt hdist
+  pm_8818 hre q.re q₀.re Complex.abs_re_le_norm
+  pm_8818 him q.im q₀.im Complex.abs_im_le_norm
   have hqim : |q.im| ≤ |q₀.im| + 1 := by
     have h := abs_add_le (q.im - q₀.im) q₀.im
     simp only [sub_add_cancel] at h
     linarith
   apply (norm_zetaDivisorWeightNumerator_right_le (by positivity) hqim u).trans
-  have henv : 0 ≤ zetaDivisorWeightEnvelope u := by unfold zetaDivisorWeightEnvelope; positivity
-  gcongr
-  linarith [(abs_lt.mp hre).1]
+  pm_7002
 
 theorem hasDerivAt_zetaDivisorWeight (q : ℂ) :
     HasDerivAt zetaDivisorWeight

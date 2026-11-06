@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 def extractedSupport (negative : Bool) (x : Source ι Jo) : Finset ι :=
   ((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon)∪x.quotientSupport
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def parent (x : Source ι Jo) : SecondParentSource ι Jo where
   cube := x.cube
@@ -47,7 +48,7 @@ theorem parent_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) :
   · exact congrArg SecondParentSource.oldAssigned h
 
 def appendParent {Jn : ℕ} (x : SecondParentSource ι Jo)
-    (q : Fin Jn→SmoothMobiusCorrection.PrimeIdeal) : SecondParentSource ι (Jo+Jn) where
+    (q : Fin Jn→ SmoothMobiusCorrection.PrimeIdeal) : SecondParentSource ι (Jo+Jn) where
   cube := x.cube
   firstCommon := x.firstCommon
   firstDivisor := x.firstDivisor
@@ -63,14 +64,14 @@ def forgetAppended {Jn : ℕ} (x : SecondParentSource ι (Jo+Jn)) : SecondParent
 
 omit [DecidableEq ι] in
 @[simp] theorem forget_append {Jn : ℕ} (x : SecondParentSource ι Jo)
-    (q : Fin Jn→SmoothMobiusCorrection.PrimeIdeal) : forgetAppended (appendParent x q)=x := by
+    (q : Fin Jn→ SmoothMobiusCorrection.PrimeIdeal) : forgetAppended (appendParent x q)=x := by
   apply SecondParentSource.ext <;> try rfl
   funext i
   simp only [forgetAppended,appendParent,Fin.addCases_left]
 
 omit [DecidableEq ι] in
 theorem appendParent_injective {Jn : ℕ} :
-    Function.Injective (fun q : SecondParentSource ι Jo × (Fin Jn→SmoothMobiusCorrection.PrimeIdeal)=>
+    Function.Injective (fun q : SecondParentSource ι Jo × (Fin Jn→ SmoothMobiusCorrection.PrimeIdeal)=>
       appendParent q.1 q.2) := by
   intro q r h
   apply Prod.ext
@@ -95,7 +96,7 @@ theorem attach_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) (
   · apply pairedSlotAssignment_injective J J
     funext i
     exact hinj (congrArg (fun q : SecondParentSource ι Jo ×
-      (Fin (J.card+J.card)→SmoothMobiusCorrection.PrimeIdeal)=>(q.2 i).val) he)
+      (Fin (J.card+J.card)→ SmoothMobiusCorrection.PrimeIdeal)=>(q.2 i).val) he)
 
 omit [DecidableEq ι] [DecidableEq σ] in
 @[simp] theorem forget_attach (J : Finset σ)
@@ -127,7 +128,7 @@ theorem extracted_prime_dvd (x : Source ι Jo) (hx : x.cube.Admissible)
   obtain hi|hi := Finset.mem_union.mp hi
   · obtain hi|hi := Finset.mem_union.mp hi
     · have hb : i∈x.cube.support := by
-        cases negative <;> simp only [Bool.false_eq_true,ite_false,ite_true] at hi
+        pm_7219
         · exact hx.1 hi
         · exact hx.2 hi
       exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (source_prime_dvd p _ i hb) _) _
@@ -135,7 +136,7 @@ theorem extracted_prime_dvd (x : Source ι Jo) (hx : x.cube.Admissible)
   · exact dvd_mul_of_dvd_right (source_prime_dvd p _ i hi) _
 
 def fixedPoint (b : CubeCoordinates ι) (C E : Finset ι)
-    (old : Fin Jo→SmoothMobiusCorrection.PrimeIdeal) (D : Finset ι) : Source ι Jo :=
+    (old : Fin Jo→ SmoothMobiusCorrection.PrimeIdeal) (D : Finset ι) : Source ι Jo :=
   ⟨b,C,E,D,old⟩
 
 variable (hp : ∀ i,p i≠0) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})

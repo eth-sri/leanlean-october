@@ -2,13 +2,13 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 public import OAI.NumberTheory.DirichletL.Hecke.LocalRamification
 public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeRowNonprincipal
 open HeckeFamily CanonicalRowCompletion CenteredMomentCanonical
 open ConcretePrimeRowBridge hiding O
@@ -38,10 +38,7 @@ theorem nonprincipal_of_local_factor (χ : Character)
   obtain ⟨x, hx⟩ := e.surjective ((1 : O ⧸ Q * J), (u : O ⧸ P ^ c))
   obtain ⟨n, rfl⟩ := Ideal.Quotient.mk_surjective x
   change (Ideal.Quotient.mk (Q * J) n, Ideal.Quotient.mk (P ^ c) n) = (1, (u : O ⧸ P ^ c)) at hx
-  have hnQJ := congrArg Prod.fst hx
-  have hnP := congrArg Prod.snd hx
-  dsimp only at hnQJ hnP
-  have hn : n - 1 ∈ Q * J := Ideal.Quotient.eq.mp (by simpa using hnQJ)
+  pm_3114
   have hnQ : n - 1 ∈ Q := Ideal.mul_le_left hn
   have hnJ : n - 1 ∈ J := Ideal.mul_le_right hn
   have hnprimary : λ₀ ^ 2 ∣ n - 1 := Ideal.mem_span_singleton.mp (hQ hnQ)
@@ -84,7 +81,7 @@ theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
       coprimalityMask_periodic m x y (Ideal.mul_le_right (Ideal.mul_le_left hxy)),
       numeratorBadTwist_periodic u a b r hr x y (Ideal.mul_le_right hxy)]
   · intro n hn
-    rw [hχ n, rowTwist_eq_actualPeriodicRow_primary _ _ _ _ hmLam hm2 u a b r hr hpr hx n hn]
+    pm_6189 hn
     change φ n * idealRowHom n (Ideal.span {r}) = φ n * idealRowHom n (P ^ c * J)
     rw [hsplit]
 
@@ -108,8 +105,7 @@ theorem extract_prime_power (I : Ideal O) (hI : CanonicalQuadraticSieve.Supporte
   refine ⟨J, hsplit, ?_, ?_⟩
   · exact (CanonicalQuadraticSieve.supported_mul_iff _ _).mp (hsplit ▸ hI) |>.2
   · apply IsCoprime.prod_left
-    intro Q hQ
-    obtain ⟨hQP, hQS⟩ := Finset.mem_erase.mp hQ
+    pm_381 Q hQ hQP hQS Finset.mem_erase.mp
     have hgoodQ := supported_factors_good I hI Q (Multiset.mem_toFinset.mp hQS)
     let : Q.IsMaximal := hgoodQ.1
     exact (Ideal.isCoprime_of_isMaximal hQP).pow_left
@@ -127,8 +123,7 @@ theorem principal_row_multiplicity (η χ : Character) (m f z : O)
     (hcop : IsCoprime (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)}) P) :
     6 ∣ (normalizedFactors (Ideal.span {r})).count P := by
   by_contra hc6
-  have hgood := supported_factors_good (Ideal.span {r}) hr P hP
-  let : P.IsMaximal := hgood.1
+  pm_6264
   obtain ⟨J, hsplit, hJ, hJP⟩ := extract_prime_power _ hr P hP
   have hc : 1 ≤ (normalizedFactors (Ideal.span {r})).count P := Multiset.count_pos.mpr hP
   exact actual_row_nonprincipal η χ m f z hmLam hm2 u a b r hr hpr hx P J
@@ -155,8 +150,7 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
   intro P hP
   refine ⟨?_, hfree P hP⟩
   apply Multiset.mem_toFinset.mpr
-  have hgood := supported_factors_good (Ideal.span {r}) hr P hP
-  let : P.IsMaximal := hgood.1
+  pm_6264
   apply (Ideal.mem_normalizedFactors_iff hQ).mpr
   refine ⟨Ideal.isPrime_of_prime (prime_of_normalized_factor P hP), ?_⟩
   by_contra hQP
@@ -170,6 +164,5 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
 
 end SevenEighths.HeckeRowNonprincipal
 
-end
 
 end OAI

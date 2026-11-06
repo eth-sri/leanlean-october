@@ -8,30 +8,29 @@ No upstream project or Architect module is imported.
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Set
 open scoped Interval ENNReal Topology
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger
 
 theorem exists_dyadic_cutoff {X : ℝ} (hX : 1 ≤ X) :
     ∃ M : ℕ, X ≤ (2:ℝ)^M ∧ (2:ℝ)^M ≤ 2*X := by
-  obtain ⟨m,hm,hupper⟩ := exists_nat_pow_near hX (by norm_num : (1:ℝ)<2)
+  pm_405 m hm hupper hX
   refine ⟨m+1,hupper.le,?_⟩
   rw [pow_succ']
-  exact mul_le_mul_of_nonneg_left hm (by norm_num)
+  grind
 
 theorem exists_dyadic_count_sq_le_rpow {ε : ℝ} (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ M : ℕ, ((M:ℝ)+1)^2 ≤ D*((2:ℝ)^M)^ε := by
   let a : ℝ := ε/2
-  have ha : 0 < a := by dsimp [a]; positivity
-  have hlog : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_64 ha a
+  pm_123 hlog
   let C : ℝ := 1+1/(a*Real.log 2)
-  have hC : 0 < C := by dsimp [C]; positivity
-  refine ⟨C^2,pow_pos hC 2,?_⟩
+  pm_64 hC C
+  pm_7854
   intro M
   have hp : 1 ≤ ((2:ℝ)^M)^a :=
     Real.one_le_rpow (one_le_pow₀ (by norm_num : (1:ℝ)≤2)) ha.le
@@ -42,9 +41,7 @@ theorem exists_dyadic_count_sq_le_rpow {ε : ℝ} (hε : 0 < ε) :
     have h := (le_div_iff₀ ha).mp hl
     nlinarith
   have hcount : (M:ℝ)+1 ≤ C*((2:ℝ)^M)^a := by
-    calc
-      _ ≤ ((2:ℝ)^M)^a/(a*Real.log 2)+((2:ℝ)^M)^a := add_le_add hm hp
-      _ = _ := by dsimp [C]; ring
+    grind
   calc
     _ ≤ (C*((2:ℝ)^M)^a)^2 :=
       pow_le_pow_left₀ (by positivity) hcount 2
@@ -63,8 +60,8 @@ theorem integral_zero_le_of_dyadic (f : ℝ → ℝ) (hf : Continuous f)
     ∃ K : ℝ, 0 < K ∧ ∀ H : ℝ, B ≤ H →
       (∫ t in 0..H, f t) ≤ K*H^p := by
   let A : ℝ := |∫ t in 0..B, f t| + C + 1
-  have hA : 0 < A := by dsimp [A]; positivity
-  have hCA : C ≤ A := by dsimp [A]; linarith [abs_nonneg (∫ t in 0..B, f t)]
+  pm_64 hA A
+  have hCA : C ≤ A := by dsimp [A]; grind
   have hBp : 0 < B := by linarith
   have htwo : (2 : ℝ) ≤ (2 : ℝ)^p := by
     simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ) ≤ 2) hp
@@ -80,7 +77,7 @@ theorem integral_zero_le_of_dyadic (f : ℝ → ℝ) (hf : Continuous f)
         _ ≤ A*B^p := by nlinarith
     | succ m ih =>
       have hm : B ≤ (2 : ℝ)^m*B := by
-        have hpow : 1 ≤ (2 : ℝ)^m := one_le_pow₀ (by norm_num)
+        pm_5252 hpow m
         nlinarith
       have hX : 0 ≤ (2 : ℝ)^m*B := by positivity
       have heq : (2 : ℝ)^(m+1)*B = 2*((2 : ℝ)^m*B) := by rw [pow_succ']; ring
@@ -109,9 +106,7 @@ theorem integral_zero_le_of_dyadic (f : ℝ → ℝ) (hf : Continuous f)
     nlinarith
   calc
     _ ≤ ∫ t in 0..(2 : ℝ)^m*B, f t := by
-      apply intervalIntegral.integral_mono_interval le_rfl hHp.le hlo'
-      · exact Filter.Eventually.of_forall hf0
-      · exact hf.intervalIntegrable _ _
+      pm_8293 hHp.le
     _ ≤ A*((2 : ℝ)^m*B)^p := hstep m
     _ ≤ A*(2*H)^p :=
       mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hhi' (by linarith)) hA.le

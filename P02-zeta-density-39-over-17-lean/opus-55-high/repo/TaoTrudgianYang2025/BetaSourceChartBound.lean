@@ -1,8 +1,9 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaTaylorStationaryMain
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Upstream beta bounds on each original stationary chart
@@ -13,13 +14,11 @@ The only supplied sum estimate is the upstream nonasymptotic beta bound.
 Physical dual power windows remain explicit for later scale transfer.
 -/
 
-noncomputable section
 
 open Set Expdb
-open scoped BigOperators NNReal
+open scoped NNReal
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 theorem sourceStationaryChart_bound_of_exponentSumBound
     {α : ℝ≥0} {β σ : ℝ}
@@ -54,8 +53,8 @@ theorem sourceStationaryChart_bound_of_exponentSumBound
   let P := max 2 (legendreFiniteInputOrder (Q+2))
   have hd : 0 < d := lt_min (modelPhaseAmplitudeTolerance_pos hσ) (lt_min hη hdβ)
   have hdamp : d ≤ modelPhaseAmplitudeTolerance σ := min_le_left _ _
-  have hdη : d ≤ η := (min_le_right _ _).trans (min_le_left _ _)
-  have hddβ : d ≤ dβ := (min_le_right _ _).trans (min_le_right _ _)
+  pm_1612 hdη d η min_le_right min_le_left
+  pm_372 hddβ d dβ min_le_right
   have hdsmall := hdη.trans hsmall
   have hdpos := hdη.trans hpos
   refine ⟨d,hd,hdsmall,hdpos,P,le_max_left _ _,C,hC,?_⟩
@@ -120,7 +119,7 @@ theorem sourceStationaryChart_bound_of_exponentSumBound
       intro k hk
       apply hbound (modelPhaseDualParameter σ A T) (modelPhaseDualScale A T N)
         (canonicalTaylorLegendrePhase F σ A Q w h) c (c+k)
-      refine ⟨hTC,hlowβ,hhighβ,hK,haN,?_⟩
+      pm_164 hTC hlowβ hhighβ hK haN
       exact (show ((c+k : ℕ) : ℝ) ≤ ((c+L : ℕ) : ℝ) by
         exact_mod_cast Nat.add_le_add_left hk c).trans hbN
     have hslope : ∀ i : ℕ, i ≤ L → ((c : ℝ)+i)*N/T ∈ modelPhaseSlopeRange F := by
@@ -142,17 +141,15 @@ theorem sourceStationaryChart_bound_of_exponentSumBound
         modelPhaseStationaryBlock F T N c L := by
       rw [show s = _ from hinterval,Finset.sum_image]
       · simp only [Int.cast_natCast,modelPhaseStationaryBlock]
-      · intro n _ m _ he
-        change (n : ℤ) = (m : ℤ) at he
-        exact_mod_cast he
-    change ‖∑ q ∈ s, modelPhaseStationaryMainTerm F T N q‖ ≤ _
+      pm_8809 n m he
+    pm_7310 q s modelPhaseStationaryMainTerm
     rw [hsum]
     apply (norm_modelPhaseStationaryBlock_le_taylor_prefixMax Q hσ hdamp hF₂
       hA hw hh hT hN c L hslope hv hplateau).trans
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hmax
       (by positivity : 0 ≤ 2*((N/Real.sqrt T)*(Real.sqrt (modelPhaseCurvatureLower σ))⁻¹))
   · have hempty : s = ∅ := Finset.not_nonempty_iff_eq_empty.mp hne
-    change ‖∑ q ∈ s, modelPhaseStationaryMainTerm F T N q‖ ≤ _
+    pm_7310 q s modelPhaseStationaryMainTerm
     rw [hempty,Finset.sum_empty,norm_zero]
     positivity
 

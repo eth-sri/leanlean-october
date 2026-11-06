@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalSource
 public import OAI.NumberTheory.DirichletL.Moments.Tail
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,11 +35,9 @@ lemma actual_correlation_radial_summable (I J : SupportedIdeal) (C : O) (hC : C�
     have hh := CenteredMomentTail.actualCorrelation_norm_le (primaryGenerator I.val) (primaryGenerator J.val)
       ((supported_span_primaryGenerator_iff _).mpr I.property)
       ((supported_span_primaryGenerator_iff _).mpr J.property) (C*k)
-    simpa only [(primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).1,
-      (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ J.property)).1] using hh
+    pm_5430 hh
   have harg (k : O) : Q*‖eisEmbedding (C*k)‖^2/‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2=t*‖eisEmbedding k‖^2 := by
-    simp only [map_mul,norm_mul,mul_pow,t]
-    ring
+    pm_3543 map_mul norm_mul mul_pow t
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun k=>norm_nonneg _) _ (hs.mul_left B)
   intro k

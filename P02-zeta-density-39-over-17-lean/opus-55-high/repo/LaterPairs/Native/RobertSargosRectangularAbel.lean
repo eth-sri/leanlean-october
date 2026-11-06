@@ -3,17 +3,15 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosMixedCharacter
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
                                                                                       
 
 noncomputable section
 open GafniTao
-open scoped BigOperators
 namespace TaoTrudgianYang2025
 
 def robertSargosAbelDifference (N : ℕ) (w : ℕ → ℂ) (j : ℕ) : ℂ :=
@@ -91,9 +89,7 @@ private theorem exists_common_family_sum_bound {ι κ : Type*}
         ((S.sup (fun m => ‖w m q‖₊) : NNReal) : ℝ)*‖z m q‖ := by
       apply Finset.sum_le_sum
       intro m hm
-      apply (norm_sum_le _ _).trans
-      apply Finset.sum_le_sum
-      intro q _
+      pm_6159 q
       rw [norm_mul]
       apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
       exact_mod_cast (Finset.le_sup (f := fun m => ‖w m q‖₊) hm)
@@ -155,13 +151,8 @@ theorem robertSargos_mixed_rectangular_norm (f : ℝ → ℝ) (m r Q : ℝ)
     ((Finset.range X) ×ˢ ((Finset.range Y) ×ˢ (Finset.range Z)))
     (fun p => ((1-|q p.1|/Q : ℝ):ℂ))
     (fun p => q p.1) (fun p => h p.2.1) (fun p => n p.2.2) f m r
-  simp only [Finset.sum_product] at he
-  rw [he]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro x _
-  apply Finset.sum_congr rfl
-  intro y _
+  pm_8542 Finset.sum_product
+  pm_156 Finset.sum_congr x y
   apply Finset.sum_congr rfl
   intro z _
   unfold robertSargosMixedAmplitude robertSargosPolynomialCharacter

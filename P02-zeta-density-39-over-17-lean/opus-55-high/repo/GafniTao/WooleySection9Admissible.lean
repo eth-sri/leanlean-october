@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleySection7
 public import GafniTao.WooleySection9Source
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,6 @@ silently allowed to depend on the grade selected later.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -132,10 +132,8 @@ theorem wooleySourcePolynomial_lemma_7_1_uniform_global
   let C : ℝ := ∑ i : I, Cr i
   let B0 : ℕ := ∑ i : I, B0r i
   rcases (show k = 0 ∨ k = 1 ∨ 2 ≤ k by omega) with hk0 | hk1 | hk
-  · subst k
-    exact ⟨1, le_rfl, 0, by omega⟩
-  · subst k
-    exact ⟨1, le_rfl, 0, by omega⟩
+  pm_7206
+  pm_7206
   · have hgrades : Nonempty I := by
       obtain ⟨r0, hr0⟩ := wooleyGradeRange_nonempty (r := k - 1) (by omega)
       exact ⟨⟨r0, hr0⟩⟩

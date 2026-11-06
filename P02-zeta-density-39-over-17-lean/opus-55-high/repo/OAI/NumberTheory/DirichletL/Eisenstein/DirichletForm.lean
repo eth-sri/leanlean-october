@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.ReflectedBranches
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,74 +8,31 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open EisensteinEmbedding ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open ActualEisensteinCubic
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
+open scoped Classical Topology ContDiff Manifold ENNReal MatrixGroups
 
 namespace CubicEisenstein
 
@@ -104,8 +62,7 @@ lemma kernelTestEnergyDensity_eq_partials (f : kernelSmoothTests) (w : Hyperboli
   change fderiv ℝ (fun p => (kernelTestField f p).re) (hyperbolicEuclideanCoordinates w)=_ at hr
   change fderiv ℝ (fun p => (kernelTestField f p).im) (hyperbolicEuclideanCoordinates w)=_ at hi
   unfold kernelTestEnergyDensity euclideanScalarDirichletDensity
-  rw [hr,hi,(EuclideanSpace.basisFun (Fin 3) ℝ).norm_dual,
-    (EuclideanSpace.basisFun (Fin 3) ℝ).norm_dual,←mul_add,←Finset.sum_add_distrib]
+  pm_3723
   congr 1
   apply Finset.sum_congr rfl
   intro j hj
@@ -113,17 +70,15 @@ lemma kernelTestEnergyDensity_eq_partials (f : kernelSmoothTests) (w : Hyperboli
   simpa only [Complex.normSq_apply,pow_two] using Complex.normSq_eq_norm_sq (kernelTestPartial f w j)
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups InnerProductSpace
+open scoped Classical Topology ContDiff Manifold ENNReal MatrixGroups InnerProductSpace
 
 def kernelGradientAt (w : HyperbolicSpace) : kernelSmoothTests→ₗ[ℂ]EuclideanSpace ℂ (Fin 3) where
   toFun f := WithLp.toLp 2 (fun j => (hyperbolicHeight w:ℂ)*kernelTestPartial f w j)
   map_add' f g := by
-    apply (WithLp.equiv 2 (Fin 3→ℂ)).injective
-    funext j
+    pm_3724
     simp [kernelTestPartial_add,mul_add]
   map_smul' c f := by
-    apply (WithLp.equiv 2 (Fin 3→ℂ)).injective
-    funext j
+    pm_3724
     simp [kernelTestPartial_smul,smul_eq_mul,mul_left_comm]
 
 lemma kernelGradientAt_norm_sq (w : HyperbolicSpace) (f : kernelSmoothTests) :
@@ -216,7 +171,7 @@ namespace CompletedGauss
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory
 
 theorem finite_integral_energy_bound {κ : Type*} [Fintype κ]
@@ -225,10 +180,10 @@ theorem finite_integral_energy_bound {κ : Type*} [Fintype κ]
     (hφ : ∀k,Integrable (fun t => b t*φ k t))
     (hbound : ∀t,(∑k,‖φ k t‖^2)≤E) :
     (∑k,‖∫t : ℝ,b t*φ k t‖^2)≤E*(∫t : ℝ,‖b t‖)^2 := by
-  let e := PiLp.continuousLinearEquiv 2 ℂ (fun _ : κ => ℂ)
+  pm_3725
   let F : ℝ→EuclideanSpace ℂ κ := fun t => e.symm (fun k => b t*φ k t)
   have hF (t : ℝ) : ‖F t‖≤‖b t‖*Real.sqrt E := by
-    apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
+    pm_3726
     rw [EuclideanSpace.norm_sq_eq,mul_pow,Real.sq_sqrt hE]
     change (∑k,‖b t*φ k t‖^2)≤‖b t‖^2*E
     simp only [norm_mul,mul_pow,←Finset.mul_sum]
@@ -241,8 +196,7 @@ theorem finite_integral_energy_bound {κ : Type*} [Fintype κ]
   have hn : ‖e.symm (fun k => ∫t : ℝ,b t*φ k t)‖≤(∫t : ℝ,‖b t‖)*Real.sqrt E := by
     rw [←he,←integral_mul_const]
     exact norm_integral_le_of_norm_le (hb.mul_const _) (Filter.Eventually.of_forall hF)
-  have hs := pow_le_pow_left₀ (norm_nonneg _) hn 2
-  rw [EuclideanSpace.norm_sq_eq,mul_pow,Real.sq_sqrt hE] at hs
+  pm_6608 hs
   simpa [e,mul_comm] using hs
 
 open CanonicalQuadraticSieve ActualEisensteinCubic
@@ -253,10 +207,13 @@ section
 open ActualEisensteinCubic CanonicalQuadraticSieve
 
 def completedRowFiber (S : Finset (Ideal O)) (Q A T : Ideal O) : Finset (Ideal O) :=
-  S.filter (fun I => rowPowerfulPart I=A ∧ rowMaskPart I Q=T)
+  S.filter (fun I=> rowPowerfulPart I=A ∧ rowMaskPart I Q=T)
 
-theorem rowResidualPart_injective_on_fiber (S : Finset (Ideal O)) (Q A T : Ideal O)
-    (hS : ∀I∈S,I≠0) : Set.InjOn (fun I => rowResidualPart I Q) (completedRowFiber S Q A T) := by
+section
+variable (S : Finset (Ideal O)) (Q A T : Ideal O)
+include S Q A T
+theorem rowResidualPart_injective_on_fiber
+    (hS : ∀I∈S,I≠0) : Set.InjOn (fun I=> rowResidualPart I Q) (completedRowFiber S Q A T) := by
   intro I hI J hJ he
   change rowResidualPart I Q=rowResidualPart J Q at he
   obtain ⟨hIS,hIA,hIT⟩ := Finset.mem_filter.mp hI
@@ -266,7 +223,7 @@ theorem rowResidualPart_injective_on_fiber (S : Finset (Ideal O)) (Q A T : Ideal
     _ = rowPowerfulPart J*rowMaskPart J Q*rowResidualPart J Q := by rw [hIA,hJA,hIT,hJT,he]
     _ = J := row_powerful_mask_residual_product J Q (hS J hJS)
 
-theorem completedRowFiber_residual_range (S : Finset (Ideal O)) (Q A T : Ideal O)
+theorem completedRowFiber_residual_range
     (hbad : ∀P∈fixedBadPrimes,P∣Q) (K : ℝ)
     (hS : ∀I∈S,I≠0 ∧ (Ideal.absNorm I:ℝ)≤K) (I : Ideal O)
     (hI : I∈completedRowFiber S Q A T) :
@@ -276,36 +233,20 @@ theorem completedRowFiber_residual_range (S : Finset (Ideal O)) (Q A T : Ideal O
   refine ⟨rowResidualPart_admissible I Q hbad,?_⟩
   rw [rowResidualPart_norm I Q (hS I hIS).1,hIA,hIT]
   exact div_le_div_of_nonneg_right (hS I hIS).2 (by positivity)
+end
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 open ActualEisensteinCubic CanonicalQuadraticSieve
 
 end CompletedGauss
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-
 namespace InitialMeanSquare
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open FirstPassCubeLabels (primeProductNorm columnLog)
-
-def initialLogProfile (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) : 𝓢(ℝ,ℂ) :=
-  ((CubicReflectionKernel.logProfile_compact W a b ha hs).mul_left
-    (f := fun t : ℝ => (Real.exp (t/2) : ℂ))).toSchwartzMap (by
-      change ContDiff ℝ ∞ (fun t : ℝ => (Real.exp (t/2) : ℂ)*W (Real.exp t))
-      have he : ContDiff ℝ ∞ (fun t : ℝ => Real.exp (t/2)) :=
-        Real.contDiff_exp.comp (contDiff_id.div_const 2)
-      exact (Complex.ofRealCLM.contDiff.comp he).mul
-        (hW.comp Real.contDiff_exp))
-
-@[simp] lemma initialLogProfile_apply (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) (t : ℝ) :
-    initialLogProfile W a b ha hs hW t =
-      (Real.exp (t/2) : ℂ)*W (Real.exp t) := rfl
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → O)
   [∀ i, (Ideal.span {p i}).IsMaximal]

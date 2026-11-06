@@ -17,7 +17,7 @@ lemma norm_bracket_le_card {F : Type*} [Field F] [Fintype F]
   have hq : (1:ℝ)≤Fintype.card F := by exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0:F)⟩
   have hr : 1≤rootCard F := by
     unfold rootCard
-    exact (Real.le_sqrt (by norm_num) (by positivity)).mpr (by simpa using hq)
+    simp_all
   have hi : (rootCard F)⁻¹≤1 := (inv_le_one₀ rootCard_pos).mpr hr
   by_cases hj4 : j=4
   · subst j
@@ -27,7 +27,7 @@ lemma norm_bracket_le_card {F : Type*} [Field F] [Fintype F]
       apply (div_le_iff₀ rootCard_pos).mpr
       nlinarith
     · rw [norm_bracket_four_nonzero χ x hx]
-      exact hi.trans hq
+      grind
   · by_cases hj0 : j=0
     · subst j
       exact (norm_bracket_zero_le χ x).trans (hi.trans hq)
@@ -35,8 +35,10 @@ lemma norm_bracket_le_card {F : Type*} [Field F] [Fintype F]
 
 variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
 
-lemma mixedActiveBracket_crude_norm (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
+section
+variable (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
+include G D
+lemma mixedActiveBracket_crude_norm
     (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (i : ι) (x : Eis) :
     ‖mixedActiveBracket G.generator_ne_zero G.generator_good j S D i x‖≤(Ideal.absNorm (G.ideal i):ℝ) := by
@@ -57,8 +59,7 @@ lemma mixedActiveBracket_crude_norm (G : PrimeFamily ι)
     rw [Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
   rw [he,G.generator_span]
 
-lemma literal_mixed_coefficient_crude (G : PrimeFamily ι)
-    (D : ControlledStratumArithmetic G.generator N a c mode)
+lemma literal_mixed_coefficient_crude
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
     (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
@@ -72,6 +73,7 @@ lemma literal_mixed_coefficient_crude (G : PrimeFamily ι)
   apply (mul_le_of_le_one_left (norm_nonneg _) (s.amplitude_norm u m n b)).trans
   rw [norm_prod,map_prod,Nat.cast_prod]
   exact Finset.prod_le_prod₀ (fun i hi => norm_nonneg _) (fun i hi => mixedActiveBracket_crude_norm G D hchar j hj S i _)
+end
 
 end
 end SevenEighths.InverseReflectedPhase

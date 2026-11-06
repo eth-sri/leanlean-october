@@ -3,12 +3,11 @@ public import QuadraticLargeValueBound
 public import GuthMaynard.Improvement.SeparatedSecondMoment
 public import DensityEnergyGM.PolynomialHeightSecondEnergy
 public import DensityEnergyGM.LargeValuesFinal
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
-noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement GuthMaynard.NativeMoment
@@ -23,12 +22,11 @@ theorem universal_quadratic_classical_mass (η : ℝ) (hη : 0 < η) :
       ∀ V : ℝ, 0 ≤ V → (∀ t ∈ W, V ≤ ‖boundedPolynomial N a t‖) →
       (W.card:ℝ)*V^2 ≤ K*T^η*T*N := by
   let H : ℝ := 1+(2:ℝ)^η/η
-  have hH : 0 < H := by dsimp [H]; positivity
+  pm_64 hH H
   refine ⟨12+48*H,by positivity,?_⟩
   intro T t₀ N hT hN hNT a ha W hW hsep V hV hlarge
-  have hTp : 0 < T := by linarith
-  have hNp : 0 < N := by linarith
-  have ht : 1 ≤ T^η := Real.one_le_rpow (by linarith) hη.le
+  pm_4516
+  pm_549 ht T η hη.le
   have hlog : 1+Real.log ⌊2*N⌋₊ ≤ H*T^η := by
     simpa only [div_one, H,Real.rpow_one] using
       polynomial_height_log_loss 1 η (by norm_num) hη (by linarith) hNp
@@ -76,33 +74,31 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
         N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)+
         N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ)) := by
   let η : ℝ := ε/3
-  have hη : 0 < η := by dsimp [η]; positivity
-  obtain ⟨Q,hQ,hquad⟩ := finite_quadratic_large_value_second MathCollab.Density.comparisonCutoff hη
-  obtain ⟨K,hK,hmass⟩ := universal_quadratic_classical_mass η hη
+  pm_64 hη η
+  pm_69 Q hQ hquad finite_quadratic_large_value_second MathCollab.Density.comparisonCutoff hη
+  pm_69 K hK hmass universal_quadratic_classical_mass η hη
   let A : ℝ := K+8*Q+8
   let B : ℝ := (4*Q*A)^(2/3:ℝ)
   let F : ℝ := (4*Q)^(12/5:ℝ)
   let C : ℝ := A+B+F+1
   let D : ℝ := 8*Q+1
-  have hA : 0 < A := by dsimp [A]; positivity
+  pm_64 hA A
   have hA1 : 1 ≤ A := by dsimp [A]; linarith
-  have hAK : K ≤ A := by dsimp [A]; linarith
+  pm_182 hAK K A
   have hA8 : 8*Q ≤ A^2 := by
     have ha : 8*Q ≤ A := by dsimp [A]; linarith
     nlinarith [sq_nonneg (A-1)]
-  have hB : 0 < B := by dsimp [B]; positivity
-  have hF : 0 < F := by dsimp [F]; positivity
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_64 hB B
+  pm_64 hF F
+  pm_64 hC C
   refine ⟨C,D,hC,by dsimp [D]; positivity,?_⟩
   intro T t₀ N V hT hN hNT hV hcut a ha W hW hsep hlarge
-  have hTp : 0 < T := by linarith
-  have hNp : 0 < N := by linarith
-  have ht : 1 ≤ T^η := Real.one_le_rpow (by linarith) hη.le
+  pm_4516
+  pm_549 ht T η hη.le
   have hpow : T^η ≤ T^ε := Real.rpow_le_rpow_of_exponent_le (by linarith) (by dsimp [η]; linarith)
   have hpow1 : T^(4*η/3) ≤ T^ε := Real.rpow_le_rpow_of_exponent_le (by linarith) (by dsimp [η]; linarith)
   have hpow2 : T^(12*η/5) ≤ T^ε := Real.rpow_le_rpow_of_exponent_le (by linarith) (by dsimp [η]; linarith)
-  let R : ℝ := W.card
-  have hR0 : 0 ≤ R := Nat.cast_nonneg _
+  pm_7974 hR0
   by_cases hR : 0 < R
   swap
   · have he : R=0 := by linarith
@@ -110,7 +106,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
     rw [he]
     positivity
   let L : ℝ := R*V^2/(A*T^η*N)
-  have hLp : 0 < L := by dsimp [L]; positivity
+  pm_64 hLp L
   have hm : R*V^2 ≤ K*T^η*T*N := hmass T t₀ N hT hN hNT a ha W hW hsep V hV.le hlarge
   have hLT : L ≤ T := by
     apply (div_le_iff₀ (by positivity : 0 < A*T^η*N)).mpr
@@ -120,7 +116,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
         _ = T*(A*T^η*N) := by ring_nf)
   let Z : ℝ := N^2*V^(-2:ℝ)+N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)+
     N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ)
-  have hZ : 0 ≤ Z := by dsimp [Z]; positivity
+  pm_61 hZ Z
   by_cases hNL : N ≤ L
   swap
   · have hs : R*V^2 ≤ A*T^η*N^2 := by
@@ -130,7 +126,7 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
       have hh := (le_div_iff₀ (sq_pos_of_pos hV)).mpr hs
       rw [Real.rpow_neg hV.le, Real.rpow_two]
       simpa only [div_eq_mul_inv,mul_assoc] using hh
-    change R ≤ C*T^ε*Z
+    pm_5994
     apply hr.trans
     calc
       _ ≤ C*T^ε*(N^2*V^(-2:ℝ)) := by gcongr; dsimp [C]; linarith
@@ -182,16 +178,12 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
       have hh := universal_quadratic_monomial_root (2*η) 4 1 6 (2/3) (by positivity : 0≤4*Q*A) hNp.le hTp.le hV.le
       norm_num only [Real.rpow_ofNat,Real.rpow_one,show (2*η)*(2/3)=4*η/3 by ring_nf] at hh
       convert hh using 1 <;> norm_num [B]; ring_nf
-    change R ≤ C*T^ε*Z
+    pm_5994
     apply (hb.trans_eq he).trans
     calc
       _ ≤ C*T^ε*(N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ)) := by gcongr; dsimp [C]; linarith
       _ ≤ _ := by
-        apply mul_le_mul_of_nonneg_left ?_ (by positivity)
-        dsimp [Z]
-        linarith [show 0≤N^2*V^(-2:ℝ) by positivity,
-          show 0≤N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ) by positivity,
-          show 0≤N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ) by positivity]
+        pm_2728
   · have hb := gm_solve_monomial hR (by positivity : 0<V^4) (by norm_num : 0<(2:ℝ)-19/12)
       (p:=2) (q:=19/12) (A:=4*Q*T^η*N^3*T^(1/4:ℝ)) (E:=1) (by
         simpa only [Real.rpow_two,mul_one] using hsecond)
@@ -201,15 +193,11 @@ theorem universal_quadratic_level_count (ε : ℝ) (hε : 0 < ε) :
       have hh := universal_quadratic_monomial_root η 3 (1/4) 4 (12/5) (by positivity : 0≤4*Q) hNp.le hTp.le hV.le
       norm_num only [Real.rpow_ofNat,show η*(12/5)=12*η/5 by ring_nf] at hh
       convert hh using 1; norm_num [F]; ring_nf
-    change R ≤ C*T^ε*Z
+    pm_5994
     apply (hb.trans_eq he).trans
     calc
       _ ≤ C*T^ε*(N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ)) := by gcongr; dsimp [C]; linarith
       _ ≤ _ := by
-        apply mul_le_mul_of_nonneg_left ?_ (by positivity)
-        dsimp [Z]
-        linarith [show 0≤N^2*V^(-2:ℝ) by positivity,
-          show 0≤N^(8/3:ℝ)*T^(2/3:ℝ)*V^(-4:ℝ) by positivity,
-          show 0≤N^(36/5:ℝ)*T^(3/5:ℝ)*V^(-48/5:ℝ) by positivity]
+        pm_2728
 
 end Montgomery.RationalMoment

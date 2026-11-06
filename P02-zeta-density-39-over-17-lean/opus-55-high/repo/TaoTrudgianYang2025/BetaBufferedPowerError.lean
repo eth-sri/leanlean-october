@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedUniformError
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,15 +25,13 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 theorem one_add_log_add_one_le_rpow {T ε : ℝ} (hT : 1 ≤ T) (hε : 0 < ε) :
     1+Real.log (T+1) ≤ (1+(2 : ℝ)^ε/ε)*T^ε := by
   have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
+  pm_153 hp T ε hT hε.le
   have hlog := Real.log_le_rpow_div (show 0 ≤ T+1 by linarith) hε
   have hpow := Real.rpow_le_rpow (show 0 ≤ T+1 by linarith)
     (show T+1 ≤ 2*T by linarith) hε.le
-  rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 2) hTpos.le] at hpow
+  pm_5164 hTpos.le hpow
   have hd := div_le_div_of_nonneg_right hpow hε.le
-  calc
-    _ ≤ T^ε+((2 : ℝ)^ε*T^ε)/ε := add_le_add hp (hlog.trans hd)
-    _ = _ := by ring
+  grind
 
 theorem modelPhase_buffered_source_power_error
     {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε) :
@@ -57,7 +56,7 @@ theorem modelPhase_buffered_source_power_error
   refine ⟨M*K,by nlinarith,?_⟩
   intro N T a b hN hT ha hb hflat F δ hδ hF
   have h := hsource N T a b hN hT ha hb hflat F δ hδ hF
-  have hx : 0 ≤ N/Real.sqrt T := by positivity
+  pm_1357
   have hlog := one_add_log_add_one_le_rpow hT hε
   have hleft : N/Real.sqrt T ≤ K*(N/Real.sqrt T) := by
     simpa only [one_mul] using mul_le_mul_of_nonneg_right hK hx
@@ -77,8 +76,10 @@ def modelPhaseSharpStationarySet (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) : Fin
       (modelPhaseBufferedPlateauUpper F ((a : ℝ)/N) ((Real.sqrt T)⁻¹) T N)
   else ∅
 
+section
+variable {F : ℝ → ℝ} {T N : ℝ} {a b : ℕ}
+include F T N a b
 theorem modelPhaseSharpStationarySet_of_long
-    {F : ℝ → ℝ} {T N : ℝ} {a b : ℕ}
     (hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N) :
     modelPhaseSharpStationarySet F T N a b =
       Finset.Ioo
@@ -87,10 +88,10 @@ theorem modelPhaseSharpStationarySet_of_long
   simp only [modelPhaseSharpStationarySet,ite_eq_left hlong]
 
 theorem modelPhaseSharpStationarySet_of_short
-    {F : ℝ → ℝ} {T N : ℝ} {a b : ℕ}
     (hshort : (b : ℝ)/N ≤ (a : ℝ)/N+4*(Real.sqrt T)⁻¹) :
     modelPhaseSharpStationarySet F T N a b = ∅ := by
   simp only [modelPhaseSharpStationarySet,ite_eq_right (not_lt.mpr hshort)]
+end
 
 theorem modelPhase_source_sharp_comparison
     {σ ε : ℝ} (hσ : 0 < σ) (hε : 0 < ε) :
@@ -102,14 +103,13 @@ theorem modelPhase_source_sharp_comparison
         ‖exponentialSumAt F T N a b-
           (∑ q ∈ modelPhaseSharpStationarySet F T N a b,
             modelPhaseStationaryMainTerm F T N q)‖ ≤ C*(N/Real.sqrt T+T^ε) := by
-  obtain ⟨M,hM,hsource⟩ := modelPhase_buffered_source_power_error hσ hε
+  pm_69 M hM hsource modelPhase_buffered_source_power_error hσ hε
   refine ⟨max M 5,hM.trans (le_max_left _ _),?_⟩
   intro N T a b hN hT ha hb F δ hδ hF
-  have hNpos : 0 < N := zero_lt_one.trans_le hN
-  have hTpos : 0 < T := zero_lt_one.trans_le hT
-  have hx : 0 ≤ N/Real.sqrt T := by positivity
-  have hp : 1 ≤ T^ε := Real.one_le_rpow hT hε.le
-  by_cases hlong : (a : ℝ)/N+4*(Real.sqrt T)⁻¹ < (b : ℝ)/N
+  pm_1610 hNpos N hN hTpos T hT
+  pm_1357
+  pm_153 hp T ε hT hε.le
+  pm_1651
   · rw [modelPhaseSharpStationarySet_of_long hlong]
     exact (hsource N T a b hN hT ha hb hlong F δ hδ hF).trans
       (mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity))

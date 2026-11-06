@@ -7,6 +7,7 @@ See third_party/twelfth/ATKINSON_MAIN_PLUS_MANIFEST.json and third_party/twelfth
 public import MathCollab.Density.Stronger.Atkinson.BesselK0Decay
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorMass
 public import Mathlib.MeasureTheory.Integral.Prod
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem norm_zetaBesselK0SourceIntegrand_le {T G L : ℝ}
         ‖zetaSmoothDivisorTest T G L x‖ := by
   by_cases hx : zetaSmoothDivisorTest T G L x = 0
   · simp only [zetaBesselK0SourceIntegrand, hx, zero_mul, norm_zero, mul_zero, le_refl]
-  have hs := support_zetaSmoothDivisorTest_physical (by linarith : 0 < T) hG hL hwidth hx
+  pm_6747
   unfold zetaBesselK0SourceIntegrand
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
   calc

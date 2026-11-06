@@ -26,6 +26,6 @@ theorem modelPhaseBufferedCutoff_eq_band {η : ℝ} (hη : 0 < η) (l r u : ℝ)
       zetaBandCutoff (l+η) (l+2*η) (r-2*η) (r-η) u := by
   unfold modelPhaseBufferedCutoff zetaBandCutoff
   rw [show l+2*η-(l+η) = η by ring,show r-η-(r-2*η) = η by ring]
-  congr 2 <;> field_simp [hη.ne'] <;> ring
+  grind
 
 end TaoTrudgianYang2025

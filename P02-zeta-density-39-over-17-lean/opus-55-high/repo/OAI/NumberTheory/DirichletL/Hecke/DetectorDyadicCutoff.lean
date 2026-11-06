@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicProfiles
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesCutoffs
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,15 +25,13 @@ lemma exists_positive_annular : ∃ W : ℝ→ℂ,
   · intro x hx
     have hg : g (4*x-5)≠0 := (mul_ne_zero_iff.mp hx).1
     have hh := hgsupp (subset_tsupport g hg)
-    constructor <;> norm_num at hh <;> linarith [hh.1,hh.2]
+    grind
   · intro x hx
     by_cases hh : DyadicTransfer.annularCutoff cutoff x=0
-    · simp [W,hh]
-    have ha := HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx 0
-      (by simpa using hh)
-    norm_num at ha
-    have hg : g (4*x-5)=1 := hgone _ (abs_le.mpr ⟨by linarith [ha.1],by linarith [ha.2]⟩)
-    simp only [W,hg,one_mul]
+    grind
+    pm_7667 ha
+    have hg : g (4*x-5)=1 := hgone _ (abs_le.mpr ⟨by grind,by linarith [ha.2]⟩)
+    grind
 
 def positiveAnnular : ℝ→ℂ := Classical.choose exists_positive_annular
 
@@ -54,7 +53,7 @@ theorem actual_profile_bounds :
     ∃ C : ℕ→ℝ, (∀ j, 0<C j) ∧
       (∀ j : ℕ, ∀ σ : ℝ, σ∈Icc (-2) 2 → ∀ t : ℝ,
         (1+|t|)^j*‖mellin positiveAnnular ((σ : ℂ)+t*Complex.I)‖≤C j) ∧
-      (∀ j : ℕ, ∀ Dstar D : ℝ, 0<Dstar → 0≤D → D≤4*Dstar →
+      (∀ j : ℕ, ∀ Dstar D : ℝ, 0<Dstar → 0≤D → D ≤4*Dstar →
         ∀ σ : ℝ, σ∈Icc (-2) 2 → ∀ t : ℝ,
         (1+|t|)^j*‖mellin (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar D)
           ((σ : ℂ)+t*Complex.I)‖≤C j) :=

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ExtractedGrid
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,8 +21,10 @@ def maskedGridHybridRow (T : Grid) (Pset : Finset (Ideal Eis))
       (quadraticRow k (primaryGenerator (u.1.1 * u.1.2)) * inverseCubicKernel P (u.2 * u.1.1)) *
         (if IsCoprime P (u.1.2 * t) then 1 else 0))
 
-theorem maskedGridHybridRow_mobius (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
+section
+variable (T : Grid) (Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
+include T Pset a beta
+theorem maskedGridHybridRow_mobius
     (t k : Ideal Eis) (hk : k ≠ 0) :
     maskedGridHybridRow T Pset a beta t k =
       ∑ D ∈ (idealDivisors k) ×ˢ (idealDivisors k),
@@ -34,27 +37,18 @@ theorem maskedGridHybridRow_mobius (T : Grid) (Pset : Finset (Ideal Eis))
     rw [hybrid_double_mask_mobius k P c hk, Finset.sum_product]
   unfold maskedGridHybridRow
   simp_rw [hm, Finset.sum_mul]
-  conv_lhs =>
-    arg 2
-    ext u
-    rw [Finset.sum_comm]
-  rw [Finset.sum_comm]
+  pm_5503 u
   apply Finset.sum_congr rfl
   intro D hD
-  unfold gridDivisorHybridBlock
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro u hu
+  pm_3809 gridDivisorHybridBlock Finset.mul_sum u hu
   by_cases hrc : D.2 ∣ u.2
   · simp only [hrc, ite_true, and_true, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro P hP
     by_cases hRP : D.1 ∣ P <;> simp [hRP]
-  · simp [hrc]
+  simp_all
 
 theorem gridDivisorHybridBlock_zero_of_not_coprime
-    (T : Grid) (Pset : Finset (Ideal Eis))
-    (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ)
     (t k R r : Ideal Eis) (hRr : ¬ IsCoprime R r)
     (hP : ∀ P ∈ Pset, primaryGenerator P ≠ 0)
     (hT : ∀ u ∈ T, primaryGenerator (u.2 * u.1.1) ≠ 0) :
@@ -73,6 +67,7 @@ theorem gridDivisorHybridBlock_zero_of_not_coprime
       simp
     · simp only [hRP, ite_false]
   · simp only [hrc, ite_false]
+end
 
 theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K : ℝ, 1 ≤ K →
@@ -84,7 +79,7 @@ theorem maskedGridHybridRow_divisor_energy (ε : ℝ) (hε : 0 < ε) :
           ∑ D ∈ rows.biUnion (fun k => (idealDivisors k) ×ˢ (idealDivisors k)),
             ∑ k ∈ rows, if D ∈ (idealDivisors k) ×ˢ (idealDivisors k) then
               ‖gridDivisorHybridBlock T Pset a beta t k D.1 D.2‖ ^ 2 else 0 := by
-  obtain ⟨C, hC, hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power (ε / 2) (by positivity)
+  pm_299 C hC hdiv IdealDivisorBound.ideal_divisor_small_power
   refine ⟨C ^ 2, pow_pos hC 2, ?_⟩
   intro K hK rows T Pset a beta t hrows
   have he (k : Ideal Eis) (hk : k ∈ rows) :=

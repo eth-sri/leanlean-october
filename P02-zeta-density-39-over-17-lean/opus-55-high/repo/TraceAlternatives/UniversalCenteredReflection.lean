@@ -1,5 +1,6 @@
 module
 public import TraceAlternatives.UniversalReflectionSecond
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,42 +21,22 @@ theorem reflection_local_energy_universal {η : ℝ} (hη : 0 < η) :
   obtain ⟨C,hC,hBound⟩ := reflection_complete_pair_energy_universal hη
   refine ⟨240*C,by positivity,?_⟩
   intro T t₀ L H hT hL hH hHT W hW _hSep
-  have hTp : 0<T := by linarith
-  have hRoot : 0<Real.sqrt T := Real.sqrt_pos.mpr hTp
-  have hLp : 0<L := hRoot.trans_le hL
-  let X : ℝ := H/L
-  have hX : 0<X := div_pos hH hLp
-  have hXbound : X≤2*Real.sqrt T := by
-    apply (div_le_iff₀ hLp).mpr
-    nlinarith [Real.sq_sqrt hTp.le,
-      mul_nonneg (sub_nonneg.mpr hL) (Real.sqrt_nonneg T)]
+  pm_4107
   let S := universalLocalReflectionBudget T L H W.card (discreteAdditiveEnergy W)
   have hS : 0≤S := by dsimp [S,universalLocalReflectionBudget,universalShortProfile,universalShortSublinearProfile]; positivity
   open MathCollab.Density in
   have hBlock (M : ℕ) (hM : M∈reflectionBlocks L H) :
       (∑' j : ℤ,completePairEnergy M (localSet W H j)) ≤ 24*(C*T^η*S) := by
-    obtain ⟨hM0,_,hMhi⟩ := reflectionBlock_scale_bounds hLp hH hM
-    have hMU : (M:ℝ)≤2*X := by
-      apply hMhi.trans
-      dsimp [X]
-      rw [← mul_div_assoc]
-      apply (div_le_div_iff₀ (by positivity : 0<Real.pi*L) hLp).mpr
-      nlinarith [Real.pi_gt_three,mul_pos hH hLp]
-    have hMT : (M:ℝ)≤4*Real.sqrt T := by linarith
-    have h := hBound T t₀ hT M hM0 hMT W hW
+    pm_4108
+    pm_528 h hBound T t₀ hT M hM0 hMT W hW
     have hMono : universalShortProfile T M W.card (discreteAdditiveEnergy W) ≤ 8*S := by
-      have hh := universalShortProfile_mono hTp.le (by linarith : T≤2*T)
-        (Nat.cast_nonneg M) hMU (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))
+      pm_5407 M hMU
       have hs := universalShortProfile_scale (by norm_num : (1:ℝ)≤2) hTp.le hX.le
         (Nat.cast_nonneg W.card) (Nat.cast_nonneg (discreteAdditiveEnergy W))
-      norm_num only [pow_succ,pow_zero,mul_one] at hs
-      exact hh.trans hs
+      pm_7201
     have hGrouped : completePairEnergy M W ≤ C*T^η*
         universalShortProfile T M W.card (discreteAdditiveEnergy W) := h
-    exact (reflection_local_pair_le_three hH M W).trans
-      ((mul_le_mul_of_nonneg_left
-        (hGrouped.trans (mul_le_mul_of_nonneg_left hMono (by positivity)))
-        (by norm_num : (0:ℝ)≤3)).trans_eq (by ring))
+    pm_2726
   open MathCollab.Density in
   calc
     localReflectionEnergy L H W ≤ ∑ _M∈reflectionBlocks L H,24*(C*T^η*S) := sum_le_sum hBlock

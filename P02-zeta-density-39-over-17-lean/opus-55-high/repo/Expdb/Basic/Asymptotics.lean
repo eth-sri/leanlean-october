@@ -5,6 +5,7 @@ public import Mathlib.Analysis.Asymptotics.Theta
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Order.Filter.Basic
 public import Mathlib.Topology.MetricSpace.Sequences
+import WeylPort.Analytic.RealLaplace
 
 /-!
 # Project-specific asymptotic notation
@@ -60,7 +61,7 @@ infinity. -/
 theorem isUnbounded_iff_tendsto_atTop {X : VariableObject ℝ} (hX : ∀ i, 0 ≤ X i) :
     X.IsUnbounded ↔ Tendsto X atTop atTop := by
   rw [IsUnbounded]
-  exact tendsto_congr fun i ↦ by rw [Real.norm_eq_abs, abs_of_nonneg (hX i)]
+  exact tendsto_congr fun i ↦ by simp_all
 
 /-- A variable object whose norm tends to zero. -/
 def IsInfinitesimal (X : VariableObject α) : Prop :=
@@ -72,7 +73,7 @@ theorem isInfinitesimal_iff_forall_pos (X : VariableObject α) :
     X.IsInfinitesimal ↔
     ∀ δ : ℝ, 0 < δ → ∀ᶠ i in atTop, ‖X i‖ < δ := by
   rw [IsInfinitesimal, Metric.tendsto_nhds]
-  simp only [dist_zero_right, norm_norm]
+  simp_all
 
 end VariableObject
 
@@ -113,7 +114,7 @@ scoped[Expdb] infix:50 " ≤o " => Expdb.IsLEUpToInfinitesimal
 
 open scoped Expdb
 
-private theorem isEqUpToInfinitesimal_iff_tendsto_sub
+theorem isEqUpToInfinitesimal_iff_tendsto_sub
     (X Y : VariableObject E) :
     (X =o Y) ↔ Tendsto (fun i ↦ X i - Y i) atTop (nhds 0) := by
   rw [IsEqUpToInfinitesimal, VariableObject.IsInfinitesimal]
@@ -149,20 +150,20 @@ theorem IsEqUpToInfinitesimal.neg
   rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h ⊢
   simpa [sub_eq_add_neg, add_comm] using h.neg
 
+section
+variable {X₁ X₂ Y₁ Y₂ : VariableObject E} (h₁ : X₁ =o Y₁) (h₂ : X₂ =o Y₂)
+include X₁ X₂ Y₁ Y₂ h₁ h₂
 /-- The relation `=o` is preserved by addition. -/
-theorem IsEqUpToInfinitesimal.add
-    {X₁ X₂ Y₁ Y₂ : VariableObject E}
-    (h₁ : X₁ =o Y₁) (h₂ : X₂ =o Y₂) :
+theorem IsEqUpToInfinitesimal.add :
     X₁ + X₂ =o Y₁ + Y₂ := by
   rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h₁ h₂ ⊢
   simpa only [Pi.add_apply, add_sub_add_comm, zero_add] using h₁.add h₂
 
 /-- The relation `=o` is preserved by subtraction. -/
-theorem IsEqUpToInfinitesimal.sub
-    {X₁ X₂ Y₁ Y₂ : VariableObject E}
-    (h₁ : X₁ =o Y₁) (h₂ : X₂ =o Y₂) :
+theorem IsEqUpToInfinitesimal.sub :
     X₁ - X₂ =o Y₁ - Y₂ := by
   simpa only [sub_eq_add_neg] using h₁.add h₂.neg
+end
 
 /-- The relation `=o` is preserved by multiplication by a fixed scalar. -/
 theorem IsEqUpToInfinitesimal.const_smul
@@ -179,7 +180,7 @@ theorem isEqUpToInfinitesimal_iff_forall_pos
     (X =o Y) ↔
     ∀ δ : ℝ, 0 < δ → ∀ᶠ i in atTop, ‖X i - Y i‖ < δ := by
   rw [IsEqUpToInfinitesimal, VariableObject.isInfinitesimal_iff_forall_pos]
-  simp only [Pi.sub_apply]
+  simp_all
 
 end InfinitesimalRelations
 
@@ -194,7 +195,7 @@ theorem isLEUpToInfinitesimal_iff_forall_pos (X Y : VariableObject ℝ) :
     rw [Real.norm_eq_abs, abs_of_nonneg (le_max_right _ _)] at hi
     linarith [le_max_left (X i - Y i) 0]
   · intro h δ hδ
-    have hδ2 : 0 < δ / 2 := by linarith
+    pm_5913 hδ2 δ
     filter_upwards [h (δ / 2) hδ2] with i hi
     rw [Real.norm_eq_abs, abs_of_nonneg (le_max_right _ _)]
     exact max_lt (by linarith) hδ
@@ -209,16 +210,10 @@ theorem isEqUpToInfinitesimal_iff_leUpToInfinitesimal
   constructor
   · intro h
     constructor
-    · intro δ hδ
-      filter_upwards [h δ hδ] with i hi
-      rw [Real.norm_eq_abs] at hi
-      linarith [lt_of_le_of_lt (le_abs_self (X i - Y i)) hi]
-    · intro δ hδ
-      filter_upwards [h δ hδ] with i hi
-      rw [Real.norm_eq_abs] at hi
-      linarith [lt_of_le_of_lt (neg_le_abs (X i - Y i)) hi]
+    pm_986 le_abs_self
+    pm_986 neg_le_abs
   · rintro ⟨hXY, hYX⟩ δ hδ
-    have hδ2 : 0 < δ / 2 := by linarith
+    pm_5913 hδ2 δ
     filter_upwards [hXY (δ / 2) hδ2, hYX (δ / 2) hδ2] with i hiXY hiYX
     rw [Real.norm_eq_abs]
     rw [abs_lt]

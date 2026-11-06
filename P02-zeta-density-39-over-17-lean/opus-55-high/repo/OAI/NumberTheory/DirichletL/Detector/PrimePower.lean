@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.Gauss
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein
 
@@ -21,19 +22,19 @@ def primePowerGauss (p : O) (hp : p ≠ 0)
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (h : O) : ℂ :=
   conductorFourier p (p ^ n) hp (pow_ne_zero _ hp) χ h
 
-theorem primePowerGauss_support (p : O) (hp : p ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (h : O)
+section
+variable (p : O) (hp : p ≠ 0) (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (h : O)
+include p hp χ n h
+theorem primePowerGauss_support
     (hG : primePowerGauss p hp χ n h ≠ 0) : p ^ n ∣ h :=
   conductorFourier_support p (p ^ n) hp (pow_ne_zero _ hp) χ h hG
 
-theorem primePowerGauss_zero_off_support (p : O) (hp : p ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (h : O)
+theorem primePowerGauss_zero_off_support
     (hdiv : ¬p ^ n ∣ h) : primePowerGauss p hp χ n h = 0 := by
   by_contra hG
   exact hdiv (primePowerGauss_support p hp χ n h hG)
 
-theorem primePowerGauss_lift (p : O) (hp : p ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (h : O) :
+theorem primePowerGauss_lift :
     primePowerGauss p hp χ n (p ^ n * h) =
       (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n * primeGauss p hp χ h := by
   unfold primePowerGauss primeGauss
@@ -41,25 +42,26 @@ theorem primePowerGauss_lift (p : O) (hp : p ≠ 0)
   have hn : Ideal.absNorm (Ideal.span {p ^ n}) = Ideal.absNorm (Ideal.span {p}) ^ n := by
     rw [← Ideal.span_singleton_pow, map_pow]
   rw [hn, Nat.cast_pow]
+end
 
-theorem primePowerGauss_nonprincipal_extra_divisibility (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+section
+variable (p : O) (hp : p ≠ 0) [(Ideal.span {p} : Ideal O).IsMaximal]
+include p hp
+theorem primePowerGauss_nonprincipal_extra_divisibility
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (hχ : χ ≠ 1) (n : ℕ) (h : O)
     (hph : p ∣ h) : primePowerGauss p hp χ n (p ^ n * h) = 0 := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
   let : Finite (O ⧸ Ideal.span {p}) := ConcreteTraceCRT.finite_quotient_span hp
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   rw [primePowerGauss_lift]
-  have hz : Ideal.Quotient.mk (Ideal.span {p}) h = 0 :=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hph)
+  pm_5464 hz h hph
   have hzero : primeGauss p hp χ h = 0 := by
     rw [primeGauss, tsum_fintype]
     simp only [hz, zero_mul, AddChar.map_zero_eq_one, mul_one]
     exact MulChar.sum_eq_zero_of_ne_one hχ
   rw [hzero, mul_zero]
 
-theorem primePowerGauss_principal (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem primePowerGauss_principal
     (hψ : quotientTrace p hp ≠ 1) (n : ℕ) (h : O) :
     primePowerGauss p hp 1 n (p ^ n * h) =
       (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ n *
@@ -69,14 +71,12 @@ theorem primePowerGauss_principal (p : O) (hp : p ≠ 0)
   let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   rw [primePowerGauss_lift]
   congr 1
-  have hdiv : Ideal.Quotient.mk (Ideal.span {p}) h = 0 ↔ p ∣ h := by
-    rw [Ideal.Quotient.eq_zero_iff_mem, Ideal.mem_span_singleton]
+  pm_6572 hdiv h
   simpa only [primeGauss, tsum_fintype, ProbeGauss.frequencyGauss, hdiv] using
     ProbeGauss.frequencyGauss_principal (quotientTrace p hp) hψ
       (Ideal.Quotient.mk (Ideal.span {p}) h)
 
-theorem higher_outer_lift_annihilated (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem higher_outer_lift_annihilated
     (χ ξ : MulChar (O ⧸ Ideal.span {p}) ℂ) {n : ℕ} (hn : 0 < n) (m : O) :
     ξ (Ideal.Quotient.mk (Ideal.span {p}) m) * primePowerGauss p hp χ n (-m) = 0 := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
@@ -85,9 +85,9 @@ theorem higher_outer_lift_annihilated (p : O) (hp : p ≠ 0)
   · have hdneg := primePowerGauss_support p hp χ n (-m) hG
     have hdpow : p ∣ p ^ n := dvd_pow_self p (Nat.ne_of_gt hn)
     have hdm : p ∣ m := dvd_neg.mp (hdpow.trans hdneg)
-    have hz : Ideal.Quotient.mk (Ideal.span {p}) m = 0 :=
-      Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hdm)
+    pm_5464 hz m hdm
     rw [hz, MulChar.map_zero, zero_mul]
+end
 
 def scalarKOne (p : O) (hp : p ≠ 0)
     (χ ξ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (h : O) : ℂ :=
@@ -120,8 +120,7 @@ theorem scalarKOne_eq (p : O) (hp : p ≠ 0)
       rw [← mul_sub, primePowerGauss_lift]
       have he : primeGauss p hp ξ (k - GaussianShiftedPartition.representative p d) =
           ProbeGauss.frequencyGauss ξ (quotientTrace p hp) (Ideal.Quotient.mk _ k - d) := by
-        rw [primeGauss, tsum_fintype]
-        simp only [hmk, ProbeGauss.frequencyGauss]
+        pm_327 primeGauss tsum_fintype hmk ProbeGauss.frequencyGauss
       rw [he]
       ring
     rw [hscalar, ProbeGauss.finite_gauss_convolution, primePowerGauss_lift]

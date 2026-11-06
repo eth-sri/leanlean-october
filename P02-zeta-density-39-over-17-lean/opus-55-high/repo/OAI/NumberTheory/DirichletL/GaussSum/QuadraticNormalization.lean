@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.QuadraticTrace
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,15 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
@@ -23,8 +21,7 @@ namespace ActualEisensteinCubic
 open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE
 
 noncomputable def quadraticGammaO (c : O) (hc : c ≠ 0) : ℂ := by
-  letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
-  letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
+  pm_3425 c hc
   let ψ := eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc
   exact (∑ x : O ⧸ Ideal.span {c}, ψ (x ^ 2)) /
     (‖eisEmbedding c‖ : ℂ)
@@ -83,7 +80,7 @@ theorem from_mean_square_and_prime_rows_with_constant
     calc
       (D ^ E) ^ 2 = D ^ (E * 2) :=
         (Real.rpow_mul_natCast hDpos.le E 2).symm
-      _ = D ^ ((23 / 12 : ℝ) + 2 * ε) := by rw [hexp]
+      _ = D ^ ((23 / 12 : ℝ) + 2 * ε) := by grind
   have htwo : 0 ≤ 2 * C * D ^ E := by positivity
   apply (sq_le_sq₀ hA htwo).mp
   rw [mul_pow, mul_pow, hpow2]
@@ -188,11 +185,11 @@ theorem dyadic_prime_error_bound (D N : ℕ) (hD : 1 ≤ D)
     (hN : (D : ℝ) ^ (11 / 60 : ℝ) / 2 ≤ (N : ℝ)) :
     ((64 * (D / N + 1) : ℕ) : ℝ) ≤
       192 * (D : ℝ) ^ (49 / 60 : ℝ) := by
-  have hDreal : (1 : ℝ) ≤ D := by exact_mod_cast hD
-  have hDpos : (0 : ℝ) < D := lt_of_lt_of_le zero_lt_one hDreal
+  pm_77 hDreal D hD
+  pm_7228
   have hYpos : 0 < (D : ℝ) ^ (11 / 60 : ℝ) :=
     Real.rpow_pos_of_pos hDpos _
-  have hNpos : (0 : ℝ) < N := by linarith
+  pm_389 hNpos N
   have hpow :
       (D : ℝ) ^ (49 / 60 : ℝ) *
         (D : ℝ) ^ (11 / 60 : ℝ) = D := by
@@ -260,15 +257,16 @@ end ActualEisensteinCubic
 
 namespace GaussianAbelPartition
 
-theorem tsum_by_finite_fibers {A B : Type*} [Fintype B]
-    (q : A → B) (f : A → ℂ) (hf : Summable f) :
+section
+variable {A B : Type*} [Fintype B] (q : A → B)
+include A B q
+theorem tsum_by_finite_fibers (f : A → ℂ) (hf : Summable f) :
     (∑' a : A, f a) =
       ∑ b : B, ∑' a : (q ⁻¹' {b}), f a.1 := by
   have h := (hf.hasSum.tsum_fiberwise q).tsum_eq
   simpa only [tsum_fintype] using h.symm
 
-theorem tsum_periodic_weighted_partition {A B : Type*} [Fintype B]
-    (q : A → B) (P : B → ℂ) (W : A → ℂ)
+theorem tsum_periodic_weighted_partition (P : B → ℂ) (W : A → ℂ)
     (hf : Summable (fun a => P (q a) * W a)) :
     (∑' a : A, P (q a) * W a) =
       ∑ b : B, P b * ∑' a : (q ⁻¹' {b}), W a.1 := by
@@ -284,6 +282,7 @@ theorem tsum_periodic_weighted_partition {A B : Type*} [Fintype B]
         simpa only [Set.mem_preimage, Set.mem_singleton_iff] using a.property
       rw [ha]
     _ = P b * ∑' a : (q ⁻¹' {b}), W a.1 := tsum_mul_left
+end
 
 open ConcreteTraceCRT ConcreteBreveE ActualEisensteinCubic
 
@@ -301,8 +300,7 @@ theorem actual_quadratic_gaussian_partition (c : O) (hc : c ≠ 0)
         (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
           (r ^ 2) *
           ∑' z : ((Ideal.Quotient.mk (Ideal.span {c})) ⁻¹' {r}), W z.1 := by
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
-  let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
+  pm_3431
   exact tsum_periodic_weighted_partition
     (Ideal.Quotient.mk (Ideal.span {c}))
     (fun r => (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
@@ -380,7 +378,7 @@ theorem fiberMap_surjective (c : O)
     simpa only [Set.mem_preimage, Set.mem_singleton_iff] using hz
   have hdiff : z-r0 ∈ Ideal.span {c} :=
     (Ideal.Quotient.mk_eq_mk_iff_sub_mem z r0).mp (hz'.trans hr.symm)
-  obtain ⟨w, hw⟩ := (Ideal.mem_span_singleton).mp hdiff
+  pm_8756 hdiff
   refine ⟨w, ?_⟩
   apply Subtype.ext
   change r0 + c*w = z
@@ -443,7 +441,7 @@ theorem eisQ_lower (z : ℤ × ℤ) :
 
 theorem eis_gauss_summable {t : ℝ} (ht : 0 < t) :
     Summable (eisGauss t) := by
-  have ht2 : 0 < t / 2 := by positivity
+  pm_4910 ht2 t
   have h1 := real_gauss_summable ht2
   have hmaj : Summable (fun z : ℤ × ℤ =>
       Real.exp (-Real.pi * (t / 2) * (z.1 : ℝ) ^ 2) *
@@ -452,8 +450,7 @@ theorem eis_gauss_summable {t : ℝ} (ht : 0 < t) :
   refine hmaj.of_norm_bounded ?_
   intro z
   have hq := eisQ_lower z
-  have hpi : 0 ≤ Real.pi * t := (mul_pos Real.pi_pos ht).le
-  have hmul := mul_le_mul_of_nonneg_left hq hpi
+  pm_7624 hpi hq
   have hexp : -Real.pi * t * eisQ z ≤
       -Real.pi * (t / 2) * (z.1 : ℝ) ^ 2 +
       -Real.pi * (t / 2) * (z.2 : ℝ) ^ 2 := by

@@ -1,43 +1,36 @@
 module
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonPairPhysicalScale
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-! Closed physical budget for the actual general-pair dyadic consumer. -/
 
-noncomputable section
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
-theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ)
-    (hC : 1 ≤ C) (hH : 1 ≤ H) (hG : 1 ≤ G)
-    (hL : 0 ≤ L) (hLH : L ≤ H) (hlog : 1 ≤ Real.log (2*H))
-    (hpair : InExponentPairTriangle k l)
+section
+variable {C H G L k l : ℝ} {N : ℕ} (R : ℕ) (hC : 1 ≤ C) (hH : 1 ≤ H) (hG : 1 ≤ G) (hL : 0 ≤ L) (hLH : L ≤ H) (hlog : 1 ≤ Real.log (2*H)) (hpair : InExponentPairTriangle k l)
+include C H G L k l N R hC hH hG hL hLH hlog hpair
+theorem atkinsonPairPowerTerm_physical_le
     (hcut : (N : ℝ) ≤ 74*H*(Real.log (2*H))^2/G^2) :
     G^2*H^(-(1/2:ℝ))*atkinsonPairPowerTerm C k l H G L N R ≤
       10000*C*(Real.log (2*H))^3*
         ((R : ℝ)*H/G+(R : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l)) := by
-  have hH0 : 0 < H := by linarith
-  have hG0 : 0 < G := by linarith
-  have hlog0 : 0 < Real.log (2*H) := by linarith
-  have hp : 0 ≤ l+1/2-k/2 := by
-    rcases hpair with ⟨_,hk,hl,_,_⟩
-    linarith
-  let P := G^2*H^(-(1/2:ℝ))
-  let B := 74*H*(Real.log (2*H))^2/G^2
+  pm_4350
+  pm_882
+  pm_1345 hpair
+  pm_4352
   let K := (harmonic (Nat.ceil (L/G)) : ℝ)
-  have hP : 0 ≤ P := by dsimp [P]; positivity
+  pm_61 hP P
   have hK : 0 ≤ K := by
     simpa only [harmonic_zero,Rat.cast_zero] using
       atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
   have hk : K ≤ 2*Real.log (2*H) :=
     atkinson_pair_harmonic_le_height_log hH hG hLH hlog
   have hd : P*(N : ℝ)^(3/2:ℝ) ≤ 5476*(H/G)*(Real.log (2*H))^3 := by
-    calc
-      _ ≤ P*B^(3/2:ℝ) := mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP
-      _ ≤ _ := atkinsonPhysical_diagonal_scale hH0 hG0 hlog0
+    pm_4353
   have hn : (Real.sqrt H/G)*(P*(N : ℝ)) ≤
       74*(H/G)*(Real.log (2*H))^2 := by
     calc
@@ -69,8 +62,8 @@ theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ
   apply (add_le_add (add_le_add h1 h2) h3).trans
   let X := (R : ℝ)*(H/G)*(Real.log (2*H))^3
   let Y := (R : ℝ)^2*(L^k*H^(l-k)*G^(1+k-2*l))*(Real.log (2*H))^3
-  have hX : 0 ≤ X := by dsimp [X]; positivity
-  have hY : 0 ≤ Y := by dsimp [Y]; positivity
+  pm_61 hX X
+  pm_61 hY Y
   calc
     _ = (5476+296*C)*X+5476*C*Y := by dsimp [X,Y]; ring
     _ ≤ (10000*C)*X+(10000*C)*Y := add_le_add
@@ -78,10 +71,7 @@ theorem atkinsonPairPowerTerm_physical_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ
       (mul_le_mul_of_nonneg_right (by linarith) hY)
     _ = _ := by dsimp [X,Y]; ring
 
-theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R : ℕ)
-    (hC : 1 ≤ C) (hH : 1 ≤ H) (hG : 1 ≤ G)
-    (hL : 0 ≤ L) (hLH : L ≤ H) (hlog : 1 ≤ Real.log (2*H))
-    (hpair : InExponentPairTriangle k l) (hN : (N : ℝ) ≤ H)
+theorem atkinsonPairPowerBudget_physical_log_le (hN : (N : ℝ) ≤ H)
     (hcut : (N : ℝ) ≤ 74*H*(Real.log (2*H))^2/G^2) :
     G^2*H^(-(1/2:ℝ))*atkinsonPairPowerBudget C k l H G L N R ≤
       (10000*C*(1/Real.log 2+1)^2)*(Real.log (2*H))^5*
@@ -102,5 +92,6 @@ theorem atkinsonPairPowerBudget_physical_log_le {C H G L k l : ℝ} {N : ℕ} (R
           ((R : ℝ)*H/G+(R : ℝ)^2*L^k*H^(l-k)*G^(1+k-2*l))) :=
       mul_le_mul_of_nonneg_right hj (by positivity)
     _ = _ := by ring
+end
 
 end TaoTrudgianYang2025

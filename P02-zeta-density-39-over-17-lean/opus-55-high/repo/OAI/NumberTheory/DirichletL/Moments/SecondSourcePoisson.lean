@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,7 +19,7 @@ local notation "O" => ActualEisensteinCubic.O
 
 theorem secondSourceKernel_poisson (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
-    secondSourceKernel I J W K=
+    secondSourceKernel I J W K =
       (K:ℂ)/((Real.sqrt (Ideal.absNorm I:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm J:ℝ):ℂ))*
         ∑' h : O,actualCorrelation (primaryGenerator I) (primaryGenerator J)
           (by rw [primary_span_supported I hI];exact hI)
@@ -34,7 +35,7 @@ theorem secondSourceKernel_poisson (I J : Ideal O) (hI : Supported I) (hJ : Supp
 theorem sourceGaussEnergy_poisson (τ : Character) (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O → ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
-    sourceGaussEnergy S β (heightCoeff τ t) W K=
+    sourceGaussEnergy S β (heightCoeff τ t) W K =
       ∑ I : supportedColumns S,∑ J : supportedColumns S,
         ((β I*heightCoeff τ t I)*star (β J*heightCoeff τ t J))*
           ((K:ℂ)/((Real.sqrt (Ideal.absNorm (I:Ideal O):ℝ):ℂ)*(Real.sqrt (Ideal.absNorm (J:Ideal O):ℝ):ℂ)))*
@@ -43,12 +44,8 @@ theorem sourceGaussEnergy_poisson (τ : Character) (t : ℝ)
               paperRadialFourier W (K*‖eisEmbedding h‖^2/
                 ‖eisEmbedding (sourceGenerator S I*sourceGenerator S J)‖^2) := by
   rw [sourceGaussEnergy,gaussEnergy_poisson _ _ _ _ W K hK]
-  apply Finset.sum_congr rfl
-  intro I hI
-  apply Finset.sum_congr rfl
-  intro J hJ
-  simp only [sourceGenerator,primary_span_supported I (Finset.mem_filter.mp I.property).2,
-    primary_span_supported J (Finset.mem_filter.mp J.property).2]
+  pm_2981
+  pm_5660
   ring
 
 end SevenEighths.CenteredMomentSecondSourcePoisson

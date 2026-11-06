@@ -8,6 +8,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonSaddle
 public import Mathlib.Analysis.Real.Pi.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem atkinsonSaddleRoot_small_frequency {T b : ℝ} (hT : 0 < T)
   have hSsq : S ^ 2 = T := Real.sq_sqrt hT.le
   have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
   have hrb : 0 < r - b := atkinsonSaddleRoot_sub_pos (by positivity) b
-  have he : r ^ 2 - b * r = T / (2 * Real.pi) := atkinsonSaddleRoot_equation (by positivity) b
+  pm_1177
   have hAlo : T / 8 ≤ T / (2 * Real.pi) :=
     div_le_div_of_nonneg_left hT.le (by positivity) (by nlinarith [Real.pi_lt_four])
   have hAhi : T / (2 * Real.pi) ≤ T / 6 :=
@@ -62,22 +63,24 @@ theorem sqrt_nat_small_frequency {T : ℝ} (hT : 0 < T) (n : ℕ)
   have hTsq := Real.sq_sqrt hT.le
   nlinarith [Real.sqrt_nonneg (n : ℝ), Real.sqrt_pos.2 hT]
 
-theorem atkinsonSaddleRoot_inverse_identity {A : ℝ} (hA : 0 < A) (b : ℝ) :
+section
+variable {A : ℝ} (hA : 0 < A)
+include A hA
+theorem atkinsonSaddleRoot_inverse_identity (b : ℝ) :
     atkinsonSaddleRoot A b-A/atkinsonSaddleRoot A b = b := by
-  have hr := atkinsonSaddleRoot_pos hA b
-  have he := atkinsonSaddleRoot_equation hA b
+  pm_111 hr atkinsonSaddleRoot_pos hA b he atkinsonSaddleRoot_equation
   field_simp
   nlinarith
 
-theorem atkinsonSaddleRoot_monotone {A : ℝ} (hA : 0 < A) :
+theorem atkinsonSaddleRoot_monotone :
     Monotone (atkinsonSaddleRoot A) := by
   intro b c hbc
   by_contra hn
   have hlt := lt_of_not_ge hn
   have hdiv := div_le_div_of_nonneg_left hA.le (atkinsonSaddleRoot_pos hA c) hlt.le
-  have hb := atkinsonSaddleRoot_inverse_identity hA b
-  have hc := atkinsonSaddleRoot_inverse_identity hA c
+  pm_733 hb atkinsonSaddleRoot_inverse_identity hA b hc c
   linarith
+end
 
 theorem zetaAtkinsonSaddle_monotone {T : ℝ} (hT : 0 < T) :
     Monotone (zetaAtkinsonSaddle T) := by
@@ -91,22 +94,20 @@ def atkinsonPositiveRootSample (T : ℝ) (m i : ℕ) : ℝ :=
 def atkinsonNegativeRootSample (T : ℝ) (m i : ℕ) : ℝ :=
   atkinsonSaddleRoot (T/(2*Real.pi)) (-Real.sqrt ((m+i:ℕ):ℝ)) / Real.sqrt T
 
-theorem atkinsonPositiveRootSample_monotone {T : ℝ} (hT : 0 < T) (m : ℕ) :
+section
+variable {T : ℝ} (hT : 0 < T)
+include T hT
+theorem atkinsonPositiveRootSample_monotone (m : ℕ) :
     Monotone (atkinsonPositiveRootSample T m) := by
-  intro i j hij
-  apply div_le_div_of_nonneg_right _ (Real.sqrt_nonneg T)
-  apply atkinsonSaddleRoot_monotone (by positivity)
+  pm_6516
   exact Real.sqrt_le_sqrt (by exact_mod_cast Nat.add_le_add_left hij m)
 
-theorem atkinsonNegativeRootSample_antitone {T : ℝ} (hT : 0 < T) (m : ℕ) :
+theorem atkinsonNegativeRootSample_antitone (m : ℕ) :
     Antitone (atkinsonNegativeRootSample T m) := by
-  intro i j hij
-  apply div_le_div_of_nonneg_right _ (Real.sqrt_nonneg T)
-  apply atkinsonSaddleRoot_monotone (by positivity)
-  apply neg_le_neg
-  exact Real.sqrt_le_sqrt (by exact_mod_cast Nat.add_le_add_left hij m)
+  pm_6516
+  pm_8117
 
-theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
+theorem atkinsonRootSample_mem (m N : ℕ)
     (hN : 10000*((m+N:ℕ):ℝ) ≤ T) (i : ℕ) (hi : i ≤ N) :
     atkinsonPositiveRootSample T m i ∈ Icc (1/4) 1 ∧
       atkinsonNegativeRootSample T m i ∈ Icc (1/4) 1 := by
@@ -117,7 +118,7 @@ theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
   have hp := atkinsonSaddleRoot_small_frequency hT hb
   have hm := atkinsonSaddleRoot_small_frequency hT (b := -Real.sqrt ((m+i:ℕ):ℝ))
     (by simpa only [abs_neg] using hb)
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  pm_4891 hs T hT
   constructor
   · constructor
     · apply (le_div_iff₀ hs).2
@@ -129,5 +130,6 @@ theorem atkinsonRootSample_mem {T : ℝ} (hT : 0 < T) (m N : ℕ)
       linarith [hm.1]
     · apply (div_le_iff₀ hs).2
       linarith [hm.2]
+end
 
 end MathCollab.Density.Stronger.Atkinson

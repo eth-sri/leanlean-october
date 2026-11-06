@@ -1,5 +1,6 @@
 module
 public import TwoPowerTailTransfer
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -14,7 +15,7 @@ theorem critical_excess_integral_le_two_tails_interval {L U v A D q : ℝ}
         A*u^(-6:ℝ)+D*u^(-q)) :
     (∫ t in Icc L U,criticalExcess v t) ≤
       (A/5)*v^(-5:ℝ)+(D/(q-1))*v^(1-q) := by
-  let μ : Measure ℝ := volume.restrict (Icc L U)
+  pm_8615 Icc L U
   have he : Integrable (criticalExcess v) μ :=
     (criticalExcess_continuous v).continuousOn.integrableOn_compact isCompact_Icc
   have h₆ := shifted_power_tail_integral hv (by norm_num : (1:ℝ)<6)
@@ -32,8 +33,8 @@ theorem critical_excess_integral_le_two_tails_interval {L U v A D q : ℝ}
       ext x
       simp only [mem_ofPred_eq,criticalExcess,le_max_iff]
       constructor
-      · rintro (h|h) <;> linarith
-      · intro h; exact Or.inl (by linarith)
+      grind
+      grind
     have hm : MeasurableSet {x : ℝ | v+t ≤ zetaMomentCriticalNorm x} :=
       measurableSet_le measurable_const continuous_zetaMomentCriticalNorm.measurable
     rw [hset]
@@ -41,7 +42,7 @@ theorem critical_excess_integral_le_two_tails_interval {L U v A D q : ℝ}
     dsimp only [μ]
     rw [Measure.restrict_apply hm]
     have hset' : {x : ℝ | v+t ≤ zetaMomentCriticalNorm x} ∩ Icc L U=
-        {x : ℝ | x ∈ Icc L U ∧ v+t ≤ zetaMomentCriticalNorm x} := by ext x; simp only [mem_inter_iff,mem_ofPred_eq,and_comm]
+        {x : ℝ | x ∈ Icc L U ∧ v+t ≤ zetaMomentCriticalNorm x} := by ext x; grind
     rw [hset']
     exact htail (v+t) (by linarith)
   apply hb.trans_eq

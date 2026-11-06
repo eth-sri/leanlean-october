@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Support
 public import OAI.NumberTheory.DirichletL.Detector.Physical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,7 @@ theorem quotientTrace_scaled (d a m : O) (hm : m = d * a)
     quotientTrace m hm0 (h * scaledResidue d a m hm x) =
       quotientTrace d hd (frequencyReduction d m (hm ▸ dvd_mul_right d a) h * x) := by
   subst m
-  obtain ⟨h, rfl⟩ := Ideal.Quotient.mk_surjective h
-  obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
+  pm_8657 h x
   have ht := quotientTrace_conductor_scale d a h hd ha (Ideal.Quotient.mk _ x)
   simp only [scaledResidue_mk, frequencyReduction_mk, ← map_mul]
   simpa only [← map_mul, conductorReduction, Ideal.Quotient.factor_mk, mul_assoc,
@@ -40,9 +40,7 @@ theorem residueGauss_supported_mk (d : O)
     (hd : CanonicalQuadraticSieve.Supported (Ideal.span {d})) (h : O) :
     residueGauss d (supported_element_ne_zero d hd) (supportedModulusCharacter d hd)
       (Ideal.Quotient.mk _ h) = ProbePhysical.sexticGauss d (supported_element_ne_zero d hd) h := by
-  apply tsum_congr
-  intro x
-  obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
+  pm_8552 tsum_congr
   rw [supportedModulusCharacter_mk, ProbePhysical.sexticGauss_coefficient_mk]
 
 theorem fourierSum_scaled (d a m : O) (hm : m = d * a)

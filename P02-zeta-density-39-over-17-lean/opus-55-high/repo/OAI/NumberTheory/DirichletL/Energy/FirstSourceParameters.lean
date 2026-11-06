@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstActualFrequencyBudget
 public import OAI.NumberTheory.DirichletL.Energy.FirstLiveAdmission
 public import OAI.NumberTheory.DirichletL.Energy.WidthRanges
 public import OAI.NumberTheory.DirichletL.Energy.StageMargins
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,19 +38,18 @@ theorem parameter_gates (M A B κ ε:ℝ)(hM:0≤M)(hA:0≤A)(hB:0≤B)
     (hκ:(3/4:ℝ)≤κ)(hε:0<ε):
     let sigma:=amplification ε
     let r:=reserve M B ε
-    0<sigma ∧ sigma≤1 ∧ 0<r/4 ∧ r/4≤sigma/4 ∧ r/4≤1 ∧
-      0<sourceEpsilon M A B ε ∧ sourceEpsilon M A B ε≤1 ∧
-      0<maskEpsilon M B ε ∧ 0<mesh M B κ ε ∧
-      mesh M B κ ε≤sigma/12 ∧ 0≤sigma/12 ∧ sigma/12<sigma/6 ∧
+    0< sigma ∧ sigma≤1 ∧ 0< r/4 ∧ r/4≤ sigma/4 ∧ r/4≤1 ∧
+      0< sourceEpsilon M A B ε ∧ sourceEpsilon M A B ε≤1 ∧
+      0< maskEpsilon M B ε ∧ 0< mesh M B κ ε ∧
+      mesh M B κ ε≤ sigma/12 ∧ 0≤ sigma/12 ∧ sigma/12< sigma/6 ∧
       0<2*sigma+1 ∧ 0≤A+1:=by
   dsimp only
   have hκ0:0≤κ:=by linarith
-  have hb:=bounds M B κ ε hM hB hκ0 hε
-  have hr:=hb.2.2.2.1
-  have hrs:reserve M B ε≤amplification ε/100:=min_le_left _ _
+  pm_1476 hκ0
+  pm_6549 hrs M B
   have hm:=hb.2.2.2.2.2.1
-  have hes:0<sourceEpsilon M A B ε:=by unfold sourceEpsilon;positivity
-  have hesr:sourceEpsilon M A B ε≤reserve M B ε:=by
+  have hes:0< sourceEpsilon M A B ε:=by unfold sourceEpsilon;positivity
+  have hesr:sourceEpsilon M A B ε≤ reserve M B ε:=by
     unfold sourceEpsilon
     apply (div_le_iff₀ (by positivity)).mpr
     nlinarith [mul_nonneg hr.le hA]
@@ -68,20 +68,19 @@ theorem eventually_actual_four_fit (M A P B κ ε:ℝ)
     (hκ:(3/4:ℝ)≤κ)(hε:0<ε):
     let r:=reserve M B ε
     ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(k:ℕ)(εchild:ℝ),εchild≤stageLoss M B ε k→∀j:Fin 4,
+      ∀(k:ℕ)(εchild:ℝ),εchild≤ stageLoss M B ε k→∀j:Fin 4,
         losses (sourceEpsilon M A B ε) (r/4) (r/4) (readyBudget A P) j+
           lossVector (amplification ε) (frequencyLoss Z 32 (r/4)) (r/4)
             ((readyBudget A P+readyBudget A P)*maskEpsilon M B ε+εchild+r/4+
               (frequencyLoss Z 32 (r/4)+r/4+r/4)/6+(r/4)/3+κ*mesh M B κ ε)
             (sourceEpsilon M A B ε) A (2*amplification ε+1) j+
-          sourceEpsilon M A B ε*(A+1)+r/4≤columnLoss M B ε k:=by
+          sourceEpsilon M A B ε*(A+1)+r/4≤ columnLoss M B ε k:=by
   dsimp only
   have hκ0:0≤κ:=by linarith
   have h:=actual_frequency_four_budget M A B (A+1) κ ε hM hA hB (by linarith) hκ0 hε
   obtain ⟨_,_,hem,_,_,hevent⟩:=h
-  have hr:0<reserve M B ε:=(bounds M B κ ε hM hB hκ0 hε).2.2.2.1
-  filter_upwards [hevent] with Z hZ
-  refine ⟨hZ.1,?_⟩
+  have hr:0< reserve M B ε:=(bounds M B κ ε hM hB hκ0 hε).2.2.2.1
+  pm_168 hevent
   intro k εchild hchild j
   have hfit:=hZ.2.2.2 k εchild (reserve M B ε) (reserve M B ε) hchild le_rfl le_rfl j
   have hmono:=source_cap_mono (sourceEpsilon M A B ε) (reserve M B ε/4) (reserve M B ε/4)

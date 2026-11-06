@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.HeckeExpansion
 public import OAI.NumberTheory.DirichletL.Moments.MobiusRegroup
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,22 +16,24 @@ variable {ι : Type*} [DecidableEq ι]
 
 def nonemptySelections (s : Finset ι) : Finset (Finset ι) := s.powerset.erase ∅
 
+section
+variable (P : Ideal O) (hP : Prime P) (s : Finset ι) (v : ι → Ideal O)
+include P hP s v
 omit [DecidableEq ι] in
-theorem prime_complement (P : Ideal O) (hP : Prime P) (s : Finset ι) (v : ι → Ideal O) :
+theorem prime_complement :
     (∏ i ∈ s, (1-(if P ∣ v i then (1:ℂ) else 0))) =
       if P ∣ ∏ i ∈ s,v i then 0 else 1 := by
   by_cases h : P ∣ ∏ i ∈ s,v i
   · rw [ite_eq_left h]
     obtain ⟨i,hi,hd⟩ := (hP.dvd_finsetProd_iff v).mp h
-    exact Finset.prod_eq_zero hi (by simp only [ite_eq_left hd,sub_self])
+    exact Finset.prod_eq_zero hi (by grind)
   · rw [ite_eq_right h]
     apply Finset.prod_eq_one
     intro i hi
     have hd : ¬P∣v i := fun hh => h ((hP.dvd_finsetProd_iff v).mpr ⟨i,hi,hh⟩)
-    simp only [ite_eq_right hd,sub_zero]
+    grind
 
-theorem prime_factor_allocation (P : Ideal O) (hP : Prime P)
-    (s : Finset ι) (v : ι → Ideal O) :
+theorem prime_factor_allocation :
     (if P ∣ ∏ i ∈ s,v i then (1:ℂ) else 0) =
       ∑ J ∈ nonemptySelections s, (-1:ℂ)^(J.card+1)*
         ∏ i ∈ J, if P ∣ v i then (1:ℂ) else 0 := by
@@ -52,11 +55,11 @@ theorem prime_factor_allocation (P : Ideal O) (hP : Prime P)
     rw [pow_succ]
     ring
   rw [hn]
-  by_cases h : P∣∏ i ∈ s,v i <;> simp only [h,ite_true,ite_false] at he ⊢ <;>
-    linear_combination he
+  grind
+end
 
 theorem squarefree_dvd_iff (D I : Ideal O) (hD : Squarefree D) :
-    D∣I ↔ ∀ P ∈ primeSupport D,P∣I := by
+    D ∣I ↔ ∀ P ∈ primeSupport D,P∣I := by
   constructor
   · intro hd P hP
     exact (dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hP)).trans hd
@@ -64,8 +67,8 @@ theorem squarefree_dvd_iff (D I : Ideal O) (hD : Squarefree D) :
     rw [← squarefree_support_product_self hD]
     apply Finset.prod_dvd_of_coprime ?_ h
     intro P hP Q hQ hne
-    let : P.IsMaximal := (Ideal.isPrime_of_prime (support_prime hP)).isMaximal (support_prime hP).ne_zero
-    let : Q.IsMaximal := (Ideal.isPrime_of_prime (support_prime hQ)).isMaximal (support_prime hQ).ne_zero
+    pm_8660 P.IsMaximal hP
+    pm_8660 Q.IsMaximal hQ
     exact Ideal.isCoprime_of_isMaximal hne
 
 abbrev Allocation (D : Ideal O) (s : Finset ι) :=
@@ -78,11 +81,11 @@ def allocationTerm (D : Ideal O) (s : Finset ι) (v : ι → Ideal O)
 
 theorem squarefree_mask_allocation (D : Ideal O) (hD : Squarefree D)
     (s : Finset ι) (v : ι → Ideal O) :
-    (if D∣∏ i ∈ s,v i then (1:ℂ) else 0) =
+    (if D ∣∏ i ∈ s,v i then (1:ℂ) else 0) =
       ∑ a : Allocation D s, allocationTerm D s v a := by
-  have hprod : (if D∣∏ i ∈ s,v i then (1:ℂ) else 0) =
+  have hprod : (if D ∣∏ i ∈ s,v i then (1:ℂ) else 0) =
       ∏ P : primeSupport D, if (P:Ideal O)∣∏ i ∈ s,v i then (1:ℂ) else 0 := by
-    by_cases hd : D∣∏ i ∈ s,v i
+    by_cases hd : D ∣∏ i ∈ s,v i
     · rw [ite_eq_left hd]
       symm
       apply Finset.prod_eq_one
@@ -99,7 +102,7 @@ theorem squarefree_mask_allocation (D : Ideal O) (hD : Squarefree D)
       ∑ J : nonemptySelections s, (-1:ℂ)^(J.val.card+1)*
         ∏ i ∈ J.val, if (P:Ideal O)∣v i then (1:ℂ) else 0 := by
     rw [prime_factor_allocation P (support_prime P.property) s v]
-    exact (Finset.sum_coe_sort (nonemptySelections s) (fun J =>
+    exact (Finset.sum_coe_sort (nonemptySelections s) (fun J=>
       (-1:ℂ)^(J.card+1)*∏ i ∈ J,if (P:Ideal O)∣v i then (1:ℂ) else 0)).symm
   simp_rw [hl]
   exact Fintype.prod_sum _

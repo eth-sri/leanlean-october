@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.Correlation
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
 public import Mathlib.Algebra.Group.Pi.Units
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem fullCorrelation_ringEquiv (e : A ≃+* B) (u v k : A) (f g : B → ℂ) 
   intro y
   have heq : v * x - u * y = k ↔ e v * e x - e u * e y = e k := by
     rw [← map_mul, ← map_mul, ← map_sub, e.injective.eq_iff]
-  simp only [RingEquiv.toEquiv_eq_coe, EquivLike.coe_coe, heq]
+  simp_all
 
 theorem fullCorrelation_pi {ι : Type*} [Fintype ι] {R : ι → Type*}
     [∀ i, CommRing (R i)] [∀ i, Fintype (R i)]
@@ -37,13 +38,10 @@ theorem fullCorrelation_pi {ι : Type*} [Fintype ι] {R : ι → Type*}
       ∏ i, if v i * x i - u i * y i = k i then f i (x i) * star (g i (y i)) else 0 := by
     by_cases h : ∀ i, v i * x i - u i * y i = k i
     · have heq : v * x - u * y = k := funext h
-      simp only [heq, ite_true, h, star_prod, Finset.prod_mul_distrib]
+      pm_93 heq ite_true h star_prod Finset.prod_mul_distrib
     · obtain ⟨i, hi⟩ := not_forall.mp h
       have hne : v * x - u * y ≠ k := fun heq => hi (congrFun heq i)
-      rw [ite_eq_right hne]
-      symm
-      apply Finset.prod_eq_zero (Finset.mem_univ i)
-      simp only [hi, ite_false]
+      pm_6873 hne
   simp only [fullCorrelation]
   simp_rw [hterm]
   calc

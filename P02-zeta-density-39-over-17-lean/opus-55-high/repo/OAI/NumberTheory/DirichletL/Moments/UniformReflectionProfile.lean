@@ -1,23 +1,25 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.OneReflectionEnergy
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical SchwartzMap ContDiff ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentUniformReflectionProfile
 open HeckeFamily FourierBridge EisensteinSchwartzPoisson
 open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
 open CenteredMomentReflectedUniformPair CenteredMomentOneReflectionEnergy
 
-theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
-    (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
+section
+variable (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M) (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ)
+include V M hM hV A J
+theorem source_separation :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀G : 𝓢(ℝ,ℂ),∀D : ℝ,0<D →
-      H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤D → ∀s : ℝ,0<s →
+      H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤D → ∀s : ℝ,0< s →
       ∃density : 𝓢(ℝ,ℂ),
         (∀y : ℝ,V y*paperRadialFourier G (s*Real.exp y)=
           ∫v : ℝ,(V y*logPhase v y)*density v) ∧
@@ -38,17 +40,16 @@ theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
   exact ⟨density,(fun y=>by simpa using hid (fun _ : Unit=>y)),hi,
     hm.trans hconst,fun v=>(hp v).trans hconst⟩
 
-theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
-    (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
+theorem actual_one_uniform :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type} [Fintype ι],
-      ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)(s X : ι→ℝ),
-      (∀i,0<s i) → (∀i,0<X i) → ∀D E : ℝ,0<D → 0≤E →
+      ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→ Character)(P : ι→ℂ)(s X : ι→ℝ),
+      (∀i,0< s i) → (∀i,0<X i) → ∀D E : ℝ,0<D → 0≤E →
       (∀i,H.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G i)≤D) →
       (∀v,(∑i,‖HeckeDyadic.polynomial (χ i) false (logWindow V) (X i) 0 (2*Real.pi*v)*P i‖^2)
         ≤E*((1+‖v‖)^J)^2) →
       (∑i,‖HeckeDyadic.polynomial (χ i) false
         (fun x=>logWindow V x*((1+s i)^A:ℂ)*paperRadialFourier (G i) (s i*x))
-          (X i) 0 0*P i‖^2)≤C*D^2*E := by
+          (X i) 0 0*P i‖^2)≤C*D ^2*E := by
   obtain ⟨H,K,hK,hb⟩ := source_separation V M hM hV A (J+2)
   refine ⟨H,(K*Real.pi)^2,by positivity,?_⟩
   intro ι _ G χ P s X hs hX D E hD hE hGD henergy
@@ -92,6 +93,7 @@ theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
   simp_rw [←hsource] at hh
   convert hh using 1
   ring
+end
 
 lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
     (hreal : ∀y,conj (V y)=V y) (X v : ℝ) (hX : 0<X) :
@@ -114,15 +116,15 @@ lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
 theorem actual_inverse_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     (hV : ∀y,V y≠0 → |y|≤M) (hreal : ∀y,conj (V y)=V y) (A J : ℕ) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀{ι : Type} [Fintype ι],
-      ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→Character)(P : ι→ℂ)(s X : ι→ℝ),
-      (∀i,0<s i) → (∀i,0<X i) → ∀D E : ℝ,0<D → 0≤E →
+      ∀(G : ι→𝓢(ℝ,ℂ))(χ : ι→ Character)(P : ι→ℂ)(s X : ι→ℝ),
+      (∀i,0< s i) → (∀i,0<X i) → ∀D E : ℝ,0<D → 0≤E →
       (∀i,H.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G i)≤D) →
       (∀v,(∑i,‖HeckeDyadic.polynomial (χ i) false (logWindow V) (X i) 0 (-2*Real.pi*v)*P i‖^2)
         ≤E*((1+‖v‖)^J)^2) →
       (∑i,‖HeckeDyadic.polynomial (χ i).inverse false
         (fun x=>logWindow V x*((1+s i)^A:ℂ)*paperRadialFourier (G i) (s i*x))
-          (X i) 0 0*P i‖^2)≤C*D^2*E := by
-  obtain ⟨H,C,hC,hbound⟩ := actual_one_uniform V M hM hV A J
+          (X i) 0 0*P i‖^2)≤C*D ^2*E := by
+  pm_562 H C hC hbound actual_one_uniform V M hM hV A J
   refine ⟨H,C,hC,?_⟩
   intro ι _ G χ P s X hs hX D E hD hE hGD henergy
   apply hbound G (fun i=>(χ i).inverse) P s X hs hX D E hD hE hGD
@@ -149,6 +151,5 @@ lemma polynomial_const_mul (χ : Character) (W : ℝ→ℂ) (X σ omega : ℝ) (
 
 end SevenEighths.CenteredMomentUniformReflectionProfile
 
-end
 
 end OAI

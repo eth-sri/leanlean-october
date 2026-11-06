@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.FixedDetectorCover
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,8 +17,11 @@ def detectorPower (T : ℝ) (N : ℕ) : ℕ :=
 
 def densityAmbient (T : ℝ) : ℝ := 32*T*(Real.log T)^2
 
+section
+variable {T : ℝ}
+include T
 /-- Least successful power among 1,2,3,4, fixed before the zero varies. -/
-theorem detectorPower_spec {T : ℝ} {N : ℕ} (hT : 0 ≤ T)
+theorem detectorPower_spec {N : ℕ} (hT : 0 ≤ T)
     (hN : T^(1/8 : ℝ) < N) :
     1 ≤ detectorPower T N ∧ detectorPower T N ≤ 4 ∧
       Real.sqrt T ≤ (N : ℝ)^(detectorPower T N) ∧
@@ -37,7 +41,7 @@ theorem detectorPower_spec {T : ℝ} {N : ℕ} (hT : 0 ≤ T)
       · simp [detectorPower, h1, h2, h3, h4.le, lt_of_not_ge h1, lt_of_not_ge h3]
 
 /-- The power does not make the underlying product scale exceed T log(T)^2. -/
-theorem detectorPower_base_le {T : ℝ} {N : ℕ}
+theorem detectorPower_base_le {N : ℕ}
     (hT : 1 ≤ T) (hlog : 1 ≤ Real.log T)
     (hN : T^(1/8 : ℝ) < N) (hN' : (N : ℝ) ≤ T*(Real.log T)^2) :
     (N : ℝ)^(detectorPower T N) ≤ T*(Real.log T)^2 := by
@@ -52,7 +56,7 @@ theorem detectorPower_base_le {T : ℝ} {N : ℕ}
     exact hpow.le.trans (by nlinarith)
 
 /-- Every dyadic support piece of the actual power is in the packet's scale band. -/
-theorem detectorPower_piece_scales {T : ℝ} {N ℓ : ℕ}
+theorem detectorPower_piece_scales {N ℓ : ℕ}
     (hT : 1 ≤ T) (hlog : 1 ≤ Real.log T)
     (hN : T^(1/8 : ℝ) < N) (hN' : (N : ℝ) ≤ T*(Real.log T)^2)
     (hℓ : ℓ < detectorPower T N) :
@@ -60,7 +64,7 @@ theorem detectorPower_piece_scales {T : ℝ} {N ℓ : ℕ}
       ((2^ℓ*N^(detectorPower T N) : ℕ) : ℝ) ≤ densityAmbient T := by
   obtain ⟨_, hk, hlower, _⟩ := detectorPower_spec (by linarith) hN
   have hbase := detectorPower_base_le hT hlog hN hN'
-  have htwo : (1 : ℝ) ≤ 2^ℓ := one_le_pow₀ (by norm_num)
+  pm_6295
   have htwo' : (2 : ℝ)^ℓ ≤ 8 := by
     have h := pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) (show ℓ ≤ 3 by omega)
     norm_num at h ⊢
@@ -69,23 +73,22 @@ theorem detectorPower_piece_scales {T : ℝ} {N ℓ : ℕ}
   constructor
   · nlinarith [Real.rpow_nonneg (by linarith : 0 ≤ T) (1/8), pow_nonneg (Nat.cast_nonneg N : (0 : ℝ) ≤ N) (detectorPower T N)]
   · unfold densityAmbient
-    have h := mul_le_mul htwo' hbase (by positivity) (by norm_num)
-    nlinarith [show 0 ≤ T*(Real.log T)^2 by positivity]
+    pm_1511 htwo'
 
-theorem detectorPower_support_scale {T : ℝ} {N : ℕ}
+theorem detectorPower_support_scale {N : ℕ}
     (hT : 1 ≤ T) (hlog : 1 ≤ Real.log T)
     (hN : T^(1/8 : ℝ) < N) (hN' : (N : ℝ) ≤ T*(Real.log T)^2) :
     ((2*N : ℕ)^(detectorPower T N) : ℝ) ≤ densityAmbient T := by
-  have hk := (detectorPower_spec (by linarith : 0 ≤ T) hN).2.1
+  pm_7716 hN
   have hbase := detectorPower_base_le hT hlog hN hN'
   have htwo : (2 : ℝ)^(detectorPower T N) ≤ 16 := by
-    have h := pow_le_pow_right₀ (by norm_num : (1 : ℝ) ≤ 2) hk
+    pm_662 h hk
     norm_num at h ⊢
     exact h
   push_cast
   rw [mul_pow]
   unfold densityAmbient
-  have h := mul_le_mul htwo hbase (by positivity) (by norm_num)
-  nlinarith [show 0 ≤ T*(Real.log T)^2 by positivity]
+  pm_1511 htwo
+end
 
 end MathCollab.Density

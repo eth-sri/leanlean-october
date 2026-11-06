@@ -39,7 +39,7 @@ theorem priority_cell_physical_budget
   dsimp only [N,Vchild]
   rw [second_cell_formal_column Z r A B t d hZ]
   rw [second_cell_scale_rpow Z d 1 hZ,second_cell_scale_rpow Z d 2 hZ] at he
-  convert he using 1 <;> congr 1 <;> ring_nf
+  grind
 
 end SevenEighths.InverseMoment
 

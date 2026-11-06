@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CompletionSupport
 public import OAI.NumberTheory.DirichletL.Descent.Canonical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -61,7 +62,7 @@ theorem marked_weighted_column_tsum_eq (S : Finset (Ideal O)) (D : ℕ)
   have hz : columnWeight (rowTwist Ψ m f z) I*W ((Ideal.absNorm I:ℝ)/X)=0 := by
     by_contra hn
     exact hI (weighted_column_support S D hSp Ψ m f z hm W b X hX hW hD hn)
-  rw [hz,zero_mul]
+  grind
 
 theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
     (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
@@ -74,12 +75,10 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
     fixedChildRow (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
       (poolPrimary_good F hF) Finset.univ Ψ m
       (fun T=>W (primeProductNorm (poolPrimary F) T/X)*d (∏i∈T,i.val)) f z =
-    ∑' I:Ideal O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I*
+    ∑' I:Ideal O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I *
       W ((Ideal.absNorm I:ℝ)/X)*d I := by
-  let F := InitialMeanSquare.outsideSquarefreeIdeals S D
-  have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  pm_3764
+  pm_3763
   dsimp only
   symm
   rw [marked_weighted_column_tsum_eq S D hSp Ψ (m*excludedGenerator S) f z

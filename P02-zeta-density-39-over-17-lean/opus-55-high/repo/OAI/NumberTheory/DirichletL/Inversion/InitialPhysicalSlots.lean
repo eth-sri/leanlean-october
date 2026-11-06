@@ -1,16 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialMarkedDictionary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseInitialPhysicalSlots
-open HeckeFamily HeckeDyadic HeckeInverseAmplification
+open HeckeFamily HeckeInverseAmplification
 open InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialMarkedDictionary
-open InverseInitialConjugateEnergy
 local notation "O" => HeckeFamily.O
 
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -23,32 +23,29 @@ def livePrimes (V : ℝ→ℂ) (b D : ℝ) : Finset (Ideal O) :=
 omit [NeZero M] in
 theorem livePrime_data (V : ℝ→ℂ) (a b D : ℝ) (hD : 0<D)
     (hV : ∀x,V x≠0 → x∈Set.Icc a b) (P : Ideal O) (hp : P∈livePrimes M H V b D) :
-    Prime P ∧ P∈RayQuotient.identityClass M H ∧ a*D≤(P.absNorm:ℝ) ∧ (P.absNorm:ℝ)≤b*D := by
+    Prime P ∧ P∈RayQuotient.identityClass M H ∧ a*D ≤(P.absNorm:ℝ) ∧ (P.absNorm:ℝ)≤b*D := by
   obtain ⟨hp,hv⟩ := Finset.mem_filter.mp hp
   obtain ⟨_,hp,hr⟩ := Finset.mem_filter.mp hp
   exact ⟨hp,hr,(le_div_iff₀ hD).mp (hV _ hv).1,(div_le_iff₀ hD).mp (hV _ hv).2⟩
 
 omit [NeZero M] in
 theorem amplitude_eq_live (u : O) (V : ℝ→ℂ) (b Z ell : ℝ) (ζ : ℂ) (hZ : 0<Z) :
-    HeckePrimeRow.canonicalPrimeAmplitude M H u V b (Z^ell) ζ=
-      ((Z^(-ell/2):ℝ):ℂ)*∑P∈livePrimes M H V b (Z^ell),
-        primeProfile V (Z^ell) ζ P*star (CanonicalRowCompletion.idealRowHom u P) := by
+    HeckePrimeRow.canonicalPrimeAmplitude M H u V b (Z ^ell) ζ=
+      ((Z ^(-ell/2):ℝ):ℂ)*∑P∈livePrimes M H V b (Z ^ell),
+        primeProfile V (Z ^ell) ζ P*star (CanonicalRowCompletion.idealRowHom u P) := by
   unfold HeckePrimeRow.canonicalPrimeAmplitude
   rw [normalization_eq Z ell hZ]
   congr 1
   rw [livePrimes]
-  conv_rhs => rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro P hP
+  pm_172 Finset.sum_filter P hP
   split_ifs with hv
   · change star (CanonicalRowCompletion.idealRowHom u P)*V _*_ =
       (V _*_)*star (CanonicalRowCompletion.idealRowHom u P)
     ring
-  · simp only [not_not] at hv
-    simp [hv]
+  grind
 
 theorem slot_normalization {ι : Type*} [Fintype ι] (Z : ℝ) (hZ : 0<Z) (ell : ι→ℝ) :
-    (∏i,((Z^(-ell i/2):ℝ):ℂ))=((Z^(-(∑i,ell i)/2):ℝ):ℂ) := by
+    (∏i,((Z ^(-ell i/2):ℝ):ℂ))=((Z ^(-(∑i,ell i)/2):ℝ):ℂ) := by
   rw [←Complex.ofReal_prod,←Real.rpow_sum_of_pos hZ]
   congr 2
   simp only [neg_div,Finset.sum_div,Finset.sum_neg_distrib]
@@ -56,10 +53,10 @@ theorem slot_normalization {ι : Type*} [Fintype ι] (Z : ℝ) (hZ : 0<Z) (ell :
 omit [NeZero M] in
 theorem amplitude_product_eq_tuples {ι : Type*} [Fintype ι] (u : O)
     (V : ι→ℝ→ℂ) (b ell : ι→ℝ) (ζ : ι→ℂ) (Z : ℝ) (hZ : 0<Z) :
-    (∏i,HeckePrimeRow.canonicalPrimeAmplitude M H u (V i) (b i) (Z^(ell i)) (ζ i))=
-      ((Z^(-(∑i,ell i)/2):ℝ):ℂ)*
-        ∑p∈Fintype.piFinset (fun i=>livePrimes M H (V i) (b i) (Z^(ell i))),
-        (∏i,primeProfile (V i) (Z^(ell i)) (ζ i) (p i))*
+    (∏i,HeckePrimeRow.canonicalPrimeAmplitude M H u (V i) (b i) (Z ^(ell i)) (ζ i))=
+      ((Z ^(-(∑i,ell i)/2):ℝ):ℂ)*
+        ∑p∈Fintype.piFinset (fun i=>livePrimes M H (V i) (b i) (Z ^(ell i))),
+        (∏i,primeProfile (V i) (Z ^(ell i)) (ζ i) (p i))*
           star (CanonicalRowCompletion.idealRowHom u (∏i,p i)) := by
   simp_rw [amplitude_eq_live M H _ _ _ _ _ _ hZ]
   rw [Finset.prod_mul_distrib,slot_normalization Z hZ,conjugate_mark_product]
@@ -68,15 +65,15 @@ omit [NeZero M] in
 theorem live_tuple_injective {ι : Type*} [Fintype ι]
     (V : ι→ℝ→ℂ) (a b ell : ι→ℝ) (Z : ℝ) (hZ : 0<Z)
     (hV : ∀i x,V i x≠0 → x∈Set.Icc (a i) (b i))
-    (hsep : ∀i j,i≠j → b i*Z^(ell i)<a j*Z^(ell j) ∨
-      b j*Z^(ell j)<a i*Z^(ell i))
-    (p : ι→Ideal O) (hp : p∈Fintype.piFinset
-      (fun i=>livePrimes M H (V i) (b i) (Z^(ell i)))) : Function.Injective p := by
+    (hsep : ∀i j,i≠j → b i*Z ^(ell i)<a j*Z ^(ell j) ∨
+      b j*Z ^(ell j)<a i*Z ^(ell i))
+    (p : ι→ Ideal O) (hp : p∈Fintype.piFinset
+      (fun i=>livePrimes M H (V i) (b i) (Z ^(ell i)))) : Function.Injective p := by
   intro i j he
   by_contra hij
-  have hi := livePrime_data M H (V i) (a i) (b i) (Z^(ell i))
+  have hi := livePrime_data M H (V i) (a i) (b i) (Z ^(ell i))
     (Real.rpow_pos_of_pos hZ _) (hV i) (p i) (Fintype.mem_piFinset.mp hp i)
-  have hj := livePrime_data M H (V j) (a j) (b j) (Z^(ell j))
+  have hj := livePrime_data M H (V j) (a j) (b j) (Z ^(ell j))
     (Real.rpow_pos_of_pos hZ _) (hV j) (p j) (Fintype.mem_piFinset.mp hp j)
   rw [he] at hi
   rcases hsep i j hij with h|h <;> linarith [hi.2.2.1,hi.2.2.2,hj.2.2.1,hj.2.2.2]
@@ -85,13 +82,13 @@ omit [NeZero M] in
 theorem live_tuple_admissible {ι : Type*} [Fintype ι]
     (data : RowData) (V : ι→ℝ→ℂ) (a b ell : ι→ℝ) (Z : ℝ) (hZ : 0<Z)
     (hV : ∀i x,V i x≠0 → x∈Set.Icc (a i) (b i))
-    (hlarge : ∀i,((baseCharacter data).modulus.absNorm:ℝ)<a i*Z^(ell i))
-    (hsep : ∀i j,i≠j → b i*Z^(ell i)<a j*Z^(ell j) ∨
-      b j*Z^(ell j)<a i*Z^(ell i))
-    (p : ι→Ideal O) (hp : p∈Fintype.piFinset
-      (fun i=>livePrimes M H (V i) (b i) (Z^(ell i)))) :
+    (hlarge : ∀i,((baseCharacter data).modulus.absNorm:ℝ)<a i*Z ^(ell i))
+    (hsep : ∀i j,i≠j → b i*Z ^(ell i)<a j*Z ^(ell j) ∨
+      b j*Z ^(ell j)<a i*Z ^(ell i))
+    (p : ι→ Ideal O) (hp : p∈Fintype.piFinset
+      (fun i=>livePrimes M H (V i) (b i) (Z ^(ell i)))) :
     CanonicalQuadraticSieve.Admissible (∏i,p i) := by
-  have hd i := livePrime_data M H (V i) (a i) (b i) (Z^(ell i))
+  have hd i := livePrime_data M H (V i) (a i) (b i) (Z ^(ell i))
     (Real.rpow_pos_of_pos hZ _) (hV i) (p i) (Fintype.mem_piFinset.mp hp i)
   have hs (i : ι) : CanonicalQuadraticSieve.Supported (p i) := by
     by_contra hn
@@ -111,8 +108,8 @@ theorem live_tuple_admissible {ι : Type*} [Fintype ι]
   refine ⟨hsprod.1,?_,?_⟩
   · apply Finset.squarefree_prod_of_pairwise_isCoprime
     · intro i _ j _ hij
-      let : (p i).IsMaximal := (Ideal.isPrime_of_prime (hd i).1).isMaximal (hd i).1.ne_zero
-      let : (p j).IsMaximal := (Ideal.isPrime_of_prime (hd j).1).isMaximal (hd j).1.ne_zero
+      pm_6598 i
+      pm_6598 j
       exact (Ideal.isCoprime_of_isMaximal (hi.ne hij)).isRelPrime
     · intro i _
       exact (hd i).1.squarefree

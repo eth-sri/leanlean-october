@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.TupleMasks
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,13 +13,13 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-def supportedSlotChoices (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :=
+def supportedSlotChoices (L : σ→ Finset (Ideal Eis)) (F : φ→ Ideal Eis) (K : Ideal Eis) :=
   {p : ∀ i,L i // IsCoprime K (∏ i,(p i).val) ∧ ∀ j i,(p i).val≠F j}
 
-instance supportedSlotChoices_fintype (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :
+instance supportedSlotChoices_fintype (L : σ→ Finset (Ideal Eis)) (F : φ→ Ideal Eis) (K : Ideal Eis) :
     Fintype (supportedSlotChoices L F K) := inferInstanceAs (Fintype {_p : ∀ i,L i // _})
 
-def supportedSlotSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→Ideal Eis) (K : Ideal Eis) :
+def supportedSlotSplit (L : σ→ Finset (Ideal Eis)) (T : Finset σ) (F : φ→ Ideal Eis) (K : Ideal Eis) :
     supportedSlotChoices L F K ≃
       supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K ×
         supportedSlotChoices (fun i : T => L i.val) F K where
@@ -28,13 +29,11 @@ def supportedSlotSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→I
     (⟨q.2,h.1⟩,⟨q.1,h.2⟩)
   invFun q := ⟨(slotChoiceSplit L T).symm (q.2.val,q.1.val),
     (slot_choice_mask_split L T q.2.val q.1.val F K).mpr ⟨q.1.property,q.2.property⟩⟩
-  left_inv p := by
-    apply Subtype.ext
-    exact (slotChoiceSplit L T).symm_apply_apply p.val
+  left_inv p := by aesop
   right_inv q := by
     apply Prod.ext <;> apply Subtype.ext
-    · exact congrArg Prod.snd ((slotChoiceSplit L T).apply_symm_apply (q.2.val,q.1.val))
-    · exact congrArg Prod.fst ((slotChoiceSplit L T).apply_symm_apply (q.2.val,q.1.val))
+    pm_7417 Prod.snd
+    pm_7417 Prod.fst
 
 end
 end SevenEighths.InverseReflectedPhase

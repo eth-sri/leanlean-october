@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwisePolynomial
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseChain
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ open Set Complex
 namespace SevenEighths.HeckeDetectorRowwiseMarked
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorRowwisePolynomial
 
-theorem marked_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
+theorem marked_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→ Character)
     (inv : Bool) (W : ℝ→ℂ) (D : ℝ) (hD : 0<D) (S : Finset (Ideal O))
     (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S)
     (P : ι→ℂ) (a b c d E : ℝ) (hab : a≤b) (hcd : c≤d)
@@ -28,16 +29,13 @@ theorem marked_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
       (1+2*(b-a))*((1+2*(d-c))*E) := by
   let M (n : ℕ) (i : ι) (x y : ℝ) :=
     polynomial (χ i) inv ((logProfile^[n]) W) D x y*P i
-  have hc1 := logProfile_cover W D S hc
-  have hc2 := logProfile_cover (logProfile W) D S hc1
+  pm_6051
   have cm (n : ℕ) (i : ι) (hn : n≤2) : Continuous (Function.uncurry (M n i)) := by
     interval_cases n
     all_goals
       dsimp [M,Function.uncurry]
       apply Continuous.mul_const
-    · exact polynomial_continuous (χ i) inv W D hD S hc
-    · exact polynomial_continuous (χ i) inv (logProfile W) D hD S hc1
-    · exact polynomial_continuous (χ i) inv (logProfile (logProfile W)) D hD S hc2
+    pm_3135 inv
   have dx (n : ℕ) (i : ι) (x y : ℝ) (hn : n≤1) :
       HasDerivAt (fun u => M n i u y) (-M (n+1) i x y) x := by
     interval_cases n
@@ -51,9 +49,9 @@ theorem marked_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
   have he (n : ℕ) (hn : n≤2) (x : ℝ) (hx : x∈Icc a b) (y : ℝ) (hy : y∈Icc c d) :
       ∑ i∈rows, ‖M n i x y‖^2≤E := by
     interval_cases n
-    · simpa [M] using h0 x hx y hy
-    · simpa [M] using h1 x hx y hy
-    · simpa [M] using h2 x hx y hy
+    pm_6597 h0
+    pm_6597 h1
+    pm_6597 h2
   exact chain_rowwise rows M cm dx dy a b c d E hab hcd σ freq hσ hf he
 
 end SevenEighths.HeckeDetectorRowwiseMarked

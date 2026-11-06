@@ -1,6 +1,7 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.NonstationaryPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,8 +19,11 @@ namespace DhimanKadiriQuesadaHerrera2026
 
 open MeasureTheory
 
+section
+variable {a b : ℝ} (hab : a < b)
+include a b hab
 /-- A continuous explicitly supplied derivative gives C¹ on a nondegenerate interval. -/
-theorem contDiffOn_one_of_continuous_derivative {a b : ℝ} (hab : a < b)
+theorem contDiffOn_one_of_continuous_derivative
     {f f' : ℝ → ℝ} (hd : ∀ x ∈ Set.Icc a b, HasDerivAt f (f' x) x)
     (hc : ContinuousOn f' (Set.Icc a b)) : ContDiffOn ℝ 1 f (Set.Icc a b) := by
   apply (contDiffOn_one_iff_derivWithin (uniqueDiffOn_Icc hab)).mpr
@@ -30,7 +34,7 @@ theorem contDiffOn_one_of_continuous_derivative {a b : ℝ} (hab : a < b)
     exact (hd x hx).hasDerivWithinAt.derivWithin (uniqueDiffOn_Icc hab x hx)
 
 /-- Source exponential normalization and constant 2 for a decreasing absolute quotient. -/
-theorem first_derivative_test_antitone {a b : ℝ} (hab : a < b)
+theorem first_derivative_test_antitone
     {f f' g : ℝ → ℝ} (hd : ∀ x ∈ Set.Icc a b, HasDerivAt f (f' x) x)
     (hc : ContinuousOn f' (Set.Icc a b)) (hg : ContinuousOn g (Set.Icc a b))
     (hn : ∀ x ∈ Set.Icc a b, f' x ≠ 0)
@@ -66,7 +70,7 @@ theorem first_derivative_test_antitone {a b : ℝ} (hab : a < b)
   field_simp
 
 /-- Reflection gives the sharp endpoint bound for an increasing absolute quotient. -/
-theorem first_derivative_test_monotone {a b : ℝ} (hab : a < b)
+theorem first_derivative_test_monotone
     {f f' g : ℝ → ℝ} (hd : ∀ x ∈ Set.Icc a b, HasDerivAt f (f' x) x)
     (hc : ContinuousOn f' (Set.Icc a b)) (hg : ContinuousOn g (Set.Icc a b))
     (hn : ∀ x ∈ Set.Icc a b, f' x ≠ 0)
@@ -74,8 +78,7 @@ theorem first_derivative_test_monotone {a b : ℝ} (hab : a < b)
     ‖∫ x in a..b, (g x : ℂ) * Complex.exp (Complex.I * (f x : ℂ))‖ ≤
       2 * |g b / f' b| := by
   have hmap : Set.MapsTo (fun x : ℝ => -x) (Set.Icc (-b) (-a)) (Set.Icc a b) := by
-    intro x hx
-    constructor <;> linarith [hx.1, hx.2]
+    pm_8035
   have hdr (x : ℝ) (hx : x ∈ Set.Icc (-b) (-a)) :
       HasDerivAt (fun u => f (-u)) (-f' (-x)) x := by
     simpa only [mul_neg_one, Function.comp_def] using (hd (-x) (hmap hx)).comp x (hasDerivAt_neg x)
@@ -87,10 +90,11 @@ theorem first_derivative_test_monotone {a b : ℝ} (hab : a < b)
       intro x hx y hy hxy
       simp only [div_neg, abs_neg]
       exact hm (hmap hy) (hmap hx) (neg_le_neg hxy))
-  simp only [Function.comp_apply, neg_neg, div_neg, abs_neg] at h
+  pm_298 Function.comp_apply neg_neg div_neg abs_neg h
   rw [intervalIntegral.integral_comp_neg (fun x =>
     (g x : ℂ) * Complex.exp (Complex.I * (f x : ℂ))), neg_neg, neg_neg] at h
   exact h
+end
 
 /-- Lemma 4 for either monotonicity direction, with the maximum realized at an endpoint.
 The proof also permits vanishing weights, a stronger conclusion than the printed nonzero condition. -/
@@ -105,9 +109,7 @@ theorem first_derivative_test {a b : ℝ} (hab : a ≤ b)
   rcases hab.eq_or_lt with rfl | hab
   · simp
   rcases hm with hm | hm
-  · exact (first_derivative_test_monotone hab hd hc hg hn hm).trans
-      (mul_le_mul_of_nonneg_left (le_max_right _ _) (by norm_num))
-  · exact (first_derivative_test_antitone hab hd hc hg hn hm).trans
-      (mul_le_mul_of_nonneg_left (le_max_left _ _) (by norm_num))
+  pm_6575 first_derivative_test_monotone le_max_right
+  pm_6575 first_derivative_test_antitone le_max_left
 
 end DhimanKadiriQuesadaHerrera2026

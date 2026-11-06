@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.FamilyTail
 public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,38 +34,12 @@ theorem original_family_dyadic_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A
   obtain ⟨degree,C,hC,hbound⟩ := InverseReflectedArithmeticHeight.literal_dyadic_tail_height_arithmetic_uniform lo hi hlo A W hWs hW
   refine ⟨degree,C,hC,?_⟩
   intro N a c mode φ σ _ _ F K hK S D s hc hN hbase hchar jF hj u θ X T QK QP hX hT hQK hQP hKr hPr
-  have hs := familyRawScale_le_literal F K hK S s hc X QK QP hX hKr hPr
-  have hsp := familyRawScale_pos F s hc X QK QP hX hQK hQP
-  have hcut (i : ℕ×ℕ×ℕ) (hi : i∉retainedDyads (familyRawScale F s X QK QP) (16*T)) :
-      16*T≤rawDyadicCenter (literalRawScale (F.reflected K hK S) s X) i := by
-    have hlt := lt_of_not_ge (fun h => hi ((mem_retainedDyads _ _ hsp i).mpr h))
-    apply hlt.le.trans
-    unfold rawDyadicCenter
-    rw [ramifiedScale_one_cube]
-    gcongr
-  have hj' : ∀ i : φ ⊕ (PrimeIndex K ⊕ σ), reflectedExponent jF i<6 := by
-    intro i
-    rcases i with f | k | p
-    · exact hj f
-    · norm_num [reflectedExponent]
-    · norm_num [reflectedExponent]
+  pm_3266
+  pm_3264
   have hh := hbound (N:=N) (a:=a) (c:=c) (mode:=mode) (F.reflected K hK S) D s hc hN hbase hchar (reflectedExponent jF) hj'
     (slotIndices φ (PrimeIndex K) σ) u θ X T hX hT
     (fun i => i∉retainedDyads (familyRawScale F s X QK QP) (16*T)) hcut
-  have hleft : ‖∑' i : ℕ×ℕ×ℕ, if i∉retainedDyads (familyRawScale F s X QK QP) (16*T) then
-        literalDyadicBlock (F.reflected K hK S) D s hc (reflectedExponent jF)
-          (slotIndices φ (PrimeIndex K) σ) (CompletedHeight.normTwistedSource W θ) X u i else 0‖≤
-      C*(1+‖θ‖)^degree*(Ideal.absNorm (∏ i,(F.reflected K hK S).ideal i):ℝ)*T^(-(A:ℝ))*
-        (literalRawScale (F.reflected K hK S) s X^2)⁻¹ := by
-    apply le_trans ?_ hh
-    apply le_of_eq
-    congr 1
-    apply tsum_congr
-    intro i
-    by_cases hi : i∈retainedDyads (familyRawScale F s X QK QP) (16*T) <;> simp [hi]
-  apply hleft.trans
-  have hnorm := reflected_norm_le_centers F K hK S QK QP hKr hPr
-  gcongr
+  pm_3265
 end
 end SevenEighths.InverseReflectedPhase
 

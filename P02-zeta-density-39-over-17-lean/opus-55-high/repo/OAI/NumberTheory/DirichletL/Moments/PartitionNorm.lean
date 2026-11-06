@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Partition
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,25 +22,28 @@ def unitIdeal (p : ι → O) (U : Finset ι) : Ideal O := ∏ i ∈ U, Ideal.spa
 omit [DecidableEq ι] in
 theorem commonIdeal_norm_pos (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
     (c d : ι → ℕ) : 0 < (Ideal.absNorm (commonIdeal p c d) : ℝ) := by
-  simp only [commonIdeal, map_prod, map_pow, Nat.cast_prod, Nat.cast_pow]
+  pm_93 commonIdeal map_prod map_pow Nat.cast_prod Nat.cast_pow
   apply Finset.prod_pos
   intro i hi
   apply pow_pos
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+  pm_5047 Nat.pos_of_ne_zero hp
 
+section
+variable (p : ι → O)
+include p
 omit [Fintype ι] [DecidableEq ι] in
-theorem unitIdeal_norm_pos (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+theorem unitIdeal_norm_pos (hp : ∀ i, Supported (Ideal.span {p i}))
     (U : Finset ι) : 0 < (Ideal.absNorm (unitIdeal p U) : ℝ) := by
   simp only [unitIdeal, map_prod, Nat.cast_prod]
   apply Finset.prod_pos
   intro i hi
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)
+  pm_5047 Nat.pos_of_ne_zero hp
 
-theorem partitionNormalizer_mul_unit_norm (p : ι → O) (c d : ι → ℕ)
+theorem partitionNormalizer_mul_unit_norm (c d : ι → ℕ)
     (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (U : Finset ι) :
     partitionNormalizer p c d U * (Ideal.absNorm (unitIdeal p U) : ℝ) =
       (Ideal.absNorm (commonIdeal p c d) : ℝ) := by
-  simp only [unitIdeal, commonIdeal, map_prod, map_pow, Nat.cast_prod, Nat.cast_pow]
+  pm_316 unitIdeal commonIdeal map_prod map_pow Nat.cast_prod Nat.cast_pow
   have hU : (∏ i ∈ U, (Ideal.absNorm (Ideal.span {p i}) : ℝ)) =
       ∏ i, if i ∈ U then (Ideal.absNorm (Ideal.span {p i}) : ℝ) else 1 := by simp
   rw [hU, partitionNormalizer, ← Finset.prod_mul_distrib]
@@ -48,15 +52,16 @@ theorem partitionNormalizer_mul_unit_norm (p : ι → O) (c d : ι → ℕ)
   by_cases hmem : i ∈ U
   · simp only [ite_eq_left hmem]
     rw [← pow_succ, Nat.sub_add_cancel (le_min (hc i) (hd i))]
-  · simp only [ite_eq_right hmem, Nat.sub_zero, mul_one]
+  grind
 
-theorem partitionNormalizer_eq_norm_ratio (p : ι → O)
+theorem partitionNormalizer_eq_norm_ratio
     (hp : ∀ i, Supported (Ideal.span {p i})) (c d : ι → ℕ)
     (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (U : Finset ι) :
     partitionNormalizer p c d U =
       (Ideal.absNorm (commonIdeal p c d) : ℝ) / Ideal.absNorm (unitIdeal p U) := by
   apply (eq_div_iff (unitIdeal_norm_pos p hp U).ne').mpr
   exact partitionNormalizer_mul_unit_norm p c d hc hd U
+end
 
 end SevenEighths.CenteredMomentPartitionNorm
 

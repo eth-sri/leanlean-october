@@ -1,14 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceTuples
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -67,7 +67,7 @@ theorem firstMask_dvd_cube_radical
     (v₁ v₂ : ι → ℕ) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     sourceIdeal p D ∣ sourceIdeal p C *
       (Ideal.span {primeProduct p B v₁}*Ideal.span {primeProduct p B v₂}).radical := by
-  have hd := InverseInitialArithmetic.sourceIdeal_dvd p D (C∪B) hD
+  pm_8768 InverseInitialArithmetic.sourceIdeal_dvd
   rw [sourceIdeal_union p C B hCB] at hd
   exact hd.trans (mul_dvd_mul_left _ (cubeSupport_dvd_radical p hcop B v₁ v₂ hv))
 
@@ -114,12 +114,11 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
   · have hb := congrArg (fun a : Eis => (Ideal.span {a} : Ideal Eis))
       (cube_pair_product_decomposition p B v₁ v₂ ε₁ ε₂ hv)
     simpa only [cubeSecondSource,pow_two,←Ideal.span_singleton_mul_span_singleton] using hb
-  · exact (aLabel_dvd_cubeSupport p B ε₁).trans (cubeSupport_dvd_radical p hcop B v₁ v₂ hv)
-  · exact (aLabel_dvd_cubeSupport p B ε₂).trans (cubeSupport_dvd_radical p hcop B v₁ v₂ hv)
+  pm_7135 ε₁
+  pm_7135 ε₂
   · exact firstMask_dvd_cube_radical p hcop B C D hCB hD v₁ v₂ hv
   · change primaryGenerator (sourceIdeal p D) ≠ 0
-    rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+    pm_3750
   · exact hE
   · exact hold
   · exact hnew

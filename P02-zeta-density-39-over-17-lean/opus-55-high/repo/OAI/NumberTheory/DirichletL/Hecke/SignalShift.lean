@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Signal
 public import OAI.NumberTheory.DirichletL.ContinuationPolynomialContour
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,10 @@ open scoped Topology
 namespace SevenEighths.HeckeSignalShift
 open HeckeFamily HeckeSignal Continuation
 
-theorem quotient_holomorphic (χ : Character) (H : ℂ → ℂ)
+section
+variable (χ : Character) (H : ℂ → ℂ)
+include χ H
+theorem quotient_holomorphic
     (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) {a : ℝ}
     (ha : (7/8 : ℝ)<a) (hβ : HeckeZeroSupremum.beta < a) :
     DifferentiableOn ℂ (quotient χ H) {s : ℂ | a ≤ s.re ∧ s.re ≤ 2} := by
@@ -21,8 +25,8 @@ theorem quotient_holomorphic (χ : Character) (H : ℂ → ℂ)
     (ha.trans_le hs.1))).mul
     (HeckeReciprocal.reciprocal_differentiableAt χ (hβ.trans_le hs.1))).differentiableWithinAt
 
-theorem quotient_polynomial_bound (χ : Character) (H : ℂ → ℂ)
-    (hb : ∀ s : ℂ, 7/8<s.re → ‖H s-1‖ ≤ 1/2)
+theorem quotient_polynomial_bound
+    (hb : ∀ s : ℂ, 7/8< s.re → ‖H s-1‖ ≤ 1/2)
     {a C : ℝ} (n : ℕ) (ha : (7/8 : ℝ)<a) (_hC : 0 ≤ C)
     (hR : ∀ s : ℂ, a ≤ s.re → s.re ≤ 2 →
       ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^n))
@@ -31,7 +35,7 @@ theorem quotient_polynomial_bound (χ : Character) (H : ℂ → ℂ)
   have hnorm : ‖H s‖ ≤ 3/2 := by
     have ht := norm_add_le (H s-1) (1 : ℂ)
     rw [sub_add_cancel, norm_one] at ht
-    linarith [hb s (ha.trans_le hs.1)]
+    grind
   unfold quotient
   rw [norm_mul]
   calc
@@ -39,9 +43,9 @@ theorem quotient_polynomial_bound (χ : Character) (H : ℂ → ℂ)
       mul_le_mul hnorm (hR s hs.1 hs.2) (norm_nonneg _) (by norm_num)
     _ = _ := by ring
 
-theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8<s.re})
-    (hb : ∀ s : ℂ, 7/8<s.re → ‖H s-1‖ ≤ 1/2)
+theorem contour_shift_left
+    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8< s.re})
+    (hb : ∀ s : ℂ, 7/8< s.re → ‖H s-1‖ ≤ 1/2)
     (c a C : ℝ) (n : ℕ) (ha : (7/8 : ℝ)<a) (ha2 : a ≤ 2)
     (hβ : HeckeZeroSupremum.beta < a) (hC : 0 ≤ C)
     (hR : ∀ s : ℂ, a ≤ s.re → s.re ≤ 2 →
@@ -65,12 +69,12 @@ theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
     nlinarith [hb'.1,hb'.2]
   have hq := quotient_polynomial_bound χ H hb n ha hC hR
     (s := (b : ℂ)+y*I) (by simpa using hb')
-  simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_im,
-    Complex.ofReal_re, mul_one, Complex.I_re, mul_zero, add_zero, zero_add] at hq
+  pm_1148
   calc
     _ ≤ (x^(2+c)*Real.exp ((2-5/6 : ℝ)^2)) *
         (((3/2)*C)*(1+|y|^n))*Real.exp (-(y^2)) := by gcongr
     _ = _ := by unfold polynomialGaussian; ring
+end
 
 def infinityConstant (a C : ℝ) (n : ℕ) : ℝ :=
   ‖(1/(2*Real.pi) : ℂ)‖*Real.exp ((a-5/6)^2)*((3/2)*C)*

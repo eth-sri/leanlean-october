@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 public import OAI.NumberTheory.DirichletL.Detector.HighAbsolute
 public import OAI.NumberTheory.DirichletL.Detector.FrequencySupport
 public import Mathlib.MeasureTheory.Integral.DominatedConvergence
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,14 +17,14 @@ open ActualEisensteinCubic EisensteinSchwartzPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma radialFourier_vertical_inverse (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
-    (hW : Function.support W⊆Set.Icc a b) (σ r : ℝ) (hσ : 0<σ) (hr : 0<r) :
+    (hW : Function.support W⊆Set.Icc a b) (σ r : ℝ) (hσ : 0<σ) (hr : 0< r) :
     paperRadialFourier W r=verticalIntegral σ (fun z=>(r:ℂ)^(-z)*mellin (paperRadialFourier W) z) := by
   have he := ProbeRadialMellin.radial_mellin_inversion W a b ha hW σ r hσ hr
-  simpa only [mellinInv,verticalIntegral,Complex.real_smul,smul_eq_mul] using he.symm
+  pm_89 mellinInv verticalIntegral Complex.real_smul smul_eq_mul he.symm
 
 lemma radial_sum_exchange {ι : Type*} [Countable ι] (W : SchwartzMap ℝ ℂ)
     (a b : ℝ) (ha : 0<a) (hW : Function.support W⊆Set.Icc a b)
-    (σ : ℝ) (hσ : 0<σ) (c : ι→ℂ) (r : ι→ℝ) (hr : ∀i,0<r i)
+    (σ : ℝ) (hσ : 0<σ) (c : ι→ℂ) (r : ι→ℝ) (hr : ∀i,0< r i)
     (hc : Summable (fun i=>‖c i‖*(r i)^(-σ))) :
     (∑'i,c i*paperRadialFourier W (r i))=
       verticalIntegral σ (fun z=>∑'i,c i*(r i:ℂ)^(-z)*mellin (paperRadialFourier W) z) := by
@@ -54,9 +55,7 @@ lemma frequency_rpow_summable (σ : ℝ) (hσ : 1<σ) :
     Summable (fun H : NonzeroFrequency=>(elementNorm H.val)^(-σ)) := by
   have he (H : NonzeroFrequency) : ‖frequencyWeight (σ:ℂ) H‖=(elementNorm H.val)^(-σ) := by
     have hH : 0<elementNorm H.val := by
-      unfold elementNorm
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr H.property))
+      pm_4905 elementNorm Nat.pos_of_ne_zero H.property
     rw [frequencyWeight,Complex.norm_cpow_eq_rpow_re_of_pos hH]
     simp
   simpa only [he,Complex.ofReal_re] using frequencyWeight_summable_norm (σ:ℂ) hσ

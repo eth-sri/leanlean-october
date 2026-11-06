@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondWholeCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -52,21 +53,16 @@ theorem full_second_correlated_tail (order : ℕ) :
         (128*L)^4 * (B^2 *
           (Y*(Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)*
             (1+L^3/Y)^2/(1+H)^order)) := by
-  obtain ⟨s,Ct,hCt,htail⟩ := full_second_supported_tail order
-  refine ⟨s,Ct,hCt,?_⟩
+  pm_3085 s Ct hCt htail full_second_supported_tail order
   intro ι _ p hp _ hg hinj hc F Ψ hΨ m c d hd Hcol W B Y H L R hB hY hH hL hcol hsupp hR
   apply htail p hp hg hinj hc F Ψ hΨ m c d Hcol W B Y H L hB hY hH hL hcol hsupp
   intro G hG E S hS T hT hST hw k hk
-  obtain ⟨hGS,hGT⟩ := residualPairWeight_test_ne_zero p hg Ψ Ψ m c d _ _ S T hw
-  have hdGS : Disjoint G S := Finset.disjoint_left.mpr (by
-    intro i hiG hiS
-    exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hS) hiS)).2 hiG)
-  have hdGT : Disjoint G T := Finset.disjoint_left.mpr (by
-    intro i hiG hiT
-    exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hT) hiT)).2 hiG)
+  pm_7650 hGS hGT
+  pm_7876 hdGS S hiS hS
+  pm_7876 hdGT T hiT hT
   have hden := second_correlated_column_denominator p hp G E.val S T hdGS hdGT L (zero_le_one.trans hL)
     (hsupp _ hGS) (hsupp _ hGT)
-  let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E.val
+  pm_3818 e i E.val
   have he : e ≠ 0 := primeSubsetGenerator_ne_zero _ _
   have hde := mul_ne_zero hd he
   have hdN : 0 < ‖eisEmbedding d‖^2 := SecondPassIntegration.elementNorm_pos d hd

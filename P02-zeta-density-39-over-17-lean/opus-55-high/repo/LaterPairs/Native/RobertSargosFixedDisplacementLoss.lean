@@ -5,6 +5,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveDivisorGrowth
 public import LaterPairs.Native.RobertSargosFixedDisplacementConic
 public import LaterPairs.Native.RobertSargosFixedDisplacementLinear
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -16,7 +17,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
-theorem exists_robertSargos_fixed_displacement_conic_bound (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem exists_robertSargos_fixed_displacement_conic_bound :
     ∃ C : ℝ, 0 < C ∧
       ∀ (S : Finset (ℤ × ℤ × ℤ)) (d q₁ q₂ : ℤ) (H Q δ : ℝ),
       Int.gcd (Int.gcd d q₁ : ℤ) q₂ = 1 → d ≠ 0 →
@@ -28,13 +32,12 @@ theorem exists_robertSargos_fixed_displacement_conic_bound (ε : ℝ) (hε : 0 <
       (∀ p ∈ S, p.2.2*d+q₁*p.1-q₂*p.2.1 = 0) →
       (∀ p ∈ S, |robertSargosReduced p.2.2 q₁ q₂ p.1 p.2.1 d| ≤ δ*H*Q^2) →
       (S.card:ℝ) ≤ C*(d.natAbs:ℝ)^ε*(1+8*H^2*δ/d.natAbs) := by
-  obtain ⟨C,hC,hdiv⟩ := exists_primitive_divisor_bound ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hdiv exists_primitive_divisor_bound ε hε
   intro S d q₁ q₂ H Q δ hc hd hH hQ hδ hq₁ hq₂ hs hh₁ hh₂ hp hl hn
   exact (robertSargos_fixed_displacement_conic_card_le S hc hd hH hQ hδ hq₁ hq₂ hs
     hh₁ hh₂ hp hl hn).trans (hdiv d.natAbs (8*H^2*δ) (Int.natAbs_pos.mpr hd) (by positivity))
 
-theorem exists_robertSargos_fixed_displacement_linear_bound (ε : ℝ) (hε : 0 < ε) :
+theorem exists_robertSargos_fixed_displacement_linear_bound :
     ∃ C : ℝ, 0 < C ∧
       ∀ (S : Finset (ℤ × ℤ × ℤ)) (d q₁ q₂ : ℤ) (R H Q δ : ℝ),
       Int.gcd (Int.gcd d q₁ : ℤ) q₂ = 1 → d ≠ 0 →
@@ -47,11 +50,11 @@ theorem exists_robertSargos_fixed_displacement_linear_bound (ε : ℝ) (hε : 0 
       (∀ p ∈ S, p.2.2*d+q₁*p.1-q₂*p.2.1 = 0) →
       (∀ p ∈ S, |robertSargosReduced p.2.2 q₁ q₂ p.1 p.2.1 d| ≤ δ*H*Q^2) →
       (S.card:ℝ) ≤ C*(d.natAbs:ℝ)^ε*(1+72*H*R/d.natAbs) := by
-  obtain ⟨C,hC,hdiv⟩ := exists_primitive_divisor_bound ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hdiv exists_primitive_divisor_bound ε hε
   intro S d q₁ q₂ R H Q δ hc hd hR hH hQ hδ hq₁ hq₂ hs hh₁ hh₂ hr hp hl hn
   exact (robertSargos_fixed_displacement_linear_card_le S hc hd hR hH hQ hδ hq₁ hq₂ hs
     hh₁ hh₂ hr hp hl hn).trans (hdiv d.natAbs (72*H*R) (Int.natAbs_pos.mpr hd) (by positivity))
+end
 
 end TaoTrudgianYang2025
 

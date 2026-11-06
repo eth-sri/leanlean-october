@@ -3,47 +3,51 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceProfileMass
 public import OAI.NumberTheory.DirichletL.Moments.SourceRow
 public import OAI.NumberTheory.DirichletL.Moments.DivisorRowEnergy
 public import OAI.NumberTheory.DirichletL.Moments.SourceLiveColumn
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceRectangle
 open ActualEisensteinCubic HeckeFamily CenteredMomentHeckeExpansion CenteredMomentRectangle
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentExtraction CenteredMomentFirstSectors
-open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile CenteredMomentRemainingBox
+open CenteredMomentFirstSectors
+open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
-def tuplePools (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
-    (ι⊕Fin 2)→Finset (Ideal O) := Sum.elim slots (fun j=>if j=0 then S₁ else S₂)
+def tuplePools (slots : ι→ Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
+    (ι⊕Fin 2)→ Finset (Ideal O) := Sum.elim slots (fun j=>if j=0 then S₁ else S₂)
 
-def tuplePool (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) : Finset (Tuple ι) :=
+def tuplePool (slots : ι→ Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) : Finset (Tuple ι) :=
   Fintype.piFinset (tuplePools slots S₁ S₂)
 
-def pack (v : ι→Ideal O) (I J : Ideal O) : Tuple ι :=
+def pack (v : ι→ Ideal O) (I J : Ideal O) : Tuple ι :=
   Sum.elim v (fun j=>if j=0 then I else J)
 
 omit [Fintype ι] in
-@[simp] theorem pack_slot (v : ι→Ideal O) (I J : Ideal O) (i : ι) :
+@[simp] theorem pack_slot (v : ι→ Ideal O) (I J : Ideal O) (i : ι) :
     pack v I J (Sum.inl i)=v i := rfl
 omit [Fintype ι] in
-@[simp] theorem pack_left (v : ι→Ideal O) (I J : Ideal O) :
+@[simp] theorem pack_left (v : ι→ Ideal O) (I J : Ideal O) :
     pack v I J (Sum.inr 0)=I := by simp [pack]
+section
+variable (v : ι→ Ideal O) (I J : Ideal O)
+include v I J
 omit [Fintype ι] in
-@[simp] theorem pack_right (v : ι→Ideal O) (I J : Ideal O) :
+@[simp] theorem pack_right :
     pack v I J (Sum.inr 1)=J := by simp [pack]
 
-theorem pack_product (v : ι→Ideal O) (I J : Ideal O) :
+theorem pack_product :
     finiteTupleProduct (pack v I J)=(∏ i,v i)*I*J := by
-  simp only [finiteTupleProduct,Fintype.prod_sum_type,pack_slot,Fin.prod_univ_two,
-    pack_left,pack_right,mul_assoc]
+  pm_437 finiteTupleProduct Fintype.prod_sum_type pack_slot Fin.prod_univ_two pack_left pack_right mul_assoc
+end
 
-def tuplePoolEquiv (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
+def tuplePoolEquiv (slots : ι→ Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
     tuplePool slots S₁ S₂ ≃ ((∀ i,slots i)×S₁×S₂) where
   toFun v := ((fun i=>⟨v.val (Sum.inl i),Fintype.mem_piFinset.mp v.property (Sum.inl i)⟩),
     ⟨v.val (Sum.inr 0),by simpa [tuplePools] using Fintype.mem_piFinset.mp v.property (Sum.inr 0)⟩,
@@ -62,7 +66,7 @@ def tuplePoolEquiv (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)
     | inr j => fin_cases j <;> rfl
   right_inv v := rfl
 
-theorem sum_tuplePool (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
+theorem sum_tuplePool (slots : ι→ Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
     (f : Tuple ι→ℂ) :
     (∑ v∈tuplePool slots S₁ S₂,f v)=
       ∑ v : (∀ i,slots i),∑ I : S₁,∑ J : S₂,f (pack (fun i=>v i) I J) := by
@@ -79,10 +83,7 @@ theorem finite_column_regroup (S : Finset (Tuple ι)) (β : Tuple ι→ℂ) (w :
   calc
     _ = ∑ I∈finiteColumns S,∑ v∈S.filter (fun v=>finiteTupleProduct v=I),
         β v*w (finiteTupleProduct v) := by
-      apply Finset.sum_congr rfl
-      intro I hI
-      apply Finset.sum_congr rfl
-      intro v hv
+      pm_3397 I hI v hv
       rw [(Finset.mem_filter.mp hv).2]
     _ = _ := Finset.sum_fiberwise_of_maps_to (fun v hv=>Finset.mem_image.mpr ⟨v,hv,rfl⟩) _
 
@@ -97,7 +98,7 @@ theorem rectangle_zero_left (S₁ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
     by_contra hn;exact hI (h I (Or.inl hn))
   have hy : W₁ ((Ideal.absNorm (B₁*I):ℝ)/Y₁)=0 := by
     by_contra hn;exact hI (h I (Or.inr hn))
-  simp only [idealRectangle,hx,hy,zero_mul,sub_self]
+  pm_94 idealRectangle hx hy zero_mul sub_self
 
 theorem rectangle_zero_right (S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
     (B₁ B₂ : Ideal O) (X₁ X₂ Y₁ Y₂ : ℝ)
@@ -107,12 +108,12 @@ theorem rectangle_zero_right (S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
     by_contra hn;exact hJ (h J (Or.inl hn))
   have hy : W₂ ((Ideal.absNorm (B₂*J):ℝ)/Y₂)=0 := by
     by_contra hn;exact hJ (h J (Or.inr hn))
-  simp only [idealRectangle,hx,hy,mul_zero,sub_self]
+  pm_94 idealRectangle hx hy mul_zero sub_self
 
 theorem finite_plain_rectangle (S₁ S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
     (B₁ B₂ : Ideal O) (X₁ X₂ Y₁ Y₂ : ℝ)
     (h₁ : PlainCoverage S₁ W₁ B₁ X₁ Y₁) (h₂ : PlainCoverage S₂ W₂ B₂ X₂ Y₂)
-    (f : Ideal O→Ideal O→ℂ) :
+    (f : Ideal O→ Ideal O→ℂ) :
     (∑ I : S₁,∑ J : S₂,f I J*idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J))=
       ∑' I : Ideal O,∑' J : Ideal O,f I J*idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J) := by
   symm
@@ -129,7 +130,7 @@ theorem finite_plain_rectangle (S₁ S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ�
     simp only [rectangle_zero_left S₁ W₁ W₂ B₁ B₂ X₁ X₂ Y₁ Y₂ h₁ I _ hI,mul_zero,tsum_zero]
 
 def fullMaskedRectangle (η : Character) (m A z : O) (t : ℝ)
-    (slots : ι→Finset (Ideal O)) (ν Wslot : ι→Ideal O→ℂ)
+    (slots : ι→ Finset (Ideal O)) (ν Wslot : ι→ Ideal O→ℂ)
     (R L : Ideal O) (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) : ℂ :=
   ∑ v : (∀ i,slots i),(∏ i,ν i (v i)*Wslot i (v i))*
     ∑' I : Ideal O,∑' J : Ideal O,
@@ -139,8 +140,8 @@ def fullMaskedRectangle (η : Character) (m A z : O) (t : ℝ)
       idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J)
 
 theorem source_polynomial_eq_full_masked_rectangle (η : Character) (m A z : O) (t : ℝ)
-    (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
-    (R L : Ideal O) (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
+    (slots : ι→ Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
+    (R L : Ideal O) (ν : ι→ Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
     (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O)
     (h₁ : PlainCoverage S₁ W₁ B₁ X₁ Y₁) (h₂ : PlainCoverage S₂ W₂ B₂ X₂ Y₂) :
     (∑ I∈finiteColumns (tuplePool slots S₁ S₂),
@@ -154,11 +155,8 @@ theorem source_polynomial_eq_full_masked_rectangle (η : Character) (m A z : O) 
   intro v hv
   rw [← finite_plain_rectangle S₁ S₂ W₁ W₂ B₁ B₂ X₁ X₂ Y₁ Y₂ h₁ h₂]
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro I hI
-  apply Finset.sum_congr rfl
-  intro J hJ
-  simp only [profileCoefficient,pack_product,pack_slot,pack_left,pack_right]
+  pm_3397 I hI J hJ
+  pm_94 profileCoefficient pack_product pack_slot pack_left pack_right
   ring
 
 theorem plainCoverage_residualPool (S : Finset (Ideal O)) (W : ℝ→ℂ)
@@ -189,7 +187,7 @@ theorem plainSupportPool_coverage (W : ℝ→ℂ) (b X Y : ℝ)
   · exact Finset.mem_union_left _ (cover X hX hi)
   · exact Finset.mem_union_right _ (cover Y hY hi)
 
-theorem liveBox_eq_tuplePool (S : (ι⊕Fin 2)→Finset (Ideal O)) (B : Tuple ι)
+theorem liveBox_eq_tuplePool (S : (ι⊕Fin 2)→ Finset (Ideal O)) (B : Tuple ι)
     (hB : ∀ i,B i≠0) :
     liveBox S B hB = tuplePool
       (fun i : liveIndices B=>residualPool (B (Sum.inl i.val)) (hB _) (S (Sum.inl i.val)))

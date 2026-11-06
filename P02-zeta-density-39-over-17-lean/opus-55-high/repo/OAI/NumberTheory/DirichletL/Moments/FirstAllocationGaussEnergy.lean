@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceOriginalData
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAllocationGaussEnergy
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice
@@ -31,23 +32,23 @@ def allocatedEnergy (D : OriginalData ι) (C L : Ideal O)
   (sourceGaussEnergy (allocatedData D C L B).columns
     (allocatedData D C L B).beta (heightCoeff τ t) W K).re
 
-lemma allocated_hasSum (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+section
+variable (D : OriginalData ι) (C L : Ideal O) (B : actualAllocations D.S C) (τ : Character) (t : ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+include D C L B τ t W K hK
+lemma allocated_hasSum :
     HasSum (fun z : O =>
       ‖gaussPolynomial Finset.univ (sourceGenerator (allocatedData D C L B).columns)
-        (sourceGenerator_supported _) (fun I => (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
+        (sourceGenerator_supported _) (fun I=> (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
       (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
       (allocatedEnergy D C L B τ t W K) :=
   gaussEnergy_hasSum_re _ _ _ _ W K hK
 
-lemma allocated_nonneg (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+lemma allocated_nonneg
     (hW : ∀ z : O, 0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     0≤allocatedEnergy D C L B τ t W K := by
   rw [← (allocated_hasSum D C L B τ t W K hK).tsum_eq]
-  exact tsum_nonneg (fun z => mul_nonneg (sq_nonneg _) (hW z))
+  pm_6691
+end
 
 theorem common_energy_allocation (D : OriginalData ι)
     (hS : ∀ i, ∀ I∈D.S i, I≠0) (hp : ∀ i, ∀ I∈D.S (Sum.inl i), Prime I)
@@ -58,13 +59,12 @@ theorem common_energy_allocation (D : OriginalData ι)
       ((actualAllocations D.S C).card:ℝ) * ∑ B : actualAllocations D.S C,
         ‖frozenCoefficient B.val C D.R D.nu D.slot D.lengths‖^2 * allocatedEnergy D C L B τ t W K := by
   unfold commonEnergy
-  apply Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hW z))
-  intro rows
+  pm_979 hW
   calc
     _ ≤ ∑ z∈rows, ((actualAllocations D.S C).card:ℝ) * ∑ B : actualAllocations D.S C,
         ‖frozenCoefficient B.val C D.R D.nu D.slot D.lengths‖^2 *
           (‖gaussPolynomial Finset.univ (sourceGenerator (allocatedData D C L B).columns)
-            (sourceGenerator_supported _) (fun I => (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
+            (sourceGenerator_supported _) (fun I=> (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
           (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) := by
       apply Finset.sum_le_sum
       intro z hz
@@ -74,20 +74,17 @@ theorem common_energy_allocation (D : OriginalData ι)
           (fun B : actualAllocations D.S C =>
             frozenCoefficient B.val C D.R D.nu D.slot D.lengths *
               gaussPolynomial Finset.univ (sourceGenerator (allocatedData D C L B).columns)
-                (sourceGenerator_supported _) (fun I => (allocatedData D C L B).beta I * heightCoeff τ t I) z))
+                (sourceGenerator_supported _) (fun I=> (allocatedData D C L B).beta I * heightCoeff τ t I) z))
         (hW z)
-      simpa only [Finset.card_univ,Fintype.card_coe,norm_mul,mul_pow,Finset.sum_mul,mul_assoc] using hc
+      pm_436 Finset.card_univ Fintype.card_coe norm_mul mul_pow Finset.sum_mul mul_assoc hc
     _ = ((actualAllocations D.S C).card:ℝ) * ∑ B : actualAllocations D.S C,
         ‖frozenCoefficient B.val C D.R D.nu D.slot D.lengths‖^2 *
           ∑ z∈rows, ‖gaussPolynomial Finset.univ (sourceGenerator (allocatedData D C L B).columns)
-            (sourceGenerator_supported _) (fun I => (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
+            (sourceGenerator_supported _) (fun I=> (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
             (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re := by
-      rw [← Finset.mul_sum,Finset.sum_comm]
-      simp only [Finset.mul_sum]
+      pm_539
     _ ≤ _ := by
-      apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
-      apply Finset.sum_le_sum
-      intro B hB
+      pm_2870
       apply mul_le_mul_of_nonneg_left _ (sq_nonneg _)
       exact sum_le_hasSum rows (fun z _ => mul_nonneg (sq_nonneg _) (hW z))
         (allocated_hasSum D C L B τ t W K hK)
@@ -95,13 +92,16 @@ theorem common_energy_allocation (D : OriginalData ι)
 def rawVolume (D : OriginalData ι) : ℝ :=
   (D.X₁*D.X₂/((Ideal.absNorm D.B₁:ℝ)*Ideal.absNorm D.B₂)) * ∏ i,D.lengths i
 
-lemma rawVolume_pos (D : OriginalData ι) (hX₁ : 0<D.X₁) (hX₂ : 0<D.X₂)
-    (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) (hP : ∀ i,0<D.lengths i) : 0<rawVolume D := by
+section
+variable (D : OriginalData ι)
+include D
+lemma rawVolume_pos (hX₁ : 0<D.X₁) (hX₂ : 0<D.X₂)
+    (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) (hP : ∀ i,0<D.lengths i) : 0< rawVolume D := by
   apply mul_pos (div_pos (mul_pos hX₁ hX₂) _)
     (Finset.prod_pos (fun i _ => hP i))
   exact mul_pos (CenteredMomentFirstScale.norm_pos _ hB₁) (CenteredMomentFirstScale.norm_pos _ hB₂)
 
-lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal O)
+lemma allocated_rawVolume_mul (C L : Ideal O)
     (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) :
     rawVolume (allocatedData D C L B) * rawReduction B.val D.lengths = rawVolume D := by
   have hB := (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1
@@ -110,13 +110,13 @@ lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal O)
   rw [← hv]
   exact raw_scale_identity B.val hB _ D.lengths
 
-lemma allocated_rawVolume (D : OriginalData ι) (C L : Ideal O)
+lemma allocated_rawVolume (C L : Ideal O)
     (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0)
     (hP : ∀ i,0<D.lengths i) :
     rawVolume (allocatedData D C L B) = rawVolume D / rawReduction B.val D.lengths := by
-  have hr := rawReduction_pos B.val
-    (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1 D.lengths hP
+  pm_6874 hr
   exact (eq_div_iff hr.ne').mpr (allocated_rawVolume_mul D C L B hB₁ hB₂)
+end
 
 def frozenControl (B : Tuple ι) (M : ι → ℝ) : ℝ :=
   ∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),M i
@@ -130,8 +130,7 @@ lemma frozen_norm_bound (D : OriginalData ι) (C : Ideal O)
   have hc : ‖(if IsCoprime C D.R then (1:ℂ) else 0)‖≤1 := by split_ifs <;> simp
   apply (mul_le_of_le_one_right (norm_nonneg _) hc).trans
   rw [norm_prod]
-  apply Finset.prod_le_prod₀ (fun i _ => norm_nonneg _)
-  intro i hi
+  pm_5766 norm_nonneg
   rw [norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) (hν i _)).trans (hW i _)
 
@@ -181,11 +180,8 @@ theorem normalized_common_energy_allocation (D : OriginalData ι)
     (common_energy_allocation D hS hp C hC hseed τ t L W K hK hW) hV.le
   apply he.trans_eq
   rw [mul_div_assoc,Finset.sum_div]
-  apply congrArg (fun x : ℝ => ((actualAllocations D.S C).card:ℝ)*x)
-  apply Finset.sum_congr rfl
-  intro B hB
-  have hR := rawReduction_pos B.val
-    (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1 D.lengths hP
+  pm_241 D.S
+  pm_6874 hR
   rw [allocated_rawVolume D C L B hB₁ hB₂ hP]
   field_simp
 

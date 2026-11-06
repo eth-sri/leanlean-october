@@ -6,6 +6,7 @@ public import Mathlib.Data.Finset.Max
 public import Mathlib.Algebra.Order.Floor.Semiring
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ theorem exists_small_increment (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)
   by_contra h
   have hinc : ∀ i ∈ Finset.range n, e < M (i + 1) - M i := by
     intro i hi
-    exact lt_of_not_ge (fun hle => h ⟨i, Finset.mem_range.mp hi, hle⟩)
+    grind
   have hs := Finset.sum_lt_sum_of_nonempty (Finset.nonempty_range_iff.mpr (Nat.ne_of_gt hn)) hinc
   simp only [Finset.sum_const, Finset.card_range, nsmul_eq_mul,
     Finset.sum_range_sub] at hs
@@ -34,7 +35,7 @@ theorem exists_grid_rounding {base x e : ℝ} (he : 0 < e) (hx : base ≤ x) :
   have hhi := Nat.lt_floor_add_one ((x - base) / e)
   have hlo' := (le_div_iff₀ he).mp hlo
   have hhi' := (div_lt_iff₀ he).mp hhi
-  refine ⟨k, ?_, ?_⟩ <;> dsimp [k] <;> nlinarith
+  grind
 
 theorem exists_buffered_bin (M : ℕ → ℝ) {n : ℕ} (hn : 0 < n)
     {e : ℝ} (he : 0 < e)
@@ -58,8 +59,7 @@ theorem simultaneous_saturation {U δ r m ε A B : ℝ}
     (hupperB : B ≤ U ^ (δ * min m (1 - m) + ε)) :
     m ≤ 1 / 2 + 75 * ε ∧
       U ^ (δ * r - 2 * ε) ≤ A ∧ U ^ (δ * m - 2 * ε) ≤ B := by
-  have hU0 : 0 < U := by linarith
-  have hδ0 : 0 ≤ δ := by linarith
+  pm_254 hU0 U hδ0 δ
   have hBcoarse : B ≤ U ^ (δ * m + ε) := by
     apply hupperB.trans
     exact Real.rpow_le_rpow_of_exponent_le hU.le
@@ -83,8 +83,7 @@ theorem simultaneous_saturation {U δ r m ε A B : ℝ}
         _ = U ^ (δ * (r + m) - ε) := by rw [← Real.rpow_add hU0]; congr 1; ring
         _ ≤ A * B := hprod
         _ ≤ _ := mul_le_mul_of_nonneg_left hBcoarse hA
-    have hpos := Real.rpow_pos_of_pos hU0 (δ * m + ε)
-    nlinarith
+    pm_8558 m
   have hlowerB : U ^ (δ * m - 2 * ε) ≤ B := by
     have hp : U ^ (δ * m - 2 * ε) * U ^ (δ * r + ε) ≤
         B * U ^ (δ * r + ε) := by
@@ -92,8 +91,7 @@ theorem simultaneous_saturation {U δ r m ε A B : ℝ}
         _ = U ^ (δ * (r + m) - ε) := by rw [← Real.rpow_add hU0]; congr 1; ring
         _ ≤ A * B := hprod
         _ ≤ _ := by simpa [mul_comm] using mul_le_mul_of_nonneg_right hupperA hB
-    have hpos := Real.rpow_pos_of_pos hU0 (δ * r + ε)
-    nlinarith
+    pm_8558 r
   exact ⟨hlength, hlowerA, hlowerB⟩
 
 end SevenEighths.Detector

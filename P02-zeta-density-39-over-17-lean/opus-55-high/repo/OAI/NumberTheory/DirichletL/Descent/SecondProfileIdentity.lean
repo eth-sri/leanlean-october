@@ -1,14 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FullProfile
 public import OAI.NumberTheory.DirichletL.Descent.Canonical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open FirstPassCubeLabels SecondPassArithmetic
 open EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
@@ -34,8 +35,7 @@ lemma secondPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
       Real.log (q 3) - (Real.log (q 1)+Real.log (q 2)+Real.log (q 2)+Real.log (q 4)+Real.log (q 5)) := by
     simp [Fin.sum_univ_succ,secondKernelSlope]; ring
   unfold secondPoissonProfile secondNormProfile
-  rw [hleft,hright,hker]
-  simp only [Real.exp_add,Real.exp_sub,Real.exp_log (hq _)]
+  pm_8442 hleft hright hker
   have hk : R * (q 3/(q 1*q 2*q 2*q 4*q 5)) = R*q 3/(q 1*(q 2)^2*q 4*q 5) := by ring
   rw [hk]
   simp only [Fin.prod_univ_succ,secondRootWindows,inverseNormWindow,inverseRootWindow,
@@ -56,14 +56,12 @@ theorem secondSourcePairKernel_profile {ι : Type*} [DecidableEq ι]
         ‖eisEmbedding k‖^2, primeProductNorm p N, primeProductNorm p M] := by
   have hs (S : Finset ι) : ‖eisEmbedding (∏ i ∈ S, p i)‖ = Real.sqrt (primeProductNorm p S) := by
     simp only [primeProductNorm, Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)]
-  have hV : 0 ≤ primeProductNorm p V := (primeProductNorm_pos p hp V).le
+  pm_8850 hV V
   have hroots : Real.sqrt (primeProductNorm p V*primeProductNorm p N) *
       Real.sqrt (primeProductNorm p V*primeProductNorm p M) =
       primeProductNorm p V * Real.sqrt (primeProductNorm p N) * Real.sqrt (primeProductNorm p M) := by
     rw [Real.sqrt_mul hV, Real.sqrt_mul hV]
-    calc
-      _ = (Real.sqrt (primeProductNorm p V))^2 * Real.sqrt (primeProductNorm p N) * Real.sqrt (primeProductNorm p M) := by ring
-      _ = _ := by rw [Real.sq_sqrt hV]
+    grind
   unfold secondSourcePairKernel secondNormProfile
   simp only [hs,primeProductNorm_union p V N hVN,primeProductNorm_union p V M hVM,
     Matrix.cons_val_zero,  Fin.isValue, Finset.prod_const_one, one_mul]
@@ -104,7 +102,7 @@ theorem secondNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   have hc4 : ![q 0/G₀,q 1/E₀,q 2/V₀,q 3/K₀,q 4/X₀,q 5/X₀] (4:Fin 6) = q 4/X₀ := rfl
   have hc5 : ![q 0/G₀,q 1/E₀,q 2/V₀,q 3/K₀,q 4/X₀,q 5/X₀] (5:Fin 6) = q 5/X₀ := rfl
   unfold secondNormProfile
-  simp only [Finset.prod_const_one,one_mul,hc0,hc1,hc2,hc3,hc4,hc5]
+  pm_403 Finset.prod_const_one one_mul hc0 hc1 hc2 hc3 hc4 hc5
   rw [hleft,hright,harg]
   have hrootC : (Real.sqrt (q 4/X₀):ℂ)*(Real.sqrt (q 5/X₀):ℂ) =
       (Real.sqrt (q 4):ℂ)*(Real.sqrt (q 5):ℂ)/(X₀:ℂ) := by exact_mod_cast hroot
@@ -115,7 +113,7 @@ theorem secondNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   have hVc : (V₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hV.ne'
   have hXc : (X₀:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
   push_cast
-  field_simp [hEc,hVc,hXc]
+  grind
 
 end
 end SevenEighths.InverseMoment

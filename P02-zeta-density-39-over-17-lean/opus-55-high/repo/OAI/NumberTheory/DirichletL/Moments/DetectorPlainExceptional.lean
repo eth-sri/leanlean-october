@@ -2,31 +2,32 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainFiberSource
 public import OAI.NumberTheory.DirichletL.Moments.DetectorEnergyInitialState
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFreeExceptional
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical SchwartzMap Topology
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainExceptional
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
+open HeckeFamily HeckeDyadic HeckeInverseAmplification
+open CenteredMomentDetectorDictionary
 open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceRow CenteredMomentSourceMass
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
 open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 open CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm
-open CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
+open ConcreteTraceCRT ActualEisensteinCubic
 local notation "O"=>HeckeFamily.O
 variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
-def retainedSourceEnergy (keep:O→Prop)
+def retainedSourceEnergy (keep:O→ Prop)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)
     (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(Φ:𝓢(ℝ,ℂ)):ℝ:=
   sourceRestrictedEnergy keep (finiteColumns (fiberPool F selected))
@@ -34,7 +35,7 @@ def retainedSourceEnergy (keep:O→Prop)
     ((U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val))
 
 theorem retained_positive_energy_le_source
-    (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
+    (keep:O→ Prop)(Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)(η:Character)
     (selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(hU:0<U)
     (hkeep:∀u∈F.rows,keep u.val):
@@ -58,11 +59,9 @@ theorem retained_positive_energy_le_source
   have hb:=finite_energy_le_restricted keep Finset.univ
     (sourceGenerator Q) (sourceGenerator_supported Q) c Φ U hU rows
     (by
-      intro z hz
-      obtain ⟨u,hu,rfl⟩:=Finset.mem_image.mp hz
+      pm_1192 z hz u hu
       exact hkeep u hu) (fun z=>hΦ _) (by
-      intro z hz
-      obtain ⟨u,hu,rfl⟩:=Finset.mem_image.mp hz
+      pm_1192 z hz u hu
       have hn:‖eisEmbedding u.val‖^2/U∈Set.Icc (0:ℝ) 1:=by
         refine ⟨div_nonneg (sq_nonneg _) hU.le,(div_le_one hU).mpr ?_⟩
         rw [eisEmbedding_norm_sq_eq_absNorm_span]
@@ -80,12 +79,15 @@ theorem retained_positive_energy_le_source
 
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
-theorem source_fibers_eventually_retained (S:ProbeFinalAssembly.SourceData D)(η:Character):
+section
+variable (S:ProbeFinalAssembly.SourceData D) (η:Character)
+include S η
+theorem source_fibers_eventually_retained:
     ∀ᶠZ:ℝ in atTop,∀rows:Finset FreeRow,
-      (∀u∈rows,Z^(1/100:ℝ)≤rowNorm u)→
+      (∀u∈rows,Z ^(1/100:ℝ)≤ rowNorm u)→
       ∀(d a ε tstar T allowance:ℝ)(i:ℕ)
       (B:Batch S.modulus ⊤ (Sum Bool (RayQuotient.Characters S.modulus ⊤)) (Fin D.N)
-        (Z^d) a ε tstar T allowance i),B.rows⊆rows→
+        (Z ^d) a ε tstar T allowance i),B.rows⊆rows→
       ∀bin label J K,∀hne:(B.fiberRows bin label J K).Nonempty,
       let η₀:=sourceMomentBase S.modulus ⊤ le_top S.S S.exclusions.prime η label;
       (∀u∈(B.fiber bin label J K hne).rows,
@@ -109,21 +111,21 @@ theorem source_fibers_eventually_retained (S:ProbeFinalAssembly.SourceData D)(η
   obtain ⟨hu,hex⟩:=Finset.mem_filter.mp hu
   exact ((source_keep_iff S η₀ u).mp (hk u hu)) hex
 
-theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Character):
+theorem source_batch_plain_retained:
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀rows:Finset FreeRow,
-      (∀u∈rows,Z^(1/100:ℝ)≤rowNorm u)→
+      (∀u∈rows,Z ^(1/100:ℝ)≤ rowNorm u)→
       ∀d:ℝ,d≠0→∀(a ε tstar T allowance:ℝ)(i:ℕ)
       (B:Batch S.modulus ⊤ (Sum Bool (RayQuotient.Characters S.modulus ⊤)) (Fin D.N)
-        (Z^d) a ε tstar T allowance i),B.rows⊆rows→
+        (Z ^d) a ε tstar T allowance i),B.rows⊆rows→
       B.data=sourceMomentData S.modulus ⊤ le_top S.S S.exclusions.prime η→
-      B.profile=(fun _ x=>(S.w x:ℂ))→B.widths=(fun s=>D.ell s/d)→
+      B.profile=(fun _ x=>(S.w x:ℂ))→ B.widths=(fun s=>D.ell s/d)→
       ∀bin label J K,∀hne:(B.fiberRows bin label J K).Nonempty,
       ∀selected:Finset (Fin D.N),∀j k:ℕ,∀σ t:ℝ,
       let F:=B.fiber bin label J K hne;
       let η₀:=sourceMomentBase S.modulus ⊤ le_top S.S S.exclusions.prime η label;
       (∑u∈F.rows,‖polynomial (F.family u F.label) false ((logProfile^[j]) positiveAnnular)
-        ((Z^d)^F.m) σ t*polynomial (F.family u F.label) false ((logProfile^[k]) positiveAnnular)
-        ((Z^d)^F.m) σ t*F.physicalProduct selected u‖^2)≤
+        ((Z ^d)^F.m) σ t*polynomial (F.family u F.label) false ((logProfile^[k]) positiveAnnular)
+        ((Z ^d)^F.m) σ t*F.physicalProduct selected u‖^2)≤
         retainedSourceEnergy (initialKeep η₀ (internalQ (sourceFixedIdeal S) η₀))
           F η₀ selected j k σ t radialMajorant:=by
   filter_upwards [source_fibers_eventually_retained S η,
@@ -132,16 +134,16 @@ theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Chara
   refine ⟨hZ,?_⟩
   intro rows hrows d hd a ε tstar T allowance i B hB hdata hprofile hwidth
     bin label J K hne selected j k σ t F η₀
-  have hU:0<Z^d:=Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _
+  have hU:0<Z ^d:=Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _
   have hdataF:F.rowData=momentData η₀:=by
     change B.data label=momentData η₀
     rw [hdata,sourceMomentData_base]
   have hMm:S.modulus≤Ideal.span {rowMaskElement}:=source_product_le_rowMask S.S S.exclusions.bad
-  have hη:∀s∈selected,∀I∈primePool S.modulus ⊤ (F.upper s) ((Z^d)^(F.widths s)),
-      F.profile s ((I.absNorm:ℝ)/((Z^d)^(F.widths s)))≠0→IsCoprime I η₀.modulus:=by
+  have hη:∀s∈selected,∀I∈primePool S.modulus ⊤ (F.upper s) ((Z ^d)^(F.widths s)),
+      F.profile s ((I.absNorm:ℝ)/((Z ^d)^(F.widths s)))≠0→ IsCoprime I η₀.modulus:=by
     intro s hs I hI hn
-    change I∈primePool S.modulus ⊤ (B.upper s) ((Z^d)^(B.widths s)) at hI
-    change B.profile s ((I.absNorm:ℝ)/((Z^d)^(B.widths s)))≠0 at hn
+    change I∈primePool S.modulus ⊤ (B.upper s) ((Z ^d)^(B.widths s)) at hI
+    change B.profile s ((I.absNorm:ℝ)/((Z ^d)^(B.widths s)))≠0 at hn
     rw [hwidth] at hI
     rw [hwidth,hprofile] at hn
     exact hcop label s d hd (fun x=>(S.w x:ℂ)) (B.upper s)
@@ -152,6 +154,7 @@ theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Chara
   rw [fiber_plain_energy_eq F η₀ hdataF hMm hU selected j k σ t hη]
   exact retained_positive_energy_le_source _ radialMajorant radialMajorant_nonneg radialMajorant_one
     F η₀ selected j k σ t hU (hret rows hrows d a ε tstar T allowance i B hB bin label J K hne).1
+end
 
 end SevenEighths.CenteredMomentDetectorPlainExceptional
 

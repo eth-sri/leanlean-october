@@ -8,6 +8,7 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinInversion
 public import MathCollab.Density.Stronger.Fourth.SquareSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem DFIVoronoiTestFunction.integrable_ordinaryDivisorMellinTerm
         (aestronglyMeasurable_const :
           AEStronglyMeasurable (fun _u : ℝ => (0 : ℂ)))
     · simp_rw [LSeries.term_of_ne_zero hn]
-      have hBase : (n : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr hn
+      pm_115 hBase n Nat.cast_ne_zero.mpr hn
       have hExponent : Continuous (fun u : ℝ =>
           (c : ℂ) + (u : ℂ) * I) := by fun_prop
       have hPow : Continuous (fun u : ℝ =>
@@ -48,8 +49,10 @@ theorem DFIVoronoiTestFunction.integrable_ordinaryDivisorMellinTerm
     rw [LSeries.norm_term_eq, LSeries.norm_term_eq]
     simp
 
+section
+variable (g : ℝ → ℂ)
+include g
 theorem DFIVoronoiTestFunction.integral_norm_ordinaryDivisorMellinTerm
-    (g : ℝ → ℂ)
     (c : ℝ) (n : ℕ) :
     (∫ u : ℝ, ‖ordinaryDivisorMellinTerm g c n u‖) =
       ‖LSeries.term divisorWeight (c : ℂ) n‖ *
@@ -66,12 +69,11 @@ theorem DFIVoronoiTestFunction.integral_norm_ordinaryDivisorMellinTerm
 /-- Absolute summability of the norms of all right-line Mellin terms.  This
 is the complete Tonelli/Fubini condition used by the Voronoi entry theorem. -/
 theorem DFIVoronoiTestFunction.summable_integral_norm_ordinaryDivisorMellinTerm
-    (g : ℝ → ℂ)
     {c : ℝ} (hc : 1 < c) :
     Summable (fun n : ℕ =>
       ∫ u : ℝ, ‖ordinaryDivisorMellinTerm g c n u‖) := by
   have hCoeff : LSeriesSummable divisorWeight (c : ℂ) :=
-    divisorLSeries_summable (by simpa using hc)
+    divisorLSeries_summable (by simp_all)
   have hNorm : Summable (fun n : ℕ =>
       ‖LSeries.term divisorWeight (c : ℂ) n‖) :=
     summable_norm_iff.mpr hCoeff
@@ -82,8 +84,7 @@ theorem DFIVoronoiTestFunction.summable_integral_norm_ordinaryDivisorMellinTerm
   exact (integral_norm_ordinaryDivisorMellinTerm g c n).symm
 
 
-theorem divisorWeight_mul_mellinInv
-    (g : ℝ → ℂ) (σ : ℝ)
+theorem divisorWeight_mul_mellinInv (σ : ℝ)
     (n : ℕ) :
     divisorWeight n * mellinInv σ (mellin g) n =
       (1 / (2 * Real.pi) : ℂ) *
@@ -92,8 +93,7 @@ theorem divisorWeight_mul_mellinInv
   · simp [divisorWeight, ordinaryDivisorMellinTerm, mellinInv,
       LSeries.term_zero]
   · unfold mellinInv ordinaryDivisorMellinTerm
-    simp only [smul_eq_mul, Complex.real_smul, ofReal_div, ofReal_one,
-      ofReal_mul]
+    pm_188 smul_eq_mul Complex.real_smul ofReal_div ofReal_one ofReal_mul
     change divisorWeight n *
         ((1 / (2 * Real.pi) : ℂ) * ∫ y : ℝ,
           ((n : ℝ) : ℂ) ^ (-((σ : ℂ) + (y : ℂ) * I)) *
@@ -113,6 +113,7 @@ theorem divisorWeight_mul_mellinInv
     rw [show ((n : ℝ) : ℂ) = (n : ℂ) by norm_cast, cpow_neg,
       div_eq_mul_inv]
     ring
+end
 
 
 /-- Native q=1 right-line identity, with inversion and absolute exchange proved. -/
@@ -125,8 +126,7 @@ theorem DFIVoronoiTestFunction.ordinaryDivisorSum_eq_zetaSquareMellinIntegral
   have hInvAll : ∀ n : ℕ,
       divisorWeight n * g n = divisorWeight n * mellinInv σ (mellin g) n := by
     intro n
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [divisorWeight]
+    pm_8587 divisorWeight
     · rw [hg.mellinInversion σ (by exact_mod_cast Nat.pos_of_ne_zero hn)]
   simp_rw [hInvAll, divisorWeight_mul_mellinInv]
   rw [tsum_mul_left]

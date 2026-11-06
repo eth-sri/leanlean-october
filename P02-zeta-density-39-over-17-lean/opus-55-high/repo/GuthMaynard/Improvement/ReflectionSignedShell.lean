@@ -2,20 +2,21 @@ module
 public import GuthMaynard.Improvement.ReflectionShellIntegral
 public import GuthMaynard.Improvement.NegativeReflectedBand
 public import GuthMaynard.Improvement.ReflectedBandBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ComplexConjugate
 namespace GuthMaynard.Improvement
 
+section
+variable {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
+include μ hm h0
 /-- Actual density-measure negation, including the interval endpoints. -/
-theorem reflection_density_negation {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) (F : ℝ → ℝ) {H : ℝ} (hH : 0 ≤ H) (u : ℝ) :
+theorem reflection_density_negation (F : ℝ → ℝ) {H : ℝ} (hH : 0 ≤ H) (u : ℝ) :
     (∫ t, F t ∂(timeMeasure μ).restrict (Icc (u-2*H) (u-H))) =
       ∫ t, F (-t) ∂(timeMeasure (fun t => μ (-t))).restrict (Icc (-u+H) (-u+2*H)) := by
-  have hm' : Measurable (fun t => μ (-t)) := hm.comp measurable_neg
+  pm_6520
   simp_rw [timeMeasure,restrict_withDensity measurableSet_Icc,
     integral_withDensity_eq_integral_toReal_smul hm.ennreal_ofReal
       (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top)),
@@ -29,12 +30,12 @@ theorem reflection_density_negation {μ : ℝ → ℝ} (hm : Measurable μ)
     intervalIntegral.integral_of_le (show -u+H ≤ -u+2*H by linarith),← integral_Icc_eq_integral_Ioc]
 
 /-- Negation preserves the exact shell density mass. -/
-theorem reflection_density_mass_negation {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) {H : ℝ} (hH : 0 ≤ H) (u : ℝ) :
+theorem reflection_density_mass_negation {H : ℝ} (hH : 0 ≤ H) (u : ℝ) :
     ((timeMeasure μ).restrict (Icc (u-2*H) (u-H))).real univ =
       ((timeMeasure (fun t => μ (-t))).restrict (Icc (-u+H) (-u+2*H))).real univ := by
   have he := reflection_density_negation hm h0 (fun _ => 1) hH u
   simpa only [integral_const,smul_eq_mul,mul_one] using he
+end
 
 /-- A negative shell is the same positive shell for the reversed density.
 Only norm evenness of the actual centered kernel is used. -/
@@ -72,9 +73,9 @@ theorem reflection_both_shell_density (w : MathCollab.Density.ReflectionCutoff)
   · exact h N L H u hN hL hH a ha μ hm hi h0 hμ
   have he : S = Icc (u-2*H) (u-H) := hS
   subst S
-  have hm' : Measurable (fun t => μ (-t)) := hm.comp measurable_neg
+  pm_6520
   have hi' : Integrable (fun t => μ (-t)) := by
-    simpa using hi.comp_mul_left' (by norm_num : (-1:ℝ) ≠ 0)
+    pm_1484 hi.comp_mul_left'
   have hμ' (t : ℝ) : μ (-t) ≤ ‖boundedPolynomial N (fun n => conj (a n)) t‖^2 := by
     have hh := hμ (-t)
     rw [boundedPolynomial_norm_reverse N a (-t),neg_neg] at hh

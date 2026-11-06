@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CompletionSplit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ theorem marked_large_cube_sum_comm (Ψ : O →* ℂ) (W : ℝ → ℂ)
   have hf : (Function.support a).Finite :=
     (completedT_finite_support Ψ W hW X hX).subset (by
       intro p hp
-      exact fun h=>hp (by simp only [a,h,mul_zero,zero_mul]))
+      aesop)
   have hs : Summable a := summable_of_hasFiniteSupport hf
   let e := Equiv.prodComm (Ideal O) (Ideal O)
   have ht : Summable (fun p=>a (e p)) := e.summable_iff.mpr hs
@@ -44,14 +45,14 @@ theorem marked_large_cube_sum_finite (S : Finset (Ideal O)) (D : ℕ)
     intro I
     by_contra hn
     exact hB (summand_cube_support S D hSp Ψ m f z hm W b X hX hW hD I B hn)
-  simp only [hz,tsum_zero,mul_zero,zero_mul]
+  simp_all
 
 theorem marked_inner_completed_sum (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ) (hX : 0<X)
     (B : Ideal O) (hB : B≠0) (d : Ideal O → ℂ) :
     (∑'I:Ideal O,summand Ψ W X I B*d (I*B^3)) =
       (cubeWeight Ψ B * (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹) *
         ∑'I:Ideal O,columnWeight Ψ I * W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3))*d (I*B^3) := by
-  have hN : 0 < (Ideal.absNorm B:ℝ) := lt_of_lt_of_le zero_lt_one (norm_at_least_one B hB)
+  pm_6072
   have hY : 0 < X/(Ideal.absNorm B:ℝ)^3 := div_pos hX (pow_pos hN _)
   have ht (I:Ideal O) : summand Ψ W X I B =
       (cubeWeight Ψ B * (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹) *

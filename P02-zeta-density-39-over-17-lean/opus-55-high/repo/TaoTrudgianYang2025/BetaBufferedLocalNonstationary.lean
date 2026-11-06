@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaMorseWindowIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,19 +32,14 @@ theorem IntervalC1Bound.fourierChar_of_closed_slope_gap
     ‖∫ x in a..b, f x*(𝐞 (φ x) : ℂ)‖ ≤ 2*M/(lam*Real.pi) := by
   have h := IntervalC1Bound.integral_mul_of_primitive_bound hf hab hJ hsub
     (k := fun x => (𝐞 (φ x) : ℂ))
-    (by
-      intro x hx
-      have hc := (hφ x hx).continuousAt
-      simp only [Real.fourierChar_apply]
-      fun_prop)
+    (by fun_prop)
     (B := 1/(lam*Real.pi)) (by
       intro x hx
       have hs : Icc a x ⊆ Icc a b := fun y hy => ⟨hy.1,hy.2.trans hx.2⟩
       apply norm_fourierCharIntegral_le_of_slope_gap hx.1 hlam
         (fun y hy => hφ y (hsub (hs hy)))
         (fun y hy z hz hyz => hmono (hs hy) (hs hz) hyz)
-      rcases hgap with hp | hn
-      · exact Or.inl (fun y hy => hp y (hs hy))
+      pm_6382 hs
       · exact Or.inr (fun y hy => hn y (hs hy)))
   convert h using 1
   ring
@@ -61,16 +57,7 @@ theorem norm_buffered_subinterval_nonstationary
   let φ : ℝ → ℝ := fun u => T*F u-q*u
   have hs : Icc a b ⊆ Ioo (1 : ℝ) 2 :=
     fun u hu => ⟨ha.trans_le hu.1,hu.2.trans_lt hb⟩
-  have hd {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
-      deriv φ u = T*deriv F u-q := by
-    have hFu := (approximateModelPhase_contDiffAt hF hu).differentiableAt (by simp)
-    simpa only [φ,mul_one,Pi.sub_def,id_eq] using
-      ((hFu.hasDerivAt.const_mul T).sub ((hasDerivAt_id u).const_mul q)).deriv
-  have hφ : ∀ u ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ 2 φ u := by
-    intro u hu
-    exact (contDiffAt_const.mul ((approximateModelPhase_contDiffAt hF hu).of_le
-      (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2))).sub
-        (contDiffAt_const.mul contDiffAt_id)
+  pm_1647
   have hm : AntitoneOn (deriv φ) (Icc a b) := by
     intro u hu v hv huv
     rw [hd (hs hu),hd (hs hv)]
@@ -79,11 +66,9 @@ theorem norm_buffered_subinterval_nonstationary
   have hg : (∀ u ∈ Icc a b, lam ≤ deriv φ u) ∨
       (∀ u ∈ Icc a b, deriv φ u ≤ -lam) := by
     rcases hgap with hp | hn
-    · exact Or.inl (fun u hu => by rw [hd (hs hu)]; exact hp u hu)
-    · exact Or.inr (fun u hu => by rw [hd (hs hu)]; exact hn u hu)
-  have h := IntervalC1Bound.fourierChar_of_closed_slope_gap
-    (intervalC1Bound_modelPhaseBufferedCutoff (l := l) (r := r) hη hab)
-    hab hlam isOpen_Ioo hs hφ hm hg
+    pm_6823 Or.inl hp
+    pm_6823 Or.inr hn
+  pm_7050 IntervalC1Bound.fourierChar_of_closed_slope_gap hs hm
   convert h using 1
   norm_num
 
@@ -97,16 +82,13 @@ theorem modelPhaseMorseInverse_window_slope_gaps
         deriv F (modelPhaseMorseInverse F v (-H))-v ∧
       H*modelPhaseCurvatureLower σ/Real.sqrt (σ+1) ≤
         v-deriv F (modelPhaseMorseInverse F v H) := by
-  have hl := (modelPhaseMorseCoordinate_deriv_bounds hσ hδ hF hv
-    (modelPhaseMorseInverse_mem hleft)).1
-  have hr := (modelPhaseMorseCoordinate_deriv_bounds hσ hδ hF hv
-    (modelPhaseMorseInverse_mem hright)).1
+  pm_7033 hl modelPhaseMorseCoordinate_deriv_bounds hleft
+  pm_7033 hr modelPhaseMorseCoordinate_deriv_bounds hright
   have el := modelPhaseMorseCoordinate_deriv_mul hσ hδ hF hv (modelPhaseMorseInverse_mem hleft)
   have er := modelPhaseMorseCoordinate_deriv_mul hσ hδ hF hv (modelPhaseMorseInverse_mem hright)
   rw [modelPhaseMorseCoordinate_inverse hleft] at el
   rw [modelPhaseMorseCoordinate_inverse hright] at er
-  have hl' := mul_le_mul_of_nonneg_left hl hH
-  have hr' := mul_le_mul_of_nonneg_left hr hH
+  pm_194 hl' mul_le_mul_of_nonneg_left hl hH hr' hr
   rw [← mul_div_assoc] at hl' hr'
   constructor <;> nlinarith
 

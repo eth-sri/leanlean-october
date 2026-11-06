@@ -2,10 +2,10 @@ module
 public import GuthMaynard.Improvement.DirichletMeanValue
 public import GuthMaynard.Improvement.SamplingVariation
 public import RationalDifferenceEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory Set
 open scoped ComplexConjugate
@@ -28,20 +28,19 @@ theorem reciprocal_separated_sum (S : Finset ι) (f : ι → ℝ)
   have hinj : Set.InjOn g S := by
     intro i hi j hj he
     by_contra hne
-    have hfi : 0 ≤ f i / δ := div_nonneg (hδ.le.trans (hf i hi).1) hδ.le
-    have hfj : 0 ≤ f j / δ := div_nonneg (hδ.le.trans (hf j hj).1) hδ.le
+    pm_8628 hfi i hi
+    pm_8628 hfj j hj
     have hli : (g i : ℝ) ≤ f i / δ := Nat.floor_le hfi
     have hlj : (g j : ℝ) ≤ f j / δ := Nat.floor_le hfj
-    have hui : f i / δ < (g i : ℝ) + 1 := Nat.lt_floor_add_one _
-    have huj : f j / δ < (g j : ℝ) + 1 := Nat.lt_floor_add_one _
+    pm_8190 hui i
+    pm_8190 huj j
     rw [he] at hli hui
     have hab : |f i / δ - f j / δ| < 1 := abs_lt.mpr ⟨by linarith, by linarith⟩
     rw [← sub_div, abs_div, abs_of_pos hδ] at hab
     have hh := (div_lt_iff₀ hδ).mp hab
     linarith [hsep i hi j hj hne]
   have hsub : S.image g ⊆ Finset.Icc 1 N := by
-    intro n hn
-    obtain ⟨i, hi, rfl⟩ := mem_image.mp hn
+    pm_136 n hn i hi mem_image.mp
     exact mem_Icc.mpr (hg i hi)
   calc
     _ ≤ ∑ i ∈ S, δ⁻¹ * (g i : ℝ)⁻¹ := by
@@ -73,25 +72,21 @@ theorem reciprocal_frequency_row [DecidableEq ι] (S : Finset ι) (ω : ι → �
     (abs_sub _ _).trans (by linarith [hω n hn, hω m hm])
   have hleft := reciprocal_separated_sum A (fun m => ω n - ω m) hδ
     (fun m hm => by
-      obtain ⟨hm, hlt⟩ := mem_filter.mp hm
-      have he := (mem_erase.mp hm).1
+      pm_6450
       have hs := hsep n hn m (mem_of_mem_erase hm) he.symm
       rw [abs_of_pos (sub_pos.mpr hlt)] at hs
       exact ⟨hs, (le_abs_self _).trans (habs m (mem_of_mem_erase hm))⟩)
     (fun i hi j hj hne => by
-      have hh := hsep i (mem_of_mem_erase (mem_filter.mp hi).1)
-        j (mem_of_mem_erase (mem_filter.mp hj).1) hne
+      pm_1400
       simpa [show ω n - ω i - (ω n - ω j) = -(ω i - ω j) by ring, abs_sub_comm] using hh)
   have hright := reciprocal_separated_sum B (fun m => ω m - ω n) hδ
     (fun m hm => by
-      obtain ⟨hm, hlt⟩ := mem_filter.mp hm
-      have he := (mem_erase.mp hm).1
+      pm_6450
       have hs := hsep m (mem_of_mem_erase hm) n hn he
       rw [abs_of_nonneg (sub_nonneg.mpr (le_of_not_gt hlt))] at hs
       exact ⟨hs, (le_abs_self _).trans (by simpa [abs_sub_comm] using habs m (mem_of_mem_erase hm))⟩)
     (fun i hi j hj hne => by
-      have hh := hsep i (mem_of_mem_erase (mem_filter.mp hi).1)
-        j (mem_of_mem_erase (mem_filter.mp hj).1) hne
+      pm_1400
       simpa only [sub_sub_sub_cancel_right] using hh)
   have hl : (∑ m ∈ A, |ω n - ω m|⁻¹) = ∑ m ∈ A, (ω n - ω m)⁻¹ := by
     apply sum_congr rfl
@@ -127,7 +122,10 @@ theorem exponentialPhase_pair (ω ν t : ℝ) :
   simp only [map_mul, Complex.conj_I, Complex.conj_ofReal, Complex.ofReal_sub]
   ring
 
-theorem exponential_gram (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ) (a b : ℝ) :
+section
+variable (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ)
+include S ω c
+theorem exponential_gram (a b : ℝ) :
     (∫ t in Set.Icc a b, (‖exponentialPolynomial S ω c t‖ ^ 2 : ℂ)) =
       ∑ n ∈ S, ∑ m ∈ S, (c n * conj (c m)) *
         (∫ t in Set.Icc a b, exponentialPhase (ω n) t * conj (exponentialPhase (ω m) t)) := by
@@ -135,12 +133,9 @@ theorem exponential_gram (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ) (a b
       ∑ n ∈ S, ∑ m ∈ S, (c n * conj (c m)) *
         (exponentialPhase (ω n) t * conj (exponentialPhase (ω m) t)) := by
     rw [← Complex.mul_conj']
-    simp only [exponentialPolynomial, map_sum, map_mul, sum_mul, mul_sum]
+    pm_93 exponentialPolynomial map_sum map_mul sum_mul mul_sum
     rw [sum_comm]
-    apply sum_congr rfl
-    intro n _
-    apply sum_congr rfl
-    intro m _
+    pm_156 sum_congr n m
     ring
   have ht (n m : ι) : IntegrableOn
       (fun t => (c n * conj (c m)) *
@@ -149,18 +144,11 @@ theorem exponential_gram (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ) (a b
     apply Continuous.continuousOn
     unfold exponentialPhase
     fun_prop
-  simp_rw [he]
-  rw [integral_finsetSum _ (fun n _ => integrable_finsetSum _ (fun m _ => ht n m))]
-  apply sum_congr rfl
-  intro n _
-  rw [integral_finsetSum _ (fun m _ => ht n m)]
-  apply sum_congr rfl
-  intro m _
-  rw [integral_const_mul]
+  pm_4522 sum_congr
 
 /-- Actual mean-square integral for arbitrary coefficients and separated real
 frequencies. The logarithmic cost is proved; no mean-value premise is assumed. -/
-theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ)
+theorem separated_frequency_mean_value
     {δ L a b : ℝ} (hδ : 0 < δ) (hab : a ≤ b)
     (hω : ∀ i ∈ S, |ω i| ≤ L)
     (hsep : ∀ i ∈ S, ∀ j ∈ S, i ≠ j → δ ≤ |ω i - ω j|) :
@@ -168,17 +156,13 @@ theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι
       ((b-a) + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊)) * ∑ n ∈ S, ‖c n‖ ^ 2 := by
   classical
   let k := fun n m : ι => if n = m then b-a else 2 / |ω n - ω m|
-  have hk : ∀ n ∈ S, ∀ m ∈ S, 0 ≤ k n m := by
-    intro n _ m _
-    dsimp [k]
-    split_ifs <;> positivity
+  pm_4523
   have hsym : ∀ n ∈ S, ∀ m ∈ S, k n m = k m n := by
     intro n _ m _
     simp only [k, eq_comm, abs_sub_comm]
   have hrow : ∀ n ∈ S, (∑ m ∈ S, k n m) ≤
       (b-a) + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊) := by
-    intro n hn
-    rw [← sum_erase_add _ _ hn]
+    pm_8914 sum_erase_add
     have he : (∑ m ∈ S.erase n, k n m) = 2 * ∑ m ∈ S.erase n, |ω n - ω m|⁻¹ := by
       rw [mul_sum]
       apply sum_congr rfl
@@ -192,7 +176,7 @@ theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι
       ‖∫ t in Set.Icc a b, exponentialPhase (ω n) t * conj (exponentialPhase (ω m) t)‖ ≤ k n m := by
     by_cases he : n = m
     · subst m
-      simp only [k, ite_true, Complex.mul_conj', exponentialPhase_norm, one_pow, Complex.ofReal_one]
+      pm_316 k ite_true Complex.mul_conj' exponentialPhase_norm one_pow Complex.ofReal_one
       simp only [integral_const, Measure.real, Measure.restrict_apply_univ, Real.volume_Icc,
         ENNReal.toReal_ofReal (sub_nonneg.mpr hab), Complex.real_smul, mul_one]
       rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (sub_nonneg.mpr hab)]
@@ -212,15 +196,13 @@ theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι
     _ ≤ ∑ n ∈ S, ∑ m ∈ S, ‖c n‖ * ‖c m‖ * k n m := by
       apply sum_le_sum
       intro n hn
-      apply (norm_sum_le _ _).trans
-      apply sum_le_sum
-      intro m hm
+      pm_244 sum_le_sum m hm
       rw [norm_mul, norm_mul, RCLike.norm_conj]
       exact mul_le_mul_of_nonneg_left (hgram n m hn hm)
         (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ ≤ _ := GuthMaynard.Improvement.finite_symmetric_row_bound S (fun n => ‖c n‖) k hk hsym hrow
 
-theorem exponentialPolynomial_derivative (S : Finset ι) (ω : ι → ℝ) (c : ι → ℂ) (t : ℝ) :
+theorem exponentialPolynomial_derivative (t : ℝ) :
     HasDerivAt (exponentialPolynomial S ω c)
       (exponentialPolynomial S ω (fun n => c n * (Complex.I * (ω n : ℂ))) t) t := by
   unfold exponentialPolynomial
@@ -232,6 +214,7 @@ theorem exponentialPolynomial_derivative (S : Finset ι) (ω : ι → ℝ) (c : 
   convert (hd.cexp).const_mul (c n) using 1
   all_goals simp only [exponentialPhase]
   all_goals ring
+end
 
 theorem frequency_cost_nonneg {δ D L : ℝ} (hδ : 0 < δ) (hD : 0 ≤ D) :
     0 ≤ D + 4 * δ⁻¹ * (1 + Real.log ⌊2*L/δ⌋₊) := by
@@ -270,23 +253,19 @@ theorem separated_frequency_discrete_mean_value (S : Finset ι) (ω : ι → ℝ
   have hi : IntegrableOn (fun t => 2 * D t * D' t) J :=
     ((continuous_const.mul hc).mul hc').continuousOn.integrableOn_Icc
   have hs : Pairwise (fun t u : W => (1 : ℝ) ≤ |(t : ℝ) - (u : ℝ)|) := by
-    intro t u hne
-    exact hsep t t.property u u.property (fun he => hne (Subtype.ext he))
+    pm_7924 u u.property
   have hsub : ∀ t : W, Set.Ioc (t : ℝ) ((t : ℝ)+1) ⊆ J := by
-    intro t x hx
-    have ht := hW t t.property
+    pm_8314
     exact ⟨by linarith [ht.1, hx.1], by linarith [ht.2, hx.2]⟩
   have hh := GuthMaynard.Improvement.sampling_separated_norm
     (fun t : W => (t : ℝ)) (by norm_num : (0 : ℝ) < 1) hd hs hsub hf hi
   simp only [inv_one, one_mul, norm_pow] at hh
   rw [Finset.sum_coe_sort W (fun t => ‖D t‖ ^ 2)] at hh
-  have hD : IntegrableOn (fun t => ‖D t‖ ^ 2) J := (hc.norm.pow 2).continuousOn.integrableOn_Icc
-  have hD' : IntegrableOn (fun t => ‖D' t‖ ^ 2) J := (hc'.norm.pow 2).continuousOn.integrableOn_Icc
+  pm_8173 hD D hc.norm.pow
+  pm_8173 hD' D' hc'.norm.pow
   have hcross : (∫ t in J, ‖2 * D t * D' t‖) ≤
       (∫ t in J, ‖D t‖ ^ 2) + (∫ t in J, ‖D' t‖ ^ 2) := by
-    rw [← integral_add hD hD']
-    apply integral_mono hi.norm (hD.add hD')
-    intro t
+    pm_6687
     simp only [norm_mul, Complex.norm_ofNat, Pi.add_apply]
     nlinarith [sq_nonneg (‖D t‖ - ‖D' t‖)]
   have hb : (∫ t in J, ‖D t‖ ^ 2) ≤ C * E := by

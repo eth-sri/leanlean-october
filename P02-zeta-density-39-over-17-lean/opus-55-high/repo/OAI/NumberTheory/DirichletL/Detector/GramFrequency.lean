@@ -29,13 +29,11 @@ lemma tsum_element_divisible (C : O) (hC : C≠0) (f : O→ℂ) :
   have hinj : Function.Injective (fun k : O=>C*k) := fun _ _ h=>mul_left_cancel₀ hC h
   have hs : Function.support (fun j : O=>if C∣j then f j else 0)⊆Set.range (fun k : O=>C*k) := by
     intro j hj
-    have hd : C∣j := by by_contra h;simp [h] at hj
+    have hd : C∣j := by by_contra h;simp_all
     obtain ⟨k,rfl⟩ := hd
-    exact ⟨k,rfl⟩
+    grind
   have ht := hinj.tsum_eq hs
-  calc
-    _ = ∑'k : O,if C∣C*k then f (C*k) else 0 := ht.symm
-    _ = _ := by simp only [dvd_mul_right,ite_true]
+  simp_all
 
 theorem actual_common_frequency_tsum (C n₁ n₂ : O)
     (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁}))
@@ -50,7 +48,7 @@ theorem actual_common_frequency_tsum (C n₁ n₂ : O)
   apply tsum_congr
   intro j
   by_cases hj : C∣j
-  · rw [ite_eq_left hj]
+  grind
   · rw [ite_eq_right hj,actual_common_frequency_zero C n₁ n₂ j hC h₁ h₂ hj,zero_mul]
 
 end SevenEighths.ProbeGramCommon

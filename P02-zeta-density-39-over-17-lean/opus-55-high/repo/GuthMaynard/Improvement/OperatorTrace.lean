@@ -2,7 +2,6 @@ module
 public import Mathlib
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace
 open scoped InnerProductSpace
@@ -15,8 +14,11 @@ are proved below for integral nuclear presentations; neither is part of this def
 def operatorDiagonalTrace (b : HilbertBasis ι ℂ E) (T : E →L[ℂ] E) : ℂ :=
   ∑' i, ⟪b i, T (b i)⟫_ℂ
 
+section
+variable (b : HilbertBasis ι ℂ E) (x y : E)
+include b x y
 /-- Absolute Bessel bound, valid also for an infinite Hilbert basis. -/
-theorem operator_rankOne_diagonal_bound (b : HilbertBasis ι ℂ E) (x y : E)
+theorem operator_rankOne_diagonal_bound
     (s : Finset ι) :
     ∑ i ∈ s, ‖⟪b i, rankOne ℂ x y (b i)⟫_ℂ‖ ≤ ‖x‖ * ‖y‖ := by
   simp only [rankOne_apply, inner_smul_right, norm_mul]
@@ -32,9 +34,10 @@ theorem operator_rankOne_diagonal_bound (b : HilbertBasis ι ℂ E) (x y : E)
     _ = _ := by rw [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)]; ring
 
 /-- An actual infinite-dimensional rank-one trace formula, via Parseval. -/
-theorem operator_rankOne_hasSum (b : HilbertBasis ι ℂ E) (x y : E) :
+theorem operator_rankOne_hasSum :
     HasSum (fun i => ⟪b i, rankOne ℂ x y (b i)⟫_ℂ) ⟪y, x⟫_ℂ := by
   simpa only [rankOne_apply, inner_smul_right] using b.hasSum_inner_mul_inner y x
+end
 
 variable [CompleteSpace E] [MeasurableSpace α] (ν : Measure α)
 
@@ -54,11 +57,12 @@ theorem operatorIntegral_integrable {x y : α → E}
   apply hxy.mono' (hc.comp_aestronglyMeasurable (hx.prodMk hy))
   exact Filter.Eventually.of_forall (fun a => (norm_rankOne (x a) (y a)).le)
 
+section
+variable [Countable ι] (b : HilbertBasis ι ℂ E) {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν) (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν)
+include b x y hx hy hxy
 /-- Trace identification for a continuous nuclear presentation, including
 absolute convergence. Its right side is independent of the Hilbert basis. -/
-theorem operatorIntegral_hasSum [Countable ι] (b : HilbertBasis ι ℂ E)
-    {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
-    (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν) :
+theorem operatorIntegral_hasSum :
     HasSum (fun i => ⟪b i, operatorIntegral ν x y (b i)⟫_ℂ)
       (∫ a, ⟪y a, x a⟫_ℂ ∂ν) := by
   let F : ι → α → ℂ := fun i a => ⟪b i, rankOne ℂ (x a) (y a) (b i)⟫_ℂ
@@ -84,11 +88,10 @@ theorem operatorIntegral_hasSum [Countable ι] (b : HilbertBasis ι ℂ E)
   exact (ev.integral_comp_comm (operatorIntegral_integrable ν hx hy hxy)).symm
 
 /-- The diagonal trace is therefore the nuclear integral, not its definition. -/
-theorem operatorIntegral_trace [Countable ι] (b : HilbertBasis ι ℂ E)
-    {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
-    (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν) :
+theorem operatorIntegral_trace :
     operatorDiagonalTrace b (operatorIntegral ν x y) = ∫ a, ⟪y a, x a⟫_ℂ ∂ν :=
   (operatorIntegral_hasSum ν b hx hy hxy).tsum_eq
+end
 
 /-- Integral nuclear presentations form a left ideal under bounded operators. -/
 theorem operatorIntegral_comp_left (S : E →L[ℂ] E)

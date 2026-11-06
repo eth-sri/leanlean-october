@@ -23,8 +23,7 @@ def amplificationPhase (p : O) (k : ℕ) (r : RayRing) : ℂ :=
     (QuadraticGaussRay.residueQuotientFour r):ℂ)^k
 
 theorem amplificationPhase_mk (p u : O) (k : ℕ) :
-    amplificationPhase p k (Ideal.Quotient.mk _ u)=sexticReciprocityPhase p u^k := by
-  simp only [amplificationPhase,QuadraticGaussRay.residueQuotientFour_mk,sexticReciprocityPhase]
+    amplificationPhase p k (Ideal.Quotient.mk _ u)=sexticReciprocityPhase p u^k := by aesop
 
 theorem amplificationPhase_norm (p : O) (k : ℕ) (r : RayRing) :
     ‖amplificationPhase p k r‖≤1 := by

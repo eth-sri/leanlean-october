@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.FixedDetectorCover
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,10 +22,7 @@ theorem detectorBlockCoefficients_apply (T : ℝ) (N j n : ℕ) :
 theorem detectorBlockCoefficients_norm_le {T : ℝ} {N : ℕ}
     (hT : 0 < T) (hN : 0 < N) (j n : ℕ) :
     ‖detectorBlockCoefficients T N j n‖ ≤ (n.divisors.card : ℝ) := by
-  rw [detectorBlockCoefficients_apply]
-  split_ifs with hn
-  · exact norm_detectorTaylorCoefficient_le hT hN hn j
-  · simp
+  pm_8708 detectorBlockCoefficients_apply norm_detectorTaylorCoefficient_le
 
 /-- Direct divisor-power domination of genuine Dirichlet convolution powers.
 For k<=4 this gives exponent <=8 and the required uniform subpower bound. -/
@@ -32,13 +30,12 @@ theorem arithmeticFunction_pow_norm_le {f : ArithmeticFunction ℂ}
     (hf : ∀ n : ℕ, ‖f n‖ ≤ (n.divisors.card : ℝ)) (k n : ℕ) :
     ‖(f^k) n‖ ≤ (n.divisors.card : ℝ)^(2*k) := by
   induction k generalizing n with
-  | zero => simp only [pow_zero, ArithmeticFunction.one_apply, mul_zero]; split_ifs <;> simp
+  | zero => simp only [pow_zero, ArithmeticFunction.one_apply, mul_zero]; aesop
   | succ k ih =>
     rw [pow_succ, ArithmeticFunction.mul_apply]
     have hb : ∀ p ∈ n.divisorsAntidiagonal,
         ‖(f^k) p.1*f p.2‖ ≤ (n.divisors.card : ℝ)^(2*k+1) := by
-      intro p hp
-      obtain ⟨he, hn⟩ := Nat.mem_divisorsAntidiagonal.mp hp
+      pm_381 p hp he hn Nat.mem_divisorsAntidiagonal.mp
       have hd1 : p.1 ∣ n := ⟨p.2, he.symm⟩
       have hd2 : p.2 ∣ n := ⟨p.1, by rw [mul_comm]; exact he.symm⟩
       have hc1 : (p.1.divisors.card : ℝ) ≤ n.divisors.card := by
@@ -75,64 +72,20 @@ theorem detectorBlockCoefficients_pow_support (T : ℝ) (N j k n : ℕ)
       by_contra h
       exact hb (by simp [detectorBlockCoefficients_apply, h])
     have hi := ih p.1 ha
-    have he := (Nat.mem_divisorsAntidiagonal.mp hp).1
-    refine ⟨Nat.pos_of_ne_zero (Nat.mem_divisorsAntidiagonal.mp hp).2, ?_⟩
-    rw [← he, pow_succ]
+    pm_4285
     exact Nat.mul_le_mul hi.2 (Finset.mem_Ioc.mp hmem).2
 
 theorem detectorBlockCoefficients_pow_lower {N : ℕ} (hN : 0 < N)
     (T : ℝ) (j k n : ℕ) (hn : ((detectorBlockCoefficients T N j)^(k+1)) n ≠ 0) :
-    N^(k+1) < n := by
-  induction k generalizing n with
-  | zero =>
-    simp only [zero_add, pow_one] at hn ⊢
-    have hmem : n ∈ Finset.Ioc N (2*N) := by
-      by_contra h
-      exact hn (by simp [detectorBlockCoefficients_apply, h])
-    exact (Finset.mem_Ioc.mp hmem).1
-  | succ k ih =>
-    rw [pow_succ, ArithmeticFunction.mul_apply] at hn
-    obtain ⟨p, hp, hmul⟩ := Finset.exists_ne_zero_of_sum_ne_zero hn
-    have ha := ih p.1 (left_ne_zero_of_mul hmul)
-    have hb : detectorBlockCoefficients T N j p.2 ≠ 0 := right_ne_zero_of_mul hmul
-    have hmem : p.2 ∈ Finset.Ioc N (2*N) := by
-      by_contra h
-      exact hb (by simp [detectorBlockCoefficients_apply, h])
-    rw [← (Nat.mem_divisorsAntidiagonal.mp hp).1, pow_succ]
-    exact Nat.mul_lt_mul_of_pos_right ha hN |>.trans_le (Nat.mul_le_mul_left _ (Finset.mem_Ioc.mp hmem).1.le)
+    N^(k+1) < n := by pm_4286 detectorBlockCoefficients_apply detectorBlockCoefficients
 
 /-- Finite support, proved for the actual powers, gives absolute convergence. -/
 theorem detectorBlockCoefficients_pow_LSeriesSummable (T : ℝ) (N j k : ℕ) (s : ℂ) :
-    LSeriesSummable (fun n => ((detectorBlockCoefficients T N j)^k) n) s := by
-  unfold LSeriesSummable
-  apply summable_of_hasFiniteSupport
-  apply Set.Finite.subset (Finset.range ((2*N)^k+1)).finite_toSet
-  intro n hn
-  apply Finset.mem_range.mpr
-  by_contra h
-  have hz : ((detectorBlockCoefficients T N j)^k) n = 0 := by
-    by_contra hh
-    have hi := detectorBlockCoefficients_pow_support T N j k n hh
-    omega
-  have ht : LSeries.term (fun n => ((detectorBlockCoefficients T N j)^k) n) s n = 0 := by
-    rw [LSeries.term_def₀ ((detectorBlockCoefficients T N j)^k).map_zero]
-    simp [hz]
-  exact hn ht
+    LSeriesSummable (fun n => ((detectorBlockCoefficients T N j)^k) n) s := by pm_4287 detectorBlockCoefficients detectorBlockCoefficients_pow_support
 
 /-- The finite L-series of the convolution power is the literal k-th power. -/
 theorem detectorBlockCoefficients_LSeries_pow (T : ℝ) (N j k : ℕ) (s : ℂ) :
     LSeries (fun n => ((detectorBlockCoefficients T N j)^k) n) s =
-      (LSeries (detectorBlockCoefficients T N j) s)^k := by
-  induction k with
-  | zero =>
-    simp only [pow_zero]
-    rw [LSeries, tsum_eq_single 1]
-    · simp [ArithmeticFunction.one_apply]
-    · intro n hn
-      simp [LSeries.term_def, ArithmeticFunction.one_apply, hn]
-  | succ k ih =>
-    rw [pow_succ, ArithmeticFunction.LSeries_mul'
-      (detectorBlockCoefficients_pow_LSeriesSummable T N j k s)
-      (by simpa using detectorBlockCoefficients_pow_LSeriesSummable T N j 1 s), ih, pow_succ]
+      (LSeries (detectorBlockCoefficients T N j) s)^k := by pm_4288 detectorBlockCoefficients_pow_LSeriesSummable
 
 end MathCollab.Density

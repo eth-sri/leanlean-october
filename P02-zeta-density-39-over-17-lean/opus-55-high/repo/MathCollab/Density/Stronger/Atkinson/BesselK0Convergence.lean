@@ -6,35 +6,15 @@ See third_party/twelfth/BESSEL_MELLIN_MANIFEST.json and third_party/twelfth/LICE
 Apache-2.0 attribution. No Estermann or general-modulus source closure is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.BesselMellinBeta
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set MeasureTheory
 open scoped Topology Interval
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem integrableOn_cpow_mul_exp_neg_mul_Ioi
-    {s : ℂ} (hs : 0 < s.re) {a : ℝ} (ha : 0 < a) :
-    IntegrableOn
-      (fun x : ℝ => (x : ℂ) ^ (s - 1) * Complex.exp (-(a * x)))
-      (Set.Ioi 0) := by
-  let f : ℝ → ℂ := fun u => Complex.exp (-(u : ℂ))
-  have hbase : MellinConvergent f s := by
-    unfold MellinConvergent f
-    refine (Complex.GammaIntegral_convergent hs).congr_fun ?_ measurableSet_Ioi
-    intro x hx
-    change ((Real.exp (-x) : ℝ) : ℂ) * (x : ℂ) ^ (s - 1) =
-      (x : ℂ) ^ (s - 1) * Complex.exp (-(x : ℂ))
-    rw [Complex.ofReal_exp, Complex.ofReal_neg]
-    ring
-  have hscaled : MellinConvergent (fun x => f (a * x)) s :=
-    (MellinConvergent.comp_mul_left (f := f) (s := s) ha).2 hbase
-  unfold MellinConvergent at hscaled
-  refine hscaled.congr_fun ?_ measurableSet_Ioi
-  intro x _
-  simp only [f, smul_eq_mul, Complex.ofReal_mul]
+export RiemannZeta.GuthMaynard (integrableOn_cpow_mul_exp_neg_mul_Ioi)
 
 /-- Norm of the two-variable Gamma kernel on the positive quadrant. -/
 theorem norm_cpow_mul_exp_neg_cosh
@@ -69,7 +49,7 @@ theorem integrableOn_inv_cosh_rpow_Ioi
     {r : ℝ} (hr : 0 < r) :
     IntegrableOn (fun t : ℝ => (1 / Real.cosh t) ^ r) (Set.Ioi 0) := by
   have hcomplex := integrableOn_cosh_cpow_neg_two_mul_Ioi
-    (w := ((r / 2 : ℝ) : ℂ)) (by simp [hr])
+    (w := ((r / 2 : ℝ) : ℂ)) (by simp_all)
   have hnorm : IntegrableOn
       (fun t : ℝ => ‖(Real.cosh t : ℂ) ^ (-2 * ((r / 2 : ℝ) : ℂ))‖)
       (Set.Ioi 0) := hcomplex.norm
@@ -94,8 +74,7 @@ theorem integrableOn_dfiBesselK0_mellin_joint
         (p.1 : ℂ) ^ (s - 1) *
           Complex.exp (-(p.1 * Real.cosh p.2)))
       (Set.Ioi 0 ×ˢ Set.Ioi 0) := by
-  let F : ℝ × ℝ → ℂ := fun p =>
-    (p.1 : ℂ) ^ (s - 1) * Complex.exp (-(p.1 * Real.cosh p.2))
+  pm_4394
   have hcont : ContinuousOn F (Set.Ioi 0 ×ˢ Set.Ioi 0) := by
     intro p hp
     apply ContinuousAt.continuousWithinAt
@@ -115,9 +94,9 @@ theorem integrableOn_dfiBesselK0_mellin_joint
   have hprod : Integrable F
       ((volume.restrict (Set.Ioi 0)).prod
         (volume.restrict (Set.Ioi 0))) := by
-    refine (integrable_prod_iff' hmeas).2 ⟨?_, ?_⟩
+    pm_8942 hmeas
     · filter_upwards with t
-      change IntegrableOn (fun x : ℝ => F (x, t)) (Set.Ioi 0)
+      pm_6895 F
       refine (integrableOn_cpow_mul_exp_neg_mul_Ioi hs
         (Real.cosh_pos t)).congr_fun ?_ measurableSet_Ioi
       intro x _
@@ -180,14 +159,9 @@ the later closed-form calculation. -/
 theorem mellinConvergent_dfiBesselK0
     {s : ℂ} (hs : 0 < s.re) :
     MellinConvergent (fun x : ℝ => (dfiBesselK0 x : ℂ)) s := by
-  let F : ℝ × ℝ → ℂ := fun p =>
-    (p.1 : ℂ) ^ (s - 1) * Complex.exp (-(p.1 * Real.cosh p.2))
-  have hjointOn : IntegrableOn F (Set.Ioi 0 ×ˢ Set.Ioi 0) :=
-    integrableOn_dfiBesselK0_mellin_joint hs
-  have hjoint : Integrable F
-      ((volume.restrict (Set.Ioi 0)).prod
-        (volume.restrict (Set.Ioi 0))) := by
-    simpa only [F, Measure.prod_restrict] using! hjointOn
+  pm_4394
+  pm_6750
+  pm_4395
   have hIntegrated : IntegrableOn
       (fun x : ℝ => ∫ t : ℝ in Set.Ioi 0, F (x, t))
       (Set.Ioi 0) := hjoint.integral_prod_left
@@ -212,20 +186,11 @@ theorem mellinConvergent_dfiBesselK0_mul_sqrt
     apply mellinConvergent_dfiBesselK0
     norm_num
     linarith
-  have hscaled : MellinConvergent
-      (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ)) (2 * s) :=
-    (MellinConvergent.comp_mul_left hA).2 hbase
-  have hscaled' : MellinConvergent
-      (fun y : ℝ => (dfiBesselK0 (A * y) : ℂ))
-        (s / ((1 / 2 : ℝ) : ℂ)) := by
-    convert hscaled using 1
-    norm_num
-    ring
+  pm_4396 dfiBesselK0
   have hroot := (MellinConvergent.comp_rpow
     (f := fun y : ℝ => (dfiBesselK0 (A * y) : ℂ))
     (s := s) (a := (1 / 2 : ℝ)) (by norm_num)).2
       hscaled'
   simpa only [Real.sqrt_eq_rpow] using hroot
-
 
 end MathCollab.Density.Stronger.Atkinson

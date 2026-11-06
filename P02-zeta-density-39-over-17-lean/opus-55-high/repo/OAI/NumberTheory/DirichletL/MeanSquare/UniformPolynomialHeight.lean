@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.MeanSquare.PolynomialHeight
 public import OAI.NumberTheory.DirichletL.CubicSieve.RankMargins
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -138,9 +139,8 @@ theorem sum_nonzero_element_le_units (T : Finset ActualEisensteinCubic.O) (hT : 
     rw [rowUnit_spec z (hT z hz)]
   have hsub : T.image unitIdealPoint ⊆
       (Finset.univ : Finset ActualEisensteinCubic.Oˣ) ×ˢ T.image (fun z=>Ideal.span {z}) := by
-    intro p hp
-    obtain ⟨z,hz,rfl⟩ := Finset.mem_image.mp hp
-    exact Finset.mem_product.mpr ⟨Finset.mem_univ _,Finset.mem_image.mpr ⟨z,hz,rfl⟩⟩
+    pm_67 p hp z hz Finset.mem_image.mp
+    pm_8883 z hz
   rw [he]
   calc
     _ ≤ ∑p∈(Finset.univ : Finset ActualEisensteinCubic.Oˣ) ×ˢ T.image (fun z=>Ideal.span {z}),f p :=
@@ -150,8 +150,7 @@ theorem sum_nonzero_element_le_units (T : Finset ActualEisensteinCubic.O) (hT : 
 lemma image_span_nonzero_norm (T : Finset ActualEisensteinCubic.O) (K : ℝ)
     (hT : ∀z∈T,z≠0 ∧ (Ideal.absNorm (Ideal.span {z}):ℝ)≤K) :
     ∀I∈T.image (fun z=>Ideal.span {z}),I≠0 ∧ (Ideal.absNorm I:ℝ)≤K := by
-  intro I hI
-  obtain ⟨z,hz,rfl⟩ := Finset.mem_image.mp hI
+  pm_67 I hI z hz Finset.mem_image.mp
   exact ⟨Ideal.span_singleton_eq_bot.not.mpr (hT z hz).1,(hT z hz).2⟩
 
 lemma unit_card : Fintype.card ActualEisensteinCubic.Oˣ=6 := by

@@ -18,9 +18,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 namespace TaoTrudgianYang2025
 
-private theorem sortedList_length_le_interval
-    (W : Finset ℝ)
-    (hsep : ∀ x ∈ W, ∀ y ∈ W, x ≠ y → 1 ≤ |x - y|) :
+section
+variable (W : Finset ℝ) (hsep : ∀ x ∈ W, ∀ y ∈ W, x ≠ y → 1 ≤ |x - y|)
+include W hsep
+private theorem sortedList_length_le_interval :
     ∀ (L : List ℝ), L.Pairwise (· < ·) →
       (∀ x ∈ L, x ∈ W) →
       ∀ a b : ℝ, (∀ x ∈ L, a ≤ x ∧ x ≤ b) →
@@ -67,8 +68,6 @@ private theorem sortedList_length_le_interval
           linarith
 
 theorem oneSeparated_card_cast_le_interval_length_add_one
-    (W : Finset ℝ)
-    (hsep : ∀ x ∈ W, ∀ y ∈ W, x ≠ y → 1 ≤ |x - y|)
     {a b : ℝ} (hab : 0 ≤ b - a)
     (hmem : ∀ x ∈ W, a ≤ x ∧ x ≤ b) :
     (W.card : ℝ) ≤ b - a + 1 := by
@@ -85,6 +84,7 @@ theorem oneSeparated_card_cast_le_interval_length_add_one
     exact hmem x (hsub x hx)
   simpa [L] using
     sortedList_length_le_interval W hsep L hsorted hsub a b hmemL hab
+end
 
                                                           
 end TaoTrudgianYang2025

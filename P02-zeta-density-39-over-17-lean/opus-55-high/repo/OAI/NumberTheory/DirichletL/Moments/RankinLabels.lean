@@ -1,18 +1,21 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
 public import OAI.NumberTheory.DirichletL.Moments.RankinSubset
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentRankinLabels
 open IdealMobiusDivisorSum CenteredMomentRankinRadical CenteredMomentRankinSubset
 local notation "O" => ActualEisensteinCubic.O
 
-theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
+section
+variable (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε)
+include a ε ha hε
+theorem common_pair_count :
     ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal O),Squarefree s → s ≠ 0 →
       ∀ S : Finset (Ideal O × Ideal O),
       (∀ v ∈ S,v.1 ≠ 0 ∧ v.2 ≠ 0) →
@@ -22,7 +25,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       (∀ v ∈ S,(Ideal.absNorm v.1:ℝ) ≤ X₁ ∧ (Ideal.absNorm v.2:ℝ) ≤ X₂) →
       (∀ v ∈ S,(Ideal.absNorm (commonRadical v.1 v.2):ℝ) ≤ Y) →
       (S.card:ℝ) ≤ C*X₁^a*X₂^a*Y^(1+ε)/(Ideal.absNorm s:ℝ) := by
-  obtain ⟨C,hC,hcount⟩ := supported_power_pair_count a ε ha hε
+  pm_97 C hC hcount supported_power_pair_count a ε ha hε
   refine ⟨128*C,by positivity,?_⟩
   intro s hs hs0 S hS heq hdiv X₁ X₂ Y hX₁ hX₂ hY hN hR
   let rad : Ideal O × Ideal O → Ideal O := fun v => commonRadical v.1 v.2
@@ -34,8 +37,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     have hb := hcount R hR0 (S.filter (fun v => rad v=R))
       (fun v hv => hS v (Finset.mem_filter.mp hv).1)
       (by
-        intro w hw
-        obtain ⟨hw,hwr⟩ := Finset.mem_filter.mp hw
+        pm_477 w hw hwr
         have he : primeSupport R=primeSupport w.1 := by
           rw [← hwr,commonRadical_support,← heq w hw,Finset.inter_self]
         rw [he,heq w hw]
@@ -46,8 +48,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
   have hrad := old_mask_radical_count S Prod.fst Prod.snd s hs hs0
     (fun v hv => (hS v hv).1) (fun v hv => (hS v hv).2)
     (fun v hv => (hdiv v hv).1) (fun v hv => (hdiv v hv).2) Y hY.le hR
-  have he := Finset.card_eq_sum_card_fiberwise
-    (fun v (hv : v ∈ S) => Finset.mem_image_of_mem rad hv)
+  pm_6876 rad
   calc
     _ = ∑ R ∈ S.image rad,((S.filter (fun v => rad v=R)).card:ℝ) := by exact_mod_cast he
     _ ≤ ∑ _R ∈ S.image rad,C*X₁^a*X₂^a*Y^ε := Finset.sum_le_sum hfiber
@@ -56,7 +57,7 @@ theorem common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       mul_le_mul_of_nonneg_right hrad (by positivity)
     _ = _ := by rw [Real.rpow_add hY,Real.rpow_one]; ring
 
-theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
+theorem partitioned_common_pair_count :
     ∃ C : ℝ,0 < C ∧ ∀ (s : Ideal O),Squarefree s → s ≠ 0 →
       ∀ S : Finset ((Ideal O × Ideal O) × Finset (Ideal O)),
       (∀ v ∈ S,v.1.1 ≠ 0 ∧ v.1.2 ≠ 0) →
@@ -67,9 +68,9 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
       (∀ v ∈ S,(Ideal.absNorm v.1.1:ℝ) ≤ X₁ ∧ (Ideal.absNorm v.1.2:ℝ) ≤ X₂) →
       (∀ v ∈ S,(Ideal.absNorm (commonRadical v.1.1 v.1.2):ℝ) ≤ Y) →
       (S.card:ℝ) ≤ C*X₁^a*X₂^a*Y^(1+ε)/(Ideal.absNorm s:ℝ) := by
-  obtain ⟨C,hC,hcount⟩ := common_pair_count a (ε/2) ha (by positivity)
-  obtain ⟨D,hD,hpow⟩ := SquarefreeDivisorBound.prime_support_subsets_bound (ε/2) (by positivity)
-  refine ⟨C*D,mul_pos hC hD,?_⟩
+  pm_6400 common_pair_count
+  pm_657 D hD hpow SquarefreeDivisorBound.prime_support_subsets_bound
+  pm_3171 C D mul_pos hC hD
   intro s hs hs0 S hS heq hdiv hpart X₁ X₂ Y hX₁ hX₂ hY hN hR
   have hpairs := hcount s hs hs0 (S.image Prod.fst)
     (by intro v hv; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hv; exact hS w hw)
@@ -79,17 +80,15 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     (by intro v hv; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hv; exact hN w hw)
     (by intro v hv; obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hv; exact hR w hw)
   have hfiber (v : Ideal O × Ideal O) (hv : v ∈ S.image Prod.fst) :
-      ((S.filter (fun w => w.1=v)).card:ℝ) ≤ D*Y^(ε/2) := by
+      ((S.filter (fun w => w.1=v)).card:ℝ) ≤ D *Y^(ε/2) := by
     have hin : (S.filter (fun w => w.1=v)).image Prod.snd ⊆
         (primeSupport (commonRadical v.1 v.2)).powerset := by
-      intro A hA
-      obtain ⟨w,hw,rfl⟩ := Finset.mem_image.mp hA
+      pm_67 A hA w hw Finset.mem_image.mp
       obtain ⟨hw,hwe⟩ := Finset.mem_filter.mp hw
       exact Finset.mem_powerset.mpr (hwe ▸ hpart w hw)
     have hinj : Set.InjOn (fun w : (Ideal O × Ideal O) × Finset (Ideal O) => w.2)
         (↑(S.filter (fun w => w.1=v)) : Set ((Ideal O × Ideal O) × Finset (Ideal O))) := by
-      intro w hw z hz he
-      exact Prod.ext ((Finset.mem_filter.mp hw).2.trans (Finset.mem_filter.mp hz).2.symm) he
+      pm_5898 w hw z hz
     have hc : ((S.filter (fun w => w.1=v)).card:ℝ) ≤
         (2:ℝ)^(primeSupport (commonRadical v.1 v.2)).card := by
       have hb := Finset.card_le_card hin
@@ -100,19 +99,18 @@ theorem partitioned_common_pair_count (a ε : ℝ) (ha : 0 < a) (hε : 0 < ε) :
     have hn : (Ideal.absNorm (commonRadical v.1 v.2):ℝ) ≤ Y := hwe ▸ hR w hw
     exact hc.trans (hb.trans (mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) hn (by positivity)) hD.le))
-  have he := Finset.card_eq_sum_card_fiberwise
-    (fun v (hv : v ∈ S) => Finset.mem_image_of_mem Prod.fst hv)
+  pm_6876 Prod.fst
   calc
     _ = ∑ v ∈ S.image Prod.fst,((S.filter (fun w => w.1=v)).card:ℝ) := by exact_mod_cast he
-    _ ≤ ∑ _v ∈ S.image Prod.fst,D*Y^(ε/2) := Finset.sum_le_sum hfiber
-    _ = ((S.image Prod.fst).card:ℝ)*(D*Y^(ε/2)) := by simp
-    _ ≤ (C*X₁^a*X₂^a*Y^(1+ε/2)/(Ideal.absNorm s:ℝ))*(D*Y^(ε/2)) :=
+    _ ≤ ∑ _v ∈ S.image Prod.fst,D *Y^(ε/2) := Finset.sum_le_sum hfiber
+    _ = ((S.image Prod.fst).card:ℝ)*(D *Y^(ε/2)) := by simp
+    _ ≤ (C*X₁^a*X₂^a*Y^(1+ε/2)/(Ideal.absNorm s:ℝ))*(D *Y^(ε/2)) :=
       mul_le_mul_of_nonneg_right hpairs (by positivity)
     _ = (C*D)*X₁^a*X₂^a*(Y^(1+ε/2)*Y^(ε/2))/(Ideal.absNorm s:ℝ) := by ring
     _ = _ := by rw [← Real.rpow_add hY]; congr 3; ring
+end
 
 end SevenEighths.CenteredMomentRankinLabels
 
-end
 
 end OAI

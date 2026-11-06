@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.ExtractionBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open scoped Classical
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -44,16 +45,14 @@ def extractionBin (R : Finset O) (M : ℝ)
 
 lemma sum_extractionBins {A : Type*} [AddCommMonoid A] (R : Finset O) (M : ℝ) (f : O → A) :
     (∑ z ∈ R, f z) = ∑ j, ∑ z ∈ extractionBin R M j, f z := by
-  simp only [extractionBin, Finset.sum_filter]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
+  pc_200 extractionBin Finset.sum_filter
   intro z hz
   simp
 
-lemma extractionBin_bounds (R : Finset O) (M : ℝ)
-    (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
-    (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
-      Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1))
+section
+variable (R : Finset O) (M : ℝ) (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M) (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) × Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1))
+include R M hR j
+lemma extractionBin_bounds
     (z : O) (hz : z ∈ extractionBin R M j) :
     (CanonicalQuadraticSieve.divisorDyadicScale j.1.val ≤
         (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ∧
@@ -70,8 +69,7 @@ lemma extractionBin_bounds (R : Finset O) (M : ℝ)
     (hparts.1.2.trans (hR z hzR).2)
   have hy := CanonicalQuadraticSieve.divisorDyadicLabel_bounds M _ hparts.2.1
     (hparts.2.2.trans (hR z hzR).2)
-  have hj1 := congrArg Prod.fst hj
-  have hj2 := congrArg Prod.snd hj
+  pm_194 hj1 congrArg Prod.fst hj hj2 Prod.snd
   change CanonicalQuadraticSieve.divisorDyadicLabel M _ = j.1 at hj1
   change CanonicalQuadraticSieve.divisorDyadicLabel M _ = j.2 at hj2
   rw [hj1] at hx
@@ -84,10 +82,7 @@ lemma extractionBin_bounds (R : Finset O) (M : ℝ)
     change _ ≤ 2 * max 1 _
     linarith [hy.2]
 
-lemma extractionBin_scale_product (R : Finset O) (M : ℝ)
-    (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
-    (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
-      Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1))
+lemma extractionBin_scale_product
     (hj : (extractionBin R M j).Nonempty) :
     CanonicalQuadraticSieve.divisorDyadicScale j.1.val *
       CanonicalQuadraticSieve.divisorDyadicScale j.2.val ^ 2 ≤ M := by
@@ -111,6 +106,7 @@ lemma extractionBin_scale_product (R : Finset O) (M : ℝ)
       le_mul_of_one_le_right (by positivity) (one_le_pow₀ hcube)
     _ = Ideal.absNorm (Ideal.span {z}) := (extracted_norm_product _ hI).symm
     _ ≤ M := (hR z hzR).2
+end
 
 theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
     (R : Finset O) (hRne : R.Nonempty) (M N : ℝ)
@@ -134,7 +130,7 @@ theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
     obtain ⟨z, hz⟩ := hRne
     refine ⟨extractionLabel M z, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩⟩
     exact ⟨z, Finset.mem_filter.mpr ⟨hz, rfl⟩⟩
-  obtain ⟨j, hj, hmax⟩ := Finset.exists_max_image active b hactive
+  pm_837 j hj hmax Finset.exists_max_image active b hactive
   have hjne : (extractionBin R M j).Nonempty := (Finset.mem_filter.mp hj).2
   have hbnonneg : 0 ≤ b j := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
   have hsum : (∑ z ∈ R, E z) ≤ (Fintype.card J : ℝ) * b j := by
@@ -147,7 +143,7 @@ theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
         · exact hmax k hka
         · have hempty : extractionBin R M k = ∅ := by
             have hh : ¬ (extractionBin R M k).Nonempty := by
-              simpa only [active, Finset.mem_filter, Finset.mem_univ, true_and] using hka
+              pm_99 active Finset.mem_filter Finset.mem_univ true_and hka
             exact Finset.not_nonempty_iff_eq_empty.mp hh
           simpa only [hempty, Finset.sum_empty] using hbnonneg
       _ = _ := by simp
@@ -166,7 +162,7 @@ theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
     _ ≤ (Fintype.card J : ℝ) * b j := hsum
     _ ≤ _ := mul_le_mul_of_nonneg_left hb (Nat.cast_nonneg _)
     _ = _ := by
-      simp only [J, Fintype.card_prod, Fintype.card_fin, Nat.cast_mul, Nat.cast_add, Nat.cast_one]
+      pm_316 J Fintype.card_prod Fintype.card_fin Nat.cast_mul Nat.cast_add Nat.cast_one
       ring
 
 end

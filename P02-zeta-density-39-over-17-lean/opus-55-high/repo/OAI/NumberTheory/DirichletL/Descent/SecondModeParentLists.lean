@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentLists
 public import OAI.NumberTheory.DirichletL.Descent.SecondModeCanonical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,29 +15,28 @@ open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyA
 open InverseInitialArithmetic CompletedGauss InverseSecondFibers JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
+section
+variable (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
+include hpr Jo Jn x
 include hp in
-theorem actual_second_canonical_label_span
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Oˣ) :
+theorem actual_second_canonical_label_span (u v : Oˣ) :
     Ideal.span {actualSecondRawLabel p x}=
       Ideal.span {primaryGenerator (actualSecondChild p u v x).2.1} := by
-  obtain ⟨u₀,v₀,hl,hv⟩ := actual_second_generator_sectors p hp hpr x
+  pm_732 u₀ v₀ hl hv actual_second_generator_sectors p hp hpr x
   rw [hl,←Ideal.span_singleton_mul_span_singleton]
   simp only [Ideal.span_singleton_eq_top.mpr (Units.isUnit u₀),Ideal.top_mul]
   rfl
 
-theorem secondCanonicalPolynomial_parent_lists_restore
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (hb : x.cube.Admissible)
+theorem secondCanonicalPolynomial_parent_lists_restore (hb : x.cube.Admissible)
     (hE : x.second.divisor⊆x.second.sourceCommon) (u v : Oˣ)
     (deleted : Finset ι)
     (hdeleted : ∀ i∈deleted,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient)
-    (pool : Finset ι) (Ψ : OuterTriple→O→*ℂ) (m : O)
-    (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (pool : Finset ι) (Ψ : OuterTriple→ O→*ℂ) (m : O)
+    (slots : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (W : OuterTriple→ℝ→ℂ) (X : ℝ) (k : O) :
     secondCanonicalPolynomial p hp hcop hg pool Ψ (actualSecondInheritedPuncture m)
       slots (fun j=>lists j\deleted) a W X ((actualSecondChild p u v x).1,
@@ -59,15 +59,13 @@ theorem secondCanonicalPolynomial_parent_lists_restore
   rw [he] at hk'
   exact hk' (Ideal.subset_span (by simp))
 
-theorem secondModeBranch_parent_lists_restore
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (hb : x.cube.Admissible)
+theorem secondModeBranch_parent_lists_restore (hb : x.cube.Admissible)
     (hE : x.second.divisor⊆x.second.sourceCommon) (u v : Oˣ)
     (deleted₁ deleted₂ : Finset ι)
     (hd₁ : ∀ i∈deleted₁,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient)
     (hd₂ : ∀ i∈deleted₂,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient)
     (pool : Finset ι) (Ψ : O→*ℂ) (m : O) (z : SecondRayIndex)
-    (slots₁ slots₂ J₁ J₂ : Finset σ) (lists₁ lists₂ : σ→Finset ι) (a₁ a₂ : σ→ι→ℂ)
+    (slots₁ slots₂ J₁ J₂ : Finset σ) (lists₁ lists₂ : σ→ Finset ι) (a₁ a₂ : σ→ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (G E V B X : ℝ) (t : Frequency×(Fin 6→ℝ)) :
     secondModeBranch p hp hcop hg x u v pool Ψ m z slots₁ slots₂ J₁ J₂
       (fun i=>lists₁ i\deleted₁) (fun i=>lists₂ i\deleted₂) a₁ a₂ ω₁ ω₂ G E V B X t =
@@ -79,6 +77,7 @@ theorem secondModeBranch_parent_lists_restore
   unfold secondModeBranch secondModeLeft secondModeRight
   rw [secondCanonicalPolynomial_parent_lists_restore p hp hcop hg hpr x hb hE u v deleted₁ hd₁,
     secondCanonicalPolynomial_parent_lists_restore p hp hcop hg hpr x hb hE u v deleted₂ hd₂]
+end
 
 end SevenEighths.InverseMoment
 

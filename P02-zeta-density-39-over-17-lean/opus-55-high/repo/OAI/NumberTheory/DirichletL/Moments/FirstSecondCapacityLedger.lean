@@ -16,8 +16,10 @@ open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
-theorem formal_reduction_pays_slots (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
+section
+variable (D:Ideal O) (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
+include D a
+theorem formal_reduction_pays_slots
     (Z:ℝ)(hZ:1<Z)(P:ι→ℝ)(hP:∀i,1≤P i):
     (∑i,Real.logb Z (P i))-remainingLogs D a Z P≤
       Real.logb Z (formalReductionFactor D a P) := by
@@ -35,14 +37,14 @@ theorem formal_reduction_pays_slots (D:Ideal O)
   dsimp only [remainingLogs]
   linarith
 
-theorem affine_reduction_le_parent (D:Ideal O)
-    (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
+theorem affine_reduction_le_parent
     (Z κ:ℝ)(hZ:1<Z)(hκ:0≤κ)(P:ι→ℝ)(hP:∀i,1≤P i):
     -Real.logb Z (formalReductionFactor D a P)+(6*κ-1)*remainingLogs D a Z P≤
       (6*κ-1)*(∑i,Real.logb Z (P i)) := by
   have hred:=formal_reduction_pays_slots D a Z hZ P hP
   have hrem:=remainingLogs_le D a Z hZ P hP
   nlinarith
+end
 
 end SevenEighths.CenteredMomentFirstSecondCapacityLedger
 

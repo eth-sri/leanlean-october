@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.ShortGammaPacking
 public import MathCollab.Density.DetectorError
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open Complex MeasureTheory Set Filter MathCollab.Density
 open scoped Topology
 namespace GuthMaynard.Improvement
@@ -27,10 +26,10 @@ theorem short_detector_window_fourth :
   have hβ : 9/13 ≤ ρ.re := hσ.trans hσβ
   let Y := H^((1:ℝ)/2)
   let K := fun t : ℝ => detectorKernel ρ (2*H^((1:ℝ)/100)) Y (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)
-  let g := fun t : ℝ => ‖Complex.Gamma (((1/2-ρ.re:ℝ):ℂ)+(t:ℂ)*I)‖
+  pm_994 ρ.re
   let F := fun t : ℝ => shortTwistedNorm H (ρ.im+t)
   let S := Icc (-(H/2)) (H/2)
-  have hy : 0 < Y := by dsimp [Y]; positivity
+  pm_64 hy Y
   have hi : Integrable K := short_integrable_detectorKernel_left hy hβ hβ'
   have hc : ‖((1/(2*Real.pi):ℝ):ℂ)‖ ≤ 1 := by
     rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (by positivity)]

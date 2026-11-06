@@ -5,6 +5,7 @@ public import Mathlib.Algebra.BigOperators.Ring.Finset
 public import Mathlib.Tactic.Group
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.NormNum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,16 +17,16 @@ noncomputable section
 
 theorem square_eq_star_of_fourth_eq (z : ℂ) (hz : z ^ 4 = z) : z ^ 2 = star z := by
   by_cases h0 : z = 0
-  · simp [h0]
+  grind
   have h3 : z ^ 3 = 1 := by
     apply mul_right_cancel₀ h0
-    simpa only [← pow_succ, one_mul] using hz
-  have hn := Complex.norm_eq_one_of_pow_eq_one h3 (by decide : (3 : ℕ) ≠ 0)
+    grind
+  pm_7426 h3
   change z ^ 2 = (starRingEnd ℂ) z
   rw [← Complex.inv_eq_conj hn]
   apply mul_right_cancel₀ h0
   rw [inv_mul_cancel₀ h0]
-  simpa only [← pow_succ] using h3
+  grind
 
 variable {R : Type*} [CommRing R] [Finite Rˣ]
 

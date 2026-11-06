@@ -2,6 +2,7 @@ module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.SecondCoefficients
 public import WeylPort.AFE.PartIISignReview
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -61,18 +62,11 @@ theorem positiveModeError_pair_le {f g : ℝ → ℝ} {a b : ℝ}
       secondH f g a / (4 * Real.pi ^ 2) * ‖positiveTail (-a) (deriv f a)‖ +
       secondH1 f g a / (4 * Real.pi ^ 3) * plusSquareBound (deriv f a) +
       (secondH f g a * |deriv (deriv f) a| / (4 * Real.pi ^ 3)) * plusCubeBound (deriv f a) := by
-  have hd : deriv (fun u => g u * deriv f u) a =
-      deriv g a * deriv f a + g a * deriv (deriv f) a :=
-    (hgd.hasDerivAt.mul hfd.hasDerivAt).deriv
-  have hb := abs_add_le (deriv g a * deriv f a) (g a * deriv (deriv f) a)
+  pm_30
   have hc : 0 ≤ 2 * Real.pi / (4 * Real.pi ^ 3) * plusSquareBound (deriv f a) :=
     mul_nonneg (by positivity) (plusSquareBound_nonneg hfa)
-  have ht := mul_le_mul_of_nonneg_right hb hc
-  unfold positiveModeError secondH secondH1
-  rw [hd]
-  simp only [abs_mul] at ht ⊢
-  simp only [div_eq_mul_inv] at ht ⊢
-  nlinarith only [ht]
+  pm_1485 positiveModeError
+  grind
 
 /-- The exact positive coefficient identity transfers proved bounds on the two actual amplitude series. -/
 theorem norm_positiveCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
@@ -91,10 +85,7 @@ theorem norm_positiveCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
       secondH1 f g a / (4 * Real.pi ^ 3) * plusSquareBound (deriv f a) +
       (secondH f g a * |deriv (deriv f) a| / (4 * Real.pi ^ 3)) * plusCubeBound (deriv f a) := by
   rw [tsum_positiveCoefficient_eq_secondModes h hg hgf]
-  apply (norm_add_le _ _).trans
-  rw [norm_div, Complex.norm_I, div_one, norm_mul]
-  have hc : ‖2 * (Real.pi : ℂ)‖ = 2 * Real.pi := by simp
-  rw [hc]
+  pm_31
   exact (add_le_add bg (mul_le_mul_of_nonneg_left bgf (by positivity))).trans
     (positiveModeError_pair_le (h.f_deriv_pos a (Set.left_mem_Icc.mpr h.lt.le)) hfd
       (h.g_differentiable a (Set.left_mem_Icc.mpr h.lt.le)))
@@ -126,9 +117,7 @@ theorem afe_positiveCoefficient_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 
         (afePhase_hasDerivAt c ha).deriv, (afePhase_hasDerivAt c (ha.trans hab)).deriv,
         (afePhase_deriv_hasDerivAt c ha).deriv] using hgf.2)
     (afePhase_deriv_hasDerivAt c ha).differentiableAt
-  simpa only [(afePhase_hasDerivAt c ha).deriv, (afePhase_hasDerivAt c (ha.trans hab)).deriv,
-    (afePhase_deriv_hasDerivAt c ha).deriv, abs_div, abs_neg, abs_of_pos hc,
-    abs_of_nonneg (sq_nonneg a)] using hn
+  pm_32
 
 /-- The literal square-denominator coefficient in the upper-frequency source estimate. -/
 noncomputable def minusSquareBound (M : ℕ) (y : ℝ) : ℝ :=
@@ -156,8 +145,11 @@ theorem minusSquareBound_nonneg {M : ℕ} {y : ℝ} (hy : 0 < y) (hM : y < (M : 
   apply (tsum_nonneg (fun n : ℕ => show 0 ≤ 1 / (((n : ℝ) + M + 1) * ((n : ℝ) + M + 1 - y) ^ 2) by positivity)).trans
   exact harmonic_tail_square_bound hy hM
 
+section
+variable {f g : ℝ → ℝ} {a b : ℝ}
+include f g a b
 /-- Combining the two amplitude majorants yields exactly the source H/H₁ terms. -/
-theorem negativeModeError_pair_le {f g : ℝ → ℝ} {a b : ℝ}
+theorem negativeModeError_pair_le
     (hfa : 0 < deriv f a) {M : ℕ} (hM : deriv f a < (M : ℝ) + 1) (hfd : DifferentiableAt ℝ (deriv f) a)
     (hgd : DifferentiableAt ℝ g a) :
     negativeModeError (deriv f) (deriv (deriv f)) (deriv g) (deriv (deriv g)) a b M +
@@ -167,21 +159,14 @@ theorem negativeModeError_pair_le {f g : ℝ → ℝ} {a b : ℝ}
       secondH f g a / (4 * Real.pi ^ 2) * ‖negativeTail M a (deriv f a)‖ +
       secondH1 f g a / (4 * Real.pi ^ 3) * minusSquareBound M (deriv f a) +
       (secondH f g a * |deriv (deriv f) a| / (4 * Real.pi ^ 3)) * minusCubeBound M (deriv f a) := by
-  have hd : deriv (fun u => g u * deriv f u) a =
-      deriv g a * deriv f a + g a * deriv (deriv f) a :=
-    (hgd.hasDerivAt.mul hfd.hasDerivAt).deriv
-  have hb := abs_add_le (deriv g a * deriv f a) (g a * deriv (deriv f) a)
+  pm_30
   have hc : 0 ≤ 2 * Real.pi / (4 * Real.pi ^ 3) * minusSquareBound M (deriv f a) :=
     mul_nonneg (by positivity) (minusSquareBound_nonneg hfa hM)
-  have ht := mul_le_mul_of_nonneg_right hb hc
-  unfold negativeModeError secondH secondH1
-  rw [hd]
-  simp only [abs_mul] at ht ⊢
-  simp only [div_eq_mul_inv] at ht ⊢
+  pm_1485 negativeModeError
   nlinarith only [ht]
 
 /-- The exact upper coefficient identity transfers proved bounds on the two actual amplitude series. -/
-theorem norm_negativeCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
+theorem norm_negativeCoefficient_le_mode_errors
     (h : PartIRegularity f g a b) (M : ℕ) (hM : deriv f a < (M : ℝ) + 1)
     (hg : Summable (upperModeTerm f (deriv g) a b M))
     (hgf : Summable (upperModeTerm f (fun u => g u * deriv f u) a b M))
@@ -197,17 +182,17 @@ theorem norm_negativeCoefficient_le_mode_errors {f g : ℝ → ℝ} {a b : ℝ}
       secondH1 f g a / (4 * Real.pi ^ 3) * minusSquareBound M (deriv f a) +
       (secondH f g a * |deriv (deriv f) a| / (4 * Real.pi ^ 3)) * minusCubeBound M (deriv f a) := by
   rw [tsum_negativeCoefficient_eq_upperModes h M hg hgf]
-  apply (norm_add_le _ _).trans
-  rw [norm_div, Complex.norm_I, div_one, norm_mul]
-  have hc : ‖2 * (Real.pi : ℂ)‖ = 2 * Real.pi := by simp
-  rw [hc]
+  pm_31
   exact (add_le_add bg (mul_le_mul_of_nonneg_left bgf (by positivity))).trans
     (negativeModeError_pair_le (h.f_deriv_pos a (Set.left_mem_Icc.mpr h.lt.le)) hM hfd
       (h.g_differentiable a (Set.left_mem_Icc.mpr h.lt.le)))
+end
 
+section
+variable {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c) (ha : 0 < a) (hab : a < b)
+include σ c a b hσ hc ha hab
 /-- The actual AFE upper Poisson tail satisfies the complete H/H₁ bound, with all integral estimates derived. -/
-theorem afe_negativeCoefficient_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
-    (ha : 0 < a) (hab : a < b) (M : ℕ) (hM : c / a < (M : ℝ) + 1) :
+theorem afe_negativeCoefficient_bound (M : ℕ) (hM : c / a < (M : ℝ) + 1) :
     ‖∑' n : ℕ, negativeCoefficient (afePhase c) (afeWeight σ) a b (n + M + 1)‖ ≤
       secondH (afePhase c) (afeWeight σ) b / (4 * Real.pi ^ 2) * ‖negativeTail M b (c / b)‖ +
       secondH (afePhase c) (afeWeight σ) a / (4 * Real.pi ^ 2) * ‖negativeTail M a (c / a)‖ +
@@ -233,13 +218,10 @@ theorem afe_negativeCoefficient_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 
         (afePhase_hasDerivAt c ha).deriv, (afePhase_hasDerivAt c (ha.trans hab)).deriv,
         (afePhase_deriv_hasDerivAt c ha).deriv] using hgf.2)
     (afePhase_deriv_hasDerivAt c ha).differentiableAt
-  simpa only [(afePhase_hasDerivAt c ha).deriv, (afePhase_hasDerivAt c (ha.trans hab)).deriv,
-    (afePhase_deriv_hasDerivAt c ha).deriv, abs_div, abs_neg, abs_of_pos hc,
-    abs_of_nonneg (sq_nonneg a)] using hn
+  pm_32
 
 /-- The actual finite AFE Poisson remainder satisfies the assembled second-order bound before the separate E₁/E₂ packaging. -/
-theorem afe_finite_poisson_second_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 0 < c)
-    (ha : 0 < a) (hab : a < b) :
+theorem afe_finite_poisson_second_bound :
     let f : ℝ → ℝ := afePhase c
     let g : ℝ → ℝ := afeWeight σ
     let M : ℕ := ⌊c / a⌋₊
@@ -267,5 +249,6 @@ theorem afe_finite_poisson_second_bound {σ c a b : ℝ} (hσ : 0 ≤ σ) (hc : 
   apply (hs _ _ _ _ _).trans
   simp only [div_eq_mul_inv] at hp hn ⊢
   nlinarith only [hp, hn]
+end
 
 end DhimanKadiriQuesadaHerrera2026

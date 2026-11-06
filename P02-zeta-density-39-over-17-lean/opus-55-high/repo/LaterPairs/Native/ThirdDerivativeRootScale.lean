@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SecondDerivativeScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -19,12 +20,12 @@ theorem third_derivative_root_scale {R H μ : ℝ}
     (hscale : R^3*μ = 1) :
     Real.sqrt μ*Real.sqrt H ≤ 1/R ∧
       1/(Real.sqrt H*Real.sqrt μ) ≤ 2*R := by
-  have hH : 0 < H := lt_of_lt_of_le (by positivity) hlo
+  pm_1622 hH H lt_of_lt_of_le hlo
   let a := Real.sqrt μ*Real.sqrt H
   have ha : 0 < a := mul_pos (Real.sqrt_pos.mpr hμ) (Real.sqrt_pos.mpr hH)
   have ha2 : a^2 = μ*H := by
     dsimp [a]
-    rw [mul_pow,Real.sq_sqrt hμ.le,Real.sq_sqrt hH.le]
+    grind
   have hu : (a*R)^2 ≤ 1 := by
     rw [mul_pow,ha2]
     calc
@@ -50,7 +51,7 @@ theorem third_derivative_optimized_square_scale {S N H R C μ : ℝ}
     (hb : S^2 ≤ 2*N^2/H+48*C*N^2*Real.sqrt μ*Real.sqrt H+
       192*N/(Real.sqrt H*Real.sqrt μ)) :
     S^2 ≤ 52*C*N^2/R+384*N*R := by
-  have hH : 0 < H := lt_of_lt_of_le (by positivity) hlo
+  pm_1622 hH H lt_of_lt_of_le hlo
   have hs := third_derivative_root_scale hR hμ hlo hhi hscale
   have hfirst : 2*N^2/H ≤ 4*N^2/R := by
     apply (div_le_div_iff₀ hH hR).mpr

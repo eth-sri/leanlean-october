@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonLinearSource
 public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,11 +33,10 @@ theorem coordinate_norm_le (s:Input ι)(C:Ideal O)(hC:C≠0)
 
 omit [DecidableEq ι] in
 theorem extracted_lower (s:Input ι)(C:Ideal O)(hC:C≠0)(B:actualAllocations s.pools C)
-    (j:ι⊕Fin 2)(Z r X:ℝ)(hZ:1<Z)(hX:Z^r≤X):
-    Z^(r-Real.logb Z (Ideal.absNorm C:ℝ))≤X/Ideal.absNorm (B.val j):=by
+    (j:ι⊕Fin 2)(Z r X:ℝ)(hZ:1<Z)(hX:Z ^r≤X):
+    Z ^(r-Real.logb Z (Ideal.absNorm C:ℝ))≤X/Ideal.absNorm (B.val j):=by
   have hz:=zero_lt_one.trans hZ
-  have hN:(0:ℝ)<Ideal.absNorm C:=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC)
+  pm_408 hN
   rw [Real.rpow_sub hz,Real.rpow_logb hz hZ.ne' hN]
   exact div_le_div₀ ((Real.rpow_nonneg hz.le r).trans hX) hX (alloc_norm_pos s C B j)
     (coordinate_norm_le s C hC B j)

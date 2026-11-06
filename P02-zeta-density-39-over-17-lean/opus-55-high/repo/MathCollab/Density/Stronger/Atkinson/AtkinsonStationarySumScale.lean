@@ -5,6 +5,8 @@ Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3
 See third_party/twelfth/ATKINSON_FINITE_ERROR_MANIFEST.json. Mathlib/PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteStationaryError
+public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,22 +16,6 @@ noncomputable section
 open Complex Filter
 open MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
-
-theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
-    (hT : 1 ≤ T) (hG : 0 < G) (hupper : G ≤ Real.sqrt T) (hL : 1 ≤ L) :
-    (atkinsonSourceCutoff T G L : ℝ) ≤ 37*T*L^2/G^2 := by
-  have hT0 : 0 < T := by linarith
-  have hG2 : 0 < G^2 := sq_pos_of_pos hG
-  have hGT : G^2 ≤ T := by nlinarith [Real.sq_sqrt hT0.le]
-  have hL2 : 1 ≤ L^2 := by nlinarith
-  have hU : 1 ≤ T*L^2/G^2 := (le_div_iff₀ hG2).2 (by nlinarith)
-  have hceil := Nat.ceil_lt_add_one (by positivity : 0 ≤ 36*T*(L/G)^2)
-  change (atkinsonSourceCutoff T G L : ℝ) < 36*T*(L/G)^2+1 at hceil
-  have he : 36*T*(L/G)^2 = 36*(T*L^2/G^2) := by ring
-  rw [he] at hceil
-  have he' : 37*T*L^2/G^2 = 37*(T*L^2/G^2) := by ring
-  rw [he']
-  linarith
 
 theorem atkinsonStationary_scale_identity {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (q : ℝ) :
@@ -55,8 +41,7 @@ theorem atkinsonStationary_cutoff_scale_le {T G L q : ℝ}
     (hq : 3/4 ≤ q) (hq1 : q ≤ 1) :
     G*Real.sqrt G*T^(-(1/2 : ℝ))*
       (atkinsonSourceCutoff T G L : ℝ)^q ≤ 37*T^(q-1/2)*L^2 := by
-  have hT0 : 0 < T := by linarith
-  have hG0 : 0 < G := by linarith
+  pm_72 hT0 T hG0 G
   have hL0 : 0 < L := by linarith
   have hN := atkinsonSourceCutoff_le_natural hT hG0 hupper hL
   have hmono := Real.rpow_le_rpow (Nat.cast_nonneg (atkinsonSourceCutoff T G L)) hN

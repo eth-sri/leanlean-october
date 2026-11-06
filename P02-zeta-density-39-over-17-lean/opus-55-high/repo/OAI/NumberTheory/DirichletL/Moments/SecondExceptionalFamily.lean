@@ -3,18 +3,19 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondLiveFamily
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedSource
 public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalBudget
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical SchwartzMap Topology
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFamily
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentPartitionNorm
 open CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth
 open CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns
@@ -35,46 +36,32 @@ theorem reflected_modulus_bound (τ:Character) :
   change (reflected τ).modulus.absNorm≤τ.modulus.absNorm*(Ideal.span {(36:O)}).absNorm at h
   simpa only [span_thirty_six_norm,mul_comm] using h
 
-theorem common_subproduct_dvd_left (C D:Ideal O) (hC:Supported C)
+section
+variable (C D:Ideal O) (hC:Supported C)
+include C D hC
+theorem common_subproduct_dvd_left
     (hCD:primeSupport C=primeSupport D) (S:Finset (CommonIndex C D)) :
     (∏P∈S,P.val)∣C := by
-  have h₁ := Finset.prod_dvd_prod_of_subset S Finset.univ
-    (fun P:CommonIndex C D=>P.val) (Finset.subset_univ S)
-  have h₂ : (∏P:CommonIndex C D,P.val)∣
-      ∏P:CommonIndex C D,Ideal.span {commonPrime C D P}^leftExponent C D P := by
-    apply Finset.prod_dvd_prod_of_dvd
-    intro P _
-    rw [commonPrime_span C D hC]
-    exact dvd_pow_self _ (Nat.ne_zero_of_lt (leftExponent_pos C D P))
+  pm_2973 leftExponent leftExponent_pos
   rw [left_ideal_product C D hC hCD] at h₂
   exact h₁.trans h₂
 
-theorem common_subproduct_dvd_right (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+theorem common_subproduct_dvd_right (hD:Supported D)
     (hCD:primeSupport C=primeSupport D) (S:Finset (CommonIndex C D)) :
     (∏P∈S,P.val)∣D := by
-  have h₁ := Finset.prod_dvd_prod_of_subset S Finset.univ
-    (fun P:CommonIndex C D=>P.val) (Finset.subset_univ S)
-  have h₂ : (∏P:CommonIndex C D,P.val)∣
-      ∏P:CommonIndex C D,Ideal.span {commonPrime C D P}^rightExponent C D P := by
-    apply Finset.prod_dvd_prod_of_dvd
-    intro P _
-    rw [commonPrime_span C D hC]
-    exact dvd_pow_self _ (Nat.ne_zero_of_lt (rightExponent_pos C D P))
+  pm_2973 rightExponent rightExponent_pos
   rw [right_ideal_product C D hC hD hCD] at h₂
   exact h₁.trans h₂
 
-theorem selected_nonunit_product (C D:Ideal O) (hC:Supported C)
+theorem selected_nonunit_product
     (U:Finset (CommonIndex C D)) :
     (∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U}=
       ∏P∈U∪nonunitPartitionSet C D U,P.val := by
-  have hd : Disjoint U (nonunitPartitionSet C D U) := by
-    apply Finset.disjoint_left.mpr
-    intro P hP hV
-    exact (Finset.mem_sdiff.mp hV).2 hP
+  pm_5526 hd
   rw [Finset.prod_union hd,nonunitFrequencyGenerator_span]
   simp only [unitIdeal,commonPrime_span C D hC]
 
-theorem selected_nonunit_dvd (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+theorem selected_nonunit_dvd (hD:Supported D)
     (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D)) :
     ((∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U}∣C) ∧
     ((∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U}∣D) := by
@@ -82,25 +69,25 @@ theorem selected_nonunit_dvd (C D:Ideal O) (hC:Supported C) (hD:Supported D)
   exact ⟨common_subproduct_dvd_left C D hC hCD _,
     common_subproduct_dvd_right C D hC hD hCD _⟩
 
-theorem selected_nonunit_norm (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+theorem selected_nonunit_norm (hD:Supported D)
     (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D)) :
     (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm≤C.absNorm ∧
     (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm≤D.absNorm := by
-  obtain ⟨h₁,h₂⟩ := selected_nonunit_dvd C D hC hD hCD U
-  constructor
+  pm_7982 selected_nonunit_dvd
   · simpa only [map_mul] using Nat.le_of_dvd
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC.1)) (map_dvd Ideal.absNorm h₁)
   · simpa only [map_mul] using Nat.le_of_dvd
       (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.1)) (map_dvd Ideal.absNorm h₂)
+end
 
 structure Family (η:Character) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
-    (U:Finset (CommonIndex C D)) (τ:RayCharacter→Character) : Prop where
+    (U:Finset (CommonIndex C D)) (τ:RayCharacter→ Character) : Prop where
   element_eq : ∀χ n,elementCoeff (τ χ) n=
     rowTwist (HeckeRowClosure.elementHom (childCharacter η χ))
       fixedBadMask 1 (reducedNumerator C D U) n
   height_eq : ∀χ I,Supported I→(IsCoprime C I ∨ IsCoprime D I)→∀t,
-    heightCoeff (τ χ) t I=heightCoeff η t I*
-      idealRowHom (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) I*
+    heightCoeff (τ χ) t I=heightCoeff η t I *
+      idealRowHom (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U) I *
       rayCharacter χ (primaryGenerator I)
   physical_budget : ∀(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(R:ℝ)(rows:Finset O)
       (W:𝓢(ℝ,ℂ))(K:ℝ),0<K→∀n:Fin 4→ℤ,
@@ -136,21 +123,23 @@ theorem exists_exceptional_family (η:Character) (C D:Ideal O)
 
 namespace Family
 variable {η:Character} {C D:Ideal O} {hC:Supported C} {hD:Supported D}
-  {U:Finset (CommonIndex C D)} {τ:RayCharacter→Character}
+  {U:Finset (CommonIndex C D)} {τ:RayCharacter→ Character}
 
-theorem nonexceptional_iff (h:Family η C D hC hD U τ) (χ:RayCharacter)
-    (Q:Ideal O) (m z:O) (hm:m≠0) (hml:ConcretePrimeRowBridge.goodLambda∣m) (hm2:(2:O)∣m) :
-    nonexceptional η χ Q m (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z ↔
+section
+variable (h:Family η C D hC hD U τ) (χ:RayCharacter) (Q:Ideal O) (m z:O) (hm:m≠0)
+include h χ Q m z hm
+theorem nonexceptional_iff (hml:ConcretePrimeRowBridge.goodLambda∣m) (hm2:(2:O)∣m) :
+    nonexceptional η χ Q m (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U) z ↔
       z≠0 ∧ ¬FixedInducingRow (τ χ) Q fixedBadMask 1 z :=
   actual_nonexceptional_iff η (τ χ) χ C D hC U (h.element_eq χ) Q m z hm hml hm2
 
-theorem inducing_iff (h:Family η C D hC hD U τ) (χ:RayCharacter)
-    (Q:Ideal O) (m z:O) (hm:m≠0) (hz:z≠0)
+theorem inducing_iff (hz:z≠0)
     (hml:ConcretePrimeRowBridge.goodLambda∣m) (hm2:(2:O)∣m) :
     FixedInducingRow (childCharacter η χ) Q m
-      (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z ↔
+      (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U) z ↔
       FixedInducingRow (τ χ) Q fixedBadMask 1 z :=
   actual_reduced_inducing_iff η (τ χ) χ C D hC U (h.element_eq χ) Q m z hm hz hml hm2
+end
 
 theorem physical_conductor_bounds (h:Family η C D hC hD U τ)
     (hCD:primeSupport C=primeSupport D)
@@ -160,12 +149,9 @@ theorem physical_conductor_bounds (h:Family η C D hC hD U τ)
     (τ χ).modulus.absNorm≤η.modulus.absNorm*fixedFactor*C.absNorm ∧
     (τ χ).modulus.absNorm≤η.modulus.absNorm*fixedFactor*D.absNorm := by
   have hN := (h.physical_budget t S β R rows W K hK n hne χ).1
-  obtain ⟨h₁,h₂⟩ := selected_nonunit_norm C D hC hD hCD U
-  constructor
-  · exact hN.trans <| by
-      simpa only [mul_assoc] using (Nat.mul_le_mul_left (η.modulus.absNorm*fixedFactor) h₁)
-  · exact hN.trans <| by
-      simpa only [mul_assoc] using (Nat.mul_le_mul_left (η.modulus.absNorm*fixedFactor) h₂)
+  pm_7982 selected_nonunit_norm
+  pm_6402 h₁
+  pm_6402 h₂
 
 end Family
 
@@ -178,7 +164,7 @@ def expandedFactor (η:Character):ℕ :=
     (Ideal.span {(72:O)}).absNorm
 
 theorem expanded_conductor_bounds {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
-    {U:Finset (CommonIndex C D)}{τ:RayCharacter→Character}
+    {U:Finset (CommonIndex C D)}{τ:RayCharacter→ Character}
     (h:Family η C D hC hD U τ)(hCD:primeSupport C=primeSupport D)
     (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(radius:ℝ)(rows:Finset O)
     (W:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(n:Fin 4→ℤ)
@@ -220,7 +206,7 @@ theorem live_norm_le_four_radius (C D:Ideal O)(U:Finset (CommonIndex C D))
   have hG := normValue_ge_one _ hg
   have hV := normValue_ge_one _ hv
   have hprod : 1≤normValue (commonFrequencyGenerator C D)*normValue (nonunitFrequencyGenerator C D U) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr hG) (sub_nonneg.mpr hV)]
+    pm_385 mul_nonneg sub_nonneg.mpr hG hV
   exact hn.trans (div_le_self (by positivity) hprod)
 
 end SevenEighths.CenteredMomentSecondExceptionalFamily

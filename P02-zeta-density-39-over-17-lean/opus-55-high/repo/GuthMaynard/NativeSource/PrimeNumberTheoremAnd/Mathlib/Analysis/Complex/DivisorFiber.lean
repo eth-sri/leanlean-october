@@ -36,33 +36,4 @@ namespace Complex.Hadamard
 ## The multiplicity fiber is finite and has the expected cardinality
 -/
 
-theorem divisorZeroIndex₀_fiber_finite (f : ℂ → ℂ) (z₀ : ℂ) :
-    ({p : divisorZeroIndex₀ f (Set.univ : Set ℂ) | divisorZeroIndex₀_val p = z₀} :
-      Set _).Finite := by
-  have hsub :
-      ({p : divisorZeroIndex₀ f (Set.univ : Set ℂ) | divisorZeroIndex₀_val p = z₀} : Set _)
-        ⊆ ({p : divisorZeroIndex₀ f (Set.univ : Set ℂ) | ‖divisorZeroIndex₀_val p‖ ≤ ‖z₀‖} :
-          Set _) := by
-    intro p hp
-    have : divisorZeroIndex₀_val p = z₀ := hp
-    simp [this]
-  have hfin :
-      ({p : divisorZeroIndex₀ f (Set.univ : Set ℂ) | ‖divisorZeroIndex₀_val p‖ ≤ ‖z₀‖} :
-        Set _).Finite := by
-    have : Metric.closedBall (0 : ℂ) ‖z₀‖ ⊆ (Set.univ : Set ℂ) := by simp
-    simpa using (divisorZeroIndex₀_norm_le_finite (f := f) (U := (Set.univ : Set ℂ))
-      (B := ‖z₀‖) this)
-  exact hfin.subset hsub
-
-/-- The finite fiber over `z₀` in the divisor-index type `divisorZeroIndex₀`. -/
-def divisorZeroIndex₀_fiberFinset (f : ℂ → ℂ) (z₀ : ℂ) :
-    Finset (divisorZeroIndex₀ f (Set.univ : Set ℂ)) :=
-  (divisorZeroIndex₀_fiber_finite (f := f) z₀).toFinset
-
-@[simp]
-lemma mem_divisorZeroIndex₀_fiberFinset (f : ℂ → ℂ) (z₀ : ℂ)
-    (p : divisorZeroIndex₀ f (Set.univ : Set ℂ)) :
-    p ∈ divisorZeroIndex₀_fiberFinset (f := f) z₀ ↔ divisorZeroIndex₀_val p = z₀ := by
-  simp [divisorZeroIndex₀_fiberFinset]
-
 end Complex.Hadamard

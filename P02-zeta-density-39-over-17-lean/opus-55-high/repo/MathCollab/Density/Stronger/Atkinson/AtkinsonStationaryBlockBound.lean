@@ -8,6 +8,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSignedPhaseSeries
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonDampedDyadic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -67,9 +68,8 @@ theorem exists_atkinsonSourceCutoff_block_bound {δ : ℝ} (hδ : 0 < δ) :
   refine ⟨C,hC,max 40000 B,le_max_left _ _,?_⟩
   intro T G hT hlower hupper m N hm hcut
   have hTlarge : 40000 ≤ T := (le_max_left _ _).trans hT
-  have hT0 : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
-  have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+  pm_4366
+  pm_650 hG G Real.rpow_pos_of_pos hT0 δ hlower
   have hGhi : G ≤ Real.sqrt T := by
     rw [Real.sqrt_eq_rpow]
     exact hupper.trans (Real.rpow_le_rpow_of_exponent_le hT1 (by linarith))

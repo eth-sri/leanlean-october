@@ -15,7 +15,3 @@ namespace GuthMaynard.NativeMoment
 
 /-- The `alpha` definition used by the source-facing construction in `ExponentArithmetic`. -/
 noncomputable def alpha (σ : ℝ) : ℝ := 15 * (1 - σ) / ((3 + 5 * σ) * (18/5 - 4 * σ))
-/-- The `final_exponent` definition used by the source-facing construction in `ExponentArithmetic`. -/
--- Source-equation compatibility keeps this established public name.
-@[nolint defsWithUnderscore]
-noncomputable def final_exponent (σ : ℝ) : ℝ := 15 * (1 - σ) / (3 + 5 * σ)

@@ -2,7 +2,6 @@ module
 public import MathCollab.Density.ComparisonCutoff
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Set
 open scoped ContDiff
@@ -38,7 +37,7 @@ theorem fixedTimeCutoff_bounds (s : ℝ) : 0 ≤ fixedTimeCutoff s ∧ fixedTime
 
 theorem fixedTimeCutoff_one {s : ℝ} (hs : s ∈ Icc (-1:ℝ) 2) : fixedTimeCutoff s=1 := by
   apply MathCollab.Density.comparisonCutoff.one_on
-  exact ⟨by linarith [hs.1],by linarith [hs.2]⟩
+  grind
 
 theorem fixedTimeCutoff_support : tsupport fixedTimeCutoff ⊆ Icc (-2:ℝ) 3 := by
   apply closure_minimal _ isClosed_Icc
@@ -46,7 +45,7 @@ theorem fixedTimeCutoff_support : tsupport fixedTimeCutoff ⊆ Icc (-2:ℝ) 3 :=
   have hh : s+2 ∈ tsupport MathCollab.Density.comparisonCutoff :=
     subset_closure (show s+2 ∈ Function.support MathCollab.Density.comparisonCutoff from hs)
   have hb := MathCollab.Density.comparisonCutoff.support hh
-  exact ⟨by linarith [hb.1],by linarith [hb.2]⟩
+  grind
 
 theorem fixedTimeCutoff_compact : HasCompactSupport fixedTimeCutoff :=
   isCompact_Icc.of_isClosed_subset (isClosed_tsupport _) fixedTimeCutoff_support

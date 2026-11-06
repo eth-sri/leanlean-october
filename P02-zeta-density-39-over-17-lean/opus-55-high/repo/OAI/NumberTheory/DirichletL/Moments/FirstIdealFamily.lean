@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalFamily
 public import OAI.NumberTheory.DirichletL.Moments.SourceRow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,18 +21,16 @@ theorem rowWeight_one_primary (η : Character) (m : O) (t : ℝ)
     (I : Ideal O) (hI : Supported I) :
     rowWeight η m 1 1 t I=elementCoeff η (CompletedGauss.primaryGenerator I)*
       coprimalityMask m (CompletedGauss.primaryGenerator I)*(Ideal.absNorm I:ℂ)^(Complex.I*t) := by
-  have hn := supported_primaryGenerator_ne_zero I hI
-  have hs := primary_span_supported I hI
+  pm_111 hn supported_primaryGenerator_ne_zero I hI hs primary_span_supported
   have he : idealCoeff η I=elementCoeff η (CompletedGauss.primaryGenerator I) := by
-    have hh := idealCoeff_span η hn
-    rw [hs] at hh
+    pm_126 hh idealCoeff_span η hn hs
     exact hh
   have hm : idealRowHom (m^6) I=coprimalityMask m (CompletedGauss.primaryGenerator I) := by
     have hh := idealRowHom_sixth_eq_mask m _ (hs.symm ▸ hI)
     rw [hs] at hh
     exact hh
   change (idealCoeff η I*idealRowHom (m^6*(1*1)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t)=_
-  rw [mul_one,mul_one,he,hm]
+  grind
 
 theorem ideal_height_of_primary (η τ : Character) (m : O) (F : O → ℂ)
     (hτ : ∀ n : O,Supported (Ideal.span {n}) → goodLambda^2∣n-1 →
@@ -57,30 +56,18 @@ theorem exists_first_ideal_pair (η : Character) (m : O) (hm : m≠0)
     ∃ τ₁ τ₂ : Character,τ₁.modulus=M ∧ τ₂.modulus=M ∧
       (∀ I : Ideal O,Supported I → ∀ t : ℝ,
         idealCoeff τ₁ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)=
-          rowWeight η m 1 1 t I*
+          rowWeight η m 1 1 t I *
             (leftCoefficient e r ρ (CompletedGauss.primaryGenerator I)*
               rayCharacter ξ₁ (CompletedGauss.primaryGenerator I))) ∧
       (∀ I : Ideal O,Supported I → ∀ t : ℝ,
         idealCoeff τ₂ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)=
-          rowWeight η m 1 1 t I*
+          rowWeight η m 1 1 t I *
             (rightCoefficient e r ρ (CompletedGauss.primaryGenerator I)*
               rayCharacter ξ₂ (CompletedGauss.primaryGenerator I))) := by
   obtain ⟨τ₁,τ₂,hM₁,hM₂,h₁,h₂⟩ := exists_canonical_first_pair η m hm hmLam hm2 C D hC E ξ₁ ξ₂
-  refine ⟨τ₁,τ₂,hM₁,hM₂,?_,?_⟩
-  · intro I hI t
-    apply ideal_height_of_primary η τ₁ m
-      (fun n => leftCoefficient (primeSubsetGenerator (fun P : CommonIndex C D => P.val) E)
-        (activeConductor C D) (finiteSexticRow (activePrime C D) (activeGood C D hC) (activeExponent C D)) n*rayCharacter ξ₁ n) _ I hI t
-    intro n hn hp
-    rw [h₁ n hn hp]
-    ring
-  · intro I hI t
-    apply ideal_height_of_primary η τ₂ m
-      (fun n => rightCoefficient (primeSubsetGenerator (fun P : CommonIndex C D => P.val) E)
-        (activeConductor C D) (finiteSexticRow (activePrime C D) (activeGood C D hC) (activeExponent C D)) n*rayCharacter ξ₂ n) _ I hI t
-    intro n hn hp
-    rw [h₂ n hn hp]
-    ring
+  pm_841 τ₁ τ₂ hM₁ hM₂
+  pm_2987 τ₁ leftCoefficient ξ₁ h₁
+  pm_2987 τ₂ rightCoefficient ξ₂ h₂
 
 end SevenEighths.CenteredMomentFirstIdealFamily
 

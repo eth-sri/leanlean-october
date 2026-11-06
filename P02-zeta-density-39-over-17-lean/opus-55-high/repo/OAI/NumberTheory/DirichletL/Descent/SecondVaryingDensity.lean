@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondFreshAssembly
 public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -45,7 +46,7 @@ theorem actualSecondVaryingFreshRows_normalized_density {κ : Type*}
           (fun z=>W₂ (z/(G₀*V₀*X₀))) Φ (fun _ _=>1) Y
           (secondActualNorms p (x j.1) j.2.1 j.2.2) := by
     simp_rw [actualSecondProfileRow_eq_whole]
-    simp only [secondProfileIndices,Finset.sum_sigma,Finset.sum_product,Finset.mul_sum,mul_assoc]
+    pm_94 secondProfileIndices Finset.sum_sigma Finset.sum_product Finset.mul_sum mul_assoc
   rw [hindexed]
   have hc (v : Frequency × (Fin 6 → ℝ)) :
       (∑ j ∈ source, w j * secondSeparatedPair p hp hcop hg F (x j)
@@ -57,19 +58,13 @@ theorem actualSecondVaryingFreshRows_normalized_density {κ : Type*}
           pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope
             (secondRelativeLog (secondActualNorms p (x j.1) j.2.1 j.2.2) G₀ E₀ V₀ K₀ X₀) v.1 v.2 := by
     simp_rw [← actual_second_full_mode_columns]
-    simp only [secondProfileIndices,Finset.sum_sigma,Finset.sum_product,Finset.mul_sum,mul_assoc]
+    pm_94 secondProfileIndices Finset.sum_sigma Finset.sum_product Finset.mul_sum mul_assoc
   simp_rw [hc]
   rw [← density_finite_sum _ density hDensity]
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro j hj
-  calc
-    _ = (w j.1 * secondActualCoefficient p hp hcop hg (x j.1)
-        slots₁ slots₂ (lists₁ j.1) (lists₂ j.1) a₁ a₂ j.2.1 j.2.2) *
-        (normalization * secondNormProfile (fun z => star (W₁ (z/(G₀*V₀*X₀))))
-          (fun z => W₂ (z/(G₀*V₀*X₀))) Φ (fun _ _ => 1) Y
-          (secondActualNorms p (x j.1) j.2.1 j.2.2)) := by ring
-    _ = _ := by rw [he j hj]; ring
+  grind
 
 end
 end SevenEighths.InverseMoment

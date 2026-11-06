@@ -17,7 +17,7 @@ namespace SevenEighths.CenteredMomentLiveCapacity
     (hpay:R=J ∨ excess J w n₁ n₂ M κ≤6*κ*(∑i∈R,w i)) :
     R=J ∨ n₁+n₂+6*κ*(∑i∈J\R,w i)≤M := by
   rcases hpay with h|h
-  · exact Or.inl h
+  grind
   · right
     have hs:=Finset.sum_sdiff hR (f:=w)
     have hm:=le_max_left (n₁+n₂+6*κ*(∑i∈J,w i)-M) (0:ℝ)

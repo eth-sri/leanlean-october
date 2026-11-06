@@ -3,8 +3,9 @@ module
 public import WeylPort.Analytic.DigammaSeries
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 -- Lean 4.34 elaborator compatibility.
 set_option backward.isDefEq.respectTransparency false
@@ -19,7 +20,7 @@ pinned PNT+ dependency; all inequalities here concern its actual real part.
 
 namespace DhimanKadiriQuesadaHerrera2026
 
-open scoped BigOperators Topology
+open scoped Topology
 open Filter MeasureTheory
 
 /-- The real series on the positive axis, with the original Euler constant. -/
@@ -30,7 +31,7 @@ theorem hasSum_real_digamma {x : ℝ} (hx : 0 < x) :
     intro n h
     have hr := congrArg Complex.re h
     simp only [Complex.ofReal_re, Complex.neg_re, Complex.natCast_re] at hr
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+    pm_14
     linarith
   convert Complex.hasSum_re (Complex.hasSum_digamma hpoles) using 1
   · funext n
@@ -60,8 +61,7 @@ theorem tendsto_log_sub_reciprocal_sum {x : ℝ} (hx : 0 < x) :
     rw [Finset.sum_sub_distrib]
     simp only [one_div, Complex.sum_inv_natCast_add_one_real, Function.comp_apply]
     ring
-  · congr 1
-    ring
+  grind
 
 /-- An exact tail identity, including the zero-frequency cutoff `N = 0`. -/
 theorem hasSum_harmonic_tail {N : ℕ} {y : ℝ} (hy : 0 < y)
@@ -69,13 +69,13 @@ theorem hasSum_harmonic_tail {N : ℕ} {y : ℝ} (hy : 0 < y)
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y)))
       (((Complex.digamma ((N : ℝ) + 1 : ℝ)).re -
         (Complex.digamma ((N : ℝ) + 1 - y : ℝ)).re) / y) := by
-  have hd : 0 < (N : ℝ) + 1 - y := by linarith
+  pm_15
   have hs := (hasSum_digamma_difference hd (by positivity : 0 < (N : ℝ) + 1)).div_const y
   convert hs using 1
   funext n
-  have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+  pm_14
   have h1 : (n : ℝ) + ((N : ℝ) + 1 - y) ≠ 0 := by positivity
-  have h2 : (n : ℝ) + ((N : ℝ) + 1) ≠ 0 := by positivity
+  pm_5966 h2
   have h3 : (n : ℝ) + N + 1 - y ≠ 0 := by linarith
   have h4 : (n : ℝ) + N + 1 ≠ 0 := by positivity
   field_simp
@@ -87,12 +87,15 @@ theorem reciprocal_le_chord {u t : ℝ} (hu : 0 < u) (ht : t ∈ Set.Icc (0 : �
   have ht0 := ht.1
   have ht1 := ht.2
   have hut : 0 < u + t := by positivity
-  have hu1 : 0 < u + 1 := by positivity
+  pm_7901 hu1 u
   field_simp
   nlinarith [mul_nonneg ht0 (sub_nonneg.mpr ht1)]
 
+section
+variable {u : ℝ} (hu : 0 < u)
+include u hu
 /-- Trapezoidal upper bound for the logarithm on a positive unit interval. -/
-theorem log_succ_sub_le {u : ℝ} (hu : 0 < u) :
+theorem log_succ_sub_le :
     Real.log (u + 1) - Real.log u ≤ (1 / u + 1 / (u + 1)) / 2 := by
   have hrec : IntervalIntegrable (fun t : ℝ => 1 / (u + t)) volume 0 1 := by
     apply intervalIntegral.intervalIntegrable_one_div
@@ -128,13 +131,14 @@ theorem log_succ_sub_le {u : ℝ} (hu : 0 < u) :
   rwa [hl, hc] at hi
 
 /-- Rectangular lower bound for the logarithm on a positive unit interval. -/
-theorem le_log_succ_sub {u : ℝ} (hu : 0 < u) :
+theorem le_log_succ_sub :
     1 / (u + 1) ≤ Real.log (u + 1) - Real.log u := by
   have h := Real.log_le_sub_one_of_pos (div_pos hu (by positivity : 0 < u + 1))
   rw [Real.log_div hu.ne' (by positivity)] at h
   have he : u / (u + 1) - 1 = -(1 / (u + 1)) := by field_simp; ring
   rw [he] at h
   linarith
+end
 
 /-- Finite integral-comparison bounds, retaining both endpoint corrections. -/
 theorem log_sub_reciprocal_sum_bounds {x : ℝ} (hx : 0 < x) (N : ℕ) :
@@ -158,9 +162,7 @@ theorem real_digamma_bounds {x : ℝ} (hx : 0 < x) :
     Real.log x - 1 / x ≤ (Complex.digamma (x : ℂ)).re ∧
       (Complex.digamma (x : ℂ)).re ≤ Real.log x - 1 / (2 * x) := by
   have hlim := tendsto_log_sub_reciprocal_sum hx
-  have hinv : Tendsto (fun N : ℕ => 1 / ((N : ℝ) + x)) atTop (𝓝 0) := by
-    simpa only [one_div, Pi.inv_def] using
-      (tendsto_atTop_add_const_right atTop x tendsto_natCast_atTop_atTop).inv_tendsto_atTop
+  pm_16 N
   constructor
   · apply le_of_tendsto_of_tendsto tendsto_const_nhds hlim
     apply Eventually.of_forall
@@ -206,41 +208,31 @@ private theorem sum_bounds_from_differences (f F : ℕ → ℝ)
   · rw [hs.tsum_eq_zero_add, ← hd.tsum_eq]
     exact add_le_add_right (ht.tsum_le_tsum hhi hd.summable) _
 
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
 /-- Convergence and integral bounds for reciprocal squares on any positive translate. -/
-theorem reciprocal_square_series_bounds {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_square_series_bounds :
     Summable (fun n : ℕ => 1 / ((n : ℝ) + x) ^ 2) ∧
       1 / x ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2) ≤ 1 / x ^ 2 + 1 / x := by
-  have hlim : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + x)) atTop (𝓝 0) := by
-    simpa only [one_div, Pi.inv_def] using
-      (tendsto_atTop_add_const_right atTop x tendsto_natCast_atTop_atTop).inv_tendsto_atTop
+  pm_18
   have h := sum_bounds_from_differences (fun n : ℕ => 1 / ((n : ℝ) + x) ^ 2)
     (fun n : ℕ => 1 / ((n : ℝ) + x)) (fun n => by positivity) hlim
-  simp only [Nat.cast_zero, zero_add] at h
-  apply h
+  pm_8034
   · intro n
-    have hu : 0 < (n : ℝ) + x := by positivity
-    have hu1 : 0 < (n : ℝ) + x + 1 := by positivity
-    push_cast
-    rw [show (n : ℝ) + 1 + x = (n : ℝ) + x + 1 by ring]
-    field_simp
+    pm_17
     nlinarith
   · intro n
-    have hu : 0 < (n : ℝ) + x := by positivity
-    have hu1 : 0 < (n : ℝ) + x + 1 := by positivity
-    push_cast
-    rw [show (n : ℝ) + 1 + x = (n : ℝ) + x + 1 by ring]
-    field_simp
+    pm_17
     nlinarith
 
 /-- Convergence and integral bounds for reciprocal cubes on any positive translate. -/
-theorem reciprocal_cube_series_bounds {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_cube_series_bounds :
     Summable (fun n : ℕ => 1 / ((n : ℝ) + x) ^ 3) ∧
       1 / (2 * x ^ 2) ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3) ≤ 1 / x ^ 3 + 1 / (2 * x ^ 2) := by
-  have hinv : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + x)) atTop (𝓝 0) := by
-    simpa only [one_div, Pi.inv_def] using
-      (tendsto_atTop_add_const_right atTop x tendsto_natCast_atTop_atTop).inv_tendsto_atTop
+  pm_16 n
   have hlim : Tendsto (fun n : ℕ => 1 / (2 * ((n : ℝ) + x) ^ 2)) atTop (𝓝 0) := by
     convert (hinv.pow 2).div_const 2 using 1
     · funext n
@@ -249,94 +241,79 @@ theorem reciprocal_cube_series_bounds {x : ℝ} (hx : 0 < x) :
     · norm_num
   have h := sum_bounds_from_differences (fun n : ℕ => 1 / ((n : ℝ) + x) ^ 3)
     (fun n : ℕ => 1 / (2 * ((n : ℝ) + x) ^ 2)) (fun n => by positivity) hlim
-  simp only [Nat.cast_zero, zero_add] at h
-  apply h
+  pm_8034
   · intro n
-    have hu : 0 < (n : ℝ) + x := by positivity
-    have hu1 : 0 < (n : ℝ) + x + 1 := by positivity
-    push_cast
-    rw [show (n : ℝ) + 1 + x = (n : ℝ) + x + 1 by ring]
-    field_simp
+    pm_17
     nlinarith [sq_pos_of_pos hu, pow_pos hu 3]
   · intro n
-    have hu : 0 < (n : ℝ) + x := by positivity
-    have hu1 : 0 < (n : ℝ) + x + 1 := by positivity
-    push_cast
-    rw [show (n : ℝ) + 1 + x = (n : ℝ) + x + 1 by ring]
-    field_simp
+    pm_17
     nlinarith [sq_pos_of_pos hu, pow_pos hu 3]
+end
 
+set_option hygiene false in
+macro "pf_157" x1:term:max x2:ident : tactic => `(tactic| (
+  have he : (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ $x1:term) =
+      1 / x ^ $x1:term + ∑' n : ℕ, 1 / ((n : ℝ) + (x + 1)) ^ $x1:term := by
+    simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_zero, zero_add, add_assoc,
+      add_comm 1 x] using ($x2:ident hx).1.tsum_eq_zero_add
+  rw [he]
+  have h := ($x2:ident (by positivity : 0 < x + 1)).2
+  constructor <;> linarith [h.1, h.2]))
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
 /-- The sharpened reciprocal-square bounds after retaining the first term. -/
-theorem reciprocal_square_series_sharp {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_square_series_sharp :
     1 / x ^ 2 + 1 / (x + 1) ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2) ≤
-        1 / x ^ 2 + 1 / (x + 1) ^ 2 + 1 / (x + 1) := by
-  have he : (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 2) =
-      1 / x ^ 2 + ∑' n : ℕ, 1 / ((n : ℝ) + (x + 1)) ^ 2 := by
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_zero, zero_add, add_assoc,
-      add_comm 1 x] using (reciprocal_square_series_bounds hx).1.tsum_eq_zero_add
-  rw [he]
-  have h := (reciprocal_square_series_bounds (by positivity : 0 < x + 1)).2
-  constructor <;> linarith [h.1, h.2]
+        1 / x ^ 2 + 1 / (x + 1) ^ 2 + 1 / (x + 1) := by pf_157 2 reciprocal_square_series_bounds
 
 /-- The sharpened reciprocal-cube bounds after retaining the first term. -/
-theorem reciprocal_cube_series_sharp {x : ℝ} (hx : 0 < x) :
+theorem reciprocal_cube_series_sharp :
     1 / x ^ 3 + 1 / (2 * (x + 1) ^ 2) ≤ ∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3 ∧
       (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3) ≤
-        1 / x ^ 3 + 1 / (x + 1) ^ 3 + 1 / (2 * (x + 1) ^ 2) := by
-  have he : (∑' n : ℕ, 1 / ((n : ℝ) + x) ^ 3) =
-      1 / x ^ 3 + ∑' n : ℕ, 1 / ((n : ℝ) + (x + 1)) ^ 3 := by
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_zero, zero_add, add_assoc,
-      add_comm 1 x] using (reciprocal_cube_series_bounds hx).1.tsum_eq_zero_add
-  rw [he]
-  have h := (reciprocal_cube_series_bounds (by positivity : 0 < x + 1)).2
-  constructor <;> linarith [h.1, h.2]
+        1 / x ^ 3 + 1 / (x + 1) ^ 3 + 1 / (2 * (x + 1) ^ 2) := by pf_157 3 reciprocal_cube_series_bounds
+end
 
+section
+variable {N : ℕ} {y : ℝ} (hy : 0 < y) (hNy : y < (N : ℝ) + 1)
+include N y hy hNy
 /-- Convergent partial-fraction decomposition for the second negative-shift power. -/
-theorem hasSum_harmonic_tail_square {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem hasSum_harmonic_tail_square :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 2))
       ((∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 2) / y -
         ((Complex.digamma ((N : ℝ) + 1 : ℝ)).re -
           (Complex.digamma ((N : ℝ) + 1 - y : ℝ)).re) / y ^ 2) := by
-  have hd : 0 < (N : ℝ) + 1 - y := by linarith
+  pm_15
   have h := ((reciprocal_square_series_bounds hd).1.hasSum.div_const y).sub
     ((hasSum_harmonic_tail hy hNy).div_const y)
   convert h using 1
   · funext n
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-    have h1 : (n : ℝ) + N + 1 ≠ 0 := by positivity
-    have h2 : (n : ℝ) + N + 1 - y ≠ 0 := by linarith
-    have h3 : (n : ℝ) + ((N : ℝ) + 1 - y) ≠ 0 := by positivity
+    pm_19
     field_simp
     ring
   · ring
 
 /-- Convergent partial-fraction decomposition for the third negative-shift power. -/
-theorem hasSum_harmonic_tail_cube {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem hasSum_harmonic_tail_cube :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 3))
       ((∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 3) / y -
         (∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 2) / y ^ 2 +
         ((Complex.digamma ((N : ℝ) + 1 : ℝ)).re -
           (Complex.digamma ((N : ℝ) + 1 - y : ℝ)).re) / y ^ 3) := by
-  have hd : 0 < (N : ℝ) + 1 - y := by linarith
+  pm_15
   have h := (((reciprocal_cube_series_bounds hd).1.hasSum.div_const y).sub
     ((reciprocal_square_series_bounds hd).1.hasSum.div_const (y ^ 2))).add
     ((hasSum_harmonic_tail hy hNy).div_const (y ^ 2))
   convert h using 1
   · funext n
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-    have h1 : (n : ℝ) + N + 1 ≠ 0 := by positivity
-    have h2 : (n : ℝ) + N + 1 - y ≠ 0 := by linarith
-    have h3 : (n : ℝ) + ((N : ℝ) + 1 - y) ≠ 0 := by positivity
+    pm_19
     field_simp
     ring
   · ring
 
 /-- The complete second negative-shift estimate of Lemma 1. -/
-theorem harmonic_tail_square_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem harmonic_tail_square_bound :
     let δ : ℝ := (N : ℝ) + 1 - y
     (∑' n : ℕ, 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 2)) ≤
       (1 / δ ^ 2 + 1 / (δ + 1) ^ 2 + 1 / (δ + 1)) / y -
@@ -344,7 +321,7 @@ theorem harmonic_tail_square_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
           (Complex.digamma (δ : ℂ)).re) / y ^ 2 := by
   dsimp only
   rw [(hasSum_harmonic_tail_square hy hNy).tsum_eq]
-  have hd : 0 < (N : ℝ) + 1 - y := by linarith
+  pm_15
   exact sub_le_sub
     (div_le_div_of_nonneg_right (reciprocal_square_series_sharp hd).2 hy.le)
     (div_le_div_of_nonneg_right
@@ -352,8 +329,7 @@ theorem harmonic_tail_square_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
       (sq_nonneg y))
 
 /-- The complete third negative-shift estimate of Lemma 1. -/
-theorem harmonic_tail_cube_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem harmonic_tail_cube_bound :
     let δ : ℝ := (N : ℝ) + 1 - y
     (∑' n : ℕ, 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 3)) ≤
       (1 / δ ^ 3 + 1 / (δ + 1) ^ 3 + 1 / (2 * (δ + 1) ^ 2)) / y -
@@ -362,7 +338,7 @@ theorem harmonic_tail_cube_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
           (Complex.digamma (δ : ℂ)).re) / y ^ 3 := by
   dsimp only
   rw [(hasSum_harmonic_tail_cube hy hNy).tsum_eq]
-  have hd : 0 < (N : ℝ) + 1 - y := by linarith
+  pm_15
   exact add_le_add
     (sub_le_sub
       (div_le_div_of_nonneg_right (reciprocal_cube_series_sharp hd).2 hy.le)
@@ -370,9 +346,13 @@ theorem harmonic_tail_cube_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
     (div_le_div_of_nonneg_right
       (sub_le_sub_right (real_digamma_bounds (by positivity : 0 < (N : ℝ) + 1)).2 _)
       (by positivity))
+end
 
+section
+variable {y : ℝ} (hy : 0 < y)
+include y hy
 /-- Convergent partial fractions for the second positive-shift power. -/
-theorem hasSum_harmonic_plus_square {y : ℝ} (hy : 0 < y) :
+theorem hasSum_harmonic_plus_square :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 2))
       (((Complex.digamma (y + 1 : ℝ)).re + Real.eulerMascheroniConstant) / y ^ 2 -
         (∑' n : ℕ, 1 / ((n : ℝ) + (y + 1)) ^ 2) / y) := by
@@ -380,15 +360,13 @@ theorem hasSum_harmonic_plus_square {y : ℝ} (hy : 0 < y) :
     ((reciprocal_square_series_bounds (by positivity : 0 < y + 1)).1.hasSum.div_const y)
   convert h using 1
   · funext n
-    have h1 : (n : ℝ) + 1 ≠ 0 := by positivity
-    have h2 : (n : ℝ) + 1 + y ≠ 0 := by positivity
-    have h3 : (n : ℝ) + (y + 1) ≠ 0 := by positivity
+    pm_20
     field_simp
     ring
   · ring
 
 /-- Convergent partial fractions for the third positive-shift power. -/
-theorem hasSum_harmonic_plus_cube {y : ℝ} (hy : 0 < y) :
+theorem hasSum_harmonic_plus_cube :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 3))
       (((Complex.digamma (y + 1 : ℝ)).re + Real.eulerMascheroniConstant) / y ^ 3 -
         (∑' n : ℕ, 1 / ((n : ℝ) + (y + 1)) ^ 2) / y ^ 2 -
@@ -399,15 +377,13 @@ theorem hasSum_harmonic_plus_cube {y : ℝ} (hy : 0 < y) :
     ((reciprocal_cube_series_bounds (by positivity : 0 < y + 1)).1.hasSum.div_const y)
   convert h using 1
   · funext n
-    have h1 : (n : ℝ) + 1 ≠ 0 := by positivity
-    have h2 : (n : ℝ) + 1 + y ≠ 0 := by positivity
-    have h3 : (n : ℝ) + (y + 1) ≠ 0 := by positivity
+    pm_20
     field_simp
     ring
   · ring
 
 /-- The positive-shift estimate of Lemma 1 for the second power. -/
-theorem harmonic_plus_square_bound {y : ℝ} (hy : 0 < y) :
+theorem harmonic_plus_square_bound :
     (∑' n : ℕ, 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 2)) ≤
       (Real.log (y + 1) + Real.eulerMascheroniConstant) / y ^ 2 -
         (1 + 2 * y) / (2 * y ^ 2 * (y + 1)) := by
@@ -421,7 +397,7 @@ theorem harmonic_plus_square_bound {y : ℝ} (hy : 0 < y) :
   convert h using 1 <;> field_simp <;> ring
 
 /-- The positive-shift estimate of Lemma 1 for the third power. -/
-theorem harmonic_plus_cube_bound {y : ℝ} (hy : 0 < y) :
+theorem harmonic_plus_cube_bound :
     (∑' n : ℕ, 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) ^ 3)) ≤
       (Real.log (y + 1) + Real.eulerMascheroniConstant) / y ^ 3 -
         (1 + 3 * y + 3 * y ^ 2) / (2 * y ^ 3 * (y + 1) ^ 2) := by
@@ -436,6 +412,7 @@ theorem harmonic_plus_cube_bound {y : ℝ} (hy : 0 < y) :
     (div_le_div_of_nonneg_right
       (reciprocal_cube_series_bounds (by positivity : 0 < y + 1)).2.1 hy.le)
   convert h using 1 <;> field_simp <;> ring
+end
 
 /-- Reindex an actual natural-number tail by its first included integer. -/
 theorem tsum_nat_tail_eq {F : ℕ → ℝ} (N : ℕ)
@@ -445,14 +422,10 @@ theorem tsum_nat_tail_eq {F : ℕ → ℝ} (N : ℕ)
   have htail : (fun n => f (n + (N + 1))) = (fun n => F (n + N + 1)) := by
     funext n
     simp only [f, show N < n + (N + 1) by omega, ite_true, Nat.add_assoc]
-  have hs : Summable f := (summable_nat_add_iff (N + 1)).mp (htail.symm ▸ hF)
+  pm_5801
   have hhead : ∑ ν ∈ Finset.range (N + 1), f ν = 0 := by
-    apply Finset.sum_eq_zero
-    intro ν hν
-    simp only [Finset.mem_range] at hν
+    pm_7729
     simp only [f, show ¬ N < ν by omega, ite_false]
-  have he := hs.sum_add_tsum_nat_add (N + 1)
-  rw [hhead, zero_add, htail] at he
-  exact he.symm
+  pm_5631
 
 end DhimanKadiriQuesadaHerrera2026

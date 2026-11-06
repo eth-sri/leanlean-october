@@ -1,16 +1,16 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseSecondSourceBlocks
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment
-open InverseSecondFibers InversePrioritySecondSource
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
@@ -45,7 +45,7 @@ theorem dyadScale_pos (n : ℕ) : 0 < dyadScale n := by unfold dyadScale; positi
 theorem dyadIndex_bounds (r : ℝ) (hr : 1 ≤ r) :
     dyadScale (dyadIndex r) ≤ r ∧ r < 2*dyadScale (dyadIndex r) := by
   have hr0 : 0 < r := lt_of_lt_of_le zero_lt_one hr
-  have hlog : 0 ≤ Real.logb 2 r := Real.logb_nonneg (by norm_num) hr
+  pm_8882 r hr
   constructor
   · have h := (Real.le_logb_iff_rpow_le (by norm_num : (1:ℝ)<2) hr0).mp (Nat.floor_le hlog)
     simpa only [dyadScale,dyadIndex,Real.rpow_natCast] using h
@@ -135,16 +135,15 @@ theorem physical_source_partition
   exact Finset.mul_sum _ _ _
 
 def capBox (A : Fin 4 → ℝ) (Z : ℝ) : Finset BlockIndex :=
-  Fintype.piFinset (fun i => Finset.range (dyadIndex (Z^(A i))+1))
+  Fintype.piFinset (fun i => Finset.range (dyadIndex (Z ^(A i))+1))
 
 omit [DecidableEq ι] in
 theorem keys_subset_capBox (p : ι → O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
-    (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z^(A i)) :
+    (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z ^(A i)) :
     keys p source ⊆ capBox A Z := by
-  intro d hd
-  obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hd
+  pm_67 d hd x hx Finset.mem_image.mp
   apply Fintype.mem_piFinset.mpr
   intro i
   apply Finset.mem_range.mpr
@@ -156,41 +155,39 @@ omit [DecidableEq ι] in
 theorem keys_card_le_product (p : ι → O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
-    (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z^(A i)) :
-    (keys p source).card ≤ ∏ i : Fin 4,(dyadIndex (Z^(A i))+1) := by
+    (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z ^(A i)) :
+    (keys p source).card ≤ ∏ i : Fin 4,(dyadIndex (Z ^(A i))+1) := by
   have h := Finset.card_le_card (keys_subset_capBox p hp source hk A Z hcaps)
   simpa [capBox,Fintype.card_piFinset] using h
 
 def capConstant (A : Fin 4 → ℝ) : ℝ := (∑ i,A i)/Real.log 2
 
-theorem capConstant_nonneg (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) :
+section
+variable (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i)
+include A hA
+theorem capConstant_nonneg :
     0 ≤ capConstant A := by
   unfold capConstant
   exact div_nonneg (Finset.sum_nonneg (fun i _ => hA i)) (Real.log_pos (by norm_num)).le
 
-theorem cap_bin_bound (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) (Z : ℝ) (hZ : 2 ≤ Z)
-    (i : Fin 4) : (dyadIndex (Z^(A i)) : ℝ)+1 ≤ 1+capConstant A*Real.log Z := by
+theorem cap_bin_bound (Z : ℝ) (hZ : 2 ≤ Z)
+    (i : Fin 4) : (dyadIndex (Z ^(A i)) : ℝ)+1 ≤ 1+capConstant A*Real.log Z := by
   have hZ0 : 0 < Z := by linarith
-  have hZi : 1 ≤ Z^(A i) := Real.one_le_rpow (by linarith) (hA i)
-  have hf := Nat.floor_le (Real.logb_nonneg (by norm_num : (1:ℝ)<2) hZi)
+  have hZi : 1 ≤ Z ^(A i) := Real.one_le_rpow (by linarith) (hA i)
+  pm_6628 hZi
   have hAi : A i ≤ ∑ j,A j := Finset.single_le_sum (fun j _ => hA j) (Finset.mem_univ i)
   have hc := mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right hAi
     (Real.log_pos (by norm_num : (1:ℝ)<2)).le) (Real.log_nonneg (by linarith : 1 ≤ Z))
   dsimp [dyadIndex,capConstant]
   calc
-    _ ≤ 1+Real.logb 2 (Z^(A i)) := by linarith
+    _ ≤ 1+Real.logb 2 (Z ^(A i)) := by linarith
     _ = 1+(A i/Real.log 2)*Real.log Z := by
       rw [Real.logb_rpow_eq_mul_logb_of_pos hZ0,Real.logb]
       ring
     _ ≤ _ := by linarith
+end
 
-omit [DecidableEq ι] in
-@[simp] theorem keys_empty (p : ι → O) (Jo Jn : ℕ) :
-    keys p (∅ : Finset (MarkedSecondSource ι Jo Jn)) = ∅ := by simp [keys]
 
-omit [DecidableEq ι] in
-@[simp] theorem cell_empty (p : ι → O) (Jo Jn : ℕ) (d : BlockIndex) :
-    cell p (∅ : Finset (MarkedSecondSource ι Jo Jn)) d = ∅ := by simp [cell]
 
 end SevenEighths.InverseSecondSourceBlocks
 

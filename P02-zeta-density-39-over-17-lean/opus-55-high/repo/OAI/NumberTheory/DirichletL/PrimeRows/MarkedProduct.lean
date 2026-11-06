@@ -15,15 +15,17 @@ local notation "O" => HeckeFamily.O
 def markExclusions (S : Finset (Ideal O)) (T : Finset PrimeIdeal) : Finset (Ideal O) :=
   S∪T.image Subtype.val
 
-theorem markExclusions_prime (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+section
+variable (S : Finset (Ideal O))
+include S
+theorem markExclusions_prime (hS : ∀P∈S,Prime P)
     (T : Finset PrimeIdeal) : ∀P∈markExclusions S T,Prime P := by
   intro P hP
   rcases Finset.mem_union.mp hP with hP|hP
-  · exact hS P hP
-  · obtain ⟨Q,hQ,rfl⟩ := Finset.mem_image.mp hP
-    exact Q.property
+  grind
+  grind
 
-@[simp] theorem mem_markExclusions (S : Finset (Ideal O)) (T : Finset PrimeIdeal) (P : PrimeIdeal) :
+@[simp] theorem mem_markExclusions (T : Finset PrimeIdeal) (P : PrimeIdeal) :
     P.val∈markExclusions S T ↔ P.val∈S ∨ P∈T := by
   simp only [markExclusions,Finset.mem_union,Finset.mem_image]
   constructor
@@ -33,6 +35,7 @@ theorem markExclusions_prime (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   · rintro (h|h)
     · exact Or.inl h
     · exact Or.inr ⟨P,h,rfl⟩
+end
 
 end SevenEighths.ProbeHighRowFamily
 

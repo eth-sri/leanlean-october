@@ -4,6 +4,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairSourceCorrelation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -37,13 +38,13 @@ theorem sourceShiftCorrelation_bound_allHeights
               (N-r)/(σ*T*r/N)) := by
   obtain ⟨d,hd,Q,hQ,C,hC,hbound⟩ := hkl.allPositiveHeight_bound (by linarith : 0 < σ+1) hε
   obtain ⟨δ,η₀,hδ,hη₀,hηhalf,hmodel⟩ := aProcessShiftPhase_uniform_model hσ Q hd
-  refine ⟨δ,hδ,Q+1,by omega,η₀,hη₀,hηhalf,C,hC,?_⟩
+  pm_1128
   intro F T N a L r hT hN hr hrN ha hb hF
   have hNpos : 0 < N := by linarith
-  have hrhalf : (r : ℝ) ≤ N/2 := hrN.trans (by nlinarith)
+  pm_7104 hrhalf
   have hNr : 1 ≤ N-(r : ℝ) := by linarith
   have hrlt : (r : ℝ) < N := by linarith
-  have hra : r ≤ a := by exact_mod_cast (hrlt.le.trans ha)
+  pm_8530 hrlt.le.trans
   have hdual : 0 < σ*T*r/N := div_pos
     (mul_pos (mul_pos hσ hT) (Nat.cast_pos.mpr hr)) hNpos
   by_cases hrL : r ≤ L

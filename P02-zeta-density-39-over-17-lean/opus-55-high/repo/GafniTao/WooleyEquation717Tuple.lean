@@ -19,7 +19,6 @@ translation/determinant argument before Corollary 3.2 is assembled.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 

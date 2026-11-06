@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownWeylMoment
 public import GafniTao.FordLemma51Fibers
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The Taylor-coefficient centre and the complete Weyl sum
@@ -14,11 +15,10 @@ derivative order `j`, the `Fin (k-1)` coordinate `j-1`, and the source range
 -/
 
 open Complex Finset Set MeasureTheory
-open scoped BigOperators ENNReal
+open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownReducedTaylorPolynomial_eq_fin_sum
     {k : ℕ} (hk : 1 ≤ k) (f : ℝ → ℝ) (n x : ℝ) :
@@ -31,9 +31,7 @@ theorem heathBrownReducedTaylorPolynomial_eq_fin_sum
     ext j
     simp only [Finset.mem_Ico, Finset.mem_Icc]
     omega
-  rw [hset, ford_sum_Icc_one_eq_fin]
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_266 hset ford_sum_Icc_one_eq_fin Finset.sum_congr j hj
   ring
 
 theorem fordVinogradovMonomial_center_eq_phase
@@ -58,8 +56,10 @@ theorem fordVinogradovMonomial_center_eq_phase
   push_cast
   ring
 
-theorem heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum
-    {k : ℕ} (hk : 1 ≤ k) (H : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+section
+variable {k : ℕ} (hk : 1 ≤ k) (H : ℕ) (f : ℝ → ℝ) (n : ℝ)
+include k hk H f n
+theorem heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum :
     heathBrownWeylSum k H (heathBrownCoefficientCenter k f n) =
       heathBrownReducedTaylorPolynomialSum k H f n := by
   unfold heathBrownWeylSum fordVinogradovWeylSum
@@ -70,14 +70,13 @@ theorem heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum
   simpa only [Nat.cast_add, Nat.cast_one] using
     fordVinogradovMonomial_center_eq_phase hk f n h
 
-theorem norm_heathBrownWeylSum_center_eq_TaylorPolynomialSum
-    {k : ℕ} (hk : 1 ≤ k) (H : ℕ) (f : ℝ → ℝ) (n : ℝ) :
+theorem norm_heathBrownWeylSum_center_eq_TaylorPolynomialSum :
     ‖heathBrownWeylSum k H (heathBrownCoefficientCenter k f n)‖ =
       ‖heathBrownTaylorPolynomialSum k H f n‖ := by
   rw [heathBrownWeylSum_center_eq_reducedTaylorPolynomialSum hk]
   exact (norm_heathBrownTaylorPolynomialSum_eq_reduced hk H f n).symm
-
-
 end
+
+
 
 end GafniTao

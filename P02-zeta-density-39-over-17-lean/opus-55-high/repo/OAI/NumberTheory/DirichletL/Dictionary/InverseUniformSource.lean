@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformTests
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorInverseFiberCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ lemma positiveAnnular_support_sharp : Function.support positiveAnnular⊆Ioo (1/
   have hx0 : 0≤x := by have := (positiveAnnular_support hx).1; linarith
   have he : DyadicTransfer.annularCutoff cutoff x≠0 := by
     rwa [←positiveAnnular_eq x hx0]
-  simpa using HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx0 0 (by simpa using he)
+  simpa using HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx0 0 (by grind)
 
 lemma ratioProfile_zero_of_four_le (R : ℝ) (hR : 4≤R) :
     ratioProfile cutoff positiveAnnular R=0 := by
@@ -43,8 +44,7 @@ theorem inverseDetectorTest_uniform_all_ratios (S : Finset (ℕ×ℕ)) :
     ∃J : ℕ,∃C : ℝ,0<C ∧ ∀scaled reverse : Bool,∀n : ℕ,n≤2→
       ∀R : ℝ,0≤R→∀σ∈Icc (0:ℝ) 1,∀t : ℝ,
       S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (inverseDetectorTest scaled reverse n R σ t)≤C*(1+‖t‖)^J := by
-  obtain ⟨J,C,hC,hb⟩ := inverseDetectorTest_uniform S
-  refine ⟨J,C,hC,?_⟩
+  pm_3085 J C hC hb inverseDetectorTest_uniform S
   intro scaled reverse n hn R hR σ hσ t
   by_cases hh : R≤4
   · exact hb scaled reverse n hn R ⟨hR,hh⟩ σ hσ t
@@ -60,15 +60,13 @@ lemma inverseSourceSchwartz_apply (scaled reverse : Bool) (n : ℕ) (U tstar r �
         (logTest (orientedProfile reverse (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t) x
       else twistProfile
         (logTest (orientedProfile reverse (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t x := by
-  simp only [inverseSourceSchwartz,inverseDetectorTest_apply,baseProfile,
-    HeckeDetectorInverseFiberCount.inverseTest,inverseProfile_eq_ratio]
+  pm_352 inverseSourceSchwartz inverseDetectorTest_apply baseProfile HeckeDetectorInverseFiberCount.inverseTest inverseProfile_eq_ratio
 
 theorem inverseSourceSchwartz_uniform (S : Finset (ℕ×ℕ)) :
     ∃J : ℕ,∃C : ℝ,0<C ∧ ∀scaled reverse : Bool,∀n : ℕ,n≤2→
       ∀U : ℝ,0<U→∀tstar r : ℝ,∀σ∈Icc (0:ℝ) 1,∀t : ℝ,
       S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (inverseSourceSchwartz scaled reverse n U tstar r σ t)≤C*(1+‖t‖)^J := by
-  obtain ⟨J,C,hC,hb⟩ := inverseDetectorTest_uniform_all_ratios S
-  refine ⟨J,C,hC,?_⟩
+  pm_3085 J C hC hb inverseDetectorTest_uniform_all_ratios S
   intro scaled reverse n hn U hU tstar r σ hσ t
   exact hb scaled reverse n hn (U^r/U^tstar) (by positivity) σ hσ t
 

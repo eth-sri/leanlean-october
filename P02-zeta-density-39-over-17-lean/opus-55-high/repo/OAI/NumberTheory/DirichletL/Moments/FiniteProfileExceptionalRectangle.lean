@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalNormalize
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,7 +22,7 @@ theorem rectangle_source_control (a b ε B : ℝ)
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
       ∀ Z : ℝ, 1≤Z → ∀ η χ ψ : Character,
-      (Ideal.absNorm χ.modulus:ℝ)≤Z^B → Q≤ψ.modulus →
+      (Ideal.absNorm χ.modulus:ℝ)≤Z ^B → Q≤ψ.modulus →
       CenteredExceptionalProfile.InducedBy χ ψ →
       ∀ m A z : O, ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
       (∀ n,elementCoeff χ n=CanonicalRowCompletion.rowTwist
@@ -30,11 +31,10 @@ theorem rectangle_source_control (a b ε B : ℝ)
       L≤X₁ → L≤X₂ → L≤Y₁ → L≤Y₂ → X₁*X₂=T → Y₁*Y₂=T →
       ‖(Real.sqrt T:ℂ)⁻¹*(twistedIdealSum χ W₁ t X₁*twistedIdealSum χ W₂ t X₂-
         twistedIdealSum χ W₁ t Y₁*twistedIdealSum χ W₂ t Y₂)‖ ≤
-        C*(sourceControl S W₁*sourceControl S W₂)*Z^ε*(1+‖t‖)^J*(Real.sqrt T/L) := by
+        C*(sourceControl S W₁*sourceControl S W₂)*Z ^ε*(1+‖t‖)^J*(Real.sqrt T/L) := by
   obtain ⟨J,S,hS,hunit⟩ := rectangle_source_unit a b ε B ha hb hε hB
-  refine ⟨J,S,hS,?_⟩
-  intro Q hQ
-  obtain ⟨C,hC,hbound⟩ := hunit Q hQ
+  pm_2950
+  pm_69 C hC hbound hunit Q hQ
   refine ⟨C,hC,?_⟩
   intro W₁ W₂ hs₁ hs₂ Z hZ η χ ψ hnorm hQψ hind m A z hml hm2 hrow
     t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY

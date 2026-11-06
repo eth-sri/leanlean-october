@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ lemma original_exponent_identity (a d R q : ℝ) :
 
 lemma relative_extend (δ d R q ζ : ℝ) (hζ : 0≤ζ) (hd : d≤13/16+ζ)
     (hslo : 0≤R+δ/2-17/50) (hshi : R+δ/2-17/50≤2) :
-    relativeExponent δ d R q≤relativeExponent δ (13/16) R q+2*ζ := by
+    relativeExponent δ d R q≤ relativeExponent δ (13/16) R q+2*ζ := by
   have hh := mul_le_mul_of_nonneg_right (show d-13/16≤ζ by linarith) hslo
   have hh' := mul_le_mul_of_nonneg_left hshi hζ
   unfold relativeExponent
@@ -41,9 +42,7 @@ lemma balanced_source_margin (δ x R Δ loss ζ d : ℝ)
   have hb := Endpoint.balanced_endpoint_margin hδ hδ1
     (show 0≤1/2-x by linarith) (show 1/2-x≤1/2 by linarith)
   have he := relative_extend δ d R (δ*x) ζ hζ hd hslo hshi
-  rw [original_exponent_identity]
-  have hid : 2*((1+δ)/2)-1=δ := by ring
-  rw [hid]
+  pm_724
   unfold Endpoint.balancedExponent at hb
   unfold relativeExponent at he ⊢
   nlinarith
@@ -55,9 +54,7 @@ lemma high_source_margin (δ R q Δ loss ζ d : ℝ)
     sourceExponent ((1+δ)/2) d R q-(3/16+Δ)≤
       -1/48-δ/16-Δ+(13/16)*loss+2*ζ := by
   have he := relative_extend δ d R q ζ hζ hd hslo hshi
-  rw [original_exponent_identity]
-  have hid : 2*((1+δ)/2)-1=δ := by ring
-  rw [hid]
+  pm_724
   unfold relativeExponent at he ⊢
   nlinarith
 
@@ -82,11 +79,9 @@ lemma realLoss_bound (N : ℕ) (d e eps heightLoss mesh : ℝ)
   nlinarith
 
 lemma physical_scale_identity (Z a e : ℝ) (hZ : 0<Z) :
-    (Z^(17/48:ℝ))^(4/25:ℝ)*Z^(a+16*e-33/50)*(Z^(23/48:ℝ))^(-a-6*e)=
-      Z^((25/48)*a-181/300+(105/8)*e) := by
-  rw [←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le,←Real.rpow_add hZ,←Real.rpow_add hZ]
-  congr 1
-  ring
+    (Z ^(17/48:ℝ))^(4/25:ℝ)*Z ^(a+16*e-33/50)*(Z ^(23/48:ℝ))^(-a-6*e)=
+      Z ^((25/48)*a-181/300+(105/8)*e) := by
+  pm_5682
 end SevenEighths.ProbeCentralExponent
 
 end

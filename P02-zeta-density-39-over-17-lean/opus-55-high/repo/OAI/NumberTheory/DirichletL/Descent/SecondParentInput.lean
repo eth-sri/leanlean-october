@@ -24,23 +24,22 @@ theorem secondInputCoefficient_old_divisor_mask (Ψ : Eis →* ℂ) (m c d : Eis
   have hd := row_power_mul_mask_power (fun i => Ideal.span {p i}) hg S d 1 1 (by decide)
   simp only [pow_one] at hd
   unfold secondInputCoefficient
-  calc
-    _ = Ψ (∏ i∈S,p i)*rowCoprimeMask (fun i => Ideal.span {p i}) S m*
-      finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S c^4*
-      (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S d*
-        rowCoprimeMask (fun i => Ideal.span {p i}) S d)*H S := by ring
-    _ = _ := by rw [hd]
+  grind
 
-theorem inputConjugateRow_old_divisor_mask (F : Finset ι) (Ψ : Eis →* ℂ) (m c d : Eis)
+section
+variable (F : Finset ι) (Ψ : Eis →* ℂ)
+include F Ψ
+theorem inputConjugateRow_old_divisor_mask (m c d : Eis)
     (H : Finset ι → ℂ) (k : Eis) :
     inputConjugateRow p hg F Ψ (m*d) c d H k = inputConjugateRow p hg F Ψ m c d H k := by
   simp only [inputConjugateRow,FirstCauchyArithmetic.supportConjugateSum,secondInputCoefficient_old_divisor_mask]
 
-theorem inputConjugateRow_puncture_span (F : Finset ι) (Ψ : Eis →* ℂ) (m₁ m₂ c d : Eis)
+theorem inputConjugateRow_puncture_span (m₁ m₂ c d : Eis)
     (hspan : Ideal.span {m₁} = (Ideal.span {m₂} : Ideal Eis)) (H : Finset ι → ℂ) (k : Eis) :
     inputConjugateRow p hg F Ψ m₁ c d H k = inputConjugateRow p hg F Ψ m₂ c d H k := by
   simp only [inputConjugateRow,FirstCauchyArithmetic.supportConjugateSum,secondInputCoefficient,
     rowCoprimeMask_eq_of_span_eq (fun i => Ideal.span {p i}) _ hspan]
+end
 
 theorem fresh_input_parent_mask {Jo : ℕ} (parent : SecondParentSource ι Jo)
     (F D : Finset ι) (hq : parent.quotient = sourceIdeal p D)

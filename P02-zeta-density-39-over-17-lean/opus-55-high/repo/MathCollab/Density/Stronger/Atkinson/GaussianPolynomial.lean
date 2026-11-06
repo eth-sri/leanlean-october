@@ -25,9 +25,7 @@ theorem integrable_abs_pow_mul_exp_neg_mul_sq
   have hpos : IntegrableOn
       (fun u : ℝ => |u| ^ j * Real.exp (-b * u ^ 2)) (Set.Ioi 0) := by
     have hraw := integrableOn_rpow_mul_exp_neg_mul_sq hb
-      (s := (j : ℝ)) (by
-        have hj : (0 : ℝ) ≤ (j : ℝ) := Nat.cast_nonneg _
-        linarith)
+      (s := (j : ℝ)) (by grind)
     apply hraw.congr_fun _ measurableSet_Ioi
     intro u hu
     dsimp only

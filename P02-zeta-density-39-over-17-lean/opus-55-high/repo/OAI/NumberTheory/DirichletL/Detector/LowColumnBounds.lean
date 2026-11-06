@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowGaussEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -42,17 +43,16 @@ lemma lowGaussColumns_card (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : �
     (a b : ℝ) (hW : Function.support W1⊆Set.Icc a b) :
     ((lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)).card:ℝ)≤128*max 1 b*Y := by
   let F := lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)
-  have hH : 1≤max 1 b*Y := one_le_mul_of_one_le_of_one_le (le_max_left _ _) hY
+  have hH : 1≤ max 1 b*Y := one_le_mul_of_one_le_of_one_le (le_max_left _ _) hY
   have hh := DescentFiberCost.finite_ideal_count_real (F.image Subtype.val) (max 1 b*Y) hH
     (by intro I hI;obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI;exact s.property.1)
     (by
-      intro I hI
-      obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI
+      pm_67 I hI s hs Finset.mem_image.mp
       have hw := (hW ((lowGaussColumns_mem W1 hW1 Y _ s).mp hs)).2
       have hn : (Ideal.absNorm s.val:ℝ)≤b*Y := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp hw
       exact hn.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (le_trans zero_le_one hY)))
   rw [Finset.card_image_of_injective _ Subtype.val_injective] at hh
-  simpa only [mul_assoc,F] using hh
+  grind
 
 lemma lowGaussColumn_norm_bound (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (W1 : ℝ→ℂ) (a b B : ℝ) (ha : 0<a) (hB : 0≤B)

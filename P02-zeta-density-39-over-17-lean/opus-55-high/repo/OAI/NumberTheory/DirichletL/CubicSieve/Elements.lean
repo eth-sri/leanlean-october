@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Extraction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -86,8 +87,7 @@ theorem span_extractedGenerator (I : Ideal O) (hI : I ≠ 0) :
   calc
     _ = (badPart (firstPart I) * goodPart (firstPart I)) *
         (badPart (secondPart I) * goodPart (secondPart I)) ^ 2 * cubePart I ^ 3 := by
-      rw [mul_pow]
-      simp only [mul_assoc, mul_left_comm, mul_comm]
+      pm_3514 mul_pow mul_assoc mul_left_comm mul_comm
     _ = firstPart I * secondPart I ^ 2 * cubePart I ^ 3 := by
       rw [badPart_mul_goodPart _ (firstPart_squarefree I),
         badPart_mul_goodPart _ (secondPart_squarefree I)]
@@ -99,7 +99,7 @@ theorem element_cubic_extraction (z : O) (hz : z ≠ 0) :
   have ha : Associated (extractedGenerator (Ideal.span {z})) z :=
     Ideal.span_singleton_eq_span_singleton.mp (span_extractedGenerator _ hI)
   obtain ⟨u, hu⟩ := ha
-  exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
+  pm_1112
 
 theorem badPart_sector (I : Ideal O) :
     ∃ E : CanonicalQuadraticSieve.fixedBadPrimes.powerset, badPart I = ∏ P ∈ E.val, P := by

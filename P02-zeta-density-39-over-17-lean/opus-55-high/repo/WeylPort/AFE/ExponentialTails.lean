@@ -1,6 +1,7 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.FiniteExponentialSums
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ set_option backward.isDefEq.respectTransparency.types false
 
 namespace DhimanKadiriQuesadaHerrera2026
 
-open scoped BigOperators Topology
+open scoped Topology
 
 /-- Absolute convergence of summable nonnegative weights times the actual modes. -/
 theorem summable_weighted_modes {w : ℕ → ℝ} (hw : ∀ n, 0 ≤ w n)
@@ -30,16 +31,12 @@ theorem tsum_complex_nat_tail_eq {F : ℕ → ℂ} (N : ℕ)
   let f : ℕ → ℂ := fun ν => if N < ν then F ν else 0
   have htail : (fun n => f (n + (N + 1))) = (fun n => F (n + N + 1)) := by
     funext n
-    simp only [f, show N < n + (N + 1) by omega, ite_true, Nat.add_assoc]
-  have hs : Summable f := (summable_nat_add_iff (N + 1)).mp (htail.symm ▸ hF)
+    grind
+  pm_5801
   have hhead : ∑ ν ∈ Finset.range (N + 1), f ν = 0 := by
-    apply Finset.sum_eq_zero
-    intro ν hν
-    simp only [Finset.mem_range] at hν
-    simp only [f, show ¬ N < ν by omega, ite_false]
-  have he := hs.sum_add_tsum_nat_add (N + 1)
-  rw [hhead, zero_add, htail] at he
-  exact he.symm
+    pm_7729
+    grind
+  pm_5631
 
 /-- The source's actual negative-shift oscillatory tail. -/
 noncomputable def negativeTail (N : ℕ) (x y : ℝ) : ℂ :=
@@ -55,7 +52,7 @@ theorem summable_negative_tail_shift {N : ℕ} {y : ℝ} (hy : 0 < y)
     Summable (fun n : ℕ => expMode x (n + N + 1) /
       (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) : ℝ)) := by
   have hw (n : ℕ) : 0 ≤ 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y)) := by
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+    pm_14
     apply one_div_nonneg.mpr
     exact mul_nonneg (by positivity) (by linarith)
   have h := summable_weighted_modes hw (hasSum_harmonic_tail hy hNy).summable x N
@@ -70,12 +67,13 @@ theorem negativeTail_eq_shift {N : ℕ} {y : ℝ} (hy : 0 < y)
   rw [tsum_complex_nat_tail_eq (F := fun ν : ℕ =>
     expMode x ν / (((ν : ℝ) * ((ν : ℝ) - y) : ℝ) : ℂ)) N
     (by simpa only [Nat.cast_add, Nat.cast_one] using summable_negative_tail_shift hy hNy x)]
-  apply tsum_congr
-  intro n
-  simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
+  pm_10
 
+section
+variable {y : ℝ} (hy : 0 < y) (x : ℝ)
+include y hy x
 /-- Absolute convergence of the actual positive-shift series. -/
-theorem summable_positive_tail_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
+theorem summable_positive_tail_shift :
     Summable (fun n : ℕ => expMode x (n + 1) /
       (((n : ℝ) + 1) * ((n : ℝ) + 1 + y) : ℝ)) := by
   have hw (n : ℕ) : 0 ≤ 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y)) := by positivity
@@ -83,7 +81,7 @@ theorem summable_positive_tail_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
   simpa [Complex.real_smul, mul_comm, div_eq_mul_inv] using h
 
 /-- Reindexing the positive tail starts at one, not zero or two. -/
-theorem positiveTail_eq_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
+theorem positiveTail_eq_shift :
     positiveTail x y = ∑' n : ℕ,
       (1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y))) • expMode x (n + 1) := by
   unfold positiveTail
@@ -91,15 +89,14 @@ theorem positiveTail_eq_shift {y : ℝ} (hy : 0 < y) (x : ℝ) :
     expMode x ν / (((ν : ℝ) * ((ν : ℝ) + y) : ℝ) : ℂ)) 0
     (by simpa only [Nat.add_zero, Nat.cast_add, Nat.cast_one] using
       summable_positive_tail_shift hy x)]
-  apply tsum_congr
-  intro n
-  simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
+  pm_10
+end
 
 /-- Differentiating the actual Gamma reflection identity gives the real digamma reflection. -/
 theorem real_digamma_one_sub {x : ℝ} (hx : 0 < x) (hx1 : x < 1) :
     (Complex.digamma (1 - x : ℝ)).re - (Complex.digamma (x : ℂ)).re =
       Real.pi * Real.cos (Real.pi * x) / Real.sin (Real.pi * x) := by
-  have hx' : 0 < 1 - x := by linarith
+  pm_7900 hx' x
   have hd : DifferentiableAt ℝ Real.Gamma x :=
     Real.differentiableAt_Gamma (fun n => by have := Nat.cast_nonneg (α := ℝ) n; linarith)
   have hd' : DifferentiableAt ℝ Real.Gamma (1 - x) :=
@@ -151,9 +148,9 @@ theorem paired_reciprocal_antitone {x z : ℝ} (hx : 0 < x) (hxz : x ≤ z) :
   rw [← (hasSum_paired_reciprocal hz).tsum_eq, ← (hasSum_paired_reciprocal hx).tsum_eq]
   apply (hasSum_paired_reciprocal hz).summable.tsum_le_tsum _ (hasSum_paired_reciprocal hx).summable
   intro n
-  have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+  pm_14
   have he (u : ℝ) (hu : 0 < u) : 1 / u - 1 / (u + 1) = 1 / (u * (u + 1)) := by
-    have hu' : 0 < u + 1 := by positivity
+    pm_7901 hu' u
     field_simp
     ring
   rw [show 2 * (n : ℝ) + 1 + z = (2 * (n : ℝ) + z) + 1 by ring,
@@ -167,25 +164,13 @@ theorem negativeTail_half_integer (N : ℕ) (k : ℤ) (y : ℝ) :
     negativeTail N ((k : ℝ) + 1 / 2) y =
       ((∑' ν : ℕ, if N < ν then (-1 : ℝ) ^ ν / ((ν : ℝ) * ((ν : ℝ) - y)) else 0 : ℝ) : ℂ) := by
   unfold negativeTail
-  rw [Complex.ofReal_tsum]
-  apply tsum_congr
-  intro ν
-  split_ifs
-  · rw [expMode_half_integer]
-    simp
-  · simp
+  pm_6421
 
 /-- The actual half-integer positive tail is the real alternating source series. -/
 theorem positiveTail_half_integer (k : ℤ) (y : ℝ) :
     positiveTail ((k : ℝ) + 1 / 2) y =
       ((∑' ν : ℕ, if 0 < ν then (-1 : ℝ) ^ ν / ((ν : ℝ) * ((ν : ℝ) + y)) else 0 : ℝ) : ℂ) := by
   unfold positiveTail
-  rw [Complex.ofReal_tsum]
-  apply tsum_congr
-  intro ν
-  split_ifs
-  · rw [expMode_half_integer]
-    simp
-  · simp
+  pm_6421
 
 end DhimanKadiriQuesadaHerrera2026

@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorNoSlotInverseCount
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorNoSlotPlainCount
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorSupportedWitness
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorBranchBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
     (U a ε tstar T allowance : ℝ) (i : ℕ) where
   rows : Finset FreeRow
   nonempty : rows.Nonempty
-  family : FreeRow→Label→Character
+  family : FreeRow→ Label→ Character
   witness : ∀ u,SupportedWitness (family u) U a ε tstar T allowance i
   label : Label
   left : Fin (dyadicLength U)
@@ -31,7 +32,7 @@ structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
   row_norm : ∀ u∈rows,((Ideal.span {u.val}).absNorm : ℝ)≤U
   rowData : RowData
   reverse : Bool
-  row_coeff : ∀ u∈rows,∀ J : Ideal O,idealCoeff (family u label) J=
+  row_coeff : ∀ u∈rows,∀ J : Ideal O,idealCoeff (family u label) J =
     if reverse then starRingEnd ℂ (idealCoeff (rowData.character ⟨u.val,u.property.1⟩) J)
     else idealCoeff (rowData.character ⟨u.val,u.property.1⟩) J
   slots : Finset Slot
@@ -42,10 +43,10 @@ structure Fiber (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ) (Label Slot : Type*)
   bin : Slot→ℝ
   mesh : ℝ
   binWidth : ℝ
-  mesh_nonneg : 0≤mesh
+  mesh_nonneg : 0≤ mesh
   binWidth_pos : 0<binWidth
   widths_pos : ∀ s∈slots,0<widths s
-  widths_mesh : ∀ s∈slots,widths s≤mesh
+  widths_mesh : ∀ s∈slots,widths s ≤ mesh
   supply : 7/37≤∑ s∈slots,widths s
   fixed_bin : ∀ u∈rows,∀ s∈slots,
     HeckePrimeAmplitudeBins.amplitude (U^(widths s)) ((2*a-1)/2) binWidth
@@ -90,7 +91,7 @@ theorem Fiber.mean_bounds (F : Fiber M H Label Slot U a ε tstar T allowance i) 
     (fun s hs => (F.widths_pos s hs).le) (by linarith [F.supply])
   intro s hs
   rw [←F.fixed_bin u hu s hs]
-  exact HeckePrimeAmplitudeBins.amplitude_bounds _ _ _ _ (by linarith)
+  pm_5999
 
 end SevenEighths.HeckeDetectorRawFiber
 

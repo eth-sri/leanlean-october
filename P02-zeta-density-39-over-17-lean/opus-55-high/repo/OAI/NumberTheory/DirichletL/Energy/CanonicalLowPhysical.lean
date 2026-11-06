@@ -39,7 +39,7 @@ public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalLowPhysical
 open HeckeFamily ConcreteTraceCRT
@@ -109,70 +109,16 @@ open CenteredMomentEnergyCanonicalAnnularPower CenteredMomentEnergyCanonicalAmpl
 open CenteredMomentFirstCommonReferencePower CenteredMomentEnergyFirstLowHomogeneousPowers
 open CenteredMomentEnergyCanonicalLowColumn CenteredMomentFirstNonexceptionalLocalWeightSum
 
-theorem actual_low_physical
-    (Wslot:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
-    (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(hbPlain:0≤b)
-    (L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
-    (ha:0<aslot)(hWs:Function.support Wslot⊆Set.Icc aslot bslot)
-    (hW:ContDiff ℝ ∞ Wslot)(hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
-    (hκsmall:(1/6:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
-    (hκ:2*HeckeZeroSupremum.beta-1≤κ)
-    (N:ℕ)(lower upper a0 θsource:ℝ)(hlower:0<lower)(hupper:1≤upper)
-    (ha0:0<a0)(hθsource:0<θsource)
-    (lows highs:α→ℝ)(hhighs:∀i,0≤highs i)
-    (εsrc δsrc θsrc Bseed ξ saving:ℝ)
-    (hεsrc:0<εsrc)(hδsrc:0<δsrc)(hθsrc:0<θsrc)(hξ:0<ξ)
-    (sigma:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤sigma/4)(A Pcap eta primeLoss reserve:ℝ)
-    (hA:0≤A)(hPcap:0≤Pcap)(heta:eta<sigma/6)(hPrimeLoss:0<primeLoss)
-    (hsigma1:sigma≤1)(hξ1:ξ≤1)(hreserve:0<reserve)
-    (heps1:εsrc≤1)(hBseed:A+1≤Bseed)
-    (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(εphysical lowerProduct:ℝ)
-    (hεphysical:0<εphysical)(hlowerProduct:0<lowerProduct):
-    ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M →
-      internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
-    ∃Cphysical:ℝ,0<Cphysical ∧ ∃Z₀:ℝ,1<Z₀ ∧
-    ∀Aorig:Finset α,∀θ:Aorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
-    ∀εchild:ℝ,∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
-    ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
-    PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
-      Mcap εchild κ Z η₀ Q degree S C₁ →
-    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤eta) →
-    (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
-    ∀src:Input Aorig,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
-    (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
-    (∀i,src.lo i=lows i.val) → (∀i,src.hi i=highs i.val) →
-    Fintype.card Aorig≤N → lower≤src.lower → src.upper≤upper →
-    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
-    lowerProduct≤(∏i,src.lo i)*a*a →
-    ∀(R0 seed0:Ideal O),R0≠0 → (R0.absNorm:ℝ)≤Z^Pcap → Squarefree seed0 → seed0≠0 →
-    ∀K:ℝ,1≤K →
-    ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
-    src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
-    ∀Mdecl Mwidth θclip ell:ℝ,0≤θclip → Mdecl≤A →
-    length Z src.X₁+length Z src.X₂+6*κ*(∑i,w i)≤Mdecl →
-    Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ)≤Mdecl →
-    Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ)≤Mwidth →
-    Mwidth-sigma/2≤Mcap →
-    Real.logb Z (max 1 b*max 1 b)≤2*θclip →
-    a0≤CenteredMomentSecondInputCapacitySource.lowerFactor N lower a →
-    Real.logb Z (volume src)≤5*Mdecl/6 →
-    (∀j:Fin 4,
-      CenteredMomentEnergyFirstGaussianProfileWeights.losses εsrc δsrc θsrc (readyBudget A Pcap) j+
-      lossVector sigma (frequencyLoss Z 32 ξ) reserve
-        ((readyBudget A Pcap+readyBudget A Pcap)*εmask+εchild+εremove+
-          (frequencyLoss Z 32 ξ+reserve+θsource)/6+θclip/3+κ*mesh)
-        εsrc A saving j + εsrc*(A+1)+primeLoss ≤ ell) →
-    CenteredMomentFirstSourceReduction.physicalMass src R0 seed0 fixedBadMask 1 (Ψ Aorig) K Z ξ /
-      volume src ≤ Cphysical*(C₀+C₁+1)*(p.control Uprofile)^2*
-        (1+|src.t|+height)^Jheight*Z^(Mdecl+ell+εphysical)/(seed0.absNorm:ℝ) := by
-  obtain ⟨UL,JL,hleft⟩:=CenteredMomentEnergyCanonicalLowSource.actual_original_left_low_column
+set_option maxHeartbeats 0 in
+set_option hygiene false in
+macro "pf_2" x1:ident x2:ident x3:ident* : tactic => `(tactic| (
+  obtain ⟨UL,JL,hleft⟩:=$x1:ident
     (α:=α) M H hH Wslot aslot bslot Mcap Lslot εremove lo hi κ a b Mslot εmask
     hMslot hεmask haPlain hbPlain L hL degree S ha hWs hW hMcap hLs hε hκsmall hbeta hκ
     N lower upper a0 θsource hlower hupper ha0 hθsource lows highs hhighs
     εsrc δsrc θsrc Bseed ξ saving hεsrc hδsrc hθsrc hξ sigma hsigma hξsmall
     A Pcap eta primeLoss reserve hA hPcap heta hPrimeLoss hsigma1 hξ1 hreserve heps1 hBseed
-  obtain ⟨UR,JR,hright⟩:=CenteredMomentEnergyCanonicalRightSourceColumn.actual_original_right_low_column
+  obtain ⟨UR,JR,hright⟩:=$x2:ident
     (α:=α) M H hH Wslot aslot bslot Mcap Lslot εremove lo hi κ a b Mslot εmask
     hMslot hεmask haPlain hbPlain L hL degree S ha hWs hW hMcap hLs hε hκsmall hbeta hκ
     N lower upper a0 θsource hlower hupper ha0 hθsource lows highs hhighs
@@ -207,7 +153,7 @@ theorem actual_low_physical
     hσlo hσhi hheight hfreq src hmatch hhi hMs hloSrc hhiSrc hcard hlowerSrc hupperSrc
     hb1 hb2 hb1max hb2max hprod R0 seed0 hR0 hRcap hseed0 hseed00 K hK1 p hp₁ hp₂
     hX₁ hX₂ hY₁ hY₂ Mdecl Mwidth θclip ell hθclip hMA hcap hMdecl hMwidth hdrop
-    hclip hsourceLower hlow hfit
+    hclip hsourceLower $x3* hfit
   have hZL':ZL≤Z:=(le_max_left _ _).trans ((le_max_right _ _).trans hZZ)
   have hZR':ZR≤Z:=(le_max_right _ _).trans ((le_max_right _ _).trans hZZ)
   have hZ:1<Z:=hZL.trans_le hZL'
@@ -284,7 +230,7 @@ theorem actual_low_physical
         hcard hlowerSrc hupperSrc hb1 hb2 hb1max hb2max R0 seed0 hR0 hRcap hseed0
         lab.val.1 lab.val.2 hs.1 hs.2 lab.property E χ χ family family.left (Or.inl rfl)
         K hK1 (Ψ T) n hne innerL hLsq hLcap p hp₁ hp₂ hX₁ hX₂ hY₁ hY₂
-        Mdecl Mwidth θclip hθclip hMA hcap hMdecl hMwidth hdrop hclip hsourceLower hlow v
+        Mdecl Mwidth θclip hθclip hMA hcap hMdecl hMwidth hdrop hclip hsourceLower $x3* v
       simpa only [frontL,FL,powers,delta,paid,deficit,base,add_assoc,family,hs,
         CenteredMomentAmplificationChildInput.volume,CenteredMomentExceptionalAmplitudePair.volume] using hh
     · intro innerL hLcap hLsq χ v
@@ -295,7 +241,7 @@ theorem actual_low_physical
         hcard hlowerSrc hupperSrc hb1 hb2 hb1max hb2max R0 seed0 hR0 hRcap hseed0
         lab.val.1 lab.val.2 hs.1 hs.2 lab.property E χ χ family family.right rfl
         K hK1 (Ψ T) n hne innerL hLsq hLcap p hp₁ hp₂ hX₁ hX₂ hY₁ hY₂
-        Mdecl Mwidth θclip hθclip hMA hcap hMdecl hMwidth hdrop hclip hsourceLower hlow v
+        Mdecl Mwidth θclip hθclip hMA hcap hMdecl hMwidth hdrop hclip hsourceLower $x3* v
       simpa only [frontR,FR,powers,delta,paid,deficit,base,add_assoc,family,hs,
         CenteredMomentAmplificationChildInput.volume,CenteredMomentExceptionalAmplitudePair.volume] using hh
   have hmass:=(hZp Z ((le_max_left _ _).trans hZZ) T) src R0 seed0 hseed0 hseed00
@@ -332,7 +278,64 @@ theorem actual_low_physical
       apply hmass.trans_eq
       dsimp [Fcap]
       ring
-    _ ≤ _ := by gcongr
+    _ ≤ _ := by gcongr))
+theorem actual_low_physical
+    (Wslot:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
+    (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(hbPlain:0≤b)
+    (L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
+    (ha:0<aslot)(hWs:Function.support Wslot⊆Set.Icc aslot bslot)
+    (hW:ContDiff ℝ ∞ Wslot)(hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
+    (hκsmall:(1/6:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
+    (hκ:2*HeckeZeroSupremum.beta-1≤κ)
+    (N:ℕ)(lower upper a0 θsource:ℝ)(hlower:0<lower)(hupper:1≤upper)
+    (ha0:0<a0)(hθsource:0<θsource)
+    (lows highs:α→ℝ)(hhighs:∀i,0≤highs i)
+    (εsrc δsrc θsrc Bseed ξ saving:ℝ)
+    (hεsrc:0<εsrc)(hδsrc:0<δsrc)(hθsrc:0<θsrc)(hξ:0<ξ)
+    (sigma:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤sigma/4)(A Pcap eta primeLoss reserve:ℝ)
+    (hA:0≤A)(hPcap:0≤Pcap)(heta:eta<sigma/6)(hPrimeLoss:0<primeLoss)
+    (hsigma1:sigma≤1)(hξ1:ξ≤1)(hreserve:0<reserve)
+    (heps1:εsrc≤1)(hBseed:A+1≤Bseed)
+    (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(εphysical lowerProduct:ℝ)
+    (hεphysical:0<εphysical)(hlowerProduct:0<lowerProduct):
+    ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
+    ∀η₀:Character,∀Q:Ideal O,Q≤M →
+      internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
+    ∃Cphysical:ℝ,0<Cphysical ∧ ∃Z₀:ℝ,1<Z₀ ∧
+    ∀Aorig:Finset α,∀θ:Aorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
+    ∀εchild:ℝ,∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
+    ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
+    PositiveAt (α:=α) M H hH Wslot bslot (a/max 1 b) b 2 0 L Lslot lo hi
+      Mcap εchild κ Z η₀ Q degree S C₁ →
+    ∀(w σ freq:Aorig→ℝ)(height mesh:ℝ),0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤eta) →
+    (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
+    ∀src:Input Aorig,Matches M H hH src η₀ θ w σ freq Wslot bslot Z →
+    (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
+    (∀i,src.lo i=lows i.val) → (∀i,src.hi i=highs i.val) →
+    Fintype.card Aorig≤N → lower≤src.lower → src.upper≤upper →
+    0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
+    lowerProduct≤(∏i,src.lo i)*a*a →
+    ∀(R0 seed0:Ideal O),R0≠0 → (R0.absNorm:ℝ)≤Z^Pcap → Squarefree seed0 → seed0≠0 →
+    ∀K:ℝ,1≤K →
+    ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
+    src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
+    ∀Mdecl Mwidth θclip ell:ℝ,0≤θclip → Mdecl≤A →
+    length Z src.X₁+length Z src.X₂+6*κ*(∑i,w i)≤Mdecl →
+    Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ)≤Mdecl →
+    Real.logb Z K+Real.logb Z (src.η.modulus.absNorm:ℝ)≤Mwidth →
+    Mwidth-sigma/2≤Mcap →
+    Real.logb Z (max 1 b*max 1 b)≤2*θclip →
+    a0≤CenteredMomentSecondInputCapacitySource.lowerFactor N lower a →
+    Real.logb Z (volume src)≤5*Mdecl/6 →
+    (∀j:Fin 4,
+      CenteredMomentEnergyFirstGaussianProfileWeights.losses εsrc δsrc θsrc (readyBudget A Pcap) j+
+      lossVector sigma (frequencyLoss Z 32 ξ) reserve
+        ((readyBudget A Pcap+readyBudget A Pcap)*εmask+εchild+εremove+
+          (frequencyLoss Z 32 ξ+reserve+θsource)/6+θclip/3+κ*mesh)
+        εsrc A saving j + εsrc*(A+1)+primeLoss ≤ ell) →
+    CenteredMomentFirstSourceReduction.physicalMass src R0 seed0 fixedBadMask 1 (Ψ Aorig) K Z ξ /
+      volume src ≤ Cphysical*(C₀+C₁+1)*(p.control Uprofile)^2*
+        (1+|src.t|+height)^Jheight*Z^(Mdecl+ell+εphysical)/(seed0.absNorm:ℝ) := by pf_2 CenteredMomentEnergyCanonicalLowSource.actual_original_left_low_column CenteredMomentEnergyCanonicalRightSourceColumn.actual_original_right_low_column hlow
 
 end SevenEighths.CenteredMomentEnergyCanonicalLowPhysical
 

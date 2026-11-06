@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownTriangularKernel
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Removing the last-coordinate wrap in the localized count
@@ -14,7 +15,6 @@ derivative bound then forces the two source indices to be close.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownPairCountTwo_last_coordinate_abs_le
     {N k H K : ℕ} {f : ℝ → ℝ} {m n : ℕ}
@@ -53,20 +53,13 @@ theorem heathBrownPairCountTwo_index_separation
   rw [mem_heathBrownPairCountTwo] at hp
   have hmN : m ≤ N := hp.2.1
   have hnN : n ≤ N := hp.2.2.2.1
-  have hmI : (m : ℝ) ∈ Set.Icc (0 : ℝ) N :=
-    ⟨by positivity, by exact_mod_cast hmN⟩
-  have hnI : (n : ℝ) ∈ Set.Icc (0 : ℝ) N :=
-    ⟨by positivity, by exact_mod_cast hnN⟩
+  pm_2779 hmI m hmN
+  pm_2779 hnI n hnN
   have hcoord := heathBrownPairCountTwo_last_coordinate_abs_le hpMem hspread
   rcases le_total m n with hmn | hnm
   · have hslope := heathBrown_lower_slope hg hgd hderivLower hmI hnI
       (by exact_mod_cast hmn)
-    have hdiffnonneg :
-        0 ≤ heathBrownDerivativeCoordinate f (k - 1) n -
-          heathBrownDerivativeCoordinate f (k - 1) m := by
-      have hindex : 0 ≤ (n : ℝ) - m :=
-        sub_nonneg.mpr (by exact_mod_cast hmn)
-      nlinarith
+    pm_5058 n m hmn
     have hupper :
         heathBrownDerivativeCoordinate f (k - 1) n -
           heathBrownDerivativeCoordinate f (k - 1) m ≤
@@ -75,17 +68,10 @@ theorem heathBrownPairCountTwo_index_separation
       exact hcoord
     rw [abs_of_nonpos (sub_nonpos.mpr (by exact_mod_cast hmn)), neg_sub,
       div_eq_mul_inv]
-    have hmuInv : mu * mu⁻¹ = 1 := by field_simp
-    have hinvPos : 0 < mu⁻¹ := inv_pos.mpr hmuPos
-    nlinarith [mul_le_mul_of_nonneg_right hslope hinvPos.le]
+    pm_2778
   · have hslope := heathBrown_lower_slope hg hgd hderivLower hnI hmI
       (by exact_mod_cast hnm)
-    have hdiffnonneg :
-        0 ≤ heathBrownDerivativeCoordinate f (k - 1) m -
-          heathBrownDerivativeCoordinate f (k - 1) n := by
-      have hindex : 0 ≤ (m : ℝ) - n :=
-        sub_nonneg.mpr (by exact_mod_cast hnm)
-      nlinarith
+    pm_5058 m n hnm
     have hupper :
         heathBrownDerivativeCoordinate f (k - 1) m -
           heathBrownDerivativeCoordinate f (k - 1) n ≤
@@ -94,11 +80,8 @@ theorem heathBrownPairCountTwo_index_separation
       exact hcoord
     rw [abs_of_nonneg (sub_nonneg.mpr (by exact_mod_cast hnm)),
       div_eq_mul_inv]
-    have hmuInv : mu * mu⁻¹ = 1 := by field_simp
-    have hinvPos : 0 < mu⁻¹ := inv_pos.mpr hmuPos
-    nlinarith [mul_le_mul_of_nonneg_right hslope hinvPos.le]
+    pm_2778
 
 
-end
 
 end GafniTao

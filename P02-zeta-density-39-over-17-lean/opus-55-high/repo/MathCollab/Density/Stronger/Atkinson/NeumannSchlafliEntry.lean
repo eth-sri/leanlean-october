@@ -8,8 +8,9 @@ The literal classical Bessel kernel, principal half-power branches and
 actual convergent integrals are preserved; no asymptotic bound is assumed.
 -/
 public import MathCollab.Density.Stronger.Atkinson.NeumannContourShift
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Matching the contour to the existing Schläfli integral
@@ -19,8 +20,6 @@ real-axis segment becomes the actual sine integral, with the
 endpoint singularity handled by a nonsingular angular parameter.
 -/
 
-set_option autoImplicit false
-noncomputable section
 
 open Complex Filter MeasureTheory Set Topology
 open scoped Interval ComplexConjugate
@@ -36,8 +35,7 @@ theorem continuousAt_neumannVerticalIntegral {x b : ℝ}
   · filter_upwards [hnear] with c hc
     exact (integrableOn_neumannContourKernel_vertical hx hc.le).aestronglyMeasurable
   · filter_upwards [hnear] with c hc
-    filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-    simpa only [mul_comm] using norm_neumannContourKernel_vertical_le hc.le ht
+    pm_7441 hc.le
   · simpa only [Real.rpow_one] using!
       integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num : -1 < -(1 / 2 : ℝ))
         (by norm_num : 0 < (1 : ℝ)) hx
@@ -51,7 +49,7 @@ theorem neumannContourHalfPowers_imaginary_axis (t : ℝ) :
       (1 + (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) =
         ((Real.sqrt (1 + t ^ 2))⁻¹ : ℝ) := by
   let z : ℂ := 1 + (t : ℂ) * I
-  have hz : z ∈ slitPlane := Or.inl (by simp [z])
+  have hz : z ∈ slitPlane := Or.inl (by aesop)
   have hc : (1 - (t : ℂ) * I) ^ (-(1 / 2 : ℂ)) =
       conj (z ^ (-(1 / 2 : ℂ))) := by
     have h := Complex.conj_cpow z (-(1 / 2 : ℂ)) (slitPlane_arg_ne_pi hz)
@@ -61,7 +59,7 @@ theorem neumannContourHalfPowers_imaginary_axis (t : ℝ) :
     norm_num
   have hs : ‖z ^ (-(1 / 2 : ℂ))‖ ^ 2 = ‖z‖⁻¹ := by
     calc
-      _ = (‖z‖ ^ (-(1 / 2 : ℝ))) ^ (2 : ℝ) := by rw [hn, Real.rpow_two]
+      _ = (‖z‖ ^ (-(1 / 2 : ℝ))) ^ (2 : ℝ) := by simp_all
       _ = ‖z‖ ^ (-1 : ℝ) := by rw [← Real.rpow_mul (norm_nonneg z)]; norm_num
       _ = _ := Real.rpow_neg_one _
   have hzNorm : ‖z‖ = Real.sqrt (1 + t ^ 2) := by
@@ -78,7 +76,7 @@ theorem neumannContourKernel_imaginary_axis (x t : ℝ) :
     push_cast
     calc
       _ = (x : ℂ) * t * (I * I) := by ring
-      _ = _ := by rw [I_mul_I]; ring
+      _ = _ := by simp_all
   unfold neumannContourKernel
   rw [mul_assoc, neumannContourHalfPowers_imaginary_axis, he, ← Complex.ofReal_exp]
   push_cast
@@ -105,14 +103,13 @@ theorem neumannContourHalfPowers_sine {u : ℝ}
   have hpow : (((Real.cos u) ^ 2 : ℝ) : ℂ) ^ (-(1 / 2 : ℂ)) =
       (((Real.cos u)⁻¹ : ℝ) : ℂ) := by
     have hh := Complex.ofReal_cpow (sq_nonneg (Real.cos u)) (-(1 / 2 : ℝ))
-    norm_num only [Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one,
-      Complex.ofReal_ofNat] at hh
+    pm_8588 hh
     rw [← hh, Real.rpow_neg (sq_nonneg _), ← Real.sqrt_eq_rpow, Real.sqrt_sq hc.le]
   have hminus : (1 - (Real.sin u : ℂ)) = ((1 - Real.sin u : ℝ) : ℂ) := by push_cast; rfl
   have hplus : (1 + (Real.sin u : ℂ)) = ((1 + Real.sin u : ℝ) : ℂ) := by push_cast; rfl
   rw [hminus, hplus, ← hmul, ← Complex.ofReal_mul, hprod, hpow]
   norm_cast
-  exact mul_inv_cancel₀ hc.ne'
+  grind
 
 theorem neumannContourKernel_angular_change (x : ℝ) {a : ℝ}
     (ha : 0 ≤ a) (ha1 : a < Real.pi / 2) :
@@ -130,9 +127,7 @@ theorem neumannContourKernel_angular_change (x : ℝ) {a : ℝ}
       linarith [hu.2]⟩).le)
   rw [Real.sin_zero] at hc
   rw [← hc]
-  apply intervalIntegral.integral_congr
-  intro u hu
-  rw [uIcc_of_le ha] at hu
+  pm_445 intervalIntegral.integral_congr u hu uIcc_of_le ha
   have hp := neumannContourHalfPowers_sine hu.1 (lt_of_le_of_lt hu.2 ha1)
   simp only [Function.comp_apply, neumannContourKernel, real_smul]
   calc

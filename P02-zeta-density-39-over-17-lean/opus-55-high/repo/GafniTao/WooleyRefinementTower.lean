@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleySection7IntegratedRefinement
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ This file records those statements without cardinality loss.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -31,8 +31,10 @@ theorem wooleyResidueLift_eq_section7
         ZMod (p ^ (a + H))) := by
   norm_cast
 
+section
+variable {p a H : ℕ} [NeZero p] (xi : ZMod (p ^ a))
+include p a H xi
 theorem wooleyResidueLift_mem
-    {p a H : ℕ} [NeZero p] (xi : ZMod (p ^ a))
     (zeta : ZMod (p ^ H)) :
     wooleyResidueLift p a H xi zeta ∈
       wooleyResidueRefinementFiber p a (a + H) (Nat.le_add_right a H) xi := by
@@ -46,8 +48,7 @@ theorem wooleyResidueLift_mem
   rw [Nat.mod_mod_of_dvd _ (pow_dvd_pow p (Nat.le_add_right a H))]
   simp [Nat.add_mod, Nat.mod_eq_of_lt xi.val_lt]
 
-theorem wooleyResidueLift_injective
-    {p a H : ℕ} [NeZero p] (xi : ZMod (p ^ a)) :
+theorem wooleyResidueLift_injective :
     Function.Injective (wooleyResidueLift p a H xi) := by
   intro zeta1 zeta2 heq
   have hmod :
@@ -61,6 +62,7 @@ theorem wooleyResidueLift_injective
     Nat.ModEq.mul_left_cancel' (pow_ne_zero a (NeZero.ne p)) hmul
   apply ZMod.val_injective
   exact Nat.ModEq.eq_of_lt_of_lt hzmod zeta1.val_lt zeta2.val_lt
+end
 
 /-- The source's `zeta` parameterization is a bijection onto the refinement
 fiber above `xi`. -/
@@ -102,8 +104,10 @@ theorem wooley_sum_residueLift
           (Nat.le_add_right a H) xi, F kappa := by
       exact (Finset.sum_subtype _ (fun _ => Iff.rfl) F).symm
 
+section
+variable {p a m b : ℕ} [NeZero p] (ham : a ≤ m) (hmb : m ≤ b)
+include p a m b ham hmb
 theorem wooley_castHom_tower
-    {p a m b : ℕ} [NeZero p] (ham : a ≤ m) (hmb : m ≤ b)
     (z : ZMod (p ^ b)) :
     ZMod.castHom (pow_dvd_pow p (ham.trans hmb)) (ZMod (p ^ a)) z =
       ZMod.castHom (pow_dvd_pow p ham) (ZMod (p ^ a))
@@ -115,7 +119,6 @@ theorem wooley_castHom_tower
 
 /-- Refinement fibers compose without duplication. -/
 theorem wooley_sum_refinement_tower
-    {p a m b : ℕ} [NeZero p] (ham : a ≤ m) (hmb : m ≤ b)
     (xi : ZMod (p ^ a)) (F : ZMod (p ^ b) → ℝ) :
     ∑ kappa ∈ wooleyResidueRefinementFiber p a m ham xi,
         ∑ z ∈ wooleyResidueRefinementFiber p m b hmb kappa, F z =
@@ -137,10 +140,7 @@ theorem wooley_sum_refinement_tower
     by_cases hk :
         ZMod.castHom (pow_dvd_pow p ham) (ZMod (p ^ a)) kappa = xi <;>
       simp only [hk, ite_true, ite_false, Finset.sum_const_zero]
-  simp_rw [hdistribute]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro z hz
+  pm_224 hdistribute Finset.sum_comm z hz
   by_cases hza :
       ZMod.castHom (pow_dvd_pow p (ham.trans hmb)) (ZMod (p ^ a)) z = xi
   · rw [ite_eq_left hza]
@@ -153,25 +153,23 @@ theorem wooley_sum_refinement_tower
       (ZMod.castHom (pow_dvd_pow p hmb) (ZMod (p ^ m)) z)]
     · rw [ite_eq_left hcompose, ite_eq_left rfl]
     · intro kappa hkappa
-      by_cases hkm :
-          ZMod.castHom (pow_dvd_pow p ham) (ZMod (p ^ a)) kappa = xi
+      pm_7024 hkm ham a kappa xi
       · rw [ite_eq_left hkm]
         rw [ite_eq_right (fun h => hkappa h.symm)]
       · rw [ite_eq_right hkm]
   · rw [ite_eq_right hza]
     apply Finset.sum_eq_zero
     intro kappa hkappa
-    by_cases hkm :
-        ZMod.castHom (pow_dvd_pow p ham) (ZMod (p ^ a)) kappa = xi
+    pm_7024 hkm ham a kappa xi
     · rw [ite_eq_left hkm]
-      by_cases hzk :
-          ZMod.castHom (pow_dvd_pow p hmb) (ZMod (p ^ m)) z = kappa
+      pm_7024 hzk hmb m z kappa
       · exfalso
         apply hza
         rw [wooley_castHom_tower ham hmb z, hzk]
         exact hkm
       · rw [ite_eq_right hzk]
     · rw [ite_eq_right hkm]
+end
 
 
 end

@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ExponentPairEpsilonBudget
 public import LaterPairs.Native.ExponentPairIntegerOptimization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -37,12 +38,10 @@ theorem source_exponentialSum_aProcess_bound
   let C₀ := 20*B/η
   have hC₀ : 1 ≤ C₀ := (le_div_iff₀ hη).mpr (by linarith)
   have hfactor : 1 ≤ 1+1/ε := by
-    have hi : 0 < 1/ε := by positivity
-    linarith
+    pm_8716 ε
   refine ⟨δ,hδ,P,hP,C₀*(1+1/ε),by nlinarith,?_⟩
   intro F T N a L hN hNT ha hb hF
-  have hN₁ : 1 ≤ N := by linarith
-  have hNpos : 0 < N := by linarith
+  pm_178 hN₁ N hNpos
   have hT := hNpos.trans_le hNT
   have hk : 0 ≤ k := hkl.inTriangle.1
   have hl : 0 ≤ l := by linarith [hkl.inTriangle.2.2.1]
@@ -51,7 +50,7 @@ theorem source_exponentialSum_aProcess_bound
   let R := aProcessOptimizationScale (k+ε) (l+ε) T N
   let M := (T/N^2)^(k+ε)*N^(l+ε)
   have hR : 0 < R := aProcessOptimizationScale_pos hT hNpos
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  pm_2825
   have hRN : R ≤ N := aProcessOptimizationScale_le hq hp hN₁ hNT
   have hbalance : M*R^(k+ε+1) = N :=
     aProcessOptimizationScale_balance hq hT hNpos
@@ -70,7 +69,7 @@ theorem source_exponentialSum_aProcess_bound
   have hcost : N^2/R =
       (T/N)^((k+ε)/(k+ε+1))*N^(1+(l+ε)/(k+ε+1)) :=
     aProcessOptimizationScale_cost hq hT hNpos
-  have hratio : 1 ≤ T/N := (le_div_iff₀ hNpos).mpr (by simpa using hNT)
+  pm_4971 hratio T N le_div_iff₀ hNpos hNT
   calc
     _ ≤ C₀*(N^2/R)*(1+Real.log N) := hopt
     _ = C₀*((T/N)^((k+ε)/(k+ε+1))*N^(1+(l+ε)/(k+ε+1))*(1+Real.log N)) := by

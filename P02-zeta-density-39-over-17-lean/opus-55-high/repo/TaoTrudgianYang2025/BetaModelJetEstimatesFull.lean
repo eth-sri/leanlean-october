@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaReferencePhase
 public import TaoTrudgianYang2025.HeathBrownModelJetCore
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -11,17 +12,18 @@ open Set Filter Expdb
 open scoped Topology ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-theorem iteratedDeriv_modelPhase_abs_le {σ : ℝ} (hσ : 0 ≤ σ)
+section
+variable {σ : ℝ} (hσ : 0 ≤ σ)
+include σ hσ
+theorem iteratedDeriv_modelPhase_abs_le
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (p : ℕ) :
     |iteratedDeriv p (modelPhase σ) u| ≤ modelPhaseJetCoefficient σ p := by
-  have hm : ContDiffAt ℝ p (modelPhase σ) u :=
-    Real.contDiffAt_rpow_const_of_ne (zero_lt_one.trans hu.1).ne'
+  pm_977 hm
   have hb := norm_iteratedDerivWithin_modelPhase_le hσ p ⟨hu.1.le,hu.2.le⟩
-  rw [iteratedDerivWithin_eq_iteratedDeriv uniqueDiffOn_phaseInterval hm
-    ⟨hu.1.le,hu.2.le⟩] at hb
+  pm_6807 hm hb
   exact hb
 
-theorem iteratedDeriv_modelPhase_lipschitz {σ : ℝ} (hσ : 0 ≤ σ)
+theorem iteratedDeriv_modelPhase_lipschitz
     {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2) (p : ℕ) :
     |iteratedDeriv p (modelPhase σ) u - iteratedDeriv p (modelPhase σ) w| ≤
       modelPhaseJetCoefficient σ (p+1) * |u-w| := by
@@ -36,5 +38,6 @@ theorem iteratedDeriv_modelPhase_lipschitz {σ : ℝ} (hσ : 0 ≤ σ)
     rw [← iteratedDeriv_succ]
     exact iteratedDeriv_modelPhase_abs_le hσ hx (p+1)
   exact Convex.norm_image_sub_le_of_norm_deriv_le hd hb (convex_Ioo 1 2) hw hu
+end
 
 end TaoTrudgianYang2025

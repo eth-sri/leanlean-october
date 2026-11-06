@@ -2,18 +2,21 @@ module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 public import OAI.NumberTheory.DirichletL.Descent.SieveComposition
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem finite_squarefree_quadratic_energy (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem finite_squarefree_quadratic_energy :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
     ∀ (rows cols : Finset (Ideal Eis)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
@@ -21,8 +24,8 @@ theorem finite_squarefree_quadratic_energy (ε : ℝ) (hε : 0 < ε) :
     ∀ a : Ideal Eis → ℂ,
       (∑ k ∈ rows, ‖∑ J ∈ cols, quadraticRow k (primaryGenerator J) * a J‖ ^ 2) ≤
         C * (K * X) ^ ε * (K + X) * ∑ J ∈ cols, ‖a J‖ ^ 2 := by
-  obtain ⟨C, hC, hsharp⟩ := sieveNorm_sharp ε hε
-  refine ⟨4 * C, by positivity, ?_⟩
+  pm_98 C hC hsharp sieveNorm_sharp ε hε
+  pm_5626
   intro K X hK hX rows cols hrows hcols a
   have hf := squarefree_all_column_energy (fun J : cols => J.val) Subtype.val_injective X K
     (fun J => hcols J.val J.property) (fun J => a J.val)
@@ -45,7 +48,7 @@ theorem finite_squarefree_quadratic_energy (ε : ℝ) (hε : 0 < ε) :
       exact mul_le_mul_of_nonneg_left (hsharp X K hX hK) (by norm_num)
     _ = _ := by rw [mul_comm X K, add_comm X K]; ring
 
-theorem quadratic_squarefree_product_column_energy (ε : ℝ) (hε : 0 < ε) :
+theorem quadratic_squarefree_product_column_energy :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
     ∀ (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis)),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
@@ -54,10 +57,10 @@ theorem quadratic_squarefree_product_column_energy (ε : ℝ) (hε : 0 < ε) :
       (∑ k ∈ rows, ‖∑ p ∈ pairs,
         quadraticRow k (primaryGenerator (p.1 * p.2)) * a p‖ ^ 2) ≤
       C * (K * X) ^ ε * (K + X) * ∑ p ∈ pairs, ‖a p‖ ^ 2 := by
-  have hhalf : 0 < ε / 2 := by positivity
+  pm_4910 hhalf ε
   obtain ⟨Cq, hCq, hquad⟩ := finite_squarefree_quadratic_energy (ε / 2) hhalf
   obtain ⟨Cd, hCd, hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power (ε / 2) hhalf
-  refine ⟨Cq * Cd, mul_pos hCq hCd, ?_⟩
+  pm_653 Cq Cd hCq hCd
   intro K X hK hX rows pairs hrows hpairs a
   let target := pairs.image (fun p => p.1 * p.2)
   have ht (J : Ideal Eis) (hJ : J ∈ target) :
@@ -86,6 +89,7 @@ theorem quadratic_squarefree_product_column_energy (ε : ℝ) (hε : 0 < ε) :
     _ = (Cq * Cd) * ((K * X) ^ (ε / 2) * X ^ (ε / 2)) * (K + X) *
         ∑ p ∈ pairs, ‖a p‖ ^ 2 := by ring
     _ ≤ _ := by gcongr
+end
 
 theorem quadratic_fixed_factor_energy
     (rows : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis))
@@ -105,8 +109,7 @@ theorem quadratic_fixed_factor_energy
       canonical_quadraticRow_argument_mul k (hrows k hk), Finset.mul_sum, mul_assoc]
   rw [he]
   apply pow_le_pow_left₀ (norm_nonneg _)
-  rw [norm_mul]
-  exact mul_le_of_le_one_left (norm_nonneg _) (quadraticRow_norm_le_one k _)
+  pm_5932 quadraticRow_norm_le_one k
 
 theorem quadratic_squarefree_product_energy_fixed_factor (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X : ℝ, 1 ≤ K → 1 ≤ X →
@@ -117,13 +120,12 @@ theorem quadratic_squarefree_product_energy_fixed_factor (ε : ℝ) (hε : 0 < �
       (∑ k ∈ rows, ‖∑ p ∈ pairs,
         quadraticRow k (primaryGenerator (B * (p.1 * p.2))) * a p‖ ^ 2) ≤
       C * (K * X) ^ ε * (K + X) * ∑ p ∈ pairs, ‖a p‖ ^ 2 := by
-  obtain ⟨C, hC, hb⟩ := quadratic_squarefree_product_column_energy ε hε
+  pm_98 C hC hb quadratic_squarefree_product_column_energy ε hε
   refine ⟨C, hC, ?_⟩
   intro K X hK hX rows pairs hrows hpairs B a
   exact (quadratic_fixed_factor_energy rows pairs (fun k hk => (hrows k hk).1) B a).trans
     (hb K X hK hX rows pairs hrows hpairs a)
 
-end
 end SevenEighths.InverseMoment
 
 end OAI

@@ -1,11 +1,11 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.PolynomialPowers
 public import GuthMaynard.NativeSource.GuthMaynard.ArithmeticCoefficients
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -22,7 +22,10 @@ noncomputable def finitePowPoly
     (N k : ℕ) (a : ℕ → ℂ) (s : ℂ) : ℂ :=
   (∑ n ∈ Ioc N (2 * N), a n * (n : ℂ) ^ (-s)) ^ k
 
-theorem finite_polynomial_power_identity (N k : ℕ) (a : ℕ → ℂ) (s : ℂ) :
+section
+variable (N k : ℕ) (a : ℕ → ℂ)
+include N k a
+theorem finite_polynomial_power_identity (s : ℂ) :
     finitePowPoly N k a s =
       ∑ m ∈ Icc (N ^ k) ((2 * N) ^ k),
         finitePowCoeff N k a m * (m : ℂ) ^ (-s) := by
@@ -51,13 +54,10 @@ theorem finite_polynomial_power_identity (N k : ℕ) (a : ℕ → ℂ) (s : ℂ)
         finitePowCoeff N k a m * (m : ℂ) ^ (-s) := by
       apply Finset.sum_congr rfl
       intro m _
-      rw [finitePowCoeff, Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro p hp
+      pm_266 finitePowCoeff Finset.sum_mul Finset.sum_congr p hp
       rw [(Finset.mem_filter.mp hp).2]
 
-theorem finitePowCoeff_lower_endpoint_eq_zero
-    (N k : ℕ) (a : ℕ → ℂ) (_hN : 0 < N) (hk : 0 < k) :
+theorem finitePowCoeff_lower_endpoint_eq_zero (_hN : 0 < N) (hk : 0 < k) :
     finitePowCoeff N k a (N ^ k) = 0 := by
   classical
   rw [finitePowCoeff]
@@ -79,8 +79,7 @@ theorem finitePowCoeff_lower_endpoint_eq_zero
     Nat.pow_lt_pow_left (Nat.lt_succ_self N) hk.ne'
   omega
 
-theorem finite_polynomial_power_identity_Ioc
-    (N k : ℕ) (a : ℕ → ℂ) (s : ℂ) (hN : 0 < N) (hk : 0 < k) :
+theorem finite_polynomial_power_identity_Ioc (s : ℂ) (hN : 0 < N) (hk : 0 < k) :
     finitePowPoly N k a s =
       ∑ m ∈ Ioc (N ^ k) ((2 * N) ^ k),
         finitePowCoeff N k a m * (m : ℂ) ^ (-s) := by
@@ -88,6 +87,7 @@ theorem finite_polynomial_power_identity_Ioc
   rw [Finset.Icc_eq_cons_Ioc]
   · simp [finitePowCoeff_lower_endpoint_eq_zero N k a hN hk]
   · exact Nat.pow_le_pow_left (by omega : N ≤ 2 * N) k
+end
 
 /-- Quantifier-correct uniform form of `finitePowCoeff_bound`.  For a fixed
 power and epsilon, the factorization constant is chosen before the block
@@ -98,9 +98,8 @@ theorem finitePowCoeff_bound_uniform
       (∀ n ∈ Ioc N (2 * N), ‖a n‖ ≤ 1) →
       ∀ m : ℕ, 0 < m →
         ‖finitePowCoeff N k a m‖ ≤ C * (m : ℝ) ^ eps := by
-  obtain ⟨C, hC, hFactor⟩ := factorizationCountBound_native k eps heps
-  refine ⟨C, hC, ?_⟩
-  intro N a ha m hm
+  pm_837 C hC hFactor factorizationCountBound_native k eps heps
+  pm_435 C hC N a ha m hm
   let source := (Fintype.piFinset (fun (_ : Fin k) => Ioc N (2 * N))).filter
     (fun p => (∏ x : Fin k, p x) = m)
   let target := (Fintype.piFinset (fun (_ : Fin k) => Ioc 1 m)).filter
@@ -141,12 +140,10 @@ theorem wideDirichletPoly_finitePoweredLineCoeffs
         finitePowPoly N k a (σ + I * t) := by
   rw [finite_polynomial_power_identity_Ioc N k a (σ + I * t) hN hk]
   unfold wideDirichletPoly finitePoweredLineCoeffs
-  have hUpper : 2 ^ k * N ^ k = (2 * N) ^ k := by rw [mul_pow]
-  rw [hUpper, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro m hm
-  have hmPos : 0 < m := lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1
-  have hmNe : (m : ℂ) ≠ 0 := by exact_mod_cast hmPos.ne'
+  pm_4650 N
+  pm_266 hUpper Finset.mul_sum Finset.sum_congr m hm
+  pm_663 hmPos Finset.mem_Ioc.mp
+  pm_146 hmNe m hmPos.ne'
   rw [mul_assoc, mul_assoc, ← Complex.cpow_add _ _ hmNe]
   congr 2
   ring_nf
@@ -157,9 +154,9 @@ theorem norm_finitePoweredLineCoeffs_le
     (hm : m ∈ Ioc (N ^ k) (2 ^ k * N ^ k)) :
     ‖finitePoweredLineCoeffs N k a σ m‖ ≤ ‖finitePowCoeff N k a m‖ := by
   have hQNat : 0 < N ^ k := pow_pos hN k
-  have hmNat : 0 < m := lt_of_le_of_lt (Nat.zero_le _) (Finset.mem_Ioc.mp hm).1
-  have hQ : (0 : ℝ) < (N ^ k : ℕ) := by exact_mod_cast hQNat
-  have hmReal : (0 : ℝ) < m := by exact_mod_cast hmNat
+  pm_663 hmNat Finset.mem_Ioc.mp
+  pm_5877
+  pm_74 hmReal m hmNat
   have hQm : ((N ^ k : ℕ) : ℝ) ≤ (m : ℝ) := by
     exact_mod_cast (Finset.mem_Ioc.mp hm).1.le
   have hPow : (((N ^ k : ℕ) : ℝ)) ^ σ ≤ (m : ℝ) ^ σ :=
@@ -198,24 +195,21 @@ theorem norm_normalizedFinitePoweredCoeffs_le_one
     (hm : m ∈ Ioc (N ^ k) (2 ^ k * N ^ k))
     (hCoeff : ‖finitePowCoeff N k a m‖ ≤ C * (m : ℝ) ^ η) :
     ‖normalizedFinitePoweredCoeffs N k a σ C η m‖ ≤ 1 := by
-  have hmUpper : m ≤ 2 ^ k * N ^ k := (Finset.mem_Ioc.mp hm).2
-  have hUpperPos : 0 < 2 ^ k * N ^ k :=
-    mul_pos (pow_pos (by omega) k) (pow_pos hN k)
+  pm_5258 N hm
+  pm_964 hUpperPos N hN
   have hRpow : (m : ℝ) ^ η ≤ ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
     exact Real.rpow_le_rpow (Nat.cast_nonneg m) (by exact_mod_cast hmUpper) hη.le
-  have hDenomPos : 0 < C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
-    exact mul_pos hC (Real.rpow_pos_of_pos (by exact_mod_cast hUpperPos) _)
-  have hDenomNorm :
-      ‖((C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η : ℝ) : ℂ)‖ =
-        C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
-    simpa only [Complex.norm_real, Real.norm_eq_abs] using abs_of_pos hDenomPos
+  pm_637 N
+  pm_4651 N hDenomPos
   rw [normalizedFinitePoweredCoeffs, norm_div, hDenomNorm,
     div_le_one hDenomPos]
   exact (norm_finitePoweredLineCoeffs_le N k m a σ hN hσ hm).trans
     (hCoeff.trans (mul_le_mul_of_nonneg_left hRpow hC.le))
 
-theorem wideDirichletPoly_normalizedFinitePoweredCoeffs
-    (N k : ℕ) (a : ℕ → ℂ) (σ C η t : ℝ)
+section
+variable (N k : ℕ) (a : ℕ → ℂ)
+include N k a
+theorem wideDirichletPoly_normalizedFinitePoweredCoeffs (σ C η t : ℝ)
     (hN : 0 < N) (hk : 0 < k) :
     wideDirichletPoly (N ^ k) k
         (normalizedFinitePoweredCoeffs N k a σ C η) t =
@@ -223,16 +217,12 @@ theorem wideDirichletPoly_normalizedFinitePoweredCoeffs
           finitePowPoly N k a (σ + I * t)) /
         ((C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η : ℝ) : ℂ) := by
   rw [← wideDirichletPoly_finitePoweredLineCoeffs N k a σ t hN hk]
-  unfold wideDirichletPoly
-  rw [Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro m _
+  pm_5313 wideDirichletPoly Finset.sum_div m
   rw [normalizedFinitePoweredCoeffs, div_mul_eq_mul_div]
 
 /-- A lower bound for the base block survives taking a fixed power and the
 normalizations required by MHH. -/
-theorem normalized_finite_powered_wide_lower
-    (N k : ℕ) (a : ℕ → ℂ) (σ C η t L : ℝ)
+theorem normalized_finite_powered_wide_lower (σ C η t L : ℝ)
     (hN : 0 < N) (hk : 0 < k) (hL : 0 ≤ L)
     (hDenom : 0 < C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η)
     (hBase : L ≤ ‖∑ n ∈ Ioc N (2 * N),
@@ -242,15 +232,12 @@ theorem normalized_finite_powered_wide_lower
       ‖wideDirichletPoly (N ^ k) k
         (normalizedFinitePoweredCoeffs N k a σ C η) t‖ := by
   have hQNat : 0 < N ^ k := pow_pos hN k
-  have hQ : (0 : ℝ) < (N ^ k : ℕ) := by exact_mod_cast hQNat
+  pm_5877
   have hQNorm : ‖((((N ^ k : ℕ) : ℝ) : ℂ) ^ (σ : ℂ))‖ =
       ((N ^ k : ℕ) : ℝ) ^ σ := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ]
     rfl
-  have hDenomNorm :
-      ‖((C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η : ℝ) : ℂ)‖ =
-        C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by
-    simpa only [Complex.norm_real, Real.norm_eq_abs] using abs_of_pos hDenom
+  pm_4651 N hDenom
   have hPower : L ^ k ≤ ‖finitePowPoly N k a (σ + I * t)‖ := by
     rw [finitePowPoly, norm_pow]
     exact pow_le_pow_left₀ hL hBase k
@@ -261,8 +248,7 @@ theorem normalized_finite_powered_wide_lower
 
 /-- A common ordinary dyadic powered block carries the large value for a
 common subset of ordinates. -/
-theorem extract_normalized_finite_powered_block
-    (N k : ℕ) (a : ℕ → ℂ) (σ C η L : ℝ) (W : Finset ℝ)
+theorem extract_normalized_finite_powered_block (σ C η L : ℝ) (W : Finset ℝ)
     (hN : 0 < N) (hk : 0 < k) (hL : 0 ≤ L)
     (hDenom : 0 < C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η)
     (hBase : ∀ t ∈ W, L ≤ ‖∑ n ∈ Ioc N (2 * N),
@@ -281,5 +267,6 @@ theorem extract_normalized_finite_powered_block
   intro t ht
   exact normalized_finite_powered_wide_lower N k a σ C η t L
     hN hk hL hDenom (hBase t ht)
+end
 
 end GuthMaynard.NativeMoment

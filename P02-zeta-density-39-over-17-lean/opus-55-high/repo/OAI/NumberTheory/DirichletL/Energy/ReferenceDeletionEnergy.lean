@@ -1,13 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceWeightedEnergy
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
 open HeckeFamily HeckeDyadic ConcreteTraceCRT
@@ -26,7 +26,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
       (W₁ W₂:𝓢(ℝ,ℂ)),0<a → 0≤b →
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
-      ∀(pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
+      ∀(pool:α→ Finset (Ideal O))(β:α→ Ideal O→ℂ)(P:α→ℝ)
         (t X₁ X₂ E p:ℝ),
       (∀i,∀I∈pool i,Prime I) → (∀i,0<P i) →
       (∀i,∀I∈pool i,‖β i I‖≤M i) →
@@ -91,8 +91,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
     have hh:=hchildren j.1.val j.1.property j.2.1.val j.2.1.property j.2.2.val j.2.2.property
     have hpow:(q j)^2=((∏I∈j.2.1.val,I).absNorm:ℝ)^p:=by
       dsimp only [q]
-      rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
-      congr 1
+      pm_459
       norm_num
     rw [hpow]
     exact hh
@@ -113,8 +112,7 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
       (hmass R hR (p/2) (by linarith))
   have hr:(((∏I∈R,I).absNorm:ℝ)^(ε/2))^2=(s.puncture.radical.absNorm:ℝ)^ε:=by
     rw [CenteredMomentAllocatedNaturalSource.primeSupport_product_radical s.puncture s.puncture_ne_zero]
-    rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
-    congr 1
+    pm_459
     norm_num
   exact he.trans ((mul_le_mul_of_nonneg_right
     (pow_le_pow_left₀ (Finset.sum_nonneg (fun j _=>mul_nonneg (hρ j) (hq j))) hm 2) hE).trans_eq
@@ -122,6 +120,5 @@ theorem original_energy_weighted_deletion (bslot M:α→ℝ)(hM:∀i,0≤M i)
 
 end SevenEighths.CenteredMomentEnergyReferenceDeletionEnergy
 
-end
 
 end OAI

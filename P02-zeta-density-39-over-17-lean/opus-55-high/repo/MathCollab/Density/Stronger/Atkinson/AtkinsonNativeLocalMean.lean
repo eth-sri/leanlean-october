@@ -8,6 +8,7 @@ Mathlib/PNT foundations retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonTwoTermSource
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonTwoTermStationary
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationarySourceAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,25 +38,21 @@ theorem exists_zetaSquareLocalMean_le_atkinson_stationary {δ κ : ℝ}
       eventually_ge_atTop B, eventually_ge_atTop E] with T hscale hTB hTE
     intro G hlower hupper hquarter
     have hT0 : 0 < T := by linarith [hscale.1]
-    have hG : 0 < G := (Real.rpow_pos_of_pos hT0 δ).trans_le hlower
+    pm_650 hG G Real.rpow_pos_of_pos hT0 δ hlower
     have hm := hsource T G hTB hlower hupper
     have he := hstationary T G hTE hlower hupper hquarter
     change ‖zetaAtkinsonTwoTermSum T G (Real.log T) -
       atkinsonStationaryLeadingSum T G (Real.log T)‖ ≤ D * G at he
-    have hr := (Complex.re_le_norm
-      (zetaAtkinsonTwoTermSum T G (Real.log T) -
-        atkinsonStationaryLeadingSum T G (Real.log T))).trans he
-    simp only [Complex.sub_re] at hr
-    have hscaled := mul_le_mul_of_nonneg_left hr (by positivity : 0 ≤ 2 * Real.exp 1)
-    have hGlog : G ≤ G * Real.log T := by nlinarith [hscale.2.1]
+    pm_5347 zetaAtkinsonTwoTermSum atkinsonStationaryLeadingSum
+    pm_4360 hscaled hr
+    pm_4417
     have herror := mul_le_mul_of_nonneg_left hGlog
       (by positivity : 0 ≤ 2 * Real.exp 1 * D)
     nlinarith
   obtain ⟨U, hU⟩ := eventually_atTop.mp hev
   refine ⟨C + 2 * Real.exp 1 * D, by positivity,
     max 40000 U, le_max_left _ _, ?_⟩
-  intro T G hT hlower hupper hquarter
-  exact hU T ((le_max_right _ _).trans hT) G hlower hupper hquarter
+  pm_5986 hU
 
 /-- The final local-mean producer has no analytic premise. -/
 theorem localMeanStationaryInput_native : LocalMeanStationaryInput := by

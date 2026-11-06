@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ActualSecondUniform
 public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,7 +38,7 @@ lemma second_fresh_scale {ι : Type*} [DecidableEq ι] (p : ι → Eis)
     (hp : ∀ i, p i ≠ 0) (V N : Finset ι) (hVN : Disjoint V N) (X : ℝ) :
     primeProductNorm p (V ∪ N)/(primeProductNorm p V*X) = primeProductNorm p N/X := by
   rw [primeProductNorm_union p V N hVN]
-  field_simp [(primeProductNorm_pos p hp V).ne']
+  pm_7091 V
 
 theorem actual_second_columns_separated {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -59,22 +60,18 @@ theorem actual_second_columns_separated {ι σ : Type*} [DecidableEq ι] [Decida
       slots₂ lists₂ a₂ (childLogTest ω₂ h₂) (primeProductNorm p x.overlap*X) := by
   rw [← secondChildKernelPair_separated_marked]
   unfold secondChildKernelPair
-  apply Finset.sum_congr rfl
-  intro N hN
-  apply Finset.sum_congr rfl
-  intro M hM
+  pm_3808
   have hVN : Disjoint x.overlap N := by
     apply Finset.disjoint_left.mpr
     intro i hi hiN
-    exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hN) hiN)).2 hi
+    grind
   have hVM : Disjoint x.overlap M := by
     apply Finset.disjoint_left.mpr
     intro i hi hiM
-    exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hM) hiM)).2 hi
+    grind
   dsimp only
   rw [second_fresh_scale p hp x.overlap N hVN,second_fresh_scale p hp x.overlap M hVM]
-  simp only [secondActualCoefficient,childLogTest,secondChildColumn,
-    star_mul,SecondPassIntegration.logPhase_conjugate,neg_neg,mul_one]
+  pm_341 secondActualCoefficient childLogTest secondChildColumn star_mul SecondPassIntegration.logPhase_conjugate neg_neg mul_one
   ring
 
 end

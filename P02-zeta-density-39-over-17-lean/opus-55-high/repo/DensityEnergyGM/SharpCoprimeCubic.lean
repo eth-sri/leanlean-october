@@ -1,10 +1,10 @@
 module
 public import DensityEnergyGM.RealScaleFourthMoment
 public import DensityEnergyGM.GcdSharpShape
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 2400000
 noncomputable section
 open Finset GuthMaynard.NativeMoment GuthMaynard.Improvement
@@ -33,12 +33,7 @@ theorem finite_cubic_le_sqrt_second_fourth {ι : Type*} (Q : Finset ι) (f : ι 
     intro q hq
     ring
   rw [hFour] at h
-  calc
-    _ = ∑ q ∈ Q, f q * f q ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro q hq
-      ring
-    _ ≤ _ := h
+  grind
 
 /-- Unconditional reduced cubic bound at every exact short real scale.
 The scale dependence is exactly M, permitting a harmonic gcd sum. -/
@@ -51,8 +46,8 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
         IsSeparated 1 W → InBaseInterval T W →
         (∑ q ∈ Q, ‖gmR W ((q.1 : ℝ) / q.2)‖ ^ 3) ≤
           C * T ^ ε * M * sharpCubicProfile T W := by
-  obtain ⟨C₂, T₂, hC₂, hT₂, hSecond⟩ := real_scale_ratio_second_sharp_native ε hε
-  obtain ⟨C₄, T₄, hC₄, hT₄, hFourth⟩ := real_scale_coprime_fourth_min_native ε hε
+  pm_4083 C₂ T₂ hC₂ hT₂ hSecond real_scale_ratio_second_sharp_native ε hε
+  pm_4083 C₄ T₄ hC₄ hT₄ hFourth real_scale_coprime_fourth_min_native ε hε
   let C : ℝ := Real.sqrt (C₂ * C₄)
   have hC : 0 < C := Real.sqrt_pos.mpr (mul_pos hC₂ hC₄)
   refine ⟨C, max T₂ T₄, hC, hT₂.trans (le_max_left _ _), ?_⟩
@@ -66,23 +61,20 @@ theorem real_scale_coprime_cubic_sharp_native (ε : ℝ) (hε : 0 < ε) :
     simp only [gmR, Finset.sum_empty, norm_zero, zero_pow (by omega : 3 ≠ 0),
       Finset.sum_const_zero]
     exact mul_nonneg (by positivity) (sharpCubicProfile_nonneg hTpos.le ∅)
-  let R : ℝ := W.card
-  let E : ℝ := discreteAdditiveEnergy W
-  let K : ℝ := R ^ 4 + T ^ (1 / 2 : ℝ) * R * E ^ (3 / 4 : ℝ)
+  pm_4223 K
   let H : ℝ := T * E
   let S : ℝ := M ^ 2 * E ^ (1 / 2 : ℝ) +
     R * E ^ (1 / 4 : ℝ) * (M ^ (9 / 5 : ℝ) + T ^ (1 / 4 : ℝ) * M ^ (6 / 5 : ℝ))
   let D : ℝ := min (M * K) H
-  have hR : 0 < R := by dsimp only [R]; exact_mod_cast Finset.card_pos.mpr hW
+  pm_6501
   have hE : 0 < E := by
-    have h := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
-    rw [native_approx_energy_eq] at h
+    pm_3946
     have hRdiag : R ^ 2 ≤ E := by dsimp only [R, E]; exact_mod_cast h
     nlinarith
-  have hK : 0 < K := by dsimp only [K]; positivity
+  pm_4213
   have hH : 0 < H := mul_pos hTpos hE
-  have hD : 0 ≤ D := by dsimp only [D]; positivity
-  have hS : 0 ≤ S := by dsimp only [S]; positivity
+  pm_3998
+  pm_4027
   let f : ℕ × ℕ → ℝ := fun q => ‖gmR W ((q.1 : ℝ) / q.2)‖
   have hQsub : Q ⊆ (sourceRatioIndices M) ×ˢ (sourceRatioIndices M) := by
     intro q hq

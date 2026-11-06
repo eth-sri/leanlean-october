@@ -1,5 +1,6 @@
 module
 public import RetunedDetectorParameters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -15,11 +16,15 @@ structure PhysicalDetectorWindow (σ a : ℝ) : Prop where
   a_high : a < 2/3
   threshold : 1/8 < (3*a/4)*(σ-1/2)
 
-theorem smoothingExponent_pos_physical {σ a : ℝ} (hw : PhysicalDetectorWindow σ a) :
+section
+variable {σ a : ℝ} (hw : PhysicalDetectorWindow σ a)
+include σ a hw
+theorem smoothingExponent_pos_physical :
     0 < smoothingExponent a := by unfold smoothingExponent; linarith [hw.a_low]
 
-theorem smoothingExponent_lt_one_physical {σ a : ℝ} (hw : PhysicalDetectorWindow σ a) :
+theorem smoothingExponent_lt_one_physical :
     smoothingExponent a < 1 := by unfold smoothingExponent; linarith [hw.a_high]
+end
 
 /-- The physical threshold supplies the actual contour saving directly. -/
 theorem detector_error_scale_physical {σ a δ T β η : ℝ}
@@ -28,18 +33,9 @@ theorem detector_error_scale_physical {σ a δ T β η : ℝ}
     Real.sqrt (MathCollab.Density.Stronger.detectorX δ T)*(detectorY a T)^(1/2-β)*T^(1/6+η) ≤
       T^(-1/48+η) := by
   have hTp : 0 < T := by linarith
-  have ha : 0 < a := by linarith [hw.a_low]
+  pm_2755
   have hsprod : 1/4 ≤ (3*a/2)*(σ-1/2) := by nlinarith only [hw.threshold]
-  have hmono := mul_le_mul_of_nonneg_left hβ (show 0 ≤ 3*a/2 by positivity)
-  have hproduct : 1/4 ≤ smoothingExponent a*(β-1/2) := by
-    unfold smoothingExponent
-    nlinarith only [hsprod,hmono]
-  have hsqrt : Real.sqrt (MathCollab.Density.Stronger.detectorX δ T)=T^(δ/2) := by
-    rw [MathCollab.Density.Stronger.detectorX,Real.sqrt_eq_rpow,← Real.rpow_mul hTp.le]
-    congr 1
-    ring
-  rw [hsqrt,detectorY,← Real.rpow_mul hTp.le,← Real.rpow_add hTp,← Real.rpow_add hTp]
-  apply Real.rpow_le_rpow_of_exponent_le hT
-  nlinarith only [hproduct,hδ]
+  pm_2756
+  pm_2757 MathCollab.Density.Stronger.detectorX
 
 end Montgomery.RationalMoment.RightDetector

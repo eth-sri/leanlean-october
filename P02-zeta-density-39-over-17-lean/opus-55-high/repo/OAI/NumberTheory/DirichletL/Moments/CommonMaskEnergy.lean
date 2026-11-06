@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskExpansion
 public import OAI.NumberTheory.DirichletL.Moments.NaturalRowSourceDictionary
 public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentCommonMaskEnergy
 open HeckeFamily CenteredMomentCommonMaskExpansion CenteredMomentNaturalRowSource
 open CenteredMomentHeckeTwist CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentLattice
@@ -31,7 +32,7 @@ theorem finite_shared_energy {ι κ : Type*} [Fintype ι] [Fintype κ]
   have hh := CompletedGauss.finite_tsum_energy_bound
     (fun j i=>a i j*f i j) (fun j=>ρ j*Real.sqrt E)
     (fun j=>mul_nonneg (hρ j) (Real.sqrt_nonneg _)) (summable_of_hasFiniteSupport (Set.toFinite _)) hb
-  simpa only [tsum_fintype,←Finset.sum_mul,mul_pow,Real.sq_sqrt hE] using hh.2
+  pm_6955
 
 lemma triple_sum {τ : Type*} {υ : Type*} {ξ : Type*} {A : Type*} [AddCommMonoid A]
     (S : Finset τ) (T : Finset υ) (U : Finset ξ)
@@ -61,9 +62,9 @@ lemma triple_sum {τ : Type*} {υ : Type*} {ξ : Type*} {A : Type*} [AddCommMono
 theorem actual_shared_energy {α : Type*} [DecidableEq α]
     (F : Finset α) (b M : α→ℝ) (hM : ∀j∈F,0≤M j) (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],
-      ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)(χ : ι→Character)
+      ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)(χ : ι→ Character)
         (W₁ W₂ : ι→𝓢(ℝ,ℂ))(X₁ X₂ : ι→ℝ)
-        (pool : ι→α→Finset (Ideal O))(β : ι→α→Ideal O→ℂ)(P : ι→α→ℝ),
+        (pool : ι→α→ Finset (Ideal O))(β : ι→α→ Ideal O→ℂ)(P : ι→α→ℝ),
       (∀i,0<X₁ i) → (∀i,0<X₂ i) →
       (∀i j,j∈F → ∀I∈pool i j,Prime I) → (∀i j,j∈F → 0<P i j) →
       (∀i j,j∈F → ∀I∈pool i j,‖β i j I‖≤M j) →
@@ -119,8 +120,7 @@ theorem actual_shared_energy {α : Type*} [DecidableEq α]
     exact (triple_sum R.powerset R.powerset F.powerset
       (fun D₁ D₂ J=>uniformMajorant R D₁ D₂ J b M)).trans_le (hmass R hR)
   have hr : ((Ideal.absNorm (∏I∈R,I):ℝ)^(ε/2))^2=(Ideal.absNorm (∏I∈R,I):ℝ)^ε := by
-    rw [←Real.rpow_natCast,←Real.rpow_mul (Nat.cast_nonneg _)]
-    congr 1
+    pm_459
     norm_num
   simp_rw [hid] at hh
   exact hh.trans ((mul_le_mul_of_nonneg_right
@@ -129,9 +129,7 @@ theorem actual_shared_energy {α : Type*} [DecidableEq α]
 
 lemma sqrt_inverse_cpow (X : ℝ) (hX : 0<X) :
     (Real.sqrt X:ℂ)⁻¹=(X:ℂ)^(-(1/2:ℂ)) := by
-  rw [Complex.cpow_neg,Real.sqrt_eq_rpow]
-  congr 1
-  simpa using (Complex.ofReal_cpow hX.le (1/2:ℝ))
+  pm_6401 hX.le
 
 lemma plain_zero_height (χ : Character) (W : ℝ→ℂ) (X : ℝ) (hX : 0<X) :
     HeckeDyadic.polynomial χ false W X 0 0=(Real.sqrt X:ℂ)⁻¹*idealSum χ W X := by
@@ -151,8 +149,7 @@ def heightCoefficient (β : Ideal O→ℂ) (t : ℝ) (I : Ideal O) : ℂ :=
 
 lemma heightCoefficient_norm (β : Ideal O→ℂ) (t : ℝ) (I : Ideal O) (hI : I≠0) :
     ‖heightCoefficient β t I‖=‖β I‖ := by
-  have hn : (0:ℝ)<I.absNorm := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  pm_5723 hn I.absNorm hI
   rw [heightCoefficient,norm_mul]
   have hp : ‖(I.absNorm:ℂ)^(Complex.I*t)‖=1 := by
     simpa using Complex.norm_cpow_eq_rpow_re_of_pos hn (Complex.I*t)
@@ -163,7 +160,7 @@ theorem original_positive_normalized {α : Type*} [Fintype α] [DecidableEq α]
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
     (hW₁ : ContDiff ℝ ∞ W₁) (hW₂ : ContDiff ℝ ∞ W₂)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
+    (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P : α→ℝ)
     (hP : ∀i,0<P i) (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
     positiveSlotRow η (CenteredMomentSecondHeightFamily.fixedBadMask*ConcretePrimeRowBridge.idealGenerator R)
       1 z W₁ W₂ pool β P t X₁ X₂=
@@ -196,13 +193,16 @@ theorem original_positive_normalized {α : Type*} [Fintype α] [DecidableEq α]
 lemma positive_height_phase_norm (X t : ℝ) (hX : 0<X) : ‖(X:ℂ)^(Complex.I*t)‖=1 := by
   simpa using Complex.norm_cpow_eq_rpow_re_of_pos hX (Complex.I*t)
 
-theorem original_positive_deletion {α : Type*} [Fintype α] [DecidableEq α]
+section
+variable {α : Type*} [Fintype α]
+include α
+theorem original_positive_deletion [DecidableEq α]
     (η : Character) (z : O) (hz : z≠0) (R : Ideal O) (hR : R≠0)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
     (hW₁ : ContDiff ℝ ∞ W₁) (hW₂ : ContDiff ℝ ∞ W₂)
-    (pool : α→Finset (Ideal O)) (hp : ∀i,∀I∈pool i,Prime I)
-    (β : α→Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
+    (pool : α→ Finset (Ideal O)) (hp : ∀i,∀I∈pool i,Prime I)
+    (β : α→ Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
     (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) :
     let χ:=(naturalRow η z hz).character
     let S:=CompletedGauss.primeSupport R
@@ -225,12 +225,12 @@ theorem original_positive_deletion {α : Type*} [Fintype α] [DecidableEq α]
     (normPowerProfile W₂ a₂ b₂ ha₂ hs₂ hW₂ t) X₁ X₂ hX₁ hX₂ Finset.univ pool
     (fun i _=>hp i) (fun i=>heightCoefficient (β i) t) P
 
-theorem original_retained_normalized {α : Type*} [Fintype α] [DecidableEq α]
+theorem original_retained_normalized [DecidableEq α]
     {η : Character} {z : O} (F : NaturalRow η z) (R : Ideal O) (hR : R≠0)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ : ℝ) (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁) (hs₂ : Function.support W₂⊆Set.Icc a₂ b₂)
     (hW₁ : ContDiff ℝ ∞ W₁) (hW₂ : ContDiff ℝ ∞ W₂)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
+    (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P : α→ℝ) (hP : ∀i,0<P i)
     (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (hr₁ : 1≤X₁*b₁) (hr₂ : 1≤X₂*b₂) :
     retainedPositiveRow η (CenteredMomentSecondHeightFamily.fixedBadMask*ConcretePrimeRowBridge.idealGenerator R)
       1 z W₁ W₂ pool β P t X₁ X₂=
@@ -251,10 +251,10 @@ theorem original_retained_normalized {α : Type*} [Fintype α] [DecidableEq α]
     (dilated_contDiff W₁ hW₁ _) (dilated_contDiff W₂ hW₂ _) pool β P hP t
     _ _ (by unfold clippedScale;positivity) (by unfold clippedScale;positivity)
 
-theorem original_retained_zero {α : Type*} [Fintype α]
+theorem original_retained_zero
     (η : Character) (m A z : O) (W₁ W₂ : ℝ→ℂ) (b₁ b₂ : ℝ)
     (hs₁ : Function.support W₁⊆Set.Iic b₁) (hs₂ : Function.support W₂⊆Set.Iic b₂)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
+    (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P : α→ℝ)
     (t X₁ X₂ : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂)
     (hz : X₁*b₁<1 ∨ X₂*b₂<1) :
     retainedPositiveRow η m A z W₁ W₂ pool β P t X₁ X₂=0 := by
@@ -266,6 +266,7 @@ theorem original_retained_zero {α : Type*} [Fintype α]
     simp
   · rw [strict_subunit_rowTwistedSum_zero η m A z W₂ b₂ t X₂ hX₂ hs₂ h]
     simp
+end
 
 end SevenEighths.CenteredMomentCommonMaskEnergy
 

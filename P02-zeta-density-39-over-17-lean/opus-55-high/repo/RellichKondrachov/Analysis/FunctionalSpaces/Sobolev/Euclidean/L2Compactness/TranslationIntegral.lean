@@ -61,14 +61,14 @@ private lemma kernelMeasure_compl_ball_eq_zero_of_tsupport_subset {deltaLoss : �
     intro x hx
     have hx' : x ∉ tsupport ψ := by
       intro hx_ts
-      exact hx (hψsupp hx_ts)
+      grind
     exact image_eq_zero_of_notMem_tsupport (f := ψ) hx'
   have hmeas : MeasurableSet ((Metric.ball (0 : E) deltaLoss)ᶜ) :=
     (measurableSet_ball : MeasurableSet (Metric.ball (0 : E) deltaLoss)).compl
   have hEq :
       Set.EqOn (fun x : E => ENNReal.ofReal (ψ x)) 0 ((Metric.ball (0 : E) deltaLoss)ᶜ) := by
     intro x hx
-    simp [hψzero x hx]
+    simp_all
   -- Expand `kernelMeasure` and note the density is identically `0` on the set.
   simp [kernelMeasure, MeasureTheory.withDensity_apply, hmeas,
     MeasureTheory.setLIntegral_eq_zero

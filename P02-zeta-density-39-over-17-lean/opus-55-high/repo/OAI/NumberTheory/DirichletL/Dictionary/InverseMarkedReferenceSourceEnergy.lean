@@ -6,32 +6,31 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialResidualUniformEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.InitialMarkedAssignedGeometry
 public import OAI.NumberTheory.DirichletL.Inversion.InitialMarkedReserve
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment InverseInitialProfile
-open InverseInitialOverlapFourier InverseInitialConjugateEnergy InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerWindow InverseInitialPoissonBridge InverseInitialPhysicalMeasure
+open CanonicalCoefficientClass ConcreteTraceCRT InverseInitialRayAttachment InverseMoment
+open InverseInitialConjugateEnergy InverseInitialQuotientGeometry
+open InverseInitialEnergyCallerWindow
 open InverseInitialMarkedAssignedGeometry DetectorDictionaryInverseRawConjugateGates
 local notation "O"=>HeckeFamily.O
 
 private theorem assigned_admissible {ι:Type}[Fintype ι][DecidableEq ι]
-    (L:ι→Finset (Ideal O))(hp:∀i,∀P∈L i,Prime P)
+    (L:ι→ Finset (Ideal O))(hp:∀i,∀P∈L i,Prime P)
     (hs:∀i,∀P∈L i,Supported P)
     (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
     (J:Finset ι)(x:Assigned L J):Admissible (assignedIdeal L J x) := by
   apply tuple_admissible (fun i:↥J=>L i.val)
     (fun i=>hp i.val) (fun i=>hs i.val) _ x
   intro i hi j hj hij
-  exact hdis (Finset.mem_univ _) (Finset.mem_univ _)
-    (fun he=>hij (Subtype.ext he))
+  aesop
 
 theorem original_source_energy
     (W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
@@ -42,7 +41,7 @@ theorem original_source_energy
     ∃degree:ℕ,∀q:ℕ,q≠0→∃C U₀:ℝ,0<C ∧ 1<U₀ ∧
     ∀U:ℝ,U₀≤U→(2:ℝ)^K≤U^eta→
     ∀{ι:Type}[Fintype ι][DecidableEq ι],Fintype.card ι≤K→
-    ∀(L:ι→Finset (Ideal O))(ell:ι→ℝ)(coeff:ι→Ideal O→ℂ),
+    ∀(L:ι→ Finset (Ideal O))(ell:ι→ℝ)(coeff:ι→ Ideal O→ℂ),
       (∀i,0≤ell i)→(∀i,∀P∈L i,Prime P)→
       (∀i,∀P∈L i,Supported P)→
       (((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)→
@@ -56,9 +55,9 @@ theorem original_source_energy
       FactorsModulo (fixedBaseConductor q) (elementCharacter (conjugateIdealCharacter χ))→
       (∀I,¬InverseInitialExcludedPool.outside (reflectionExcludedPrimes q) I→
         conjugateIdealCharacter χ I=0)→
-    ∀m r:ℝ,0≤m→m≤2→
-      (∀J:Finset ι,-2≤r+(∑i,ell i)-2*(∑i∈J,ell i))→
-      r+2*(∑i,ell i)≤m-2*gap→2*r+8*(∑i,ell i)≤3*m-2*gap→
+    ∀m r:ℝ,0≤ m→ m≤2→
+      (∀J:Finset ι,-2≤ r+(∑i,ell i)-2*(∑i∈J,ell i))→
+      r+2*(∑i,ell i)≤ m-2*gap→2*r+8*(∑i,ell i)≤3*m-2*gap→
       r+(∑i,ell i)+7*eta≤2→
     ∀rows:Finset O,(∀u∈rows,‖eisEmbedding u‖^2≤U^m)→∀θ:ℝ,
       (∑u∈rows,‖∑x:Tuple L,(∏i,coeff i (x i).val)*
@@ -76,7 +75,7 @@ theorem original_source_energy
     2 gap eps π eta τ loss (by norm_num) hgap heps hπ heta hetaone hetagap hτ hτgap hloss K
   refine ⟨degree,?_⟩
   intro q hq
-  obtain ⟨C,U₀,hC,hU₀,henergy⟩:=henergy q hq
+  pm_3744 C U₀ hC hU₀ henergy
   let A:ℝ:=((2:ℝ)^K*DetectorDictionaryInverseAssignedCount.assignedConstant K 2)^2
   have hA:0<A:=sq_pos_of_pos (mul_pos (by positivity)
     (DetectorDictionaryInverseAssignedCount.assignedConstant_pos K (by norm_num)))
@@ -89,7 +88,7 @@ theorem original_source_energy
   have hnorm (i:ι)(P:Ideal O)(hP:P∈L i):(P.absNorm:ℝ)≤2*U^(ell i):=
     (div_le_iff₀ (hscale i)).mp (hratio i P hP).2
   let E:ℝ:=C*U^(m+15*eta+π+eps+loss)*((1+‖θ‖)^degree)^2
-  have hE:0≤E:=by dsimp [E];positivity
+  pm_100 hE E
   have hres (J:Finset ι)(x:Assigned L J):
       (∑u∈rows,(1:ℝ)*‖remainingPolynomial (originalSource U r bo) L J x coeff χ
         (childLogTest W θ) U r (∑i,ell i) (∑i∈J,ell i) u‖^2)≤E := by
@@ -133,10 +132,9 @@ theorem original_source_energy
     (originalSource U r bo) L hp hdis ell (fun i P hP=>⟨(hp i P hP).ne_zero,hnorm i P hP⟩)
     coeff hc χ (assigned_admissible L hp hs hdis) (fun J x=>hχ _)
     (childLogTest W θ) r (∑i,ell i) rows (fun _=>1) (fun _=>zero_le_one) E hE hres
-  simpa only [one_mul,E,A,mul_assoc] using hb
+  pm_89 one_mul E A mul_assoc hb
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 
-end
 
 end OAI

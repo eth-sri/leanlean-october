@@ -1,23 +1,25 @@
 module
 public import MathCollab.Density.Stronger.UniformMellin
 public import MathCollab.Density.DetectorMellin
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex MeasureTheory Set Filter
-open scoped BigOperators ContDiff
-set_option autoImplicit false
+open scoped ContDiff
 noncomputable section
 namespace MathCollab.Density.Stronger
 
-theorem LSeries_term_mul_scaled_cpow (f : ℕ → ℂ) (ρ s : ℂ)
+section
+variable (f : ℕ → ℂ)
+include f
+theorem LSeries_term_mul_scaled_cpow (ρ s : ℂ)
     {N : ℝ} (hN : 0 < N) (n : ℕ) :
     LSeries.term f ρ n * (((n : ℝ)/N : ℝ) : ℂ)^(-s) =
       (N : ℂ)^s * LSeries.term f (ρ+s) n := by
-  rcases eq_or_ne n 0 with rfl | hn
-  · simp
-  have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-  have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast hn
+  pm_4961
+  pm_117 hnPos n
+  pm_146 hnC n hn
   rw [GammaMellin.cpow_neg_div_eq_reverse_cpow hnPos hN, Complex.ofReal_div,
     Complex.div_cpow_ofReal_nonneg hN.le hnPos.le,
     LSeries.term_of_ne_zero hn, LSeries.term_of_ne_zero hn,
@@ -26,20 +28,21 @@ theorem LSeries_term_mul_scaled_cpow (f : ℕ → ℂ) (ρ s : ℂ)
   simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 
-theorem norm_LSeries_term_vertical (f : ℕ → ℂ) (ρ : ℂ) (σ u : ℝ) (n : ℕ) :
+theorem norm_LSeries_term_vertical (ρ : ℂ) (σ u : ℝ) (n : ℕ) :
     ‖LSeries.term f (ρ+((σ : ℂ)+u*I)) n‖ =
       ‖LSeries.term f (ρ+(σ : ℂ)) n‖ := by
   simp [LSeries.norm_term_eq]
 
-theorem continuous_LSeries_term_vertical (f : ℕ → ℂ) (ρ : ℂ) (σ : ℝ) (n : ℕ) :
+theorem continuous_LSeries_term_vertical (ρ : ℂ) (σ : ℝ) (n : ℕ) :
     Continuous (fun u : ℝ => LSeries.term f (ρ+((σ : ℂ)+u*I)) n) := by
   rcases eq_or_ne n 0 with rfl | hn
   · simpa using (continuous_const : Continuous (fun _ : ℝ => (0 : ℂ)))
-  have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast hn
+  pm_146 hnC n hn
   simp only [LSeries.term_of_ne_zero hn]
   exact continuous_const.div ((by fun_prop : Continuous
     (fun u : ℝ => ρ+((σ : ℂ)+u*I))).const_cpow (Or.inl hnC))
     (fun _ => Complex.cpow_ne_zero_iff.mpr (Or.inl hnC))
+end
 
 theorem integrable_scaled_mellin_line {ψ : ℝ → ℝ} {a b N : ℝ}
     (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
@@ -56,12 +59,12 @@ theorem integrable_scaled_mellin_line {ψ : ℝ → ℝ} {a b N : ℝ}
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hN]
   simp
 
+section
+variable {ψ : ℝ → ℝ} {a b N : ℝ} (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b) (hN : 0 < N) (q σ : ℝ) (f : ℕ → ℂ) (ρ : ℂ) (hSum : LSeriesSummable f (ρ+(σ : ℂ)))
+include ψ a b N hψ ha hb hs hN q σ f ρ hSum
 /-- Every summand on the full vertical line is integrable, and the sum of
 its L¹ norms is finite whenever the shifted Dirichlet series converges. -/
-theorem smoothMellin_absolute_exchange {ψ : ℝ → ℝ} {a b N : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (hN : 0 < N) (q σ : ℝ)
-    (f : ℕ → ℂ) (ρ : ℂ) (hSum : LSeriesSummable f (ρ+(σ : ℂ))) :
+theorem smoothMellin_absolute_exchange :
     (∀ n : ℕ, Integrable (fun u : ℝ =>
       ((N : ℂ)^((σ : ℂ)+u*I) *
         mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+u*I)) *
@@ -70,8 +73,7 @@ theorem smoothMellin_absolute_exchange {ψ : ℝ → ℝ} {a b N : ℝ}
       ‖((N : ℂ)^((σ : ℂ)+u*I) *
         mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+u*I)) *
           LSeries.term f (ρ+((σ : ℂ)+u*I)) n‖) := by
-  let H : ℝ → ℂ := fun u => (N : ℂ)^((σ : ℂ)+u*I) *
-    mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+u*I)
+  pm_4479
   have hH : Integrable H := integrable_scaled_mellin_line hψ ha hb hs hN σ q
   constructor
   · intro n
@@ -84,30 +86,25 @@ theorem smoothMellin_absolute_exchange {ψ : ℝ → ℝ} {a b N : ℝ}
     convert hNorm.mul_left (∫ u : ℝ, ‖H u‖) using 1
     funext n
     simp_rw [norm_mul, norm_LSeries_term_vertical, integral_mul_const]
-    simp only [H, norm_mul]
+    aesop
 
 /-- Exact smooth cutoff identity on any line where the shifted Dirichlet
 series converges absolutely. The series–integral exchange is proved above. -/
-theorem smoothLSeries_eq_mellinContour {ψ : ℝ → ℝ} {a b N : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (hN : 0 < N) (q σ : ℝ)
-    (f : ℕ → ℂ) (ρ : ℂ) (hSum : LSeriesSummable f (ρ+(σ : ℂ))) :
+theorem smoothLSeries_eq_mellinContour :
     (∑' n : ℕ, LSeries.term f ρ n * (dampedCutoff ψ q ((n : ℝ)/N) : ℂ)) =
       ((1/(2*Real.pi) : ℝ) : ℂ) * ∫ u : ℝ,
         (N : ℂ)^((σ : ℂ)+u*I) *
           mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+u*I) *
             LSeries f (ρ+((σ : ℂ)+u*I)) := by
-  let H : ℝ → ℂ := fun u => (N : ℂ)^((σ : ℂ)+u*I) *
-    mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+u*I)
+  pm_4479
   let F : ℕ → ℝ → ℂ := fun n u => H u * LSeries.term f (ρ+((σ : ℂ)+u*I)) n
-  let C : ℂ := ((1/(2*Real.pi) : ℝ) : ℂ)
+  pm_630 C
   obtain ⟨hInt,hAbs⟩ := smoothMellin_absolute_exchange hψ ha hb hs hN q σ f ρ hSum
   have hTerm (n : ℕ) :
       LSeries.term f ρ n * (dampedCutoff ψ q ((n : ℝ)/N) : ℂ) =
         C * ∫ u : ℝ, F n u := by
-    rcases eq_or_ne n 0 with rfl | hn
-    · simp [F]
-    have hnPos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+    pm_8587 F
+    pm_5896 hnPos n Nat.pos_of_ne_zero hn
     rw [dampedCutoff_mellin_inversion hψ ha hb hs σ q (div_pos hnPos hN)]
     calc
       _ = C * ∫ u : ℝ, LSeries.term f ρ n *
@@ -132,6 +129,7 @@ theorem smoothLSeries_eq_mellinContour {ψ : ℝ → ℝ} {a b N : ℝ}
       apply integral_congr_ae
       filter_upwards with u
       simp only [F, tsum_mul_left, H, LSeries]
+end
 
 /-- Literal smooth mollifier block; damping q remains independent of N. -/
 def smoothMollifierBlock (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) : ℂ :=

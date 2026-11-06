@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownMultiplicitySecondMoment
 public import GafniTao.HeathBrownRefinedCountFinal
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # From coefficient-cell intersections to Heath-Brown's `mathcal N`
@@ -12,12 +13,11 @@ two source indices whose coefficient cells meet satisfy every simultaneous
 distance-to-an-integer condition in the concrete finite count `mathcal N`.
 -/
 
-open Finset Set MeasureTheory Metric
-open scoped BigOperators ENNReal
+open Finset Set MeasureTheory
+open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
 
 theorem unitAddCircle_dist_real_coe
     (a b : ℝ) :
@@ -38,8 +38,10 @@ theorem heathBrown_center_coordinate_dist
   unfold heathBrownCoefficientCenter heathBrownDerivativeCoordinate
   rw [unitAddCircle_dist_real_coe]
 
-theorem heathBrown_cell_intersection_coordinate_bound
-    {k H : ℕ} {f : ℝ → ℝ} {m n : ℕ}
+section
+variable {k H : ℕ} {f : ℝ → ℝ}
+include k H f
+theorem heathBrown_cell_intersection_coordinate_bound {m n : ℕ}
     (hover : (heathBrownCoefficientCell k H f m ∩
       heathBrownCoefficientCell k H f n).Nonempty)
     (j : Fin (k - 1)) :
@@ -48,14 +50,8 @@ theorem heathBrown_cell_intersection_coordinate_bound
           heathBrownDerivativeCoordinate f ((j : ℕ) + 1) n) ≤
       2 * (((H : ℝ) ^ ((j : ℕ) + 1))⁻¹) := by
   obtain ⟨α, hm, hn⟩ := hover
-  have hmj : dist (α j)
-      (heathBrownCoefficientCenter k f m j) ≤
-        heathBrownCellRadius H j := by
-    exact hm j (Set.mem_univ j)
-  have hnj : dist (α j)
-      (heathBrownCoefficientCenter k f n j) ≤
-        heathBrownCellRadius H j := by
-    exact hn j (Set.mem_univ j)
+  pm_6561 hmj m hm
+  pm_6561 hnj n hn
   rw [← heathBrown_center_coordinate_dist f m n j]
   calc
     dist (heathBrownCoefficientCenter k f m j)
@@ -68,8 +64,7 @@ theorem heathBrown_cell_intersection_coordinate_bound
     _ = 2 * (((H : ℝ) ^ ((j : ℕ) + 1))⁻¹) := by
       simp [heathBrownCellRadius, two_mul]
 
-theorem heathBrown_cell_intersection_derivative_bound
-    {k H : ℕ} {f : ℝ → ℝ} {m n j : ℕ}
+theorem heathBrown_cell_intersection_derivative_bound {m n j : ℕ}
     (hj : j ∈ Finset.Icc 1 (k - 1))
     (hover : (heathBrownCoefficientCell k H f m ∩
       heathBrownCoefficientCell k H f n).Nonempty) :
@@ -84,9 +79,12 @@ theorem heathBrown_cell_intersection_derivative_bound
     omega
   simpa only [hq] using
     heathBrown_cell_intersection_coordinate_bound hover q
+end
 
-theorem heathBrownOverlappingCellPairs_subset_pairCount
-    {N k H : ℕ} (f : ℝ → ℝ) :
+section
+variable {N k H : ℕ} (f : ℝ → ℝ)
+include N k H f
+theorem heathBrownOverlappingCellPairs_subset_pairCount :
     heathBrownOverlappingCellPairs N k H f ⊆
       heathBrownPairCount N k H f := by
   classical
@@ -101,11 +99,11 @@ theorem heathBrownOverlappingCellPairs_subset_pairCount
   intro j hj
   exact heathBrown_cell_intersection_derivative_bound hj hp.2
 
-theorem card_heathBrownOverlappingCellPairs_le_pairCount
-    {N k H : ℕ} (f : ℝ → ℝ) :
+theorem card_heathBrownOverlappingCellPairs_le_pairCount :
     (heathBrownOverlappingCellPairs N k H f).card ≤
       (heathBrownPairCount N k H f).card :=
   Finset.card_le_card (heathBrownOverlappingCellPairs_subset_pairCount f)
+end
 
 theorem integral_heathBrownNu_sq_le_pairCount
     (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
@@ -121,6 +119,5 @@ theorem integral_heathBrownNu_sq_le_pairCount
   · exact measureReal_nonneg
 
 
-end
 
 end GafniTao

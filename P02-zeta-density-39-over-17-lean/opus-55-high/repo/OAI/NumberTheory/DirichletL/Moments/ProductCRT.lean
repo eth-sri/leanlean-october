@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.HeterogeneousCRT
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentProductCRT
 open CenteredMomentCorrelation CenteredMomentCommonSupport
 open CenteredMomentHeterogeneousCRT
@@ -45,7 +46,10 @@ def cofactor (a : ι → A) (i : ι) : A := ∏ j ∈ Finset.univ.erase i, a j
 theorem factor_mul_cofactor (a : ι → A) (i : ι) : a i * cofactor a i = ∏ j, a j :=
   Finset.mul_prod_erase Finset.univ a (Finset.mem_univ i)
 
-theorem left_crt_component (a b : ι → A)
+section
+variable (a b : ι → A)
+include a b
+theorem left_crt_component
     (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (x : Residue (∏ i, a i)) (i : ι) :
@@ -53,13 +57,9 @@ theorem left_crt_component (a b : ι → A)
       (scaledResidue (∏ i, a i) (∏ i, b i) ((∏ i, a i) * ∏ i, b i) rfl x) i =
       scaledResidue (a i) (b i) (a i * b i) rfl
         (Ideal.Quotient.mk _ (cofactor b i) * productCRT a ha x i) := by
-  obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
-  rw [scaledResidue_mk, jointCRT_mk, productCRT_mk, ← map_mul, scaledResidue_mk]
-  congr 1
-  rw [← factor_mul_cofactor b i]
-  ring
+  pm_5403 x b
 
-theorem right_crt_component (a b : ι → A)
+theorem right_crt_component
     (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (y : Residue (∏ i, b i)) (i : ι) :
@@ -67,13 +67,9 @@ theorem right_crt_component (a b : ι → A)
       (scaledResidue (∏ i, b i) (∏ i, a i) ((∏ i, a i) * ∏ i, b i) (mul_comm _ _) y) i =
       scaledResidue (b i) (a i) (a i * b i) (mul_comm _ _)
         (Ideal.Quotient.mk _ (cofactor a i) * productCRT b hb y i) := by
-  obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
-  rw [scaledResidue_mk, jointCRT_mk, productCRT_mk, ← map_mul, scaledResidue_mk]
-  congr 1
-  rw [← factor_mul_cofactor a i]
-  ring
+  pm_5403 y a
 
-theorem fullModulusCorrelation_product (a b : ι → A)
+theorem fullModulusCorrelation_product
     (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
     (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
@@ -101,7 +97,7 @@ theorem fullModulusCorrelation_product (a b : ι → A)
   simpa only [fullModulusCorrelation, fullCorrelation, crtCharacter_apply, jointCRT_mk,
     RingEquiv.toEquiv_eq_coe, EquivLike.coe_coe] using hcrt
 
-theorem cross_cofactor_coprime (a b : ι → A)
+theorem cross_cofactor_coprime
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (i : ι) : IsCoprime (a i) (cofactor b i) := by
   unfold cofactor
@@ -111,7 +107,7 @@ theorem cross_cofactor_coprime (a b : ι → A)
   have hij := (Ideal.isCoprime_span_singleton_iff _ _).mp (hab hji.symm)
   exact (IsCoprime.mul_right_iff.mp (IsCoprime.mul_left_iff.mp hij).1).2
 
-theorem local_cofactor_norm (a b : ι → A)
+theorem local_cofactor_norm
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     [∀ i, Fintype (Residue (a i))] [∀ i, Fintype (Residue (b i))]
     (χ : ∀ i, MulChar (Residue (a i)) ℂ) (ψ : ∀ i, MulChar (Residue (b i)) ℂ)
@@ -133,7 +129,7 @@ theorem local_cofactor_norm (a b : ι → A)
     FiniteRayExpansion.norm_char_unit, FiniteRayExpansion.norm_char_unit, one_mul, one_mul]
   rfl
 
-theorem fullModulusCorrelation_product_norm (a b : ι → A)
+theorem fullModulusCorrelation_product_norm
     (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
     (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
@@ -147,9 +143,10 @@ theorem fullModulusCorrelation_product_norm (a b : ι → A)
   apply Finset.prod_congr rfl
   intro i hi
   exact local_cofactor_norm a b hab χ ψ h i
+end
 
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
 open CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
@@ -160,9 +157,7 @@ theorem supported_character_product (a : ι → O)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i}))) :
     supportedModulusCharacter (∏ i, a i) hprod =
       crtCharacter (productCRT a hcop) (fun i => supportedModulusCharacter (a i) (ha i)) := by
-  apply DFunLike.ext
-  intro x
-  obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
+  pm_8552 DFunLike.ext
   simp only [crtCharacter_apply, productCRT_mk, supportedModulusCharacter_mk]
   rw [← Ideal.prod_span_singleton Finset.univ a, map_prod]
 
@@ -176,14 +171,14 @@ theorem actualCorrelation_product_norm (a b : ι → O)
     (hcab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i}))) (h : O) :
     ‖actualCorrelation (∏ i, a i) (∏ i, b i) hA hB h‖ =
       ∏ i, ‖actualCorrelation (a i) (b i) (ha i) (hb i) h‖ := by
-  let : ∀ i, Finite (Residue (a i)) := fun i => finite_quotient_span (supported_element_ne_zero (a i) (ha i))
-  let : ∀ i, Finite (Residue (b i)) := fun i => finite_quotient_span (supported_element_ne_zero (b i) (hb i))
-  let : ∀ i, Fintype (Residue (a i)) := fun i => Fintype.ofFinite _
-  let : ∀ i, Fintype (Residue (b i)) := fun i => Fintype.ofFinite _
+  pm_5739 a ha
+  pm_5739 b hb
+  pm_6868 a
+  pm_6868 b
   let := finite_quotient_span (supported_element_ne_zero _ hA)
   let := finite_quotient_span (supported_element_ne_zero _ hB)
-  let : Fintype (Residue (∏ i, a i)) := Fintype.ofFinite _
-  let : Fintype (Residue (∏ i, b i)) := Fintype.ofFinite _
+  pm_7687 a
+  pm_7687 b
   change ‖fullModulusCorrelation _ _ (supportedModulusCharacter _ hA)
     (supportedModulusCharacter _ hB) h‖ =
     ∏ i, ‖fullModulusCorrelation _ _ (supportedModulusCharacter _ (ha i))

@@ -14,16 +14,19 @@ local notation "Eis" => ActualEisensteinCubic.O
 def originalResidualRows (rows : Finset (Ideal Eis)) (R Q : Ideal Eis) : Finset (Ideal Eis) :=
   (representativeRowFiber rows R Q).image (fun I => rowResidualPart I Q)
 
-lemma originalResidualRows_reconstruct (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
+section
+variable (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
+include rows R Q
+lemma originalResidualRows_reconstruct
     (hrows : ∀ I∈rows, I≠0) (K : Ideal Eis) (hK : K∈originalResidualRows rows R Q) :
     reconstructFiberRow R Q K∈representativeRowFiber rows R Q ∧
       rowResidualPart (reconstructFiberRow R Q K) Q=K := by
   obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hK
   have he := reconstructFiberRow_of_original rows R Q I hI (hrows I (Finset.mem_filter.mp hI).1)
   rw [he]
-  exact ⟨hI,rfl⟩
+  grind
 
-lemma originalResidualRows_range (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
+lemma originalResidualRows_range
     (hbad : ∀ P∈fixedBadPrimes, P∣Q) (X : ℝ)
     (hrows : ∀ I∈rows, I≠0 ∧ (Ideal.absNorm I:ℝ)≤X)
     (K : Ideal Eis) (hK : K∈originalResidualRows rows R Q) :
@@ -32,6 +35,7 @@ lemma originalResidualRows_range (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)
   obtain ⟨I,hI,rfl⟩ := Finset.mem_image.mp hK
   exact mem_idealRange.mp (completedRowFiber_residual_range rows Q (rowPowerfulPart R)
     (rowMaskPart R Q) hbad X hrows I hI)
+end
 
 theorem original_fiber_sum_reindex {M : Type*} [AddCommMonoid M]
     (rows : Finset (Ideal Eis)) (R Q : Ideal Eis)

@@ -2,7 +2,6 @@ module
 public import GuthMaynard.Improvement.SmoothingFourier
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform ContDiff
@@ -30,8 +29,8 @@ theorem compactKernel_zero {x : ℝ} (hx : 2 ≤ |x|) : compactKernel x = 0 := b
   have hs := kernelBump.support_normed_eq (μ := volume)
   have hn : x ∉ Function.support compactKernel := by
     rw [show Function.support compactKernel = Metric.ball 0 2 from hs]
-    simpa [Metric.mem_ball, Real.dist_eq, not_lt] using hx
-  simpa [Function.support] using hn
+    simp_all
+  simp_all
 
 theorem compactKernel_bound : ∃ B : ℝ, 0 < B ∧ ∀ x, ‖compactKernel x‖ ≤ B := by
   refine ⟨(∫ x, kernelBump x)⁻¹, inv_pos.mpr kernelBump.integral_pos, ?_⟩

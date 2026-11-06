@@ -10,13 +10,12 @@ The imported GammaStrip retains its upstream Apache-2.0 attribution.
 -/
 public import MathCollab.Density.GammaStrip
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex
 open MathCollab.Density.GammaBounds
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 /-- Retain the full pi/2 exponential rate in the exact half-line formula. -/
@@ -27,14 +26,13 @@ theorem norm_Gamma_half_vertical_le_exp (t : ℝ) :
       Real.pi / Real.cosh (Real.pi * t) := by
     have h := norm_Gamma_centralPoint_sq t
     change ‖Complex.Gamma (((1 / 2 : ℝ) : ℂ) + (t : ℂ) * I)‖ ^ 2 = _ at h
-    simpa only [ofReal_div, ofReal_one, ofReal_ofNat] using h
+    simp_all
   have hcosh := exp_abs_le_two_mul_cosh (Real.pi * t)
   rw [abs_mul, abs_of_pos Real.pi_pos] at hcosh
   have hsq_le : ‖Complex.Gamma ((1 / 2 : ℂ) + (t : ℂ) * I)‖ ^ 2 ≤
       2 * Real.pi * Real.exp (-(Real.pi * |t|)) := by
     rw [hsq, Real.exp_neg]
-    change Real.pi / Real.cosh (Real.pi * t) ≤
-      (2 * Real.pi) / Real.exp (Real.pi * |t|)
+    pm_1311
     apply (div_le_div_iff₀ (Real.cosh_pos _) (Real.exp_pos _)).2
     nlinarith [Real.pi_pos]
   have hsq_final : ‖Complex.Gamma ((1 / 2 : ℂ) + (t : ℂ) * I)‖ ^ 2 ≤
@@ -77,21 +75,11 @@ theorem norm_Gamma_positive_strip_strong {a v : ℝ}
     (ha : 1 / 2 ≤ a) (ha' : a ≤ 3 / 2) :
     ‖Complex.Gamma ((a : ℂ) + (v : ℂ) * I)‖ ≤
       72 * Real.exp (-(4 / 3 : ℝ) * |v|) := by
-  let z : ℂ := (1 / 2 : ℂ) + (v : ℂ) * I
-  have hz : z ≠ 0 := by
-    intro h
-    have hr := congrArg Complex.re h
-    norm_num [z] at hr
+  pm_4448 v
   have hrec : Complex.Gamma (stripPoint (3 / 2) v) = z * Complex.Gamma z := by
     convert Complex.Gamma_add_one z hz using 1
-    congr 1
-    dsimp [stripPoint, z]
-    push_cast
-    ring
-  have hnorm : ‖z‖ ≤ 1 + |v| := by
-    have h := Complex.norm_le_abs_re_add_abs_im z
-    norm_num [z] at h
-    linarith
+    pm_6552 stripPoint z
+  pm_6155 hnorm v
   calc
     _ ≤ 4 * ‖Complex.Gamma (stripPoint (3 / 2) v)‖ :=
       norm_Gamma_stripPoint_le_four_upper ha ha'
@@ -111,7 +99,7 @@ theorem Gamma_displaced_strong_bound {a v : ℝ}
     (ha : -(1 / 2 : ℝ) ≤ a) (ha' : a ≤ 1 / 2) (ha0 : a ≠ 0) :
     (|a| + |v|) * ‖Complex.Gamma ((a : ℂ) + (v : ℂ) * I)‖ ≤
       144 * Real.exp (-(4 / 3 : ℝ) * |v|) := by
-  let z : ℂ := (a : ℂ) + (v : ℂ) * I
+  pm_256 z a v I
   have hz : z ≠ 0 := by
     intro h
     apply ha0

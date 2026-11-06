@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GlobalBinLoss
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,75 +10,32 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 theorem list_exists_positive_bound (xs : List ℝ) :
@@ -107,7 +65,7 @@ def poissonPrimitiveConstants
    nonzeroLatticeEnvelopeConstant, CD, CS, CT, CP,
    sD.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticTransformedSquareProfile W),
    sS.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticSquareProfile W),
-   sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W, D^η]
+   sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W, D ^η]
 
 theorem poissonPrimitiveConstants_nonneg
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
@@ -116,10 +74,10 @@ theorem poissonPrimitiveConstants_nonneg
     (D : ℝ) (hD : 0≤D) (W : 𝓢(ℝ,ℂ)) :
     ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, 0≤x := by
   intro x hx
-  simp only [poissonPrimitiveConstants,List.mem_cons,List.not_mem_nil,or_false] at hx
+  pm_423 poissonPrimitiveConstants List.mem_cons List.not_mem_nil or_false hx
   rcases hx with rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl
   · exact (divisorConstant_pos η hη).le
-  · have : 0<Real.log 2 := Real.log_pos (by norm_num); positivity
+  positivity
   · norm_num
   · exact (supportConstant_pos η hη).le
   · exact (divisorExponentConstant_pos hexp η hη).le
@@ -129,14 +87,14 @@ theorem poissonPrimitiveConstants_nonneg
   · positivity
   · exact originalMiddleDecayConstant_nonneg _
   · exact nonzeroLatticeEnvelopeConstant_nonneg
-  · exact hCD
-  · exact hCS
-  · exact hCT
-  · exact hCP
+  grind
+  grind
+  grind
+  grind
   · positivity
   · positivity
   · positivity
-  · exact Real.rpow_nonneg hD _
+  positivity
 
 theorem poissonUnitBudget_power_envelope
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
@@ -146,7 +104,7 @@ theorem poissonUnitBudget_power_envelope
     (hK : 1≤K) (hN : 1≤N) (hP : 1≤P) (hD : 1≤D) (hH : 1≤H)
     (hconst : ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, x≤H)
     (hscales : ∀x∈([(Ideal.absNorm G:ℝ), K,N,(2*K)*N,N*N,
-      (Ideal.absNorm G:ℝ)*(N*N),K*N] : List ℝ), 0≤x ∧ x≤D*P^4) :
+      (Ideal.absNorm G:ℝ)*(N*N),K*N] : List ℝ), 0≤x ∧ x≤D *P^4) :
     ∀x∈poissonUnitBudget sD sS sT CD CS CT CP hexp η hη η hη G K N W,
       0≤x ∧ x≤(H*P^(4*η))^8 := by
   let V := H*P^(4*η)
@@ -166,183 +124,145 @@ theorem poissonUnitBudget_power_envelope
         (Ideal.absNorm G:ℝ)*(N*N),K*N] : List ℝ)) : 0≤x^η ∧ x^η≤V := by
     have hx0 := (hscales x hx).1
     refine ⟨Real.rpow_nonneg hx0 _, ?_⟩
-    have hDpow : D^η≤H := hconst _ (by simp [poissonPrimitiveConstants])
+    have hDpow : D ^η≤H := hconst _ (by simp [poissonPrimitiveConstants])
     calc
-      _ ≤ (D*P^4)^η := Real.rpow_le_rpow hx0 (hscales x hx).2 hη.le
-      _ = D^η*P^(4*η) := by
+      _ ≤ (D *P^4)^η := Real.rpow_le_rpow hx0 (hscales x hx).2 hη.le
+      _ = D ^η*P^(4*η) := by
         rw [Real.mul_rpow (by linarith : 0≤D) (by positivity : 0≤P^4)]
-        congr 1
-        rw [←Real.rpow_natCast,←Real.rpow_mul hP0.le]
-        norm_num
+        pm_7796
       _ ≤ V := mul_le_mul_of_nonneg_right hDpow (by positivity)
   let prims := poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W ++
-    [(Ideal.absNorm G:ℝ)^η,K^η,N^η,((2*K)*N)^η,(N*N)^η,
+    [(Ideal.absNorm G:ℝ)^η,K ^η,N^η,((2*K)*N)^η,(N*N)^η,
       ((Ideal.absNorm G:ℝ)*(N*N))^η,(K*N)^η]
   have hprims : ∀x∈prims, 0≤x ∧ x≤V := by
     intro x hx
-    simp only [prims,List.mem_append,List.mem_cons,List.not_mem_nil,or_false] at hx
+    pm_3605 prims List.mem_append List.mem_cons List.not_mem_nil or_false hx
     rcases hx with hx|rfl|rfl|rfl|rfl|rfl|rfl|rfl
     · exact hCV x hx
     all_goals exact hpow _ (by simp)
-  have hp (xs : List ℝ) (hx : ∀x∈xs, x∈prims) (hn : xs.length≤8) : xs.prod≤V^8 :=
-    list_prod_budget xs prims V hV hprims hx hn
-  have hp1 (x : ℝ) (hx : x∈prims) : x≤V^8 := by
+  pm_5321 prims V hV hprims
+  have hp1 (x : ℝ) (hx : x∈prims) : x≤V ^8 := by
     simpa using hp [x] (by simpa using hx) (by simp)
   intro x hx
-  simp only [poissonUnitBudget,List.mem_cons,List.not_mem_nil,or_false] at hx
+  pm_423 poissonUnitBudget List.mem_cons List.not_mem_nil or_false hx
   rcases hx with rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl|rfl
   · refine ⟨by positivity, ?_⟩
     apply ((IdealDivisorBound.ideal_divisor_small_power η hη).choose_spec.2 G hG).trans
     have hh := hp [divisorConstant η hη,(Ideal.absNorm G:ℝ)^η] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · refine ⟨by positivity, ?_⟩
-    apply (show (columnDyadicLength K+1:ℕ) ≤ (2+1/(η*Real.log 2))*K^η by
-      simpa only [Nat.cast_add,Nat.cast_one] using columnDyadicLength_small_power η hη K hK).trans
-    have hh := hp [2+1/(η*Real.log 2),K^η] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+    pm_1463 K hK
+    have hh := hp [2+1/(η*Real.log 2),K ^η] (by
+      pm_3062
       rcases hy with rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · refine ⟨by positivity, ?_⟩
-    apply (show (columnDyadicLength N+1:ℕ) ≤ (2+1/(η*Real.log 2))*N^η by
-      simpa only [Nat.cast_add,Nat.cast_one] using columnDyadicLength_small_power η hη N hN).trans
+    pm_1463 N hN
     have hh := hp [2+1/(η*Real.log 2),N^η] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [256,supportConstant η hη,divisorConstant η hη,N^η,N^η] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl | rfl | rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [divisorExponentConstant hexp η hη,((2*K)*N)^η] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [‖paperRadialFourier (quadraticTransformedSquareProfile W) 0‖] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl
       simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [‖quadraticTransformedSquareProfile W 0‖] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl
       simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · refine ⟨dualMiddleDecayConstant_nonneg _, ?_⟩
     have hh := hp [dualMiddleDecayConstant (quadraticTransformedSquareProfile W)] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl
       simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [‖paperRadialFourier (quadraticSquareProfile W) 0‖] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl
       simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · refine ⟨originalMiddleDecayConstant_nonneg _, ?_⟩
     have hh := hp [originalMiddleDecayConstant (quadraticSquareProfile W)] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl
       simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · refine ⟨nonzeroLatticeEnvelopeConstant_nonneg, ?_⟩
     have hh := hp [nonzeroLatticeEnvelopeConstant] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl
       simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [supportConstant η hη,(N*N)^η,CD,sD.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticTransformedSquareProfile W)] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl | rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [supportConstant η hη,((Ideal.absNorm G:ℝ)*(N*N))^η,CS,sS.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticSquareProfile W)] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl | rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [CT,sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
   · have hs := (supportConstant_pos η hη).le
-    have hd := (divisorConstant_pos η hη).le
-    have he := (divisorExponentConstant_pos hexp η hη).le
-    refine ⟨by positivity, ?_⟩
+    pm_3061
     have hh := hp [supportConstant η hη,N^η,CP,(K*N)^η] (by
-      intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      pm_3062
       rcases hy with rfl | rfl | rfl | rfl <;>
         simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
           List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    pm_3060
 
 end
 
@@ -351,16 +271,14 @@ section
 theorem selectedPoisson_upper (C C1 M X η : ℝ)
     (hC : 4≤C) (hCC : C≤C1) (hM : 1≤M) (hX : 1≤X)
     (hη : 0≤η) (hη1 : η≤1) :
-    4≤selectedPoissonT C M X η ∧
-    (M*X)^η≤selectedPoissonT C M X η ∧
+    4≤ selectedPoissonT C M X η ∧
+    (M*X)^η≤ selectedPoissonT C M X η ∧
     selectedPoissonK C M X η≤C1*(M*X)^3 := by
   have hC10 : 0≤C1 := by linarith
-  have hM0 : 0<M := by linarith
-  have hX0 : 0<X := by linarith
-  have hP : 1≤M*X := by nlinarith
-  have hP0 : 0<M*X := by positivity
+  pm_3774
+  pm_597 X
   have hR : 1≤(M*X)^η := Real.one_le_rpow hP hη
-  have hT : 4≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
+  have hT : 4≤ selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
   refine ⟨hT,by dsimp [selectedPoissonT]; nlinarith,?_⟩
   have hXP : X≤M*X := by nlinarith
   have hfrac : X^2/M≤(M*X)^2 :=
@@ -452,12 +370,11 @@ theorem poisson_tail_abstract (B P t K η M : ℝ) (A : ℕ)
     (hB : 1≤B) (hP : 1≤P) (hM : 0≤M)
     (ht : 1/(B*P^2)≤t) (hu : P^η≤1+t*K) (hA : 4≤η*A) :
     M/((min 1 t)^2*(1+t*K)^A)≤B^2*M := by
-  have hB0 : 0<B := by linarith
-  have hP0 : 0<P := by linarith
+  pm_175 hB0 B hP0 P
   have hBP : 1≤B*P^2 := by nlinarith [sq_nonneg (P-1)]
   have hinv : 1/(B*P^2)≤1 := (div_le_one (by positivity)).mpr hBP
-  have htlo : 1/(B*P^2)≤min 1 t := le_min hinv ht
-  have htpos : 0<min 1 t := lt_of_lt_of_le (by positivity) htlo
+  have htlo : 1/(B*P^2)≤ min 1 t := le_min hinv ht
+  have htpos : 0< min 1 t := lt_of_lt_of_le (by positivity) htlo
   have hup : 0<1+t*K := lt_of_lt_of_le (Real.rpow_pos_of_pos hP0 _) hu
   have hpow := power_cutoff_dominates P (1+t*K) η A hP hu hA
   have hprod : 1/B^2≤(min 1 t)^2*(1+t*K)^A := by
@@ -476,17 +393,15 @@ theorem selectedPoisson_tail_shape (C B M X q η : ℝ) (A : ℕ)
     M/((min 1 (M/((B*q)*(X/q)*(X/q))))^2*
       (1+(M/((B*q)*(X/q)*(X/q)))*selectedPoissonK C M X η)^A)≤B^2*M := by
   have hB0 : 0<B := by linarith
-  have hM0 : 0<M := by linarith
-  have hX0 : 0<X := by linarith
-  have hq0 : 0<q := by linarith
-  have hC0 : 0<C := by linarith
+  pm_3774
+  pm_175 hq0 q hC0 C
   have hP : 1≤M*X := by nlinarith
   have hXP : X≤M*X := by nlinarith
   have hMQ : 1≤M*q := by nlinarith
   have hEq : M/((B*q)*(X/q)*(X/q))=M*q/(B*X^2) := by field_simp
   have ht : 1/(B*(M*X)^2)≤M/((B*q)*(X/q)*(X/q)) := by
     rw [hEq]
-    apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
+    pm_856 div_le_div_iff₀
     calc
       1*(B*X^2) ≤ B*(M*X)^2 := by
         simpa only [one_mul] using mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hX0.le hXP 2) hB0.le
@@ -494,7 +409,7 @@ theorem selectedPoisson_tail_shape (C B M X q η : ℝ) (A : ℕ)
   have hu : (M*X)^η≤1+(M/((B*q)*(X/q)*(X/q)))*selectedPoissonK C M X η := by
     rw [selectedPoisson_radial_identity C B M X q η hM0 hX0 hq0 hB0]
     have hp : 0≤(M*X)^η := Real.rpow_nonneg (by positivity) _
-    have hb : (M*X)^η≤selectedPoissonT C M X η*q/B := by
+    have hb : (M*X)^η≤ selectedPoissonT C M X η*q/B := by
       apply (le_div_iff₀ hB0).mpr
       dsimp [selectedPoissonT]
       calc
@@ -510,13 +425,10 @@ theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
     Real.sqrt (M/selectedPoissonK C M X η)*N+
       Real.sqrt M*(selectedPoissonK C M X η)^(α-1/2) ≤
     M+selectedPoissonT C M X η*Real.sqrt M*(2*selectedPoissonK C M X η)^(α-1/2) := by
-  have hM0 : 0<M := by linarith
-  have hX0 : 0<X := by linarith
-  have hP : 1≤M*X := by nlinarith
-  have hpow : 1≤(M*X)^η := Real.one_le_rpow hP hη
-  have hT : 1≤selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
-  have hT0 : 0<selectedPoissonT C M X η := by linarith
-  have hK0 : 0<selectedPoissonK C M X η := by unfold selectedPoissonK; positivity
+  pm_3774
+  pm_3775 hP X η hη
+  have hT : 1≤ selectedPoissonT C M X η := by dsimp [selectedPoissonT]; nlinarith
+  pm_711
   have hfrac : M/selectedPoissonK C M X η≤(M/X)^2 := by
     apply (div_le_iff₀ hK0).mpr
     have he : (M/X)^2*selectedPoissonK C M X η=M*selectedPoissonT C M X η := by
@@ -544,7 +456,7 @@ theorem selectedPoisson_principal_shape (C M X N η α : ℝ)
 
 end
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic IdealCoprimeSieveOperator DivisorBlockCauchy EisensteinSchwartzPoisson
 
 def poissonShape (M X α : ℝ) : ℝ := M+X+X^(2*α-1)*M^(1-α)
@@ -572,7 +484,7 @@ theorem poissonComparisonMajorant_selected_power
     ∃ Cfinal : ℝ, 0<Cfinal ∧
       ∀ (C M X q : ℝ) (G : Ideal O), 4≤C → B≤C → C≤C1 →
         1≤M → 1≤X → 1≤q → q≤X → G≠0 → (Ideal.absNorm G:ℝ)=B*q →
-        1≤selectedPoissonK C M X η →
+        1≤ selectedPoissonK C M X η →
       poissonComparisonMajorant sD sS sT CD CS CT CP l A hexp η hη η hη G
         (selectedPoissonK C M X η) (X/q) M (selectedPoissonT C M X η)
         (fun _ : Unit => (1:ℂ)) W ≤
@@ -597,8 +509,7 @@ theorem poissonComparisonMajorant_selected_power
     nlinarith only [hC10,sq_nonneg B]
   refine ⟨262144*H^64*Cshape,by positivity,?_⟩
   intro C M X q G hC hBC hCC hM hX hq hqX hG hGN hK
-  have hM0 : 0<M := lt_of_lt_of_le zero_lt_one hM
-  have hX0 : 0<X := lt_of_lt_of_le zero_lt_one hX
+  pm_353 hM0 M hM hX0 X hX
   have hq0 : 0<q := lt_of_lt_of_le zero_lt_one hq
   have hP : 1≤M*X := by nlinarith only [hM,hX]
   have hP0 : 0<M*X := by positivity
@@ -608,7 +519,7 @@ theorem poissonComparisonMajorant_selected_power
   have hNX : X/q≤X := div_le_self hX0.le hq
   have hNP : X/q≤M*X := hNX.trans hXP
   obtain ⟨hT,hTP,hKP⟩ := selectedPoisson_upper C C1 M X η hC hCC hM hX hη.le hη1
-  have hKg : 0≤selectedPoissonK C M X η := le_trans zero_le_one hK
+  have hKg : 0≤ selectedPoissonK C M X η := le_trans zero_le_one hK
   have hg : (Ideal.absNorm G:ℝ)≤B*(M*X) := by rw [hGN]; gcongr; exact hqX.trans hXP
   have hb := poissonUnitBudget_power_envelope sD sS sT CD CS CT CP hCD hCS hCT hCP
     hexp η hη G hG (selectedPoissonK C M X η) (X/q) (M*X) D H W
@@ -618,7 +529,7 @@ theorem poissonComparisonMajorant_selected_power
   let R := (M*X)^(3*η)
   have hR : 1≤R := Real.one_le_rpow hP (by positivity)
   let Z := X^(2*α-1)*M^(1-α)
-  have hZ : 0≤Z := by dsimp [Z]; positivity
+  pm_3063 hZ Z
   let S := Cshape*R*poissonShape M X α
   have hshape : 1≤poissonShape M X α := by
     change 1≤M+X+Z

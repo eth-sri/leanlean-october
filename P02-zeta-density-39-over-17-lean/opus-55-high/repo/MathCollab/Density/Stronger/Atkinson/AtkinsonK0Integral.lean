@@ -6,6 +6,7 @@ See third_party/twelfth/ATKINSON_MAIN_PLUS_MANIFEST.json and third_party/twelfth
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonVoronoiTerms
 public import MathCollab.Density.Stronger.Atkinson.BesselK0SourceIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,8 +40,7 @@ theorem norm_integral_zetaAtkinsonK0_le {T G L : ℝ}
           ‖zetaSmoothDivisorTest T G L x‖ := by
     rw [norm_zetaAtkinsonK0_integrand]
     exact norm_zetaBesselK0SourceIntegrand_le hT hG hL hwidth hn k x
-  have h := norm_integral_le_of_norm_le hi (Filter.Eventually.of_forall hb)
-  simpa only [integral_const_mul] using h
+  pm_7722 Filter.Eventually.of_forall
 
 theorem exists_norm_integral_zetaAtkinsonK0_le (k : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →

@@ -23,7 +23,10 @@ def robertSargosShiftedCorrelation (f : ℝ → ℝ) (M H Q N : ℕ) (q r : ℤ)
         (robertSargosSymmetricDifference f (m+n+q) h-
           robertSargosSymmetricDifference f (m+n) (h+r))
 
-theorem robertSargos_shifted_correlation_h_sum (f : ℝ → ℝ) (M H Q N : ℕ) (q r : ℤ) :
+section
+variable (f : ℝ → ℝ) (M H Q N : ℕ) (q r : ℤ)
+include f M H Q N q r
+theorem robertSargos_shifted_correlation_h_sum :
     robertSargosShiftedCorrelation f M H Q N q r =
       ∑ h ∈ robertSargosHOverlap H r, (N:ℂ)⁻¹*∑ n ∈ Finset.Icc (1:ℤ) N,
         ∑ m ∈ robertSargosCommonMInterval M H Q N,
@@ -33,7 +36,7 @@ theorem robertSargos_shifted_correlation_h_sum (f : ℝ → ℝ) (M H Q N : ℕ)
   unfold robertSargosShiftedCorrelation
   rw [Finset.sum_comm,Finset.mul_sum]
 
-theorem norm_robertSargos_trimmed_shift_error (f : ℝ → ℝ) (M H Q N : ℕ) (q r : ℤ)
+theorem norm_robertSargos_trimmed_shift_error
     (hN : 0 < N) (hq : q ∈ Finset.Ioo (-(Q:ℤ)) Q) :
     ‖robertSargosTrimmedCorrelation f M H q r-
       robertSargosShiftedCorrelation f M H Q N q r‖ ≤
@@ -57,5 +60,6 @@ theorem norm_robertSargos_trimmed_shift_error (f : ℝ → ℝ) (M H Q N : ℕ) 
       simp only [Finset.sum_const,nsmul_eq_mul]
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact_mod_cast robertSargos_h_overlap_card H r
+end
 
 end TaoTrudgianYang2025

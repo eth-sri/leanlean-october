@@ -1,6 +1,7 @@
 module
 public import GuthMaynard.Improvement.TruncatedSourceCubic
 public import GuthMaynard.Improvement.SpectralScaleBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -24,17 +25,14 @@ theorem fixed_truncated_source_moment_raw {δ ε : ℝ} (hδ : 0 < δ) (hε : 0 
         (N^4/L)*(C*(5*T)^ε*(25*T^2*M*Real.sqrt M+
           5*T*L*(D*(N^2+H))*M+3060*D*N^3*L*T^3*(Real.log (2*N))^2))+
         5*N^5*L*T*M) := by
-  obtain ⟨C,D,hC,hD,hc⟩ := fixed_truncated_source_cubic hε
+  pm_231 C D hC hD hc fixed_truncated_source_cubic hε
   obtain ⟨S,hS,hs⟩ := source_spectral_scale MathCollab.Density.comparisonCutoff hδ
     (by norm_num : (1:ℝ)≤5) (by norm_num : (0:ℝ)<2)
-  refine ⟨S,C,D,hS,hC,hD,?_⟩
+  pm_211 S C D hS hC hD
   intro N T L hN hNT hTN hNL hLl hLu a U ha
   dsimp only
-  let μ := sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U
-  let H := ∫ t, sourceRemovedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t
-  let M := ∫ t, μ t^2
-  have hT : 0 < T := by linarith
-  have hL : 0 < L := by linarith
+  pm_4538
+  pm_72 hT T hL L
   obtain ⟨hm,hi,h2,h0,hμs,hdom⟩ := fixed_truncated_source_regular hN hT a ha U
   have hsupport : Function.support μ ⊆ Icc (-2*T) (-2*T+5*T) := by
     have he : -2*T+5*T=3*T := by ring

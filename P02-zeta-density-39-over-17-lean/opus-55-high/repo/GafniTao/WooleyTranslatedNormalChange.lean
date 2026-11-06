@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyTranslationMatrix
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Normalizing the translated Section 7 equations
@@ -15,11 +16,9 @@ for the integral row reduction to (7.7).
 -/
 
 open Finset Polynomial Matrix
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleyNormalFormCombination_high_coeff_dvd_of_each
     {k p c q : ℕ} (theta : WooleyPolynomialSystem k)
@@ -28,9 +27,7 @@ theorem wooleyNormalFormCombination_high_coeff_dvd_of_each
     (G : Matrix (Fin k) (Fin k) (ZMod q)) (i : Fin k)
     (n : ℕ) (hn : k + 1 ≤ n) :
     (p : ℤ) ^ c ∣ (wooleyNormalFormCombination theta q G i).coeff n := by
-  unfold wooleyNormalFormCombination
-  rw [← lcoeff_apply, map_sum]
-  simp only [lcoeff_apply, coeff_C_mul]
+  pm_6689
   apply dvd_sum
   intro j hj
   exact dvd_mul_of_dvd_right (hhigh j n hn) _
@@ -73,10 +70,7 @@ theorem wooley_exists_tail_normal_change_of_leftInverse_high
       (∑ d : Fin k, C ((f i).coeff ((d : ℕ) + 1)) *
         X ^ ((d : ℕ) + 1)) =
       wooleyNormalFormPositiveLow theta (p ^ B) G i := by
-    unfold wooleyNormalFormPositiveLow
-    apply Finset.sum_congr rfl
-    intro d hd
-    congr 2
+    pm_8145 wooleyNormalFormPositiveLow d hd
     simp only [f, coeff_sub, coeff_C]
     rw [ite_eq_right (by omega : (d : ℕ) + 1 ≠ 0), sub_zero]
   have hf := htail i
@@ -116,6 +110,5 @@ theorem WooleyPolynomialSystem.Spaced.exists_translated_tail_normal_change
   exact ⟨G, psi, Error, hchange⟩
 
 
-end
 
 end GafniTao

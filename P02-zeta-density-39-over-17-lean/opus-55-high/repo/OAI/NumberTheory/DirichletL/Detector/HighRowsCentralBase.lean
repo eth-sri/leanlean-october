@@ -1,18 +1,19 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralTerms
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
 
+include hc in
 include hc in
 lemma rowBaseFinite_central_remainder (eta a rho x w z : ℂ) (alpha eps : ℝ)
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p}))
@@ -26,7 +27,7 @@ lemma rowBaseFinite_central_remainder (eta a rho x w z : ℂ) (alpha eps : ℝ)
     ‖rowBaseFinite p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) rho j e l-
       (if e=1 ∧ l=0 then T 1 0 else 0)‖≤16*Q^(1/2-x.re) := by
   dsimp only
-  let Q : ℝ := Ideal.absNorm (Ideal.span {p})
+  pm_3834
   let T := fun k m=>rowMarkedTerm p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) rho j e l k m
   have hpow : 0≤Q^(1/2-x.re) := by positivity
   have hv := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_V_half _ hQ z (by rw [hz]))
@@ -93,7 +94,7 @@ theorem rowClosedMarked_central_remainder (eta a rho x w z : ℂ) (alpha eps : �
   simp only [Complex.ofReal_natCast] at *
   unfold rowClosedMarked
   rw [←sub_div,div_eq_mul_inv,norm_mul]
-  have heq (A B C D T : ℂ) : A+B+C+D-T=A+(B-T)+C+D := by ring
+  have heq (A B C D T : ℂ) : A+B+C+D -T=A+(B-T)+C+D := by ring
   rw [heq]
   apply (mul_le_mul_of_nonneg_right ((norm_add_le _ _).trans (add_le_add
     ((norm_add_le _ _).trans (add_le_add ((norm_add_le _ _).trans (add_le_add h02 h10)) h01)) h11)) (norm_nonneg _)).trans
@@ -101,6 +102,5 @@ theorem rowClosedMarked_central_remainder (eta a rho x w z : ℂ) (alpha eps : �
     _≤(16*(_ : ℝ)+16*_+16*_+16*_)*2 := mul_le_mul_of_nonneg_left hr (by positivity)
     _=_ := by ring
 end SevenEighths.ProbeEuler
-end
 
 end OAI

@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.FirstPriorityParents
 public import OAI.NumberTheory.DirichletL.Descent.SecondFullSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InversePrioritySecondSource
 open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
@@ -15,7 +16,7 @@ open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
 open InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→ O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def quotientSupport (y : SecondParentSource ι Jo) : Finset ι :=
   Function.extend (sourceIdeal p) id (fun _=>∅) y.quotient
@@ -30,13 +31,13 @@ theorem quotientSupport_attach (hinj : Function.Injective (fun i=>Ideal.span {p 
     quotientSupport p (attach p J q)=q.1.quotientSupport :=
   quotientSupport_parent p hinj q.1
 
-def residualLists (negative : Bool) (lists : σ→Finset ι)
+def residualLists (negative : Bool) (lists : σ→ Finset ι)
     (y : SecondParentSource ι Jo) (i : σ) : Finset ι :=
   lists i \ (((if negative then y.cube.rightDivisor else y.cube.leftDivisor)∪y.firstCommon)∪
     quotientSupport p y)
 
 omit [DecidableEq σ] [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem residualLists_disjoint (negative : Bool) (lists : σ→Finset ι)
+theorem residualLists_disjoint (negative : Bool) (lists : σ→ Finset ι)
     (y : SecondParentSource ι Jo) (i : σ) :
     Disjoint (residualLists p negative lists y i) (quotientSupport p y) := by
   apply Finset.disjoint_left.mpr
@@ -44,16 +45,16 @@ theorem residualLists_disjoint (negative : Bool) (lists : σ→Finset ι)
   exact (Finset.mem_sdiff.mp hq).2 (Finset.mem_union_right _ hd)
 
 def retainedPool (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
-    (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
-    (label : SecondParentSource ι Jo→Finset ι→SecondExpansionData ι→κ)
+    (R : SecondParentSource ι Jo→ Finset ι→ Finset ι→ℝ)
+    (label : SecondParentSource ι Jo→ Finset ι→ SecondExpansionData ι→κ)
     (residual : Finset ι) (j : κ) : Finset (MarkedSecondSource ι Jo 0) :=
   attachedSecondFamily parents (fun y=>secondDyadicSector pool (secondVariableCutoff p y (R y))
     residual (label y) j)
 
 omit [∀ i,(Ideal.span {p i}).IsMaximal] in
 theorem mem_retainedPool (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
-    (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
-    (label : SecondParentSource ι Jo→Finset ι→SecondExpansionData ι→κ)
+    (R : SecondParentSource ι Jo→ Finset ι→ Finset ι→ℝ)
+    (label : SecondParentSource ι Jo→ Finset ι→ SecondExpansionData ι→κ)
     (residual : Finset ι) (j : κ) (x : MarkedSecondSource ι Jo 0) :
     x∈retainedPool p pool parents R label residual j ↔
       secondParentOf x∈parents ∧ x.second∈secondDyadicSector pool
@@ -66,7 +67,7 @@ variable (hp : ∀ i,p i≠0)
 
 def parentPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
-    (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots J : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (ω : ℝ→ℂ) (X t Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (y : SecondParentSource ι Jo) : ℂ :=
   firstFreshSecondPoisson p hp hg hinj pool (quotientSupport p y) y.cube.support
@@ -76,7 +77,7 @@ def parentPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (∏ i∈y.firstCommon,p i) (secondParentDivisor p y) core t Y
 
 def retainedRow (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
-    (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots J : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) : ℂ :=
   actualSecondSignedWeight p hp hcop hg Ψ
     (m*ConcretePrimeRowBridge.idealGenerator x.quotient) ray x *
@@ -91,10 +92,10 @@ theorem parentPoisson_full [Fintype κ]
     (y : SecondParentSource ι Jo) (pool : Finset ι)
     (hq : y.quotient=sourceIdeal p (quotientSupport p y))
     (negative : Bool) (Ψ : O→*ℂ) (m : O)
-    (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (slots J : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
     (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
-    (R : Finset ι→Finset ι→ℝ) (label : Finset ι→SecondExpansionData ι→κ) :
+    (R : Finset ι→ Finset ι→ℝ) (label : Finset ι→ SecondExpansionData ι→κ) :
     let Ψ₀ := firstCoreTwist negative (if negative then r.1 else r.2) Ψ core
     let V := principalWindow om lo hi hlo hs negative t
     let H := markedRadial p (slots\J) (residualLists p negative lists y) a ∅ V X
@@ -121,16 +122,12 @@ theorem parentPoisson_full [Fintype κ]
       (Y:ℂ)*secondRayCoefficient ray *
         ∑ x∈(secondDyadicSector pool K residual label j).image (attachSecondExpansion y),
           retainedRow p hp hcop hg pool negative Ψ₀ m slots J lists a V X Y ray x := by
-    apply Finset.sum_congr rfl
-    intro ray hray
-    apply Finset.sum_congr rfl
-    intro residual hresidual
+    pm_3397 ray hray residual hresidual
     apply Finset.sum_congr rfl
     intro j hj
     apply congrArg ((Y:ℂ)*secondRayCoefficient ray * ·)
     apply Finset.sum_congr rfl
-    intro x hx
-    obtain ⟨z,hz,rfl⟩ := Finset.mem_image.mp hx
+    pm_67 x hx z hz Finset.mem_image.mp
     rfl
   have he := first_parent_full_second_source p hp hcop hg hinj hc hpr y pool (quotientSupport p y) hq
     negative (if negative then r.1 else r.2) Ψ m (slots\J) (residualLists p negative lists y) a
@@ -144,16 +141,14 @@ omit [∀ i,(Ideal.span {p i}).IsMaximal] in
 
 theorem retained_sum
     (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
-    (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
-    (label : SecondParentSource ι Jo→Finset ι→SecondExpansionData ι→κ)
+    (R : SecondParentSource ι Jo→ Finset ι→ Finset ι→ℝ)
+    (label : SecondParentSource ι Jo→ Finset ι→ SecondExpansionData ι→κ)
     (residual : Finset ι) (j : κ) (w : SecondParentSource ι Jo→ℂ)
     (H : MarkedSecondSource ι Jo 0→ℂ) :
     (∑ y∈parents,w y*∑ x∈(secondDyadicSector pool (secondVariableCutoff p y (R y))
       residual (label y) j).image (attachSecondExpansion y),H x) =
     ∑ x∈retainedPool p pool parents R label residual j,w (secondParentOf x)*H x := by
-  rw [retainedPool,sum_attachedSecondFamily]
-  apply Finset.sum_congr rfl
-  intro y hy
+  pm_3813 retainedPool sum_attachedSecondFamily Finset.sum_congr y hy
   rw [Finset.sum_image (fun _ _ _ _ h=>attachSecondExpansion_injective y h),Finset.mul_sum]
   rfl
 

@@ -1,15 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedTuples
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalSlotSupport
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
+open scoped Classical ContDiff
+open CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -18,7 +18,7 @@ variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hcop : IsCoprime (Q*Ideal.span {(72:Eis)}) (rowResidualPart I (Ideal.span {m}*F)))
     (hpow : rowPowerfulPart R=rowPowerfulPart I)
     (hmask : rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
-variable (L : σ→Finset (Ideal Eis))
+variable (L : σ→ Finset (Ideal Eis))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
@@ -69,15 +69,8 @@ theorem actual_marked_slot_split_reflection
   rw [actual_marked_tuple_reflection D R I F Q hR hI hF hm hf hz hbad hcop hpow hmask
     (fun p : ∀ i,L i => slotChoiceFamily L hmax hgood p) hS hSodd Ψ hΨnorm hQ hΨperiod hmLam hm2
     c hc hcQ G N hN hNp C (fun p => ∏ i,w i (p i)) W hWcompact lo hi hlo hsupp hW X hX]
-  congr 1
-  apply Finset.sum_congr rfl
-  intro h hh
-  congr 1
-  apply Finset.sum_congr rfl
-  intro A hA
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro T hT
+  pm_5046 h hh
+  pm_3170 A hA Finset.mul_sum T hT
   congr 1
   have hs :=
     (original_supported_slot_sum D R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask
@@ -87,16 +80,13 @@ theorem actual_marked_slot_split_reflection
             (((poolPrimeFamily R (Ideal.span {m}*F) (Q*Ideal.span {(72:Eis)})).restrict A).reflected (rowResidualPart I (Ideal.span {m}*F)) (rowResidualPart_admissible I (Ideal.span {m}*F) hbad) ((slotChoiceFamily L hmax hgood p.val).restrict T)).generator_good
             (reflectedExponent (fun b : A => completedLocalExponent R F b.val.val))
             (slotIndices A (PrimeIndex (rowResidualPart I (Ideal.span {m}*F))) T) W X))
-  convert hs using 1
-  apply Finset.sum_congr rfl
-  intro p hp
+  pm_4983 hs p hp
   congr 1
   congr 1
   apply Finset.prod_congr (by ext; simp only [Finset.mem_sdiff,Finset.mem_univ])
   intro t ht
   rfl
 
-end
 end SevenEighths.InverseReflectedPhase
 
 end OAI

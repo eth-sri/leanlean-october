@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SpatialDerivatives
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstCoreCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,75 +9,32 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace CubicEisenstein
 open Filter
-open scoped BigOperators Classical Topology Matrix
+open scoped Classical Topology Matrix
 
 def smoothEisenstein (s : ℂ) (p : SpatialCoordinates) : ℂ := ∑'r, smoothSummand s r p
 
@@ -118,24 +76,28 @@ def axisLaplacian (f : SpatialCoordinates → ℂ) (p : SpatialCoordinates) : �
   (p 2:ℂ)^2 * (∑ j : Fin 3, deriv (deriv (axisSlice f p j)) (p j)) -
     (p 2:ℂ)*deriv (axisSlice f p 2) (p 2)
 
-lemma axisSlice_zero (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+section
+variable (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates)
+include f p
+lemma axisSlice_zero :
     axisSlice (fun q => f (q 0) (q 1) (q 2)) p 0 = fun t => f t (p 1) (p 2) := by
   funext t
   simp [axisSlice,Function.update]
-lemma axisSlice_one (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+lemma axisSlice_one :
     axisSlice (fun q => f (q 0) (q 1) (q 2)) p 1 = fun t => f (p 0) t (p 2) := by
   funext t
   simp [axisSlice,Function.update]
-lemma axisSlice_two (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+lemma axisSlice_two :
     axisSlice (fun q => f (q 0) (q 1) (q 2)) p 2 = fun t => f (p 0) (p 1) t := by
   funext t
   simp [axisSlice,Function.update]
 
-lemma axisLaplacian_eq_hyperbolicLaplacian (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+lemma axisLaplacian_eq_hyperbolicLaplacian :
     axisLaplacian (fun q => f (q 0) (q 1) (q 2)) p =
       hyperbolicLaplacian f (p 0) (p 1) (p 2) := by
   simp only [axisLaplacian,Fin.sum_univ_three,axisSlice_zero,axisSlice_one,axisSlice_two,
     hyperbolicLaplacian]
+end
 
 lemma smoothSummand_axisLaplacian (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates) (hv : 0<p 2) :
     axisLaplacian (smoothSummand s r) p = s*(s-2)*smoothSummand s r p := by
@@ -175,18 +137,19 @@ theorem smoothEisenstein_eigenfunction (s : ℂ) (hs : 2<s.re)
   rw [tsum_mul_left]
   rfl
 
-lemma axisSlice_eventuallyEq_of_positive (f g : SpatialCoordinates → ℂ)
-    (heq : ∀ q, 0<q 2 → f q=g q) (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
+section
+variable (f g : SpatialCoordinates → ℂ) (heq : ∀ q, 0<q 2 → f q=g q) (p : SpatialCoordinates) (hv : 0<p 2)
+include f g heq p hv
+lemma axisSlice_eventuallyEq_of_positive (j : Fin 3) :
     axisSlice f p j =ᶠ[𝓝 (p j)] axisSlice g p j := by
   have hnear : ∀ᶠ t in 𝓝 (p j), 0<(Function.update p j t) 2 := by
-    apply ((continuous_apply 2).comp (continuous_axis_update p j)).continuousAt.eventually_const_lt
+    pm_7212
     change 0<(Function.update p j (p j)) 2
     simpa only [Function.update_eq_self] using hv
   filter_upwards [hnear] with t ht
   exact heq _ ht
 
-lemma axisLaplacian_congr_positive (f g : SpatialCoordinates → ℂ)
-    (heq : ∀ q, 0<q 2 → f q=g q) (p : SpatialCoordinates) (hv : 0<p 2) :
+lemma axisLaplacian_congr_positive :
     axisLaplacian f p = axisLaplacian g p := by
   have h (j : Fin 3) := axisSlice_eventuallyEq_of_positive f g heq p hv j
   unfold axisLaplacian
@@ -195,10 +158,10 @@ lemma axisLaplacian_congr_positive (f g : SpatialCoordinates → ℂ)
   apply Finset.sum_congr rfl
   intro j hj
   exact (h j).deriv.deriv_eq
+end
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
 section
@@ -228,7 +191,7 @@ lemma residualPairWeight_test_ne_zero
   constructor
   · intro hz
     apply hw
-    simp only [residualPairWeight, secondInputCoefficient, hz, mul_zero, star_zero, zero_mul]
+    pm_316 residualPairWeight secondInputCoefficient hz mul_zero star_zero zero_mul
   · intro hz
     apply hw
     simp only [residualPairWeight, secondInputCoefficient, hz, mul_zero]
@@ -237,7 +200,6 @@ end
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -297,7 +259,7 @@ theorem originalTerm_product_divisor (S T : Finset (Ideal O))
       originalTerm rows left right a b D E i j k * F (D*E) i j k else 0) =
     (if d ∣ left j*right k then
       originalTerm rows left right a b 1 1 i j k * F d i j k else 0) := by
-  by_cases hc : IsCoprime (left j) (right k)
+  pm_3717
   · have hd := divisor_product_delta S T (left j) (right k) d (hleft j) (hright k) hc
       (hS j) (hT k) (fun q =>
         star (quadraticRow (left j) (CompletedGauss.primaryGenerator (rows i)) * a j) *
@@ -334,19 +296,13 @@ theorem originalColumnSum_product_divisor (S T : Finset (Ideal O))
   calc
     _ = ∑ j, ∑ k, ∑ D ∈ S, ∑ E ∈ T, if D*E=d then
         originalTerm rows left right a b D E i j k * F (D*E) i j k else 0 := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      apply Finset.sum_congr rfl
-      intro k hk
+      pm_3718
       exact (originalTerm_product_divisor S T rows left right a b d i j k hleft hright hS hT F).symm
     _ = ∑ D ∈ S, ∑ E ∈ T, ∑ j, ∑ k, if D*E=d then
         originalTerm rows left right a b D E i j k * F (D*E) i j k else 0 :=
       four_sums_exchange Finset.univ Finset.univ S T _
     _ = _ := by
-      apply Finset.sum_congr rfl
-      intro D hD
-      apply Finset.sum_congr rfl
-      intro E hE
+      pm_3438
       by_cases h : D*E=d <;> simp [h]
 
 omit [Fintype m] [DecidableEq m] [DecidableEq n] [DecidableEq p] in
@@ -369,12 +325,8 @@ theorem originalColumnSum_divisor_rectangles (K S T : Finset (Ideal O))
     by_cases hp : P d i
     · simp only [hp, and_true]
       rw [originalColumnSum_product_divisor S T rows left right a b d i hleft hright hS hT F]
-      apply (norm_sum_le _ _).trans
-      apply Finset.sum_le_sum
-      intro D hD
-      apply (norm_sum_le _ _).trans
-      apply Finset.sum_le_sum
-      intro E hE
+      pm_3719 D hD
+      pm_3719 E hE
       by_cases h : D*E=d <;> simp [h,B]
     · simp [hp]
   calc
@@ -383,10 +335,7 @@ theorem originalColumnSum_divisor_rectangles (K S T : Finset (Ideal O))
     _ = ∑ D ∈ S, ∑ E ∈ T, ∑ d ∈ K, if D*E=d ∧ P d i then ‖B D E‖ else 0 :=
       three_sums_exchange K S T _
     _ = _ := by
-      apply Finset.sum_congr rfl
-      intro D hD
-      apply Finset.sum_congr rfl
-      intro E hE
+      pm_3438
       have heq (d : Ideal O) : (if D*E=d ∧ P d i then ‖B D E‖ else 0) =
           if d=D*E then (if P (D*E) i then ‖B D E‖ else 0) else 0 := by
         by_cases h : d=D*E
@@ -430,9 +379,10 @@ lemma divisorDyadicLabel_bounds (N : ℝ) (D : Ideal O)
 
 lemma divisorDyadicScale_ge_one (j : ℕ) : 1 ≤ divisorDyadicScale j := le_max_left _ _
 
-theorem divisorDyadicBin_bounds (S : Finset (Ideal O)) (N : ℝ)
-    (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ N)
-    (j : Fin (columnDyadicLength N+1)) (D : Ideal O) (hD : D ∈ divisorDyadicBin S N j) :
+section
+variable (S : Finset (Ideal O)) (N : ℝ) (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ N) (j : Fin (columnDyadicLength N+1))
+include S N hS j
+theorem divisorDyadicBin_bounds (D : Ideal O) (hD : D ∈ divisorDyadicBin S N j) :
     divisorDyadicScale j.val ≤ (Ideal.absNorm D : ℝ) ∧
       (Ideal.absNorm D : ℝ) ≤ 2 * divisorDyadicScale j.val := by
   obtain ⟨hDS,hj⟩ := Finset.mem_filter.mp hD
@@ -443,14 +393,16 @@ theorem divisorDyadicBin_bounds (S : Finset (Ideal O)) (N : ℝ)
   have hm : (2 : ℝ)^j.val/2 ≤ divisorDyadicScale j.val := le_max_right _ _
   linarith [hb.2]
 
-theorem divisorDyadicBin_scale_le (S : Finset (Ideal O)) (N : ℝ)
-    (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ N)
-    (j : Fin (columnDyadicLength N+1)) (hj : (divisorDyadicBin S N j).Nonempty) :
+theorem divisorDyadicBin_scale_le (hj : (divisorDyadicBin S N j).Nonempty) :
     divisorDyadicScale j.val ≤ N := by
   obtain ⟨D,hD⟩ := hj
   exact (divisorDyadicBin_bounds S N hS j D hD).1.trans (hS D (Finset.mem_filter.mp hD).1).2
+end
 
-theorem sum_divisorDyadicBins {A : Type*} [AddCommMonoid A]
+section
+variable {A : Type*} [AddCommMonoid A]
+include A
+theorem sum_divisorDyadicBins
     (S : Finset (Ideal O)) (N : ℝ) (f : Ideal O → A) :
     (∑ D ∈ S, f D) = ∑ j : Fin (columnDyadicLength N+1), ∑ D ∈ divisorDyadicBin S N j, f D := by
   simp only [divisorDyadicBin,Finset.sum_filter]
@@ -459,7 +411,7 @@ theorem sum_divisorDyadicBins {A : Type*} [AddCommMonoid A]
   intro D hD
   simp
 
-theorem sum_divisorDyadicRectangles {A : Type*} [AddCommMonoid A]
+theorem sum_divisorDyadicRectangles
     (S T : Finset (Ideal O)) (N : ℝ) (f : Ideal O → Ideal O → A) :
     (∑ D ∈ S, ∑ E ∈ T, f D E) =
       ∑ j : Fin (columnDyadicLength N+1), ∑ k : Fin (columnDyadicLength N+1),
@@ -469,27 +421,26 @@ theorem sum_divisorDyadicRectangles {A : Type*} [AddCommMonoid A]
         ∑ E ∈ T, f D E := sum_divisorDyadicBins S N _
     _ = ∑ j : Fin (columnDyadicLength N+1), ∑ D ∈ divisorDyadicBin S N j,
         ∑ k : Fin (columnDyadicLength N+1), ∑ E ∈ divisorDyadicBin T N k, f D E := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      apply Finset.sum_congr rfl
-      intro D hD
+      pm_3397 j hj D hD
       exact sum_divisorDyadicBins T N (f D)
     _ = _ := by
       apply Finset.sum_congr rfl
       intro j hj
       exact Finset.sum_comm
+end
 
 def columnDivisorPool {n : Type*} [Fintype n] (left : n → Ideal O) : Finset (Ideal O) :=
   Finset.univ.biUnion (fun j => IdealMobiusDivisorSum.idealDivisors (left j))
 
-theorem mem_columnDivisorPool_of_dvd {n : Type*} [Fintype n]
-    (left : n → Ideal O) (hleft : ∀ j, left j ≠ 0) (j : n) (D : Ideal O)
+section
+variable {n : Type*} [Fintype n] (left : n → Ideal O) (hleft : ∀ j, left j ≠ 0)
+include n left hleft
+theorem mem_columnDivisorPool_of_dvd (j : n) (D : Ideal O)
     (hD : D ∣ left j) : D ∈ columnDivisorPool left := by
   apply Finset.mem_biUnion.mpr
   exact ⟨j,Finset.mem_univ j,(IdealMobiusDivisorSum.mem_idealDivisors (hleft j)).mpr hD⟩
 
-theorem columnDivisorPool_norm_bounds {n : Type*} [Fintype n]
-    (left : n → Ideal O) (hleft : ∀ j, left j ≠ 0) (N : ℝ)
+theorem columnDivisorPool_norm_bounds (N : ℝ)
     (hN : ∀ j, (Ideal.absNorm (left j) : ℝ) ≤ N)
     (D : Ideal O) (hD : D ∈ columnDivisorPool left) :
     1 ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ N := by
@@ -503,7 +454,8 @@ theorem columnDivisorPool_norm_bounds {n : Type*} [Fintype n]
     Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (fun h => hleft j (Ideal.absNorm_eq_zero_iff.mp h)))
       (map_dvd Ideal.absNorm hd)
   refine ⟨?_,(Nat.cast_le.mpr hDN).trans (hN j)⟩
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h => hDz (Ideal.absNorm_eq_zero_iff.mp h))
+  pm_3073 Nat.one_le_iff_ne_zero.mpr h hDz
+end
 
 end CanonicalQuadraticSieve
 

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.LogarithmicControl
 public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem exists_uniform_polynomial_exponent :
   intro η hp a e t ha he z hz
   have hz2 : z ∈ closedBall ((2 : ℂ)+t*Complex.I) (2-a-2*e) :=
     ball_subset_closedBall.trans (closedBall_subset_closedBall (by linarith)) hz
-  have h := regular_disk_growth η hp a e t ha he.le hz2
+  pm_528 h regular_disk_growth η hp a e t ha he.le hz2
   have hQ : (η.modulus.absNorm : ℝ)^(3/5 : ℝ) ≤ (η.modulus.absNorm : ℝ) := by
     simpa using Real.rpow_le_rpow_of_exponent_le (modulus_norm_ge_one η)
       (show (3/5 : ℝ)≤1 by norm_num)
@@ -58,11 +59,11 @@ theorem disk_control_of_euler_log (e A ε : ℝ)
       EqOn (Complex.exp ∘ E) (regular η) (ball ((2 : ℂ)+t*Complex.I) (1/2)) →
       (∀ z ∈ closedBall ((2 : ℂ)+t*Complex.I) (49/100), ‖E z‖ ≤ A) →
       (∀ z ∈ closedBall ((2 : ℂ)+t*Complex.I) (2-a-6*e),
-        ‖regular η z‖ + ‖(regular η z)⁻¹‖ ≤ D*(complexity η t)^ε) ∧
+        ‖regular η z‖ + ‖(regular η z)⁻¹‖ ≤ D *(complexity η t)^ε) ∧
       (∀ z ∈ closedBall ((2 : ℂ)+t*Complex.I) (2-a-8*e),
         ‖deriv (regular η) z / regular η z‖ ≤ B*Real.log (complexity η t)) := by
   obtain ⟨M,hM,hpoly⟩ := exists_uniform_polynomial_exponent
-  obtain ⟨D,hD,hb⟩ := LogarithmicControl.logarithmic_control he he' hA hM hε
+  pm_3547 D hD hb LogarithmicControl.logarithmic_control he he' hA hM hε
   refine ⟨D, LogarithmicControl.outerConstant e A M/(2*e), hD, ?_, ?_⟩
   · have hB := LogarithmicControl.outerConstant_ge_one he he' hA hM
     positivity

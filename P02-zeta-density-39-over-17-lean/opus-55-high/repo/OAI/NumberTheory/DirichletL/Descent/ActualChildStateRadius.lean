@@ -30,7 +30,7 @@ theorem actual_cell_radius_nonnegative_on_keys {ι : Type*} [DecidableEq ι]
   obtain ⟨x,hx⟩ := (mem_keys_iff p source d).mp hd
   have hr := actual_second_row_radius_one p (cell p source d)
     (actualCellRowRadius Z M ell A t V j eta d) ⟨x,hx⟩ (hrows d)
-  exact (Real.rpow_le_rpow_left_iff hZ).mp (by simpa only [Real.rpow_zero,actualCellRowRadius] using hr)
+  exact (Real.rpow_le_rpow_left_iff hZ).mp (by aesop)
 
 end SevenEighths.InverseMoment
 end

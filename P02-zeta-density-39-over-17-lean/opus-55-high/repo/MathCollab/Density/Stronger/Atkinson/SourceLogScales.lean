@@ -8,6 +8,8 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.QuadraticDivisorShortening
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+public import WeylPort.GrowthAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,28 +21,24 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
-
 theorem exists_logGaussian_power_tail_bound (C p A : ℝ) {b : ℝ} (hb : 0 < b) :
     ∃ T₀ : ℝ, 1 ≤ T₀ ∧ ∀ T : ℝ, T₀ ≤ T →
       C * T ^ p * Real.exp (-b * (Real.log T) ^ 2) ≤ T ^ (-A) := by
   let T₀ := max 1 (max C (Real.exp ((A + p + 1) / b)))
-  refine ⟨T₀, le_max_left _ _, ?_⟩
+  pm_4889
   intro T hT₀
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT₀
-  have hT : 0 < T := by linarith
+  pm_306 hT1 hT₀ hT
   have hTC : C ≤ T := (le_max_left _ _).trans ((le_max_right _ _).trans hT₀)
   have hTexp : Real.exp ((A + p + 1) / b) ≤ T :=
     (le_max_right _ _).trans ((le_max_right _ _).trans hT₀)
   have hlog0 := Real.log_nonneg hT1
   have hlog : (A + p + 1) / b ≤ Real.log T := by
-    simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos _) hTexp
+    pm_7851
   have hbLog : A + p + 1 ≤ b * Real.log T := by
     have h := (div_le_iff₀ hb).mp hlog
     linarith
   have hexp : Real.exp (-b * (Real.log T) ^ 2) ≤ T ^ (-(A + p + 1)) := by
-    rw [Real.rpow_def_of_pos hT]
-    apply Real.exp_le_exp.mpr
-    nlinarith [mul_nonneg hlog0 (sub_nonneg.mpr hbLog)]
+    pm_7720 hbLog
   calc
     _ ≤ T * T ^ p * Real.exp (-b * (Real.log T) ^ 2) := by gcongr
     _ ≤ T * T ^ p * T ^ (-(A + p + 1)) := by gcongr
@@ -53,29 +51,14 @@ theorem exists_zetaQuadraticDivisor_log_tail_bound (A : ℝ) :
     ∃ T₀ : ℝ, 1 ≤ T₀ ∧ ∀ T G : ℝ, T₀ ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
       ‖zetaFrozenDivisorQuadraticSum T G - zetaShortQuadraticDivisorSum T G (Real.log T)‖ ≤
         G * T ^ (-A) := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_zetaFrozenDivisorQuadraticSum_sub_short_le (1 / 2) (by norm_num)
-  obtain ⟨T₀, hT₀, htail⟩ := exists_logGaussian_power_tail_bound C 1 A (b := 1 / 8) (by norm_num)
-  refine ⟨T₀, hT₀, ?_⟩
-  intro T G hT hG hGT
+  pm_5034 exists_norm_zetaFrozenDivisorQuadraticSum_sub_short_le T₀ hT₀
+  pm_435 T₀ hT₀ T G hT hG hGT
   have hT1 := hT₀.trans hT
   have h := hbound T G (Real.log T) hT1 hG hGT (Real.log_nonneg hT1)
   have he := mul_le_mul_of_nonneg_left (htail T hT) hG.le
-  rw [Real.rpow_one] at he
-  norm_num only [show (1 / 2 + 1 / 2 : ℝ) = 1 by norm_num, Real.rpow_one] at h
-  apply h.trans
-  rw [show -(Real.log T) ^ 2 / 8 = -(1 / 8) * (Real.log T) ^ 2 by ring]
-  calc
-    _ = G * (C * T * Real.exp (-(1 / 8) * (Real.log T) ^ 2)) := by ring
-    _ ≤ _ := he
+  pm_4355
 
-theorem eventually_const_log_pow_le_rpow (C : ℝ) (hC : 0 ≤ C) (k : ℕ)
-    {η : ℝ} (hη : 0 < η) :
-    ∀ᶠ T : ℝ in atTop, C * (Real.log T) ^ k ≤ T ^ η := by
-  have hsmall := (isLittleO_log_rpow_rpow_atTop (k : ℝ) hη).const_mul_left C
-  filter_upwards [hsmall.bound (by norm_num : (0 : ℝ) < 1), eventually_ge_atTop (1 : ℝ)] with T h hT
-  simpa only [Real.rpow_natCast, Real.norm_eq_abs, one_mul,
-    abs_of_nonneg (mul_nonneg hC (pow_nonneg (Real.log_nonneg hT) k)),
-    abs_of_nonneg (Real.rpow_nonneg (by linarith : 0 ≤ T) η)] using h
+export TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow)
 
 theorem gaussian_width_sq_le_height {T G δ : ℝ} (hT : 1 ≤ T) (hG : 0 ≤ G)
     (hδ : 0 ≤ δ) (hwidth : G ≤ T ^ (1 / 2 - δ)) : G ^ 2 ≤ T := by
@@ -96,8 +79,7 @@ theorem eventually_zeta_source_log_window_scales {δ : ℝ} (hδ : 0 < δ) :
     eventually_ge_atTop (8 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1] with T hlog hT hlog1
   refine ⟨hT, hlog1, ?_⟩
   intro G hG hwidth
-  have hT1 : 1 ≤ T := by linarith
-  have hT0 : 0 < T := by linarith
+  pm_178 hT1 T hT0
   have hsq := gaussian_width_sq_le_height hT1 hG.le hδ.le hwidth
   have hGpow : G ≤ T := hwidth.trans (by
     calc

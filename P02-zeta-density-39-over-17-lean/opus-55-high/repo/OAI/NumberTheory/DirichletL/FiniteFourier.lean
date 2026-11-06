@@ -6,6 +6,7 @@ public import Mathlib.RingTheory.Ideal.Span
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.LinearCombination
 public import Mathlib.Tactic.ByContra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ def IsPrimitiveOnIdeals (χ : MulChar R ℂ) : Prop :=
 theorem IsPrimitiveOnIdeals.inv {χ : MulChar R ℂ} (hχ : IsPrimitiveOnIdeals χ) :
     IsPrimitiveOnIdeals χ⁻¹ := by
   intro I hI
-  obtain ⟨u, hu, hχu⟩ := hχ I hI
+  pm_98 u hu hχu hχ I hI
   refine ⟨u, hu, ?_⟩
   intro hinv
   apply hχu
@@ -44,14 +45,8 @@ theorem transform_inversion (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
   calc
     (∑ y : R, ∑ a : R, f y * ψ (a * y) * ψ (-(a * x))) =
         ∑ y : R, f y * ∑ a : R, ψ (a * (y - x)) := by
-      apply Finset.sum_congr rfl
-      intro y _
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro a _
-      rw [mul_assoc, ← AddChar.map_add_eq_mul]
-      congr 2
-      ring
+      pm_150 Finset.sum_congr y Finset.mul_sum a
+      pm_7086 AddChar.map_add_eq_mul
     _ = (Fintype.card R : ℂ) * f x := by
       simp only [AddChar.sum_mulShift _ hψ, sub_eq_zero]
       simp [mul_ite, mul_comm]
@@ -66,7 +61,10 @@ theorem exists_nonzero_annihilator {a : R} (ha : ¬ IsUnit a) :
   by_contra hb0
   exact h b hb0 hb
 
-theorem exists_unit_stabilizer (χ : MulChar R ℂ) (hχ : IsPrimitiveOnIdeals χ)
+section
+variable (χ : MulChar R ℂ) (hχ : IsPrimitiveOnIdeals χ)
+include χ hχ
+theorem exists_unit_stabilizer
     {a : R} (ha : ¬ IsUnit a) :
     ∃ u : Rˣ, a * (u : R) = a ∧ χ (u : R) ≠ 1 := by
   obtain ⟨b, hb, hab⟩ := exists_nonzero_annihilator ha
@@ -82,11 +80,10 @@ theorem exists_unit_stabilizer (χ : MulChar R ℂ) (hχ : IsPrimitiveOnIdeals �
     rw [hc, ← mul_assoc, hab, zero_mul]
   linear_combination hzero
 
-theorem gaussSum_mulShift_nonunit_eq_zero (χ : MulChar R ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ)
+theorem gaussSum_mulShift_nonunit_eq_zero (ψ : AddChar R ℂ)
     {a : R} (ha : ¬ IsUnit a) :
     gaussSum χ (ψ.mulShift a) = 0 := by
-  obtain ⟨u, hu, hχu⟩ := exists_unit_stabilizer χ hχ ha
+  pm_837 u hu hχu exists_unit_stabilizer χ hχ ha
   have hshift : (ψ.mulShift a).mulShift (u : R) = ψ.mulShift a := by
     ext x
     simp only [AddChar.mulShift_apply, ← mul_assoc, hu]
@@ -94,21 +91,18 @@ theorem gaussSum_mulShift_nonunit_eq_zero (χ : MulChar R ℂ)
   rw [hshift] at heq
   exact eq_zero_of_mul_eq_self_left hχu heq
 
-theorem primitive_gaussSum_mulShift (χ : MulChar R ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (a : R) :
+theorem primitive_gaussSum_mulShift (ψ : AddChar R ℂ) (a : R) :
     gaussSum χ (ψ.mulShift a) = χ⁻¹ a * gaussSum χ ψ := by
   by_cases ha : IsUnit a
   · simpa only [ha.unit_spec] using gaussSum_mulShift_eq χ ψ ha.unit
   · rw [gaussSum_mulShift_nonunit_eq_zero χ hχ ψ ha,
       MulChar.map_nonunit _ ha, zero_mul]
 
-theorem transform_primitive_character (χ : MulChar R ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (a : R) :
+theorem transform_primitive_character (ψ : AddChar R ℂ) (a : R) :
     transform ψ χ a = χ⁻¹ a * gaussSum χ ψ := by
   exact primitive_gaussSum_mulShift χ hχ ψ a
 
-theorem primitive_gaussSum_mul_conjugate (χ : MulChar R ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
+theorem primitive_gaussSum_mul_conjugate (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ * star (gaussSum χ ψ) = (Fintype.card R : ℂ) := by
   have hinv := transform_inversion ψ hψ (fun x => χ x) 1
   simp only [transform_primitive_character χ hχ, mul_one, map_one, mul_one] at hinv
@@ -124,13 +118,13 @@ theorem primitive_gaussSum_mul_conjugate (χ : MulChar R ℂ)
       ring
     _ = (Fintype.card R : ℂ) := hinv
 
-theorem primitive_gaussSum_norm_sq (χ : MulChar R ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
+theorem primitive_gaussSum_norm_sq (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     ‖gaussSum χ ψ‖ ^ 2 = (Fintype.card R : ℝ) := by
   apply Complex.ofReal_inj.mp
   rw [Complex.sq_norm, Complex.normSq_eq_conj_mul_self]
   simpa only [starRingEnd_apply, mul_comm, Complex.ofReal_natCast] using
     primitive_gaussSum_mul_conjugate χ hχ ψ hψ
+end
 
 end
 

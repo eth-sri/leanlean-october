@@ -1,6 +1,7 @@
 module
 public import RationalShortRange
 public import RationalMomentCover
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ theorem rational_energy_trivial (A : Finset ℚ) (W : Finset ℝ) :
       apply sum_le_sum
       intro r _
       apply pow_le_pow_left₀ (norm_nonneg _)
-      exact (norm_sum_le _ _).trans_eq (by simp only [hphase, sum_const, nsmul_eq_mul, mul_one])
+      pm_6595 norm_sum_le
     _ = _ := by simp
 
 theorem rational_card_le_height (A : Finset ℚ) (H : ℕ)
@@ -29,7 +30,7 @@ theorem rational_card_le_height (A : Finset ℚ) (H : ℕ)
       (↑(Icc 1 (3*H) ×ˢ Icc 1 H) : Set (ℕ × ℕ)) := by
     intro r hr
     have hn : (r.num.natAbs : ℝ) ≤ 3*(H : ℝ) := by
-      have hd : (r.den : ℝ) ≤ H := by exact_mod_cast (hA r hr).2.1
+      have hd : (r.den : ℝ) ≤ H := by simp_all
       exact (numerator_bound_of_log (hA r hr).1 (hA r hr).2.2).trans
         ((mul_le_mul_of_nonneg_left hd (Real.exp_pos _).le).trans
           (mul_le_mul_of_nonneg_right Real.exp_one_lt_three.le (Nat.cast_nonneg _)))

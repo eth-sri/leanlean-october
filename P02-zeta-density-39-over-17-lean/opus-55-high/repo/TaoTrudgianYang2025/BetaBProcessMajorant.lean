@@ -1,5 +1,6 @@
 module
 public import TaoTrudgianYang2025.BetaDiscreteCurvature
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,13 +27,12 @@ theorem betaBProcess_majorant {m N T c C : ℝ}
       betaBProcessConstant c C*(Real.sqrt T+N/Real.sqrt T) := by
   let y := Real.sqrt T
   let d := Real.sqrt c
-  have hy : 0 < y := Real.sqrt_pos.mpr hT
-  have hd : 0 < d := Real.sqrt_pos.mpr hc
+  pm_5886 hy y Real.sqrt_pos.mpr hT hd d hc
   have hySq : y^2 = T := Real.sq_sqrt hT.le
   have hyN : y ≤ N := by
     rw [← Real.sqrt_sq hN.le]
     exact Real.sqrt_le_sqrt hscale
-  have hratio : 1 ≤ N/y := (le_div_iff₀ hy).2 (by simpa using hyN)
+  have hratio : 1 ≤ N/y := (le_div_iff₀ hy).2 (by grind)
   have hsqrt : Real.sqrt (c*T/N^2) = d*y/N := by
     rw [Real.sqrt_div (by positivity),Real.sqrt_mul hc.le,Real.sqrt_sq hN.le]
   have hfirst : m*(C*T/N^2)/(2*Real.pi)+2 ≤
@@ -63,8 +63,6 @@ theorem betaBProcess_majorant {m N T c C : ℝ}
   have heq : (T/N+1)*(N/y) = y+N/y := by
     field_simp
     nlinarith [hySq]
-  calc
-    _ = (C/(2*Real.pi)+2)*((2*Real.pi+2)/d+2)*((T/N+1)*(N/y)) := by ring
-    _ = _ := by rw [heq]
+  grind
 
 end TaoTrudgianYang2025

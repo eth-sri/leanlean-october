@@ -29,9 +29,7 @@ theorem physical_scalar_extracted (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ�
   unfold extractedOutsideScalar
   rw [mul_div_cancel₀ _ (hp 1),mul_div_cancel₀ _ (hp 2)]
   have h := reciprocal_annulus_normalization r Qn Qb kn kb hr hn hb hkn hkb
-  calc
-    _ = A*(1/(r*Real.sqrt Qn*Qb))*smallScalar R := by ring
-    _ = _ := by rw [h]; ring
+  grind
 
 theorem annular_kernel_threshold (Z T tau C r QK QP Qn Qb kn kb D1 D2 : ℝ)
     (hT : 0<T) (htau : 0<tau) (hC : 0<C) (hr : 0<r)

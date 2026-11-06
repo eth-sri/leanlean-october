@@ -70,7 +70,7 @@ theorem identityClass_iff_generator {I : Ideal A} (hI : I ≠ ⊥) :
     rw [hua, ← hq]
     change (Ideal.Quotient.mk M (Submodule.IsPrincipal.generator I)) *
       (w : A ⧸ M) * (w⁻¹ : (A ⧸ M)ˣ) = _
-    rw [mul_assoc, ← Units.val_mul, mul_inv_cancel, Units.val_one, mul_one]
+    simp_all
   · intro h
     exact ⟨hI, _, Ideal.span_singleton_generator I, h⟩
 

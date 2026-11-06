@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProductSpace
+open scoped Classical FourierTransform SchwartzMap RealInnerProductSpace
 
 namespace ProbeGramLatticeDecay
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
@@ -27,21 +28,7 @@ theorem sourceControl_nonneg (S : Finset (ℕ × ℕ)) (W : 𝓢(Joint, ℂ)) :
 
 theorem product_decay (W : 𝓢(Joint, ℂ)) (x y : ℂ) :
     ((1+‖x‖^2)^2 * (1+‖y‖^2)^2) * ‖W (point x y)‖ ≤
-      (2:ℝ)^8 * sourceControl (Finset.Iic (8,0)) W := by
-  have hx := WithLp.norm_fst_le ℂ (point x y)
-  have hy := WithLp.norm_snd_le ℂ (point x y)
-  change ‖x‖ ≤ ‖point x y‖ at hx
-  change ‖y‖ ≤ ‖point x y‖ at hy
-  have hx2 : 1+‖x‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg (point x y), norm_nonneg x, norm_nonneg y]
-  have hy2 : 1+‖y‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg (point x y), norm_nonneg x, norm_nonneg y]
-  have hpow : (1+‖x‖^2)^2 * (1+‖y‖^2)^2 ≤ (1+‖point x y‖)^8 := by
-    calc
-      _ ≤ ((1+‖point x y‖)^2)^2 * ((1+‖point x y‖)^2)^2 := by gcongr
-      _ = _ := by ring
-  have h := SchwartzMap.one_add_le_sup_seminorm_apply (𝕜 := ℝ)
-    (m := (8,0)) (k := 8) (n := 0) le_rfl le_rfl W (point x y)
-  simp only [norm_iteratedFDeriv_zero] at h
-  exact (mul_le_mul_of_nonneg_right hpow (norm_nonneg _)).trans h
+      (2:ℝ)^8 * sourceControl (Finset.Iic (8,0)) W := by pm_3899
 
 def physicalPoint (N : ℝ) (m : O × O) : Joint :=
   point (eisEmbedding m.1 / (Real.sqrt N : ℂ))
@@ -50,14 +37,14 @@ def physicalPoint (N : ℝ) (m : O × O) : Joint :=
 theorem physicalPoint_eq_smul (N : ℝ) (m : O × O) :
     physicalPoint N m = (Real.sqrt N)⁻¹ • point (eisEmbedding m.1) (eisEmbedding m.2) := by
   apply WithLp.ofLp_injective
-  simp [physicalPoint, point, div_eq_mul_inv, Algebra.smul_def, mul_comm]
+  pm_564 physicalPoint point div_eq_mul_inv Algebra.smul_def mul_comm
 
 theorem physical_summable (W : 𝓢(Joint, ℂ)) (N : ℝ) (hN : 0 < N) :
     Summable (fun m : O × O => ‖W (physicalPoint N m)‖) := by
   let g : O → ℝ := fun m => ((1+N⁻¹*‖eisEmbedding m‖^2)^2)⁻¹
-  have hg : Summable g := scaled_eisenstein_cauchy_summable _ (inv_pos.mpr hN)
-  have hp := hg.mul_of_nonneg hg (fun _ => by dsimp [g]; positivity)
-    (fun _ => by dsimp [g]; positivity)
+  pm_8774 hN
+  have hp := hg.mul_of_nonneg hg (fun _ => by positivity)
+    (fun _ => by positivity)
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ (hp.mul_left ((2:ℝ)^8 * sourceControl (Finset.Iic (8,0)) W))
   intro m
   have hb := product_decay W (eisEmbedding m.1 / (Real.sqrt N : ℂ))
@@ -67,9 +54,7 @@ theorem physical_summable (W : 𝓢(Joint, ℂ)) (N : ℝ) (hN : 0 < N) :
     ring
   simp only [hnorm] at hb
   change ‖W (physicalPoint N m)‖ ≤ ((2:ℝ)^8 * sourceControl (Finset.Iic (8,0)) W) * (g m.1*g m.2)
-  dsimp only [g]
-  rw [ ← mul_inv, ← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-  simpa only [physicalPoint, mul_comm] using hb
+  pm_821
 
 theorem physical_lattice_bound :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -79,7 +64,7 @@ theorem physical_lattice_bound :
   intro W N hN
   have hNp : 0 < N := lt_of_lt_of_le zero_lt_one hN
   let g : O → ℝ := fun m => ((1+N⁻¹*‖eisEmbedding m‖^2)^2)⁻¹
-  have hg : Summable g := scaled_eisenstein_cauchy_summable _ (inv_pos.mpr hNp)
+  pm_8774 hNp
   have hp := hg.mul_of_nonneg hg (fun _ => by dsimp [g]; positivity)
     (fun _ => by dsimp [g]; positivity)
   have hpoint (m : O × O) : ‖W (physicalPoint N m)‖ ≤
@@ -90,20 +75,18 @@ theorem physical_lattice_bound :
       rw [norm_div, div_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs, Real.sq_sqrt hNp.le]
       ring
     simp only [hn] at hb
-    dsimp only [g]
-    rw [ ← mul_inv, ← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-    simpa only [physicalPoint, mul_comm] using hb
+    pm_821
   have hmass : (∑' m : O, g m) ≤ (4*(1+Real.pi)^2)*N := by
     have h := scaled_eisenstein_cauchy_small N⁻¹ (inv_pos.mpr hNp) ((inv_le_one₀ hNp).mpr hN)
     have hh := mul_le_mul_of_nonneg_left h hNp.le
-    simpa only [g, ← mul_assoc, mul_inv_cancel₀ hNp.ne', one_mul, mul_comm] using hh
+    pm_8486 g hNp.ne'
   calc
     _ ≤ ∑' m : O × O, ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*(g m.1*g m.2) :=
       (physical_summable W N hNp).tsum_le_tsum hpoint (hp.mul_left _)
     _ = ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*(∑' m : O, g m)^2 := by
       rw [tsum_mul_left, ← hg.tsum_mul_tsum hg hp, pow_two]
     _ ≤ ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*((4*(1+Real.pi)^2)*N)^2 := by
-      apply mul_le_mul_of_nonneg_left _ (mul_nonneg (by positivity) (sourceControl_nonneg _ _))
+      pm_6989
       exact pow_le_pow_left₀ (tsum_nonneg (fun _ => by dsimp [g]; positivity)) hmass 2
     _ = _ := by ring
 
@@ -137,12 +120,11 @@ theorem dualCoordinates_norm_le (p : DualIndex) :
     ‖dualCoordinates p‖ ≤ 2 * ‖dualPoint p‖ := by
   have hc := CubicEisenstein.coordinates_norm_bound (dualRow p)
   have hp : ‖fun i => eisEmbedding (dualRow p i)‖ ≤ ‖dualPoint p‖ := by
-    apply (pi_norm_le_iff_of_nonneg (norm_nonneg _)).mpr
-    intro i
+    pm_8934 norm_nonneg
     have h1 := explicitDualFrequency_norm_sq 1 p.1
     have h2 := explicitDualFrequency_norm_sq 1 p.2
     norm_num only [norm_one, one_pow, div_one] at h1 h2
-    have hq := norm_point_sq (explicitDualFrequency 1 p.1) (explicitDualFrequency 1 p.2)
+    pm_8279 hq
     fin_cases i
     · change ‖eisEmbedding (dualFrequencyEquiv p.1)‖ ≤ ‖dualPoint p‖
       dsimp only [dualPoint]
@@ -192,7 +174,7 @@ theorem norm_scaledDualPoint (L : ℝ) (hL : 0 ≤ L) (u : ℂ) (hu : ‖u‖ = 
     (p : DualIndex) : ‖scaledDualPoint L u p‖ = L * ‖dualPoint p‖ := by
   have h1 := norm_point_sq (u*(L:ℂ)*explicitDualFrequency 1 p.1)
     (u*(L:ℂ)*explicitDualFrequency 1 p.2)
-  have h2 := norm_point_sq (explicitDualFrequency 1 p.1) (explicitDualFrequency 1 p.2)
+  pm_8279 h2
   simp only [norm_mul, hu, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hL,
     one_mul] at h1
   apply (sq_eq_sq₀ (norm_nonneg _) (mul_nonneg hL (norm_nonneg _))).mp
@@ -233,17 +215,20 @@ theorem scaledDual_decay (F : 𝓢(Joint, ℂ)) (k : ℕ) (L : ℝ) (hL : 0 < L)
     Real.mul_rpow hL.le (norm_nonneg _)] at hh
   simpa only [mul_assoc] using hh
 
-theorem dual_fourier_summable (A : ℕ) (hA : 2 < A)
+section
+variable (A : ℕ) (hA : 2 < A)
+include A hA
+theorem dual_fourier_summable
     (W : 𝓢(Joint, ℂ)) (L : ℝ) (hL : 0 < L) (u : ℂ) (hu : ‖u‖ = 1) :
     Summable (fun p : {p : DualIndex // p ≠ 0} => ‖(𝓕 W) (scaledDualPoint L u p.val)‖) := by
-  have hdim : (4:ℝ) < ((2*A:ℕ):ℝ) := by exact_mod_cast (by omega : 4 < 2*A)
+  pm_3902
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _
     ((dual_power_summable ((2*A:ℕ):ℝ) hdim).mul_left
       (SchwartzMap.seminorm ℝ (2*A) 0 (𝓕 W) * L^(-((2*A:ℕ):ℝ))))
   intro p
   exact scaledDual_decay (𝓕 W) (2*A) L hL u hu p.val p.property
 
-theorem dual_fourier_lattice_bound (A : ℕ) (hA : 2 < A) :
+theorem dual_fourier_lattice_bound :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (W : 𝓢(Joint, ℂ)) (L : ℝ), 1 ≤ L → ∀ (u : ℂ), ‖u‖ = 1 →
         (∑' p : {p : DualIndex // p ≠ 0}, ‖(𝓕 W) (scaledDualPoint L u p.val)‖) ≤
@@ -254,7 +239,7 @@ theorem dual_fourier_lattice_bound (A : ℕ) (hA : 2 < A) :
   refine ⟨S,C*(mass+1),mul_pos hC (by positivity),?_⟩
   intro W L hL u hu
   have hLp : 0 < L := lt_of_lt_of_le zero_lt_one hL
-  have hdim : (4:ℝ) < ((2*A:ℕ):ℝ) := by exact_mod_cast (by omega : 4 < 2*A)
+  pm_3902
   calc
     _ ≤ ∑' p : {p : DualIndex // p ≠ 0},
         (SchwartzMap.seminorm ℝ (2*A) 0 (𝓕 W) * L^(-((2*A:ℕ):ℝ))) *
@@ -270,6 +255,7 @@ theorem dual_fourier_lattice_bound (A : ℕ) (hA : 2 < A) :
       · exact hm
       · exact mul_nonneg (mul_nonneg hC.le (sourceControl_nonneg S W)) (Real.rpow_nonneg hLp.le _)
     _ = _ := by ring
+end
 
 theorem sourceControl_mono {S T : Finset (ℕ × ℕ)} (hST : S ⊆ T)
     (W : 𝓢(Joint, ℂ)) : sourceControl S W ≤ sourceControl T W :=

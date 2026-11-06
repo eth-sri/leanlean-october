@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleyExponent
 public import GafniTao.WooleySourceSections68
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The initial normalized lower bound in Wooley Section 10
@@ -15,7 +16,6 @@ not imposed as an extra hypothesis.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The exact real-power rearrangement used between (6.3), Lemma 6.3, and
 the initial inequality in (10.6). -/
@@ -27,7 +27,7 @@ theorem wooley_initial_normalization_algebra
     (hupper : U ≤ C * (p ^ theta : ℝ) ^ s * K) :
     C⁻¹ * (p : ℝ) ^ (-((H : ℝ) * epsilon) - (s : ℝ) * theta) ≤
       K / ((p : ℝ) ^ (Lambda * (H : ℝ)) * Z) := by
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hp)
+  pm_2847 hpR p
   have hden : 0 < (p : ℝ) ^ (Lambda * (H : ℝ)) * Z :=
     mul_pos (Real.rpow_pos_of_pos hpR _) hZ
   rw [le_div_iff₀ hden]
@@ -55,8 +55,7 @@ theorem wooley_initial_normalization_algebra
             (p : ℝ) ^ (Lambda * (H : ℝ)) =
           (p : ℝ) ^ (-((s : ℝ) * theta)) *
             (p : ℝ) ^ ((H : ℝ) * (Lambda - epsilon)) := by
-      rw [← Real.rpow_add hpR, ← Real.rpow_add hpR]
-      congr 1
+      pm_344 hpR
       ring
     calc
       C⁻¹ * (p : ℝ) ^
@@ -84,6 +83,5 @@ theorem wooley_initial_normalization_algebra
           mul_le_mul_of_nonneg_left hupper (inv_nonneg.mpr hscale.le)
     _ = K := by field_simp
 
-end
 
 end GafniTao

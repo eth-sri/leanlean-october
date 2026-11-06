@@ -2,9 +2,12 @@ module
 /- Isolated from Scott McColm, smccolm/Lean pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1. MIT-0. See notes/guth-maynard-affine-reuse-audit.md. -/
 public import Mathlib
 public import MathCollab.Density.DivisorGrowth
+public import GuthMaynard.NativeSource.GuthMaynard.VanDerCorput
+public import GuthMaynard.NativeSource.GuthMaynard.ZeroDetector
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-open Complex Finset Filter FourierTransform MeasureTheory Real Set
+open Complex Finset Filter FourierTransform MeasureTheory Real
 open scoped ContDiff FourierTransform Topology
 namespace RiemannZeta.GuthMaynard
 
@@ -22,10 +25,9 @@ theorem summable_gmIntDecayProfile {q : ℕ} (hq : 2 ≤ q) :
   apply Summable.of_nonneg_of_le (fun m => by
     simp only [gmIntDecayProfile]
     split_ifs
-    · exact le_rfl
+    grind
     · positivity) (fun m => ?_) hs
-  by_cases hm : m = 0
-  · simp [gmIntDecayProfile, hm]
+  pm_1452 hm m gmIntDecayProfile
   · simp only [gmIntDecayProfile, ite_false, hm, abs_div, abs_one, abs_pow]
     exact le_rfl
 
@@ -53,26 +55,13 @@ theorem gmCubicLocalBump_eq_zero_of_two_le_abs
   by_contra hne
   have hsupp : x / 2 ∈ Function.support dfiUnitRedundantBump := by
     exact hne
-  rw [dfiUnitRedundantBump.support_eq, Metric.mem_ball, Real.dist_eq] at hsupp
-  simp only [sub_zero, show dfiUnitRedundantBump.rOut = (1 : ℝ) by rfl] at hsupp
+  pm_823
   have habs : |x / 2| = |x| / 2 := by
-    rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+    grind
   rw [habs] at hsupp
   linarith
 
-theorem norm_sum_sq_le_card_mul_sum_norm_sq {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (a : ι → ℂ) :
-    ‖∑ i ∈ s, a i‖ ^ 2 ≤ (s.card : ℝ) * ∑ i ∈ s, ‖a i‖ ^ 2 := by
-  calc
-    ‖∑ i ∈ s, a i‖ ^ 2 ≤ (∑ i ∈ s, ‖a i‖) ^ 2 := by
-      gcongr
-      exact norm_sum_le _ _
-    _ ≤ (s.card : ℝ) * ∑ i ∈ s, ‖a i‖ ^ 2 := by
-      exact sq_sum_le_card_mul_sum_sq
-
-def DivisorCountBoundProp : Prop :=
-  ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧
-    ∀ n : ℕ, 0 < n → (n.divisors.card : ℝ) ≤ C * (n : ℝ) ^ ε
+export GuthMaynard.NativeMoment (norm_sum_sq_le_card_mul_sum_norm_sq DivisorCountBoundProp)
 
 theorem divisorCountBound_native : DivisorCountBoundProp := by
   intro ε hε

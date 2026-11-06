@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosSymmetricThirdDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -45,19 +46,17 @@ theorem robertSargos_zero_r_second_curvature
           robertSargosSymmetricDifference (iteratedDeriv 2 f) x h ≤ C*(2*h*q*lam) := by
   have hin (y : ℝ) (hy : y ∈ Icc x (x+q)) :
       y-h ∈ Icc a b ∧ y+h ∈ Icc a b := by
-    constructor <;> constructor <;> linarith [hy.1,hy.2]
+    grind
   have hd (y : ℝ) (hy : y ∈ Icc x (x+q)) :=
     hasDerivAt_robertSargos_symmetric_jet (by norm_num : 2 < 4)
       (hf (y+h) (hin y hy).2) (hf (y-h) (hin y hy).1)
-  have hc (y : ℝ) (hy : y ∈ Icc x (x+q)) :=
-    robertSargos_symmetric_third_curvature hh
-      (hin y hy).1.1 (hin y hy).2.2 hf hlo hhi
+  pm_7572 y hy x q hh
   have hb := derivative_increment_bounds
     (fun y => robertSargosSymmetricDifference (iteratedDeriv 2 f) y h)
     (fun y => robertSargosSymmetricDifference (iteratedDeriv 3 f) y h)
     (show x ≤ x+q by linarith) hd
     (fun y hy => (hc y hy).1) (fun y hy => (hc y hy).2)
   rw [show (x+q)-x = q by ring] at hb
-  simpa only [mul_assoc,mul_comm,mul_left_comm] using hb
+  grind
 
 end TaoTrudgianYang2025

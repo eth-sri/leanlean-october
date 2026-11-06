@@ -1,26 +1,21 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Independent
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators MatrixGroups
+open scoped Classical MatrixGroups
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase ShortDraftCRT CompletedGauss
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
-    (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)
-    (D : ∀ x, ControlledStratumArithmetic (p x) N a c mode)
-    (hc : c ≠ 0) (h9N : (9:Eis) ∣ N) (hcN : c ∣ N)
-    (hprimary : ∀ x, λ₀^2 ∣ (∏ i, p x i)-1)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1)
-    (hcop : ∀ x, IsCoprime (∏ i, p x i) (N*c))
-    (sector : α → Q)
-    (hsector : ∀ x y, sector x = sector y → N^2 ∣ (∏ i, p x i)-(∏ i, p y i)) :
+section
+variable {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)] (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool) (D : ∀ x, ControlledStratumArithmetic (p x) N a c mode) (hc : c ≠ 0) (h9N : (9:Eis) ∣ N) (hcN : c ∣ N) (hprimary : ∀ x, λ₀^2 ∣ (∏ i, p x i)-1) (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hcop : ∀ x, IsCoprime (∏ i, p x i) (N*c)) (sector : α → Q) (hsector : ∀ x y, sector x = sector y → N^2 ∣ (∏ i, p x i)-(∏ i, p y i))
+include α Q ι p N a c mode D hc h9N hcN hprimary hbase hcop sector hsector
+theorem simultaneous_controlled_matrices_dependent :
     ∃ mat : ∀ x, (∀ i, (Eis ⧸ Ideal.span {p x i})ˣ) → SL(2,Eis),
       (∀ x v, mat x v 0 0 = (D x).matrix v 0 0) ∧
       (∀ x v, mat x v 1 0 = c*∏ i, p x i) ∧
@@ -59,13 +54,13 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
     · obtain ⟨b,d,C,hd,hb,hz,hm⟩ := exists_primary_denominator_sector_completions
         N c h9N hbase ss aa rr (fun x => hprimary x.1) hacop
         (fun x => hcop x.1) haa hrr
-      exact ⟨b,d,C,hd,fun x => ⟨hb x,hz x⟩,hm⟩
+      pm_1415
     · obtain ⟨b,d,C,hd,hb,hz,hm⟩ := exists_primary_numerator_sector_completions
         N c hc h9N ss aa rr
         (fun x => (D x.1).numerator_primary h3N (hprimary x.1) hbase x.2)
         (fun x => hprimary x.1) hacop (fun x => hcop x.1) haa hrr
-      exact ⟨b,d,C,hd,fun x => ⟨hb x,hz x⟩,hm⟩
-  obtain ⟨b,d,C,hdet,hcond,hmat⟩ := hex
+      pm_1415
+  pm_563 b d C hdet hcond hmat hex
   let mat := fun (x : α) (v : ∀ i, (Eis ⧸ Ideal.span {p x i})ˣ) =>
     controlledCompletionMatrix (aa ⟨x,v⟩) (b ⟨x,v⟩) (c*rr ⟨x,v⟩) (d ⟨x,v⟩) (hdet ⟨x,v⟩)
   refine ⟨mat,fun _ _ => rfl,fun _ _ => rfl,fun x v => hcond ⟨x,v⟩,?_⟩
@@ -75,15 +70,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
   have he' := congrArg (fun T : Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {N}) => T i j) he
   exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp he')
 
-theorem exists_sector_controlled_arithmetic_dependent {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
-    (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)
-    (D : ∀ x, ControlledStratumArithmetic (p x) N a c mode)
-    (hc : c ≠ 0) (h9N : (9:Eis) ∣ N) (hcN : c ∣ N)
-    (hprimary : ∀ x, λ₀^2 ∣ (∏ i, p x i)-1)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1)
-    (hcop : ∀ x, IsCoprime (∏ i, p x i) (N*c))
-    (sector : α → Q)
-    (hsector : ∀ x y, sector x = sector y → N^2 ∣ (∏ i, p x i)-(∏ i, p y i)) :
+theorem exists_sector_controlled_arithmetic_dependent :
     ∃ E : ∀ x, ControlledStratumArithmetic (p x) N a c mode,
       (∀ x, (E x).lift = (D x).lift) ∧
       (∀ x, (E x).U = (D x).U) ∧
@@ -101,6 +88,7 @@ theorem exists_sector_controlled_arithmetic_dependent {α Q : Type*} {ι : α �
       matrix_fixed := fun v i j => hfixed x x v (fun _ => 1) rfl i j
       conditions := hcond x }
   exact ⟨E,fun _ => rfl,fun _ => rfl,fun _ => rfl,fun _ => rfl,hfixed⟩
+end
 
 theorem exists_sector_templates {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
     (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)
@@ -177,11 +165,10 @@ theorem exists_separate_ray_templates {α : Type*} {ι : α → Type*} [∀ x, F
   obtain ⟨E,hlift,hU,hσ,hε,hmat⟩ := exists_sector_controlled_arithmetic_dependent p N a c mode D
     hc ((dvd_mul_right 9 c).trans hN) ((dvd_mul_left c 9).trans hN)
     hprimary hbase hcop sector hsector
-  refine ⟨E,hlift,hU,hσ,hε,?_⟩
+  pm_164 E hlift hU hσ hε
   exact exists_sector_templates p N a c mode E s hc hN hprimary hbase sector hsector
     (fun x y hxy => hmat x y (fun _ => 1) (fun _ => 1) hxy)
 
-end
 end SevenEighths.InverseReflectedPhase
 
 end OAI

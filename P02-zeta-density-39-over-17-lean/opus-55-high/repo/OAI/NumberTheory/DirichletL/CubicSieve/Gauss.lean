@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Gcd
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
@@ -22,17 +23,19 @@ def cubicQuotientCharacter (I : Ideal O) (hI : Admissible I) : MulChar (O ⧸ I)
       simpa only [CubicEisenstein.isUnit_quotient_iff_sup, Ideal.isCoprime_iff_sup_eq] using hx
     have hc := idealSymbol_cube_mask I z hI.2
     rw [ite_eq_right hcop] at hc
-    exact (eq_zero_of_pow_eq_zero hc)
+    grind
 
-@[simp] lemma cubicQuotientCharacter_mk (I : Ideal O) (hI : Admissible I) (z : O) :
+section
+variable (I : Ideal O) (hI : Admissible I)
+include I hI
+@[simp] lemma cubicQuotientCharacter_mk (z : O) :
     cubicQuotientCharacter I hI (Ideal.Quotient.mk I z) = cubicRow I z :=
   CubicEisenstein.cubicRow_eq_idealSymbol I hI.2 hI.1 z
 
-lemma cubicQuotientCharacter_cube (I : Ideal O) (hI : Admissible I) :
+lemma cubicQuotientCharacter_cube :
     cubicQuotientCharacter I hI ^ 3 = 1 := by
   apply DFunLike.ext
-  intro x
-  obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective x
+  pm_5264 z
   rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), cubicQuotientCharacter_mk, cubicRow,
     idealSymbol_cube_mask I z hI.2]
   have hu : IsUnit (Ideal.Quotient.mk I z) ↔ IsCoprime I (Ideal.span {z}) := by
@@ -41,7 +44,7 @@ lemma cubicQuotientCharacter_cube (I : Ideal O) (hI : Admissible I) :
   · rw [ite_eq_left (hu.mp h), MulChar.one_apply h]
   · rw [ite_eq_right (fun hcop => h (hu.mpr hcop)), MulChar.map_nonunit _ h]
 
-lemma cubicQuotientCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
+lemma cubicQuotientCharacter_neg_one :
     cubicQuotientCharacter I hI (-1) = 1 := by
   have h3 := congrArg (fun χ : MulChar (O ⧸ I) ℂ => χ (-1)) (cubicQuotientCharacter_cube I hI)
   rw [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), MulChar.one_apply (isUnit_neg_one)] at h3
@@ -50,6 +53,7 @@ lemma cubicQuotientCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
     _ = cubicQuotientCharacter I hI (-1) ^ 2 * cubicQuotientCharacter I hI (-1) := by rw [h2, one_mul]
     _ = cubicQuotientCharacter I hI (-1) ^ 3 := by ring
     _ = 1 := h3
+end
 
 def quotientCharacterTransport {R S : Type*} [CommRing R] [CommRing S]
     (e : R ≃+* S) (χ : MulChar S ℂ) : MulChar R ℂ where
@@ -63,17 +67,20 @@ def principalCubicCharacter (I : Ideal O) (hI : Admissible I) :
   quotientCharacterTransport (Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1)
     (cubicQuotientCharacter I hI)
 
-@[simp] lemma principalCubicCharacter_mk (I : Ideal O) (hI : Admissible I) (z : O) :
+section
+variable (I : Ideal O) (hI : Admissible I)
+include I hI
+@[simp] lemma principalCubicCharacter_mk (z : O) :
     principalCubicCharacter I hI (Ideal.Quotient.mk _ z) = cubicRow I z := by
   change cubicQuotientCharacter I hI ((Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1) (Ideal.Quotient.mk _ z)) = _
   rw [Ideal.quotEquivOfEq_mk, cubicQuotientCharacter_mk]
 
-lemma principalCubicCharacter_neg_one (I : Ideal O) (hI : Admissible I) :
+lemma principalCubicCharacter_neg_one :
     principalCubicCharacter I hI (-1) = 1 := by
   change cubicQuotientCharacter I hI ((Ideal.quotEquivOfEq (primaryGenerator_spec I hI.2).1) (-1)) = 1
   rw [map_neg, map_one, cubicQuotientCharacter_neg_one]
 
-lemma gaussTwo_eq_gaussSum (I : Ideal O) (hI : Admissible I) :
+lemma gaussTwo_eq_gaussSum :
     let : Finite (O ⧸ Ideal.span {primaryGenerator I}) := finite_quotient_span hI.2
     let : Fintype (O ⧸ Ideal.span {primaryGenerator I}) := Fintype.ofFinite _
     gaussTwo I hI.2 = gaussSum (principalCubicCharacter I hI)
@@ -81,6 +88,7 @@ lemma gaussTwo_eq_gaussSum (I : Ideal O) (hI : Admissible I) :
         (primaryGenerator I) hI.2) / (‖eisEmbedding (primaryGenerator I)‖ : ℂ) := by
   dsimp only [gaussTwo, gaussSum, principalCubicCharacter, quotientCharacterTransport, cubicQuotientCharacter]
   congr 1
+end
 
 lemma gaussSum_inverse_of_even {R : Type*} [CommRing R] [Fintype R]
     (χ : MulChar R ℂ) (ψ : AddChar R ℂ) (heven : χ (-1) = 1) :

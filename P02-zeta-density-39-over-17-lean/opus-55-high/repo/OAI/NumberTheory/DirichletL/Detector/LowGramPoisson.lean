@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowGramProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,10 @@ open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson ConcreteTraceC
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-lemma lowGram_pair_prefactor (C : CalibrationData) (W1 : ℝ→ℂ)
+section
+variable (C : CalibrationData) (W1 : ℝ→ℂ)
+include C W1
+lemma lowGram_pair_prefactor
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v Q : ℝ) (s t : {I : Id // Supported I}) :
     (lowGaussColumn C W1 Y σ v s*star (lowGaussColumn C W1 Y σ v t))*
       ((Q:ℂ)/((Real.sqrt (Ideal.absNorm s.val:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm t.val:ℝ):ℂ)))=
@@ -24,7 +28,7 @@ lemma lowGram_pair_prefactor (C : CalibrationData) (W1 : ℝ→ℂ)
   calc
     _ = (Q:ℂ)*(lowGaussColumn C W1 Y σ v s/(Real.sqrt (Ideal.absNorm s.val:ℝ):ℂ))*
         star (lowGaussColumn C W1 Y σ v t/(Real.sqrt (Ideal.absNorm t.val:ℝ):ℂ)) := by
-      simp only [Complex.star_def,map_mul,map_inv₀,Complex.conj_ofReal,div_eq_mul_inv,mul_inv_rev]
+      pm_382 Complex.star_def map_mul map_inv₀ Complex.conj_ofReal div_eq_mul_inv mul_inv_rev
       ring
     _ = (Q:ℂ)*(lowGramScale Y*star (lowGramScale Y))*
         ((lowGramCoefficient C σ s*lowGramProfile W1 v ((Ideal.absNorm s.val:ℝ)/Y))*
@@ -34,7 +38,7 @@ lemma lowGram_pair_prefactor (C : CalibrationData) (W1 : ℝ→ℂ)
       ring
     _ = _ := by rw [lowGramScale_mul_star Y hY];simp only [div_eq_mul_inv,Complex.ofReal_mul,Complex.ofReal_inv]
 
-theorem lowGram_source_poisson (C : CalibrationData) (W1 : ℝ→ℂ)
+theorem lowGram_source_poisson
     (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ)
     (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0<Q) :
     gaussEnergy (lowGaussColumns W1 hW1 Y hY) (fun s=>primaryGenerator s.val)
@@ -50,13 +54,11 @@ theorem lowGram_source_poisson (C : CalibrationData) (W1 : ℝ→ℂ)
             paperRadialFourier U (Q*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator s.val*primaryGenerator t.val)‖^2) := by
   rw [gaussEnergy_poisson _ _ _ _ U Q hQ]
   simp_rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro s hs
-  apply Finset.sum_congr rfl
-  intro t ht
+  pm_3397 s hs t ht
   have hes := congrArg Ideal.absNorm ((primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1)
   have het := congrArg Ideal.absNorm ((primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1)
   rw [hes,het,←mul_assoc,lowGram_pair_prefactor C W1 Y hY σ v Q s t,mul_assoc]
+end
 
 theorem lowGram_kernel_scale (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
     (s t : {I : Id // Supported I}) (h : O) :

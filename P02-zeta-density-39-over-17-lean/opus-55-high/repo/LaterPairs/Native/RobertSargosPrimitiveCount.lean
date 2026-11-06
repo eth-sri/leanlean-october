@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosLargeToleranceCount
 public import LaterPairs.Native.RobertSargosSmallToleranceCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -22,11 +23,11 @@ theorem exists_robertSargos_primitive_count (ε : ℝ) (hε : 0 < ε) :
       1 ≤ R → 1 ≤ H → 1 ≤ Q → 0 ≤ δ → R ≤ H/2 →
       (∀ p ∈ S, RobertSargosPrimitiveSystem R H Q δ p) →
       (S.card:ℝ) ≤ C*(R*H*Q)^(1+ε)*(1+δ*Q) := by
-  obtain ⟨Cs,hCs,hs⟩ := exists_robertSargos_primitive_count_small_tolerance ε hε
-  obtain ⟨Cl,hCl,hl⟩ := exists_robertSargos_primitive_count_large_tolerance ε hε
+  pm_69 Cs hCs hs exists_robertSargos_primitive_count_small_tolerance ε hε
+  pm_69 Cl hCl hl exists_robertSargos_primitive_count_large_tolerance ε hε
   refine ⟨Cs+Cl,by positivity,?_⟩
-  intro S R H Q δ hR hH hQ hδ hRH hmem
-  have hnonneg : 0 ≤ (R*H*Q)^(1+ε)*(1+δ*Q) := by positivity
+  pm_1677
+  pm_2534
   by_cases hsmall : δ ≤ 1
   · calc
       _ ≤ Cs*(R*H*Q)^(1+ε)*(1+δ*Q) :=

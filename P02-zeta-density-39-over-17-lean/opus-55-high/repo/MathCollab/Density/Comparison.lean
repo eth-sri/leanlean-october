@@ -1,14 +1,13 @@
 module
 public import MathCollab.Density.ComparisonExpansion
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Real Complex Set
-open scoped BigOperators ComplexConjugate
+open Real Complex
+open scoped ComplexConjugate
 
-set_option autoImplicit false
 
-noncomputable section
 namespace MathCollab.Density
 
 /-- The detecting polynomial, original product grouping, and nonnegative extension. -/
@@ -52,7 +51,7 @@ theorem comparison_extension_bound (w : ComparisonCutoff) {T : ℝ} {N M : ℕ}
     _ = _ := by simp only [comparisonExtension, Q, F, ← Finset.mul_sum, mul_assoc]
 
 theorem dyadicPolynomial_norm_le (M : ℕ) (v : ℝ) : ‖dyadicPolynomial M v‖ ≤ M := by
-  have hc : (Finset.Ico M (2*M)).card = M := by simp; omega
+  pm_5161 Finset.Ico M
   calc
     _ ≤ ∑ q ∈ Finset.Ico M (2*M), ‖dirichletPhase ((q : ℝ)/M) v‖ := norm_sum_le _ _
     _ = _ := by simp only [norm_dirichletPhase, Finset.sum_const, nsmul_eq_mul, mul_one, hc]
@@ -76,8 +75,11 @@ theorem bootstrapScalar_nonneg (T V : ℝ) (N : ℕ) : 0 ≤ bootstrapScalar T N
   unfold bootstrapScalar
   positivity
 
+section
+variable (w : ComparisonCutoff)
+include w
 /-- Continuous-term control uses one absolute row-sum constant, independent of |U|. -/
-theorem comparison_continuous_bound (w : ComparisonCutoff) {C T V : ℝ} {N M : ℕ}
+theorem comparison_continuous_bound {C T V : ℝ} {N M : ℕ}
     (hC : 0 ≤ C) (hdecay : ∀ v : ℝ, ‖cutoffIntegral w.toReflectionCutoff v‖ ≤ C/(1+|v|)^2)
     (hV : 0 < V) (a : ℕ → ℂ) (U : Finset ℝ) (hsep : oneSeparated U)
     (hlarge : ∀ t ∈ U, V ≤ ‖detectingPolynomial N a t‖) :
@@ -126,7 +128,7 @@ theorem comparison_continuous_bound (w : ComparisonCutoff) {C T V : ℝ} {N M : 
       mul_le_mul_of_nonneg_left (separated_decay_pairs hsep) (by positivity)
     _ = _ := by dsimp [b]; ring
 
-theorem comparison_remainder_bound (w : ComparisonCutoff) {T V : ℝ} {N M : ℕ}
+theorem comparison_remainder_bound {T V : ℝ} {N M : ℕ}
     (hV : 0 < V) (a : ℕ → ℂ) (U : Finset ℝ)
     (hlarge : ∀ t ∈ U, V ≤ ‖detectingPolynomial N a t‖) :
     (N : ℝ)*(divisorMaximum T : ℝ)*
@@ -163,11 +165,10 @@ theorem comparison_remainder_bound (w : ComparisonCutoff) {T V : ℝ} {N M : ℕ
           ‖dyadicPolynomial M (t-u)‖^2/2) :=
       Finset.sum_le_sum (fun t ht => Finset.sum_le_sum (fun u hu => hp t u ht hu))
     _ = _ := by
-      simp only [b, kernelEnergy, completePairEnergy, Finset.sum_add_distrib,
-        Finset.mul_sum, Finset.sum_div]
+      pm_204 b kernelEnergy completePairEnergy Finset.sum_add_distrib Finset.mul_sum Finset.sum_div
 
 /-- The comparison constant is selected solely from w, before every original data parameter. -/
-theorem uniform_comparison (w : ComparisonCutoff) :
+theorem uniform_comparison :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (T V : ℝ) (N M : ℕ) (a : ℕ → ℂ) (U : Finset ℝ),
       0 < N → 0 < M → (N : ℝ)*M ≤ 8*(T+1) → 0 < V → oneSeparated U →
       (∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ 1) →
@@ -182,7 +183,7 @@ theorem uniform_comparison (w : ComparisonCutoff) :
     have hh := hlarge t ht
     rw [he, norm_zero] at hh
     linarith
-  have hext := comparison_extension_bound w hN hM hscale a U ha hD
+  pm_528 hext comparison_extension_bound w hN hM hscale a U ha hD
   have hC := comparison_continuous_bound w hC₀ hdecay hV a U hsep hlarge (T := T) (M := M)
   have hR := comparison_remainder_bound w hV a U hlarge (T := T) (M := M)
   have hnorm : comparisonExtension w N M a U = ‖(comparisonExtension w N M a U : ℂ)‖ := by
@@ -200,5 +201,6 @@ theorem uniform_comparison (w : ComparisonCutoff) :
     (show 0 ≤ (N : ℝ)*(divisorMaximum T : ℝ) by positivity)
   simp only [Finset.sum_add_distrib, mul_add] at hh hext
   nlinarith
+end
 
 end MathCollab.Density

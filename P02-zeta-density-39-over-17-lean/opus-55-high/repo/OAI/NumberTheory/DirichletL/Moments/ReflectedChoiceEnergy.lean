@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OneReflectionScaleEnergy
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionWeightedEnergy
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionRetainedLength
 public import OAI.NumberTheory.DirichletL.Moments.ReflectionTailMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,11 +24,11 @@ local notation "O" => HeckeFamily.O
 theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm →
-      (χ.modulus.absNorm:ℝ)≤C*Z^M →
+      (χ.modulus.absNorm:ℝ)≤C*Z ^M →
       let S := redundantSet χ.modulus ψ.modulus
       ∀u : Index S,
-      let Y := (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈u.1.1.val,P):ℝ)/(Z^a*CenteredMomentReflectionDeletion.norm u.1.2.val)
-      ∀hY : 0<Y,u.2∈retainedAnnuli (Z^(xi/4)) Y hY →
+      let Y := (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈u.1.1.val,P):ℝ)/(Z ^a*CenteredMomentReflectionDeletion.norm u.1.2.val)
+      ∀hY : 0<Y,u.2∈retainedAnnuli (Z ^(xi/4)) Y hY →
       1≤dyadicScale u.2*Y ∧
       0≤Real.log (dyadicScale u.2*Y) ∧
       Real.log (dyadicScale u.2*Y)≤(M-a+xi)*Real.log Z := by
@@ -37,11 +38,10 @@ theorem eventually_natural_choice_geometry (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) 
   dsimp only
   intro u hY hu
   have hS := redundantSet_prime χ.modulus ψ.modulus
-  have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
+  pm_4989 hQ ψ.modulus.absNorm ψ.modulus_ne_bot
   have hD := subset_product_norm_pos u.1.1.val
     (fun P hP=>hS P ((Finset.mem_powerset.mp u.1.1.property) hP))
-  have hc : (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (redundantIdeal χ.modulus ψ.modulus):ℝ)≤C*Z^M := by
+  have hc : (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (redundantIdeal χ.modulus ψ.modulus):ℝ)≤C*Z ^M := by
     have hh : (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (redundantIdeal χ.modulus ψ.modulus):ℝ)≤(χ.modulus.absNorm:ℝ) := by exact_mod_cast hcap
     exact hh.trans hmod
   have hh := hZ.2 M a _ _ _ _ hQ hD hc

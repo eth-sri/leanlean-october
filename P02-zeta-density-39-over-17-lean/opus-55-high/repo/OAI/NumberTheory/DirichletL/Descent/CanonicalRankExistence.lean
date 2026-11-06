@@ -15,7 +15,7 @@ theorem actual_rank_reference_cutoffs : RankReferenceCutoffs :=by
   intro lo hi hlo hhi
   obtain ⟨Vlog,Alog,hA,hAe,hcompact,hsupport,hbox,hone,hzero⟩:=
     exists_canonical_reference_cutoff lo hi
-  exact ⟨Vlog,Alog,hbox,hone⟩
+  aesop
 
 theorem actual_rank_reference_thresholds : RankReferenceThresholds :=by
   intro eta heta hi Alog window

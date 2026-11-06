@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.PrimitiveTripleGcdFiber
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -54,7 +55,7 @@ theorem primitive_linear_triple_card_le_divisor_sum
 theorem primitive_divisor_bound_identity {c : ℕ} (hc : 0 < c) (K : ℝ) :
     (∑ g ∈ c.divisors, (1+K/((c:ℝ)*g))) =
       (c.divisors.card:ℝ)+K/(c:ℝ)^2*(∑ g ∈ c.divisors, (g:ℝ)) := by
-  have hcr : (0:ℝ) < c := by exact_mod_cast hc
+  pm_4473 hcr c hc
   calc
     _ = ∑ g ∈ c.divisors, (1+K/(c:ℝ)^2*(c/g:ℕ)) := by
       apply Finset.sum_congr rfl

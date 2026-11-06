@@ -19,6 +19,8 @@ public import Mathlib.NumberTheory.ZetaValues
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.SpecialFunctions.Complex.LogBounds
 public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.Mathlib.Analysis.SpecialFunctions.Pow.Deriv
 public import GuthMaynard.NativeSource.GuthMaynardExternal.PNT.ZetaBoundsUpstream
+public import WeylPort.Analytic.NonstationaryFoundation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -43,25 +45,19 @@ private theorem continuousOn_ofReal_deriv (φ : ℝ → ℝ) (a b : ℝ)
 
 private theorem denom1_ne_zero (φ : ℝ → ℝ) (a b : ℝ)
     (hphi_ne : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) :
-    ∀ t ∈ Set.Icc a b, 2 * π * I * ↑(deriv φ t) ≠ 0 := by
-  intro t ht
-  exact mul_ne_zero h2piI_ne_zero (ofReal_ne_zero.mpr (hphi_ne t ht))
+    ∀ t ∈ Set.Icc a b, 2 * π * I * ↑(deriv φ t) ≠ 0 := by simp_all
 
 private theorem denom2_ne_zero (φ : ℝ → ℝ) (a b : ℝ)
     (hphi_ne : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) :
-    ∀ t ∈ Set.Icc a b, 2 * π * I * ↑(deriv φ t) ^ 2 ≠ 0 := by
-  intro t ht
-  exact mul_ne_zero h2piI_ne_zero (pow_ne_zero 2 (ofReal_ne_zero.mpr (hphi_ne t ht)))
+    ∀ t ∈ Set.Icc a b, 2 * π * I * ↑(deriv φ t) ^ 2 ≠ 0 := by simp_all
 
 private theorem continuousOn_denom1 (φ : ℝ → ℝ) (a b : ℝ)
     (hderiv_cont : ContinuousOn (fun t ↦ deriv φ t) (Set.Icc a b)) :
-    ContinuousOn (fun t ↦ 2 * π * I * ↑(deriv φ t)) (Set.Icc a b) := by
-  exact ContinuousOn.mul continuousOn_const (continuousOn_ofReal_deriv φ a b hderiv_cont)
+    ContinuousOn (fun t ↦ 2 * π * I * ↑(deriv φ t)) (Set.Icc a b) := by fun_prop
 
 private theorem continuousOn_denom2 (φ : ℝ → ℝ) (a b : ℝ)
     (hderiv_cont : ContinuousOn (fun t ↦ deriv φ t) (Set.Icc a b)) :
-    ContinuousOn (fun t ↦ 2 * π * I * ↑(deriv φ t) ^ 2) (Set.Icc a b) := by
-  exact ContinuousOn.mul continuousOn_const ((continuousOn_ofReal_deriv φ a b hderiv_cont).pow 2)
+    ContinuousOn (fun t ↦ 2 * π * I * ↑(deriv φ t) ^ 2) (Set.Icc a b) := by fun_prop
 
 private theorem intervalIntegrable_v' (φ : ℝ → ℝ) (a b : ℝ) (hab : a ≤ b)
     (hφ_cont : ContinuousOn φ (Set.Icc a b))
@@ -75,7 +71,7 @@ private theorem continuousOn_rpow_const_Icc (a b p : ℝ) (ha_pos : 0 < a) :
     ContinuousOn (fun t ↦ t ^ p) (Set.Icc a b) := by
   apply ContinuousOn.rpow_const continuousOn_id
   intro x hx
-  exact Or.inl (ne_of_gt (lt_of_lt_of_le ha_pos hx.1))
+  grind
 
 private theorem continuousOn_rpow_toComplex (a b p : ℝ) (ha_pos : 0 < a) :
     ContinuousOn (fun t ↦ ((t ^ p : ℝ) : ℂ)) (Set.Icc a b) :=
@@ -179,7 +175,7 @@ private theorem hasDerivAt_e_comp (φ : ℝ → ℝ) (t : ℝ) (hdiff : Differen
         (cexp (2 * π * I * (φ t : ℂ)) * (2 * π * I * (↑(deriv φ t)))) t := by
     exact (hasDerivAt_exp (2 * π * I * (φ t : ℂ))).comp t
       ((hdiff.hasDerivAt.ofReal_comp).const_mul (2 * π * I))
-  simpa only [e, mul_assoc, mul_left_comm, mul_comm] using hcomp
+  pm_99 e mul_assoc mul_left_comm mul_comm hcomp
 
 private theorem integral_Icc_eq_interval {a b : ℝ} (h : a ≤ b) (f : ℝ → ℂ) :
     ∫ t in Set.Icc a b, f t = ∫ t in a..b, f t := by
@@ -214,16 +210,13 @@ private theorem integral_power_phase_ibp (σ : ℝ) (φ : ℝ → ℝ) (a b : �
     ring_nf
   have h_lhs : ∫ x in a..b, ((x ^ (-σ) : ℝ) : ℂ) * e (φ x) =
       ∫ x in a..b, u x * v' x := by
-    apply intervalIntegral.integral_congr
-    intro x hx
-    rw [uIcc_of_le hab_le] at hx
+    pm_445 intervalIntegral.integral_congr x hx uIcc_of_le hab_le
     simp only [u, v']
     field_simp [h_phi_ne x hx]
   rw [h_lhs]
   have h_ibp : (∫ x in a..b, u x * v' x) = u b * v b - u a * v a - ∫ x in a..b, u' x * v x := by
     have hIoo_to_Icc : ∀ {x : ℝ}, x ∈ Set.Ioo (min a b) (max a b) → x ∈ Set.Icc a b := by
-      intro x hx
-      rw [min_eq_left hab_le, max_eq_right hab_le] at hx
+      pm_5961 hab_le
       exact Ioo_subset_Icc_self hx
     exact intervalIntegral.integral_mul_deriv_eq_deriv_mul_of_hasDerivAt
       (by
@@ -299,7 +292,7 @@ private theorem phase_rewrite (t : ℝ) (s : ℂ) (ν : ℝ) (ht : 0 < t) :
         field_simp
         ring_nf
     _ = ((t ^ (-s.re) : ℝ) : ℂ) * e (ν * t - (s.im / (2 * π)) * Real.log t) := by
-      simp only [e, ofReal_sub, ofReal_mul, ofReal_div, ofReal_ofNat]
+      pm_93 e ofReal_sub ofReal_mul ofReal_div ofReal_ofNat
 
 private theorem deriv_linear_sub_log (ν c : ℝ) (t : ℝ) (ht : t ≠ 0) :
     deriv (fun t ↦ ν * t - c * Real.log t) t = ν - c * t⁻¹ := by
@@ -340,7 +333,7 @@ private theorem lemma_aachIBP (s : ℂ) (ν : ℝ) (hν : ν ≠ 0) (a b : ℝ)
         (t ^ (-s.re - 1) : ℝ) / (2 * π * I * (deriv φ t)) * e (φ t)) +
       ∫ t in Set.Icc a b, (t ^ (-s.re) : ℝ) * (deriv (deriv φ) t) /
         (2 * π * I * (deriv φ t) ^ 2) * e (φ t) := by
-  have ha_pos : 0 < a := lt_of_le_of_lt (div_nonneg (abs_nonneg _) (by positivity)) ha
+  pm_5876
   intro φ Φ
   have hIcc_pos : Set.Icc a b ⊆ Set.Ioi 0 := fun t ht ↦ lt_of_lt_of_le ha_pos ht.1
   have h_lhs : ∫ t in Set.Icc a b, t ^ (-s) * e (ν * t) =
@@ -350,14 +343,8 @@ private theorem lemma_aachIBP (s : ℂ) (ν : ℝ) (hν : ν ≠ 0) (a b : ℝ)
     simpa [φ] using phase_rewrite t s ν (hIcc_pos ht)
   rw [h_lhs]
   have h_phi_ne : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0 := by
-    intro t ht
-    exact phi_deriv_ne_zero s ν a t ha ha_pos hν ht.1
-  have hsmooth : ContDiffOn ℝ 2 φ (Set.Ioi 0) := by
-    simp only [φ]
-    apply ContDiffOn.sub
-    · fun_prop
-    · apply ContDiffOn.mul contDiffOn_const
-      exact contDiffOn_log.mono (fun x hx ↦ ne_of_gt hx)
+    pm_7556
+  pm_4607
   have h_diff : ∀ t ∈ Set.Icc a b, DifferentiableAt ℝ φ t :=
     fun t ht ↦ (hsmooth.differentiableOn (by norm_num)).differentiableAt
       (Ioi_mem_nhds (hIcc_pos ht))
@@ -366,17 +353,7 @@ private theorem lemma_aachIBP (s : ℂ) (ν : ℝ) (hν : ν ≠ 0) (a b : ℝ)
     have h := hsmooth.contDiffAt (Ioi_mem_nhds (hIcc_pos ht))
     have h1 : ContDiffAt ℝ 1 (deriv φ) t := h.derivWithin (by norm_num)
     exact h1.differentiableAt (by norm_num)
-  have h_cont : ContinuousOn φ (Set.Icc a b) :=
-    (hsmooth.mono (fun x hx ↦ lt_of_lt_of_le ha_pos hx.1)).continuousOn
-  have h_deriv_cont : ContinuousOn (fun t ↦ deriv φ t) (Set.Icc a b) := by
-    have h1 : ContinuousOn (deriv φ) (Set.Ioi 0) :=
-      hsmooth.continuousOn_deriv_of_isOpen isOpen_Ioi (by norm_num)
-    exact h1.mono (fun x hx ↦ lt_of_lt_of_le ha_pos hx.1)
-  have h_deriv2_cont : ContinuousOn (fun t ↦ deriv (deriv φ) t) (Set.Icc a b) := by
-    have h1 : ContDiffOn ℝ 1 (deriv φ) (Set.Ioi 0) :=
-      ((contDiffOn_succ_iff_deriv_of_isOpen isOpen_Ioi).mp hsmooth).2.2
-    exact (h1.continuousOn_deriv_of_isOpen isOpen_Ioi (by norm_num)).mono
-      (fun x hx ↦ lt_of_lt_of_le ha_pos hx.1)
+  pm_4606
   exact integral_power_phase_ibp s.re φ a b hb ha_pos h_phi_ne h_diff h_diff2
     h_cont h_deriv_cont h_deriv2_cont
 
@@ -388,122 +365,12 @@ private theorem lemma_IBP_bound_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (
         (⨆ t ∈ Icc a b, ‖F t‖) * ∫ t in Icc a b, |deriv g t| := by
   have hint_parts : ∫ t in Icc a b, (g t) * (deriv F t) =
       (g b) * (F b) - (g a) * (F a) - ∫ t in Icc a b, (F t) * (deriv g t) := by
-    rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hab.le,
-      integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hab.le,
-        eq_sub_iff_add_eq, ← intervalIntegral.integral_add, intervalIntegral.integral_eq_sub_of_hasDeriv_right]
+    pm_5634
     · simpa only [Set.uIcc_of_le hab.le, Pi.mul_def, Function.comp_def] using ContinuousOn.mul
         (continuous_ofReal.comp_continuousOn hg.continuousOn) hF.continuousOn
-    · intro x hx
-      have hxa : x > a := by cases max_cases a b <;> cases min_cases a b <;> linarith [hx.1, hx.2]
-      have hxb : x < b := by cases max_cases a b <;> cases min_cases a b <;> linarith [hx.1, hx.2]
-      convert HasDerivAt.hasDerivWithinAt <| HasDerivAt.mul
-        (HasDerivAt.ofReal_comp <| hg.differentiableOn_one |> DifferentiableOn.hasDerivAt <| Icc_mem_nhds hxa hxb)
-          (hF.differentiableOn_one |> DifferentiableOn.hasDerivAt <| Icc_mem_nhds hxa hxb)
-            using 1
-      ring
-    · rw [intervalIntegrable_iff_integrableOn_Ioo_of_le hab.le]
-      refine Integrable.add ?_ ?_
-      · have hintF : IntegrableOn (fun x ↦ deriv F x) (Ioo a b) := by
-          have hcont := hF.continuousOn_derivWithin
-          have hintF' : IntegrableOn (fun x ↦ derivWithin F (Icc a b) x) (Ioo a b) :=
-            (hcont (uniqueDiffOn_Icc hab) le_rfl |> ContinuousOn.integrableOn_Icc) |>
-              fun h ↦ h.mono_set Ioo_subset_Icc_self
-          refine hintF'.congr ?_
-          filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx using
-            by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)
-        apply Integrable.mono' _ _ _
-        · exact fun x ↦ ‖deriv F x‖ * sSup (Set.image (fun x ↦ |g x|) (Icc a b))
-        · exact Integrable.mul_const hintF.norm _
-        · exact AEStronglyMeasurable.mul
-            (continuous_ofReal.comp_aestronglyMeasurable
-              (hg.continuousOn.aestronglyMeasurable measurableSet_Icc |>
-                fun h ↦ h.mono_set Ioo_subset_Icc_self))
-            hintF.aestronglyMeasurable
-        · filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx using by
-            simpa [mul_comm] using mul_le_mul_of_nonneg_left
-              (le_csSup (IsCompact.bddAbove (isCompact_Icc.image_of_continuousOn
-                (continuous_abs.comp_continuousOn hg.continuousOn)))
-                (Set.mem_image_of_mem _ <| Ioo_subset_Icc_self hx)) (norm_nonneg _)
-      · have hintg : IntegrableOn (fun x ↦ deriv g x) (Ioo a b) := by
-          have hcont := hg.continuousOn_derivWithin (uniqueDiffOn_Icc hab) le_rfl
-          have hintg' : IntegrableOn (fun x ↦ derivWithin g (Icc a b) x) (Ioo a b) :=
-            hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self
-          exact hintg'.congr_fun (fun x hx ↦
-            by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
-        have hintFg : IntegrableOn (fun x ↦ F x * deriv g x) (Ioo a b) := by
-          have hbdd : ∃ C, ∀ x ∈ Ioo a b, ‖F x‖ ≤ C :=
-            IsCompact.exists_bound_of_continuousOn isCompact_Icc hF.continuousOn |>
-              fun ⟨C, hC⟩ ↦ ⟨C, fun x hx ↦ hC x <| Ioo_subset_Icc_self hx⟩
-          apply Integrable.mono' _ _ _
-          · exact fun x ↦ hbdd.choose * ‖deriv g x‖
-          · exact Integrable.const_mul hintg.norm _
-          · exact AEStronglyMeasurable.mul
-              (hF.continuousOn.aestronglyMeasurable measurableSet_Icc |>
-                fun h ↦ h.mono_set Ioo_subset_Icc_self)
-              (continuous_ofReal.comp_aestronglyMeasurable hintg.aestronglyMeasurable)
-          · filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx using by
-              simpa using mul_le_mul_of_nonneg_right (hbdd.choose_spec x hx)
-                (norm_nonneg (deriv g x))
-        exact hintFg
-    · rw [intervalIntegrable_iff_integrableOn_Ioo_of_le hab.le]
-      have hintF : IntegrableOn (fun x ↦ deriv F x) (Ioo a b) := by
-        have hcont := hF.continuousOn_derivWithin
-        have hintF' : IntegrableOn (fun x ↦ derivWithin F (Icc a b) x) (Ioo a b) :=
-          (hcont (uniqueDiffOn_Icc hab) le_rfl |> ContinuousOn.integrableOn_Icc) |>
-            fun h ↦ h.mono_set Ioo_subset_Icc_self
-        refine hintF'.congr ?_
-        filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx using
-          by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)
-      refine hintF.norm.const_mul ?_ |> fun h ↦ h.mono' ?_ ?_
-      · exact sSup (Set.image (fun x ↦ ‖g x‖) (Icc a b))
-      · exact AEStronglyMeasurable.mul
-          (continuous_ofReal.comp_aestronglyMeasurable
-            (hg.continuousOn.aestronglyMeasurable measurableSet_Icc |>
-              fun h ↦ h.mono_set Ioo_subset_Icc_self))
-          hintF.aestronglyMeasurable
-      · filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx using by
-          simpa [abs_mul] using mul_le_mul_of_nonneg_right
-            (le_csSup (IsCompact.bddAbove (isCompact_Icc.image_of_continuousOn hg.continuousOn.norm))
-              (Set.mem_image_of_mem _ <| Ioo_subset_Icc_self hx)) (norm_nonneg _)
-    · rw [intervalIntegrable_iff_integrableOn_Ioc_of_le hab.le]
-      have hintg : IntegrableOn (fun x ↦ deriv g x) (Ioc a b) := by
-        have hintg' : IntegrableOn (fun x ↦ deriv g x) (Ioo a b) := by
-          have hcont := hg.continuousOn_derivWithin (uniqueDiffOn_Icc hab) le_rfl
-          have hintg'' : IntegrableOn (fun x ↦ derivWithin g (Icc a b) x) (Ioo a b) :=
-            hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self
-          exact hintg''.congr_fun (fun x hx ↦
-            by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
-        rwa [IntegrableOn, Measure.restrict_congr_set Ioo_ae_eq_Ioc] at *
-      have hintFg : IntegrableOn (fun x ↦ F x * deriv g x) (Ioc a b) := by
-        have hbdd : ∃ C, ∀ x ∈ Ioc a b, ‖F x‖ ≤ C :=
-          IsCompact.exists_bound_of_continuousOn isCompact_Icc hF.continuousOn |>
-            fun ⟨C, hC⟩ ↦ ⟨C, fun x hx ↦ hC x <| Ioc_subset_Icc_self hx⟩
-        apply Integrable.mono' _ _ _
-        · exact fun x ↦ hbdd.choose * ‖deriv g x‖
-        · exact Integrable.const_mul hintg.norm _
-        · exact AEStronglyMeasurable.mul
-            (hF.continuousOn.aestronglyMeasurable measurableSet_Icc |>
-              fun h ↦ h.mono_set Ioc_subset_Icc_self)
-            (continuous_ofReal.comp_aestronglyMeasurable hintg.aestronglyMeasurable)
-        · filter_upwards [ae_restrict_mem measurableSet_Ioc] with x hx using by
-            simpa using mul_le_mul_of_nonneg_right (hbdd.choose_spec x hx)
-              (norm_nonneg (deriv g x))
-      convert hintFg using 1
-  simp_all only [sub_sub_cancel_left, norm_neg, Set.mem_Icc, ge_iff_le]
-  rw [← integral_const_mul]
-  refine le_trans (norm_integral_le_integral_norm _) (integral_mono_of_nonneg ?_ ?_ ?_)
-  · exact Eventually.of_forall fun x ↦ norm_nonneg _
-  · refine Integrable.const_mul ?_ _
-    have hderivint : IntegrableOn (deriv g) (Ioo a b) := by
-      have hcont := hg.continuousOn_derivWithin (uniqueDiffOn_Icc hab) le_rfl
-      exact (hcont.integrableOn_Icc.mono_set Ioo_subset_Icc_self) |> fun h ↦ h.congr_fun
-        (fun x hx ↦ by exact derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)) measurableSet_Ioo
-    simpa only [IntegrableOn, Measure.restrict_congr_set Ioo_ae_eq_Icc] using hderivint.abs
-  · filter_upwards [ae_restrict_mem measurableSet_Icc] with t ht
-    refine le_trans ?_ (mul_le_mul_of_nonneg_right (le_ciSup ?_ t) (abs_nonneg _))
-    · aesop
-    · obtain ⟨M, hM⟩ := IsCompact.exists_bound_of_continuousOn isCompact_Icc hF.continuousOn.norm
-      exact ⟨Max.max M 1, Set.forall_mem_range.mpr fun t ↦ by rw [ciSup_eq_ite]; aesop⟩
+    pm_1597
+    pm_1598
+  pm_1599
 
 /-- Integration by parts bound for `C¹` monotone functions.
 For `C¹` monotone `g` and `C¹` `F`, `‖∫ g F' - [gF]‖ ≤ sup ‖F‖ · (g(b) - g(a))`. -/
@@ -511,177 +378,25 @@ private theorem lemma_IBP_bound_C1_monotone {a b : ℝ} (hab : a < b) (g : ℝ �
     (hg : ContDiffOn ℝ 1 g (Icc a b)) (hg_mono : MonotoneOn g (Icc a b))
     (hF : ContDiffOn ℝ 1 F (Icc a b)) :
     ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖ ≤
-    (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) := by
-  have hbound := @lemma_IBP_bound_C1 a b hab g F hg hF
-  have hdiff : DifferentiableOn ℝ g (Icc a b) := hg.differentiableOn_one
-  have hderiv_nonneg : ∀ t ∈ Ioo a b, 0 ≤ deriv g t := by
-    intro t ht
-    have hlim : Tendsto (fun h ↦ (g (t + h) - g t) / h) (𝓝[Ioi 0] 0) (𝓝 (deriv g t)) := by
-      have hHasDeriv : HasDerivAt g (deriv g t) t :=
-        hdiff.differentiableAt (Icc_mem_nhds ht.1 ht.2) |>.hasDerivAt
-      simpa [div_eq_inv_mul] using hHasDeriv.tendsto_slope_zero_right
-    refine le_of_tendsto_of_tendsto tendsto_const_nhds hlim ?_
-    filter_upwards [Ioo_mem_nhdsGT (sub_pos.mpr ht.2)] with h hh
-    apply div_nonneg
-    · rw [sub_nonneg]
-      refine hg_mono (Ioo_subset_Icc_self ht) ?_ (by linarith [hh.1])
-      rw [Set.mem_Icc]
-      constructor <;> linarith [ht.1, ht.2, hh.1, hh.2]
-    · exact hh.1.le
-  have hint_deriv : ∫ t in Icc a b, deriv g t = g b - g a := by
-    rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hab.le]
-    apply intervalIntegral.integral_eq_sub_of_hasDerivAt_of_le hab.le hg.continuousOn
-    · intro t ht
-      exact hdiff.differentiableAt (Icc_mem_nhds ht.1 ht.2) |>.hasDerivAt
-    · rw [intervalIntegrable_iff_integrableOn_Ioo_of_le hab.le]
-      have hcont_dw := hg.continuousOn_derivWithin (uniqueDiffOn_Icc hab) le_rfl
-      refine hcont_dw.integrableOn_Icc.mono_set Ioo_subset_Icc_self |>.congr_fun ?_ measurableSet_Ioo
-      intro x hx
-      rw [derivWithin_of_mem_nhds (Icc_mem_nhds hx.1 hx.2)]
-  have hint_abs : ∫ t in Icc a b, |deriv g t| = ∫ t in Icc a b, deriv g t := by
-    simp only [integral_Icc_eq_integral_Ioc, integral_Ioc_eq_integral_Ioo]
-    refine setIntegral_congr_fun measurableSet_Ioo fun x hx ↦ ?_
-    rw [abs_of_nonneg (hderiv_nonneg x hx)]
-  rw [hint_abs, hint_deriv] at hbound
-  exact hbound
+    (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) := by pm_1600
 
 open scoped unitInterval in
 /-- The Bernstein approximation of a monotone function is monotone. -/
 private theorem bernsteinApproximation_monotone (n : ℕ) (f : C(I, ℝ)) (hf : Monotone f) :
-    Monotone (bernsteinApproximation n f) := by
-  intro x y hxy
-  simp only [bernsteinApproximation, smul_eq_mul, ContinuousMap.coe_sum, ContinuousMap.coe_mul,
-    ContinuousMap.coe_const, Finset.sum_apply, Pi.mul_apply, Function.const_apply]
-  have hmono : ∀ i j : Fin (n + 1), i ≤ j → f (bernstein.z i) ≤ f (bernstein.z j) :=
-    fun i j hij ↦ hf <| Subtype.mk_le_mk.mpr <| by simpa [bernstein.z] using by gcongr; aesop
-  have hsum : ∑ i : Fin (n + 1), ∑ j : Fin (n + 1),
-      (bernstein n i x * bernstein n j y - bernstein n i y * bernstein n j x) *
-        (f (bernstein.z j) - f (bernstein.z i)) ≥ 0 := by
-    refine Finset.sum_nonneg fun i _ ↦ Finset.sum_nonneg fun j _ ↦ ?_
-    by_cases hij : i ≤ j
-    · refine mul_nonneg ?_ (sub_nonneg.mpr (hmono i j hij))
-      have hineq : x.val ^ (i : ℕ) * (1 - x.val) ^ (n - i : ℕ) * y.val ^ (j : ℕ) *
-          (1 - y.val) ^ (n - j : ℕ) ≥ x.val ^ (j : ℕ) * (1 - x.val) ^ (n - j : ℕ) *
-          y.val ^ (i : ℕ) * (1 - y.val) ^ (n - i : ℕ) := by
-        have hdiv : y.val ^ (j - i : ℕ) * (1 - x.val) ^ (j - i : ℕ) ≥
-            x.val ^ (j - i : ℕ) * (1 - y.val) ^ (j - i : ℕ) := by
-          rw [← mul_pow, ← mul_pow]
-          exact pow_le_pow_left₀ (mul_nonneg (Subtype.property x |>.1)
-            (sub_nonneg.2 (Subtype.property y |>.2)))
-            (by nlinarith [show (x : ℝ) ≤ y from hxy, show (x : ℝ) ≥ 0 from Subtype.property x |>.1,
-              show (y : ℝ) ≤ 1 from Subtype.property y |>.2]) _
-        simp_all only [Finset.mem_univ, ge_iff_le, mul_comm, mul_left_comm, mul_assoc]
-        convert mul_le_mul_of_nonneg_left hdiv (show 0 ≤ (x : ℝ) ^ (i : ℕ) * (y : ℝ) ^ (i : ℕ) *
-            (1 - x : ℝ) ^ (n - j : ℕ) * (1 - y : ℝ) ^ (n - j : ℕ) by
-          exact mul_nonneg (mul_nonneg (mul_nonneg (pow_nonneg (mod_cast x.2.1) _)
-            (pow_nonneg (mod_cast y.2.1) _)) (pow_nonneg (sub_nonneg.2 <| mod_cast x.2.2) _))
-            (pow_nonneg (sub_nonneg.2 <| mod_cast y.2.2) _)) using 1 <;> ring_nf
-        · simp only [mul_assoc, ← pow_add, add_tsub_cancel_of_le (show (i : ℕ) ≤ j from hij),
-            mul_eq_mul_left_iff, pow_eq_zero_iff', ne_eq, Icc.coe_eq_zero, Fin.val_eq_zero_iff]
-          exact Or.inl <| Or.inl <| Or.inl <|
-            by rw [tsub_add_tsub_cancel (mod_cast Fin.is_le _) (mod_cast hij)]
-        · simp only [mul_assoc, ← pow_add, add_tsub_cancel_of_le (show (i : ℕ) ≤ j from hij),
-            mul_eq_mul_left_iff, mul_eq_mul_right_iff, pow_eq_zero_iff', ne_eq, Icc.coe_eq_zero,
-            Fin.val_eq_zero_iff]
-          exact Or.inl <| Or.inl <| Or.inl <|
-            by rw [tsub_add_tsub_cancel (mod_cast Fin.is_le _) (mod_cast hij)]
-      simp_all only [Finset.mem_univ, ge_iff_le, bernstein, Polynomial.toContinuousMapOn_apply,
-        Polynomial.toContinuousMap_apply, sub_nonneg]
-      simp_all only [bernsteinPolynomial, Polynomial.eval_mul, Polynomial.eval_natCast,
-        Polynomial.eval_pow, Polynomial.eval_X, Polynomial.eval_sub, Polynomial.eval_one]
-      convert mul_le_mul_of_nonneg_left hineq
-        (show 0 ≤ (n.choose i : ℝ) * (n.choose j : ℝ) by positivity) using 1 <;> ring
-    · refine mul_nonneg_of_nonpos_of_nonpos ?_ ?_
-      · norm_num [bernstein, bernsteinPolynomial]
-        have hexp : (x.val : ℝ) ^ (i : ℕ) * (y.val : ℝ) ^ (j : ℕ) ≤
-            (x.val : ℝ) ^ (j : ℕ) * (y.val : ℝ) ^ (i : ℕ) := by
-          rw [show (i : ℕ) = j + (i - j) by rw [Nat.add_sub_cancel' (le_of_not_ge hij)]]
-          ring_nf
-          rw [mul_right_comm]
-          exact mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by exact_mod_cast x.2.1)
-            (by exact_mod_cast hxy) _) (mul_nonneg (pow_nonneg (by exact_mod_cast x.2.1) _)
-            (pow_nonneg (by exact_mod_cast y.2.1) _))
-        have hexp2 : (1 - x.val) ^ (n - i.val) * (1 - y.val) ^ (n - j.val) ≤
-            (1 - x.val) ^ (n - j.val) * (1 - y.val) ^ (n - i.val) := by
-          rw [show n - (i : ℕ) = n - (j : ℕ) - (i - j : ℕ) by
-            rw [tsub_tsub, add_tsub_cancel_of_le (mod_cast le_of_not_ge hij)]]
-          rw [show (1 - x.val) ^ (n - j.val) = (1 - x.val) ^ (n - j.val - (i.val - j.val)) *
-              (1 - x.val) ^ (i.val - j.val) by rw [← pow_add, Nat.sub_add_cancel
-              (show (i.val - j.val) ≤ n - j.val from Nat.sub_le_sub_right (mod_cast Fin.is_le i) _)],
-            show (1 - y.val) ^ (n - j.val) = (1 - y.val) ^ (n - j.val - (i.val - j.val)) *
-              (1 - y.val) ^ (i.val - j.val) by rw [← pow_add, Nat.sub_add_cancel
-              (show (i.val - j.val) ≤ n - j.val from Nat.sub_le_sub_right (mod_cast Fin.is_le i) _)]]
-          rw [mul_assoc, mul_comm ((1 - x.val) ^ (i.val - j.val))]
-          exact mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left
-            (pow_le_pow_left₀ (sub_nonneg.2 <| mod_cast y.2.2)
-            (sub_le_sub_left (mod_cast hxy) _) _) <| pow_nonneg (sub_nonneg.2 <| mod_cast y.2.2) _)
-            <| pow_nonneg (sub_nonneg.2 <| mod_cast x.2.2) _
-        convert mul_le_mul_of_nonneg_left (mul_le_mul hexp hexp2 (?_) (?_))
-          (show (0 : ℝ) ≤ (n.choose i : ℝ) * (n.choose j : ℝ) by positivity) using 1 <;> ring_nf
-        · exact mul_nonneg (pow_nonneg (sub_nonneg.2 <| mod_cast x.2.2) _)
-            (pow_nonneg (sub_nonneg.2 <| mod_cast y.2.2) _)
-        · exact mul_nonneg (pow_nonneg (Subtype.property x |>.1) _)
-            (pow_nonneg (Subtype.property y |>.1) _)
-      · exact sub_nonpos_of_le <| hmono _ _ <| le_of_not_ge hij
-  contrapose! hsum
-  simp_all only [mul_comm, mul_sub, sum_sub_distrib, ← Finset.mul_sum _ _ _, bernstein.probability,
-    one_mul, sub_neg]
-  simp_all only [← mul_assoc, ← sum_comm, ← sum_mul, ← Finset.mul_sum _ _ _, bernstein.probability,
-    mul_one]
-  linarith
+    Monotone (bernsteinApproximation n f) := by pf_6
 
 open scoped unitInterval in
 /-- Continuous monotone functions on `[0,1]` can be uniformly approximated by smooth monotone
 functions (polynomials). -/
 private theorem lemma_approx_monotone_C1_I (f : C(I, ℝ)) (hf_mono : Monotone f) :
-    ∀ ε > 0, ∃ P : ℝ → ℝ, ContDiffOn ℝ 1 P I ∧ MonotoneOn P I ∧ ∀ x : I, |f x - P x| < ε := by
-  intro ε hεpos
-  obtain ⟨n, hn⟩ := Metric.tendsto_atTop.mp (tendsto_iff_norm_sub_tendsto_zero.mp
-    (bernsteinApproximation_uniform f)) ε hεpos
-  have hn : ‖bernsteinApproximation n f - f‖ < ε := by simpa [dist_zero_right, norm_norm] using hn n le_rfl
-  let P : ℝ → ℝ := fun x ↦ ∑ k : Fin (n + 1), (n.choose k : ℝ) * x ^ (k : ℕ) * (1 - x) ^ (n - k : ℕ) * f (bernstein.z k)
-  have hP (x) (hx : x ∈ I) : P x = bernsteinApproximation n f ⟨x, hx⟩ := by
-    simp [P, bernsteinApproximation, bernstein, bernsteinPolynomial, mul_comm]
-  refine ⟨P, ContDiff.contDiffOn <| ContDiff.sum fun k _ ↦ ?_, fun x hx y hy hxy ↦ ?_, fun x ↦ ?_⟩
-  · apply_rules [ContDiff.mul, ContDiff.pow, contDiff_const, contDiff_id, ContDiff.sub]
-  · rw [hP x hx, hP y hy]
-    exact bernsteinApproximation_monotone n f hf_mono (Subtype.mk_le_mk.mpr hxy)
-  · rw [abs_sub_comm, hP x x.2]
-    exact lt_of_le_of_lt (ContinuousMap.norm_coe_le_norm (bernsteinApproximation n f - f) x) hn
+    ∀ ε > 0, ∃ P : ℝ → ℝ, ContDiffOn ℝ 1 P I ∧ MonotoneOn P I ∧ ∀ x : I, |f x - P x| < ε := by pf_92
 
 /-- Continuous monotone functions on a compact interval can be uniformly approximated by `C¹`
 monotone functions. -/
 private theorem lemma_approx_monotone_C1 {a b : ℝ} (hab : a < b) (g : ℝ → ℝ)
     (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mono : MonotoneOn g (Set.Icc a b)) :
     ∀ ε > 0, ∃ g' : ℝ → ℝ, ContDiffOn ℝ 1 g' (Set.Icc a b) ∧ MonotoneOn g' (Set.Icc a b) ∧
-      ∀ x ∈ Set.Icc a b, |g x - g' x| < ε := by
-  intro ε hε_pos
-  set f := fun t : unitInterval ↦ g (a + t.val * (b - a)) with hf_def
-  obtain ⟨P, hP_cont, hP_mono, hP_approx⟩ : ∃ P : ℝ → ℝ, ContDiffOn ℝ 1 P unitInterval ∧
-    MonotoneOn P unitInterval ∧ ∀ t : unitInterval, |f t - P t| < ε := by
-    have hf_cont : ContinuousOn f (Set.univ : Set unitInterval) :=
-      hg_cont.comp (Continuous.continuousOn (by continuity)) fun x hx ↦
-        ⟨by nlinarith [x.2.1, x.2.2], by nlinarith [x.2.1, x.2.2]⟩
-    have hf_mono : Monotone f :=
-      fun x y hxy ↦ hg_mono ⟨by nlinarith [x.2.1, x.2.2], by nlinarith [x.2.1, x.2.2]⟩ ⟨by nlinarith [y.2.1, y.2.2],
-        by nlinarith [y.2.1, y.2.2]⟩ (by nlinarith [x.2.1, x.2.2, y.2.1, y.2.2, show (x : ℝ) ≤ y from hxy])
-    have := @lemma_approx_monotone_C1_I
-    exact this ⟨f, by simpa using hf_cont⟩ hf_mono ε hε_pos
-  refine ⟨fun x ↦ P ((x - a) / (b - a)), ?_, ?_, ?_⟩
-  · simp_all only [MonotoneOn, Set.mem_Icc, and_imp, gt_iff_lt, Subtype.forall]
-    refine hP_cont.comp (ContDiffOn.div_const (contDiffOn_id.sub contDiffOn_const) _)
-      fun x hx ↦ ⟨?_, ?_⟩ <;> nlinarith [hx.1, hx.2, mul_div_cancel₀ (x - a) (sub_ne_zero_of_ne hab.ne')]
-  · simp_all only [MonotoneOn, Set.mem_Icc, and_imp, gt_iff_lt, Subtype.forall]
-    exact fun x hx₁ hx₂ y hy₁ hy₂ hxy ↦ hP_mono (div_nonneg (by linarith) (by linarith))
-      (div_le_one_of_le₀ (by linarith) (by linarith)) (div_nonneg (by linarith) (by linarith))
-        (div_le_one_of_le₀ (by linarith) (by linarith)) (div_le_div_of_nonneg_right (by linarith) (by linarith))
-  · simp_all only [MonotoneOn, Set.mem_Icc, and_imp, gt_iff_lt, Subtype.forall]
-    intro x hx₁ hx₂
-    convert hP_approx ((x - a) / (b - a)) (div_nonneg (by linarith) (by linarith))
-      (div_le_one_of_le₀ (by linarith) (by linarith)) using 1
-    congr 1
-    rw [div_mul_cancel₀ _ (by linarith)]
-    ring_nf
+      ∀ x ∈ Set.Icc a b, |g x - g' x| < ε := by pm_1601
 
 /-- Integration by parts bound for continuous monotone functions.
 For continuous monotone `g` and `C¹` `F`, `‖∫ g F' - [gF]‖ ≤ sup ‖F‖ · (g(b) - g(a))`. -/
@@ -690,181 +405,21 @@ private theorem lemma_IBP_bound_monotone {a b : ℝ} (hab : a < b) (g : ℝ → 
     (hg_mono : MonotoneOn g (Icc a b))
     (hF_C1 : ContDiffOn ℝ 1 F (Icc a b)) :
     ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖ ≤
-    (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) := by
-  have happrox := lemma_approx_monotone_C1 hab g hg_cont hg_mono
-  choose! g' hg'_cont hg'_mono hg'_approx using happrox
-  let gₙ := fun (n : ℕ) ↦ g' (1 / (n + 1 : ℝ))
-  have hpos : ∀ n : ℕ, 0 < (1 : ℝ) / (n + 1) := fun n ↦ by positivity
-  have hgₙ_cont : ∀ n, ContDiffOn ℝ 1 (gₙ n) (Icc a b) := fun n ↦ hg'_cont _ (hpos n)
-  have hgₙ_mono : ∀ n, MonotoneOn (gₙ n) (Icc a b) := fun n ↦ hg'_mono _ (hpos n)
-  have hgₙ_bound : ∀ n, ∀ x ∈ Icc a b, |gₙ n x - g x| ≤ 1 / (n + 1 : ℝ) := fun n x hx ↦ by
-    rw [abs_sub_comm]; exact (hg'_approx _ (hpos n) x hx).le
-  have hgₙ_lim : ∀ x ∈ Icc a b, Tendsto (fun n ↦ gₙ n x) atTop (nhds (g x)) := fun x hx ↦ by
-    rw [tendsto_iff_norm_sub_tendsto_zero]
-    exact squeeze_zero (fun _ ↦ by positivity) (fun n ↦ hgₙ_bound n x hx)
-      tendsto_one_div_add_atTop_nhds_zero_nat
-  have hboundₙ : ∀ n, ‖(∫ t in Icc a b, (gₙ n t : ℂ) * deriv F t) - (gₙ n b * F b - gₙ n a * F a)‖ ≤
-      (⨆ t ∈ Icc a b, ‖F t‖) * (gₙ n b - gₙ n a) := fun n ↦ by
-    convert lemma_IBP_bound_C1_monotone hab (gₙ n) F (hgₙ_cont n) (hgₙ_mono n) hF_C1 using 1
-  have hconv : Tendsto (fun n ↦ ∫ t in Icc a b, (gₙ n t : ℂ) * deriv F t) atTop
-      (nhds (∫ t in Icc a b, (g t : ℂ) * deriv F t)) := by
-    let M := sSup (image (|g ·|) (Icc a b))
-    have hM_bdd : BddAbove (image (|g ·|) (Icc a b)) :=
-      IsCompact.bddAbove (isCompact_Icc.image_of_continuousOn (continuous_abs.comp_continuousOn hg_cont))
-    have hM : ∀ x ∈ Icc a b, |g x| ≤ M := fun x hx ↦ le_csSup hM_bdd (mem_image_of_mem _ hx)
-    refine tendsto_integral_of_dominated_convergence (fun x ↦ (M + 1) * ‖deriv F x‖) ?_ ?_ ?_ ?_
-    · exact fun n ↦ AEStronglyMeasurable.mul (ContinuousOn.aestronglyMeasurable
-        (continuous_ofReal.comp_continuousOn (hgₙ_cont n).continuousOn) measurableSet_Icc) (by fun_prop)
-    · apply Integrable.const_mul <| Integrable.norm <|
-        (hF_C1.continuousOn_derivWithin (uniqueDiffOn_Icc hab) le_rfl).integrableOn_Icc.congr _
-      rw [EventuallyEq, ae_restrict_iff' measurableSet_Icc]
-      filter_upwards [measure_eq_zero_iff_ae_notMem.mp (measure_singleton a),
-        measure_eq_zero_iff_ae_notMem.mp (measure_singleton b)] with x hxa hxb hx
-      rw [derivWithin_of_mem_nhds]
-      exact Icc_mem_nhds (lt_of_le_of_ne hx.1 (fun h ↦ hxa (mem_singleton_iff.mpr h.symm)))
-        (lt_of_le_of_ne hx.2 hxb)
-    · intro n
-      filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
-      simp only [norm_mul]; gcongr; norm_cast
-      calc |gₙ n x| = ‖gₙ n x‖ := (norm_eq_abs _).symm
-        _ = ‖(gₙ n x - g x) + g x‖ := by rw [sub_add_cancel]
-        _ ≤ ‖gₙ n x - g x‖ + ‖g x‖ := norm_add_le _ _
-        _ = |gₙ n x - g x| + |g x| := by simp only [norm_eq_abs]
-        _ ≤ 1 / ((n : ℝ) + 1) + M := add_le_add (hgₙ_bound n x hx) (hM x hx)
-        _ ≤ 1 + M := by gcongr; rw [div_le_one (by positivity)]; linarith [n.cast_nonneg (α := ℝ)]
-        _ = M + 1 := add_comm ..
-    · filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
-      exact Tendsto.mul (continuous_ofReal.continuousAt.tendsto.comp <| hgₙ_lim x hx)
-        tendsto_const_nhds
-  have hlim_lhs : Tendsto (fun n ↦ ‖(∫ t in Icc a b, (gₙ n t : ℂ) * deriv F t) -
-      (gₙ n b * F b - gₙ n a * F a)‖) atTop
-      (nhds ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖) := by
-    refine Tendsto.norm <| Tendsto.sub hconv <| Tendsto.sub ?_ ?_
-    · exact Tendsto.mul (continuous_ofReal.continuousAt.tendsto.comp
-        (hgₙ_lim b (right_mem_Icc.mpr hab.le))) tendsto_const_nhds
-    · exact Tendsto.mul (continuous_ofReal.continuousAt.tendsto.comp
-        (hgₙ_lim a (left_mem_Icc.mpr hab.le))) tendsto_const_nhds
-  have hlim_rhs : Tendsto (fun n ↦ (⨆ t ∈ Icc a b, ‖F t‖) * (gₙ n b - gₙ n a)) atTop
-      (nhds ((⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a))) := by
-    exact Tendsto.mul tendsto_const_nhds
-      (Tendsto.sub (hgₙ_lim b (right_mem_Icc.mpr hab.le)) (hgₙ_lim a (left_mem_Icc.mpr hab.le)))
-  exact le_of_tendsto_of_tendsto' hlim_lhs hlim_rhs hboundₙ
+    (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) := by pm_1602
 
 /-- Integration by parts bound for continuous functions with antitone absolute value.
 If `|g|` is antitone, `‖∫ g F'‖ ≤ sup ‖F‖ · 2 |g(a)|`. -/
 private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
     (hgcont : ContinuousOn g (Icc a b)) (hganti : AntitoneOn (|g ·|) (Icc a b))
     (hF : ContDiffOn ℝ 1 F (Icc a b)) :
-    ‖∫ t in Icc a b, (g t : ℂ) * deriv F t‖ ≤ (⨆ t ∈ Icc a b, ‖F t‖) * (2 * |g a|) := by
-  have hsign : (∀ t ∈ Icc a b, g t ≥ 0) ∨ (∀ t ∈ Icc a b, g t ≤ 0) := by
-    by_cases hsign : ∃ a' b' : ℝ, a ≤ a' ∧ a' < b' ∧ b' ≤ b ∧ g a' * g b' < 0
-    · obtain ⟨a', b', ha', hb', hab', hsign⟩ := hsign
-      obtain ⟨r, hr⟩ : ∃ r ∈ Icc a' b', g r = 0 := by
-        have hivt : ContinuousOn g (Icc a' b') := hgcont.mono (Icc_subset_Icc ha' hab')
-        have := hivt.image_Icc hb'.le
-        exact this.symm.subset (Set.mem_Icc.mpr ⟨by nlinarith [Set.mem_Icc.mp (this ▸
-          mem_image_of_mem g (Set.left_mem_Icc.mpr hb'.le)), Set.mem_Icc.mp (this ▸
-          mem_image_of_mem g (Set.right_mem_Icc.mpr hb'.le))], by nlinarith [mem_Icc.mp (this ▸
-          mem_image_of_mem g (Set.left_mem_Icc.mpr hb'.le)), mem_Icc.mp (this ▸
-          mem_image_of_mem g (Set.right_mem_Icc.mpr hb'.le))]⟩)
-      have := hganti ⟨by linarith [hr.1.1], by linarith [hr.1.2]⟩ ⟨by linarith [hr.1.1], by
-        linarith [hr.1.2]⟩ hr.1.2
-      simp_all
-    · contrapose! hsign
-      obtain ⟨⟨x, hx₁, hx₂⟩, ⟨y, hy₁, hy₂⟩⟩ := hsign
-      norm_num at *
-      cases lt_or_gt_of_ne (show x ≠ y by rintro rfl; linarith) with
-      | inl h => exact ⟨x, hx₁.1, y, by linarith, by linarith, by nlinarith⟩
-      | inr h => exact ⟨y, hy₁.1, x, by linarith, by linarith, by nlinarith⟩
-  cases hsign with
-  | inl hsign =>
-    have hbd₁ : ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖ ≤
-        (⨆ t ∈ Icc a b, ‖F t‖) * (g a - g b) := by
-      have := @lemma_IBP_bound_monotone a b hab (fun t ↦ -g t) F ?_ ?_ ?_ <;> norm_num at *
-      · convert this using 1 <;> norm_num [integral_neg]
-        · ring_nf; rw [← norm_neg]; ring_nf
-        · exact Or.inl <| by ring
-      · exact hgcont.neg
-      · intro t ht u hu htu; have := hganti ht hu htu; simp_all [abs_of_nonneg]
-      · assumption
-    have hbd₂ : ‖g b * F b - g a * F a‖ ≤ (⨆ t ∈ Icc a b, ‖F t‖) * (g b + g a) := by
-      refine (norm_sub_le _ _).trans ?_
-      have hFle : ∀ t ∈ Icc a b, ‖F t‖ ≤ ⨆ t ∈ Icc a b, ‖F t‖ := fun t ht ↦ by
-        apply le_csSup
-        · obtain ⟨M, hM⟩ := IsCompact.exists_bound_of_continuousOn isCompact_Icc hF.continuousOn
-          exact ⟨max M 1, forall_mem_range.mpr fun t ↦ by rw [ciSup_eq_ite]; aesop⟩
-        · exact ⟨t, by simp_all⟩
-      norm_num at *
-      rw [abs_of_nonneg (hsign b hab.le le_rfl), abs_of_nonneg (hsign a le_rfl hab.le)]
-      nlinarith [hFle b hab.le le_rfl, hFle a le_rfl hab.le, hsign b hab.le le_rfl, hsign a le_rfl hab.le]
-    have hbd₃ : ‖∫ t in Icc a b, (g t : ℂ) * deriv F t‖ ≤
-        (⨆ t ∈ Icc a b, ‖F t‖) * (g a - g b) + (⨆ t ∈ Icc a b, ‖F t‖) * (g b + g a) := by
-      have h := norm_add_le ((∫ t in Icc a b, (g t : ℂ) * deriv F t) -
-        (g b * F b - g a * F a)) (g b * F b - g a * F a)
-      simpa using h.trans (add_le_add hbd₁ hbd₂)
-    exact hbd₃.trans (by
-      rw [abs_of_nonneg (hsign a <| left_mem_Icc.mpr hab.le)]
-      nlinarith [show 0 ≤ ⨆ t ∈ Icc a b, ‖F t‖ from iSup_nonneg fun _ ↦ iSup_nonneg fun _ ↦ norm_nonneg _])
-  | inr hsign =>
-    have hbd₁ : ‖(∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)‖ ≤
-        (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) := by
-      apply_rules [lemma_IBP_bound_monotone]
-      intro x hx y hy hxy; have := hganti hx hy hxy; simp_all [abs_of_nonpos]
-    have hbd₂ : ‖g b * F b - g a * F a‖ ≤ (⨆ t ∈ Icc a b, ‖F t‖) * (|g b| + |g a|) := by
-      have hFle : ∀ t ∈ Icc a b, ‖F t‖ ≤ ⨆ t ∈ Icc a b, ‖F t‖ := fun t ht ↦ by
-        apply le_csSup
-        · obtain ⟨M, hM⟩ := IsCompact.exists_bound_of_continuousOn isCompact_Icc hF.continuousOn.norm
-          use max M 1
-          rintro x ⟨t, rfl⟩; by_cases ht : t ∈ Icc a b <;> simp_all
-        · exact ⟨t, by simp_all⟩
-      refine (norm_sub_le ..).trans ?_
-      simp only [Set.mem_Icc, and_imp, norm_mul, norm_real, norm_eq_abs] at *
-      nlinarith [abs_nonneg (g b), abs_nonneg (g a),
-        hFle b (by linarith) (by linarith), hFle a (by linarith) (by linarith)]
-    have hbd₃ : ‖∫ t in Icc a b, (g t : ℂ) * deriv F t‖ ≤
-        (⨆ t ∈ Icc a b, ‖F t‖) * (g b - g a) + (⨆ t ∈ Icc a b, ‖F t‖) * (|g b| + |g a|) := by
-      have h := norm_add_le ((∫ t in Icc a b, (g t : ℂ) * deriv F t) - (g b * F b - g a * F a)) (g b * F b - g a * F a)
-      simpa using h.trans (add_le_add hbd₁ hbd₂)
-    convert hbd₃ using 1
-    rw [abs_of_nonpos (hsign b <| right_mem_Icc.mpr hab.le), abs_of_nonpos (hsign a <| left_mem_Icc.mpr hab.le)]
-    ring
+    ‖∫ t in Icc a b, (g t : ℂ) * deriv F t‖ ≤ (⨆ t ∈ Icc a b, ‖F t‖) * (2 * |g a|) := by pm_1603
 
 set_option backward.isDefEq.respectTransparency false in
 
 private theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
     (hφ'_ne0 : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) (h g : ℝ → ℝ) (hg : ∀ t, g t = h t / deriv φ t)
     (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b)) :
-    ‖∫ t in Set.Icc a b, h t * e (φ t)‖ ≤ |g a| / π := by
-  let F : ℝ → ℂ := fun t ↦ (1 / (2 * Real.pi * I)) * (exp (2 * Real.pi * I * φ t))
-  have h_integral_bound : ‖∫ t in Set.Icc a b, (g t : ℂ) * (deriv F t)‖ ≤ (⨆ t ∈ Set.Icc a b, ‖F t‖) * (2 * |g a|) :=
-    lemma_IBP_bound_abs_antitone ha g F hg_cont hg_mon <|
-      ContDiffOn.mul contDiffOn_const <| contDiff_exp.comp_contDiffOn <|
-        ContDiffOn.mul contDiffOn_const <| ofRealCLM.contDiff.comp_contDiffOn hφ_C1
-  have h_deriv_F : ∀ t ∈ Set.Ioo a b, deriv F t = (exp (2 * Real.pi * I * φ t)) * (deriv φ t) := by
-    intro t ht
-    rw [deriv_const_mul]
-    · norm_num [Complex.exp_ne_zero, mul_comm]
-      erw [HasDerivAt.deriv (HasDerivAt.comp t (Complex.hasDerivAt_exp _) (HasDerivAt.mul (HasDerivAt.ofReal_comp
-        (hφ_C1.differentiableOn_one |> DifferentiableOn.hasDerivAt <| Icc_mem_nhds ht.1 ht.2)) <| hasDerivAt_const ..))]
-      norm_num
-      ring_nf
-      simp
-    · apply Complex.differentiableAt_exp.comp
-      apply DifferentiableAt.const_mul <| ofRealCLM.differentiableAt.comp _ <| DifferentiableOn.differentiableAt
-        hφ_C1.differentiableOn_one (Icc_mem_nhds ht.1 ht.2) ..
-  have h_norm_F : ⨆ t ∈ Set.Icc a b, ‖F t‖ = 1 / (2 * Real.pi) := by
-    dsimp only [F]
-    rw [@ciSup_eq_of_forall_le_of_forall_lt_exists_gt] <;> norm_num [norm_exp, abs_of_nonneg pi_pos.le]
-    · exact fun t ↦ by rw [ciSup_eq_ite]; split_ifs <;> norm_num; linarith [pi_pos]
-    · exact fun w hw ↦ ⟨a, hw.trans_le <| by rw [ciSup_pos]; norm_num; linarith⟩
-  have h_integral_subst : ‖∫ t in Set.Icc a b, (g t : ℂ) * (deriv F t)‖ = ‖∫ t in Set.Icc a b,
-      (h t : ℂ) * (exp (2 * Real.pi * I * φ t))‖ := by
-    simp only [integral_Icc_eq_integral_Ioc, integral_Ioc_eq_integral_Ioo]
-    rw [setIntegral_congr_fun measurableSet_Ioo fun t ht ↦ by rw [h_deriv_F t ht, hg t]]
-    simp only [div_eq_mul_inv, ofReal_mul, ofReal_inv, mul_comm, mul_left_comm, mul_assoc]
-    refine congr_arg Norm.norm <| setIntegral_congr_fun measurableSet_Ioo <| fun x hx ↦ ?_
-    simp [mul_inv_cancel_left₀ (ofReal_ne_zero.mpr (hφ'_ne0 x (Set.Ioo_subset_Icc_self hx)))]
-  exact h_integral_subst ▸ h_integral_bound.trans (by rw [h_norm_F]; ring_nf; norm_num [pi_pos.ne'])
+    ‖∫ t in Set.Icc a b, h t * e (φ t)‖ ≤ |g a| / π := by pf_43
 
 private theorem lemma_aachdecre (σ : ℝ) (hσ : 0 ≤ σ) (τ : ℝ) (ν : ℝ) (hν : ν ≠ 0) (a b : ℝ)
     (ha : a > |τ| / (2 * π * |ν|)) (k : ℕ) (hk : 1 ≤ k) :
@@ -902,7 +457,7 @@ private theorem lemma_aachdecre (σ : ℝ) (hσ : 0 ≤ σ) (τ : ℝ) (ν : ℝ
       convert h_deriv_neg using 1; simp only [neg_add_rev, sub_right_inj]; ring_nf; grind
     have h_expr_neg : -(σ + k) - (k + 1) * (τ / (t * ν)) / (2 * Real.pi - τ / (t * ν)) < 0 := by
       rw [sub_div', div_lt_iff₀] <;> nlinarith [abs_lt.mp h_abs, show (k : ℝ) ≥ 1 by norm_cast]
-    have ht_pos : 0 < t := lt_of_lt_of_le (lt_of_le_of_lt (by positivity) ha) ht.1
+    pm_4608
     rw [h_deriv_eq]
     have h_goal : -(σ + k) / t - (k + 1) * (τ / (t * ν)) / (2 * Real.pi - τ / (t * ν)) / t =
         (-(σ + k) - (k + 1) * (τ / (t * ν)) / (2 * Real.pi - τ / (t * ν))) / t := by ring
@@ -932,7 +487,7 @@ private theorem lemma_aachdecre (σ : ℝ) (hσ : 0 ≤ σ) (τ : ℝ) (ν : ℝ
         Real.exp ((-(σ + k) * Real.log t) - (k + 1) * Real.log |2 * Real.pi * ν - τ / t|) := by
     intro t ht
     have h_pos : 0 < t ∧ 0 < |2 * Real.pi * ν - τ / t| := by
-      have ht_pos : 0 < t := lt_of_lt_of_le (lt_of_le_of_lt (by positivity) ha) ht.1
+      pm_4608
       constructor
       · exact ht_pos
       · rw [abs_pos, sub_ne_zero, ne_eq, eq_div_iff (ne_of_gt ht_pos)]
@@ -949,6 +504,7 @@ private theorem lemma_aachdecre (σ : ℝ) (hσ : 0 ≤ σ) (τ : ℝ) (ν : ℝ
   refine fun x hx y hy hxy ↦ by cases eq_or_lt_of_le hxy <;> simp_all only [Set.mem_Icc, and_imp, le_refl]
 
 set_option backward.isDefEq.respectTransparency false in
+set_option backward.isDefEq.respectTransparency false in
 private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν : ν ≠ 0) (a b : ℝ)
     (ha : a > |s.im| / (2 * π * |ν|)) (hb : b > a) :
     let φ : ℝ → ℝ := fun t ↦ ν * t - (s.im / (2 * π)) * Real.log t
@@ -961,36 +517,17 @@ private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν :
   rw [lemma_aachIBP s ν hν a b ha hb]
   dsimp only [φ, Φ]
   let g_1 : ℝ → ℝ := fun t ↦ t ^ (-s.re - 1) / (deriv φ t) ^ 2
-  have ha_pos : 0 < a := lt_of_le_of_lt (div_nonneg (abs_nonneg _) (by positivity)) ha
-  have hsmooth : ContDiffOn ℝ 2 φ (Set.Ioi 0) := by
-    simp only [φ]
-    apply ContDiffOn.sub
-    · fun_prop
-    · apply ContDiffOn.mul contDiffOn_const
-      exact contDiffOn_log.mono (fun x hx ↦ ne_of_gt hx)
+  pm_5876
+  pm_4607
   have hcontdiffφ : ContDiffOn ℝ 1 φ (Set.Icc a b) := (hsmooth.mono (fun x hx ↦ lt_of_lt_of_le ha_pos hx.1)).of_le (by norm_num)
-  have h_cont : ContinuousOn φ (Set.Icc a b) :=
-    (hsmooth.mono (fun x hx ↦ lt_of_lt_of_le ha_pos hx.1)).continuousOn
-  have h_deriv_cont : ContinuousOn (fun t ↦ deriv φ t) (Set.Icc a b) := by
-    have h1 : ContinuousOn (deriv φ) (Set.Ioi 0) :=
-      hsmooth.continuousOn_deriv_of_isOpen isOpen_Ioi (by norm_num)
-    exact h1.mono (fun x hx ↦ lt_of_lt_of_le ha_pos hx.1)
-  have h_deriv2_cont : ContinuousOn (fun t ↦ deriv (deriv φ) t) (Set.Icc a b) := by
-    have h1 : ContDiffOn ℝ 1 (deriv φ) (Set.Ioi 0) :=
-      ((contDiffOn_succ_iff_deriv_of_isOpen isOpen_Ioi).mp hsmooth).2.2
-    exact (h1.continuousOn_deriv_of_isOpen isOpen_Ioi (by norm_num)).mono
-      (fun x hx ↦ lt_of_lt_of_le ha_pos hx.1)
+  pm_4606
   have hφ_deriv : ∀ t ∈ Set.Icc a b, deriv φ t = ν - s.im / (2 * π * t) := by
     intro t ht
-    have ht_pos : 0 < t := lt_of_lt_of_le (lt_of_le_of_lt (by positivity) ha) ht.1
-    rw [show φ = fun x ↦ ν * x - (s.im / (2 * π)) * Real.log x from rfl]
-    convert HasDerivAt.deriv (HasDerivAt.sub (HasDerivAt.const_mul ν (hasDerivAt_id t))
-      (HasDerivAt.const_mul (s.im / (2 * π)) (Real.hasDerivAt_log ht_pos.ne'))) using 1
-    · rfl
-    field_simp
+    pm_4608
+    pm_4609
   have hφ_deriv2 : ∀ t ∈ Set.Icc a b, deriv (deriv φ) t = s.im / (2 * π * t^2) := by
     intro t ht
-    have ht_pos : 0 < t := lt_of_lt_of_le (lt_of_le_of_lt (by positivity) ha) ht.1
+    pm_4608
     have h_deriv_φ : ∀ x ∈ Set.Ioi 0, deriv φ x = ν - s.im / (2 * π * x) := by
       intro x hx
       rw [show φ = fun x ↦ ν * x - (s.im / (2 * π)) * Real.log x from rfl]
@@ -1010,8 +547,7 @@ private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν :
     field_simp [Real.two_pi_pos.ne']
     ring
   have h_deriv_ne_zero : (∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) := by
-    intro t ht
-    exact phi_deriv_ne_zero s ν a t ha ha_pos hν ht.1
+    pm_7556
   have g_1_cont : ContinuousOn g_1 (Set.Icc a b) := by
     apply ContinuousOn.div
     · apply continuousOn_rpow_const_Icc (ha_pos := ha_pos)
@@ -1034,15 +570,11 @@ private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν :
       positivity
     have hg_eq : Set.EqOn (fun t ↦ |g_1 t|) (fun t ↦ (2 * π) ^ 2 * f t) (Set.Icc a b) := by
       intro t ht
-      have ht_pos : 0 < t := lt_of_lt_of_le (lt_of_le_of_lt (by positivity) ha) ht.1
+      pm_4608
       dsimp only [g_1, f]
       rw [abs_div, abs_pow, abs_rpow_of_nonneg ht_pos.le]
       have hφ' : deriv φ t = ν - s.im / (2 * π * t) := by
-        rw [show φ = fun x ↦ ν * x - (s.im / (2 * π)) * Real.log x from rfl]
-        convert HasDerivAt.deriv (HasDerivAt.sub (HasDerivAt.const_mul ν (hasDerivAt_id t))
-          (HasDerivAt.const_mul (s.im / (2 * π)) (Real.hasDerivAt_log ht_pos.ne'))) using 1
-        · rfl
-        field_simp
+        pm_4609
       rw [hφ']
       have h_inner : 2 * π * ν - s.im / t = 2 * π * (ν - s.im / (2 * π * t)) := by
         field_simp [ht_pos.ne', Real.two_pi_pos.ne']
@@ -1065,8 +597,7 @@ private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν :
       intro t
       dsimp [g_1, h]
       rw [div_div, pow_two]
-    have hmonophase := lemma_aachmonophase (a := a) (b := b) (φ := φ) (by simp [hb])
-      (hcontdiffφ) (h_deriv_ne_zero) h g_1 hg_1_eq_h_div_deriv_φ g_1_cont hg_1_antitone
+    pm_5557 g_1 hg_1_eq_h_div_deriv_φ g_1_cont hg_1_antitone
     simp only [ofReal_div, h] at hmonophase
     have h_factor : (fun t => (t ^ (-s.re - 1 : ℂ) / (2 * π * I * deriv φ t)) * e (φ t)) =
                 (fun t => (1 / (2 * π * I)) * (t ^ (-s.re - 1 : ℂ) / deriv φ t * e (φ t))) := by
@@ -1118,7 +649,7 @@ private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν :
       ring_nf
     have g2_eq_const_mul_f : ∀ t ∈ Set.Icc a b, |g_2 t| = |s.im| * (2 * π)^2 * f t := by
       intro t ht
-      have ht_pos : 0 < t := lt_of_lt_of_le (lt_of_le_of_lt (by positivity) ha) ht.1
+      pm_4608
       dsimp [g_2, f]
       rw [hφ_deriv t ht, hφ_deriv2 t ht]
       calc
@@ -1155,8 +686,7 @@ private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν :
       intro t
       dsimp [g_2, h]
       rw [div_div, ← pow_succ]
-    have hmonophase := lemma_aachmonophase (a := a) (b := b) (φ := φ) (by simp [hb])
-      (hcontdiffφ) (h_deriv_ne_zero) h g_2 hg_2_eq_h_div_deriv_φ g_2_cont g_2_antitone
+    pm_5557 g_2 hg_2_eq_h_div_deriv_φ g_2_cont g_2_antitone
     simp only [ofReal_div, h, g_2] at hmonophase
     have h_factor : ∫ t in Set.Icc a b, (t : ℂ) ^ (-s.re : ℂ) * (deriv (deriv φ) t) /
         (2 * π * I * (deriv φ t) ^ 2) * e (φ t) =
@@ -1169,7 +699,7 @@ private theorem lemma_aachfour (s : ℂ) (hsigma : 0 ≤ s.re) (ν : ℝ) (hν :
       field_simp [h_deriv_ne_zero t ht]
     rw [h_factor, integral_const_mul, norm_mul]
     have h_norm_const : ‖1 / (2 * ↑π * I)‖ = 1 / (2 * π) := by
-      rw [norm_div, norm_one, Complex.norm_mul, Complex.norm_I, mul_one]
+      pm_265 norm_div norm_one Complex.norm_mul Complex.norm_I mul_one
       simp only [Complex.norm_mul, Complex.norm_ofNat, norm_real, norm_eq_abs, one_div, mul_inv_rev,
         mul_eq_mul_right_iff, inv_inj, abs_eq_self, inv_eq_zero, OfNat.ofNat_ne_zero, or_false]; positivity
     rw [h_norm_const]
@@ -1337,11 +867,9 @@ private theorem lemma_aachcanc (s : ℂ) {n : ℤ} (hn : 0 < n) {a b : ℝ}
     convert lemma_aachcanc_pointwise s (show n ≠ 0 by linarith) t ht' ht'' ?_ ?_ ?_ using 1
     all_goals norm_num [mul_comm]
     · norm_num [ht''.ne', pi_ne_zero, mul_comm]
-      field_simp
-      cases abs_cases s.im <;> nlinarith [pi_pos, h_bound]
+      pm_8123
     · norm_num [ht''.ne', Real.differentiableAt_log]
-      field_simp
-      cases abs_cases s.im <;> nlinarith [pi_pos, h_bound]
+      pm_8123
     · rw [sub_eq_zero, eq_comm]
       norm_num [div_pow, ← mul_assoc, Complex.ext_iff]
       norm_cast
@@ -1391,11 +919,11 @@ private theorem proposition_applem (s : ℂ) (hsigma : 0 ≤ s.re) {a b : ℝ} (
       congr with t
       norm_num [e, Complex.cos]
       ring_nf
-    · exact (h_cont_pow.mul (Complex.continuous_exp.comp (by continuity)).continuousOn).integrableOn_Icc
-    · exact (h_cont_pow.mul (Complex.continuous_exp.comp (by continuity)).continuousOn).integrableOn_Icc
+    pm_7279
+    pm_7279
   constructor
   · have h_lem := lemma_aachcanc s (by grind) h_bound_aux hb ha' hb'
-    simp only [zpow_natCast, Int.cast_natCast, one_div, neg_mul] at h_lem
+    pm_298 zpow_natCast Int.cast_natCast one_div neg_mul h_lem
     simp only [h_integral, hE1_eq, hE2_eq]
     convert congrArg (· + (↑(a ^ (-s.re - 1)) / (4 * ↑π ^ 2)) * (E1 + E2)) h_lem using 1; ring_nf
   · have : |-(n : ℝ) - s.im / (2 * π * a)| = |(n : ℝ) + s.im / (2 * π * a)| := by
@@ -1696,7 +1224,7 @@ private theorem lemma_abadsumas_sum_fourier (s : ℂ) {a b : ℝ} (ha : 0 < a)
     exact ha.trans_le hy.1
   have key : (y : ℂ) ^ (-s) =
       ↑(y ^ (-s.re)) * e (-(s.im / (2 * π)) * Real.log y) := by
-    have hyne : (y : ℂ) ≠ 0 := by exact_mod_cast hy_pos.ne'
+    pm_146 hyne y hy_pos.ne'
     rw [Complex.cpow_def_of_ne_zero hyne]
     rw [← Complex.ofReal_log hy_pos.le]
     have hexp_split : (↑(Real.log y) : ℂ) * -s =
@@ -1728,8 +1256,7 @@ private theorem lemma_abadsumas_sum_fourier (s : ℂ) {a b : ℝ} (ha : 0 < a)
 private theorem exp_two_pi_mul_I_ne_one_of_not_int {x : ℝ} (hx : ¬ ∃ k : ℤ, x = k) :
     Complex.exp ((2 * Real.pi * x : ℝ) * Complex.I) ≠ 1 := by
   intro h
-  rw [Complex.exp_eq_one_iff] at h
-  obtain ⟨k, hk⟩ := h
+  pm_4610 Complex.exp_eq_one_iff h k hk
   apply hx
   refine ⟨k, ?_⟩
   have h_cancel :
@@ -1750,7 +1277,7 @@ private theorem exp_geometric_partial_sums_bounded {x : ℝ} (hx : ¬ ∃ k : �
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ N : ℕ,
         ‖∑ n ∈ range N, (Complex.exp ((2 * Real.pi * x : ℝ) * Complex.I)) ^ n‖ ≤ C := by
-  let z : ℂ := Complex.exp ((2 * Real.pi * x : ℝ) * Complex.I)
+  pm_6902 z
   have hz_ne_one : z ≠ 1 := exp_two_pi_mul_I_ne_one_of_not_int hx
   have hz_norm : ‖z‖ = 1 := norm_exp_two_pi_mul_I x
   refine ⟨2 / ‖z - 1‖, ?_, fun N ↦ ?_⟩
@@ -1783,7 +1310,7 @@ private theorem cauchySeq_exp_over_nat_of_not_int {x : ℝ} (hx : ¬ ∃ k : ℤ
         ((1 : ℝ) / (n + 1 : ℝ)) •
           (Complex.exp ((2 * Real.pi * x : ℝ) * Complex.I)) ^ (n + 1) := by
   let z : ℕ → ℂ := fun n ↦ (Complex.exp ((2 * Real.pi * x : ℝ) * Complex.I)) ^ (n + 1)
-  let ζ : ℂ := Complex.exp ((2 * Real.pi * x : ℝ) * Complex.I)
+  pm_6902 ζ
   have hζ_norm : ‖ζ‖ = 1 := norm_exp_two_pi_mul_I x
   obtain ⟨C, _hC_nonneg, hC⟩ := exp_geometric_partial_sums_bounded hx
   refine one_div_nat_add_one_antitone.cauchySeq_series_mul_of_tendsto_zero_of_bounded
@@ -1884,7 +1411,7 @@ private theorem tendsto_exp_over_nat_eq_neg_log_of_not_int {x : ℝ} (hx : ¬ �
         (expPhase x) ^ (n + 1) / (n + 1 : ℂ) * (r : ℂ) ^ n)
       (𝓝[<] (1 : ℝ)) (𝓝 (-Complex.log (1 - expPhase x))) := by
     refine h_log.congr' ?_
-    filter_upwards [Ioo_mem_nhdsLT (show (0 : ℝ) < 1 by norm_num)] with r hr
+    pm_5469 Ioo_mem_nhdsLT r hr
     symm
     have hr0 : (r : ℂ) ≠ 0 := by exact_mod_cast (ne_of_gt hr.1)
     have hnorm : ‖(r : ℂ) * expPhase x‖ < 1 := by
@@ -1923,7 +1450,7 @@ private theorem one_sub_expPhase_factor {x : ℝ} :
         Real.cos_two_mul]
       nlinarith [Real.sin_sq_add_cos_sq θ]
     · rw [sub_im, one_im, h2im]
-      rw [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul, hsubim]
+      pm_265 Complex.mul_im Complex.ofReal_re Complex.ofReal_im zero_mul hsubim
       simp [Real.sin_sub, Real.cos_pi_div_two, Real.sin_pi_div_two,
         Real.sin_two_mul]
   simpa [θ, expPhase, mul_assoc, mul_comm, mul_left_comm] using hmain
@@ -1935,8 +1462,7 @@ private theorem arg_one_sub_expPhase_of_mem_Ioo {x : ℝ} (hx0 : 0 < x) (hx1 : x
     · positivity
     · nlinarith [Real.pi_pos]
   have hscale_pos : 0 < 2 * Real.sin (Real.pi * x) := by positivity
-  have hθ : Real.pi * x - Real.pi / 2 ∈ Set.Ioc (-Real.pi) Real.pi := by
-    constructor <;> nlinarith [Real.pi_pos]
+  pm_1124
   rw [one_sub_expPhase_factor]
   rw [Complex.arg_real_mul _ hscale_pos]
   exact Complex.arg_exp_mul_I _ |>.trans
@@ -1999,15 +1525,7 @@ private theorem tendsto_sine_series_unit_interval {x : ℝ} (hx0 : 0 < x) (hx1 :
 
 private theorem sin_two_pi_mul_nat_fract (x : ℝ) (n : ℕ) :
     Real.sin (2 * Real.pi * (n + 1) * x) =
-      Real.sin (2 * Real.pi * (n + 1) * Int.fract x) := by
-  conv_lhs =>
-    rw [← Int.fract_add_floor x]
-  rw [show 2 * Real.pi * (n + 1) * (Int.fract x + (⌊x⌋ : ℝ)) =
-      2 * Real.pi * (n + 1) * Int.fract x +
-        (⌊x⌋ * (n + 1 : ℤ) : ℤ) * (2 * Real.pi) by
-    push_cast
-    ring]
-  rw [Real.sin_add_int_mul_two_pi]
+      Real.sin (2 * Real.pi * (n + 1) * Int.fract x) := by pm_4611 Real.sin_add_int_mul_two_pi
 
 private theorem tendsto_sine_series_of_not_int {x : ℝ} (hx : ¬ ∃ k : ℤ, x = k) :
     Tendsto
@@ -2018,8 +1536,7 @@ private theorem tendsto_sine_series_of_not_int {x : ℝ} (hx : ¬ ∃ k : ℤ, x
     intro h0
     rcases (Int.fract_eq_zero_iff.mp h0) with ⟨k, hk⟩
     exact hx ⟨k, hk.symm⟩
-  have hfract_pos : 0 < Int.fract x :=
-    lt_of_le_of_ne (Int.fract_nonneg x) (Ne.symm hfract_ne)
+  pm_8789 hfract_pos Int.fract x Int.fract_nonneg hfract_ne
   have hunit := tendsto_sine_series_unit_interval hfract_pos (Int.fract_lt_one x)
   refine hunit.congr' ?_
   filter_upwards with N
@@ -2106,11 +1623,7 @@ private theorem hasDerivAt_sine_antideriv (n : ℕ) (x : ℝ) :
         (fun y : ℝ ↦ Real.sin (2 * Real.pi * (n + 1 : ℝ) * y))
         ((2 * Real.pi * (n + 1 : ℝ)) *
           Real.cos (2 * Real.pi * (n + 1 : ℝ) * x)) x := by
-    convert
-      (Real.hasDerivAt_sin (2 * Real.pi * (n + 1 : ℝ) * x)).comp x
-        ((hasDerivAt_id x).const_mul (2 * Real.pi * (n + 1 : ℝ))) using 1
-    · rfl
-    ring
+    pm_4612 Real.hasDerivAt_sin
   have hreal :
       HasDerivAt
         (fun y : ℝ ↦ Real.sin (2 * Real.pi * (n + 1 : ℝ) * y) /
@@ -2135,17 +1648,11 @@ private theorem cosine_integral_by_parts_cpow {a b : ℝ} (ha : 0 < a) (hab : a 
             ((Real.sin (2 * Real.pi * (n + 1 : ℝ) * y) /
               (Real.pi * (n + 1 : ℝ))) : ℂ) := by
   let u : ℝ → ℂ := fun y ↦ (y : ℂ) ^ (-s)
-  let v : ℝ → ℂ := fun y ↦
-    ((Real.sin (2 * Real.pi * (n + 1 : ℝ) * y) /
-      (Real.pi * (n + 1 : ℝ))) : ℂ)
+  pm_4615 v
   let u' : ℝ → ℂ := deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s))
   let v' : ℝ → ℂ := fun y ↦
     ((2 * Real.cos (2 * Real.pi * (n + 1 : ℝ) * y)) : ℂ)
-  have hIoo_to_Icc :
-      ∀ {x : ℝ}, x ∈ Set.Ioo (min a b) (max a b) → x ∈ Set.Icc a b := by
-    intro x hx
-    rw [min_eq_left hab.le, max_eq_right hab.le] at hx
-    exact Set.Ioo_subset_Icc_self hx
+  pm_4613
   have h_ibp :
       ∫ y in a..b, u y * v' y =
         u b * v b - u a * v a - ∫ y in a..b, u' y * v y := by
@@ -2170,9 +1677,7 @@ private theorem cosine_integral_by_parts_cpow {a b : ℝ} (ha : 0 < a) (hab : a 
         intro x _hx
         simpa [v, v'] using hasDerivAt_sine_antideriv n x)
       (by
-        have hcont : ContinuousOn u' (Set.uIcc a b) := by
-          simpa [u', Set.uIcc_of_le hab.le] using
-            (Complex.continuousOn_deriv_ofReal_cpow_neg (s := s) (a := a) (b := b) ha)
+        pm_4614 hcont u' Complex.continuousOn_deriv_ofReal_cpow_neg
         exact hcont.intervalIntegrable)
       (by
         apply ContinuousOn.intervalIntegrable
@@ -2212,15 +1717,7 @@ private theorem hasSum_cos_over_pi_sq_unit_raw {x : ℝ} (hx : x ∈ Set.Icc (0 
 
 private theorem cos_two_pi_mul_nat_fract (x : ℝ) (n : ℕ) :
     Real.cos (2 * Real.pi * (n + 1) * x) =
-      Real.cos (2 * Real.pi * (n + 1) * Int.fract x) := by
-  conv_lhs =>
-    rw [← Int.fract_add_floor x]
-  rw [show 2 * Real.pi * (n + 1) * (Int.fract x + (⌊x⌋ : ℝ)) =
-      2 * Real.pi * (n + 1) * Int.fract x +
-        (⌊x⌋ * (n + 1 : ℤ) : ℤ) * (2 * Real.pi) by
-    push_cast
-    ring]
-  rw [Real.cos_add_int_mul_two_pi]
+      Real.cos (2 * Real.pi * (n + 1) * Int.fract x) := by pm_4611 Real.cos_add_int_mul_two_pi
 
 private theorem hasSum_cos_over_pi_sq_fract (x : ℝ) :
     HasSum
@@ -2243,7 +1740,7 @@ private theorem hasSum_cos_antideriv_real (x : ℝ) :
   have h := (hasSum_cos_over_pi_sq_fract x).mul_left (-(1 / 2 : ℝ))
   convert h using 1
   · ext n
-    have hden : (n + 1 : ℝ) ≠ 0 := by positivity
+    pm_8026 hden
     field_simp [hden, Real.pi_ne_zero]
     ring
   · ring
@@ -2335,11 +1832,7 @@ private theorem hasDerivAt_cos_antideriv (n : ℕ) (x : ℝ) :
         (fun y : ℝ ↦ Real.cos (2 * Real.pi * (n + 1 : ℝ) * y))
         (-(2 * Real.pi * (n + 1 : ℝ)) *
           Real.sin (2 * Real.pi * (n + 1 : ℝ) * x)) x := by
-    convert
-      (Real.hasDerivAt_cos (2 * Real.pi * (n + 1 : ℝ) * x)).comp x
-        ((hasDerivAt_id x).const_mul (2 * Real.pi * (n + 1 : ℝ))) using 1
-    · rfl
-    ring
+    pm_4612 Real.hasDerivAt_cos
   have hreal :
       HasDerivAt
         (fun y : ℝ ↦
@@ -2367,19 +1860,13 @@ private theorem deriv_kernel_integral_by_parts_cpow {a b : ℝ} (ha : 0 < a) (ha
           (s * (s + 1) * (y : ℂ) ^ (-s - 2)) *
             ((-Real.cos (2 * Real.pi * (n + 1 : ℝ) * y) /
               (2 * Real.pi ^ 2 * (n + 1 : ℝ) ^ 2)) : ℂ) := by
-  let u : ℝ → ℂ := fun y ↦ deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) y
+  pm_5304 u
   let v : ℝ → ℂ := fun y ↦
     ((-Real.cos (2 * Real.pi * (n + 1 : ℝ) * y) /
       (2 * Real.pi ^ 2 * (n + 1 : ℝ) ^ 2)) : ℂ)
-  let u' : ℝ → ℂ := fun y ↦ s * (s + 1) * (y : ℂ) ^ (-s - 2)
-  let v' : ℝ → ℂ := fun y ↦
-    ((Real.sin (2 * Real.pi * (n + 1 : ℝ) * y) /
-      (Real.pi * (n + 1 : ℝ))) : ℂ)
-  have hIoo_to_Icc :
-      ∀ {x : ℝ}, x ∈ Set.Ioo (min a b) (max a b) → x ∈ Set.Icc a b := by
-    intro x hx
-    rw [min_eq_left hab.le, max_eq_right hab.le] at hx
-    exact Set.Ioo_subset_Icc_self hx
+  pm_4616 u'
+  pm_4615 v'
+  pm_4613
   have h_ibp :
       ∫ y in a..b, u y * v' y =
         u b * v b - u a * v a - ∫ y in a..b, u' y * v y := by
@@ -2398,9 +1885,7 @@ private theorem deriv_kernel_integral_by_parts_cpow {a b : ℝ} (ha : 0 < a) (ha
         intro x _hx
         simpa [v, v'] using hasDerivAt_cos_antideriv n x)
       (by
-        have hcont : ContinuousOn u' (Set.uIcc a b) := by
-          simpa [u', Set.uIcc_of_le hab.le] using
-            (continuousOn_second_deriv_ofReal_cpow_neg (s := s) (a := a) (b := b) ha)
+        pm_4614 hcont u' continuousOn_second_deriv_ofReal_cpow_neg
         exact hcont.intervalIntegrable)
       (by
         apply ContinuousOn.intervalIntegrable
@@ -2475,7 +1960,7 @@ private theorem cos_antideriv_norm_bound (n : ℕ) (x : ℝ) :
     rw [← Complex.normSq_eq_norm_sq]
     simp [Complex.normSq]
     ring_nf
-  rw [norm_div, norm_neg, Complex.norm_real, Real.norm_eq_abs, hden_norm]
+  pm_265 norm_div norm_neg Complex.norm_real Real.norm_eq_abs hden_norm
   gcongr
   exact Real.abs_cos_le_one _
 
@@ -2490,7 +1975,7 @@ private theorem summable_one_div_two_pi_sq_nat_add_one_sq :
   convert hscale using 1
   ext n
   have hden : 2 * Real.pi ^ 2 ≠ 0 := by positivity
-  have hn : (n + 1 : ℝ) ≠ 0 := by positivity
+  pm_8026 hn
   field_simp [hden, hn]
 
 open Interval MeasureTheory
@@ -2506,18 +1991,15 @@ private theorem hasSum_second_ibp_integral_series {a b : ℝ} (ha : 0 < a) (hab 
       (∫ y in a..b,
         (s * (s + 1) * (y : ℂ) ^ (-s - 2)) *
           (((-(Int.fract y ^ 2 - Int.fract y + 1 / 6) / 2) : ℝ) : ℂ)) := by
-  let H : ℝ → ℂ := fun y ↦ s * (s + 1) * (y : ℂ) ^ (-s - 2)
+  pm_4616 H
   let W : ℕ → ℝ → ℂ := fun n y ↦
     ((-Real.cos (2 * Real.pi * (n + 1 : ℝ) * y) /
       (2 * Real.pi ^ 2 * (n + 1 : ℝ) ^ 2)) : ℂ)
-  let Wlim : ℝ → ℂ := fun y ↦
-    (((-(Int.fract y ^ 2 - Int.fract y + 1 / 6) / 2) : ℝ) : ℂ)
-  have hH_cont : ContinuousOn H (Set.uIcc a b) := by
-    simpa [H, Set.uIcc_of_le hab.le] using
-      (continuousOn_second_deriv_ofReal_cpow_neg (s := s) (a := a) (b := b) ha)
+  pm_769 Wlim
+  pm_4614 hH_cont H continuousOn_second_deriv_ofReal_cpow_neg
   obtain ⟨C0, hC0⟩ := isCompact_uIcc.exists_bound_of_continuousOn hH_cont
   let C : ℝ := max C0 0
-  have hC_nonneg : 0 ≤ C := le_max_right _ _
+  pm_4918 hC_nonneg C le_max_right
   have hC : ∀ y ∈ Set.uIcc a b, ‖H y‖ ≤ C := by
     intro y hy
     exact (hC0 y hy).trans (le_max_left _ _)
@@ -2567,12 +2049,8 @@ private theorem tendsto_deriv_kernel_second_ibp_limit {a b : ℝ} (ha : 0 < a) (
           ∫ y in a..b,
             (s * (s + 1) * (y : ℂ) ^ (-s - 2)) *
               (((-(Int.fract y ^ 2 - Int.fract y + 1 / 6) / 2) : ℝ) : ℂ))) := by
-  have hb :=
-    (tendsto_cos_antideriv_partial b).const_mul
-      (deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) b)
-  have ha_tendsto :=
-    (tendsto_cos_antideriv_partial a).const_mul
-      (deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) a)
+  pm_5742 hb b
+  pm_5742 ha_tendsto a
   have hint := (hasSum_second_ibp_integral_series (a := a) (b := b) ha hab s).tendsto_sum_nat
   have hcombined := (hb.sub ha_tendsto).sub hint
   refine hcombined.congr' ?_
@@ -2583,9 +2061,7 @@ private theorem fract_eq_sub_nat_of_mem_Ioo (m : ℕ) {x : ℝ}
     (hx : x ∈ Set.Ioo (m : ℝ) (m + 1 : ℝ)) :
     Int.fract x = x - m := by
   rw [← Int.self_sub_floor x]
-  have hfloor : ((⌊x⌋ : ℤ) : ℝ) = (m : ℝ) := by
-    simpa using
-      (Int.floor_eq_on_Ico' (R := ℝ) (m : ℤ) x ⟨hx.1.le, by simpa using hx.2⟩)
+  pm_4617 hfloor
   rw [hfloor]
 
 private theorem B1_eq_sub_nat_sub_half_of_mem_Ioo (m : ℕ) {x : ℝ}
@@ -2594,9 +2070,7 @@ private theorem B1_eq_sub_nat_sub_half_of_mem_Ioo (m : ℕ) {x : ℝ}
   unfold GuthMaynard.NativePNT.B1
   have hx0 : 0 ≤ x := le_trans (Nat.cast_nonneg m) hx.1.le
   have hfloor : (⌊x⌋₊ : ℝ) = (m : ℝ) := by
-    have hfloor_int : ((⌊x⌋ : ℤ) : ℝ) = (m : ℝ) := by
-      simpa using
-        (Int.floor_eq_on_Ico' (R := ℝ) (m : ℤ) x ⟨hx.1.le, by simpa using hx.2⟩)
+    pm_4617 hfloor_int
     rw [natCast_floor_eq_intCast_floor hx0, hfloor_int]
   rw [hfloor]
 
@@ -2670,16 +2144,14 @@ private theorem second_ibp_limit_eq_neg_B1_integral_on_unit {u v : ℝ}
           (((-(Int.fract y ^ 2 - Int.fract y + 1 / 6) / 2) : ℝ) : ℂ) =
         -(∫ y in u..v,
           deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) y * ((GuthMaynard.NativePNT.B1 y : ℝ) : ℂ)) := by
-  let H : ℝ → ℂ := fun y ↦ deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) y
-  let W : ℝ → ℂ := fun y ↦
-    (((-(Int.fract y ^ 2 - Int.fract y + 1 / 6) / 2) : ℝ) : ℂ)
-  let H' : ℝ → ℂ := fun y ↦ s * (s + 1) * (y : ℂ) ^ (-s - 2)
+  pm_5304 H
+  pm_769 W
+  pm_4616 H'
   let W' : ℝ → ℂ := fun y ↦ (((-GuthMaynard.NativePNT.B1 y) : ℝ) : ℂ)
   have hIoo_to_unit :
       ∀ {x : ℝ}, x ∈ Set.Ioo (min u v) (max u v) →
         x ∈ Set.Ioo (m : ℝ) (m + 1 : ℝ) := by
-    intro x hx
-    rw [min_eq_left huv, max_eq_right huv] at hx
+    pm_5961 huv
     exact ⟨lt_of_le_of_lt hmu hx.1, lt_of_lt_of_le hx.2 hvm⟩
   have h_ibp :
       ∫ y in u..v, H y * W' y =
@@ -2691,8 +2163,7 @@ private theorem second_ibp_limit_eq_neg_B1_integral_on_unit {u v : ℝ}
       (by
         exact continuous_bernoulli2_primitive.continuousOn)
       (by
-        intro x hx
-        rw [min_eq_left huv, max_eq_right huv] at hx
+        pm_5961 huv
         have hx_pos : 0 < x := lt_trans hu_pos hx.1
         simpa [H, H'] using hasDerivAt_deriv_ofReal_cpow_neg s hx_pos)
       (by
@@ -2770,22 +2241,14 @@ private theorem second_ibp_expr_add_adjacent {a c b : ℝ} (hac : a ≤ c) (hcb 
         ∫ y in a..b,
           (s * (s + 1) * (y : ℂ) ^ (-s - 2)) *
             (((-(Int.fract y ^ 2 - Int.fract y + 1 / 6) / 2) : ℝ) : ℂ) := by
-  have hc_pos : 0 < c := lt_of_lt_of_le ha_pos hac
-  have hInt_ac := intervalIntegrable_second_ibp_integrand (u := a) (v := c) ha_pos hac s
-  have hInt_cb := intervalIntegrable_second_ibp_integrand (u := c) (v := b) hc_pos hcb s
-  rw [← intervalIntegral.integral_add_adjacent_intervals hInt_ac hInt_cb]
-  ring
+  pm_4618 intervalIntegrable_second_ibp_integrand
 
 private theorem neg_B1_integral_add_adjacent {a c b : ℝ} (hac : a ≤ c) (hcb : c ≤ b)
     (ha_pos : 0 < a) (s : ℂ) :
     -(∫ y in a..c, deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) y * ((GuthMaynard.NativePNT.B1 y : ℝ) : ℂ)) +
       -(∫ y in c..b, deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) y * ((GuthMaynard.NativePNT.B1 y : ℝ) : ℂ)) =
         -(∫ y in a..b, deriv (fun t : ℝ ↦ (t : ℂ) ^ (-s)) y * ((GuthMaynard.NativePNT.B1 y : ℝ) : ℂ)) := by
-  have hc_pos : 0 < c := lt_of_lt_of_le ha_pos hac
-  have hInt_ac := intervalIntegrable_deriv_cpow_mul_B1 (u := a) (v := c) ha_pos hac s
-  have hInt_cb := intervalIntegrable_deriv_cpow_mul_B1 (u := c) (v := b) hc_pos hcb s
-  rw [← intervalIntegral.integral_add_adjacent_intervals hInt_ac hInt_cb]
-  ring
+  pm_4618 intervalIntegrable_deriv_cpow_mul_B1
 
 private noncomputable def bernoulli2Primitive (y : ℝ) : ℂ :=
   (((-(Int.fract y ^ 2 - Int.fract y + 1 / 6) / 2) : ℝ) : ℂ)
@@ -2991,7 +2454,7 @@ private theorem integral_cpow_neg_eq_main {a b : ℝ} (ha : 0 < a) (hab : a < b)
     {s : ℂ} (hs1 : s ≠ 1) :
     (∫ x in a..b, (x : ℂ) ^ (-s)) =
       ((b : ℂ) ^ (1 - s) - (a : ℂ) ^ (1 - s)) / (1 - s) := by
-  convert integral_cpow (a := a) (b := b) (r := -s) ?_ using 1
+  pm_5633
   · rw [(by ring : -s + 1 = 1 - s)]
   · right
     refine ⟨?_, ?_⟩
@@ -3084,7 +2547,7 @@ private theorem lemma_abadusepoisson {a b : ℝ} (ha : ¬∃ n : ℤ, a = n) (hb
   exact lemma_abadusepoisson_from_deriv_kernel ha hb hab ha' hs1 (tendsto_deriv_kernel_to_neg_B1 (a := a) (b := b) ha' hab s)
 
 private theorem trig (z : ℂ) : tan z = - cot (z + π / 2) := by
-  simp [Complex.tan, Complex.cot, Complex.cos_add_pi_div_two, neg_div', Complex.sin_add_pi_div_two]
+  pm_564 Complex.tan Complex.cot Complex.cos_add_pi_div_two neg_div' Complex.sin_add_pi_div_two
 
 private theorem sin_ne_zero {z : ℂ} (hz : ¬∃ (n : ℤ), n * π / 2 = z) : sin z ≠ 0 :=
   Complex.sin_ne_zero_iff.2 fun k h ↦ hz ⟨2 * k, by grind⟩
@@ -3105,9 +2568,8 @@ private theorem hsummable {z : ℂ} (hz : z ∈ integerComplement) :
     Summable fun n : ℕ+ ↦ 1 / (z - 2 * n) + 1 / (z + 2 * n) := by
   have he (n : ℕ+) := cotTerm_identity hz (2 * n - 1)
   have hi : (fun n : ℕ+ ↦ (2 * n : ℤ)).Injective := fun _ _ _ ↦ by simp_all
-  have := mul_left (2 * z)
-    ((EisensteinSeries.summable_linear_sub_mul_linear_add z 1 1).comp_injective hi)
-  simp_all [cotTerm, mul_comm (z + _)⁻¹]
+  pm_6306
+  pm_7557
 
 private theorem asummable {z : ℂ} (hz : z ∈ integerComplement) :
     Summable fun n : ℕ+ ↦ (-1) ^ (2 * n : ℕ) * (1 / (z - 2 * n) + 1 / (z + 2 * n)) := by
@@ -3117,7 +2579,7 @@ private theorem asummable {z : ℂ} (hz : z ∈ integerComplement) :
 private theorem hsummable' {z : ℂ} (hz : z ∈ integerComplement) :
     Summable fun n : ℕ+ ↦ 1 / (z + 1 - 2 * n) + 1 / (z + 1 + 2 * n) := by
   have : z + 1 ∈ integerComplement := by
-    simp_all only [integerComplement, Set.mem_compl_iff, Set.mem_range, not_exists]
+    pm_5630
     refine fun n hn ↦ hz (n - 1) ?_
     grind
   exact hsummable this
@@ -3126,12 +2588,11 @@ private theorem hsummable'' {z : ℂ} (hz : z ∈ integerComplement) :
     Summable fun n : ℕ+ ↦ 1 / (z - (2 * n - 1)) + 1 / (z + (2 * n - 1)) := by
   have he (n : ℕ+) := cotTerm_identity hz (2 * n - 2)
   have hi : (fun n : ℕ+ ↦ (2 * n - 1 : ℤ)).Injective := fun _ _ _ ↦ by simp_all
-  have := mul_left (2 * z)
-    ((EisensteinSeries.summable_linear_sub_mul_linear_add z 1 1).comp_injective hi)
+  pm_6306
   have (n : ℕ+) : ((2 * n - 2 : ℕ) : ℂ) + 1 = ((2 * n : ℕ) : ℂ) - 1 := by
     norm_cast
     rw [Nat.cast_add, Int.subNatNat_eq_coe, Nat.cast_sub] <;> push_cast <;> linarith [n.pos]
-  simp_all [cotTerm, mul_comm (z + _)⁻¹]
+  pm_7557
 
 private theorem neg_one_pow (n : ℕ+) : (-1 : ℂ) ^ (2 * n - 1 : ℕ) = -1 := (neg_one_pow_eq_neg_one_iff_odd
   (by grind)).2 ⟨n - 1, by cases n using PNat.recOn <;> norm_num; linarith⟩
@@ -3192,12 +2653,12 @@ private theorem lemma_abadeuleulmit1 {z : ℂ} (hz : z ∈ integerComplement) :
       + 1 / ((z + 1) / 2 + n))) := by
       congr
       · have : z / 2 ∈ integerComplement := by
-          simp_all only [integerComplement, Set.mem_compl_iff, Set.mem_range, not_exists]
+          pm_5630
           refine fun n hn ↦ hz (2 * n) ?_
           grind
         simpa [mul_div_assoc] using cot_series_rep this
       · have : (z + 1) / 2 ∈ integerComplement := by
-          simp_all only [integerComplement, Set.mem_compl_iff, Set.mem_range, not_exists]
+          pm_5630
           refine fun n hn ↦ hz (2 * n - 1) ?_
           grind
         simpa [mul_div_assoc] using cot_series_rep this
@@ -3280,9 +2741,7 @@ private theorem lemma_abadeulmit2_integral_tsum_inv_sub_int_sq {z w : ℂ}
       · apply continuousOn_const
     · intro t ht
       apply pow_ne_zero
-      rw [sub_ne_zero]
-      intro h_eq
-      exact h_path t ht ⟨n, h_eq.symm⟩
+      pm_7012
   have h_summable : Summable (fun n ↦ ∫ t in Set.Ioc 0 1, ‖g n t‖) := by
     simp_rw [g, norm_div, norm_one, norm_pow]
     let C := 2 * M
@@ -3375,9 +2834,7 @@ private theorem lemma_abadeulmit2_integral_tsum_inv_sub_int_sq {z w : ℂ}
       intro t ht
       dsimp [F, g, path]
       have h_denom_ne_zero : path t - (n : ℂ) ≠ 0 := by
-        rw [sub_ne_zero]
-        intro h_eq
-        exact h_path t ht ⟨n, h_eq.symm⟩
+        pm_7012
       have h_d_path : HasDerivAt path (z - w) t := by
         dsimp [path]
         apply HasDerivAt.const_add
@@ -3413,7 +2870,7 @@ private theorem lemma_abadeulmit2_integral_tsum_inv_sub_int_sq {z w : ℂ}
       · apply setLIntegral_congr_fun_ae (by simp)
         apply Filter.Eventually.of_forall
         intro x hx
-        simp only [one_div, norm_inv, norm_pow, g, path]
+        pm_93 one_div norm_inv norm_pow g path
         rw [enorm_inv]
         · conv_rhs => arg 1; rw [← ofReal_norm, norm_pow]
           apply ENNReal.ofReal_inv_of_pos
@@ -3423,7 +2880,7 @@ private theorem lemma_abadeulmit2_integral_tsum_inv_sub_int_sq {z w : ℂ}
       · let S := path '' Set.Icc 0 1
         have h_compact : IsCompact S := isCompact_Icc.image_of_continuousOn h_cont_path
         have h_not_mem : (i : ℂ) ∉ S := by
-          simp only [Set.mem_image, Set.mem_Icc, not_exists, not_and, and_imp, S]
+          pm_316 Set.mem_image Set.mem_Icc not_exists not_and and_imp S
           intro t h0 h1 heq
           rcases lt_or_eq_of_le h0 with ht_pos | rfl
           · exact convexity_w t ⟨ht_pos, h1⟩ (sub_eq_zero.mpr heq)
@@ -3483,11 +2940,11 @@ private theorem summable_inv_sub_inv_aux {z w : ℂ} (hz : z ∈ integerCompleme
     Summable (fun n : ℤ ↦ 1 / (w - n) - 1 / (z - n)) := by
   have h_bound : (fun n : ℤ ↦ 1 / (w - n) - 1 / (z - n)) =O[Filter.cofinite] (fun n : ℤ ↦ (1 : ℝ) / (n : ℝ)^2) := by
     have h_eq : ∀ᶠ (n : ℤ) in Filter.cofinite, 1 / (w - n) - 1 / (z - n) = (z - w) / ((w - n) * (z - n)) := by
-      filter_upwards [Filter.eventually_cofinite_ne (0 : ℤ)] with n hn
+      pm_7780
       rw [div_sub_div]
       · ring
-      · exact sub_ne_zero.mpr (fun h ↦ hw ⟨n, by simp [h]⟩)
-      · exact sub_ne_zero.mpr (fun h ↦ hz ⟨n, by simp [h]⟩)
+      pm_7148 hw
+      pm_7148 hz
     refine (Asymptotics.isBigO_congr h_eq (Eventually.of_forall fun _ ↦ rfl)).mpr ?_
     apply Asymptotics.IsBigO.trans (g := fun n : ℤ ↦ (1 : ℝ) / |n|^2)
     · apply Asymptotics.IsBigO.of_bound (4 * ‖z - w‖)
@@ -3495,25 +2952,13 @@ private theorem summable_inv_sub_inv_aux {z w : ℂ} (hz : z ∈ integerCompleme
       simp only [norm_div, norm_mul, norm_pow]
       rw [Real.norm_of_nonneg (by positivity)]
       have hw' : ‖w‖ ≤ |(n : ℝ)| / 2 := by
-        have : (max (2 * ‖w‖) (2 * ‖z‖) : ℝ) ≤ |(n : ℝ)| := hn
-        linarith [le_max_left (2 * ‖w‖) (2 * ‖z‖)]
+        pm_4619
+        pm_7149 le_max_left
       have hz' : ‖z‖ ≤ |(n : ℝ)| / 2 := by
-        have : (max (2 * ‖w‖) (2 * ‖z‖) : ℝ) ≤ |(n : ℝ)| := hn
-        linarith [le_max_right (2 * ‖w‖) (2 * ‖z‖)]
-      have hwn : ‖w - n‖ ≥ |(n : ℝ)| / 2 := by
-        rw [norm_sub_rev]
-        calc
-          ‖(n : ℂ) - w‖ ≥ ‖(n : ℂ)‖ - ‖w‖ := norm_sub_norm_le ..
-          _ = |(n : ℝ)| - ‖w‖ := by rw [norm_intCast]
-          _ ≥ |(n : ℝ)| - |(n : ℝ)| / 2 := by linarith
-          _ = |(n : ℝ)| / 2 := by ring
-      have hzn : ‖z - n‖ ≥ |(n : ℝ)| / 2 := by
-        rw [norm_sub_rev]
-        calc
-          ‖(n : ℂ) - z‖ ≥ ‖(n : ℂ)‖ - ‖z‖ := norm_sub_norm_le ..
-          _ = |(n : ℝ)| - ‖z‖ := by rw [norm_intCast]
-          _ ≥ |(n : ℝ)| - |(n : ℝ)| / 2 := by linarith
-          _ = |(n : ℝ)| / 2 := by ring
+        pm_4619
+        pm_7149 le_max_right
+      pm_4620 hwn w
+      pm_4620 hzn z
       calc
         ‖z - w‖ / (‖w - n‖ * ‖z - n‖)
           ≤ ‖z - w‖ / (|(n : ℝ)| / 2 * (|(n : ℝ)| / 2)) := by
@@ -3557,14 +3002,8 @@ private theorem lemma_abadeulmit2_integral_eq_cot_diff {z w : ℂ}
     _ = (1 / w - 1 / z) + (∑' (n : ℕ), (1 / (w - (↑n + 1)) + 1 / (w + (↑n + 1))) - ∑' (n : ℕ), (1 / (z - (↑n + 1)) + 1 / (z + (↑n + 1)))) := by
       rw [Summable.tsum_sub (summable_cotTerm hw) (summable_cotTerm hz)]
     _ = (1 / w + ∑' (n : ℕ+), (1 / (w - n) + 1 / (w + n))) - (1 / z + ∑' (n : ℕ+), (1 / (z - n) + 1 / (z + n))) := by
-      have hw : ∑' (n : ℕ), (1 / (w - (↑n + 1)) + 1 / (w + (↑n + 1))) = ∑' (n : ℕ+), (1 / (w - n) + 1 / (w + n)) := by
-        symm
-        simp_rw [tsum_pnat_eq_tsum_succ (f := fun (n : ℕ) => 1 / (w - n) + 1 / (w + n))]
-        simp
-      have hz_sum : ∑' (n : ℕ), (1 / (z - (↑n + 1)) + 1 / (z + (↑n + 1))) = ∑' (n : ℕ+), (1 / (z - n) + 1 / (z + n)) := by
-        symm
-        simp_rw [tsum_pnat_eq_tsum_succ (f := fun (n : ℕ) => 1 / (z - n) + 1 / (z + n))]
-        simp
+      pm_4621 hw w
+      pm_4621 hz_sum z
       rw [hw, hz_sum]
       ring
     _ = π * cot (π * w) - π * cot (π * z) := by
@@ -3601,7 +3040,7 @@ private theorem lemma_abadeulmit2_continuousAt_integral_tsum_one_div_sub_int_sq 
         refine Asymptotics.IsBigO.pow ?_ 2
         apply Asymptotics.IsBigO.inv_rev
         · apply Asymptotics.IsBigO.of_bound 2
-          filter_upwards [eventually_ge_atTop (Nat.ceil (2 * (‖z‖ + ε')))] with x hx
+          pm_5705
           norm_cast
           have hx_real : 2 * (‖z‖ + ε') ≤ x := by exact_mod_cast Nat.le_of_ceil_le hx
           have h_dist : ↑x - ‖z‖ ≤ ‖z - ↑x‖ := by
@@ -3619,7 +3058,7 @@ private theorem lemma_abadeulmit2_continuousAt_integral_tsum_one_div_sub_int_sq 
           refine Asymptotics.IsBigO.pow ?_ 2
           apply Asymptotics.IsBigO.inv_rev
           · apply Asymptotics.IsBigO.of_bound 2
-            filter_upwards [eventually_ge_atTop (Nat.ceil (2 * (‖z‖ + ε')))] with x hx
+            pm_5705
             push_cast
             simp only [sub_neg_eq_add]
             have h_rev : ↑x + 1 - ‖z‖ ≤ ‖z + (↑x + 1)‖ := by
@@ -3660,18 +3099,16 @@ private theorem lemma_abadeulmit2_continuousAt_integral_tsum_one_div_sub_int_sq 
     refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_uIoc
     apply ContinuousOn.comp hS_cont (by fun_prop)
     intro t ht
-    convert Convex.add_smul_sub_mem (convex_closedBall z ε') (Metric.mem_closedBall_self (le_of_lt hε')) (Metric.ball_subset_closedBall hx) ?_
+    pm_6093
     · simp only [Set.mem_Icc]
-      rw [uIoc_of_le zero_le_one] at ht
-      exact ⟨le_of_lt ht.1, ht.2⟩
+      pm_7280
   · filter_upwards [Metric.ball_mem_nhds z hε'] with x hx
     apply Filter.Eventually.of_forall
     intro t ht
     apply hM
     apply Set.mem_image_of_mem
-    convert Convex.add_smul_sub_mem (convex_closedBall z ε') (Metric.mem_closedBall_self (le_of_lt hε')) (Metric.ball_subset_closedBall hx) ?_
-    rw [uIoc_of_le zero_le_one] at ht
-    exact ⟨le_of_lt ht.1, ht.2⟩
+    pm_6093
+    pm_7280
   · exact intervalIntegrable_const
   · apply Filter.Eventually.of_forall
     intro t ht
@@ -3705,7 +3142,7 @@ private theorem lemma_abadeulmit2_tsum_one_div_sub_int_sq {z : ℂ} (hz : z ∈ 
       rw [h_eq, tendsto_sub_nhds_zero_iff]
       have hgz : g z = ∑' (n : ℤ), 1 / (z - ↑n) ^ 2 := by
         simp only [g, sub_self, mul_zero, add_zero]
-        rw [intervalIntegral.integral_const, sub_zero, Complex.real_smul, Complex.ofReal_one, one_mul]
+        pm_265 intervalIntegral.integral_const sub_zero Complex.real_smul Complex.ofReal_one one_mul
       rw [← hgz]
       apply (lemma_abadeulmit2_continuousAt_integral_tsum_one_div_sub_int_sq hz).tendsto
   · obtain ⟨ε, hε, h_ball⟩ := Metric.isOpen_iff.1 (Complex.isOpen_compl_range_intCast) z hz
@@ -3778,8 +3215,8 @@ private theorem lemma_abadimpseri (ϑ : ℝ) (hϑ : |ϑ| < 1) :
             2 * (∑' n : ℕ, (1 / (n + 1 : ℝ) ^ 3)) - 1 := by
           rw [Summable.tsum_add, Summable.tsum_eq_zero_add] <;> norm_num
           · norm_num [add_assoc]; ring
-          · exact_mod_cast summable_nat_add_iff 1 |>.2 <| summable_nat_pow_inv.2 <| by omega
-          · exact_mod_cast summable_nat_add_iff 1 |>.2 <| summable_nat_pow_inv.2 <| by omega
+          pm_7281
+          pm_7281
           · exact_mod_cast summable_nat_add_iff 2 |>.2 <| summable_nat_pow_inv.2 <| by omega
         convert h_sum_zeta.le using 2
         erw [zeta_eq_tsum_one_div_nat_add_one_cpow] <;> norm_num
@@ -3937,8 +3374,7 @@ private theorem lemma_abadsumas_sum_main_term_a (ϑ : ℝ) (hϑ_lt : |ϑ| < 1)
     ∑' (n : ℕ), ((-1 : ℂ) ^ (n + 2) * 2 * ϑ / (((n : ℂ) + 1) ^ (2 : ℕ) - (ϑ : ℂ) ^ (2 : ℕ))) =
     ↑π * g ϑ := by
   intro g
-  by_cases hϑ : ϑ = 0
-  · simp [hϑ, g]
+  pm_212 hϑ ϑ g
   · have h_not_int : (ϑ : ℂ) ∈ integerComplement := lemma_abadsumas_not_in_integerComplement hϑ_lt hϑ
     have h_sum_shift :
         ∑' (n : ℕ), (-1 : ℂ) ^ (n + 2) * 2 * (ϑ : ℂ) /
@@ -3965,8 +3401,7 @@ private theorem lemma_abadsumas_sum_main_term_a (ϑ : ℝ) (hϑ_lt : |ϑ| < 1)
           _ = ∑' (n : ℕ+), (-1 : ℂ) ^ (n : ℕ) *
                   (1 / ((ϑ : ℂ) - ↑↑n) + 1 / ((ϑ : ℂ) + ↑↑n)) := by
                 rw [← Equiv.tsum_eq Equiv.pnatEquivNat.symm]
-                simp only [one_div, Equiv.pnatEquivNat_symm_apply, Nat.succPNat_coe,
-                  Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one]
+                pm_232 one_div Equiv.pnatEquivNat_symm_apply Nat.succPNat_coe Nat.succ_eq_add_one Nat.cast_add Nat.cast_one
     rw [h_sum_shift, show g ϑ = 1 / Complex.sin (↑π * ↑ϑ) - 1 / (↑π * ↑ϑ) by dsimp [g]; rw [ite_eq_left hϑ]]
     rw [show ↑π * (1 / Complex.sin (↑π * ↑ϑ) - 1 / (↑π * ↑ϑ)) = ↑π / Complex.sin (↑π * ↑ϑ) - 1 / ↑ϑ by field_simp]
     rw [lemma_abadeuleulmit1 h_not_int]
@@ -4009,13 +3444,7 @@ private theorem lemma_abadsumas_quad {s : ℂ} {a : ℝ} (ha : 0 < a)
       simpa using h]
     ring
   · have hϑ_lt : |ϑ| < 1 := by
-      simp only [ϑ]
-      rw [abs_div, abs_of_pos (by positivity : (0:ℝ) < 2 * π * a),
-          div_lt_one (by positivity : (0:ℝ) < 2 * π * a)]
-      have h2π : (0:ℝ) < 2 * π := by positivity
-      have := haτ
-      rw [gt_iff_lt, div_lt_iff₀ h2π] at this
-      linarith [abs_nonneg s.im]
+      pm_4622
     have hmem : (ϑ : ℂ) ∈ Complex.integerComplement := by
       simp only [Complex.integerComplement, Set.mem_compl_iff, Set.mem_range, not_exists]
       intro n heq
@@ -4034,45 +3463,23 @@ private theorem lemma_abadsumas_quad {s : ℂ} {a : ℝ} (ha : 0 < a)
           apply Summable.of_norm_bounded_eventually (g := fun n : ℕ => 1 / (n : ℝ) ^ 2)
           · exact Real.summable_one_div_nat_pow.mpr (by norm_num)
           · rw [Nat.cofinite_eq_atTop]
-            filter_upwards [eventually_ge_atTop 1] with n hn
-            rw [norm_div, norm_one, norm_pow]
+            pm_6758
             have h_eq : ‖(ϑ : ℂ) - ↑(n + 1)‖ = (n : ℝ) + 1 - ϑ := by
               rw [show (ϑ : ℂ) - ↑(n + 1) = -↑((n : ℝ) + 1 - ϑ) by push_cast; ring]
               rw [norm_neg, Complex.norm_real, Real.norm_eq_abs]
-              apply abs_of_pos
-              have : -1 < ϑ ∧ ϑ < 1 := abs_lt.mp hϑ_lt
-              have : (1 : ℝ) ≤ n := by exact_mod_cast hn
-              linarith
-            rw [h_eq]
-            apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
-            apply pow_le_pow_left₀
-            · have : (1 : ℝ) ≤ n := by exact_mod_cast hn
-              have : -1 < ϑ ∧ ϑ < 1 := abs_lt.mp hϑ_lt
-              linarith
-            · have : -1 < ϑ ∧ ϑ < 1 := abs_lt.mp hϑ_lt
-              linarith
+              pm_730
+            pm_4623
         exact (summable_nat_add_iff 1).mp h_nat_shift
       have h_neg : Summable (fun n : ℕ => (1 : ℂ) / ((ϑ : ℂ) - ↑(-(n + 1 : ℤ))) ^ 2) := by
         apply Summable.of_norm_bounded_eventually (f := fun n : ℕ => 1 / ((ϑ : ℂ) - ↑(-(n + 1 : ℤ))) ^ 2) (g := fun n : ℕ => 1 / (n : ℝ) ^ 2)
         · exact Real.summable_one_div_nat_pow.mpr (by norm_num)
         · rw [Nat.cofinite_eq_atTop]
-          filter_upwards [eventually_ge_atTop 1] with n hn
-          rw [norm_div, norm_one, norm_pow]
+          pm_6758
           have h_eq : ‖(ϑ : ℂ) - ↑(-(n + 1 : ℤ))‖ = (n : ℝ) + 1 + ϑ := by
             rw [show (ϑ : ℂ) - ↑(-(n + 1 : ℤ)) = ↑((n : ℝ) + 1 + ϑ) by push_cast; ring]
             rw [Complex.norm_real, Real.norm_eq_abs]
-            apply abs_of_pos
-            have : -1 < ϑ ∧ ϑ < 1 := abs_lt.mp hϑ_lt
-            have : (1 : ℝ) ≤ n := by exact_mod_cast hn
-            linarith
-          rw [h_eq]
-          apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
-          apply pow_le_pow_left₀
-          · have : (1 : ℝ) ≤ n := by exact_mod_cast hn
-            have : -1 < ϑ ∧ ϑ < 1 := abs_lt.mp hϑ_lt
-            linarith
-          · have : -1 < ϑ ∧ ϑ < 1 := abs_lt.mp hϑ_lt
-            linarith
+            pm_730
+          pm_4623
       exact Summable.of_nat_of_neg_add_one h_nat h_neg
     have hC : (↑π : ℂ) ^ 2 / Complex.sin (↑π * ↑ϑ) ^ 2 =
         1 / (↑ϑ : ℂ) ^ 2 +
@@ -4082,15 +3489,13 @@ private theorem lemma_abadsumas_quad {s : ℂ} {a : ℝ} (ha : 0 < a)
       rw [add_assoc, add_left_cancel_iff]
       have hpos : ∑' (n : ℕ+), (1 : ℂ) / ((ϑ : ℂ) - ↑(↑↑n : ℤ)) ^ 2 =
           ∑' (n : ℕ), 1 / ((↑n + 1 - (ϑ : ℂ)) ^ 2) := by
-        rw [← Equiv.tsum_eq Equiv.pnatEquivNat.symm]
-        congr 1; ext n
+        pm_8124
         simp only [Equiv.pnatEquivNat_symm_apply, Nat.succPNat_coe, Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one, Int.cast_add,
           Int.cast_natCast, Int.cast_one, one_div, inv_inj]
         ring
       have hneg : ∑' (n : ℕ+), (1 : ℂ) / ((ϑ : ℂ) - ↑(-(↑↑n : ℤ))) ^ 2 =
           ∑' (n : ℕ), 1 / ((↑n + 1 + (ϑ : ℂ)) ^ 2) := by
-        rw [← Equiv.tsum_eq Equiv.pnatEquivNat.symm]
-        congr 1; ext n
+        pm_8124
         simp only [Equiv.pnatEquivNat_symm_apply, Nat.succPNat_coe, Nat.succ_eq_add_one, Nat.cast_add, Nat.cast_one, neg_add_rev,
           Int.reduceNeg, Int.cast_add, Int.cast_neg, Int.cast_one, Int.cast_natCast, one_div,
           inv_inj]
@@ -4099,16 +3504,12 @@ private theorem lemma_abadsumas_quad {s : ℂ} {a : ℝ} (ha : 0 < a)
         have h := hZ_summable.comp_injective
           (i := fun n : ℕ => (↑n + 1 : ℤ))
           (fun a b hab => by simpa using hab)
-        refine h.congr (fun n => ?_)
-        simp only [Function.comp]
-        push_cast; ring
+        pm_6759
       have hsum2 : Summable (fun n : ℕ => (1 : ℂ) / ((↑n + 1 + (ϑ : ℂ)) ^ 2)) := by
         have h := hZ_summable.comp_injective
           (i := fun n : ℕ => -(↑n + 1 : ℤ))
           (fun a b hab => by simpa using hab)
-        refine h.congr (fun n => ?_)
-        simp only [Function.comp]
-        push_cast; ring
+        pm_6759
       rw [hpos, hneg, ← Summable.tsum_add hsum1 hsum2]
     symm
     apply Complex.ofReal_inj.mp
@@ -4118,6 +3519,11 @@ private theorem lemma_abadsumas_quad {s : ℂ} {a : ℝ} (ha : 0 < a)
       _ = ∑' (n : ℕ), (1 / ((n : ℂ) + 1 - (ϑ : ℂ)) ^ 2 + 1 / ((n : ℂ) + 1 + (ϑ : ℂ)) ^ 2) := by ring
       _ = (↑(∑' n : ℕ, (1 / (n + 1 - ϑ) ^ 2 + 1 / (n + 1 + ϑ) ^ 2 : ℝ)) : ℂ) := by rw [Complex.ofReal_tsum]; push_cast; rfl
 
+set_option hygiene false in
+macro "pc_586" x1:ident x2:ident x3:ident x4:ident : tactic => `(tactic| (
+  have $x1:ident : Summable (fun n : ℕ ↦
+    $x2:ident ^ (-s) / (2 * π * I) * ((-1) ^ (n + 2) * 2 * $x3:ident / ((n + 1) ^ 2 - $x3:ident ^ 2))) :=
+    $x4:ident ($x2:ident ^ (-s) / (2 * π * I))))
 private theorem lemma_abadsumas {s : ℂ} (hsigma : 0 ≤ s.re) {a b : ℝ} (ha : 0 < a)
     (hab : a < b) (ha' : a.IsHalfInteger) (hb' : b.IsHalfInteger) (haτ : a > |s.im| / (2 * π)) :
     let ϑ : ℝ := s.im / (2 * π * a)
@@ -4182,19 +3588,12 @@ private theorem lemma_abadsumas {s : ℂ} (hsigma : 0 ≤ s.re) {a b : ℝ} (ha 
       exact mul_le_mul_of_nonneg_left hE_bound' hpos
   choose error_term error_term_eq error_term_bound using apply_applem
   have hϑ_lt : |ϑ| < 1 := by
-    simp only [ϑ]
-    rw [abs_div, abs_of_pos (by positivity : (0:ℝ) < 2 * π * a),
-        div_lt_one (by positivity : (0:ℝ) < 2 * π * a)]
-    have h2π : (0:ℝ) < 2 * π := by positivity
-    have := haτ
-    rw [gt_iff_lt, div_lt_iff₀ h2π] at this
-    linarith [abs_nonneg s.im]
+    pm_4622
   have hsin_pos : ϑ ≠ 0 → 0 < Real.sin (π * ϑ) ^ 2 := by
     intro hϑ0
     apply sq_pos_of_ne_zero
     intro hsin
-    rw [Real.sin_eq_zero_iff] at hsin
-    obtain ⟨n, hn⟩ := hsin
+    pm_4610 Real.sin_eq_zero_iff hsin n hn
     have hπ : π ≠ 0 := Real.pi_ne_zero
     have hϑn : ϑ = (n : ℝ) := by
       have := mul_left_cancel₀ hπ (by linarith : π * ϑ = π * n)
@@ -4230,17 +3629,9 @@ private theorem lemma_abadsumas {s : ℂ} (hsigma : 0 ≤ s.re) {a b : ℝ} (ha 
     ((-1) ^ (n + 2) * 2 * ϑ_minus / ((n + 1) ^ 2 - ϑ_minus ^ 2) : ℂ)) := by
     apply lemma_abadsumas_summable_alternating_theta
     dsimp [ϑ_minus, ϑ] at hϑ_lt ⊢
-    rw [abs_div]
-    have hb_pos : 0 < b := lt_trans ha hab
-    rw [abs_of_pos (by positivity : (0 : ℝ) < 2 * π * b),
-        div_lt_one (by positivity)]
-    nlinarith [Real.pi_pos, hab]
-  have summable_term_a : Summable (fun n : ℕ ↦
-    a ^ (-s) / (2 * π * I) * ((-1) ^ (n + 2) * 2 * ϑ / ((n + 1) ^ 2 - ϑ ^ 2))) :=
-    main_summable_a.mul_left (a ^ (-s) / (2 * π * I))
-  have summable_term_b : Summable (fun n : ℕ ↦
-    b ^ (-s) / (2 * π * I) * ((-1) ^ (n + 2) * 2 * ϑ_minus / ((n + 1) ^ 2 - ϑ_minus ^ 2))) :=
-    main_summable_b.mul_left (b ^ (-s) / (2 * π * I))
+    pm_4624
+  pc_586 summable_term_a a ϑ main_summable_a.mul_left
+  pc_586 summable_term_b b ϑ_minus main_summable_b.mul_left
   have summable_diff : Summable (fun n : ℕ ↦
     a ^ (-s) / (2 * π * I) * ((-1 : ℂ) ^ (n + 2) * 2 * ϑ / ((n + 1) ^ 2 - ϑ ^ 2)) -
     b ^ (-s) / (2 * π * I) * ((-1 : ℂ) ^ (n + 2) * 2 * ϑ_minus / ((n + 1) ^ 2 - ϑ_minus ^ 2))) :=
@@ -4249,7 +3640,7 @@ private theorem lemma_abadsumas {s : ℂ} (hsigma : 0 ≤ s.re) {a b : ℝ} (ha 
     intro n
     have := hϑ_lt
     have hϑ_le : ϑ ≤ |ϑ| := le_abs_self ϑ
-    linarith [Nat.cast_nonneg (α := ℝ) n]
+    pm_5998
   have hpos_plus : ∀ n : ℕ, 0 < (n : ℝ) + 1 + ϑ := by
     intro n
     have hϑ_le : -|ϑ| ≤ ϑ := neg_abs_le ϑ
@@ -4278,11 +3669,7 @@ private theorem lemma_abadsumas {s : ℂ} (hsigma : 0 ≤ s.re) {a b : ℝ} (ha 
     ((-1 : ℂ) ^ (n + 2) * 2 * ϑ / ((n + 1) ^ 2 - ϑ ^ 2)) = π * g ϑ := lemma_abadsumas_sum_main_term_a ϑ hϑ_lt hpos_minus hpos_plus
   have hϑ_minus_lt : |ϑ_minus| < 1 := by
     dsimp [ϑ_minus]
-    rw [abs_div]
-    have hb_pos : 0 < b := lt_trans ha hab
-    rw [abs_of_pos (by positivity : (0 : ℝ) < 2 * π * b),
-        div_lt_one (by positivity)]
-    nlinarith [Real.pi_pos, hab]
+    pm_4624
   have sum_main_term_b : ∑' n : ℕ,
     ((-1 : ℂ) ^ (n + 2) * 2 * ϑ_minus / ((n + 1 : ℂ) ^ 2 - ϑ_minus ^ 2)) = π * g ϑ_minus := lemma_abadsumas_sum_main_term_b ϑ_minus hϑ_minus_lt
   let bound : ℕ → ℝ := fun n =>
@@ -4372,7 +3759,7 @@ private theorem lemma_abadsumas {s : ℂ} (hsigma : 0 ≤ s.re) {a b : ℝ} (ha 
           rw [show 0 = ϑ from hϑ0.symm]
           simp only [neg_add_rev, hϑ0, sub_zero, one_div, zero_mul, add_zero, ge_iff_le]
           have hq : ∑' (n : ℕ), (1 / (↑n + 1 : ℝ) ^ 2 + 1 / (↑n + 1 : ℝ) ^ 2) = π ^ 2 / 3 := by
-            simp only [hϑ0, sub_zero, add_zero, ite_true] at hquad
+            pm_298 hϑ0 sub_zero add_zero ite_true hquad
             exact hquad
           have hq' : ∑' (n : ℕ), (((↑n + 1 : ℝ) ^ 2)⁻¹ + ((↑n + 1 : ℝ) ^ 2)⁻¹) = π ^ 2 / 3 := by
             convert hq using 3
@@ -4388,8 +3775,7 @@ private theorem lemma_abadsumas {s : ℂ} (hsigma : 0 ≤ s.re) {a b : ℝ} (ha 
         · have hquad' : ∑' n : ℕ, (1/(n+1-ϑ)^2 + 1/((n+1+ϑ)^2)) =
               π^2 / Real.sin (π * ϑ)^2 - 1/ϑ^2 := by
             rw [hquad]; simp [hϑ0]
-          rw [hquad']
-          simp only [hϑ0, ne_eq, not_false_eq_true, ite_true]
+          pm_214 hquad' hϑ0 ne_eq not_false_eq_true ite_true
           have hre2 : (1 / ((π : ℂ) * (ϑ : ℂ)) ^ 2).re = 1 / (π * ϑ) ^ 2 := by
             have h : ((1 : ℂ) / ((π : ℂ) * (ϑ : ℂ)) ^ 2) = ((1 / (π * ϑ) ^ 2 : ℝ) : ℂ) := by
               push_cast; ring
@@ -4457,8 +3843,7 @@ private theorem proposition_dadaro_b_tendsto_zero_atTop {s : ℂ} (hsigma : 0 < 
     filter_upwards [hball, hne] with x hlt hxne
     rw [Complex.sin_ne_zero_iff]
     intro k
-    by_cases hk : k = 0
-    · simp [hk, hxne]
+    pm_212 hk k hxne
     · have hkπ : π ≤ ‖(k : ℂ) * ↑π‖ := by
         rw [norm_mul]
         suffices 1 ≤ ‖(k : ℂ)‖ by
@@ -4471,8 +3856,7 @@ private theorem proposition_dadaro_b_tendsto_zero_atTop {s : ℂ} (hsigma : 0 < 
       intro heq
       linarith [heq ▸ hlt]
   have hl : (fun x ↦ 1 / Complex.sin x - 1 / x) =ᶠ[𝓝[≠] 0] (fun x ↦ (x - Complex.sin x) / (x * Complex.sin x)) := by
-    filter_upwards [hsin, hne] with x hsinx hxne
-    field_simp [hxne, hsinx]
+    pm_7962 hsinx
   have hscale : Tendsto (fun t : ℝ ↦ (↑π * ↑t : ℂ)) (𝓝 0) (𝓝 0) := by
     simpa only [Pi.mul_def, Complex.ofReal_zero, mul_zero] using (continuous_const.mul Complex.continuous_ofReal).tendsto (0 : ℝ)
   have h_pi : Tendsto (fun t : ℝ ↦ (↑π * ↑t : ℂ)) (𝓝[≠] 0) (𝓝[≠] 0) := by
@@ -4487,8 +3871,7 @@ private theorem proposition_dadaro_b_tendsto_zero_atTop {s : ℂ} (hsigma : 0 < 
     have hsinx : Tendsto (fun x ↦ Complex.sin x / x) (𝓝[≠] 0) (𝓝 1) :=
       (Asymptotics.isEquivalent_iff_tendsto_one hne).mp heq
     have hflip : (fun x ↦ x / Complex.sin x) =ᶠ[𝓝[≠] (0 : ℂ)] (fun x ↦ (Complex.sin x / x)⁻¹) := by
-      filter_upwards [hsin, hne] with x hsx hxne
-      field_simp [hxne, hsx]
+      pm_7962 hsx
     rw [tendsto_congr' hflip]
     simpa using hsinx.inv₀ (by norm_num : (1 : ℂ) ≠ 0)
   have hfactor : (fun x : ℂ ↦ (x - Complex.sin x) / (x * Complex.sin x))
@@ -4556,9 +3939,7 @@ private theorem proposition_dadaro_b_tendsto_zero_atTop {s : ℂ} (hsigma : 0 < 
     have hg_eq : g =ᶠ[𝓝 0] fun t : ℝ =>
         (1 / Complex.sin (↑π * ↑t) - 1 / (↑π * ↑t)) / (2 * I) := by
       exact Filter.Eventually.of_forall fun t ↦ by
-        simp only [g, dadaro_g]
-        split_ifs with ht
-        · rfl
+        pm_7858
         · simp only [one_div, mul_inv_rev]
           field_simp
           push Not at ht
@@ -4663,9 +4044,7 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
             have hg_unfold : ∀ t : ℝ, g t =
                 (fun t : ℝ ↦ if t ≠ 0 then (1 / Complex.sin (↑π * ↑t) : ℂ) - 1 / (↑π * ↑t) else 0) t / (2 * I) := by
               intro t
-              simp only [g, dadaro_g]
-              split_ifs with ht
-              · rfl
+              pm_7858
               · simp
             rw [hL_tsum, h_E_eq]
             simp only [hg_unfold]
@@ -4704,14 +4083,7 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
         rw [show (0 : ℝ) = (2 * ‖s‖ / s.re) * 0 by ring]
         exact Tendsto.const_mul _ (tendsto_rpow_neg_atTop hsigma)
     obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp h_limit ε hε
-    let M := max a N
-    let B₀ : ℝ := ↑⌊M⌋ + 3 / 2
-    use B₀
-    refine ⟨?_, ?_, ?_⟩
-    · have hM_a : M ≥ a := le_max_left a N
-      have hB₀_M : B₀ > M := Real.floor_add_three_halfs_gt M
-      linarith
-    · exact Real.IsHalfInteger.floor_add_three_halfs M
+    pm_4625 B₀ hB₀_M
     · intro b hb_hi hb_ge
       have hb_gt_a : b > a := by
         have hM_a : M ≥ a := le_max_left a N
@@ -4721,12 +4093,8 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
       obtain ⟨_, E₂, _, _, hE₂_bd⟩ := h_for_each_b b hb_in_B
       use E₂
       refine ⟨hE₂_bd, ?_⟩
-      have hb_ge_N : b ≥ N := by
-        have hM_N : M ≥ N := le_max_right a N
-        have hB₀_M : B₀ > M := Real.floor_add_three_halfs_gt M
-        linarith
-      have h_dist := hN b hb_ge_N
-      rw [dist_zero_right] at h_dist
+      pm_6568 hb_ge_N hB₀_M B₀
+      pm_126 h_dist hN b hb_ge_N dist_zero_right
       have h_pos : 0 < 2 * ‖s‖ / (s.re * b ^ s.re) := by
         apply div_pos
         · have h_s_ne_zero : s ≠ 0 := by
@@ -4752,9 +4120,8 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
         (b : ℂ) ^ (-s) * c_b b‖ < ε := by
     refine ⟨main_a - ∑ n ∈ Icc 1 ⌊a⌋₊, (n : ℂ) ^ (-s), ?_, ?_⟩
     · apply le_of_forall_pos_le_add
-      intro ε hε
-      have hε2 : ε / 2 > 0 := by linarith
-      obtain ⟨B₁, hB₁_prop⟩ := Metric.tendsto_atTop.mp h_b_term_vanishes (ε / 2) hε2
+      pm_7282
+      pm_8899 B₁ hB₁_prop
       obtain ⟨B₂, _hB₂_gt, _hB₂_hi, hB₂_prop⟩ := h_E₂_vanishes (ε / 2) hε2
       let M := max (max a B₁) B₂
       let b : ℝ := ↑⌊M⌋ + 3 / 2
@@ -4802,28 +4169,16 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
         riemannZeta s + (a : ℂ) ^ (1 - s) / (1 - s) + c * (a : ℂ) ^ (-s) +
         (-E₁ + transient_error b E₂) ∧
       ‖transient_error b E₂‖ < ε := by
-    intro ε hε
-    have hε2 : ε / 2 > 0 := by linarith
+    pm_7282
     obtain ⟨B₁, hB₁_gt, hB₁_hi, hB₁_prop⟩ := h_E₂_vanishes (ε / 2) hε2
     have hB₂_exists : ∃ B₂ : ℝ, B₂ > a ∧ B₂.IsHalfInteger ∧
         ∀ b : ℝ, b.IsHalfInteger → b ≥ B₂ →
           ‖(↑b : ℂ) ^ (-s) * dadaro_g (s.im / (2 * π * b))‖ < ε / 2 := by
-      obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp h_b_term_vanishes (ε / 2) hε2
-      let M := max a N
-      let B₂ : ℝ := ↑⌊M⌋ + 3 / 2
-      use B₂
-      refine ⟨?_, ?_, ?_⟩
-      · have hM_a : M ≥ a := le_max_left a N
-        have hB₂_M : B₂ > M := Real.floor_add_three_halfs_gt M
-        linarith
-      · exact Real.IsHalfInteger.floor_add_three_halfs M
+      pm_8899 N hN
+      pm_4625 B₂ hB₂_M
       · intro b _ hb_B₂
-        have hb_N : b ≥ N := by
-          have hM_N : M ≥ N := le_max_right a N
-          have hB₂_M : B₂ > M := Real.floor_add_three_halfs_gt M
-          linarith
-        have h_dist := hN b hb_N
-        rw [dist_zero_right] at h_dist
+        pm_6568 hb_N hB₂_M B₂
+        pm_126 h_dist hN b hb_N dist_zero_right
         exact h_dist
     obtain ⟨B₂, hB₂_gt, hB₂_hi, hB₂_prop⟩ := hB₂_exists
     obtain ⟨B₃, hB₃_gt, hB₃_hi, hB₃_prop⟩ := hE₁_limit ε hε
@@ -4889,8 +4244,7 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
                 linarith
           rw [Complex.sin_ne_zero_iff]
           intro k
-          by_cases hk : k = 0
-          · simp [hk, hxnonzero]
+          pm_212 hk k hxnonzero
           · have h_k_bound : π ≤ ‖(k : ℂ) * ↑π‖ := by
               rw [norm_mul]; simp only [norm_intCast, norm_real, norm_eq_abs]
               suffices 1 ≤ ‖(k : ℂ)‖ by
@@ -4915,7 +4269,7 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
           - ↑a ^ (-s) * ((1 / Complex.sin (↑π * ↑(s.im / (2 * π * a)))
               - 1 / (↑π * ↑(s.im / (2 * π * a)))) / (2 * I)) := by ring
           _ = _ := by
-                simp only [ofReal_div, ofReal_mul, ofReal_ofNat, one_div, mul_inv_rev, inv_div]
+                pm_316 ofReal_div ofReal_mul ofReal_ofNat one_div mul_inv_rev inv_div
       · simp only [zero_mul, add_zero, mul_zero, sub_zero]
     refine ⟨E₁ - E₁_lem + E₂_lem, ?_, ?_⟩
     · simp only [transient_error]
@@ -4936,7 +4290,7 @@ private theorem proposition_dadaro_zero_lt {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
                        (a : ℂ) ^ (1 - s) / (1 - s) - c * (a : ℂ) ^ (-s) + E₁)‖ < ε := by
       intro ε hε
       obtain ⟨B₀, hB₀a, hB₀half, hforallb⟩ := h_eq_for_large_b ε hε
-      obtain ⟨E₂, hEq, hTbound⟩ := hforallb B₀ hB₀half le_rfl
+      pm_837 E₂ hEq hTbound hforallb B₀ hB₀half le_rfl
       rwa [show riemannZeta s -
             (∑ n ∈ Finset.Icc 1 ⌊a⌋₊, (n : ℂ) ^ (-s) -
               (a : ℂ) ^ (1 - s) / (1 - s) -
@@ -4991,18 +4345,12 @@ private theorem proposition_dadaro_zero_eq {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
       · left; norm_cast
         linarith
     · apply ContinuousAt.div
-      · apply ContinuousAt.cpow
-        · exact continuousAt_const
-        · fun_prop
-        · left; norm_cast
+      pm_7859
       · fun_prop
       · exact hs_zero.symm ▸ sub_ne_zero.mpr hs1.symm
     · apply ContinuousAt.mul
       · exact continuousAt_const
-      · apply ContinuousAt.cpow
-        · exact continuousAt_const
-        · fun_prop
-        · left; norm_cast
+      pm_7859
   have h_nearby_approximation : ∀ σ ∈ Set.Ioo (0 : ℝ) 1,
     ∃ E_σ : ℂ,
       riemannZeta (σ + I * s.im) =
@@ -5028,9 +4376,7 @@ private theorem proposition_dadaro_zero_eq {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
       simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re,
                 zero_mul, Complex.I_im, Complex.ofReal_im, one_mul, sub_self, add_zero, hσ_pos]
     have hs_σ_im_bound : a > |s_σ.im| / (2 * π) := by
-      rw [hs_σ_def]
-      simp only [Complex.add_im, Complex.ofReal_im, zero_add, Complex.mul_im,
-                Complex.I_re, Complex.ofReal_re, mul_zero, Complex.I_im, one_mul]
+      pm_1184
       exact haτ
     obtain ⟨E_σ, hE_eq, hE_bound⟩ :=
       proposition_dadaro_zero_lt hs_σ_ne_one hs_σ_re_pos ha ha' hs_σ_im_bound
@@ -5041,9 +4387,7 @@ private theorem proposition_dadaro_zero_eq {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
       simp only [Complex.add_im, Complex.ofReal_im, zero_add, Complex.mul_im, Complex.I_re,
         Complex.ofReal_re, mul_zero, Complex.I_im, one_mul]
     · have hϑ_match : s_σ.im / (2 * π * a) = ϑ := by
-        rw [hs_σ_def]
-        simp only [Complex.add_im, Complex.ofReal_im, zero_add, Complex.mul_im,
-                  Complex.I_re, Complex.ofReal_re, mul_zero, Complex.I_im, one_mul]
+        pm_1184
         rfl
       have hre_match : s_σ.re = σ := by
         rw [hs_σ_def]
@@ -5077,11 +4421,7 @@ private theorem proposition_dadaro_zero_eq {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
       else σ_n n / 6) / a ^ (σ_n n + 1) := fun n ↦
     h_nearby_approximation (σ_n n) (hσ_n_mem n)
   choose E_n hE_n_eq hE_n_bound using hE_n
-  have h_lim_σ : Tendsto σ_n atTop (𝓝 0) := by
-    simp only [one_div, σ_n]
-    apply tendsto_inv_atTop_zero.comp
-    apply Filter.tendsto_atTop_add_const_right
-    exact tendsto_natCast_atTop_atTop
+  pm_1185
   let E := riemannZeta (I * s.im) - (∑ k ∈ Finset.Icc 1 ⌊a⌋₊, (k : ℂ) ^ (-(I * s.im) : ℂ) -
              ↑a ^ (1 - (I * s.im) : ℂ) / (1 - (I * s.im) : ℂ) - c * ↑a ^ (-(I * s.im) : ℂ))
   have hE_converges : Filter.Tendsto E_n Filter.atTop (𝓝 E) := by
@@ -5116,9 +4456,7 @@ private theorem proposition_dadaro_zero_eq {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
     · simp only [hϑ, ne_eq, not_true_eq_false, ↓reduceIte, bound_n]
       have h_num : Tendsto (fun n ↦ σ_n n / 6) atTop (𝓝 0) := by
         simpa using h_lim_σ.div_const 6
-      have h_den : Tendsto (fun n ↦ a ^ (σ_n n + 1)) atTop (𝓝 a) := by
-        convert Tendsto.rpow tendsto_const_nhds (h_lim_σ.add tendsto_const_nhds) (Or.inl ha.ne')
-        simp
+      pm_770 h_den
       rw [show C = 0 by simp [C, hϑ, hsigma.symm, zero_div]]
       apply h_num.div h_den ha.ne'
     · simp only [ne_eq, hϑ, not_false_eq_true, ↓reduceIte, one_div, inv_re, map_pow, map_mul,
@@ -5134,9 +4472,7 @@ private theorem proposition_dadaro_zero_eq {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
         · convert (h_lim_σ.div_const 2).mul_const ((1 / Complex.sin (π * ϑ : ℂ) ^ 2).re - (1 / (π * ϑ : ℂ) ^ 2).re)
           simp
         · exact tendsto_const_nhds
-      have hden : Tendsto (fun n ↦ a ^ (σ_n n + 1)) atTop (𝓝 a) := by
-        convert Tendsto.rpow tendsto_const_nhds (h_lim_σ.add tendsto_const_nhds) (Or.inl ha.ne')
-        simp
+      pm_770 hden
       convert hnum.div hden (by positivity) using 1
       · ext n; dsimp; congr 1; rw [hC]
         have h_sin : (1 / Complex.sin ((π : ℂ) * (ϑ : ℂ)) ^ 2).re =
@@ -5153,11 +4489,7 @@ private theorem proposition_dadaro_zero_eq {s : ℂ} (hs1 : s ≠ 1) (hsigma : 0
   constructor
   · have h_lhs : Filter.Tendsto (fun n => riemannZeta (↑(σ_n n) + I * ↑s.im))
       Filter.atTop (𝓝 (riemannZeta (I * ↑s.im))) := by
-      have h_lim_σ : Tendsto σ_n atTop (𝓝 0) := by
-        simp only [one_div, σ_n]
-        apply tendsto_inv_atTop_zero.comp
-        apply Filter.tendsto_atTop_add_const_right
-        exact tendsto_natCast_atTop_atTop
+      pm_1185
       have h_cont := h_continuous_extension.1.tendsto
       simpa only [Function.comp_def, Complex.ofReal_zero, zero_add] using h_cont.comp h_lim_σ
     have h_rhs : Filter.Tendsto (fun n =>

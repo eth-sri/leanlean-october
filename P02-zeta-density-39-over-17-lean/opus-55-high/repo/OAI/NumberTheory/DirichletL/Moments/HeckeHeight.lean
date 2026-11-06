@@ -26,7 +26,7 @@ theorem rowTwistedSum_eq (η χ : Character) (m A₀ z : O)
   intro I
   have he := HeckeRowClosure.idealCoeff_eq_row η χ m 1 (A₀*z) hrow I
   simp only [one_pow,mul_one] at he
-  rw [he]
+  grind
 
 end SevenEighths.CenteredMomentHeckeHeight
 

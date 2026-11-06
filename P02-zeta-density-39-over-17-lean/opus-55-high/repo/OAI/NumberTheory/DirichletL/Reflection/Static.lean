@@ -14,9 +14,10 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι κ : Type*} [Fintype ι] [Fintype κ]
   {p : ι → Eis} {p₀ : κ → Eis} {N a c : Eis} {mode : Bool}
 
+section
+variable (D : ControlledStratumArithmetic p N a c mode) (D₀ : ControlledStratumArithmetic p₀ N a c mode)
+include D D₀
 theorem controlled_fixedFactor_eq
-    (D : ControlledStratumArithmetic p N a c mode)
-    (D₀ : ControlledStratumArithmetic p₀ N a c mode)
     (hN : (9:Eis)*c ∣ N)
     (hr : λ₀^2 ∣ (∏ i, p i)-1) (hr₀ : λ₀^2 ∣ (∏ i, p₀ i)-1)
     (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1)
@@ -34,9 +35,7 @@ theorem controlled_fixedFactor_eq
       (A3_ramified_relative_primary _ c (D.ramified_relative h3N hr hbase c (by simp) _))
       (A3_ramified_relative_primary _ c (D₀.ramified_relative h3N hr₀ hbase c (by simp) _)) ha hb
 
-theorem controlled_static_array_eq
-    (D : ControlledStratumArithmetic p N a c mode)
-    (D₀ : ControlledStratumArithmetic p₀ N a c mode) (hc : c ≠ 0)
+theorem controlled_static_array_eq (hc : c ≠ 0)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hbad : ramifiedTraceLambda^3*c ∣ N)
     (hr : N ∣ (∏ i, p i)-(∏ i, p₀ i))
@@ -52,6 +51,7 @@ theorem controlled_static_array_eq
   have he := congrFun (controlled_bad_phase_eq D D₀ hc hbad hr hd) (s.modelDualNumerator u m I J)
   rw [A4BadPhase_as_fixed_residue,A4BadPhase_as_fixed_residue] at he
   rw [he]
+end
 
 end
 end SevenEighths.InverseReflectedPhase

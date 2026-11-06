@@ -1,6 +1,7 @@
 module
 public import Mathlib.NumberTheory.Harmonic.Bounds
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,12 +21,12 @@ theorem quadratic_gap_sum_le (y : ℝ) (N : ℕ) (hy : 1 ≤ y)
       (m:ℝ)^2/(y^2*(y-m)) ≤ 8*(1/((N+1-m:ℕ):ℝ)) := by
     obtain ⟨hm1,hmN⟩ := mem_Icc.mp hm
     have hm0 : (0:ℝ) ≤ m := by positivity
-    have hmle : (m:ℝ) ≤ N := by exact_mod_cast hmN
+    pm_404 hmle m N hmN
     have hmy : (m:ℝ) < y := by linarith
     have hden : 0 < y-m := by linarith
     have hnat : m ≤ N+1 := by omega
     have he : ((N+1-m:ℕ):ℝ) = (N:ℝ)+1-m := by
-      rw [Nat.cast_sub hnat, Nat.cast_add, Nat.cast_one]
+      simp_all
     have hpos : 0 < ((N+1-m:ℕ):ℝ) := by rw [he]; linarith
     calc
       _ ≤ 1/(y-m) := by

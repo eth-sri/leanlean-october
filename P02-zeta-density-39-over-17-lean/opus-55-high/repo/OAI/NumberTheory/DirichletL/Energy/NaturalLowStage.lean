@@ -6,27 +6,24 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
 public import OAI.NumberTheory.DirichletL.Energy.PositiveBalancedAdmission
 public import OAI.NumberTheory.DirichletL.Energy.PositiveLowBandSource
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowStage
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource
-open CenteredMomentEnergyNaturalSourceAdmission
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
+open CenteredMomentEnergyBands
+open CenteredMomentNaturalFixedRaySource
+open CenteredMomentEnergyPositiveLowBandSource
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
+open CenteredMomentEnergyStageMargins
+open CenteredMomentEnergyFirstLiveAdmission
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -47,14 +44,14 @@ theorem actual_low_from_bands
     (hMA:Mparent≤A)(hready:readyBudget A Bmask≤B)
     (hκ:(3/4:ℝ)≤κ)(hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)
     (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(hε:0<ε)
-    (hslot:Lslot≤mesh Mglobal B κ ε)
+    (hslot:Lslot≤ mesh Mglobal B κ ε)
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (degree:ℕ)(S:Finset (ℕ×ℕ)):
     ∃Uout:Finset (ℕ×ℕ),∃Jout:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
+    ∀η₀:Character,∀Q:Ideal O,Q≤M→ internalQ Q η₀≠0→ internalQ Q η₀≠⊤→
       internalQ Q η₀≤Ideal.span {(72:O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀εchild C₀ C₁:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
+    ∀εchild C₀ C₁:ℝ,εchild≤ stageLoss Mglobal B ε k→0≤C₀→0≤C₁→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b bΦ Bmask (2*max Lgoal Mparent+reserve Mglobal B ε/4)
         Mchild εchild Z degree S C₀→
       PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask (2*max Lgoal Mparent+reserve Mglobal B ε/4)
@@ -63,11 +60,10 @@ theorem actual_low_from_bands
         (physicalLoss Mglobal B ε k) κ Z η₀ Q Jout Uout (C*(C₀+C₁+1)) ∧
       ZeroLowAt (internalQ Q η₀) a b bΦ Bmask Lgoal Mparent
         (physicalLoss Mglobal B ε k) Z Jout Uout (C*(C₀+C₁+1)) :=by
-  let r:=reserve Mglobal B ε
-  have hκ0:0≤κ:=by linarith
-  have hr:0<r:=(bounds Mglobal B κ ε hMg hB hκ0 hε).2.2.2.1
+  pm_5567 Mglobal B
+  have hr:0< r:=(bounds Mglobal B κ ε hMg hB hκ0 hε).2.2.2.1
   have hmarg:=margins Mglobal B κ ε hMg hB hκ0 hε k
-  have hκsmall:(1/6:ℝ)≤κ:=by linarith
+  pm_6967
   have hbΦ:0<bΦ:=by linarith
   obtain ⟨Ψ,hΨs,hΨn,Cfixed,hCfixed,hentry⟩:=
     CenteredMomentEnergyPositiveLowSourceControlled.actual_low_stages_from_physical (α:=α)
@@ -89,10 +85,9 @@ theorem actual_low_from_bands
     have hh:=le_max_left Lgoal Mparent
     linarith
   refine ⟨insert (0,0) Umerge,Jmerge,?_⟩
-  intro η₀ Q hQM hQ0 hQt hQ72
-  obtain ⟨Cp,hCp,hphys⟩:=hphysical η₀ Q hQM hQ0 hQt hQ72
+  pm_8815 Cp hCp hphys hphysical
   let Cout:=Cfixed*(Cp+1)+1
-  have hCout:0<Cout:=by dsimp [Cout];positivity
+  pm_3592 hCout Cout
   refine ⟨Cout,hCout,?_⟩
   filter_upwards [hentry,hphys] with Z he hp
   refine ⟨hp.1,?_⟩
@@ -114,18 +109,15 @@ theorem actual_low_from_bands
   have hm':PhysicalLowAt (α:=α) M H hH W hW.continuous aslot bslot lo hi haslot hWs
       a b bΦ Bmask Lgoal Lslot Mchild Mparent κ (r/4) (physicalLoss Mglobal B ε k)
       Z ha Ψ η₀ Q Umerge Jmerge (Cp*(C₀+C₁+1)):=by
-    intro T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hrho hs
-      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
-    have hh:=hm T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hrho hs
-      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
+    pm_3390 hrho hm
     have hz:0≤Z:=zero_le_one.trans hp.1.le
     have hcontrol:=profile_control_mono p hU
     have hc0:=p.control_nonneg U
-    have hheight1:1≤1+|t|+height:=by linarith [abs_nonneg t]
+    pm_761 hheight1
     apply hh.trans
     gcongr
   have hsave:-(2*amplification ε+1)≤physicalLoss Mglobal B ε k:=by
-    have hs:0<amplification ε:=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
+    pm_5843
     linarith [hmarg.1]
   have hout:=he.2 Bmask Lgoal Lslot Mchild κ (physicalLoss Mglobal B ε k) η₀ Q Umerge Jmerge
     (Cp*(C₀+C₁+1)) C₁ hκsmall (by positivity) hC₁ hmarg.2.2.1 hsave hold hm'

@@ -2,6 +2,7 @@ module
 public import MathCollab.Density.LargeValueDefinitions
 public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,10 +19,10 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
-theorem exists_unitSeparated_closedBall_cover_of_card_bound
-    {S : Set ℝ} {B : ℝ}
-    (hcount : ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ S) →
-      oneSeparated W → (W.card:ℝ) ≤ B) :
+section
+variable {S : Set ℝ} {B : ℝ} (hcount : ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ S) → oneSeparated W → (W.card:ℝ) ≤ B)
+include S B hcount
+theorem exists_unitSeparated_closedBall_cover_of_card_bound :
     ∃ W : Finset ℝ, (∀ t ∈ W, t ∈ S) ∧ oneSeparated W ∧
       ∀ t ∈ S, ∃ u ∈ W, dist t u ≤ 1 := by
   classical
@@ -33,14 +34,12 @@ theorem exists_unitSeparated_closedBall_cover_of_card_bound
       oneSeparated W → W.card ∈ Q := by
     intro W hWS hsep
     have hcard : W.card ≤ N := by exact_mod_cast (hcount W hWS hsep).trans hN
-    exact Finset.mem_filter.mpr
-      ⟨Finset.mem_range.mpr (by omega),W,hWS,hsep,rfl⟩
+    grind
   have hzero : 0 ∈ Q := by
     simpa using hmem ∅ (by simp) (by intro x hx; simp at hx)
   have hQ : Q.Nonempty := ⟨0,hzero⟩
   obtain ⟨W,hWS,hsep,hcard⟩ := (Finset.mem_filter.mp (Q.max'_mem hQ)).2
-  refine ⟨W,hWS,hsep,?_⟩
-  intro t ht
+  pm_253 W hWS hsep t ht
   by_contra hnot
   have hfar : ∀ u ∈ W, 1 < dist t u := by
     intro u hu
@@ -68,17 +67,14 @@ theorem exists_unitSeparated_closedBall_cover_of_card_bound
   rw [Finset.card_insert_of_notMem htW,← hcard] at hmax
   omega
 
-theorem volume_le_two_mul_of_separated_card_bound
-    {S : Set ℝ} {B : ℝ}
-    (hcount : ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ S) →
-      oneSeparated W → (W.card:ℝ) ≤ B) :
+theorem volume_le_two_mul_of_separated_card_bound :
     volume S ≤ ENNReal.ofReal (2*B) := by
   classical
   obtain ⟨W,hWS,hsep,hcover⟩ :=
     exists_unitSeparated_closedBall_cover_of_card_bound hcount
   have hsub : S ⊆ ⋃ u ∈ W, Metric.closedBall u 1 := by
     intro t ht
-    obtain ⟨u,hu,hut⟩ := hcover t ht
+    pm_69 u hu hut hcover t ht
     exact Set.mem_iUnion.mpr ⟨u,Set.mem_iUnion.mpr ⟨hu,hut⟩⟩
   calc
     volume S ≤ volume (⋃ u ∈ W, Metric.closedBall u 1) := measure_mono hsub
@@ -89,6 +85,7 @@ theorem volume_le_two_mul_of_separated_card_bound
       simp [mul_comm]
     _ ≤ ENNReal.ofReal (2*B) :=
       ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left (hcount W hWS hsep) (by norm_num))
+end
 
 
 end MathCollab.Density.Stronger

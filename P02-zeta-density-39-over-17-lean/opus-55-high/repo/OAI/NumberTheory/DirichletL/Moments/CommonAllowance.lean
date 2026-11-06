@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Active
 public import OAI.NumberTheory.DirichletL.Moments.SecondLedger
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,14 +18,14 @@ def activeIndicator (c d : ℕ) : ℝ := if netExponent c d ≠ 0 then 1 else 0
 theorem netExponent_self (c : ℕ) : netExponent c c = 0 := by
   unfold netExponent
   have h : c+5*c=6*c := by omega
-  rw [h, Nat.mul_mod_right]
+  grind
 
 theorem local_allowance (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) :
     max (3*(c:ℝ)-5*(d:ℝ)-activeIndicator c d) 0 / 6 +
       max (3*(d:ℝ)-5*(c:ℝ)-activeIndicator c d) 0 / 6 ≤
       (c:ℝ)+(d:ℝ)-2-activeIndicator c d := by
-  have hc' : (1:ℝ) ≤ c := by exact_mod_cast hc
-  have hd' : (1:ℝ) ≤ d := by exact_mod_cast hd
+  pm_278 hc' c hc
+  pm_278 hd' d hd
   unfold activeIndicator
   split_ifs with he
   · have hne : c ≠ d := by rintro rfl; exact he (netExponent_self c)
@@ -32,9 +33,8 @@ theorem local_allowance (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) :
       rcases lt_or_gt_of_ne hne with h | h
       · left; exact_mod_cast h
       · right; exact_mod_cast h
-    rcases hgap with hgap | hgap <;>
-      rw [max_def,max_def] <;> split_ifs <;> linarith
-  · rw [max_def,max_def]; split_ifs <;> linarith
+    grind
+  grind
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -73,7 +73,7 @@ theorem actual_common_support_allowance (p : ι → O)
     let P := Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}) : ℝ)
     let R := Real.logb Z (Ideal.absNorm
       (∏ i ∈ activeSupport Finset.univ c d, Ideal.span {p i}) : ℝ)
-    max (3*C-5*D-R) 0/6 + max (3*D-5*C-R) 0/6 ≤ C+D-2*P-R := by
+    max (3*C-5*D -R) 0/6 + max (3*D -5*C-R) 0/6 ≤ C+D -2*P-R := by
   dsimp only
   rw [log_norm_power_product p hp c,log_norm_power_product p hp d,
     log_norm_radical p hp,log_norm_radical p hp]

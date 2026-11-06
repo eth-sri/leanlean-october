@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondWholeKernel
 public import OAI.NumberTheory.DirichletL.Descent.SecondPass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,10 +33,7 @@ theorem secondChildKernelPair_separated_marked {ι σ : Type*} [DecidableEq ι] 
   unfold secondChildKernelPair secondChildSum
   rw [star_sum, Finset.sum_mul]
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro N hN
-  apply Finset.sum_congr rfl
-  intro M hM
+  pm_3808
   simp only [secondChildColumn,star_mul,mul_one]
   ring
 

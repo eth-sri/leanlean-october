@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.Profiles
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,8 +21,7 @@ theorem retained_pair_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
       ∀p:Profiles a b,∀U:Fin 2→ℝ,∀hU:∀i,0<U i,∀t:ℝ,
       (retainedPair a b ha p U hU t).control S≤
         C*p.control T*(1+‖t‖)^(2*n):=by
-  obtain ⟨n,T,C,hC,hbound⟩:=plain_profile_source_control a b ha S
-  refine ⟨n,T,C^2,sq_pos_of_pos hC,?_⟩
+  pm_5270 hbound plain_profile_source_control
   intro p U hU t
   have h₀:=hbound (p.profile 0) (p.support 0) (U 0) (hU 0) t
   have h₁:=hbound (p.profile 1) (p.support 1) (U 1) (hU 1) t

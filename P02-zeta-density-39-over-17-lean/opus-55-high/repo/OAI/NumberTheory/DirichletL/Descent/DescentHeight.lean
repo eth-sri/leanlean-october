@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.DescentProfiles
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ θ : ℝ,
       (∫ t : ℝ, (1 + ‖t‖)^J * ‖(𝓕 (frequencyTwist g θ)) t‖) ≤
         C * (1 + ‖θ‖)^(J + (volume : Measure ℝ).integrablePower) := by
-  let K := J + (volume : Measure ℝ).integrablePower
+  pm_1369
   let D := twistSourceBound g K
   have hD : 0 ≤ D := twistSourceBound_nonneg g K
   let C := (2 : ℝ)^J * (coefficientMomentBound 0 D + coefficientMomentBound J D)
@@ -23,7 +24,7 @@ theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
   refine ⟨C, hC, ?_⟩
   intro θ
   let H := (1 + ‖θ‖)^K
-  have hH : 0 ≤ H := by dsimp only [H]; positivity
+  pm_82 hH H
   have hs : ∀ i ≤ K,
       (SchwartzMap.seminorm ℝ 0 i) (frequencyTwist g θ) +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower i) (frequencyTwist g θ) ≤ D * H := by
@@ -31,7 +32,7 @@ theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
     exact (source_le_profileSourceBound (frequencyTwist g θ) K i hi).trans
       (profileSourceBound_frequencyTwist g θ K)
   have hh := uniform_fourier_one_plus_moment (frequencyTwist g θ) J 1 (D * H)
-    (by norm_num) (mul_nonneg hD hH) (fun i hi => by simpa only [one_mul] using hs i hi)
+    (by norm_num) (mul_nonneg hD hH) (fun i hi => by grind)
   have hlin (j : ℕ) : coefficientMomentBound j (D * H) = coefficientMomentBound j D * H := by
     unfold coefficientMomentBound
     ring

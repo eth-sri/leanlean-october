@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyFiniteMean
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Redundant finite Fourier constraints
@@ -13,11 +14,9 @@ for arbitrary finite weighted families.  No analytic integral or informal
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The normalized character average is the indicator of zero frequency. -/
 theorem wooley_normalized_grid_character
@@ -49,9 +48,7 @@ private theorem finite_weighted_filter
   calc
     (∑ i : I, A * (weight omega * character i omega)) =
         weight omega * (A * ∑ i : I, character i omega) := by
-      rw [Finset.mul_sum, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro i hi
+      pm_1063 Finset.mul_sum i hi
       ring
     _ = if P omega then weight omega else 0 := by
       rw [hcharacter]
@@ -94,15 +91,11 @@ private theorem finite_insert_redundant_average
             rw [Finset.mul_sum]
       _ = A * ∑ i : I, ∑ omega : Ω,
           if Q omega then weight omega * first i omega else 0 := by
-            apply congrArg (A * ·)
-            apply Finset.sum_congr rfl
-            intro i hi
+            pm_7481
             exact hinner i
       _ = A * ∑ i : I, ∑ omega : Ω,
           (if Q omega then weight omega else 0) * first i omega := by
-            apply congrArg (A * ·)
-            apply Finset.sum_congr rfl
-            intro i hi
+            pm_7481
             apply Finset.sum_congr rfl
             intro omega homega
             by_cases hQ : Q omega
@@ -147,8 +140,8 @@ theorem wooley_insert_redundant_grid_average
               ∑ omega : Ω, weight omega *
                 (∏ j, ZMod.stdAddChar (alpha j * disp omega j)) *
                 ∏ l, ZMod.stdAddChar (beta l * extra omega l) := by
-  let A : ℂ := (((q ^ k : ℕ) : ℂ))⁻¹
-  let E : ℂ := (((qPrime ^ r : ℕ) : ℂ))⁻¹
+  pm_8642 A q k
+  pm_8642 E qPrime r
   let first : (Fin k → ZMod q) → Ω → ℂ := fun alpha omega =>
     ∏ j, ZMod.stdAddChar (alpha j * disp omega j)
   let second : (Fin r → ZMod qPrime) → Ω → ℂ := fun beta omega =>
@@ -169,6 +162,5 @@ theorem wooley_insert_redundant_grid_average
     (fun omega => disp omega = 0) (fun omega => extra omega = 0)
     hfirst hsecond hforced
 
-end
 
 end GafniTao

@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.GramPhysicalScale
 public import OAI.NumberTheory.DirichletL.Detector.GramShell
 public import OAI.NumberTheory.DirichletL.Detector.GramJointProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,8 +38,8 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       ∀{ι : Type*}[Fintype ι],∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C k : O)(_hC : C≠0)(_hk0 : k≠0)(u : Oˣ)(a b : ℕ)(r : O)
       (hr : Supported (Ideal.span {r})),k=u.val*goodLambda^a*(2:O)^b*r→
-      ∀(P : ι→Id)[_hmax : ∀i,(P i).IsMaximal](hg : ∀i,goodLambda∉P i)(c : ι→ℕ),
-      (∀i,1≤c i)→Ideal.span {C}=∏i,P i^c i→
+      ∀(P : ι→ Id)[_hmax : ∀i,(P i).IsMaximal](hg : ∀i,goodLambda∉P i)(c : ι→ℕ),
+      (∀i,1≤ c i)→ Ideal.span {C}=∏i,P i^c i→
       ∀(p : Id)[_hpmax : p.IsMaximal],p≠0→∀_hgp : goodLambda∉p,
       ringChar (O⧸p)≠2→(¬p∣jointFixedModulus S hS)→(¬p∣∏i,P i)→
       (¬6∣(normalizedFactors (Ideal.span {k})).count p)→
@@ -51,12 +52,11 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
           (Ideal.absNorm (Ideal.span {C}):ℝ)*N^2*
           min 1 (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
             Ideal.absNorm (Ideal.span {k})/N)^A) := by
-  obtain ⟨H₀,K₀,hK₀,hblock⟩ := literal_nonexceptional_block A hA a₀ b₀ ha₀ hab
-  obtain ⟨J,H,hprofile⟩ := ProbeGramJointProfile.jointProfile_uniform_degree a₀ b₀ ha₀ hab B H₀
-  refine ⟨J,H,?_⟩
-  intro W hs hW
+  pm_562 H₀ K₀ hK₀ hblock literal_nonexceptional_block A hA a₀ b₀ ha₀ hab
+  pm_957 J H hprofile ProbeGramJointProfile.jointProfile_uniform_degree a₀ b₀ ha₀ hab B H₀
+  pm_3532 J H W hs hW
   obtain ⟨K₁,hK₁,hprofile⟩ := hprofile W hs hW
-  refine ⟨K₀*K₁,mul_pos hK₀ hK₁,?_⟩
+  pm_3171 K₀ K₁ mul_pos hK₀ hK₁
   intro ι inst S hS σ C k hC hk0 u a b r hr hk P hmax hg c hc hfac p hpmax hp0 hgp hchar hfixed hcommon he U v T hT d N hN
   let V := ProbeGramJointConstruction.jointProfile W U a₀ b₀ ha₀ hab hs hW v T hT
   have hv := ProbeGramJointConstruction.jointProfile_annularSupport W U a₀ b₀ ha₀ hab hs hW v T hT
@@ -69,7 +69,7 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     rw [jointProfile_physicalPoint W U a₀ b₀ ha₀ hab hs hW v T hT N hN m]
   rw [hfun] at hb
   refine ⟨hb.1,hb.2.trans ?_⟩
-  have hm : 0≤min (1:ℝ) (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
+  have hm : 0≤ min (1:ℝ) (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
       Ideal.absNorm (Ideal.span {k})/N)^A) := by positivity
   have hh := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right

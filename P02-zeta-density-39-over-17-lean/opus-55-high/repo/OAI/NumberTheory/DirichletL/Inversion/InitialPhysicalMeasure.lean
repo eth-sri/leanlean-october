@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialConjugateEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseInitialPhysicalMeasure
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
@@ -46,7 +47,7 @@ structure Valid (x : Point ι) : Prop where
 
 include hp in
 omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem coordinates_pos (x : Point ι) (hx : Valid x) : ∀ i,0<coordinates p x i :=
+theorem coordinates_pos (x : Point ι) (hx : Valid x) : ∀ i,0< coordinates p x i :=
   physicalCoordinates_pos _ _ _ _ _ _ (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _)
     (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _) hx.frequency_nonzero
 
@@ -75,14 +76,17 @@ def unitSector (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) : Oˣ :=
   Classical.choose (generator_eq_unit_primary (sourceIdeal p x.divisor) (divisor p x)
     (divisor_span p x) (by rw [sourceIdeal_gen p hp hpr]; exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)))
 
+section
+variable (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι)
+include hpr x
 include hp in
 omit [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem unitSector_spec (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) :
+theorem unitSector_spec :
     divisor p x=(unitSector p hp hpr x:O)*primaryGenerator (sourceIdeal p x.divisor) :=
   Classical.choose_spec (generator_eq_unit_primary (sourceIdeal p x.divisor) (divisor p x)
     (divisor_span p x) (by rw [sourceIdeal_gen p hp hpr]; exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)))
 
-theorem child_normalized (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι)
+theorem child_normalized
     (Ψ : O →* ℂ) (j h : O) (H : Finset ι→ℂ) (N : Finset ι) :
     secondChildColumn p hp hcop hg Ψ (j*quotient p x)
       (divisor p x*∏ i∈x.overlap,p i) (divisor p x*h) H N =
@@ -97,6 +101,7 @@ theorem child_normalized (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι)
   have hu' : u=unitSector p hp hpr x := Units.val_injective
     (mul_right_cancel₀ hgen (hu.symm.trans (unitSector_spec p hp hpr x)))
   simpa only [hu',quotient] using he H N
+end
 
 include hp hcop hg in
 theorem column_extraction (hpr : ∀ i,goodLambda^2∣p i-1)
@@ -164,7 +169,7 @@ theorem physicalTerm_extracted (hpr : ∀ i,goodLambda^2∣p i-1)
     column_extraction p hp hcop hg hpr x hx _ _ _ σ _ hx.overlap_right,
     sourceIdeal_union p _ _ hx.overlap_left,sourceIdeal_union p _ _ hx.overlap_right,
     physicalKernel_common_factor]
-  simp only [canonicalColumn,mul_one,star_mul,outerCoefficient,coordinates]
+  pm_94 canonicalColumn mul_one star_mul outerCoefficient coordinates
   ring
 
 def barePair (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
@@ -174,7 +179,7 @@ def barePair (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
     canonicalColumn p hp hcop hg hpr (secondRayPlus Ψ ρ) j σ x (-x.frequency) (fun _=>1) x.right
 
 def columnRatio (N : Finset ι) (Z D B v : ℝ) : ℝ :=
-  (Ideal.absNorm (sourceIdeal p N):ℝ)/Z^(columnCenter D B v)
+  (Ideal.absNorm (sourceIdeal p N):ℝ)/Z ^(columnCenter D B v)
 
 omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
 theorem relative_column_left (x : Point ι) (Z D B v θ H : ℝ) :
@@ -186,7 +191,7 @@ theorem relative_column_right (x : Point ι) (Z D B v θ H : ℝ) :
 
 omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
 theorem columnRatio_actual (N : Finset ι) (Z D B v : ℝ) :
-    columnRatio p N Z D B v=primeProductNorm p N/Z^(columnCenter D B v) := by
+    columnRatio p N Z D B v=primeProductNorm p N/Z ^(columnCenter D B v) := by
   unfold columnRatio sourceIdeal primeProductNorm
   rw [←eisEmbedding_norm_sq_eq_absNorm_span]
 
@@ -217,7 +222,7 @@ theorem canonical_pair_mode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ)
 
 theorem family_density_finite_sum {κ : Type*} (s : Finset κ)
     (g : Fin 6→𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ)) (c₁ c₂ θ₁ θ₂ L : ℝ)
-    (c : κ→ℂ) (y : κ→Fin 6→ℝ) :
+    (c : κ→ℂ) (y : κ→ Fin 6→ℝ) :
     (∑ k∈s,c k*∫ z : Frequency × (Fin 6→ℝ),
       familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ L z *
         pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope (y k) z.1 z.2) =
@@ -260,7 +265,7 @@ theorem physicalBlock_integral
     (hcut : ∀ x∈source,star (ω₁ (columnRatio p x.left Z D B v))≠0 →
       ω₂ (columnRatio p x.right Z D B v)≠0 → ∀ i,V i (relativeLog (coordinates p x) Z D B v θ H i)=1) :
     physicalBlock p hp hcop hg source w Ψ j σ (clippedSource W₁ c₁ θ₁) (clippedSource W₂ c₂ θ₂) Φ Z D m =
-      (Z^(prefactorCenter m D B θ+3*η):ℝ)*
+      (Z ^(prefactorCenter m D B θ+3*η):ℝ)*
       ∫ z : Frequency × (Fin 6→ℝ),familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) z *
         canonicalBlock p hp hcop hg hpr source w Ψ j σ ω₁ ω₂ Z D B v θ H z := by
   let S := source ×ˢ (Finset.univ : Finset SecondRayIndex)
@@ -270,7 +275,7 @@ theorem physicalBlock_integral
   have he := family_density_finite_sum S g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) c y
   have hpnt (x : Point ι) (hx : x∈source) (ρ : SecondRayIndex) :
       w x*physicalTerm p hp hcop hg Ψ j σ (clippedSource W₁ c₁ θ₁) (clippedSource W₂ c₂ θ₂) Φ Z D m x ρ =
-      (Z^(prefactorCenter m D B θ+3*η):ℝ)*c (x,ρ)*
+      (Z ^(prefactorCenter m D B θ+3*η):ℝ)*c (x,ρ)*
         ∫ z : Frequency × (Fin 6→ℝ),familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) z *
           pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope (y (x,ρ)) z.1 z.2 := by
     rw [physicalTerm_extracted p hp hcop hg hpr Ψ j σ _ _ Φ Z D m x (hs x hx) ρ]
@@ -281,15 +286,12 @@ theorem physicalBlock_integral
     ring
   have hsumeq : physicalBlock p hp hcop hg source w Ψ j σ
       (clippedSource W₁ c₁ θ₁) (clippedSource W₂ c₂ θ₂) Φ Z D m =
-      (Z^(prefactorCenter m D B θ+3*η):ℝ)*
+      (Z ^(prefactorCenter m D B θ+3*η):ℝ)*
         ∑ a∈S,c a*∫ z : Frequency × (Fin 6→ℝ),
           familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) z *
             pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope (y a) z.1 z.2 := by
     simp only [physicalBlock,S,Finset.sum_product,Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro x hx
-    apply Finset.sum_congr rfl
-    intro ρ hρ
+    pm_3397 x hx ρ hρ
     rw [hpnt x hx ρ]
     ring
   rw [hsumeq,he]
@@ -297,11 +299,8 @@ theorem physicalBlock_integral
   apply integral_congr_ae
   filter_upwards with z
   congr 1
-  simp only [S,Finset.sum_product,canonicalBlock,c,y]
-  apply Finset.sum_congr rfl
-  intro x hx
-  apply Finset.sum_congr rfl
-  intro ρ hρ
+  pm_94 S Finset.sum_product canonicalBlock c y
+  pm_3397 x hx ρ hρ
   rw [mul_assoc (w x),mul_assoc (w x),canonical_pair_mode]
 
 theorem original_ray_common_insertion
@@ -319,10 +318,7 @@ theorem original_ray_common_insertion
   rw [←prime_product_moebius (fun i=>Ideal.span {p i})
     (fun i=>Ideal.prime_of_isPrime (NeZero.ne _) inferInstance) hinj V]
   simp only [Finset.mul_sum,initialPhysicalMode,Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro N₁ hN₁
-  apply Finset.sum_congr rfl
-  intro N₂ hN₂
+  pm_3397 N₁ hN₁ N₂ hN₂
   apply Finset.sum_congr rfl
   intro ρ hρ
   simp only [physicalTerm,divisor,supportMobius]

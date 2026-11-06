@@ -27,16 +27,20 @@ open scoped Topology
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem integrable_fresnelDampedKernel {ε : ℝ} (hε : 0 < ε) (c : ℝ) :
+section
+variable {ε : ℝ} (hε : 0 < ε) (c : ℝ)
+include ε hε c
+theorem integrable_fresnelDampedKernel :
     Integrable (fresnelDampedKernel ε c) := by
   apply integrable_cexp_neg_mul_sq
-  simpa using hε
+  simp_all
 
-theorem integral_Ioi_fresnelDampedKernel {ε : ℝ} (hε : 0 < ε) (c : ℝ) :
+theorem integral_Ioi_fresnelDampedKernel :
     (∫ x : ℝ in Ioi 0, fresnelDampedKernel ε c x) =
       ((Real.pi : ℂ) / ((ε : ℂ) + 2 * Real.pi * c * I)) ^ (1 / 2 : ℂ) / 2 := by
   apply integral_gaussian_complex_Ioi
-  simpa using hε
+  simp_all
+end
 
 theorem norm_integral_Ioi_fresnelDampedKernel_le {ε c H : ℝ}
     (hε : 0 < ε) (hc : 0 < c) (hH : 0 < H) :
@@ -71,7 +75,7 @@ theorem norm_gaussianValue_sub_fresnelDampedWindow_le {ε c H : ℝ}
       (∫ x in (-H)..H, fresnelDampedKernel ε c x) =
         2 * ∫ x : ℝ in Ioi H, fresnelDampedKernel ε c x := by
     rw [integral_symmetric_fresnelDampedKernel]
-    linear_combination 2 * hsplit
+    grind
   rw [he, norm_mul, Complex.norm_ofNat]
   apply (mul_le_mul_of_nonneg_left
     (norm_integral_Ioi_fresnelDampedKernel_le hε hc hH) (by norm_num : (0 : ℝ) ≤ 2)).trans_eq

@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.LogFourierDecay
 public import GuthMaynard.Improvement.PoissonTails
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
@@ -30,14 +29,14 @@ theorem poisson_remainder_of_fourier_bound (ψ : ℝ → ℂ) (j : ℕ)
         dsimp [t]
         rw [abs_mul, abs_of_pos hRp, ← mul_assoc, inv_mul_cancel₀ hRp.ne', one_mul]
       have ht : 1+|(n:ℝ)-α| ≤ (1+R⁻¹)*(1+t) := by
-        have hr0 : 0 ≤ R⁻¹ := inv_nonneg.mpr hRp.le
+        pm_4935 hr0 R hRp.le
         nlinarith
       have hp : (1+H)^j*(1+|(n:ℝ)-α|)^2 ≤ (1+R⁻¹)^2*(1+t)^(j+2) := by
         have h1 := pow_le_pow_left₀ (by positivity : 0 ≤ 1+H)
           (by dsimp [t]; linarith : 1+H ≤ 1+t) j
         have h2 := pow_le_pow_left₀ (by positivity : 0 ≤ 1+|(n:ℝ)-α|) ht 2
-        have hh := mul_le_mul h1 h2 (by positivity) (by positivity)
-        simpa only [pow_add, mul_pow, mul_assoc, mul_left_comm, mul_comm] using hh
+        pm_355 hh h1 h2
+        pm_383 pow_add mul_pow mul_assoc mul_left_comm mul_comm hh
       have hh := (mul_le_mul_of_nonneg_right hp
         (norm_nonneg (𝓕 ψ (R*((n:ℝ)-α))))).trans (by
           have hh := mul_le_mul_of_nonneg_left (hc (R*((n:ℝ)-α))) (sq_nonneg (1+R⁻¹))

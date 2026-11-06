@@ -2,12 +2,12 @@ module
 /- Adapted from audited Density.DetectorDyadic; actual short coefficient support. -/
 public import MathCollab.Density.DetectorDyadic
 public import GuthMaynard.Improvement.ShortFiniteDetector
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Complex Set Filter MathCollab.Density
-open scoped BigOperators Topology
-set_option autoImplicit false
+open Complex Filter MathCollab.Density
+open scoped Topology
 noncomputable section
 namespace GuthMaynard.Improvement
 
@@ -22,61 +22,33 @@ theorem shortFiniteDetector_eq_dyadic_sum {T : ℝ} (hT : 1 ≤ T) (ρ : ℂ) :
       ∑ r ∈ Finset.range (shortDetectorDyadicCount T), shortDetectorBlock ρ T (2^r) := by
   let K := shortDetectorCutoff T
   let L := shortDetectorDyadicCount T
-  let f := fun n : ℕ => shortDetectorCoefficient T n*(n : ℂ)^(-ρ)
-  have hK : K < 2^L := Nat.lt_pow_succ_log_self (by norm_num) K
+  pm_686 shortDetectorCoefficient
   have hX : 1 ≤ ⌊2*T^((100:ℝ)⁻¹)⌋₊ := Nat.le_floor (by
     have hp := Real.one_le_rpow hT (by positivity : (0:ℝ) ≤ (100:ℝ)⁻¹)
     linarith)
-  have hs : ∑ n ∈ Finset.range K, f n = ∑ n ∈ Finset.range (2^L+1), f n := by
-    apply Finset.sum_subset (Finset.range_mono (by omega))
-    intro n hn hn'
-    have hz : ¬ n < shortDetectorCutoff T := by simpa [K] using hn'
-    simp [f, shortDetectorCoefficient, hz]
+  pm_4263 shortDetectorCutoff shortDetectorCoefficient
   have hi : ∑ n ∈ Finset.Ioc 1 (2^L), f n = ∑ n ∈ Finset.range (2^L+1), f n := by
     apply Finset.sum_subset
-    · intro n hn
-      exact Finset.mem_range.mpr (by have := (Finset.mem_Ioc.mp hn).2; omega)
+    grind
     · intro n hn hn'
       have hnlow : n ≤ 1 := by
         have hnr := Finset.mem_range.mp hn
-        have hni : ¬ (1 < n ∧ n ≤ 2^L) := by simpa using hn'
+        have hni : ¬ (1 < n ∧ n ≤ 2^L) := by grind
         omega
       have hz : ¬ ⌊2*T^((100:ℝ)⁻¹)⌋₊ < n := by omega
       simp [f, shortDetectorCoefficient, hz]
-  change (∑ n ∈ Finset.range K, f n) = _
-  rw [hs, ← hi, ← sum_dyadic_Ioc f L]
-  rfl
+  pm_1052
 
 /-- Quantitative extraction from the fixed dyadic list, without moving t. -/
 theorem exists_short_detector_dyadic_block {T A : ℝ} {ρ : ℂ}
     (hT : 1 ≤ T) (hA : 0 < A) (hlarge : A ≤ ‖shortFiniteDetector ρ T‖) :
     ∃ r ∈ Finset.range (shortDetectorDyadicCount T),
-      A/(shortDetectorDyadicCount T : ℝ) ≤ ‖shortDetectorBlock ρ T (2^r)‖ := by
-  have hL : 0 < shortDetectorDyadicCount T := by unfold shortDetectorDyadicCount; omega
-  have hLreal : (0 : ℝ) < shortDetectorDyadicCount T := by exact_mod_cast hL
-  by_contra h
-  push Not at h
-  have he : (∑ r ∈ Finset.range (shortDetectorDyadicCount T), ‖shortDetectorBlock ρ T (2^r)‖) < A := by
-    calc
-      _ < ∑ _r ∈ Finset.range (shortDetectorDyadicCount T), A/(shortDetectorDyadicCount T : ℝ) :=
-        Finset.sum_lt_sum_of_nonempty ⟨0, Finset.mem_range.mpr hL⟩ h
-      _ = A := by simp; field_simp
-  rw [shortFiniteDetector_eq_dyadic_sum hT ρ] at hlarge
-  have hb := norm_sum_le (Finset.range (shortDetectorDyadicCount T)) (fun r => shortDetectorBlock ρ T (2^r))
-  linarith
+      A/(shortDetectorDyadicCount T : ℝ) ≤ ‖shortDetectorBlock ρ T (2^r)‖ := by pm_4264 shortDetectorDyadicCount shortDetectorBlock shortFiniteDetector_eq_dyadic_sum
 
 /-- A nonzero block meets the true retained support, giving the packet's
 strict lower block scale and its original logarithmic upper scale. -/
 theorem shortDetectorBlock_scale_bounds {T : ℝ} {N : ℕ} {ρ : ℂ}
     (hT : 0 < T) (hblock : shortDetectorBlock ρ T N ≠ 0) :
-    T^((100:ℝ)⁻¹) < (N : ℝ) ∧ (N : ℝ) < T^(1/2:ℝ)*(Real.log T)^2 := by
-  obtain ⟨n, hn, hterm⟩ := Finset.exists_ne_zero_of_sum_ne_zero hblock
-  have hc : shortDetectorCoefficient T n ≠ 0 := by
-    intro he
-    exact hterm (by rw [he, zero_mul])
-  have hs := shortDetectorCoefficient_real_support hT hc
-  have hlo : (N : ℝ) < n := by exact_mod_cast (Finset.mem_Ioc.mp hn).1
-  have hhi : (n : ℝ) ≤ 2*N := by exact_mod_cast (Finset.mem_Ioc.mp hn).2
-  constructor <;> linarith
+    T^((100:ℝ)⁻¹) < (N : ℝ) ∧ (N : ℝ) < T^(1/2:ℝ)*(Real.log T)^2 := by pm_4265 shortDetectorCoefficient shortDetectorCoefficient_real_support
 
 end GuthMaynard.Improvement

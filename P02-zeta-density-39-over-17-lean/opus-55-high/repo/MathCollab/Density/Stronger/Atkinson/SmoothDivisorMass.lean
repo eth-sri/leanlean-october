@@ -7,6 +7,7 @@ Mathlib and the existing contour/Digamma sources retain Apache-2.0 attribution.
 No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSupport
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,8 +23,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem exists_norm_zetaShortDivisorTestFunction_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T G x : ℝ, 0 < T → 0 < G → G ^ 2 ≤ 2 * T → 1 ≤ x →
       ‖zetaShortDivisorTestFunction T G x‖ ≤ C * G := by
-  obtain ⟨C, hC, hweight⟩ := exists_norm_zetaDivisorWeight_min_le
-    (B := Real.pi / 2) (by positivity)
+  pm_1336 hweight exists_norm_zetaDivisorWeight_min_le
   refine ⟨C * Real.sqrt Real.pi, by positivity, ?_⟩
   intro T G x hT hG hGT hx
   have hx0 : 0 < x := by linarith
@@ -50,19 +50,18 @@ theorem exists_norm_zetaShortDivisorTestFunction_le :
 theorem exists_norm_zetaSmoothDivisorTest_le :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 16 ≤ T → 0 < G → G ^ 2 ≤ 2 * T →
       0 < L → 8 * L ≤ G → ∀ x : ℝ, ‖zetaSmoothDivisorTest T G L x‖ ≤ C * G := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_zetaShortDivisorTestFunction_le
-  refine ⟨C, hC, ?_⟩
+  pm_157 C hC hbound exists_norm_zetaShortDivisorTestFunction_le
   intro T G L hT hG hGT hL hwidth x
   by_cases hx : zetaSmoothDivisorTest T G L x = 0
   · rw [hx, norm_zero]
     positivity
-  have hs := support_zetaSmoothDivisorTest_physical (by linarith : 0 < T) hG hL hwidth hx
+  pm_6747
   have hx1 : 1 ≤ x := by linarith [hs.1]
   unfold zetaSmoothDivisorTest
   rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, zetaDivisorBandCutoff,
     abs_of_nonneg (zetaBandCutoff_nonneg _ _ _ _ _)]
   apply (mul_le_of_le_one_left (norm_nonneg _) (zetaBandCutoff_le_one _ _ _ _ _)).trans
-  exact hbound T G x (by linarith) hG hGT hx1
+  grind
 
 theorem integrable_zetaSmoothDivisorTest {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) : Integrable (zetaSmoothDivisorTest T G L) := by
@@ -73,12 +72,10 @@ theorem zetaSmoothDivisorTest_integral_norm_eq_physical {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
     (∫ x : ℝ in Ioi 0, ‖zetaSmoothDivisorTest T G L x‖) =
       ∫ x : ℝ in Icc (T / 16) T, ‖zetaSmoothDivisorTest T G L x‖ := by
-  apply setIntegral_eq_of_subset_of_forall_sdiff_eq_zero measurableSet_Ioi
-    (fun x hx => (by positivity : 0 < T / 16).trans_le hx.1)
-  intro x hx
+  pm_4382
   have hzero : zetaSmoothDivisorTest T G L x = 0 := by
     by_contra hn
-    exact hx.2 (support_zetaSmoothDivisorTest_physical hT hG hL hwidth hn)
+    pm_7094 hn
   simp only [hzero, norm_zero]
 
 theorem exists_integral_norm_zetaSmoothDivisorTest_le :
@@ -86,8 +83,7 @@ theorem exists_integral_norm_zetaSmoothDivisorTest_le :
       0 < L → 8 * L ≤ G →
       (∫ x : ℝ in Ioi 0, ‖zetaSmoothDivisorTest T G L x‖) ≤ C * G * T := by
   obtain ⟨C, hC, hbound⟩ := exists_norm_zetaSmoothDivisorTest_le
-  refine ⟨C, hC, ?_⟩
-  intro T G L hT hG hGT hL hwidth
+  pm_4383
   rw [zetaSmoothDivisorTest_integral_norm_eq_physical (by linarith) hG hL hwidth]
   have hi := norm_setIntegral_le_of_norm_le_const
     (s := Icc (T / 16) T)

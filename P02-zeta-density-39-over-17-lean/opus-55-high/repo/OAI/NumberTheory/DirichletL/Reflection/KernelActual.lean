@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.KernelSource
 public import OAI.NumberTheory.DirichletL.Descent.ReflectedDual
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,12 +15,11 @@ local notation "Eis" => ActualEisensteinCubic.O
 variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
 
 lemma fixedKernelCoefficient_pos (X tau r : ℝ) (C D1 D2 : Ideal Eis)
-    (hX : 0<X) (htau : 0<tau) (hr : 0<r) (hC : C≠0) (hD1 : D1≠0) (hD2 : D2≠0) :
+    (hX : 0<X) (htau : 0<tau) (hr : 0< r) (hC : C≠0) (hD1 : D1≠0) (hD2 : D2≠0) :
     0<fixedKernelCoefficient X tau r C D1 D2 := by
   have hn (I : Ideal Eis) (hI : I≠0) : (0:ℝ)<Ideal.absNorm I := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-  have hCn := hn C hC
-  have h1 := hn D1 hD1
+  pm_268 hCn hn C hC h1 D1 hD1
   have h2 := hn D2 hD2
   unfold fixedKernelCoefficient
   positivity

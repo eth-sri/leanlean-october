@@ -1,9 +1,9 @@
 module
 public import DensityWindowBudgets
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1200000
 namespace Montgomery.RationalMoment
 
@@ -11,10 +11,10 @@ namespace Montgomery.RationalMoment
 theorem two_term_window_first (s : ℝ) (hl : (12/17:ℝ) ≤ s) (hr : s ≤ (5/7:ℝ)) :
     TwoTermWindow s (2/(8*s-3)) (6*(1-s)/(8*s-3)) ((14*s-9)/((8*s-3)*(2*s-1))) := by
   have hD : 0 < 8*s-3 := by linarith
-  have hE : 0 < 2*s-1 := by linarith
+  pm_5241 hE s
   have hDn : -3+s*8 ≠ 0 := by linarith
-  have hEn : -1+s*2 ≠ 0 := by linarith
-  have hPn : ((3:ℝ) + (-14:ℝ)*s + (16:ℝ)*s^2) ≠ 0 := by nlinarith only [mul_pos hD hE]
+  pm_879
+  have hPn : ((3:ℝ) + (-14:ℝ)*s + (16:ℝ)*s^2) ≠ 0 := by grind
   ring_nf at hDn hEn hPn
   refine {
     sigma_low := by linarith
@@ -28,13 +28,13 @@ theorem two_term_window_first (s : ℝ) (hl : (12/17:ℝ) ≤ s) (hr : s ≤ (5/
         have h₁ : 0 ≤ (17493/5:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
           mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (14161/10:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
-      have hh : 0 ≤ (2/(8*s-3))-(7/10:ℝ) := by rw [hid]; exact div_nonneg hpoly (by positivity)
-      linarith only [hh]
+        grind
+      have hh : 0 ≤ (2/(8*s-3))-(7/10:ℝ) := by rw [hid]; positivity
+      grind
     a_high := by
       have hid : (4/5:ℝ)-(2/(8*s-3)) = ((-22/5:ℝ) + (32/5:ℝ)*s)/((8*s-3)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf
       have hpoly : 0 ≤ (-22/5:ℝ) + (32/5:ℝ)*s := by
-        have h₀ : 0 ≤ (1666:ℝ)*((5/7:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4249
         have h₁ : 0 ≤ (20468/5:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
           mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (12138/5:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
@@ -54,11 +54,10 @@ theorem two_term_window_first (s : ℝ) (hl : (12/17:ℝ) ≤ s) (hr : s ≤ (5/
     alpha_low := by
       have hid : ((14*s-9)/((8*s-3)*(2*s-1)))-(2/(8*s-3)) = ((-7:ℝ) + (10:ℝ)*s)/((8*s-3)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (-7:ℝ) + (10:ℝ)*s := by
-        have h₀ : 0 ≤ (833:ℝ)*((5/7:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4250
         have h₁ : 0 ≤ (2856:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
           mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (2023:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4248
       have hh : 0 ≤ ((14*s-9)/((8*s-3)*(2*s-1)))-(2/(8*s-3)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     alpha_high := by
@@ -83,18 +82,13 @@ theorem two_term_window_first (s : ℝ) (hl : (12/17:ℝ) ≤ s) (hr : s ≤ (5/
       linarith only [hh]
     amplifier_lower := by
       have hid : (6*(1-s)/(8*s-3))+((14*s-9)/((8*s-3)*(2*s-1)))*(6*s-5) = ((39:ℝ) + (-106:ℝ)*s + (72:ℝ)*s^2)/((8*s-3)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
-      have hpoly : 0 ≤ (39:ℝ) + (-106:ℝ)*s + (72:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (735:ℝ)*((5/7:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (952:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
-          mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (289:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+      pm_4247
       have hh : 0 ≤ (6*(1-s)/(8*s-3))+((14*s-9)/((8*s-3)*(2*s-1)))*(6*s-5) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     cubic_lower := by
       have hid : (6*(1-s)/(8*s-3))+(2/(8*s-3))*(6*s-4)-(4/5:ℝ) = ((2/5:ℝ) + (-2/5:ℝ)*s)/((8*s-3)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (2/5:ℝ) + (-2/5:ℝ)*s := by
-        have h₀ : 0 ≤ (1666:ℝ)*((5/7:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4249
         have h₁ : 0 ≤ (16422/5:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
           mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (8092/5:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
@@ -107,14 +101,13 @@ theorem two_term_window_first (s : ℝ) (hl : (12/17:ℝ) ≤ s) (hr : s ≤ (5/
         have h₀ : 0 ≤ (2205:ℝ)*((5/7:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
         have h₁ : 0 ≤ (4284:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
           mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (2023:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+        pm_4248
       have hh : 0 ≤ 1-((6*(1-s)/(8*s-3))+((14*s-9)/((8*s-3)*(2*s-1)))*(6*s-4)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     cubic_balance := by
       have hid : 5*(6*(1-s)/(8*s-3))/2+(2/(8*s-3))*(12*s-8)-2 = ((5:ℝ) + (-7:ℝ)*s)/((8*s-3)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
       have hpoly : 0 ≤ (5:ℝ) + (-7:ℝ)*s := by
-        have h₀ : 0 ≤ (833:ℝ)*((5/7:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
+        pm_4250
         have h₁ : 0 ≤ (833:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
           mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
         have h₂ : 0 ≤ (0:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
@@ -123,18 +116,12 @@ theorem two_term_window_first (s : ℝ) (hl : (12/17:ℝ) ≤ s) (hr : s ≤ (5/
       linarith only [hh]
     energy_first := by
       have hid : 2*(6*(1-s)/(8*s-3))-(1+((14*s-9)/((8*s-3)*(2*s-1)))*(6-8*s)) = ((39:ℝ) + (-106:ℝ)*s + (72:ℝ)*s^2)/((8*s-3)*(2*s-1)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
-      have hpoly : 0 ≤ (39:ℝ) + (-106:ℝ)*s + (72:ℝ)*s^2 := by
-        have h₀ : 0 ≤ (735:ℝ)*((5/7:ℝ)-s)^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        have h₁ : 0 ≤ (952:ℝ)*((s-(12/17:ℝ))*((5/7:ℝ)-s)) :=
-          mul_nonneg (by norm_num) (mul_nonneg (by linarith) (by linarith))
-        have h₂ : 0 ≤ (289:ℝ)*(s-(12/17:ℝ))^2 := mul_nonneg (by norm_num) (sq_nonneg _)
-        nlinarith only [h₀,h₁,h₂]
+      pm_4247
       have hh : 0 ≤ 2*(6*(1-s)/(8*s-3))-(1+((14*s-9)/((8*s-3)*(2*s-1)))*(6-8*s)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     energy_resonant := by
       have hid : (6*(1-s)/(8*s-3))-(1+(2/(8*s-3))*(9/2-7*s)) = ((0:ℝ))/((8*s-3)) := by field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring_nf; field_simp [hD.ne',hE.ne',hDn,hEn,hPn]; ring
-      have hpoly : 0 ≤ (0:ℝ) := by
-        norm_num
+      pm_7448
       have hh : 0 ≤ (6*(1-s)/(8*s-3))-(1+(2/(8*s-3))*(9/2-7*s)) := by rw [hid]; exact div_nonneg hpoly (by positivity)
       linarith only [hh]
     typeII := by

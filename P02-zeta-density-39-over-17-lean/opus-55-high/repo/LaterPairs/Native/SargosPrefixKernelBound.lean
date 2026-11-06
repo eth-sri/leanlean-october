@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosCharacterGap
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -23,16 +24,19 @@ def sargosResidueDistance {N : ℕ} [NeZero N] (k : ZMod N) : ℝ :=
 def sargosPrefixMajorant {N : ℕ} [NeZero N] (k : ZMod N) : ℝ :=
   (if k = 0 then 1 else 0)+(k.val : ℝ)⁻¹+((-k).val : ℝ)⁻¹
 
-theorem sargosResidueDistance_pos {N : ℕ} [NeZero N] {k : ZMod N} (hk : k ≠ 0) :
+section
+variable {N : ℕ} [NeZero N]
+include N
+theorem sargosResidueDistance_pos {k : ZMod N} (hk : k ≠ 0) :
     0 < sargosResidueDistance k := by
   unfold sargosResidueDistance
   apply lt_min
   · exact_mod_cast ZMod.val_pos.mpr hk
   · exact sub_pos.mpr (by exact_mod_cast ZMod.val_lt k)
 
-theorem sargos_stdAddChar_sub_one_lower {N : ℕ} [NeZero N] (k : ZMod N) :
+theorem sargos_stdAddChar_sub_one_lower (k : ZMod N) :
     4*sargosResidueDistance k/(N : ℝ) ≤ ‖ZMod.stdAddChar k-1‖ := by
-  have hN : (0 : ℝ) < N := by exact_mod_cast NeZero.pos N
+  pm_565 hN N
   have hv : (k.val : ℝ) ≤ N := by exact_mod_cast (ZMod.val_lt k).le
   have hs := sargos_sin_pi_lower (t := (k.val : ℝ)/(N : ℝ))
     (by positivity) ((div_le_one hN).mpr hv)
@@ -44,13 +48,9 @@ theorem sargos_stdAddChar_sub_one_lower {N : ℕ} [NeZero N] (k : ZMod N) :
       Real.pi*(k.val : ℝ)/(N : ℝ) := by ring
   rw [harg] at hs
   unfold sargosResidueDistance
-  calc
-    _ = 2*(2*(min (k.val : ℝ) ((N : ℝ)-k.val)/(N : ℝ))) := by ring
-    _ ≤ 2*Real.sin (Real.pi*(k.val : ℝ)/(N : ℝ)) :=
-      mul_le_mul_of_nonneg_left hs (by norm_num)
-    _ ≤ _ := mul_le_mul_of_nonneg_left (le_abs_self _) (by norm_num)
+  grind
 
-theorem sargos_geometric_kernel_product_le_two {N : ℕ} [NeZero N]
+theorem sargos_geometric_kernel_product_le_two
     (H : ℕ) (k : ZMod N) :
     ‖∑ j ∈ Finset.range H, ZMod.stdAddChar (k*(j : ZMod N))‖*
       ‖ZMod.stdAddChar k-1‖ ≤ 2 := by
@@ -59,7 +59,7 @@ theorem sargos_geometric_kernel_product_le_two {N : ℕ} [NeZero N]
     _ ≤ ‖(ZMod.stdAddChar k)^H‖+‖(1 : ℂ)‖ := norm_sub_le _ _
     _ = 2 := by rw [norm_pow,sargos_stdAddChar_norm]; norm_num
 
-theorem norm_sargosPrefixKernel_le_inv_distance {N : ℕ} [NeZero N]
+theorem norm_sargosPrefixKernel_le_inv_distance
     (H : ℕ) {k : ZMod N} (hk : k ≠ 0) :
     ‖sargosPrefixKernel H k‖ ≤ 1/sargosResidueDistance k := by
   have hd := sargosResidueDistance_pos hk
@@ -78,10 +78,11 @@ theorem norm_sargosPrefixKernel_le_inv_distance {N : ℕ} [NeZero N]
   apply (le_div_iff₀ hd).mpr
   nlinarith
 
-theorem sargosPrefixMajorant_nonneg {N : ℕ} [NeZero N] (k : ZMod N) :
+theorem sargosPrefixMajorant_nonneg (k : ZMod N) :
     0 ≤ sargosPrefixMajorant k := by
   unfold sargosPrefixMajorant
   positivity
+end
 
 theorem norm_sargosPrefixKernel_le_majorant {N H : ℕ} [NeZero N]
     (hH : H ≤ N) (k : ZMod N) :

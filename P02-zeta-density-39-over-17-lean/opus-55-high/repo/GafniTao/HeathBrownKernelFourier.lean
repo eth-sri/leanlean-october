@@ -1,8 +1,9 @@
 module
 public import GafniTao.HeathBrownTriangularKernel
 public import GafniTao.FordTentSeries
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Fourier expansion of Heath-Brown's triangular kernel
@@ -16,7 +17,6 @@ kernel, rather than an independently chosen majorant.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownDistanceToInteger_eq_unitAddCircle_norm (x : ℝ) :
     heathBrownDistanceToInteger x = ‖(x : UnitAddCircle)‖ := by
@@ -29,10 +29,12 @@ theorem heathBrownHat_eq_fordTent (B x : ℝ) :
   rw [heathBrownDistanceToInteger_eq_unitAddCircle_norm]
   simp only [div_eq_mul_inv]
   rw [mul_comm B⁻¹ ‖(x : UnitAddCircle)‖]
-  rw [max_comm]
+  grind
 
-theorem heathBrownHatFourierCoefficient_eq_fordTent
-    {B : ℝ} (hB : 0 < B) (r : ℤ) :
+section
+variable {B : ℝ} (hB : 0 < B)
+include B hB
+theorem heathBrownHatFourierCoefficient_eq_fordTent (r : ℤ) :
     (heathBrownHatFourierCoefficient B r : ℂ) =
       fordTentFourierCoefficient B r := by
   by_cases hr : r = 0
@@ -40,15 +42,14 @@ theorem heathBrownHatFourierCoefficient_eq_fordTent
     simp [heathBrownHatFourierCoefficient_zero,
       fordTentFourierCoefficient_zero]
   · have harg : Real.pi * (r : ℝ) * B ≠ 0 := by
-      exact mul_ne_zero (mul_ne_zero Real.pi_ne_zero (Int.cast_ne_zero.mpr hr)) hB.ne'
+      aesop
     simp only [heathBrownHatFourierCoefficient,
       heathBrownSincCoefficient, hr, ite_false,
       fordTentFourierCoefficient]
     rw [Real.sinc_of_ne_zero harg]
 
 /-- The exact one-dimensional Fourier series of Heath-Brown's tent. -/
-theorem hasSum_heathBrownHatFourierSeries
-    {B : ℝ} (hB : 0 < B) (hBHalf : B ≤ 1 / 2) (x : ℝ) :
+theorem hasSum_heathBrownHatFourierSeries (hBHalf : B ≤ 1 / 2) (x : ℝ) :
     HasSum
       (fun r : ℤ => (heathBrownHatFourierCoefficient B r : ℂ) *
         fordAdditiveCharacter ((r : ℝ) * x))
@@ -58,8 +59,7 @@ theorem hasSum_heathBrownHatFourierSeries
     rw [heathBrownHatFourierCoefficient_eq_fordTent hB]
   · rw [heathBrownHat_eq_fordTent]
 
-theorem summable_norm_heathBrownHatFourierTerm
-    {B : ℝ} (hB : 0 < B) (x : ℝ) :
+theorem summable_norm_heathBrownHatFourierTerm (x : ℝ) :
     Summable (fun r : ℤ =>
       ‖(heathBrownHatFourierCoefficient B r : ℂ) *
         fordAdditiveCharacter ((r : ℝ) * x)‖) := by
@@ -70,6 +70,7 @@ theorem summable_norm_heathBrownHatFourierTerm
   unfold fordAdditiveCharacter
   rw [Complex.norm_exp]
   simp
+end
 
 /-- The exact absolutely convergent two-dimensional Fourier expansion of
 Heath-Brown's kernel `phi(x,y)`. -/
@@ -82,12 +83,8 @@ theorem hasSum_heathBrownTriangularFourierSeries
           fordAdditiveCharacter ((rs.1 : ℝ) * x) *
           fordAdditiveCharacter ((rs.2 : ℝ) * y))
       (heathBrownTriangularKernel B C x y : ℂ) := by
-  let f : ℤ → ℂ := fun r =>
-    (heathBrownHatFourierCoefficient B r : ℂ) *
-      fordAdditiveCharacter ((r : ℝ) * x)
-  let g : ℤ → ℂ := fun s =>
-    (heathBrownHatFourierCoefficient C s : ℂ) *
-      fordAdditiveCharacter ((s : ℝ) * y)
+  pm_8148 f r B x
+  pm_8148 g s C y
   have hf : HasSum f (heathBrownHat B x : ℂ) :=
     hasSum_heathBrownHatFourierSeries hB hBHalf x
   have hg : HasSum g (heathBrownHat C y : ℂ) :=
@@ -108,6 +105,5 @@ theorem hasSum_heathBrownTriangularFourierSeries
     rfl
 
 
-end
 
 end GafniTao

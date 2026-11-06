@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.RayCoefficients
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,74 +10,32 @@ noncomputable section
 
 namespace SecondPassArithmetic
 
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
+open MulChar
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
+open ActualEisensteinCubic ShortDraftLatticeCount
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open ActualEisensteinCubic
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 section
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
@@ -155,7 +114,6 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
@@ -181,7 +139,7 @@ end
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 
 section
@@ -207,14 +165,12 @@ end
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
@@ -224,7 +180,7 @@ theorem exists_label_unit (f : O) (I : Ideal O) (hf : Ideal.span {f} = I) :
     ∃ u : Oˣ, f = (u : O) * idealGenerator I := by
   have hs : Ideal.span {idealGenerator I} = Ideal.span {f} := (span_idealGenerator I).trans hf.symm
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs
-  exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
+  pm_1112
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]

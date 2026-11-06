@@ -28,7 +28,7 @@ lemma physicalRayRepresentative_spec (s : PhysicalRayElement) :
     physicalRay (physicalRayRepresentative (physicalRay s.val)).val=physicalRay s.val := by
   have hh : ∃r : PhysicalRayElement,physicalRay r.val=physicalRay s.val := ⟨s,rfl⟩
   simp only [physicalRayRepresentative,dite_eq_left hh]
-  exact Classical.choose_spec hh
+  grind
 
 lemma rowCoefficient_congr_ray (η : HeckeFamily.Character) (Xi : O→*ℂ)
     (s r : PhysicalRayElement) (h : physicalRay s.val=physicalRay r.val) (m : O) :
@@ -40,7 +40,7 @@ lemma rowCoefficient_congr_ray (η : HeckeFamily.Character) (Xi : O→*ℂ)
   have he : sexticReciprocityPhase s.val n=sexticReciprocityPhase r.val n := by
     unfold sexticReciprocityPhase
     rw [QuadraticGaussRay.residue_eq_of_four_dvd_sub s.val r.val hd]
-  rw [he]
+  grind
 
 def physicalRayRowMonoid (η : HeckeFamily.Character) (C : CalibrationData)
     (σ : RayRing) (m : O) : O→*ℂ :=

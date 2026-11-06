@@ -8,6 +8,7 @@ The local actual-zeta source approximation remains an explicit premise.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonStationaryDyadic
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSourceAssembly
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,16 +33,16 @@ theorem localMeanSourceToPrefix_of_stationary (hSource : LocalMeanStationaryInpu
     LocalMeanSourceToPrefix := by
   intro δ κ hδ hκ
   obtain ⟨A,hA,U,hU,hsource⟩ := hSource δ κ hδ hκ
-  obtain ⟨B,hB,V,hV,hstationary⟩ := exists_norm_atkinsonStationarySum_le_undamped hδ
+  pm_231 B hB V hV hstationary exists_norm_atkinsonStationarySum_le_undamped hδ
   let C : ℝ := A+2*Real.exp 1*B
-  have hC : 0 < C := by dsimp [C]; positivity
-  refine ⟨C,hC,max U V,hU.trans (le_max_left _ _),?_⟩
+  pm_4312
+  pm_1071 U V hU.trans
   intro t G ht hlower hupper hquarter
-  have htU : U ≤ t := (le_max_left _ _).trans ht
-  have htV : V ≤ t := (le_max_right _ _).trans ht
-  have ht0 : 0 < t := by linarith [hU.trans htU]
-  have hG : 0 < G := (Real.rpow_pos_of_pos ht0 δ).trans_le hlower
-  have hlog : 0 ≤ Real.log t := Real.log_nonneg (by linarith [hU.trans htU])
+  pm_207 htU U t le_max_left ht
+  pm_207 htV V t le_max_right ht
+  have ht0 : 0 < t := by grind
+  pm_650 hG G Real.rpow_pos_of_pos ht0 δ hlower
+  have hlog : 0 ≤ Real.log t := Real.log_nonneg (by grind)
   have hprefix := atkinsonUndampedDyadicPhaseBound_nonneg t
     (atkinsonSourceCutoff t G (Real.log t))
   have hs := (Complex.re_le_norm (atkinsonStationaryLeadingSum t G (Real.log t))).trans

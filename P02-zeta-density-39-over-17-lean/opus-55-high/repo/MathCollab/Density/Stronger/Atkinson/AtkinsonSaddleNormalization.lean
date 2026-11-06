@@ -7,6 +7,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonSaddle
 public import Mathlib.Analysis.SpecialFunctions.Arsinh
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -43,21 +44,24 @@ theorem atkinsonSaddleRoot_sum_neg (A b : ℝ) :
   rw [neg_sq]
   ring
 
-theorem log_atkinsonSaddleRoot_div_sqrt {A : ℝ} (hA : 0 < A) (b : ℝ) :
+section
+variable {A : ℝ} (hA : 0 < A) (b : ℝ)
+include A hA b
+theorem log_atkinsonSaddleRoot_div_sqrt :
     Real.log (atkinsonSaddleRoot A b / Real.sqrt A) = Real.arsinh (b / (2 * Real.sqrt A)) := by
   let r := atkinsonSaddleRoot A b
   have hr : 0 < r := atkinsonSaddleRoot_pos hA b
-  have hs : 0 < Real.sqrt A := Real.sqrt_pos.2 hA
+  pm_4891 hs A hA
   have he : r ^ 2 - b * r = A := atkinsonSaddleRoot_equation hA b
   have hratio : 0 < r / Real.sqrt A := by positivity
   have hh : Real.sinh (Real.log (r / Real.sqrt A)) = b / (2 * Real.sqrt A) := by
     rw [Real.sinh_eq, Real.exp_log hratio, Real.exp_neg, Real.exp_log hratio]
     field_simp
-    nlinarith [Real.sq_sqrt hA.le]
+    grind
   have h := congrArg Real.arsinh hh
   simpa only [Real.arsinh_sinh] using h
 
-theorem log_atkinsonSaddleRoot_sq_sub_log {A : ℝ} (hA : 0 < A) (b : ℝ) :
+theorem log_atkinsonSaddleRoot_sq_sub_log :
     Real.log ((atkinsonSaddleRoot A b) ^ 2) - Real.log A =
       2 * Real.arsinh (b / (2 * Real.sqrt A)) := by
   have h := log_atkinsonSaddleRoot_div_sqrt hA b
@@ -65,6 +69,7 @@ theorem log_atkinsonSaddleRoot_sq_sub_log {A : ℝ} (hA : 0 < A) (b : ℝ) :
     (Real.sqrt_pos.2 hA).ne', Real.log_sqrt hA.le] at h
   rw [Real.log_pow]
   linarith
+end
 
 theorem zetaAtkinsonSaddle_log_argument {T : ℝ} (hT : 0 < T) (b : ℝ) :
     Real.log (zetaAtkinsonSaddle T b) - Real.log (T / (2 * Real.pi)) =
@@ -85,9 +90,8 @@ theorem atkinsonDualPhase_neg (T b : ℝ) : atkinsonDualPhase T (-b) = -atkinson
 theorem zetaAtkinsonPhase_at_saddle {T : ℝ} (hT : 0 < T) (b : ℝ) :
     zetaAtkinsonPhase T b (zetaAtkinsonSaddle T b) =
       atkinsonCentralPhase T + Real.pi * b ^ 2 + atkinsonDualPhase T b := by
-  have hA : 0 < T / (2 * Real.pi) := by positivity
-  have hr := atkinsonSaddleRoot_pos hA b
-  have he := atkinsonSaddleRoot_equation hA b
+  pm_4409
+  pm_111 hr atkinsonSaddleRoot_pos hA b he atkinsonSaddleRoot_equation
   have hTval := (eq_div_iff (show 2 * Real.pi ≠ 0 by positivity)).mp he
   have hl := zetaAtkinsonSaddle_log_argument hT b
   have hs : Real.sqrt (b ^ 2 + 4 * (T / (2 * Real.pi))) =

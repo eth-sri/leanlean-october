@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlap
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ def columns (S:Finset (Ideal O))(P j:Ideal O):Finset (Ideal O):=
 theorem quotient_properties {P j n:Ideal O}(hn:Squarefree n)(hg:gcd n P=j):
     Squarefree (idealQuotient j n) ∧ IsCoprime (idealQuotient j n) P ∧
       j*idealQuotient j n=n := by
-  have hjn:j∣n:=hg ▸ GCDMonoid.gcd_dvd_left n P
+  pm_7803
   exact ⟨hn.squarefree_of_dvd (idealQuotient_dvd hjn),by
     rw [←hg];exact squarefree_quotient_gcd_coprime n P hn,idealQuotient_mul hjn⟩
 
@@ -34,9 +35,8 @@ theorem mem_columns {S:Finset (Ideal O)}{P j c:Ideal O}
     c∈columns S P j ↔ Squarefree c ∧ IsCoprime c P ∧ j*c∈S := by
   constructor
   · intro hc
-    obtain ⟨n,hn,rfl⟩:=Finset.mem_image.mp hc
-    obtain ⟨hnS,hns,hng⟩:=mem_original.mp hn
-    obtain ⟨hcs,hcp,he⟩:=quotient_properties hns hng
+    pm_7075 hnS hng
+    pm_3599 hcs hcp he quotient_properties hns hng
     exact ⟨hcs,hcp,he.symm ▸ hnS⟩
   · rintro ⟨hcs,hcp,hnS⟩
     obtain ⟨hns,hng⟩:=reconstruct_properties hP hj hcs hcp
@@ -51,8 +51,8 @@ theorem sum_reconstruct (S:Finset (Ideal O)){P j:Ideal O}
     intro n hn
     rw [(quotient_properties (mem_original.mp hn).2.1 (mem_original.mp hn).2.2).2.2]
   · intro n hn n' hn' he
-    have h1:=(quotient_properties (mem_original.mp hn).2.1 (mem_original.mp hn).2.2).2.2
-    have h2:=(quotient_properties (mem_original.mp hn').2.1 (mem_original.mp hn').2.2).2.2
+    pm_8661 h1 hn
+    pm_8661 h2 hn'
     rw [←h1,←h2,he]
 
 theorem cutoff_argument (j c:Ideal O)(X:ℝ):
@@ -66,7 +66,10 @@ theorem coefficient_identity (ψ:Ideal O→*ℂ){P j c:Ideal O}
   rw [((hcp.mono (dvd_refl _) hj).symm.isRelPrime).moebius_mul,Int.cast_mul,map_mul]
   ring
 
-theorem polynomial_slice (S:Finset (Ideal O)){P j:Ideal O}
+section
+variable (S:Finset (Ideal O))
+include S
+theorem polynomial_slice{P j:Ideal O}
     (hP:Squarefree P)(hj:j∣P)(ψ:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(X:ℝ):
     (∑n∈original S P j,(moebius n:ℂ)*ψ n*a n*W ((n.absNorm:ℝ)/X))=
     ((moebius j:ℂ)*ψ j)*∑c∈columns S P j,(moebius c:ℂ)*ψ c*a (j*c)*
@@ -77,7 +80,7 @@ theorem polynomial_slice (S:Finset (Ideal O)){P j:Ideal O}
   rw [coefficient_identity ψ hj ((mem_columns hP hj).mp hc).2.1,cutoff_argument]
   ring
 
-theorem polynomial_decomposition (S:Finset (Ideal O)){P:Ideal O}(hP:Squarefree P)
+theorem polynomial_decomposition{P:Ideal O}(hP:Squarefree P)
     (ψ:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(X:ℝ):
     (∑n∈S,(moebius n:ℂ)*ψ n*a n*W ((n.absNorm:ℝ)/X))=
     ∑j∈idealDivisors P,((moebius j:ℂ)*ψ j)*
@@ -95,6 +98,7 @@ theorem polynomial_decomposition (S:Finset (Ideal O)){P:Ideal O}(hP:Squarefree P
   apply Finset.sum_congr rfl
   intro j hj
   exact polynomial_slice S hP ((mem_idealDivisors hP.ne_zero).mp hj) ψ a W X
+end
 
 end SevenEighths.InverseInitialExcludedSource
 

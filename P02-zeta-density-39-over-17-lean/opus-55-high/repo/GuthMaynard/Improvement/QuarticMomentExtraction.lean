@@ -2,10 +2,9 @@ module
 public import GuthMaynard.Improvement.SourceQuarticTail
 public import GuthMaynard.Improvement.QuarticCellGeometry
 public import GuthMaynard.Improvement.TruncatedSourceAttachment
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -34,7 +33,7 @@ theorem quartic_good_integral {N T R U w : ℝ} (hN : 2 ≤ N) (hT : 0 < T)
       (∫ t, sourceQuarticWeight (t-w)*μ t^2) +
       ∫ t in {t : ℝ | R < |t-w|}, sourceQuarticWeight (t-w)*‖boundedPolynomial N a t‖^4 := by
   dsimp only
-  have hmeas : MeasurableSet {t : ℝ | R < |t-w|} := by measurability
+  pm_6651 hmeas
   rw [← integral_indicator hmeas,← integral_add
     (quartic_truncated_weight_integrable hN hT a ha U w)
     ((source_quartic_weighted_integrable N a w 4).indicator hmeas)]
@@ -73,11 +72,11 @@ theorem quartic_moment_extraction (q : ℕ) :
   let A := (∫ t, sourceQuarticWeight t)^3
   have hA : 0 ≤ A := pow_nonneg (integral_nonneg (fun _ => norm_nonneg _)) _
   let C := 2*A*B+A*D+1
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_64 hC C
   refine ⟨C,hC,?_⟩
   intro N T R U V M hN hT hR hRT hV hsmall a W ha hsep hw hv hM
   classical
-  let μ := sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U
+  pm_5702
   let K := occupiedRealCells ({x | U < ‖boundedPolynomial N a x‖} ∩ Icc (-T) (2*T)) (-T) (2*T)
   let Z := quarticDeleted W K R
   let G := W \ Z
@@ -113,8 +112,7 @@ theorem quartic_moment_extraction (q : ℕ) :
   have hs := mul_le_mul_of_nonneg_left hsum hA
   have hsmall' : A*D*N^4/R^q ≤ V^4/2 := by
     apply le_trans _ hsmall
-    apply div_le_div_of_nonneg_right _ (by positivity)
-    apply mul_le_mul_of_nonneg_right _ (by positivity)
+    pm_329 div_le_div_of_nonneg_right mul_le_mul_of_nonneg_right
     dsimp [C]
     nlinarith
   have hcount : (G.card:ℝ)*V^4 ≤ 2*A*B*M := by

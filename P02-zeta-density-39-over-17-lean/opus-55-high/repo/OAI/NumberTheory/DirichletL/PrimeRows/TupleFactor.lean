@@ -15,10 +15,7 @@ theorem physicalCompensatedRow_indexed {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (x w z : ℂ) :
-    let hT : ∀Q∈Finset.univ.image P,Q.val∉S := by
-      intro Q hQ
-      obtain ⟨i,_,rfl⟩ := Finset.mem_image.mp hQ
-      exact hPS i
+    let hT : ∀Q∈Finset.univ.image P,Q.val∉S := by grind
     physicalCompensatedRow S hS (Finset.univ.image P) hT η u x w z=
       (LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) w*
@@ -34,12 +31,10 @@ theorem physicalCompensatedRow_indexed {K : ℕ}
   congr 2
   symm
   apply Finset.prod_bij (fun i _=>⟨P i,Finset.mem_image.mpr ⟨i,Finset.mem_univ _,rfl⟩⟩)
-  · intro i _; exact Finset.mem_attach _ _
-  · intro i _ j _ h; exact hP (congrArg Subtype.val h)
-  · intro Q _
-    obtain ⟨i,hi,he⟩ := Finset.mem_image.mp Q.property
-    exact ⟨i,hi,Subtype.ext he⟩
-  · intro i _; rfl
+  grind
+  grind
+  grind
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 end

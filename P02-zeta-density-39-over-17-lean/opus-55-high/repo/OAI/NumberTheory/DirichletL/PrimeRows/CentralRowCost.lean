@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.CentralRepeatedProduct
 public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -41,11 +42,11 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   let L : ℝ := 3+H
   let A : ℝ := a-1/2+6*e
   let R : ℝ := 6*e+2*eps
-  have hn : 0<rowNorm u := zero_lt_one.trans_le (rowNorm_ge_one u)
+  have hn : 0< rowNorm u := zero_lt_one.trans_le (rowNorm_ge_one u)
   have hN : 0<N := mul_pos hFp hn
   have hL : 0<L := by dsimp [L];linarith
   have hA : 0≤A := by dsimp [A];linarith
-  have hR : 0≤R := by dsimp [R];positivity
+  pm_3395 hR R
   have hrad : ((radical (rowCharacter S hS u).modulus).absNorm:ℝ)≤N :=
     original_row_deletion_radical_le S hS u
   have hq : ((rowCharacter S hS u).modulus.absNorm:ℝ)≤N := original_row_conductor_le S hS u

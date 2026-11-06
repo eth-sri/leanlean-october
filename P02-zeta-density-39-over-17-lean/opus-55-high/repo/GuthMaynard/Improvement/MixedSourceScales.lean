@@ -1,13 +1,12 @@
 module
 public import GuthMaynard.Improvement.UnequalSourceScales
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Low frequency with three independent integer shells, bounded separately
 by outer scale R and denominator scale K. -/
@@ -20,11 +19,9 @@ theorem mixed_source_low_frequency (n : ℕ) (f : 𝓢(ℝ, ℝ))
       (gmAffinePoissonMainEnvelope f M₁ M₂ M₃ Q+gmAffinePoissonFarEnvelope n f M₁ M₂ M₃ Q)^2 ≤
       (gmAffineRegionIConstant n)^2*Q^3*(R:ℝ)^2*(K:ℝ)^4*(∫ x, f x)^2 := by
   have henv := gmAffinePoissonEnvelopes_le_mass n f hf h₁ h₂ h₃ hQ
-  have h₃p : (0:ℝ) < M₃ := by exact_mod_cast h₃
-  have h₁r : (M₁:ℝ) ≤ R := by exact_mod_cast h₁R
-  have h₂k : (M₂:ℝ) ≤ K := by exact_mod_cast h₂K
-  have h₃r : (M₃:ℝ) ≤ R := by exact_mod_cast h₃R
-  have hrad : 0 ≤ gmAffineFirstPoissonRadius M₁ M₃ Q := by unfold gmAffineFirstPoissonRadius; positivity
+  pm_4473 h₃p M₃ h₃
+  pm_4570
+  pm_5538 hrad gmAffineFirstPoissonRadius M₁ M₃ Q
   have hsum : 0 ≤ ∑' j : ℤ, gmIntDecayProfile 2 j :=
     tsum_nonneg (fun j => by unfold gmIntDecayProfile; split_ifs <;> positivity)
   have henv0 : 0 ≤ gmAffinePoissonMainEnvelope f M₁ M₂ M₃ Q+gmAffinePoissonFarEnvelope n f M₁ M₂ M₃ Q := by
@@ -56,25 +53,16 @@ theorem mixed_source_retained_core {ε T Q Y : ℝ}
           Real.sqrt (gmAffineJ (gmAffineTildeSchwartz
             (gmAffineSecondPoissonCutoff T Q M₂ M₃/Q)
             (by unfold gmAffineSecondPoissonCutoff; positivity) f) M₂)) := by
-  have hrad : 0 ≤ gmAffineFirstPoissonRadius M₁ M₃ Q := by unfold gmAffineFirstPoissonRadius; positivity
+  pm_5538 hrad gmAffineFirstPoissonRadius M₁ M₃ Q
   have hwindow : 0 ≤ (Y+gmAffineFirstPoissonRadius M₁ M₃ Q)^ε := by positivity
   have hfactor := gmAffineFirstPoissonRadius_card_factor_mul_scale_le h₁ h₃ hQ
-  have h₁r : (M₁:ℝ) ≤ R := by exact_mod_cast h₁R
-  have h₂k : (M₂:ℝ) ≤ K := by exact_mod_cast h₂K
-  have h₃r : (M₃:ℝ) ≤ R := by exact_mod_cast h₃R
+  pm_4570
   have hscale : (2*gmAffineFirstPoissonRadius M₁ M₃ Q+3)*(M₃:ℝ)*(M₂:ℝ) ≤ 8*Q*((R:ℝ)*(K:ℝ)) := by
     calc
       _ ≤ (4*Q*((M₁:ℝ)+M₃))*(M₂:ℝ) := mul_le_mul_of_nonneg_right hfactor (Nat.cast_nonneg M₂)
       _ ≤ (4*Q*((R:ℝ)+R))*(K:ℝ) := by gcongr
       _ = _ := by ring
-  let H : ℝ := Real.sqrt (∫ u : ℝ, f u ^ 2) *
-    Real.sqrt (gmAffineJ
-      (gmAffineTildeSchwartz
-        (gmAffineSecondPoissonCutoff T Q M₂ M₃ / Q)
-        (by unfold gmAffineSecondPoissonCutoff; positivity) f) M₂)
-  have hH : 0 ≤ H := by dsimp only [H]; positivity
-  unfold gmAffineRegionIICoreRawBound gmAffineRegionIICoreConstant
-  dsimp only
+  pm_4030
   change 2 *
       (Cdiv * (Y + gmAffineFirstPoissonRadius M₁ M₃ Q) ^ ε *
         (2 * gmAffineFirstPoissonRadius M₁ M₃ Q + 3)) *
@@ -83,7 +71,7 @@ theorem mixed_source_retained_core {ε T Q Y : ℝ}
           ((Q / (M₂ : ℝ)) * SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual) * H))) ≤
     Cdiv * (8192 * SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 3) *
       (Y + gmAffineFirstPoissonRadius M₁ M₃ Q) ^ ε * Q ^ 3 * ((R : ℝ) * K) * H
-  have h₂p : (0:ℝ) < M₂ := by exact_mod_cast h₂
+  pm_4473 h₂p M₂ h₂
   calc
     _ = 1024*Cdiv*(Y+gmAffineFirstPoissonRadius M₁ M₃ Q)^ε*
       SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual^3*Q^2*

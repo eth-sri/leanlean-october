@@ -2,10 +2,9 @@ module
 public import GuthMaynard.Improvement.CubicFourierMoments
 public import GuthMaynard.Improvement.CubicFourierStrip
 public import GuthMaynard.Improvement.CubicMaskedSpatialBound
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
@@ -29,14 +28,14 @@ theorem cubic_masked_near_estimate (a b : ℝ) (ha : 0 < a) (ha1 : a ≤ 1) (hb1
             T*L*Real.sqrt (∫ ξ in D, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^4)) := by
   have hab : a ≤ b := ha1.trans hb1
   have hb : 0 < b := by linarith
-  have hc : 0 < a/b := div_pos ha hb
+  pm_6528 hc a b ha hb
   have hcd : a/b ≤ b/a :=
     ((div_le_one hb).mpr hab).trans ((one_le_div ha).mpr hab)
   obtain ⟨η,C,T₀,hη,hη1,hC,hT₀,h⟩ := cubic_fourier_moments a b (a/b) (b/a) ha hab hc hcd hε
   refine ⟨η,C,T₀,hη,hη1,hC,hT₀,?_⟩
   intro T L μ A B Cmask D S hT hLl hLu hm h0 h1 h2 hA hB hCmask hD hAsym hDsym hBD hCD hS
   have hTp : 0 < T := lt_of_lt_of_le (by linarith) hT
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
+  pm_4573
   have hn := (fourier_near_strip_sum hm h0 h1 h2 ha ha1 hb1 hA hB hCmask hD hAsym hDsym hBD hCD L (T^η) S).2
   exact (mul_le_mul_of_nonneg_left hn (by positivity : 0 ≤ L^3)).trans
     (h T L μ A D S hT hLl hLu h0 h1 h2 hA hD hS).2
@@ -62,25 +61,24 @@ theorem cubic_masked_spatial_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
             T*L*Real.sqrt (∫ ξ in D, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^4)) +
           T^(-100:ℝ)*Real.sqrt (∫ t, μ t^2)^3) := by
   have hu : 0 < u := hl.trans_le hlu
-  have hv : 0 < l/u := div_pos hl hu
-  have hv1 : l/u ≤ 1 := (div_le_one hu).mpr hlu
-  have hy1 : 1 ≤ u/l := (one_le_div hl).mpr hlu
+  pm_6528 hv l u hl hu
+  pm_5442 hv1 l u hu hlu
+  pm_5443 hy1 u l hl hlu
   obtain ⟨η,Cm,T₀,hη,hη1,hCm,hT₀,hmoment⟩ := cubic_masked_near_estimate (l/u) (u/l) hv hv1 hy1 hε
   obtain ⟨Cn,Ct,hCn,hCt,hspatial⟩ := masked_spatial_near_tail_bound ha hl hlu hs hη
   let C := Cn*Cm+Ct*(u/l-l/u)^2
   have hC : 0 < C := add_pos_of_pos_of_nonneg (mul_pos hCn hCm) (by positivity)
   refine ⟨η,C,T₀,hη,hη1,hC,hT₀,?_⟩
   intro T L t₀ t₁ μ A B Cmask D S hT hLl hLu ht hlen hm h0 hi h2 hsup hA hB hCmask hD hAsym hDsym hBD hCD hS
-  have hT1 : 1 ≤ T := by linarith
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
+  pm_4572
+  pm_4573
   have hLT : L ≤ T^(1+η) := hLu.trans (by
     calc
       T = T^(1:ℝ) := (Real.rpow_one T).symm
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hT1 (by linarith))
   have hSc : S ⊆ cubicModes (T^(1+η)/L) := by
     intro m hmS
-    obtain ⟨h₁,h₂,h₃⟩ := hS m hmS
+    pm_69 h₁ h₂ h₃ hS m hmS
     exact (mem_cubicModes _ m).mpr ⟨((mem_poissonModes _ _).mp h₁).2,
       ((mem_poissonModes _ _).mp h₂).2,((mem_poissonModes _ _).mp h₃).2⟩
   have hn := hmoment T L μ A B Cmask D S hT hLl hLu hm h0 hi h2 hA hB hCmask hD hAsym hDsym hBD hCD hS
@@ -89,8 +87,8 @@ theorem cubic_masked_spatial_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a
     (T^2*(∫ ξ in D, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2)+T*L*Real.sqrt (∫ ξ in D, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^4))
   let Y := T^(-100:ℝ)*Real.sqrt (∫ t, μ t^2)^3
   have hD2 : 0 ≤ ∫ ξ in D, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2 := integral_nonneg (fun _ => sq_nonneg _)
-  have hX : 0 ≤ X := by dsimp [X]; positivity
-  have hY : 0 ≤ Y := by dsimp [Y]; positivity
+  pm_4556
+  pm_61 hY Y
   have hCmC : Cn*Cm ≤ C := by dsimp [C]; nlinarith [mul_nonneg hCt.le (sq_nonneg (u/l-l/u)),mul_pos hCn hCm]
   have hCtC : Ct*(u/l-l/u)^2 ≤ C := by dsimp [C]; nlinarith [mul_nonneg hCt.le (sq_nonneg (u/l-l/u)),mul_pos hCn hCm]
   calc

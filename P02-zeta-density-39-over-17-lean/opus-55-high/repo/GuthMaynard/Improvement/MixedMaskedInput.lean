@@ -1,5 +1,6 @@
 module
 public import GuthMaynard.Improvement.MaskedAffine
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -7,7 +8,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap FourierTransform ContDiff
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Independent slope and denominator shells with translation bounded by the outer scale. -/
 def InMixedAffineBox (B Q R C₀ : ℝ) (p : ℤ × (ℤ × ℤ)) : Prop :=
@@ -51,12 +52,12 @@ theorem mixed_finite_box (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
   have hcover : ∀ p ∈ S, ∃ i ∈ A,
       p ∈ gmAffineIndexSet (twoShell B i.1) (twoShell Q i.2) M₃ := by
     intro p hpS
-    obtain ⟨hb1,hb2,hq1,hq2,hd⟩ := hbox p hpS
+    pm_107 hb1 hb2 hq1 hq2 hd hbox p hpS
     have hb := real_signed_two_shells hB hb1 hb2
     have hq := real_dyadic_two_shells hQ hq1 hq2
     have hdM : p.2.2 ∈ gmAffineCentralShell M₃ := by
       have hc : C₀*R+1 ≤ (M₃:ℝ) := Nat.le_ceil _
-      have hMp : (0:ℝ) < M₃ := by exact_mod_cast hM₃
+      pm_4473 hMp M₃ hM₃
       have hadd : |(p.2.2:ℝ)| ≤ 8*(M₃:ℝ) := by linarith only [hd,hc,hMp]
       have ha := abs_le.mp hadd
       apply mem_gmAffineCentralShell.mpr
@@ -64,10 +65,10 @@ theorem mixed_finite_box (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D β n)
       · exact_mod_cast ha.1
       · exact_mod_cast ha.2
     rcases hb with hb | hb <;> rcases hq with hq | hq
-    · exact ⟨(false,false),Finset.mem_univ _,mem_gmAffineIndexSet.mpr ⟨hb,hq,hdM⟩⟩
-    · exact ⟨(false,true),Finset.mem_univ _,mem_gmAffineIndexSet.mpr ⟨hb,hq,hdM⟩⟩
-    · exact ⟨(true,false),Finset.mem_univ _,mem_gmAffineIndexSet.mpr ⟨hb,hq,hdM⟩⟩
-    · exact ⟨(true,true),Finset.mem_univ _,mem_gmAffineIndexSet.mpr ⟨hb,hq,hdM⟩⟩
+    pm_6612 false
+    pm_7368 false true
+    pm_7368 true false
+    pm_6612 true
   have hcov := affine_integral_le_cover f hf S A (fun i => twoShell B i.1)
     (fun i => twoShell Q i.2) (fun _ => M₃)
     (fun i _ => twoShell_pos hB i.1) (fun i _ => twoShell_pos hQ i.2) hcover
@@ -96,21 +97,19 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
       (∀ p ∈ S, InMixedAffineBox B Q R C₀ p) →
       affineIndexIntegral f S ≤ C*T^ε*
         (R^2*K^4*(∫ x, f x)^2+R*K^3*(∫ x, f x^2)) := by
-  have hLp : (0:ℝ) < L := by exact_mod_cast hL
-  have hL1 : (1:ℝ) ≤ L := by exact_mod_cast hL
+  pm_4473 hLp L hL
+  pm_278 hL1 L hL
   obtain ⟨C,hC,h⟩ := mixed_finite_box D hD (C₀+2*L) (by positivity) hε
   refine ⟨C*(L:ℝ)^ε*(L:ℝ)^6,by positivity,?_⟩
   intro T R K B Q f S hT hK hKR hB hBR hQ hQK hRT hf hs hp hbox
-  have hTp : 0 < T := by linarith
-  have hR : 1 ≤ R := hK.trans hKR
+  pm_6304
   obtain ⟨g,hg,hgs⟩ := canonical_affine_input f hLp (f.smooth ⊤) hs
   have hg0 : ∀ x, 0 ≤ g x := by intro x; rw [hg]; exact hf _
   have hgp := affine_input_fourier_family D hD hTp hL1 hg hp
   let S' := S.image (supportIndexMap L)
   have hbox' : ∀ p ∈ S', InMixedAffineBox B ((L:ℝ)*Q) ((L:ℝ)*R) (C₀+2*L) p := by
-    intro p hpS
-    obtain ⟨q,hq,rfl⟩ := Finset.mem_image.mp hpS
-    obtain ⟨hb1,hb2,hq1,hq2,hd⟩ := hbox q hq
+    pm_67 p hpS q hq Finset.mem_image.mp
+    pm_107 hb1 hb2 hq1 hq2 hd hbox q hq
     unfold InMixedAffineBox supportIndexMap
     push_cast
     refine ⟨hb1,hb2,?_,?_,?_⟩
@@ -153,9 +152,9 @@ theorem mixed_affine_full_finite (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤
   have hmass := (affine_input_integrals f hLp).1
   have hL2 := (affine_input_integrals f hLp).2
   simp_rw [← hg] at hmass hL2
-  have hmass0 : 0 ≤ ∫ x, f x := integral_nonneg hf
-  have hgMass0 : 0 ≤ ∫ x, g x := integral_nonneg hg0
-  have hf20 : 0 ≤ ∫ x, f x^2 := integral_nonneg (fun _ => sq_nonneg _)
+  pm_4518 hmass0 x f integral_nonneg hf
+  pm_4518 hgMass0 x g integral_nonneg hg0
+  pm_5238 hf20 x f
   have hLi : (L:ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hL1
   have hmassle : (∫ x, g x) ≤ ∫ x, f x := by rw [hmass]; exact mul_le_of_le_one_left hmass0 hLi
   have hL2le : (∫ x, g x^2) ≤ ∫ x, f x^2 := by rw [hL2]; exact mul_le_of_le_one_left hf20 hLi

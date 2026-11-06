@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalFrequency
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,7 +25,10 @@ def nonunitPartitionSet (C D : Ideal O) (U : Finset (CommonIndex C D)) : Finset 
 def nonunitFrequencyGenerator (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
   ∏ P∈nonunitPartitionSet C D U,commonPrime C D P
 
-theorem commonPrime_dividedFrequency_iff (C D : Ideal O) (hC : Supported C)
+section
+variable (C D : Ideal O)
+include C D
+theorem commonPrime_dividedFrequency_iff (hC : Supported C)
     (w : O) (P : CommonIndex C D) :
     commonPrime C D P∣dividedFrequency (commonPrime C D) (leftExponent C D) (rightExponent C D) w P ↔
       commonPrime C D P∣w := by
@@ -38,22 +42,21 @@ theorem commonPrime_dividedFrequency_iff (C D : Ideal O) (hC : Supported C)
   · exact fun h=>hc.dvd_of_dvd_mul_left h
   · exact fun h=>h.trans (dvd_mul_left _ _)
 
-theorem nonunitPartitionSet_eq_actual (C D : Ideal O) (U : Finset (CommonIndex C D))
+theorem nonunitPartitionSet_eq_actual (U : Finset (CommonIndex C D))
     (w : O) (hpart : canonicalPartition C D U w) :
     nonunitPartitionSet C D U=actualNonunitSet (commonPrime C D) (leftExponent C D) (rightExponent C D) w := by
   unfold canonicalPartition at hpart
   rw [nonunitPartitionSet,←hpart]
   ext P
-  simp only [equalActiveSet,actualUnitSet,actualNonunitSet,Finset.mem_sdiff,Finset.mem_filter,
-    Finset.mem_univ,true_and]
+  pm_3780 equalActiveSet actualUnitSet actualNonunitSet Finset.mem_sdiff Finset.mem_filter Finset.mem_univ true_and
   tauto
 
-theorem nonunitFrequencyGenerator_ne_zero (C D : Ideal O) (hC : Supported C)
+theorem nonunitFrequencyGenerator_ne_zero (hC : Supported C)
     (U : Finset (CommonIndex C D)) : nonunitFrequencyGenerator C D U≠0 :=
   Finset.prod_ne_zero_iff.mpr (fun P _=>
     CenteredMomentSupportedCorrelation.supported_element_ne_zero _ (commonPrime_supported C D hC P))
 
-theorem nonunitFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C)
+theorem nonunitFrequencyGenerator_dvd (hC : Supported C)
     (U : Finset (CommonIndex C D)) (w : O) (hpart : canonicalPartition C D U w) :
     nonunitFrequencyGenerator C D U∣w := by
   apply Finset.prod_dvd_of_coprime ?_ ?_
@@ -62,6 +65,7 @@ theorem nonunitFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C)
   · intro P hP
     rw [nonunitPartitionSet_eq_actual C D U w hpart] at hP
     exact (commonPrime_dividedFrequency_iff C D hC w P).mp (Finset.mem_filter.mp hP).2.2.2
+end
 
 end SevenEighths.CenteredMomentSecondCanonicalNonunit
 

@@ -1,5 +1,6 @@
 module
 public import DensityWindowBudgets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,37 +24,9 @@ theorem two_term_monomial_budgets {σ a p α δ T N : ℝ}
     N^12*T^2 ≤ Q^2*S^4*V^16 ∧
     N^9*T^2 ≤ Q^2*S^2*V^14 ∧
     N^4*L ≤ Q*S*V^6 := by
-  have hTp : 0 < T := by linarith
-  have ha : 0 ≤ a := by linarith [hw.a_low]
-  have hN1 : 1 ≤ N := (Real.one_le_rpow hT ha).trans hlo
-  have ht : 0 ≤ Real.log T := Real.log_nonneg hT
-  have hn : 0 ≤ Real.log N := Real.log_nonneg hN1
-  have hlow : a*Real.log T ≤ Real.log N := by
-    have hh := Real.log_le_log (Real.rpow_pos_of_pos hTp a) hlo
-    simpa only [Real.log_rpow hTp] using hh
-  have hhigh : Real.log N ≤ α*Real.log T := by
-    have hh := Real.log_le_log hN hhi
-    simpa only [Real.log_rpow hTp] using hh
-  have hd := mul_nonneg hδ ht
-  dsimp only
-  refine ⟨?_,?_,?_,?_,?_⟩
-  all_goals
-    apply (Real.log_le_log_iff (by first | (unfold twoTermAmplifier; positivity) | positivity)
-      (by positivity)).mp
-    simp (disch := positivity) only [twoTermAmplifier,Real.log_mul,Real.log_div,
-      Real.log_pow,Real.log_rpow]
-    norm_num only [Nat.cast_ofNat]
-  · have hh := mul_nonneg (show 0 ≤ 9-12*σ by linarith [hw.sigma_high]) hn
-    nlinarith only [hh,hd]
-  · have hh := mul_le_mul_of_nonneg_left hlow (show 0 ≤ 24*σ-16 by linarith [hw.sigma_low])
-    have hb := mul_nonneg (show 0 ≤ 5*p-4+a*(24*σ-16) by linarith [hw.cubic_balance]) ht
-    nlinarith only [hh,hb,hd]
-  · have hh := mul_le_mul_of_nonneg_left hhigh (show 0 ≤ 12-16*σ by linarith [hw.sigma_high])
-    have hb := mul_nonneg (show 0 ≤ 4*p-2-α*(12-16*σ) by linarith [hw.energy_first]) ht
-    nlinarith only [hh,hb]
-  · have hh := mul_le_mul_of_nonneg_left hlow (show 0 ≤ 14*σ-9 by linarith [hw.sigma_low])
-    have hb := mul_nonneg (show 0 ≤ 2*p-2+a*(14*σ-9) by linarith [hw.energy_resonant]) ht
-    nlinarith only [hh,hb,hd]
-  · nlinarith only [hd]
+  pm_134
+  pm_5435
+  pm_80
+  grind
 
 end Montgomery.RationalMoment

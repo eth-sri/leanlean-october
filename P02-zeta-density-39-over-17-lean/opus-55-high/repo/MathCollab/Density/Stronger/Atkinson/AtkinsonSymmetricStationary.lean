@@ -6,8 +6,9 @@ Narrow stationary refinement; see third_party/twelfth/ATKINSON_SYMMETRIC_MANIFES
 Mathlib and previously ported PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.StationaryOddRemainder
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
@@ -20,7 +21,6 @@ the phase's cubic term. The remaining estimate is on the actual local
 integral and consumes the constructed second derivative bounds.
 -/
 
-noncomputable section
 
 open Complex MeasureTheory Set
 
@@ -39,7 +39,7 @@ theorem integral_atkinsonRootQuadratic_odd (T b H : ℝ) {k : ℕ} (hk : Odd k) 
       (atkinsonSaddleRoot (T/(2*Real.pi)) b+H),
         (((y-atkinsonSaddleRoot (T/(2*Real.pi)) b)^k : ℝ) : ℂ) *
           atkinsonRootQuadraticKernel T b y) = 0 := by
-  let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
+  pm_460
   let F : ℝ → ℂ := fun y => (((y-r)^k : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y
   have hodd (y : ℝ) : F (2*r-y) = -F y := by
     dsimp [F]
@@ -52,13 +52,13 @@ theorem integral_atkinsonRootQuadratic_odd (T b H : ℝ) {k : ℕ} (hk : Odd k) 
   simp_rw [hodd] at h
   rw [intervalIntegral.integral_neg, hleft, hright] at h
   change (∫ y in r-H..r+H, F y) = 0
-  linear_combination -h / 2
+  grind
 
 theorem abs_atkinsonRootCubicCorrection_le {T y H : ℝ} (hT : 0 < T) (b : ℝ)
     (hH : 0 ≤ H) (hy : |y-atkinsonSaddleRoot (T/(2*Real.pi)) b| ≤ H) :
     |atkinsonRootCubicCorrection T b y| ≤
       2*T*H^3/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^3 := by
-  have hr := atkinsonSaddleRoot_pos (by positivity : 0 < T/(2*Real.pi)) b
+  pm_4398
   rw [atkinsonRootCubicCorrection, abs_mul, abs_of_pos (by positivity : 0 < 2*T/3),
     abs_pow, abs_div, abs_of_pos hr]
   calc
@@ -81,8 +81,8 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
       M*(2*R^2*H^3 + 4*R*T*H^5/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^3 +
         8*T*H^5/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^4 +
         8*T^2*H^7/(atkinsonSaddleRoot (T/(2*Real.pi)) b)^6) := by
-  let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
-  have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
+  pm_460
+  pm_4370
   have horder : r-H ≤ r+H := by linarith
   have hpos : 0 < r-H := by change H ≤ r/2 at hwindow; linarith
   have hmem {y : ℝ} (hy : y ∈ Icc (r-H) (r+H)) : y ∈ Icc a c :=
@@ -98,9 +98,9 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
       ((y-r : ℝ) : ℂ) * atkinsonRootQuadraticKernel T b y) := by fun_prop
   have hcubic : Continuous (fun y : ℝ =>
       ((y-r : ℝ) : ℂ)^3 * atkinsonRootQuadraticKernel T b y) := by fun_prop
-  have hquad := hq.intervalIntegrable (μ := volume) (a := r-H) (b := r+H)
-  have hlinearInt := hlinear.intervalIntegrable (μ := volume) (a := r-H) (b := r+H)
-  have hcubicInt := hcubic.intervalIntegrable (μ := volume) (a := r-H) (b := r+H)
+  pm_853 hquad hq.intervalIntegrable
+  pm_853 hlinearInt hlinear.intervalIntegrable
+  pm_853 hcubicInt hcubic.intervalIntegrable
   have hP : IntervalIntegrable P volume (r-H) (r+H) :=
     ((hquad.const_mul (f r)).add (hlinearInt.const_mul (deriv f r))).add
       (hcubicInt.const_mul (((2*T/(3*r^3) : ℝ) : ℂ)*I*f r))
@@ -118,7 +118,7 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
       (hcubicInt.const_mul _),
       intervalIntegral.integral_add (hquad.const_mul (f r))
       (hlinearInt.const_mul (deriv f r))]
-    simp only [intervalIntegral.integral_const_mul, h1, h3, mul_zero, add_zero]
+    pm_93 intervalIntegral.integral_const_mul h1 h3 mul_zero add_zero
   have hactual : IntervalIntegrable (fun y => f y * atkinsonRootKernel T b y)
       volume (r-H) (r+H) := by
     apply ContinuousOn.intervalIntegrable
@@ -151,10 +151,8 @@ theorem IntervalC2Bound.atkinsonLocalSymmetric {f : ℝ → ℂ} {a c M R T H : 
       push_cast
       ring
     rw [he]
-    apply (norm_add_le _ _).trans
-    apply (add_le_add (norm_add_le _ _) le_rfl).trans
-    simp only [norm_mul, norm_atkinsonRootQuadraticKernel, norm_I, mul_one,
-      Complex.norm_real, Real.norm_eq_abs]
+    pm_4364
+    pm_204 norm_mul norm_atkinsonRootQuadraticKernel norm_I mul_one Complex.norm_real Real.norm_eq_abs
     exact add_le_add (add_le_add ha (mul_le_mul hb hd (abs_nonneg _)
       (mul_nonneg (mul_nonneg hf.nonneg hf.scale_nonneg) hH)))
       (mul_le_mul (hf.norm_le y (hmem hy)) hk (norm_nonneg _) hf.nonneg)

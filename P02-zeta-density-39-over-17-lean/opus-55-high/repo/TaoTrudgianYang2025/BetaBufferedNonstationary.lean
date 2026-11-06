@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedVariation
 public import TaoTrudgianYang2025.BetaWeightedPhase
 public import TaoTrudgianYang2025.BetaFourierModes
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,23 +22,21 @@ open scoped ContDiff FourierTransform
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem modelPhaseBufferedCutoff_support_open {l r η : ℝ} (hη : 0 < η) :
+section
+variable {l r η : ℝ} (hη : 0 < η)
+include l r η hη
+theorem modelPhaseBufferedCutoff_support_open :
     Function.support (modelPhaseBufferedCutoff l r η) ⊆ Ioo (l+η) (r-η) := by
-  intro u hu
-  constructor
-  · by_contra h
-    exact hu (modelPhaseBufferedCutoff_zero_left hη (le_of_not_gt h))
-  · by_contra h
-    exact hu (modelPhaseBufferedCutoff_zero_right hη (le_of_not_gt h))
+  pm_5276 le_of_not_gt
 
-theorem modelPhaseBufferedCutoff_eq_zero_of_overlap {l r η : ℝ}
-    (hη : 0 < η) (h : r-η ≤ l+η) :
+theorem modelPhaseBufferedCutoff_eq_zero_of_overlap (h : r-η ≤ l+η) :
     modelPhaseBufferedCutoff l r η = fun _ => 0 := by
   funext u
   apply Function.notMem_support.mp
   intro hu
   have hh := modelPhaseBufferedCutoff_support_open hη hu
   linarith [hh.1,hh.2]
+end
 
 theorem intervalC1Bound_modelPhaseBufferedCutoff
     {l r η a b : ℝ} (hη : 0 < η) (hab : a ≤ b) :
@@ -58,48 +57,30 @@ theorem norm_modelPhaseBufferedNormalizedMode_nonstationary
       (∀ u ∈ Ioo (1 : ℝ) 2, T*deriv F u-q ≤ -lam)) :
     ‖modelPhaseNormalizedMode (modelPhaseBufferedCutoff l r η) F T q‖ ≤
       4/(lam*Real.pi) := by
-  by_cases hab : l+η ≤ r-η
+  pm_8304
   · let φ : ℝ → ℝ := fun u => T*F u-q*u
-    have hd {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
-        deriv φ u = T*deriv F u-q := by
-      have hFu := (approximateModelPhase_contDiffAt hF hu).differentiableAt (by simp)
-      simpa only [φ,mul_one,Pi.sub_def,id_eq] using
-        ((hFu.hasDerivAt.const_mul T).sub ((hasDerivAt_id u).const_mul q)).deriv
-    have hφ : ∀ u ∈ Ioo (1 : ℝ) 2, ContDiffAt ℝ 2 φ u := by
-      intro u hu
-      exact (contDiffAt_const.mul ((approximateModelPhase_contDiffAt hF hu).of_le
-        (ENat.natCast_le_of_coe_top_le_withTop le_rfl 2))).sub
-          (contDiffAt_const.mul contDiffAt_id)
+    pm_1647
     have hmono : AntitoneOn (deriv φ) (Ioo (1 : ℝ) 2) := by
       intro u hu v hv huv
       rw [hd hu,hd hv]
       exact sub_le_sub_right (mul_le_mul_of_nonneg_left
         ((approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn hu hv huv) hT.le) q
-    have hsub : Icc (l+η) (r-η) ⊆ Ioo (1 : ℝ) 2 := by
-      intro u hu
-      constructor <;> linarith [hu.1,hu.2]
+    pm_1649
     have hg : (∀ u ∈ Ioo (1 : ℝ) 2, lam ≤ deriv φ u) ∨
         (∀ u ∈ Ioo (1 : ℝ) 2, deriv φ u ≤ -lam) := by
       rcases hgap with hp | hn
-      · exact Or.inl (fun u hu => by rw [hd hu]; exact hp u hu)
-      · exact Or.inr (fun u hu => by rw [hd hu]; exact hn u hu)
-    have h := IntervalC1Bound.fourierChar_of_slope_gap
-      (intervalC1Bound_modelPhaseBufferedCutoff (l := l) (r := r) hη hab)
-      hab hlam isOpen_Ioo hsub hφ hmono hg
+      pm_7630 Or.inl hp
+      pm_7630 Or.inr hn
+    pm_7050 IntervalC1Bound.fourierChar_of_slope_gap hsub hmono
     have hs : Function.support (fun u => (modelPhaseBufferedCutoff l r η u : ℂ)*
         (𝐞 (φ u) : ℂ)) ⊆ Ioc (l+η) (r-η) := by
-      intro u hu
-      have hχ : modelPhaseBufferedCutoff l r η u ≠ 0 := by
-        intro hz
-        exact hu (by simp only [hz,Complex.ofReal_zero,zero_mul])
-      have hh := modelPhaseBufferedCutoff_support_open hη hχ
-      exact ⟨hh.1,hh.2.le⟩
+      pm_1648
     unfold modelPhaseNormalizedMode
     rw [← intervalIntegral.integral_eq_integral_of_support_subset hs]
     convert h using 1
     norm_num
   · have hz := modelPhaseBufferedCutoff_eq_zero_of_overlap hη (le_of_not_ge hab)
-    simp only [modelPhaseNormalizedMode,hz,Complex.ofReal_zero,zero_mul,integral_zero,norm_zero]
+    pm_382 modelPhaseNormalizedMode hz Complex.ofReal_zero zero_mul integral_zero norm_zero
     positivity
 
 theorem norm_modelPhaseBufferedFourierMode_nonstationary

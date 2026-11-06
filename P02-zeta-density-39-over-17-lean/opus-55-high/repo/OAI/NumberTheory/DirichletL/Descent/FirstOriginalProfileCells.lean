@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileIdentity
 public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsLive
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmeti
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def originalNorms (x : OriginalIndex ι) : Fin 6→ℝ :=
   sourceNorms (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p)
@@ -36,8 +37,7 @@ theorem original_cell_subset (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     sourceCell (originalNorms p)
       (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) k ⊆
     firstGlobalRetainedSource p (originalOuterCell p pool Q k) (fun _=>labels) (fun x=>x.1) Y := by
-  intro x hx
-  obtain ⟨hxs,hk⟩ := Finset.mem_filter.mp hx
+  pm_161 x hx hxs hk Finset.mem_filter.mp
   obtain ⟨ho,hf⟩ := Finset.mem_sigma.mp hxs
   apply Finset.mem_sigma.mpr
   refine ⟨Finset.mem_filter.mpr ⟨ho,?_⟩,hf⟩

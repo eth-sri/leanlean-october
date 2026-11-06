@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedInverseStability
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,14 +34,7 @@ theorem iteratedDeriv_modelPhase_positive_compact_lipschitz
   have hd : ContinuousOn (deriv (iteratedDeriv p (modelPhase σ))) (Icc l r) := by
     intro x hx
     exact ((hf x hx).derivWithin (m := ∞) (by simp)).continuousAt.continuousWithinAt
-  obtain ⟨B,hB⟩ := isCompact_Icc.exists_bound_of_continuousOn hd
-  refine ⟨max 1 B,le_max_left _ _,?_⟩
-  intro x hx y hy
-  have h := Convex.norm_image_sub_le_of_norm_deriv_le
-    (fun z hz => (hf z hz).differentiableAt (by simp : (∞ : WithTop ℕ∞) ≠ 0))
-    (fun z hz => (hB z hz).trans (le_max_right 1 B))
-    (convex_Icc l r) hy hx
-  simpa only [Real.norm_eq_abs] using h
+  pb_973
 
 def expandedModelPointLower (σ : ℝ) : ℝ := min 1 ((2 : ℝ)^(-σ⁻¹))
 
@@ -58,9 +52,8 @@ theorem modelPhaseInverseSlope_expanded_points
     (hv : v ∈ modelPhaseSlopeRange F) :
     modelPhaseInverseSlope F v ∈ Icc (expandedModelPointLower σ) (expandedModelPointUpper σ) ∧
       v^(-σ⁻¹) ∈ Icc (expandedModelPointLower σ) (expandedModelPointUpper σ) := by
-  have hu := modelPhaseInverseSlope_mem hv
-  have hw := modelPhaseSlopeRange_positive_window hσ hδ hF hv
-  have hlo : 0 < (2 : ℝ)^(-σ)/2 := by positivity
+  pm_8529 modelPhaseSlopeRange_positive_window
+  pm_1630
   have hvp : 0 < v := hlo.trans_le hw.1
   have hexp : -σ⁻¹ ≤ 0 := neg_nonpos.mpr (inv_nonneg.mpr hσ.le)
   have hL := Real.rpow_le_rpow_of_nonpos hvp hw.2 hexp
@@ -81,8 +74,7 @@ theorem modelPhaseInverse_iteratedDeriv_expanded_reference_error
     (r := expandedModelPointUpper σ) (expandedModelPointLower_pos σ) σ p
   refine ⟨1+B*A,by nlinarith,?_⟩
   intro F δ P hδ hF hp v hv
-  have hu := modelPhaseInverseSlope_mem hv
-  have hw := modelPhaseInverseSlope_expanded_points hσ hδ hF hv
+  pm_8529 modelPhaseInverseSlope_expanded_points
   have hvpos : 0 < v^(-σ⁻¹) :=
     (expandedModelPointLower_pos σ).trans_le hw.2.1
   rw [referenceModelPrimitive_iteratedDeriv σ hvpos p]

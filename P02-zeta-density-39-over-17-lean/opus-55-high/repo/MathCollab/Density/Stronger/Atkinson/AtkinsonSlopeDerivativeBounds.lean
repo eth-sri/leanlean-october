@@ -5,6 +5,7 @@ Selected exact source slices from revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3
 See third_party/twelfth/ATKINSON_SOURCE_TAIL_MANIFEST.json. Mathlib/PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSecondOrderIntegration
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,8 +29,7 @@ namespace MathCollab.Density.Stronger.Atkinson
 theorem IntervalC2Bound.restrict {f : ℝ → ℂ} {a c u v M R : ℝ}
     (hf : IntervalC2Bound f a c M R) (hau : a ≤ u) (hvc : v ≤ c) :
     IntervalC2Bound f u v M R := by
-  have hmem {x : ℝ} (hx : x ∈ Icc u v) : x ∈ Icc a c :=
-    ⟨hau.trans hx.1, hx.2.trans hvc⟩
+  pm_4401
   exact ⟨hf.nonneg, hf.scale_nonneg, fun x hx => hf.smooth x (hmem hx),
     fun x hx => hf.norm_le x (hmem hx), fun x hx => hf.deriv_le x (hmem hx),
     fun x hx => hf.second_le x (hmem hx)⟩
@@ -59,7 +59,7 @@ theorem atkinsonRootSlope_derivative_bounds {T y : ℝ} (hT : 0 < T)
     (hy : Real.sqrt T / 4 ≤ y) (b : ℝ) :
     |deriv (atkinsonRootSlope T b) y| ≤ 8 ∧
       |iteratedDeriv 2 (atkinsonRootSlope T b) y| ≤ 64 / Real.sqrt T := by
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
+  pm_4891 hS T hT
   have hy0 : 0 < y := by linarith
   have hT16 : T ≤ 16 * y ^ 2 := by nlinarith [Real.sq_sqrt hT.le]
   have hfrac : T / (Real.pi * y ^ 2) ≤ 6 := by
@@ -90,10 +90,9 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
     IntervalC2Bound (fun y => (((atkinsonRootSlope T b y)⁻¹ : ℝ) : ℂ))
       (atkinsonRootBandLower T G L) (atkinsonRootBandUpper T G L)
         (3 / B) (32 * (G / Real.sqrt T)) := by
-  have hG0 : 0 < G := by linarith
-  have hL0 : 0 < L := by linarith
-  have hS : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hB0 : 0 < B := (by positivity : 0 < 6 * Real.sqrt T * (L / G)).trans_le hB
+  pm_4407
+  pm_4891 hS T hT
+  pm_1200 hB0 B hB
   have hBG : 6 * L ≤ B * (G / Real.sqrt T) := by
     calc
       _ = (6 * Real.sqrt T * (L / G)) * (G / Real.sqrt T) := by field_simp
@@ -110,7 +109,7 @@ theorem intervalC2Bound_atkinsonSlope_reciprocal_band {T G L B : ℝ}
     exact h
   refine intervalC2Bound_real_reciprocal hB0 (by positivity) ?_ hslope ?_ ?_
   · intro y hy
-    have hy0 := (atkinsonRootBandLower_pos hT G L).trans_le hy.1
+    pm_8116
     unfold atkinsonRootSlope
     fun_prop (disch := positivity)
   · intro y hy

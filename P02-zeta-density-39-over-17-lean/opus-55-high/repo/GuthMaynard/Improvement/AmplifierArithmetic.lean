@@ -3,9 +3,9 @@ public import GuthMaynard.Improvement.Target
 public import GuthMaynard.Improvement.CenteredKernelBridge
 public import GuthMaynard.Improvement.DivisorMultiplicity
 public import MathCollab.Density.DivisorGrowth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace GuthMaynard.Improvement
@@ -26,7 +26,10 @@ theorem amplifier_source_bounds {N : ℝ} (hN : 0 < N) {n : ℕ}
   obtain ⟨h₁,h₂⟩ := mem_Ioc.mp hn
   exact ⟨(Nat.floor_lt hN.le).mp h₁,(Nat.le_floor_iff (by positivity)).mp h₂⟩
 
-theorem amplifier_column_bounds {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) {q : ℕ}
+section
+variable {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L)
+include N L hN hNL
+theorem amplifier_column_bounds {q : ℕ}
     (hq : q ∈ amplifierColumns N L) :
     0 < q ∧ L/N ≤ (q:ℝ) ∧ (q:ℝ) ≤ 2*L/N := by
   obtain ⟨h₁,h₂⟩ := mem_Icc.mp hq
@@ -35,21 +38,18 @@ theorem amplifier_column_bounds {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) {q : �
   have hhi : (q:ℝ) ≤ 2*L/N := (Nat.le_floor_iff (by positivity)).mp h₂
   exact ⟨by exact_mod_cast (lt_of_lt_of_le (div_pos hL hN) hlo),hlo,hhi⟩
 
-theorem amplifier_product_plateau {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L)
+theorem amplifier_product_plateau
     {q n : ℕ} (hq : q ∈ amplifierColumns N L) (hn : n ∈ amplifierSource N) :
     1 ≤ ((q*n:ℕ):ℝ)/L ∧ ((q*n:ℕ):ℝ)/L ≤ 4 := by
-  obtain ⟨hq0,hqlo,hqhi⟩ := amplifier_column_bounds hN hNL hq
+  pm_114 hq0 hqlo hqhi amplifier_column_bounds hN hNL hq
   obtain ⟨hnlo,hnhi⟩ := amplifier_source_bounds hN hn
   have hL : 0 < L := hN.trans_le hNL
   have hqN : L ≤ (q:ℝ)*N := (div_le_iff₀ hN).mp hqlo
   have hqN' : (q:ℝ)*N ≤ 2*L := (le_div_iff₀ hN).mp hqhi
   constructor
-  · apply (le_div_iff₀ hL).mpr
-    push_cast
-    nlinarith [mul_le_mul_of_nonneg_left hnlo.le (Nat.cast_nonneg q)]
-  · apply (div_le_iff₀ hL).mpr
-    push_cast
-    nlinarith [mul_le_mul_of_nonneg_left hnhi (Nat.cast_nonneg q)]
+  pm_8518 le_div_iff₀ hnlo.le
+  pm_8518 div_le_iff₀ hnhi
+end
 
 theorem amplifier_product_row {N L l u : ℝ} (hN : 0 < N) (hNL : N ≤ L)
     (hl : l ≤ 1) (hu : 4 ≤ u) {q n : ℕ}
@@ -70,7 +70,7 @@ theorem amplifier_columns_card {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) :
       ((amplifierColumns N L).card:ℝ) ≤ 2*L/N := by
   let x := L/N
   have hx : 1 ≤ x := (le_div_iff₀ hN).mpr (by simpa using hNL)
-  have hxc : x ≤ (⌈x⌉₊:ℝ) := Nat.le_ceil x
+  pm_5017 hxc x
   have hxc' : (⌈x⌉₊:ℝ) ≤ x+1 := by
     have hh : (⌈x⌉₊:ℝ) ≤ (⌊x⌋₊:ℝ)+1 := by exact_mod_cast Nat.ceil_le_floor_add_one x
     have hf := Nat.floor_le (by linarith : 0 ≤ x)
@@ -103,8 +103,7 @@ theorem amplifier_columns_card {N L : ℝ} (hN : 0 < N) (hNL : N ≤ L) :
 /-- The source has at most N+1 terms, uniformly for real N. -/
 theorem amplifier_source_card {N : ℝ} (hN : 0 ≤ N) :
     ((amplifierSource N).card:ℝ) ≤ N+1 := by
-  have hfl : ⌊N⌋₊ ≤ ⌊2*N⌋₊ := Nat.floor_mono (by linarith)
-  rw [amplifierSource,Nat.card_Ioc,Nat.cast_sub hfl]
+  pm_5741 hfl amplifierSource
   have h₁ := Nat.floor_le (by linarith : 0 ≤ 2*N)
   have h₂ := Nat.lt_floor_add_one N
   linarith

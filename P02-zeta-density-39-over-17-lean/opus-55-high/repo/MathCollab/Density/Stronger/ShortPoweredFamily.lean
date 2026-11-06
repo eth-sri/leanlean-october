@@ -1,11 +1,11 @@
 module
 public import MathCollab.Density.Stronger.ShortPoweredHeight
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Complex Set Filter
-open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
+open Real Complex Filter
+open scoped Topology ComplexConjugate
 noncomputable section
 namespace MathCollab.Density.Stronger
 
@@ -38,33 +38,21 @@ theorem mem_smoothPoweredIndices {σ δ T : ℝ} {q : (ℤ × ℕ × ℕ) × ℕ
       q.1 ∈ smoothTaylorIndices σ T ∧
       1 ≤ q.2.1 ∧ q.2.1 ≤ smoothPowerBound σ δ ∧ q.2.2 < q.2.1 ∧
       T^(lowerExponent σ) ≤ (smoothHalfScale q.1.1 q.1.2.1 : ℝ)^q.2.1 ∧
-      (smoothHalfScale q.1.1 q.1.2.1 : ℝ)^q.2.1 ≤ T^(smoothingExponent σ) := by
-  constructor
-  · intro hq
-    obtain ⟨hbase, hlt, hlo, hhi⟩ := Finset.mem_filter.mp hq
-    obtain ⟨hp, hkl⟩ := Finset.mem_product.mp hbase
-    obtain ⟨hk, hl⟩ := Finset.mem_product.mp hkl
-    have hk' := Finset.mem_Icc.mp hk
-    exact ⟨hp, hk'.1, hk'.2, hlt, hlo, hhi⟩
-  · rintro ⟨hp, hk0, hkK, hl, hlo, hhi⟩
-    apply Finset.mem_filter.mpr
-    refine ⟨Finset.mem_product.mpr ⟨hp, Finset.mem_product.mpr ?_⟩, hl, hlo, hhi⟩
-    exact ⟨Finset.mem_Icc.mpr ⟨hk0, hkK⟩, Finset.mem_range.mpr (lt_of_lt_of_le hl hkK)⟩
+      (smoothHalfScale q.1.1 q.1.2.1 : ℝ)^q.2.1 ≤ T^(smoothingExponent σ) := by pm_4458
 
-theorem smoothTaylorIndices_card_eventually {σ : ℝ} (hσ : 3/4 < σ) :
+section
+variable {σ : ℝ} (hσ : 3/4 < σ)
+include σ hσ
+theorem smoothTaylorIndices_card_eventually :
     ∀ᶠ T : ℝ in atTop, ((smoothTaylorIndices σ T).card : ℝ) ≤ 144*(Real.log T)^2 := by
   filter_upwards [eventually_ge_atTop (1 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1,
     log_sq_eventually_le_height] with T hT hlog hsq
-  have hYlo : 1 ≤ detectorY σ T := Real.one_le_rpow hT (smoothingExponent_pos hσ).le
-  have hYhi : detectorY σ T ≤ T := by
-    simpa only [detectorY, Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT (smoothingExponent_lt_one hσ).le
-  have hR : 1 ≤ detectorY σ T*(Real.log T)^2 := by nlinarith
+  pm_5148 hYlo σ hT smoothingExponent_pos hσ hYhi smoothingExponent_lt_one
   have hRhi : detectorY σ T*(Real.log T)^2 ≤ T^2 := by nlinarith
   exact smoothTaylorIndices_card_le_log (smoothScaleIndices_card_le_log hT hlog hR hRhi) hlog
 
 /-- At most a fixed multiple of log(T)^2 members, before zeros are selected. -/
-theorem smoothPoweredIndices_card_eventually {σ : ℝ} (hσ : 3/4 < σ) (δ : ℝ) :
+theorem smoothPoweredIndices_card_eventually (δ : ℝ) :
     ∀ᶠ T : ℝ in atTop,
       ((smoothPoweredIndices σ δ T).card : ℝ) ≤
         144*(smoothPowerBound σ δ : ℝ)^2*(Real.log T)^2 := by
@@ -83,6 +71,7 @@ theorem smoothPoweredIndices_card_eventually {σ : ℝ} (hσ : 3/4 < σ) (δ : �
     _ ≤ (144*(Real.log T)^2)*(smoothPowerBound σ δ : ℝ)^2 :=
       mul_le_mul_of_nonneg_right hcard (by positivity)
     _ = _ := by ring
+end
 
 /-- Every member of the fixed family has the required powered scales and
 globally bounded normalized coefficients. Threshold precedes every index. -/
@@ -108,7 +97,7 @@ theorem smoothPoweredFamily_admissible {σ η : ℝ}
   · have hsupp := bounded_power_support_scale
       (Nat.cast_nonneg (smoothHalfScale q.1.1 q.1.2.1)) hkK hhi
     have hTpos : 0 < T := by linarith
-    have hY : 0 < detectorY σ T := Real.rpow_pos_of_pos hTpos _
+    pm_5306 hY detectorY σ hTpos
     exact hnorm (detectorX δ T) (detectorY σ T) q.1.1 q.1.2.1 q.1.2.2 q.2.1 hY hkK
       (hsupp.trans (hupper.trans (by nlinarith)))
 
@@ -125,9 +114,7 @@ theorem smooth_long_or_short_powered_cover {σ δ η : ℝ}
         (smoothPoweredFamilyScale q : ℝ)^σ*T^(-2*η) ≤
           ‖detectingPolynomial (smoothPoweredFamilyScale q) (smoothPoweredFamilyCoefficient η σ δ T q) ρ.im‖) := by
   have ha : 0 < lowerExponent σ := by unfold lowerExponent; positivity
-  filter_upwards [smooth_long_or_short_Taylor_cover hσ hδ.le hδ',
-    short_scale_bounded_power ha hδ,
-    exists_normalizedSmoothPowered_height hη (smoothPowerBound σ δ)] with T hcover hpower hheight
+  pm_6579 hσ σ
   intro ρ hβ hβ' hγ hγ' hzero
   rcases hcover ρ hβ hβ' hγ hγ' hzero with hlong | ⟨p, hp, hlo, hhi, hdet⟩
   · exact Or.inl hlong

@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.AtkinsonCardinalityAbsorption
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -47,17 +48,14 @@ theorem atkinsonHeightFiber_interval {H L : ℝ} {W : Finset ℝ} (k : ℕ)
     (hL : 0 < L) (hrange : ∀ t ∈ W, H ≤ t) :
     ∀ t ∈ atkinsonHeightFiber H L W k,
       H+(k:ℝ)*L ≤ t ∧ t ≤ (H+(k:ℝ)*L)+L := by
-  intro t ht
-  obtain ⟨htW,htbin⟩ := Finset.mem_filter.mp ht
+  pm_161 t ht htW htbin Finset.mem_filter.mp
   have hq : 0 ≤ (t-H)/L := div_nonneg (sub_nonneg.mpr (hrange t htW)) hL.le
   have hlo := Nat.floor_le hq
   have hhi := Nat.lt_floor_add_one ((t-H)/L)
   change (atkinsonHeightBin H L t:ℝ) ≤ (t-H)/L at hlo
   change (t-H)/L < (atkinsonHeightBin H L t:ℝ)+1 at hhi
-  rw [htbin] at hlo hhi
-  have hl := (le_div_iff₀ hL).mp hlo
-  have hh := (div_lt_iff₀ hL).mp hhi
-  constructor <;> nlinarith
+  pm_8609 htbin hl hL hh
+  grind
 
 theorem atkinsonHeightFiber_card_partition {H L : ℝ} (W : Finset ℝ)
     (hL : 0 < L) (hrange : ∀ t ∈ W, t ≤ 2*H) :

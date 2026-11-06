@@ -13,12 +13,15 @@ open HeckeDetectorInverseFiberCount HeckeDetectorPlainFiberCount HeckeDetectorNo
 variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
-theorem Fiber.lengths (F : Fiber M H Label Slot U a ε tstar T allowance i) (hU : 1<U) :
+section
+variable (F : Fiber M H Label Slot U a ε tstar T allowance i)
+include F
+theorem Fiber.lengths (hU : 1<U) :
     tstar-F.r-ε≤F.m ∧ F.r≤tstar+ε ∧ F.m≤1/2+75*ε ∧ tstar-1/2-76*ε≤F.r ∧ 0≤F.m :=
   fiber_lengths F.rows F.nonempty F.family U a ε tstar T allowance i hU F.witness
     F.left F.right F.fixed_left F.fixed_right
 
-theorem Fiber.inverse_marked_count (F : Fiber M H Label Slot U a ε tstar T allowance i)
+theorem Fiber.inverse_marked_count
     {Δ c κ C height εm : ℝ} (moments : Moments F Δ c κ C height εm)
     (hU : 1<U) (ha : 1/2≤a) (hC : 0≤C) (hh : 0≤height)
     (hf : 2*Real.pi*allowance+(3*i : ℕ)*T≤height)
@@ -30,7 +33,7 @@ theorem Fiber.inverse_marked_count (F : Fiber M H Label Slot U a ε tstar T allo
     F.mesh_nonneg F.binWidth_pos F.widths_pos F.widths_mesh (by linarith [F.supply])
     hz (hz'.trans F.supply) F.fixed_bin hC hh hf hcap1 hcap2 moments.inverse_marked
 
-theorem Fiber.plain_marked_count (F : Fiber M H Label Slot U a ε tstar T allowance i)
+theorem Fiber.plain_marked_count
     {Δ c κ C height εm : ℝ} (moments : Moments F Δ c κ C height εm)
     (hU : 1<U) (ha : 1/2≤a) (hΔ : 0≤Δ) (hC : 0≤C) (hh : 0≤height)
     (hf : 2*Real.pi*allowance+(3*i : ℕ)*T≤height)
@@ -42,7 +45,7 @@ theorem Fiber.plain_marked_count (F : Fiber M H Label Slot U a ε tstar T allowa
     F.mesh_nonneg F.binWidth_pos F.widths_pos F.widths_mesh (by linarith [F.supply])
     hz (hz'.trans F.supply) F.fixed_bin (by linarith) hC hh hf hcap moments.plain_marked
 
-theorem Fiber.plain_unmarked_count (F : Fiber M H Label Slot U a ε tstar T allowance i)
+theorem Fiber.plain_unmarked_count
     {Δ c κ C height εm : ℝ} (moments : Moments F Δ c κ C height εm)
     (hU : 1<U) (ha : 0≤a) (hC : 0≤C) (hh : 0≤height)
     (hf : 2*Real.pi*allowance+(3*i : ℕ)*T≤height) :
@@ -50,6 +53,7 @@ theorem Fiber.plain_unmarked_count (F : Fiber M H Label Slot U a ε tstar T allo
   exact no_slot_plain_count F.rows F.family U a ε tstar T allowance i hU ha
     (fun u => (F.witness u).toWitness) F.label F.left F.right F.fixed_label F.fixed_left F.fixed_right
     εm C height hC hh hf moments.plain_unmarked
+end
 
 def fiberConstant (C height K : ℝ) : ℝ := (192*(1+height)*C)*max 1 K
 

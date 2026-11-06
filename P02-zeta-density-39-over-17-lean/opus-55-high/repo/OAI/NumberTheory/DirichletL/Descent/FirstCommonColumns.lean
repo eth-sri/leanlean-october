@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,16 +35,13 @@ theorem firstCommonColumn_pair (F D : Finset ι) (C₁ C₂ : Finset ι → ℂ)
     star (firstCommonColumn p hg F D C₁ true r.1 ω₁ X₁ t₁ h) *
       firstCommonColumn p hg F D C₂ false r.2 ω₂ X₂ t₂ h := by
   simp only [firstCommonColumn,supportConjugateSum,star_sum,Finset.sum_mul_sum]
-  apply Finset.sum_congr rfl
-  intro U hU
-  apply Finset.sum_congr rfl
-  intro V hV
-  simp only [firstCommonCoefficient,Bool.false_eq_true,ite_false,ite_true,star_mul,star_star]
+  pm_3811
+  pm_382 firstCommonCoefficient Bool.false_eq_true ite_false ite_true star_mul star_star
   ring
 
 def firstCommonOuterLog (A₁ A₂ C R : ℝ) (d h : Eis) (D : Finset ι) (s : Fin 9 → ℝ) : Fin 7 → ℝ :=
   ![Real.log (A₁/s 0),Real.log (A₂/s 1),Real.log (C/s 2),Real.log (‖eisEmbedding d‖^2/s 3),
-    Real.log (R/s 4),Real.log (primeProductNorm p D/s 5),Real.log (‖eisEmbedding h‖^2/s 6)]
+    Real.log (R/s 4),Real.log (primeProductNorm p D /s 5),Real.log (‖eisEmbedding h‖^2/s 6)]
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem first_common_source_mode (A₁ A₂ C R : ℝ) (d h : Eis) (s : Fin 9 → ℝ)

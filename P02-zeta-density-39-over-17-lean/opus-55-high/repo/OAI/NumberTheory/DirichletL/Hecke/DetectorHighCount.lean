@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorCountFromMoments
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,21 +21,18 @@ theorem high_count_from_raw_moments
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
     (εm : ℝ) (hεm : 0<εm) :
-    ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
+    ∃ c κ K₀ : ℝ,0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (a ε T allowance Δ C height : ℝ) (i : ℕ),
       1<U → 5/6≤2*a-1 → a≤1 → 0≤ε → ε≤1/1000 → 0≤C → 0≤height →
       2*Real.pi*allowance+(3*i : ℕ)*T≤height →
       ∀ {Label Slot : Type*} (F : Fiber M H Label Slot U a ε (3/2) T allowance i),
       Moments F Δ c κ C height εm →
       (F.rows.card : ℝ)≤fiberConstant C height K₀*U^(1-(2*a-1)+78*ε+εm) := by
-  obtain ⟨c,κ,K₀,hc,hc1,hκ,hK,hamp⟩ := HeckeDetectorNoSlotInverseCount.no_slot_inverse_count
-    M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB 2 εm (by norm_num) hεm
-  refine ⟨c,κ,K₀,hc,hc1,hκ,hK,?_⟩
+  pm_3131
+  pm_3149
   filter_upwards [hamp] with U hamp
   intro a ε T allowance Δ C height i hU ha ha' hε hεsmall hC hh hf Label Slot F moments
-  have hgeom := F.lengths hU
-  have hr0 : 0≤F.r := by linarith [hgeom.2.2.2.1]
-  have hr2 : F.r≤2 := by linarith [hgeom.2.1]
+  pm_713
   obtain ⟨hconst,_,_,hconstI⟩ := fiberConstant_bounds C height K₀ hC hh hK
   have hi := hamp F.rows F.family a ε (3/2) T allowance i hU (by linarith)
     (fun u => (F.witness u).toWitness) F.label F.left F.right F.fixed_label F.fixed_left F.fixed_right

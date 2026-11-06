@@ -1,6 +1,7 @@
 module
 public import DensityEnergyGM.DifferenceLayerCake
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,10 +23,9 @@ theorem finite_dyadic_weighted_square_bound {ι : Type*} (S : Finset ι)
       (2+Real.logb 2 T)*((∑ i ∈ S, r i)+4*B) := by
   classical
   have hTp : 0 < T := by linarith
-  have hlogtwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  pm_123 hlogtwo
   have hlogT : 0 ≤ Real.logb 2 T := by
-    unfold Real.logb
-    exact div_nonneg (Real.log_nonneg (by linarith)) hlogtwo.le
+    pm_7774
   let K : ℕ := ⌈Real.logb 2 T⌉₊+1
   have hK : (K:ℝ) ≤ 2+Real.logb 2 T := by
     have hh := Nat.ceil_lt_add_one hlogT
@@ -41,15 +41,13 @@ theorem finite_dyadic_weighted_square_bound {ι : Type*} (S : Finset ι)
         (2:ℝ)^(2*j)*(if (2:ℝ)^j ≤ v i then r i else 0) := by positivity
     by_cases hlow : v i ≤ 1
     · have hh : r i*v i^2 ≤ r i := by
-        have hv0 := hv i hi
-        have hr0 := hr i hi
+        pm_111 hv0 hv i hi hr0 hr
         have hp : v i^2 ≤ 1 := by nlinarith
         nlinarith [mul_le_mul_of_nonneg_left hp hr0]
       linarith
     have hvp : 0 < v i := by linarith
     have hlv : 0 ≤ Real.logb 2 (v i) := by
-      unfold Real.logb
-      exact div_nonneg (Real.log_nonneg (by linarith)) hlogtwo.le
+      pm_7774
     let j : ℕ := ⌊Real.logb 2 (v i)⌋₊
     have hjlo : (j:ℝ) ≤ Real.logb 2 (v i) := Nat.floor_le hlv
     have hjhi : Real.logb 2 (v i) < (j:ℝ)+1 := Nat.lt_floor_add_one _

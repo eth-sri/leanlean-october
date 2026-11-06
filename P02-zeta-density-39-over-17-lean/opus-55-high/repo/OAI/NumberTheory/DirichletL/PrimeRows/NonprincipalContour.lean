@@ -2,6 +2,8 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.PrincipalMask
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedFirst
 public import OAI.NumberTheory.DirichletL.Detector.CompensatedRows
+public import OAI.NumberTheory.DirichletL.PrimeRows.WeightedTuple
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,32 +24,25 @@ lemma calibrated_physicalRow_first_w (eps : ℝ) (heps : 0<eps)
     (hxw : 1+eps≤x.re+w.re) :
     DifferentiableAt ℂ (fun w=>star ((calibrationForSet S hmax).residueMonoid u.val)*
       physicalCompensatedRow S hS T hT η u x w z) w := by
-  by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0
-  · simp only [hc,star_zero,zero_mul]
-    exact differentiableAt_const _
+  pm_410
+  simp_all
   · have hp := calibrated_row_nonprincipal S hS.prime hmax hS.bad u hu hc
     apply DifferentiableAt.const_mul
     unfold physicalCompensatedRow continuedCompensatedRow
     apply DifferentiableAt.mul
     · exact ((HeckeOrigin.continued_differentiableAt _ (Or.inr hp)).const_mul _).mul_const _
     · apply DifferentiableAt.mul
-      · exact (continuedCorrection_first_boundary_w eps heps (markExclusions S T)
-          (markedSourceExclusions S hS T) (marked_firstTail (eps/2) S hfirst T) η u x w z
-          hx hw hz hxw).differentiableAt
+      pm_3457 continuedCorrection_first_boundary_w
       · apply DifferentiableAt.fun_finsetProd
         intro P hP
         exact (continuedCompensatedLocal_first_differentiable_w η u P.val _
           (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) x z
           (by linarith) (by linarith)) w
 
-theorem contourTupleOutside {K : ℕ} (S : Finset (Ideal O)) (P : Fin K→PrimeIdeal)
-    (hPS : ∀i,(P i).val∉S) : ∀Q∈Finset.univ.image P,Q.val∉S := by
-  intro Q hQ
-  obtain ⟨i,_,rfl⟩ := Finset.mem_image.mp hQ
-  exact hPS i
+alias contourTupleOutside := OAI.SevenEighths.ProbeHighRowFamily.tupleOutside
 
 def continuedPhysicalRowKernel {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
-    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
+    (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→ PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) : ℂ :=
   sourceMellinWeight W0 W1 X Y Z x w z*
     (∏i,(elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)^(z-1))*
@@ -57,7 +52,7 @@ def continuedPhysicalRowKernel {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExcl
 
 theorem continuedPhysicalRowKernel_initial {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
+    (P : Fin K→ PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
     (t : ProbeMellinBoundary.HeightSpace) :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z
@@ -75,14 +70,14 @@ lemma sourceMellinWeight_differentiable_w (W0 W1 : SchwartzMap ℝ ℂ)
     Differentiable ℂ (fun w=>sourceMellinWeight W0 W1 X Y Z x w z) := by
   have hm : Differentiable ℂ (mellin W1) := fun w=>
     CubicReflectionKernel.compact_source_mellin_differentiable W1 a b ha hW (W1.smooth (⊤:ℕ∞)) w
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
+  pm_3058 hy Y hY.ne'
   unfold sourceMellinWeight
   fun_prop (disch := exact Or.inl hy)
 
 theorem continuedPhysicalRowKernel_differentiableAt_w {K : ℕ}
     (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hfirst : FirstTail (eps/2) S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
+    (P : Fin K→ PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a) (hW : Function.support W1⊆Icc a b)
     (X Y Z : ℝ) (hY : 0<Y) (x w z : ℂ)
     (hx : (51/100:ℝ)≤x.re) (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)

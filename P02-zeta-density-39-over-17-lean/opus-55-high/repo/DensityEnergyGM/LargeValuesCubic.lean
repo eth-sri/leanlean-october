@@ -3,11 +3,11 @@ public import Mathlib.Analysis.Normed.Ring.InfiniteSum
 public import DensityEnergyGM.LargeValuesLanguage
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesReflection
 public import GuthMaynard.NativeSource.GuthMaynard.Separated
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset Filter MeasureTheory Real Set
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -36,42 +36,44 @@ noncomputable def gmTraceZeroMode (cutoff : GMSmoothCutoff) (N : ℕ)
     (t : ℝ) : ℂ :=
   gmScaledTraceMode cutoff N t 0
 
-theorem gmScaledTraceMode_summable (cutoff : GMSmoothCutoff) (N : ℕ)
-    (hN : 0 < N) (t : ℝ) :
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (hN : 0 < N) (t : ℝ)
+include cutoff N hN t
+theorem gmScaledTraceMode_summable :
     Summable (gmScaledTraceMode cutoff N t) := by
   unfold gmScaledTraceMode
   simpa using
     gmScaledTraceFourier_summable cutoff t (N : ℝ) (by exact_mod_cast hN)
 
-theorem gmScaledTraceMode_tsum_decompose (cutoff : GMSmoothCutoff)
-    (N : ℕ) (hN : 0 < N) (t : ℝ) :
+theorem gmScaledTraceMode_tsum_decompose :
     ∑' m : ℤ, gmScaledTraceMode cutoff N t m =
       gmTraceZeroMode cutoff N t + gmTraceNonzeroTailAt cutoff N t := by
   rw [(gmScaledTraceMode_summable cutoff N hN t).tsum_eq_add_tsum_ite 0]
-  simp [gmTraceZeroMode, gmTraceNonzeroTailAt]
+  aesop
+end
 
+section
+variable (cutoff : GMSmoothCutoff)
+include cutoff
 /-- Uniform arbitrary-order control of the complete nonzero-frequency tail.
 This is the summed version of Lemma 4.3(1), with the full ordinate dependence
 left explicit. -/
-theorem gmTraceNonzeroTailAt_bound (cutoff : GMSmoothCutoff)
+theorem gmTraceNonzeroTailAt_bound
     (q : ℕ) (hq : 2 ≤ q) :
     ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ), 0 < N → ∀ t : ℝ,
       ‖gmTraceNonzeroTailAt cutoff N t‖ ≤
         K * (1 + |t|) ^ q / (N : ℝ) ^ (q - 1) := by
-  obtain ⟨C, hC, hDecay⟩ := gmTraceFourier_uniform_decay cutoff q
+  pm_98 C hC hDecay gmTraceFourier_uniform_decay cutoff q
   have hSeries : Summable (fun m : ℤ ↦ ‖1 / (m : ℂ) ^ q‖) := by
     have hNorm : (fun m : ℤ ↦ ‖1 / (m : ℂ) ^ q‖) =
         fun m : ℤ ↦ |1 / (m : ℝ) ^ q| := by
       funext m
-      simp only [norm_div, norm_one, norm_pow, Complex.norm_intCast,
-        abs_div, abs_one, pow_abs]
-    rw [hNorm, summable_abs_iff]
-    exact Real.summable_one_div_int_pow.mpr (by omega)
-  let B : ℝ := ∑' m : ℤ, ‖1 / (m : ℂ) ^ q‖
-  have hB : 0 ≤ B := tsum_nonneg fun m ↦ norm_nonneg _
-  refine ⟨C * B + 1, by positivity, ?_⟩
+      simp_all
+    pm_7844
+  pm_875 q
+  pm_4786
   intro N hN t
-  have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
+  pm_4783
   let scale : ℝ := C * (1 + |t|) ^ q / (N : ℝ) ^ (q - 1)
   have hPointwise : ∀ m : ℤ,
       ‖if m = 0 then 0 else gmScaledTraceMode cutoff N t m‖ ≤
@@ -79,20 +81,16 @@ theorem gmTraceNonzeroTailAt_bound (cutoff : GMSmoothCutoff)
     intro m
     by_cases hm : m = 0
     · have hq0 : q ≠ 0 := by omega
-      simp [hm, hq0]
+      simp_all
     · have hmReal : (m : ℝ) ≠ 0 := by exact_mod_cast hm
-      have hmAbs : 0 < |(m : ℝ)| := abs_pos.mpr hmReal
-      have hFreqAbs : |(N : ℝ) * (m : ℝ)| =
-          (N : ℝ) * |(m : ℝ)| := by
-        rw [abs_mul, abs_of_pos hNr]
-      have hFreqPos : 0 < |(N : ℝ) * (m : ℝ)| := by positivity
+      pm_4785 hmAbs
+      pm_4209
+      pm_5687
       have hFourier :
           ‖gmTraceFourier cutoff t ((N : ℝ) * (m : ℝ))‖ ≤
             C * (1 + |t|) ^ q /
               |(N : ℝ) * (m : ℝ)| ^ q := by
-        rw [le_div_iff₀ (pow_pos hFreqPos q)]
-        simpa [mul_comm, mul_left_comm, mul_assoc] using
-          hDecay t ((N : ℝ) * (m : ℝ))
+        pm_4210
       simp only [ite_false, hm, gmScaledTraceMode, norm_mul,
         Complex.norm_natCast, norm_div, norm_one, norm_pow,
         Complex.norm_intCast]
@@ -103,30 +101,25 @@ theorem gmTraceNonzeroTailAt_bound (cutoff : GMSmoothCutoff)
                 |(N : ℝ) * (m : ℝ)| ^ q) := by gcongr
         _ = scale * (1 / |(m : ℝ)| ^ q) := by
           rw [hFreqAbs, mul_pow]
-          have hqEq : q = (q - 1) + 1 := by omega
+          pm_6126 hqEq q
           have hNpow : (N : ℝ) ^ q =
               (N : ℝ) ^ (q - 1) * (N : ℝ) := by
             conv_lhs => rw [hqEq, pow_succ]
           dsimp only [scale]
           rw [hNpow]
           field_simp
-  have hScaled : Summable (fun m : ℤ ↦ scale * ‖1 / (m : ℂ) ^ q‖) :=
-    hSeries.mul_left scale
-  have hBound := tsum_of_norm_bounded hScaled.hasSum hPointwise
-  rw [tsum_mul_left] at hBound
+  pm_6805 hScaled q hSeries.mul_left
+  pm_126 hBound tsum_of_norm_bounded hScaled.hasSum hPointwise tsum_mul_left
   change ‖gmTraceNonzeroTailAt cutoff N t‖ ≤ scale * B at hBound
   calc
     ‖gmTraceNonzeroTailAt cutoff N t‖ ≤ scale * B := hBound
     _ ≤ (C * B + 1) * (1 + |t|) ^ q / (N : ℝ) ^ (q - 1) := by
-      dsimp only [scale]
-      have hPow : 0 < (N : ℝ) ^ (q - 1) := by positivity
-      rw [div_mul_eq_mul_div]
-      apply (div_le_div_iff_of_pos_right hPow).2
+      pm_992 q
       have htPow : 0 ≤ (1 + |t|) ^ q := by positivity
       nlinarith
 
 /-- A uniform bound for every scaled zero mode. -/
-theorem gmTraceZeroMode_bound (cutoff : GMSmoothCutoff) :
+theorem gmTraceZeroMode_bound :
     ∃ B : ℝ, 0 < B ∧ ∀ (N : ℕ) (t : ℝ),
       ‖gmTraceZeroMode cutoff N t‖ ≤ (N : ℝ) * B := by
   obtain ⟨C, hC, hDecay⟩ := gmTraceFourier_uniform_decay cutoff 0
@@ -134,27 +127,23 @@ theorem gmTraceZeroMode_bound (cutoff : GMSmoothCutoff) :
   intro N t
   have h := hDecay t 0
   simp only [abs_zero, pow_zero, one_mul] at h
-  simp only [gmTraceZeroMode, gmScaledTraceMode, Int.cast_zero, mul_zero,
-    norm_mul, Complex.norm_natCast]
+  pm_204 gmTraceZeroMode gmScaledTraceMode Int.cast_zero mul_zero norm_mul Complex.norm_natCast
   exact mul_le_mul_of_nonneg_left (h.trans (by nlinarith [hC]))
     (Nat.cast_nonneg N)
 
 /-- A separated nonzero ordinate difference makes its scaled zero mode
 arbitrarily small. -/
-theorem gmTraceZeroMode_separated_bound (cutoff : GMSmoothCutoff)
+theorem gmTraceZeroMode_separated_bound
     (q : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ (N : ℕ) {δ t : ℝ}, 0 < δ → δ ≤ |t| →
       ‖gmTraceZeroMode cutoff N t‖ ≤
         (N : ℝ) * C / δ ^ q := by
-  obtain ⟨C, hC, hDecay⟩ := gmTraceFourier_zero_uniform_decay_source cutoff q
-  refine ⟨C, hC, ?_⟩
-  intro N δ t hδ ht
-  have htPos : 0 < |t| := hδ.trans_le ht
+  pm_98 C hC hDecay gmTraceFourier_zero_uniform_decay_source cutoff q
+  pm_435 C hC N δ t hδ ht
+  pm_4888 htPos t hδ.trans_le ht
   have hFourier : ‖gmTraceFourier cutoff t 0‖ ≤ C / |t| ^ q := by
-    rw [le_div_iff₀ (pow_pos htPos q)]
-    simpa [mul_comm] using hDecay t
-  simp only [gmTraceZeroMode, gmScaledTraceMode, Int.cast_zero, mul_zero,
-    norm_mul, Complex.norm_natCast]
+    pm_8705 htPos t
+  pm_204 gmTraceZeroMode gmScaledTraceMode Int.cast_zero mul_zero norm_mul Complex.norm_natCast
   calc
     (N : ℝ) * ‖gmTraceFourier cutoff t 0‖ ≤
         (N : ℝ) * (C / |t| ^ q) := by gcongr
@@ -163,21 +152,23 @@ theorem gmTraceZeroMode_separated_bound (cutoff : GMSmoothCutoff)
       have hpow : δ ^ q ≤ |t| ^ q := pow_le_pow_left₀ hδ.le ht q
       exact div_le_div_of_nonneg_left (mul_nonneg (Nat.cast_nonneg N) hC.le)
         (pow_pos hδ q) hpow
+end
 
-private theorem gmTraceKernel_eq_scaled_phase
-    (cutoff : GMSmoothCutoff) (N n : ℕ) (hN : 0 < N) (hn : 0 < n)
+section
+variable (cutoff : GMSmoothCutoff)
+include cutoff
+private theorem gmTraceKernel_eq_scaled_phase (N n : ℕ) (hN : 0 < N) (hn : 0 < n)
     (t : ℝ) :
     (cutoff ((n : ℝ) / N) ^ 2 : ℂ) *
         (n : ℂ) ^ ((t : ℂ) * I) =
       (N : ℂ) ^ ((t : ℂ) * I) *
         gmTraceKernel cutoff t ((n : ℝ) / N) := by
-  have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
-  have hnr : 0 < (n : ℝ) := by exact_mod_cast hn
-  have hratio : 0 < (n : ℝ) / N := div_pos hnr hNr
+  pm_4783
+  pm_456 hnr n hn
+  pm_8706 N hNr
   have hcast :
       ((n : ℂ) : ℂ) = (N : ℂ) * (((n : ℝ) / N : ℝ) : ℂ) := by
-    have hreal : (n : ℝ) = (N : ℝ) * ((n : ℝ) / N) :=
-      (mul_div_cancel₀ (n : ℝ) hNr.ne').symm
+    pm_5211 N hNr.ne'
     calc
       (n : ℂ) = (((n : ℝ) : ℂ)) := by norm_num
       _ = ((((N : ℝ) * ((n : ℝ) / N) : ℝ)) : ℂ) := congrArg Complex.ofReal hreal
@@ -186,32 +177,17 @@ private theorem gmTraceKernel_eq_scaled_phase
   change (cutoff ((n : ℝ) / N) ^ 2 : ℂ) *
       ((((N : ℝ) : ℂ) * (((n : ℝ) / N : ℝ) : ℂ)) ^ ((t : ℂ) * I)) = _
   rw [Complex.mul_cpow_ofReal_nonneg hNr.le hratio.le]
-  unfold gmTraceKernel
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hratio.ne')]
-  rw [← Complex.ofReal_log hratio.le]
-  have harg :
-      ((Real.log ((n : ℝ) / N) : ℝ) : ℂ) * ((t : ℂ) * I) =
-        (((t * Real.log ((n : ℝ) / N) : ℝ)) : ℂ) * I := by
-    push_cast
-    ring
-  rw [harg]
+  pm_4211 N
   ac_rfl
 
 /-- Compact support identifies the integer kernel sum with the actual matrix
 columns for every ordinate difference. -/
-theorem gmTraceKernel_tsum_eq_column_sum (cutoff : GMSmoothCutoff)
+theorem gmTraceKernel_tsum_eq_column_sum
     (N : ℕ) (hN : 0 < N) (t : ℝ) :
     ∑' n : ℤ, gmTraceKernel cutoff t ((n : ℝ) / N) =
       ∑ n : GMColumn N, gmTraceKernel cutoff t ((n : ℝ) / N) := by
   rw [gmTraceKernel_tsum_eq_intBlock cutoff t (N : ℝ) (by exact_mod_cast hN)]
-  have hFloorN : Int.floor (N : ℝ) = (N : ℤ) := by simp
-  have hFloorTwoN : Int.floor (2 * (N : ℝ)) = ((2 * N : ℕ) : ℤ) := by
-    calc
-      Int.floor (2 * (N : ℝ)) = Int.floor (((2 * N : ℕ) : ℝ)) := by
-        congr 1
-        norm_num
-      _ = ((2 * N : ℕ) : ℤ) := Int.floor_natCast (R := ℝ) (2 * N)
-  rw [hFloorN, hFloorTwoN]
+  pm_4781
   have hInterval :
       Finset.Ioc (N : ℤ) ((2 * N : ℕ) : ℤ) =
         (Finset.Ioc N (2 * N)).map Nat.castEmbedding := by
@@ -219,27 +195,22 @@ theorem gmTraceKernel_tsum_eq_column_sum (cutoff : GMSmoothCutoff)
     simp only [Finset.mem_Ioc, Finset.mem_map]
     constructor
     · intro hz
-      have hzNonneg : 0 ≤ z := by omega
-      refine ⟨z.toNat, ?_, ?_⟩
+      pm_6508
       · constructor <;> omega
       · exact Int.toNat_of_nonneg hzNonneg
-    · rintro ⟨n, hn, rfl⟩
-      change (N : ℤ) < (n : ℤ) ∧ (n : ℤ) ≤ (2 * N : ℤ)
-      exact_mod_cast hn
+    pm_4782
   rw [hInterval, Finset.sum_map]
   have hAttach :
       (∑ n : GMColumn N, gmTraceKernel cutoff t ((n : ℝ) / N)) =
         ∑ n ∈ dyadicInterval N, gmTraceKernel cutoff t ((n : ℝ) / N) := by
-    conv_rhs => rw [← Finset.sum_attach]
-    rw [Finset.univ_eq_attach (dyadicInterval N)]
+    pm_4832 N
   rw [hAttach]
   apply Finset.sum_congr rfl
   intro n hn
   rfl
 
 /-- A Gram entry is a Mellin phase times the full scaled Fourier series. -/
-theorem gmMatrix_gram_apply_eq_phase_mul_fourier_tsum
-    (cutoff : GMSmoothCutoff) (N : ℕ) (hN : 0 < N)
+theorem gmMatrix_gram_apply_eq_phase_mul_fourier_tsum (N : ℕ) (hN : 0 < N)
     (W : Finset ℝ) (t u : GMRow W) :
     (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose) t u =
       (N : ℂ) ^ (((((t : ℝ) - (u : ℝ)) : ℝ) : ℂ) * I) *
@@ -253,12 +224,7 @@ theorem gmMatrix_gram_apply_eq_phase_mul_fourier_tsum
           ∑ n : GMColumn N,
             gmTraceKernel cutoff ((t : ℝ) - (u : ℝ)) ((n : ℝ) / N) := by
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro n hn
-    have hnPos : 0 < (n : ℕ) := by
-      have hnMem : (n : ℕ) ∈ Finset.Ioc N (2 * N) := n.property
-      rw [Finset.mem_Ioc] at hnMem
-      omega
+    pm_4833
     exact gmTraceKernel_eq_scaled_phase cutoff N n hN
       hnPos
       ((t : ℝ) - (u : ℝ))
@@ -269,14 +235,15 @@ theorem gmMatrix_gram_apply_eq_phase_mul_fourier_tsum
   rw [gmTraceKernel_poisson cutoff ((t : ℝ) - (u : ℝ)) (N : ℝ)
     (by exact_mod_cast hN)]
   congr 1
+end
 
 private theorem gmCubicPhase_cancel (N : ℕ) (hN : 0 < N)
     (t u v : ℝ) :
     (N : ℂ) ^ (((t - u : ℝ) : ℂ) * I) *
         (N : ℂ) ^ (((u - v : ℝ) : ℂ) * I) *
           (N : ℂ) ^ (((v - t : ℝ) : ℂ) * I) = 1 := by
-  have hNne : (N : ℂ) ≠ 0 := by exact_mod_cast hN.ne'
-  rw [← Complex.cpow_add _ _ hNne, ← Complex.cpow_add _ _ hNne]
+  pm_146 hNne N hN.ne'
+  pm_8527 hNne
   convert Complex.cpow_zero (N : ℂ) using 2
   push_cast
   ring
@@ -303,8 +270,11 @@ noncomputable def gmCubicZeroRemainder (cutoff : GMSmoothCutoff) (N : ℕ)
         gmTraceZeroMode cutoff N ((u : ℝ) - (v : ℝ)) *
           gmTraceZeroMode cutoff N ((v : ℝ) - (t : ℝ))
 
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ)
+include cutoff N
 @[simp]
-theorem gmTraceZeroMode_zero (cutoff : GMSmoothCutoff) (N : ℕ) :
+theorem gmTraceZeroMode_zero :
     gmTraceZeroMode cutoff N 0 =
       (N : ℂ) * (gmCutoffL2Sq cutoff : ℂ) := by
   simp [gmTraceZeroMode, gmScaledTraceMode,
@@ -312,8 +282,7 @@ theorem gmTraceZeroMode_zero (cutoff : GMSmoothCutoff) (N : ℕ) :
 
 /-- Exact separation of the zero-frequency contribution into its diagonal
 main term and off-diagonal remainder. -/
-theorem gmCubicZeroMode_eq_main_add_remainder (cutoff : GMSmoothCutoff)
-    (N : ℕ) (W : Finset ℝ) :
+theorem gmCubicZeroMode_eq_main_add_remainder (W : Finset ℝ) :
     gmCubicZeroMode cutoff N W =
       gmCubicDiagonalMain cutoff N W + gmCubicZeroRemainder cutoff N W := by
   unfold gmCubicZeroMode gmCubicDiagonalMain gmCubicZeroRemainder
@@ -351,15 +320,9 @@ theorem gmCubicZeroMode_eq_main_add_remainder (cutoff : GMSmoothCutoff)
         · simp
       _ = (N : ℂ) ^ 3 * (W.card : ℂ) *
           (gmCutoffL2Sq cutoff : ℂ) ^ 3 := by
-        simp only [Finset.sum_const, Finset.card_univ, Fintype.card_coe,
-          nsmul_eq_mul]
-        ring
+        pm_1374
   rw [hMain]
-  rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
-  intro t ht
-  rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
+  pm_4968 Finset.sum_add_distrib t ht
   intro u hu
   rw [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
@@ -371,6 +334,7 @@ theorem gmCubicZeroMode_eq_main_add_remainder (cutoff : GMSmoothCutoff)
       simp
     · simp [htv]
   · simp [htu]
+end
 
 /-- The piece with exactly one nonzero Fourier frequency. -/
 noncomputable def gmCubicS1Summand (cutoff : GMSmoothCutoff) (N : ℕ)
@@ -433,10 +397,12 @@ noncomputable def gmCubicS3 (cutoff : GMSmoothCutoff) (N : ℕ)
       gmTraceNonzeroTailAt cutoff N ((u : ℝ) - (v : ℝ)) *
         gmTraceNonzeroTailAt cutoff N ((v : ℝ) - (t : ℝ))
 
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (hN : 0 < N) (W : Finset ℝ)
+include cutoff N hN W
 /-- Exact Guth--Maynard cubic Poisson expansion before separating the four
 frequency classes. -/
-theorem gmMatrix_cubic_trace_poisson_expand (cutoff : GMSmoothCutoff)
-    (N : ℕ) (hN : 0 < N) (W : Finset ℝ) :
+theorem gmMatrix_cubic_trace_poisson_expand :
     Matrix.trace
         ((gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose) ^ 3) =
       ∑ t : GMRow W, ∑ u : GMRow W, ∑ v : GMRow W,
@@ -449,10 +415,7 @@ theorem gmMatrix_cubic_trace_poisson_expand (cutoff : GMSmoothCutoff)
   rw [matrix_trace_cube_expand]
   apply Finset.sum_congr rfl
   intro t ht
-  apply Finset.sum_congr rfl
-  intro u hu
-  apply Finset.sum_congr rfl
-  intro v hv
+  pm_4212
   simp_rw [gmMatrix_gram_apply_eq_phase_mul_fourier_tsum cutoff N hN W,
     gmScaledTraceMode_tsum_decompose cutoff N hN]
   calc
@@ -478,8 +441,7 @@ theorem gmMatrix_cubic_trace_poisson_expand (cutoff : GMSmoothCutoff)
 
 /-- Equation (5.5): the exact cubic trace is the zero mode plus the pieces
 with exactly one, exactly two, and exactly three nonzero frequencies. -/
-theorem gmMatrix_cubic_trace_split (cutoff : GMSmoothCutoff)
-    (N : ℕ) (hN : 0 < N) (W : Finset ℝ) :
+theorem gmMatrix_cubic_trace_split :
     Matrix.trace
         ((gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose) ^ 3) =
       gmCubicZeroMode cutoff N W + gmCubicS1 cutoff N W +
@@ -491,17 +453,14 @@ theorem gmMatrix_cubic_trace_split (cutoff : GMSmoothCutoff)
   simp_rw [← Finset.sum_add_distrib]
   apply Finset.sum_congr rfl
   intro t ht
-  apply Finset.sum_congr rfl
-  intro u hu
-  apply Finset.sum_congr rfl
-  intro v hv
+  pm_4212
   ring
+end
 
 private theorem gmRow_difference_abs_le {T : ℝ} {W : Finset ℝ}
     (hW : InBaseInterval T W) (t u : GMRow W) :
     |(t : ℝ) - (u : ℝ)| ≤ T := by
-  have ht := hW t t.property
-  have hu := hW u u.property
+  pm_268 ht hW t t.property hu u u.property
   rw [Set.mem_Icc] at ht hu
   rw [abs_le]
   constructor <;> linarith
@@ -562,23 +521,23 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
           ((N : ℝ) * (1 + |T|) ^ 2 / δ ^ q +
             (N : ℝ) ^ 2 / (N : ℝ) ^ 29) := by
   obtain ⟨B, hB, hZero⟩ := gmTraceZeroMode_bound cutoff
-  obtain ⟨C, hC, hSmall⟩ := gmTraceZeroMode_separated_bound cutoff q
-  obtain ⟨L, hL, hTail⟩ := gmTraceNonzeroTailAt_bound cutoff 2 (by norm_num)
+  pm_98 C hC hSmall gmTraceZeroMode_separated_bound cutoff q
+  pm_8704 L hL
   obtain ⟨D, hD, hTailZero⟩ :=
     gmTraceNonzeroTailAt_bound cutoff 30 (by norm_num)
   let K : ℝ := 3 * (L * B * C + B ^ 2 * D) + 1
-  have hK : 0 < K := by dsimp only [K]; positivity
+  pm_4213
   refine ⟨K, hK, ?_⟩
   intro N W T δ hN hδ hSep hW
-  have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
+  pm_4783
   let offMajor : ℝ :=
     L * (1 + |T|) ^ 2 / (N : ℝ) *
       ((N : ℝ) * B) * ((N : ℝ) * C / δ ^ q)
   let diagMajor : ℝ :=
     3 * ((N : ℝ) * B) ^ 2 *
       (D * (1 + |(0 : ℝ)|) ^ 30 / (N : ℝ) ^ 29)
-  have hOffNonneg : 0 ≤ offMajor := by dsimp only [offMajor]; positivity
-  have hDiagNonneg : 0 ≤ diagMajor := by dsimp only [diagMajor]; positivity
+  pm_82 hOffNonneg offMajor
+  pm_82 hDiagNonneg diagMajor
   have hTailAny : ∀ t u : GMRow W,
       ‖gmTraceNonzeroTailAt cutoff N ((t : ℝ) - (u : ℝ))‖ ≤
         L * (1 + |T|) ^ 2 / (N : ℝ) := by
@@ -586,8 +545,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
     have hdiff := gmRow_difference_abs_le hW t u
     have hbase : 1 + |(t : ℝ) - (u : ℝ)| ≤ 1 + |T| := by
       have hT0 : 0 ≤ T := by
-        have ht := hW t t.property
-        rw [Set.mem_Icc] at ht
+        pm_126 ht hW t t.property Set.mem_Icc
         linarith
       rw [abs_of_nonneg hT0]
       linarith
@@ -603,8 +561,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
     simpa using hTailZero N hN 0
   have hSummand : ∀ t u v : GMRow W,
       ‖gmCubicS1Summand cutoff N t u v‖ ≤ offMajor * 3 + diagMajor := by
-    intro t u v
-    by_cases hAll : t = u ∧ u = v
+    pm_7267
     · rcases hAll with ⟨rfl, rfl⟩
       simp only [sub_self, gmCubicS1Summand]
       have hDiagOne :
@@ -619,9 +576,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                 ‖gmTraceZeroMode cutoff N 0‖ ≤
             (D * (1 + |(0 : ℝ)|) ^ 30 / (N : ℝ) ^ 29) *
               ((N : ℝ) * B) * ((N : ℝ) * B) := by
-                gcongr
-                · exact hZero N 0
-                · exact hZero N 0
+                pm_5628
               
           _ = _ := by ring
       calc
@@ -664,9 +619,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                       _ ≤ ((N : ℝ) * B) *
                           (D * (1 + |(0 : ℝ)|) ^ 30 / (N : ℝ) ^ 29) *
                             ((N : ℝ) * B) := by
-                              gcongr
-                              · exact hZero N 0
-                              · exact hZero N 0
+                              pm_5628
                       _ = _ := by ring
                   have hDiagThree :
                       ‖gmTraceZeroMode cutoff N 0‖ *
@@ -677,9 +630,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                     calc
                       _ ≤ ((N : ℝ) * B) * ((N : ℝ) * B) *
                           (D * (1 + |(0 : ℝ)|) ^ 30 / (N : ℝ) ^ 29) := by
-                            gcongr
-                            · exact hZero N 0
-                            · exact hZero N 0
+                            pm_5628
                       _ = _ := by ring
                   nlinarith
       _ = diagMajor := by rfl
@@ -690,13 +641,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                 gmTraceZeroMode cutoff N ((v : ℝ) - (t : ℝ))‖ ≤ offMajor := by
         have hCases : u ≠ v ∨ v ≠ t := by
           by_cases huv : u = v
-          · right
-            intro hvt
-            apply hAll
-            subst v
-            subst u
-            exact ⟨rfl, rfl⟩
-          · exact Or.inl huv
+          pm_8653 v u huv
         rcases hCases with huv | hvt
         · simp only [norm_mul]
           calc
@@ -707,8 +652,8 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                 ((N : ℝ) * C / δ ^ q) * ((N : ℝ) * B) := by
                   gcongr
                   · exact hTailAny t u
-                  · exact hSmall N hδ (gmRow_difference_separated hSep u v huv)
-                  · exact hZero N ((v : ℝ) - (t : ℝ))
+                  pm_4217 u v huv
+                  pm_4214
             _ = offMajor := by dsimp only [offMajor]; ring
         · simp only [norm_mul]
           calc
@@ -719,8 +664,8 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                 ((N : ℝ) * B) * ((N : ℝ) * C / δ ^ q) := by
                   gcongr
                   · exact hTailAny t u
-                  · exact hZero N ((u : ℝ) - (v : ℝ))
-                  · exact hSmall N hδ (gmRow_difference_separated hSep v t hvt)
+                  pm_4216
+                  pm_4217 v t hvt
             _ = offMajor := by rfl
       have hTerm2 :
           ‖gmTraceZeroMode cutoff N ((t : ℝ) - (u : ℝ)) *
@@ -728,13 +673,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                 gmTraceZeroMode cutoff N ((v : ℝ) - (t : ℝ))‖ ≤ offMajor := by
         have hCases : t ≠ u ∨ v ≠ t := by
           by_cases htu : t = u
-          · right
-            intro hvt
-            apply hAll
-            subst u
-            subst v
-            exact ⟨rfl, rfl⟩
-          · exact Or.inl htu
+          pm_8653 u v htu
         rcases hCases with htu | hvt
         · simp only [norm_mul]
           calc
@@ -744,9 +683,9 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
               ((N : ℝ) * C / δ ^ q) *
                 (L * (1 + |T|) ^ 2 / (N : ℝ)) * ((N : ℝ) * B) := by
                   gcongr
-                  · exact hSmall N hδ (gmRow_difference_separated hSep t u htu)
+                  pm_4217 t u htu
                   · exact hTailAny u v
-                  · exact hZero N ((v : ℝ) - (t : ℝ))
+                  pm_4214
             _ = offMajor := by dsimp only [offMajor]; ring
         · simp only [norm_mul]
           calc
@@ -756,10 +695,9 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
               ((N : ℝ) * B) *
                 (L * (1 + |T|) ^ 2 / (N : ℝ)) *
                   ((N : ℝ) * C / δ ^ q) := by
-                    gcongr
-                    · exact hZero N ((t : ℝ) - (u : ℝ))
+                    pm_4215
                     · exact hTailAny u v
-                    · exact hSmall N hδ (gmRow_difference_separated hSep v t hvt)
+                    pm_4217 v t hvt
             _ = offMajor := by dsimp only [offMajor]; ring
       have hTerm3 :
           ‖gmTraceZeroMode cutoff N ((t : ℝ) - (u : ℝ)) *
@@ -780,8 +718,8 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
               ((N : ℝ) * C / δ ^ q) * ((N : ℝ) * B) *
                 (L * (1 + |T|) ^ 2 / (N : ℝ)) := by
                   gcongr
-                  · exact hSmall N hδ (gmRow_difference_separated hSep t u htu)
-                  · exact hZero N ((u : ℝ) - (v : ℝ))
+                  pm_4217 t u htu
+                  pm_4216
                   · exact hTailAny v t
             _ = offMajor := by dsimp only [offMajor]; ring
         · simp only [norm_mul]
@@ -791,9 +729,8 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                   ‖gmTraceNonzeroTailAt cutoff N ((v : ℝ) - (t : ℝ))‖ ≤
               ((N : ℝ) * B) * ((N : ℝ) * C / δ ^ q) *
                 (L * (1 + |T|) ^ 2 / (N : ℝ)) := by
-                  gcongr
-                  · exact hZero N ((t : ℝ) - (u : ℝ))
-                  · exact hSmall N hδ (gmRow_difference_separated hSep u v huv)
+                  pm_4215
+                  pm_4217 u v huv
                   · exact hTailAny v t
             _ = offMajor := by dsimp only [offMajor]; ring
       unfold gmCubicS1Summand
@@ -833,15 +770,10 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
           exact norm_sum_le _ _
     _ ≤ ∑ t : GMRow W, ∑ u : GMRow W, ∑ v : GMRow W,
         ‖gmCubicS1Summand cutoff N t u v‖ := by
-          apply Finset.sum_le_sum
-          intro t ht
-          apply Finset.sum_le_sum
-          intro u hu
-          exact norm_sum_le _ _
+          pm_894
     _ ≤ ∑ _t : GMRow W, ∑ _u : GMRow W, ∑ _v : GMRow W,
         (offMajor * 3 + diagMajor) := by
-          gcongr with t ht u hu v hv
-          exact hSummand t u v
+          pm_8586 hSummand
     _ = (W.card : ℝ) ^ 3 * (offMajor * 3 + diagMajor) := by
       simp only [Finset.sum_const, Finset.card_univ, Fintype.card_coe, nsmul_eq_mul]
       ring
@@ -861,7 +793,7 @@ theorem gmCubicS1_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
         norm_num
         ring
       rw [hFirst, hSecond]
-      have hCardNonneg : 0 ≤ (W.card : ℝ) ^ 3 := by positivity
+      pm_5937 hCardNonneg W.card
       have hx : 0 ≤ (N : ℝ) * (1 + |T|) ^ 2 / δ ^ q := by positivity
       have hy : 0 ≤ (N : ℝ) ^ 2 / (N : ℝ) ^ 29 := by positivity
       calc
@@ -888,7 +820,7 @@ theorem gmCubicS1_power_decay (cutoff : GMSmoothCutoff) (q : ℕ) (hq : 0 < q) :
       T ≤ (N : ℝ) ^ 2 → 0 < δ → T ^ 16 ≤ δ ^ q →
       IsSeparated δ W → InBaseInterval T W →
       ‖gmCubicS1 cutoff N W‖ ≤ K / T ^ 10 := by
-  obtain ⟨K₀, hK₀, hQuant⟩ := gmCubicS1_quantitative cutoff q
+  pm_98 K₀ hK₀ hQuant gmCubicS1_quantitative cutoff q
   refine ⟨40 * K₀, by positivity, ?_⟩
   intro N W T δ hN hNOne hT hNT hTN hδ hδPow hSep hW
   have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
@@ -901,18 +833,13 @@ theorem gmCubicS1_power_decay (cutoff : GMSmoothCutoff) (q : ℕ) (hq : 0 < q) :
       have hTpow : 1 ≤ T ^ 16 := one_le_pow₀ hT
       linarith
     exact hδOne.trans (hSep x hx y hy hxy)
-  have hCard : (W.card : ℝ) ≤ 2 * T :=
-    gmSeparated_card_le_two_height hT hOneSep hW
+  pm_7437 hOneSep
   have hQuantitative := hQuant N W hN hδ hSep hW
-  have hCardCube : (W.card : ℝ) ^ 3 ≤ 8 * T ^ 3 := by
-    calc
-      (W.card : ℝ) ^ 3 ≤ (2 * T) ^ 3 :=
-        pow_le_pow_left₀ (by positivity) hCard 3
-      _ = 8 * T ^ 3 := by ring
+  pm_4218
   have hAbsT : |T| = T := abs_of_pos hTpos
   have hNum : (N : ℝ) * (1 + |T|) ^ 2 ≤ 4 * T ^ 3 := by
     rw [hAbsT]
-    have hOneAdd : 1 + T ≤ 2 * T := by linarith
+    pm_8584 hOneAdd
     calc
       (N : ℝ) * (1 + T) ^ 2 ≤ T * (1 + T) ^ 2 :=
         mul_le_mul_of_nonneg_right hNT (sq_nonneg (1 + T))
@@ -955,14 +882,11 @@ theorem gmCubicS1_estimate (cutoff : GMSmoothCutoff) (ε : ℝ) (hε : 0 < ε) :
       T ≤ (N : ℝ) ^ 2 → IsSeparated (T ^ ε) W →
       InBaseInterval T W → ‖gmCubicS1 cutoff N W‖ ≤ K / T ^ 10 := by
   obtain ⟨q, hq⟩ := exists_nat_gt (16 / ε)
-  have hqPos : 0 < q := by
-    have : 0 < (q : ℝ) := (div_pos (by norm_num) hε).trans hq
-    exact_mod_cast this
-  obtain ⟨K, hK, hDecay⟩ := gmCubicS1_power_decay cutoff q hqPos
+  pm_4219
+  pm_837 K hK hDecay gmCubicS1_power_decay cutoff q hqPos
   refine ⟨K, hK, ?_⟩
   intro N W T hN hNOne hT hNT hTN hSep hW
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
-  have hScalePos : 0 < T ^ ε := Real.rpow_pos_of_pos hTpos ε
+  pm_1582
   have hExponent : 16 < ε * (q : ℝ) := by
     rw [div_lt_iff₀ hε] at hq
     nlinarith
@@ -980,21 +904,18 @@ theorem gmCubicZeroRemainder_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
       ‖gmCubicZeroRemainder cutoff N W‖ ≤
         K * (W.card : ℝ) ^ 3 * ((N : ℝ) ^ 3 / δ ^ q) := by
   obtain ⟨B, hB, hZero⟩ := gmTraceZeroMode_bound cutoff
-  obtain ⟨C, hC, hSmall⟩ := gmTraceZeroMode_separated_bound cutoff q
+  pm_98 C hC hSmall gmTraceZeroMode_separated_bound cutoff q
   let K : ℝ := C * B ^ 2 + 1
-  refine ⟨K, by dsimp only [K]; positivity, ?_⟩
+  pm_621 K
   intro N W δ hδ hSep
   let major : ℝ := ((N : ℝ) * C / δ ^ q) * ((N : ℝ) * B) ^ 2
-  have hMajorNonneg : 0 ≤ major := by
-    dsimp only [major]
-    positivity
+  pm_4220 hMajorNonneg major
   have hTerm : ∀ t u v : GMRow W,
       ‖if t = u ∧ u = v then 0 else
           gmTraceZeroMode cutoff N ((t : ℝ) - (u : ℝ)) *
             gmTraceZeroMode cutoff N ((u : ℝ) - (v : ℝ)) *
               gmTraceZeroMode cutoff N ((v : ℝ) - (t : ℝ))‖ ≤ major := by
-    intro t u v
-    by_cases hAll : t = u ∧ u = v
+    pm_7267
     · simp [hAll, hMajorNonneg]
     · simp only [ite_eq_right hAll, norm_mul]
       by_cases htu : t = u
@@ -1007,10 +928,9 @@ theorem gmCubicZeroRemainder_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
                   ‖gmTraceZeroMode cutoff N ((v : ℝ) - (t : ℝ))‖ ≤
               ((N : ℝ) * B) * ((N : ℝ) * C / δ ^ q) *
                 ((N : ℝ) * B) := by
-            gcongr
-            · exact hZero N ((t : ℝ) - (u : ℝ))
-            · exact hSmall N hδ (gmRow_difference_separated hSep u v huv)
-            · exact hZero N ((v : ℝ) - (t : ℝ))
+            pm_4215
+            pm_4217 u v huv
+            pm_4214
           _ = major := by dsimp only [major]; ring
       · calc
           ‖gmTraceZeroMode cutoff N ((t : ℝ) - (u : ℝ))‖ *
@@ -1019,9 +939,9 @@ theorem gmCubicZeroRemainder_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
               ((N : ℝ) * C / δ ^ q) * ((N : ℝ) * B) *
                 ((N : ℝ) * B) := by
             gcongr
-            · exact hSmall N hδ (gmRow_difference_separated hSep t u htu)
-            · exact hZero N ((u : ℝ) - (v : ℝ))
-            · exact hZero N ((v : ℝ) - (t : ℝ))
+            pm_4217 t u htu
+            pm_4216
+            pm_4214
           _ = major := by dsimp only [major]; ring
   unfold gmCubicZeroRemainder
   calc
@@ -1049,18 +969,11 @@ theorem gmCubicZeroRemainder_quantitative (cutoff : GMSmoothCutoff) (q : ℕ) :
           gmTraceZeroMode cutoff N ((t : ℝ) - (u : ℝ)) *
             gmTraceZeroMode cutoff N ((u : ℝ) - (v : ℝ)) *
               gmTraceZeroMode cutoff N ((v : ℝ) - (t : ℝ))‖ := by
-      apply Finset.sum_le_sum
-      intro t ht
-      apply Finset.sum_le_sum
-      intro u hu
-      exact norm_sum_le _ _
+      pm_894
     _ ≤ ∑ _t : GMRow W, ∑ _u : GMRow W, ∑ _v : GMRow W, major := by
-      gcongr with t ht u hu v hv
-      exact hTerm t u v
+      pm_8586 hTerm
     _ = (W.card : ℝ) ^ 3 * major := by
-      simp only [Finset.sum_const, Finset.card_univ, Fintype.card_coe,
-        nsmul_eq_mul]
-      ring
+      pm_1374
     _ ≤ K * (W.card : ℝ) ^ 3 * ((N : ℝ) ^ 3 / δ ^ q) := by
       calc
         (W.card : ℝ) ^ 3 * major =
@@ -1085,29 +998,20 @@ theorem gmCubicZeroMode_main_term (cutoff : GMSmoothCutoff)
       ‖gmCubicZeroMode cutoff N W - gmCubicDiagonalMain cutoff N W‖ ≤
         K / T ^ 100 := by
   obtain ⟨q, hq⟩ := exists_nat_gt (106 / ε)
-  obtain ⟨K₀, hK₀, hRemainder⟩ := gmCubicZeroRemainder_quantitative cutoff q
-  refine ⟨8 * K₀, by positivity, ?_⟩
+  pm_98 K₀ hK₀ hRemainder gmCubicZeroRemainder_quantitative cutoff q
+  pm_8109
   intro N W T hN hT hNT hSep hW
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
-  have hScalePos : 0 < T ^ ε := Real.rpow_pos_of_pos hTpos ε
-  have hScaleOne : 1 ≤ T ^ ε := Real.one_le_rpow hT hε.le
-  have hOneSep : IsSeparated 1 W := by
-    intro x hx y hy hxy
-    exact hScaleOne.trans (hSep x hx y hy hxy)
+  pm_1582
+  pm_4221
   have hCard := gmSeparated_card_le_two_height hT hOneSep hW
-  have hCardCube : (W.card : ℝ) ^ 3 ≤ 8 * T ^ 3 := by
-    calc
-      (W.card : ℝ) ^ 3 ≤ (2 * T) ^ 3 :=
-        pow_le_pow_left₀ (by positivity) hCard 3
-      _ = 8 * T ^ 3 := by ring
+  pm_4218
   have hNCube : (N : ℝ) ^ 3 ≤ T ^ 3 :=
     pow_le_pow_left₀ (by positivity) hNT 3
   have hExponent : 106 < ε * (q : ℝ) := by
     rw [div_lt_iff₀ hε] at hq
     nlinarith
   have hScalePower : T ^ 106 ≤ (T ^ ε) ^ q := by
-    rw [← Real.rpow_natCast, ← Real.rpow_natCast,
-      ← Real.rpow_mul hTpos.le]
+    pm_1377
     exact Real.rpow_le_rpow_of_exponent_le hT hExponent.le
   rw [gmCubicZeroMode_eq_main_add_remainder, add_sub_cancel_left]
   calc

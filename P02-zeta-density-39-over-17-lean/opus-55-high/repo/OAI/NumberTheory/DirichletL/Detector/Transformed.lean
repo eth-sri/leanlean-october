@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.MellinPoisson
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -42,9 +43,7 @@ theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : Calibra
       unfold elementNorm
       rw [(primaryGenerator_spec s.val ha).1]
     have hb : 0<elementNorm C.generator := by
-      unfold elementNorm
-      exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
+      pm_4905 elementNorm Nat.pos_of_ne_zero C.generator_ne_zero
     have hs : 0<(Ideal.absNorm s.val:ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
     have hK : 0<elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X := mul_pos (mul_pos hb hs) hX

@@ -2,11 +2,9 @@ module
 public import GuthMaynard.Improvement.GlobalDensityIngham
 public import GuthMaynard.Improvement.NativeIngham
 
-@[expose] public section
+public section
 
 open MathCollab.Density
-set_option autoImplicit false
-noncomputable section
 namespace GuthMaynard.Improvement
 
 /-- Global39/17 for the actual nontrivial zeta-zero count, with analytic

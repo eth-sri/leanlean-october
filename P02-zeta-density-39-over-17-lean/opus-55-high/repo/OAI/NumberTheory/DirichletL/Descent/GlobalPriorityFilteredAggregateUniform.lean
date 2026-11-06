@@ -5,19 +5,18 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityAggregate
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredRays
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
+open InverseWholePriorityRetainedSource RayFourExpansion
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_aggregate_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -165,6 +164,5 @@ theorem global_priority_filtered_aggregate_uniform_types
     _= _:=by dsimp [Ctot,H];ring
 end SevenEighths.InverseMoment
 
-end
 
 end OAI

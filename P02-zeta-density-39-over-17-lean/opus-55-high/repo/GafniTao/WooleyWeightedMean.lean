@@ -14,7 +14,6 @@ are those of equations (3.2)--(3.8).
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 

@@ -9,7 +9,10 @@ noncomputable section
 open scoped BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 
-lemma large_geometric_scale (Z ζ δ r : ℝ) (hZ : 0<Z) (n : ℕ) :
+section
+variable (Z ζ δ r : ℝ) (hZ : 0<Z)
+include Z ζ δ r hZ
+lemma large_geometric_scale (n : ℕ) :
     Z^((53/32:ℝ)+(13/16:ℝ)*r)*(Z^((13/16:ℝ)+ζ)*(2:ℝ)^n)^(8/5+δ-r)=
       Z^((53/32:ℝ)+((13/16:ℝ)+ζ)*(8/5+δ)-ζ*r)*((2:ℝ)^(8/5+δ-r))^n := by
   rw [Real.mul_rpow (Real.rpow_nonneg hZ.le _) (by positivity),←Real.rpow_mul hZ.le]
@@ -19,18 +22,19 @@ lemma large_geometric_scale (Z ζ δ r : ℝ) (hZ : 0<Z) (n : ℕ) :
   congr 2
   ring
 
-lemma large_geometric_summable (Z ζ δ r : ℝ) (hZ : 0<Z) (hr : 8/5+δ<r) :
+lemma large_geometric_summable (hr : 8/5+δ<r) :
     Summable (fun n : ℕ=>Z^((53/32:ℝ)+(13/16:ℝ)*r)*(Z^((13/16:ℝ)+ζ)*(2:ℝ)^n)^(8/5+δ-r)) := by
   simp_rw [large_geometric_scale Z ζ δ r hZ]
   exact (summable_geometric_of_lt_one (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) _)
     (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith))).mul_left _
 
-lemma large_geometric_sum (Z ζ δ r : ℝ) (hZ : 0<Z) (hr : 8/5+δ<r) :
+lemma large_geometric_sum (hr : 8/5+δ<r) :
     (∑'n : ℕ,Z^((53/32:ℝ)+(13/16:ℝ)*r)*(Z^((13/16:ℝ)+ζ)*(2:ℝ)^n)^(8/5+δ-r))=
       Z^((53/32:ℝ)+((13/16:ℝ)+ζ)*(8/5+δ)-ζ*r)*(1-(2:ℝ)^(8/5+δ-r))⁻¹ := by
   simp_rw [large_geometric_scale Z ζ δ r hZ]
   rw [tsum_mul_left,tsum_geometric_of_lt_one (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) _)
     (Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith))]
+end
 
 lemma exists_large_tail_line (ζ δ saving : ℝ) (hζ : 0<ζ) :
     ∃r : ℝ,(17/50:ℝ)≤r ∧ 8/5+δ<r ∧

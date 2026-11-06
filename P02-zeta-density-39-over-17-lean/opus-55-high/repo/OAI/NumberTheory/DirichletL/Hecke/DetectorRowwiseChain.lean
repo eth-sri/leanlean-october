@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwise
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,13 +22,11 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
       ∑ i∈rows, ‖M n i x y‖^2≤E) :
     ∑ i∈rows, ‖M 0 i (σ i) (freq i)‖^2≤
       (1+2*(b-a))*((1+2*(d-c))*E) := by
-  let F : Fin 2→Fin 2→ι→ℝ→ℝ→ℂ := fun j k i x y =>
+  let F : Fin 2→ Fin 2→ι→ℝ→ℝ→ℂ := fun j k i x y =>
     if j=0 then (if k=0 then M 0 i x y else I*M 1 i x y)
     else (if k=0 then -M 1 i x y else -(I*M 2 i x y))
   have cF (j k : Fin 2) (i : ι) (hi : i∈rows) : Continuous (Function.uncurry (F j k i)) := by
-    have c0 := cm 0 i (by norm_num)
-    have c1 := cm 1 i (by norm_num)
-    have c2 := cm 2 i (by norm_num)
+    pm_5352 cm
     fin_cases j <;> fin_cases k
     · simpa [F] using c0
     · convert c1.const_mul I using 1
@@ -45,12 +44,12 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
   have dFx (k : Fin 2) (i : ι) (hi : i∈rows) (x y : ℝ) :
       HasDerivAt (fun u => F 0 k i u y) (F 1 k i x y) x := by
     fin_cases k
-    · simpa [F] using dx 0 i x y (by norm_num)
+    pm_7989 dx
     · simpa [F] using (dx 1 i x y (by norm_num)).const_mul I
   have dFy (j : Fin 2) (i : ι) (hi : i∈rows) (x y : ℝ) :
       HasDerivAt (F j 0 i x) (F j 1 i x y) y := by
     fin_cases j
-    · simpa [F] using dy 0 i x y (by norm_num)
+    pm_7989 dy
     · convert (dy 1 i x y (by norm_num)).neg using 1
       · ext t
         simp [F]

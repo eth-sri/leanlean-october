@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleySourceBox
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Coefficient-one specialization of the source means
@@ -12,11 +13,9 @@ the modular count used by `WooleyMonomialPadicConcentration`.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooleyWeightedMassSq_one (Q : ℕ) :
     wooleyWeightedMassSq (fun _ : Fin Q => (1 : ℂ)) = Q := by
@@ -33,16 +32,15 @@ theorem wooleyWeightedGridSum_one
       wooleyMonomialGridSum q k Q alpha := by
   simp [wooleyWeightedGridSum, wooleyMonomialGridSum]
 
-theorem wooleyWeightedResidueGridSum_one
-    (qB k Q qH : ℕ) [NeZero qB]
-    (alpha : Fin k → ZMod qB) (xi : ZMod qH) :
+section
+variable (qB k Q qH : ℕ) [NeZero qB] (alpha : Fin k → ZMod qB) (xi : ZMod qH)
+include qB k Q qH alpha xi
+theorem wooleyWeightedResidueGridSum_one :
     wooleyWeightedResidueGridSum qB k (fun _ : Fin Q => (1 : ℂ)) alpha xi =
       wooleyResidueGridSum qB k Q qH alpha xi := by
   simp [wooleyWeightedResidueGridSum, wooleyResidueGridSum]
 
-theorem wooleyWeightedNormalizedResidueGridSum_one
-    (qB k Q qH : ℕ) [NeZero qB]
-    (alpha : Fin k → ZMod qB) (xi : ZMod qH) :
+theorem wooleyWeightedNormalizedResidueGridSum_one :
     wooleyWeightedNormalizedResidueGridSum
         qB k (fun _ : Fin Q => (1 : ℂ)) alpha xi =
       wooleyNormalizedResidueGridSum qB k Q qH alpha xi := by
@@ -51,6 +49,7 @@ theorem wooleyWeightedNormalizedResidueGridSum_one
   rw [wooleyWeightedResidueMassSq_one,
     wooleyWeightedResidueGridSum_one]
   norm_cast
+end
 
 theorem wooleyWeightedConditionedGridMean_one
     {s k Q qB qH : ℕ} [NeZero qB] [NeZero qH] (hQ : 1 ≤ Q) :
@@ -60,7 +59,7 @@ theorem wooleyWeightedConditionedGridMean_one
   unfold wooleyWeightedConditionedGridMean wooleyConditionedGridMean
     wooleyResidueRawMoment
   rw [wooleyWeightedMassSq_one]
-  have hQne : (Q : ℝ) ≠ 0 := by positivity
+  pm_392 hQne Q
   simp only [Nat.cast_eq_zero, show Q ≠ 0 by omega, ↓reduceIte]
   simp_rw [wooleyWeightedResidueMassSq_one,
     wooleyWeightedNormalizedResidueGridSum_one]
@@ -78,7 +77,7 @@ theorem wooleyWeightedGridMean_one
   unfold wooleyWeightedGridMean wooleyWeightedNormalizedGridSum
     wooleyMonomialNormalizedGridMean wooleyMonomialRawGridMoment
   rw [wooleyWeightedMassSq_one]
-  have hQpos : (0 : ℝ) < Q := by exact_mod_cast (show 0 < Q by omega)
+  pm_6810 hQpos Q
   have hsqrt : Real.sqrt (Q : ℝ) ≠ 0 := Real.sqrt_ne_zero'.mpr hQpos
   simp only [Nat.cast_eq_zero, show Q ≠ 0 by omega, ↓reduceIte,
     wooleyWeightedGridSum_one, norm_mul, norm_inv,
@@ -87,9 +86,9 @@ theorem wooleyWeightedGridMean_one
     rw [show 2 * s = 2 * s by rfl, pow_mul, Real.sq_sqrt hQpos.le]
   simp_rw [mul_pow, inv_pow, hsqrtPow]
   rw [← Finset.mul_sum]
-  have hqpos : (0 : ℝ) < q := by exact_mod_cast NeZero.pos q
+  pm_565 hqpos q
   have hqpow : (((q ^ k : ℕ) : ℝ)) ≠ 0 := by
-    exact_mod_cast (pow_ne_zero k (NeZero.ne q))
+    aesop
   have hQpow : ((Q : ℝ) ^ s) ≠ 0 := pow_ne_zero _ hQpos.ne'
   field_simp
   norm_num
@@ -101,9 +100,8 @@ theorem wooleyWeightedGridMean_one
   intro n
   unfold wooleyBoxSourceSequence
   rw [Finsupp.embDomain_apply]
-  split_ifs <;> norm_num
+  aesop
 
 
-end
 
 end GafniTao

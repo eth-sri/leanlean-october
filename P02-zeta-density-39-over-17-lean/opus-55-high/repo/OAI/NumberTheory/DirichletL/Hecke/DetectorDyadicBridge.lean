@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierActual
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,8 +9,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
-open Set Complex
+open scoped Classical Topology
+open Complex
 namespace SevenEighths.HeckeDetectorDyadicBridge
 open HeckeFamily HeckeDyadic HeckeDetectorFourier
 
@@ -38,7 +39,10 @@ lemma normalization (D : ℝ) (hD : 0<D) (s : ℂ) :
   congr 1
   ring
 
-lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
+section
+variable (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
+include χ inverse W
+lemma polynomial_eq_finite
     (D σ freq : ℝ) (S : Finset (Ideal O))
     (hcover : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
     polynomial χ inverse W D σ freq =
@@ -47,14 +51,13 @@ lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
           (((J.absNorm : ℝ)/D : ℝ) : ℂ)^(-HeckeDyadic.shift σ freq) := by
   unfold polynomial
   congr 1
-  let f : Ideal O→ℂ := fun J => coefficient χ inverse J*W ((J.absNorm : ℝ)/D)*
+  let f : Ideal O→ℂ := fun J=> coefficient χ inverse J*W ((J.absNorm : ℝ)/D)*
     (((J.absNorm : ℝ)/D : ℝ) : ℂ)^(-HeckeDyadic.shift σ freq)
   have hf : Function.support f ⊆ {J : Ideal O | J≠0} := by
     intro J hJ hzero
     subst J
     apply hJ
-    dsimp only [f]
-    rw [coefficient_zero, zero_mul, zero_mul]
+    pm_7500
   have he := tsum_subtype_eq_of_support_subset hf
   change (∑' J : {J : Ideal O // J≠0}, f J.val)=_
   apply he.trans
@@ -62,14 +65,13 @@ lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
   intro J hJ
   by_cases hj : J=0
   · subst J
-    dsimp only [f]
-    rw [coefficient_zero, zero_mul, zero_mul]
+    pm_7500
   have hw : W ((J.absNorm : ℝ)/D)=0 := by
     by_contra hw
     exact hJ (hcover J hj hw)
-  simp [f,hw]
+  grind
 
-theorem phase_sum_eq_polynomial (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
+theorem phase_sum_eq_polynomial
     (D : ℝ) (hD : 0<D) (s : ℂ) (t : ℝ) (S : Finset (Ideal O))
     (hS : ∀ J∈S, J≠0)
     (hcover : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
@@ -88,9 +90,10 @@ theorem phase_sum_eq_polynomial (χ : Character) (inverse : Bool) (W : ℝ→ℂ
     _ = coefficient χ inverse J*W ((J.absNorm : ℝ)/D)*
         ((J.absNorm : ℂ)^(-s)*FourierBridge.logPhase t (Real.log ((J.absNorm : ℝ)/D))) := by ring
     _ = _ := by rw [hp]; ring
+end
 
 def inverseProfile (V W : ℝ→ℂ) (Dstar D : ℝ) (x : ℝ) : ℂ :=
-  V (D*x/Dstar)*W x
+  V (D *x/Dstar)*W x
 
 lemma inverseProfile_at_norm (V W : ℝ→ℂ) (Dstar D x : ℝ) (hD : 0<D) :
     inverseProfile V W Dstar D (x/D)=V (x/Dstar)*W (x/D) := by
@@ -98,16 +101,19 @@ lemma inverseProfile_at_norm (V W : ℝ→ℂ) (Dstar D x : ℝ) (hD : 0<D) :
   congr 2
   field_simp
 
-lemma weighted_eq (χ : Character) (s : ℂ) (J : Ideal O) (hJ : J≠0) :
+section
+variable (χ : Character)
+include χ
+lemma weighted_eq (s : ℂ) (J : Ideal O) (hJ : J≠0) :
     IdealEuler.weighted (idealCoeff χ) s J=idealCoeff χ J*(J.absNorm : ℂ)^(-s) := by
   simp only [IdealEuler.weighted, IdealEuler.normWeight, MonoidWithZeroHom.coe_mk,
     ZeroHom.coe_mk, CubicEisenstein.fullIdealWeight, ite_eq_right hJ]
 
-theorem plain_phase_eq (χ : Character) (W : ℝ→ℂ) (D : ℝ) (hD : 0<D)
+theorem plain_phase_eq (W : ℝ→ℂ) (D : ℝ) (hD : 0<D)
     (s : ℂ) (t : ℝ) (S : Finset (Ideal O)) (hS : ∀ J∈S, J≠0)
     (hcover : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
     phasePolynomial S (plainCoefficient χ W D s)
-      (fun J => Real.log ((J.absNorm : ℝ)/D)) t =
+      (fun J=> Real.log ((J.absNorm : ℝ)/D)) t =
       (D : ℂ)^((1/2 : ℂ)-s)*polynomial χ false W D s.re (2*Real.pi*t-s.im) := by
   rw [← phase_sum_eq_polynomial χ false W D hD s t S hS hcover]
   unfold phasePolynomial
@@ -116,11 +122,11 @@ theorem plain_phase_eq (χ : Character) (W : ℝ→ℂ) (D : ℝ) (hD : 0<D)
   rw [plainCoefficient, weighted_eq χ s J (hS J hJ)]
   rfl
 
-theorem inverse_phase_eq (χ : Character) (V W : ℝ→ℂ) (Dstar D : ℝ) (hD : 0<D)
+theorem inverse_phase_eq (V W : ℝ→ℂ) (Dstar D : ℝ) (hD : 0<D)
     (s : ℂ) (t : ℝ) (S : Finset (Ideal O)) (hS : ∀ J∈S, J≠0)
     (hcover : ∀ J : Ideal O, J≠0 → inverseProfile V W Dstar D ((J.absNorm : ℝ)/D)≠0 → J∈S) :
     phasePolynomial S (inverseCoefficient χ V W Dstar D s)
-      (fun J => Real.log ((J.absNorm : ℝ)/D)) t =
+      (fun J=> Real.log ((J.absNorm : ℝ)/D)) t =
       (D : ℂ)^((1/2 : ℂ)-s)*
         polynomial χ true (inverseProfile V W Dstar D) D s.re (2*Real.pi*t-s.im) := by
   rw [← phase_sum_eq_polynomial χ true (inverseProfile V W Dstar D) D hD s t S hS hcover]
@@ -130,9 +136,10 @@ theorem inverse_phase_eq (χ : Character) (V W : ℝ→ℂ) (Dstar D : ℝ) (hD 
   rw [inverseCoefficient, weighted_eq χ s J (hS J hJ), inverseProfile_at_norm V W Dstar D _ hD]
   simp only [coefficient, ite_true]
   ring
+end
 
 lemma normalization_norm (D : ℝ) (hD : 0<D) (s : ℂ) :
-    ‖(D : ℂ)^((1/2 : ℂ)-s)‖=D^(1/2-s.re) := by
+    ‖(D : ℂ)^((1/2 : ℂ)-s)‖=D ^(1/2-s.re) := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hD]
   congr 1
   simp
@@ -143,10 +150,10 @@ theorem pair_phase_norm (χ : Character) (V W₁ W₂ : ℝ→ℂ) (Dstar D N : 
     (hcoverS : ∀ J : Ideal O, J≠0 → inverseProfile V W₁ Dstar D ((J.absNorm : ℝ)/D)≠0 → J∈S)
     (hcoverR : ∀ J : Ideal O, J≠0 → W₂ ((J.absNorm : ℝ)/N)≠0 → J∈R) :
     ‖phasePolynomial S (inverseCoefficient χ V W₁ Dstar D s)
-        (fun J => Real.log ((J.absNorm : ℝ)/D)) t‖ *
+        (fun J=> Real.log ((J.absNorm : ℝ)/D)) t‖ *
       ‖phasePolynomial R (plainCoefficient χ W₂ N s)
-        (fun J => Real.log ((J.absNorm : ℝ)/N)) t‖ =
-      D^(1/2-s.re)*N^(1/2-s.re)*
+        (fun J=> Real.log ((J.absNorm : ℝ)/N)) t‖ =
+      D ^(1/2-s.re)*N^(1/2-s.re)*
         (‖polynomial χ true (inverseProfile V W₁ Dstar D) D s.re (2*Real.pi*t-s.im)‖ *
          ‖polynomial χ false W₂ N s.re (2*Real.pi*t-s.im)‖) := by
   rw [inverse_phase_eq χ V W₁ Dstar D hD s t S hS hcoverS,

@@ -4,11 +4,10 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.BetaModelJetEstimates
 public import LaterPairs.Native.ExponentPairShiftUniformity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
  
                                                           
@@ -67,7 +66,7 @@ theorem tests_monomial_ne_zero {a z x : ℝ}
   rw [tests_monomial]
   have ha0 : 0 < a := by linarith
   have ha1 : 0 < a+1 := by linarith
-  have ha2 : 0 < 2*a-1 := by linarith
+  pm_5241 ha2 a
   fin_cases i <;> dsimp
   · positivity
   · exact mul_ne_zero (mul_ne_zero (neg_ne_zero.mpr ha0.ne') hz.ne')
@@ -95,7 +94,7 @@ private theorem compact_tests_uniform_lower {n m : ℕ} [Nonempty (Fin m)]
     have hi (i : Fin m) : IsOpen {v : Fin n → ℝ | f v i ≠ 0} :=
       isOpen_ne.preimage (hf i)
     simpa only [Set.iInter_ofPred] using isOpen_iInter_of_finite hi
-  obtain ⟨δ,hδ,hδU⟩ := hS.exists_cthickening_subset_open hU hne
+  pm_69 δ hδ hδU hS.exists_cthickening_subset_open hU hne
   let K := cthickening δ S
   have hK : IsCompact K := hS.cthickening
   have hKne : K.Nonempty := hSne.mono (self_subset_cthickening S)

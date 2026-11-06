@@ -8,75 +8,32 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace CubicEisenstein
 open Filter
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
     (p : SpatialCoordinates) (hp : 0<p 2) :
@@ -85,7 +42,7 @@ lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠
         c*cuspSeedDefectProfile a b s (rowHeight u p) := by
   rw [axisLaplacian_const_mul,rowProfile_laplacian _ (cuspSeedProfile_contDiffAt a b s) u hu p hp]
   have h := cuspSeedProfile_laplace_defect a b s (rowHeight u p) (rowHeight_pos u hu p hp).ne'
-  linear_combination c*h
+  grind
 
 theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
     (p : SpatialCoordinates) (hp : 0<p 2) :
@@ -127,33 +84,33 @@ def smoothCuspSeedDefectField (a b : ℝ) (s : ℂ) (p : SpatialCoordinates) : �
   if hp : 0<p 2 then smoothCuspSeedDefect a b s
     (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp) else 0
 
-lemma smoothCuspSeedField_eq (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b) (p : SpatialCoordinates) (hp : 0<p 2)
+include a b s ha hab p hp
+lemma smoothCuspSeedField_eq :
     smoothCuspSeedField a b s p=heightPoincareField (cuspSeedProfile a b s) p := by
   rw [smoothCuspSeedField,dite_eq_left hp,smoothCuspSeed_coordinate a b s ha hab p hp]
-lemma smoothCuspSeedDefectField_eq (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma smoothCuspSeedDefectField_eq :
     smoothCuspSeedDefectField a b s p=heightPoincareField (cuspSeedDefectProfile a b s) p := by
   rw [smoothCuspSeedDefectField,dite_eq_left hp,smoothCuspSeedDefect_coordinate a b s ha hab p hp]
 
-lemma actual_smoothCuspSeed_contDiffAt (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) : ContDiffAt ℝ ∞ (smoothCuspSeedField a b s) p := by
+lemma actual_smoothCuspSeed_contDiffAt : ContDiffAt ℝ ∞ (smoothCuspSeedField a b s) p := by
   have heq : smoothCuspSeedField a b s =ᶠ[𝓝 p] heightPoincareField (cuspSeedProfile a b s) := by
     filter_upwards [(continuous_apply 2).continuousAt.eventually_const_lt hp] with q hq
     exact smoothCuspSeedField_eq a b s ha hab q hq
   exact (smoothCuspSeed_contDiffAt a b s ha hab p hp).congr_of_eventuallyEq heq
 
-theorem actual_smoothCuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
-    (p : SpatialCoordinates) (hp : 0<p 2) :
+theorem actual_smoothCuspSeed_laplace_defect :
     axisLaplacian (smoothCuspSeedField a b s) p-s*(s-2)*smoothCuspSeedField a b s p=
       smoothCuspSeedDefectField a b s p := by
   rw [axisLaplacian_congr_positive _ _ (fun q hq => smoothCuspSeedField_eq a b s ha hab q hq) p hp,
     smoothCuspSeedField_eq a b s ha hab p hp,smoothCuspSeedDefectField_eq a b s ha hab p hp]
   exact heightPoincare_cuspSeed_laplace_defect a b s ha hab p hp
+end
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
@@ -162,18 +119,20 @@ open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 def sectorBadIdeal (E : fixedBadPrimes.powerset) : Ideal O := ∏ P ∈ E.val, P
 
-theorem sector_bad_good_product (I : Ideal O) (hI : Squarefree I)
-    (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E) :
+section
+variable (I : Ideal O) (hI : Squarefree I) (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E)
+include I hI E hE
+theorem sector_bad_good_product :
     sectorBadIdeal E * goodSquarefreePart I = I := by
   have hs : badPrimeSupport I = E.val := congrArg Subtype.val hE
   simpa only [hs, sectorBadIdeal] using squarefree_bad_good_product I hI
 
-theorem sectorBadIdeal_ne_zero_of_row (I : Ideal O) (hI : Squarefree I)
-    (E : fixedBadPrimes.powerset) (hE : badPrimeSector I = E) : sectorBadIdeal E ≠ 0 := by
+theorem sectorBadIdeal_ne_zero_of_row : sectorBadIdeal E ≠ 0 := by
   intro hz
   have hp := sector_bad_good_product I hI E hE
   rw [hz, zero_mul] at hp
   exact hI.ne_zero hp.symm
+end
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -466,7 +425,6 @@ theorem HasSieveExponent.unrestricted_dual_truncated_middle {α : ℝ} (hexp : H
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 
@@ -494,7 +452,6 @@ open FirstPassCubeLabels (primeProductNorm)
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct primeProductNorm squarefreeLabel jLabel j2Label b0Label
@@ -566,8 +523,8 @@ lemma b0_jLabel_square (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : �
     FirstPassCubeLabels.cube_pair_product_decomposition p B v₁ v₂ ε₁ ε₂ hv]
   ring
 
-include hp in
 
+include hp in
 omit [∀ (i : ι), (span {p i}).IsMaximal] in
 theorem cube_label_norm_bounds (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) (B₀ : ℝ) (hB : 0 ≤ B₀)

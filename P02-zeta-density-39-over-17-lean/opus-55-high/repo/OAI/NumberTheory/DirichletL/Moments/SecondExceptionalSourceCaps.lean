@@ -34,7 +34,7 @@ theorem eventually_source_caps :
     _=Z^(5*B+1):=by
       rw [show (Z^B)^2=Z^B*Z^B by ring]
       calc
-        _=Z^(1:ℝ)*Z^B*Z^B*(Z^B*Z^B)*Z^B:=by rw [Real.rpow_one]
+        _=Z^(1:ℝ)*Z^B*Z^B*(Z^B*Z^B)*Z^B:=by simp_all
         _=Z^(5*B+1):=by
           repeat rw [←Real.rpow_add hz]
           congr 1

@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.DifferenceLayerCake
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,15 +10,19 @@ noncomputable section
 open Finset MeasureTheory GuthMaynard.NativeMoment
 namespace Montgomery.RationalMoment
 
-theorem sqrt_inverse_four {s : ℝ} (hs : 0 < s) :
+section
+variable {s : ℝ} (hs : 0 < s)
+include s hs
+theorem sqrt_inverse_four :
     (Real.sqrt s) ^ (-4 : ℝ) = 1 / s ^ 2 := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hs.le]
   norm_num
 
-theorem sqrt_inverse_eight {s : ℝ} (hs : 0 < s) :
+theorem sqrt_inverse_eight :
     (Real.sqrt s) ^ (-8 : ℝ) = 1 / s ^ 4 := by
   rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hs.le]
   norm_num
+end
 
 /-- Unconditional actual second-moment integral reduction. Both the
 native weak estimate and its actual maximizing representatives are supplied
@@ -35,10 +40,9 @@ theorem actual_second_moment_integral_native (ε : ℝ) (hε : 0 < ε) :
                   ((M : ℝ) ^ 4 / s ^ 2 +
                     ((M : ℝ) ^ (36 / 5 : ℝ) +
                       (2 * T) * (M : ℝ) ^ (24 / 5 : ℝ)) / s ^ 4)))) := by
-  obtain ⟨C, T₀, hC, hT₀, hWeak⟩ := difference_cell_weighted_level_native ε hε
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
-  intro M T a W hM hT hMT ha hBase
-  obtain ⟨p, hrep, hmass⟩ := hWeak M T a W hM hT hMT ha hBase
+  pm_4083 C T₀ hC hT₀ hWeak difference_cell_weighted_level_native ε hε
+  pm_4084
+  pm_5583 hmass hWeak
   let H : ℝ → ℝ := fun s =>
     ∑ j ∈ (differenceFloorSupport W).filter (fun j =>
       s ≤ ‖dirichletPoly M a ((p j).1 - (p j).2)‖ ^ 2),

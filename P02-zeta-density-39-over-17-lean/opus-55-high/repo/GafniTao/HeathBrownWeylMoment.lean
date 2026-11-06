@@ -13,8 +13,8 @@ is therefore the concrete Vinogradov solution count, and monotonicity permits
 the replacement `Q <= H` used in the source.
 -/
 
-open Finset Set MeasureTheory
-open scoped BigOperators ENNReal
+open Finset MeasureTheory
+open scoped ENNReal
 
 namespace GafniTao
 

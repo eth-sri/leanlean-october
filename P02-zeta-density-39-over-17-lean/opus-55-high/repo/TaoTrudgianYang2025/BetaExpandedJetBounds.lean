@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedReferenceJets
 public import TaoTrudgianYang2025.BetaLegendreAllOrders
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,7 +26,7 @@ theorem expandedReferenceInverseJet_uniform_bound
     {σ : ℝ} (hσ : 0 < σ) (K : ℕ) :
     ∃ B : ℝ, 1 ≤ B ∧ ∀ v ∈ Icc ((2 : ℝ)^(-σ)/2) 2,
       ∀ j ≤ K, |expandedReferenceInverseJet σ v j| ≤ B := by
-  have hlo : 0 < (2 : ℝ)^(-σ)/2 := by positivity
+  pm_1630
   have hb (j : ℕ) : ∃ B : ℝ, ∀ v ∈ Icc ((2 : ℝ)^(-σ)/2) 2,
       ‖expandedReferenceInverseJet σ v j‖ ≤ B := by
     apply isCompact_Icc.exists_bound_of_continuousOn
@@ -40,13 +41,13 @@ theorem expandedReferenceInverseJet_uniform_bound
     (fun i _ => abs_nonneg (B i)) (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hj))
   have h := hB j v hv
   rw [Real.norm_eq_abs] at h
-  exact h.trans ((le_abs_self (B j)).trans (hsingle.trans (by linarith)))
+  grind
 
 theorem abs_inverse_sub_inverse_le_product
     {a b : ℝ} (ha : a ≠ 0) (hb : b ≠ 0) :
     |a⁻¹-b⁻¹| ≤ |a-b| *|a⁻¹| *|b⁻¹| := by
   have he : a⁻¹-b⁻¹ = (b-a)*a⁻¹*b⁻¹ := by field_simp
-  rw [he,abs_mul,abs_mul,abs_sub_comm]
+  grind
 
 theorem modelPhaseInverseJet_expanded_reference_error
     {σ : ℝ} (hσ : 0 < σ) (j : ℕ) :
@@ -71,8 +72,7 @@ theorem modelPhaseInverseJet_expanded_reference_error
       intro F δ P hδ hpos hP hF hj v hv
       have hF₁ := approximateModelPhase_mono hF hP le_rfl
       have hu := modelPhaseInverseSlope_mem hv
-      have hw := modelPhaseSlopeRange_positive_window hσ hpos hF hv
-      have hvpos : 0 < v := (show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le hw.1
+      pm_1653
       have ha := approximateModelPhase_secondDeriv_ne_zero hσ hδ hF₁ hu
       have hb := referenceModelPrimitive_secondDeriv_reciprocal_ne_zero hσ hvpos
       have hx := modelPhaseInverseJet_abs_le hσ hδ hP hF hv 1 hj

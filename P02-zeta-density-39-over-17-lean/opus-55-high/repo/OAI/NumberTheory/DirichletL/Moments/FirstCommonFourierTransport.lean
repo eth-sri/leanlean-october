@@ -24,7 +24,7 @@ theorem quotient_function_heq (r r':O)(hr:r'=r)
   apply heq_of_eq
   funext x
   obtain ⟨z,rfl⟩:=Ideal.Quotient.mk_surjective x
-  exact hG z
+  grind
 
 def retainedFourierTerm (a b r:O)(ha:a≠0)(hb:b≠0)(hr:r≠0)
     (χa:MulChar (Residue a) ℂ)(χb:MulChar (Residue b) ℂ)(G:Residue r→ℂ)
@@ -55,7 +55,10 @@ def fixedRetainedTerm (C D:Ideal O)(hC:Supported C)(a b:O)
     (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E) (∏P∈E,P.val) W K
     (frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K X) Z ξ)
 
-theorem canonicalRetainedTerm_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J)
+section
+variable (I J:Ideal O) (hI:Supported I) (hJ:Supported J)
+include I J hI hJ
+theorem canonicalRetainedTerm_fixed
     (E:Finset (CommonIndex I J))(W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     canonicalRetainedTerm I J hI hJ E W K
       (firstNominalScale I J (∏P∈E,P.val) K X) Z ξ=
@@ -77,16 +80,7 @@ theorem canonicalRetainedTerm_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J
     (frequencyRadius (firstNominalScale I J (∏P∈E,P.val) K X) Z ξ)
   exact hh.symm
 
-def inactiveEquiv (I J:Ideal O):
-    CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J ≃
-      CenteredMomentFirstDiscardedEnergy.inactiveSubsets (commonPart I J) (commonPart J I):=
-  (Equiv.finsetCongr (commonEquiv I J)).subtypeEquiv (fun E=>(mappedSubset_inactive I J E).symm)
-
-@[simp] theorem inactiveEquiv_val (I J:Ideal O)
-    (E:CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J):
-    (inactiveEquiv I J E).val=mappedSubset I J E.val:=rfl
-
-theorem canonicalRetainedPair_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J)
+theorem canonicalRetainedPair_fixed
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     CenteredMomentFirstSectorLocalization.retainedPair I J hI hJ W K X Z ξ=
     ∑E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets (commonPart I J) (commonPart J I),
@@ -105,6 +99,7 @@ theorem canonicalRetainedPair_fixed (I J:Ideal O)(hI:Supported I)(hJ:Supported J
     exact ⟨E,(mappedSubset_inactive I J E).mp (he.symm ▸ hF),he⟩
   · intro E hE
     exact canonicalRetainedTerm_fixed I J hI hJ E W K X Z ξ
+end
 
 end SevenEighths.CenteredMomentFirstCommonFourierTransport
 

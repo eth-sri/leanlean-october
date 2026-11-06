@@ -10,6 +10,7 @@ actual convergent integrals are preserved; no asymptotic bound is assumed.
 public import MathCollab.Density.Stronger.Atkinson.BesselY0
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 public import Mathlib.Analysis.Complex.CauchyIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,7 +22,6 @@ branches on the strip and exposes the integrable square-root
 singularity as the right edge approaches one.
 -/
 
-set_option autoImplicit false
 noncomputable section
 
 open Complex Filter MeasureTheory Set Topology
@@ -52,7 +52,7 @@ theorem norm_neumannContourKernel (x : ℝ) (z : ℂ) :
     Complex.ofReal_ofNat] at hm hp
   rw [hm, hp]
   congr 2
-  simp [mul_re, mul_im]
+  simp_all
 
 theorem neumannContourKernel_slit_vertical {b t : ℝ}
     (hb : 0 ≤ b) (ht : 0 < t) :
@@ -62,7 +62,7 @@ theorem neumannContourKernel_slit_vertical {b t : ℝ}
   · apply Or.inr
     simp only [sub_im, one_im, add_im, ofReal_im, mul_im, I_im, ofReal_re,
       I_re, mul_one, mul_zero, add_zero, zero_add, zero_sub]
-    exact neg_ne_zero.mpr ht.ne'
+    grind
   · apply Or.inl
     simp only [add_re, one_re, ofReal_re, mul_re, ofReal_im, I_re, I_im,
       mul_zero, zero_mul, sub_self, add_zero]
@@ -73,19 +73,15 @@ theorem norm_neumannContourKernel_vertical_le {x b t : ℝ}
     ‖neumannContourKernel x ((b : ℂ) + t * I)‖ ≤
       Real.exp (-x * t) * t ^ (-(1 / 2 : ℝ)) := by
   have hm : t ≤ ‖1 - ((b : ℂ) + t * I)‖ := by
-    have h := Complex.abs_im_le_norm (1 - ((b : ℂ) + t * I))
+    pm_7949 b t
     simpa [abs_of_pos ht] using h
   have hp : 1 ≤ ‖1 + ((b : ℂ) + t * I)‖ := by
-    have h := Complex.re_le_norm (1 + ((b : ℂ) + t * I))
-    simp only [add_re, one_re, ofReal_re, mul_re, ofReal_im, I_re, I_im,
-      mul_zero, zero_mul, sub_self, add_zero] at h
-    linarith
-  have hmp := Real.rpow_le_rpow_of_nonpos ht hm (by norm_num : -(1 / 2 : ℝ) ≤ 0)
-  have hpp := Real.rpow_le_rpow_of_nonpos zero_lt_one hp (by norm_num : -(1 / 2 : ℝ) ≤ 0)
+    pm_8843 Complex.re_le_norm b t
+    pm_6567 add_re one_re sub_self
+  pm_581 hmp ht hm
+  pm_581 hpp zero_lt_one hp
   rw [Real.one_rpow] at hpp
-  rw [norm_neumannContourKernel]
-  simp only [add_im, ofReal_im, mul_im, ofReal_re, I_im, I_re, mul_one, mul_zero,
-    add_zero, zero_add]
+  pm_951
   calc
     _ ≤ Real.exp (-x * t) * t ^ (-(1 / 2 : ℝ)) * 1 := by gcongr
     _ = _ := mul_one _
@@ -94,19 +90,17 @@ theorem norm_neumannContourKernel_horizontal_le {x u H : ℝ} (hH : 1 ≤ H) :
     ‖neumannContourKernel x ((u : ℂ) + H * I)‖ ≤ Real.exp (-x * H) := by
   have hH0 : 0 < H := by linarith
   have hm : 1 ≤ ‖1 - ((u : ℂ) + H * I)‖ := by
-    have h := Complex.abs_im_le_norm (1 - ((u : ℂ) + H * I))
+    pm_7949 u H
     have he : H ≤ ‖1 - ((u : ℂ) + H * I)‖ := by simpa [abs_of_pos hH0] using h
-    exact hH.trans he
+    grind
   have hp : 1 ≤ ‖1 + ((u : ℂ) + H * I)‖ := by
-    have h := Complex.abs_im_le_norm (1 + ((u : ℂ) + H * I))
+    pm_8843 Complex.abs_im_le_norm u H
     have he : H ≤ ‖1 + ((u : ℂ) + H * I)‖ := by simpa [abs_of_pos hH0] using h
-    exact hH.trans he
-  have hmp := Real.rpow_le_rpow_of_nonpos zero_lt_one hm (by norm_num : -(1 / 2 : ℝ) ≤ 0)
-  have hpp := Real.rpow_le_rpow_of_nonpos zero_lt_one hp (by norm_num : -(1 / 2 : ℝ) ≤ 0)
+    grind
+  pm_581 hmp zero_lt_one hm
+  pm_581 hpp zero_lt_one hp
   rw [Real.one_rpow] at hmp hpp
-  rw [norm_neumannContourKernel]
-  simp only [add_im, ofReal_im, mul_im, ofReal_re, I_im, I_re, mul_one, mul_zero,
-    add_zero, zero_add]
+  pm_951
   calc
     _ ≤ Real.exp (-x * H) * 1 * 1 := by gcongr
     _ = _ := by ring
@@ -123,14 +117,10 @@ theorem continuousOn_neumannContourKernel_vertical (x : ℝ) {b : ℝ}
 theorem integrableOn_neumannContourKernel_vertical {x b : ℝ}
     (hx : 0 < x) (hb : 0 ≤ b) :
     IntegrableOn (fun t : ℝ => neumannContourKernel x ((b : ℂ) + t * I)) (Ioi 0) := by
-  have hi : IntegrableOn (fun t : ℝ => t ^ (-(1 / 2 : ℝ)) * Real.exp (-x * t)) (Ioi 0) := by
-    simpa only [Real.rpow_one] using
-      integrableOn_rpow_mul_exp_neg_mul_rpow (by norm_num : -1 < -(1 / 2 : ℝ))
-        (by norm_num : 0 < (1 : ℝ)) hx
+  pm_4369
   apply hi.mono' ((continuousOn_neumannContourKernel_vertical x hb).aestronglyMeasurable
     measurableSet_Ioi)
-  filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
-  simpa only [mul_comm] using norm_neumannContourKernel_vertical_le hb ht
+  pm_7441 hb
 
 theorem neumannContourKernel_finite_rectangle (x : ℝ) {b H : ℝ}
     (hb : 0 ≤ b) (hb1 : b < 1) :
@@ -152,6 +142,6 @@ theorem neumannContourKernel_finite_rectangle (x : ℝ) {b H : ℝ}
   have h := Complex.integral_boundary_rect_eq_zero_of_differentiableOn
     (neumannContourKernel x) 0 ((b : ℂ) + H * I)
     (by simpa using hd)
-  simpa using h
+  simp_all
 
 end MathCollab.Density.Stronger.Atkinson

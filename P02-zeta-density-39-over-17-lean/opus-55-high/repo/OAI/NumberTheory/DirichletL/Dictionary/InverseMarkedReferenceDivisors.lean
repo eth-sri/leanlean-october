@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceCoefficients
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,19 +17,18 @@ local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
-theorem tuple_product_squarefree (P:ι→Ideal O)(hP:∀i,Prime (P i))
+theorem tuple_product_squarefree (P:ι→ Ideal O)(hP:∀i,Prime (P i))
     (hinj:Function.Injective P) : Squarefree (∏i,P i) := by
   have hs:∀Q∈Finset.univ.image P,Prime Q := by
-    intro Q hQ
-    obtain ⟨i,hi,rfl⟩:=Finset.mem_image.mp hQ
-    exact hP i
+    pm_1192 Q hQ i hi
+    grind
   have he:(∏Q∈Finset.univ.image P,Q)=∏i,P i :=
     Finset.prod_image (fun i hi j hj h=>hinj h)
   rw [←he]
   exact InverseInitialExcludedPolynomial.prime_product_squarefree _ hs
 
 omit [DecidableEq ι] in
-theorem tuple_product_support (P:ι→Ideal O)(hP:∀i,Prime (P i))
+theorem tuple_product_support (P:ι→ Ideal O)(hP:∀i,Prime (P i))
     (_hinj:Function.Injective P) : primeSupport (∏i,P i)=Finset.univ.image P := by
   have hn:(∏i,P i)≠0:=Finset.prod_ne_zero_iff.mpr (fun i hi=>(hP i).ne_zero)
   ext Q
@@ -42,7 +42,7 @@ theorem tuple_product_support (P:ι→Ideal O)(hP:∀i,Prime (P i))
     exact ⟨hP i,Finset.dvd_prod_of_mem P hi⟩
 
 omit [DecidableEq ι] in
-theorem tuple_divisors_eq_subsets (P:ι→Ideal O)(hP:∀i,Prime (P i))
+theorem tuple_divisors_eq_subsets (P:ι→ Ideal O)(hP:∀i,Prime (P i))
     (hinj:Function.Injective P) :
     idealDivisors (∏i,P i)=Finset.univ.powerset.image (fun J:Finset ι=>∏i∈J,P i) := by
   have hs:=tuple_product_squarefree P hP hinj
@@ -56,20 +56,22 @@ theorem tuple_divisors_eq_subsets (P:ι→Ideal O)(hP:∀i,Prime (P i))
   funext J
   exact Finset.prod_image (fun i hi j hj h=>hinj h)
 
+section
+variable (P:ι→ Ideal O) (hP:∀i,Prime (P i)) (hinj:Function.Injective P)
+include P hP hinj
 omit [Fintype ι] in
-theorem tuple_subset_product_injective (P:ι→Ideal O)(hP:∀i,Prime (P i))
-    (hinj:Function.Injective P) : Function.Injective (fun J:Finset ι=>∏i∈J,P i) := by
+theorem tuple_subset_product_injective : Function.Injective (fun J:Finset ι=>∏i∈J,P i) := by
   let:∀i,(P i).IsMaximal:=fun i=>(Ideal.isPrime_of_prime (hP i)).isMaximal (hP i).ne_zero
   exact FirstCauchyArithmetic.family_product_injective P hinj
 
-theorem sum_tuple_divisors (P:ι→Ideal O)(hP:∀i,Prime (P i))
-    (hinj:Function.Injective P)(f:Ideal O→ℂ) :
+theorem sum_tuple_divisors(f:Ideal O→ℂ) :
     (∑j∈idealDivisors (∏i,P i),f j)=∑J∈Finset.univ.powerset,f (∏i∈J,P i) := by
   rw [tuple_divisors_eq_subsets P hP hinj,Finset.sum_image
     (fun J hJ K hK he=>tuple_subset_product_injective P hP hinj he)]
+end
 
 theorem originalTotal_slot_subsets (S:Finset (Ideal O))
-    (P:ι→Ideal O)(hP:∀i,Prime (P i))(hinj:Function.Injective P)
+    (P:ι→ Ideal O)(hP:∀i,Prime (P i))(hinj:Function.Injective P)
     (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(hZ:0<Z)(u:O) :
     originalTotalPolynomial S (∏i,P i) η a W Z r z u=
       ∑J∈Finset.univ.powerset,

@@ -8,6 +8,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCompactProfiles
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
 public import MathCollab.Density.Stronger.Atkinson.ZetaQuadraticLogGaussianVariation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,13 +32,11 @@ theorem exists_intervalC1Bound_atkinsonPowerWeight (α : ℝ) :
     (fun _ hu => contDiffAt_atkinsonPowerProfile α hu)
   refine ⟨128 * C * Real.sqrt Real.pi, by positivity, ?_⟩
   intro T G L hT hG hGT hL
-  have hab : T / 16 ≤ T := by linarith
+  pm_6602 hab
   have ht : IntervalC1Bound (fun _ : ℝ => ((T ^ (-α) : ℝ) : ℂ)) (T / 16) T (T ^ (-α)) := by
     simpa only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.rpow_pos_of_pos hT _)] using
       intervalC1Bound_const ((T ^ (-α) : ℝ) : ℂ) (T / 16) T
-  have hp : IntervalC1Bound (fun _ : ℝ => zetaSquareReflectedGammaPhase T) (T / 16) T 1 := by
-    simpa only [norm_zetaSquareReflectedGammaPhase] using
-      intervalC1Bound_const (zetaSquareReflectedGammaPhase T) (T / 16) T
+  pm_604 hp
   have h := (((ht.mul (hprofile T hT) hab).mul
     (intervalC1Bound_zetaDivisorBandCutoff hT hG hL hab) hab).mul hp hab).mul
       (intervalC1Bound_zetaQuadraticLogGaussian hT hG hGT) hab

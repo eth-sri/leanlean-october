@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.ActiveAllocation
 public import OAI.NumberTheory.DirichletL.Moments.DivisorBoundary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,9 +20,9 @@ structure Source (ι:Type*) [Fintype ι] where
   m : O
   A : O
   t : ℝ
-  slots : ι→Finset (Ideal O)
+  slots : ι→ Finset (Ideal O)
   prime : ∀i,∀I∈slots i,Prime I
-  ν : ι→Ideal O→ℂ
+  ν : ι→ Ideal O→ℂ
   W : ι→ℝ→ℂ
   lo : ι→ℝ
   hi : ι→ℝ
@@ -52,11 +53,11 @@ theorem Source.active_boundary (s:Source ι) (D:Ideal O) (hD:Squarefree D)
     s.support D hD a s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ Z hZ ha
 
 theorem reciprocal_sqrt_log (Z x y:ℝ) (hZ:1<Z) (hx:0<x) (hy:0<y) :
-    1/Real.sqrt (x*y)=Z^(-(Real.logb Z x+Real.logb Z y)/2) := by
+    1/Real.sqrt (x*y)=Z ^(-(Real.logb Z x+Real.logb Z y)/2) := by
   have hz:0<Z:=zero_lt_one.trans hZ
   calc
     _=(x*y)^(-(1/2:ℝ)):=by rw [Real.sqrt_eq_rpow,one_div,Real.rpow_neg (mul_nonneg hx.le hy.le)]
-    _=(Z^(Real.logb Z x+Real.logb Z y))^(-(1/2:ℝ)):=by
+    _=(Z ^(Real.logb Z x+Real.logb Z y))^(-(1/2:ℝ)):=by
       rw [Real.rpow_add hz,Real.rpow_logb hz hZ.ne' hx,Real.rpow_logb hz hZ.ne' hy]
     _=_:=by rw [←Real.rpow_mul hz.le]; congr 1; ring
 
@@ -66,13 +67,10 @@ theorem Source.active_pair_weight {κ:Type*} [Fintype κ] [DecidableEq κ]
     (b:Allocation D (Finset.univ:Finset (κ⊕Fin 2)))
     (ha:a∈s.active D) (hb:b∈v.active D) (Z:ℝ) (hZ:1<Z) :
     1/Real.sqrt (formalReductionFactor D a s.P*formalReductionFactor D b v.P)≤
-      Z^((s.allowance Z+v.allowance Z)/2)/(Ideal.absNorm D:ℝ) := by
-  have hs:0<formalReductionFactor D a s.P:=
-    mul_pos (selectedNorm_pos D a) (Finset.prod_pos (fun i _=>s.P_pos i))
-  have hv:0<formalReductionFactor D b v.P:=
-    mul_pos (selectedNorm_pos D b) (Finset.prod_pos (fun i _=>v.P_pos i))
-  have hn:0<(Ideal.absNorm D:ℝ):=by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD.ne_zero)
+      Z ^((s.allowance Z+v.allowance Z)/2)/(Ideal.absNorm D:ℝ) := by
+  pm_8150 hs a s.P s.P_pos
+  pm_8150 hv b v.P v.P_pos
+  pm_6044
   rw [reciprocal_sqrt_log Z _ _ hZ hs hv]
   have hl:=s.active_boundary D hD a ha Z hZ
   have hr:=v.active_boundary D hD b hb Z hZ

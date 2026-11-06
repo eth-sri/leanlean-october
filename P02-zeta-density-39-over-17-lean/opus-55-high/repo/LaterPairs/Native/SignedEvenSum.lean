@@ -37,17 +37,13 @@ theorem sum_signed_even (f : ℤ → ℝ) (N : ℕ) (hN : 0 < N)
   have hneg : (∑ n ∈ Finset.Ioo (-(N:ℤ)) 0, f n) =
       ∑ n ∈ Finset.Ioo (0:ℤ) N, f n := by
     apply Finset.sum_bij (fun n _ => -n)
-    · intro n hn'
-      simp only [Finset.mem_Ioo] at hn' ⊢
-      omega
-    · intro n _ m _ he'
-      omega
+    grind
+    grind
     · intro n hn'
       refine ⟨-n,?_,by omega⟩
       simp only [Finset.mem_Ioo] at hn' ⊢
       omega
-    · intro n _
-      exact (hf n).symm
+    grind
   rw [he,Finset.sum_insert hn,Finset.sum_union hd,hneg]
   ring
 

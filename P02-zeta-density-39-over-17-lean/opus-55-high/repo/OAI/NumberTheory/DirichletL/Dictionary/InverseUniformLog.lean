@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformHeight
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRowwise
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,10 @@ lemma logTest_apply (W : ℝ→ℂ) (n : ℕ) (x : ℝ) :
 def baseProfile (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R : ℝ) : ℝ→ℂ :=
   logTest (orientedProfile reverse (ratioProfile V W R)) n
 
-lemma baseProfile_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R : ℝ) :
+section
+variable (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ)
+include reverse n V W
+lemma baseProfile_support (R : ℝ) :
     Function.support (baseProfile reverse n V W R)⊆Function.support W := by
   apply (logTest_support _ _).trans
   cases reverse
@@ -31,7 +35,7 @@ lemma baseProfile_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R : ℝ)
   · rw [orientedProfile,ite_eq_left rfl,conjugate_profile_support]
     exact ratioProfile_support V W R
 
-lemma baseProfile_smooth (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R a b : ℝ)
+lemma baseProfile_smooth (R a b : ℝ)
     (ha : 0<a) (hV : ContDiff ℝ ∞ V) (hW : ContDiff ℝ ∞ W)
     (hs : Function.support W⊆Icc a b) : ContDiff ℝ ∞ (baseProfile reverse n V W R) := by
   apply logTest_smooth _ n a b ha
@@ -41,43 +45,42 @@ lemma baseProfile_smooth (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (R a b : �
       exact (ratioProfile_support V W R).trans hs
   · have hv : ContDiff ℝ ∞ (ratioProfile V W R) :=
       (hV.comp (by fun_prop)).mul hW
-    cases reverse
-    · exact hv
-    · exact conjugate_profile_smooth _ hv
+    pm_5569 hv
+end
 
 def inverseLogFamily (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (p : ℝ×ℝ) (x : ℝ) : ℂ :=
   Real.exp (-p.1*x) • ((x:ℂ)^n*
     (orientedProfile reverse V (p.2*Real.exp x)*orientedProfile reverse W (Real.exp x)))
 
-lemma inverseLogFamily_smooth (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ)
+section
+variable (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ)
+include reverse n V W
+lemma inverseLogFamily_smooth
     (hV : ContDiff ℝ ∞ V) (hW : ContDiff ℝ ∞ W) :
     ContDiff ℝ ∞ (Function.uncurry (inverseLogFamily reverse n V W)) := by
   have hv : ContDiff ℝ ∞ (orientedProfile reverse V) := by
-    cases reverse
-    · exact hV
-    · exact conjugate_profile_smooth _ hV
+    pm_5569 hV
   have hw : ContDiff ℝ ∞ (orientedProfile reverse W) := by
-    cases reverse
-    · exact hW
-    · exact conjugate_profile_smooth _ hW
+    pm_5569 hW
   unfold inverseLogFamily Function.uncurry
   exact (by fun_prop : ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ=>Real.exp (-p.1.1*p.2))).smul
     (((Complex.ofRealCLM.contDiff.comp (contDiff_snd : ContDiff ℝ ∞ (fun p : (ℝ×ℝ)×ℝ=>p.2))).pow n).mul
       ((hv.comp (by fun_prop)).mul (hw.comp (by fun_prop))))
 
-lemma inverseLogFamily_eq (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (p : ℝ×ℝ) (x : ℝ) :
+lemma inverseLogFamily_eq (p : ℝ×ℝ) (x : ℝ) :
     inverseLogFamily reverse n V W p x=realInterpolatedLog (baseProfile reverse n V W p.2) p x := by
   unfold inverseLogFamily realInterpolatedLog baseProfile
   rw [logTest_apply,Real.log_exp]
   cases reverse <;> simp [orientedProfile,ratioProfile,map_mul]
 
-lemma inverseLogFamily_support (reverse : Bool) (n : ℕ) (V W : ℝ→ℂ) (a b : ℝ)
+lemma inverseLogFamily_support (a b : ℝ)
     (ha : 0<a) (hs : Function.support W⊆Icc a b) (p : ℝ×ℝ) :
     Function.support (inverseLogFamily reverse n V W p)⊆Icc (-(|Real.log a|+|Real.log b|)) (|Real.log a|+|Real.log b|) := by
   have he : inverseLogFamily reverse n V W p=realInterpolatedLog (baseProfile reverse n V W p.2) p :=
     funext (inverseLogFamily_eq reverse n V W p)
   rw [he]
   exact realInterpolatedLog_support _ a b ha ((baseProfile_support reverse n V W p.2).trans hs) p
+end
 
 end SevenEighths.DetectorDictionaryInverseUniform
 

@@ -1,11 +1,11 @@
 module
 public import GuthMaynard.Improvement.RadialDecay
 public import GuthMaynard.Improvement.CubicTimeMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
 
@@ -27,16 +27,19 @@ theorem radialKernel_measurable {a : ℝ → ℂ} (ha : Measurable a) (L : ℝ) 
     fun_prop
   exact hh.stronglyMeasurable.integral_prod_right'.measurable
 
-theorem ratioFourierProduct_measurable {μ : ℝ → ℝ} (hi : Integrable μ) : Measurable (ratioFourierProduct μ) := by
+set_option hygiene false in
+macro "pb_2744" : tactic => `(tactic| (
   have hc : Continuous (𝓕 (fun t => (μ t:ℂ))) :=
     VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar (innerSL ℝ).continuous₂
-      (Complex.ofRealCLM.integrable_comp hi)
+      (Complex.ofRealCLM.integrable_comp hi)))
+theorem ratioFourierProduct_measurable {μ : ℝ → ℝ} (hi : Integrable μ) : Measurable (ratioFourierProduct μ) := by
+  pb_2744
   unfold ratioFourierProduct mellinFrequency
   fun_prop
 
 theorem ratioFourierProduct_bound {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
     (hi : Integrable μ) (p : ℝ × ℝ) : ‖ratioFourierProduct μ p‖ ≤ (∫ t, μ t)^3 := by
-  have hmass : 0 ≤ ∫ t, μ t := integral_nonneg h0
+  pm_4517
   unfold ratioFourierProduct
   simp only [norm_mul]
   calc

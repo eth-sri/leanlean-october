@@ -2,6 +2,7 @@ module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.OscillatoryParts
 public import WeylPort.AFE.ExponentialTails
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,8 +32,11 @@ noncomputable def secondModeEndpoint (f p h : ℝ → ℝ) (x : ℝ) (n : ℕ) :
     exp (2 * (Real.pi : ℂ) * I * ((f x + ((n : ℝ) + 1) * x : ℝ) : ℂ)) /
       (2 * (Real.pi : ℂ) * I) / (2 * (Real.pi : ℂ) * ((n : ℂ) + 1))
 
+section
+variable (f p h : ℝ → ℝ)
+include f p h
 /-- The boundary coefficient is the actual positive-shift harmonic mode times its endpoint amplitude. -/
-theorem secondModeEndpoint_eq (f p h : ℝ → ℝ) (x : ℝ) (n : ℕ) :
+theorem secondModeEndpoint_eq (x : ℝ) (n : ℕ) :
     secondModeEndpoint f p h x n =
       ((h x : ℂ) * exp (2 * (Real.pi : ℂ) * I * (f x : ℂ)) / (4 * (Real.pi : ℂ) ^ 2 * I)) *
         (expMode (-x) (n + 1) / (((n : ℝ) + 1) * ((n : ℝ) + 1 + p x) : ℝ)) := by
@@ -48,34 +52,29 @@ theorem secondModeEndpoint_eq (f p h : ℝ → ℝ) (x : ℝ) (n : ℕ) :
   ring_nf
 
 /-- The actual endpoint series is absolutely convergent. -/
-theorem summable_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x) :
+theorem summable_secondModeEndpoint {x : ℝ} (hp : 0 < p x) :
     Summable (secondModeEndpoint f p h x) := by
   change Summable (fun n => secondModeEndpoint f p h x n)
   simp_rw [secondModeEndpoint_eq]
   exact (summable_positive_tail_shift hp (-x)).mul_left _
 
 /-- The endpoint series sums to the existing oscillatory positive tail. -/
-theorem tsum_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x) :
+theorem tsum_secondModeEndpoint {x : ℝ} (hp : 0 < p x) :
     (∑' n : ℕ, secondModeEndpoint f p h x n) =
       ((h x : ℂ) * exp (2 * (Real.pi : ℂ) * I * (f x : ℂ)) / (4 * (Real.pi : ℂ) ^ 2 * I)) *
         positiveTail (-x) (p x) := by
   simp_rw [secondModeEndpoint_eq]
   rw [tsum_mul_left, positiveTail_eq_shift hp]
   congr 1
-  apply tsum_congr
-  intro n
-  simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
+  pm_10
+end
 
 /-- Norm of the exact endpoint series retains its oscillatory cancellation. -/
 theorem norm_tsum_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x) :
     ‖∑' n : ℕ, secondModeEndpoint f p h x n‖ =
       |h x| / (4 * Real.pi ^ 2) * ‖positiveTail (-x) (p x)‖ := by
   rw [tsum_secondModeEndpoint f p h hp, norm_mul, norm_div, norm_mul]
-  have he : ‖exp (2 * (Real.pi : ℂ) * I * (f x : ℂ))‖ = 1 := by
-    rw [Complex.norm_exp]
-    simp
-  rw [he]
-  simp [Real.norm_eq_abs]
+  pm_12
 
 /-- An actual mode minus its exact endpoints satisfies the square/cube Fourier remainder bound. -/
 theorem secondModeTerm_remainder_bound {a b : ℝ} (hab : a < b)
@@ -100,9 +99,7 @@ theorem secondModeTerm_remainder_bound {a b : ℝ} (hab : a < b)
     (fun u hu => (hp u hu).const_add ((n : ℝ) + 1)) hh
     (continuousOn_const.add hpc) hppc hhpc (fun u hu => (hn u hu).ne') hq1
     (by
-      intro u hu v hv huv
-      dsimp only
-      rw [abs_of_pos (hn u hu), abs_of_pos (hn v hv)]
+      pm_1324 abs_of_pos hn
       exact hq2 hu hv huv)
   have hea := Set.left_mem_Icc.mpr hab.le
   rw [abs_of_pos (hn a hea)] at hb
@@ -124,39 +121,28 @@ theorem secondModeTerm_remainder_bound {a b : ℝ} (hab : a < b)
     have he : 2 * (Real.pi : ℂ) * ((n : ℂ) + 1) =
         ((2 * Real.pi * ((n : ℝ) + 1) : ℝ) : ℂ) := by push_cast; rfl
     rw [he, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hn0]
-  rw [hd]
-  convert hb' using 1
-  simp only [div_eq_mul_inv, mul_inv_rev]
-  ring
+  pm_6655
 
+section
+variable {a b : ℝ} (hab : a < b) {f p p' h h' : ℝ → ℝ} (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u) (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u) (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u) (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b)) (hhpc : ContinuousOn h' (Set.Icc a b)) (hpos : ∀ u ∈ Set.Icc a b, 0 < p u) (hq1 : ∀ n : ℕ, AntitoneOn (fun u => |h' u| / (((n : ℝ) + 1) + p u) ^ 2) (Set.Icc a b)) (hq2 : ∀ n : ℕ, AntitoneOn (fun u => |h u * p' u| / (((n : ℝ) + 1) + p u) ^ 3) (Set.Icc a b))
+include a b hab f p p' h h' hf hp hh hpc hppc hhpc hpos hq1 hq2
 /-- The actual positive-frequency integral series converges, and its bound retains both endpoint cancellations and both harmonic tails. -/
-theorem secondModeTail_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpos : ∀ u ∈ Set.Icc a b, 0 < p u)
-    (hq1 : ∀ n : ℕ, AntitoneOn (fun u => |h' u| / (((n : ℝ) + 1) + p u) ^ 2) (Set.Icc a b))
-    (hq2 : ∀ n : ℕ, AntitoneOn (fun u => |h u * p' u| / (((n : ℝ) + 1) + p u) ^ 3) (Set.Icc a b)) :
+theorem secondModeTail_bound :
     Summable (secondModeTerm f h a b) ∧
     ‖∑' n : ℕ, secondModeTerm f h a b n‖ ≤
       |h b| / (4 * Real.pi ^ 2) * ‖positiveTail (-b) (p b)‖ +
       |h a| / (4 * Real.pi ^ 2) * ‖positiveTail (-a) (p a)‖ +
       (|h' a| / (4 * Real.pi ^ 3)) * (∑' n : ℕ, 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + p a) ^ 2)) +
       (|h a * p' a| / (4 * Real.pi ^ 3)) * (∑' n : ℕ, 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + p a) ^ 3)) := by
-  have ha := hpos a (Set.left_mem_Icc.mpr hab.le)
-  have hb := hpos b (Set.right_mem_Icc.mpr hab.le)
+  pm_6207
   let R : ℕ → ℂ := fun n => secondModeTerm f h a b n -
     (secondModeEndpoint f p h b n - secondModeEndpoint f p h a n)
-  let A : ℝ := |h' a| / (4 * Real.pi ^ 3)
-  let B : ℝ := |h a * p' a| / (4 * Real.pi ^ 3)
+  pm_13
   let w2 : ℕ → ℝ := fun n => 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + p a) ^ 2)
   let w3 : ℕ → ℝ := fun n => 1 / (((n : ℝ) + 1) * ((n : ℝ) + 1 + p a) ^ 3)
   have hs2 : Summable w2 := (hasSum_harmonic_plus_square ha).summable
   have hs3 : Summable w3 := (hasSum_harmonic_plus_cube ha).summable
-  have hs := (hs2.mul_left A).add (hs3.mul_left B)
+  pm_7730
   have hbound (n : ℕ) : ‖R n‖ ≤ A * w2 n + B * w3 n :=
     secondModeTerm_remainder_bound hab hf hp hh hpc hppc hhpc hpos n (hq1 n) (hq2 n)
   have hsR : Summable R := hs.of_norm_bounded hbound
@@ -166,31 +152,18 @@ theorem secondModeTail_bound {a b : ℝ} (hab : a < b)
       R n + (secondModeEndpoint f p h b n - secondModeEndpoint f p h a n) := by
     funext n
     exact (sub_add_cancel _ _).symm
-  refine ⟨?_, ?_⟩
-  · rw [hseq]
-    exact hsR.add (hsEb.sub hsEa)
+  pm_6422
   · have hr : ‖∑' n, R n‖ ≤ A * ∑' n, w2 n + B * ∑' n, w3 n := by
-      have ht := tsum_of_norm_bounded hs.hasSum hbound
-      simpa only [Summable.tsum_add (hs2.mul_left A) (hs3.mul_left B), tsum_mul_left] using ht
-    rw [hseq, hsR.tsum_add (hsEb.sub hsEa), hsEb.tsum_sub hsEa]
+      pm_1382
+    pm_7449
     have hn := (norm_add_le (∑' n, R n)
       ((∑' n, secondModeEndpoint f p h b n) - ∑' n, secondModeEndpoint f p h a n)).trans
         (add_le_add hr (norm_sub_le _ _))
     rw [norm_tsum_secondModeEndpoint f p h hb, norm_tsum_secondModeEndpoint f p h ha] at hn
-    dsimp only [A, B, w2, w3] at hn
-    linarith
+    pm_7155
 
 /-- Lemma 1 gives the full source logarithmic square/cube coefficients for the actual positive-frequency integral sum. -/
-theorem secondModeTail_source_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpos : ∀ u ∈ Set.Icc a b, 0 < p u)
-    (hq1 : ∀ n : ℕ, AntitoneOn (fun u => |h' u| / (((n : ℝ) + 1) + p u) ^ 2) (Set.Icc a b))
-    (hq2 : ∀ n : ℕ, AntitoneOn (fun u => |h u * p' u| / (((n : ℝ) + 1) + p u) ^ 3) (Set.Icc a b)) :
+theorem secondModeTail_source_bound :
     ‖∑' n : ℕ, secondModeTerm f h a b n‖ ≤
       |h b| / (4 * Real.pi ^ 2) * ‖positiveTail (-b) (p b)‖ +
       |h a| / (4 * Real.pi ^ 2) * ‖positiveTail (-a) (p a)‖ +
@@ -205,5 +178,6 @@ theorem secondModeTail_source_bound {a b : ℝ} (hab : a < b)
   exact add_le_add
     (add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (harmonic_plus_square_bound ha) (by positivity)))
     (mul_le_mul_of_nonneg_left (harmonic_plus_cube_bound ha) (by positivity))
+end
 
 end DhimanKadiriQuesadaHerrera2026

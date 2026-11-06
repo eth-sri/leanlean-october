@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentReflectedAnnuli
 open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization
@@ -55,12 +55,6 @@ def logProfile (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   positiveLogProfile logWindow (reflected W t) s logWindow_compact logWindow_smooth
     (reflected_smooth W a b ha hs hW t) hs0
 
-@[simp] theorem logProfile_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (s : ℝ) (hs0 : 0<s) (t v : ℝ) :
-    logProfile W a b ha hs hW s hs0 t v =
-      annularProfile (reflected W t) s (Real.exp v) := rfl
-
 theorem normalized_annular_term (η : HeckeFamily.Character) (F : ℝ→ℂ)
     (s Y : ℝ) (hs : 0<s) (hY : 0<Y) :
     HeckeDyadic.polynomial η false (fun x=>(annulus (x/s):ℂ)*F x) Y 0 0=
@@ -69,7 +63,7 @@ theorem normalized_annular_term (η : HeckeFamily.Character) (F : ℝ→ℂ)
   have he (x : ℝ) : (annulus ((x/Y)/s):ℂ)*F (x/Y)=
       annularProfile F s (x/(s*Y)) := by
     unfold annularProfile
-    congr 2 <;> field_simp
+    grind
   simp_rw [he]
   rw [Real.sqrt_mul hs.le,Complex.ofReal_mul]
   have hs' : (Real.sqrt s:ℂ)≠0 := by exact_mod_cast (ne_of_gt (Real.sqrt_pos.2 hs))

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Common
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,11 +24,15 @@ instance idealMaximal (i : ι) : (G.ideal i).IsMaximal := G.maximal i
 
 def generator (i : ι) : Eis := primaryPrime (G.ideal i)
 
-lemma generator_ne_zero (i : ι) : G.generator i ≠ 0 := primaryPrime_ne_zero _ (G.good i)
-lemma generator_span (i : ι) : Ideal.span {G.generator i} = G.ideal i :=
+section
+variable (i : ι)
+include i
+lemma generator_ne_zero : G.generator i ≠ 0 := primaryPrime_ne_zero _ (G.good i)
+lemma generator_span : Ideal.span {G.generator i} = G.ideal i :=
   (primaryPrime_spec _ (G.generator_ne_zero i)).2.2.1
-lemma generator_primary (i : ι) : λ₀^2 ∣ G.generator i-1 :=
+lemma generator_primary : λ₀^2 ∣ G.generator i-1 :=
   (primaryPrime_spec _ (G.generator_ne_zero i)).2.2.2
+end
 instance generatorMaximal (i : ι) : (Ideal.span {G.generator i}).IsMaximal :=
   G.generator_span i ▸ G.maximal i
 lemma generator_good (i : ι) : λ₀ ∉ Ideal.span {G.generator i} := by
@@ -50,7 +55,7 @@ lemma generator_coprime_period (N : Eis)
     IsCoprime N (G.generator i) := by
   apply (Ideal.isCoprime_span_singleton_iff _ _).mp
   rw [G.generator_span]
-  exact hN i
+  grind
 
 lemma generator_product_coprime_period [Fintype ι] (N c : Eis) (hc : c ∣ N)
     (hN : ∀ i, IsCoprime (Ideal.span {N}) (G.ideal i)) :
@@ -68,10 +73,7 @@ theorem exists_controlled [Fintype ι] (N a c : Eis) (mode : Bool)
   apply exists_controlledStratumArithmetic G.generator G.generator_ne_zero
   · intro i k hik
     simpa only [G.generator_span] using hcop hik
-  · exact G.generator_primary
-  · exact hc
-  · exact hN
-  · exact hbase
+  pm_87 G.generator_primary hc hN hbase
   · exact hac
   · exact G.generator_coprime_period N hNp
 

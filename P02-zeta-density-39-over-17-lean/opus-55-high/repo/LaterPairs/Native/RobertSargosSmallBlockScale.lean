@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ThirdDerivativeRpowScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -31,9 +32,7 @@ theorem small_block_inverse_sixth_root {M H lam : ℝ}
     H*Real.sqrt M*(2*H*lam)^(-(1:ℝ)/6) ≤ M := by
   have ht : 0 < (2*H*lam)^((1:ℝ)/6) := by positivity
   have hsqrt : (Real.sqrt M)^6 = M^3 := by
-    calc
-      _ = ((Real.sqrt M)^2)^3 := by ring
-      _ = _ := by rw [Real.sq_sqrt hM]
+    grind
   have hp : H*Real.sqrt M ≤ M*(2*H*lam)^((1:ℝ)/6) := by
     apply (pow_le_pow_iff_left₀ (by positivity) (by positivity) (by norm_num : 6 ≠ 0)).mp
     rw [mul_pow,mul_pow,hsqrt,sixth_root_pow_six (by positivity)]
@@ -54,8 +53,7 @@ theorem small_block_third_derivative_budget {M H C lam : ℝ}
   have h1 := mul_le_mul_of_nonneg_left (small_block_sixth_root hH.le hlam.le hfirst) hM
   have h2 := small_block_inverse_sixth_root hM hH hlam hsecond
   have h3 := mul_le_mul_of_nonneg_right hC hM
-  have hsum := mul_le_mul_of_nonneg_left (add_le_add h1 h2)
-    (show 0 ≤ 20*C by positivity)
+  pm_8830 hsum h1 h2
   nlinarith
 
 end TaoTrudgianYang2025

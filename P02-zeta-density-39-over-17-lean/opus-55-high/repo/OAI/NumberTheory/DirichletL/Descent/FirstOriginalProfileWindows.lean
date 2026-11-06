@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCells
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,7 @@ open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
 local notation "O" => ActualEisensteinCubic.O
 theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (Bρ : Fin 9→ℝ)
-    (hm₁ : 0≤m₁) (hm₂ : 0≤m₂)
+    (hm₁ : 0≤ m₁) (hm₂ : 0≤ m₂)
     (hg₁ : Function.support g₁⊆Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂⊆Set.Icc (-m₂) m₂)
     (hBρ : ∀i,0≤Bρ i) :
@@ -23,17 +24,17 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
       (∀i,0≤M₀ i) ∧ (∀i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
       ∀{ι : Type*}[DecidableEq ι]
-      (p : ι→O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O)) (Y : ℝ)
-      (C₁ C₂ : OriginalIndex ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ)
+      (C₁ C₂ : OriginalIndex ι→ Finset ι→ℂ) (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ)
       (ρ : Fin 9→ℝ)(c₁ c₂ θ₁ θ₂ : ℝ),
       0<T₁ → 0<T₂ → (∀i,|ρ i|≤Bρ i) →
-      1≤c₁ → c₁≤bcap → 1≤c₂ → c₂≤bcap →
+      1≤ c₁ → c₁≤bcap → 1≤ c₂ → c₂≤bcap →
       let source := sourceCell (originalNorms p)
         (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) k
       let F := pool
-      let selector : OriginalIndex ι→Finset ι→ℂ := fun _=>commonSelector p (fun _=>1) l
+      let selector : OriginalIndex ι→ Finset ι→ℂ := fun _=>commonSelector p (fun _=>1) l
       let A₁ := leftNorm p
       let A₂ := rightNorm p
       let C := commonNorm p
@@ -56,7 +57,7 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
   obtain ⟨w₁,w₂,U,M,a,b,ha,hab,hwc₁,hwc₂,hws₁,hws₂,hM,hUc,hUs,he⟩ :=
     actual_first_child_windows g₁ g₂ m₁ m₂ bcap (fun _=>1) (fun _=>2) Bρ
       hm₁ hm₂ hg₁ hg₂ (by intro i;norm_num) (by intro i;norm_num) hBρ
-  refine ⟨w₁,w₂,U,M,a,b,ha,hab,hwc₁,hwc₂,hws₁,hws₂,hM,hUc,hUs,?_⟩
+  pm_3767
   intro ι _ p hp _ hg pool Q labels Y C₁ C₂ k l T₁ T₂ ρ c₁ c₂ θ₁ θ₂
     hT₁ hT₂ hρ hc₁ hcb₁ hc₂ hcb₂ source F selector A₁ A₂ C R d h s
   apply he p hp hg source F selector C₁ C₂ A₁ A₂ C R d h s ρ c₁ c₂ θ₁ θ₂

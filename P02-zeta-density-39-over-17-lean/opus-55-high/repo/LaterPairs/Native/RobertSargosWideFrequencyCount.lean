@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosCoefficientFibers
 public import LaterPairs.Native.RobertSargosCoefficientProjection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -21,9 +22,9 @@ theorem exists_robertSargos_primitive_count_coefficient_bound (ε : ℝ) (hε : 
       (∀ p ∈ S, RobertSargosPrimitiveSystem R H Q δ p) →
       (S.card:ℝ) ≤ C*H^ε*(R*H^2+δ*R*H*Q^2) := by
   classical
-  obtain ⟨C,hC,hfiber⟩ := exists_robertSargos_coefficient_fiber_bound ε hε
+  pm_69 C hC hfiber exists_robertSargos_coefficient_fiber_bound ε hε
   refine ⟨12*C,by positivity,?_⟩
-  intro S R H Q δ hR hH hQ hδ hRH hmem
+  pm_1677
   have hHp : 0 < H := by linarith
   let U := S.image robertSargosCoefficientKey
   have hU : (U.card:ℝ) ≤ 12*R*H^2 :=
@@ -41,9 +42,7 @@ theorem exists_robertSargos_primitive_count_coefficient_bound (ε : ℝ) (hε : 
       exact ⟨congrArg (fun z : ℤ × ℤ × ℤ => z.1) he,
         congrArg (fun z : ℤ × ℤ × ℤ => z.2.1) he,
         congrArg (fun z : ℤ × ℤ × ℤ => z.2.2) he⟩
-  have hmaps : Set.MapsTo robertSargosCoefficientKey S U := by
-    intro p hp
-    exact Finset.mem_image.mpr ⟨p,hp,rfl⟩
+  pm_347 robertSargosCoefficientKey
   have hcard := Finset.card_eq_sum_card_fiberwise hmaps
   have hcardR : (S.card:ℝ) =
       ∑ z ∈ U, ((S.filter (fun p => robertSargosCoefficientKey p = z)).card:ℝ) := by

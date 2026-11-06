@@ -21,8 +21,6 @@ remove the distinct medium ordinary-zeta Type-I reflection in ANTEDB Lemma
 zeta-polynomial range is strictly below its lower end `2`. -/
 theorem ingham_zeta_polynomial_range_empty
     {σ τ : ℝ} (hσ : 1 / 2 < σ) (hτ : 2 ≤ τ) :
-    ¬ τ < 4 * (2 - σ) / 3 := by
-  intro hUpper
-  nlinarith
+    ¬ τ < 4 * (2 - σ) / 3 := by grind
 
 end GuthMaynard.NativeMoment

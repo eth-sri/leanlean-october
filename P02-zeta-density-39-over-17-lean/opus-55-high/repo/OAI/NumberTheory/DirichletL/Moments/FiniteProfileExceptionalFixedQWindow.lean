@@ -3,25 +3,24 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonWindowColumn
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommonHeight
 public import OAI.NumberTheory.DirichletL.Moments.LogDyadic
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalFixedQCanonical
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
 open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentCommonExceptionalCost
-open CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn
-open CenteredMomentHeckeColumnWindow CenteredMomentSmooth
+open CenteredMomentCommonWindowColumn
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
 open CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
+open CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
 local notation "O" => HeckeFamily.O
@@ -33,51 +32,48 @@ theorem actual_canonical_common_window (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s v:Input ι)(p q:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       (∀i,v.lo i=lo i) → (∀i,v.hi i=hi i) →
-      (∀i,1≤s.P i) → (∀i,1≤v.P i) →
+      (∀i,1≤ s.P i) → (∀i,1≤v.P i) →
       s.W₁=p.profile 0 → s.W₂=p.profile 1 → v.W₁=q.profile 0 → v.W₂=q.profile 1 →
       ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O),R≠0 → seed∣C → seed∣D →
       ∀rLeft rRight:ℝ,
-      Z^rLeft≤s.X₁ → Z^rLeft≤s.X₂ → Z^rLeft≤s.Y₁ → Z^rLeft≤s.Y₂ →
-      Z^rRight≤v.X₁ → Z^rRight≤v.X₂ → Z^rRight≤v.Y₁ → Z^rRight≤v.Y₂ →
+      Z ^rLeft≤ s.X₁ → Z ^rLeft≤ s.X₂ → Z ^rLeft≤ s.Y₁ → Z ^rLeft≤ s.Y₂ →
+      Z ^rRight≤v.X₁ → Z ^rRight≤v.X₂ → Z ^rRight≤v.Y₁ → Z ^rRight≤v.Y₂ →
       ∀rows:Finset O,(∀z∈rows,z≠0) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow s.η Q fixedBadMask 1 z) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow v.η Q fixedBadMask 1 z) →
       (∀z∈rows,(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+        (Ideal.span {(72:O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z ^B) →
       (∀z∈rows,(v.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+        (Ideal.span {(72:O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z ^B) →
       ∀(η₀:Character)(χ:RayFourExpansion.RayCharacter)(U:Finset (CommonIndex C D)),
       idealCoeff η₀ C≠0 →
       ∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow (childCharacter η₀ χ) Q m
-        (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z) →
-      ∀Cr M:ℝ,0≤Cr → (∀z∈rows,(Ideal.absNorm (Ideal.span {z}):ℝ)≤Cr*Z^M) →
+        (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U) z) →
+      ∀Cr M:ℝ,0≤Cr → (∀z∈rows,(Ideal.absNorm (Ideal.span {z}):ℝ)≤Cr*Z ^M) →
       ∀θ₁ θ₂ X Y:ℝ,0<X → 0<Y →
-      ∀Ds:Finset (Ideal O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z^Lbound) →
+      ∀Ds:Finset (Ideal O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z ^Lbound) →
       (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
         ‖windowColumn s C hC R seed L s.η s.t θ₁ X logAnnulus z‖*
         ‖windowColumn v D hD R seed L v.η v.t θ₂ Y logAnnulus z‖)≤
         K*(768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*
-          Z^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D=>P.val)
+          Z ^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D =>P.val)
             (leftExponent C D) (rightExponent C D) (nonunitPartitionSet C D U)):ℝ))/6+
             2*ε+δ-max (max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
               (max (rRight-Real.logb Z (D.absNorm:ℝ)) 0))*
           ((C.absNorm:ℝ)*D.absNorm)^θ*
           (frozenProfile s*frozenProfile v/((C.absNorm:ℝ)*D.absNorm))*
-          mass Sprofile s v p q s.t v.t θ₁ θ₂ J*
+          mass Sprofile s v p q s.t v.t θ₁ θ₂ J *
           (∫u:ℝ,(1+‖u‖)^J*‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth u‖)^2 :=by
-  obtain ⟨J,Sprofile,hSprofile,hJ⟩:=actual_common_canonical_bound wlo whi hwlo hwhi lo hi ε δ θ B Lbound hε hδ hθ hB hL
+  pm_2941 actual_common_canonical_bound
   refine ⟨J,Sprofile,hSprofile,?_⟩
-  intro Q hQ hQtop hQ72
-  obtain ⟨K,hK,hbound⟩:=hJ Q hQ hQtop hQ72
-  refine ⟨K,hK,?_⟩
-  filter_upwards [hbound] with Z hZ
-  refine ⟨hZ.1,?_⟩
+  pm_2938
+  pm_2985
   intro s v p q hslo hshi hlo hhi hsP hvP hsW₁ hsW₂ hvW₁ hvW₂ C D hC hD R seed hR hsC hsD
     rLeft rRight hsX₁ hsX₂ hsY₁ hsY₂ hvX₁ hvX₂ hvY₁ hvY₂ rows hn hsEx hvEx hsCond hvCond
     η₀ χ U hη m hm hml hm2 hex Cr M hCr hN θ₁ θ₂ X Y hX hY Ds hDs
   let F:=K*(768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*
-          Z^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D=>P.val)
+          Z ^((M-4*Real.logb Z (Ideal.absNorm (forcingIdeal (fun P:CommonIndex C D =>P.val)
             (leftExponent C D) (rightExponent C D) (nonunitPartitionSet C D U)):ℝ))/6+
             2*ε+δ-max (max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
               (max (rRight-Real.logb Z (D.absNorm:ℝ)) 0))*
@@ -92,7 +88,7 @@ theorem actual_canonical_common_window (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
     logAnnulus_compact logAnnulus_compact logAnnulus_smooth logAnnulus_smooth
     J J (F*mass Sprofile s v p q s.t v.t θ₁ θ₂ J)
     (mul_nonneg hF (mass_nonneg Sprofile s v p q s.t v.t θ₁ θ₂ J)) ?_
-  · simpa only [F,pow_two,mul_assoc] using hh
+  pm_504 F pow_two mul_assoc hh
   intro u w
   have hb:=hZ.2 (withHeight s s.η (s.t+2*Real.pi*(u-θ₁)))
     (withHeight v v.η (v.t+2*Real.pi*(w-θ₂))) p q hslo hshi hlo hhi hsP hvP hsW₁ hsW₂ hvW₁ hvW₂
@@ -111,6 +107,5 @@ theorem actual_canonical_common_window (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(l
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
 
-end
 
 end OAI

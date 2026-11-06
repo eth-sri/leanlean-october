@@ -1,7 +1,8 @@
 module
 public import GafniTao.HeathBrownSpacingRealBound
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Quantitative bound for one positive shift
@@ -13,7 +14,6 @@ truncation `N-d` visible.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem heathBrownPositiveShiftFiber_card_cast_le_raw
     {N k H K d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -38,12 +38,12 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_raw
         ((A * lambda * d / ((k - 2).factorial : ℝ)) * (N - d : ℕ) +
           2 * (4 * (((H : ℝ) ^ (k - 2))⁻¹)) + 3) := by
   let g := heathBrownShiftedDifference f (k - 2) d
-  let theta : ℝ := 4 * (((H : ℝ) ^ (k - 2))⁻¹)
+  pm_5786 theta
   let mu : ℝ := lambda * d / ((k - 2).factorial : ℝ)
   let M : ℝ := A * lambda * d / ((k - 2).factorial : ℝ)
-  have hmu : 0 < mu := by dsimp [mu]; positivity
-  have htheta : 0 ≤ theta := by dsimp [theta]; positivity
-  have hM : 0 ≤ M := by dsimp [M]; positivity
+  pm_64 hmu mu
+  pm_61 htheta theta
+  pm_2825
   have hg := heathBrown_shiftedDifference_continuousOn hdN hcoord
   have hgd := heathBrown_shiftedDifference_differentiableOn hdN hcoordd
   have hbounds := heathBrown_shiftedDifference_deriv_bounds
@@ -60,8 +60,8 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_raw
           (heathBrownShiftedDifference f (k - 2) d)
           (4 * (((H : ℝ) ^ (k - 2))⁻¹))).card : ℝ) := by
       exact_mod_cast hnat
-    simpa only [g, theta] using hcast
-  exact hfiber.trans (by simpa only [g, theta, mu, M] using hspacing)
+    grind
+  grind
 
 theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
     {N k H K D d : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
@@ -95,13 +95,13 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
   let c : ℝ := 8 * fac * u / lambda
   let b : ℝ := 8 * u + 3
   let a : ℝ := A * lambda * N / fac
-  have hfac : 0 < fac := by dsimp [fac]; positivity
-  have hdR : 0 < (d : ℝ) := by exact_mod_cast hd
-  have hDR : (d : ℝ) ≤ D := by exact_mod_cast hdD
-  have hu : 0 ≤ u := by dsimp [u]; positivity
-  have hc : 0 ≤ c := by dsimp [c]; positivity
-  have hb : 0 ≤ b := by dsimp [b]; positivity
-  have ha : 0 ≤ a := by dsimp [a]; positivity
+  pm_64 hfac fac
+  pm_456 hdR d hd
+  pm_106 hDR d D hdD
+  pm_61 hu u
+  pm_61 hc c
+  pm_61 hb b
+  pm_61 ha a
   have hNd : ((N - d : ℕ) : ℝ) ≤ N := by exact_mod_cast Nat.sub_le N d
   have hsecond :
       (A * lambda * (d : ℝ) / fac) * ((N - d : ℕ) : ℝ) + 8 * u + 3 ≤
@@ -139,7 +139,7 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
     have hright : b + a * (d : ℝ) ≤ b + a * D := by
       simpa only [add_comm] using
         add_le_add_left (mul_le_mul_of_nonneg_left hDR ha) b
-    exact mul_le_mul hleft hright (by positivity) (by positivity)
+    pm_149 hleft hright
   calc
     ((heathBrownPositiveShiftFiber N k H K f d).card : ℝ) ≤
         ((d : ℝ) + c) / d *
@@ -150,6 +150,5 @@ theorem heathBrownPositiveShiftFiber_card_cast_le_harmonic
     _ = ((D : ℝ) + c) * (b + a * D) / d := by ring
 
 
-end
 
 end GafniTao

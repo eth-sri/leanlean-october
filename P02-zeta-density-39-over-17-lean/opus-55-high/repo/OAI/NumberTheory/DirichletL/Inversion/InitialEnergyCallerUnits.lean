@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAllSlots
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,18 +8,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open scoped Classical
+open CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerUnits
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
+open InverseInitialProfile
+open InverseInitialQuotientGeometry InverseInitialClippedColumns
 local notation "Eis"=>ActualEisensteinCubic.O
 local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
@@ -41,7 +41,7 @@ theorem unit_sector_card : Fintype.card Eisˣ=6 := by
 
 theorem all_units_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
@@ -49,10 +49,10 @@ theorem all_units_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
       (_hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
       (S:Finset (Source (ι:=ι) 0))(_hdiv:∀x∈S,x.divisor⊆x.common)
       (pool:Finset ι)(Ψ:Eis→*ℂ)(_hΨ:∀n,‖Ψ n‖≤1)(j:Eis)
-      (slots:Finset σ)(_hslots:slots.card≤N)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+      (slots:Finset σ)(_hslots:slots.card≤N)(lists:σ→ Finset ι)(a:σ→ι→ℂ)
       (_ha:∀i∈slots,∀q∈lists i,‖a i q‖≤1)
       (ω₁ ω₂:ℝ→ℂ)(Z D B v θ H R:ℝ)(_hZ:1≤Z)(_hR:R≤U)
-      (_hn:∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z^R)
+      (_hn:∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z ^R)
       (ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))
       (w:Source (ι:=ι) 0→ℂ)(_hw:∀x∈S,‖w x‖≤1)
       (labels:Finset (Ideal Eis))(rows:Finset Eis)
@@ -65,20 +65,20 @@ theorem all_units_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
         normalizedColumnEnergy p hp hcop hg pool (secondRayMinus Ψ ρ) (j*primaryGenerator t)
           (slots\J₁) lists a labels rows (fun f=>((idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1))
           (childLogTest ω₁ (-(profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2) 4))
-          (Z^(columnCenter D B v)) Z F≤E ∧
+          (Z ^(columnCenter D B v)) Z F≤E ∧
         normalizedColumnEnergy p hp hcop hg pool (secondRayPlus Ψ ρ) (j*primaryGenerator t)
           (slots\J₂) lists a labels rows (fun f=>((idealDivisors f).card:ℝ)^(J₁.card+J₂.card+1))
           (childLogTest ω₂ ((profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2) 5))
-          (Z^(columnCenter D B v)) Z F≤E),
+          (Z ^(columnCenter D B v)) Z F≤E),
       ‖∑x∈S,w x*rowMode p hp hcop hg hpr pool Ψ j slots lists a ω₁ ω₂
-        Z D B v θ H x ρ z‖≤C*‖secondRayCoefficient ρ‖*Z^(F+R+π)*E := by
-  obtain ⟨C,hC,hbound⟩ := InverseInitialEnergyCallerAllSlots.all_slots_bound N U π hU hπ
+        Z D B v θ H x ρ z‖≤C*‖secondRayCoefficient ρ‖*Z ^(F+R+π)*E := by
+  pm_3547 C hC hbound InverseInitialEnergyCallerAllSlots.all_slots_bound N U π hU hπ
   refine ⟨6*C,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hpr hc S hdiv pool Ψ hΨ j slots hslots lists a ha ω₁ ω₂
     Z D B v θ H R hZ hR hn ρ z w hw labels rows hlabels hneg hchild F E hE hmoment
   have hb (u:Eisˣ) :
       ‖∑x∈sourceSector p hp hpr S u,w x*rowMode p hp hcop hg hpr pool Ψ j slots lists a ω₁ ω₂
-        Z D B v θ H x ρ z‖≤C*‖secondRayCoefficient ρ‖*Z^(F+R+π)*E := by
+        Z D B v θ H x ρ z‖≤C*‖secondRayCoefficient ρ‖*Z ^(F+R+π)*E := by
     have hs : sourceSector p hp hpr S u⊆S := Finset.filter_subset _ _
     apply hbound p hp hcop hg hinj hpr hc (sourceSector p hp hpr S u) u
       (fun x hx=>hdiv x (hs hx)) (fun x hx=>(Finset.mem_filter.mp hx).2)
@@ -97,7 +97,7 @@ theorem all_units_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
   calc
     _≤∑u:Eisˣ,‖∑x∈sourceSector p hp hpr S u,w x*rowMode p hp hcop hg hpr pool Ψ j
       slots lists a ω₁ ω₂ Z D B v θ H x ρ z‖ := norm_sum_le _ _
-    _≤∑_u:Eisˣ,C*‖secondRayCoefficient ρ‖*Z^(F+R+π)*E := Finset.sum_le_sum fun u _=>hb u
+    _≤∑_u:Eisˣ,C*‖secondRayCoefficient ρ‖*Z ^(F+R+π)*E := Finset.sum_le_sum fun u _=>hb u
     _=_ := by simp only [Finset.sum_const,Finset.card_univ,unit_sector_card,nsmul_eq_mul];norm_num;ring
 
 end SevenEighths.InverseInitialEnergyCallerUnits

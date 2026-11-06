@@ -1,6 +1,7 @@
 module
 public import WeylPort.ShortSum
 public import Mathlib.NumberTheory.LSeries.RiemannZeta
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,30 +12,33 @@ namespace WeylPort
 
 noncomputable def criticalPoint (t : ℝ) : ℂ := (1/2:ℂ) + (t:ℂ)*I
 
-theorem one_sub_criticalPoint (t : ℝ) :
+section
+variable (t : ℝ)
+include t
+theorem one_sub_criticalPoint :
     1 - criticalPoint t = conj (criticalPoint t) := by
   apply Complex.ext <;> norm_num [criticalPoint]
 
-theorem criticalPoint_neg (t : ℝ) :
+theorem criticalPoint_neg :
     criticalPoint (-t) = conj (criticalPoint t) := by
   apply Complex.ext <;> simp [criticalPoint]
 
-theorem criticalTerm_neg (t : ℝ) (n : ℕ) :
+theorem criticalTerm_neg (n : ℕ) :
     criticalTerm (-t) n = conj (criticalTerm t n) := by
   have ha : (n:ℂ).arg ≠ Real.pi := by simp [Real.pi_ne_zero.symm]
   have hc := Complex.cpow_conj (n:ℂ) (-criticalPoint t) ha
   change (n:ℂ)^(-criticalPoint (-t)) = conj ((n:ℂ)^(-criticalPoint t))
   rw [criticalPoint_neg]
-  simpa only [map_neg, map_natCast] using hc
+  simp_all
 
-theorem norm_critical_sum_neg (t : ℝ) (N : ℕ) :
+theorem norm_critical_sum_neg (N : ℕ) :
     ‖∑ n ∈ Ico 1 (N+1), criticalTerm (-t) n‖ =
       ‖∑ n ∈ Ico 1 (N+1), criticalTerm t n‖ := by
   simp_rw [criticalTerm_neg]
   rw [← map_sum, Complex.norm_conj]
 
 /-- The dual AFE polynomial has exactly the same norm as the original polynomial. -/
-theorem norm_dual_critical_sum (t : ℝ) (N : ℕ) :
+theorem norm_dual_critical_sum (N : ℕ) :
     ‖∑ n ∈ Ico 1 (N+1), (n:ℂ)^(criticalPoint t - 1)‖ =
       ‖∑ n ∈ Ico 1 (N+1), criticalTerm t n‖ := by
   have hexp : criticalPoint t - 1 = -criticalPoint (-t) := by
@@ -42,37 +46,37 @@ theorem norm_dual_critical_sum (t : ℝ) (N : ℕ) :
     ring
   simp_rw [hexp]
   exact norm_critical_sum_neg t N
+end
 
 theorem gammaReal_conj (s : ℂ) : Gammaℝ (conj s) = conj (Gammaℝ s) := by
   have ha : (Real.pi:ℂ).arg ≠ Real.pi := by
     rw [Complex.arg_ofReal_of_nonneg Real.pi_pos.le]
     exact Real.pi_ne_zero.symm
   have hc := Complex.cpow_conj (Real.pi:ℂ) (-s/2) ha
-  simp only [map_div₀, map_neg, map_ofNat, conj_ofReal] at hc
+  pm_298 map_div₀ map_neg map_ofNat conj_ofReal hc
   simp only [Gammaℝ, map_mul, ← Gamma_conj, map_div₀, map_ofNat, hc]
 
 /-- The genuine completed-zeta gamma quotient in the functional equation. -/
 noncomputable def criticalGammaRatio (t : ℝ) : ℂ :=
   Gammaℝ (1 - criticalPoint t) / Gammaℝ (criticalPoint t)
 
-theorem norm_criticalGammaRatio (t : ℝ) : ‖criticalGammaRatio t‖ = 1 := by
+section
+variable (t : ℝ)
+include t
+theorem norm_criticalGammaRatio : ‖criticalGammaRatio t‖ = 1 := by
   have hne : Gammaℝ (criticalPoint t) ≠ 0 :=
     Gammaℝ_ne_zero_of_re_pos (by norm_num [criticalPoint])
   rw [criticalGammaRatio, one_sub_criticalPoint, gammaReal_conj, norm_div,
     Complex.norm_conj, div_self (norm_ne_zero_iff.mpr hne)]
 
 /-- Actual zeta reflection, with no zeta-value nonvanishing assumption. -/
-theorem riemannZeta_critical_functional_equation (t : ℝ) :
+theorem riemannZeta_critical_functional_equation :
     riemannZeta (criticalPoint t) =
       criticalGammaRatio t * riemannZeta (1 - criticalPoint t) := by
   have hs : criticalPoint t ≠ 0 := by
-    intro he
-    have := congrArg Complex.re he
-    norm_num [criticalPoint] at this
+    pm_532 he criticalPoint
   have hs' : 1 - criticalPoint t ≠ 0 := by
-    intro he
-    have := congrArg Complex.re he
-    norm_num [criticalPoint] at this
+    pm_532 he criticalPoint
   have hne : Gammaℝ (1 - criticalPoint t) ≠ 0 :=
     Gammaℝ_ne_zero_of_re_pos (by norm_num [criticalPoint])
   rw [riemannZeta_def_of_ne_zero hs, riemannZeta_def_of_ne_zero hs',
@@ -81,7 +85,7 @@ theorem riemannZeta_critical_functional_equation (t : ℝ) :
 
 /-- The product-form chi used by the source AFE is the genuine gamma quotient.
 This identification uses Gamma reflection and duplication, never division by zeta. -/
-theorem critical_chi_product_eq_ratio (t : ℝ) :
+theorem critical_chi_product_eq_ratio :
     (2:ℂ)^(criticalPoint t) * (Real.pi:ℂ)^(criticalPoint t - 1) *
       Gamma (1-criticalPoint t) * sin ((Real.pi:ℂ)*criticalPoint t/2) =
         criticalGammaRatio t := by
@@ -90,7 +94,7 @@ theorem critical_chi_product_eq_ratio (t : ℝ) :
     intro n he
     have hr := congrArg Complex.re he
     norm_num [s,criticalPoint] at hr
-    have hn : (0:ℝ) ≤ n := Nat.cast_nonneg n
+    pm_5327 hn n
     linarith
   have h := Gammaℝ_div_Gammaℝ_one_sub hs
   rw [show 1-(1-s) = s by ring] at h
@@ -110,9 +114,10 @@ theorem critical_chi_product_eq_ratio (t : ℝ) :
   ring
 
 /-- Exact unit norm for the source AFE's literal product-form chi factor. -/
-theorem norm_critical_chi_product (t : ℝ) :
+theorem norm_critical_chi_product :
     ‖(2:ℂ)^(criticalPoint t) * (Real.pi:ℂ)^(criticalPoint t - 1) *
       Gamma (1-criticalPoint t) * sin ((Real.pi:ℂ)*criticalPoint t/2)‖ = 1 := by
   rw [critical_chi_product_eq_ratio, norm_criticalGammaRatio]
+end
 
 end WeylPort

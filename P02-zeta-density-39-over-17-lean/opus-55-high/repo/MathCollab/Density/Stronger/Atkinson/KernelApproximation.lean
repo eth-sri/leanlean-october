@@ -9,14 +9,13 @@ No upstream project or Architect module is imported.
 public import MathCollab.Density.Stronger.Atkinson.NearKernel
 public import MathCollab.Density.Stronger.Atkinson.GaussianPolynomial
 public import MathCollab.Density.Stronger.Fourth.SquareDivisorSeries
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open MathCollab.Density.Stronger.Fourth
 open scoped Interval ComplexConjugate
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -70,10 +69,7 @@ theorem exists_norm_normalized_zetaSquareRightKernel_far_le :
 theorem continuous_zetaSquareLeadingRightKernel (t : ℝ) :
     Continuous (zetaSquareLeadingRightKernel t) := by
   have haux := differentiable_hughesYoungAuxiliaryZero.continuous
-  have hw : ∀ u : ℝ, (1 : ℂ) + (u : ℂ) * I ≠ 0 := by
-    intro u h
-    have := congrArg Complex.re h
-    norm_num at this
+  pm_4471
   unfold zetaSquareLeadingRightKernel
   dsimp only
   fun_prop (disch := aesop)
@@ -101,11 +97,10 @@ theorem exists_norm_zetaSquareLeadingRightKernel_far_le :
   intro t u ht hu
   have ht0 : 0 < t := by linarith
   let R : ℝ := 1 + |u|
-  have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
+  pm_4464
   have hw : ‖(1 : ℂ) + (u : ℂ) * I‖ ≤ R := by
-    simpa [R, Real.norm_eq_abs] using norm_add_le (1 : ℂ) ((u : ℂ) * I)
-  have hwlower : 1 ≤ ‖(1 : ℂ) + (u : ℂ) * I‖ := by
-    simpa using Complex.abs_re_le_norm ((1 : ℂ) + (u : ℂ) * I)
+    pm_6203 R
+  pm_4393 hwlower
   have haux := norm_hughesYoungAuxiliaryZero_le_polynomial hR hw
   have htR : t / (2 * Real.pi) ≤ 4 * R := by
     calc
@@ -135,7 +130,7 @@ theorem exists_norm_zetaSquareRightKernel_sub_leading_le :
   obtain ⟨K, hK, hk⟩ := exists_norm_normalized_zetaSquareRightKernel_far_le
   obtain ⟨L, hL, hl⟩ := exists_norm_zetaSquareLeadingRightKernel_far_le
   let N : ℝ := 114375 * Real.exp 120
-  have hN : 0 < N := by dsimp [N]; positivity
+  pm_64 hN N
   refine ⟨N + K + L, by positivity, ?_⟩
   intro t u ht
   have hm := zetaSquareKernelErrorMajorant_nonneg u
@@ -154,7 +149,10 @@ theorem exists_norm_zetaSquareRightKernel_sub_leading_le :
     apply (add_le_add (hk t u ht (le_of_not_ge hu)) (hl t u ht (le_of_not_ge hu))).trans
     nlinarith
 
-theorem integrable_zetaSquareRightKernel_error {t : ℝ} (ht : 4 ≤ t) :
+section
+variable {t : ℝ} (ht : 4 ≤ t)
+include t ht
+theorem integrable_zetaSquareRightKernel_error :
     Integrable (fun u : ℝ => zetaSquareRightKernel (-t) u / zetaSquareGammaNormalization t -
       zetaSquareLeadingRightKernel t u) := by
   obtain ⟨C, _, hbound⟩ := exists_norm_zetaSquareRightKernel_sub_leading_le
@@ -164,13 +162,14 @@ theorem integrable_zetaSquareRightKernel_error {t : ℝ} (ht : 4 ≤ t) :
   filter_upwards with u
   exact hbound t u ht
 
-theorem integrable_zetaSquareLeadingRightKernel {t : ℝ} (ht : 4 ≤ t) :
+theorem integrable_zetaSquareLeadingRightKernel :
     Integrable (zetaSquareLeadingRightKernel t) := by
   have h := ((integrable_zetaSquareRightKernel (-t)).div_const
     (zetaSquareGammaNormalization t)).sub (integrable_zetaSquareRightKernel_error ht)
   convert h using 1
   funext u
   simp only [Pi.sub_apply, sub_sub_cancel]
+end
 
 /-- The whole-line integrated absolute error has one uniform constant.
 This supplies an honest `O(1)` kernel remainder before the divisor series

@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownCoefficientAbel
 public import GafniTao.HeathBrownIntegratedHolder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,7 @@ introduced.
 -/
 
 open Complex Finset Set MeasureTheory
-open scoped BigOperators ENNReal
+open scoped ENNReal
 
 namespace GafniTao
 
@@ -65,7 +66,7 @@ theorem heathBrown_cellwise_center_le
               ∑ j ∈ Finset.Ico 1 Q, ‖heathBrownWeylSum k j α‖) := by
       apply Finset.sum_le_sum
       intro n hn
-      by_cases hα : α ∈ heathBrownCoefficientCell k H f n
+      pm_5997
       · rw [show heathBrownCellIndicator k H f n α = 1 by
           simp [heathBrownCellIndicator, hα]]
         simpa only [one_mul] using
@@ -84,10 +85,7 @@ theorem heathBrown_cellwise_center_le
                 heathBrownCellIndicator k H f n α) *
               ∑ j ∈ Finset.Ico 1 Q,
                 ‖heathBrownWeylSum k j α‖ := by
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro j hj
-        rw [mul_comm]
+        pm_223 Finset.mul_sum j hj mul_comm
       rw [hsum]
       ring
 
@@ -108,7 +106,7 @@ theorem lintegral_heathBrownCellIndicator_mul_const
           (measurableSet_heathBrownCoefficientCell k H f n)]
         apply lintegral_congr
         intro α
-        by_cases hα : α ∈ heathBrownCoefficientCell k H f n
+        pm_5997
         · simp [Set.indicator, heathBrownCellIndicator, hα]
         · simp [Set.indicator, heathBrownCellIndicator, hα]
     _ = _ := by simp [mul_comm]
@@ -128,7 +126,7 @@ theorem heathBrown_cellwise_center_lintegral_le
             heathBrownIntegratedWeyl N k H j f := by
   let μ := heathBrownCoefficientMeasure k
   let c : ℝ := 2 * Real.pi * ((k : ℝ) ^ 2 / H)
-  have hc : 0 ≤ c := by dsimp [c]; positivity
+  pm_61 hc c
   have hpoint (α : HeathBrownCoefficientTorus k) :
       ∑ n ∈ heathBrownInteriorIndices N H,
           ENNReal.ofReal (heathBrownCellIndicator k H f n α) *
@@ -226,8 +224,7 @@ theorem heathBrown_cellwise_center_lintegral_le
     rw [lintegral_const_mul _ hsum]
     rw [lintegral_finsetSum (Finset.Ico 1 Q) fun j hj => hterm j]
     rfl
-  rw [hright] at hmono
-  simpa only [c] using hmono
+  pm_293 hright hmono c
 
 
 end

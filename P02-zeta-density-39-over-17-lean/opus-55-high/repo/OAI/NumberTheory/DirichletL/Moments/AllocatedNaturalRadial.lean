@@ -2,20 +2,21 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalSource
 public import OAI.NumberTheory.DirichletL.Moments.CommonMaskRadialEnergy
 public import OAI.NumberTheory.DirichletL.Moments.SecondOriginalChildren
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentAllocatedNaturalRadial
 open HeckeFamily HeckeDyadic ConcreteTraceCRT MeasureTheory
 open CenteredMomentAllocatedNaturalSource CenteredMomentCommonMaskRadialEnergy
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentNaturalRowSource CenteredMomentRetainedProfile CenteredMomentLattice
+open CenteredMomentNaturalRowSource CenteredMomentRetainedProfile
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentDivisorRetained
-open CenteredMomentOriginalRadialComparison CenteredMomentRadialPolynomialEnergy
+open CenteredMomentOriginalRadialComparison
 open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentEligibleEnergy
 open CenteredMomentCommonAllocationSum CenteredMomentRadialEligibleEnergy
 local notation "O" => HeckeFamily.O
@@ -39,9 +40,9 @@ variable {α : Type*} [Fintype α] [DecidableEq α]
 
 def Shared (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
   ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)
-      (χ : O→Character)(W₁ W₂ : 𝓢(ℝ,ℂ))(X₁ X₂ a₁ b₁ a₂ b₂ : ℝ)
-      (pool : α→Finset (Ideal O))(β : α→Ideal O→ℂ)(P : α→ℝ)
-      (keep : O→Prop)(Φ : 𝓢(ℝ,ℂ))(K E : ℝ),
+      (χ : O→ Character)(W₁ W₂ : 𝓢(ℝ,ℂ))(X₁ X₂ a₁ b₁ a₂ b₂ : ℝ)
+      (pool : α→ Finset (Ideal O))(β : α→ Ideal O→ℂ)(P : α→ℝ)
+      (keep : O→ Prop)(Φ : 𝓢(ℝ,ℂ))(K E : ℝ),
       0<X₁ → 0<X₂ → 0≤b₁ → 0≤b₂ →
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a₁ b₁ →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a₂ b₂ →
@@ -56,7 +57,7 @@ def Shared (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
           ∏j∈F\J,naturalSlot (χ z) (pool j) (β j) (P j)) keep Φ K≤E) →
       radialEnergy (fun z=>polynomial ((χ z).excludePrimes R hR) false W₁ X₁ 0 0 *
         polynomial ((χ z).excludePrimes R hR) false W₂ X₂ 0 0 *
-        ∏j∈F,naturalSlot ((χ z).excludePrimes R hR) (pool j) (β j) (P j)) keep Φ K≤
+        ∏j∈F,naturalSlot ((χ z).excludePrimes R hR) (pool j) (β j) (P j)) keep Φ K ≤
         C*(Ideal.absNorm (∏I∈R,I):ℝ)^ε*E
 
 theorem uniform_shared (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : ℝ) (hε : 0<ε) :
@@ -94,7 +95,7 @@ theorem allocated_radial_bound (b M : α→ℝ) (C₀ ε : ℝ)
     (D : Ideal O) (a : Allocation D (Finset.univ : Finset (α⊕Fin 2)))
     (hb : Shared (liveIndices D a) b M C₀ ε)
     (η : Character) (R : Ideal O) (hR : R≠0) (V₁ V₂ : Plain)
-    (pool : α→Finset (Ideal O)) (β : α→Ideal O→ℂ) (P : α→ℝ)
+    (pool : α→ Finset (Ideal O)) (β : α→ Ideal O→ℂ) (P : α→ℝ)
     (hprime : ∀i,∀I∈pool i,Prime I) (hP : ∀i,0<P i)
     (hβ : ∀i,∀I∈pool i,‖β i I‖≤M i)
     (hs : ∀i,∀I∈pool i,β i I≠0 → (I.absNorm:ℝ)≤b i*P i)
@@ -136,7 +137,7 @@ theorem allocated_radial_bound (b M : α→ℝ) (C₀ ε : ℝ)
 omit [DecidableEq α] in
 lemma common_nonzero (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C) : C≠0 := by
   rw [←(Finset.mem_filter.mp B.property).2]
-  exact Finset.prod_ne_zero_iff.mpr (fun i _=>alloc_ne s C B i)
+  pm_7488
 
 lemma child_energy_eq_radial (s : Data α) (r : Radial) (D : Ideal O)
     (a : Allocation D (Finset.univ : Finset (α⊕Fin 2))) :
@@ -145,12 +146,8 @@ lemma child_energy_eq_radial (s : Data α) (r : Radial) (D : Ideal O)
         D a s.W₁ s.W₂ s.X₁ s.X₂) r.keep r.profile r.scale+
       radialEnergy (fun z=>allocatedPositiveRow s.η s.m s.A z s.t s.slots s.coefficient s.P
         D a s.W₁ s.W₂ s.Y₁ s.Y₂) r.keep r.profile r.scale := by
-  have hx:=CenteredMomentPositiveSummability.allocated_positive_summable s.η s.m s.A s.t
-    s.W₁ s.W₂ s.b₁ s.b₂ s.X₁ s.X₂ s.support₁ s.support₂ s.X₁_pos s.X₂_pos
-    s.slots s.coefficient s.P D a r.keep r.profile r.scale r.scale_pos
-  have hy:=CenteredMomentPositiveSummability.allocated_positive_summable s.η s.m s.A s.t
-    s.W₁ s.W₂ s.b₁ s.b₂ s.Y₁ s.Y₂ s.support₁ s.support₂ s.Y₁_pos s.Y₂_pos
-    s.slots s.coefficient s.P D a r.keep r.profile r.scale r.scale_pos
+  pm_8802 hx s.X₁ s.X₂ s.X₁_pos s.X₂_pos
+  pm_8802 hy s.Y₁ s.Y₂ s.Y₁_pos s.Y₂_pos
   unfold childEnergy radialEnergy
   rw [←hx.tsum_add hy]
   apply tsum_congr
@@ -178,7 +175,7 @@ theorem actual_common_radial_energy (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : �
   obtain ⟨C₀,hC₀,hbound⟩:=uniform_shared b M hM ε hε
   refine ⟨C₀,hC₀,?_⟩
   intro s hhi hMs τ v C R hR B L a V₁ V₂ hV₁ hV₂ r hkeep E₁ E₂ hE₁ hE₂ hleft hright
-  let d:=commonData (withHeight s τ v) C R B
+  pm_5765 s
   have hRC : R*C≠0:=mul_ne_zero hR (common_nonzero s C B)
   have hb:=hbound (CenteredMomentCommonProfile.liveIndices B.val) (liveIndices L a)
   have hc:= (commonSlots s C B).controls
@@ -188,16 +185,12 @@ theorem actual_common_radial_energy (b M : α→ℝ) (hM : ∀i,0≤M i) (ε : �
   have hs : ∀i,∀I∈d.slots i,d.coefficient i I≠0 → (I.absNorm:ℝ)≤b i*d.P i := by
     intro i I _ hn
     exact (hc.2 i I hn).trans (mul_le_mul_of_nonneg_right (hhi i) (s.P_pos i).le)
-  have hl:=allocated_radial_bound (fun i : CenteredMomentCommonProfile.liveIndices B.val=>b i)
-    (fun i=>M i) C₀ ε L a hb τ (R*C) hRC V₁ V₂ d.slots d.coefficient d.P
-    d.prime d.P_pos hβ hs v d.X₁ d.X₂ d.X₁_pos d.X₂_pos r hkeep E₁ hE₁ hleft
-  have hr:=allocated_radial_bound (fun i : CenteredMomentCommonProfile.liveIndices B.val=>b i)
-    (fun i=>M i) C₀ ε L a hb τ (R*C) hRC V₁ V₂ d.slots d.coefficient d.P
-    d.prime d.P_pos hβ hs v d.Y₁ d.Y₂ d.Y₁_pos d.Y₂_pos r hkeep E₂ hE₂ hright
+  pm_5712 hl d.X₁ d.X₂ d.X₁_pos d.X₂_pos E₁ hE₁ hleft
+  pm_5712 hr d.Y₁ d.Y₂ d.Y₁_pos d.Y₂_pos E₂ hE₂ hright
   rw [child_energy_eq_radial]
   have hh:=add_le_add hl hr
   rw [←mul_add] at hh
-  simpa only [d,commonData,withHeight,hV₁,hV₂] using hh
+  pm_124 d commonData withHeight hV₁ hV₂ hh
 
 end SevenEighths.CenteredMomentAllocatedNaturalRadial
 

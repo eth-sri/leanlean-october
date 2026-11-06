@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveBudget
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalAggregation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,24 +16,23 @@ local notation "Eis" => ActualEisensteinCubic.O
 lemma pool_subset_choices_small_power (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ (J Q Q₀ : Ideal Eis),J≠0 → Q≠0 →
       (Fintype.card (Finset (FreeReflection.pool J Q Q₀)):ℝ)^2≤C*(Ideal.absNorm (J*Q):ℝ)^ε := by
-  obtain ⟨C,hC,hb⟩ := original_pool_choice_count ε hε
-  refine ⟨C,hC,?_⟩
-  intro J Q Q₀ hJ hQ
+  pm_69 C hC hb original_pool_choice_count ε hε
+  pm_1188 C hC J Q Q₀ hJ hQ
   apply le_trans _ (hb J Q Q₀ hJ hQ)
-  simp only [Fintype.card_finset,Fintype.card_fun,Fintype.card_fin,Nat.cast_pow,Nat.cast_ofNat]
+  pm_94 Fintype.card_finset Fintype.card_fun Fintype.card_fin Nat.cast_pow Nat.cast_ofNat
   exact pow_le_pow_left₀ (by positivity) (pow_le_pow_left₀ (by norm_num) (by norm_num) _) _
 
 theorem original_source_cost {χ : Type*} [Fintype χ] (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {σ : Type*} [Fintype σ] (H : σ→ℝ),
-      Fintype.card σ≤rmax → (∀ i,1≤H i) →
+      Fintype.card σ≤ rmax → (∀ i,1≤H i) →
     ∀ (J Q Q₀ : Ideal Eis),J≠0 → Q≠0 →
       (Fintype.card (χ×(Finset (FreeReflection.pool J Q Q₀)×Finset σ)):ℝ)^2*
         (∏ i,256*(columnDyadicLength (H i)+1:ℝ))^2≤
       C*(Ideal.absNorm (J*Q):ℝ)^ε*(∏ i,H i)^ε := by
-  obtain ⟨Cp,hCp,hp⟩ := pool_subset_choices_small_power ε hε
-  obtain ⟨Ch,hCh,hh⟩ := harmonic_product_small_power rmax ε hε
+  pm_69 Cp hCp hp pool_subset_choices_small_power ε hε
+  pm_114 Ch hCh hh harmonic_product_small_power rmax ε hε
   let C := ((Fintype.card χ:ℝ)^2+1)*(2:ℝ)^(2*rmax)*Cp*Ch
-  refine ⟨C,by dsimp [C];positivity,?_⟩
+  pm_346 C
   intro σ _ H hcard hH J Q Q₀ hJ hQ
   have hs : (Fintype.card (Finset σ):ℝ)^2≤(2:ℝ)^(2*rmax) := by
     simp only [Fintype.card_finset,Nat.cast_pow,Nat.cast_ofNat,←pow_mul]

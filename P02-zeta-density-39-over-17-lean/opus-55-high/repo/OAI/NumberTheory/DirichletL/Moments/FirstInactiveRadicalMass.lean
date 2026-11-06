@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondBlockRadicalHarmonicMass
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscardedEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,16 +24,18 @@ def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ):ℝ:=
   ‖(UniqueFactorizationMonoid.moebius (∏P∈E,P.val):ℂ)‖/
     ((Ideal.absNorm (∏P∈E,P.val):ℝ)^a)
 
-lemma inactiveWeight_nonneg (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ):
+section
+variable (C D:Ideal O) (E:Finset (CommonIndex C D)) (a:ℝ)
+include C D E a
+lemma inactiveWeight_nonneg:
     0 ≤ inactiveWeight C D E a:=by
   unfold inactiveWeight
-  exact div_nonneg (norm_nonneg _) (Real.rpow_nonneg (Nat.cast_nonneg _) _)
+  positivity
 
-lemma inactiveWeight_le_one (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ)(ha:0≤a):
+lemma inactiveWeight_le_one(ha:0≤a):
     inactiveWeight C D E a≤1:=by
   have hE:(∏P∈E,P.val)≠(0:Ideal O):=by
-    have he:=primeSubsetGenerator_ne_zero (fun P:CommonIndex C D=>P.val) E
-    have hh:=Ideal.span_singleton_eq_bot.not.mpr he
+    pm_7638 C D
     simpa only [primeSubsetGenerator,ConcretePrimeRowBridge.span_idealGenerator,
       Ideal.zero_eq_bot] using hh
   have hn:1≤(Ideal.absNorm (∏P∈E,P.val):ℝ):=by
@@ -40,15 +43,16 @@ lemma inactiveWeight_le_one (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ)(ha:
   have hp:1≤(Ideal.absNorm (∏P∈E,P.val):ℝ)^a:=Real.one_le_rpow hn ha
   unfold inactiveWeight
   exact (div_le_self (norm_nonneg _) hp).trans (QuadraticInitialBound.norm_ideal_moebius_le_one _)
+end
 
 theorem actual_inactive_radical_mass (B ε:ℝ)(hB:0≤B)(hε:0<ε):
-    ∃C:ℝ,0<C ∧ ∀Z:ℝ,2≤Z→∀seed:Ideal O,Squarefree seed→seed≠0→
+    ∃C:ℝ,0<C ∧ ∀Z:ℝ,2≤Z→∀seed:Ideal O,Squarefree seed→ seed≠0→
       ∀(S:Finset (Ideal O))(β:Ideal O→ℂ),
-      (∀I∈S,β I≠0→seed∣I)→(∀I∈S,β I≠0→(I.absNorm:ℝ)≤Z^B)→
+      (∀I∈S,β I≠0→ seed∣I)→(∀I∈S,β I≠0→(I.absNorm:ℝ)≤Z ^B)→
       ∀a:ℝ,0≤a→
       (∑p:ActiveLabel S β,∑E∈inactiveSubsets p.val.1 p.val.2,
         inactiveWeight p.val.1 p.val.2 E a/
-          (Ideal.absNorm (commonRadical p.val.1 p.val.2):ℝ))≤C*Z^ε/(seed.absNorm:ℝ):=by
+          (Ideal.absNorm (commonRadical p.val.1 p.val.2):ℝ))≤C*Z ^ε/(seed.absNorm:ℝ):=by
   obtain ⟨C,hC,hb⟩:=actual_active_radical_mass B ε hB hε
   refine ⟨C,hC,?_⟩
   intro Z hZ seed hs hs0 S β hm hn a ha

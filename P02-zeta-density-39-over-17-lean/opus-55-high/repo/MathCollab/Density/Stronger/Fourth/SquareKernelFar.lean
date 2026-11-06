@@ -7,14 +7,13 @@ Provenance and adaptation details: third_party/twelfth/SQUARE_KERNEL_SERIES_MANI
 Mathlib dependencies retain their Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.SquareNormalized
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex
 open MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
 theorem abs_polynomial_mul_exp_le_gaussian
@@ -34,18 +33,22 @@ theorem abs_polynomial_mul_exp_le_gaussian
       nlinarith [sq_nonneg (|u|-((m:ℝ)*b+D)/2), sq_abs u]
     _ = _ := Real.exp_add _ _
 
-theorem norm_vertical_shift_le {c : ℝ} (hc : 0 ≤ c) (u : ℝ) :
+section
+variable {c : ℝ} (hc : 0 ≤ c) (u : ℝ)
+include c hc u
+theorem norm_vertical_shift_le :
     ‖(c:ℂ)+(u:ℂ)*I‖ ≤ c+|u| := by
   simpa only [norm_mul, norm_I, mul_one, Complex.norm_real,
     Real.norm_eq_abs, abs_of_nonneg hc] using
       norm_add_le (c:ℂ) ((u:ℂ)*I)
 
-theorem vertical_shift_re_le_norm {c : ℝ} (hc : 0 ≤ c) (u : ℝ) :
+theorem vertical_shift_re_le_norm :
     c ≤ ‖(c:ℂ)+(u:ℂ)*I‖ := by
   simpa only [Complex.add_re, Complex.ofReal_re, Complex.mul_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul,
     sub_zero, add_zero, abs_of_nonneg hc] using
       Complex.abs_re_le_norm ((c:ℂ)+(u:ℂ)*I)
+end
 theorem norm_complex_sin_le_exp_abs_im (z : ℂ) :
     ‖Complex.sin z‖ ≤ Real.exp |z.im| := by
   have hraw : ‖(2 : ℂ) * Complex.sin z‖ ≤
@@ -72,13 +75,13 @@ theorem norm_inv_gamma_critical_half_le (t : ℝ) :
   have hsin : Complex.sin ((Real.pi : ℂ) * p) ≠ 0 := by
     intro h
     rw [h, div_zero] at href
-    exact mul_ne_zero hGp hGq href
+    grind
   have hid : (Complex.Gamma p)⁻¹ =
       Complex.Gamma (1 - p) * Complex.sin ((Real.pi : ℂ) * p) / (Real.pi : ℂ) := by
     have h := (eq_div_iff hsin).mp href
     rw [mul_comm (Real.pi : ℂ) p] at h
     field_simp
-    linear_combination -h
+    grind
   have hg : ‖Complex.Gamma (1 - p)‖ ≤ Real.Gamma (3 / 4) := by
     convert norm_Gamma_le_realGamma_re hq using 1
     norm_num [p, afeCriticalPoint]
@@ -95,7 +98,7 @@ theorem exists_norm_inv_gammaReal_critical_le :
     ∃ C : ℝ, 0 < C ∧ ∀ t : ℝ,
       ‖(Complex.Gammaℝ (afeCriticalPoint t))⁻¹‖ ≤ C * Real.exp (Real.pi * |t| / 2) := by
   let P : ℝ := Real.pi ^ (-(1 / 4 : ℝ))
-  have hP : 0 < P := Real.rpow_pos_of_pos Real.pi_pos _
+  pm_4907 hP P Real.pi_pos
   refine ⟨P⁻¹ * (Real.Gamma (3 / 4) / Real.pi),
     mul_pos (inv_pos.mpr hP) (div_pos (Real.Gamma_pos_of_pos (by norm_num)) Real.pi_pos), ?_⟩
   intro t
@@ -127,13 +130,13 @@ theorem norm_zetaSquarePoleShift_le_polynomial
     {t c : ℝ} (ht : 0 ≤ t) (hc : 0 ≤ c) (u : ℝ) :
     ‖zetaSquarePoleShift t ((c:ℂ)+(u:ℂ)*I)‖ ≤
       16*(3+c+t+|u|)^4 := by
-  let w : ℂ := (c:ℂ)+(u:ℂ)*I
+  pm_4461
   let s : ℂ := afeCriticalPoint (-t)+w
-  let R : ℝ := 3+c+t+|u|
+  pm_5125 R c
   have hcrit : ‖afeCriticalPoint (-t)‖ ≤ 1/2+t := by
     simpa [afeCriticalPoint,abs_of_nonneg ht] using
       norm_add_le (1/2:ℂ) (((-t:ℝ):ℂ)*I)
-  have hw : ‖w‖ ≤ c+|u| := norm_vertical_shift_le hc u
+  pm_7724 hc
   have hs : ‖s‖ ≤ 1/2+t+c+|u| :=
     (norm_add_le _ _).trans (by linarith)
   have hsR : ‖s‖ ≤ R := hs.trans (by dsimp [R]; linarith)
@@ -141,7 +144,7 @@ theorem norm_zetaSquarePoleShift_le_polynomial
     rw [norm_one]
     dsimp [R]
     linarith)
-  have hR : 0 ≤ R := by dsimp [R]; positivity
+  pm_61 hR R
   rw [zetaSquarePoleShift_eq_source, norm_div, norm_pow, norm_mul]
   change (‖s‖*‖1-s‖)^2/‖zetaSquarePoleNormalization t‖ ≤ 16*R^4
   calc
@@ -161,20 +164,17 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
     (Real.Gamma_pos_of_pos (by linarith))
   let A : ℝ := 10000*G^2*C/c
   let Q : ℝ := 12*(c+3)+(60+4*Real.pi)^2/4
-  let K : ℝ := A*Real.exp (100*c^2)*Real.exp Q
-  have hA : 0 < A := by dsimp [A]; positivity
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  pm_7143 c
+  pm_4462
+  pm_345 K
   intro t u ht hu
-  let w : ℂ := (c:ℂ)+(u:ℂ)*I
-  let R : ℝ := 3+c+t+|u|
+  pm_4461
+  pm_5125 R c
   let B : ℝ := c+3+5*|u|
-  have hR : 1 ≤ R := by dsimp [R]; linarith [abs_nonneg u]
-  have hw := norm_vertical_shift_le hc.le u
-  have hwlower := vertical_shift_re_le_norm hc.le u
-  have haux : ‖hughesYoungAuxiliaryZero w‖ ≤ 625*R^8 :=
-    norm_hughesYoungAuxiliaryZero_le_polynomial hR (hw.trans (by dsimp [R]; linarith))
-  have hpole : ‖zetaSquarePoleShift t w‖ ≤ 16*R^4 :=
-    norm_zetaSquarePoleShift_le_polynomial ht hc.le u
+  pm_4464
+  pm_111 hw norm_vertical_shift_le hc.le u hwlower vertical_shift_re_le_norm
+  pm_834
+  pm_6898 hc.le
   have hg : ‖Complex.Gammaℝ (afeCriticalPoint (-t)+w)‖ ≤ G := by
     have hre : (afeCriticalPoint (-t)+w).re = 1/2+c := by
       norm_num [afeCriticalPoint,w]
@@ -184,8 +184,7 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
       ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
         Complex.Gammaℝ (afeCriticalPoint (-t)))^2‖ ≤
         G^2*(C*Real.exp (Real.pi*t)) := by
-    rw [← norm_gammaSquare_div_zetaSquareGammaNormalization,
-      div_eq_mul_inv, norm_mul, norm_pow]
+    pm_8119
     have hi := hInv t
     rw [abs_of_nonneg ht] at hi
     gcongr
@@ -200,15 +199,8 @@ theorem exists_norm_zetaFourthKernel_far_le {c : ℝ} (hc : 0 < c) :
     nlinarith [mul_le_mul_of_nonneg_left hu Real.pi_pos.le]
   have he : Real.exp (100*c^2-100*u^2) =
       Real.exp (100*c^2)*Real.exp (-100*u^2) := by rw [← Real.exp_add]; congr 1; ring
-  have hgauss : Real.exp (u^2)*Real.exp (-100*u^2) = Real.exp (-99*u^2) := by
-    rw [← Real.exp_add]
-    congr 1
-    ring
-  rw [norm_zetaFourthKernel_vertical]
-  change Real.exp (100*c^2-100*u^2)*‖hughesYoungAuxiliaryZero w‖*
-    ‖zetaSquarePoleShift t w‖*
-    ‖(Complex.Gammaℝ (afeCriticalPoint (-t)+w) /
-      Complex.Gammaℝ (afeCriticalPoint (-t)))^2‖/‖w‖ ≤ _
+  pm_4465
+  pm_4463
   calc
     _ ≤ Real.exp (100*c^2-100*u^2)*(625*R^8)*(16*R^4)*
         (G^2*(C*Real.exp (Real.pi*t)))/c := by gcongr

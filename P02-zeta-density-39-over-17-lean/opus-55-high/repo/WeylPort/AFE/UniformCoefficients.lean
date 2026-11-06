@@ -1,6 +1,7 @@
 module
 public import WeylPort.AFE.SecondCoeffBounds
 public import WeylPort.AFE.UniformElementary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,18 +18,14 @@ theorem plus_coefficients_uniform {y : ℝ} (hy : 1 ≤ y) :
   have hg : Real.eulerMascheroniConstant ≤ 1 :=
     Real.eulerMascheroniConstant_lt_two_thirds.le.trans (by norm_num)
   have hnum : Real.log (y+1) + Real.eulerMascheroniConstant ≤ 2*y := by linarith
-  have hs : y ≤ y^2 := by nlinarith
-  have hc : y^2 ≤ y^3 := by nlinarith [sq_nonneg (y-1)]
-  constructor
+  pm_5262 hs hc
   · unfold plusSquareBound
-    apply (sub_le_self _ (by positivity)).trans
-    apply (div_le_div_of_nonneg_right hnum (by positivity)).trans
-    apply (div_le_iff₀ (by positivity : 0 < y^2)).mpr
+    pm_5803
+    pm_7963 y
     field_simp
     nlinarith
   · unfold plusCubeBound
-    apply (sub_le_self _ (by positivity)).trans
-    apply (div_le_div_of_nonneg_right hnum (by positivity)).trans
+    pm_5803
     apply (div_le_iff₀ (by positivity : 0 < y^3)).mpr
     field_simp
     nlinarith
@@ -38,7 +35,7 @@ theorem minus_coefficients_uniform {M : ℕ} {y : ℝ} (hy : 1 ≤ y)
     (hlo : 1/2 ≤ (M:ℝ)+1-y) (hhi : (M:ℝ)+1-y ≤ 1) :
     minusSquareBound M y ≤ 7/y ∧ minusCubeBound M y ≤ 15/y := by
   let δ := (M:ℝ)+1-y
-  have hd0 : 0 < δ := by dsimp [δ]; linarith
+  pm_358 hd0 δ
   have hy0 : 0 < y := by linarith
   have hδ : 1/2 ≤ δ := hlo
   have hδ1 : δ ≤ 1 := hhi
@@ -46,7 +43,7 @@ theorem minus_coefficients_uniform {M : ℕ} {y : ℝ} (hy : 1 ≤ y)
   have hψ := digamma_gap_bounds hlo hhi
   change -4 ≤ (Complex.digamma (δ:ℂ)).re ∧ (Complex.digamma (δ:ℂ)).re ≤ 0 at hψ
   have hMs : 1 ≤ (M:ℝ)+1 := by linarith [Nat.cast_nonneg (α := ℝ) M]
-  have hM0 : 0 < (M:ℝ)+1 := by positivity
+  pm_8855 hM0 M
   have hlog0 : 0 ≤ Real.log ((M:ℝ)+1) := Real.log_nonneg hMs
   have hlog : Real.log ((M:ℝ)+1) ≤ y := by
     have := Real.log_le_sub_one_of_pos hM0
@@ -63,9 +60,7 @@ theorem minus_coefficients_uniform {M : ℕ} {y : ℝ} (hy : 1 ≤ y)
   have hiδp2 : 1/(δ+1)^2 ≤ 1 := (div_le_one (by positivity)).mpr (by nlinarith)
   have hiδp3 : 1/(δ+1)^3 ≤ 1 := (div_le_one (by positivity)).mpr (by nlinarith [sq_nonneg δ])
   have hiδhalf : 1/(2*(δ+1)^2) ≤ 1 := (div_le_one (by positivity)).mpr (by nlinarith)
-  have hsq : y ≤ y^2 := by nlinarith
-  have hcu : y^2 ≤ y^3 := by nlinarith [sq_nonneg (y-1)]
-  constructor
+  pm_5262 hsq hcu
   · change (1/δ^2 + 1/(δ+1)^2 + 1/(δ+1))/y -
       (Real.log ((M:ℝ)+1) - 1/((M:ℝ)+1) - (Complex.digamma (δ:ℂ)).re)/y^2 ≤ 7/y
     have ha : (1/δ^2 + 1/(δ+1)^2 + 1/(δ+1))/y ≤ 6/y := by gcongr; linarith

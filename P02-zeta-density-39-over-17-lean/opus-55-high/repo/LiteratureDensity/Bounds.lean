@@ -1,20 +1,19 @@
 module
 public import WrittenDensity.Common
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 0
-noncomputable section
 namespace Montgomery.LiteratureDensity
 open MathCollab.Density Montgomery.WrittenDensity
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
 theorem source_extra_baseline_tty_1 {σ ε : ℝ} (_hlo : (1/2) ≤ σ)
     (_hhi : σ ≤ (7/10)) (_hε : 0 < ε) :
     DensityBound σ ((-3 + (3 * σ)) / (-2 + σ)) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
+  pm_538
+  grind
+  pm_428
   by_cases hc0 : σ ≤ (9/13)
   ·
     have hl : (1/2) ≤ σ := by linarith
@@ -35,13 +34,10 @@ theorem source_extra_baseline_tty_1 {σ ε : ℝ} (_hlo : (1/2) ≤ σ)
       _ = (3:ℝ)/(2 + (-1 * σ))*(1-σ) := by ring
       _ ≤ 3/(2 + (-1 * σ))*(1-σ) := hp
       _ = ((-3 + (3 * σ)) / (-2 + σ)) := by
-        rw [div_mul_eq_mul_div]
-        apply (div_eq_div_iff (ne_of_gt hd2) hpd).2
-        ring
+        pm_6944
   have hl : (9/13) ≤ σ := by linarith
   have hh : σ ≤ (7/10) := by linarith
-  apply density_weaken (Montgomery.Refined.refined_density_middle (by linarith) (by linarith) _hε)
-  have hd1 : 0 < (3 + (7 * σ)) := by linarith
+  pm_607
   have hd2 : (0:ℝ) < (2 + (-1 * σ)) := by linarith
   have hA : (18:ℝ)/(3 + (7 * σ)) ≤ 3/(2 + (-1 * σ)) := by
     apply (div_le_div_iff₀ hd1 hd2).2
@@ -50,23 +46,19 @@ theorem source_extra_baseline_tty_1 {σ ε : ℝ} (_hlo : (1/2) ≤ σ)
         0 ≤ 39*(σ-(9/13)) := by positivity
         _ = (-27 + (39 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   have hpd : ((-2 + σ):ℝ) ≠ 0 := by linarith
   calc
     _ = (18:ℝ)/(3 + (7 * σ))*(1-σ) := by ring
     _ ≤ 3/(2 + (-1 * σ))*(1-σ) := hp
     _ = ((-3 + (3 * σ)) / (-2 + σ)) := by
-      rw [div_mul_eq_mul_div]
-      apply (div_eq_div_iff (ne_of_gt hd2) hpd).2
-      ring
+      pm_6944
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
 theorem source_extra_baseline_tty_2 {σ ε : ℝ} (_hlo : (7/10) ≤ σ)
     (_hhi : σ < (19/25)) (_hε : 0 < ε) :
     DensityBound σ ((15 + (-15 * σ)) / (3 + (5 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
-  by_cases hc0 : σ ≤ (12/17)
+  pm_2860
+  pm_8334
   ·
     have hl : (7/10) ≤ σ := by linarith
     have hh : σ ≤ (12/17) := by linarith
@@ -82,7 +74,7 @@ theorem source_extra_baseline_tty_2 {σ ε : ℝ} (_hlo : (7/10) ≤ σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc1 : σ ≤ (5/7)
+  pm_8335
   ·
     have hl : (12/17) ≤ σ := by linarith
     have hh : σ ≤ (5/7) := by linarith
@@ -98,7 +90,7 @@ theorem source_extra_baseline_tty_2 {σ ε : ℝ} (_hlo : (7/10) ≤ σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc2 : σ ≤ (113/153)
+  pm_8336
   ·
     have hl : (5/7) ≤ σ := by linarith
     have hh : σ ≤ (113/153) := by linarith
@@ -114,7 +106,7 @@ theorem source_extra_baseline_tty_2 {σ ε : ℝ} (_hlo : (7/10) ≤ σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc3 : σ ≤ (3/4)
+  pm_8337
   ·
     have hl : (113/153) ≤ σ := by linarith
     have hh : σ ≤ (3/4) := by linarith
@@ -132,8 +124,7 @@ theorem source_extra_baseline_tty_2 {σ ε : ℝ} (_hlo : (7/10) ≤ σ)
     convert hp using 1 <;> ring
   have hl : (3/4) ≤ σ := by linarith
   have hh : σ ≤ (19/25) := by linarith
-  apply density_weaken (MathCollab.Density.Stronger.stronger_density_bound_native (by linarith) _hε)
-  have hd1 : 0 < (2 * σ) := by linarith
+  pm_2861
   have hd2 : (0:ℝ) < (3 + (5 * σ)) := by linarith
   have hA : (3:ℝ)/(2 * σ) ≤ 15/(3 + (5 * σ)) := by
     apply (div_le_div_iff₀ hd1 hd2).2
@@ -142,40 +133,42 @@ theorem source_extra_baseline_tty_2 {σ ε : ℝ} (_hlo : (7/10) ≤ σ)
         0 ≤ 225*((19/25)-σ)+240*(σ-(3/4)) := by positivity
         _ = (-9 + (15 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   convert hp using 1 <;> ring
-/-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
-theorem source_extra_baseline_tty_3 {σ ε : ℝ} (_hlo : (19/25) ≤ σ)
-    (_hhi : σ < (127/167)) (_hε : 0 < ε) :
-    DensityBound σ ((9 + (-9 * σ)) / (-2 + (8 * σ))) ε := by
+set_option hygiene false in
+macro "pf_103" x1:term:max x2:term:max x3:term:max x4:term:max x5:term:max x6:term:max x7:term:max x8:term:max x9:term:max x10:term:max : tactic => `(tactic| (
   by_cases hz : (7/8 : ℝ) < σ
   · exact density_of_actual_zero hz
   have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
-  have hl : (19/25) ≤ σ := by linarith
-  have hh : σ ≤ (127/167) := by linarith
+  have hl : ($x1:term/$x2:term) ≤ σ := by linarith
+  have hh : σ ≤ ($x3:term/$x4:term) := by linarith
   apply density_weaken (MathCollab.Density.Stronger.stronger_density_bound_native (by linarith) _hε)
   have hd1 : 0 < (2 * σ) := by linarith
-  have hd2 : (0:ℝ) < (-2 + (8 * σ)) := by linarith
-  have hA : (3:ℝ)/(2 * σ) ≤ 9/(-2 + (8 * σ)) := by
+  have hd2 : (0:ℝ) < (-$x5:term + (($x6:term) * σ)) := by linarith
+  have hA : (3:ℝ)/(2 * σ) ≤ $x7:term/(-$x5:term + (($x6:term) * σ)) := by
     apply (div_le_div_iff₀ hd1 hd2).2
-    have hc : 0 ≤ (6 + (-6 * σ)) := by
+    have hc : 0 ≤ ($x8:term + (-($x8:term) * σ)) := by
       calc
-        0 ≤ 3006*((127/167)-σ)+3000*(σ-(19/25)) := by positivity
-        _ = (6 + (-6 * σ)) := by ring
+        0 ≤ ($x9:term)*(($x3:term/$x4:term)-σ)+($x10:term)*(σ-($x1:term/$x2:term)) := by positivity
+        _ = ($x8:term + (-($x8:term) * σ)) := by ring
     nlinarith only [hc]
   have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
-  convert hp using 1 <;> ring
+  convert hp using 1 <;> ring))
+section
+variable {σ ε : ℝ}
+include σ ε
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
-theorem source_extra_baseline_tty_4 {σ ε : ℝ} (_hlo : (127/167) ≤ σ)
+theorem source_extra_baseline_tty_3 (_hlo : (19/25) ≤ σ)
+    (_hhi : σ < (127/167)) (_hε : 0 < ε) :
+    DensityBound σ ((9 + (-9 * σ)) / (-2 + (8 * σ))) ε := by pf_103 19 25 127 167 2 8 9 6 3006 3000
+/-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
+theorem source_extra_baseline_tty_4 (_hlo : (127/167) ≤ σ)
     (_hhi : σ < (13/17)) (_hε : 0 < ε) :
     DensityBound σ ((15 + (-15 * σ)) / (-3 + (13 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
+  pm_2860
   have hl : (127/167) ≤ σ := by linarith
   have hh : σ ≤ (13/17) := by linarith
-  apply density_weaken (MathCollab.Density.Stronger.stronger_density_bound_native (by linarith) _hε)
-  have hd1 : 0 < (2 * σ) := by linarith
+  pm_2861
   have hd2 : (0:ℝ) < (-3 + (13 * σ)) := by linarith
   have hA : (3:ℝ)/(2 * σ) ≤ 15/(-3 + (13 * σ)) := by
     apply (div_le_div_iff₀ hd1 hd2).2
@@ -184,40 +177,20 @@ theorem source_extra_baseline_tty_4 {σ ε : ℝ} (_hlo : (127/167) ≤ σ)
         0 ≤ 510*((13/17)-σ)+501*(σ-(127/167)) := by positivity
         _ = (9 + (-9 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   convert hp using 1 <;> ring
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
-theorem source_extra_baseline_tty_5 {σ ε : ℝ} (_hlo : (13/17) ≤ σ)
+theorem source_extra_baseline_tty_5 (_hlo : (13/17) ≤ σ)
     (_hhi : σ < (17/22)) (_hε : 0 < ε) :
-    DensityBound σ ((6 + (-6 * σ)) / (-1 + (5 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
-  have hl : (13/17) ≤ σ := by linarith
-  have hh : σ ≤ (17/22) := by linarith
-  apply density_weaken (MathCollab.Density.Stronger.stronger_density_bound_native (by linarith) _hε)
-  have hd1 : 0 < (2 * σ) := by linarith
-  have hd2 : (0:ℝ) < (-1 + (5 * σ)) := by linarith
-  have hA : (3:ℝ)/(2 * σ) ≤ 6/(-1 + (5 * σ)) := by
-    apply (div_le_div_iff₀ hd1 hd2).2
-    have hc : 0 ≤ (3 + (-3 * σ)) := by
-      calc
-        0 ≤ 88*((17/22)-σ)+85*(σ-(13/17)) := by positivity
-        _ = (3 + (-3 * σ)) := by ring
-    nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
-  convert hp using 1 <;> ring
+    DensityBound σ ((6 + (-6 * σ)) / (-1 + (5 * σ))) ε := by pf_103 13 17 17 22 1 5 6 3 88 85
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
-theorem source_extra_baseline_tty_6 {σ ε : ℝ} (_hlo : (17/22) ≤ σ)
+theorem source_extra_baseline_tty_6 (_hlo : (17/22) ≤ σ)
     (_hhi : σ < (41/53)) (_hε : 0 < ε) :
     DensityBound σ ((2 + (-2 * σ)) / (-6 + (9 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
+  pm_2860
   have hl : (17/22) ≤ σ := by linarith
   have hh : σ ≤ (41/53) := by linarith
-  apply density_weaken (MathCollab.Density.Stronger.stronger_density_bound_native (by linarith) _hε)
-  have hd1 : 0 < (2 * σ) := by linarith
+  pm_2861
   have hd2 : (0:ℝ) < (-6 + (9 * σ)) := by linarith
   have hA : (3:ℝ)/(2 * σ) ≤ 2/(-6 + (9 * σ)) := by
     apply (div_le_div_iff₀ hd1 hd2).2
@@ -226,19 +199,16 @@ theorem source_extra_baseline_tty_6 {σ ε : ℝ} (_hlo : (17/22) ≤ σ)
         0 ≤ 265*((41/53)-σ)+242*(σ-(17/22)) := by positivity
         _ = (18 + (-23 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   convert hp using 1 <;> ring
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
-theorem source_extra_baseline_tty_7 {σ ε : ℝ} (_hlo : (41/53) ≤ σ)
+theorem source_extra_baseline_tty_7 (_hlo : (41/53) ≤ σ)
     (_hhi : σ < (7/9)) (_hε : 0 < ε) :
     DensityBound σ ((9 + (-9 * σ)) / (-1 + (7 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
+  pm_2860
   have hl : (41/53) ≤ σ := by linarith
   have hh : σ ≤ (7/9) := by linarith
-  apply density_weaken (MathCollab.Density.Stronger.stronger_density_bound_native (by linarith) _hε)
-  have hd1 : 0 < (2 * σ) := by linarith
+  pm_2861
   have hd2 : (0:ℝ) < (-1 + (7 * σ)) := by linarith
   have hA : (3:ℝ)/(2 * σ) ≤ 9/(-1 + (7 * σ)) := by
     apply (div_le_div_iff₀ hd1 hd2).2
@@ -247,15 +217,13 @@ theorem source_extra_baseline_tty_7 {σ ε : ℝ} (_hlo : (41/53) ≤ σ)
         0 ≤ 162*((7/9)-σ)+159*(σ-(41/53)) := by positivity
         _ = (3 + (-3 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   convert hp using 1 <;> ring
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
-theorem source_extra_baseline_tty_8 {σ ε : ℝ} (_hlo : (7/9) ≤ σ)
+theorem source_extra_baseline_tty_8 (_hlo : (7/9) ≤ σ)
     (_hhi : σ < (1867/2347)) (_hε : 0 < ε) :
     DensityBound σ ((9 + (-9 * σ)) / (-8 + (16 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
+  pm_2860
   by_cases hc0 : σ ≤ (29359/37574)
   ·
     have hl : (7/9) ≤ σ := by linarith
@@ -316,15 +284,14 @@ theorem source_extra_baseline_tty_8 {σ ε : ℝ} (_hlo : (7/9) ≤ σ)
         0 ≤ (900949931/6058)*((1867/2347)-σ)+(748966827/6058)*(σ-(353/447)) := by positivity
         _ = (20671 + (-25088 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   convert hp using 1 <;> ring
+end
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
 theorem source_extra_baseline_kerr6 {σ ε : ℝ} (_hlo : (23/29) ≤ σ)
     (_hhi : σ ≤ 1) (_hε : 0 < ε) :
     DensityBound σ ((3 + (-3 * σ)) / (2 * σ)) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
+  pm_2860
   by_cases hc0 : σ ≤ (467/586)
   ·
     have hl : (23/29) ≤ σ := by linarith
@@ -453,7 +420,7 @@ theorem source_extra_baseline_kerr6 {σ ε : ℝ} (_hlo : (23/29) ≤ σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc8 : σ ≤ (2905/3354)
+  pm_7085 hc8
   ·
     have hl : (6482825/7570038) ≤ σ := by linarith
     have hh : σ ≤ (2905/3354) := by linarith
@@ -469,10 +436,7 @@ theorem source_extra_baseline_kerr6 {σ ε : ℝ} (_hlo : (23/29) ≤ σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  have hl : (2905/3354) ≤ σ := by linarith
-  have hh : σ ≤ (7/8) := by linarith
-  apply density_weaken (Montgomery.RationalMoment.RightDetector.Physical.density_sharp_row8 (by linarith) (by linarith) _hε)
-  have hd1 : 0 < (-1015 + (2742 * σ)) := by linarith
+  pm_2862
   have hd2 : (0:ℝ) < (2 * σ) := by linarith
   have hA : (2172:ℝ)/(-1015 + (2742 * σ)) ≤ 3/(2 * σ) := by
     apply (div_le_div_iff₀ hd1 hd2).2
@@ -481,16 +445,14 @@ theorem source_extra_baseline_kerr6 {σ ε : ℝ} (_hlo : (23/29) ≤ σ)
         0 ≤ (608160/17)*((7/8)-σ)+(674154/17)*(σ-(2905/3354)) := by positivity
         _ = (-3045 + (3882 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   convert hp using 1 <;> ring
 /-- Exact published-source density conclusion, supplied by native project domination and strict actual zero-freeness. No new mathematics or claim to reprove the original published route. -/
 theorem source_extra_baseline_full_hb {σ ε : ℝ} (_hlo : (7/10) < σ)
     (_hhi : σ ≤ 1) (_hε : 0 < ε) :
     DensityBound σ ((3 + (-3 * σ)) / (-7 + (10 * σ))) ε := by
-  by_cases hz : (7/8 : ℝ) < σ
-  · exact density_of_actual_zero hz
-  have hright : σ ≤ (7/8 : ℝ) := le_of_not_gt hz
-  by_cases hc0 : σ ≤ (12/17)
+  pm_2860
+  pm_8334
   ·
     have hl : (7/10) ≤ σ := by linarith
     have hh : σ ≤ (12/17) := by linarith
@@ -506,7 +468,7 @@ theorem source_extra_baseline_full_hb {σ ε : ℝ} (_hlo : (7/10) < σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc1 : σ ≤ (5/7)
+  pm_8335
   ·
     have hl : (12/17) ≤ σ := by linarith
     have hh : σ ≤ (5/7) := by linarith
@@ -522,7 +484,7 @@ theorem source_extra_baseline_full_hb {σ ε : ℝ} (_hlo : (7/10) < σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc2 : σ ≤ (113/153)
+  pm_8336
   ·
     have hl : (5/7) ≤ σ := by linarith
     have hh : σ ≤ (113/153) := by linarith
@@ -538,7 +500,7 @@ theorem source_extra_baseline_full_hb {σ ε : ℝ} (_hlo : (7/10) < σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc3 : σ ≤ (3/4)
+  pm_8337
   ·
     have hl : (113/153) ≤ σ := by linarith
     have hh : σ ≤ (3/4) := by linarith
@@ -746,7 +708,7 @@ theorem source_extra_baseline_full_hb {σ ε : ℝ} (_hlo : (7/10) < σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  by_cases hc16 : σ ≤ (2905/3354)
+  pm_7085 hc16
   ·
     have hl : (6482825/7570038) ≤ σ := by linarith
     have hh : σ ≤ (2905/3354) := by linarith
@@ -762,10 +724,7 @@ theorem source_extra_baseline_full_hb {σ ε : ℝ} (_hlo : (7/10) < σ)
       nlinarith only [hc]
     have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
     convert hp using 1 <;> ring
-  have hl : (2905/3354) ≤ σ := by linarith
-  have hh : σ ≤ (7/8) := by linarith
-  apply density_weaken (Montgomery.RationalMoment.RightDetector.Physical.density_sharp_row8 (by linarith) (by linarith) _hε)
-  have hd1 : 0 < (-1015 + (2742 * σ)) := by linarith
+  pm_2862
   have hd2 : (0:ℝ) < (-7 + (10 * σ)) := by linarith
   have hA : (2172:ℝ)/(-1015 + (2742 * σ)) ≤ 3/(-7 + (10 * σ)) := by
     apply (div_le_div_iff₀ hd1 hd2).2
@@ -774,6 +733,6 @@ theorem source_extra_baseline_full_hb {σ ε : ℝ} (_hlo : (7/10) < σ)
         0 ≤ (903552/17)*((7/8)-σ)+(674154/17)*(σ-(2905/3354)) := by positivity
         _ = (12159 + (-13494 * σ)) := by ring
     nlinarith only [hc]
-  have hp := mul_le_mul_of_nonneg_right hA (by linarith : 0 ≤ 1-σ)
+  pm_2859
   convert hp using 1 <;> ring
 end Montgomery.LiteratureDensity

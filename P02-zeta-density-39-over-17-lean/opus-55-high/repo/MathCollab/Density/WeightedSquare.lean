@@ -21,10 +21,7 @@ theorem weighted_integral_sq_le {ρ f : ℝ → ℝ} (hρ : ∀ x, 0 ≤ ρ x)
     have he : (∫ x, ρ x * (f x-c)^2) =
         (∫ x, ρ x * f x ^ 2) - 2*c*(∫ x, ρ x * f x) + c^2*(∫ x, ρ x) := by
       calc
-        _ = ∫ x, (ρ x * f x ^ 2) - 2*c*(ρ x * f x) + c^2*ρ x := by
-          apply integral_congr_ae
-          filter_upwards with x
-          ring
+        _ = ∫ x, (ρ x * f x ^ 2) - 2*c*(ρ x * f x) + c^2*ρ x := by grind
         _ = _ := by
           have hi₃ : Integrable (fun x => ρ x * f x ^ 2 - 2*c*(ρ x*f x)) :=
             hi₂.sub (hi₁.const_mul (2*c))
@@ -36,8 +33,10 @@ theorem weighted_integral_sq_le {ρ f : ℝ → ℝ} (hρ : ∀ x, 0 ≤ ρ x)
   unfold discrim at hh
   nlinarith
 
-theorem integrable_weighted_norm_sq {W g : ℝ → ℂ} (hW : Integrable W)
-    (hg : AEStronglyMeasurable g) {C : ℝ} (hb : ∀ x, ‖g x‖ ≤ C) :
+section
+variable {W g : ℝ → ℂ} (hW : Integrable W) (hg : AEStronglyMeasurable g) {C : ℝ} (hb : ∀ x, ‖g x‖ ≤ C)
+include W g hW hg C hb
+theorem integrable_weighted_norm_sq :
     Integrable (fun x => ‖W x‖ * ‖g x‖ ^ 2) := by
   apply hW.norm.mul_bdd (hg.norm.pow 2) (c := C^2)
   filter_upwards with x
@@ -45,8 +44,7 @@ theorem integrable_weighted_norm_sq {W g : ℝ → ℂ} (hW : Integrable W)
   exact pow_le_pow_left₀ (norm_nonneg _) (hb x) 2
 
 /-- Complex weighted Cauchy--Schwarz with all integrability discharged by a bound. -/
-theorem norm_integral_mul_sq_le {W g : ℝ → ℂ} (hW : Integrable W)
-    (hg : AEStronglyMeasurable g) {C : ℝ} (hb : ∀ x, ‖g x‖ ≤ C) :
+theorem norm_integral_mul_sq_le :
     ‖∫ x, W x * g x‖ ^ 2 ≤ (∫ x, ‖W x‖) * ∫ x, ‖W x‖ * ‖g x‖ ^ 2 := by
   have hi := hW.mul_bdd hg (Filter.Eventually.of_forall hb)
   have hi₁ : Integrable (fun x => ‖W x‖ * ‖g x‖) := by
@@ -56,5 +54,6 @@ theorem norm_integral_mul_sq_le {W g : ℝ → ℂ} (hW : Integrable W)
   have hn : ‖∫ x, W x * g x‖ ≤ ∫ x, ‖W x‖ * ‖g x‖ := by
     simpa only [norm_mul] using norm_integral_le_integral_norm (fun x => W x * g x)
   exact (pow_le_pow_left₀ (norm_nonneg _) hn 2).trans hh
+end
 
 end MathCollab.Density

@@ -2,28 +2,29 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.UncenteredTerminal
 public import OAI.NumberTheory.DirichletL.Moments.SourceRectangleEnergy
 public import OAI.NumberTheory.DirichletL.Moments.RetainedEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentDetectorPlainSource
-open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
+open CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform
 open CenteredMomentSourceRectangle CenteredMomentSourceRectangleMask
 open CenteredMomentUncenteredTerminal CenteredMomentHeckeExpansion
 open CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentDivisorRowEnergy
-open CenteredMomentRetainedEnergy CenteredMomentRectangle CenteredMomentSourceRectangleEnergy
+open CenteredMomentRetainedEnergy CenteredMomentSourceRectangleEnergy
 open CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentSecondHeightFamily
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def completePool (slots : ι→Finset (Ideal O)) (b₁ b₂ X₁ X₂ : ℝ) : Finset (Tuple ι) :=
+def completePool (slots : ι→ Finset (Ideal O)) (b₁ b₂ X₁ X₂ : ℝ) : Finset (Tuple ι) :=
   tuplePool slots (plainSupportPool b₁ X₁ (comparisonScale b₁))
     (plainSupportPool b₂ X₂ (X₁*X₂/comparisonScale b₁))
 
@@ -33,7 +34,10 @@ lemma support_zero (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   have := (hs hn).1
   linarith
 
-lemma comparison_row_zero (η : Character) (m A z : O) (t : ℝ)
+section
+variable (η : Character) (m A z : O) (t : ℝ)
+include η m A z t
+lemma comparison_row_zero
     (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hs : Function.support W⊆Set.Icc a b) :
     rowTwistedSum η m A z W t (comparisonScale b)=0 := by
   rw [rowTwistedSum_eq_weight]
@@ -42,13 +46,13 @@ lemma comparison_row_zero (η : Character) (m A z : O) (t : ℝ)
       apply tsum_congr
       intro I
       have h := comparison_first_zero W a b ha hs 1 I one_ne_zero
-      simpa only [one_mul,mul_zero] using congrArg (fun v : ℂ=>rowWeight η m A z t I*v) h
+      grind
     _ = 0 := tsum_zero
 
-theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)
+theorem complete_source_polynomial
     (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (slots : ι→Finset (Ideal O)) (R : Ideal O)
-    (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
+    (slots : ι→ Finset (Ideal O)) (R : Ideal O)
+    (ν : ι→ Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
     (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
@@ -84,10 +88,10 @@ theorem complete_source_polynomial (η : Character) (m A z : O) (t : ℝ)
   rw [hr,comparison_row_zero η (m*idealGenerator R) A z t W₁ a₁ b₁ ha₁ hs₁,
     zero_mul,sub_zero]
 
-theorem positiveSlotRow_eq_complete_source (η : Character) (m A z : O) (t : ℝ)
+theorem positiveSlotRow_eq_complete_source
     (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (slots : ι→Finset (Ideal O)) (R : Ideal O)
-    (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
+    (slots : ι→ Finset (Ideal O)) (R : Ideal O)
+    (ν : ι→ Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
     (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
@@ -102,10 +106,11 @@ theorem positiveSlotRow_eq_complete_source (η : Character) (m A z : O) (t : ℝ
   rw [complete_source_polynomial η m A z t hmLam hm2 slots R ν Wslot P W₁ W₂
     a₁ b₁ a₂ b₂ X₁ X₂ ha₁ ha₂ hs₁ hs₂ hX₁ hX₂]
   rfl
+end
 
-theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O→Prop)
-    (slots : ι→Finset (Ideal O)) (R : Ideal O)
-    (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ) (hP : ∀ i,0<P i)
+theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O→ Prop)
+    (slots : ι→ Finset (Ideal O)) (R : Ideal O)
+    (ν : ι→ Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ) (hP : ∀ i,0<P i)
     (W₁ W₂ : ℝ→ℂ) (a₁ b₁ a₂ b₂ X₁ X₂ : ℝ)
     (ha₁ : 0<a₁) (ha₂ : 0<a₂)
     (hs₁ : Function.support W₁⊆Set.Icc a₁ b₁)
@@ -122,10 +127,7 @@ theorem positive_energy_eq_complete_source (η : Character) (t : ℝ) (keep : O�
   have htotal : 0<X₁*X₂*∏ i,P i := mul_pos (mul_pos hX₁ hX₂)
     (Finset.prod_pos (fun i _=>hP i))
   unfold sourceRestrictedEnergy restrictedEnergy
-  rw [← tsum_div_const]
-  apply tsum_congr
-  intro z
-  rw [height_source_row]
+  pm_1065 tsum_div_const z height_source_row
   by_cases hk : keep z
   · rw [ite_eq_left hk,ite_eq_left hk,
       positiveSlotRow_eq_complete_source η fixedBadMask 1 z t

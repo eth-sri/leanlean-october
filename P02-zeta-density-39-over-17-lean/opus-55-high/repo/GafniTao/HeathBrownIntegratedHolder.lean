@@ -2,7 +2,7 @@ module
 public import GafniTao.HeathBrownHolder
 public import GafniTao.FordMomentInterpolation
 
-@[expose] public section
+public section
 
 /-!
 # Heath-Brown's integrated Weyl-sum bound
@@ -18,10 +18,11 @@ open scoped ENNReal
 
 namespace GafniTao
 
-noncomputable section
 
-theorem integrable_heathBrownNu_sq
-    (N k H : ℕ) (f : ℝ → ℝ) :
+section
+variable (N k H : ℕ)
+include N k H
+theorem integrable_heathBrownNu_sq (f : ℝ → ℝ) :
     Integrable (fun α => (heathBrownNu N k H f α) ^ 2)
       (heathBrownCoefficientMeasure k) := by
   have hsum : Integrable
@@ -35,8 +36,7 @@ theorem integrable_heathBrownNu_sq
   filter_upwards [] with α
   exact (heathBrownNu_sq_eq_pair_sum N k H f α).symm
 
-theorem lintegral_heathBrownNu_eq
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
+theorem lintegral_heathBrownNu_eq (hH : 2 ≤ H) (f : ℝ → ℝ) :
     ∫⁻ α, ENNReal.ofReal (heathBrownNu N k H f α)
         ∂(heathBrownCoefficientMeasure k) =
       ENNReal.ofReal
@@ -49,8 +49,7 @@ theorem lintegral_heathBrownNu_eq
     (Filter.Eventually.of_forall fun α =>
       heathBrownNu_nonneg N k H f α)).symm
 
-theorem lintegral_heathBrownNu_sq_le
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ) :
+theorem lintegral_heathBrownNu_sq_le (hH : 2 ≤ H) (f : ℝ → ℝ) :
     ∫⁻ α, (ENNReal.ofReal (heathBrownNu N k H f α)) ^ 2
         ∂(heathBrownCoefficientMeasure k) ≤
       ENNReal.ofReal
@@ -79,8 +78,7 @@ theorem lintegral_heathBrownNu_sq_le
 on the right are respectively `J_{s,k-1}(H)`, the source pair count
 `mathcal N`, and the number of interior source indices, each with the exact
 coefficient-cell volume. -/
-theorem heathBrown_integratedWeyl_le_source_moments
-    (N k H : ℕ) (hH : 2 ≤ H) (f : ℝ → ℝ)
+theorem heathBrown_integratedWeyl_le_source_moments (hH : 2 ≤ H) (f : ℝ → ℝ)
     {Q s : ℕ} (hQH : Q ≤ H) (hs : 1 ≤ s) :
     ∫⁻ α : HeathBrownCoefficientTorus k,
         ENNReal.ofReal ‖heathBrownWeylSum k Q α‖ *
@@ -131,8 +129,8 @@ theorem heathBrown_integratedWeyl_le_source_moments
     _ ≤ _ := by
       gcongr
       · exact_mod_cast fordVinogradovMomentNat_mono s (k - 1) hQH
-
-
 end
+
+
 
 end GafniTao

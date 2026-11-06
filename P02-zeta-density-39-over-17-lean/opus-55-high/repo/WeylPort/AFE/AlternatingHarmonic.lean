@@ -2,8 +2,9 @@ module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.HarmonicDigamma
 public import Mathlib.Analysis.SpecialFunctions.Pow.Deriv
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 -- Lean 4.34 elaborator compatibility.
 set_option backward.isDefEq.respectTransparency false
@@ -19,22 +20,25 @@ convergent reciprocal series as an unordered sum.
 
 namespace DhimanKadiriQuesadaHerrera2026
 
-open scoped BigOperators Topology
+open scoped Topology
 open Filter
 
-private theorem ne_pole_of_re_pos {z : ℂ} (hz : 0 < z.re) : ∀ n : ℕ, z ≠ -n := by
+section
+variable {z : ℂ} (hz : 0 < z.re)
+include z hz
+private theorem ne_pole_of_re_pos : ∀ n : ℕ, z ≠ -n := by
   intro n h
   have hr := congrArg Complex.re h
   simp only [Complex.neg_re, Complex.natCast_re] at hr
-  have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+  pm_14
   linarith
 
 /-- Digamma duplication obtained by differentiating Mathlib's exact Gamma identity. -/
-theorem digamma_two_mul {z : ℂ} (hz : 0 < z.re) :
+theorem digamma_two_mul :
     Complex.digamma (2 * z) = Complex.digamma z / 2 +
       Complex.digamma (z + 1 / 2) / 2 + Complex.log 2 := by
   have hzhalf : 0 < (z + 1 / 2).re := by simp; linarith
-  have hz2 : 0 < (2 * z).re := by simpa using mul_pos (by norm_num : (0 : ℝ) < 2) hz
+  have hz2 : 0 < (2 * z).re := by simp_all
   have hd := Complex.differentiableAt_Gamma z (ne_pole_of_re_pos hz)
   have hdhalf := Complex.differentiableAt_Gamma (z + 1 / 2) (ne_pole_of_re_pos hzhalf)
   have hd2 := Complex.differentiableAt_Gamma (2 * z) (ne_pole_of_re_pos hz2)
@@ -60,13 +64,13 @@ theorem digamma_two_mul {z : ℂ} (hz : 0 < z.re) :
     change logDeriv (Complex.Gamma ∘ (fun w : ℂ => w + 1 / 2)) z = _
     rw [logDeriv_comp (g := fun w : ℂ => w + 1 / 2) (x := z)
       hdhalf (differentiableAt_id.add_const _)]
-    simp [Complex.digamma_def]
+    aesop
   have hdouble : logDeriv (fun w : ℂ => Complex.Gamma (2 * w)) z =
       Complex.digamma (2 * z) * 2 := by
     change logDeriv (Complex.Gamma ∘ (fun w : ℂ => 2 * w)) z = _
     rw [logDeriv_comp (g := fun w : ℂ => 2 * w) (x := z)
       hd2 (differentiableAt_id.const_mul _)]
-    simp [Complex.digamma_def]
+    aesop
   have hpower : logDeriv (fun w : ℂ => (2 : ℂ) ^ (1 - 2 * w)) z =
       -2 * Complex.log 2 := by
     rw [logDeriv_apply, Complex.deriv_const_cpow (f := fun w : ℂ => 1 - 2 * w)
@@ -75,17 +79,21 @@ theorem digamma_two_mul {z : ℂ} (hz : 0 < z.re) :
     simp
     ring
   rw [hhalf, hdouble, hpower, ← Complex.digamma_def] at h
-  linear_combination -h / 2
+  grind
+end
 
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
 /-- The exact real duplication formula on its positive domain. -/
-theorem real_digamma_two_mul {x : ℝ} (hx : 0 < x) :
+theorem real_digamma_two_mul :
     (Complex.digamma (2 * x : ℝ)).re = (Complex.digamma (x : ℂ)).re / 2 +
       (Complex.digamma (x + 1 / 2 : ℝ)).re / 2 + Real.log 2 := by
   have h := congrArg Complex.re (digamma_two_mul (z := (x : ℂ)) hx)
   simpa [Complex.log_re, Complex.norm_ofNat] using h
 
 /-- The absolutely convergent paired reciprocal series in the appendix. -/
-theorem hasSum_paired_reciprocal {x : ℝ} (hx : 0 < x) :
+theorem hasSum_paired_reciprocal :
     HasSum (fun n : ℕ => 1 / (2 * (n : ℝ) + x) - 1 / (2 * (n : ℝ) + 1 + x))
       (((Complex.digamma ((x + 1) / 2 : ℝ)).re -
         (Complex.digamma (x / 2 : ℝ)).re) / 2) := by
@@ -99,18 +107,17 @@ theorem hasSum_paired_reciprocal {x : ℝ} (hx : 0 < x) :
   have h4 : (n : ℝ) + (x + 1) / 2 ≠ 0 := by positivity
   field_simp
   ring
+end
 
 private theorem reciprocal_sub_succ {u : ℝ} (hu : 0 < u) :
-    1 / u - 1 / (u + 1) = 1 / (u * (u + 1)) := by
-  have hu1 : u + 1 ≠ 0 := by positivity
-  field_simp
-  ring
+    1 / u - 1 / (u + 1) = 1 / (u * (u + 1)) := by grind
 
-private theorem hasSum_reciprocal_unit_difference {x : ℝ} (hx : 0 < x) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+private theorem hasSum_reciprocal_unit_difference :
     HasSum (fun n : ℕ => 1 / ((n : ℝ) + x) - 1 / ((↑(n + 1) : ℝ) + x)) (1 / x) := by
-  have hlim : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + x)) atTop (𝓝 0) := by
-    simpa only [one_div, Pi.inv_def] using
-      (tendsto_atTop_add_const_right atTop x tendsto_natCast_atTop_atTop).inv_tendsto_atTop
+  pm_18
   have hn : ∀ n : ℕ, 0 ≤ 1 / ((n : ℝ) + x) - 1 / ((↑(n + 1) : ℝ) + x) := by
     intro n
     apply sub_nonneg.mpr
@@ -122,7 +129,7 @@ private theorem hasSum_reciprocal_unit_difference {x : ℝ} (hx : 0 < x) :
     (tendsto_const_nhds (x := 1 / x)).sub hlim
 
 /-- Elementary upper and lower bounds on the paired reciprocal value. -/
-theorem paired_reciprocal_bounds {x : ℝ} (hx : 0 < x) :
+theorem paired_reciprocal_bounds :
     0 ≤ ((Complex.digamma ((x + 1) / 2 : ℝ)).re -
         (Complex.digamma (x / 2 : ℝ)).re) / 2 ∧
       ((Complex.digamma ((x + 1) / 2 : ℝ)).re -
@@ -138,7 +145,7 @@ theorem paired_reciprocal_bounds {x : ℝ} (hx : 0 < x) :
   · rw [← ht.tsum_eq]
     apply hs.summable.tsum_le_tsum _ ht.summable
     intro n
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
+    pm_14
     simp only [Nat.cast_add, Nat.cast_one]
     rw [show 2 * (n : ℝ) + 1 + x = (2 * (n : ℝ) + x) + 1 by ring,
       show (n : ℝ) + 1 + x = ((n : ℝ) + x) + 1 by ring,
@@ -148,7 +155,7 @@ theorem paired_reciprocal_bounds {x : ℝ} (hx : 0 < x) :
     gcongr <;> linarith
 
 /-- Duplication puts the paired reciprocal value in exactly the source's variables. -/
-theorem paired_reciprocal_source_eq {x : ℝ} (hx : 0 < x) :
+theorem paired_reciprocal_source_eq :
     ((Complex.digamma ((x + 1) / 2 : ℝ)).re -
       (Complex.digamma (x / 2 : ℝ)).re) / 2 =
         Real.log 2 + (Complex.digamma ((x + 1) / 2 : ℝ)).re -
@@ -157,6 +164,7 @@ theorem paired_reciprocal_source_eq {x : ℝ} (hx : 0 < x) :
   rw [show 2 * (x / 2) = x by ring,
     show x / 2 + 1 / 2 = (x + 1) / 2 by ring] at h
   linarith
+end
 
 private theorem tsum_pair_nat {f : ℕ → ℝ} (hf : Summable f) :
     (∑' n, f n) = ∑' n, (f (2 * n) + f (2 * n + 1)) := by
@@ -195,17 +203,14 @@ theorem hasSum_alternating_harmonic_tail {N : ℕ} {y : ℝ} (hy : 0 < y)
         ((Complex.digamma (((N : ℝ) + 2) / 2 : ℝ)).re -
           (Complex.digamma (((N : ℝ) + 1) / 2 : ℝ)).re) / 2) / y) := by
   dsimp only
-  have hd : 0 < (N : ℝ) + 1 - y := by linarith
-  have ha : 0 < (N : ℝ) + 1 := by positivity
+  pm_15
+  pm_6905
   have hs := (hasSum_digamma_difference hd ha).summable.alternating.hasSum
   rw [alternating_reciprocal_difference hd ha] at hs
   convert hs.div_const y using 1
   · funext n
-    have hn : 0 ≤ (n : ℝ) := Nat.cast_nonneg n
-    have h1 : (n : ℝ) + N + 1 ≠ 0 := by positivity
-    have h2 : (n : ℝ) + N + 1 - y ≠ 0 := by linarith
-    have h3 : (n : ℝ) + ((N : ℝ) + 1 - y) ≠ 0 := by positivity
-    have h4 : (n : ℝ) + ((N : ℝ) + 1) ≠ 0 := by positivity
+    pm_19
+    pm_5966 h4
     field_simp
     ring
   · rw [show (N : ℝ) + 1 + 1 = (N : ℝ) + 2 by ring]
@@ -215,10 +220,7 @@ theorem abs_tsum_alternating_shift (f : ℕ → ℝ) (M : ℕ) :
     |∑' n : ℕ, (-1 : ℝ) ^ (n + M) * f n| = |∑' n : ℕ, (-1 : ℝ) ^ n * f n| := by
   have he : (∑' n : ℕ, (-1 : ℝ) ^ (n + M) * f n) =
       (-1 : ℝ) ^ M * ∑' n : ℕ, (-1 : ℝ) ^ n * f n := by
-    rw [← tsum_mul_left]
-    apply tsum_congr
-    intro n
-    rw [pow_add]
+    pm_1065 tsum_mul_left n pow_add
     ring
   rw [he, abs_mul, abs_pow]
   norm_num
@@ -228,16 +230,14 @@ theorem hasSum_alternating_harmonic_plus {y : ℝ} (hy : 0 < y) :
     HasSum (fun n : ℕ => (-1 : ℝ) ^ (n + 1) / (((n : ℝ) + 1) * ((n : ℝ) + 1 + y)))
       ((((Complex.digamma ((y + 2) / 2 : ℝ)).re -
         (Complex.digamma ((y + 1) / 2 : ℝ)).re) / 2 - Real.log 2) / y) := by
-  have ha : 0 < y + 1 := by positivity
+  pm_7901 ha y
   have hs := (hasSum_digamma_difference (by norm_num : (0 : ℝ) < 1) ha).summable.alternating.hasSum
   rw [alternating_reciprocal_difference (by norm_num : (0 : ℝ) < 1) ha,
     paired_reciprocal_source_eq (by norm_num : (0 : ℝ) < 1)] at hs
   norm_num at hs
   convert hs.neg.div_const y using 1
   · funext n
-    have h1 : (n : ℝ) + 1 ≠ 0 := by positivity
-    have h2 : (n : ℝ) + 1 + y ≠ 0 := by positivity
-    have h3 : (n : ℝ) + (y + 1) ≠ 0 := by positivity
+    pm_20
     rw [pow_succ]
     field_simp
     ring

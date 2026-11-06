@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Descent.PrincipalChild
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseSecondPrincipalCaller
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
+open FirstPassCubeLabels SecondPassArithmetic FourierBridge
 open SecondPassIntegration CompletedHeight
-open InverseMoment InversePrincipalEnergy RayFourExpansion
+open InverseMoment InversePrincipalEnergy
 local notation "Eis" => ActualEisensteinCubic.O
 
 def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
@@ -19,8 +19,10 @@ def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
   if negative then conjugateProfile (uniformTwistedSchwartz om a b ha hs (om.smooth ⊤) t)
   else uniformTwistedSchwartz om a b ha hs (om.smooth ⊤) t
 
-theorem principalWindow_apply (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t x : ℝ) :
+section
+variable (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om ⊆ Set.Icc a b)
+include om a b ha hs
+theorem principalWindow_apply (negative : Bool) (t x : ℝ) :
     principalWindow om a b ha hs negative t x =
       if negative then normTwistedSource (fun y => star (om y)) (-t) x
       else normTwistedSource om t x := by
@@ -28,21 +30,18 @@ theorem principalWindow_apply (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     conjugateProfile_apply,uniformTwistedSchwartz_apply,normTwistedSource,
     star_mul,logPhase_conjugate,mul_comm]
 
-theorem principalWindow_norm (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t x : ℝ) :
+theorem principalWindow_norm (negative : Bool) (t x : ℝ) :
     ‖principalWindow om a b ha hs negative t x‖=‖om x‖ := by
   rw [principalWindow_apply]
   cases negative <;> simp [normTwistedSource,logPhase_norm]
 
-theorem principalWindow_support (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ) :
+theorem principalWindow_support (negative : Bool) (t : ℝ) :
     Function.support (principalWindow om a b ha hs negative t) = Function.support om := by
   ext x
   change (_≠0) ↔ (_≠0)
   rw [←norm_ne_zero_iff,principalWindow_norm,norm_ne_zero_iff]
 
-theorem principalWindow_seminorm_zero (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ) :
+theorem principalWindow_seminorm_zero (negative : Bool) (t : ℝ) :
     SchwartzMap.seminorm ℝ 0 0 (principalWindow om a b ha hs negative t)=
       SchwartzMap.seminorm ℝ 0 0 om := by
   apply le_antisymm
@@ -55,14 +54,14 @@ theorem principalWindow_seminorm_zero (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a
     simpa only [pow_zero,one_mul,norm_iteratedFDeriv_zero,principalWindow_norm]
       using SchwartzMap.norm_le_seminorm ℝ (principalWindow om a b ha hs negative t) x
 
-theorem principalWindow_upper (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
-    (hs : Function.support om ⊆ Set.Icc a b) (M : ℝ) (hb : b≤Real.exp M)
+theorem principalWindow_upper (M : ℝ) (hb : b≤Real.exp M)
     (negative : Bool) (t x : ℝ) (hx : principalWindow om a b ha hs negative t x≠0) :
     x≤Real.exp M := by
   have hmem : x∈Function.support om := by
     rw [←principalWindow_support om a b ha hs negative t]
     exact hx
   exact (hs hmem).2.trans hb
+end
 
 section Arithmetic
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleySourceMean
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,6 @@ no coefficients or residue classes are merged.
 -/
 
 open Finset Polynomial
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -25,7 +25,7 @@ def wooleyBoxIndexEmbedding (Q : ℕ) : Fin Q ↪ ℤ where
     intro m n h
     apply Fin.ext
     change (((m : ℕ) + 1 : ℕ) : ℤ) = (((n : ℕ) + 1 : ℕ) : ℤ) at h
-    exact Nat.add_right_cancel (Int.ofNat_inj.mp h)
+    grind
 
 @[simp] theorem wooleyBoxIndexEmbedding_apply {Q : ℕ} (n : Fin Q) :
     wooleyBoxIndexEmbedding Q n = (((n : ℕ) + 1 : ℕ) : ℤ) := rfl
@@ -37,20 +37,23 @@ def wooleyBoxSourceSequence {Q : ℕ} (gamma : Fin Q → ℂ) :
   Finsupp.embDomain (wooleyBoxIndexEmbedding Q)
     (Finsupp.equivFunOnFinite.symm gamma)
 
-@[simp] theorem wooleyBoxSourceSequence_apply_index {Q : ℕ}
-    (gamma : Fin Q → ℂ) (n : Fin Q) :
+section
+variable {Q : ℕ} (gamma : Fin Q → ℂ)
+include Q gamma
+@[simp] theorem wooleyBoxSourceSequence_apply_index (n : Fin Q) :
     wooleyBoxSourceSequence gamma (wooleyBoxIndexEmbedding Q n) = gamma n := by
   rw [wooleyBoxSourceSequence, Finsupp.embDomain_apply_self]
   rfl
 
 /-- The support is exactly the image of the nonzero box coefficients. -/
-theorem wooleyBoxSourceSequence_support {Q : ℕ} (gamma : Fin Q → ℂ) :
+theorem wooleyBoxSourceSequence_support :
     (wooleyBoxSourceSequence gamma).support =
       (Finset.univ.filter fun n : Fin Q => gamma n ≠ 0).map
         (wooleyBoxIndexEmbedding Q) := by
   rw [wooleyBoxSourceSequence, Finsupp.support_embDomain]
   ext n
   simp
+end
 
 /-- The source and box `L²` masses agree exactly. -/
 theorem wooleyBoxSourceSequence_massSq {Q : ℕ} (gamma : Fin Q → ℂ) :
@@ -60,12 +63,7 @@ theorem wooleyBoxSourceSequence_massSq {Q : ℕ} (gamma : Fin Q → ℂ) :
     wooleyBoxSourceSequence_support]
   rw [Finset.sum_map]
   simp only [wooleyBoxSourceSequence_apply_index]
-  apply Finset.sum_subset (by simp)
-  intro n hn hnot
-  have hnzero : gamma n = 0 := by
-    simpa only [Finset.mem_filter, Finset.mem_univ, true_and,
-      not_ne_iff] using hnot
-  simp [hnzero]
+  pm_2821
 
 /-- Residue `L²` masses agree under the box embedding. -/
 theorem wooleySourceResidueMassSq_box {Q q : ℕ}
@@ -75,8 +73,7 @@ theorem wooleySourceResidueMassSq_box {Q q : ℕ}
   unfold wooleySourceResidueMassSq wooleyWeightedResidueMassSq
     wooleyResidueClass
   rw [wooleyBoxSourceSequence_support]
-  rw [Finset.filter_map, Finset.sum_map]
-  simp only [Function.comp_apply, wooleyBoxSourceSequence_apply_index]
+  pm_327 Finset.filter_map Finset.sum_map Function.comp_apply wooleyBoxSourceSequence_apply_index
   simp only [wooleyBoxIndexEmbedding_apply]
   have hcast (n : Fin Q) :
       (((((n : ℕ) + 1 : ℕ) : ℤ) : ZMod q)) =
@@ -90,58 +87,36 @@ theorem wooleySourceResidueMassSq_box {Q q : ℕ}
       ∑ n ∈ (Finset.univ : Finset (Fin Q)).filter
         (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod q)) = xi),
         ‖gamma n‖ ^ 2
-  apply Finset.sum_subset (by
-    intro n hn
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hn ⊢
-    exact hn.2)
-  intro n hn hnot
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hn hnot
-  have hnzero : gamma n = 0 := by
-    by_contra hne
-    exact hnot ⟨hne, hn⟩
-  simp [hnzero]
+  pm_2822
 
+section
+variable {Q k q : ℕ} [NeZero q]
+include Q k q
 /-- The monomial source phase agrees with the earlier literal box phase. -/
-theorem wooleySourcePolynomialPhase_box_monomial
-    {Q k q : ℕ} [NeZero q] (alpha : Fin k → ZMod q) (n : Fin Q) :
+theorem wooleySourcePolynomialPhase_box_monomial (alpha : Fin k → ZMod q) (n : Fin Q) :
     wooleySourcePolynomialPhase (wooleyMonomialPolynomialSystem k) alpha
         (wooleyBoxIndexEmbedding Q n) =
       wooleyMonomialGridPhase q k Q alpha n := by
-  unfold wooleySourcePolynomialPhase wooleyMonomialGridPhase
-  apply congrArg ZMod.stdAddChar
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_8730 wooleyMonomialGridPhase
   simp [wooleyMonomialPolynomialSystem, wooleyBoxIndexEmbedding]
 
 /-- The source phase agrees with the finite-box polynomial phase for every
 integer polynomial system, not merely the monomial specialization. -/
-theorem wooleySourcePolynomialPhase_box
-    {Q k q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
+theorem wooleySourcePolynomialPhase_box (phi : WooleyPolynomialSystem k)
     (alpha : Fin k → ZMod q) (n : Fin Q) :
     wooleySourcePolynomialPhase phi alpha (wooleyBoxIndexEmbedding Q n) =
       wooleyPolynomialGridPhase phi q Q alpha n := by
-  unfold wooleySourcePolynomialPhase wooleyPolynomialGridPhase
-  apply congrArg ZMod.stdAddChar
-  apply Finset.sum_congr rfl
-  intro j hj
+  pm_8730 wooleyPolynomialGridPhase
   rfl
 
 /-- General polynomial-system version of the source/box global-sum bridge. -/
-theorem wooleySourcePolynomialSum_box
-    {Q k q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
+theorem wooleySourcePolynomialSum_box (phi : WooleyPolynomialSystem k)
     (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod q) :
     wooleySourcePolynomialSum phi (wooleyBoxSourceSequence gamma) alpha =
       wooleyPolynomialWeightedGridSum phi q gamma alpha := by
-  rw [wooleySourcePolynomialSum, wooleyPolynomialWeightedGridSum,
-    wooleyBoxSourceSequence_support, Finset.sum_map]
-  simp only [wooleyBoxSourceSequence_apply_index,
-    wooleySourcePolynomialPhase_box]
-  apply Finset.sum_subset (by simp)
-  intro n hn hnot
-  have hnzero : gamma n = 0 := by
-    simpa only [Finset.mem_filter, Finset.mem_univ, true_and,
-      not_ne_iff] using hnot
-  simp [hnzero]
+  pm_8482 wooleyPolynomialWeightedGridSum wooleySourcePolynomialPhase_box
+  pm_2821
+end
 
 /-- General polynomial-system version of the residue-sum bridge. -/
 theorem wooleySourcePolynomialResidueSum_box
@@ -152,33 +127,10 @@ theorem wooleySourcePolynomialResidueSum_box
       wooleyPolynomialWeightedResidueGridSum phi q gamma alpha xi := by
   unfold wooleySourcePolynomialResidueSum
     wooleyPolynomialWeightedResidueGridSum wooleyResidueClass
-  rw [wooleyBoxSourceSequence_support]
-  rw [Finset.filter_map, Finset.sum_map]
-  simp only [Function.comp_apply, wooleyBoxSourceSequence_apply_index,
-    wooleySourcePolynomialPhase_box]
-  simp only [wooleyBoxIndexEmbedding_apply]
-  have hcast (n : Fin Q) :
-      (((((n : ℕ) + 1 : ℕ) : ℤ) : ZMod qH)) =
-        ((((n : ℕ) + 1 : ℕ) : ZMod qH)) := by norm_num
-  simp_rw [hcast]
-  change
-    (∑ n ∈ ((Finset.univ : Finset (Fin Q)).filter
-        fun n => gamma n ≠ 0).filter
-        (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod qH)) = xi),
-        gamma n * wooleyPolynomialGridPhase phi q Q alpha n) =
-      ∑ n ∈ (Finset.univ : Finset (Fin Q)).filter
-        (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod qH)) = xi),
-        gamma n * wooleyPolynomialGridPhase phi q Q alpha n
-  apply Finset.sum_subset (by
-    intro n hn
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hn ⊢
-    exact hn.2)
-  intro n hn hnot
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hn hnot
-  have hnzero : gamma n = 0 := by
-    by_contra hne
-    exact hnot ⟨hne, hn⟩
-  simp [hnzero]
+  pm_6867 wooleySourcePolynomialPhase_box
+  pm_2823
+  pm_2824 wooleyPolynomialGridPhase phi q
+  pm_2822
 
 theorem wooleySourceNormalizedPolynomialSum_box
     {Q k q : ℕ} [NeZero q] (phi : WooleyPolynomialSystem k)
@@ -220,11 +172,7 @@ theorem wooleySourcePolynomialConditionedMean_box
       wooleyPolynomialConditionedGridMean phi s q qH gamma := by
   unfold wooleySourcePolynomialConditionedMean
     wooleyPolynomialConditionedGridMean
-  rw [wooleyBoxSourceSequence_massSq]
-  split_ifs
-  · rfl
-  · simp_rw [wooleySourceResidueMassSq_box,
-      wooleySourceNormalizedPolynomialResidueSum_box]
+  pm_5502 wooleySourceNormalizedPolynomialResidueSum_box
 
 /-- The source global sum is literally the earlier box sum. -/
 theorem wooleySourcePolynomialSum_box_monomial
@@ -233,16 +181,8 @@ theorem wooleySourcePolynomialSum_box_monomial
     wooleySourcePolynomialSum (wooleyMonomialPolynomialSystem k)
         (wooleyBoxSourceSequence gamma) alpha =
       wooleyWeightedGridSum q k gamma alpha := by
-  rw [wooleySourcePolynomialSum, wooleyWeightedGridSum,
-    wooleyBoxSourceSequence_support, Finset.sum_map]
-  simp only [wooleyBoxSourceSequence_apply_index,
-    wooleySourcePolynomialPhase_box_monomial]
-  apply Finset.sum_subset (by simp)
-  intro n hn hnot
-  have hnzero : gamma n = 0 := by
-    simpa only [Finset.mem_filter, Finset.mem_univ, true_and,
-      not_ne_iff] using hnot
-  simp [hnzero]
+  pm_8482 wooleyWeightedGridSum wooleySourcePolynomialPhase_box_monomial
+  pm_2821
 
 /-- Residue exponential sums agree under the box embedding. -/
 theorem wooleySourcePolynomialResidueSum_box_monomial
@@ -253,33 +193,10 @@ theorem wooleySourcePolynomialResidueSum_box_monomial
       wooleyWeightedResidueGridSum q k gamma alpha xi := by
   unfold wooleySourcePolynomialResidueSum wooleyWeightedResidueGridSum
     wooleyResidueClass
-  rw [wooleyBoxSourceSequence_support]
-  rw [Finset.filter_map, Finset.sum_map]
-  simp only [Function.comp_apply, wooleyBoxSourceSequence_apply_index,
-    wooleySourcePolynomialPhase_box_monomial]
-  simp only [wooleyBoxIndexEmbedding_apply]
-  have hcast (n : Fin Q) :
-      (((((n : ℕ) + 1 : ℕ) : ℤ) : ZMod qH)) =
-        ((((n : ℕ) + 1 : ℕ) : ZMod qH)) := by norm_num
-  simp_rw [hcast]
-  change
-    (∑ n ∈ ((Finset.univ : Finset (Fin Q)).filter
-        fun n => gamma n ≠ 0).filter
-        (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod qH)) = xi),
-        gamma n * wooleyMonomialGridPhase q k Q alpha n) =
-      ∑ n ∈ (Finset.univ : Finset (Fin Q)).filter
-        (fun n : Fin Q => ((((n : ℕ) + 1 : ℕ) : ZMod qH)) = xi),
-        gamma n * wooleyMonomialGridPhase q k Q alpha n
-  apply Finset.sum_subset (by
-    intro n hn
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hn ⊢
-    exact hn.2)
-  intro n hn hnot
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hn hnot
-  have hnzero : gamma n = 0 := by
-    by_contra hne
-    exact hnot ⟨hne, hn⟩
-  simp [hnzero]
+  pm_6867 wooleySourcePolynomialPhase_box_monomial
+  pm_2823
+  pm_2824 wooleyMonomialGridPhase q k
+  pm_2822
 
 theorem wooleySourceNormalizedPolynomialSum_box_monomial
     {Q k q : ℕ} [NeZero q] (gamma : Fin Q → ℂ)
@@ -324,11 +241,7 @@ theorem wooleySourcePolynomialConditionedMean_box_monomial
       wooleyWeightedConditionedGridMean s k q qH gamma := by
   unfold wooleySourcePolynomialConditionedMean
     wooleyWeightedConditionedGridMean
-  rw [wooleyBoxSourceSequence_massSq]
-  split_ifs
-  · rfl
-  · simp_rw [wooleySourceResidueMassSq_box,
-      wooleySourceNormalizedPolynomialResidueSum_box_monomial]
+  pm_5502 wooleySourceNormalizedPolynomialResidueSum_box_monomial
 
 end
 

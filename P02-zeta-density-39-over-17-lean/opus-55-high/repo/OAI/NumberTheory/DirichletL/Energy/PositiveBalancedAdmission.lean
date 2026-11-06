@@ -47,7 +47,7 @@ theorem fixed_lower_product (N:ℕ)(hN:Fintype.card α≤N) :
     (min 1 aslot)^N*a*a≤(∏i,(balancedSource).lo i)*a*a := by
   have hh:=CenteredMomentEnergyOriginalProfileControl.lower_product balancedSource N aslot haslot hN
     (fun _=>le_rfl)
-  exact ⟨by positivity,mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hh ha.le) ha.le⟩
+  simp_all
 
 theorem four_upper_scales (κ L:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
     (hcap:length Z X₁+length Z X₂+6*κ*(∑i,w i)≤s.width)(hs:s.width≤L) :
@@ -63,7 +63,7 @@ theorem four_upper_scales (κ L:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
     exact Real.one_le_rpow hZ.le (Finset.sum_nonneg (fun i _=>hw i))
   have hxy:X₁*X₂≤volume balancedSource:=by
     change X₁*X₂≤X₁*X₂*(∏i,Z^(w i))
-    exact le_mul_of_one_le_right (mul_pos hX₁ hX₂).le hprod
+    simp_all
   have hY:1≤comparisonFirst Z s.width:=Real.one_le_rpow hZ.le (div_nonneg s.width_nonneg (by norm_num))
   refine ⟨hx.1,hx.2,?_,?_⟩
   · change Z^(s.width/4)≤Z^L

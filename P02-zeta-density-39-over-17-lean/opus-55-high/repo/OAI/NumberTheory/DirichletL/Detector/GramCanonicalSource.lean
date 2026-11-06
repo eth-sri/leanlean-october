@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -48,15 +49,12 @@ theorem originalCommonBlock_eq_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
     (gramNumeratorData k).factor (gramPrime C) (gramPrime_good C) (gramExponent C)
     (gramExponent_pos C) (gramPrime_coprime C) (gramPrime_product C) W hW Y Q hY hQ U v
   change originalCommonBlock S hS σ C k W hW Y Q hY U v=_ at hh
-  rw [hh]
-  apply Finset.sum_congr rfl
-  intro D hD
-  congr 1
+  pm_5314 hh D hD
   have hD0 := (divisorPool_supported _ D hD).1
-  have hN : 0<commonResidualScale C Y/(Ideal.absNorm D:ℝ) :=
+  have hN : 0< commonResidualScale C Y/(Ideal.absNorm D:ℝ) :=
     div_pos (commonResidualScale_pos C Y hY) (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD0))
   exact (shell_lattice_summable W hW _ hN U v (frequencyScale C k.val Y Q)
-    (fun n m=>canonicalJoint S hS σ C k (primaryGenerator D*n) (primaryGenerator D*m))).tsum_prod.symm
+    (fun n m=>canonicalJoint S hS σ C k (primaryGenerator D *n) (primaryGenerator D *m))).tsum_prod.symm
 
 end SevenEighths.ProbeGramCommon
 end

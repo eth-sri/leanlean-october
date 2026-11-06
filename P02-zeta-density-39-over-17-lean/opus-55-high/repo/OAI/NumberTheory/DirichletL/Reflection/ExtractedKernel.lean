@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.Extraction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,16 +26,14 @@ lemma extractedSlotFactor_norm_le_one (D1 D2 P : Ideal Eis) : ‖extractedSlotFa
   · simp
 
 lemma coprime_product_mask (P D b : Ideal Eis) :
-    (if IsCoprime P (D*b) then (1:ℂ) else 0) =
+    (if IsCoprime P (D *b) then (1:ℂ) else 0) =
       (if IsCoprime P D then 1 else 0)*(if IsCoprime P b then 1 else 0) := by
   by_cases hD : IsCoprime P D <;> by_cases hb : IsCoprime P b
   · simp [hD,hb,hD.mul_right hb]
-  · have hn : ¬IsCoprime P (D*b) := fun h => hb (h.of_isCoprime_of_dvd_right (dvd_mul_left _ _))
+  · have hn : ¬IsCoprime P (D *b) := fun h => hb (h.of_isCoprime_of_dvd_right (dvd_mul_left _ _))
     simp [hD,hb,hn]
-  · have hn : ¬IsCoprime P (D*b) := fun h => hD (h.of_isCoprime_of_dvd_right (dvd_mul_right _ _))
-    simp [hD,hb,hn]
-  · have hn : ¬IsCoprime P (D*b) := fun h => hD (h.of_isCoprime_of_dvd_right (dvd_mul_right _ _))
-    simp [hD,hb,hn]
+  pm_3321
+  pm_3321
 
 theorem forced_dual_kernel_factor (D1 D2 K P n b : Ideal Eis)
     (hK : Admissible K) (hP : primaryGenerator P ≠ 0) :

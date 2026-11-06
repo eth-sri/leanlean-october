@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainExceptional
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ lemma plainProfile_eq_detectorSchwartz
   exact (detectorSchwartz_apply F.reverse j σ t x).symm
 
 theorem retainedSourceEnergy_eq_energy
-    (keep:O→Prop)(F:Fiber M H Label Slot U a ε tstar T allowance i)
+    (keep:O→ Prop)(F:Fiber M H Label Slot U a ε tstar T allowance i)
     (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(Φ:𝓢(ℝ,ℂ))(hU:0<U):
     retainedSourceEnergy keep F η selected j k σ t Φ=
       energy η (fixedBadMask*idealGenerator 1) 1 0
@@ -52,7 +53,7 @@ theorem retainedSourceEnergy_empty_eq_plainEnergy
     retainedSourceEnergy (initialKeep η Q) F η ∅ j k σ t Φ=
       (initialState η Q Φ bΦ U δ hU hδ hs hp hη).plainEnergy
         (detectorProfiles F.reverse j k σ t) 0 (U^F.m) (U^F.m):=by
-  rw [retainedSourceEnergy_eq_energy _ _ _ _ _ _ _ _ _ (zero_lt_one.trans_le hU)]
+  pm_6452
   simp only [plainProfile_eq_detectorSchwartz]
   unfold NaturalState.plainEnergy energy
   apply tsum_congr

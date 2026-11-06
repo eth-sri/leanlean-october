@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.Mobius
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,7 +29,7 @@ theorem descended_energy_small_power {n : Type*} [Fintype n]
     (∑ D ∈ columnDivisorPool cols, ∑ E ∈ idealDivisors D,
       ∑ j, ‖descendedCoefficient D cols a (idealGenerator E) j‖^2) ≤
         (divisorConstant ε hε * N^ε)^2 * ∑ j, ‖a j‖^2 := by
-  have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
+  pm_3790
   let B := divisorConstant ε hε * N^ε
   have hB : 0 ≤ B := mul_nonneg (divisorConstant_pos ε hε).le (Real.rpow_nonneg hN0 _)
   have hcard (D : Ideal O) (hD : D ∈ columnDivisorPool cols) :

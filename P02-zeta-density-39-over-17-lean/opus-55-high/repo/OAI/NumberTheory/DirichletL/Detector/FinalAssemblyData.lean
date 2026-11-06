@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.ParametersFixedSource
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblySource
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ structure SourceData {Δ : ℝ} (D : HighData Δ) where
 
 theorem exists_source_data {Δ : ℝ} (D : HighData Δ) : Nonempty (SourceData D) := by
   obtain ⟨S,_,hS,hfirst,hmax⟩ := exists_fixed_source D.e D.e_pos ∅ (by simp)
-  obtain ⟨w,W,hw,hc,hs,hp,hb,hn,he,hWn,hWs,hr,hWpos⟩ := exists_fixed_probe_window
+  pm_7039 hp hb hWpos exists_fixed_probe_window
   exact ⟨⟨S,hS,hmax,hfirst,w,W,hw,hc,hs,hp,hb,hn,he,hWn,hWs,hr,hWpos⟩⟩
 
 def SourceData.modulus {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : Ideal O := ∏P∈F.S,P
@@ -58,7 +59,7 @@ def SourceData.probe {Δ : ℝ} {D : HighData Δ} (F : SourceData D) (η : Chara
 
 theorem SourceData.probe_low {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
     (loss : ℝ) (hloss : 0<loss) (η : Character) :
-    F.probe η=O[atTop](fun Z : ℝ=>Z^(3/16+loss)) := by
+    F.probe η=O[atTop](fun Z : ℝ=>Z ^(3/16+loss)) := by
   exact normalizedProbe_low F.modulus ⊤ le_top F.S F.exclusions F.maximal 1 2 1 loss
     (by norm_num) (by norm_num) hloss D.ell (fun j=>(D.slots_bounds j).1) D.slots_injective D.slots_sum
     (fun _=>F.w) (fun _=>F.smooth) (fun _=>F.compact) (fun _=>F.support)

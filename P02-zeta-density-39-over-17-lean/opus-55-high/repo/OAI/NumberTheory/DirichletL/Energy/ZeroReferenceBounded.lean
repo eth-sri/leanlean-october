@@ -3,39 +3,25 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceOriginal
 public import OAI.NumberTheory.DirichletL.Energy.StageReserveBounded
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily QuadraticInitialBound
+open CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceOriginal CenteredMomentEnergyReferenceScalarReserve
+open CenteredMomentEnergyZeroReferenceOriginal
 open CenteredMomentEnergyStageReserveBounded
 open CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource
 open CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
-theorem balanced_reference_from_zero_low
-    (a b bΦ rho ε Mcap Bmask:ℝ)
-    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
-    (hM:0≤Mcap)(hBmask:0≤Bmask):
-    ∃d xi L:ℝ,0<d ∧ 0<xi ∧ xi≤rho/100 ∧ Mcap+Bmask+xi≤L ∧ L≤Mcap+Bmask+rho/100 ∧
-    ∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
-      ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
-      ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
-      ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →s.width/4≤Real.logb Z (X₁*X₂) →
-      s.plainEnergy p t (comparisonFirst Z s.width) (comparisonSecond Z s.width X₁ X₂) ≤
-        C*(K+1)*diagonalControl s.radial.profile*
-          (sourceControl U (p.profile 0)*sourceControl U (p.profile 1))^2*
-          (1+|t|)^J*Z^(s.width+e+ε):=by
+set_option hygiene false in
+macro "pf_15" x1:ident* : tactic => `(tactic| (
   obtain ⟨d,xi,saving,L,Cscalar,hd,hxi,hsaving,hCs,hxirho,hL,hLupper,hscalar⟩:=
     exists_bounded_separated_reference_reserve rho ε Mcap Bmask bΦ hrho hε hM hBmask
   refine ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,?_⟩
@@ -48,9 +34,9 @@ theorem balanced_reference_from_zero_low
   refine ⟨J,U,Cweight*Cprofile*Cscalar,by positivity,?_⟩
   filter_upwards [href] with Z hZ
   refine ⟨hZ.1,?_⟩
-  intro e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂ hlarge
+  intro e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂ $x1*
   have hxiM:xi≤s.width/6:=by linarith only [hxirho, hslo, hrho]
-  have hh:=hZ.2 e Q degree K hK hlow s hQ hs hxiM p t X₁ X₂ hX₁ hX₂ hlarge
+  have hh:=hZ.2 e Q degree K hK hlow s hQ hs hxiM p t X₁ X₂ hX₁ hX₂ $x1*
   have hledger:=hscalar e he Z hZ.1.le s hs (Fin 0) (fun _=>0) (by simpa using hM)
   simp only [Finset.univ_eq_empty,Finset.prod_empty,mul_one] at hledger
   have hp:=hprofile (p.profile 0) (p.profile 1) (p.support 0) (p.support 1) t 0 (le_refl 0)
@@ -105,10 +91,24 @@ theorem balanced_reference_from_zero_low
   · dsimp only [P,Qmain,Qerror] at hfirst
     convert hfirst using 1 <;> (try dsimp only [E,A]) <;> ring
   · dsimp only [E,A]
-    ring
+    ring))
+theorem balanced_reference_from_zero_low
+    (a b bΦ rho ε Mcap Bmask:ℝ)
+    (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hrho:0<rho)(hε:0<ε)
+    (hM:0≤Mcap)(hBmask:0≤Bmask):
+    ∃d xi L:ℝ,0<d ∧ 0<xi ∧ xi≤rho/100 ∧ Mcap+Bmask+xi≤L ∧ L≤Mcap+Bmask+rho/100 ∧
+    ∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
+      ∀ᶠ Z:ℝ in atTop,1<Z ∧
+      ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
+      ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
+      ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →s.width/4≤Real.logb Z (X₁*X₂) →
+      s.plainEnergy p t (comparisonFirst Z s.width) (comparisonSecond Z s.width X₁ X₂) ≤
+        C*(K+1)*diagonalControl s.radial.profile*
+          (sourceControl U (p.profile 0)*sourceControl U (p.profile 1))^2*
+          (1+|t|)^J*Z^(s.width+e+ε):= by pf_15 hlarge
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceBounded
 
-end
 
 end OAI

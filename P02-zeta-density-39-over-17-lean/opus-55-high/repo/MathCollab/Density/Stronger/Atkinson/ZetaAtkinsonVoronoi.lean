@@ -10,6 +10,7 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMinusTransport
 public import MathCollab.Density.Stronger.Atkinson.BesselTransformBridge
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonVoronoiTerms
 public import MathCollab.Density.Stronger.Atkinson.SmoothDivisorSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,17 +30,14 @@ theorem ordinaryDivisorVoronoi_bessel {g : ℝ → ℂ} (hg : DFIVoronoiTestFunc
   have hminus (n : ℕ) : divisorWeight n * dfiVoronoiMinusTransform 1 (mellin g) n =
       divisorWeight n * (-(2 * Real.pi) : ℂ) *
         ∫ x : ℝ in Ioi 0, g x * (dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n)) : ℂ) := by
-    by_cases hn : n = 0
-    · simp [hn, divisorWeight]
+    pm_212 hn n divisorWeight
     · have h := dfiVoronoiMinusTransform_mellin_eq_bessel 1 n (Nat.pos_of_ne_zero hn) hg
       change dfiVoronoiMinusTransform 1 (mellin g) n = _ at h
-      rw [h]
-      simp only [dfiVoronoiMinusBesselTransform, Nat.cast_one, div_one, mul_assoc]
+      pm_214 h dfiVoronoiMinusBesselTransform Nat.cast_one div_one mul_assoc
   have hplus (n : ℕ) : divisorWeight n * dfiVoronoiPlusTransform 1 (mellin g) n =
       divisorWeight n * 4 *
         ∫ x : ℝ in Ioi 0, g x * (dfiBesselK0 (4 * Real.pi * Real.sqrt (x * n)) : ℂ) := by
-    by_cases hn : n = 0
-    · simp [hn, divisorWeight]
+    pm_212 hn n divisorWeight
     · rw [dfiVoronoiPlusTransform_mellin_eq_bessel 1 n (Nat.pos_of_ne_zero hn) hg]
       simp only [dfiVoronoiPlusBesselTransform, Nat.cast_one, div_one, mul_assoc]
   rw [ordinaryDivisorVoronoi_native hg]
@@ -59,8 +57,8 @@ theorem exists_zetaSquareLocalMean_le_atkinson_bessel {δ : ℝ} (hδ : 0 < δ) 
         2 * Real.exp 1 * (zetaAtkinsonVoronoiMain T G (Real.log T) +
           zetaAtkinsonBesselMinus T G (Real.log T) + zetaAtkinsonBesselPlus T G (Real.log T)).re +
             C * G * Real.log T := by
-  obtain ⟨C, hC, T₀, hT₀, hbound⟩ := exists_zetaSquareLocalMean_le_smooth_divisor hδ
-  refine ⟨C, hC, T₀, hT₀, ?_⟩
+  pm_206 C hC T₀ hT₀ hbound exists_zetaSquareLocalMean_le_smooth_divisor hδ
+  pm_505 C hC T₀ hT₀
   intro T G hT hG hupper
   have hT8 := hT₀.trans hT
   rw [← zetaSmoothDivisorSum_eq_atkinson_bessel (by linarith : 0 < T) hG (Real.log_pos (by linarith))]

@@ -6,6 +6,7 @@ Narrow extraction only; see third_party/twelfth/ATKINSON_STATIONARY_MANIFEST.jso
 The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaAtkinsonPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,38 +30,41 @@ def atkinsonSaddleRoot (A b : ℝ) : ℝ := (b + Real.sqrt (b ^ 2 + 4 * A)) / 2
 
 def zetaAtkinsonSaddle (T b : ℝ) : ℝ := (atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 2
 
-theorem atkinsonSaddleRoot_pos {A : ℝ} (hA : 0 < A) (b : ℝ) :
+section
+variable {A : ℝ} (hA : 0 < A) (b : ℝ)
+include A hA b
+theorem atkinsonSaddleRoot_pos :
     0 < atkinsonSaddleRoot A b := by
   have h := Real.sqrt_lt_sqrt (sq_nonneg b) (show b ^ 2 < b ^ 2 + 4 * A by linarith)
   rw [Real.sqrt_sq_eq_abs] at h
   unfold atkinsonSaddleRoot
-  linarith [neg_abs_le b]
+  grind
 
-theorem atkinsonSaddleRoot_equation {A : ℝ} (hA : 0 < A) (b : ℝ) :
+theorem atkinsonSaddleRoot_equation :
     (atkinsonSaddleRoot A b) ^ 2 - b * atkinsonSaddleRoot A b = A := by
   have hs := Real.sq_sqrt (show 0 ≤ b ^ 2 + 4 * A by positivity)
   unfold atkinsonSaddleRoot
   nlinarith
 
-theorem atkinsonSaddleRoot_sub_pos {A : ℝ} (hA : 0 < A) (b : ℝ) :
+theorem atkinsonSaddleRoot_sub_pos :
     0 < atkinsonSaddleRoot A b - b := by
   have hmul : 0 < atkinsonSaddleRoot A b * (atkinsonSaddleRoot A b - b) := by
     nlinarith [atkinsonSaddleRoot_equation hA b]
   exact (mul_pos_iff.mp hmul).resolve_right (fun h => (atkinsonSaddleRoot_pos hA b).not_gt h.1) |>.2
+end
 
 theorem atkinson_saddle_equation_iff {A x : ℝ} (hA : 0 < A) (hx : 0 < x) (b : ℝ) :
     x - b * Real.sqrt x = A ↔ x = (atkinsonSaddleRoot A b) ^ 2 := by
-  have hr := atkinsonSaddleRoot_pos hA b
-  have he := atkinsonSaddleRoot_equation hA b
+  pm_111 hr atkinsonSaddleRoot_pos hA b he atkinsonSaddleRoot_equation
   constructor
   · intro h
     have hf : (Real.sqrt x - atkinsonSaddleRoot A b) *
         (Real.sqrt x + atkinsonSaddleRoot A b - b) = 0 := by
-      nlinarith [Real.sq_sqrt hx.le]
+      grind
     have hp : 0 < Real.sqrt x + atkinsonSaddleRoot A b - b := by
       linarith [Real.sqrt_nonneg x, atkinsonSaddleRoot_sub_pos hA b]
     have heq := (mul_eq_zero.mp hf).resolve_right hp.ne'
-    nlinarith [Real.sq_sqrt hx.le]
+    grind
   · rintro rfl
     rw [Real.sqrt_sq hr.le]
     exact he

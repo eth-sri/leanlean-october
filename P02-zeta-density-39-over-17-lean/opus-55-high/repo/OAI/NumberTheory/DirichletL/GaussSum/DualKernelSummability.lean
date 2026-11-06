@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.SourceMellinInversion
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,78 +8,33 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic ShortDraftLatticeCount
+open ConcreteTraceCRT ActualEisensteinCubic
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
+open Ideal NumberField
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 
 namespace CompletedGauss
-open scoped BigOperators Classical ContDiff
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical ContDiff
+open Finset AddChar MulChar
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -97,7 +53,7 @@ lemma nonzeroDualIdeal_inv_pow_summable (n : ℕ) (hn : 1<n) :
     Complex.cpow_neg,Complex.cpow_natCast,norm_inv,norm_pow,Complex.norm_natCast]
 
 def rawDualKernelTerm (V : ℝ→ℂ) (scale ρ q : ℝ)
-    (β : ℕ→Ideal Eis→Ideal Eis→ℂ) (x : ℕ×NonzeroDualIdeal×NonzeroDualIdeal) : ℂ :=
+    (β : ℕ→ Ideal Eis→ Ideal Eis→ℂ) (x : ℕ×NonzeroDualIdeal×NonzeroDualIdeal) : ℂ :=
   β x.1 x.2.1.val x.2.2.val * CubicReflectionKernel.paperKernel V
     (scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3)
 
@@ -112,18 +68,14 @@ lemma rawDualKernel_inverse_square (scale ρ q : ℝ) (x : ℕ×NonzeroDualIdeal
 theorem rawDualKernelTerm_summable_norm
     (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hsupp : Function.support V⊆Set.Icc a b) (hV : ContDiff ℝ ∞ V)
-    (scale ρ q B : ℝ) (hscale : 0<scale) (hρ : 0<ρ) (hq : 1<q)
-    (hB : 0≤B) (β : ℕ→Ideal Eis→Ideal Eis→ℂ)
+    (scale ρ q B : ℝ) (hscale : 0< scale) (hρ : 0<ρ) (hq : 1<q)
+    (hB : 0≤B) (β : ℕ→ Ideal Eis→ Ideal Eis→ℂ)
     (hβ : ∀m,∀I J : NonzeroDualIdeal,‖β m I.val J.val‖≤B) :
     Summable (fun x : ℕ×NonzeroDualIdeal×NonzeroDualIdeal =>
       ‖rawDualKernelTerm V scale ρ q β x‖) := by
   obtain ⟨C,hC,hdec⟩:=CubicReflectionKernel.paperKernel_euler_power_decay
     V a b ha hsupp hV 2 0
-  have hq6 : 1<q^6 := one_lt_pow₀ hq (by norm_num)
-  have hg : Summable (fun m : ℕ => ((q^6)⁻¹)^m) :=
-    summable_geometric_of_lt_one (by positivity) ((inv_lt_one₀ (by positivity)).mpr hq6)
-  have hi := nonzeroDualIdeal_inv_pow_summable 2 (by norm_num)
-  have hj := nonzeroDualIdeal_inv_pow_summable 6 (by norm_num)
+  pm_3416
   have hij := hi.mul_of_nonneg hj (fun I=>by positivity) (fun J=>by positivity)
   have hs := hg.mul_of_nonneg hij (fun m=>by positivity) (fun IJ=>by positivity)
   have hmajor := hs.mul_left (B*C*(scale^2*ρ^6)⁻¹)
@@ -131,10 +83,10 @@ theorem rawDualKernelTerm_summable_norm
   intro x
   have hn:=nonzeroDualIdeal_norm_pos x.2.1
   have hb:=nonzeroDualIdeal_norm_pos x.2.2
-  have hx : 0<scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*
+  have hx : 0< scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*
       (Ideal.absNorm x.2.2.val:ℝ)^3 := by positivity
   have hk := (hdec _ hx).2
-  simp only [LocalLogFourier.eulerDeriv,iteratedDeriv_zero,Real.exp_zero,mul_one] at hk
+  pm_423 LocalLogFourier.eulerDeriv iteratedDeriv_zero Real.exp_zero mul_one hk
   norm_num only [Nat.cast_ofNat] at hk
   have hr : (scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*
       (Ideal.absNorm x.2.2.val:ℝ)^3)^(-(2:ℝ))=
@@ -155,12 +107,12 @@ theorem rawDualKernelTerm_summable_norm
 end
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
 
 namespace ReflectedBranchData
@@ -173,7 +125,7 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
@@ -182,15 +134,17 @@ local instance ramifiedFrequencyUnitsFintype : Fintype Eisˣ := @Fintype.ofFinit
 
 lemma ramifiedFrequencyChar_neg_unit (k:Eis) (u:Eisˣ) (n:ℕ) :
     ramifiedFrequencyChar k (-u) n=ramifiedFrequencyChar k u n := by
-  ext x
-  obtain ⟨d,rfl⟩:=Ideal.Quotient.mk_surjective x
+  pm_5271 d
   have hp:lambda^2∣(1+3*d)-1:=by
     rw [add_sub_cancel_left]
     exact dvd_mul_of_dvd_left lambda_sq_dvd_three d
   rw [ramifiedFrequencyChar_mk,ramifiedFrequencyChar_mk,Units.val_neg,neg_mul,
     symbol_neg_numerator _ _ hp]
 
-lemma arithmeticResidueSum_neg_unit (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
+section
+variable (h:Eis)
+include h
+lemma arithmeticResidueSum_neg_unit (u:Eisˣ) (n:ℕ) (hn:2≤n) :
     arithmeticResidueSum (-h) (u.val*lambda^n)=
       arithmeticResidueSum h ((-u).val*lambda^n) := by
   by_cases hd:u.val*lambda^n∣3*(-h)
@@ -212,28 +166,28 @@ lemma arithmeticResidueSum_neg_unit (h:Eis) (u:Eisˣ) (n:ℕ) (hn:2≤n) :
       linear_combination -hk
     rw [hl,hr]
 
-lemma principalResidueTerm_neg (h:Eis) (u:Eisˣ) (n:ℕ) :
+lemma principalResidueTerm_neg (u:Eisˣ) (n:ℕ) :
     principalResidueTerm (-h) u n=principalResidueTerm h (-u) n := by
   unfold principalResidueTerm
-  rw [arithmeticResidueSum_neg_unit h u (n+2) (by omega)]
+  pm_7998 arithmeticResidueSum_neg_unit
   congr 2
   simp only [Units.val_neg]
   ring
 
-lemma principalArithmeticResidue_neg (h:Eis) :
+lemma principalArithmeticResidue_neg :
     principalArithmeticResidue (-h)=principalArithmeticResidue h := by
   by_cases hh:h=0
   · rw [hh,neg_zero]
   let N:=max (ramifiedFrequencyBound (-h)+1) (ramifiedFrequencyBound h+1)
   rw [principalArithmeticResidue_eq_sum (-h) (neg_ne_zero.mpr hh) N (le_max_left _ _),
     principalArithmeticResidue_eq_sum h hh N (le_max_right _ _)]
-  apply congrArg (fun z:ℂ=>z/((9*Real.sqrt 3/2:ℝ):ℂ))
+  pm_1159
   simp_rw [principalResidueTerm_neg]
   exact Fintype.sum_equiv (Equiv.neg Eisˣ)
     (fun u=>∑n∈Finset.range N,principalResidueTerm h (-u) n)
     (fun u=>∑n∈Finset.range N,principalResidueTerm h u n) (fun _=>rfl)
 
-theorem sourceArithmeticResidue_neg (h:Eis) :
+theorem sourceArithmeticResidue_neg :
     sourceArithmeticResidue (-h)=sourceArithmeticResidue h := by
   have hU:unramifiedGaussResidue (-(9*h))=unramifiedGaussResidue (9*h):=by
     have he:=unramifiedGaussResidue_of_initial_relation (-(9*h)) (9*h) 0
@@ -245,13 +199,14 @@ theorem sourceArithmeticResidue_neg (h:Eis) :
     AddChar.map_neg_eq_inv,inv_eq_one,principalArithmeticResidue_neg,
     mul_neg,hU]
 
-lemma cubicBesselNormalizer_neg (h:Eis) : cubicBesselNormalizer (-h)=cubicBesselNormalizer h := by
+lemma cubicBesselNormalizer_neg : cubicBesselNormalizer (-h)=cubicBesselNormalizer h := by
   simp only [cubicBesselNormalizer,cuspFrequency_neg,norm_neg]
 
-theorem sourceResidualFourierCoefficient_neg (h:Eis) :
+theorem sourceResidualFourierCoefficient_neg :
     sourceResidualFourierCoefficient (-h)=sourceResidualFourierCoefficient h := by
   rw [sourceResidualFourierCoefficient,sourceResidualFourierCoefficient,
     cubicBesselNormalizer_neg,sourceArithmeticResidue_neg]
+end
 
 end
 

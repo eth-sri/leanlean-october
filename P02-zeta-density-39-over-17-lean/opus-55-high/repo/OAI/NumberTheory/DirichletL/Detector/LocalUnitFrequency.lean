@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
 public import OAI.NumberTheory.DirichletL.Detector.PhysicalLocalEuler
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,24 +21,22 @@ lemma finite_fourier_unit_scale {R : Type*} [CommRing R] [Fintype R]
     (∑ x, F x * ψ (((u : R) * H) * x)) = c⁻¹ * ∑ x, F x * ψ (H*x) := by
   have he : (∑ x, F x * ψ (H*x)) = c * ∑ x, F x * ψ (((u : R)*H)*x) := by
     rw [← Equiv.sum_comp u.mulLeft (fun x => F x * ψ (H*x))]
-    simp only [Units.mulLeft_apply, hF, Finset.mul_sum]
-    apply Finset.sum_congr rfl
+    pm_424 Units.mulLeft_apply hF Finset.mul_sum Finset.sum_congr
     intro x hx
     rw [show H*((u : R)*x) = ((u : R)*H)*x by ring]
     ring
-  rw [he, ← mul_assoc, inv_mul_cancel₀ hc, one_mul]
+  grind
 
-theorem barePhysicalFourier_unit_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (b H : O) (hcop : IsCoprime b (A*s)) :
+section
+variable (A s : O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s})) (b H : O) (hcop : IsCoprime b (A*s))
+include A s hA hs b H hcop
+theorem barePhysicalFourier_unit_frequency :
     barePhysicalFourier A s (supportedElement_ne_zero A hA)
         (supportedElement_ne_zero s hs) (b*H) =
       ((idealRowHom b (Ideal.span {A}))⁻¹ * idealRowHom b (Ideal.span {s})) *
         barePhysicalFourier A s (supportedElement_ne_zero A hA)
           (supportedElement_ne_zero s hs) H := by
-  have hAs := mul_ne_zero (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs)
-  let := finite_quotient_span hAs
-  let : Fintype (Residue (A*s)) := Fintype.ofFinite _
+  pm_3833
   let u := residueUnit (A*s) b hcop.symm
   have hcA := idealRowHom_ne_zero_of_coprime A b hA hcop.of_mul_right_left.symm
   have hcs := idealRowHom_ne_zero_of_coprime s b hs hcop.of_mul_right_right.symm
@@ -55,11 +54,9 @@ theorem barePhysicalFourier_unit_frequency (A s : O)
     quotientTrace (A*s) hAs (Ideal.Quotient.mk _ (b*H)*x)) =
       _ * ∑ x, movingQuotient A s (supportedElement_ne_zero s hs) x *
         quotientTrace (A*s) hAs (Ideal.Quotient.mk _ H*x)
-  simpa only [u, residueUnit_coe, map_mul, mul_inv_rev, inv_inv, mul_comm] using he
+  pm_546 u residueUnit_coe map_mul mul_inv_rev inv_inv mul_comm he
 
-theorem bareCongruenceCoefficient_unit_frequency (A s : O)
-    (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (b H : O) (hcop : IsCoprime b (A*s)) :
+theorem bareCongruenceCoefficient_unit_frequency :
     bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) (b*H) =
       ((idealRowHom b (Ideal.span {A}))⁻¹ * idealRowHom b (Ideal.span {s})) *
         bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H := by
@@ -71,6 +68,7 @@ theorem bareCongruenceCoefficient_unit_frequency (A s : O)
   apply mul_left_cancel₀ hn
   rw [he]
   ring
+end
 
 lemma supported_element_power (p : O) (hs : Supported (Ideal.span {p})) (n : ℕ) :
     Supported (Ideal.span {p^n}) := by

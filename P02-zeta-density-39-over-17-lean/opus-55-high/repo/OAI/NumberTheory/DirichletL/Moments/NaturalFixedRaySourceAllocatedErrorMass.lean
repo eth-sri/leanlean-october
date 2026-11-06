@@ -22,7 +22,7 @@ theorem naturalSlot_ideal_bound (χ : Character) (pool : Finset (Ideal O))
     (hs : ∀I∈pool,β I≠0 → (I.absNorm:ℝ)≤b*P) :
     ‖naturalSlot χ pool β P‖≤(128*max 1 b*M)*Real.sqrt P := by
   let f : Ideal O→ℂ:=fun I=>if I∈pool then idealCoeff χ I*β I else 0
-  have hf0 : f 0=0:=by simp only [f,idealCoeff_zero,zero_mul,ite_self]
+  have hf0 : f 0=0:=by grind
   have hf : ∀I,‖f I‖≤M := by
     intro I
     by_cases hi : I∈pool

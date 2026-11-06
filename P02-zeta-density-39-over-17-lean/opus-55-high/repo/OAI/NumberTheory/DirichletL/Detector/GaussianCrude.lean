@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,10 +31,13 @@ lemma gaussianAnnulus_scaled_square (N T : ℝ) (hN : 0<N) (hT : 0<T) :
     _ ≤ N^2 := mul_le_of_le_one_right (sq_nonneg _) (gaussianAnnulus_norm_le_one _)
     _ ≤ _ := by nlinarith
 
-lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+section
+variable (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+include S D Ψ
+lemma gaussianFixedWindow_spectral_identity
     (T t : ℝ) (hT : 0<T) (I J : Id) (hI : I≠0) (hJ : J≠0) :
-    correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T I J=
-      spectralSummand S D Ψ 2 I J*
+    correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T I J =
+      spectralSummand S D Ψ 2 I J *
         ((((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3:ℝ):ℂ)^2*
           (gaussianAnnulus ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/T)*
             logPhase t (Real.log ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3/T)))) := by
@@ -50,18 +54,18 @@ lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : O→*
   push_cast
   field_simp
 
-lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+lemma gaussianFixedWindow_summand_crude
     (hΨ : ∀n,‖Ψ n‖≤1) (T t : ℝ) (hT : 0<T) (I J : Id) :
     ‖correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T I J‖≤
       4*T^2*rowMajorant 2 (I,J) := by
   by_cases hI : I=0
   · subst I
-    simp only [correctedSummand,markedSummand,summand_zero_left,mul_zero,norm_zero]
+    pm_94 correctedSummand markedSummand summand_zero_left mul_zero norm_zero
     unfold rowMajorant
     positivity
   by_cases hJ : J=0
   · subst J
-    simp only [correctedSummand,markedSummand,summand_zero_right,mul_zero,norm_zero]
+    pm_94 correctedSummand markedSummand summand_zero_right mul_zero norm_zero
     unfold rowMajorant
     positivity
   have hi : (0:ℝ)<Ideal.absNorm I := by
@@ -72,11 +76,12 @@ lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
   rw [gaussianFixedWindow_spectral_identity S D Ψ T t hT I J hI hJ,
     norm_mul,norm_mul,norm_pow,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hN,
     norm_mul,logPhase_norm,mul_one]
-  have hs : ‖spectralSummand S D Ψ 2 I J‖≤rowMajorant 2 (I,J) := by
+  have hs : ‖spectralSummand S D Ψ 2 I J‖≤ rowMajorant 2 (I,J) := by
     simpa only [Complex.ofReal_ofNat,Complex.ofReal_zero,zero_mul,add_zero] using
       spectralSummand_vertical_bound S D Ψ hΨ 2 0 (I,J)
   have hn := gaussianAnnulus_scaled_square _ T hN hT
   exact (mul_le_mul hs hn (by positivity) (by unfold rowMajorant;positivity)).trans_eq (by ring)
+end
 
 theorem gaussianFixedWindow_completed_crude :
     ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀D : Id,∀Ψ : O→*ℂ,

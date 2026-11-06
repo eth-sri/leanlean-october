@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssembly
 public import OAI.NumberTheory.DirichletL.ParametersHighDataFine
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,16 +20,16 @@ def ChosenMomentInput:Prop:=
     ∃counts:CountParameters F.modulus ⊤ D.t,
     ∃J:ℝ,0≤J ∧ ∀η:Character,∃C:ℝ,0<C ∧
       ∀τ:ℝ,0<τ→τ≤1→∀ᶠZ:ℝ in atTop,
-        SourceMomentBound F counts η Z τ (C*(1+Z^(2*τ))^J) (Z^(2*τ))
+        SourceMomentBound F counts η Z τ (C*(1+Z ^(2*τ))^J) (Z ^(2*τ))
 
 def FineMomentInput:Prop:=
   ∀_hβ:(7/8:ℝ)<HeckeZeroSupremum.beta,
-    ∃mesh:ℝ→ℝ,(∀t:ℝ,0<t→0<mesh t) ∧
-    ∀D:HighData (HeckeZeroSupremum.beta-7/8),(∀j,D.ell j≤mesh D.t/200)→
+    ∃mesh:ℝ→ℝ,(∀t:ℝ,0<t→0< mesh t) ∧
+    ∀D:HighData (HeckeZeroSupremum.beta-7/8),(∀j,D.ell j≤ mesh D.t/200)→
     ∀F:SourceData D,∀counts:CountParameters F.modulus ⊤ D.t,
     ∃J:ℝ,0≤J ∧ ∀η:Character,∃C:ℝ,0<C ∧
       ∀τ:ℝ,0<τ→τ≤1→∀ᶠZ:ℝ in atTop,
-        SourceMomentBound F counts η Z τ (C*(1+Z^(2*τ))^J) (Z^(2*τ))
+        SourceMomentBound F counts η Z τ (C*(1+Z ^(2*τ))^J) (Z ^(2*τ))
 
 theorem chosen_input_of_fine (h:FineMomentInput):ChosenMomentInput:=by
   intro hβ
@@ -42,11 +43,11 @@ theorem chosen_data_height {Δ:ℝ}(D:HighData Δ)(F:SourceData D)
     (counts:CountParameters F.modulus ⊤ D.t)(J:ℝ)(hJ:0≤J)
     (hbound:∀η:Character,∃C:ℝ,0<C ∧
       ∀τ:ℝ,0<τ→τ≤1→∀ᶠZ:ℝ in atTop,
-        SourceMomentBound F counts η Z τ (C*(1+Z^(2*τ))^J) (Z^(2*τ))):
+        SourceMomentBound F counts η Z τ (C*(1+Z ^(2*τ))^J) (Z ^(2*τ))):
     ∃τ:ℝ,0<τ ∧ τ<(1/200:ℝ)/2 ∧ 4*τ<(1/200)*D.cost ∧ τ<D.t ∧
       2*τ≤D.t ∧ τ*(2+4*D.eps)<D.t ∧
       ∀η:Character,∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,
-        SourceMomentBound F counts η Z τ (C*Z^D.t) (Z^(2*τ)):=by
+        SourceMomentBound F counts η Z τ (C*Z ^D.t) (Z ^(2*τ)):=by
   obtain ⟨τ,hτ,hτd,hτcost,hτt,hτJ,hτeps⟩:=D.height_choice J hJ
   have htau1:τ≤1:=by linarith
   refine ⟨τ,hτ,hτd,hτcost,hτt,by nlinarith,hτeps,?_⟩
@@ -65,9 +66,9 @@ theorem common_probe_of_chosen_moments (hmom : ChosenMomentInput) : HeckeCommonP
   let loss := (HeckeZeroSupremum.beta-7/8)/2
   have hloss : 0<loss := by dsimp [loss];linarith
   have hlossgap : loss<HeckeZeroSupremum.beta-7/8 := by dsimp [loss];linarith
-  refine ⟨loss,D.sigma,hloss,hlossgap,D.sigma_pos,?_⟩
+  pm_164 loss D.sigma hloss hlossgap D.sigma_pos
   intro η hprimitive
-  obtain ⟨hmask,hH,hHbound⟩ := actual_source_analytic F.S F.exclusions η
+  pm_114 hmask hH hHbound actual_source_analytic F.S F.exclusions η
   refine ⟨η.excludePrimes F.S F.exclusions.prime,sourceCorrection η F.S,F.probe η,
     hmask,hH,hHbound,F.probe_low loss hloss η,?_⟩
   obtain ⟨Ct,hCt,hhigh⟩ := hhigh η
@@ -77,7 +78,7 @@ theorem common_probe_of_chosen_moments (hmom : ChosenMomentInput) : HeckeCommonP
   filter_upwards [hhigh,hsource] with Z hh hs
   exact hh Cm hCm.le hs
 
-theorem zeta_of_chosen_moments (hmom : ChosenMomentInput) (s : ℂ) (hs : (7/8:ℝ)<s.re) :
+theorem zeta_of_chosen_moments (hmom : ChosenMomentInput) (s : ℂ) (hs : (7/8:ℝ)< s.re) :
     riemannZeta s≠0 :=
   HeckeCommonProbe.zeta_of_common_probe (common_probe_of_chosen_moments hmom) s hs
 

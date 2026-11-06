@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleyWeightedComplexHolder
 public import GafniTao.WooleyWeightedMean
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ This file proves the exact size of a fibre of the reduction map
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -47,17 +47,7 @@ theorem wooleyResidueRefinementFiber_card
   have hmul : p ^ a *
       (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card =
       p ^ b := by
-    calc
-      p ^ a *
-          (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card =
-          Fintype.card (ZMod (p ^ a)) *
-            (Finset.univ.filter fun z : ZMod (p ^ b) => f z = xi).card := by
-        rw [ZMod.card]
-      _ = ∑ y : ZMod (p ^ a),
-          (Finset.univ.filter fun z : ZMod (p ^ b) => f z = y).card := by
-        simp_rw [hfiber]
-        simp
-      _ = p ^ b := htotal
+    simp_all
   have hpPow : 0 < p ^ a := pow_pos (NeZero.pos p) a
   have hcanonical : p ^ a * p ^ (b - a) = p ^ b := by
     rw [Nat.mul_comm, Nat.pow_sub_mul_pow p hab]
@@ -89,20 +79,7 @@ theorem wooley_sum_refined_residue_mass
           else 0 := by
     by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
         (ZMod (p ^ a)) z = xi <;> simp [hz]
-  simp_rw [hdistribute]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [Fintype.sum_eq_single
-    (((n : ℕ) + 1 : ℕ) : ZMod (p ^ b))]
-  · have hcast :
-        ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))
-            ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ b))) =
-          ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ a))) :=
-      ZMod.cast_natCast (pow_dvd_pow p hab) ((n : ℕ) + 1)
-    rw [hcast]
-    by_cases hxi : ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ a))) = xi <;>
-      simp [hxi]
+  pm_2845
   · intro z hzne
     by_cases hzxi : ZMod.castHom (pow_dvd_pow p hab)
         (ZMod (p ^ a)) z = xi

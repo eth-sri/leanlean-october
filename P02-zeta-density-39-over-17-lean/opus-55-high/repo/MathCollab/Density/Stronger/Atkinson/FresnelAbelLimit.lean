@@ -7,6 +7,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.FresnelGaussianComparison
 public import Mathlib.Analysis.SpecialFunctions.Pow.Continuity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,34 +37,36 @@ def atkinsonQuadraticWindow (c H : ℝ) : ℂ :=
 def fresnelGaussianValue (c : ℝ) : ℂ :=
   ((Real.pi : ℂ) / (2 * Real.pi * c * I)) ^ (1 / 2 : ℂ)
 
-theorem fresnelGaussianBase {c : ℝ} (hc : 0 < c) :
+section
+variable {c : ℝ} (hc : 0 < c)
+include c hc
+theorem fresnelGaussianBase :
     (Real.pi : ℂ) / (2 * Real.pi * c * I) = -I / ((2 * c : ℝ) : ℂ) := by
-  have hcC : (c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
-  have hpiC : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  pm_115 hcC c Complex.ofReal_ne_zero.mpr hc.ne'
+  pm_115 hpiC Real.pi Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   push_cast
   field_simp
-  simp [Complex.I_sq]
+  simp_all
 
-theorem continuousAt_fresnelGaussianValue_damping {c : ℝ} (hc : 0 < c) :
+theorem continuousAt_fresnelGaussianValue_damping :
     ContinuousAt (fun ε : ℝ =>
       ((Real.pi : ℂ) / ((ε : ℂ) + 2 * Real.pi * c * I)) ^ (1 / 2 : ℂ)) 0 := by
-  have hcC : (c : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hc.ne'
-  have hpiC : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  pm_115 hcC c Complex.ofReal_ne_zero.mpr hc.ne'
+  pm_115 hpiC Real.pi Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
   have hden : ((0 : ℝ) : ℂ) + 2 * Real.pi * c * I ≠ 0 := by
-    simpa only [Complex.ofReal_zero, zero_add] using
-      mul_ne_zero (mul_ne_zero (mul_ne_zero (by norm_num : (2 : ℂ) ≠ 0) hpiC) hcC) I_ne_zero
+    simp_all
   have hbase : (Real.pi : ℂ) / (2 * Real.pi * c * I) ∈ slitPlane := by
     rw [fresnelGaussianBase hc]
     apply Or.inr
     rw [Complex.div_ofReal_im, Complex.neg_im, Complex.I_im]
-    exact div_ne_zero (by norm_num) (by positivity)
+    grind
   have hquot : ContinuousAt (fun ε : ℝ => (Real.pi : ℂ) /
       ((ε : ℂ) + 2 * Real.pi * c * I)) 0 :=
     continuousAt_const.div (Complex.continuous_ofReal.continuousAt.add continuousAt_const) hden
   have hbase' : (Real.pi : ℂ) / (((0 : ℝ) : ℂ) + 2 * Real.pi * c * I) ∈ slitPlane := by
-    simpa only [Complex.ofReal_zero, zero_add] using hbase
-  exact (continuousAt_cpow_const (b := (1 / 2 : ℂ)) hbase').comp
-    (f := fun ε : ℝ => (Real.pi : ℂ) / ((ε : ℂ) + 2 * Real.pi * c * I)) hquot
+    simp_all
+  fun_prop
+end
 
 theorem fresnelDampedKernel_zero (c x : ℝ) :
     fresnelDampedKernel 0 c x = Complex.exp (((-2 * Real.pi * c * x ^ 2 : ℝ) : ℂ) * I) := by

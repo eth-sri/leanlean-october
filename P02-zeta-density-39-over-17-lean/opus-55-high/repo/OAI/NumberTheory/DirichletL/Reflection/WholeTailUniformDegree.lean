@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.WholeTail
 public import OAI.NumberTheory.DirichletL.Reflection.RowTailUniformDegree
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,7 +19,7 @@ theorem original_family_whole_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A 
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
     ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
       (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-      (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+      (S : Ideal Eis→ PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
       (D : ∀ P : Pset, IsCoprime K P.val →
         ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
@@ -34,21 +35,15 @@ theorem original_family_whole_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A 
         (fixedRadialCoefficientScalar*s.stratumShapeFactor (c*primaryGenerator (∏ i,F.ideal i)))*
           ∑' u : Eisˣ,∑ i∈retainedDyads (familyRawScale F s X QK QP) (16*T),
             literalDyadicRow F K hK S jF Pset D s hc u i W θ X
-              (fun K => r K*shapeArgument (primaryGenerator K))
+              (fun K=> r K*shapeArgument (primaryGenerator K))
               (fun P => aw P*shapeArgument (primaryGenerator P))‖≤
         (6*‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c‖)*Pset.card*
           (C*(1+‖θ‖)^degree*((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*
             T^(-(A:ℝ))*(familyRawScale F s X QK QP^2)⁻¹) := by
-  obtain ⟨degree,C,hC,hbound⟩ := original_family_row_tail_uniform_degree lo hi hlo A W hWs hW
-  refine ⟨degree,C,hC,?_⟩
-  intro N a c mode φ σ _ _ F K hK S jF Pset D s hc hN hbase hchar hj hprod hPad θ X T QK QP r aw hX hT hQK hQP hKr hPr hr haw
+  pm_3293 original_family_row_tail_uniform_degree hPad
   let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
   let : Fintype Eisˣ := Fintype.ofFinite _
-  let J := retainedDyads (familyRawScale F s X QK QP) (16*T)
-  let rr := fun K => r K*shapeArgument (primaryGenerator K)
-  let aa := fun P => aw P*shapeArgument (primaryGenerator P)
-  let E := C*(1+‖θ‖)^degree*((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*
-    T^(-(A:ℝ))*(familyRawScale F s X QK QP^2)⁻¹
+  pm_3262
   have hb (v : Eisˣ) :
       ‖(∑' i,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa)-
         ∑ i∈J,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa‖≤Pset.card*E :=
@@ -58,17 +53,14 @@ theorem original_family_whole_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A 
   have hcard : Fintype.card Eisˣ=6 := by
     rw [←Nat.card_eq_fintype_card]
     exact PrimaryIdealUnitReindex.card_units_eq_six
-  rw [literalWholeRow_eq_dyadic F K hK S jF Pset D s hc hN hbase hchar hj hprod W lo hi hlo hWs hW θ X hX r aw]
-  rw [←mul_sub,norm_mul, norm_mul,stratumShapeFactor_frozen_norm]
-  simp only [tsum_fintype]
-  rw [←Finset.sum_sub_distrib]
+  pm_3263
   calc
     _ ≤ (‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c‖)*
         ∑ v : Eisˣ,‖(∑' i,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa)-
           ∑ i∈J,literalDyadicRow F K hK S jF Pset D s hc v i W θ X rr aa‖ := by
       exact mul_le_mul_of_nonneg_left (norm_sum_le _ _) (by positivity)
     _ ≤ (‖fixedRadialCoefficientScalar‖*‖s.stratumShapeFactor c‖)*∑ _v : Eisˣ,Pset.card*E := by
-      exact mul_le_mul_of_nonneg_left (Finset.sum_le_sum (fun v _ => hb v)) (by positivity)
+      pm_6475
     _ = _ := by simp only [Finset.sum_const,Finset.card_univ,hcard,nsmul_eq_mul]; dsimp only [E]; ring
 end
 end SevenEighths.InverseReflectedPhase

@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Energy.PositiveLowBandSource
 public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
 public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -51,14 +52,13 @@ theorem actual_low_stages_from_physical
     CenteredMomentEnergyPositiveLowBandSource.actual_low_stages_from_physical (α:=α) M H hH
       W hW aslot bslot lo hi a b bΦ Mcap εdiag ξ saving haslot hWs hbslot ha hb hbΦ
       hMcap hεdiag hξ
-  refine ⟨Ψ,hΨs,hΨn,Cfixed,hCfixed,?_⟩
-  filter_upwards [hbound] with Z hZ
-  refine ⟨hZ.1,?_⟩
+  pm_164 Ψ hΨs hΨn Cfixed hCfixed
+  pm_168 hbound
   intro Bmask L Lslot rho κ e η₀ Q S J Cphysical Cprevious hκ hCphysical hCprevious he hsave hold hmass
   let Cm:=Cphysical+Cprevious/Cfixed
   have hdiv:0≤Cprevious/Cfixed:=div_nonneg hCprevious hCfixed.le
-  have hCm:0≤Cm:=by dsimp [Cm];positivity
-  have hcc:Cphysical≤Cm:=by dsimp [Cm];linarith
+  pm_100 hCm Cm
+  pm_844 hcc Cphysical Cm
   have heq:Cfixed*(Cm+1)=Cfixed*(Cphysical+1)+Cprevious:=by
     dsimp [Cm]
     field_simp
@@ -75,10 +75,7 @@ theorem actual_low_stages_from_physical
       hCprevious hprev hold
   have hmass':PhysicalLowAt (α:=α) M H hH W hW aslot bslot lo hi haslot hWs
       a b bΦ Bmask L Lslot rho Mcap κ ξ e Z ha Ψ η₀ Q S J Cm:=by
-    intro T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hlo hs
-      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
-    have hh:=hmass T θ w σ freq t height hw hwL hσlo hσhi hheight hfreq state hQ hlo hs
-      p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap hlow
+    pm_3390 hlo hmass
     have hz:0≤Z:=zero_le_one.trans hZ.1.le
     apply hh.trans
     gcongr

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,20 +30,17 @@ lemma finite_weighted_energy {ι κ:Type*}[Fintype ι][Fintype κ]
   have hh:=CompletedGauss.finite_tsum_energy_bound (fun j i=>a i j*f i j)
     (fun j=>ρ j*q j*Real.sqrt E) (fun j=>mul_nonneg (mul_nonneg (hρ j) (hq j)) (Real.sqrt_nonneg E))
     (summable_of_hasFiniteSupport (Set.toFinite _)) hb
-  simpa only [tsum_fintype,←Finset.sum_mul,mul_pow,Real.sq_sqrt hE] using hh.2
+  pm_6955
 
 theorem radial_weighted_energy {κ:Type*}[Fintype κ]
     (a f:O→κ→ℂ)(ρ q:κ→ℝ)(hρ:∀j,0≤ρ j)(hq:∀j,0≤q j)
-    (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K E:ℝ)
+    (keep:O→ Prop)(Φ:𝓢(ℝ,ℂ))(K E:ℝ)
     (hΦ:∀z,0≤(Φ (‖eisEmbedding z‖^2/K)).re)
     (ha:∀z,keep z→∀j,‖a z j‖≤ρ j)(hE:0≤E)
     (hs:∀j,Summable (fun z:O=>if keep z then ‖f z j‖^2*(Φ (‖eisEmbedding z‖^2/K)).re else 0))
     (hf:∀j,radialEnergy (fun z=>f z j) keep Φ K≤E*(q j)^2):
     radialEnergy (fun z=>∑j,a z j*f z j) keep Φ K≤(∑j,ρ j*q j)^2*E:=by
-  unfold radialEnergy
-  apply Real.tsum_le_of_sum_le (fun z=>by split_ifs;exact mul_nonneg (sq_nonneg _) (hΦ z);exact le_rfl)
-  intro rows
-  let S:=rows.filter keep
+  pm_2899
   let w(z:S):ℂ:=(Real.sqrt ((Φ (‖eisEmbedding z‖^2/K)).re):ℂ)
   have hh:=finite_weighted_energy (fun z:S=>a z) (fun z:S=>fun j=>f z j*w z) ρ q hρ hq
     (fun z=>ha z (Finset.mem_filter.mp z.property).2) E hE ?_

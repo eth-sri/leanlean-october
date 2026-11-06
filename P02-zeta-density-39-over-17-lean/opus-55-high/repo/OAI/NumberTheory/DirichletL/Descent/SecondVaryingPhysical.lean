@@ -1,14 +1,15 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondModeIntegral
 public import OAI.NumberTheory.DirichletL.Descent.SecondVaryingBalanced
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical ContDiff
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -19,10 +20,10 @@ variable {ι : Type u₁} {σ : Type u₂} [DecidableEq ι] [DecidableEq σ]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-theorem actual_second_varying_modes_common_sectors
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (hs : ActualSecondSourceConditions p source) :
+section
+variable (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0)) (hs : ActualSecondSourceConditions p source)
+include hpr Jo source hs
+theorem actual_second_varying_modes_common_sectors :
     ∃ sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ,
       ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : MarkedSecondSource ι Jo 0 → σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -34,25 +35,18 @@ theorem actual_second_varying_modes_common_sectors
         ∑ J₁ ∈ slots₁.powerset,∑ J₂ ∈ slots₂.powerset,
           secondModeBranch p hp hcop hg x uv.1 uv.2 pool Ψ m z slots₁ slots₂ J₁ J₂ (lists₁ x) (lists₂ x) a₁ a₂
             ω₁ ω₂ G E V B X t := by
-  obtain ⟨sector,hsector⟩ := exists_second_uniform_sectors p hp hcop hg hpr (σ:=σ) source hs
+  pm_629 exists_second_uniform_sectors
   refine ⟨sector,?_⟩
   intro pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ ω₁ ω₂ G E V B X t w
   rw [secondSourceSector_partition source sector]
-  apply Finset.sum_congr rfl
-  intro uv huv
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_3397 uv huv x hx
   obtain ⟨hx,hxs⟩ := Finset.mem_filter.mp hx
   congr 1
-  have hh := hsector x hx
-  rw [hxs] at hh
+  pm_126 hh hsector x hx hxs
   exact second_inherited_mode_canonical p hp hcop hg x uv.1 uv.2 hh
     pool Ψ m z slots₁ slots₂ (lists₁ x) (lists₂ x) a₁ a₂ ω₁ ω₂ G E V B X t
 
-theorem actual_second_varying_balanced_profile_children
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (hs : ActualSecondSourceConditions p source) :
+theorem actual_second_varying_balanced_profile_children :
     ∃ sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ,
       ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : MarkedSecondSource ι Jo 0 → σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -61,7 +55,7 @@ theorem actual_second_varying_balanced_profile_children
         (w : MarkedSecondSource ι Jo 0 → ℂ),
       0 < G → 0 < E → 0 < V → 0 < B → 0 < X → Integrable density →
       (∀ y : Fin 6 → ℝ,(Real.exp (-6*L):ℂ)*secondPoissonProfile (fun x => star (W₁ x)) W₂ Φ U
-        (Y*B/(E*V^2*X^2)) y = ∫ t : Frequency × (Fin 6 → ℝ),density t*
+        (Y*B/(E*V ^2*X^2)) y = ∫ t : Frequency × (Fin 6 → ℝ),density t*
           pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope y t.1 t.2) →
       (∀ x ∈ source,x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R) →
       (∀ x ∈ source,∀ N ∈ (pool\x.second.overlap).powerset,
@@ -87,7 +81,7 @@ theorem actual_second_varying_balanced_profile_children
             ∑ J₁ ∈ slots₁.powerset,∑ J₂ ∈ slots₂.powerset,
               secondModeBranch p hp hcop hg x uv.1 uv.2 pool Ψ m z slots₁ slots₂ J₁ J₂ (lists₁ x) (lists₂ x) a₁ a₂
                 ω₁ ω₂ G E V B X t := by
-  obtain ⟨sector,hsector⟩ := actual_second_varying_modes_common_sectors p hp hcop hg hpr (σ:=σ) source hs
+  pm_629 actual_second_varying_modes_common_sectors
   refine ⟨sector,?_⟩
   intro pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ W₁ W₂ ω₁ ω₂ Φ G E V B X Y R L
     U density w hG hE hV hB hX hDensity hsep hrows hω₁ hω₂ hcut
@@ -120,6 +114,7 @@ theorem actual_second_varying_balanced_profile_children
       filter_upwards with t
       apply congrArg (fun a : ℂ => density t*a)
       exact hsector pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ ω₁ ω₂ G E V B X t _
+end
 
 end
 end SevenEighths.InverseMoment

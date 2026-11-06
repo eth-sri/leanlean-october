@@ -9,6 +9,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCompactProfiles
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCutoffVariation
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSampleGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem zetaMainMellinProfile_saddle_eq_root {T : ℝ} (hT : 0 < T) (b : ℝ) :
       atkinsonPowerProfile 0 ((atkinsonSaddleRoot (T/(2*Real.pi)) b/Real.sqrt T)^2) := by
   unfold atkinsonPowerProfile zetaAtkinsonSaddle
   rw [div_pow,Real.sq_sqrt hT.le]
-  simp only [neg_zero,Real.rpow_zero,Complex.ofReal_one,one_mul]
+  simp_all
 
 theorem exists_finiteVariationBound_saddleMellin :
     ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 0 < T → ∀ m N : ℕ,
@@ -37,8 +38,7 @@ theorem exists_finiteVariationBound_saddleMellin :
       FiniteVariationBound (fun i => zetaMainMellinProfile
         (zetaAtkinsonSaddle T (-Real.sqrt ((m+i:ℕ):ℝ))/T)) N C := by
   obtain ⟨C,hC,hprofile⟩ := exists_intervalC2Bound_atkinsonPowerRootProfile 0
-  refine ⟨C,hC,?_⟩
-  intro T hT m N hN
+  pm_1188 C hC T hT m N hN
   have hbound (u : ℕ → ℝ) (hm : MonotoneOn u (Iic N) ∨ AntitoneOn u (Iic N))
       (hr : ∀ i ≤ N, u i ∈ Icc (1/4) 1) :
       FiniteVariationBound (fun i => atkinsonPowerProfile 0 ((u i)^2)) N C := by
@@ -69,8 +69,7 @@ theorem finiteVariationBound_saddleCutoff {T G L : ℝ}
   have hm : Antitone (fun i : ℕ => zetaAtkinsonSaddle T (-Real.sqrt ((m+i:ℕ):ℝ))) := by
     intro i j hij
     apply zetaAtkinsonSaddle_monotone hT
-    apply neg_le_neg
-    exact Real.sqrt_le_sqrt (by exact_mod_cast Nat.add_le_add_left hij m)
+    pm_8117
   exact ⟨finiteVariationBound_zetaBandCutoff_sample (he (by linarith)) (he (by linarith))
     _ N (Or.inl (hp.monotoneOn (Iic N))),
     finiteVariationBound_zetaBandCutoff_sample (he (by linarith)) (he (by linarith))

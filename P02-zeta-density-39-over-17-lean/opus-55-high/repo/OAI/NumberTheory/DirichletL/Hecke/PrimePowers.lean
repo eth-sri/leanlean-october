@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadic
 public import OAI.NumberTheory.DirichletL.PrimeCounting.IdealPrimeMass
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,13 +19,13 @@ theorem nonprime_primePow_powerful {I : Ideal O} (hpow : IsPrimePow I) (hprime :
     by_contra h
     have hk1 : k=1 := by omega
     subst k
-    exact hprime (by simpa using hP)
+    grind
   refine ⟨pow_ne_zero _ hP.ne_zero,?_⟩
   intro Q hQ
   rw [hP.irreducible.normalizedFactors_pow] at hQ ⊢
   have hQP := (Multiset.mem_replicate.mp hQ).2
   subst Q
-  simpa using hk2
+  simp_all
 
 def logWeight (I : Ideal O) : ℝ := IdealMangoldt.value I / Real.log (Ideal.absNorm I)
 
@@ -49,7 +50,7 @@ theorem logWeight_eq_zero {I : Ideal O} (hI : ¬IsPrimePow I) : logWeight I=0 :=
 theorem sum_prime_extraction (χ : Character) (S : Finset (Ideal O)) (f : Ideal O→ℂ) :
     (∑ I∈S, (logWeight I : ℂ)*idealCoeff χ I*f I) -
       (∑ I∈S.filter Prime, idealCoeff χ I*f I) =
-      ∑ I∈S.filter (fun I => IsPrimePow I ∧ ¬Prime I),
+      ∑ I∈S.filter (fun I=> IsPrimePow I ∧ ¬Prime I),
         (logWeight I : ℂ)*idealCoeff χ I*f I := by
   rw [Finset.sum_filter, Finset.sum_filter, ← Finset.sum_sub_distrib]
   apply Finset.sum_congr rfl
@@ -58,7 +59,7 @@ theorem sum_prime_extraction (χ : Character) (S : Finset (Ideal O)) (f : Ideal 
   · simp only [hP, ite_true, not_true_eq_false, and_false, ite_false,
       logWeight_prime hP, Complex.ofReal_one, one_mul, sub_self]
   · by_cases hp : IsPrimePow I
-    · simp [hP,hp]
+    grind
     · simp [hP,hp,logWeight_eq_zero hp]
 
 theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
@@ -67,11 +68,11 @@ theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
       (∀ I∈S, (I.absNorm : ℝ)≤X) → (∀ I∈S, ‖f I‖≤B) →
       ‖(∑ I∈S, (logWeight I : ℂ)*idealCoeff χ I*f I) -
         (∑ I∈S.filter Prime, idealCoeff χ I*f I)‖ ≤ C*X^(1/2+ε)*B := by
-  obtain ⟨C,hC,hcount⟩ := CompletedGauss.powerful_ideal_count ε hε
+  pm_69 C hC hcount CompletedGauss.powerful_ideal_count ε hε
   refine ⟨C,hC,?_⟩
   intro χ S f X B hX hB hnorm hf
   rw [sum_prime_extraction]
-  let A := S.filter (fun I => IsPrimePow I ∧ ¬Prime I)
+  let A := S.filter (fun I=> IsPrimePow I ∧ ¬Prime I)
   have hA : (A.card : ℝ)≤C*X^(1/2+ε) := by
     apply hcount A X hX
     intro I hI

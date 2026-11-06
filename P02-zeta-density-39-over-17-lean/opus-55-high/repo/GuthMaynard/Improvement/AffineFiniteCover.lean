@@ -1,5 +1,6 @@
 module
 public import GuthMaynard.Improvement.AffineScaleTransfer
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -7,7 +8,7 @@ noncomputable section
 open MeasureTheory Set
 open scoped SchwartzMap
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 /-- Positivity allows overlapping finite covers without a disjointness premise. -/
 theorem sum_le_cover {α ι : Type*} [DecidableEq α] [DecidableEq ι]
@@ -16,7 +17,7 @@ theorem sum_le_cover {α ι : Type*} [DecidableEq α] [DecidableEq ι]
     ∑ x ∈ S, g x ≤ ∑ i ∈ A, ∑ x ∈ boxes i, g x := by
   have hpoint : ∀ x ∈ S, g x ≤ ∑ i ∈ A, if x ∈ boxes i then g x else 0 := by
     intro x hx
-    obtain ⟨i,hi,hxi⟩ := hcover x hx
+    pm_69 i hi hxi hcover x hx
     have h := Finset.single_le_sum (fun j _ => show 0 ≤ (if x ∈ boxes j then g x else 0) by split_ifs; exact hg x; exact le_rfl) hi
     simpa only [ite_eq_left hxi] using h
   calc
@@ -33,16 +34,13 @@ theorem sum_le_cover {α ι : Type*} [DecidableEq α] [DecidableEq ι]
 theorem integrable_affine_square (f : 𝓢(ℝ, ℝ)) {M₁ M₂ M₃ : ℕ}
     (h₁ : 0 < M₁) (h₂ : 0 < M₂) :
     Integrable (fun u => gmAffineTransformSum f M₁ M₂ M₃ u^2) := by
-  have hf2 : Integrable (fun x => f x^2) :=
-    (memLp_two_iff_integrable_sq f.continuous.aestronglyMeasurable).1 (f.memLp 2)
+  pm_4603
   have hi : Integrable (fun u => ((gmAffineIndexSet M₁ M₂ M₃).card:ℝ)*
       ∑ p ∈ gmAffineIndexSet M₁ M₂ M₃, gmAffineTerm f p.1 p.2.1 p.2.2 u^2) := by
     apply Integrable.const_mul
     apply integrable_finsetSum
     intro p hp
-    exact integrable_gmAffineTerm_sq hf2
-      (gmAffineSignedShell_ne_zero h₁ (mem_gmAffineIndexSet.mp hp).1)
-      (gmAffinePositiveShell_ne_zero h₂ (mem_gmAffineIndexSet.mp hp).2.1)
+    pm_4955 integrable_gmAffineTerm_sq hf2 h₁ h₂
   apply hi.mono' ((continuous_gmAffineTransformSum f.continuous M₁ M₂ M₃).pow 2).aestronglyMeasurable
   filter_upwards with u
   simp only [Pi.pow_apply]
@@ -78,12 +76,15 @@ theorem affine_integral_le_cover {ι : Type*} [DecidableEq ι]
       · rfl
       · exact fun i hi => integrable_affine_square f (h₁ i hi) (h₂ i hi)
 
+section
+variable {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
+include R hR m
 /-- A real dyadic interval is covered by two native natural dyadic intervals. -/
-theorem real_dyadic_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
+theorem real_dyadic_two_shells
     (hlo : R ≤ (m:ℝ)) (hhi : (m:ℝ) ≤ 2*R) :
     m ∈ gmAffinePositiveShell ⌊R⌋₊ ∨ m ∈ gmAffinePositiveShell (2*⌊R⌋₊) := by
-  have hp : 0 < ⌊R⌋₊ := Nat.floor_pos.mpr hR
-  have hpr : (1:ℝ) ≤ ⌊R⌋₊ := by exact_mod_cast hp
+  pm_8613 hp R hR
+  pm_6109 hpr R hp
   have hfloor := Nat.floor_le (show 0 ≤ R by linarith)
   have hupper := Nat.lt_floor_add_one R
   have h₁ : (⌊R⌋₊:ℤ) ≤ m := by exact_mod_cast hfloor.trans hlo
@@ -98,7 +99,7 @@ theorem real_dyadic_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
     constructor <;> omega
 
 /-- The same two-shell cover retains both slope signs. -/
-theorem real_signed_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
+theorem real_signed_two_shells
     (hlo : R ≤ |(m:ℝ)|) (hhi : |(m:ℝ)| ≤ 2*R) :
     m ∈ gmAffineSignedShell ⌊R⌋₊ ∨ m ∈ gmAffineSignedShell (2*⌊R⌋₊) := by
   have h := real_dyadic_two_shells hR (m := |m|) (by simpa using hlo) (by simpa using hhi)
@@ -115,5 +116,6 @@ theorem real_signed_two_shells {R : ℝ} (hR : 1 ≤ R) {m : ℤ}
       push_cast
       constructor <;> omega
   exact h.elim (fun hp => Or.inl (hc hp)) (fun hp => Or.inr (hc hp))
+end
 
 end GuthMaynard.Improvement

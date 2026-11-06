@@ -1,6 +1,7 @@
 module
 public import TraceAlternatives.CubePolynomialCount
 public import TraceAlternatives.CubeCountTargetWindows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,8 @@ structure CubeCountWindow (σ a : ℝ) : Prop where
 
 theorem cubeCountWindow_row3 {σ : ℝ} (hlo : 163/198 ≤ σ) (hhi : σ ≤ 7873/9370) :
     CubeCountWindow σ (31544/(107010*σ-33609)) := by
-  have hd : 0 < 107010*σ-33609 := by linarith
-  have hσ : 4/5 ≤ σ := by linarith
+  pm_493
+  pm_4911
   have ha : 1/2 ≤ 31544/(107010*σ-33609) := by
     apply (le_div_iff₀ hd).mpr
     linarith

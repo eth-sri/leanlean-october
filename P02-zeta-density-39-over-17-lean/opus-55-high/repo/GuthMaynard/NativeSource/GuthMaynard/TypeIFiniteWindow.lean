@@ -2,10 +2,11 @@ module
 public import GuthMaynard.NativeSource.GuthMaynard.FiniteScaleAssembly
 public import GuthMaynard.NativeSource.GuthMaynard.TypeIFiniteEstimates
 public import GuthMaynard.NativeSource.GuthMaynard.FiniteDensityEndpoint
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Finset Set
+open Finset
 
 namespace GuthMaynard.NativeMoment
 
@@ -19,7 +20,7 @@ height. -/
 theorem rpow_typeILogarithmicScale_eq
     {T : ℝ} {N : ℕ} (hT : 0 < T) (hN : 1 < N) :
     (N : ℝ) ^ typeILogarithmicScale T N = T := by
-  exact Real.rpow_logb (by exact_mod_cast (show 0 < N by omega))
+  exact Real.rpow_logb (by positivity)
     (by exact_mod_cast hN.ne') hT
 
 /-- The source normalization for a Type-I block of length `N`.  Multiplying
@@ -29,16 +30,17 @@ noncomputable def normalizedClassicalTypeICoeff
     (C N : ℕ) (σ : ℝ) (n : ℕ) : ℂ :=
   (((N : ℝ) ^ σ : ℝ) : ℂ) * classicalZetaLongLineCoeff C σ n
 
+section
+variable (C N : ℕ)
+include C N
 /-- The normalized Type-I coefficients are genuinely unit bounded on the
 dyadic block.  This is the normalization needed for the MHH exponent
 `classicalMHHExponent σ τ`; applying MHH directly to `n⁻σ` at the unscaled
 threshold loses the decisive factor `N^(2σ)`. -/
-theorem norm_normalizedClassicalTypeICoeff_le_one
-    (C N : ℕ) (σ : ℝ) (hN : 0 < N) (hσ : 0 ≤ σ) :
+theorem norm_normalizedClassicalTypeICoeff_le_one (σ : ℝ) (hN : 0 < N) (hσ : 0 ≤ σ) :
     ∀ n ∈ dyadicInterval N, ‖normalizedClassicalTypeICoeff C N σ n‖ ≤ 1 := by
   intro n hn
-  have hnData := Finset.mem_Ioc.mp hn
-  have hnPos : 0 < n := lt_of_le_of_lt (Nat.zero_le N) hnData.1
+  pm_6315
   unfold normalizedClassicalTypeICoeff classicalZetaLongLineCoeff
   split_ifs
   · rw [norm_mul, Complex.norm_real, Real.norm_eq_abs,
@@ -51,13 +53,12 @@ theorem norm_normalizedClassicalTypeICoeff_le_one
     apply Real.rpow_le_one
     · positivity
     · exact (div_le_one (by exact_mod_cast hnPos)).2 (by exact_mod_cast hnData.1.le)
-    · exact hσ
+    grind
   · simp
 
 /-- Normalizing the coefficients scales the whole finite Dirichlet
 polynomial by the positive real factor `N^σ`. -/
-theorem dirichletPoly_normalizedClassicalTypeICoeff
-    (C N : ℕ) (σ t : ℝ) :
+theorem dirichletPoly_normalizedClassicalTypeICoeff (σ t : ℝ) :
     dirichletPoly N (normalizedClassicalTypeICoeff C N σ) t =
       (((N : ℝ) ^ σ : ℝ) : ℂ) *
         dirichletPoly N (classicalZetaLongLineCoeff C σ) t := by
@@ -69,8 +70,7 @@ theorem dirichletPoly_normalizedClassicalTypeICoeff
 
 /-- A large value of the actual sharp Type-I polynomial becomes a large
 value at threshold `N^σ V` after source normalization. -/
-theorem normalizedClassicalTypeICoeff_large
-    (C N : ℕ) (σ t V : ℝ) (hN : 0 < N) (hLarge :
+theorem normalizedClassicalTypeICoeff_large (σ t V : ℝ) (hN : 0 < N) (hLarge :
       V ≤ ‖dirichletPoly N (classicalZetaLongLineCoeff C σ) t‖) :
     (N : ℝ) ^ σ * V ≤
       ‖dirichletPoly N (normalizedClassicalTypeICoeff C N σ) t‖ := by
@@ -79,6 +79,7 @@ theorem normalizedClassicalTypeICoeff_large
     abs_of_nonneg (Real.rpow_nonneg (Nat.cast_nonneg N) _)]
   exact mul_le_mul_of_nonneg_left hLarge
     (Real.rpow_nonneg (by exact_mod_cast hN.le) _)
+end
 
 /-!
 # Finite Type-I window resolution
@@ -111,8 +112,7 @@ theorem actual_typeI_normalized_dichotomy_witness_mhh_native :
               (3 * T) * min
                 ((N : ℝ) / ((N : ℝ) ^ σ * V) ^ 2)
                 ((N : ℝ) ^ 4 / ((N : ℝ) ^ σ * V) ^ 6)) := by
-  obtain ⟨K, hK, hMHH⟩ := classical_large_values_with_harmonic_unrestricted
-  refine ⟨K, hK, ?_⟩
+  pm_157 K hK hMHH classical_large_values_with_harmonic_unrestricted
   intro C N σ δ T V W hσ hN hT hV hShift hSep hInterval hLarge
   have hBase : InBaseInterval (3 * T) W := by
     intro t ht
@@ -157,9 +157,8 @@ theorem powered_actual_typeI_block_large_values_bound_bounded_uniform
               ((Q : ℝ) ^ 2 / L ^ 2 +
                 H * min ((Q : ℝ) / L ^ 2)
                   ((Q : ℝ) ^ 4 / L ^ 6)) := by
-  obtain ⟨D, hD, K, hK, hPowered⟩ :=
-    powered_unit_block_large_values_bound_bounded_uniform B η hη
-  refine ⟨D, hD, K, hK, ?_⟩
+  pm_351 D hD K hK hPowered powered_unit_block_large_values_bound_bounded_uniform B η hη
+  pm_505 D hD K hK
   intro k C N σ H V W hk hkB hN hσ hH hV hSep hBase hLarge
   have hLargeNormalized : ∀ t ∈ W,
       (N : ℝ) ^ σ * V ≤

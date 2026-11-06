@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.DescentHeight
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,19 +13,19 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 namespace SevenEighths.InverseMoment
 open MeasureTheory CanonicalCubeSeparation FourierBridge JointLogSeparation CompletedHeight
 
-theorem reopening_coefficient_twist (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
-    (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(theta:ℝ)
+section
+variable (W:ℝ→ℂ) (a b:ℝ) (ha:0<a) (hs:Function.support W⊆Set.Icc a b) (hW:ContDiff ℝ ∞ W)
+include W a b ha hs hW
+theorem reopening_coefficient_twist(theta:ℝ)
     (hT:ContDiff ℝ ∞ (normTwistedSource W theta)):
     reopeningCoefficient (normTwistedSource W theta) a b ha
       ((normTwistedSource_support W theta).trans hs) hT=
       𝓕 (frequencyTwist (sourceLogProfile W a b ha hs hW) theta) :=by
   unfold reopeningCoefficient
   congr 1
-  ext x
-  simp only [sourceLogProfile_apply,frequencyTwist_apply,normTwistedSource,Real.log_exp]
+  pm_187 x sourceLogProfile_apply frequencyTwist_apply normTwistedSource Real.log_exp
 
-theorem reopening_twisted_moment (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
-    (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(J:ℕ):
+theorem reopening_twisted_moment(J:ℕ):
     ∃C:ℝ,0≤C ∧ ∀theta:ℝ,∀hT:ContDiff ℝ ∞ (normTwistedSource W theta),
       (∫ξ:ℝ,‖reopeningCoefficient (normTwistedSource W theta) a b ha
         ((normTwistedSource_support W theta).trans hs) hT ξ‖*(1+|ξ|)^J)≤
@@ -35,17 +36,17 @@ theorem reopening_twisted_moment (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
   rw [reopening_coefficient_twist W a b ha hs hW theta hT]
   simpa only [Real.norm_eq_abs,mul_comm] using he theta
 
-theorem reopening_twisted_moment_squared (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
-    (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(J:ℕ):
+theorem reopening_twisted_moment_squared(J:ℕ):
     ∃C:ℝ,0≤C ∧ ∀theta:ℝ,∀hT:ContDiff ℝ ∞ (normTwistedSource W theta),
       (∫ξ:ℝ,‖reopeningCoefficient (normTwistedSource W theta) a b ha
         ((normTwistedSource_support W theta).trans hs) hT ξ‖*(1+|ξ|)^J)^2≤
       C*(1+‖theta‖)^(2*(J+(volume:Measure ℝ).integrablePower)) :=by
   obtain ⟨C,hC,he⟩:=reopening_twisted_moment W a b ha hs hW J
-  refine ⟨C^2,sq_nonneg _,?_⟩
+  pm_8080
   intro theta hT
   have hh:=pow_le_pow_left₀ (integral_nonneg (fun ξ=>by positivity)) (he theta hT) 2
   simpa only [mul_pow,←pow_mul,Nat.mul_comm] using hh
+end
 
 end SevenEighths.InverseMoment
 

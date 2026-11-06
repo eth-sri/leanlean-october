@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.GramLatticeDecay
 public import OAI.NumberTheory.DirichletL.Detector.GramAnnularLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,19 +37,23 @@ def rootScale (a b : ℝ) (ha : 0<a) (z : Joint) : ℝ :=
 def amplitude (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (z : Joint) : ℂ :=
   W (q1 z)*star (W (q2 z))*Complex.exp (-((log1 a b ha z+log2 a b ha z):ℂ))
 
-lemma patchedLog_smooth (a b : ℝ) (ha : 0<a) :
+section
+variable (a b : ℝ) (ha : 0<a)
+include a b ha
+lemma patchedLog_smooth :
     ContDiff ℝ ∞ (CompletedHeight.patchedLog a b ha) :=
   contDiff_id.add (CompletedHeight.logCorrection_smooth a b ha)
-lemma log1_smooth (a b : ℝ) (ha : 0<a) : ContDiff ℝ ∞ (log1 a b ha) :=
+lemma log1_smooth : ContDiff ℝ ∞ (log1 a b ha) :=
   (patchedLog_smooth a b ha).comp q1_smooth
-lemma log2_smooth (a b : ℝ) (ha : 0<a) : ContDiff ℝ ∞ (log2 a b ha) :=
+lemma log2_smooth : ContDiff ℝ ∞ (log2 a b ha) :=
   (patchedLog_smooth a b ha).comp q2_smooth
-lemma phase_smooth (a b : ℝ) (ha : 0<a) : ContDiff ℝ ∞ (phase a b ha) :=
+lemma phase_smooth : ContDiff ℝ ∞ (phase a b ha) :=
   (log1_smooth a b ha).sub (log2_smooth a b ha)
-lemma rootScale_smooth (a b : ℝ) (ha : 0<a) : ContDiff ℝ ∞ (rootScale a b ha) :=
+lemma rootScale_smooth : ContDiff ℝ ∞ (rootScale a b ha) :=
   (((log1_smooth a b ha).add (log2_smooth a b ha)).neg.div_const 2).exp
-lemma rootScale_pos (a b : ℝ) (ha : 0<a) (z : Joint) : 0<rootScale a b ha z :=
+lemma rootScale_pos (z : Joint) : 0< rootScale a b ha z :=
   Real.exp_pos _
+end
 lemma amplitude_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) (a b : ℝ) (ha : 0<a) :
     ContDiff ℝ ∞ (amplitude W a b ha) := by
   unfold amplitude
@@ -69,7 +74,10 @@ def patchedProfile (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
   amplitude W a b ha z * FourierBridge.logPhase (v/(2*Real.pi)) (phase a b ha z) *
     paperFourierRayCLM U (Real.sqrt T*rootScale a b ha z)
 
-lemma patchedProfile_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) (U : 𝓢(ℝ,ℂ))
+section
+variable (W : ℝ→ℂ)
+include W
+lemma patchedProfile_smooth (hW : ContDiff ℝ ∞ W) (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (ha : 0<a) (v T : ℝ) :
     ContDiff ℝ ∞ (patchedProfile W U a b ha v T) := by
   have h1 := amplitude_smooth W hW a b ha
@@ -81,16 +89,17 @@ lemma patchedProfile_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) (U : 𝓢(
     exact ((Complex.ofRealCLM.contDiff.comp (contDiff_const.mul h2)).mul contDiff_const).cexp
   exact (h1.mul hp).mul (h4.comp (contDiff_const.mul h3))
 
-lemma rawProfile_zero_left (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (v T : ℝ) (z : Joint)
+lemma rawProfile_zero_left (U : 𝓢(ℝ,ℂ)) (v T : ℝ) (z : Joint)
     (hz : W (q1 z)=0) : rawProfile W U v T z=0 := by simp [rawProfile,hz]
-lemma rawProfile_zero_right (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (v T : ℝ) (z : Joint)
+lemma rawProfile_zero_right (U : 𝓢(ℝ,ℂ)) (v T : ℝ) (z : Joint)
     (hz : W (q2 z)=0) : rawProfile W U v T z=0 := by simp [rawProfile,hz]
-lemma patchedProfile_zero_left (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
+lemma patchedProfile_zero_left (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     (v T : ℝ) (z : Joint) (hz : W (q1 z)=0) : patchedProfile W U a b ha v T z=0 := by
   simp [patchedProfile,amplitude,hz]
-lemma patchedProfile_zero_right (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
+lemma patchedProfile_zero_right (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     (v T : ℝ) (z : Joint) (hz : W (q2 z)=0) : patchedProfile W U a b ha v T z=0 := by
   simp [patchedProfile,amplitude,hz]
+end
 
 def sourceCompact (b : ℝ) : Set Joint := Metric.closedBall 0 (1+2*b)
 lemma sourceCompact_isCompact (b : ℝ) : IsCompact (sourceCompact b) :=
@@ -100,9 +109,9 @@ lemma support_amplitude (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hs : Function.support W⊆Icc a b) :
     Function.support (amplitude W a b ha)⊆{z | a≤q1 z ∧ q1 z≤b ∧ a≤q2 z ∧ q2 z≤b} := by
   intro z hz
-  have h1 : W (q1 z)≠0 := fun h => hz (by simp [amplitude,h])
-  have h2 : W (q2 z)≠0 := fun h => hz (by simp [amplitude,h])
-  exact ⟨(hs h1).1,(hs h1).2,(hs h2).1,(hs h2).2⟩
+  pm_6591 h1 q1
+  pm_6591 h2 q2
+  simp_all
 
 lemma annulus_subset_sourceCompact (a b : ℝ) (ha : 0<a) (hab : a<b) :
     {z : Joint | a≤q1 z ∧ q1 z≤b ∧ a≤q2 z ∧ q2 z≤b}⊆sourceCompact b := by
@@ -113,16 +122,18 @@ lemma annulus_subset_sourceCompact (a b : ℝ) (ha : 0<a) (hab : a<b) :
   have hb : 0<b := ha.trans hab
   nlinarith [norm_nonneg z, sq_nonneg (‖z‖-1),hz.2.1,hz.2.2.2]
 
-lemma tsupport_amplitude_subset (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
-    (hs : Function.support W⊆Icc a b) :
+section
+variable (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b) (hs : Function.support W⊆Icc a b)
+include W a b ha hab hs
+lemma tsupport_amplitude_subset :
     tsupport (amplitude W a b ha)⊆sourceCompact b := by
   exact closure_minimal ((support_amplitude W a b ha hs).trans
     (annulus_subset_sourceCompact a b ha hab)) Metric.isClosed_closedBall
 
-lemma amplitude_hasCompactSupport (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
-    (hs : Function.support W⊆Icc a b) : HasCompactSupport (amplitude W a b ha) :=
+lemma amplitude_hasCompactSupport : HasCompactSupport (amplitude W a b ha) :=
   HasCompactSupport.of_support_subset_isCompact (sourceCompact_isCompact b)
     ((support_amplitude W a b ha hs).trans (annulus_subset_sourceCompact a b ha hab))
+end
 
 lemma norm_power_pair (v x y : ℝ) (hx : 0<x) (hy : 0<y) :
     (x:ℂ)^(-1+(v:ℂ)*Complex.I)*star ((y:ℂ)^(-1+(v:ℂ)*Complex.I)) =
@@ -134,10 +145,8 @@ lemma norm_power_pair (v x y : ℝ) (hx : 0<x) (hy : 0<y) :
   simp only [Complex.star_def,←Complex.exp_conj,map_mul,map_add,map_neg,map_one,
     Complex.conj_ofReal,Complex.conj_I]
   unfold FourierBridge.logPhase
-  rw [←Complex.exp_add,←Complex.exp_add]
-  congr 1
-  push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  pm_8072
+  pm_3058 hpi Real.pi Real.pi_ne_zero
   field_simp
   ring
 
@@ -159,14 +168,12 @@ theorem rawProfile_eq_patchedProfile (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (ha : 0<a) (hs : Function.support W⊆Icc a b)
     (v T : ℝ) (hT : 0≤T) (z : Joint) :
     rawProfile W U v T z=patchedProfile W U a b ha v T z := by
-  by_cases h1 : W (q1 z)=0
-  · rw [rawProfile_zero_left W U v T z h1,patchedProfile_zero_left W U a b ha v T z h1]
-  by_cases h2 : W (q2 z)=0
-  · rw [rawProfile_zero_right W U v T z h2,patchedProfile_zero_right W U a b ha v T z h2]
+  pm_7029 h1 q1 rawProfile_zero_left patchedProfile_zero_left
+  pm_7029 h2 q2 rawProfile_zero_right patchedProfile_zero_right
   have hx := ha.trans_le (hs h1).1
   have hy := ha.trans_le (hs h2).1
-  have hl1 : log1 a b ha z=Real.log (q1 z) := CompletedHeight.patchedLog_eq_log a b ha _ (hs h1)
-  have hl2 : log2 a b ha z=Real.log (q2 z) := CompletedHeight.patchedLog_eq_log a b ha _ (hs h2)
+  pm_8622 hl1 log1 q1 h1
+  pm_8622 hl2 log2 q2 h2
   have hker : paperRadialFourier U (T/(q1 z*q2 z)) =
       paperFourierRayCLM U (Real.sqrt T*rootScale a b ha z) := by
     rw [paperRadialFourier_eq_ray]
@@ -186,11 +193,14 @@ def amplitudeSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) : 𝓢(Joint,ℂ) :=
   (amplitude_hasCompactSupport W a b ha hab hs).toSchwartzMap (amplitude_smooth W hW a b ha)
 
-@[simp] lemma amplitudeSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
+section
+variable (W : ℝ→ℂ)
+include W
+@[simp] lemma amplitudeSchwartz_apply (a b : ℝ) (ha : 0<a) (hab : a<b)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (z : Joint) :
     amplitudeSchwartz W a b ha hab hs hW z=amplitude W a b ha z := rfl
 
-lemma rawProfile_smooth (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
+lemma rawProfile_smooth (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (ha : 0<a) (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
     (v T : ℝ) (hT : 0≤T) : ContDiff ℝ ∞ (rawProfile W U v T) := by
   have he : rawProfile W U v T=patchedProfile W U a b ha v T :=
@@ -198,19 +208,20 @@ lemma rawProfile_smooth (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
   rw [he]
   exact patchedProfile_smooth W hW U a b ha v T
 
-lemma support_rawProfile (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
+lemma support_rawProfile (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (hs : Function.support W⊆Icc a b) (v T : ℝ) :
     Function.support (rawProfile W U v T)⊆{z | a≤q1 z ∧ q1 z≤b ∧ a≤q2 z ∧ q2 z≤b} := by
   intro z hz
-  have h1 : W (q1 z)≠0 := fun h => hz (rawProfile_zero_left W U v T z h)
-  have h2 : W (q2 z)≠0 := fun h => hz (rawProfile_zero_right W U v T z h)
+  pm_7612 h1 q1 rawProfile_zero_left
+  pm_7612 h2 q2 rawProfile_zero_right
   exact ⟨(hs h1).1,(hs h1).2,(hs h2).1,(hs h2).2⟩
 
-lemma rawProfile_hasCompactSupport (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
+lemma rawProfile_hasCompactSupport (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (ha : 0<a) (hab : a<b) (hs : Function.support W⊆Icc a b) (v T : ℝ) :
     HasCompactSupport (rawProfile W U v T) :=
   HasCompactSupport.of_support_subset_isCompact (sourceCompact_isCompact b)
     ((support_rawProfile W U a b hs v T).trans (annulus_subset_sourceCompact a b ha hab))
+end
 
 def jointProfile (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hab : a<b)
     (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
@@ -218,26 +229,22 @@ def jointProfile (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hab
   (rawProfile_hasCompactSupport W U a b ha hab hs v T).toSchwartzMap
     (rawProfile_smooth W U a b ha hs hW v T hT)
 
-@[simp] theorem jointProfile_apply (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hab : a<b)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (v T : ℝ) (hT : 0≤T) (z : Joint) :
+section
+variable (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hab : a<b) (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W) (v T : ℝ) (hT : 0≤T)
+include W U a b ha hab hs hW v T hT
+@[simp] theorem jointProfile_apply (z : Joint) :
     jointProfile W U a b ha hab hs hW v T hT z=rawProfile W U v T z := rfl
 
-theorem jointProfile_factorization (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
-    (a b : ℝ) (ha : 0<a) (hab : a<b)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (v T : ℝ) (hT : 0≤T) (z : Joint) :
+theorem jointProfile_factorization (z : Joint) :
     jointProfile W U a b ha hab hs hW v T hT z=
       amplitude W a b ha z * FourierBridge.logPhase (v/(2*Real.pi)) (phase a b ha z) *
         paperFourierRayCLM U (Real.sqrt T*rootScale a b ha z) :=
   rawProfile_eq_patchedProfile W U a b ha hs v T hT z
 
-theorem jointProfile_annularSupport (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
-    (a b : ℝ) (ha : 0<a) (hab : a<b)
-    (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
-    (v T : ℝ) (hT : 0≤T) :
+theorem jointProfile_annularSupport :
     ProbeGramAnnularLattice.AnnularSupport a b (jointProfile W U a b ha hab hs hW v T hT) :=
   support_rawProfile W U a b hs v T
+end
 
 end ProbeGramJointConstruction
 

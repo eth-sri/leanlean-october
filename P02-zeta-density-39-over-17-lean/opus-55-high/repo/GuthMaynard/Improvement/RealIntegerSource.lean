@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.ReflectedBandMeanValue
 public import MathCollab.Density.LargeValueDefinitions
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open Finset
 namespace GuthMaynard.Improvement
 
@@ -15,15 +14,15 @@ theorem source_floor_bounds {N : ℝ} (hN : 2 ≤ N) :
   have hlo := Nat.floor_le (by linarith : 0 ≤ N)
   have hhi := Nat.lt_floor_add_one N
   have hm : (2:ℝ) ≤ ⌊N⌋₊ := by exact_mod_cast hM
-  exact ⟨hM,by linarith,hlo⟩
+  grind
 
 /-- Exactly zero or one endpoint lies beyond the integer dyadic source. -/
 theorem source_double_floor {N : ℝ} (hN : 0 ≤ N) :
     ⌊2*N⌋₊ = 2*⌊N⌋₊ ∨ ⌊2*N⌋₊ = 2*⌊N⌋₊+1 := by
   have hlo := Nat.floor_le hN
   have hhi := Nat.lt_floor_add_one N
-  have hlo2 := Nat.floor_le (by positivity : 0 ≤ 2*N)
-  have hl : 2*⌊N⌋₊ ≤ ⌊2*N⌋₊ := Nat.le_floor (by push_cast; linarith)
+  pm_8296 hlo2
+  have hl : 2*⌊N⌋₊ ≤ ⌊2*N⌋₊ := Nat.le_floor (by grind)
   have hu : ⌊2*N⌋₊ < 2*⌊N⌋₊+2 := by
     have hh : (⌊2*N⌋₊:ℝ) < (2*⌊N⌋₊+2:ℕ) := by push_cast; linarith
     exact_mod_cast hh
@@ -44,15 +43,18 @@ theorem detectingPolynomial_eq_boundedPolynomial (M : ℕ) (a : ℕ → ℂ) (t 
   congr 2
   ring
 
+section
+variable {N : ℝ}
+include N
 /-- Remove only a unit phase; the integer-frequency coefficient sum is literal. -/
-theorem boundedPolynomial_norm_integer_sum {N : ℝ} (hN : 0 < N)
+theorem boundedPolynomial_norm_integer_sum (hN : 0 < N)
     (a : ℕ → ℂ) (t : ℝ) :
     ‖boundedPolynomial N a t‖ = ‖∑ n ∈ sourceRatioIndices N, a n*dirichletPhase n t‖ := by
   rw [boundedPolynomial_integer_phase hN,norm_mul,MathCollab.Density.norm_dirichletPhase,one_mul]
 
 /-- Bounded coefficients on the original real source remain bounded on
 its integer source; no coefficient extension estimate is assumed. -/
-theorem source_floor_coefficients {N : ℝ} (hN : 0 ≤ N) (a : ℕ → ℂ)
+theorem source_floor_coefficients (hN : 0 ≤ N) (a : ℕ → ℂ)
     (ha : ∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1) :
     ∀ n ∈ Ioc ⌊N⌋₊ (2*⌊N⌋₊), ‖a n‖ ≤ 1 := by
   intro n hn
@@ -65,7 +67,7 @@ theorem source_floor_coefficients {N : ℝ} (hN : 0 ≤ N) (a : ℕ → ℂ)
 
 /-- The real source differs, after a unit normalization, by at most one
 bounded endpoint term. This is an actual polynomial estimate. -/
-theorem boundedPolynomial_le_detecting_floor_add_one {N : ℝ} (hN : 2 ≤ N)
+theorem boundedPolynomial_le_detecting_floor_add_one (hN : 2 ≤ N)
     (a : ℕ → ℂ) (ha : ∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1) (t : ℝ) :
     ‖boundedPolynomial N a t‖ ≤ ‖MathCollab.Density.detectingPolynomial ⌊N⌋₊ a t‖+1 := by
   have hN0 : 0 < N := by linarith
@@ -88,7 +90,8 @@ theorem boundedPolynomial_le_detecting_floor_add_one {N : ℝ} (hN : 2 ≤ N)
       exact mem_Ioc.mpr ⟨by omega,le_rfl⟩)
     have ht : ‖a (2*⌊N⌋₊+1)*dirichletPhase (2*⌊N⌋₊+1) t‖ ≤ 1 := by
       simpa only [norm_mul,dirichletPhase_norm,mul_one] using ha'
-    exact (norm_add_le _ _).trans (add_le_add le_rfl ht)
+    pm_243 norm_add_le le_rfl ht
+end
 
 /-- Large values at real length pass to the audited integer source at
 half the threshold, for V≥2. -/

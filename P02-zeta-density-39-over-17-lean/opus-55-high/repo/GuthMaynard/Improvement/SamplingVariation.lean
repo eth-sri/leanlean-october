@@ -1,9 +1,8 @@
 module
 public import Mathlib
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
@@ -27,7 +26,7 @@ theorem sampling_interval_variation {f f' : ℝ → E} {a δ t : ℝ}
         (Filter.Eventually.of_forall (fun _ hx => Ioc_subset_Ioc le_rfl ht.2 hx))
   have hh := norm_sub_le (f t) (f t-f a)
   rw [sub_sub_cancel] at hh
-  exact hh.trans (add_le_add le_rfl hv)
+  grind
 
 /-- Integrating the pointwise variation supplies the exact averaging cost. -/
 theorem sampling_interval_average {f f' : ℝ → E} {a δ : ℝ}
@@ -46,9 +45,12 @@ theorem sampling_interval_average {f f' : ℝ → E} {a δ : ℝ}
   simpa only [setIntegral_const, smul_eq_mul, Real.volume_real_Ioc_of_le (by linarith : a ≤ a+δ),
     add_sub_cancel_left] using hh
 
+section
+variable {ι : Type*}
+include ι
 /-- Finite point sampling on disjoint actual intervals, with no point-value
 estimate premise. The ambient set may be bounded; no global L1 of f' is required. -/
-theorem sampling_disjoint_intervals {ι : Type*} [Fintype ι]
+theorem sampling_disjoint_intervals [Fintype ι]
     {f f' : ℝ → E} (x : ι → ℝ) {δ : ℝ} (hδ : 0 < δ)
     (hd : ∀ t, HasDerivAt f (f' t) t)
     (hs : Pairwise (fun i j => Disjoint (Ioc (x i) (x i+δ)) (Ioc (x j) (x j+δ))))
@@ -68,7 +70,7 @@ theorem sampling_disjoint_intervals {ι : Type*} [Fintype ι]
   exact hsum.trans (add_le_add (hnorm f hf) (mul_le_mul_of_nonneg_left (hnorm f' hi) hδ.le))
 
 /-- Separation gives literal disjointness for half-open sampling intervals. -/
-theorem sampling_intervals_disjoint {ι : Type*} (x : ι → ℝ) (δ : ℝ)
+theorem sampling_intervals_disjoint (x : ι → ℝ) (δ : ℝ)
     (hsep : Pairwise (fun i j => δ ≤ |x i-x j|)) :
     Pairwise (fun i j => Disjoint (Ioc (x i) (x i+δ)) (Ioc (x j) (x j+δ))) := by
   intro i j hij
@@ -83,7 +85,7 @@ theorem sampling_intervals_disjoint {ι : Type*} (x : ι → ℝ) (δ : ℝ)
 
 /-- First-variation point sampling on any ambient set containing the
 separated sampling intervals; all costs are ordinary integrals. -/
-theorem sampling_separated_norm {ι : Type*} [Fintype ι]
+theorem sampling_separated_norm [Fintype ι]
     {f f' : ℝ → E} (x : ι → ℝ) {δ : ℝ} (hδ : 0 < δ)
     (hd : ∀ t, HasDerivAt f (f' t) t)
     (hsep : Pairwise (fun i j => δ ≤ |x i-x j|))
@@ -91,8 +93,8 @@ theorem sampling_separated_norm {ι : Type*} [Fintype ι]
     (hf : IntegrableOn f A) (hi : IntegrableOn f' A) :
     (∑ i, ‖f (x i)‖) ≤ δ⁻¹*(∫ t in A, ‖f t‖)+(∫ t in A, ‖f' t‖) := by
   have hh := sampling_disjoint_intervals x hδ hd (sampling_intervals_disjoint x δ hsep) hsub hf hi
-  apply (mul_le_mul_iff_right₀ hδ).mp
-  convert hh using 1
+  pm_8449 hδ hh
   field_simp
+end
 
 end GuthMaynard.Improvement

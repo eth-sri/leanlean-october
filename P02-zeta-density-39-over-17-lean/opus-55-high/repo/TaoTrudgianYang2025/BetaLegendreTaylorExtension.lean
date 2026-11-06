@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedEndpointGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -50,7 +51,7 @@ theorem modelPhaseTaylorExtension_uniformity
     (u := 2) (by norm_num [phaseInterval])
   have hupp := modelPhaseClosedSlope_positive_window hσ hpos hF
     (u := 1) (by norm_num [phaseInterval])
-  have hlo : 0 < (2 : ℝ)^(-σ)/2 := by positivity
+  pm_1630
   have himage : ∀ v ∈ Ioo (modelPhaseClosedSlope F 2) (modelPhaseClosedSlope F 1),
       v ∈ modelPhaseSlopeRange F := by
     intro v hv
@@ -68,11 +69,9 @@ theorem modelPhaseTaylorExtension_uniformity
     fun v hv => taylorPastedExtension_agrees _ Q hh hv,?_⟩
   intro v hv n hn
   have hdistL : |v-(modelPhaseClosedSlope F 2+2*h)| ≤ 4 := by
-    rw [abs_le]
-    constructor <;> linarith [hlow.1,hupp.2,hv.1,hv.2]
+    pm_6657
   have hdistR : |v-(modelPhaseClosedSlope F 1-2*h)| ≤ 4 := by
-    rw [abs_le]
-    constructor <;> linarith [hlow.1,hupp.2,hv.1,hv.2]
+    pm_6657
   exact (hpaste (anchoredLegendreError F σ w) _ _ h v (A*δ)
     hh hh₁ hgap hf hb hdistL hdistR n hn).trans_eq (by ring)
 

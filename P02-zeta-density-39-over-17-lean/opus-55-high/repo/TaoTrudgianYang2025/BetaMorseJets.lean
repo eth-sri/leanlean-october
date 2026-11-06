@@ -45,11 +45,10 @@ def morseDerivativeExpression : ℕ → InversePhaseExpression
   | 0 => .mul (.atom 0) (.atom 1)
   | n+1 => morseDifferentiate (morseDerivativeExpression n)
 
-theorem modelPhaseMorseJet_hasDerivAt
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) (j : ℕ) :
+section
+variable {F : ℝ → ℝ} {σ δ v u : ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
+include F σ δ v u hσ hδ hF hv hu
+theorem modelPhaseMorseJet_hasDerivAt (j : ℕ) :
     HasDerivAt (fun x => modelPhaseMorseJet F v x j)
       (inversePhaseEval (morseAtomDerivative j) (modelPhaseMorseJet F v u)) u := by
   have hA := modelPhaseAveragedCurvature_contDiffAt hF hv hu
@@ -78,10 +77,6 @@ theorem modelPhaseMorseJet_hasDerivAt
       · simp only [inversePhaseEval,morseAtomDerivative,modelPhaseMorseJet,iteratedDeriv_succ]
 
 theorem morseEval_hasDerivAt
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
     (e : InversePhaseExpression) :
     HasDerivAt (fun x => inversePhaseEval e (modelPhaseMorseJet F v x))
       (inversePhaseEval (morseDifferentiate e) (modelPhaseMorseJet F v u)) u := by
@@ -91,11 +86,7 @@ theorem morseEval_hasDerivAt
   | add e f he hf => exact he.add hf
   | mul e f he hf => exact he.mul hf
 
-theorem iteratedDeriv_modelPhaseMorseCoordinate_formula
-    {F : ℝ → ℝ} {σ δ v u : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) (n : ℕ) :
+theorem iteratedDeriv_modelPhaseMorseCoordinate_formula (n : ℕ) :
     iteratedDeriv n (modelPhaseMorseCoordinate F v) u =
       inversePhaseEval (morseDerivativeExpression n) (modelPhaseMorseJet F v u) := by
   induction n generalizing u with
@@ -109,5 +100,6 @@ theorem iteratedDeriv_modelPhaseMorseCoordinate_formula
         exact ih hx
       rw [he.deriv_eq,(morseEval_hasDerivAt hσ hδ hF hv hu (morseDerivativeExpression n)).deriv]
       rfl
+end
 
 end TaoTrudgianYang2025

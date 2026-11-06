@@ -15,7 +15,10 @@ noncomputable section
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
-theorem robertSargos_nonzero_weighted_shifted_re (f : ℝ → ℝ) (M H Q R N : ℕ) :
+section
+variable (f : ℝ → ℝ) (M H Q R N : ℕ)
+include f M H Q R N
+theorem robertSargos_nonzero_weighted_shifted_re :
     (∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0, ∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0,
       (1-|(q:ℝ)|/Q)*(1-|(r:ℝ)|/R)*
         (robertSargosShiftedCorrelation f M H Q N q r).re) =
@@ -30,7 +33,7 @@ theorem robertSargos_nonzero_weighted_shifted_re (f : ℝ → ℝ) (M H Q R N : 
   simpa only [Complex.re_sum,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,
     zero_mul,sub_zero] using he
 
-theorem robertSargos_nonzero_weighted_shifted_re_le (f : ℝ → ℝ) (M H Q R N : ℕ)
+theorem robertSargos_nonzero_weighted_shifted_re_le
     (hR : 0 < R) :
     (∑ q ∈ (Finset.Ioo (-(Q:ℤ)) Q).erase 0, ∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0,
       (1-|(q:ℝ)|/Q)*(1-|(r:ℝ)|/R)*
@@ -50,5 +53,6 @@ theorem robertSargos_nonzero_weighted_shifted_re_le (f : ℝ → ℝ) (M H Q R N
     (signed_triangular_weight_nonneg hR (Finset.mem_erase.mp hr).2)).trans
       (by simpa only [one_mul] using (mul_le_mul_of_nonneg_right hw
         (norm_nonneg (robertSargosNonzeroShiftedTriple f H Q N r m))))
+end
 
 end TaoTrudgianYang2025

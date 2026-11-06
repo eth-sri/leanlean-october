@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCRT
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationGlobal
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy
 open CenteredMomentAmplification ProbePhysical
 local notation "O" => ActualEisensteinCubic.O
@@ -76,17 +76,21 @@ theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → O)
 def primeRemainder (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) : O :=
   Classical.choose ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
 
-theorem primeRemainder_spec (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) :
+section
+variable (p : O) (hp : Prime p) (a : O)
+include p hp a
+theorem primeRemainder_spec (ha : a ≠ 0) :
     a = p^(multiplicity p a)*primeRemainder p hp a ha ∧ ¬p ∣ primeRemainder p hp a ha :=
   Classical.choose_spec ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
 
-theorem primeRemainder_supported (p : O) (hp : Prime p) (a : O)
+theorem primeRemainder_supported
     (ha : Supported (Ideal.span {a})) :
     Supported (Ideal.span {primeRemainder p hp a (supported_element_ne_zero a ha)}) := by
   have hs := ha
   rw [(primeRemainder_spec p hp a (supported_element_ne_zero a ha)).1,
     ← Ideal.span_singleton_mul_span_singleton,supported_mul_iff] at hs
   exact hs.2
+end
 
 theorem polynomial_amplification_actual {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)

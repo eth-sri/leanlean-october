@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramEnergyNonzero
 public import OAI.NumberTheory.DirichletL.Detector.GramWindowGcd
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,20 +25,18 @@ def originalPairWeight (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing
   (lowGramCoefficient (calibrationForSet S hS) σ I*lowGramProfile W v ((Ideal.absNorm I.val:ℝ)/Y))*
     star (lowGramCoefficient (calibrationForSet S hS) σ J*lowGramProfile W v ((Ideal.absNorm J.val:ℝ)/Y))
 
-theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
-    (U : SchwartzMap ℝ ℂ) (v : ℝ) :
+section
+variable (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing) (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q) (U : SchwartzMap ℝ ℂ) (v : ℝ)
+include S hS σ W hW Y Q hY hQ U v
+theorem original_nonzero_common_sum :
     (∑I∈lowGaussColumns W hW Y hY,∑J∈lowGaussColumns W hW Y hY,
-      originalPairWeight S hS σ W Y v I J*
+      originalPairWeight S hS σ W Y v I J *
       ∑'h : GramFrequency,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
         ((supported_span_primaryGenerator_iff _).mpr I.property)
         ((supported_span_primaryGenerator_iff _).mpr J.property) (-h.val)*
         paperRadialFourier U (Q*‖eisEmbedding h.val‖^2/‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2))=
       ∑C∈commonPool (lowGaussColumns W hW Y hY),∑'k : GramFrequency,originalCommonBlock S hS σ C k W hW Y Q hY U v := by
-  simp_rw [actual_gcd_nonzero_frequency_source]
-  rw [original_window_gcd]
-  apply Finset.sum_congr rfl
-  intro C hC
+  pm_224 actual_gcd_nonzero_frequency_source original_window_gcd C hC
   let F:=lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)
   let f := fun (I J : SupportedIdeal) (k : GramFrequency)=>
     if IsCoprime I.val J.val then
@@ -52,7 +51,7 @@ theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) 
     · have hh := ((actual_correlation_radial_summable (supportedIdealProduct C I) (supportedIdealProduct C J)
         (primaryGenerator C.val) (supported_primaryGenerator_ne_zero _ C.property) U Q hQ).subtype (fun k : O=>k≠0)).mul_left
           (originalPairWeight S hS σ W Y v (supportedIdealProduct C I) (supportedIdealProduct C J))
-      simpa only [f,hij,ite_true,Function.comp_def,mul_assoc] using hh
+      pm_124 f hij ite_true Function.comp_def mul_assoc hh
     · simpa only [f,hij,ite_false] using (summable_zero : Summable (fun _ : GramFrequency=>(0:ℂ)))
   have hr : (∑'k : GramFrequency,originalCommonBlock S hS σ C k W hW Y Q hY U v)=
       ∑I∈F,∑J∈F,∑'k : GramFrequency,f I J k := by
@@ -62,21 +61,16 @@ theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) 
     intro I hI
     exact Summable.tsum_finsetSum (fun J hJ=>hf I J)
   rw [hr]
-  apply Finset.sum_congr rfl
-  intro I hI
-  apply Finset.sum_congr rfl
-  intro J hJ
+  pm_3397 I hI J hJ
   by_cases hij : IsCoprime I.val J.val
   · simp only [hij,ite_true,f,gcdCommon_product_coprime C I J hij]
     rw [←tsum_mul_left]
     apply tsum_congr
     intro k
     ring
-  · simp only [hij,ite_false,f,tsum_zero]
+  pm_3814 hij ite_false f tsum_zero
 
-theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
-    (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
-    (U : SchwartzMap ℝ ℂ) (v : ℝ) :
+theorem original_energy_common_blocks :
     gaussEnergy (lowGaussColumns W hW Y hY) (fun I=>primaryGenerator I.val)
       (fun I=>(supported_span_primaryGenerator_iff _).mpr I.property)
       (lowGaussColumn (calibrationForSet S hS) W Y σ v) U Q=
@@ -87,6 +81,7 @@ theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
   congr 1
   congr 1
   exact original_nonzero_common_sum S hS σ W hW Y Q hY hQ U v
+end
 
 end SevenEighths.ProbeGramCommon
 end

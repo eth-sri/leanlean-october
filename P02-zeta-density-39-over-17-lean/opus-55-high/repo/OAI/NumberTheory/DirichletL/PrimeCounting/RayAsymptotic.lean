@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.RayQuotient
 public import OAI.NumberTheory.DirichletL.IdealLogDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,7 +10,7 @@ namespace OAI
 namespace SevenEighths.PNT.RayAsymptotic
 
 open ActualEisensteinCubic RayOrthogonality Filter
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 noncomputable section
 
@@ -44,7 +45,7 @@ theorem principalRegularization_analyticAt_of_local (F R : ℂ → ℂ)
   · subst s
     simp only [principalRegularization, Function.update_self]
   · rw [principalRegularization, Function.update_of_ne hs1]
-    exact (hs hs1).symm
+    grind
 
 omit [Finite (O ⧸ M)] in
 theorem principalRegularization_logDeriv (F : ℂ → ℂ) (residue : ℂ)
@@ -71,35 +72,28 @@ structure AnalyticFamily (F : rayCharacters M → ℂ → ℂ) (residue : ℂ) :
   pole_analytic : AnalyticAt ℂ (principalRegularization (F 1) residue) 1
   residue_ne_zero : residue ≠ 0
 
-theorem regularizedFamily_analyticAt {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
+theorem regularizedFamily_analyticAt {F : rayCharacters M → ℂ → ℂ} {residue : ℂ} (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
     AnalyticAt ℂ (regularizedFamily M F residue χ) s := by
   by_cases hχ : χ = 1
   · subst χ
-    rw [regularizedFamily, ite_eq_left rfl]
-    by_cases hs1 : s = 1
+    pm_7492
     · subst s
       exact hF.pole_analytic
     · exact principalRegularization_analyticAt _ _ hs1 (hF.analytic 1 s hs (Or.inr hs1))
-  · rw [regularizedFamily, ite_eq_right hχ]
-    exact hF.analytic χ s hs (Or.inl hχ)
+  pm_7409 hF.analytic
 
-theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
+theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue : ℂ} (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
     regularizedFamily M F residue χ s ≠ 0 := by
   by_cases hχ : χ = 1
   · subst χ
-    rw [regularizedFamily, ite_eq_left rfl]
-    by_cases hs1 : s = 1
+    pm_7492
     · subst s
       simpa only [principalRegularization, Function.update_self] using hF.residue_ne_zero
     · rw [principalRegularization, Function.update_of_ne hs1]
       exact mul_ne_zero (sub_ne_zero.mpr hs1) (hF.nonzero 1 s hs (Or.inr hs1))
-  · rw [regularizedFamily, ite_eq_right hχ]
-    exact hF.nonzero χ s hs (Or.inl hχ)
+  pm_7409 hF.nonzero
 
-theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 < s.re) :
+theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residue : ℂ} (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 < s.re) :
     -deriv (regularizedFamily M F residue χ) s / regularizedFamily M F residue χ s =
       -deriv (F χ) s / F χ s - (if χ = 1 then 1 / (s - 1) else 0) := by
   by_cases hχ : χ = 1
@@ -107,7 +101,7 @@ theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residu
     have hs1 : s ≠ 1 := by intro heq; simp only [heq, Complex.one_re] at hs; linarith
     exact principalRegularization_logDeriv _ _ hs1
       (hF.analytic χ s hs.le (Or.inr hs1)) (hF.nonzero χ s hs.le (Or.inr hs1))
-  · simp only [regularizedFamily, hχ, ite_false, sub_zero]
+  pm_2997 regularizedFamily hχ ite_false sub_zero
 
 section Quotient
 
@@ -122,13 +116,11 @@ theorem quotient_sum_coeff (n : ℕ) :
   unfold IdealLogDerivative.coeff ShortDraftHeckeBridge.normFiberCoeff
   rw [Finset.sum_comm]
   unfold quotientClassCoeff IdealMangoldt.classCoeff IdealMangoldt.coeff IdealMangoldt.normFiber
-  rw [Complex.ofReal_sum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro I hI
+  pm_3419 Complex.ofReal_sum Finset.mul_sum I hI
   rw [← Finset.mul_sum, RayQuotient.sum_idealCharacters]
   by_cases hI : I ∈ RayQuotient.identityClass M H
-  · simp only [hI, ite_true, one_mul, mul_comm]
-  · simp only [hI, ite_false, zero_mul, Complex.ofReal_zero, mul_zero]
+  pm_2997 hI ite_true one_mul mul_comm
+  pm_3429 hI ite_false zero_mul Complex.ofReal_zero mul_zero
 
 theorem quotient_average_coeff (n : ℕ) :
     (quotientClassCoeff M H n : ℂ) =
@@ -150,7 +142,7 @@ theorem quotientClassCoeff_LSeries (s : ℂ) (hs : 1 < s.re) :
         IdealLogDerivative.coeff (RayQuotient.idealCharacter M H hH χ) := by
     funext n
     rw [quotient_average_coeff M H hH]
-    simp only [Pi.smul_apply, Finset.sum_apply, smul_eq_mul, div_eq_mul_inv, mul_comm]
+    pm_93 Pi.smul_apply Finset.sum_apply smul_eq_mul div_eq_mul_inv mul_comm
   rw [heq, LSeries_smul, LSeries_sum]
   · rw [div_eq_mul_inv, mul_comm]
   · intro χ _
@@ -162,8 +154,10 @@ def quotientRemainder (F : rayCharacters M → ℂ → ℂ) (residue : ℂ) (s :
       regularizedFamily M F residue (RayQuotient.toFullRay M H hH χ) s) /
         (RayQuotient.classNumber M H : ℂ)
 
-theorem quotientRemainder_continuousOn {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) :
+section
+variable {F : rayCharacters M → ℂ → ℂ} {residue : ℂ} (hF : AnalyticFamily M F residue)
+include F residue hF
+theorem quotientRemainder_continuousOn :
     ContinuousOn (quotientRemainder M H hH F residue) {s : ℂ | 1 ≤ s.re} := by
   intro s hs
   apply ContinuousAt.continuousWithinAt
@@ -174,8 +168,7 @@ theorem quotientRemainder_continuousOn {F : rayCharacters M → ℂ → ℂ} {re
   exact h.deriv.continuousAt.neg.div h.continuousAt
     (regularizedFamily_ne_zero M hF (RayQuotient.toFullRay M H hH χ) s hs)
 
-theorem quotientRemainder_eqOn {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) :
+theorem quotientRemainder_eqOn :
     Set.EqOn (quotientRemainder M H hH F residue)
       (fun s => LSeries (fun n => (quotientClassCoeff M H n : ℂ)) s -
         (RayQuotient.classNumber M H : ℂ)⁻¹ / (s - 1)) {s : ℂ | 1 < s.re} := by
@@ -197,6 +190,7 @@ theorem quotientRemainder_eqOn {F : rayCharacters M → ℂ → ℂ} {residue : 
       (norm_idealCharacter_le_one M _) (F _) (hF.eq_series _) s hs).symm
   simp_rw [hlog]
   ring
+end
 
 include hH in
 

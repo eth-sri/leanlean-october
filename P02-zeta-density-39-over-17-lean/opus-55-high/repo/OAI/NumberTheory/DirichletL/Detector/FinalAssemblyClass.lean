@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorClass
 public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblySourceCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
@@ -19,10 +20,10 @@ local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZ
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
-    (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
-    (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
+    (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0< c) (hcb : c≤b) (hA : 0≤A)
+    (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (hdRange : dmin≤dmax) (hrmin : 0< rmin)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤ cost) (hmesh : 0< mesh)
+    (hbudget : 8*e*R+κ≤ε) (hgap : ε< rmin*mesh) (hmargin : 0< margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
@@ -45,29 +46,29 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
     ∀η : Character,∀ᶠZ : ℝ in atTop,
       ∀d : ℝ,dmin≤d → d≤dmax → ∀(v a C0 : ℝ),0≤v → 51/100<a → a≤1 → 0≤C0 →
       ∀rows : Finset FreeRow,
-      (∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧
-        (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ rowNorm u≤Z^(d-margin)) →
-      (∀u∈rows,Z^v≤rowNorm u ∧ rowNorm u≤2*Z^v) →
+      (∀u∈rows,u.val≠1 ∧ Z ^(1/100:ℝ)≤ rowNorm u ∧
+        (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ rowNorm u≤Z ^(d-margin)) →
+      (∀u∈rows,Z ^v≤ rowNorm u ∧ rowNorm u≤2*Z ^v) →
       ∀i : ℕ,i≤n →
       (∀u∈rows,detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u))
-        (3*(i+1:ℕ)*Z^τ)<a+2*e) →
+        (3*(i+1:ℕ)*Z ^τ)<a+2*e) →
       (∀u∈rows,a≤detectorMaximum (sourceDetectorFamily S hS.prime η u (rayCubeFamily M H hH u))
-        ((3*i:ℕ)*Z^τ)) →
-      let Y : Fin N→ℝ := fun j=>Z^(ell j)
-      let T : Fin N→Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
-      ∀t : HeightSpace,((|t.1.1|≤(3*i+1:ℕ)*Z^τ ∧ |t.2|≤(3*i+1:ℕ)*Z^τ) ∧ |t.1.2|≤(3*i+1:ℕ)*Z^τ) →
+        ((3*i:ℕ)*Z ^τ)) →
+      let Y : Fin N→ℝ := fun j=>Z ^(ell j)
+      let T : Fin N→ Finset ProbePhysical.PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
+      ∀t : HeightSpace,((|t.1.1|≤(3*i+1:ℕ)*Z ^τ ∧ |t.2|≤(3*i+1:ℕ)*Z ^τ) ∧ |t.1.2|≤(3*i+1:ℕ)*Z ^τ) →
       let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
       SourceMomentsAt M H hH S hS.prime η rows ell W Z d a ε τ dmax b R mesh i z Δ
         (if 2*a-1≤5/6 then counts.cB else counts.cH) (if 2*a-1≤5/6 then counts.kB else counts.kH)
-        (C0*Z^momentCost) (Z^heightCost) εm →
-      let Q := physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z^d)
+        (C0*Z ^momentCost) (Z ^heightCost) εm →
+      let Q := physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z ^d)
       ∀bin : BinLabel (Finset.univ : Finset (Fin N)) ((2*a-1)/2) mesh,
-      let rows' := amplitudeRows rows Finset.univ (Z^d) ((2*a-1)/2) mesh hmesh (fun j=>ell j/d) Q bin
+      let rows' := amplitudeRows rows Finset.univ (Z ^d) ((2*a-1)/2) mesh hmesh (fun j=>ell j/d) Q bin
       let q := classMean Finset.univ ((2*a-1)/2) mesh (fun j=>ell j/d) bin
       rows'.Nonempty → 0≤q ∧ q≤(2*a-1)/2 ∧
       ‖cubeArithmeticSum S hS hmax η rows' T (nonfloorPoolOutside M H S N c b Y) W Y a e t‖≤
         C*C0*(η.modulus.absNorm:ℝ)^(2*eps)*
-          Z^(logCost+heightCost+momentCost+
+          Z ^(logCost+heightCost+momentCost+
             d*adaptiveRowExponent (2*a-1) q Δ ε εm R ν+
             v*(a-1/2+12*e+eps*(N+8)-17/50)+loss-2/75+q/6+mesh/6) := by
   have hdmax0 : 0<dmax := hdmin.trans_le hdRange
@@ -79,7 +80,7 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
   obtain ⟨C,hC,hphysical⟩ := actual_class_cube_arithmetic M H hH N n e eps c b A R dmin dmax rmin τ ε κ cost mesh (1/100) margin loss
     he he1 heps hc hcb hA hR hdmin hdmax hdRange hrmin hτ hε hκ hcost hmesh (by norm_num)
     hbudget hgap hmargin hheight hloss S hS hfirst hmax ell hell hello hellhi W hWs hW hWB hellsum
-  refine ⟨C*K,mul_pos hC hK,?_⟩
+  pm_3171 C K mul_pos hC hK
   intro η
   have hbatches := actual_source_amplitude_batches M H hH S hS hmax η
     dmin dmax τ ε e κ cost margin R mesh n hdmin hdRange hdtop hτ hτzero hτheight
@@ -90,18 +91,18 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
   intro t ht hmom bin hne
   have hZp : 0<Z := zero_lt_one.trans hZ
   have hd0 : 0<d := hdmin.trans_le hd
-  let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
-  let Q := physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z^d)
-  let rows' := amplitudeRows rows Finset.univ (Z^d) ((2*a-1)/2) mesh hmesh (fun j=>ell j/d) Q bin
-  let q := classMean Finset.univ ((2*a-1)/2) mesh (fun j=>ell j/d) bin
-  have hsub : rows'⊆rows := Finset.filter_subset _ _
+  pm_606
+  let Q := physical M H (fun u : FreeRow=>u.val) W (fun _=>b) (fun j=>ell j/d) (fun _=>z) (Z ^d)
+  let rows' := amplitudeRows rows Finset.univ (Z ^d) ((2*a-1)/2) mesh hmesh (fun j=>ell j/d) Q bin
+  pm_3912 classMean mesh
+  pm_4982 hsub rows' rows
   have hrowne : rows.Nonempty := hne.mono hsub
-  have hband : rows⊆rowBand (Z^(1/100:ℝ)) (2*Z^v+1) := by
+  have hband : rows⊆rowBand (Z ^(1/100:ℝ)) (2*Z ^v+1) := by
     intro u hu
     exact mem_rowBand.mpr ⟨(hrows u hu).1,(hrows u hu).2.1,by linarith [(hnorm u hu).2]⟩
   have hellpos (j : Fin N) : 0<ell j := (mul_pos hdmax0 hrmin).trans_le (hello j)
   obtain ⟨B,hBr,hBd,hRev,hSlots,hWidths,hW',hUpper,hExternal,hMesh,hBin,hFam,hMean⟩ :=
-    hbatch d hd hd' (2*Z^v+1) rows hrowne hband (fun u hu=>(hrows u hu).2.2.1)
+    hbatch d hd hd' (2*Z ^v+1) rows hrowne hband (fun u hu=>(hrows u hu).2.2.1)
       (fun u hu=>(hrows u hu).2.2.2) a i hi ha ha' hnext hcurrent
       N ell hellpos hellhi hellsum W (fun _=>b) (fun _=>z) bin hne
   have hBsub : B.rows⊆rows := hBr ▸ hsub
@@ -112,11 +113,11 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
   have hcard := hcount d hd hd' a ε Δ ν C0 q i hi ha ha' hε.le hε1 hΔ hΔ1 hν hC0 B
     (by rw [hSlots];simp) hBin (hBr.symm ▸ hne) hMean hraw
   rw [hBr,hMesh] at hcard
-  have hqb := classMean_bounds rows Finset.univ (Z^d) (2*a-1) mesh hmesh (fun j=>ell j/d) Q bin
+  have hqb := classMean_bounds rows Finset.univ (Z ^d) (2*a-1) mesh hmesh (fun j=>ell j/d) Q bin
     (by linarith) (fun j _=>div_nonneg (hellpos j).le hd0.le)
     (by rw [source_slot_length_sum Finset.univ ell d hellsum];positivity) hne
   refine ⟨hqb.1,hqb.2,?_⟩
-  have hp := hphysical d hd hd' v a q (K*C0*Z^(logCost+heightCost+momentCost))
+  have hp := hphysical d hd hd' v a q (K*C0*Z ^(logCost+heightCost+momentCost))
     (adaptiveRowExponent (2*a-1) q Δ ε εm R ν) hv ha.le ha' (by positivity) rows'
     (fun u hu=>hrows u (hsub hu)) (fun u hu=>hnorm u (hsub hu)) hcard i hi
     (fun u hu=>hnext u (hsub hu)) t ht

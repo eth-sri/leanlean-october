@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramCommonSource
 public import OAI.NumberTheory.DirichletL.Detector.GramSourceBlock
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -22,18 +23,22 @@ instance gramPrimeMaximal (C : SupportedIdeal) (P : GramPrime C) : (gramPrime C 
   (Ideal.isPrime_of_prime (support_prime P.property)).isMaximal (support_prime P.property).ne_zero
 
 def gramExponent (C : SupportedIdeal) (P : GramPrime C) : ℕ := (normalizedFactors C.val).count P.val
-lemma gramExponent_pos (C : SupportedIdeal) (P : GramPrime C) : 1≤gramExponent C P :=
+section
+variable (C : SupportedIdeal)
+include C
+lemma gramExponent_pos (P : GramPrime C) : 1≤gramExponent C P :=
   Multiset.count_pos.mpr (Multiset.mem_toFinset.mp P.property)
-lemma gramPrime_good (C : SupportedIdeal) (P : GramPrime C) : λ₀∉gramPrime C P :=
+lemma gramPrime_good (P : GramPrime C) : λ₀∉gramPrime C P :=
   (supported_factors_good C.val C.property P.val (Multiset.mem_toFinset.mp P.property)).2.1
-lemma gramPrime_coprime (C : SupportedIdeal) : Pairwise (Function.onFun IsCoprime (gramPrime C)) := by
+lemma gramPrime_coprime : Pairwise (Function.onFun IsCoprime (gramPrime C)) := by
   intro P Q hpq
   exact Ideal.isCoprime_of_isMaximal (Subtype.val_injective.ne hpq)
-lemma gramPrime_product (C : SupportedIdeal) : C.val=∏P : GramPrime C,gramPrime C P^gramExponent C P := by
+lemma gramPrime_product : C.val=∏P : GramPrime C,gramPrime C P^gramExponent C P := by
   calc
     C.val=(normalizedFactors C.val).prod := (Ideal.prod_normalizedFactors_eq_self C.property.1).symm
     _=∏P∈IdealMobiusDivisorSum.primeSupport C.val,P^(normalizedFactors C.val).count P := Finset.prod_multiset_count _
     _=_ := (Finset.prod_coe_sort _ _).symm
+end
 
 instance gramPrimePowerFinite (C : SupportedIdeal) (P : GramPrime C) :
     Finite (O⧸gramPrime C P^gramExponent C P) :=
@@ -56,7 +61,7 @@ structure GramNumeratorData (k : GramFrequency) where
   factor : k.val=unit.val*λ₀^lambdaExponent*(2:O)^twoExponent*good
 
 lemma gramNumeratorData_nonempty (k : GramFrequency) : Nonempty (GramNumeratorData k) := by
-  obtain ⟨u,a,b,r,hr,hpr,hf⟩ := exists_supported_numerator_factorization k.val k.property
+  pm_371 u a b r hr hpr hf exists_supported_numerator_factorization k.val k.property
   exact ⟨⟨u,a,b,r,hr,hpr,hf⟩⟩
 def gramNumeratorData (k : GramFrequency) : GramNumeratorData k := Classical.choice (gramNumeratorData_nonempty k)
 

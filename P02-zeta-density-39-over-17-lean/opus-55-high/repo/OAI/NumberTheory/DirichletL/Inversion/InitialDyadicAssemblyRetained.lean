@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialDyadicAssembly
 open InverseInitialProfile CenteredMomentSectorLocalization CenteredMomentDyadicCount
 open Filter

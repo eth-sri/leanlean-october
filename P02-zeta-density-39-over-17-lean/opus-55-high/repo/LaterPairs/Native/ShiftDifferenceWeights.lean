@@ -22,52 +22,34 @@ theorem card_positive_shift_difference (N k : ℕ) :
   classical
   rw [← Finset.card_range (N-k)]
   apply Finset.card_bij (fun p _ => p.2)
-  · intro p hp
-    have ht := Finset.mem_filter.mp hp
-    have hm := Finset.mem_product.mp ht.1
-    have h₁ := Finset.mem_range.mp hm.1
-    have h₂ := Finset.mem_range.mp hm.2
-    apply Finset.mem_range.mpr
-    omega
-  · intro p hp q hq he
-    have hp' := (Finset.mem_filter.mp hp).2
-    have hq' := (Finset.mem_filter.mp hq).2
-    apply Prod.ext <;> omega
+  grind
+  grind
   · intro t ht
     have ht' := Finset.mem_range.mp ht
     refine ⟨(t+k,t),?_,rfl⟩
     apply Finset.mem_filter.mpr
     constructor
-    · apply Finset.mem_product.mpr
-      constructor <;> apply Finset.mem_range.mpr <;> omega
-    · dsimp only
-      omega
+    grind
+    grind
 
-theorem card_shift_difference_neg (N : ℕ) (q : ℤ) :
+section
+variable (N : ℕ)
+include N
+theorem card_shift_difference_neg (q : ℤ) :
     ((Finset.range N ×ˢ Finset.range N).filter
       (fun p => (p.1:ℤ)-p.2 = -q)).card =
       ((Finset.range N ×ˢ Finset.range N).filter
         (fun p => (p.1:ℤ)-p.2 = q)).card := by
   classical
   apply Finset.card_bij (fun p _ => p.swap)
-  · intro p hp
-    have ht := Finset.mem_filter.mp hp
-    have hm := Finset.mem_product.mp ht.1
-    apply Finset.mem_filter.mpr
-    exact ⟨Finset.mem_product.mpr ⟨hm.2,hm.1⟩,by dsimp only [Prod.swap]; omega⟩
-  · intro p hp z hz he
-    exact Prod.swap_injective he
-  · intro p hp
-    have ht := Finset.mem_filter.mp hp
-    have hm := Finset.mem_product.mp ht.1
-    refine ⟨p.swap,?_,Prod.swap_swap p⟩
-    apply Finset.mem_filter.mpr
-    exact ⟨Finset.mem_product.mpr ⟨hm.2,hm.1⟩,by dsimp only [Prod.swap]; omega⟩
+  grind
+  grind
+  aesop
 
-theorem card_signed_shift_difference (N : ℕ) (q : ℤ) :
+theorem card_signed_shift_difference (q : ℤ) :
     ((Finset.range N ×ˢ Finset.range N).filter
       (fun p => (p.1:ℤ)-p.2 = q)).card = N-q.natAbs := by
-  have he : q.natAbs = ((q.natAbs:ℤ)).natAbs := by simp only [Int.natAbs_natCast]
+  have he : q.natAbs = ((q.natAbs:ℤ)).natAbs := by grind
   rcases Int.natAbs_eq_natAbs_iff.mp he with hp | hn
   · rw [hp]
     exact card_positive_shift_difference N q.natAbs
@@ -75,7 +57,7 @@ theorem card_signed_shift_difference (N : ℕ) (q : ℤ) :
     simpa only [Int.natAbs_neg,Int.natAbs_natCast] using
       card_positive_shift_difference N q.natAbs
 
-theorem sum_signed_shift_differences (N : ℕ) (f : ℤ → ℝ) :
+theorem sum_signed_shift_differences (f : ℤ → ℝ) :
     (∑ s ∈ Finset.range N, ∑ t ∈ Finset.range N, f ((s:ℤ)-t)) =
       ∑ q ∈ Finset.Ioo (-(N:ℤ)) N, ((N-q.natAbs:ℕ):ℝ)*f q := by
   classical
@@ -93,5 +75,6 @@ theorem sum_signed_shift_differences (N : ℕ) (f : ℤ → ℝ) :
   apply Finset.sum_congr rfl
   intro q _
   simp only [Finset.sum_const,nsmul_eq_mul,card_signed_shift_difference]
+end
 
 end TaoTrudgianYang2025

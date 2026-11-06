@@ -20,24 +20,28 @@ local notation "O" => HeckeFamily.O
 def activeRows (rows : Finset O) (n : Fin 4→ℤ) : Finset O :=
   rows.filter (fun h => h∈dyadRows (n 1))
 
-lemma mem_activeRows (rows : Finset O) (n : Fin 4→ℤ) (h : O) :
+section
+variable (rows : Finset O) (n : Fin 4→ℤ)
+include rows n
+lemma mem_activeRows (h : O) :
     h∈activeRows rows n ↔ h∈rows ∧ dyadicWeight (n 1) (normValue h)≠0 := by
   simp only [activeRows,Finset.mem_filter,mem_dyadRows]
 
-lemma activeRows_nonzero (rows : Finset O) (n : Fin 4→ℤ) (h : O)
+lemma activeRows_nonzero (h : O)
     (hh : h∈activeRows rows n) : h≠0 :=
   dyadRows_ne_zero (n 1) h (Finset.mem_filter.mp hh).2
 
-lemma activeRows_norm (rows : Finset O) (n : Fin 4→ℤ) (h : O)
+lemma activeRows_norm (h : O)
     (hh : h∈activeRows rows n) :
     1≤normValue h ∧ dyadicScale (n 1)/4<normValue h ∧ normValue h<dyadicScale (n 1) :=
   ⟨normValue_ge_one h (activeRows_nonzero rows n h hh),
     dyadicWeight_support (n 1) ((mem_activeRows rows n h).mp hh).2⟩
 
-lemma activeRows_scale_gt_one (rows : Finset O) (n : Fin 4→ℤ)
+lemma activeRows_scale_gt_one
     (hne : (activeRows rows n).Nonempty) : 1<dyadicScale (n 1) := by
   obtain ⟨h,hh⟩:=hne
   exact (activeRows_norm rows n h hh).1.trans_lt (activeRows_norm rows n h hh).2.2
+end
 
 lemma row_log_window (n : ℤ) (h : O) :
     logAnnulus (Real.log (‖eisEmbedding h‖^2/dyadicScale n)) =

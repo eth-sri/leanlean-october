@@ -4,13 +4,14 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroRetainedError
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthOriginal
@@ -46,11 +47,8 @@ lemma plainEnergy_swap {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
       ((swapProfiles p).profile 1) (fun _:Fin 0=>∅) (fun _:Fin 0=>0) (fun _:Fin 0=>1)
       t X₂ X₁=positiveSlotRow s.character s.mask 1 z (p.profile 0) (p.profile 1)
       (fun _:Fin 0=>∅) (fun _:Fin 0=>0) (fun _:Fin 0=>1) t X₁ X₂:=by
-    simp only [swapProfiles,Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one]
-    unfold positiveSlotRow
-    rw [mul_comm X₂ X₁]
-    ring
-  rw [hh]
+    pm_7644 swapProfiles positiveSlotRow
+  grind
 
 theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
@@ -59,16 +57,16 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
       ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(Bmask L Mcap loss:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K→
       ZeroGrowthAt Q a b bΦ Bmask L Mcap loss Z degree S K→0≤Bmask→
-      Mcap+Bmask+defect+xi≤L→Mcap+Bmask+defect≤Lreflect→
-      ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤Mcap→
-      ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
+      Mcap+Bmask+defect+xi≤L→ Mcap+Bmask+defect≤Lreflect→
+      ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→ s.width≤Mcap→
+      ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁→0<X₂→ X₁≤Z ^L→ X₂≤Z ^L→
       s.plainEnergy p t X₁ X₂≤
-        C*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*(1+|t|)^J*
+        C*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*(1+|t|)^J *
           (s.puncture.radical.absNorm:ℝ)^epsilon*
-          ((max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^epsilon*
-            (1+2*(L*Real.log Z))*Z^(s.width+loss+defect+xi)+
-           (max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*epsilon)*
-            Z^(-2*saving)*max 1 s.radial.scale*Z^L):=by
+          ((max 1 ((fixedConductorFactor:ℝ)*bΦ*Z ^s.width))^epsilon*
+            (1+2*(L*Real.log Z))*Z ^(s.width+loss+defect+xi)+
+           (max 1 ((fixedConductorFactor:ℝ)*bΦ*Z ^s.width))^(2*epsilon)*
+            Z ^(-2*saving)*max 1 s.radial.scale*Z ^L):=by
   obtain ⟨n,T,Dchild,hDc,nlive,Slive,Clive,Dlive,hCl,hDl,hlive⟩:=
     live_deleted_bounded a b bΦ epsilon xi defect saving Lreflect
       ha hlo hhi hbΦ hepsilon hxi hdefect 2 (by norm_num) S
@@ -79,33 +77,32 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
   obtain ⟨J,U,Cprofile,hCp,hprofile⟩:=reference_envelopes a b ha S T (Slive∪Sdead)
     0 n (nlive+ndead) Clive Dchild (Dlive+Cdead) hCl hDc (by positivity)
   refine ⟨J,U,Cweight*Cprofile,by positivity,?_⟩
-  filter_upwards [hlive,hdead] with Z hZ hZd
-  refine ⟨hZ.1,?_⟩
+  pm_735 hlive hdead hZ hZd
   intro Bmask L Mcap loss Q degree K hK hgrowth hBmask hL hLreflect s hQ hs
   have hz:0<Z:=zero_lt_one.trans hZ.1
   have hL0:0≤L:=by linarith only [s.width_nonneg, hs, hBmask, hdefect, hxi, hL]
-  have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
+  pm_118
   have hd:=diagonalControl_nonneg s.radial.profile
-  let Rcap:=max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)
-  let Pmain:=Rcap^epsilon*(1+2*(L*Real.log Z))*Z^(s.width+loss+defect+xi)
-  let Perror:=Rcap^(2*epsilon)*Z^(-2*saving)*max 1 s.radial.scale*Z^L
+  let Rcap:=max 1 ((fixedConductorFactor:ℝ)*bΦ*Z ^s.width)
+  let Pmain:=Rcap^epsilon*(1+2*(L*Real.log Z))*Z ^(s.width+loss+defect+xi)
+  let Perror:=Rcap^(2*epsilon)*Z ^(-2*saving)*max 1 s.radial.scale*Z ^L
   have hPm:0≤Pmain:=by dsimp only [Pmain,Rcap];positivity
   have hPe:0≤Perror:=by dsimp only [Perror,Rcap];positivity
   have hordered (p:Profiles a b)(t Xshort Xlong:ℝ)(hXs:0<Xshort)(horder:Xshort≤Xlong)
-      (hcap:Xshort≤Z^L)(hsupport:1≤b*Xlong):
+      (hcap:Xshort≤Z ^L)(hsupport:1≤b*Xlong):
       s.plainEnergy p t Xshort Xlong≤
-        Cweight*Cprofile*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*(1+|t|)^J*
+        Cweight*Cprofile*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*(1+|t|)^J *
           (s.puncture.radical.absNorm:ℝ)^epsilon*(Pmain+Perror):=by
     have hXl:0<Xlong:=hXs.trans_le horder
     have hp:=hprofile (p.profile 0) (p.profile 1) (p.support 0) (p.support 1) t 0 (le_refl 0)
-    simp only [add_zero,zero_add,pow_zero,mul_one] at hp
+    pm_423 add_zero zero_add pow_zero mul_one hp
     let A:=Cprofile*(p.control U)^2*(1+|t|)^J
     let E:=(K+1)*diagonalControl s.radial.profile*A
     have hA:0≤A:=by dsimp only [A];positivity
     have hE:0≤E:=by dsimp only [E];positivity
-    have hSl:sourceControl Slive (p.profile 1)≤sourceControl (Slive∪Sdead) (p.profile 1):=
+    have hSl:sourceControl Slive (p.profile 1)≤ sourceControl (Slive∪Sdead) (p.profile 1):=
       control_mono Finset.subset_union_left _
-    have hSd:sourceControl Sdead (p.profile 1)≤sourceControl (Slive∪Sdead) (p.profile 1):=
+    have hSd:sourceControl Sdead (p.profile 1)≤ sourceControl (Slive∪Sdead) (p.profile 1):=
       control_mono Finset.subset_union_right _
     have hSl0:=sourceControl_nonneg Slive (p.profile 1)
     have hSd0:=sourceControl_nonneg Sdead (p.profile 1)
@@ -128,31 +125,13 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
       convert hh' using 1; ring
     have herrLive:Dlive*(sourceControl Slive (p.profile 1))^2*(1+‖t‖)^(2*nlive)*
         ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) (p.profile 0))^2*diagonalControl s.radial.profile≤E:=by
-      have hh:Dlive*(sourceControl Slive (p.profile 1))^2*
-          ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) (p.profile 0))^2*(1+‖t‖)^(2*nlive)≤A:=by
-        apply le_trans _ hp.2.2
-        gcongr
-        exact le_add_of_nonneg_right hCd.le
-      have hh':=mul_le_mul_of_nonneg_left hh hd
-      have he:diagonalControl s.radial.profile*A≤E:=by
-        dsimp only [E]
-        nlinarith only [mul_nonneg hK (mul_nonneg hd hA)]
-      apply le_trans _ he
-      convert hh' using 1; ring
+      pm_4936 Dlive Slive nlive le_add_of_nonneg_right hCd.le
+      pm_3325
     have herrDead:Cdead*(sourceControl Sdead (p.profile 1))^2*
         ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) (p.profile 0))^2*(1+‖t‖)^(2*ndead)*
         diagonalControl s.radial.profile≤E:=by
-      have hh:Cdead*(sourceControl Sdead (p.profile 1))^2*
-          ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) (p.profile 0))^2*(1+‖t‖)^(2*ndead)≤A:=by
-        apply le_trans _ hp.2.2
-        gcongr
-        exact le_add_of_nonneg_left hDl.le
-      have hh':=mul_le_mul_of_nonneg_left hh hd
-      have he:diagonalControl s.radial.profile*A≤E:=by
-        dsimp only [E]
-        nlinarith only [mul_nonneg hK (mul_nonneg hd hA)]
-      apply le_trans _ he
-      convert hh' using 1; ring
+      pm_4936 Cdead Sdead ndead le_add_of_nonneg_left hDl.le
+      pm_3325
     have hw:=hweight Z Bmask bΦ a b s (p.profile 0) (p.profile 1) ha (by linarith only [hlo, hhi])
       (p.support 0) (p.support 1) (fun _=>∅) (fun _ _=>0) (fun _=>1)
       t Xshort Xlong (E*(Pmain+Perror)) 1
@@ -170,12 +149,12 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
       · intro Ds hDs Dl hDl' I hI
         obtain ⟨hNs,_⟩:=divisor_norm s Ds hDs
         obtain ⟨hNl,_⟩:=divisor_norm s Dl hDl'
-        have hpS:0<((∏P∈Ds,P).absNorm:ℝ):=zero_lt_one.trans_le hNs
-        have hpL:0<((∏P∈Dl,P).absNorm:ℝ):=zero_lt_one.trans_le hNl
+        pm_3345 hpS Ds hNs
+        pm_3345 hpL Dl hNl
         have heffective (f:O→ℂ):radialEnergy f (effectiveState s).radial.keep
             s.radial.profile s.radial.scale=radialEnergy f s.radial.keep s.radial.profile s.radial.scale:=
           radialEnergy_effective s.radial f
-        simp only [Finset.univ_eq_empty,Finset.empty_sdiff,Finset.prod_empty,mul_one,Real.rpow_one]
+        pm_94 Finset.univ_eq_empty Finset.empty_sdiff Finset.prod_empty mul_one Real.rpow_one
         rw [show (fun z:O=>polynomial (naturalCharacter s.character z) false (p.profile 0)
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t*
             polynomial (naturalCharacter s.character z) false (p.profile 1)
@@ -184,7 +163,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
               (Xlong/((∏P∈Dl,P).absNorm:ℝ)) 0 t*
             polynomial (naturalCharacter s.character z) false (p.profile 0)
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t) by funext z;exact mul_comm _ _]
-        by_cases hl:0≤s.width-Real.logb Z (Xlong/((∏P∈Dl,P).absNorm:ℝ))+xi
+        by_cases hl:0≤ s.width-Real.logb Z (Xlong/((∏P∈Dl,P).absNorm:ℝ))+xi
         · have hh:=hZ.2 Bmask L Mcap loss Q degree K hK hgrowth hBmask hL hLreflect
             s hQ hs (p.profile 1) (p.profile 0) (p.support 1) (p.support 0)
             t Xshort Xlong hXs horder hcap hsupport Ds Dl hDs hDl' hl
@@ -208,12 +187,12 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
             (Xshort/((∏P∈Ds,P).absNorm:ℝ)) (div_pos hXs hpS) hfar
           rw [Real.rpow_logb hz hZ.1.ne' (div_pos hXl hpL)] at hh
           rw [heffective]
-          have hshortcap:Xshort/((∏P∈Ds,P).absNorm:ℝ)≤Z^L:=
+          have hshortcap:Xshort/((∏P∈Ds,P).absNorm:ℝ)≤Z ^L:=
             (div_le_self hXs.le hNs).trans hcap
           have hb:=mul_le_mul_of_nonneg_right herrDead
-            (show 0≤Rcap^(2*epsilon)*Z^(-2*saving)*max 1 s.radial.scale*
+            (show 0≤Rcap^(2*epsilon)*Z ^(-2*saving)*max 1 s.radial.scale*
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)) by positivity)
-          have hc:E*(Rcap^(2*epsilon)*Z^(-2*saving)*max 1 s.radial.scale*
+          have hc:E*(Rcap^(2*epsilon)*Z ^(-2*saving)*max 1 s.radial.scale*
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)))≤E*Perror:=by
             dsimp only [Perror]
             gcongr
@@ -222,7 +201,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
               (le_mul_of_one_le_right (mul_nonneg hE (add_nonneg hPm hPe)) hNl)
           apply hh.trans
           calc
-            _ ≤ E*(Rcap^(2*epsilon)*Z^(-2*saving)*max 1 s.radial.scale*
+            _ ≤ E*(Rcap^(2*epsilon)*Z ^(-2*saving)*max 1 s.radial.scale*
                 (Xshort/((∏P∈Ds,P).absNorm:ℝ))) := by
               convert hb using 1; dsimp only [Rcap,sourceControl]; ring
             _ ≤ E*Perror := hc

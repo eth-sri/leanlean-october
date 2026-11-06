@@ -30,7 +30,10 @@ def robertSargosSymmetricSum (f : ℝ → ℝ) (M H : ℕ) : ℂ :=
     ∑ m ∈ Finset.Icc (h+1) ((M:ℤ)-h),
       fordAdditiveCharacter (robertSargosSymmetricDifference f m h)
 
-theorem robertSargos_symmetric_array_support (f : ℝ → ℝ) (M H : ℕ)
+section
+variable (f : ℝ → ℝ) (M H : ℕ)
+include f M H
+theorem robertSargos_symmetric_array_support
     (m h : ℤ) (hout : m ∉ Finset.Icc (1:ℤ) M ∨ h ∉ Finset.Icc (1:ℤ) (2*H)) :
     robertSargosSymmetricArray f M H m h = 0 := by
   unfold robertSargosSymmetricArray
@@ -41,7 +44,7 @@ theorem robertSargos_symmetric_array_support (f : ℝ → ℝ) (M H : ℕ)
   · rfl
   · rfl
 
-theorem robertSargos_symmetric_array_sum (f : ℝ → ℝ) (M H : ℕ) :
+theorem robertSargos_symmetric_array_sum :
     (∑ m ∈ Finset.Icc (1:ℤ) M, ∑ h ∈ Finset.Icc (1:ℤ) (2*H),
       robertSargosSymmetricArray f M H m h) = robertSargosSymmetricSum f M H := by
   classical
@@ -71,5 +74,6 @@ theorem robertSargos_symmetric_array_sum (f : ℝ → ℝ) (M H : ℕ) :
       ext m
       simp only [Finset.mem_filter,Finset.mem_Icc]
       omega
+end
 
 end TaoTrudgianYang2025

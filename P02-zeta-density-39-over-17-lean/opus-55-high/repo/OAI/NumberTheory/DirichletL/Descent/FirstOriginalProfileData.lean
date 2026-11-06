@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalSourceEnergy
 public import OAI.NumberTheory.DirichletL.Descent.PriorityProfile
 public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsCells
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ open CompletedHeight FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 abbrev OriginalIndex (ι : Type*) := Σ _ : FirstOriginalOuter ι,Ideal O×O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def leftNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.rightBit)‖^2
 def rightNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.leftBit)‖^2
@@ -29,16 +30,14 @@ include hp in
 theorem original_source_positive (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (Y : ℝ) :
     ∀x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun k=>k.1) Y,
-      0<leftNorm p x ∧ 0<rightNorm p x ∧ 0<commonNorm p x ∧ 0<activeNorm p x ∧
+      0<leftNorm p x ∧ 0< rightNorm p x ∧ 0< commonNorm p x ∧ 0<activeNorm p x ∧
       divisorElement p x.1≠0 ∧ x.2.2≠0 := by
   intro x hx
   have hm := (Finset.mem_sigma.mp hx).2
   have hk := ((mem_firstRetainedSource p labels x.1.1 Y x.2).mp hm).2
   refine ⟨?_,?_,primeProductNorm_pos p hp _,primeProductNorm_pos p hp _,?_,(Finset.mem_erase.mp hk).1⟩
-  · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero
-      (primeProduct_ne_zero p hp _ _)))
-  · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero
-      (primeProduct_ne_zero p hp _ _)))
+  pm_6729
+  pm_6729
   · exact primeSubsetGenerator_ne_zero _ _
 
 include hp in
@@ -48,10 +47,10 @@ theorem original_source_norms_ge_one (pool : Finset ι) (Q : Finset (ι→₀ℕ
       ∀i,1≤InverseMomentFirstChildWindows.sourceNorms (leftNorm p) (rightNorm p) (commonNorm p)
         (activeNorm p) (fun x=>divisorElement p x.1) (fun x=>x.2.2) x i := by
   intro x hx
-  have hh := original_source_positive p hp pool Q labels Y x hx
+  pm_528 hh original_source_positive p hp pool Q labels Y x hx
   apply InverseMomentFirstChildWindows.sourceNorms_ge_one
-  · exact element_norm_ge_one _ (primeProduct_ne_zero p hp _ _)
-  · exact element_norm_ge_one _ (primeProduct_ne_zero p hp _ _)
+  pm_5268 element_norm_ge_one
+  pm_5268 element_norm_ge_one
   · exact primeProductNorm_ge_one p hp _
   · exact primeProductNorm_ge_one p hp _
   · exact hh.2.2.2.2.1
@@ -60,7 +59,7 @@ theorem original_source_norms_ge_one (pool : Finset ι) (Q : Finset (ι→₀ℕ
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem original_weight_bound (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Γ Y : ℝ)
+    (R : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ) (Γ Y : ℝ)
     (hΓ : 0≤Γ) (hβ : ∀I∈labels,∀v∈Q,‖β I v‖≤Γ) :
     ∀k∈firstOriginalOuter pool Q,∀x∈firstRetainedSource p labels k.1 Y,
       ‖firstOriginalWeight p β R k x‖≤Γ^2 := by

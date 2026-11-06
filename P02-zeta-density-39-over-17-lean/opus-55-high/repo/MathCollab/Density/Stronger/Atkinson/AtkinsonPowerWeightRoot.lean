@@ -7,6 +7,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerWeight
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonAmplitudeIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,7 @@ theorem exists_intervalC1Bound_atkinsonPowerWeight_root (α : ℝ) :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 0 < T → 0 < G → G ^ 2 ≤ 2 * T → 0 < L →
       IntervalC1Bound (fun y => atkinsonPowerWeight T G L α (y ^ 2))
         (Real.sqrt T / 4) (Real.sqrt T) (C * G * T ^ (-α)) := by
-  obtain ⟨C, hC, hbound⟩ := exists_intervalC1Bound_atkinsonPowerWeight α
-  refine ⟨C, hC, ?_⟩
+  pm_1062 C hC hbound exists_intervalC1Bound_atkinsonPowerWeight α
   intro T G L hT hG hGT hL
   have hsq : (Real.sqrt T / 4) ^ 2 = T / 16 := by
     rw [div_pow, Real.sq_sqrt hT.le]
@@ -30,7 +30,7 @@ theorem exists_intervalC1Bound_atkinsonPowerWeight_root (α : ℝ) :
   have hf : IntervalC1Bound (atkinsonPowerWeight T G L α)
       ((Real.sqrt T / 4) ^ 2) ((Real.sqrt T) ^ 2) (C * G * T ^ (-α)) := by
     rw [hsq, Real.sq_sqrt hT.le]
-    exact hbound T G L hT hG hGT hL
+    grind
   exact hf.comp_sq (by positivity) (by nlinarith [Real.sqrt_nonneg T])
 
 

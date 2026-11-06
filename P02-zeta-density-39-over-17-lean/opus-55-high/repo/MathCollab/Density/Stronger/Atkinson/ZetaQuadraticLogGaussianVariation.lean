@@ -7,6 +7,7 @@ The reused nonstationary foundation retains its Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaLogGaussianVariation
 public import MathCollab.Density.Stronger.Atkinson.DivisorTestSmooth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -65,11 +66,11 @@ theorem intervalC1Bound_zetaQuadraticLogGaussian {T G : ℝ}
     IntervalC1Bound
       (fun x => zetaGaussianQuadraticIntegral T G (Real.log x - Real.log (T / (2 * Real.pi))))
       (T / 16) T (4 * Real.sqrt Real.pi * G) := by
-  let A : ℝ := T / (2 * Real.pi)
+  pm_5316 A T Real.pi
   have hcenter := atkinson_center_mem_physical hT
   have henv := intervalC1Bound_zetaLogGaussianEnvelope (by positivity : 0 < T / 16)
     hcenter.1 hcenter.2 G
-  have hinterval : T / 16 ≤ T := by linarith
+  pm_6602 hinterval
   have hs (x : ℝ) (hx : x ∈ Icc (T / 16) T) :
       ContDiffAt ℝ 1 (fun y => zetaGaussianQuadraticIntegral T G (Real.log y - Real.log A)) x := by
     have hl : ContDiffAt ℝ 1 Real.log x :=
@@ -81,8 +82,7 @@ theorem intervalC1Bound_zetaQuadraticLogGaussian {T G : ℝ}
       volume (T / 16) T := by
     apply ContinuousOn.intervalIntegrable
     rw [uIcc_of_le hinterval]
-    intro x hx
-    exact ((hs x hx).derivWithin (m := 0) (by norm_num)).continuousAt.continuousWithinAt
+    pm_4373
   refine ⟨by positivity, hs, ?_, ?_⟩
   · intro x hx
     exact (norm_zetaGaussianQuadraticIntegral_le_mass hT hG hGT _).trans (by

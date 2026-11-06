@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 public import OAI.NumberTheory.DirichletL.Detector.Physical
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,10 @@ def sourceMellinWeight (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ)
   (X:ℂ)^(1/2-z)*(Z:ℂ)^(x+z-1)*(Y:ℂ)^(w-1)*
     Complex.exp ((x+z-1)^2)*mellin (paperRadialFourier W0) z*mellin W1 w
 
-lemma sourceMellinWeight_marked (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z Q : ℝ)
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z Q : ℝ)
+include W0 W1 X Y Z Q
+lemma sourceMellinWeight_marked
     (hZ : 0<Z) (hQ : 0<Q) (x w z : ℂ) :
     sourceMellinWeight W0 W1 X Y (Z*Q) x w z=
       (Q:ℂ)^(x+z-1)*sourceMellinWeight W0 W1 X Y Z x w z := by
@@ -23,11 +27,11 @@ lemma sourceMellinWeight_marked (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z Q : ℝ)
   rw [Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg hZ.le hQ.le]
   ring
 
-lemma sourceMellinWeight_rescaled (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z Q : ℝ)
+lemma sourceMellinWeight_rescaled
     (hX : 0<X) (hY : 0<Y) (hQ : 0<Q) (x w z : ℂ) :
     ((Q^(-(3/2:ℝ)):ℝ):ℂ)*sourceMellinWeight W0 W1 (X/Q) (Y/Q) Z x w z=
       (Q:ℂ)^(z-w-1)*sourceMellinWeight W0 W1 X Y Z x w z := by
-  have hQc : (Q:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hQ.ne'
+  pm_3058 hQc Q hQ.ne'
   unfold sourceMellinWeight
   rw [Complex.ofReal_div,Complex.ofReal_div,
     Complex.div_cpow_ofReal_nonneg hX.le hQ.le,Complex.div_cpow_ofReal_nonneg hY.le hQ.le,
@@ -38,11 +42,8 @@ lemma sourceMellinWeight_rescaled (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z Q : ℝ)
     congr 1
     push_cast
     ring
-  calc
-    _ = ((Q:ℂ)^((-(3/2:ℝ):ℝ):ℂ)*(Q:ℂ)^(-(1/2-z))*(Q:ℂ)^(-(w-1))) *
-        ((X:ℂ)^(1/2-z)*(Z:ℂ)^(x+z-1)*(Y:ℂ)^(w-1)*
-        Complex.exp ((x+z-1)^2)*mellin (paperRadialFourier W0) z*mellin W1 w) := by ring_nf
-    _ = _ := by rw [he]; simp only [div_eq_mul_inv]
+  grind
+end
 
 end SevenEighths.ProbePhysical
 end

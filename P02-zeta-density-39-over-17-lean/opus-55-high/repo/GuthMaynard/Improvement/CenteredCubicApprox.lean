@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.CenteredKernelBridge
 public import GuthMaynard.Improvement.CubicLocalError
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ContDiff FourierTransform
 namespace GuthMaynard.Improvement
@@ -13,8 +12,7 @@ theorem retainedPoissonKernel_measurable (ν : Measure ℝ) [SFinite ν]
     {a : ℝ → ℂ} (ha : Measurable a) (L : ℝ) (S : Finset ℤ) :
     Measurable (retainedPoissonKernel ν a L S) := by
   have hA := retainedAmplitude_measurable ha L S
-  have hp := phase_measurable
-  have hf : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
+  pm_5232 hp phase_measurable hf
   have hh : Measurable (fun z : ℝ × ℝ => retainedAmplitude a L S z.2*phase (z.1*mellinFrequency z.2)) := by fun_prop
   exact hh.stronglyMeasurable.integral_prod_right'.measurable
 
@@ -33,19 +31,17 @@ theorem centered_cubic_approximation {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
           (retainedPoissonKernel (volume.restrict (Icc l u)) a L (poissonModes (T^(1+η)/L)))‖ ≤
         C*T^(-100:ℝ)*Real.sqrt (∫ t, μ t^2)^3 := by
   obtain ⟨E,hE,herr⟩ := centeredKernel_truncation_negligible ha hl hlu hs hη (show (0:ℝ) ≤ 1 by norm_num)
-  obtain ⟨D,hD,hbound⟩ := centeredKernel_uniform_bound ha hl hlu hs
+  pm_97 D hD hbound centeredKernel_uniform_bound ha hl hlu hs
   obtain ⟨B,hB⟩ := isCompact_Icc.exists_bound_of_continuousOn ha.continuous.continuousOn
   have hb : ∀ x, ‖a x‖ ≤ max 0 B := by
     intro x
-    by_cases hx : x ∈ Icc l u
-    · exact (hB x hx).trans (le_max_right _ _)
+    pm_4540 hB
     · simp [hs x hx]
-  refine ⟨3*E*(D+E)^2,by positivity,?_⟩
+  pm_6084
   intro T L t₀ t₁ μ hT hL hLT ht hlen hm h0 hi h2 hsup
   let J := retainedPoissonKernel (volume.restrict (Icc l u)) a L (poissonModes (T^(1+η)/L))
-  have hLp : 0 < L := by linarith
-  have hTp : 0 < T := by linarith
-  have hpow : T^(-200:ℝ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hT (by norm_num)
+  pm_72 hLp L hTp T
+  pm_6646 hpow
   have he : ∀ s, |s| ≤ t₁-t₀ → ‖centeredKernel a l u L s-J s‖ ≤ E*T^(-200:ℝ) := by
     intro s hst
     dsimp only [J]

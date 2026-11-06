@@ -1,8 +1,9 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.FirstDerivativeTest
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 -- Lean 4.34 elaborator compatibility.
 set_option backward.isDefEq.respectTransparency false
@@ -19,8 +20,11 @@ namespace DhimanKadiriQuesadaHerrera2026
 
 open Complex MeasureTheory
 
+section
+variable {a b : ℝ}
+include a b
 /-- Integration by parts retains the actual complex boundary factor 1/i. -/
-theorem oscillatory_integral_parts {a b : ℝ} {f p p' h h' : ℝ → ℝ}
+theorem oscillatory_integral_parts {f p p' h h' : ℝ → ℝ}
     (hf : ∀ u ∈ Set.uIcc a b, HasDerivAt f (p u) u)
     (hp : ∀ u ∈ Set.uIcc a b, HasDerivAt p (p' u) u)
     (hh : ∀ u ∈ Set.uIcc a b, HasDerivAt h (h' u) u)
@@ -31,8 +35,7 @@ theorem oscillatory_integral_parts {a b : ℝ} {f p p' h h' : ℝ → ℝ}
         (h a / p a : ℝ) * exp (I * (f a : ℂ))) / I -
       (∫ u in a..b, (((h' u * p u - h u * p' u) / (p u) ^ 2 : ℝ) : ℂ) *
         exp (I * (f u : ℂ))) / I := by
-  have hhc : ContinuousOn h (Set.uIcc a b) := fun u hu => (hh u hu).continuousAt.continuousWithinAt
-  have hfc : ContinuousOn f (Set.uIcc a b) := fun u hu => (hf u hu).continuousAt.continuousWithinAt
+  pm_598 Set.uIcc
   have he (u : ℝ) (hu : u ∈ Set.uIcc a b) :
       HasDerivAt (fun v => exp (I * (f v : ℂ)))
         ((I * (p u : ℂ)) * exp (I * (f u : ℂ))) u := by
@@ -65,7 +68,7 @@ theorem oscillatory_integral_parts {a b : ℝ} {f p p' h h' : ℝ → ℝ}
 
 /-- The explicit second-integration remainder follows from two actual quotient monotonicity conditions.
 The assumptions are analytic conditions on the amplitudes, not a supplied remainder estimate. -/
-theorem norm_oscillatory_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
+theorem norm_oscillatory_integral_sub_boundary_le (hab : a < b)
     {f p p' h h' : ℝ → ℝ}
     (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
     (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
@@ -78,8 +81,7 @@ theorem norm_oscillatory_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
       ((h b / p b : ℝ) * exp (I * (f b : ℂ)) -
         (h a / p a : ℝ) * exp (I * (f a : ℂ))) / I‖ ≤
       2 * |h' a| / (p a) ^ 2 + 2 * |h a * p' a| / |p a| ^ 3 := by
-  have hhc : ContinuousOn h (Set.Icc a b) := fun u hu => (hh u hu).continuousAt.continuousWithinAt
-  have hfc : ContinuousOn f (Set.Icc a b) := fun u hu => (hf u hu).continuousAt.continuousWithinAt
+  pm_598 Set.Icc
   have ha1 : ContinuousOn (fun u => h' u / p u) (Set.Icc a b) := hhpc.div hpc hn
   have ha2 : ContinuousOn (fun u => h u * p' u / (p u) ^ 2) (Set.Icc a b) :=
     (hhc.mul hppc).div (hpc.pow 2) (fun u hu => pow_ne_zero _ (hn u hu))
@@ -116,7 +118,7 @@ theorem norm_oscillatory_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
   simpa only [mul_div_assoc] using add_le_add hb1 hb2
 
 /-- Source 2π normalization of the second-integration estimate, with its exact complex endpoint term. -/
-theorem norm_expMode_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
+theorem norm_expMode_integral_sub_boundary_le (hab : a < b)
     {f p p' h h' : ℝ → ℝ}
     (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
     (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
@@ -145,14 +147,10 @@ theorem norm_expMode_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
     (continuousOn_const.mul hpc) (continuousOn_const.mul hppc) hhpc
     (fun u hu => mul_ne_zero Real.two_pi_pos.ne' (hn u hu))
     (by
-      intro u hu v hv huv
-      dsimp only
-      rw [he1 u, he1 v]
+      pm_7954 he1
       exact mul_le_mul_of_nonneg_left (hq1 hu hv huv) (by positivity))
     (by
-      intro u hu v hv huv
-      dsimp only
-      rw [he2 u, he2 v]
+      pm_7954 he2
       exact mul_le_mul_of_nonneg_left (hq2 hu hv huv) (by positivity))
   have hexp (u : ℝ) : exp (I * ((2 * Real.pi * f u : ℝ) : ℂ)) =
       exp (2 * (Real.pi : ℂ) * I * (f u : ℂ)) := by
@@ -176,6 +174,7 @@ theorem norm_expMode_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
     show 2 * |h a * (2 * Real.pi * p' a)| / |2 * Real.pi * p a| ^ 3 =
     2 * (|h a * (2 * Real.pi * p' a)| / |2 * Real.pi * p a| ^ 3) by ring, he2]
   ring
+end
 
 /-- Above the phase-derivative cutoff, the source's decreasing absolute amplitudes imply both quotient conditions. -/
 theorem negative_second_quotients_antitone {a b ν : ℝ} {p p' h h' : ℝ → ℝ}

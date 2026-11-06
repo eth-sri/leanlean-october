@@ -5,6 +5,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.ContinuousThirdDerivativeSquare
 public import LaterPairs.Native.ThirdDerivativeNormScale
 public import LaterPairs.Native.ThirdDerivativeRpowScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -31,14 +32,14 @@ theorem continuous_third_derivative_bound
     (hhi : ∀ x ∈ Icc A (A+N), F''' x ≤ C*μ) :
     ‖∑ n ∈ Finset.range N, fordAdditiveCharacter (F (A+n))‖ ≤
       20*C*((N:ℝ)*μ^((1:ℝ)/6)+Real.sqrt N*μ^(-(1:ℝ)/6)) := by
-  obtain ⟨hR,hscale,hs,hi⟩ := third_derivative_rpow_scale hμ hμ1
+  pm_205 hR hscale hs hi third_derivative_rpow_scale hμ hμ1
   have hb := continuous_third_derivative_square_bound F F' F'' F''' A N
     hC hμ hR hscale hF hF' hF'' hlo hhi
   have hn := third_derivative_norm_of_square (Nat.cast_nonneg N)
     (zero_lt_one.trans_le hR) hC hb
   have he : (N:ℝ)/Real.sqrt (μ^(-(1:ℝ)/3)) = (N:ℝ)*μ^((1:ℝ)/6) := by
-    rw [div_eq_mul_one_div,hi]
-  rwa [he,hs] at hn
+    grind
+  grind
 
 theorem norm_sum_fordAdditiveCharacter_neg_phase
     (F : ℝ → ℝ) (A : ℝ) (N : ℕ) :

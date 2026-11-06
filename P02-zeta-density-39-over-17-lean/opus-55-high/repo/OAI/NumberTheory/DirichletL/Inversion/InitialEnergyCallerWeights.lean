@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,7 +32,7 @@ theorem initialBeta_norm_le_one (Ψ : Eis →* ℂ) (hΨ : ∀ n, ‖Ψ n‖≤1
     (j : Eis) (G : Finset ι) : ‖initialBeta p Ψ j G‖≤1 := by
   have hm : ‖rowCoprimeMask (fun i=>Ideal.span {p i}) G j‖≤1 := by
     unfold rowCoprimeMask
-    split_ifs <;> norm_num
+    aesop
   have h := (mul_le_of_le_one_left (norm_nonneg _) (hΨ (∏ i∈G,p i))).trans hm
   simp only [initialBeta,Complex.norm_real,Real.norm_eq_abs]
   rw [abs_of_nonneg (sq_nonneg _),norm_mul]
@@ -43,10 +44,7 @@ theorem outerCoefficient_norm_le
     (Ψ : Eis →* ℂ) (hΨ : ∀ n, ‖Ψ n‖≤1)
     (j : Eis) (x : Point ι) (ρ : SecondRayIndex) :
     ‖outerCoefficient p hp hcop hg Ψ j x ρ‖ ≤ ‖secondRayCoefficient ρ‖ := by
-  have hβ := initialBeta_norm_le_one p Ψ hΨ j x.common
-  have hμ := QuadraticInitialBound.norm_ideal_moebius_le_one (sourceIdeal p x.divisor)
-  have hV : ‖supportMobius (fun i=>Ideal.span {p i}) x.overlap‖≤1 :=
-    QuadraticInitialBound.norm_ideal_moebius_le_one _
+  pm_5128 hβ hμ hV
   have hL := (initialColumn_norm_le p hp hcop hg hc (secondRayMinus Ψ ρ)
     j (∏ i∈x.common,p i) (divisor p x) x.frequency x.overlap).trans
       ((secondRayMinus_norm_le Ψ ρ _).trans (hΨ _))

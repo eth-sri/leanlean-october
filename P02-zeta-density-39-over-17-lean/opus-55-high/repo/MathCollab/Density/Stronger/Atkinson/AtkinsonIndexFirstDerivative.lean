@@ -8,6 +8,7 @@ and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexBProcess
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,11 +24,9 @@ This file supplies the first-derivative alternative used together with the
 scales on a dyadic index box; no exponent-pair estimate is postulated.
 -/
 
-open Set
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-set_option autoImplicit false
 noncomputable section
 
 /-- Lower first-derivative scale for two heights separated by `t-u` and
@@ -51,29 +50,13 @@ theorem atkinsonIndexRealSlope_sub_eq
       (2 * Real.pi * (t - u) / x) /
         (atkinsonIndexRealSlope t x +
           atkinsonIndexRealSlope u x) := by
-  have hst := atkinsonIndexRealSlope_pos ht hx
-  have hsu := atkinsonIndexRealSlope_pos hu hx
+  pm_194 hst atkinsonIndexRealSlope_pos ht hx hsu hu
   have hden : atkinsonIndexRealSlope t x +
       atkinsonIndexRealSlope u x ≠ 0 := by positivity
-  have htsq : (atkinsonIndexRealSlope t x) ^ (2 : ℕ) =
-      2 * Real.pi * t / x + Real.pi ^ (2 : ℕ) := by
-    unfold atkinsonIndexRealSlope
-    rw [Real.sq_sqrt]
-    positivity
-  have husq : (atkinsonIndexRealSlope u x) ^ (2 : ℕ) =
-      2 * Real.pi * u / x + Real.pi ^ (2 : ℕ) := by
-    unfold atkinsonIndexRealSlope
-    rw [Real.sq_sqrt]
-    positivity
+  pm_5069 htsq t
+  pm_5069 husq u
   apply (eq_div_iff hden).2
-  calc
-    (atkinsonIndexRealSlope t x -
-          atkinsonIndexRealSlope u x) *
-        (atkinsonIndexRealSlope t x +
-          atkinsonIndexRealSlope u x) =
-        (atkinsonIndexRealSlope t x) ^ (2 : ℕ) -
-          (atkinsonIndexRealSlope u x) ^ (2 : ℕ) := by ring
-    _ = 2 * Real.pi * (t - u) / x := by rw [htsq, husq]; ring
+  grind
 
 /-- Pointwise first-derivative bounds on a dyadic height/index box. -/
 theorem atkinsonIndexRealSlopeDifference_box_bounds
@@ -91,8 +74,7 @@ theorem atkinsonIndexRealSlopeDifference_box_bounds
   have hB : 0 < B := hx.trans_le hxB
   have ht : 0 < t := hu.trans htu
   have hgap : 0 < t - u := sub_pos.mpr htu
-  have hstPos := atkinsonIndexRealSlope_pos ht hx
-  have hsuPos := atkinsonIndexRealSlope_pos hu hx
+  pm_194 hstPos atkinsonIndexRealSlope_pos ht hx hsuPos hu
   have hupperApos := atkinsonIndexSlopeUpper_pos hu hA
   have hlowerBpos := atkinsonIndexSlopeLower_pos hu hB
   have hupperX := atkinsonIndexSlopeUpper_anti hu hA hAx
@@ -113,7 +95,7 @@ theorem atkinsonIndexRealSlopeDifference_box_bounds
     have hsum : atkinsonIndexRealSlope t x +
         atkinsonIndexRealSlope u x ≤
         2 * atkinsonIndexSlopeUpper u A := by
-      linarith [hstUpper.trans hupperX, hsuUpper.trans hupperX]
+      grind
     exact mul_le_mul hxB hsum (add_nonneg hstPos.le hsuPos.le) hB.le
   have hdenLower :
       A * (2 * atkinsonIndexSlopeLower u B) ≤
@@ -122,7 +104,7 @@ theorem atkinsonIndexRealSlopeDifference_box_bounds
     have hsum : 2 * atkinsonIndexSlopeLower u B ≤
         atkinsonIndexRealSlope t x +
           atkinsonIndexRealSlope u x := by
-      linarith [hlowerX.trans hstLower, hlowerX.trans hsuLower]
+      grind
     exact mul_le_mul hAx hsum (mul_nonneg (by norm_num) hlowerBpos.le) hx.le
   have hnum : 0 ≤ 2 * Real.pi * (t - u) := by positivity
   have hdenUpperPos : 0 < B *
@@ -175,10 +157,12 @@ def atkinsonIndexIncreasingDifferenceNat
   atkinsonSourcePhase t (K + n) -
     atkinsonSourcePhase u (K + n)
 
+section
+variable {t u : ℝ}
+include t u
 /-- A unit increment of the exact phase difference equals its derivative at
 an intermediate real index. -/
-theorem exists_atkinsonIndexIncreasingDifferenceNat_increment
-    {t u : ℝ} {K n : ℕ}
+theorem exists_atkinsonIndexIncreasingDifferenceNat_increment {K n : ℕ}
     (hu : 0 < u) (htu : u < t) (hK : 0 < K) :
     ∃ xi ∈ Set.Ioo ((K + n : ℕ) : ℝ) ((K + n + 1 : ℕ) : ℝ),
       atkinsonIndexRealSlope t xi -
@@ -188,8 +172,7 @@ theorem exists_atkinsonIndexIncreasingDifferenceNat_increment
   let F : ℝ → ℝ := atkinsonIndexPhaseDifference t u
   let F' : ℝ → ℝ := fun x =>
     atkinsonIndexRealSlope t x - atkinsonIndexRealSlope u x
-  have hleft : 0 < ((K + n : ℕ) : ℝ) := by
-    exact_mod_cast (show 0 < K + n by omega)
+  pm_5302 hleft
   have hlt : ((K + n : ℕ) : ℝ) < ((K + n + 1 : ℕ) : ℝ) := by
     exact_mod_cast (show K + n < K + n + 1 by omega)
   have hcont : ContinuousOn F
@@ -204,8 +187,7 @@ theorem exists_atkinsonIndexIncreasingDifferenceNat_increment
       (hu.trans htu) hu (hleft.trans hx.1)
   obtain ⟨xi, hxi, heq⟩ :=
     exists_hasDerivAt_eq_slope F F' hlt hcont hderiv
-  refine ⟨xi, hxi, ?_⟩
-  dsimp only [F, F'] at heq ⊢
+  pm_8226 xi hxi
   have hone : (((K + n + 1 : ℕ) : ℝ) - ((K + n : ℕ) : ℝ)) = 1 := by
     push_cast
     ring
@@ -220,8 +202,7 @@ theorem exists_atkinsonIndexIncreasingDifferenceNat_increment
 
 /-- Uniform unit-increment bounds obtained from the pointwise derivative
 estimate. -/
-theorem atkinsonIndexIncreasingDifferenceNat_increment_bounds
-    {t u : ℝ} {K N : ℕ}
+theorem atkinsonIndexIncreasingDifferenceNat_increment_bounds {K N : ℕ}
     (hu : 0 < u) (htu : u < t) (hK : 0 < K)
     (hblock : (((K + N + 2 : ℕ) : ℝ)) ≤ u)
     (htUpper : t ≤ 2 * u) :
@@ -250,13 +231,11 @@ theorem atkinsonIndexIncreasingDifferenceNat_increment_bounds
       exact_mod_cast (show K + N + 1 ≤ K + N + 2 by omega))
   have hb := atkinsonIndexRealSlopeDifference_box_bounds
     hu htu (by exact_mod_cast hK) hAxi hxiB hBu htUpper
-  rw [heq] at hb
-  simpa only [Nat.cast_add, Nat.cast_one] using hb
+  pm_354 heq hb Nat.cast_add Nat.cast_one
 
 /-- The unit increments of the positively sloped phase orientation decrease
 with the summation index. -/
-theorem atkinsonIndexIncreasingDifferenceNat_increment_anti
-    {t u : ℝ} {K N : ℕ}
+theorem atkinsonIndexIncreasingDifferenceNat_increment_anti {K N : ℕ}
     (hu : 0 < u) (htu : u < t) (hK : 0 < K)
     (hblock : (((K + N + 2 : ℕ) : ℝ)) ≤ u)
     (htUpper : t ≤ 2 * u) :
@@ -274,6 +253,7 @@ theorem atkinsonIndexIncreasingDifferenceNat_increment_anti
   unfold atkinsonIndexPositiveDifferenceNat at hsecond
   unfold atkinsonIndexIncreasingDifferenceNat
   linarith
+end
 
 end
 

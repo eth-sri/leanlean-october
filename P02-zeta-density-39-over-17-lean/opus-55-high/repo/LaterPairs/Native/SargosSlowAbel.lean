@@ -25,19 +25,14 @@ theorem sargos_sum_Ioc_eq_range {A : Type*} [AddCommMonoid A]
       ∑ j ∈ Finset.range H, f ((N : ℤ)+j+1) := by
   symm
   refine Finset.sum_bij (fun j _ => (N : ℤ)+j+1) ?_ ?_ ?_ ?_
-  · intro j hj
-    have hj' := Finset.mem_range.mp hj
-    rw [Finset.mem_Ioc]
-    constructor <;> omega
-  · intro j hj k hk he
-    omega
+  grind
+  grind
   · intro n hn
     rw [Finset.mem_Ioc] at hn
     have hn0 : 0 ≤ n-(N : ℤ)-1 := by omega
     have hc := Int.toNat_of_nonneg hn0
     refine ⟨(n-(N : ℤ)-1).toNat,Finset.mem_range.mpr (by omega),?_⟩
     omega
-  · intro j hj
-    rfl
+  grind
 
 end TaoTrudgianYang2025

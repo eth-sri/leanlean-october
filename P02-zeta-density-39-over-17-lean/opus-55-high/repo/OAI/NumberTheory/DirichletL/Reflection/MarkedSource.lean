@@ -25,7 +25,7 @@ def restrict (A : Finset ι) : PrimeFamily A where
 lemma restrict_pairwise (hP : Pairwise (Function.onFun IsCoprime P.ideal)) (A : Finset ι) :
     Pairwise (Function.onFun IsCoprime (P.restrict A).ideal) := by
   intro i k hik
-  exact hP (fun h => hik (Subtype.ext h))
+  aesop
 
 def activeControlled [Fintype ι]
     (hP : Pairwise (Function.onFun IsCoprime P.ideal))

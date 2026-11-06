@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleyPadicScale
 public import GafniTao.WooleyCriticalBase
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # From Wooley's p-adic concentration to the critical mean value estimate
@@ -15,7 +16,6 @@ requested `Q^epsilon` loss, with every fixed factor retained in the constant.
 
 namespace GafniTao
 
-noncomputable section
 
 theorem fordLambda34_critical (k : ℕ) (epsilon : ℝ) :
     fordLambda34 (fordVinogradovKappa k) k epsilon =
@@ -37,7 +37,7 @@ theorem vinogradovCriticalEndpoint_of_wooleyPadic
   let s := fordVinogradovKappa k
   let delta := epsilon / (k : ℝ)
   have hkPos : 0 < k := by omega
-  have hkReal : (0 : ℝ) < k := by exact_mod_cast hkPos
+  pm_74 hkReal k hkPos
   have hdelta : 0 < delta := div_pos hepsilon hkReal
   obtain ⟨C, hC, B0, hconcentration⟩ :=
     hconc.specialize hp hkp hdelta
@@ -50,13 +50,12 @@ theorem vinogradovCriticalEndpoint_of_wooleyPadic
   refine ⟨C * (D : ℝ) ^ epsilon, mul_pos hC (Real.rpow_pos_of_pos
     (by exact_mod_cast hDPos) _), ?_⟩
   intro Q hQ
-  obtain ⟨h, hB, hQph, hnowrap, hphUpper⟩ :=
-    exists_wooleyPadicScale hk hp.two_le hQ
+  pm_351 h hB hQph hnowrap hphUpper exists_wooleyPadicScale hk hp.two_le hQ
   have hmodular := hconcentration Q h hQ hB hQph
   rw [wooleyPadicCount_eq_fordVinogradovMomentNat hQ hnowrap] at hmodular
   have hQPosNat : 0 < Q := by omega
-  have hQPos : (0 : ℝ) < Q := by exact_mod_cast hQPosNat
-  have hDPosReal : (0 : ℝ) < D := by exact_mod_cast hDPos
+  pm_74 hQPos Q hQPosNat
+  pm_74 hDPosReal D hDPos
   have hphUpperNat : p ^ h ≤ D * Q := by
     simpa [D, s, Nat.mul_assoc] using hphUpper
   have hpowUpperNat : p ^ (k * h) ≤ (D * Q) ^ k := by
@@ -114,6 +113,5 @@ theorem heathBrownVMVTMainConjecture_of_wooleyPadic
     (vinogradovCriticalEndpoint_of_wooleyPadic hconc)
 
 
-end
 
 end GafniTao

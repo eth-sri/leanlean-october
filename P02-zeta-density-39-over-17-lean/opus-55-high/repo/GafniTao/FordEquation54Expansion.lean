@@ -1,8 +1,7 @@
 module
 public import GafniTao.FordLemma51Fibers
 
-@[expose] public section
-noncomputable section
+public section
 open scoped ComplexConjugate
 namespace GafniTao
 theorem conj_fordAdditiveCharacter (x : ℝ) :

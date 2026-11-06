@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,20 +31,12 @@ theorem buffered_rectangle_control (e ε : ℝ)
       LFunction (χ j) z≠0 ∧
       ‖LFunction (χ j) z‖+‖HeckeReciprocal.reciprocal (χ j) z‖≤
         C*(presentationComplexity (χ j) ((3*i+2 : ℕ)*T))^ε := by
-  obtain ⟨C,hC,hbound⟩ := HeckeDyadicControl.buffered_original_control e ε he he' hε
+  pm_3547 C hC hbound HeckeDyadicControl.buffered_original_control e ε he he' hε
   refine ⟨C,hC,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j z hzl hzr hzi
   have hz6 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-6*e) := by
-    rw [mem_closedBall,dist_eq_norm]
-    have heq : z-((2 : ℂ)+z.im*I)=((z.re-2 : ℝ) : ℂ) := by
-      apply Complex.ext <;> simp
-    rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith : z.re-2≤0)]
-    linarith
-  have hz2 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-2*e) :=
-    closedBall_subset_closedBall (by linarith) hz6
-  refine ⟨HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
-    hmax j z.im hzi hz2, ?_⟩
-  apply (hbound χ hχ T a i hT ha ha' hmax j z.im hzi z hz6).trans
+    pm_271
+  pm_228
   apply mul_le_mul_of_nonneg_left _ hC.le
   apply Real.rpow_le_rpow
   · unfold presentationComplexity complexity
@@ -52,7 +45,7 @@ theorem buffered_rectangle_control (e ε : ℝ)
   · exact hε.le
 
 theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
-    (hl : a+6*e≤l+σ) (hr : r+σ≤2) (hlr : l≤r) (hT : 0≤T)
+    (hl : a+6*e≤l+σ) (hr : r+σ≤2) (hlr : l≤ r) (hT : 0≤T)
     (hfreq : |freq|+T≤H) {s : ℂ} (hs : s ∈ (uIcc l r ×ℂ uIcc (-T) T)) :
     a+6*e≤(s+shift σ freq).re ∧ (s+shift σ freq).re≤2 ∧
       |(s+shift σ freq).im|≤H := by
@@ -67,8 +60,7 @@ theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
   · simp only [add_re,shift_re]
     linarith [hs'.1.2]
   · have hi : (s+shift σ freq).im=s.im-freq := by simp [shift,sub_eq_add_neg]
-    rw [hi]
-    exact (abs_sub _ _).trans (by linarith)
+    pm_515 hi abs_sub
 
 end SevenEighths.HeckeDyadic
 

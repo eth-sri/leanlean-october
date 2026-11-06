@@ -37,8 +37,10 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def secondLabelWeight (K : ℕ) (f : Ideal Eis) : ℝ := ((idealDivisors f).card : ℝ)^(9+4*K)
 
-theorem second_left_normalized_energy
-    (K : ℕ) (labels : Finset (Ideal Eis)) (rows : Finset Eis) (γ : OuterTriple)
+section
+variable (K : ℕ) (labels : Finset (Ideal Eis))
+include K labels
+theorem second_left_normalized_energy (rows : Finset Eis) (γ : OuterTriple)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (ω : ℝ → ℂ) (Z N V : ℝ) (hZ : 0 < Z) (t : Frequency × (Fin 6 → ℝ)) :
@@ -50,8 +52,7 @@ theorem second_left_normalized_energy
   exact initial_columnEnergy_clipping_normalized p hp hcop hg pool (secondRayMinus Ψ z)
     (actualSecondInheritedPuncture m γ) slots lists a labels rows (secondLabelWeight K) ω hZ N V _
 
-theorem second_right_normalized_energy
-    (K : ℕ) (labels : Finset (Ideal Eis)) (R : ℝ) (γ : OuterTriple)
+theorem second_right_normalized_energy (R : ℝ) (γ : OuterTriple)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (ω : ℝ → ℂ) (Z N V : ℝ) (hZ : 0 < Z) (t : Frequency × (Fin 6 → ℝ)) :
@@ -78,6 +79,7 @@ theorem second_right_normalized_energy
   exact initial_columnEnergy_clipping_normalized p hp hcop hg pool (secondRayPlus Ψ z)
     (actualSecondInheritedPuncture m γ) slots lists a labels (nonzeroChildFrequencyBall 1 R)
     (secondLabelWeight K) ω hZ N V _
+end
 
 omit [DecidableEq σ] in
 theorem normalized_child_energy_radical_puncture

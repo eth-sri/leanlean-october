@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramInfiniteEstimate
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,18 +18,14 @@ lemma nonexceptional_scale_identity (M P Y δ : ℝ) (hM : 0<M) (hP : 0<P) (hY :
     rw [←Real.rpow_add hP]
     congr 1
     ring
-  calc
-    _=M^(1-δ)*(P*P^(-(-1+δ)))*Y^(-1+δ) := by rw [show -(-1+δ)=1-δ by ring];ring
-    _=_ := by rw [he]
+  grind
 
 lemma nonexceptional_scale_loss (M P Y δ : ℝ) (hM : 1≤M) (hP : 1≤P) (hY : 0<Y)
     (hδ : 0≤δ) :
     P*(Y/(M*P))^(-1+δ)≤M*(P^2/Y)*Y^δ := by
-  have hm : 0<M := lt_of_lt_of_le zero_lt_one hM
-  have hp : 0<P := lt_of_lt_of_le zero_lt_one hP
+  pm_353 hm M hM hp P hP
   rw [nonexceptional_scale_identity M P Y δ hm hp hY]
-  have hmp : M^(1-δ)≤M := by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hM (show 1-δ≤1 by linarith)
+  pm_7028 hmp M δ hM
   have hpp : P^(2-δ)≤P^2 := by
     simpa only [Real.rpow_two] using Real.rpow_le_rpow_of_exponent_le hP (show 2-δ≤2 by linarith)
   calc

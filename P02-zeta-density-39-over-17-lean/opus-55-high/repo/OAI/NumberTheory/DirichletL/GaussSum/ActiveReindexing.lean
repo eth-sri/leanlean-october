@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.RowCompletion.RowAmplitudes
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -89,7 +90,7 @@ open ActualEisensteinCubic CompletedGauss CompletedDyadic CanonicalQuadraticSiev
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
+variable {ι:Type*} [Fintype ι] {p:ι→ Eis} {N:Eis}
 
 end FixedFourierGeometry
 end CubicEisenstein
@@ -135,8 +136,7 @@ noncomputable local instance inactiveFintype (P:Ideal Eis) [P.IsMaximal] : Finty
 lemma finiteAdditiveFourierCoeff_zero {R:Type*} [Field R] [Fintype R]
     (ψ:AddChar R ℂ) (χ:MulChar R ℂ) (j:ℕ) :
     finiteAdditiveFourierCoeff ψ (fun x=>(χ^j) x) 0=zeroFourierCoefficient χ j := by
-  simp only [finiteAdditiveFourierCoeff,zeroFourierCoefficient,neg_zero,zero_mul,
-    AddChar.map_zero_eq_one,mul_one,div_eq_mul_inv]
+  pm_437 finiteAdditiveFourierCoeff zeroFourierCoefficient neg_zero zero_mul AddChar.map_zero_eq_one mul_one div_eq_mul_inv
   ring
 
 lemma prime_zeroFourier_norm_formula (p:Eis) [(Ideal.span {p}).IsMaximal]

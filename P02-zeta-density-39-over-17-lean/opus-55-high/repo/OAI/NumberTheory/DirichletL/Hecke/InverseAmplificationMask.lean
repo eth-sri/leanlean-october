@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationColumn
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,11 +18,10 @@ theorem row_coeff_zero_unsupported (η χ : Character) (m f z : O)
     (hmLam : λ₀∣m) (hm2 : (2 : O)∣m) (J : Ideal O) (hJ : ¬Supported J) :
     idealCoeff χ J=0 := by
   by_cases hz : J=0
-  · subst J
-    exact map_zero _
+  grind
   let n := ConcretePrimeRowBridge.idealGenerator J
   have hn : n≠0 := ConcretePrimeRowBridge.idealGenerator_ne_zero J hz
-  have hs : Ideal.span {n}=J := ConcretePrimeRowBridge.span_idealGenerator J
+  pm_6531 J ConcretePrimeRowBridge.span_idealGenerator
   rw [←hs,idealCoeff_span χ hn,heq]
   exact rowTwist_zero_of_not_supported (elementHom η) m f z n hmLam hm2 (hs ▸ hJ)
 

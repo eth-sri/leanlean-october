@@ -5,12 +5,13 @@ public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.LinearCombination
 public import Mathlib.GroupTheory.Index
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentCorrelation
 noncomputable section
 variable {R X Y : Type*} [CommRing R] [Fintype R] [Fintype X] [Fintype Y]
@@ -29,28 +30,21 @@ theorem fullCorrelation_swap (left : X → R) (right : Y → R)
   classical
   simp only [fullCorrelation, star_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro y _
-  apply Finset.sum_congr rfl
-  intro x _
+  pm_156 Finset.sum_congr y x
   have heq : left x - right y = j ↔ right y - left x = -j := by
-    constructor <;> intro h <;> linear_combination -h
+    grind
   by_cases h : left x - right y = j
   · simp [h, heq.mp h, star_mul]
-  · simp [h, not_congr heq |>.mp h]
+  grind
 
 theorem fullCorrelation_fourier (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
     (left : X → R) (right : Y → R) (f : X → ℂ) (g : Y → ℂ) (j : R) :
     (∑ h : R, fourierSum ψ left f h * star (fourierSum ψ right g h) * ψ (-(h * j))) =
       (Fintype.card R : ℂ) * fullCorrelation left right f g j := by
   classical
-  simp only [fourierSum, star_sum, star_mul, Finset.sum_mul, Finset.mul_sum]
+  pm_93 fourierSum star_sum star_mul Finset.sum_mul Finset.mul_sum
   rw [Finset.sum_comm]
-  conv_lhs =>
-    arg 2
-    ext x
-    rw [Finset.sum_comm]
-  rw [Finset.sum_comm]
+  pm_5503 x
   have hphase (h : R) (x : X) (y : Y) :
       (f x * ψ (h * left x) * (star (ψ (h * right y)) * star (g y))) * ψ (-(h * j)) =
         (f x * star (g y)) * ψ (h * (left x - right y - j)) := by
@@ -66,10 +60,7 @@ theorem fullCorrelation_fourier (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
         ring
   simp_rw [hphase, ← Finset.mul_sum, AddChar.sum_mulShift _ hψ]
   simp only [fullCorrelation, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro x _
-  apply Finset.sum_congr rfl
-  intro y _
+  pm_156 Finset.sum_congr x y
   by_cases hxy : left x - right y = j
   · simp [hxy, mul_comm]
   · simp [sub_ne_zero.mpr hxy, hxy]
@@ -80,12 +71,15 @@ variable {F : Type*} [Field F] [Fintype F]
 def shiftCorrelation (χ : MulChar F ℂ) (k : F) : ℂ :=
   ∑ x : F, χ x * star (χ (x - k))
 
-lemma character_mul_star (χ : MulChar F ℂ) {a : F} (ha : a ≠ 0) :
+section
+variable (χ : MulChar F ℂ)
+include χ
+lemma character_mul_star {a : F} (ha : a ≠ 0) :
     χ a * star (χ a) = 1 := by
   rw [MulChar.star_apply', MulChar.inv_apply_eq_inv']
   exact mul_inv_cancel₀ (χ.apply_ne_zero_iff.mpr (isUnit_iff_ne_zero.mpr ha))
 
-theorem shiftCorrelation_scale (χ : MulChar F ℂ) {k : F} (hk : k ≠ 0) :
+theorem shiftCorrelation_scale {k : F} (hk : k ≠ 0) :
     shiftCorrelation χ k = shiftCorrelation χ 1 := by
   unfold shiftCorrelation
   rw [← (Equiv.mulLeft₀ k hk).sum_comp]
@@ -99,15 +93,14 @@ theorem shiftCorrelation_scale (χ : MulChar F ℂ) {k : F} (hk : k ≠ 0) :
     _ = (χ k * star (χ k)) * (χ x * star (χ (x - 1))) := by ring
     _ = _ := by rw [character_mul_star χ hk, one_mul]
 
-theorem shiftCorrelation_one (χ : MulChar F ℂ) :
+theorem shiftCorrelation_one :
     shiftCorrelation χ 1 = χ⁻¹ (-1) * jacobiSum χ χ⁻¹ := by
-  simp only [shiftCorrelation, jacobiSum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
+  pm_424 shiftCorrelation jacobiSum Finset.mul_sum Finset.sum_congr
   intro x _
   rw [MulChar.star_apply', show x - 1 = (-1) * (1 - x) by ring, map_mul]
   ring
 
-theorem shiftCorrelation_zero (χ : MulChar F ℂ) :
+theorem shiftCorrelation_zero :
     shiftCorrelation χ 0 = (Fintype.card F : ℂ) - 1 := by
   classical
   simp only [shiftCorrelation, sub_zero, MulChar.star_apply', ← MulChar.mul_apply,
@@ -115,10 +108,11 @@ theorem shiftCorrelation_zero (χ : MulChar F ℂ) :
   rw [MulChar.sum_one_eq_card_units, Fintype.card_eq_card_units_add_one (α := F)]
   simp
 
-theorem shiftCorrelation_nonprincipal (χ : MulChar F ℂ) (hχ : χ ≠ 1)
+theorem shiftCorrelation_nonprincipal (hχ : χ ≠ 1)
     {k : F} (hk : k ≠ 0) : shiftCorrelation χ k = -1 := by
   rw [shiftCorrelation_scale χ hk, shiftCorrelation_one, jacobiSum_nontrivial_inv hχ,
     mul_neg, ← MulChar.mul_apply, inv_mul_cancel, MulChar.one_apply (isUnit_iff_ne_zero.mpr (neg_ne_zero.mpr one_ne_zero))]
+end
 
 theorem shiftCorrelation_principal {k : F} (hk : k ≠ 0) :
     shiftCorrelation (1 : MulChar F ℂ) k = (Fintype.card F : ℂ) - 2 := by
@@ -128,8 +122,10 @@ theorem shiftCorrelation_principal {k : F} (hk : k ≠ 0) :
 def localCorrelation (χ : MulChar F ℂ) (n₁ n₂ k : F) : ℂ :=
   fullCorrelation (fun x : F => n₂ * x) (fun y : F => n₁ * y) χ χ k
 
-theorem localCorrelation_eq_shift (χ : MulChar F ℂ) {n₁ n₂ : F}
-    (h₁ : n₁ ≠ 0) (h₂ : n₂ ≠ 0) (k : F) :
+section
+variable (χ : MulChar F ℂ) {n₁ n₂ : F} (h₁ : n₁ ≠ 0) (h₂ : n₂ ≠ 0) (k : F)
+include χ n₁ n₂ h₁ h₂ k
+theorem localCorrelation_eq_shift :
     localCorrelation χ n₁ n₂ k = χ (n₁ / n₂) * shiftCorrelation χ (k / n₁) := by
   classical
   have hsolve (x y : F) : n₂ * x - n₁ * y = k ↔ y = (n₂ * x - k) / n₁ := by
@@ -140,25 +136,23 @@ theorem localCorrelation_eq_shift (χ : MulChar F ℂ) {n₁ n₂ : F}
   rw [← (Equiv.mulLeft₀ (n₁ / n₂) (div_ne_zero h₁ h₂)).sum_comp]
   swap
   · simp
-  simp only [Equiv.mulLeft₀_apply, shiftCorrelation, Finset.mul_sum]
-  apply Finset.sum_congr rfl
+  pm_424 Equiv.mulLeft₀_apply shiftCorrelation Finset.mul_sum Finset.sum_congr
   intro x _
   rw [map_mul]
   have heq : (n₂ * (n₁ / n₂ * x) - k) / n₁ = x - k / n₁ := by
     field_simp
   rw [heq, mul_assoc]
 
-theorem localCorrelation_units (χ : MulChar F ℂ) {n₁ n₂ : F}
-    (h₁ : n₁ ≠ 0) (h₂ : n₂ ≠ 0) (k : F) :
+theorem localCorrelation_units :
     localCorrelation χ n₁ n₂ k = χ (n₁ / n₂) *
       (if k = 0 then (Fintype.card F : ℂ) - 1
        else if χ = 1 then (Fintype.card F : ℂ) - 2 else -1) := by
   rw [localCorrelation_eq_shift χ h₁ h₂]
-  by_cases hk : k = 0
-  · simp [hk, shiftCorrelation_zero]
+  pm_212 hk k shiftCorrelation_zero
   · by_cases hχ : χ = 1
     · simp [hk, hχ, shiftCorrelation_principal (div_ne_zero hk h₁)]
     · simp [hk, hχ, shiftCorrelation_nonprincipal χ hχ (div_ne_zero hk h₁)]
+end
 
 end FiniteField
 
@@ -167,7 +161,10 @@ variable {A B : Type*} [CommRing A] [CommRing B] [Fintype A] [Fintype B]
 def reductionMultiplicity (π : A →+* B) : ℕ :=
   (Finset.univ.filter fun x : A => π x = 0).card
 
-theorem sum_reduction (π : A →+* B) (hπ : Function.Surjective π) (f : B → ℂ) :
+section
+variable (π : A →+* B) (hπ : Function.Surjective π)
+include π hπ
+theorem sum_reduction (f : B → ℂ) :
     (∑ x : A, f (π x)) = (reductionMultiplicity π : ℂ) * ∑ y : B, f y := by
   classical
   rw [← Finset.sum_fiberwise Finset.univ π (fun x => f (π x)), Finset.mul_sum]
@@ -175,28 +172,27 @@ theorem sum_reduction (π : A →+* B) (hπ : Function.Surjective π) (f : B →
   intro y _
   calc
     _ = ∑ x : A with π x = y, f y := by
-      apply Finset.sum_congr rfl
-      intro x hx
-      rw [(Finset.mem_filter.mp hx).2]
+      pm_275 Finset.sum_congr x hx Finset.mem_filter.mp
     _ = _ := by
       have hc := AddMonoidHom.card_fiber_eq_of_mem_range π (hπ y) (hπ 0)
       simp only [Finset.sum_const, nsmul_eq_mul]
       rw [hc]
       rfl
 
-theorem reductionMultiplicity_mul_card (π : A →+* B) (hπ : Function.Surjective π) :
+theorem reductionMultiplicity_mul_card :
     reductionMultiplicity π * Fintype.card B = Fintype.card A := by
   have h := sum_reduction π hπ (fun _ => (1 : ℂ))
-  simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at h
+  pm_298 Finset.sum_const Finset.card_univ nsmul_eq_mul mul_one h
   exact_mod_cast h.symm
 
-theorem reductionMultiplicity_eq_pow (π : A →+* B) (hπ : Function.Surjective π)
+theorem reductionMultiplicity_eq_pow
     {P c : ℕ} (hP : 0 < P) (hc : 1 ≤ c)
     (hA : Fintype.card A = P ^ c) (hB : Fintype.card B = P) :
     reductionMultiplicity π = P ^ (c - 1) := by
   apply Nat.eq_of_mul_eq_mul_right hP
   rw [← hB, reductionMultiplicity_mul_card π hπ, hA, hB, ← pow_succ,
     Nat.sub_add_cancel hc]
+end
 
 theorem fullCorrelation_unit_right (u : Aˣ) (v k : A) (f g : A → ℂ) :
     fullCorrelation (fun x => v * x) (fun y => (u : A) * y) f g k =
@@ -211,10 +207,12 @@ theorem fullCorrelation_unit_right (u : Aˣ) (v k : A) (f g : A → ℂ) :
     · intro h
       rw [h, ← mul_assoc, Units.mul_inv, one_mul]
       ring
-  simp only [fullCorrelation, hsolve, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
+  pm_93 fullCorrelation hsolve Finset.sum_ite_eq' Finset.mem_univ ite_true
 
-theorem fullCorrelation_reduction_unit_right (π : A →+* B)
-    (hπ : Function.Surjective π) (u : Aˣ) (v k : A) (f g : B → ℂ) :
+section
+variable (π : A →+* B) (hπ : Function.Surjective π)
+include π hπ
+theorem fullCorrelation_reduction_unit_right (u : Aˣ) (v k : A) (f g : B → ℂ) :
     fullCorrelation (fun x : A => v * x) (fun y : A => (u : A) * y)
         (fun x => f (π x)) (fun y => g (π y)) k =
       (reductionMultiplicity π : ℂ) *
@@ -229,8 +227,7 @@ theorem fullCorrelation_reduction_unit_right (π : A →+* B)
   simpa only [map_mul, map_sub] using
     sum_reduction π hπ (fun x => f x * star (g (π (↑u⁻¹ : A) * (π v * x - π k))))
 
-theorem fullCorrelation_reduction_unit_left (π : A →+* B)
-    (hπ : Function.Surjective π) (u : A) (v : Aˣ) (k : A) (f g : B → ℂ) :
+theorem fullCorrelation_reduction_unit_left (u : A) (v : Aˣ) (k : A) (f g : B → ℂ) :
     fullCorrelation (fun x : A => (v : A) * x) (fun y : A => u * y)
         (fun x => f (π x)) (fun y => g (π y)) k =
       (reductionMultiplicity π : ℂ) *
@@ -239,6 +236,7 @@ theorem fullCorrelation_reduction_unit_left (π : A →+* B)
   rw [fullCorrelation_swap (fun x : B => π v * x) (fun y : B => π u * y) f g (π k)]
   simp only [map_neg, star_mul, star_natCast]
   ring
+end
 
 end
 end SevenEighths.CenteredMomentCorrelation

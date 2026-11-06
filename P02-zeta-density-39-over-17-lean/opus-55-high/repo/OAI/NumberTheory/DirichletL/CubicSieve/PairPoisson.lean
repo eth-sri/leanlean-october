@@ -1,12 +1,13 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.PairPrimes
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open EisensteinSchwartzPoisson GaussGeneratorTransport
 noncomputable section
@@ -18,8 +19,10 @@ def pairPrincipalRow (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (pairPrime_good I J hI hJ) (pairExponent I J) (primaryGenerator I * primaryGenerator J)
     (pairPrime_modulus I J hI hJ)
 
-lemma pairPrincipalRow_mk (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hcop : IsCoprime I J) (z : O) :
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hcop : IsCoprime I J)
+include I J hI hJ hcop
+lemma pairPrincipalRow_mk (z : O) :
     pairPrincipalRow I J hI hJ hcop (Ideal.Quotient.mk _ z) =
       star (cubicRow I z) * cubicRow J z := by
   unfold pairPrincipalRow
@@ -27,8 +30,7 @@ lemma pairPrincipalRow_mk (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J
     (pairPrime_good I J hI hJ) (pairExponent I J) _ (pairPrime_modulus I J hI hJ) z,
     pairPrime_row I J hI hJ]
 
-lemma pairPrincipalGauss_eq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hcop : IsCoprime I J) :
+lemma pairPrincipalGauss_eq :
     principalNormalizedGauss (pairPrime I J) (pairPrime_coprime I J hI hJ hcop)
       (pairPrime_good I J hI hJ) (pairExponent I J)
       (primaryGenerator I * primaryGenerator J) (pairPrime_modulus I J hI hJ)
@@ -43,7 +45,7 @@ lemma pairPrincipalGauss_eq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible
   let e : (O ⧸ Ideal.span {a * b}) ≃+* (O ⧸ (Ideal.span {a}) * (Ideal.span {b})) :=
     Ideal.quotEquivOfEq (Ideal.span_singleton_mul_span_singleton a b).symm
   have hnorm : (‖eisEmbedding (a * b)‖ : ℂ) = (‖eisEmbedding a‖ : ℂ) * (‖eisEmbedding b‖ : ℂ) := by
-    rw [map_mul, norm_mul, Complex.ofReal_mul]
+    simp_all
   dsimp only [principalNormalizedGauss, cubicPairGauss]
   rw [hnorm]
   congr 1
@@ -57,16 +59,14 @@ lemma pairPrincipalGauss_eq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible
   rw [← MulChar.star_apply', principalCubicCharacter_mk I hI, principalCubicCharacter_mk J hJ]
   congr 1
 
-lemma pairPrincipalGauss_separation (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hcop : IsCoprime I J) :
+lemma pairPrincipalGauss_separation :
     principalNormalizedGauss (pairPrime I J) (pairPrime_coprime I J hI hJ hcop)
       (pairPrime_good I J hI hJ) (pairExponent I J)
       (primaryGenerator I * primaryGenerator J) (pairPrime_modulus I J hI hJ)
       (mul_ne_zero hI.2 hJ.2) = star (gaussTwo I hI.2) * gaussTwo J hJ.2 := by
   rw [pairPrincipalGauss_eq I J hI hJ hcop, cubicPairGauss_separation I J hI hJ hcop]
 
-theorem cubic_pair_poisson (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hcop : IsCoprime I J) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+theorem cubic_pair_poisson (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     (∑' z : O, (star (cubicRow I z) * cubicRow J z) * W (‖eisEmbedding z‖ ^ 2 / M)) =
       ((M : ℂ) * (star (gaussTwo I hI.2) * gaussTwo J hJ.2) /
         (‖eisEmbedding (primaryGenerator I * primaryGenerator J)‖ : ℂ)) *
@@ -107,10 +107,7 @@ theorem cubic_pair_poisson (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
       paperRadialFourier W (M * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2)) =
       G * ∑' h : O, (cubicRow I h * star (cubicRow J h)) *
         paperRadialFourier W (M * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2) := by
-    rw [← tsum_mul_left]
-    apply tsum_congr
-    intro h
-    ring
+    pm_8357
   rw [hsum] at hp
   have hrow (z : O) : row (Ideal.Quotient.mk (Ideal.span {c}) z) =
       star (cubicRow I z) * cubicRow J z :=
@@ -129,7 +126,8 @@ theorem cubic_pair_poisson (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
     (M : ℂ) * (star (gaussTwo I hI.2) * gaussTwo J hJ.2) / (‖eisEmbedding c‖ : ℂ)
   rw [hG]
   push_cast
-  field_simp [hn]
+  grind
+end
 
 end
 end SevenEighths.CubicSieve

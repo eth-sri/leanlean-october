@@ -26,24 +26,28 @@ def sourceDivisorUnion (F : Finset SupportedIdeal) (W : ℝ→ℂ) (hW : HasComp
 
 def sourceMobiusWeight (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C D : SupportedIdeal) : ℂ :=
   if D∈sourceDivisors W hW Y hY C then (moebius D.val:ℂ) else 0
-lemma sourceMobiusWeight_norm (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C D : SupportedIdeal) :
+section
+variable (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y)
+include W hW Y hY
+lemma sourceMobiusWeight_norm (C D : SupportedIdeal) :
     ‖sourceMobiusWeight W hW Y hY C D‖≤1 := by
   unfold sourceMobiusWeight
   split_ifs
   · exact CubicEisenstein.norm_ideal_moebius_le_one _
   · simp
 
-lemma sourceDivisors_sum (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y)
+lemma sourceDivisors_sum
     (C : SupportedIdeal) (f : Id→ℂ) :
     (∑D∈sourceDivisors W hW Y hY C,f D.val)=
       ∑D∈divisorPool (lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)) Subtype.val,f D := by
   apply Finset.sum_bij (fun D _=>D.val)
   · intro D hD;exact (sourceDivisors_mem W hW Y hY C D).mp hD
-  · intro D hD E hE h;exact Subtype.val_injective h
+  grind
   · intro D hD
     refine ⟨⟨D,divisorPool_supported _ _ hD⟩,?_,rfl⟩
     exact (sourceDivisors_mem W hW Y hY C _).mpr hD
-  · intro D hD;rfl
+  grind
+end
 
 lemma sourceMobiusWeight_rectangle (F : Finset SupportedIdeal) (W : ℝ→ℂ) (hW : HasCompactSupport W)
     (Y : ℝ) (hY : 0<Y) (C : SupportedIdeal) (hC : C∈F) (f : SupportedIdeal→ℂ) :

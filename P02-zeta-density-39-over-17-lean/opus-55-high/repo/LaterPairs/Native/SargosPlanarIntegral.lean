@@ -18,8 +18,10 @@ open scoped BigOperators ComplexConjugate
 
 namespace TaoTrudgianYang2025
 
-theorem integrable_sargosWeightedPlanarIntegrand_inner_complex {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ) {b : ℝ} (hb : 0 < b)
+section
+variable {ι : Type*} (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ)
+include ι S z u v
+theorem integrable_sargosWeightedPlanarIntegrand_inner_complex {b : ℝ} (hb : 0 < b)
     (a c d α : ℝ) :
     Integrable (fun γ : ℝ => (sargosWeightedPlanarIntegrand S z u v a b c d α γ : ℂ)) := by
   simp_rw [sargosWeightedPlanarIntegrand_eq_gram]
@@ -27,15 +29,13 @@ theorem integrable_sargosWeightedPlanarIntegrand_inner_complex {ι : Type*}
   intro p hp
   exact (integrable_sargosPlanarKernelTerm_inner hb a c d (u p.1-u p.2) (v p.1-v p.2) α).const_mul (z p.1*conj (z p.2))
 
-theorem integrable_sargosWeightedPlanarIntegrand_inner {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ) {b : ℝ} (hb : 0 < b)
+theorem integrable_sargosWeightedPlanarIntegrand_inner {b : ℝ} (hb : 0 < b)
     (a c d α : ℝ) :
     Integrable (sargosWeightedPlanarIntegrand S z u v a b c d α) := by
   exact (Integrable.iff_ofReal (𝕜 := ℂ)).mpr
     (integrable_sargosWeightedPlanarIntegrand_inner_complex S z u v hb a c d α)
 
-theorem integral_sargosWeightedPlanarIntegrand_inner_complex {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ) {b : ℝ} (hb : 0 < b)
+theorem integral_sargosWeightedPlanarIntegrand_inner_complex {b : ℝ} (hb : 0 < b)
     (a c d α : ℝ) :
     (∫ γ : ℝ, (sargosWeightedPlanarIntegrand S z u v a b c d α γ : ℂ)) =
       ∑ p ∈ S ×ˢ S, (z p.1*conj (z p.2))*
@@ -45,8 +45,7 @@ theorem integral_sargosWeightedPlanarIntegrand_inner_complex {ι : Type*}
     (integrable_sargosPlanarKernelTerm_inner hb a c d (u p.1-u p.2) (v p.1-v p.2) α).const_mul (z p.1*conj (z p.2)))]
   simp_rw [integral_const_mul]
 
-theorem integrable_sargosWeightedPlanarIntegrand_outer_complex {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ) {a b : ℝ}
+theorem integrable_sargosWeightedPlanarIntegrand_outer_complex {a b : ℝ}
     (ha : 0 < a) (hb : 0 < b) (c d : ℝ) :
     Integrable (fun α : ℝ =>
       ∫ γ : ℝ, (sargosWeightedPlanarIntegrand S z u v a b c d α γ : ℂ)) := by
@@ -55,8 +54,7 @@ theorem integrable_sargosWeightedPlanarIntegrand_outer_complex {ι : Type*}
   intro p hp
   exact (integrable_sargosPlanarKernelTerm_outer ha hb c d (u p.1-u p.2) (v p.1-v p.2)).const_mul (z p.1*conj (z p.2))
 
-theorem integrable_sargosWeightedPlanarIntegrand_outer {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ) {a b : ℝ}
+theorem integrable_sargosWeightedPlanarIntegrand_outer {a b : ℝ}
     (ha : 0 < a) (hb : 0 < b) (c d : ℝ) :
     Integrable (fun α : ℝ =>
       ∫ γ : ℝ, sargosWeightedPlanarIntegrand S z u v a b c d α γ) := by
@@ -64,8 +62,7 @@ theorem integrable_sargosWeightedPlanarIntegrand_outer {ι : Type*}
   apply (integrable_sargosWeightedPlanarIntegrand_outer_complex S z u v ha hb c d).congr
   exact Filter.Eventually.of_forall (fun _ => integral_complex_ofReal)
 
-theorem integral_sargosWeightedPlanarIntegrand_eq_gram {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ) {a b : ℝ}
+theorem integral_sargosWeightedPlanarIntegrand_eq_gram {a b : ℝ}
     (ha : 0 < a) (hb : 0 < b) (c d : ℝ) :
     ((∫ α : ℝ, ∫ γ : ℝ, sargosWeightedPlanarIntegrand S z u v a b c d α γ : ℝ) : ℂ) =
       ∑ p ∈ S ×ˢ S, (z p.1*conj (z p.2))*
@@ -82,5 +79,6 @@ theorem integral_sargosWeightedPlanarIntegrand_eq_gram {ι : Type*}
       exact integral_finsetSum (S ×ˢ S) (fun p _ =>
         (integrable_sargosPlanarKernelTerm_outer ha hb c d (u p.1-u p.2) (v p.1-v p.2)).const_mul (z p.1*conj (z p.2)))
     _ = _ := by simp_rw [integral_const_mul]
+end
 
 end TaoTrudgianYang2025

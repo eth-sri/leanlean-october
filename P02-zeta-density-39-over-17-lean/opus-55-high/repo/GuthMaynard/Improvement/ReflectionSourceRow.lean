@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.ReflectionAbsoluteShell
 public import GuthMaynard.Improvement.ReflectionDyadicIntegral
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -22,16 +21,14 @@ theorem centered_source_row (w : MathCollab.Density.ReflectionCutoff)
       (∫ t, μ t*‖centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L (u-t)‖^2) ≤
         C*N^ε*L*N*T := by
   obtain ⟨C₀,hC₀,hnear⟩ := centered_near_row_bound w
-  obtain ⟨C₁,hC₁,hband⟩ := reflection_absolute_shell_bound w hε hA hp
+  pm_97 C₁ hC₁ hband reflection_absolute_shell_bound w hε hA hp
   refine ⟨1+C₀+2*C₁,by positivity,?_⟩
   intro N L T t₀ u hN hNL hT hupper hu a μ ha hm hi h0 hs hμ
-  have hN0 : 0 < N := by linarith
-  have hL : 0 < L := hN0.trans_le hNL
-  have hpow : 1 ≤ N^ε := Real.one_le_rpow (by linarith) hε.le
+  pm_4533
+  pm_4532 hpow ε hε.le
   let Y := Real.pi*L/8
-  have hY : 0 < Y := by dsimp [Y]; positivity
-  let F := fun t => μ t*‖centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L (t-u)‖^2
-  have hiF : Integrable F := centered_row_integrable w (by linarith) u hi
+  pm_64 hY Y
+  pm_4557
   have hz : ∀ t, T < |t-u| → F t=0 := by
     intro t ht
     have hn : μ t=0 := by

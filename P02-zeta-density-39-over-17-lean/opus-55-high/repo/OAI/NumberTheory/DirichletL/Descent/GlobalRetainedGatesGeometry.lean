@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGates
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,13 +15,14 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecon
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
+section
+variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+include hcop hg
 lemma actual_profile_zero_of_geometry
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
-    (lists₁ lists₂ : σ→Finset ι) (a₁ a₂ : σ→ι→ℂ)
+    (lists₁ lists₂ : σ→ Finset ι) (a₁ a₂ : σ→ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y X b : ℝ) (hX : 0<X)
     (hW : ∀y,W₁ y≠0 → y≤b)
     (hgeom : b*X<primeProductNorm p x.common*primeProductNorm p x.overlap) :
@@ -31,8 +33,7 @@ lemma actual_profile_zero_of_geometry
   apply Finset.sum_eq_zero
   intro M hM
   have hzero : W₁ (primeProductNorm p x.common*primeProductNorm p x.overlap*primeProductNorm p N/X)=0 := by
-    by_contra hn
-    have hh := (div_le_iff₀ hX).mp (hW _ hn)
+    pm_8007 hX
     have hlo := le_mul_of_one_le_right
       (mul_nonneg (primeProductNorm_pos p hp x.common).le (primeProductNorm_pos p hp x.overlap).le)
       (primeProductNorm_ge_one p hp N)
@@ -40,10 +41,8 @@ lemma actual_profile_zero_of_geometry
   simp [secondNormProfile,secondActualNorms,hzero]
 
 lemma wholeRow_zero_of_geometry
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    {Jo : ℕ} (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    {Jo : ℕ} (extra : CubeCoordinates ι→ Finset ι) (pool : Finset ι) (negative : Bool)
+    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→ Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (X Y b : ℝ) (hX : 0<X) (hW : ∀y,W y≠0 → y≤b)
     (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0)
     (hgeom : b*X<primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap) :
@@ -52,7 +51,8 @@ lemma wholeRow_zero_of_geometry
   have hh := actual_profile_zero_of_geometry p hp hcop hg pool (secondInheritedProfile p x Ψ m ray)
     (slots\J) (slots\J) (fun i=>lists i\InverseMomentWholeRetainedSource.deleted p extra negative x)
     (fun i=>lists i\InverseMomentWholeRetainedSource.deleted p extra negative x) a a W W rowMajorant Y X b hX hW hgeom
-  rw [hh,mul_zero]
+  grind
+end
 
 omit hp [∀i,(Ideal.span {p i}).IsMaximal] in
 def geometrySource {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (b X : ℝ) :
@@ -74,16 +74,14 @@ lemma geometrySource_gate {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι 
 lemma original_retained_geometry_sum
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    {Jo : ℕ} (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
+    {Jo : ℕ} (extra : CubeCoordinates ι→ Finset ι) (pool : Finset ι)
     (source : Finset (MarkedSecondSource ι Jo 0)) (w : MarkedSecondSource ι Jo 0→ℂ)
     (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ)
-    (lists : σ→Finset ι) (a : σ→ι→ℂ) (W : ℝ→ℂ) (X Y b : ℝ)
+    (lists : σ→ Finset ι) (a : σ→ι→ℂ) (W : ℝ→ℂ) (X Y b : ℝ)
     (hX : 0<X) (hW : ∀y,W y≠0 → y≤b) (ray : SecondRayIndex) :
     (∑x∈source,w x*wholeRow p hp hcop hg extra pool negative Ψ m slots J lists a W X Y ray x)=
     ∑x∈geometrySource p source b X,w x*wholeRow p hp hcop hg extra pool negative Ψ m slots J lists a W X Y ray x := by
-  rw [geometrySource,Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_3813 geometrySource Finset.sum_filter Finset.sum_congr x hx
   split_ifs with hg₀
   · rfl
   · rw [wholeRow_zero_of_geometry p hp hcop hg extra pool negative Ψ m slots J lists a W X Y b hX hW

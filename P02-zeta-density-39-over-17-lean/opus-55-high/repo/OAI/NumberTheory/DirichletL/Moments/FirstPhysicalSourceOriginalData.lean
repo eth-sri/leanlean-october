@@ -5,6 +5,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceAllocationEnergy
 public import OAI.NumberTheory.DirichletL.Moments.LiveDomain
 public import OAI.NumberTheory.DirichletL.Moments.CommonPuncture
 public import OAI.NumberTheory.DirichletL.Moments.SecondHeightFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -43,13 +44,17 @@ def allocatedData (D:OriginalData ι)(C L:Ideal O)(B:actualAllocations D.S C):
   B₁:=D.B₁*B.val (Sum.inr 0)
   B₂:=D.B₂*B.val (Sum.inr 1)
 
-lemma allocated_pools (D:OriginalData ι)(C L:Ideal O)(B:actualAllocations D.S C):
+section
+variable (D:OriginalData ι) (C L:Ideal O) (B:actualAllocations D.S C)
+include D C L B
+lemma allocated_pools:
     Fintype.piFinset (allocatedData D C L B).S=
       liveBox D.S B.val (allocation_data D.S C B (Finset.mem_filter.mp B.property).1).1:=rfl
 
-lemma allocated_profile (D:OriginalData ι)(C L:Ideal O)(B:actualAllocations D.S C):
+lemma allocated_profile:
     (allocatedData D C L B).profile=maskedLiveProfile B.val C D.R L D.nu D.slot D.lengths
       D.W₁ D.W₂ D.X₁ D.X₂ D.Y₁ D.Y₂ D.B₁ D.B₂:=rfl
+end
 
 def commonGauss (D:OriginalData ι)(C:Ideal O)(hC:Supported C)(τ:Character)(t:ℝ)(L:Ideal O)(z:O):ℂ:=
   let Q:=residualPool C hC.1 D.columns
@@ -69,10 +74,10 @@ theorem common_gauss_allocation (D:OriginalData ι)
   let b:=fun B:actualAllocations D.S C=>frozenCoefficient B.val C D.R D.nu D.slot D.lengths
   let d:=fun (B:actualAllocations D.S C)(I:supportedColumns Q)=>
     finiteColumnCoefficient (liveBox D.S B.val (allocation_data D.S C B (Finset.mem_filter.mp B.property).1).1)
-      (liveProfile B.val C D.R D.nu D.slot D.lengths D.W₁ D.W₂ D.X₁ D.X₂ D.Y₁ D.Y₂ D.B₁ D.B₂) I*
+      (liveProfile B.val C D.R D.nu D.slot D.lengths D.W₁ D.W₂ D.X₁ D.X₂ D.Y₁ D.Y₂ D.B₁ D.B₂) I *
         ((if L∣(I:Ideal O) then 1 else 0)*heightCoeff τ t I)
   have he (I:supportedColumns Q):
-      (if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then D.beta (C*I) else 0)*heightCoeff τ t I=
+      (if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then D.beta (C*I) else 0)*heightCoeff τ t I =
         ∑B,b B*d B I:=by
     have hc:=original_source_punctured_column D.S hS hp C D.R D.s I hC.1
       (Finset.mem_filter.mp I.property).2.1 hseed D.nu D.slot D.lengths D.W₁ D.W₂
@@ -82,14 +87,11 @@ theorem common_gauss_allocation (D:OriginalData ι)
     · simp only [hl,and_true]
       change (if IsCoprime C (I:Ideal O) then _ else 0)*heightCoeff τ t I=_
       rw [hc,Finset.sum_mul]
-      simp only [b,d,hl,ite_true,one_mul,mul_assoc]
-    · simp only [hl,and_false,ite_false,zero_mul,b,d,mul_zero,Finset.sum_const_zero]
+      pm_382 b d hl ite_true one_mul mul_assoc
+    pm_5827
   unfold commonGauss
   change gaussPolynomial Finset.univ (sourceGenerator Q) _ _ z=_
-  rw [funext he,gaussPolynomial_allocation]
-  apply Finset.sum_congr rfl
-  intro B hB
-  apply congrArg (fun w:ℂ=>b B*w)
+  pm_5525 gaussPolynomial_allocation
   have hh:=live_gaussPolynomial D.S hS hp B.val
     (allocation_data D.S C B (Finset.mem_filter.mp B.property).1).1 C D.R hC
     (Finset.mem_filter.mp B.property).1 (Finset.mem_filter.mp B.property).2

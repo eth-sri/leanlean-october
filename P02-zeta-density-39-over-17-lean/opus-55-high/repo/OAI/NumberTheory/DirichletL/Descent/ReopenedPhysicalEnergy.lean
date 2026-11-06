@@ -26,7 +26,7 @@ theorem rowFamilyEnergy_le_of_full_split (labels : Finset (Ideal O))
   rw [he]
   have hn : 0≤(∑ I∈labels,((‖P I 0‖^2:ℝ):ℂ)).re := by
     simp only [Complex.re_sum,Complex.ofReal_re]
-    exact Finset.sum_nonneg (fun I hI=>sq_nonneg _)
+    positivity
   simp only [Complex.add_re]
   linarith [Complex.re_le_norm A,Complex.re_le_norm B,Complex.re_le_norm C]
 

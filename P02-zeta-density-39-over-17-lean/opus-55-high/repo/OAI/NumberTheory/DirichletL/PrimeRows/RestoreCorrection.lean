@@ -23,8 +23,10 @@ def excludedCorrection (S : Finset (Ideal O)) (η : Character) (u : FreeRow)
     (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   if P.val∈S then 1 else supportedCorrection η u P x w z
 
-theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
-    (hS : SourceExclusions S) (htail : FirstTail eps S)
+section
+variable (eps : ℝ) (S : Finset (Ideal O)) (hS : SourceExclusions S) (htail : FirstTail eps S)
+include eps S hS htail
+theorem continuedCorrection_first_hasProd
     (η : Character) (u : FreeRow) (x w z : ℂ)
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
     (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
@@ -47,8 +49,7 @@ theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
       exact hP ⟨⟨P,hn⟩,rfl⟩
     simp [excludedCorrection,hm])).mp hsub
 
-theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
-    (hS : SourceExclusions S) (htail : FirstTail eps S)
+theorem continuedCorrection_restore
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
@@ -73,6 +74,7 @@ theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
   by_cases hp : P∈T
   · simp [hp,hT P hp]
   · simp [hp]
+end
 
 end SevenEighths.ProbeHighRowFamily
 end

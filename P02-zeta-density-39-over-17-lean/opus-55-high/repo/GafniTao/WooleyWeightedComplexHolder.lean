@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyWeightedHolder
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Complex finite-sum form of Wooley's Hölder step
@@ -11,11 +12,9 @@ immediately before equation (3.9).
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooley_weighted_complex_sum_pow_le
     {ι : Type*} (t : Finset ι) (w : ι → ℝ) (z : ι → ℂ)
@@ -34,11 +33,8 @@ theorem wooley_weighted_complex_sum_pow_le
       _ = A := by
         apply Finset.sum_congr rfl
         intro i hi
-        simp [Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
-  have hA : 0 ≤ A := by
-    dsimp [A]
-    exact Finset.sum_nonneg fun i hi =>
-      mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _)
+        simp_all
+  pm_165 hA A
   have hD : 0 ≤ D := by
     dsimp [D]
     exact Finset.sum_nonneg fun i hi =>
@@ -61,9 +57,7 @@ theorem wooley_weighted_complex_sum_pow_le
   have hWeightedNat :
       D ^ s ≤ (∑ i ∈ t, w i) ^ (s - 1) *
         ∑ i ∈ t, w i * ‖z i‖ ^ (2 * s) := by
-    have hexponent : (s : ℝ) - 1 = ((s - 1 : ℕ) : ℝ) := by
-      rw [Nat.cast_sub hs]
-      norm_num
+    pm_1499 hexponent
     calc
       D ^ s = D ^ (s : ℝ) := by rw [Real.rpow_natCast]
       _ ≤ (∑ i ∈ t, w i) ^ ((s : ℝ) - 1) *
@@ -89,6 +83,5 @@ theorem wooley_weighted_complex_sum_pow_le
         ∑ i ∈ t, w i * ‖z i‖ ^ (2 * s) := by ring
 
 
-end
 
 end GafniTao

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.IdealQuotients
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,74 +10,32 @@ noncomputable section
 
 namespace FirstPassCubeLabels
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 
 section
@@ -160,7 +119,7 @@ theorem beforeDilationLabel_norm_le_one {κ : Type*} (p : κ → O) (B : Finset 
     ‖beforeDilationLabel P hg p B v ε₁ ε₂ side c d f S‖ ≤ 1 := by
   have hm : ‖rowCoprimeMask P S (cubeRadical p B)‖ ≤ 1 := by
     unfold rowCoprimeMask
-    split_ifs <;> simp
+    aesop
   simp only [beforeDilationLabel, norm_mul, norm_pow]
   calc
     _ ≤ (1:ℝ)^4 * 1 * (1 * 1^4 * 1) * 1^4 := by
@@ -222,10 +181,7 @@ theorem rayIdealRow_beforeDilation {ι κ : Type*} [DecidableEq ι] (p : ι → 
       dilatedRayColumn p hg F D C negative χ q B v ε₁ ε₂ c d
         (h * f ^ 2 * dilationLabel q B v ε₁ ε₂) := by
   rw [rayIdealRow_eq_supportRow p hinj]
-  unfold dilatedRayColumn supportConjugateSum
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro U hU
+  pm_315 dilatedRayColumn supportConjugateSum Finset.mul_sum Finset.sum_congr U hU
   have hd : Disjoint D U := by
     exact Finset.disjoint_left.mpr (fun i hiD hiU =>
       (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hU) hiU)).2 hiD)
@@ -266,8 +222,10 @@ def cubeCoreCoefficient {ι : Type*} [DecidableEq ι]
       MixedCrossSeparation.columnG p hp hcop hg S * C S *
       (V (y S) * FourierBridge.logPhase t (-(y S)))
 
-theorem cubeLogCoefficient_originalLabel {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+section
+variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+include ι p hp
+theorem cubeLogCoefficient_originalLabel
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (B : Finset ι)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (negative : Bool)
@@ -283,8 +241,7 @@ theorem cubeLogCoefficient_originalLabel {ι : Type*} [DecidableEq ι]
       originalLabelColumn, beforeDilationLabel, Bool.false_eq_true, ite_false, ite_true,
       finiteSquarefreeRow_mul, mul_pow] <;> ring
 
-theorem rayIdealRow_cube_labels {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem rayIdealRow_cube_labels
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F D B : Finset ι)
@@ -305,6 +262,7 @@ theorem rayIdealRow_cube_labels {ι : Type*} [DecidableEq ι]
     exact cubeLogCoefficient_originalLabel p hp hcop hg B v ε₁ ε₂ negative C V y t c d f S
   rw [he]
   exact rayIdealRow_beforeDilation p hinj hg F D _ negative χ p B v ε₁ ε₂ hv negative c d f h
+end
 
 end
 
@@ -314,7 +272,7 @@ open ConcreteTraceCRT (eisEmbedding)
 end
 
 section
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic
 open RayFourExpansion (RayCharacter crossCoeff)
 
@@ -324,8 +282,7 @@ theorem blockRow_norm_le_one {ι : Type*} (p : ι → O)
   rw [blockRow_eq_product, norm_prod]
   calc
     _ ≤ ∏ i ∈ S, (1 : ℝ) := by
-      apply Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
-      intro i hi
+      pm_5246 i hi
       let : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
       exact FiniteRayExpansion.norm_char_le_one _ _
     _ = 1 := by simp
@@ -340,7 +297,7 @@ theorem cubeBaseFactor_norm_le_one {ι : Type*} [DecidableEq ι]
   have he : ∀ i ∈ cubeActiveSupport B v ε₁ ε₂,
       (conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)).val ≠ 0 := by
     intro i hi
-    exact (ZMod.val_eq_zero _).not.mpr (Finset.mem_filter.mp hi).2
+    pm_8938 hi
   simp only [cubeBaseFactor, norm_mul, norm_star,
     gaussBlock_norm_one p hp hcop hg hc _ _ he (fun _ _ => ZMod.val_lt _), one_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _)
@@ -348,9 +305,7 @@ theorem cubeBaseFactor_norm_le_one {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FourierBridge (logPhase)

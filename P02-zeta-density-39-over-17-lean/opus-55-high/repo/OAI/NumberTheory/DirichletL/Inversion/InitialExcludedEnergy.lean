@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,7 +35,7 @@ theorem deletionWeight_norm_le_one (χ:Character){j:Ideal O}(hj:j≠0):
     _=1:=one_mul _
 
 theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
-    (W:ℝ→ℂ)(X σ t b:ℝ)(hX:0<X)(hW:∀x,W x≠0→x≤b)(mark:ℂ):
+    (W:ℝ→ℂ)(X σ t b:ℝ)(hX:0<X)(hW:∀x,W x≠0→ x≤b)(mark:ℂ):
     ‖polynomial χ true W X σ t*mark‖^2≤
     ((idealDivisors (∏P∈S,P)).card:ℝ)*
       ∑j∈idealDivisors (∏P∈S,P),
@@ -45,23 +46,22 @@ theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
         polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t*mark‖≤
       ∑j∈idealDivisors (∏P∈S,P),
         ‖polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t*mark‖:=by
-    refine (norm_sum_le _ _).trans (Finset.sum_le_sum ?_)
+    pm_8070
     intro j hj
     change ‖deletionWeight χ j*polynomial _ _ _ _ _ _*mark‖≤_
-    rw [mul_assoc,norm_mul]
-    apply mul_le_of_le_one_left (norm_nonneg _)
+    pm_1219 mul_assoc
     apply deletionWeight_norm_le_one χ
     exact ne_zero_of_dvd_ne_zero (prime_product_squarefree S hS).ne_zero
       ((mem_idealDivisors (prime_product_squarefree S hS).ne_zero).mp hj)
   have hh:=Finset.sum_mul_sq_le_sq_mul_sq (idealDivisors (∏P∈S,P))
     (fun _=>(1:ℝ)) (fun j=>‖polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t*mark‖)
-  simp only [one_mul,one_pow,Finset.sum_const,nsmul_eq_mul,mul_one] at hh
+  pm_3605 one_mul one_pow Finset.sum_const nsmul_eq_mul mul_one hh
   exact (sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg (fun _ _=>norm_nonneg _))).mpr hn |>.trans
     hh
 
-theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→Character)
+theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→ Character)
     (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(W:ℝ→ℂ)(X σ t b:ℝ)
-    (hX:0<X)(hW:∀x,W x≠0→x≤b)(mark:ι→ℂ)(weight:ι→ℝ)
+    (hX:0<X)(hW:∀x,W x≠0→ x≤b)(mark:ι→ℂ)(weight:ι→ℝ)
     (hw:∀u∈rows,0≤weight u):
     (∑u∈rows,weight u*‖polynomial (χ u) true W X σ t*mark u‖^2)≤
       ((idealDivisors (∏P∈S,P)).card:ℝ)*
@@ -75,9 +75,7 @@ theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→Character)
       intro u hu
       exact mul_le_mul_of_nonneg_left (marked_pointwise (χ u) S hS W X σ t b hX hW (mark u)) (hw u hu)
     _=_:=by
-      simp only [Finset.mul_sum]
-      rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
+      pm_3006
       intro j hj
       apply Finset.sum_congr rfl
       intro u hu

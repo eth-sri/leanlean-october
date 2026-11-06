@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ActualSecondEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondFixedFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
@@ -53,9 +54,10 @@ theorem finiteCanonicalMarkedRow_mask_span (F : Finset ι) (Ψ : Eis →* ℂ)
       finiteCanonicalMarkedRow p hp hcop hg F Ψ m₂ f k slots lists a W X :=
   fixedChildRow_congr_mask_span p hp hcop hg F Ψ he _ f k
 
+section
+variable (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
+include hpr Jo Jn x
 theorem actual_second_puncture_span
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) (u v : Eisˣ) (m : Eis) :
     Ideal.span {((m*b0Label p x.cube.support
       (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)*
@@ -72,9 +74,7 @@ theorem actual_second_puncture_span
   simp only [←Ideal.span_singleton_mul_span_singleton,secondMaskQuotient_span,
     FiniteGaussPhase.span_finset_prod]
 
-theorem actual_second_generator_sectors
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) :
+theorem actual_second_generator_sectors :
     ∃ u v : Eisˣ,
       actualSecondRawLabel p x = (u:Eis)*primaryGenerator (actualSecondChild p u v x).2.1 ∧
       primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor *
@@ -90,8 +90,7 @@ theorem actual_second_generator_sectors
     simp only [←Ideal.span_singleton_mul_span_singleton,hs,sourceIdeal,markedSecondOriginal,cubeSecondSource]
     ring
   have hgp (S : Finset ι) : primaryGenerator (sourceIdeal p S) ≠ 0 := by
-    rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+    pm_3750
   have hL : primaryGenerator L ≠ 0 := by
     dsimp only [L]
     rw [primaryGenerator_mul,primaryGenerator_mul,primaryGenerator_mul]
@@ -110,8 +109,6 @@ theorem actual_second_generator_sectors
   exact ⟨u,v,hu,hv⟩
 
 theorem actual_second_canonical_child
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) :
     ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m k : Eis)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ),
@@ -125,12 +122,13 @@ theorem actual_second_canonical_child
     secondCanonicalPolynomial p hp hcop hg F (fun _ => Ψ) (actualSecondPuncture m)
       slots lists a (fun _ => W) X
       (actualSecondChild p u v {x with second := {x.second with frequency := k}}) := by
-  obtain ⟨u,v,hu,hv⟩ := actual_second_generator_sectors p hp hpr x
+  pm_732 u v hu hv actual_second_generator_sectors p hp hpr x
   refine ⟨u,v,?_⟩
   intro F Ψ m k slots lists a W X
   rw [secondCanonical_generator_transport p hp hcop hg F Ψ _ _ _ _ _ _ _ _ u v hu hv]
   exact finiteCanonicalMarkedRow_mask_span p hp hcop hg F Ψ _ _ _ _
     (actual_second_puncture_span p hp hpr x hE u v m) slots lists a W X
+end
 
 end
 end SevenEighths.InverseMoment

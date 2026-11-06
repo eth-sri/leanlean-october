@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondReducedPredicate
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -30,9 +31,7 @@ theorem unitCharacter_ideal (I:Ideal O) (hI:I≠0) : idealCoeff unitCharacter I=
 
 theorem principal_inducedBy_unit (χ:Character) (hχ:χ.residue=1) : InducedBy χ unitCharacter := by
   intro I
-  by_cases hI:I=0
-  · subst I
-    simp only [map_zero,ite_self]
+  pm_8686 hI ite_self
   · have hn:=idealGenerator_ne_zero I hI
     rw [unitCharacter_ideal I hI]
     rw [←span_idealGenerator I,idealCoeff_span χ hn]
@@ -40,19 +39,21 @@ theorem principal_inducedBy_unit (χ:Character) (hχ:χ.residue=1) : InducedBy �
     rw [hχ]
     by_cases hc:IsCoprime (Ideal.span {idealGenerator I}) χ.modulus
     · rw [ite_eq_left hc]
-      exact MulChar.one_apply ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mpr hc)
+      pm_8920 hc
     · rw [ite_eq_right hc]
       exact MulChar.map_nonunit _ (fun h=>hc ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp h))
 
-theorem principal_row_fixed (η χ:Character) (Q:Ideal O) (m A z:O)
-    (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
+section
+variable (η χ:Character) (Q:Ideal O) (m A z:O) (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
+include η χ Q m A z hrow
+theorem principal_row_fixed
     (hχ:χ.residue=1) : FixedInducingRow η Q m A z :=
   ⟨χ,unitCharacter,unitCharacter_primitive,principal_inducedBy_unit χ hχ,le_top,hrow⟩
 
-theorem actual_row_nonprincipal (η χ:Character) (Q:Ideal O) (m A z:O)
-    (hrow:∀n:O,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
+theorem actual_row_nonprincipal
     (hex:¬FixedInducingRow η Q m A z) : χ.residue≠1 :=
   fun h=>hex (principal_row_fixed η χ Q m A z hrow h)
+end
 
 end SevenEighths.CenteredMomentNonprincipalGate
 

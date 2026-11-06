@@ -2,13 +2,11 @@ module
 public import MathCollab.Density.ZetaCounting
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.Algebra.Order.Archimedean.Basic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Finset MathCollab.Density
-open scoped BigOperators
-set_option autoImplicit false
-noncomputable section
 namespace GuthMaynard.Improvement
 
 /-- Uniformization for the actual multiplicity-weighted zero count. The
@@ -28,27 +26,19 @@ theorem zetaDensityCount_uniform_of_fixed_sigma {c : ℝ} (hc : 0 < c)
   have hcn : c < (n:ℝ)*ε := (div_lt_iff₀ hε).mp hn
   let grid := fun j : Fin (n+1) => (1/2:ℝ)+(j:ℕ)/(2*(n:ℝ))
   have hg (j : Fin (n+1)) : 1/2 ≤ grid j ∧ grid j ≤ 1 := by
-    have hj : (j:ℕ) ≤ n := Nat.le_of_lt_succ j.isLt
-    have hjr : ((j:ℕ):ℝ) ≤ (n:ℝ) := by exact_mod_cast hj
-    dsimp [grid]
-    constructor
+    pm_4597
     · have hd : (0:ℝ) ≤ ((j:ℕ):ℝ)/(2*(n:ℝ)) := by positivity
       linarith
     · have hd : ((j:ℕ):ℝ)/(2*(n:ℝ)) ≤ 1/2 :=
         (div_le_iff₀ (by positivity)).mpr (by nlinarith)
       linarith
-  have hex (j : Fin (n+1)) := hfixed (grid j) (hg j).1 (hg j).2 (ε/2) (by positivity)
-  choose C hC hbound using hex
-  let B : ℝ := 1+∑ j : Fin (n+1),C j
-  have hsum : 0 ≤ ∑ j : Fin (n+1),C j := Finset.sum_nonneg (fun j _ => (hC j).le)
-  refine ⟨B,by dsimp [B]; positivity,?_⟩
-  intro σ T hσ hσ' hT
+  pm_4595
   let x : ℝ := (2*σ-1)*(n:ℝ)
   have hx : 0 ≤ x := mul_nonneg (by linarith) hn0.le
   have hxn : x ≤ (n:ℝ) := by dsimp [x]; nlinarith
   have hjn : ⌊x⌋₊ ≤ n := by
     exact_mod_cast (Nat.floor_le hx).trans hxn
-  let j : Fin (n+1) := ⟨⌊x⌋₊,Nat.lt_succ_of_le hjn⟩
+  pm_6899 x
   have hjlow : grid j ≤ σ := by
     have hh := Nat.floor_le hx
     dsimp [grid,j,x] at *
@@ -65,19 +55,13 @@ theorem zetaDensityCount_uniform_of_fixed_sigma {c : ℝ} (hc : 0 < c)
     nlinarith
   have hmesh : c*(σ-grid j) ≤ ε/2 := by
     have hdivide : c*(1/(2*(n:ℝ))) ≤ ε/2 := by
-      apply (le_div_iff₀ (by norm_num : (0:ℝ)<2)).mpr
+      pm_467 le_div_iff₀
       have he : c*(1/(2*(n:ℝ)))*2 = c/(n:ℝ) := by field_simp
       rw [he]
       exact (div_le_iff₀ hn0).mpr (by linarith)
     exact (mul_le_mul_of_nonneg_left hjgap hc.le).trans hdivide
   have hexp : c*(1-grid j)+ε/2 ≤ c*(1-σ)+ε := by nlinarith
-  have hmono : (zetaDensityCount σ T:ℝ) ≤ (zetaDensityCount (grid j) T:ℝ) := by
-    exact_mod_cast zetaDensityCount_mono hjlow (le_refl T)
-  have hCB : C j ≤ B := by
-    have hh : C j ≤ ∑ i : Fin (n+1),C i :=
-      Finset.single_le_sum (fun i _ => (hC i).le) (Finset.mem_univ j)
-    dsimp [B]
-    linarith
+  pm_4596
   calc
     _ ≤ C j*T^(c*(1-grid j)+ε/2) := hmono.trans (hbound j T hT)
     _ ≤ C j*T^(c*(1-σ)+ε) := mul_le_mul_of_nonneg_left

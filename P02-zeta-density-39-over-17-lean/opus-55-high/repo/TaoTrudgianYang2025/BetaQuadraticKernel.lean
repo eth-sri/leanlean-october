@@ -26,14 +26,17 @@ def betaQuadraticKernel (T z : ℝ) : ℂ := (𝐞 (-(T/2)*z^2) : ℂ)
 theorem continuous_betaQuadraticKernel (T : ℝ) : Continuous (betaQuadraticKernel T) :=
   (continuous_subtype_val.comp Real.continuous_fourierChar).comp (by fun_prop)
 
-theorem norm_betaQuadraticKernel (T z : ℝ) : ‖betaQuadraticKernel T z‖ = 1 :=
+section
+variable (T z : ℝ)
+include T z
+theorem norm_betaQuadraticKernel : ‖betaQuadraticKernel T z‖ = 1 :=
   Circle.norm_coe _
 
-theorem betaQuadraticKernel_neg (T z : ℝ) :
+theorem betaQuadraticKernel_neg :
     betaQuadraticKernel T (-z) = betaQuadraticKernel T z := by
   simp only [betaQuadraticKernel,neg_sq]
 
-theorem betaQuadraticKernel_hasDerivAt (T z : ℝ) :
+theorem betaQuadraticKernel_hasDerivAt :
     HasDerivAt (betaQuadraticKernel T)
       ((-2*Real.pi*T : ℂ)*Complex.I*(z : ℂ)*betaQuadraticKernel T z) z := by
   have hd := (Real.hasDerivAt_fourierChar (-(T/2)*z^2)).scomp z
@@ -43,6 +46,7 @@ theorem betaQuadraticKernel_hasDerivAt (T z : ℝ) :
   · simp only [betaQuadraticKernel,Complex.real_smul,id_eq]
     push_cast
     ring
+end
 
 theorem integral_betaQuadraticKernel_odd (T H : ℝ) :
     (∫ z in (-H)..H, (z : ℂ)*betaQuadraticKernel T z) = 0 := by

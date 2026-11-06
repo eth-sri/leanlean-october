@@ -37,34 +37,32 @@ theorem primitive_linear_congruence_determinant_dvd
     convert dvd_add (dvd_mul_of_dvd_left hg (Int.gcdA (Int.gcd a b : ℤ) c))
       (dvd_mul_right c (Int.gcdB (Int.gcd a b : ℤ) c*D)) using 1
     ring
-  simpa only [hprim,Int.natCast_one,one_mul,D] using hlast
+  grind
 
-theorem primitive_fraction_coordinates_eq {u₁ v₁ u₂ v₂ : ℤ}
-    (hv₁ : 0 < v₁) (hv₂ : 0 < v₂)
-    (hp₁ : Nat.Coprime u₁.natAbs v₁.natAbs)
-    (hp₂ : Nat.Coprime u₂.natAbs v₂.natAbs)
+section
+variable {u₁ v₁ u₂ v₂ : ℤ} (hv₁ : 0 < v₁) (hv₂ : 0 < v₂) (hp₁ : Nat.Coprime u₁.natAbs v₁.natAbs) (hp₂ : Nat.Coprime u₂.natAbs v₂.natAbs)
+include u₁ v₁ u₂ v₂ hv₁ hv₂ hp₁ hp₂
+theorem primitive_fraction_coordinates_eq
     (h : (u₁:ℝ)/v₁ = (u₂:ℝ)/v₂) :
     u₁ = u₂ ∧ v₁ = v₂ := by
-  have hd₁ : (v₁:ℝ) ≠ 0 := by exact_mod_cast hv₁.ne'
-  have hd₂ : (v₂:ℝ) ≠ 0 := by exact_mod_cast hv₂.ne'
+  have hd₁ : (v₁:ℝ) ≠ 0 := by aesop
+  have hd₂ : (v₂:ℝ) ≠ 0 := by aesop
   have hm : u₁*v₂ = u₂*v₁ := by
     exact_mod_cast (div_eq_div_iff hd₁ hd₂).mp h
   apply Rat.div_int_inj hv₁ hv₂ hp₁ hp₂
-  apply (div_eq_div_iff (by exact_mod_cast hv₁.ne') (by exact_mod_cast hv₂.ne')).mpr
+  apply (div_eq_div_iff (by simp_all) (by simp_all)).mpr
   exact_mod_cast hm
 
-theorem primitive_fraction_determinant_ne_zero {u₁ v₁ u₂ v₂ : ℤ}
-    (hv₁ : 0 < v₁) (hv₂ : 0 < v₂)
-    (hp₁ : Nat.Coprime u₁.natAbs v₁.natAbs)
-    (hp₂ : Nat.Coprime u₂.natAbs v₂.natAbs)
+theorem primitive_fraction_determinant_ne_zero
     (hne : (u₁,v₁) ≠ (u₂,v₂)) :
     u₁*v₂-u₂*v₁ ≠ 0 := by
   intro hz
   have hm : (u₁:ℝ)*(v₂:ℝ) = (u₂:ℝ)*(v₁:ℝ) := by
     exact_mod_cast (sub_eq_zero.mp hz)
   have he := primitive_fraction_coordinates_eq hv₁ hv₂ hp₁ hp₂
-    ((div_eq_div_iff (by exact_mod_cast hv₁.ne') (by exact_mod_cast hv₂.ne')).mpr hm)
-  exact hne (Prod.ext he.1 he.2)
+    ((div_eq_div_iff (by aesop) (by exact_mod_cast hv₂.ne')).mpr hm)
+  grind
+end
 
 theorem primitive_linear_congruence_ratio_spacing
     {a b c u₁ v₁ u₂ v₂ : ℤ} {V : ℝ}

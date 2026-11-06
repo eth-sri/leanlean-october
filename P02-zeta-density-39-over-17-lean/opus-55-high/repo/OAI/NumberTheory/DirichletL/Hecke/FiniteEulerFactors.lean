@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormFiberExtraction
 public import OAI.NumberTheory.DirichletL.Mellin.FiniteEulerRestoration
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -66,8 +67,7 @@ theorem idealsUpTo_card_le (N : ℕ) :
     exact Finset.card_image_of_injective _ idealGenerator_injective
   rw [← himage]
   apply ShortDraftLatticeCount.actual_eisenstein_count
-  intro x hx
-  obtain ⟨I, hI, rfl⟩ := Finset.mem_image.mp hx
+  pm_136 x hx I hI Finset.mem_image.mp
   have hnorm : Ideal.absNorm I ≤ N := (mem_idealsUpTo.mp hI).2
   have hqNat : ShortDraftLatticeCount.qNat (idealGenerator I) ≤ N := by
     rw [ActualEisensteinCubic.qNat_eq_absNorm_span, span_idealGenerator]
@@ -84,7 +84,7 @@ theorem idealsUpTo_card_le (N : ℕ) :
       ((ShortDraftLatticeCount.q
         (ActualEisensteinCoordinates.coords (idealGenerator I))).toNat : ℤ) ≤ N := by
     exact_mod_cast hqNat
-  simpa only [hcast] using hqInt
+  grind
 
 noncomputable def fixedTestWeight (W : ℝ → ℂ) (m n : ℕ) : ℂ :=
   W (2 * ((n : ℝ) / (2 * m : ℕ)))
@@ -93,7 +93,7 @@ theorem fixedTestWeight_eq (W : ℝ → ℂ) {m : ℕ} (hm : 0 < m) (n : ℕ) :
     fixedTestWeight W m n = W ((n : ℝ) / (m : ℝ)) := by
   unfold fixedTestWeight
   congr 1
-  have hm0 : (m : ℝ) ≠ 0 := by exact_mod_cast Nat.ne_of_gt hm
+  pm_300 hm0 m
   push_cast
   field_simp
 
@@ -134,7 +134,7 @@ theorem FixedTestPrimeMS.bound
       384 * ((2 * m : ℕ) : ℝ) ^ ((23 / 24 : ℝ) + ε) := by
   have hWeight : ∀ n : ℕ, ‖fixedTestWeight W m n‖ ≤ 1 := by
     intro n
-    exact hW _
+    aesop
   have hD : 1 ≤ 2 * m := by omega
   have hbound := outsideCoeff_prime_extraction_from_MS χ
     (fixedTestWeight W m) S hSbad hWeight h.selected (fun p : O => p)

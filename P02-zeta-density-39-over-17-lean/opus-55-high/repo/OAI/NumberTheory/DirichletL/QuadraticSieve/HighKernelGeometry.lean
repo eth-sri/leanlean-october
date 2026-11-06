@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.RetainedDualBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,73 +8,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic
 
@@ -87,21 +44,13 @@ theorem finite_inverse_norm_square_sum (S : Finset (Ideal O)) (H : ℝ)
   have hbin (j : Fin (columnDyadicLength H+1)) :
       (∑ I ∈ divisorDyadicBin S H j, 1/(Ideal.absNorm I : ℝ)^2) ≤
         512 * (1/(2:ℝ))^j.val := by
-    have hp : 0 < (2:ℝ)^j.val := by positivity
-    have hone : 1 ≤ (2:ℝ)^j.val := one_le_pow₀ (by norm_num)
+    pm_5930 hp j.val
+    pm_394 hone j.val
     have hcount : ((divisorDyadicBin S H j).card : ℝ) ≤ 128 * (2:ℝ)^j.val := by
-      apply DescentFiberCost.finite_ideal_count_real _ _ hone
-      · intro I hI
-        exact hS I (Finset.mem_filter.mp hI).1
-      · intro I hI
-        obtain ⟨hIS,hj⟩ := Finset.mem_filter.mp hI
-        have hb := (divisorDyadicLabel_bounds H I (hpos I hIS) (hH I hIS)).2
-        simpa only [hj] using hb
+      pm_3056
     have hterm (I : Ideal O) (hI : I ∈ divisorDyadicBin S H j) :
         1/(Ideal.absNorm I : ℝ)^2 ≤ 4/((2:ℝ)^j.val)^2 := by
-      obtain ⟨hIS,hj⟩ := Finset.mem_filter.mp hI
-      have hb := (divisorDyadicLabel_bounds H I (hpos I hIS) (hH I hIS)).1
-      rw [hj] at hb
+      pm_3057
       have hni : 0 < (Ideal.absNorm I : ℝ) := lt_of_lt_of_le (by norm_num) (hpos I hIS)
       apply (div_le_div_iff₀ (sq_pos_of_pos hni) (sq_pos_of_pos hp)).mpr
       nlinarith
@@ -131,21 +80,17 @@ theorem highSquareParts_card_le (M K : ℝ) (_hM : 0 ≤ M) (hK : 0 < K) :
   · obtain ⟨A,hA⟩ := Finset.nonempty_iff_ne_empty.mpr hempty
     have hb := highSquareParts_bounds M K hK A hA
     apply DescentFiberCost.finite_ideal_count_real _ _ (hb.2.1.trans hb.2.2.1)
-    · intro I hI
-      exact (highSquareParts_bounds M K hK I hI).1.1
-    · intro I hI
-      exact (highSquareParts_bounds M K hK I hI).2.2.1
+    pm_8419 I hI hK
 
 theorem HasSieveExponent.high_kernel {α : ℝ} (h : HasSieveExponent α) :
     ∀ ε : ℝ, 0 < ε → ∃ C : ℝ, 0 < C ∧ ∀ M N K : ℝ,
       1 ≤ M → 1 ≤ N → 1 ≤ K →
       highKernelNorm M N K ≤ C * (M*N)^ε * (M + Real.sqrt (M/K)*N^α) := by
   intro ε hε
-  obtain ⟨C,hC,hbound⟩ := h ε hε
+  pm_69 C hC hbound h ε hε
   refine ⟨1024*C,by positivity,?_⟩
   intro M N K hM hN hK
-  have hM0 : 0 ≤ M := by linarith
-  have hN0 : 0 ≤ N := by linarith
+  pm_255 hM0 M hN0 N
   have hK0 : 0 < K := by linarith
   let S := highSquareParts M K
   have hrow (A : Ideal O) (hA : A ∈ S) :
@@ -158,13 +103,10 @@ theorem HasSieveExponent.high_kernel {α : ℝ} (h : HasSieveExponent α) :
     gcongr
   have hsum : (∑ A ∈ S, 1/(Ideal.absNorm A : ℝ)^2) ≤ 1024 := by
     apply finite_inverse_norm_square_sum S (Real.sqrt (M/K))
-    · intro A hA
-      exact (highSquareParts_bounds M K hK0 A hA).1.1
-    · intro A hA
-      exact (highSquareParts_bounds M K hK0 A hA).2.2.1
+    pm_8419 A hA hK0
   have hcard : (S.card : ℝ) ≤ 128*Real.sqrt (M/K) := highSquareParts_card_le M K hM0 hK0
   have hcoeff : 0 ≤ C*(M*N)^ε := by positivity
-  have hpow : 0 ≤ N^α := Real.rpow_nonneg hN0 _
+  pm_6316 hpow N α hN0
   calc
     _ ≤ ∑ A ∈ S, sieveNorm (M/(Ideal.absNorm A : ℝ)^2) N :=
       highKernelNorm_le_squarePart_sum M N K
@@ -187,7 +129,7 @@ end CanonicalQuadraticSieve
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped Classical Topology MatrixGroups Matrix
 
 def bottomRowUnitary (c d : ℂ) (r : ℝ) : Matrix (Fin 2) (Fin 2) ℂ :=
   !![star d/(r:ℂ),-star c/(r:ℂ);c/(r:ℂ),d/(r:ℂ)]
@@ -197,7 +139,7 @@ lemma bottomRowUnitary_mem (c d : ℂ) (r : ℝ) (hr : r≠0)
   have hC : c*star c+d*star d=(r:ℂ)^2 := by
     simpa only [Complex.ofReal_add,Complex.ofReal_pow,← Complex.mul_conj',Complex.star_def] using
       congrArg (fun x : ℝ => (x:ℂ)) hrow
-  have hrC : (r:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hr
+  pm_3058 hrC r hr
   simp only [Complex.star_def] at hC
   rw [Matrix.mem_unitaryGroup_iff]
   ext i j
@@ -210,7 +152,7 @@ lemma iwasawa_z_row_identities (a b c d : ℂ) (q : ℝ)
     (hq : q≠0) (hrow : (q:ℂ)=c*star c+d*star d) (hdet : a*d-b*c=1) :
     star d/(q:ℂ)+(a*star c+b*star d)/(q:ℂ)*c=a ∧
     -star c/(q:ℂ)+(a*star c+b*star d)/(q:ℂ)*d=b := by
-  have hqC : (q:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hq
+  pm_3058 hqC q hq
   constructor
   · field_simp [hqC]
     rw [hrow]
@@ -236,14 +178,13 @@ lemma matrix_iwasawa_factor (g : SL(2,ℂ)) :
   have hqC : (q:ℂ)=g 1 0*star (g 1 0)+g 1 1*star (g 1 1) := by
     simp only [q,rowEnergy,complexBottomRow,Complex.ofReal_add,Complex.ofReal_pow,
       ← Complex.mul_conj',Complex.star_def]
-  have hdet : g 0 0*g 1 1-g 0 1*g 1 0=1 := by
-    simpa only [Matrix.det_fin_two] using g.det_coe
+  pm_3250 hdet g g.det_coe
   have hz := iwasawa_z_row_identities (g 0 0) (g 0 1) (g 1 0) (g 1 1) q hq.ne' hqC hdet
   let B := upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g)
   let U := bottomRowUnitary (g 1 0) (g 1 1) r
   have hroot : Real.sqrt (liftedHeight g)=r⁻¹ := by
     exact Real.sqrt_inv q
-  have hrC : (r:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hr.ne'
+  pm_3058 hrC r hr.ne'
   have hqrC : (r:ℂ)^2=(q:ℂ) := by exact_mod_cast hr2
   have hB : (B:Matrix (Fin 2) (Fin 2) ℂ)=
       !![(r:ℂ)⁻¹,matrixHorizontal g*(r:ℂ);0,(r:ℂ)] := by
@@ -292,22 +233,14 @@ theorem upperPoint_surjective (w : HyperbolicSpace) :
   | _ g =>
     obtain ⟨k,hk,hg⟩ := matrix_iwasawa_factor g
     refine ⟨matrixHorizontal g,liftedHeight g,liftedHeight_pos g,?_⟩
-    apply Quotient.sound
-    apply QuotientGroup.leftRel_apply.mpr
-    change (upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g))⁻¹*g∈compactSubgroup
-    have hcancel : (upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g))⁻¹*g=k := by
-      calc
-        _ = (upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g))⁻¹*
-            (upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g)*k) :=
-          congrArg (fun M => (upperSection (matrixHorizontal g) (liftedHeight g) (liftedHeight_pos g))⁻¹*M) hg
-        _ = k := inv_mul_cancel_left _ _
+    pm_3059
     rw [hcancel]
     exact hk
 
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinEmbedding
@@ -344,7 +277,7 @@ lemma hexagon_norm_sq_bound (x y : ℝ)
     (h₁ : x+Real.sqrt 3*y≤1) (h₂ : x-Real.sqrt 3*y≤1)
     (h₃ : -x+Real.sqrt 3*y≤1) (h₄ : -x-Real.sqrt 3*y≤1) :
     x^2+y^2≤1/3 := by
-  have hs : (Real.sqrt 3)^2=3 := Real.sq_sqrt (by norm_num)
+  pm_6459
   have ha : |x|+Real.sqrt 3*|y|≤1 := by
     rcases le_total 0 x with hxx | hxx <;> rcases le_total 0 y with hyy | hyy
     · simpa only [abs_of_nonneg hxx,abs_of_nonneg hyy] using h₁
@@ -376,7 +309,7 @@ theorem exists_eisenstein_distance_sq_le_third (z : ℂ) :
   have hnω := hmin (-(ActualEisensteinCoordinates.eval 0 1))
   have hη := hmin (ActualEisensteinCoordinates.eval 1 1)
   have hnη := hmin (-(ActualEisensteinCoordinates.eval 1 1))
-  have hs : (Real.sqrt 3)^2=3 := Real.sq_sqrt (by norm_num)
+  pm_6459
   simp only [map_one,map_neg,eisEmbedding_eval,Int.cast_zero,Int.cast_one,zero_add,one_mul,
     Complex.normSq_apply,Complex.sub_re,Complex.sub_im,Complex.add_re,Complex.add_im,
     Complex.neg_re,Complex.neg_im,Complex.one_re,Complex.one_im,hre,omega3_im] at h1 hn1 hω hnω hη hnη
@@ -393,8 +326,7 @@ theorem exists_eisenstein_distance_sq_le_third (z : ℂ) :
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 
@@ -457,7 +389,7 @@ theorem exists_maximal_integral_height (w : HyperbolicSpace) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix
+open scoped Classical Topology MatrixGroups Matrix
 
 open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
@@ -472,8 +404,7 @@ lemma integralTranslation_action (n : O) (z : ℂ) (v : ℝ) (hv : 0<v) :
       upperPoint (z+eisEmbedding n) v hv := by
   change (QuotientGroup.mk (integralComplexMatrix (integralTranslation n)*upperSection z v hv) : HyperbolicSpace)=
     QuotientGroup.mk (upperSection (z+eisEmbedding n) v hv)
-  apply congrArg (fun g : SL(2,ℂ) => (QuotientGroup.mk g : HyperbolicSpace))
-  apply Subtype.ext
+  pm_1549
   change (integralComplexMatrix (integralTranslation n) : Matrix (Fin 2) (Fin 2) ℂ) *
     (upperSection z v hv : Matrix (Fin 2) (Fin 2) ℂ) =
     (upperSection (z + eisEmbedding n) v hv : Matrix (Fin 2) (Fin 2) ℂ)
@@ -531,7 +462,7 @@ theorem bianchi_reduction_height_floor (w : HyperbolicSpace) :
       integralComplexMatrix M • w=upperPoint z v hv ∧
       Complex.normSq z≤1/3 ∧ Real.sqrt (2/3)≤v := by
   obtain ⟨M,z,v,hv,hMw,hz,hunit,hmax⟩ := bianchi_ford_cover w
-  refine ⟨M,z,v,hv,hMw,hz,?_⟩
+  pm_211 M z v hv hMw hz
   apply (Real.sqrt_le_iff).mpr
   exact ⟨hv.le,by linarith⟩
 
@@ -550,8 +481,6 @@ lemma mem_truncatedFordBox (z : ℂ) (v T : ℝ)
 
 end CubicEisenstein
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
 
 namespace CubicEisenstein
 open CubicKubota ActualEisensteinCubic ConcreteTraceCRT

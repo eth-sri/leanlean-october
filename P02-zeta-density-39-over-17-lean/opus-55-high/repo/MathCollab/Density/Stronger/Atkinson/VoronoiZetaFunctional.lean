@@ -22,7 +22,10 @@ theorem four_mul_cos_half_sq (w : ℂ) :
   unfold Complex.cos
   ring
 
-theorem riemannZeta_eq_voronoiFactor {z : ℂ} (hz : z.re < 1) (hz0 : z ≠ 0) :
+section
+variable {z : ℂ} (hz : z.re < 1) (hz0 : z ≠ 0)
+include z hz hz0
+theorem riemannZeta_eq_voronoiFactor :
     riemannZeta z = 2 * dfiPeriodicArchimedeanFactor 1 (1 - z) *
       Complex.cos (Real.pi * (1 - z) / 2) * riemannZeta (1 - z) := by
   have hr : 0 < (1 - z).re := by simp only [sub_re, one_re]; linarith
@@ -30,16 +33,16 @@ theorem riemannZeta_eq_voronoiFactor {z : ℂ} (hz : z.re < 1) (hz0 : z ≠ 0) :
     intro n h
     have hre := congrArg Complex.re h
     simp only [neg_re, natCast_re] at hre
-    linarith [Nat.cast_nonneg (α := ℝ) n]
+    grind
   have hne : 1 - z ≠ 1 := by
     intro h
     apply hz0
-    linear_combination -h
+    grind
   have h := riemannZeta_one_sub hn hne
   rw [show 1 - (1 - z) = z by ring] at h
   simpa [dfiPeriodicArchimedeanFactor, mul_assoc] using h
 
-theorem riemannZeta_sq_eq_voronoiMultipliers {z : ℂ} (hz : z.re < 1) (hz0 : z ≠ 0) :
+theorem riemannZeta_sq_eq_voronoiMultipliers :
     riemannZeta z ^ 2 =
       (dfiVoronoiMinusMultiplier 1 z + dfiVoronoiPlusMultiplier 1 z) *
         riemannZeta (1 - z) ^ 2 := by
@@ -52,9 +55,7 @@ theorem riemannZeta_sq_eq_voronoiMultipliers {z : ℂ} (hz : z.re < 1) (hz0 : z 
   rw [riemannZeta_eq_voronoiFactor hz hz0]
   unfold dfiVoronoiMinusMultiplier dfiVoronoiPlusMultiplier
   simp only [Nat.cast_one, one_mul, mul_one]
-  calc
-    _ = dfiPeriodicArchimedeanFactor 1 (1 - z) ^ 2 *
-        (4 * Complex.cos (Real.pi * (1 - z) / 2) ^ 2) * riemannZeta (1 - z) ^ 2 := by ring
-    _ = _ := by rw [hc]; ring
+  grind
+end
 
 end MathCollab.Density.Stronger.Atkinson

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GaussianSubset
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,17 +15,17 @@ local notation "O" => ActualEisensteinCubic.O
 theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
     (W : Fin K→ℝ→ℂ) (M : Fin K→ℝ) (hM : ∀i,0≤M i)
     (hwindow : ∀i y,W i (Real.exp y)≠0→|y|≤M i) :
-    ∃V : Finset (Fin K)→SchwartzMap ℝ ℂ,
+    ∃V : Finset (Fin K)→ SchwartzMap ℝ ℂ,
     ∃hV : ∀A,HasCompactSupport (V A:ℝ→ℂ),
-      (∀N : ℕ,∀s : ℝ,0<s→∃B : ℝ,0<B ∧
+      (∀N : ℕ,∀s : ℝ,0< s→∃B : ℝ,0<B ∧
         ∀A : Finset (Fin K),∀Z : ℝ,0<Z→
           Summable (fun j : ℕ=>((2:ℝ)^j)^s*gaussianJointMoment (V A) (hV A) N ((2:ℝ)^j/Z)) ∧
-          (∑'j : ℕ,((2:ℝ)^j)^s*gaussianJointMoment (V A) (hV A) N ((2:ℝ)^j/Z))≤B*Z^s) ∧
+          (∑'j : ℕ,((2:ℝ)^j)^s*gaussianJointMoment (V A) (hV A) N ((2:ℝ)^j/Z))≤B*Z ^s) ∧
       (∀η : HeckeFamily.Character,∀C : CalibrationData,∀W0 W1 : ℝ→ℂ,
-        HasCompactSupport W0→HasCompactSupport W1→
-        ∀slotPrimes : Fin K→Finset O,(∀i a,a∈slotPrimes i→a≠0)→
+        HasCompactSupport W0→ HasCompactSupport W1→
+        ∀slotPrimes : Fin K→ Finset O,(∀i a,a∈slotPrimes i→ a≠0)→
         ∀P : Fin K→ℝ,(∀i,0<P i)→∀X Y Z : ℝ,0<X→0<Y→0<Z→
-          compensatedPhysicalProbe η C W0 W1 slotPrimes W P X Y Z=
+          compensatedPhysicalProbe η C W0 W1 slotPrimes W P X Y Z =
           ∑A∈(Finset.univ : Finset (Fin K)).powerset,
             ∑'j : ℕ,∫t : ℝ,
               (∑p : ((i : Fin K)→{a : O // a∈slotPrimes i}),
@@ -38,14 +39,13 @@ theorem compensatedPhysicalProbe_common_gaussian {K : ℕ}
   refine ⟨V,hV,?_,?_⟩
   · intro N s hs
     choose B hB hb using fun A : Finset (Fin K)=>gaussianJointMoment_summed (V A) (hV A) N s hs
-    let B0 := (∑A∈(Finset.univ : Finset (Fin K)).powerset,B A)+1
+    pm_6840 B0 B
     have hB0 : 0<B0 := by
       have hh : 0≤∑A∈(Finset.univ : Finset (Fin K)).powerset,B A :=
         Finset.sum_nonneg (fun A _=>(hB A).le)
       dsimp only [B0]
       linarith
-    refine ⟨B0,hB0,?_⟩
-    intro A Z hZ
+    pm_3532 B0 hB0 A Z hZ
     obtain ⟨hsm,hbd⟩ := hb A Z hZ
     refine ⟨hsm,hbd.trans ?_⟩
     apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZ.le s)

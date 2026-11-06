@@ -76,10 +76,10 @@ end FixedRay
 def eligiblePool (P : Finset (Ideal O)) (R : Ideal O) : Finset (Ideal O) :=
   P.filter (fun Q => ¬Q ∣ R)
 
-theorem eligiblePool_card_lower (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime Q)
-    (R : Ideal O) (hR : R ≠ 0) (Z ℓ B : ℝ) (hZ : 1 < Z) (hℓ : 0 < ℓ)
-    (hlower : ∀ Q ∈ P, Z^ℓ ≤ (Ideal.absNorm Q : ℝ))
-    (hupper : (Ideal.absNorm R : ℝ) ≤ Z^B) :
+section
+variable (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime Q) (R : Ideal O) (hR : R ≠ 0) (Z ℓ B : ℝ) (hZ : 1 < Z) (hℓ : 0 < ℓ) (hlower : ∀ Q ∈ P, Z^ℓ ≤ (Ideal.absNorm Q : ℝ)) (hupper : (Ideal.absNorm R : ℝ) ≤ Z^B)
+include P hp R hR Z ℓ B hZ hℓ hlower hupper
+theorem eligiblePool_card_lower :
     (P.card : ℝ) - B/ℓ ≤ (eligiblePool P R).card := by
   have hbad := large_prime_divisor_count (P.filter (fun Q => Q ∣ R))
     (fun Q hQ => hp Q (Finset.mem_filter.mp hQ).1) R hR
@@ -90,13 +90,11 @@ theorem eligiblePool_card_lower (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime 
     exact_mod_cast he
   linarith
 
-theorem eligiblePool_half (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime Q)
-    (R : Ideal O) (hR : R ≠ 0) (Z ℓ B : ℝ) (hZ : 1 < Z) (hℓ : 0 < ℓ)
-    (hlower : ∀ Q ∈ P, Z^ℓ ≤ (Ideal.absNorm Q : ℝ))
-    (hupper : (Ideal.absNorm R : ℝ) ≤ Z^B) (hsize : 2*(B/ℓ) ≤ P.card) :
+theorem eligiblePool_half (hsize : 2*(B/ℓ) ≤ P.card) :
     (P.card : ℝ)/2 ≤ (eligiblePool P R).card := by
   have h := eligiblePool_card_lower P hp R hR Z ℓ B hZ hℓ hlower hupper
   linarith
+end
 
 end SevenEighths.CenteredMomentPrimePool
 

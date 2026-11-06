@@ -33,8 +33,7 @@ lemma idealFromValuations_ne_zero (v : PrimeIdeal →₀ ℕ) : idealFromValuati
   simp only [primeValuations,factorization_one,Finsupp.subtypeDomain_zero]
 
 lemma primeValuations_mul (I J : Id) (hI : I≠0) (hJ : J≠0) :
-    primeValuations (I*J)=primeValuations I+primeValuations J := by
-  simp only [primeValuations,factorization_mul hI hJ,Finsupp.subtypeDomain_add]
+    primeValuations (I*J)=primeValuations I+primeValuations J := by aesop
 
 @[simp] lemma primeValuations_prime (P : PrimeIdeal) :
     primeValuations P.val=Finsupp.single P 1 := by
@@ -48,10 +47,7 @@ lemma primeValuations_mul (I J : Id) (hI : I≠0) (hJ : J≠0) :
     simp [Ne.symm h,hv]
 
 lemma primeValuations_pow (I : Id) (n : ℕ) :
-    primeValuations (I^n)=n • primeValuations I := by
-  ext P
-  simp only [primeValuations_apply,normalizedFactors_pow,Multiset.count_nsmul,
-    Finsupp.coe_smul,Pi.smul_apply,smul_eq_mul]
+    primeValuations (I^n)=n • primeValuations I := by aesop
 
 @[simp] lemma idealFromValuations_zero : idealFromValuations 0=1 := by
   simp [idealFromValuations]
@@ -106,14 +102,13 @@ lemma prime_coprime_idealFromValuations (P : PrimeIdeal) (v : PrimeIdeal →₀ 
   apply primeIdeal_coprime
   intro hh
   subst Q
-  exact Finsupp.mem_support_iff.mp hQ hP
+  grind
 
 def finsuppPairEquiv {α β γ : Type*} [Zero β] [Zero γ] :
     ((α→₀β)×(α→₀γ)) ≃ (α→₀(β×γ)) where
   toFun v := Finsupp.zipWith Prod.mk rfl v.1 v.2
   invFun v := (v.mapRange Prod.fst rfl,v.mapRange Prod.snd rfl)
-  left_inv v := by
-    apply Prod.ext <;> ext a <;> rfl
+  left_inv v := by aesop
   right_inv v := by
     apply Finsupp.ext
     intro a

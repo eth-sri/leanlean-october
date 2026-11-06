@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedFiber
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -46,12 +47,10 @@ theorem original_fiber_inactive_sum (S : PrimeFamily σ)
     S hodd hS (fun P => (UniqueFactorizationMonoid.normalizedFactors D.movingIdeal).count P.val.val%6)
     (fun _ => Nat.mod_lt _ (by norm_num)) E hres H
   refine he.trans ?_
-  apply Finset.sum_congr (by ext B; simp only [Finset.mem_univ])
-  intro B hB
-  apply Finset.sum_congr (by ext T; simp only [Finset.mem_univ])
-  intro T hT
+  pm_5733 B hB
+  pm_5733 T hT
   congr 2
-  apply Finset.prod_congr (by ext b; simp only [Finset.mem_sdiff,Finset.mem_univ])
+  pm_3320 b
   intro b hb
   rw [D.primeFiberEquiv_exponent R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask (Sum.inr b)]
   change (if completedLocalExponent R F b.val=0 then

@@ -2,6 +2,7 @@ module
 public import GafniTao.FordLemma34Terminal
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Defs
 public import Mathlib.Analysis.Calculus.Deriv.MeanValue
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,6 @@ At Heath-Brown's critical choice `l = k - 1` and
 -/
 
 open Complex Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -57,8 +57,8 @@ theorem heathBrownCriticalMoment_degree_identity
     {k : ℕ} (hk : 1 ≤ k) :
     (k - 1) * ((k - 1) + 1) / 2 = heathBrownCriticalMoment k := by
   unfold heathBrownCriticalMoment
-  have hsucc : k - 1 + 1 = k := by omega
-  rw [hsucc, Nat.mul_comm]
+  pm_2812 hsucc k
+  grind
 
 /-- At the critical index, Ford's exact real exponent is `s + epsilon`. -/
 theorem heathBrownCriticalMoment_lambda
@@ -71,11 +71,8 @@ theorem heathBrownCriticalMoment_lambda
   have hcrit : (heathBrownCriticalMoment k : ℝ) =
       (k : ℝ) * ((k : ℝ) - 1) / 2 := by
     unfold heathBrownCriticalMoment
-    rw [Nat.cast_div
-      (even_iff_two_dvd.mp (Nat.even_mul_pred_self k))
-      (by norm_num : (2 : ℝ) ≠ 0)]
-    push_cast
-    rw [hsub]
+    pm_2813 Nat.even_mul_pred_self k
+    grind
   unfold fordLambda34
   rw [hcrit, hsub]
   ring
@@ -120,39 +117,31 @@ theorem norm_heathBrownPhase (x : ℝ) :
   rw [Complex.norm_exp]
   norm_num
 
+section
+variable {N : ℕ} {f : ℝ → ℝ}
+include N f
 /-- Lower slope estimate extracted from the derivative hypotheses. -/
-theorem heathBrown_lower_slope
-    {N : ℕ} {f : ℝ → ℝ} {mu : ℝ}
+theorem heathBrown_lower_slope {mu : ℝ}
     (hf : ContinuousOn f (Set.Icc 0 (N : ℝ)))
     (hfd : DifferentiableOn ℝ f (Set.Ioo 0 (N : ℝ)))
     (hmu : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), mu ≤ deriv f x)
     {x y : ℝ} (hx : x ∈ Set.Icc (0 : ℝ) N)
     (hy : y ∈ Set.Icc (0 : ℝ) N) (hxy : x ≤ y) :
     mu * (y - x) ≤ f y - f x := by
-  have hInterior : interior (Set.Icc (0 : ℝ) (N : ℝ)) =
-      Set.Ioo 0 (N : ℝ) := by
-    rw [interior_Icc]
-  apply Convex.mul_sub_le_image_sub_of_le_deriv
-    (convex_Icc (0 : ℝ) (N : ℝ)) hf
-    (by simpa only [hInterior] using hfd) (by simpa only [hInterior] using hmu)
-    x hx y hy hxy
+  pm_2814
+  pm_1083 Convex.mul_sub_le_image_sub_of_le_deriv hmu
 
 /-- Upper slope estimate extracted from the derivative hypotheses. -/
-theorem heathBrown_upper_slope
-    {N : ℕ} {f : ℝ → ℝ} {M : ℝ}
+theorem heathBrown_upper_slope {M : ℝ}
     (hf : ContinuousOn f (Set.Icc 0 (N : ℝ)))
     (hfd : DifferentiableOn ℝ f (Set.Ioo 0 (N : ℝ)))
     (hM : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), deriv f x ≤ M)
     {x y : ℝ} (hx : x ∈ Set.Icc (0 : ℝ) N)
     (hy : y ∈ Set.Icc (0 : ℝ) N) (hxy : x ≤ y) :
     f y - f x ≤ M * (y - x) := by
-  have hInterior : interior (Set.Icc (0 : ℝ) (N : ℝ)) =
-      Set.Ioo 0 (N : ℝ) := by
-    rw [interior_Icc]
-  apply Convex.image_sub_le_mul_sub_of_deriv_le
-    (convex_Icc (0 : ℝ) (N : ℝ)) hf
-    (by simpa only [hInterior] using hfd) (by simpa only [hInterior] using hM)
-    x hx y hy hxy
+  pm_2814
+  pm_1083 Convex.image_sub_le_mul_sub_of_deriv_le hM
+end
 
 /-- The elementary bound used in the small-parameter branch of the source
 proof.  It is deliberately recorded separately from Theorem 1. -/

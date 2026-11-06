@@ -1,5 +1,6 @@
 module
 public import GafniTao.HeathBrownChosenAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,8 +27,7 @@ theorem heathBrownRefinedCountConstant_pos
     (k : ℕ) {A : ℝ} (hA : 0 < A) :
     0 < heathBrownRefinedCountConstant k A := by
   unfold heathBrownRefinedCountConstant heathBrownChosenTotalConstant
-  have hC₁ := heathBrownChosenFirstConstant_nonneg k hA.le
-  have hC₂ := heathBrownChosenSecondConstant_nonneg k hA.le
+  pm_111 hC₁ heathBrownChosenFirstConstant_nonneg k hA.le hC₂ heathBrownChosenSecondConstant_nonneg
   positivity
 
 theorem heathBrownBlockParameter_cast_le
@@ -39,31 +39,10 @@ theorem heathBrownBlockParameter_cast_le
   gcongr
   exact Nat.floor_le (by positivity)
 
-theorem heathBrownPairCount_card_cast_le_source_scale
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1)
-    (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
-    (hcoordLow : ContinuousOn
-      (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLowD : DifferentiableOn ℝ
-      (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Ioo 0 (N : ℝ)))
-    (hcoordLast : ContinuousOn
-      (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLastD : DifferentiableOn ℝ
-      (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Ioo 0 (N : ℝ)))
-    (hraw : ContinuousOn (iteratedDeriv (k - 1) f)
-      (Set.Icc 0 (N : ℝ)))
-    (hrawd : DifferentiableOn ℝ (iteratedDeriv (k - 1) f)
-      (Set.Ioo 0 (N : ℝ)))
-    (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
-      lambda ≤ iteratedDeriv k f x ∧
-        iteratedDeriv k f x ≤ A * lambda) :
+section
+variable {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ} (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda) (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4) (hlargeH : 8 ≤ heathBrownHChoice k A lambda) (hcoordLow : ContinuousOn (heathBrownDerivativeCoordinate f (k - 2)) (Set.Icc 0 (N : ℝ))) (hcoordLowD : DifferentiableOn ℝ (heathBrownDerivativeCoordinate f (k - 2)) (Set.Ioo 0 (N : ℝ))) (hcoordLast : ContinuousOn (heathBrownDerivativeCoordinate f (k - 1)) (Set.Icc 0 (N : ℝ))) (hcoordLastD : DifferentiableOn ℝ (heathBrownDerivativeCoordinate f (k - 1)) (Set.Ioo 0 (N : ℝ))) (hraw : ContinuousOn (iteratedDeriv (k - 1) f) (Set.Icc 0 (N : ℝ))) (hrawd : DifferentiableOn ℝ (iteratedDeriv (k - 1) f) (Set.Ioo 0 (N : ℝ))) (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ), lambda ≤ iteratedDeriv k f x ∧ iteratedDeriv k f x ≤ A * lambda)
+include N k f A lambda hk hN hA hlambda hlambdaOne hsmall hlargeH hcoordLow hcoordLowD hcoordLast hcoordLastD hraw hrawd hkBounds
+theorem heathBrownPairCount_card_cast_le_source_scale :
     let H := heathBrownHChoice k A lambda
     ((heathBrownPairCount N k H f).card : ℝ) ≤
       heathBrownRefinedCountConstant k A *
@@ -74,23 +53,18 @@ theorem heathBrownPairCount_card_cast_le_source_scale
   let K := heathBrownBlockParameter A lambda N
   let C := heathBrownChosenTotalConstant k A
   let S := (N : ℝ) + lambda ^ (-(2 / (k : ℝ)))
-  let L := 1 + Real.log (N : ℝ)
-  have hcount := heathBrownPairCount_card_cast_le_chosen_factor
-    (N := N) (k := k) (f := f) (A := A) (lambda := lambda)
-    hk hN hA hlambda hsmall hlargeH hcoordLow hcoordLowD hcoordLast
-    hcoordLastD hraw hrawd hkBounds
-  dsimp only at hcount
+  pm_8066
+  pm_2810 heathBrownPairCount_card_cast_le_chosen_factor
   have hshift := heathBrownChosenShiftFactor_le_source_sum
     (k := k) (N := N) (A := A) (lambda := lambda)
     hk hA hlambda hlambdaOne
   have hC : 0 ≤ C := by
     dsimp only [C, heathBrownChosenTotalConstant]
-    have hC₁ := heathBrownChosenFirstConstant_nonneg k hA.le
-    have hC₂ := heathBrownChosenSecondConstant_nonneg k hA.le
+    pm_111 hC₁ heathBrownChosenFirstConstant_nonneg k hA.le hC₂ heathBrownChosenSecondConstant_nonneg
     positivity
-  have hS : 0 ≤ S := by dsimp only [S]; positivity
-  have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hlog : 0 ≤ Real.log (N : ℝ) := Real.log_nonneg hNreal
+  pm_82 hS S
+  pm_2809
+  pm_888
   have hLone : 1 ≤ L := by dsimp only [L]; linarith
   have hL : 0 ≤ L := hLone.trans' (by norm_num)
   have hNleS : (N : ℝ) ≤ S := by
@@ -108,8 +82,7 @@ theorem heathBrownPairCount_card_cast_le_source_scale
           simpa only [C] using hshift
         _ = C * S := by simp only [S, add_comm]
     have hmul := mul_le_mul_of_nonneg_right hshift' hL
-    have hmul' := mul_le_mul_of_nonneg_left hmul
-      (by norm_num : (0 : ℝ) ≤ 2)
+    pm_6451
     calc
       (N : ℝ) + 2 * heathBrownChosenShiftFactor N k A lambda * L ≤
           N + 2 * (C * S) * L := by
@@ -143,31 +116,7 @@ theorem heathBrownPairCount_card_cast_le_source_scale
         (N + lambda ^ (-(2 / (k : ℝ)))) *
         (1 + Real.log N) := by rfl
 
-theorem heathBrownPairCount_card_cast_le_lemma_two
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1)
-    (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
-    (hcoordLow : ContinuousOn
-      (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLowD : DifferentiableOn ℝ
-      (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Ioo 0 (N : ℝ)))
-    (hcoordLast : ContinuousOn
-      (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLastD : DifferentiableOn ℝ
-      (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Ioo 0 (N : ℝ)))
-    (hraw : ContinuousOn (iteratedDeriv (k - 1) f)
-      (Set.Icc 0 (N : ℝ)))
-    (hrawd : DifferentiableOn ℝ (iteratedDeriv (k - 1) f)
-      (Set.Ioo 0 (N : ℝ)))
-    (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
-      lambda ≤ iteratedDeriv k f x ∧
-        iteratedDeriv k f x ≤ A * lambda) :
+theorem heathBrownPairCount_card_cast_le_lemma_two :
     let H := heathBrownHChoice k A lambda
     ((heathBrownPairCount N k H f).card : ℝ) ≤
       heathBrownLemmaTwoConstant k A *
@@ -179,11 +128,11 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
     hk hN hA hlambda hlambdaOne hsmall hlargeH hcoordLow hcoordLowD
     hcoordLast hcoordLastD hraw hrawd hkBounds
   dsimp only at hsource
-  let P := lambda ^ (-(2 / (k : ℝ)))
+  pm_7405 P
   let B := (N : ℝ) + lambda * N ^ 2 + P
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by omega : k ≠ 0)
+  pm_2806
   have hexp : 0 ≤ 1 - 2 / (k : ℝ) := by
-    rw [sub_nonneg, div_le_one (by positivity : (0 : ℝ) < k)]
+    pm_1455 sub_nonneg div_le_one k
     exact_mod_cast (by omega : 2 ≤ k)
   have hq : lambda ^ (1 - 2 / (k : ℝ)) ≤ 1 :=
     Real.rpow_le_one hlambda.le hlambdaOne hexp
@@ -195,8 +144,8 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
       _ = lambda ^ ((1 : ℝ) + -(2 / (k : ℝ))) := by
         rw [Real.rpow_add hlambda]
       _ = lambda ^ (1 - 2 / (k : ℝ)) := by rfl
-  have hP : 0 ≤ P := by dsimp only [P]; positivity
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
+  pm_82 hP P
+  pm_82 hB B
   have hproduct :
       (1 + A * lambda * (N : ℝ)) * (N + P) ≤ (1 + A) * B := by
     have hcross : A * (N : ℝ) * (lambda * P) ≤ A * N := by
@@ -215,7 +164,7 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
           mul_nonneg hA.le
             (mul_nonneg hlambda.le (sq_nonneg (N : ℝ)))]
   have hlog : 0 ≤ 1 + Real.log (N : ℝ) := by
-    have hNreal : (1 : ℝ) ≤ N := by exact_mod_cast hN
+    pm_2809
     have := Real.log_nonneg hNreal
     linarith
   have hC : 0 ≤ heathBrownRefinedCountConstant k A :=
@@ -240,6 +189,7 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
       unfold heathBrownLemmaTwoConstant
       dsimp only [B, P]
       ring
+end
 
 
 end

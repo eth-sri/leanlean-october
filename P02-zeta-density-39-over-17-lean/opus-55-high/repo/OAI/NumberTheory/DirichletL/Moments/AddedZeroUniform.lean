@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.AddedZero
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,21 +25,23 @@ def tupleEquiv {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) :
 
 def finiteTupleProduct {ι : Type*} [Fintype ι] (v : Tuple ι) : Ideal O := ∏ i, v i
 
-lemma tupleEquiv_slot {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) (i : ι) :
+section
+variable {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι)
+include ι n e v
+lemma tupleEquiv_slot (i : ι) :
     tupleEquiv e v ((e i).castAdd 2) = v (Sum.inl i) := by
-  change v ((coordinateEquiv e).symm _) = _
+  pm_7788
   have h : coordinateEquiv e (Sum.inl i) = (e i).castAdd 2 := by
-    simp only [coordinateEquiv, Equiv.trans_apply, Equiv.sumCongr_apply,
-      Sum.map_inl, finSumFinEquiv_apply_left]
-  rw [← h, Equiv.symm_apply_apply]
+    aesop
+  grind
 
-lemma tupleEquiv_plain {ι : Type*} {n : ℕ} (e : ι ≃ Fin n) (v : Tuple ι) (j : Fin 2) :
+lemma tupleEquiv_plain (j : Fin 2) :
     tupleEquiv e v (j.natAdd n) = v (Sum.inr j) := by
-  change v ((coordinateEquiv e).symm _) = _
+  pm_7788
   have h : coordinateEquiv e (Sum.inr j) = j.natAdd n := by
-    simp only [coordinateEquiv, Equiv.trans_apply, Equiv.sumCongr_apply,
-      Sum.map_inr, finSumFinEquiv_apply_right, Equiv.refl_apply]
-  rw [← h, Equiv.symm_apply_apply]
+    aesop
+  grind
+end
 
 theorem tupleProduct_reindex {ι : Type*} [Fintype ι] {n : ℕ}
     (e : ι ≃ Fin n) (v : Tuple ι) :

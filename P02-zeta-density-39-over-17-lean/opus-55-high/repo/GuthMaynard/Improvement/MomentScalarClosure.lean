@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.SpectralScaleBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 namespace GuthMaynard.Improvement
 
 /-- Elementary absorption of the normalized cubic inequality. No positive
@@ -21,7 +20,7 @@ theorem normalized_moment_absorption {M P Q : ℝ}
       calc
         _ ≤ P*Real.sqrt M*M*Real.sqrt M := by gcongr
         _ = P*M*(Real.sqrt M)^2 := by ring
-        _ = P*M^2 := by rw [Real.sq_sqrt hM]; ring
+        _ = P*M^2 := by grind
     have h1 : P^3 ≤ P*M^2 := by
       have hh := mul_le_mul_of_nonneg_left (pow_le_pow_left₀ hP hpm 2) hP
       convert hh using 1
@@ -36,7 +35,7 @@ theorem normalized_moment_absorption {M P Q : ℝ}
         _ = _ := by ring
     have hcancel : M ≤ 3*Q*P := by
       have hh' : M*M^2 ≤ (3*Q*P)*M^2 := by convert hh using 1; ring
-      exact le_of_mul_le_mul_right hh' (show 0 < M^2 by positivity)
+      simp_all
     nlinarith
 
 /-- A normalized subpower loss survives scalar absorption without enlargement. -/
@@ -45,12 +44,12 @@ theorem normalized_moment_power_absorption {M P Q N ε : ℝ}
     (h : M^3 ≤ Q*N^ε*(P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M)) :
     M ≤ (1+3*Q)*N^ε*P := by
   have hn : 0 ≤ N := by linarith
-  have hp : 1 ≤ N^ε := Real.one_le_rpow hN hε
+  pm_153 hp N ε hN hε
   have hh := normalized_moment_absorption hM hP (mul_nonneg hQ (Real.rpow_nonneg hn _)) h
   have hb : (1+3*(Q*N^ε))*P ≤ (1+3*Q)*N^ε*P := by
     apply mul_le_mul_of_nonneg_right _ hP
     nlinarith
-  exact hh.trans hb
+  grind
 
 /-- Normalize the middle-scale raw moment from explicit scalar identities and
 three independent losses. Every constant is independent of the varying scales. -/
@@ -68,11 +67,10 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
     M^3 ≤ (S*(150+C*A*(5+5*D*(1+K)+3060*D*B)))*F*X*Y*Z*
       (P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M) := by
   have hL : 0 ≤ L := hN.trans hNL
-  have hx : 0 ≤ X := by linarith
-  have hy : 0 ≤ Y := by linarith
+  pm_255 hx X hy Y
   have hz : 0 ≤ Z := by linarith
   let V := P^3+P*Real.sqrt P*M*Real.sqrt M+P^2*M
-  have hv : 0 ≤ V := by dsimp [V]; positivity
+  pm_61 hv V
   have hv10 : 0 ≤ P^3 := by positivity
   have hv20 : 0 ≤ P*Real.sqrt P*M*Real.sqrt M := by positivity
   have hv30 : 0 ≤ P^2*M := by positivity
@@ -100,7 +98,7 @@ theorem raw_moment_normalized_budget {N L T P M H S C D K A B F X Y Z R : ℝ}
       _ ≤ X*(Z*V) := mul_le_mul_of_nonneg_left hvz hx
       _ = _ := by ring
   let E := 5+5*D*(1+K)+3060*D*B
-  have he : 0 ≤ E := by dsimp [E]; positivity
+  pm_61 he E
   have hbracket : 5*P*Real.sqrt P*M*Real.sqrt M+5*D*N^4*T*(N^2+H)*M+
         3060*D*N^7*T^3*(Real.log (2*N))^2 ≤ E*X*Z*V := by
     have h1 := mul_le_mul_of_nonneg_left (hv2.trans hvxz) (show (0:ℝ)≤5 by norm_num)

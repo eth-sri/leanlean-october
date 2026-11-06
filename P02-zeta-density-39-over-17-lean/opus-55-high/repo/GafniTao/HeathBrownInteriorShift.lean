@@ -2,6 +2,7 @@ module
 public import GafniTao.HeathBrownLemmaOneDivision
 public import Mathlib.Analysis.Calculus.ContDiff.Comp
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,8 +15,7 @@ argument is applied here to `x ↦ f (x + 1)` on the compact interval
 sum by precisely its two endpoint phases, whose total norm is at most two.
 -/
 
-open Complex Finset Set
-open scoped BigOperators
+open Complex Finset
 
 namespace GafniTao
 
@@ -38,7 +38,7 @@ theorem heathBrownInteriorShift_contDiffOn
   have hmap : Set.MapsTo (fun x : ℝ => x + 1)
       (Set.Ioo (-1 : ℝ) ((N : ℝ) - 1)) (Set.Ioo 0 (N : ℝ)) := by
     intro x hx
-    constructor <;> linarith [hx.1, hx.2]
+    grind
   have hshift : ContDiffOn ℝ k (fun x : ℝ => x + 1)
       (Set.Ioo (-1 : ℝ) ((N : ℝ) - 1)) :=
     (contDiff_id.add contDiff_const).contDiffOn
@@ -52,7 +52,7 @@ theorem heathBrownInteriorCompact_subset
       Set.Ioo (-1 : ℝ) ((N : ℝ) - 1) := by
   intro x hx
   constructor
-  · linarith [hx.1]
+  grind
   · rw [Nat.cast_sub hN] at hx
     norm_num at hx ⊢
     linarith [hx.2]
@@ -84,7 +84,7 @@ theorem sum_Icc_two_sub_one_eq_shifted
   · intro b hb
     change b ∈ Finset.Icc 2 (N - 1) at hb
     rw [Finset.mem_Icc] at hb
-    have heq : b - 1 + 1 = b := by omega
+    pm_2812 heq b
     refine ⟨b - 1, ?_, heq⟩
     · rw [Finset.mem_coe, Finset.mem_Icc]
       constructor
@@ -95,15 +95,17 @@ theorem sum_Icc_two_sub_one_eq_shifted
   · intro _ _
     rfl
 
-theorem heathBrownExponentialSum_interior_identity
-    {N : ℕ} (hN : 2 ≤ N) (f : ℝ → ℝ) :
+section
+variable {N : ℕ} (hN : 2 ≤ N) (f : ℝ → ℝ)
+include N hN f
+theorem heathBrownExponentialSum_interior_identity :
     heathBrownExponentialSum N f =
       heathBrownPhase (f 1) +
         heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f) +
           heathBrownPhase (f N) := by
   classical
   unfold heathBrownExponentialSum heathBrownInteriorShift
-  have htop : N - 1 + 1 = N := by omega
+  pm_2812 htop N
   have honeN : 1 ≤ N - 1 := by omega
   have htopSum :
       (∑ n ∈ Finset.Icc 1 N, heathBrownPhase (f n)) =
@@ -136,8 +138,7 @@ theorem heathBrownExponentialSum_interior_identity
       rw [sum_Icc_two_sub_one_eq_shifted N hN]
       simp only [Nat.cast_add, Nat.cast_one]
 
-theorem norm_heathBrownExponentialSum_le_interior_add_two
-    {N : ℕ} (hN : 2 ≤ N) (f : ℝ → ℝ) :
+theorem norm_heathBrownExponentialSum_le_interior_add_two :
     ‖heathBrownExponentialSum N f‖ ≤
       ‖heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f)‖ + 2 := by
   rw [heathBrownExponentialSum_interior_identity hN]
@@ -158,6 +159,7 @@ theorem norm_heathBrownExponentialSum_le_interior_add_two
     _ = ‖heathBrownExponentialSum (N - 2) (heathBrownInteriorShift f)‖ + 2 := by
       rw [norm_heathBrownPhase, norm_heathBrownPhase]
       ring
+end
 
 
 end

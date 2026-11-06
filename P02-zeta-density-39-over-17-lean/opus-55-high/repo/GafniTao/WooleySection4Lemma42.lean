@@ -2,8 +2,9 @@ module
 public import GafniTao.WooleySection4Holder
 public import GafniTao.WooleyNormalization
 public import GafniTao.WooleySection4Lemma41
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Wooley Lemma 4.2
@@ -16,7 +17,6 @@ Vinogradov constant is discarded in this exact, eventual-bound form.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The source Lemma 4.2 calculation after the two instances of Lemma 4.1
 have been supplied.  This is the precise terminal estimate used in Section
@@ -48,37 +48,25 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
           wooleyNormalizationExponent k r) := by
   let s := wooleyTriangular k
   let R := wooleyTriangular r
-  let u : ℝ := (R : ℝ) / (s : ℝ)
-  let e := wooleyNormalizationExponent k r
-  let K := wooleySourcePolynomialMixedMean phi s r p B a b nu gamma
-  let X := wooleySourcePolynomialConditionedMean s (p ^ B) (p ^ a) phi gamma
-  let Y := wooleySourcePolynomialConditionedMean s (p ^ B) (p ^ b) phi gamma
-  let Z := wooleySourcePolynomialConditionedMean s (p ^ B) (p ^ H) phi gamma
+  pm_5112 u R s
+  pm_6040
+  pm_8483 X a
+  pm_8483 Y b
+  pm_2829
   have hk : 2 ≤ k := by omega
   have hs : 1 ≤ s := by
     dsimp [s]
-    unfold wooleyTriangular
-    have hkpos : 0 < k := by omega
-    have htwo : 2 ≤ k * (k + 1) := by nlinarith
-    omega
-  have hRle : R ≤ s := by
-    dsimp [R, s]
-    exact wooleyTriangular_mono hrk.le
-  have hu0 : 0 ≤ u := by
-    dsimp [u]
-    exact div_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)
-  have hu1 : u ≤ 1 := by
-    dsimp [u]
-    rw [div_le_one (by exact_mod_cast (show 0 < s by omega))]
-    exact_mod_cast hRle
+    pm_2832
+  pm_8481 hRle hrk.le
+  pm_2816 hRle
   have hRpos : 0 < R := by
     dsimp [R]
     unfold wooleyTriangular
     have hrpos : 0 < r := by omega
-    have htwo : 2 ≤ r * (r + 1) := by nlinarith
+    pm_6121 htwo r
     omega
   have hRlt : R < s := by
-    have hrReal : (r : ℝ) < k := by exact_mod_cast hrk
+    pm_5450 hrReal r hrk
     have hpositive : 0 < ((k : ℝ) - r) * ((k : ℝ) + r + 1) := by
       positivity
     have hreal : (R : ℝ) < s := by
@@ -102,18 +90,9 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
     dsimp [K]
     exact wooleySourcePolynomialMixedMean_nonneg
       phi s r p B a b nu gamma
-  have hX0 : 0 ≤ X := by
-    dsimp [X]
-    exact wooleySourcePolynomialConditionedMean_nonneg
-      phi s (p ^ B) (p ^ a) gamma
-  have hY0 : 0 ≤ Y := by
-    dsimp [Y]
-    exact wooleySourcePolynomialConditionedMean_nonneg
-      phi s (p ^ B) (p ^ b) gamma
-  have hZ0 : 0 ≤ Z := by
-    dsimp [Z]
-    exact wooleySourcePolynomialConditionedMean_nonneg phi s (p ^ B)
-      (p ^ H) gamma
+  pm_7044 hX0 X a
+  pm_7044 hY0 Y b
+  pm_921
   have hKholder : K ≤ X ^ u * Y ^ (1 - u) := by
     simpa only [K, X, Y, u, R, s] using
       wooleySourcePolynomial_equation_4_15
@@ -125,41 +104,17 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
     have hupperB' : Y ≤
         C * (p : ℝ) ^ (((H - b : ℕ) : ℝ) * (Lambda + epsilon)) * Z := by
       simpa only [Y, Z, s] using hupperB
-    have hXzero : X = 0 := by
-      apply le_antisymm _ hX0
-      simpa only [hZzero, mul_zero] using hupperA'
-    have hYzero : Y = 0 := by
-      apply le_antisymm _ hY0
-      simpa only [hZzero, mul_zero] using hupperB'
-    have hKzero : K = 0 := by
-      apply le_antisymm _ hK0
-      simpa only [hXzero, hYzero, Real.zero_rpow huPos.ne',
-        Real.zero_rpow (sub_pos.mpr huLt).ne', zero_mul] using hKholder
-    unfold wooleySourceNormalizedMixedMean
-    rw [show wooleySourcePolynomialMixedMean phi s r p B a b nu gamma = 0 by
-      simpa only [K] using hKzero]
-    simp only [zero_div,
-      Real.zero_rpow (ne_of_gt (wooleyNormalizationExponent_pos hr hrk))]
-    exact mul_nonneg (by positivity) (Real.rpow_nonneg (by positivity) _)
-  have hZ : 0 < Z := lt_of_le_of_ne hZ0 (Ne.symm hZzero)
+    pm_7865 hXzero X hX0 hZzero mul_zero hupperA'
+    pm_7865 hYzero Y hY0 hZzero mul_zero hupperB'
+    pm_2828
+  pm_485 hZ Z lt_of_le_of_ne hZ0 Ne.symm hZzero
   by_cases hCzero : C = 0
   · have hXzero : X = 0 := by
       apply le_antisymm _ hX0
       simpa only [hCzero, zero_mul] using hupperA
-    have hYzero : Y = 0 := by
-      apply le_antisymm _ hY0
-      simpa only [hCzero, zero_mul] using hupperB
-    have hKzero : K = 0 := by
-      apply le_antisymm _ hK0
-      simpa only [hXzero, hYzero, Real.zero_rpow huPos.ne',
-        Real.zero_rpow (sub_pos.mpr huLt).ne', zero_mul] using hKholder
-    unfold wooleySourceNormalizedMixedMean
-    rw [show wooleySourcePolynomialMixedMean phi s r p B a b nu gamma = 0 by
-      simpa only [K] using hKzero]
-    simp only [zero_div,
-      Real.zero_rpow (ne_of_gt (wooleyNormalizationExponent_pos hr hrk))]
-    exact mul_nonneg (by positivity) (Real.rpow_nonneg (by positivity) _)
-  have hCpos : 0 < C := lt_of_le_of_ne hC (Ne.symm hCzero)
+    pm_7865 hYzero Y hY0 hCzero zero_mul hupperB
+    pm_2828
+  pm_485 hCpos C lt_of_le_of_ne hC Ne.symm hCzero
   have hnormalized :
       (K / Z) ^ e ≤
         (X / Z) ^ (u * e) * (Y / Z) ^ ((1 - u) * e) := by
@@ -168,17 +123,17 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
       (show u + (1 - u) = 1 by ring)
       (show K ≤ 1 * (X ^ u * Y ^ (1 - u)) by simpa using hKholder)
     simpa using h
-  let A : ℝ := ((H - a : ℕ) : ℝ) * (Lambda + epsilon)
-  let D : ℝ := ((H - b : ℕ) : ℝ) * (Lambda + epsilon)
+  pm_7069 A a
+  pm_7069 D b
   have hratioA : X / Z ≤ C * (p : ℝ) ^ A := by
     rw [div_le_iff₀ hZ]
-    simpa only [X, Z, A, s] using hupperA
+    pm_99 X Z A s hupperA
   have hratioB : Y / Z ≤ C * (p : ℝ) ^ D := by
     rw [div_le_iff₀ hZ]
-    simpa only [Y, Z, D, s] using hupperB
-  have hratioA0 : 0 ≤ X / Z := div_nonneg hX0 hZ.le
-  have hratioB0 : 0 ≤ Y / Z := div_nonneg hY0 hZ.le
-  have hue0 : 0 ≤ u * e := mul_nonneg hu0 he0
+    pm_99 Y Z D s hupperB
+  pm_6530 hratioA0 X Z hX0 hZ.le
+  pm_6530 hratioB0 Y Z hY0 hZ.le
+  pm_5094 hue0 u e hu0 he0
   have hve0 : 0 ≤ (1 - u) * e :=
     mul_nonneg (sub_nonneg.mpr hu1) he0
   have hpowA :
@@ -188,18 +143,12 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
       (Y / Z) ^ ((1 - u) * e) ≤
         (C * (p : ℝ) ^ D) ^ ((1 - u) * e) :=
     Real.rpow_le_rpow hratioB0 hratioB hve0
-  have hpR : (0 : ℝ) < p := by exact_mod_cast (show 0 < p by omega)
-  have hA0 : 0 ≤ A := mul_nonneg (Nat.cast_nonneg _) hLambdaEpsilon
-  have hD0 : 0 ≤ D := mul_nonneg (Nat.cast_nonneg _) hLambdaEpsilon
+  pm_91 hpR p
+  pm_8159 hA0 A hLambdaEpsilon
+  pm_8159 hD0 D hLambdaEpsilon
   have hweighted0 : 0 ≤ A * u + D * (1 - u) := by positivity
-  have hAle : A ≤ (H : ℝ) * (Lambda + epsilon) := by
-    dsimp [A]
-    rw [Nat.cast_sub haH]
-    nlinarith
-  have hDle : D ≤ (H : ℝ) * (Lambda + epsilon) := by
-    dsimp [D]
-    rw [Nat.cast_sub hbH]
-    nlinarith
+  pm_6800 hAle A haH
+  pm_6800 hDle D hbH
   have hweighted :
       (A * u + D * (1 - u)) * e ≤
         ((H : ℝ) * (Lambda + epsilon)) * e := by
@@ -232,9 +181,7 @@ theorem wooleySourcePolynomial_lemma_4_2_of_conditioned_bounds_with_constant
         (p : ℝ) ^ (((H : ℝ) * (Lambda + epsilon)) * e) :=
     Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast (show 1 ≤ p by omega))
       hweighted
-  have hscaleZero :
-      wooleySourceNormalizationScale phi p B H s 0 gamma = Z := by
-    simp [wooleySourceNormalizationScale, Z]
+  pm_5659
   calc
     wooleySourceNormalizedMixedMean phi p B H s r a b nu 0 gamma =
         (K / Z) ^ e := by
@@ -259,6 +206,5 @@ theorem wooley_natPrimePower_rpow
   rw [Nat.cast_pow]
   exact (Real.rpow_natCast_mul (by exact_mod_cast hp.le) n Lambda).symm
 
-end
 
 end GafniTao

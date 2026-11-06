@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleyPolynomialBasic
 public import GafniTao.WooleyResidueRefinement
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Residue refinement for polynomial systems
@@ -13,17 +14,14 @@ systems used by the induction in Section 7.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
-theorem wooleyPolynomial_sum_refined_residue_grid
-    {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (hab : a ≤ b)
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
-    (xi : ZMod (p ^ a)) :
+section
+variable {Q p a b qB k : ℕ} [NeZero p] [NeZero qB] (phi : WooleyPolynomialSystem k) (hab : a ≤ b) (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB) (xi : ZMod (p ^ a))
+include Q p a b qB k phi hab gamma alpha xi
+theorem wooleyPolynomial_sum_refined_residue_grid :
     ∑ z ∈ wooleyResidueRefinementFiber p a b hab xi,
         wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha z =
       wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha xi := by
@@ -41,33 +39,11 @@ theorem wooleyPolynomial_sum_refined_residue_grid
             (if ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ b))) = z then
               gamma n * wooleyPolynomialGridPhase phi qB Q alpha n else 0)
           else 0 := by
-    by_cases hz : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi <;> simp [hz]
-  simp_rw [hdistribute]
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [Fintype.sum_eq_single
-    (((n : ℕ) + 1 : ℕ) : ZMod (p ^ b))]
-  · have hcast :
-        ZMod.castHom (pow_dvd_pow p hab) (ZMod (p ^ a))
-            ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ b))) =
-          ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ a))) :=
-      ZMod.cast_natCast (pow_dvd_pow p hab) ((n : ℕ) + 1)
-    rw [hcast]
-    by_cases hxi : ((((n : ℕ) + 1 : ℕ) : ZMod (p ^ a))) = xi <;>
-      simp [hxi]
-  · intro z hzne
-    by_cases hzxi : ZMod.castHom (pow_dvd_pow p hab)
-        (ZMod (p ^ a)) z = xi
-    · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
-    · rw [ite_eq_right hzxi]
+    simp_all
+  pm_2845
+  grind
 
-theorem wooleyPolynomial_refined_normalized_residue_decomposition
-    {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (hab : a ≤ b)
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
-    (xi : ZMod (p ^ a)) :
+theorem wooleyPolynomial_refined_normalized_residue_decomposition :
     (Real.sqrt (wooleyWeightedResidueMassSq gamma xi) : ℂ) *
         wooleyPolynomialNormalizedResidueGridSum phi qB gamma alpha xi =
       ∑ z ∈ wooleyResidueRefinementFiber p a b hab xi,
@@ -79,6 +55,7 @@ theorem wooleyPolynomial_refined_normalized_residue_decomposition
     phi gamma alpha]
   exact (wooleyPolynomial_sum_refined_residue_grid
     phi hab gamma alpha xi).symm
+end
 
 /-- Polynomial-system form of Wooley Lemma 6.2. -/
 theorem wooleyPolynomial_lemma_6_2
@@ -105,9 +82,7 @@ theorem wooleyPolynomial_lemma_6_2
       dsimp [R]
       exact Finset.sum_nonneg fun z hz => mul_nonneg
         (wooleyWeightedResidueMassSq_nonneg gamma z) (by positivity)
-    dsimp [M] at hMzero
-    rw [hMzero, zero_mul]
-    exact mul_nonneg (by positivity) hR
+    pm_6041
   · have hMpos : 0 < M := lt_of_le_of_ne
       (wooleyWeightedResidueMassSq_nonneg gamma xi) (Ne.symm hMzero)
     have hholder := wooley_weighted_complex_sum_pow_le
@@ -124,15 +99,8 @@ theorem wooleyPolynomial_lemma_6_2
             ‖wooleyPolynomialNormalizedResidueGridSum
                 phi qB gamma alpha xi‖ ^ (2 * w) ≤
           (p ^ (b - a) : ℝ) ^ w * M ^ (w - 1) * R := by
-      rw [← hdecomp] at hholder
-      simpa only [M, R, wooleyResidueRefinementFiber_card hab xi,
-        wooley_sum_refined_residue_mass hab gamma xi,
-        norm_mul, Complex.norm_real, Real.norm_eq_abs,
-        abs_of_nonneg (Real.sqrt_nonneg _), mul_pow, pow_mul,
-        Real.sq_sqrt hMpos.le, Nat.cast_pow] using hholder
-    have hpow : M ^ w = M ^ (w - 1) * M := by
-      conv_lhs => rw [← Nat.sub_add_cancel hw, pow_add, pow_one]
-    have hfactorPos : 0 < M ^ (w - 1) := pow_pos hMpos _
+      pm_2855 wooley_sum_refined_residue_mass
+    pm_2854
     have hfactored :
         M ^ (w - 1) *
             (M * ‖wooleyPolynomialNormalizedResidueGridSum
@@ -148,6 +116,5 @@ theorem wooleyPolynomial_lemma_6_2
     exact le_of_mul_le_mul_left hfactored hfactorPos
 
 
-end
 
 end GafniTao

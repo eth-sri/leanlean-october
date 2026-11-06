@@ -1,10 +1,10 @@
 module
 public import GuthMaynard.Improvement.RadialRemainder
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
-open MeasureTheory Set
+open MeasureTheory
 open scoped ContDiff
 namespace GuthMaynard.Improvement
 
@@ -36,7 +36,7 @@ theorem mem_cubicModes (U : ℝ) (m : ℤ × (ℤ × ℤ)) :
     constructor
     · intro hk
       have h₁ : -(k:ℝ) ≤ U := by
-        have hz : -k ≤ ⌊U⌋ := by omega
+        pm_8785 k
         simpa only [Int.cast_neg] using Int.le_floor.mp hz
       exact ⟨by linarith,Int.le_floor.mp hk.2⟩
     · intro hk

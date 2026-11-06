@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryRows
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,7 +33,7 @@ theorem fiber_plain_energy_eq (F : Fiber M H Label Slot U a ε tstar T allowance
     (hMm : M≤Ideal.span {rowMaskElement}) (hU : 0<U)
     (selected : Finset Slot) (j k : ℕ) (σ t : ℝ)
     (hη : ∀s∈selected,∀J∈primePool M H (F.upper s) (U^(F.widths s)),
-      F.profile s ((J.absNorm:ℝ)/(U^(F.widths s)))≠0→IsCoprime J η.modulus) :
+      F.profile s ((J.absNorm:ℝ)/(U^(F.widths s)))≠0→ IsCoprime J η.modulus) :
     (∑u∈F.rows,‖polynomial (F.family u F.label) false ((logProfile^[j]) positiveAnnular) (U^F.m) σ t*
       polynomial (F.family u F.label) false ((logProfile^[k]) positiveAnnular) (U^F.m) σ t*
         F.physicalProduct selected u‖^2)=
@@ -40,8 +41,7 @@ theorem fiber_plain_energy_eq (F : Fiber M H Label Slot U a ε tstar T allowance
   apply Finset.sum_congr rfl
   intro u hu
   congr 1
-  have hc := F.row_coeff u hu
-  rw [hdata] at hc
+  pm_126 hc F.row_coeff u hu hdata
   have he := momentData_plain_pair_norm M H η (F.family u F.label) u F.reverse hc hMm
     ((logProfile^[j]) positiveAnnular) ((logProfile^[k]) positiveAnnular)
     (fun s : selected=>F.profile s.val) (fun s : selected=>F.upper s.val)

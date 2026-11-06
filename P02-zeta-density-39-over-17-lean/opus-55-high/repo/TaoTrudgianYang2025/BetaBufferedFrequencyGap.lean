@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedNonstationary
 public import TaoTrudgianYang2025.BetaInverseStability
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,8 +21,10 @@ open Set Expdb
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem approximateModelPhase_firstDeriv_bounds
-    {F : ℝ → ℝ} {σ δ : ℝ} {P : ℕ} (hσ : 0 < σ)
+section
+variable {F : ℝ → ℝ}
+include F
+theorem approximateModelPhase_firstDeriv_bounds {σ δ : ℝ} {P : ℕ} (hσ : 0 < σ)
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     (2 : ℝ)^(-σ)-δ ≤ deriv F u ∧ deriv F u ≤ 1+δ := by
@@ -30,10 +33,9 @@ theorem approximateModelPhase_firstDeriv_bounds
     Real.rpow_le_rpow_of_nonpos (zero_lt_one.trans hu.1) hu.2.le (by linarith)
   have hhigh : u^(-σ) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos hu.1.le (by linarith)
-  constructor <;> linarith [he.1,he.2]
+  grind
 
-theorem norm_modelPhaseBufferedFourierMode_of_envelope_gap
-    {F : ℝ → ℝ} {σ δ T N q l r η lam : ℝ}
+theorem norm_modelPhaseBufferedFourierMode_of_envelope_gap {σ δ T N q l r η lam : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
@@ -52,8 +54,7 @@ theorem norm_modelPhaseBufferedFourierMode_of_envelope_gap
     have hb := (approximateModelPhase_firstDeriv_bounds hσ hF hu).2
     nlinarith
 
-theorem norm_modelPhaseBufferedFourierMode_of_frequency_gap
-    {F : ℝ → ℝ} {σ δ T N q l r η d : ℝ}
+theorem norm_modelPhaseBufferedFourierMode_of_frequency_gap {σ δ T N q l r η d : ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
@@ -62,19 +63,15 @@ theorem norm_modelPhaseBufferedFourierMode_of_frequency_gap
     ‖modelPhaseFourierMode (modelPhaseBufferedCutoff l r η) F T N q‖ ≤
       4/(d*Real.pi) := by
   have hg : q*N ≤ T*((2 : ℝ)^(-σ)-δ)-N*d ∨ T*(1+δ)+N*d ≤ q*N := by
-    have he (c : ℝ) : (T/N)*c*N = T*c := by field_simp
-    rcases hgap with hp | hn
+    pm_640
     · left
-      have h := mul_le_mul_of_nonneg_right hp hN.le
-      rw [sub_mul,he] at h
-      nlinarith
+      pm_1330 hp sub_mul
     · right
-      have h := mul_le_mul_of_nonneg_right hn hN.le
-      rw [add_mul,he] at h
-      nlinarith
+      pm_1330 hn add_mul
   have h := norm_modelPhaseBufferedFourierMode_of_envelope_gap hσ hδ hF hT hN hη hl hr
     (mul_pos hN hd) hg
   apply h.trans_eq
   field_simp
+end
 
 end TaoTrudgianYang2025

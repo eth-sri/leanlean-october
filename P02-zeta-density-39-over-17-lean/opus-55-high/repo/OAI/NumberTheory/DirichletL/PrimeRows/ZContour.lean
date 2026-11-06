@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,19 +26,14 @@ lemma physicalCompensatedRow_first_z (eps : ℝ) (heps : 0<eps)
   · exact (((LFunction_differentiableAt (fixedSourcePrincipal S hS.prime) hz0 (Or.inl hz1)).comp z
       (differentiableAt_id.const_mul 6)).mul_const _).mul_const _
   · apply DifferentiableAt.mul
-    · exact (continuedCorrection_first_boundary_z eps heps (markExclusions S T)
-        (markedSourceExclusions S hS T) (marked_firstTail (eps/2) S hfirst T) η u x w z
-        hx hw hz hxw).differentiableAt
-    · apply DifferentiableAt.fun_finsetProd
-      intro P hP
-      exact continuedCompensatedLocal_first_differentiableAt_z η u P.val _
-        (by exact_mod_cast hS.tail.norm_four P.val (hT P.val P.property)) x w z (by linarith) (by linarith)
+    pm_3457 continuedCorrection_first_boundary_z
+    pm_990 continuedCompensatedLocal_first_differentiableAt_z
 
 lemma sourceMellinWeight_differentiableAt_z (W0 W1 : SchwartzMap ℝ ℂ)
     (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) (x w z : ℂ) (hz : 0<z.re) :
     DifferentiableAt ℂ (fun z=>sourceMellinWeight W0 W1 X Y Z x w z) z := by
-  have hxc : (X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hzc : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  pm_3058 hxc X hX.ne'
+  pm_3058 hzc Z hZ.ne'
   have hm := (ProbeRadialMellin.radial_mellin_analytic W0 z hz).differentiableAt
   unfold sourceMellinWeight
   fun_prop (disch := first | exact Or.inl hxc | exact Or.inl hzc)
@@ -45,7 +41,7 @@ lemma sourceMellinWeight_differentiableAt_z (W0 W1 : SchwartzMap ℝ ℂ)
 theorem continuedPhysicalRowKernel_differentiableAt_z {K : ℕ}
     (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
     (hfirst : FirstTail (eps/2) S) (hmax : ∀P∈S,P.IsMaximal)
-    (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
+    (P : Fin K→ PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) (x w z : ℂ)
     (hx : (51/100:ℝ)≤x.re) (hw : -(1/100:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
     (hxw : 1+eps≤x.re+w.re) :
@@ -58,7 +54,7 @@ theorem continuedPhysicalRowKernel_differentiableAt_z {K : ℕ}
     have hn : (elementNorm (CompletedGauss.primaryGenerator (P i).val):ℂ)≠0 :=
       Complex.ofReal_ne_zero.mpr (elementNorm_pos _ hp0).ne'
     exact (differentiable_id.sub_const 1).const_cpow (Or.inl hn)
-  have hNu : (elementNorm u.val:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (elementNorm_pos _ u.property.1).ne'
+  pm_6883 hNu
   have hfreq : Differentiable ℂ (fun z=>frequencyWeight z ⟨u.val,u.property.1⟩) :=
     differentiable_id.neg.const_cpow (Or.inl hNu)
   exact ((hm.mul (hp z)).mul (hfreq z)).mul

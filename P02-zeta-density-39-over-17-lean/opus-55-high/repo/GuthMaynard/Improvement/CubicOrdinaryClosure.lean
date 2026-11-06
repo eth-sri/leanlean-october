@@ -1,18 +1,19 @@
 module
 public import GuthMaynard.Improvement.CubicClosure
 public import GuthMaynard.Improvement.OrdinaryFourierMoments
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
 
+section
+variable {μ : ℝ → ℝ} (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
+include μ h0 h1 h2
 /-- Exact ordinary Fourier threshold budgets, in the normalized Fourier
 coordinate with Plancherel constant one. No moment bound is assumed. -/
-theorem ordinary_fourier_threshold_budgets {μ : ℝ → ℝ}
-    (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
+theorem ordinary_fourier_threshold_budgets
     {Λ : ℝ} (hΛ : 0 ≤ Λ) :
     let F := 𝓕 (fun t => (μ t:ℂ))
     let A := {ξ | Λ < ‖F ξ‖}
@@ -36,8 +37,7 @@ theorem ordinary_fourier_threshold_budgets {μ : ℝ → ℝ}
 /-- Closing helper for an arbitrary complex quantity H. The only remaining
 analytic premise is the displayed masked majorant; all ordinary Fourier
 threshold estimates are derived. This does not assert a trace theorem. -/
-theorem ordinary_restricted_cubic_of_masked {μ : ℝ → ℝ}
-    (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
+theorem ordinary_restricted_cubic_of_masked
     {Λ Q T L : ℝ} (hΛ : 0 ≤ Λ) (hQ : 0 ≤ Q) (hT : 0 ≤ T) (hL : 0 ≤ L)
     (H : ℂ) :
     let F := 𝓕 (fun t => (μ t:ℂ))
@@ -52,9 +52,9 @@ theorem ordinary_restricted_cubic_of_masked {μ : ℝ → ℝ}
     ‖H‖ ≤ 3*Q*(T^2*M*Real.sqrt M+T*L*Λ*M+T*L*M₁*A₂) := by
   dsimp only
   intro hmasked
-  obtain ⟨hA,hE₀,hE⟩ := ordinary_fourier_threshold_budgets h0 h1 h2 hΛ
-  have hm : 0 ≤ ∫ t, μ t^2 := integral_nonneg (fun _ => sq_nonneg _)
-  have hm1 : 0 ≤ ∫ t, μ t := integral_nonneg h0
+  pm_97 hA hE₀ hE ordinary_fourier_threshold_budgets h0 h1 h2 hΛ
+  pm_5238 hm t μ
+  pm_4518 hm1 t μ integral_nonneg h0
   have ha : 0 ≤ ∫ ξ in {ξ | Λ < ‖𝓕 (fun t => (μ t:ℂ)) ξ‖}, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2 :=
     integral_nonneg (fun _ => sq_nonneg _)
   have hh := restricted_cubic_of_masked (H := ‖H‖) (c := 1) hQ hT hL hm hm1 ha hΛ
@@ -62,5 +62,6 @@ theorem ordinary_restricted_cubic_of_masked {μ : ℝ → ℝ}
     (by simpa only [abs_of_nonneg (norm_nonneg H)] using hmasked)
   simpa only [abs_of_nonneg (norm_nonneg H),mul_one,one_mul,
     show (1:ℝ)+2=3 by norm_num,mul_comm Q 3] using hh
+end
 
 end GuthMaynard.Improvement

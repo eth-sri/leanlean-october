@@ -1,20 +1,17 @@
 module
 public import DensityEnergyGM.SecondMomentPowerAlgebra
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
-noncomputable section
 namespace Montgomery.RationalMoment
 
 theorem min_le_geometric_rpow {a b w : ℝ}
     (ha : 0 < a) (hb : 0 < b) (hw0 : 0 ≤ w) (hw1 : w ≤ 1) :
     min a b ≤ a ^ w * b ^ (1 - w) := by
-  have haId : a ^ w * a ^ (1 - w) = a := by
-    rw [← Real.rpow_add ha, show w + (1 - w) = 1 by ring, Real.rpow_one]
-  have hbId : b ^ w * b ^ (1 - w) = b := by
-    rw [← Real.rpow_add hb, show w + (1 - w) = 1 by ring, Real.rpow_one]
+  pm_959 haId a w ha
+  pm_959 hbId b w hb
   by_cases hab : a ≤ b
   · rw [min_eq_left hab]
     calc
@@ -30,9 +27,7 @@ theorem min_le_geometric_rpow {a b w : ℝ}
 
 theorem rpow_half_sq {x : ℝ} (hx : 0 ≤ x) (p : ℝ) :
     (x ^ (p / 2)) ^ 2 = x ^ p := by
-  rw [← Real.rpow_natCast, ← Real.rpow_mul hx]
-  congr 1
-  ring
+  pm_336 Real.rpow_natCast Real.rpow_mul hx
 
 /-- Exact pointwise optimization for every positive scale, including
 when the transition H/K lies outside the allowed scale interval. -/
@@ -51,10 +46,7 @@ theorem gcd_scale_sqrt_min {M H K q : ℝ}
       (M * H ^ ((q - 1) / 2) * K ^ ((2 - q) / 2)) ^ 2 := by
     rw [Real.mul_rpow hM.le hK.le, mul_pow, mul_pow,
       rpow_half_sq hH.le, rpow_half_sq hK.le]
-    calc
-      M ^ q * (M ^ (2 - q) * K ^ (2 - q) * H ^ (q - 1)) =
-          (M ^ q * M ^ (2 - q)) * (H ^ (q - 1) * K ^ (2 - q)) := by ring
-      _ = _ := by rw [hMprod]; ring
+    grind
   have hBound := mul_le_mul_of_nonneg_left hMin (Real.rpow_nonneg hM.le q)
   rw [hShape] at hBound
   have hInside : 0 ≤ M ^ q * min (M * K) H := by positivity

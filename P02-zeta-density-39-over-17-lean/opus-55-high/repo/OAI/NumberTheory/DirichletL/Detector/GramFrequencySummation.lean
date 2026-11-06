@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.LowGramExceptional
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.ProbeGramFrequencySummation
 local notation "O" => ActualEisensteinCubic.O
@@ -17,9 +18,7 @@ def frequencyNorm (k : O) : ℝ := Ideal.absNorm (Ideal.span {k})
 lemma frequencyNorm_nonneg (k : O) : 0 ≤ frequencyNorm k := Nat.cast_nonneg _
 
 lemma frequencyNorm_one_le (k : O) (hk : k ≠ 0) : 1 ≤ frequencyNorm k := by
-  unfold frequencyNorm
-  exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr hk))
+  pm_4905 frequencyNorm Nat.one_le_iff_ne_zero.mpr hk
 
 theorem finite_weighted_of_count {α : Type*} (E : Finset α) (q : α → ℝ)
     (hq : ∀ x, 0 ≤ q x) (C d H : ℝ) (hC : 0 ≤ C) (hd : d ≤ 1) (hH : 0 < H)
@@ -113,7 +112,7 @@ theorem exceptional_frequency_weighted_sum (ε : ℝ) (hε : 0<ε) :
         CenteredExceptionalCount.valuation (Ideal.span {k}) P % 6=0) →
       ∑ k∈E,(1+frequencyNorm k/H)^(-2:ℝ) ≤
         K*(Ideal.absNorm G:ℝ)^ε*H^(1/6:ℝ) := by
-  obtain ⟨C,hC,hcount⟩ := ProbePhysical.lowGramExceptional_count ε hε
+  pm_69 C hC hcount ProbePhysical.lowGramExceptional_count ε hε
   refine ⟨4*C,by positivity,?_⟩
   intro G hG E H hH hE hres
   have hh := finite_weighted_of_count E frequencyNorm frequencyNorm_nonneg

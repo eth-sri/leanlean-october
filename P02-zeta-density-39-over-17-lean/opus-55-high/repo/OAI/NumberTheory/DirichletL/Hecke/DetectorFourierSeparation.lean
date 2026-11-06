@@ -13,17 +13,21 @@ noncomputable section
 def phasePolynomial {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) (t : ℝ) : ℂ :=
   ∑ i ∈ S, a i*FourierBridge.logPhase t (x i)
 
-lemma phasePolynomial_continuous {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) :
+section
+variable {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ)
+include α S a x
+lemma phasePolynomial_continuous :
     Continuous (phasePolynomial S a x) := by
   apply continuous_finsetSum
   intro i hi
   exact continuous_const.mul (FourierBridge.logPhase_continuous_left _)
 
-lemma phasePolynomial_norm {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) (t : ℝ) :
+lemma phasePolynomial_norm (t : ℝ) :
     ‖phasePolynomial S a x t‖ ≤ ∑ i ∈ S, ‖a i‖ := by
   calc
     _ ≤ ∑ i ∈ S, ‖a i*FourierBridge.logPhase t (x i)‖ := norm_sum_le _ _
     _ = _ := by simp only [norm_mul, FourierBridge.logPhase_norm, mul_one]
+end
 
 lemma separated_pair_integrable {α β : Type*} (S : Finset α) (T : Finset β)
     (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ) (g : SchwartzMap ℝ ℂ) :
@@ -34,7 +38,7 @@ lemma separated_pair_integrable {α β : Type*} (S : Finset α) (T : Finset β)
   have hh := (𝓕 g).integrable.mul_bdd hmeas (Filter.Eventually.of_forall (fun t =>
     (norm_mul _ _).le.trans (mul_le_mul (phasePolynomial_norm S a x t)
       (phasePolynomial_norm T b y t) (norm_nonneg _) (Finset.sum_nonneg (fun i hi => norm_nonneg _)))))
-  simpa only [mul_assoc] using hh
+  grind
 
 lemma schwartz_product_inversion (g : SchwartzMap ℝ ℂ) (x y : ℝ) :
     g (x+y) = ∫ t : ℝ,

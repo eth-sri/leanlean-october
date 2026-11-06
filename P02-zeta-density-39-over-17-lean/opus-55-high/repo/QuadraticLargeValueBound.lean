@@ -1,6 +1,7 @@
 module
 public import QuadraticAmplifiedMoment
 public import GeneralCenteredTrace
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,22 +25,21 @@ theorem finite_quadratic_large_value_general (w : MathCollab.Density.ComparisonC
       (W.card:ℝ)^2*V^4 ≤ C*T^η*((N*L)^2+
         (N^3/L)*adjacentCenteredBudget K T L W.card) := by
   have hδ : 0 < η/2 := by positivity
-  obtain ⟨A,hA,hamp⟩ := finite_quadratic_amplified_moment w hδ
-  obtain ⟨B,hB,htrace⟩ := centered_trace_general w.toReflectionCutoff hK hδ
+  pm_69 A hA hamp finite_quadratic_amplified_moment w hδ
+  pm_114 B hB htrace centered_trace_general w.toReflectionCutoff hK hδ
   refine ⟨A*(1+B),by positivity,?_⟩
   intro T t₀ N L hT hN hNL hLT a ha W V hV hW hlarge hsep
-  have hTp : 0 < T := by linarith
-  have hNp : 0 < N := by linarith
+  pm_4516
   have hLp : 0 < L := hNp.trans_le hNL
   have hL1 : 1 ≤ L := hN.trans hNL
   have hb := adjacentCenteredBudget_nonneg K hTp.le hLp.le (Nat.cast_nonneg W.card)
   have hamp' := hamp T N L hT hN hNL hLT a ha W V hV hlarge hsep
-  have ht := htrace T t₀ L hT hL1 W hW hsep
+  pm_528 ht htrace T t₀ L hT hL1 W hW hsep
   have ht' : (Matrix.trace (cutoffCenteredMatrix w.toReflectionCutoff L W^2)).re ≤
       B*T^(η/2)*adjacentCenteredBudget K T L W.card := by
     exact (Complex.re_le_norm _).trans (by simpa only [pow_two] using ht)
-  have hp : 1 ≤ T^(η/2) := Real.one_le_rpow hT.le hδ.le
-  have he : T^(η/2)*T^(η/2)=T^η := by rw [← Real.rpow_add hTp]; congr 1; ring
+  pm_966 hp hT.le
+  pm_199 he T η hTp
   let X := (N*L)^2+(N^3/L)*adjacentCenteredBudget K T L W.card
   have hbudget : (N*L)^2+(N^3/L)*
       (Matrix.trace (cutoffCenteredMatrix w.toReflectionCutoff L W^2)).re ≤

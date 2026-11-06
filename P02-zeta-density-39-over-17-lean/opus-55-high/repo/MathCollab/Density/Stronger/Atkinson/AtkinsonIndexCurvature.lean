@@ -7,6 +7,7 @@ See ../../../../../third_party/twelfth/ATKINSON_PREFIX_MANIFEST.json
 and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexPhase
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -37,8 +38,10 @@ def atkinsonIndexRealCurvature (T x : ℝ) : ℝ :=
   -(Real.pi * T) /
     (x ^ (2 : ℕ) * atkinsonIndexRealSlope T x)
 
-theorem atkinsonIndexRealSlope_pos
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+section
+variable {T x : ℝ} (hT : 0 < T) (hx : 0 < x)
+include T x hT hx
+theorem atkinsonIndexRealSlope_pos :
     0 < atkinsonIndexRealSlope T x := by
   unfold atkinsonIndexRealSlope
   apply Real.sqrt_pos.2
@@ -46,8 +49,7 @@ theorem atkinsonIndexRealSlope_pos
 
 /-- Exact derivative of the phase slope, hence the second derivative of
 the equation-(11) phase. -/
-theorem hasDerivAt_atkinsonIndexRealSlope
-    {T x : ℝ} (hT : 0 < T) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexRealSlope :
     HasDerivAt (atkinsonIndexRealSlope T)
       (atkinsonIndexRealCurvature T x) x := by
   have hdiv : HasDerivAt (fun u : ℝ => 2 * Real.pi * T / u)
@@ -57,15 +59,14 @@ theorem hasDerivAt_atkinsonIndexRealSlope
   have hradicand : HasDerivAt
       (fun u : ℝ => 2 * Real.pi * T / u + Real.pi ^ (2 : ℕ))
       (-(2 * Real.pi * T) / x ^ (2 : ℕ)) x := by
-    simpa only [add_zero] using! hdiv.add
-      (hasDerivAt_const x (Real.pi ^ (2 : ℕ)))
-  have hpos : 0 < 2 * Real.pi * T / x + Real.pi ^ (2 : ℕ) := by
-    positivity
+    simp_all
+  pm_1435
   have hsqrt := hradicand.sqrt hpos.ne'
   unfold atkinsonIndexRealSlope atkinsonIndexRealCurvature
   convert hsqrt using 1
   simp only [atkinsonIndexRealSlope]
   ring
+end
 
 /-- Difference of two exact Atkinson phases, with the later height first. -/
 def atkinsonIndexPhaseDifference (t u x : ℝ) : ℝ :=

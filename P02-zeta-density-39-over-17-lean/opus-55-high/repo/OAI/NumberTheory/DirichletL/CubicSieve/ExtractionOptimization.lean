@@ -1,17 +1,17 @@
 module
 public import OAI.NumberTheory.DirichletL.CubicSieve.FullNorm
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-noncomputable section
 
 lemma cube_scale_power (M T a : ℝ) (hT : 0 < T) (hTM : T ≤ M) (ha : (1/3 : ℝ) ≤ a) :
     (M/T)^(1/3 : ℝ) * T^a ≤ M^a := by
   have hM : 0 < M := hT.trans_le hTM
-  have hbase : 1 ≤ M/T := (one_le_div hT).mpr hTM
+  pm_5443 hbase M T hT hTM
   calc
     _ ≤ (M/T)^a * T^a := mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow_of_exponent_le hbase ha) (Real.rpow_nonneg hT.le _)
@@ -24,7 +24,7 @@ lemma extracted_monomial_le (W U T a : ℝ) (hW : 1 ≤ W) (hU : 0 ≤ U)
   have hw : W ≤ (W^2)^a := by
     rw [← Real.rpow_natCast_mul hW0]
     conv_lhs => rw [← Real.rpow_one W]
-    exact Real.rpow_le_rpow_of_exponent_le hW (by norm_num; linarith)
+    exact Real.rpow_le_rpow_of_exponent_le hW (by grind)
   calc
     _ ≤ (W^2)^a * U^a := mul_le_mul_of_nonneg_right hw (Real.rpow_nonneg hU _)
     _ = (W^2*U)^a := (Real.mul_rpow (sq_nonneg _) hU).symm
@@ -73,11 +73,10 @@ theorem extraction_min_shape (M N X Y ξ : ℝ) (hN : 0 ≤ N)
     (M/(X*Y^2))^(1/3 : ℝ) *
       min (Y*(X^ξ + N + (X*N)^(2/3 : ℝ))) (X*(Y^ξ + N + (Y*N)^(2/3 : ℝ))) ≤
       M^ξ + M^(1/3 : ℝ)*N + (M*N)^(2/3 : ℝ) := by
-  have hX0 : 0 < X := by linarith
-  have hY0 : 0 < Y := by linarith
-  have hT : 0 < X*Y^2 := by positivity
+  pm_72 hX0 X hY0 Y
+  pm_5106 hT X Y
   have hM0 : 0 < M := hT.trans_le hXY
-  have hH : 0 ≤ (M/(X*Y^2))^(1/3 : ℝ) := Real.rpow_nonneg (by positivity) _
+  pm_3806
   by_cases hyx : Y ≤ X
   · apply (mul_le_mul_of_nonneg_left (min_le_left _ _) hH).trans
     rw [← mul_assoc]
@@ -95,7 +94,7 @@ lemma cubic_cross_shape_absorb (M N ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N)
     (M*N)^(2/3 : ℝ) ≤ M^(1/3 : ℝ)*N + M^ξ := by
   have hM0 : 0 < M := by linarith
   have hfirst : 0 ≤ M^(1/3 : ℝ)*N := mul_nonneg (Real.rpow_nonneg hM0.le _) hN
-  have hsecond : 0 ≤ M^ξ := Real.rpow_nonneg hM0.le _
+  pm_6316 hsecond M ξ hM0.le
   by_cases hMN : M ≤ N
   · have hN0 : 0 < N := hM0.trans_le hMN
     have hh := Real.rpow_le_rpow hM0.le hMN (by norm_num : (0 : ℝ) ≤ 1/3)
@@ -133,7 +132,6 @@ theorem extraction_min_two_power (M N X Y ξ : ℝ) (hM : 1 ≤ M) (hN : 0 ≤ N
   have hc := cubic_cross_shape_absorb M N ξ hM hN hξ
   linarith
 
-end
 end SevenEighths.CubicSieve
 
 end OAI

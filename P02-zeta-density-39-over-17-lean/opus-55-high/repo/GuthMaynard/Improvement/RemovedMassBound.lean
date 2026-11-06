@@ -3,10 +3,9 @@ public import GuthMaynard.Improvement.RemovedMassDyadic
 public import GuthMaynard.Improvement.ClassicalLevelVolume
 public import GuthMaynard.Improvement.SourceRatioHeightBudget
 public import GuthMaynard.Improvement.FixedCutoffs
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -63,8 +62,8 @@ theorem removed_dyadic_cover {δ : ℝ} (hδ : 0 < δ) :
     ∃ K : ℝ, 0 < K ∧ ∀ N : ℝ, 2 ≤ N →
       ∃ J : ℕ, 2*N ≤ (2:ℝ)^J ∧ (J:ℝ)+1 ≤ K*N^δ := by
   let K := (2/Real.log 2)*(Real.log 2+1/δ)+1
-  have hl : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  refine ⟨K,by dsimp [K]; positivity,?_⟩
+  pm_123 hl
+  pm_345 K
   intro N hN
   have hn : 0 < N := by linarith
   obtain ⟨J,hcover,_,hupper,_⟩ := source_least_height_cover
@@ -83,7 +82,7 @@ theorem removed_dyadic_cover {δ : ℝ} (hδ : 0 < δ) :
     convert hh using 1
     ring
   have hg := classical_log_budget (show 1 ≤ N by linarith) hδ
-  have hnp : 1 ≤ N^δ := Real.one_le_rpow (by linarith) hδ.le
+  pm_549 hnp N δ hδ.le
   have hm := mul_le_mul_of_nonneg_left hg (show 0 ≤ 2/Real.log 2 by positivity)
   refine ⟨J,hcover,?_⟩
   dsimp [K]
@@ -97,12 +96,10 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
       (∫ t, sourceRemovedDensity (fun t => fixedTimeCutoff (t/T))
         (boundedPolynomial N a) U t) ≤ C*N^ε*(N^2+T*N^4/U^4) := by
   have he : 0 < ε/2 := by linarith
-  obtain ⟨C,hC,hlevels⟩ := boundedPolynomial_classical_level_volume he
-  obtain ⟨K,hK,hcover⟩ := removed_dyadic_cover he
+  pm_313 C hC hlevels boundedPolynomial_classical_level_volume he K hK hcover removed_dyadic_cover
   refine ⟨40*C*K,by positivity,?_⟩
   intro N T U hN hNT hTN hU a ha
-  have hn : 0 < N := by linarith
-  have ht : 0 < T := by linarith
+  pm_72 hn N ht T
   have hu : 0 < U := by linarith
   let β := fun t => fixedTimeCutoff (t/T)
   let D := boundedPolynomial N a
@@ -117,9 +114,9 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
   have hs : Function.support β ⊆ Icc (-2*T) (3*T) := by
     intro t hmem
     have hh := fixedTimeCutoff_support (subset_closure hmem)
-    exact ⟨(le_div_iff₀ ht).mp hh.1,(div_le_iff₀ ht).mp hh.2⟩
+    pm_6782 le_div_iff₀ ht div_le_iff₀
   have hDm : Measurable D := (boundedPolynomial_regular N a).1.measurable
-  obtain ⟨J,hJ,hJK⟩ := hcover N hN
+  pm_69 J hJ hJK hcover N hN
   have hb : ∀ t, ‖D t‖ ≤ (2:ℝ)^J*U := by
     intro t
     exact (boundedPolynomial_norm_le_two_mul hN a ha t).trans
@@ -148,7 +145,7 @@ theorem fixed_source_removed_mass {ε : ℝ} (hε : 0 < ε) :
         intro j _
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_left (removed_dyadic_classical_sum ht.le hu J) (by positivity)
-  have hp : N^(ε/2)*N^(ε/2)=N^ε := by rw [← Real.rpow_add hn]; congr 1; ring
+  pm_199 hp N ε hn
   have hrest : 0 ≤ T*N^4/U^4 := by positivity
   have hscalar : 4*(J:ℝ)*N^2+8*T*N^4/U^4 ≤
       8*(K*N^(ε/2))*(N^2+T*N^4/U^4) := by

@@ -1,10 +1,10 @@
 module
 public import GuthMaynard.NativeSource.GuthMaynard.VanDerCorput
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Finset Set
-open scoped BigOperators
 
 namespace GuthMaynard.NativeMoment
 
@@ -16,7 +16,10 @@ This module partitions a monotone sequence of phase increments into full
 the lower second-difference bound counts the two short endpoint pieces.
 -/
 
-theorem discrete_growth_lower (theta : Nat -> Real) (lambda : Real)
+section
+variable (theta : Nat -> Real)
+include theta
+theorem discrete_growth_lower (lambda : Real)
     (i d N : Nat)
     (hstep : forall n, n < N -> lambda <= theta (n + 1) - theta n)
     (hid : i + d <= N) :
@@ -31,7 +34,7 @@ theorem discrete_growth_lower (theta : Nat -> Real) (lambda : Real)
       push_cast
       linarith
 
-theorem monotone_of_step (theta : Nat -> Real) (N : Nat)
+theorem monotone_of_step (N : Nat)
     (hstep : forall n, n < N -> theta n <= theta (n + 1)) :
     forall i j, i <= j -> j <= N -> theta i <= theta j := by
   intro i j hij hj
@@ -42,7 +45,7 @@ theorem monotone_of_step (theta : Nat -> Real) (N : Nat)
       have hprev := ih (by omega) (by omega)
       exact hprev.trans (hstep (i + d) (by omega))
 
-theorem filter_card_bound (theta : Nat -> Real) (N : Nat)
+theorem filter_card_bound (N : Nat)
     (lambda a b : Real) (hlambda : 0 < lambda) (hab : a <= b)
     (hstep : forall n, n < N -> lambda <= theta (n + 1) - theta n) :
     (((Finset.range (N + 1)).filter fun n => a <= theta n ∧ theta n <= b).card : Real)
@@ -55,13 +58,11 @@ theorem filter_card_bound (theta : Nat -> Real) (N : Nat)
     have hj_mem : j ∈ s := s.max'_mem hs
     have hi_data := Finset.mem_filter.mp hi_mem
     have hj_data := Finset.mem_filter.mp hj_mem
-    have hij : i <= j := s.min'_le j hj_mem
-    have hjN : j <= N := by
-      have := Finset.mem_range.mp hj_data.1
-      omega
+    pm_8403
+    pm_7560
     have hsub : s ⊆ Finset.Icc i j := by
       intro n hn
-      exact Finset.mem_Icc.mpr ⟨s.min'_le n hn, s.le_max' n hn⟩
+      pm_8128
     have hcard : s.card <= (Finset.Icc i j).card := Finset.card_le_card hsub
     have hgap := discrete_growth_lower theta lambda i (j - i) N hstep (by omega)
     rw [Nat.card_Icc] at hcard
@@ -85,6 +86,7 @@ theorem filter_card_bound (theta : Nat -> Real) (N : Nat)
     have hnonneg : 0 <= (b - a) / lambda :=
       div_nonneg (sub_nonneg.mpr hab) hlambda.le
     linarith
+end
 
 theorem sum_Icc_eq_shifted_range (z : Nat -> Complex) (i j : Nat) (hij : i <= j) :
     (∑ n ∈ Finset.Icc i j, z n) = ∑ d ∈ Finset.range (j - i + 1), z (i + d) := by
@@ -123,17 +125,15 @@ theorem kusminLandau_good_fiber (f : Nat -> Real) (N : Nat) (k : Int)
     let j := s.max' hs
     have hi_mem : i ∈ s := s.min'_mem hs
     have hj_mem : j ∈ s := s.max'_mem hs
-    have hij : i <= j := s.min'_le j hj_mem
+    pm_8403
     have hi_data := Finset.mem_filter.mp hi_mem
     have hj_data := Finset.mem_filter.mp hj_mem
-    have hjN : j <= N := by
-      have := Finset.mem_range.mp hj_data.1
-      omega
+    pm_7560
     have hs_eq : s = Finset.Icc i j := by
       ext n
       constructor
       · intro hn
-        exact Finset.mem_Icc.mpr ⟨s.min'_le n hn, s.le_max' n hn⟩
+        pm_8128
       · intro hn
         have hn' := Finset.mem_Icc.mp hn
         apply Finset.mem_filter.mpr
@@ -148,14 +148,10 @@ theorem kusminLandau_good_fiber (f : Nat -> Real) (N : Nat) (k : Int)
     rw [hs_eq, sum_Icc_eq_shifted_range _ i j hij]
     apply kusminLandau_interval f i (j - i) k delta hdelta
     · intro d hd
-      have hd_mem : i + d ∈ s := by
-        rw [hs_eq]
-        exact Finset.mem_Icc.mpr ⟨by omega, by omega⟩
+      pm_1440
       exact (Finset.mem_filter.mp hd_mem).2.1
     · intro d hd
-      have hd_mem : i + d ∈ s := by
-        rw [hs_eq]
-        exact Finset.mem_Icc.mpr ⟨by omega, by omega⟩
+      pm_1440
       exact (Finset.mem_filter.mp hd_mem).2.2
     · intro d hd
       exact hmono (i + d) (by omega)
@@ -171,21 +167,24 @@ noncomputable def periodIndex (theta : Real) : Int :=
 theorem periodIndex_bounds (theta : Real) :
     (periodIndex theta : Real) * (2 * Real.pi) <= theta ∧
       theta < ((periodIndex theta : Real) + 1) * (2 * Real.pi) := by
-  have hp : 0 < 2 * Real.pi := by positivity
+  pm_4895 hp Real.pi
   constructor
   · rw [periodIndex]
-    have h := Int.floor_le (theta / (2 * Real.pi))
+    pm_8594 Int.floor_le
     exact (le_div_iff₀ hp).mp (by simpa [mul_comm] using h)
   · rw [periodIndex]
-    have h := Int.lt_floor_add_one (theta / (2 * Real.pi))
+    pm_8594 Int.lt_floor_add_one
     exact (div_lt_iff₀ hp).mp h
 
-theorem periodIndex_mono {x y : Real} (hxy : x <= y) :
+section
+variable {x y : Real} (hxy : x <= y)
+include x y hxy
+theorem periodIndex_mono :
     periodIndex x <= periodIndex y := by
   apply Int.floor_mono
   exact div_le_div_of_nonneg_right hxy (by positivity)
 
-theorem period_count_bound {x y : Real} (hxy : x <= y) :
+theorem period_count_bound :
     (((Finset.Icc (periodIndex x) (periodIndex y)).card : Nat) : Real)
       <= (y - x) / (2 * Real.pi) + 2 := by
   let i := periodIndex x
@@ -195,19 +194,18 @@ theorem period_count_bound {x y : Real} (hxy : x <= y) :
     Int.card_Icc_of_le i j (by omega)
   have hcardReal : (((Finset.Icc i j).card : Nat) : Real) = (j : Real) + 1 - (i : Real) := by
     exact_mod_cast hcardInt
-  have hifloor : (i : Real) <= x / (2 * Real.pi) := by
-    exact Int.floor_le _
+  pm_8446 hifloor i x
   have hilower : x / (2 * Real.pi) < (i : Real) + 1 := by
     exact Int.lt_floor_add_one _
-  have hjfloor : (j : Real) <= y / (2 * Real.pi) := by
-    exact Int.floor_le _
+  pm_8446 hjfloor j y
   rw [show Finset.Icc (periodIndex x) (periodIndex y) = Finset.Icc i j by rfl,
     hcardReal]
-  have hp : 0 < 2 * Real.pi := by positivity
+  pm_4895 hp Real.pi
   have hdiv : y / (2 * Real.pi) - x / (2 * Real.pi) =
       (y - x) / (2 * Real.pi) := by ring
   rw [← hdiv]
   linarith
+end
 
 theorem discrete_growth_upper (theta : Nat -> Real) (Lambda : Real)
     (i d N : Nat)
@@ -231,8 +229,10 @@ theorem norm_phase_sum_finset_le_card (s : Finset Nat) (f : Nat -> Real) :
       norm_sum_le _ _
     _ = (s.card : Real) := by simp
 
-theorem vanDerCorput_second_derivative
-    (f : Nat -> Real) (N : Nat) (lambda Lambda delta : Real)
+section
+variable (f : Nat -> Real) (N : Nat)
+include f N
+theorem vanDerCorput_second_derivative (lambda Lambda delta : Real)
     (hlambda : 0 < lambda) (hdelta : 0 < delta)
     (hlower : forall n, n < N ->
       lambda <= (f (n + 2) - f (n + 1)) - (f (n + 1) - f n))
@@ -284,10 +284,10 @@ theorem vanDerCorput_second_derivative
     apply Finset.mem_filter.mpr
     refine ⟨hnData.1, ?_⟩
     have hlow : (k : Real) <= theta n / (2 * Real.pi) := by
-      rw [le_div_iff₀ (by positivity : 0 < 2 * Real.pi)]
+      pm_585 le_div_iff₀ Real.pi
       linarith [hnData.2.1]
     have hhigh : theta n / (2 * Real.pi) < (k : Real) + 1 := by
-      rw [div_lt_iff₀ (by positivity : 0 < 2 * Real.pi)]
+      pm_585 div_lt_iff₀ Real.pi
       linarith [hnData.2.2, hdelta]
     dsimp only [idx, periodIndex]
     exact Int.floor_eq_iff.mpr ⟨hlow, hhigh⟩
@@ -398,8 +398,7 @@ theorem vanDerCorput_second_derivative
 /-- The optimized B-process: choosing the endpoint width `sqrt lambda`
 exhibits the classical `(1/2, 1/2)` second-derivative scale.  The displayed
 formula keeps the constants and the upper/lower curvature ratio explicit. -/
-theorem vanDerCorput_B_process
-    (f : Nat -> Real) (N : Nat) (lambda Lambda : Real)
+theorem vanDerCorput_B_process (lambda Lambda : Real)
     (hlambda : 0 < lambda)
     (hlower : forall n, n < N ->
       lambda <= (f (n + 2) - f (n + 1)) - (f (n + 1) - f n))
@@ -411,5 +410,6 @@ theorem vanDerCorput_B_process
           2 * (Real.sqrt lambda / lambda + 1)) := by
   exact vanDerCorput_second_derivative f N lambda Lambda (Real.sqrt lambda)
     hlambda (Real.sqrt_pos.2 hlambda) hlower hupper
+end
 
 end GuthMaynard.NativeMoment

@@ -2,10 +2,9 @@ module
 public import GuthMaynard.Improvement.OperatorMixedCentered
 public import GuthMaynard.Improvement.MixedKernelRow
 public import GuthMaynard.Improvement.MixedCutoffEnvelope
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -42,8 +41,7 @@ theorem operator_mixed_bound (w : MathCollab.Density.ReflectionCutoff) :
     · simp only [hs x hx,abs_zero]; exact le_max_left _ _
   rw [operator_centered_mixed (timeMeasure μ) w.smooth.continuous.measurable hwi
     (le_max_left 0 B) hwB (by norm_num : (0:ℝ)<1/2) hLp hs b]
-  obtain ⟨D,hD,hDb⟩ := centeredKernel_uniform_bound w.complex_smooth
-    (by norm_num : (0:ℝ)<1/2) (by norm_num : (1/2:ℝ)≤5) hsc
+  pm_1209 hDb hsc
   have hc : Measurable (mixedCutoffKernel w) := mixedCutoffKernel_measurable w
   have hbound := kernelMixed_time_row_bound hm h0 hi h2
     (C := fun s => (L:ℂ)*mixedCutoffKernel w s)

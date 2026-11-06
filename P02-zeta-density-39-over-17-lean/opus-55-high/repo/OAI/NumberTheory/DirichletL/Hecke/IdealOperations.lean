@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.Operations
 public import OAI.NumberTheory.DirichletL.Hecke.IdealBridge
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem exists_primitive_character (χ : Character) :
     Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
   obtain ⟨M, φ, hφ, hM, hM₀, hprim, hnorm, hmask, _⟩ :=
     IdealCharacter.exists_primitive_associate χ.modulus χ.residue χ.unit_trivial
-  exact ⟨Character.ofResidue M hM₀ φ hφ, hM, hprim, hnorm, hmask⟩
+  pm_6704
 
 theorem exists_primitive_product_character (χ ψ : Character) :
     ∃ ρ : Character,
@@ -43,7 +44,7 @@ theorem exists_primitive_product_character (χ ψ : Character) :
   obtain ⟨M, φ, hφ, hM, hM₀, hprim, hnorm, hmask, _⟩ :=
     IdealCharacter.exists_primitive_product_associate χ.modulus ψ.modulus
       χ.residue ψ.residue χ.unit_trivial ψ.unit_trivial
-  exact ⟨Character.ofResidue M hM₀ φ hφ, hM, hprim, hnorm, hmask⟩
+  pm_6704
 
 end SevenEighths.HeckeFamily
 

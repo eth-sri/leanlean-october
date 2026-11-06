@@ -9,6 +9,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonResidualVariation
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonGaussianVariation
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonCoefficientVariation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,7 +36,7 @@ theorem exists_finiteVariationBound_atkinsonMainWeights :
         (C*G*T^(-(1/4:ℝ))*(m:ℝ)^(-(1/4:ℝ))*Real.exp (-(G^2*(m:ℝ))/(12*T))) := by
   obtain ⟨D,hD,hres⟩ := exists_finiteVariationBound_saddleResidual
   let K : ℝ := (1/Real.sqrt 2)*(2/Real.pi)^(-(1/4:ℝ))
-  have hK : 0 < K := by dsimp [K]; positivity
+  pm_64 hK K
   refine ⟨8*K*Real.sqrt Real.pi*D,by positivity,?_⟩
   intro T G L hT hG hGT hL m N hm hN
   have hmT : (m:ℝ) ≤ T := by
@@ -46,13 +47,7 @@ theorem exists_finiteVariationBound_atkinsonMainWeights :
   have hg := finiteVariationBound_atkinsonSaddleGaussian_physical hT hG hGT m N hmT
   obtain ⟨hrp,hrm⟩ := hres T G L hT hG hL m N hN
   constructor
-  · convert (hc.mul hg).mul hrp using 1
-    · rfl
-    · dsimp [K]
-      ring
-  · convert (hc.mul hg).mul hrm using 1
-    · rfl
-    · dsimp [K]
-      ring
+  pm_7141 hrp
+  pm_7141 hrm
 
 end MathCollab.Density.Stronger.Atkinson

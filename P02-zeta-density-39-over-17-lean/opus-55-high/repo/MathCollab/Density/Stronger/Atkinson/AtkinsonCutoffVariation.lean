@@ -9,6 +9,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 public import MathCollab.Density.Stronger.Atkinson.DivisorBandCutoff
 public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeBounds
 public import MathCollab.Density.Stronger.Atkinson.FiniteWeightVariation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,14 +30,8 @@ theorem intervalC1Bound_zetaBandCutoff {a b c d A B : ℝ}
     (fun x y hxy => div_le_div_of_nonneg_right (sub_le_sub_left hxy d) (sub_pos.mpr hcd).le)
   have hsu : ContDiff ℝ 1 u := Real.smoothTransition.contDiff.comp (by fun_prop)
   have hsv : ContDiff ℝ 1 v := Real.smoothTransition.contDiff.comp (by fun_prop)
-  have hbu := intervalC1Bound_ofReal_of_deriv_nonneg hAB (by norm_num : (0 : ℝ) ≤ 1)
-    (fun x _ => hsu.contDiffAt (x := x))
-    (fun x _ => ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩)
-    (fun _ _ => hu.deriv_nonneg)
-  have hbv := intervalC1Bound_ofReal_of_deriv_nonpos hAB (by norm_num : (0 : ℝ) ≤ 1)
-    (fun x _ => hsv.contDiffAt (x := x))
-    (fun x _ => ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩)
-    (fun _ _ => hv.deriv_nonpos)
+  pm_5004 hbu intervalC1Bound_ofReal_of_deriv_nonneg hsu.contDiffAt hu.deriv_nonneg
+  pm_5004 hbv intervalC1Bound_ofReal_of_deriv_nonpos hsv.contDiffAt hv.deriv_nonpos
   simpa only [u, v, zetaBandCutoff, Complex.ofReal_mul, mul_one] using hbu.mul hbv hAB
 
 theorem intervalC1Bound_zetaDivisorBandCutoff {T G L A B : ℝ}
@@ -59,14 +54,10 @@ theorem finiteVariationBound_zetaBandCutoff_sample {a b c d : ℝ}
       (hm : Monotone f ∨ Antitone f) :
       FiniteVariationBound (fun i => (f (u i) : ℂ)) N 1 := by
     rcases hm with hm | hm <;> rcases hu with hu | hu
-    · exact finiteVariationBound_of_monotone (by norm_num)
-        (fun i hi j hj hij => hm (hu hi hj hij)) (fun i _ => hf _)
-    · exact finiteVariationBound_of_antitone (by norm_num)
-        (fun i hi j hj hij => hm (hu hi hj hij)) (fun i _ => hf _)
-    · exact finiteVariationBound_of_antitone (by norm_num)
-        (fun i hi j hj hij => hm (hu hi hj hij)) (fun i _ => hf _)
-    · exact finiteVariationBound_of_monotone (by norm_num)
-        (fun i hi j hj hij => hm (hu hi hj hij)) (fun i _ => hf _)
+    pm_4399
+    pm_4400
+    pm_4400
+    pm_4399
   have h₁ := hbnd p (fun _ => ⟨Real.smoothTransition.nonneg _,Real.smoothTransition.le_one _⟩) (Or.inl hp)
   have h₂ := hbnd q (fun _ => ⟨Real.smoothTransition.nonneg _,Real.smoothTransition.le_one _⟩) (Or.inr hq)
   simpa only [p,q,zetaBandCutoff,Complex.ofReal_mul,mul_one] using h₁.mul h₂

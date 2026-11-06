@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LiftedFourier
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,8 +12,10 @@ namespace SevenEighths.ProbePrimePower
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
 local notation "O" => ActualEisensteinCubic.O
 
-theorem higher_convolution_zero (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+section
+variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
+include p hp
+theorem higher_convolution_zero
     (χ ξ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n m : ℕ) (H : O) :
     (∑' d : O ⧸ Ideal.span {p^(m+2)},
       χ (Ideal.Quotient.mk _ (representative (p^(m+2)) d)) *
@@ -25,9 +28,7 @@ theorem higher_convolution_zero (p : O) (hp : Prime p)
     ConcreteTraceCRT.finite_quotient_span (mul_ne_zero hp.ne_zero (pow_ne_zero _ hp.ne_zero))
   let : Fintype (O ⧸ Ideal.span {p*p^(n+(m+2))}) := Fintype.ofFinite _
   have hmod : p*p^(n+(m+2)) = p^(m+2)*p^(n+1) := by
-    rw [← pow_succ', ← pow_add]
-    congr 1
-    omega
+    pm_6599 pow_succ'
   have hinner (V : O) : (∑' d : O ⧸ Ideal.span {p^(m+2)},
       χ (Ideal.Quotient.mk _ (representative (p^(m+2)) d)) *
         quotientTrace (p^(m+2)) (pow_ne_zero _ hp.ne_zero)
@@ -36,7 +37,7 @@ theorem higher_convolution_zero (p : O) (hp : Prime p)
     change quotientFourier p (p^(m+2)) (pow_ne_zero _ hp.ne_zero) χ (-V) = _
     rw [primePowerGauss_eq_quotientFourier]
     apply quotientFourier_congr
-    rw [← pow_succ']
+    grind
   unfold primePowerGauss conductorFourier
   simp_rw [tsum_fintype, Finset.mul_sum]
   rw [Finset.sum_comm]
@@ -69,10 +70,7 @@ theorem higher_convolution_zero (p : O) (hp : Prime p)
           χ (Ideal.Quotient.mk _ (representative (p^(m+2)) d)) *
             quotientTrace (p^(m+2)) (pow_ne_zero _ hp.ne_zero)
               (Ideal.Quotient.mk _ ((-v)*representative (p^(m+2)) d)) := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro d hd
-      ring
+      pm_4886 d hd
     _ = quotientTrace (p*p^(n+(m+2))) (mul_ne_zero hp.ne_zero (pow_ne_zero _ hp.ne_zero))
           (Ideal.Quotient.mk _ (H*v)) *
         (ξ (Ideal.Quotient.mk _ v) * primePowerGauss p hp.ne_zero χ (m+1) (-v)) := by
@@ -82,12 +80,12 @@ theorem higher_convolution_zero (p : O) (hp : Prime p)
       ring
     _ = 0 := by rw [higher_outer_lift_annihilated p hp.ne_zero χ ξ (by omega : 0 < m+1) v, mul_zero]
 
-theorem positiveScalar_kge_two (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
+theorem positiveScalar_kge_two
     (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n m j : ℕ) :
     positiveScalar p hp.ne_zero χ n (m+2) j = 0 := by
   rw [positiveScalar_full_lift p hp χ n (m+2) j (by omega),
     higher_convolution_zero p hp (χ^(m+2)) (χ^(n+1)) n m (p^j), mul_zero]
+end
 
 end SevenEighths.ProbePrimePower
 end

@@ -1,9 +1,9 @@
 module
 public import GuthMaynard.Improvement.CompactTransverse
 public import GuthMaynard.Improvement.CubicStripGeometry
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
@@ -18,8 +18,7 @@ def smoothedStripPair (r : ℝ → ℝ) (a δ : ℝ) (m : ℤ × (ℤ × ℤ)) (
 
 theorem cubicStripMass_measurable {r : ℝ → ℝ} (hr : Measurable r)
     (L H : ℝ) (m : ℤ × (ℤ × ℤ)) : Measurable (cubicStripMass r L H m) := by
-  have hs : MeasurableSet {p : ℝ × ℝ | |L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ))| ≤ H} := by
-    apply measurableSet_le <;> fun_prop
+  pm_482 hs
   have hmeas : Measurable (fun p : ℝ × ℝ =>
       ({p : ℝ × ℝ | |L*((m.1:ℝ)*p.1+(m.2.1:ℝ)*p.2+(m.2.2:ℝ))| ≤ H}).indicator
         (fun p => r p.2*r (p.2/p.1)) p) := by
@@ -50,13 +49,9 @@ theorem smoothedStripPair_bounded_measurable {r : ℝ → ℝ} (hr : Measurable 
     (hr2 : Integrable (fun x => r x^2)) (a : ℝ) {δ : ℝ} (hδ : 0 < δ) :
     ∃ W : ℝ, 0 ≤ W ∧ ∀ m : ℤ × (ℤ × ℤ), Measurable (smoothedStripPair r a δ m) ∧
       ∀ v, 0 ≤ smoothedStripPair r a δ m v ∧ smoothedStripPair r a δ m v ≤ W := by
-  have hq : 0 < max 1 (1/a) := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  pm_5875
   have hw : 0 < max 1 (1/a)*δ := mul_pos hq hδ
-  obtain ⟨B,hB,hb⟩ := compactKernel_bound
-  obtain ⟨hFm,hFb⟩ := squareSmoothing_bounded_measurable
-    (scaledKernel_measurable compactKernel_smooth.continuous.measurable _)
-    (scaledKernel_nonneg compactKernel_nonneg hw) (by positivity)
-    (scaledKernel_bound hw hb) hr hr2
+  pm_5204 B hB hb
   let W := (max 1 (1/a)*δ)⁻¹*B*(∫ x, r x^2)
   have hW : 0 ≤ W := mul_nonneg (by positivity) (integral_nonneg (fun _ => sq_nonneg _))
   refine ⟨W,hW,?_⟩
@@ -73,9 +68,12 @@ theorem smoothedStripPair_bounded_measurable {r : ℝ → ℝ} (hr : Measurable 
         (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
       _ = _ := Real.mul_self_sqrt hW
 
+section
+variable (a b : ℝ) (ha : 0 < a)
+include a b ha
 /-- Pointwise transverse bound on the literal strip. The fixed constant
 precedes every density, scale, mode and positive ratio. -/
-theorem cubic_strip_transverse (a b : ℝ) (ha : 0 < a) :
+theorem cubic_strip_transverse :
     ∃ C : ℝ, 0 < C ∧ ∀ (L H K v : ℝ) (m : ℤ × (ℤ × ℤ)) (r : ℝ → ℝ),
       0 < L → 0 < H → 0 < K → K ≤ (m.2.1:ℝ) → a ≤ v → v ≤ b →
       Measurable r → Integrable (fun y => r y^2) → (∀ y, 0 ≤ r y) →
@@ -83,12 +81,12 @@ theorem cubic_strip_transverse (a b : ℝ) (ha : 0 < a) :
         {y | |L*((m.1:ℝ)*v+(m.2.1:ℝ)*y+(m.2.2:ℝ))| ≤ H} ∧
       cubicStripMass r L H m v ≤ C*(H/(L*K))*Real.sqrt b*
         smoothedStripPair r a (H/(L*K)) m v := by
-  obtain ⟨C,hC,h⟩ := compact_masked_transverse a b ha
+  pm_114 C hC h compact_masked_transverse a b ha
   refine ⟨C,hC,?_⟩
   intro L H K v m r hL hH hK hKm hav hvb hr hr2 hr0
   have hv : 0 < v := ha.trans_le hav
   have hm : 0 < (m.2.1:ℝ) := hK.trans_le hKm
-  have hδ : 0 < H/(L*K) := div_pos hH (mul_pos hL hK)
+  pm_631 hK
   have hp := (memLp_two_iff_integrable_sq hr.aestronglyMeasurable).mpr hr2
   have hpv := (memLp_two_iff_integrable_sq (hr.comp (measurable_id.div_const v)).aestronglyMeasurable).mpr
     (hr2.comp_div hv.ne')
@@ -116,7 +114,7 @@ theorem cubic_strip_transverse (a b : ℝ) (ha : 0 < a) :
 
 /-- The actual finite strip integral exists and satisfies its smoothed box
 majorant. The designated first mask is retained literally on both sides. -/
-theorem cubic_strip_integral (a b : ℝ) (ha : 0 < a) (_hab : a ≤ b) :
+theorem cubic_strip_integral (_hab : a ≤ b) :
     ∃ C : ℝ, 0 < C ∧ ∀ (L H K : ℝ) (S : Finset (ℤ × (ℤ × ℤ)))
       (A₀ : Set ℝ) (r₀ r : ℝ → ℝ),
       0 < L → 0 < H → 0 < K → (∀ m ∈ S, K ≤ (m.2.1:ℝ)) →
@@ -127,15 +125,15 @@ theorem cubic_strip_integral (a b : ℝ) (ha : 0 < a) (_hab : a ≤ b) :
       (∫ v in Icc a b, A₀.indicator r₀ v * ∑ m ∈ S, cubicStripMass r L H m v) ≤
         C*(H/(L*K))*Real.sqrt b *
           (∫ v in Icc a b, A₀.indicator r₀ v * ∑ m ∈ S, smoothedStripPair r a (H/(L*K)) m v) := by
-  obtain ⟨C,hC,h⟩ := cubic_strip_transverse a b ha
+  pm_114 C hC h cubic_strip_transverse a b ha
   refine ⟨C,hC,?_⟩
   intro L H K S A₀ r₀ r hL hH hK hKm hA₀ hr₀ hmem₀ hr₀0 hr hr2 hr0
-  have hδ : 0 < H/(L*K) := div_pos hH (mul_pos hL hK)
+  pm_631 hK
   have hρ : IntegrableOn (A₀.indicator r₀) (Icc a b) :=
     MemLp.integrable (by norm_num) ((hmem₀.indicator hA₀).restrict _)
   have hρ0 : ∀ v, 0 ≤ A₀.indicator r₀ v := by
     intro v; by_cases hv : v ∈ A₀ <;> simp [hv,hr₀0]
-  obtain ⟨W,hW,hpair⟩ := smoothedStripPair_bounded_measurable hr hr2 a hδ
+  pm_97 W hW hpair smoothedStripPair_bounded_measurable hr hr2 a hδ
   have hright : IntegrableOn (fun v => A₀.indicator r₀ v * ∑ m ∈ S, smoothedStripPair r a (H/(L*K)) m v) (Icc a b) := by
     have hm : Measurable (fun v => ∑ m ∈ S, smoothedStripPair r a (H/(L*K)) m v) :=
       Finset.measurable_sum S (fun m _ => (hpair m).1)
@@ -160,8 +158,7 @@ theorem cubic_strip_integral (a b : ℝ) (ha : 0 < a) (_hab : a ≤ b) :
     exact integral_nonneg (fun y => mul_nonneg (hr0 y) (hr0 _))
   have hleft : IntegrableOn (fun v => A₀.indicator r₀ v * ∑ m ∈ S, cubicStripMass r L H m v) (Icc a b) :=
     (hright.const_mul (C*(H/(L*K))*Real.sqrt b)).mono' hleftm.aestronglyMeasurable (by
-      filter_upwards [ae_restrict_mem measurableSet_Icc] with v hv
-      rw [Real.norm_eq_abs,abs_of_nonneg (hleft0 v)]
+      pm_7146 hleft0
       exact hpoint v hv)
   refine ⟨hleft,hright,?_⟩
   calc
@@ -170,5 +167,6 @@ theorem cubic_strip_integral (a b : ℝ) (ha : 0 < a) (_hab : a ≤ b) :
         filter_upwards [ae_restrict_mem measurableSet_Icc] with v hv
         exact hpoint v hv)
     _ = _ := integral_const_mul _ _
+end
 
 end GuthMaynard.Improvement

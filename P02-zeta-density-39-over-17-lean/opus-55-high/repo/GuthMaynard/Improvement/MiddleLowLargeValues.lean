@@ -2,10 +2,9 @@ module
 public import GuthMaynard.Improvement.QuarticRadiusExtraction
 public import GuthMaynard.Improvement.MiddleFourthMoment
 public import GuthMaynard.Improvement.MiddleLargeValueBranches
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
@@ -18,8 +17,8 @@ theorem middle_low_threshold_budget {N T V : ℝ} (hN : 2 ≤ N)
       2*middleMoment N T/V^4 := by
   have hn : 0 < N := by linarith
   have ht : 0 < T := hn.trans_le (middle_time_bounds hN hlo hhi).1
-  have hu : 0 < middleThreshold N T := by unfold middleThreshold; positivity
-  have hp : 0 < middleMoment N T := by unfold middleMoment; positivity
+  pm_4560
+  pm_4561
   have hnl := (middle_length_bounds hN hlo hhi).1
   have hfirst : N^2/(middleThreshold N T)^2 ≤ middleMoment N T/(middleThreshold N T)^4 := by
     calc
@@ -31,8 +30,7 @@ theorem middle_low_threshold_budget {N T V : ℝ} (hN : 2 ≤ N)
     rw [← middle_threshold_square_quotient hn ht]
     field_simp
   calc
-    _ ≤ 2*middleMoment N T/(middleThreshold N T)^4 := by
-      convert add_le_add hfirst hsecond.le using 1; ring
+    _ ≤ 2*middleMoment N T/(middleThreshold N T)^4 := by grind
     _ ≤ _ := by gcongr
 
 /-- Actual separated large values below the fixed truncation threshold in the
@@ -49,15 +47,13 @@ theorem middle_large_values_low {ε : ℝ} (hε : 0 < ε) :
       (∀ w ∈ W, V ≤ ‖boundedPolynomial N a w‖) →
       (W.card:ℝ) ≤ C*N^ε*middleMoment N T/V^4 := by
   have hhalf : 0 < ε/2 := by positivity
-  obtain ⟨E,hE,he⟩ := quartic_extraction_of_moment hhalf
-  obtain ⟨D,hD,hd⟩ := middle_fourth_moment hhalf
+  pm_313 E hE he quartic_extraction_of_moment hhalf D hD hd middle_fourth_moment
   refine ⟨E*(2+D),by positivity,?_⟩
   intro N T V hN hlo hhi hV hVU a W ha hw hsep hv
   obtain ⟨hnt,htn⟩ := middle_time_bounds hN hlo hhi
-  have hn : 0 < N := by linarith
-  have ht : 0 < T := by linarith
+  pm_4537
   have hv0 : 0 < V := by linarith
-  have hp : 0 ≤ middleMoment N T := by unfold middleMoment; positivity
+  pm_8295 hp
   have hU : middleThreshold N T ≤ 2*N :=
     (middle_threshold_le_length hN hlo hhi).trans (by linarith)
   have hm := hd N T hN hlo hhi a ha
@@ -65,13 +61,12 @@ theorem middle_large_values_low {ε : ℝ} (hε : 0 < ε) :
     hN hnt htn hV hVU hU a W ha hsep hw hv hm
   have hbudget := middle_low_threshold_budget hN hlo hhi hv0 hVU
   have hpow : 1 ≤ N^(ε/2) := Real.one_le_rpow (by linarith) hhalf.le
-  have hid : N^(ε/2)*N^(ε/2)=N^ε := by rw [← Real.rpow_add hn]; congr 1; ring
+  pm_199 hid N ε hn
   calc
     _ ≤ E*N^(ε/2)*(2*middleMoment N T/V^4+D*N^(ε/2)*middleMoment N T/V^4) :=
       hx.trans (mul_le_mul_of_nonneg_left (add_le_add hbudget le_rfl) (by positivity))
     _ ≤ E*N^(ε/2)*(2*N^(ε/2)*middleMoment N T/V^4+D*N^(ε/2)*middleMoment N T/V^4) := by
-      apply mul_le_mul_of_nonneg_left _ (by positivity)
-      apply add_le_add _ le_rfl
+      pm_8069
       gcongr
       linarith
     _ = E*(2+D)*(N^(ε/2)*N^(ε/2))*middleMoment N T/V^4 := by ring

@@ -1,17 +1,18 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
 public import OAI.NumberTheory.DirichletL.IdealCharacter
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondDiagonal
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CanonicalQuadraticSieve CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_zero_off_diagonal (u v : O)
@@ -24,18 +25,15 @@ theorem full_zero_off_diagonal (u v : O)
   intro x hx
   apply Finset.sum_eq_zero
   intro y hy
-  obtain ⟨x,rfl⟩ := Ideal.Quotient.mk_surjective x
-  obtain ⟨y,rfl⟩ := Ideal.Quotient.mk_surjective y
+  pm_522
   rw [scaledResidue_congruence]
   split_ifs with hc
   · by_cases hx0 : χ (Ideal.Quotient.mk _ x) = 0
     · rw [hx0,zero_mul]
     by_cases hy0 : ψ (Ideal.Quotient.mk _ y) = 0
     · rw [hy0,star_zero,mul_zero]
-    have hux : IsCoprime u x := ((Ideal.isCoprime_span_singleton_iff x u).mp
-      ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hx0))).symm
-    have hvy : IsCoprime v y := ((Ideal.isCoprime_span_singleton_iff y v).mp
-      ((IdealCharacter.isUnit_mk_iff_isCoprime _ _).mp (MulChar.apply_ne_zero_iff.mp hy0))).symm
+    pm_8149 hux u x hx0
+    pm_8149 hvy v y hy0
     simp only [sub_zero] at hc
     have hu : u ∣ v*x := by
       have he := dvd_add ((dvd_mul_right u v).trans hc) (dvd_mul_right u y)
@@ -49,20 +47,20 @@ theorem full_zero_off_diagonal (u v : O)
       (Ideal.span_singleton_le_span_singleton.mpr huv)))
   · rfl
 
-theorem full_same_zero (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
-    (χ : MulChar (Residue u) ℂ) :
+section
+variable (u : O) (hu : u ≠ 0) [Fintype (Residue u)] (χ : MulChar (Residue u) ℂ)
+include u hu χ
+theorem full_same_zero :
     fullModulusCorrelation u u χ χ 0 = ∑ x : Residue u, χ x*star (χ x) := by
   have hcong (x y : Residue u) :
       scaledResidue u u (u*u) rfl x - scaledResidue u u (u*u) (mul_comm u u) y =
         Ideal.Quotient.mk (Ideal.span {u*u}) 0 ↔ x=y := by
-    obtain ⟨x,rfl⟩ := Ideal.Quotient.mk_surjective x
-    obtain ⟨y,rfl⟩ := Ideal.Quotient.mk_surjective y
+    pm_522
     rw [scaledResidue_congruence,sub_zero,← mul_sub,mul_dvd_mul_iff_left hu]
     exact Ideal.mem_span_singleton.symm.trans Ideal.Quotient.eq.symm
-  simp only [fullModulusCorrelation,fullCorrelation,hcong,Finset.sum_ite_eq,Finset.mem_univ,ite_true]
+  pm_382 fullModulusCorrelation fullCorrelation hcong Finset.sum_ite_eq Finset.mem_univ ite_true
 
-theorem full_same_zero_norm_le (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
-    (χ : MulChar (Residue u) ℂ) :
+theorem full_same_zero_norm_le :
     ‖fullModulusCorrelation u u χ χ 0‖ ≤ (Fintype.card (Residue u) : ℝ) := by
   rw [full_same_zero u hu χ]
   calc
@@ -71,9 +69,10 @@ theorem full_same_zero_norm_le (u : O) (hu : u ≠ 0) [Fintype (Residue u)]
       apply Finset.sum_le_sum
       intro x hx
       by_cases hn : χ x = 0
-      · simp only [hn,zero_mul,norm_zero,zero_le_one]
+      pm_3814 hn zero_mul norm_zero zero_le_one
       · rw [MulChar.star_apply',MulChar.inv_apply_eq_inv',mul_inv_cancel₀ hn,norm_one]
     _ = _ := by simp
+end
 
 theorem actual_zero_off_diagonal (u v : O) (hu : Supported (Ideal.span {u}))
     (hv : Supported (Ideal.span {v}))
@@ -82,8 +81,7 @@ theorem actual_zero_off_diagonal (u v : O) (hu : Supported (Ideal.span {u}))
     actualCorrelation u v hu hv 0 = 0 := by
   let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero u hu)
   let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero v hv)
-  let : Fintype (Residue u) := Fintype.ofFinite _
-  let : Fintype (Residue v) := Fintype.ofFinite _
+  pm_2900
   apply full_zero_off_diagonal u v
   intro he
   apply hne
@@ -92,10 +90,9 @@ theorem actual_zero_off_diagonal (u v : O) (hu : Supported (Ideal.span {u}))
 
 theorem actual_same_zero_norm_le (u : O) (hu : Supported (Ideal.span {u})) :
     ‖actualCorrelation u u hu hu 0‖ ≤ (Ideal.absNorm (Ideal.span {u}) : ℝ) := by
-  let := ConcreteTraceCRT.finite_quotient_span (supported_element_ne_zero u hu)
-  let : Fintype (Residue u) := Fintype.ofFinite _
+  pm_511 ConcreteTraceCRT.finite_quotient_span supported_element_ne_zero u hu Residue
   have hb := full_same_zero_norm_le u (supported_element_ne_zero u hu) (supportedModulusCharacter u hu)
-  simpa only [actualCorrelation,supportedCorrelation,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card] using hb
+  pm_124 actualCorrelation supportedCorrelation Ideal.absNorm_apply Submodule.cardQuot_apply Nat.card_eq_fintype_card hb
 
 theorem divisible_ideal_card (S : Finset (Ideal O)) (s : Ideal O) (hs : s ≠ 0)
     (hS : ∀ I ∈ S, I ≠ 0) (hdiv : ∀ I ∈ S, s ∣ I)
@@ -126,10 +123,10 @@ def secondZeroEnergy {α : Type*} (S : Finset α) (a : α → O)
       ((Real.sqrt (Ideal.absNorm (Ideal.span {a i}) : ℝ) : ℂ)*
        (Real.sqrt (Ideal.absNorm (Ideal.span {a j}) : ℝ) : ℂ)))
 
-theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (c : α → ℂ) :
+section
+variable {α : Type*} (S : Finset α) (a : α → O) (ha : ∀ i, Supported (Ideal.span {a i})) (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1) (hinj : Set.InjOn a S)
+include α S a ha hp hinj
+theorem secondZeroEnergy_bound (c : α → ℂ) :
     ‖secondZeroEnergy S a ha c‖ ≤ ∑ i ∈ S, ‖c i‖^2 := by
   have hroot (i : α) :
       ((Real.sqrt (Ideal.absNorm (Ideal.span {a i}) : ℝ) : ℂ)*
@@ -149,18 +146,13 @@ theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
       rw [actual_zero_off_diagonal _ _ (ha i) (ha j) (hp i) (hp j) hne,zero_div,mul_zero]
     · exact fun hnot => False.elim (hnot hi)
   rw [he]
-  apply (norm_sum_le _ _).trans
-  apply Finset.sum_le_sum
-  intro i hi
+  pm_3619
   rw [norm_mul,norm_mul,norm_star,norm_div,Complex.norm_natCast,← pow_two]
   have hN : 0 < (Ideal.absNorm (Ideal.span {a i}) : ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (ha i).1)
+    pm_5047 Nat.pos_of_ne_zero ha
   exact mul_le_of_le_one_right (sq_nonneg _) ((div_le_one hN).mpr (actual_same_zero_norm_le _ (ha i)))
 
-theorem primary_column_card {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (s : Ideal O) (hs : s ≠ 0)
+theorem primary_column_card (s : Ideal O) (hs : s ≠ 0)
     (hdiv : ∀ i ∈ S, s ∣ Ideal.span {a i}) (Y : ℝ) (hY : 0 ≤ Y)
     (hN : ∀ i ∈ S, (Ideal.absNorm (Ideal.span {a i}) : ℝ) ≤ Y) :
     (S.card : ℝ) ≤ 128*Y/(Ideal.absNorm s : ℝ) := by
@@ -176,10 +168,7 @@ theorem primary_column_card {α : Type*} (S : Finset α) (a : α → O)
     Y hY (by intro I hI; obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hI; exact hN i hi)
   rwa [Finset.card_image_of_injOn hspan] at hb
 
-theorem secondZeroEnergy_divisor_bound {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (c : α → ℂ) (B : ℝ) (_hB : 0 ≤ B)
+theorem secondZeroEnergy_divisor_bound (c : α → ℂ) (B : ℝ) (_hB : 0 ≤ B)
     (hc : ∀ i ∈ S, ‖c i‖ ≤ B) (s : Ideal O) (hs : s ≠ 0)
     (hdiv : ∀ i ∈ S, s ∣ Ideal.span {a i}) (Y : ℝ) (hY : 0 ≤ Y)
     (hN : ∀ i ∈ S, (Ideal.absNorm (Ideal.span {a i}) : ℝ) ≤ Y) :
@@ -192,6 +181,7 @@ theorem secondZeroEnergy_divisor_bound {α : Type*} (S : Finset α) (a : α → 
     _ ≤ B^2*(128*Y/(Ideal.absNorm s : ℝ)) :=
       mul_le_mul_of_nonneg_left (primary_column_card S a ha hp hinj s hs hdiv Y hY hN) (sq_nonneg _)
     _ = _ := by ring
+end
 
 end SevenEighths.CenteredMomentSecondDiagonal
 

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedHolomorphic
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,8 +15,10 @@ open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
-theorem continuedMarkedLocal_first_analyticAt_x (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x w z : ℂ)
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm)
+include η u P hs hQ
+theorem continuedMarkedLocal_first_analyticAt_x (x w z : ℂ)
     (hx : (1/2:ℝ)<x.re) (hz : (1/3:ℝ)≤z.re) :
     AnalyticAt ℂ (fun x=>continuedMarkedLocal η u P hs x w z) x := by
   have he : (fun x=>continuedMarkedLocal η u P hs x w z)=
@@ -24,8 +27,7 @@ theorem continuedMarkedLocal_first_analyticAt_x (η : Character) (u : FreeRow) (
   rw [he]
   exact (((ramifiedCorrection_first_analytic_x η u P hs hQ w z hz) x hx).sub analyticAt_const).div_const
 
-theorem continuedMarkedLocal_first_differentiable_w (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x z : ℂ)
+theorem continuedMarkedLocal_first_differentiable_w (x z : ℂ)
     (hx : (1/2:ℝ)≤x.re) (hz : (1/3:ℝ)≤z.re) :
     Differentiable ℂ (fun w=>continuedMarkedLocal η u P hs x w z) := by
   have he : (fun w=>continuedMarkedLocal η u P hs x w z)=
@@ -34,8 +36,7 @@ theorem continuedMarkedLocal_first_differentiable_w (η : Character) (u : FreeRo
   rw [he]
   exact ((ramifiedCorrection_first_analytic_w η u P hs hQ x z hx hz).sub_const 1).div_const _
 
-theorem continuedMarkedLocal_first_analyticAt_z (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x w z : ℂ)
+theorem continuedMarkedLocal_first_analyticAt_z (x w z : ℂ)
     (hx : (1/2:ℝ)≤x.re) (hz : (1/3:ℝ)<z.re) :
     AnalyticAt ℂ (fun z=>continuedMarkedLocal η u P hs x w z) z := by
   have hcv := (coordV_differentiable (P.val.absNorm:ℝ) (by linarith)).analyticAt z
@@ -46,14 +47,13 @@ theorem continuedMarkedLocal_first_analyticAt_z (η : Character) (u : FreeRow) (
   filter_upwards [(Complex.isOpen_re_gt (1/3)).mem_nhds hz] with t ht
   exact (continuedMarkedLocal_eq_quotient η u P hs x w t (selected_V_ne_zero P hQ t (by linarith))).symm
 
-theorem continuedCompensatedLocal_first_differentiableAt_x (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x w z : ℂ)
+theorem continuedCompensatedLocal_first_differentiableAt_x (x w z : ℂ)
     (hx : (1/2:ℝ)<x.re) (hz : (1/3:ℝ)≤z.re) :
     DifferentiableAt ℂ (fun x=>continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))) x := by
-  have hQ0 : (0:ℝ)<P.val.absNorm := by linarith
-  have hQc : (P.val.absNorm:ℂ)≠0 := by exact_mod_cast hQ0.ne'
-  have hM := (continuedMarkedLocal_first_analyticAt_x η u P hs hQ x w z hx hz).differentiableAt
+  pm_3486
+  pm_3596 hQc P.val.absNorm hQ0.ne'
+  pm_7421 continuedMarkedLocal_first_analyticAt_x
   have hD := coordD_differentiable (P.val.absNorm:ℝ) hQ0 (idealCoeff η P.val) (idealRowHom u.val P.val)
   have hB : Differentiable ℂ (fun x:ℂ=>star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) :=
     (differentiable_id.const_cpow (Or.inl hQc)).const_mul _
@@ -63,13 +63,12 @@ theorem continuedCompensatedLocal_first_differentiableAt_x (η : Character) (u :
   unfold continuedCompensatedLocal ProbeLocal.compensatedReplacement
   fun_prop (disch := first | assumption | exact Or.inl hQc)
 
-theorem continuedCompensatedLocal_first_differentiable_w (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x z : ℂ)
+theorem continuedCompensatedLocal_first_differentiable_w (x z : ℂ)
     (hx : (1/2:ℝ)≤x.re) (hz : (1/3:ℝ)≤z.re) :
     Differentiable ℂ (fun w=>continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))) := by
-  have hQ0 : (0:ℝ)<P.val.absNorm := by linarith
-  have hQc : (P.val.absNorm:ℂ)≠0 := by exact_mod_cast hQ0.ne'
+  pm_3486
+  pm_3596 hQc P.val.absNorm hQ0.ne'
   have hM := continuedMarkedLocal_first_differentiable_w η u P hs hQ x z hx hz
   have hW := coordW_differentiable (P.val.absNorm:ℝ) hQ0 (idealRowHom u.val P.val)
   have hq : Differentiable ℂ (fun w:ℂ=>(P.val.absNorm:ℂ)^(-w)) :=
@@ -77,16 +76,16 @@ theorem continuedCompensatedLocal_first_differentiable_w (η : Character) (u : F
   unfold continuedCompensatedLocal ProbeLocal.compensatedReplacement
   fun_prop
 
-theorem continuedCompensatedLocal_first_differentiableAt_z (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x w z : ℂ)
+theorem continuedCompensatedLocal_first_differentiableAt_z (x w z : ℂ)
     (hx : (1/2:ℝ)≤x.re) (hz : (1/3:ℝ)<z.re) :
     DifferentiableAt ℂ (fun z=>continuedCompensatedLocal η u P hs x w z
       (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w))) z := by
-  have hQ0 : (0:ℝ)<P.val.absNorm := by linarith
-  have hM := (continuedMarkedLocal_first_analyticAt_z η u P hs hQ x w z hx hz).differentiableAt
+  pm_3486
+  pm_7421 continuedMarkedLocal_first_analyticAt_z
   have hV := coordV_differentiable (P.val.absNorm:ℝ) hQ0
   unfold continuedCompensatedLocal ProbeLocal.compensatedReplacement
   fun_prop
+end
 
 end SevenEighths.ProbeHighRowFamily
 

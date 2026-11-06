@@ -2,26 +2,19 @@ module
 public import OAI.NumberTheory.DirichletL.Reflection.ActualSelected
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalWeights
 public import OAI.NumberTheory.DirichletL.Reflection.WholePair
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
-noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
-lemma sum_subtype_dite_decidable {α : Type*} [Fintype α] (p : α→Prop) [DecidablePred p]
+lemma sum_subtype_dite_decidable {α : Type*} [Fintype α] (p : α→ Prop) [DecidablePred p]
     (f : ∀ x,p x→ℂ) :
-    (∑ x : {x // p x},f x.val x.property)=∑ x,if h:p x then f x h else 0 := by
-  have hh := Fintype.sum_subtype_add_sum_subtype p (fun x => if h:p x then f x h else 0)
-  have hz : (∑ x : {x // ¬p x},if h:p x.val then f x.val h else 0)=0 := by
-    apply Finset.sum_eq_zero
-    intro x hx
-    exact dite_eq_right x.property
-  rw [hz,add_zero] at hh
-  simpa only [Subtype.property,dite_eq_left] using hh
+    (∑ x : {x // p x},f x.val x.property)=∑ x,if h:p x then f x h else 0 := by pm_3292
 
 variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
 variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
@@ -30,8 +23,7 @@ variable (R I F Q : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hcop : IsCoprime (Q*Ideal.span {(72:Eis)}) (rowResidualPart I (Ideal.span {m}*F)))
     (hpow : rowPowerfulPart R=rowPowerfulPart I)
     (hmask : rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
-variable {α : Type*} [Fintype α] (Sp : α→PrimeFamily σ)
-local notation "E" => D.primeFiberEquiv R I F (Q*Ideal.span {(72:Eis)}) hR hI hF hm hf hz hbad hcop hpow hmask
+variable {α : Type*} [Fintype α] (Sp : α→ PrimeFamily σ)
 local notation "K" => rowResidualPart I (Ideal.span (Set.singleton m)*F)
 local notation "hK" => rowResidualPart_admissible I (Ideal.span (Set.singleton m)*F) hbad
 
@@ -94,18 +86,10 @@ theorem actual_marked_tuple_reflection
   simp_rw [he]
   simp only [Finset.mul_sum,frozenInactiveWeight]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro h hh
+  pm_3170 h hh Finset.sum_comm A hA
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro A hA
-  rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro T hT
-  apply Finset.sum_congr rfl
-  intro p hp
+  pm_3397 T hT p hp
   ring
-end
 end SevenEighths.InverseReflectedPhase
 
 end OAI

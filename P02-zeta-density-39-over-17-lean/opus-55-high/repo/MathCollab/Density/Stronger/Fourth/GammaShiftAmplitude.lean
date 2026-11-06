@@ -8,13 +8,11 @@ The imported DigammaSeries retains its separate Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Fourth.GammaShiftLog
 public import Mathlib.Analysis.ODE.Gronwall
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 open Complex Set MeasureTheory
-open MathCollab.Density.Stronger
-open MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
 
@@ -29,8 +27,7 @@ theorem zetaGammaShiftError_nonneg {t : ℝ} (ht : 0 ≤ t) (w : ℂ) :
     0 ≤ zetaGammaShiftError t w := by unfold zetaGammaShiftError; positivity
 
 theorem zetaGammaShiftAmplitude_zero (t : ℝ) (w : ℂ) : zetaGammaShiftAmplitude t w 0 = 1 := by
-  have hne := Complex.Gammaℝ_ne_zero_of_re_pos (by norm_num [afeCriticalPoint] :
-    0 < (afeCriticalPoint (-t)).re)
+  pm_6202 hne
   simp [zetaGammaShiftAmplitude, hne]
 
 /-- The derivative is of the literal Gamma quotient, not a model amplitude. -/
@@ -54,8 +51,10 @@ theorem hasDerivAt_zetaGammaShiftAmplitude (t : ℝ) {w : ℂ} (hw : 0 ≤ w.re)
   | rfl
   | (norm_num [zetaGammaShiftAmplitude, zetaGammaHalfShift, Function.comp_def]; ring)
 
-theorem amplitude_derivative_norm_le {t : ℝ} (ht : 4 ≤ t)
-    {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2)
+section
+variable {t : ℝ} (ht : 4 ≤ t) {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2)
+include t ht w hwre hw
+theorem amplitude_derivative_norm_le
     {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) :
     ‖zetaGammaShiftAmplitude t w v * w *
       (Complex.digamma (zetaGammaHalfShift t w v) -
@@ -68,8 +67,7 @@ theorem amplitude_derivative_norm_le {t : ℝ} (ht : 4 ≤ t)
         (mul_nonneg (norm_nonneg _) (norm_nonneg _))
     _ = _ := by unfold zetaGammaShiftError; ring
 
-theorem norm_zetaGammaShiftAmplitude_le {t : ℝ} (ht : 4 ≤ t)
-    {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2)
+theorem norm_zetaGammaShiftAmplitude_le
     {v : ℝ} (hv : v ∈ Icc (0 : ℝ) 1) :
     ‖zetaGammaShiftAmplitude t w v‖ ≤ Real.exp (zetaGammaShiftError t w * v) := by
   let f := zetaGammaShiftAmplitude t w
@@ -89,11 +87,10 @@ theorem norm_zetaGammaShiftAmplitude_le {t : ℝ} (ht : 4 ≤ t)
 
 /-- Uniform relative error, obtained by integrating the genuine normalized
 ratio's derivative after its Gronwall estimate. -/
-theorem norm_zetaGammaShiftAmplitude_sub_one_le {t : ℝ} (ht : 4 ≤ t)
-    {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2) :
+theorem norm_zetaGammaShiftAmplitude_sub_one_le :
     ‖zetaGammaShiftAmplitude t w 1 - 1‖ ≤
       zetaGammaShiftError t w * Real.exp (zetaGammaShiftError t w) := by
-  have hB : 0 ≤ zetaGammaShiftError t w := zetaGammaShiftError_nonneg (by linarith) w
+  pm_7003
   have hbound (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 1) :
       ‖zetaGammaShiftAmplitude t w v * w *
         (Complex.digamma (zetaGammaHalfShift t w v) -
@@ -111,8 +108,7 @@ theorem norm_zetaGammaShiftAmplitude_sub_one_le {t : ℝ} (ht : 4 ≤ t)
 
 /-- Absolute error for the actual squared Gamma ratio. The leading
 exponential retains both its height power and its signed contour growth. -/
-theorem norm_gammaReal_shift_sq_sub_exp_le {t : ℝ} (ht : 4 ≤ t)
-    {w : ℂ} (hwre : 0 ≤ w.re) (hw : ‖w‖ ≤ t / 2) :
+theorem norm_gammaReal_shift_sq_sub_exp_le :
     ‖(Complex.Gammaℝ (afeCriticalPoint (-t) + w) /
         Complex.Gammaℝ (afeCriticalPoint (-t))) ^ 2 - Complex.exp (w * zetaGammaLeadingLog t)‖ ≤
       zetaGammaShiftError t w * Real.exp (zetaGammaShiftError t w) *
@@ -125,6 +121,7 @@ theorem norm_gammaReal_shift_sq_sub_exp_le {t : ℝ} (ht : 4 ≤ t)
   rw [heq, norm_mul, Complex.norm_exp]
   exact mul_le_mul_of_nonneg_right (norm_zetaGammaShiftAmplitude_sub_one_le ht hwre hw)
     (Real.exp_pos _).le
+end
 
 theorem zetaGammaLeadingLog_mul_re (t : ℝ) (w : ℂ) :
     (w * zetaGammaLeadingLog t).re = w.re * Real.log (t / (2 * Real.pi)) + w.im * (Real.pi / 2) := by

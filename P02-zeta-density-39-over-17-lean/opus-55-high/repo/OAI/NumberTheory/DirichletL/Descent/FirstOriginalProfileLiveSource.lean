@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileParents
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,39 +13,38 @@ open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmeti
 open InverseMomentFirstChildWindows
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def refinedOuter (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex)
-    (gate : FirstOriginalOuter ι→Prop) : Finset (FirstOriginalOuter ι) :=
+    (gate : FirstOriginalOuter ι→ Prop) : Finset (FirstOriginalOuter ι) :=
   (originalOuterCell p pool Q k).filter gate
 
 def refinedSource (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
-    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Y : ℝ) (k : SourceIndex) (gate : FirstOriginalOuter ι→Prop) : Finset (OriginalIndex ι) :=
+    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
+    (Y : ℝ) (k : SourceIndex) (gate : FirstOriginalOuter ι→ Prop) : Finset (OriginalIndex ι) :=
   (sourceCell (originalNorms p)
     (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) k).filter
       (fun x=>gate x.1 ∧ firstOriginalWeight p β cutoff x.1 x.2≠0)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma refinedSource_subset (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
-    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Y : ℝ) (k : SourceIndex) (gate : FirstOriginalOuter ι→Prop) :
+    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
+    (Y : ℝ) (k : SourceIndex) (gate : FirstOriginalOuter ι→ Prop) :
     refinedSource p pool Q labels β cutoff Y k gate⊆sourceCell (originalNorms p)
       (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) k :=
   Finset.filter_subset _ _
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma original_weight_frequency (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
+    (cutoff : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
     (x : OriginalIndex ι) (hx : firstOriginalWeight p β cutoff x.1 x.2≠0) :
     x.2.2∈reopenedPhysicalCutoff p x.1.1 x.2.1 (cutoff x.1.1 x.1.2.1 x.2.1) x.1.2.2 := by
-  by_contra hh
-  exact hx (by simp [firstOriginalWeight,hh])
+  pm_1453 hh hx firstOriginalWeight
 
 theorem refined_source_radius (hp : ∀i,p i≠0)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
-    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ysource Ychild : ℝ) (k : SourceIndex) (gate : FirstOriginalOuter ι→Prop)
+    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→ Finset ι→ Ideal O→ Finset ι→ℝ)
+    (Ysource Ychild : ℝ) (k : SourceIndex) (gate : FirstOriginalOuter ι→ Prop)
     (hn : ∀I∈labels,I≠0)
     (hcut : ∀x∈refinedOuter p pool Q k gate,∀I∈labels,cutoff x.1 x.2.1 I x.2.2≤Ychild) :
     refinedSource p pool Q labels β cutoff Ysource k gate⊆

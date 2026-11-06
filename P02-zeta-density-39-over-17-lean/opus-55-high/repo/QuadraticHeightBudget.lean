@@ -1,5 +1,6 @@
 module
 public import QuadraticWindow
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,7 +18,7 @@ theorem quadratic_diagonal_budget {σ a δ A : ℝ}
     ∀ᶠ T : ℝ in atTop, 1 < T ∧ ∀ N : ℝ, 0 < N → T^a ≤ N →
       2*A*T^δ*N^3 ≤ (N^σ*T^(-2*δ))^4 := by
   let g := a*(4*σ-3)-9*δ
-  have hg : 0 < g := by dsimp [g]; linarith only [hsmall]
+  have hg : 0 < g := by dsimp [g]; grind
   filter_upwards [eventually_gt_atTop (1:ℝ),
     (tendsto_rpow_atTop hg).eventually_ge_atTop (2*A)] with T hT hTA
   refine ⟨hT,?_⟩
@@ -31,8 +32,7 @@ theorem quadratic_diagonal_budget {σ a δ A : ℝ}
     calc
       _ ≤ T^g*T^δ := mul_le_mul_of_nonneg_right hTA (by positivity)
       _ = T^(a*(4*σ-3))*T^(-8*δ) := by
-        rw [← Real.rpow_add hTp,← Real.rpow_add hTp]
-        congr 1
+        pm_7732
         dsimp [g]
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_right hn (by positivity)

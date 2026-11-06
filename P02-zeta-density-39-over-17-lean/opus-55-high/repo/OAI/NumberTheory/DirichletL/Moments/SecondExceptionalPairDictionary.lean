@@ -25,7 +25,7 @@ lemma raw_pair (V:ℝ)(hV:0<V)(a b:ℂ):
   have hs:0<Real.sqrt V:=Real.sqrt_pos.mpr hV
   simp only [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hs]
   field_simp
-  rw [Real.sq_sqrt hV.le]
+  grind
 
 omit [DecidableEq ι] in
 theorem original_pair (s:Input ι)(η τ₁ τ₂:Character)(χ ξ:RayCharacter)(A:O)

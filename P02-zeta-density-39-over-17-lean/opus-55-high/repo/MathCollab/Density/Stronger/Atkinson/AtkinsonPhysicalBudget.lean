@@ -13,12 +13,11 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalizedGram
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 public import Mathlib.NumberTheory.Harmonic.Bounds
 public import WeylPort.GrowthAlgebra
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 open Complex Filter MeasureTheory Set Topology Finset
 open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow)
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
     (hT : 1 ≤ T) (hG : 0 < G) (hupper : G ≤ Real.sqrt T) (hL : 1 ≤ L) :
@@ -41,11 +40,8 @@ theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
 theorem atkinson_clog_le_height_log {H : ℝ} {N : ℕ}
     (hH : 1 ≤ H) (hlog : 1 ≤ Real.log (2*H)) (hN : (N:ℝ) ≤ H) :
     (Nat.clog 2 N:ℝ) ≤ (1/Real.log 2+1)*Real.log (2*H) := by
-  have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  by_cases hN0 : N = 0
-  · subst N
-    simp only [Nat.clog_zero_right, Nat.cast_zero]
-    positivity
+  pm_123 h2
+  pm_7574 hN0 N Nat.clog_zero_right Nat.cast_zero
   have hN1 : (1:ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN0
   have hceil := Nat.ceil_lt_add_one (Real.logb_nonneg (by norm_num : (1:ℝ) < 2) hN1)
   have he := Real.natCeil_logb_natCast 2 N
@@ -55,29 +51,19 @@ theorem atkinson_clog_le_height_log {H : ℝ} {N : ℕ}
     Real.log_le_log (by linarith) (by linarith)
   have hd := div_le_div_of_nonneg_right hl h2.le
   unfold Real.logb at hceil
-  calc
-    _ ≤ Real.log (2*H)/Real.log 2+Real.log (2*H) := by linarith
-    _ = _ := by ring
+  grind
 
 theorem atkinson_harmonic_le_height_log {H G : ℝ} {N : ℕ}
     (hH : 1 ≤ H) (hG : 1 ≤ G) (hlog : 1 ≤ Real.log (2*H))
     (hN : (N:ℝ) ≤ H) :
     (harmonic (Nat.ceil (Real.sqrt (H*(N:ℝ))/G)):ℝ) ≤ 2*Real.log (2*H) := by
-  have hH0 : 0 < H := by linarith
-  have hG0 : 0 < G := by linarith
+  pm_4350
   have hs : Real.sqrt (H*(N:ℝ)) ≤ H := by
     apply (Real.sqrt_le_left hH0.le).2
     nlinarith
   have hq : Real.sqrt (H*(N:ℝ))/G ≤ H :=
     (div_le_iff₀ hG0).2 (by nlinarith)
-  have hm := atkinson_harmonic_mono (Nat.ceil_mono hq)
-  have hc : (Nat.ceil H:ℝ) ≤ 2*H := by
-    have hh := Nat.ceil_lt_add_one hH0.le
-    linarith
-  have hc0 : (0:ℝ) < Nat.ceil H := hH0.trans_le (Nat.le_ceil H)
-  have hl := Real.log_le_log hc0 hc
-  have hb := harmonic_le_one_add_log (Nat.ceil H)
-  linarith
+  pm_4351
 
 theorem eventually_atkinson_height_log_pow_le_rpow (k : ℕ) {ν : ℝ} (hν : 0 < ν) :
     ∀ᶠ H : ℝ in atTop, (Real.log (2*H))^k ≤ H^ν := by
@@ -90,7 +76,7 @@ theorem eventually_atkinson_height_log_pow_le_rpow (k : ℕ) {ν : ℝ} (hν : 0
     linarith
   have hp := pow_le_pow_left₀ (Real.log_nonneg (by linarith : 1 ≤ 2*H)) hlog k
   rw [mul_pow] at hp
-  exact hp.trans hsmall
+  grind
 
 
 
@@ -102,8 +88,10 @@ theorem atkinsonPhysicalCutoff_le_natural {H G : ℝ}
   exact (atkinsonSourceCutoff_le_natural (by linarith : 1 ≤ 2*H) hG hupper hlog).trans_eq
     (by ring)
 
-theorem atkinsonPhysical_cutoff_scale_identity {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) (q : ℝ) :
+section
+variable {H G ℓ : ℝ} (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ)
+include H G ℓ hH hG hℓ
+theorem atkinsonPhysical_cutoff_scale_identity (q : ℝ) :
     G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^q =
       (74:ℝ)^q*H^(q-1/2)*ℓ^(2*q)*G^(2-2*q) := by
   have hbase : (74*H*ℓ^2/G^2)^q =
@@ -117,8 +105,7 @@ theorem atkinsonPhysical_cutoff_scale_identity {H G ℓ : ℝ}
   rw [hbase,Real.rpow_sub hH,Real.rpow_sub hG,Real.rpow_neg hH.le,Real.rpow_two]
   ring
 
-theorem atkinsonPhysical_diagonal_scale {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) :
+theorem atkinsonPhysical_diagonal_scale :
     G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^(3/2:ℝ) ≤
       5476*(H/G)*ℓ^3 := by
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ]
@@ -133,8 +120,7 @@ theorem atkinsonPhysical_diagonal_scale {H G ℓ : ℝ}
     _ ≤ 5476*H*ℓ^3*G⁻¹ := by gcongr
     _ = _ := by ring
 
-theorem atkinsonPhysical_near_scale {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) :
+theorem atkinsonPhysical_near_scale :
     (Real.sqrt H/G)*(G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^(1:ℝ)) =
       74*(H/G)*ℓ^2 := by
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ]
@@ -145,6 +131,7 @@ theorem atkinsonPhysical_near_scale {H G ℓ : ℝ}
   calc
     _ = 74*(Real.sqrt H)^2/G*ℓ^2 := by ring
     _ = _ := by rw [Real.sq_sqrt hH.le]; ring
+end
 
 theorem atkinsonPhysical_far_scale {H G ℓ L : ℝ}
     (hH : 0 < H) (hG : 0 < G) (hℓ : 1 ≤ ℓ) :
@@ -179,7 +166,7 @@ theorem atkinsonPowerGapTerm_epsilon_factor {N : ℕ} (hN : 0 < N)
     (η H G L : ℝ) (R : ℕ) :
     atkinsonPowerGapTerm η H G L N R =
       (N:ℝ)^η*atkinsonPowerGapTerm 0 H G L N R := by
-  have hN0 : (0:ℝ) < N := by exact_mod_cast hN
+  pm_4473 hN0 N hN
   unfold atkinsonPowerGapTerm
   simp only [add_zero,Real.rpow_add hN0]
   ring
@@ -189,39 +176,29 @@ theorem atkinsonPhysical_gap_term_zero_le {H G : ℝ} {N : ℕ} (L : ℝ) (R : �
     (hN : (N:ℝ) ≤ H) (hcut : (N:ℝ) ≤ 74*H*(Real.log (2*H))^2/G^2) :
     G^2*H^(-(1/2:ℝ))*atkinsonPowerGapTerm 0 H G L N R ≤
       148000*(Real.log (2*H))^3*((R:ℝ)*H/G+(R:ℝ)^2*Real.sqrt (G*L)) := by
-  have hH0 : 0 < H := by linarith
-  have hG0 : 0 < G := by linarith
-  have hlog0 : 0 < Real.log (2*H) := by linarith
-  let P := G^2*H^(-(1/2:ℝ))
-  let B := 74*H*(Real.log (2*H))^2/G^2
+  pm_4350
+  pm_882
+  pm_4352
   let K := (harmonic (Nat.ceil (Real.sqrt (H*(N:ℝ))/G)):ℝ)
-  have hP : 0 ≤ P := by dsimp [P]; positivity
+  pm_61 hP P
   have hK : 0 ≤ K := by
-    simpa only [harmonic_zero,Rat.cast_zero] using atkinson_harmonic_mono
-      (Nat.zero_le (Nat.ceil (Real.sqrt (H*(N:ℝ))/G)))
+    pm_5301 N
   have hk : K ≤ 2*Real.log (2*H) := atkinson_harmonic_le_height_log hH hG hlog hN
   have hdiag : P*(N:ℝ)^(3/2:ℝ) ≤ 5476*(H/G)*(Real.log (2*H))^3 := by
-    calc
-      _ ≤ P*B^(3/2:ℝ) := mul_le_mul_of_nonneg_left
-        (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP
-      _ ≤ _ := atkinsonPhysical_diagonal_scale hH0 hG0 hlog0
+    pm_4353
   have hnear : (Real.sqrt H/G)*(P*(N:ℝ)^(1:ℝ)) ≤
       74*(H/G)*(Real.log (2*H))^2 := by
     calc
       _ ≤ (Real.sqrt H/G)*(P*B^(1:ℝ)) := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        exact mul_le_mul_of_nonneg_left
-          (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP
+        pm_1587
       _ = _ := atkinsonPhysical_near_scale hH0 hG0 hlog0
   have hfar : (H^(-(1/4:ℝ))*Real.sqrt L)*(P*(N:ℝ)^(3/4:ℝ)) ≤
       74*Real.sqrt (G*L)*(Real.log (2*H))^3 := by
     calc
       _ ≤ (H^(-(1/4:ℝ))*Real.sqrt L)*(P*B^(3/4:ℝ)) := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        exact mul_le_mul_of_nonneg_left
-          (Real.rpow_le_rpow (Nat.cast_nonneg N) hcut (by norm_num)) hP
+        pm_1587
       _ ≤ _ := atkinsonPhysical_far_scale hH0 hG0 hlog
-  have hd := mul_le_mul_of_nonneg_left hdiag (Nat.cast_nonneg R : (0:ℝ) ≤ _)
+  pm_8513 hd hdiag
   have hn := mul_le_mul
     (mul_le_mul_of_nonneg_left hnear (by positivity : 0 ≤ 120*(R:ℝ)))
     hk hK (by positivity)
@@ -250,9 +227,8 @@ theorem atkinsonPhysical_gap_budget_log_le {H G η : ℝ} {N : ℕ} (L : ℝ) (R
     G^2*H^(-(1/2:ℝ))*atkinsonPowerGapBudget η H G L N R ≤
       (148000*(1/Real.log 2+1)^2)*H^η*(Real.log (2*H))^5*
         ((R:ℝ)*H/G+(R:ℝ)^2*Real.sqrt (G*L)) := by
-  have hH0 : 0 < H := by linarith
-  have hG0 : 0 < G := by linarith
-  have hlog0 : 0 < Real.log (2*H) := by linarith
+  pm_4350
+  pm_882
   have hterm := atkinsonPhysical_gap_term_zero_le L R hH hG hlog hN hcut
   have hpow := Real.rpow_le_rpow (Nat.cast_nonneg N) hN hη
   have hJ := pow_le_pow_left₀ (Nat.cast_nonneg (Nat.clog 2 N) : (0:ℝ) ≤ _)
@@ -289,36 +265,31 @@ theorem exists_atkinsonPhysicalGapBudget_le_twoTerm {δ ν : ℝ} (hδ : 0 < δ)
             (atkinsonSourceCutoff (2*H) G (Real.log (2*H))) R ≤
           C*H^ν*((R:ℝ)*H/G+(R:ℝ)^2*Real.sqrt (G*L)) := by
   obtain ⟨A,hA,hgeometry⟩ := exists_atkinsonPhysicalCutoff_prefix_geometry hδ
-  obtain ⟨B,hB⟩ := eventually_atTop.mp
-    (eventually_atkinson_height_log_pow_le_rpow 5 (show 0 < ν/2 by linarith))
+  pm_1516
   obtain ⟨D,hD⟩ := eventually_atTop.mp (Real.tendsto_log_atTop.eventually_ge_atTop 1)
   let C : ℝ := 148000*(1/Real.log 2+1)^2
   have hC : 0 < C := by
-    have h2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+    pm_123 h2
     dsimp [C]
     positivity
   refine ⟨C,hC,max A (max B D),(hA.trans (le_max_left _ _)),?_⟩
   intro H G L R hH hwidth hupper
-  have hAH : A ≤ H := (le_max_left _ _).trans hH
-  have hBH : B ≤ H := (le_max_left _ _).trans ((le_max_right _ _).trans hH)
-  have hDH : D ≤ H := (le_max_right _ _).trans ((le_max_right _ _).trans hH)
-  have hH1 : 1 ≤ H := by linarith [hA.trans hAH]
-  have hH0 : 0 < H := by linarith
-  have hG1 : 1 ≤ G := (Real.one_le_rpow hH1 hδ.le).trans hwidth
+  pm_207 hAH A H le_max_left hH
+  pm_343 hBH B hDH D
+  pm_4354
+  pm_5447 hG1 hH1 hwidth
   have hG0 : 0 < G := by linarith
   have hl : 1 ≤ Real.log (2*H) :=
     (hD H hDH).trans (Real.log_le_log hH0 (by linarith))
   have hn : (atkinsonSourceCutoff (2*H) G (Real.log (2*H)):ℝ) ≤ H := by
-    have hg := hgeometry H G hAH hwidth
-    have hn0 := Nat.cast_nonneg (α := ℝ) (atkinsonSourceCutoff (2*H) G (Real.log (2*H)))
-    linarith
+    pm_5174 hg hn0
   have hn0 := atkinsonSourceCutoff_pos (by positivity : 0 < 2*H) hG0
     (by linarith : 0 < Real.log (2*H))
   have hp := atkinsonPhysical_gap_budget_log_le L R hH1 hG1
     (show 0 ≤ ν/2 by linarith) hn0 hl hn
     (atkinsonPhysicalCutoff_le_natural hH1 hG0 hupper hl)
   have hh : H^(ν/2)*H^(ν/2) = H^ν := by
-    rw [← Real.rpow_add hH0]; congr 1; ring
+    pm_4975 Real.rpow_add hH0
   apply hp.trans
   change C*H^(ν/2)*(Real.log (2*H))^5*_ ≤ _
   calc

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceOriginalData
 public import OAI.NumberTheory.DirichletL.Moments.SecondSectorColumns
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,11 +33,8 @@ theorem columns_gauss_polynomial_filter (Q C:Ideal O)(hC:Supported C)(S:Finset (
     rfl
   simp only [gaussPolynomial,he]
   rw [Finset.sum_coe_sort (columns Q C hC.1 S) (fun I=>f I*primaryGaussRow I z)]
-  unfold columns
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro I hI
-  split_ifs <;> simp
+  pm_3809 columns Finset.sum_filter I hI
+  grind
 
 variable {ι:Type*}[Fintype ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _

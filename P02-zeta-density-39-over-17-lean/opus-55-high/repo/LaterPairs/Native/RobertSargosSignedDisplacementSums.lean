@@ -25,8 +25,7 @@ theorem sum_integer_natAbs_le_twice
     intro n
     have hsub : S.filter (fun d => d.natAbs = n) ⊆ {(n:ℤ),-(n:ℤ)} := by
       intro d hd
-      simpa only [Finset.mem_insert,Finset.mem_singleton] using
-        Int.natAbs_eq_iff.mp (Finset.mem_filter.mp hd).2
+      grind
     exact (Finset.card_le_card hsub).trans Finset.card_le_two
   calc
     _ = ∑ n ∈ Finset.Icc 1 N, ∑ _d ∈ S.filter (fun d => d.natAbs = n), f n :=

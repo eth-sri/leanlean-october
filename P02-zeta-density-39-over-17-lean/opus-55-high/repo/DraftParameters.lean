@@ -1,11 +1,10 @@
 module
 public import Mathlib
 
-@[expose] public section
+public section
 
 /- These are parameter theorems only. No zero-density result is asserted
 from the newer rational moment or trace estimates in this module. -/
-set_option autoImplicit false
 set_option maxHeartbeats 1000000
 namespace Montgomery.DraftParameters
 

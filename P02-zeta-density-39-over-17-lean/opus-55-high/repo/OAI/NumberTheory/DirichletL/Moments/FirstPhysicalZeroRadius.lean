@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalOriginalMask
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,7 @@ lemma coefficient_zero (s : Input ι) (R seed : Ideal O)
     CenteredMomentOriginalCommonHarmonic.coefficient s R seed I=0 := by
   by_contra h
   obtain ⟨hI,hN⟩ := original_column_norm s R seed I h₁ h₂ h
-  have hn : 1≤(I.absNorm:ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
+  pm_6250
   linarith
 
 omit [DecidableEq ι] in

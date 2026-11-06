@@ -1,26 +1,22 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.NaturalLowSourceBound
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalSourceAdmission
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
 open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyState
 open CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison
 open CenteredMomentEnergyOriginalSource CenteredMomentEnergyOriginalProfileControl
 open CenteredMomentEnergyInputParentCapacity CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-open CenteredMomentInductionEnergy CenteredMomentSourceRow CenteredMomentRetainedEnergy
-open CenteredMomentSourceInputTailUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
+open CenteredMomentEnergyBands
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := energyOriginalSourceDecidableSum
@@ -55,9 +51,9 @@ lemma volume_log (hZ : 1 < Z) :
     Real.logb Z (volume s₀) = Real.logb Z X₁ + Real.logb Z X₂ + ∑ i, w i := by
   have hh := input_volume_log s Z
   change Real.logb Z (volume s) = Real.logb Z X₁ + Real.logb Z X₂ +
-    ∑ i, Real.logb Z (Z^(w i)) at hh
+    ∑ i, Real.logb Z (Z ^(w i)) at hh
   simp only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hh
-  exact ⟨hh,hh⟩
+  aesop
 
 theorem low_admission (hZ : 1 < Z)
     (hlow : length Z X₁ + length Z X₂ + ∑ i, w i ≤ 5*state.width/6) :
@@ -67,7 +63,7 @@ theorem low_admission (hZ : 1 < Z)
     w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂ hZ
   have h1 := raw_log_le_length Z X₁ hZ hX₁
   have h2 := raw_log_le_length Z X₂ hZ hX₂
-  constructor <;> linarith [hv.1,hv.2]
+  grind
 
 theorem lower_product_admission (N : ℕ) (hN : Fintype.card ι ≤ N) :
     0 < lowerProduct N aslot a ∧
@@ -81,7 +77,7 @@ end Source
 
 theorem radial_admission {Z Bmask bΦ : ℝ} (state : NaturalState Z Bmask bΦ) :
     1 ≤ state.radial.scale ∧ state.radial.scale⁻¹ ≤ 1 ∧
-    state.radial.scale⁻¹ ≤ Z^state.width := by
+    state.radial.scale⁻¹ ≤ Z ^state.width := by
   have hs : 1 ≤ state.radial.scale := by
     rw [state.scale_eq]
     exact Real.one_le_rpow state.base_ge_one state.row_nonneg
@@ -92,16 +88,14 @@ theorem original_scale_caps {Z X₁ X₂ M L κ : ℝ} (w : ι → ℝ)
     (hZ : 1 < Z) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
     (hw : ∀ i, 0 ≤ w i) (hκ : 1/6 ≤ κ)
     (hcap : length Z X₁ + length Z X₂ + 6*κ*(∑ i, w i) ≤ M)
-    (hM : M ≤ L) : X₁ ≤ Z^L ∧ X₂ ≤ Z^L := by
+    (hM : M ≤ L) : X₁ ≤ Z ^L ∧ X₂ ≤ Z ^L := by
   have hn : 0 ≤ 6*κ*(∑ i, w i) :=
     mul_nonneg (by linarith) (Finset.sum_nonneg (fun i _ => hw i))
   have h1 := raw_log_le_length Z X₁ hZ hX₁
   have h2 := raw_log_le_length Z X₂ hZ hX₂
   constructor
-  · apply (Real.logb_le_iff_le_rpow hZ hX₁).mp
-    linarith [length_nonneg Z X₂ hZ]
-  · apply (Real.logb_le_iff_le_rpow hZ hX₂).mp
-    linarith [length_nonneg Z X₁ hZ]
+  pm_8887 hX₁ X₂
+  pm_8887 hX₂ X₁
 
 theorem eventually_scale_admission (b L ε : ℝ) (hL : 0 ≤ L) (hε : 0 < ε) :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧
@@ -120,9 +114,9 @@ theorem eventually_scale_admission (b L ε : ℝ) (hL : 0 ≤ L) (hε : 0 < ε) 
       w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂
     let s₀ := zeroSourceInput Q H hH η₀ θ W hW aslot bslot lo hi haslot hWs
       w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂
-    (s).X₁ ≤ Z^L ∧ (s).X₂ ≤ Z^L ∧ (s).Y₁ ≤ Z^L ∧ (s).Y₂ ≤ Z^L ∧
-    (s₀).X₁ ≤ Z^L ∧ (s₀).X₂ ≤ Z^L ∧
-    (s₀).Y₁ ≤ Z^(2*L+ε) ∧ (s₀).Y₂ ≤ Z^(2*L+ε) := by
+    (s).X₁ ≤ Z ^L ∧ (s).X₂ ≤ Z ^L ∧ (s).Y₁ ≤ Z ^L ∧ (s).Y₂ ≤ Z ^L ∧
+    (s₀).X₁ ≤ Z ^L ∧ (s₀).X₂ ≤ Z ^L ∧
+    (s₀).Y₁ ≤ Z ^(2*L+ε) ∧ (s₀).Y₂ ≤ Z ^(2*L+ε) := by
   filter_upwards [(Filter.tendsto_atTop.1 (tendsto_rpow_atTop hε)) (2*max 1 b),
     eventually_gt_atTop (1 : ℝ)] with Z hc hZ
   refine ⟨hZ,?_⟩
@@ -133,7 +127,7 @@ theorem eventually_scale_admission (b L ε : ℝ) (hL : 0 ≤ L) (hε : 0 < ε) 
   refine ⟨hx.1,hx.2,hx.1,hx.2,hx.1,hx.2,?_,?_⟩
   · exact (smallScale_le_one b).trans (Real.one_le_rpow hZ.le (by positivity))
   · change X₁*X₂/smallScale b ≤ _
-    have hp : X₁*X₂ ≤ Z^(2*L) := by
+    have hp : X₁*X₂ ≤ Z ^(2*L) := by
       have hh := mul_le_mul hx.1 hx.2 hX₂.le (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) L).le
       rw [←Real.rpow_add (zero_lt_one.trans hZ)] at hh
       simpa only [two_mul] using hh

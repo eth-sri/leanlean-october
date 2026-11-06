@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.MeasureGate
 public import GuthMaynard.Improvement.Gate
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 namespace GuthMaynard.Improvement
 
@@ -19,11 +18,12 @@ theorem sqrt_product_memLp {α : Type*} [MeasurableSpace α] {μ : Measure α}
   simp_rw [mul_pow,Real.sq_sqrt (hf0 _),Real.sq_sqrt (hg0 _)]
   exact hf.integrable_mul hg
 
+section
+variable {α ι : Type*} [MeasurableSpace α] {μ : Measure α} (s : Finset ι) {A : Set α} (hA : MeasurableSet A) {r : α → ℝ} {f g : ι → α → ℝ}
+include α ι μ s A hA r f g
 /-- Actual Lebesgue integral of the finite sum, with the designated first
 mask unchanged. All integrability follows from L2 premises. -/
-theorem masked_box_cauchy_schwarz {α ι : Type*} [MeasurableSpace α]
-    {μ : Measure α} (s : Finset ι) {A : Set α} (hA : MeasurableSet A)
-    {r : α → ℝ} {f g : ι → α → ℝ}
+theorem masked_box_cauchy_schwarz
     (hr : MemLp r 2 μ) (hf : ∀ i ∈ s, MemLp (f i) 2 μ)
     (hg : ∀ i ∈ s, MemLp (g i) 2 μ)
     (hr0 : ∀ x, 0 ≤ r x) (hf0 : ∀ i x, 0 ≤ f i x) (hg0 : ∀ i x, 0 ≤ g i x) :
@@ -31,10 +31,9 @@ theorem masked_box_cauchy_schwarz {α ι : Type*} [MeasurableSpace α]
       Real.sqrt (∫ x in A, r x^2 ∂μ) *
         Real.sqrt (Real.sqrt (∫ x, (∑ i ∈ s, f i x)^2 ∂μ) *
           Real.sqrt (∫ x, (∑ i ∈ s, g i x)^2 ∂μ)) := by
-  have hX := memLp_finsetSum s hf
-  have hY := memLp_finsetSum s hg
-  have hX0 : ∀ x, 0 ≤ ∑ i ∈ s, f i x := fun x => Finset.sum_nonneg (fun i _ => hf0 i x)
-  have hY0 : ∀ x, 0 ≤ ∑ i ∈ s, g i x := fun x => Finset.sum_nonneg (fun i _ => hg0 i x)
+  pm_733 hX memLp_finsetSum s hf hY hg
+  pm_6127 hX0 f hf0
+  pm_6127 hY0 g hg0
   have hterms := memLp_finsetSum s (fun i hi => sqrt_product_memLp (hf i hi) (hg i hi) (hf0 i) (hg0 i))
   have hprod := sqrt_product_memLp hX hY hX0 hY0
   have hleft := (hr.indicator hA).integrable_mul hterms
@@ -51,9 +50,7 @@ theorem masked_box_cauchy_schwarz {α ι : Type*} [MeasurableSpace α]
 
 /-- Equal affine energy majorants collapse the two fourth roots without
 altering the restricted first-factor mass. -/
-theorem masked_box_of_energy_bounds {α ι : Type*} [MeasurableSpace α]
-    {μ : Measure α} (s : Finset ι) {A : Set α} (hA : MeasurableSet A)
-    {r : α → ℝ} {f g : ι → α → ℝ} {B : ℝ}
+theorem masked_box_of_energy_bounds {B : ℝ}
     (hr : MemLp r 2 μ) (hf : ∀ i ∈ s, MemLp (f i) 2 μ)
     (hg : ∀ i ∈ s, MemLp (g i) 2 μ)
     (hr0 : ∀ x, 0 ≤ r x) (hf0 : ∀ i x, 0 ≤ f i x) (hg0 : ∀ i x, 0 ≤ g i x)
@@ -68,5 +65,6 @@ theorem masked_box_of_energy_bounds {α ι : Type*} [MeasurableSpace α]
     _ ≤ Real.sqrt B*Real.sqrt B := mul_le_mul (Real.sqrt_le_sqrt hX)
       (Real.sqrt_le_sqrt hY) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
     _ = B := Real.mul_self_sqrt hB
+end
 
 end GuthMaynard.Improvement

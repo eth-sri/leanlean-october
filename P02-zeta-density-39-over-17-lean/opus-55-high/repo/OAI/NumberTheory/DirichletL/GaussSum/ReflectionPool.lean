@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.RowCompletion.PeriodicRows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,76 +8,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical SchwartzMap
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 open ActualEisensteinCubic LocalReflectionBrackets
@@ -96,7 +51,10 @@ section
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma actualSextic_sixth_one (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P) :
+section
+variable (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P)
+include P hg
+lemma actualSextic_sixth_one :
     actualSextic P hg^6=1 := by
   apply MulChar.ext
   intro t
@@ -104,18 +62,19 @@ lemma actualSextic_sixth_one (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P) :
   have hnot:n∉P:=by
     intro hm
     have ht:(t:Eis⧸P)=0:=by rw [←hn];exact Ideal.Quotient.eq_zero_iff_mem.mpr hm
-    exact t.ne_zero ht
+    simp_all
   have h:=canonicalSextic_sixth_power_mask P hg n
-  change actualSextic P hg (Ideal.Quotient.mk P (n^6))=_ at h
+  pm_5397 n h
   rw [map_pow,map_pow,ite_eq_right hnot] at h
   rw [MulChar.pow_apply_coe,MulChar.one_apply_coe,←hn]
   exact h
 
-lemma actualSextic_power_mod_six (P:Ideal Eis) [P.IsMaximal] (hg:lambda∉P)
+lemma actualSextic_power_mod_six
     (k:ℕ) (hk:k≠0) (n:Eis) :
     actualSextic P hg (Ideal.Quotient.mk P n)^k=
       (actualSextic P hg^(k%6)) (Ideal.Quotient.mk P n) := by
   rw [←MulChar.pow_apply' _ hk,pow_eq_pow_mod _ (actualSextic_sixth_one P hg)]
+end
 
 lemma idealRowHom_eq_prime_count_product (I:Ideal Eis) (hI:Supported I) (n:Eis) :
     idealRowHom n I=∏P:PrimeIndex I,
@@ -167,8 +126,7 @@ lemma coprimalityMask_good_part (u:Eisˣ) (a b:ℕ) (r n:Eis)
 lemma idealRowHom_sixth_denominator_mask (r n:Eis) (hr:Supported (Ideal.span {r})) :
     idealRowHom n ((Ideal.span {r})^6)=coprimalityMask r n := by
   rw [map_pow,←idealRowHom_argument_pow n 6 _ hr,idealRowHom_sixth_eq_mask n r hr]
-  change (if IsCoprime n r then (1:ℂ) else 0)=(if IsCoprime r n then 1 else 0)
-  rw [isCoprime_comm]
+  pm_5280 r
 
 lemma mask_times_good_row (m:Eis) (um:Eisˣ) (am bm:ℕ) (g r n:Eis)
     (hg:Supported (Ideal.span {g})) (hm:m=um.val*lambda^am*(2:Eis)^bm*g)
@@ -178,8 +136,10 @@ lemma mask_times_good_row (m:Eis) (um:Eisˣ) (am bm:ℕ) (g r n:Eis)
   rw [hm,coprimalityMask_good_part um am bm g n hn,map_mul,
     idealRowHom_sixth_denominator_mask g n hg]
 
-theorem rowTwist_eq_fixed_times_good_row_primary
-    (Ψ:Eis→*ℂ) (m f z:Eis) (hmLam:lambda∣m) (hm2:(2:Eis)∣m)
+section
+variable (Ψ:Eis→*ℂ)
+include Ψ
+theorem rowTwist_eq_fixed_times_good_row_primary (m f z:Eis) (hmLam:lambda∣m) (hm2:(2:Eis)∣m)
     (um:Eisˣ) (am bm:ℕ) (g:Eis) (hg:Supported (Ideal.span {g}))
     (hm:m=um.val*lambda^am*(2:Eis)^bm*g)
     (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r}))
@@ -199,7 +159,7 @@ theorem rowTwist_eq_fixed_times_good_row_primary
     rw [numeratorBadTwist_zero_of_not_supported u a b r hr n hn]
     simp only [mul_zero,zero_mul]
 
-lemma fixedNumeratorTwist_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
+lemma fixedNumeratorTwist_periodic (Q:Ideal Eis)
     (hΨ:CanonicalCoefficientClass.FactorsModulo Q Ψ)
     (u:Eisˣ) (a b:ℕ) (r:Eis) (hr:Supported (Ideal.span {r})) :
     CanonicalCoefficientClass.FactorsModulo (Q*Ideal.span {(72:Eis)})
@@ -207,6 +167,7 @@ lemma fixedNumeratorTwist_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
   intro x y hxy
   change Ψ x*numeratorBadTwist u a b r hr x=Ψ y*numeratorBadTwist u a b r hr y
   rw [hΨ x y (Ideal.mul_le_left hxy),numeratorBadTwist_periodic u a b r hr x y (Ideal.mul_le_right hxy)]
+end
 
 end CanonicalRowCompletion
 
@@ -217,7 +178,7 @@ noncomputable local instance A4unitsField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
 
 theorem exists_A4_local_units {ι:Type*} [Fintype ι]
-    (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal] (hp:∀i,p i≠0)
+    (p:ι→ Eis) [∀i,(Ideal.span {p i}).IsMaximal] (hp:∀i,p i≠0)
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (c0 U w:Eis) (hbez:U*(∏i,p i)+(ramifiedTraceLambda^3*w)*c0=1) :
     ∃σ ε:∀i,(Eis⧸Ideal.span {p i})ˣ,
@@ -229,13 +190,13 @@ theorem exists_A4_local_units {ι:Type*} [Fintype ι]
       (σ:Eis⧸Ideal.span {p i})=Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^2*c0*cofactor p i) ∧
       Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c0*cofactor p i)*
         (σ:Eis⧸Ideal.span {p i})*(ε:Eis⧸Ideal.span {p i})=-1 := by
-    let q:=Ideal.Quotient.mk (Ideal.span {p i})
+    pm_8082
     have hz:q (∏k,p k)=0 := Ideal.Quotient.eq_zero_iff_mem.mpr
       (Ideal.mem_span_singleton.mpr (Finset.dvd_prod_of_mem p (Finset.mem_univ i)))
     have hb:q (ramifiedTraceLambda^3*c0)*q w=1 := by
       have he:=congrArg q hbez
-      simp only [map_add,map_mul,map_pow,map_one,hz,mul_zero,zero_add] at he
-      simpa only [map_mul,map_pow,mul_assoc,mul_comm,mul_left_comm] using he
+      pm_6881 he
+      pm_124 map_mul map_pow mul_assoc mul_comm mul_left_comm he
     have hb0:q (ramifiedTraceLambda^3*c0)≠0 := by
       intro he
       rw [he,zero_mul] at hb
@@ -269,7 +230,7 @@ theorem exists_A4_local_units {ι:Type*} [Fintype ι]
 end ShortDraftCusp
 
 section
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
 namespace ShortDraftCusp
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
@@ -290,7 +251,7 @@ end CubicEisenstein
 end
 
 namespace CubicEisenstein
-open scoped BigOperators Classical ContDiff MatrixGroups Matrix
+open scoped Classical ContDiff MatrixGroups Matrix
 
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic
 open CubicKubota CubicJacobiGlobal ShortDraftCusp LocalReflectionBrackets FiniteGaussPhase
@@ -302,7 +263,7 @@ noncomputable local instance smoothingFintype (P:Ideal Eis) [P.IsMaximal] :
 
 end CubicEisenstein
 
-open scoped Classical BigOperators MatrixGroups
+open scoped Classical MatrixGroups
 
 namespace ShortDraftCRT
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT PrimaryIdealUnitReindex
@@ -314,15 +275,14 @@ lemma exists_primary_unit_multiple (x:Eis) (hx:¬lambda∣x) :
   have hspec:=primaryGenerator_spec (Ideal.span {x}) hg
   have ha:Associated x (primaryGenerator (Ideal.span {x})):=
     Ideal.span_singleton_eq_span_singleton.mp hspec.1.symm
-  obtain ⟨u,hu⟩:=ha
-  refine ⟨u,?_⟩
+  pm_7227
   rw [mul_comm,hu]
   exact hspec.2
 
 lemma normalize_coprime_pair (a c:Eis) (hcop:IsCoprime a c) :
     ∃u:Eisˣ,IsCoprime (u.val*a) (u.val*c) ∧
-      (lambda∣u.val*c→lambda^2∣u.val*a-1) ∧
-      (¬lambda∣u.val*c→lambda^2∣u.val*c-1) := by
+      (lambda∣u.val*c→ lambda^2∣u.val*a-1) ∧
+      (¬lambda∣u.val*c→ lambda^2∣u.val*c-1) := by
   have hunit (u:Eisˣ):IsCoprime (u.val*a) (u.val*c) := by
     obtain ⟨r,s,hrs⟩:=hcop
     refine ⟨r*(↑u⁻¹:Eis),s*(↑u⁻¹:Eis),?_⟩
@@ -346,15 +306,12 @@ lemma normalize_coprime_pair (a c:Eis) (hcop:IsCoprime a c) :
 theorem exists_normalized_rational_cusp (a c:Eis) (hc:c≠0) :
     ∃a0 c0:Eis,c0≠0 ∧ c0∣c ∧ IsCoprime a0 c0 ∧
       eisEmbedding a0/eisEmbedding c0=eisEmbedding a/eisEmbedding c ∧
-      (lambda∣c0→lambda^2∣a0-1) ∧ (¬lambda∣c0→lambda^2∣c0-1) := by
+      (lambda∣c0→ lambda^2∣a0-1) ∧ (¬lambda∣c0→ lambda^2∣c0-1) := by
   let d:Eis:=IsBezout.gcd a c
-  obtain ⟨a',ha⟩:=IsBezout.gcd_dvd_left a c
-  obtain ⟨c',hc'⟩:=IsBezout.gcd_dvd_right a c
-  change a=d*a' at ha
-  change c=d*c' at hc'
-  have hd:d≠0:=by intro hz; exact hc (by rw [hc',hz,zero_mul])
-  have hcp:c'≠0:=by intro hz; exact hc (by rw [hc',hz,mul_zero])
-  obtain ⟨r,s,hrs⟩:=IsBezout.gcd_eq_sum a c
+  pm_3414
+  pm_7610 hd d zero_mul
+  pm_7610 hcp c' mul_zero
+  pm_3599 r s hrs IsBezout.gcd_eq_sum a c
   have hred:IsCoprime a' c':=by
     refine ⟨r,s,?_⟩
     apply mul_left_cancel₀ hd

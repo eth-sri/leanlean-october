@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FullProfile
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -11,7 +12,10 @@ open MeasureTheory FourierBridge JointLogSeparation
 noncomputable section
 variable {ι : Type*} [Fintype ι]
 
-lemma full_density_integrable (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ,ℂ)) :
+section
+variable (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ,ℂ))
+include g b₁ b₂ b₃
+lemma full_density_integrable :
     Integrable (fullProfileDensity g b₁ b₂ b₃) := by
   have hc : Continuous (fullProfileDensity g b₁ b₂ b₃) := by
     unfold fullProfileDensity coordinateDensity tripleCoefficient
@@ -20,7 +24,7 @@ lemma full_density_integrable (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : 𝓢(
   simpa only [tripleHeight,coordinateHeight,pow_zero,Finset.prod_const_one,mul_one,one_mul] using
     fullProfileDensity_weighted_integrable g b₁ b₂ b₃ 0
 
-lemma full_density_mode_integrable (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ,ℂ))
+lemma full_density_mode_integrable
     (a₁ a₂ ak y : ι → ℝ) :
     Integrable (fun p : Frequency × (ι → ℝ) => fullProfileDensity g b₁ b₂ b₃ p *
       pureProfileMode a₁ a₂ ak y p.1 p.2) := by
@@ -30,7 +34,7 @@ lemma full_density_mode_integrable (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : 
   exact (full_density_integrable g b₁ b₂ b₃).mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall (fun p => (pureProfileMode_norm a₁ a₂ ak y p.1 p.2).le))
 
-theorem full_density_mode_fubini (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ,ℂ))
+theorem full_density_mode_fubini
     (a₁ a₂ ak y : ι → ℝ) :
     (∫ p : Frequency × (ι → ℝ), fullProfileDensity g b₁ b₂ b₃ p *
       pureProfileMode a₁ a₂ ak y p.1 p.2) =
@@ -49,6 +53,7 @@ theorem full_density_mode_fubini (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : �
   apply integral_congr_ae
   filter_upwards [ht.prod_right_ae] with t₁ ht₁
   simpa only [Measure.volume_eq_prod] using integral_prod (fun t : ℝ×ℝ => ∫ u, f ((t₁,t.1,t.2),u)) ht₁
+end
 
 theorem full_density_finite_sum {κ : Type*} (s : Finset κ)
     (g : ι → 𝓢(ℝ,ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ,ℂ)) (a₁ a₂ ak : ι → ℝ)
@@ -60,10 +65,7 @@ theorem full_density_finite_sum {κ : Type*} (s : Finset κ)
   simp only [← integral_const_mul]
   rw [← integral_finsetSum s (fun k hk =>
     (full_density_mode_integrable g b₁ b₂ b₃ a₁ a₂ ak (y k)).const_mul (c k))]
-  apply integral_congr_ae
-  filter_upwards with p
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
+  pm_1326 p
   intro k hk
   ring
 

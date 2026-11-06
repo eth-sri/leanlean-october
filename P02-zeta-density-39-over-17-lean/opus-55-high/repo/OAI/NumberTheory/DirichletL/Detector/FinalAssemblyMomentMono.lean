@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorMoments
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,8 +15,7 @@ open ProbeHighRowFamily
 
 lemma rawMoment_mono_constant {data : RowData} {W : ℝ→ℂ} {c κ C D : ℝ}
     (h : RawMoment data W c κ C) (hCD : C≤D) : RawMoment data W c κ D := by
-  intro H X hH hX hsize rows hrows
-  apply (h H X hH hX hsize rows hrows).trans
+  pm_5370 H X hH hX hsize
   exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hCD (by linarith)) (by positivity)
 
 lemma moments_mono_constant {M : Ideal O} [NeZero M] {H : Subgroup (O ⧸ M)ˣ}
@@ -27,12 +27,8 @@ lemma moments_mono_constant {M : Ideal O} [NeZero M] {H : Subgroup (O ⧸ M)ˣ}
   · intro n hn s hs t ht
     exact ⟨rawMoment_mono_constant (h.inverse_raw n hn s hs t ht).1 hCD,
       rawMoment_mono_constant (h.inverse_raw n hn s hs t ht).2 hCD⟩
-  · intro selected hsel hcap1 hcap2 n hn s hs t ht
-    exact (h.inverse_marked selected hsel hcap1 hcap2 n hn s hs t ht).trans
-      (mul_le_mul_of_nonneg_right hCD (Real.rpow_nonneg hU _))
-  · intro selected hsel hcap j k hj s hs t ht
-    exact (h.plain_marked selected hsel hcap j k hj s hs t ht).trans
-      (mul_le_mul_of_nonneg_right hCD (Real.rpow_nonneg hU _))
+  pm_5887 hsel hcap1 hcap2 n hn s hs h.inverse_marked hCD
+  pm_5887 hsel hcap j k hj s hs h.plain_marked hCD
   · intro j k hj s hs t ht
     exact (h.plain_unmarked j k hj s hs t ht).trans
       (mul_le_mul_of_nonneg_right hCD (Real.rpow_nonneg hU _))

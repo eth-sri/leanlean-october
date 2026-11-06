@@ -5,6 +5,7 @@ public import Mathlib.Analysis.Asymptotics.Defs
 public import Mathlib.Analysis.Asymptotics.Lemmas
 public import Mathlib.Analysis.SpecialFunctions.Log.Base
 public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
+import WeylPort.Analytic.RealLaplace
 
 /-!
 # Power asymptotics
@@ -70,7 +71,7 @@ theorem isPowerAsymptotic_of_logb_tendsto
     (hT : ∀ᶠ i in atTop, 1 < T i) (hN : ∀ᶠ i in atTop, 0 < N i)
     (hexponent : Tendsto (fun i ↦ Real.logb (T i) (N i)) atTop (nhds α)) :
     IsPowerAsymptotic N T α := by
-  let exponent : VariableObject ℝ := fun i ↦ Real.logb (T i) (N i)
+  pm_6245
   refine ⟨exponent, ?_, ?_⟩
   · rw [IsEqUpToInfinitesimal, VariableObject.IsInfinitesimal]
     have hsub : Tendsto (fun i ↦ Real.logb (T i) (N i) - α) atTop (nhds 0) := by
@@ -91,7 +92,7 @@ theorem isPowerAsymptotic_of_between_of_infinitesimal
     (hbetween : ∀ i,
       T i ^ (α - δ i) ≤ N i ∧ N i ≤ T i ^ (α + δ i)) :
     IsPowerAsymptotic N T α := by
-  let exponent : VariableObject ℝ := fun i ↦ Real.logb (T i) (N i)
+  pm_6245
   refine ⟨exponent, ?_, Filter.Eventually.of_forall fun i ↦ ?_⟩
   · apply (isEqUpToInfinitesimal_iff_forall_pos
     exponent (VariableObject.fixed α)).2
@@ -106,7 +107,7 @@ theorem isPowerAsymptotic_of_between_of_infinitesimal
     rw [Real.norm_eq_abs, abs_lt]
     rw [Real.norm_eq_abs] at hi
     have hδupper : δ i < ε := (le_abs_self (δ i)).trans_lt hi
-    constructor <;> dsimp [exponent, VariableObject.fixed] at * <;> linarith
+    grind
   · exact (Real.rpow_logb (lt_trans zero_lt_one (hT i))
       (hT i).ne' (hN i)).symm
 
@@ -118,44 +119,34 @@ theorem isPowerAsymptotic_self (T : VariableObject ℝ) :
   ⟨VariableObject.fixed 1, IsEqUpToInfinitesimal.refl _,
     Filter.Eventually.of_forall fun i ↦ (Real.rpow_one (T i)).symm⟩
 
+section
+variable {A B T : VariableObject ℝ} {α β : ℝ} (hA : IsPowerAsymptotic A T α) (hB : IsPowerAsymptotic B T β) (hT : ∀ i, 1 ≤ T i)
+include A B T α β hA hB hT
 /-- Products of powers add their asymptotic exponents. -/
-theorem IsPowerAsymptotic.mul
-    {A B T : VariableObject ℝ} {α β : ℝ}
-    (hA : IsPowerAsymptotic A T α) (hB : IsPowerAsymptotic B T β)
-    (hT : ∀ i, 1 ≤ T i) :
+theorem IsPowerAsymptotic.mul :
     IsPowerAsymptotic (A * B) T (α + β) := by
   obtain ⟨a, ha, hAeq⟩ := hA
   obtain ⟨b, hb, hBeq⟩ := hB
   refine ⟨a + b, ?_, ?_⟩
-  · exact ha.add hb
-  · filter_upwards [hAeq, hBeq] with i hiA hiB
-    simp only [Pi.mul_apply, hiA, hiB]
-    simpa only [Pi.add_apply] using
-      (Real.rpow_add (zero_lt_one.trans_le (hT i)) (a i) (b i)).symm
+  pm_5003 ha.add Pi.mul_apply Pi.add_apply Real.rpow_add
 
 /-- Quotients of powers subtract their asymptotic exponents. -/
-theorem IsPowerAsymptotic.div
-    {A B T : VariableObject ℝ} {α β : ℝ}
-    (hA : IsPowerAsymptotic A T α) (hB : IsPowerAsymptotic B T β)
-    (hT : ∀ i, 1 ≤ T i) :
+theorem IsPowerAsymptotic.div :
     IsPowerAsymptotic (A / B) T (α - β) := by
   obtain ⟨a, ha, hAeq⟩ := hA
   obtain ⟨b, hb, hBeq⟩ := hB
   refine ⟨a - b, ?_, ?_⟩
-  · exact ha.sub hb
-  · filter_upwards [hAeq, hBeq] with i hiA hiB
-    simp only [Pi.div_apply, hiA, hiB]
-    simpa only [Pi.sub_apply] using
-      (Real.rpow_sub (zero_lt_one.trans_le (hT i)) (a i) (b i)).symm
+  pm_5003 ha.sub Pi.div_apply Pi.sub_apply Real.rpow_sub
+end
 
+section
+variable {X T : VariableObject ℝ} {α : ℝ} (hX : IsPowerAsymptotic X T α)
+include X T α hX
 /-- A negative power-asymptotic exponent forces convergence to zero. -/
 theorem IsPowerAsymptotic.tendsto_zero_of_neg
-    {X T : VariableObject ℝ} {α : ℝ} (hX : IsPowerAsymptotic X T α)
     (hα : α < 0) (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded) :
     Tendsto X atTop (𝓝 0) := by
-  have hTtop : Tendsto T atTop atTop :=
-    (VariableObject.isUnbounded_iff_tendsto_atTop
-      (fun i ↦ zero_le_one.trans (hT i))).mp hTunbounded
+  pm_2754
   have hbetween := hX.eventually_between (Filter.Eventually.of_forall hT)
     (show 0 < -α / 2 by linarith)
   have hpowzero : Tendsto (fun i ↦ T i ^ (α + -α / 2)) atTop (𝓝 0) := by
@@ -170,16 +161,14 @@ theorem IsPowerAsymptotic.tendsto_zero_of_neg
 
 /-- A positive power-asymptotic exponent forces convergence to infinity. -/
 theorem IsPowerAsymptotic.tendsto_atTop_of_pos
-    {X T : VariableObject ℝ} {α : ℝ} (hX : IsPowerAsymptotic X T α)
     (hα : 0 < α) (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded) :
     Tendsto X atTop atTop := by
-  have hTtop : Tendsto T atTop atTop :=
-    (VariableObject.isUnbounded_iff_tendsto_atTop
-      (fun i ↦ zero_le_one.trans (hT i))).mp hTunbounded
+  pm_2754
   have hbetween := hX.eventually_between (Filter.Eventually.of_forall hT)
     (show 0 < α / 2 by linarith)
   apply tendsto_atTop_mono' atTop (hbetween.mono fun _ hi ↦ hi.1)
   exact (tendsto_rpow_atTop (show 0 < α - α / 2 by linarith)).comp hTtop
+end
 
 /-! ## Natural-valued power scales -/
 
@@ -191,9 +180,11 @@ theorem floorRpow_pos (T : VariableObject ℝ) (κ : ℝ) (i : ℕ) :
     0 < floorRpow T κ i := by
   simp [floorRpow]
 
+section
+variable {T : VariableObject ℝ} {κ : ℝ} (hκ : 0 < κ)
+include T κ hκ
 /-- Flooring a divergent positive power introduces only a multiplicative `1 + o(1)` error. -/
 theorem tendsto_floorRpow_cast_div_rpow_one
-    {T : VariableObject ℝ} {κ : ℝ} (hκ : 0 < κ)
     (hT : Tendsto T atTop atTop) :
     Tendsto (fun i ↦ (floorRpow T κ i : ℝ) / T i ^ κ) atTop (𝓝 1) := by
   have hpow : Tendsto (fun i ↦ T i ^ κ) atTop atTop :=
@@ -210,12 +201,9 @@ theorem tendsto_floorRpow_cast_div_rpow_one
 
 /-- The cast of `floorRpow T κ` is power-asymptotic to exponent `κ`. -/
 theorem isPowerAsymptotic_floorRpow
-    {T : VariableObject ℝ} {κ : ℝ} (hκ : 0 < κ)
     (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded) :
     IsPowerAsymptotic (fun i ↦ (floorRpow T κ i : ℝ)) T κ := by
-  have hTtop : Tendsto T atTop atTop :=
-    (VariableObject.isUnbounded_iff_tendsto_atTop
-      (fun i ↦ zero_le_one.trans (hT i))).mp hTunbounded
+  pm_2754
   have hratio := tendsto_floorRpow_cast_div_rpow_one hκ hTtop
   have hTgt : ∀ᶠ i in atTop, 1 < T i := hTtop.eventually (eventually_gt_atTop 1)
   have hqpos : ∀ᶠ i in atTop, 0 < (floorRpow T κ i : ℝ) :=
@@ -240,6 +228,7 @@ theorem isPowerAsymptotic_floorRpow
   dsimp only [Function.comp_apply]
   field_simp [(Real.log_pos hi).ne']
   ring
+end
 
 /-! ## Power bounds -/
 
@@ -250,29 +239,29 @@ theorem isLittleO_rpow_comp_tendsto_of_lt
     (hT : Tendsto T atTop atTop) (hβγ : β < γ) :
     (fun i ↦ T i ^ β) =o[atTop] (fun i ↦ T i ^ γ) := by
   have hzero : ∀ᶠ i in atTop, T i ^ γ = 0 → T i ^ β = 0 := by
-    filter_upwards [hT.eventually (eventually_gt_atTop 0)] with i hi
+    pm_8063
     exact fun hzero ↦ ((Real.rpow_pos_of_pos hi γ).ne' hzero).elim
   rw [Asymptotics.isLittleO_iff_tendsto' hzero]
   have hlimit := (tendsto_rpow_neg_atTop (sub_pos.mpr hβγ)).comp hT
   apply hlimit.congr'
-  filter_upwards [hT.eventually (eventually_gt_atTop 0)] with i hi
+  pm_8063
   change T i ^ (-(γ - β)) = T i ^ β / T i ^ γ
   rw [← Real.rpow_sub hi]
   congr 1
   ring
 
+section
+variable {E : Type*} [SeminormedAddCommGroup E]
+include E
 /-- If `T` is at least one and unbounded, then `X ≪ T ^ (β + o(1))` iff
 `X = O(T ^ (β + ε))` for every fixed `ε > 0`. -/
 theorem isPowerBounded_iff_forall_pos
-    {E : Type*} [SeminormedAddCommGroup E]
     (X : VariableObject E) (T : VariableObject ℝ) (β : ℝ)
     (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded) :
     IsPowerBounded X T β ↔
       ∀ ε : ℝ, 0 < ε →
         Asymptotics.IsBigO atTop X (fun i ↦ T i ^ (β + ε)) := by
-  have hTtop : Tendsto T atTop atTop :=
-    (VariableObject.isUnbounded_iff_tendsto_atTop
-      fun i ↦ zero_le_one.trans (hT i)).1 hTunbounded
+  pm_5657
   have hTgt : ∀ᶠ i in atTop, 1 < T i :=
     (tendsto_atTop.1 hTtop 2).mono fun _ hi ↦ by linarith
   constructor
@@ -311,7 +300,7 @@ theorem isPowerBounded_iff_forall_pos
       by_cases hXi : ‖X i‖ = 0
       · simp [exponent, hXi, hδ]
       · have hXpos : 0 < ‖X i‖ := lt_of_le_of_ne (norm_nonneg _) (Ne.symm hXi)
-        have hiTpos : 0 < T i := lt_trans zero_lt_one hiT
+        pm_8064
         have hXpower : ‖X i‖ ≤ T i ^ (β + 2 * δ / 3) := by
           calc
             ‖X i‖ ≤ C * T i ^ (β + δ / 3) := hiX
@@ -340,7 +329,7 @@ theorem isPowerBounded_iff_forall_pos
       · rw [hXi]
         exact Real.rpow_nonneg (le_trans zero_le_one (hT i)) _
       · have hXpos : 0 < ‖X i‖ := lt_of_le_of_ne (norm_nonneg _) (Ne.symm hXi)
-        have hiTpos : 0 < T i := lt_trans zero_lt_one hiT
+        pm_8064
         apply (Real.le_rpow_iff_log_le hXpos hiTpos).2
         apply (div_le_iff₀ (Real.log_pos hiT)).1
         simp only [exponent, hXi, ↓reduceIte]
@@ -348,7 +337,6 @@ theorem isPowerBounded_iff_forall_pos
 
 /-- Increasing the exponent preserves a power bound when the base is eventually at least one. -/
 theorem IsPowerBounded.mono
-    {E : Type*} [SeminormedAddCommGroup E]
     {X : VariableObject E} {T : VariableObject ℝ} {β γ : ℝ}
     (hX : IsPowerBounded X T β) (hT : ∀ᶠ i in atTop, 1 ≤ T i)
     (hβγ : β ≤ γ) :
@@ -365,8 +353,7 @@ theorem IsPowerBounded.mono
     ring
   filter_upwards [hT] with i hiT
   have hT0 : 0 ≤ T i := zero_le_one.trans hiT
-  rw [one_mul, Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hT0 _),
-    Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hT0 _)]
+  pm_1541
   exact Real.rpow_le_rpow_of_exponent_le hiT (by
     dsimp [shiftedExponent]
     linarith)
@@ -374,7 +361,6 @@ theorem IsPowerBounded.mono
 /-- A power lower bound for an unbounded object forces its exponent to be no larger than any
 admissible power-bound exponent. -/
 theorem exponent_le_of_isPowerBounded_of_eventually_norm_ge_rpow
-    {E : Type*} [SeminormedAddCommGroup E]
     {X : VariableObject E} {T : VariableObject ℝ} {β γ c : ℝ}
     (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded)
     (hbound : IsPowerBounded X T β) (hc : 0 < c)
@@ -383,11 +369,9 @@ theorem exponent_le_of_isPowerBounded_of_eventually_norm_ge_rpow
   by_contra hγβ
   have hβγ : β < γ := lt_of_not_ge hγβ
   let ε := (γ - β) / 2
-  have hε : 0 < ε := by dsimp [ε]; linarith
+  pm_358 hε ε
   have hO := (isPowerBounded_iff_forall_pos X T β hT hTunbounded).1 hbound ε hε
-  have hTtop : Tendsto T atTop atTop :=
-    (VariableObject.isUnbounded_iff_tendsto_atTop
-      fun i ↦ zero_le_one.trans (hT i)).1 hTunbounded
+  pm_5657
   have hpowO : (fun i ↦ T i ^ γ) =O[atTop] X := by
     apply Asymptotics.IsBigO.of_bound (1 / c)
     filter_upwards [hlower] with i hi
@@ -402,5 +386,6 @@ theorem exponent_le_of_isPowerBounded_of_eventually_norm_ge_rpow
     (Filter.Eventually.of_forall fun i ↦
       (Real.rpow_pos_of_pos (zero_lt_one.trans_le (hT i)) _).ne').frequently
   exact hsmall.not_isBigO hnonzero (hpowO.trans hO)
+end
 
 end Expdb

@@ -1,13 +1,12 @@
 module
 public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
@@ -24,10 +23,7 @@ theorem addChar_crt_pair (ψ : AddChar K ℂ) (m n u v z : K)
     ψ (z / (m * n)) = ψ (u * z / m) * ψ (v * z / n) := by
   rw [← map_add_eq_mul]
   congr 1
-  calc
-    z / (m * n) = z * (u * n + v * m) / (m * n) := by rw [hbez, mul_one]
-    _ = u * z / m + v * z / n := by
-      field_simp
+  grind
 
 theorem normalized_crt_pair {R : Type*} [CommRing R]
     (ι : R →+* K) (ψ : AddChar K ℂ)
@@ -43,11 +39,8 @@ theorem normalized_crt_pair {R : Type*} [CommRing R]
     (ι (lam ^ 3 * w)) (-(ι d * (ι x / ι lam ^ 4))) hc₀ hr hbezK
   rw [hsplit]
   congr 1
-  · congr 1
-    ring
-  · congr 1
-    simp only [map_mul, map_pow, map_neg]
-    field_simp
+  grind
+  grind
 
 variable {R : Type*} [CommRing R]
 
@@ -70,14 +63,10 @@ variable (ω : ℂ) (hω : ω ^ 2 + ω + 1 = 0)
 include hω hconj
 
 omit hconj in
-private lemma lam_ne_zero : (1 + 2 * ω : ℂ) ≠ 0 := by
-  intro h
-  have hw : ω = -(1 : ℂ) / 2 := by linear_combination h / 2
-  rw [hw] at hω
-  norm_num at hω
+private lemma lam_ne_zero : (1 + 2 * ω : ℂ) ≠ 0 := by grind
 
 private lemma conj_lam : conj (1 + 2 * ω) = -(1 + 2 * ω) := by
-  rw [map_add, map_one, map_mul, map_ofNat, hconj]
+  pm_265 map_add map_one map_mul map_ofNat hconj
   linear_combination 2 * hω
 
 omit hconj in
@@ -111,15 +100,10 @@ end Generic
 noncomputable def ω₃ : ℂ := ((-1 : ℂ) + (Real.sqrt 3 : ℝ) * Complex.I) / 2
 
 private theorem omega_sq : ω₃ ^ 2 = -ω₃ - 1 := by
-  have hs : (Real.sqrt 3 : ℝ) ^ 2 = 3 := Real.sq_sqrt (by norm_num)
+  pm_6066
   have hs' : ((Real.sqrt 3 : ℝ) : ℂ) ^ 2 = 3 := by
     norm_cast
-  have hquad : ω₃ ^ 2 + ω₃ + 1 =
-      (3 + ((Real.sqrt 3 : ℝ) : ℂ) ^ 2 * Complex.I ^ 2) / 4 := by
-    unfold ω₃
-    ring
-  rw [hs', Complex.I_sq] at hquad
-  norm_num at hquad
+  pm_3536 ω₃
   linear_combination hquad
 
 theorem omega_conj : conj ω₃ = ω₃ ^ 2 := by

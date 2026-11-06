@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.ChildRows
 public import OAI.NumberTheory.DirichletL.Hecke.UnitRows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,22 +21,22 @@ theorem idealCoeff_ne_zero_iff (χ : Character) (I : Ideal O) :
   change (if I = ⊥ then 0 else χ.residue
     (Ideal.Quotient.mk χ.modulus (Submodule.IsPrincipal.generator I))) ≠ 0 ↔ _
   by_cases hI : I = ⊥
-  · simp only [hI,ite_true,ne_eq,not_true_eq_false,false_and]
+  grind
   · rw [ite_eq_right hI]
     have he : χ.residue (Ideal.Quotient.mk χ.modulus (Submodule.IsPrincipal.generator I)) ≠ 0 ↔
         IsUnit (Ideal.Quotient.mk χ.modulus (Submodule.IsPrincipal.generator I)) := MulChar.apply_ne_zero_iff
     rw [IdealCharacter.isUnit_mk_iff_isCoprime,Ideal.span_singleton_generator] at he
-    exact he.trans (and_iff_right hI).symm
+    grind
 
 theorem fixed_primitive_product (χ ψ τ : Character) (h : InducedBy χ ψ)
     (Q : Ideal O) (hψ : Q ≤ ψ.modulus) (hτ : Q ≤ τ.modulus) :
     ∃ ρ : Character, FiniteFourier.IsPrimitiveOnIdeals ρ.residue ∧
       Q ≤ ρ.modulus ∧ InducedBy (χ.product τ) ρ := by
-  obtain ⟨ρ,hmod,hprim,hnorm,hmask⟩ := exists_primitive_product_character ψ τ
+  pm_107 ρ hmod hprim hnorm hmask exists_primitive_product_character ψ τ
   refine ⟨ρ,hprim,(le_inf hψ hτ).trans hmod,?_⟩
   intro I
   by_cases hI : I = 0
-  · simp only [hI,idealCoeff_zero,ite_self]
+  grind
   by_cases hc : IsCoprime I (χ.product τ).modulus
   · have hn := (idealCoeff_ne_zero_iff (χ.product τ) I).mpr ⟨hI,hc⟩
     rw [idealCoeff_product] at hn
@@ -57,7 +58,7 @@ theorem fixedInducingRow_of_product (η₁ η₂ τ : Character) (Q : Ideal O)
     (he : ∀ n, rowTwist (HeckeRowClosure.elementHom η₂) m 1 (A*z₂) n =
       rowTwist (HeckeRowClosure.elementHom η₁) m 1 (A*z₁) n * elementCoeff τ n)
     (hx : FixedInducingRow η₁ Q m A z₁) : FixedInducingRow η₂ Q m A z₂ := by
-  obtain ⟨χ,ψ,hprim,hind,hQ,hrow⟩ := hx
+  pm_563 χ ψ hprim hind hQ hrow hx
   obtain ⟨ρ,hρ,hQρ,hindρ⟩ := fixed_primitive_product χ ψ τ hind Q hQ hτ
   refine ⟨χ.product τ,ρ,hρ,hindρ,hQρ,?_⟩
   intro n

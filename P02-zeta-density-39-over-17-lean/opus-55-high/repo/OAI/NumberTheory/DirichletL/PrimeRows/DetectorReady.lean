@@ -18,7 +18,10 @@ variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 def sourceConductorConstant (S : Finset (Ideal O)) (η : Character) : ℕ :=
   conductorConstant*(∏P∈S,P).absNorm*(η.modulus.absNorm+1)+conductorConstant*M.absNorm
 
-theorem source_ray_conductor (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+section
+variable (S : Finset (Ideal O))
+include S
+theorem source_ray_conductor (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) (j : Sum Bool (RayQuotient.Characters M H)) :
     (sourceDetectorFamily S hS η u (rayCubeFamily M H hH u) j).modulus.absNorm≤
       sourceConductorConstant M S η*(Ideal.span {u.val}:Ideal O).absNorm := by
@@ -41,7 +44,7 @@ theorem source_ray_conductor (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     ring_nf
     omega
 
-theorem source_ray_nonprincipal_eventually (S : Finset (Ideal O)) (hS : SourceExclusions S)
+theorem source_ray_nonprincipal_eventually (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (d : ℝ) (hd : 0<d) :
     ∀ᶠ Z : ℝ in atTop,∀U : ℝ,∀u∈rowBand (Z^d) U,
       (calibrationForSet S hmax).residueMonoid u.val≠0 →
@@ -58,7 +61,7 @@ theorem source_ray_nonprincipal_eventually (S : Finset (Ideal O)) (hS : SourceEx
     | true => exact calibrated_row_nonprincipal S hS.prime hmax hS.bad u (mem_rowBand.mp hu).1 hc
   | inr θ => exact hray u hnorm hs H hH θ
 
-theorem source_ray_conductor_eventually (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem source_ray_conductor_eventually (hS : ∀P∈S,Prime P)
     (η : Character) (ν : ℝ) (hν : 0<ν) :
     ∀ᶠ Z : ℝ in atTop,∀(u : FreeRow) (d : ℝ),rowNorm u≤Z^(d-ν) →
       ∀j,((sourceDetectorFamily S hS η u (rayCubeFamily M H hH u) j).modulus.absNorm:ℝ)≤Z^d := by
@@ -73,6 +76,7 @@ theorem source_ray_conductor_eventually (S : Finset (Ideal O)) (hS : ∀P∈S,Pr
   calc
     _ ≤ Z^ν*Z^(d-ν) := mul_le_mul hC hu (by unfold rowNorm;positivity) (Real.rpow_nonneg hZ.le _)
     _ = Z^d := by rw [←Real.rpow_add hZ];congr 1;ring
+end
 
 end SevenEighths.ProbeHighRowFamily
 

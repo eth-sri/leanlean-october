@@ -33,12 +33,15 @@ theorem unit_ideal (I:Ideal O)(hI:Supported I):
   rw [ConcretePrimeRowBridge.span_idealGenerator,ite_eq_left hI]
   rfl
 
-theorem reflected_height (η:Character)(t:ℝ)(I:Ideal O)(hI:Supported I):
+section
+variable (η:Character)
+include η
+theorem reflected_height(t:ℝ)(I:Ideal O)(hI:Supported I):
     heightCoeff (reflected η) t I=heightCoeff η t I*idealRowHom (-1) I:=by
   rw [heightCoeff,reflected,idealCoeff_product,unit_ideal I hI,heightCoeff]
   ring
 
-theorem reflected_row (η:Character)(m A z n:O)
+theorem reflected_row(m A z n:O)
     (hmLam:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:O)∣m):
     rowTwist (HeckeRowClosure.elementHom η) m 1 (A*(-z)) n=
       rowTwist (HeckeRowClosure.elementHom (reflected η)) m 1 (A*z) n:=by
@@ -50,18 +53,19 @@ theorem reflected_row (η:Character)(m A z n:O)
     rw [reflected,elementCoeff_product,HeckeUnitRows.elementCoeff_character]
     have hu:unitSupplement (-1:Oˣ) n=idealRowHom (-1) (Ideal.span {n}):=by
       change (if Supported (Ideal.span {n}) then idealRowHom (-1) (Ideal.span {n}) else 0)=_
-      rw [ite_eq_left hn]
+      grind
     rw [hu,show A*(-z)=(-1)*(A*z) by ring,idealRowHom_argument_mul]
     ring
   · rw [CanonicalRowCompletion.rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hn,
       CanonicalRowCompletion.rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hn]
 
-theorem reflected_inducing (η:Character)(Q:Ideal O)(m A z:O)
+theorem reflected_inducing(Q:Ideal O)(m A z:O)
     (hmLam:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:O)∣m):
     CenteredExceptionalProfile.FixedInducingRow η Q m A (-z) ↔
       CenteredExceptionalProfile.FixedInducingRow (reflected η) Q m A z:=by
   unfold CenteredExceptionalProfile.FixedInducingRow
   simp_rw [←reflected_row η m A z _ hmLam hm2]
+end
 
 end SevenEighths.CenteredMomentReflectedSource
 

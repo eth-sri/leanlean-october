@@ -1,10 +1,9 @@
 module
 public import MathCollab.Density.GammaStrip
 public import MathCollab.Density.MollifierDirichlet
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory
 namespace GuthMaynard.Improvement
 
@@ -14,11 +13,7 @@ theorem short_detector_gamma_bound {a : ℝ} (ha : 0 < a) (hahi : a ≤ 1/2) (u 
     ‖Complex.Gamma (((-a:ℝ):ℂ)+(u:ℂ)*Complex.I)‖ ≤
       (12/a)*(1+|u|)*Real.exp (-|u|) := by
   let z : ℂ := ((-a:ℝ):ℂ)+(u:ℂ)*Complex.I
-  have hz : z ≠ 0 := by
-    intro he
-    have hr := congrArg Complex.re he
-    simp [z] at hr
-    linarith
+  pm_447 he hr
   have hlower : a ≤ ‖z‖ := by
     simpa [z,abs_of_pos ha] using Complex.abs_re_le_norm z
   have hrec := congrArg norm (Complex.Gamma_add_one z hz)
@@ -33,7 +28,7 @@ theorem short_detector_gamma_bound {a : ℝ} (ha : 0 < a) (hahi : a ≤ 1/2) (u 
   have hm : a*‖Complex.Gamma z‖ ≤ 12*(1+|u|)*Real.exp (-|u|) := by
     exact (mul_le_mul_of_nonneg_right hlower (norm_nonneg _)).trans hshift
   have hd := (le_div_iff₀ ha).mpr (show ‖Complex.Gamma z‖*a ≤
-    12*(1+|u|)*Real.exp (-|u|) by nlinarith [hm])
+    12*(1+|u|)*Real.exp (-|u|) by grind)
   change ‖Complex.Gamma z‖ ≤ _
   convert hd using 1; ring
 

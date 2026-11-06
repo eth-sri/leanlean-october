@@ -13,8 +13,8 @@ open ProbeMellinBoundary
 def sourceHeightShear : HeightSpace ≃ᵐ HeightSpace where
   toFun p := ((p.1.1+p.1.2,p.1.2),p.2)
   invFun p := ((p.1.1-p.1.2,p.1.2),p.2)
-  left_inv p := by rcases p with ⟨⟨t,v⟩,w⟩;simp
-  right_inv p := by rcases p with ⟨⟨t,v⟩,w⟩;simp
+  left_inv p := by grind
+  right_inv p := by grind
   measurable_toFun := by
     change Measurable (fun p : HeightSpace=>((p.1.1+p.1.2,p.1.2),p.2))
     fun_prop

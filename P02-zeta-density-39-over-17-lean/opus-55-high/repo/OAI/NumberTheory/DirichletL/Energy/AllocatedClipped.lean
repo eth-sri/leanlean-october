@@ -1,13 +1,14 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.AllocatedPaid
 public import OAI.NumberTheory.DirichletL.Energy.AllocatedZero
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyAllocatedClipped
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
@@ -32,20 +33,24 @@ def scale (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
     (X:ℝ)(j:Fin 2)(F:Finset (Ideal O)):ℝ:=
   clippedScale (rawScale D alloc X j)/((∏I∈F,I).absNorm:ℝ)
 
-lemma scale_pos (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (X:ℝ)(j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):0<scale D alloc X j F:=by
+section
+variable (D:Ideal O) (alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+include D alloc
+lemma scale_pos
+    (X:ℝ)(j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):0< scale D alloc X j F:=by
   have hn:0<((∏I∈F,I).absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.prod_ne_zero_iff.mpr hF))
   exact div_pos (by unfold clippedScale;positivity) hn
 
-lemma scale_cap (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (Z L X:ℝ)(hZ:1≤Z)(hL:0≤L)(hX:0<X)(hc:X≤Z^L)
-    (j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):scale D alloc X j F≤Z^L:=
+lemma scale_cap
+    (Z L X:ℝ)(hZ:1≤Z)(hL:0≤L)(hX:0<X)(hc:X≤Z ^L)
+    (j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):scale D alloc X j F≤Z ^L:=
   (allocatedScale_le D alloc X hX j F hF).trans (max_le (Real.one_le_rpow hZ hL) hc)
+end
 
 lemma allocated_pair {Z Bmask bΦ a b:ℝ}(st:NaturalState Z Bmask bΦ)(hunit:st.puncture=1)
     (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (ha:0<a)(p:Profiles a b)(pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
+    (ha:0<a)(p:Profiles a b)(pool:α→ Finset (Ideal O))(β:α→ Ideal O→ℂ)(P:α→ℝ)
     (v X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(F₁ F₂:Finset (Ideal O))(J:Finset α):
     allocatedEnergy st.character st.radial D alloc
       (sourcePlain a b ha (p.profile 0) (p.support 0))
@@ -69,7 +74,7 @@ theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εrem
     (ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)
     (hMcap:0≤Mcap)(hbΦ:0≤bΦ)(hLs:0≤Lslot)(hε:0<εremove)
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
-    ∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→RayQuotient.Characters M H,
+    ∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→ RayQuotient.Characters M H,
     ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z →
     ∀(a b Bmask L εchild:ℝ)(ha:0<a),0≤L → ∀Q:Ideal O,Q≤M →
     ∀(degree:ℕ)(S:Finset (ℕ×ℕ))(C₀ C₁:ℝ),0≤C₀ → 0≤C₁ →
@@ -77,14 +82,14 @@ theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εrem
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
     ∀(w σ freq:α→ℝ)(v height mesh:ℝ),
-    0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    0≤ mesh → (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
       (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
       (J:Finset (CenteredMomentCommonProfile.liveIndices B.val)),
     ∀st:NaturalState Z Bmask bΦ,st.puncture=1 → st.fixedModulus=internalQ Q η₀ → st.width≤Mcap →
-    ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z^L → X₂≤Z^L →
+    ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z ^L → X₂≤Z ^L →
     ∀F₁ F₂:Finset (Ideal O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
     let d:=commonData (withHeight src st.character v) C R B
     allocatedEnergy st.character st.radial D alloc
@@ -94,15 +99,12 @@ theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εrem
       Cc*(C₀+C₁)*diagonalControl st.radial.profile*
         ((pair D alloc ha p v X₁ X₂ hX₁ hX₂).control S)^2*
         (1+(|v|+height))^(dc+degree)*
-        Z^(st.width+εchild+εremove+
+        Z ^(st.width+εchild+εremove+
           CenteredMomentLiveCapacity.excess (originalImage src C B D alloc J) w
             (length Z (scale D alloc X₁ 0 F₁)) (length Z (scale D alloc X₂ 1 F₂)) st.width κ/6+κ*mesh) := by
-  obtain ⟨dc,Cc,hCc,hbound⟩:=actual_allocated_paid_bands (α:=α) M H hH W aslot bslot Mcap bΦ Lslot
-    εremove lo hi κ ha hWs hW hMcap hbΦ hLs hε hbeta hκ
+  pm_3386 actual_allocated_paid_bands
   refine ⟨dc,Cc,hCc,?_⟩
-  intro η₀ θ
-  obtain ⟨Z₀,hZ₀,hbound⟩:=hbound η₀ θ
-  refine ⟨Z₀,hZ₀,?_⟩
+  pm_3385
   intro Z hZ a b Bmask L εchild ha hL Q hQM degree S C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
     src hmatch C R B D alloc J st hunit hQ hs p X₁ X₂ hX₁ hX₂ hc₁ hc₂ F₁ F₂ hF₁ hF₂

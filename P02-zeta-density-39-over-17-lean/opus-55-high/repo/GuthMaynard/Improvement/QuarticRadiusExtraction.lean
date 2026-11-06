@@ -1,18 +1,20 @@
 module
 public import GuthMaynard.Improvement.QuarticExtraction
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 namespace GuthMaynard.Improvement
 
+section
+variable {ε : ℝ} (hε : 0 < ε)
+include ε hε
 /-- A subpower radius meets any fixed polynomial tail order after a uniform
 bounded-height exception. This lemma is purely scalar. -/
-theorem quartic_radius_parameters {ε : ℝ} (hε : 0 < ε) :
+theorem quartic_radius_parameters :
     ∃ ν : ℝ, 0 < ν ∧ ν ≤ ε/2 ∧ ν ≤ 1 ∧ ∃ q : ℕ, 5 ≤ ν*(q:ℝ) := by
   let ν := min (ε/2) (1/2:ℝ)
-  have hν : 0 < ν := lt_min (by positivity) (by norm_num)
+  pm_251 hν ν
   obtain ⟨q,hq⟩ := exists_nat_ge (5/ν)
   refine ⟨ν,hν,min_le_left _ _,(min_le_right _ _).trans (by norm_num),q,?_⟩
   have hh := (div_le_iff₀ hν).mp hq
@@ -21,7 +23,7 @@ theorem quartic_radius_parameters {ε : ℝ} (hε : 0 < ε) :
 /-- The only analytic hypothesis is the actual truncated fourth moment.
 The radius and tail smallness have been discharged with uniform constants;
 small N is handled by the audited packing estimate. -/
-theorem quartic_extraction_of_moment {ε : ℝ} (hε : 0 < ε) :
+theorem quartic_extraction_of_moment :
     ∃ C : ℝ, 0 < C ∧ ∀ N T U V M : ℝ,
       2 ≤ N → N ≤ T → T ≤ N^2 → 1 ≤ V → V ≤ U → U ≤ 2*N →
       ∀ (a : ℕ → ℂ) (W : Finset ℝ),
@@ -35,23 +37,20 @@ theorem quartic_extraction_of_moment {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨B,hB,hb⟩ := quartic_extraction (show 0 < ε/2 by positivity) q
   let N₀ := max 2 (2*B)
   let C := 8*N₀^2+2*B+1
-  have hC : 0 < C := by dsimp [C]; positivity
+  pm_4312
   refine ⟨C,hC,?_⟩
   intro N T U V M hN hNT hTN hV hVU hUN a W ha hsep hw hv hM
-  have hN0 : 0 < N := by linarith
-  have hN1 : 1 ≤ N := by linarith
+  pm_34 hN0 N hN1
   have hV0 : 0 < V := by linarith
-  have hU : 0 < U := hV0.trans_le hVU
-  have hT : 0 < T := hN0.trans_le hNT
-  have hm : 0 ≤ M := (integral_nonneg (fun t => sq_nonneg
-    (sourceTruncatedDensity (fun t => fixedTimeCutoff (t/T)) (boundedPolynomial N a) U t))).trans hM
-  have hp : 1 ≤ N^ε := Real.one_le_rpow hN1 hε.le
+  pm_4278 hU U hV0.trans_le hVU hT T hN0.trans_le hNT
+  pm_4585
+  pm_153 hp N ε hN1 hε.le
   have hx : 0 ≤ N^2/U^2+T*N^4/U^6 := by positivity
   have hy : 0 ≤ M/V^4 := by positivity
   by_cases hlarge : N₀ ≤ N
   · have hBN : 2*B ≤ N := (le_max_right _ _).trans hlarge
     let R := N^ν
-    have hR : 0 < R := Real.rpow_pos_of_pos hN0 _
+    pm_4907 hR R hN0
     have hR1 : 1 ≤ R := Real.one_le_rpow hN1 hν.le
     have hRT : R ≤ T := by
       apply le_trans _ hNT
@@ -102,11 +101,12 @@ theorem quartic_extraction_of_moment {ε : ℝ} (hε : 0 < ε) :
       have hh := pow_le_pow_left₀ hU.le hUN 2
       nlinarith
     have hbudget : 1/4 ≤ N^2/U^2+T*N^4/U^6+M/V^4 := by
-      have hh : 0 ≤ T*N^4/U^6 := by positivity
+      pm_5225 hh T N U
       linarith
     have hcoef : 8*N₀^2 ≤ C := by dsimp [C]; linarith
     have hCpow : C ≤ C*N^ε := le_mul_of_one_le_right hC.le hp
     have hh := mul_le_mul_of_nonneg_left hbudget (show 0 ≤ C*N^ε by positivity)
     nlinarith
+end
 
 end GuthMaynard.Improvement

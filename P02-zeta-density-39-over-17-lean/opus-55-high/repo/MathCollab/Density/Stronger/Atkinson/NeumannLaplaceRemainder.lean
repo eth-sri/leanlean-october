@@ -52,9 +52,12 @@ theorem norm_neumannLaplaceIntegrand_sub_linear_le (x : ℝ) {t : ℝ} (ht : 0 <
     _ ≤ neumannLaplaceMomentIntegrand x 0 t * ((3 / 8 : ℝ) * (t / 2) ^ 2) :=
       mul_le_mul_of_nonneg_left (norm_neumannLaplaceAmplitude_sub_linear_le _)
         (neumannLaplaceMomentIntegrand_nonneg ht.le 0)
-    _ = _ := by rw [h2]; ring
+    _ = _ := by grind
 
-theorem norm_neumannLaplaceIntegral_sub_moments_le {x : ℝ} (hx : 0 < x) :
+section
+variable {x : ℝ} (hx : 0 < x)
+include x hx
+theorem norm_neumannLaplaceIntegral_sub_moments_le :
     ‖neumannLaplaceIntegral x -
       ((neumannLaplaceMoment x 0 : ℂ) - I / 4 * (neumannLaplaceMoment x 1 : ℂ))‖ ≤
         (3 / 32 : ℝ) * neumannLaplaceMoment x 2 := by
@@ -81,7 +84,7 @@ theorem norm_neumannLaplaceIntegral_sub_moments_le {x : ℝ} (hx : 0 < x) :
       exact norm_neumannLaplaceIntegrand_sub_linear_le x ht)
   simpa only [integral_const_mul, neumannLaplaceMoment] using h
 
-theorem norm_neumannLaplaceIntegral_sub_approximation_le {x : ℝ} (hx : 0 < x) :
+theorem norm_neumannLaplaceIntegral_sub_approximation_le :
     ‖neumannLaplaceIntegral x - neumannLaplaceApproximation x‖ ≤
       (9 / 128 : ℝ) * Real.sqrt Real.pi * x ^ (-(5 / 2 : ℝ)) := by
   have h := norm_neumannLaplaceIntegral_sub_moments_le hx
@@ -96,5 +99,6 @@ theorem norm_neumannLaplaceIntegral_sub_approximation_le {x : ℝ} (hx : 0 < x) 
   rw [he] at h
   convert h using 1
   ring
+end
 
 end MathCollab.Density.Stronger.Atkinson

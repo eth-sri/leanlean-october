@@ -6,6 +6,7 @@ Narrow extraction; see third_party/twelfth/ATKINSON_CORRECTION_SERIES_MANIFEST.j
 Mathlib and the nonstationary foundations retain their Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPowerIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,11 +22,9 @@ theorem exists_norm_atkinsonPowerPair_le (α : ℝ) (c d : ℂ) :
       0 < L → 8 * L ≤ G →
       ‖c * atkinsonPowerIntegral T G L α b + d * atkinsonPowerIntegral T G L α (-b)‖ ≤
         C * G * T ^ (-α) := by
-  obtain ⟨C, hC, hbound⟩ := exists_norm_atkinsonPowerIntegral_le α
-  refine ⟨(1 + ‖c‖ + ‖d‖) * C, by positivity, ?_⟩
+  pm_507 exists_norm_atkinsonPowerIntegral_le c d
   intro T G L b hT hG hGT hL hwidth
-  apply (norm_add_le _ _).trans
-  rw [norm_mul, norm_mul]
+  pm_4372
   calc
     _ ≤ ‖c‖ * (C * G * T ^ (-α)) + ‖d‖ * (C * G * T ^ (-α)) :=
       add_le_add

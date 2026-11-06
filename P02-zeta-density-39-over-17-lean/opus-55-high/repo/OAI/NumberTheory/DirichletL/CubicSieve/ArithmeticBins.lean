@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.PoissonComparison
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,77 +8,34 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
 
 namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory
 open ActualEisensteinCubic
 open SecondPassFiber (newLabel newRow)
@@ -98,7 +56,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
@@ -112,8 +70,8 @@ def activeGcdCoefficient (N : ℝ) (a : idealRange N → ℂ) (D : Ideal O) (c :
     gcdRaySupport (fun I : idealRange N => I.val) a D c → ℂ := fun j => a j.val
 
 theorem originalHigh_gcd_eq_maskedPoissonDifference {n : Type} [Fintype n] [DecidableEq n]
-    (D : Ideal O) (hD : D≠0) (cols : n → Ideal O) (hcols : ∀j, Admissible (cols j))
-    (hdiv : ∀j, D∣cols j) (hproper : ∀j, cols j≠D)
+    (D : Ideal O) (hD : D ≠0) (cols : n → Ideal O) (hcols : ∀j, Admissible (cols j))
+    (hdiv : ∀j, D ∣cols j) (hproper : ∀j, cols j≠D)
     (hray : ∀j k, columnRay (cols j)=columnRay (cols k))
     (a : n → ℂ) (W : 𝓢(ℝ,ℂ)) (M K : ℝ) (hM : 0<M) :
     (∑j, ∑k, if gcd (cols j) (cols k)=D then
@@ -128,17 +86,16 @@ theorem originalHigh_gcd_eq_maskedPoissonDifference {n : Type} [Fintype n] [Deci
 
 theorem annularRayGcdBlock_eq_active_difference (M N X K : ℝ) (hM : 0<M)
     (a : idealRange N → ℂ) (ha : CoefficientOnShell N X a)
-    (D : Ideal O) (hD : D≠0) (hsmall : (Ideal.absNorm D:ℝ)≤X/2)
+    (D : Ideal O) (hD : D ≠0) (hsmall : (Ideal.absNorm D:ℝ)≤X/2)
     (c : EisensteinEPrimaryPhase.Coord) :
     annularRayGcdBlock M N K D c a =
       maskedPoissonDifference (commonMaskIdeal D) QuadraticInitialBound.annularSieveCutoff
         (activeGcdColumns N a D c) (activeGcdCoefficient N a D c) M K := by
   classical
   rw [annularRayGcdBlock_eq_pair_high M N K hM D c a]
-  simp only [rayPairCoefficient,ite_mul,zero_mul]
-  rw [gcd_ray_pair_sum_restrict]
+  pm_487 rayPairCoefficient ite_mul zero_mul gcd_ray_pair_sum_restrict
   let S := gcdRaySupport (fun I : idealRange N => I.val) a D c
-  have hdiv (j : S) : D∣j.val.val :=
+  have hdiv (j : S) : D ∣j.val.val :=
     ((mem_gcdRaySupport _ a D c j.val).mp j.property).1
   have hray (j k : S) : columnRay j.val.val=columnRay k.val.val := by
     have hj := ((mem_gcdRaySupport _ a D c j.val).mp j.property).2.1
@@ -155,19 +112,18 @@ theorem HasSieveExponent.annular_small_gcd_complete {α : ℝ} (hexp : HasSieveE
       0<CD ∧ 0<CS ∧ 0<CT ∧ 0<CP ∧
       ∀ (ε : ℝ) (hε : 0<ε) (M N X K T : ℝ), 1≤M → 1≤K → 4≤T →
       ∀ (a : idealRange N → ℂ), CoefficientOnShell N X a →
-      ∀ (D : Ideal O), D≠0 → (Ideal.absNorm D:ℝ)≤X/2 →
+      ∀ (D : Ideal O), D ≠0 → (Ideal.absNorm D:ℝ)≤X/2 →
       ∀ (c : EisensteinEPrimaryPhase.Coord),
         ‖(6:ℂ)*annularRayGcdBlock M N K D c a‖ ≤
           poissonComparisonMajorant sD sS sT CD CS CT CP l A hexp deltaLoss hδ ε hε
             (commonMaskIdeal D) K (X/(Ideal.absNorm D:ℝ)) M T
             (activeGcdCoefficient N a D c) QuadraticInitialBound.annularSieveCutoff := by
-  obtain ⟨sD,sS,sT,CD,CS,CT,CP,hCD,hCS,hCT,hCP,hbound⟩ :=
-    hexp.masked_poisson_complete hα deltaLoss hδ l A
+  pm_5267 hbound hexp.masked_poisson_complete
   refine ⟨sD,sS,sT,CD,CS,CT,CP,hCD,hCS,hCT,hCP,?_⟩
   intro ε hε M N X K T hM hK hT a ha D hD hsmall c
   classical
   have hDn : 0<(Ideal.absNorm D:ℝ) := by
-    exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun hz => hD (Ideal.absNorm_eq_zero_iff.mp hz))
+    pm_3073 Nat.pos_iff_ne_zero.mpr hz hD
   have hscale : 1≤X/(Ideal.absNorm D:ℝ) := (le_div_iff₀ hDn).mpr (by linarith)
   have hp := gcdRaySupport_quotient_properties N X a ha D hD c
   rw [annularRayGcdBlock_eq_active_difference M N X K (by linarith) a ha D hD hsmall c]
@@ -186,17 +142,15 @@ def selectedPoissonK (C M X η : ℝ) : ℝ := selectedPoissonT C M X η*X^2/M
 
 theorem selectedPoisson_bounds (C M X η : ℝ)
     (hC : 4≤C) (hM : 1≤M) (hX : 1≤X) (hMX : M≤X^2) (hη : 0≤η) :
-    4≤selectedPoissonT C M X η ∧ 1≤selectedPoissonK C M X η ∧
+    4≤ selectedPoissonT C M X η ∧ 1≤ selectedPoissonK C M X η ∧
       selectedPoissonK C M X η≤C*(M*X)^(η+2) := by
-  have hM0 : 0<M := by linarith
-  have hX0 : 0<X := by linarith
-  have hprod : 1≤M*X := by nlinarith
-  have hpow : 1≤(M*X)^η := Real.one_le_rpow hprod hη
-  have hT : 4≤selectedPoissonT C M X η := by
+  pm_3774
+  pm_3775 hprod X η hη
+  have hT : 4≤ selectedPoissonT C M X η := by
     unfold selectedPoissonT
     nlinarith
   have hfrac : 1≤X^2/M := (le_div_iff₀ hM0).mpr (by simpa using hMX)
-  have hK : 1≤selectedPoissonK C M X η := by
+  have hK : 1≤ selectedPoissonK C M X η := by
     unfold selectedPoissonK
     rw [mul_div_assoc]
     nlinarith
@@ -240,22 +194,17 @@ theorem selectedPoisson_middle_bound (C M X η α : ℝ)
     (hC : 4≤C) (hM : 1≤M) (hX : 1≤X) (hη : 0≤η) (hα : α≤2) :
     selectedPoissonT C M X η*Real.sqrt M*(2*selectedPoissonK C M X η)^(α-1/2) ≤
       4*C^3*(M*X)^(3*η)*(X^(2*α-1)*M^(1-α)) := by
-  have hM0 : 0<M := by linarith
-  have hX0 : 0<X := by linarith
+  pm_3774
   have hP : 0<M*X := by positivity
-  have hP1 : 1≤M*X := by nlinarith
-  have hpow : 1≤(M*X)^η := Real.one_le_rpow hP1 hη
-  have hT : 1≤selectedPoissonT C M X η := by unfold selectedPoissonT; nlinarith
-  have hT0 : 0<selectedPoissonT C M X η := by linarith
-  have hK0 : 0<selectedPoissonK C M X η := by unfold selectedPoissonK; positivity
+  pm_3775 hP1 X η hη
+  have hT : 1≤ selectedPoissonT C M X η := by unfold selectedPoissonT; nlinarith
+  pm_711
   have htwo : (2:ℝ)^(α-1/2)≤4 := by
     calc
       _ ≤ (2:ℝ)^(2:ℝ) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith)
       _ = 4 := by norm_num
   have hp3 : ((M*X)^η)^3 = (M*X)^(3*η) := by
-    rw [←Real.rpow_natCast,←Real.rpow_mul hP.le]
-    congr 1
-    ring
+    pm_3776 Real.rpow_natCast Real.rpow_mul hP.le
   have hT3 : (selectedPoissonT C M X η)^(α+1/2)≤C^3*(M*X)^(3*η) := by
     calc
       _ ≤ (selectedPoissonT C M X η)^(3:ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
@@ -264,7 +213,7 @@ theorem selectedPoisson_middle_bound (C M X η α : ℝ)
   calc
     _ ≤ 4*(selectedPoissonT C M X η*Real.sqrt M*(selectedPoissonK C M X η)^(α-1/2)) := by
       have hh := mul_le_mul_of_nonneg_right htwo
-        (show 0≤selectedPoissonT C M X η*Real.sqrt M*(selectedPoissonK C M X η)^(α-1/2) by positivity)
+        (show 0≤ selectedPoissonT C M X η*Real.sqrt M*(selectedPoissonK C M X η)^(α-1/2) by positivity)
       nlinarith [hh]
     _ = 4*((selectedPoissonT C M X η)^(α+1/2)*X^(2*α-1)*M^(1-α)) := by
       rw [selectedPoissonK,cutoff_middle_identity M X _ α hM0 hX0 hT0]
@@ -276,7 +225,7 @@ theorem selectedPoisson_middle_bound (C M X η α : ℝ)
 end CanonicalQuadraticSieve
 
 open Filter MeasureTheory EuclideanGeometry
-open scoped BigOperators Classical Topology InnerProductSpace ENNReal
+open scoped Classical Topology InnerProductSpace ENNReal
 
 namespace CubicEisenstein
 
@@ -336,15 +285,19 @@ lemma euclideanInversion_measurable : Measurable euclideanInversion := by
   simp +unfoldPartialApp only [euclideanInversion,inversion,dist_zero_right,vsub_eq_sub,sub_zero,vadd_eq_add,add_zero]
   fun_prop
 
-lemma euclideanUpperHalf_ne_zero (p : EuclideanSpatial) (hp : p∈euclideanUpperHalf) : p≠0 := by
+section
+variable (p : EuclideanSpatial) (hp : p∈euclideanUpperHalf)
+include p hp
+lemma euclideanUpperHalf_ne_zero : p≠0 := by
   intro he
   simp [euclideanUpperHalf,he] at hp
 
-lemma euclideanInversion_mem (p : EuclideanSpatial) (hp : p∈euclideanUpperHalf) :
+lemma euclideanInversion_mem :
     euclideanInversion p∈euclideanUpperHalf := by
   change 0<euclideanInversion p 2
   rw [euclideanInversion_apply]
   exact mul_pos (sq_pos_of_pos (one_div_pos.mpr (norm_pos_iff.mpr (euclideanUpperHalf_ne_zero p hp)))) hp
+end
 
 lemma euclideanInversion_image : euclideanInversion '' euclideanUpperHalf=euclideanUpperHalf := by
   apply Set.Subset.antisymm
@@ -354,12 +307,15 @@ lemma euclideanInversion_image : euclideanInversion '' euclideanUpperHalf=euclid
     exact ⟨euclideanInversion p,euclideanInversion_mem p hp,
       inversion_inversion 0 (by norm_num) p⟩
 
-lemma euclideanInversion_hasFDerivAt (p : EuclideanSpatial) (hp : p≠0) :
+section
+variable (p : EuclideanSpatial)
+include p
+lemma euclideanInversion_hasFDerivAt (hp : p≠0) :
     HasFDerivAt euclideanInversion (euclideanInversionDeriv p) p := by
   simpa [euclideanInversion,euclideanInversionDeriv,dist_zero_right] using
     (hasFDerivAt_inversion (R := (1:ℝ)) hp)
 
-lemma euclideanInversion_abs_det (p : EuclideanSpatial) :
+lemma euclideanInversion_abs_det :
     |(euclideanInversionDeriv p).det|=((1/‖p‖)^2)^3 := by
   unfold euclideanInversionDeriv
   change |LinearMap.det ((1/‖p‖)^2 • ((ℝ ∙ p)ᗮ).reflection.toLinearMap)|=_
@@ -369,14 +325,13 @@ lemma euclideanInversion_abs_det (p : EuclideanSpatial) :
     one_pow,mul_one]
   rw [abs_of_nonneg (one_div_nonneg.mpr (norm_nonneg p))]
 
-lemma euclideanInversion_jacobian_density (p : EuclideanSpatial) (hp : p∈euclideanUpperHalf) :
+lemma euclideanInversion_jacobian_density (hp : p∈euclideanUpperHalf) :
     ENNReal.ofReal |(euclideanInversionDeriv p).det| *
       hyperbolicDensity (euclideanInversion p)=hyperbolicDensity p := by
-  rw [euclideanInversion_abs_det,hyperbolicDensity,hyperbolicDensity,euclideanInversion_apply]
-  rw [←ENNReal.ofReal_mul (by positivity)]
-  congr 1
+  pm_7364 euclideanInversion_abs_det euclideanInversion_apply
   have hn : ‖p‖≠0 := norm_ne_zero_iff.mpr (euclideanUpperHalf_ne_zero p hp)
   field_simp
+end
 
 theorem euclideanInversion_preserves_hyperbolicVolume :
     Measure.map euclideanInversion hyperbolicEuclideanVolume=hyperbolicEuclideanVolume := by

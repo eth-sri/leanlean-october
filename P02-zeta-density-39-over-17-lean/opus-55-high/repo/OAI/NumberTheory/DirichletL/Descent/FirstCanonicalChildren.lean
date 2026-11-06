@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepChildren
 public import OAI.NumberTheory.DirichletL.Descent.ActualDepthBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,19 +16,19 @@ open InverseMomentFirstChildWindows InverseFirstGlobalCaps InverseSecondSourceBl
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+variable (p:ι→ O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 theorem source_total_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))(k:SourceIndex)(l j:ℕ)
-    (negative:Bool)(J:Finset σ)(lists:σ→Finset ι)(Z M r ell V eta tau window b:ℝ)
-    (hZ:1<Z)(heta:0≤eta)(hbin:2≤Z^eta)(hell:0≤ell)(hV:0≤V)
-    (hb:1≤b)(hbt:b≤Z^(6*eta))
-    (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta)):
+    (negative:Bool)(J:Finset σ)(lists:σ→ Finset ι)(Z M r ell V eta tau window b:ℝ)
+    (hZ:1<Z)(heta:0≤eta)(hbin:2≤Z ^eta)(hell:0≤ell)(hV:0≤V)
+    (hb:1≤b)(hbt:b≤Z ^(6*eta))
+    (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z ^(ell+eta)):
     let S:=source p pool Q k l j negative J lists Z M r ell V eta tau window b;
     ∀d∈keys p S,actualCellTotalExponent Z (columnScale Z r k l negative)
-      (exponent Z (k 2)) (exponent Z j) eta d≤r+3*ell+V+15*eta :=by
+      (exponent Z (k 2)) (exponent Z j) eta d≤ r+3*ell+V+15*eta :=by
   intro S d hd
-  obtain ⟨x,hx⟩:=(mem_keys_iff p S d).mp hd
+  pm_8008 S
   have hn:=retained_label_numeric p hp pool Q k l j Z ell eta hZ heta hbin hQ negative J lists
     (secondCutoff p Z M r ell V eta tau window k l j negative) b (columnScale Z r k l negative)
     x (cell_subset p S d hx)
@@ -42,16 +43,16 @@ theorem source_total_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))(k:SourceIndex)
 
 include hp in
 theorem source_state_bounds (pool:Finset ι)(Q:Finset (ι→₀ℕ))(k:SourceIndex)(l j:ℕ)
-    (negative:Bool)(J:Finset σ)(lists:σ→Finset ι)(Z M r ell V eta tau window b cutoff:ℝ)
-    (hZ:1<Z)(heta:0≤eta)(hbin:2≤Z^eta)(hell:0≤ell)(hV:0≤V)
-    (hb:1≤b)(hbt:b≤Z^(6*eta))(hwindow:Real.exp window≤Z^(4*eta))
-    (hterminal:cutoff≤ell+V)(hsmall:eta≤cutoff/16)
-    (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta)):
+    (negative:Bool)(J:Finset σ)(lists:σ→ Finset ι)(Z M r ell V eta tau window b cutoff:ℝ)
+    (hZ:1<Z)(heta:0≤eta)(hbin:2≤Z ^eta)(hell:0≤ell)(hV:0≤V)
+    (hb:1≤b)(hbt:b≤Z ^(6*eta))(hwindow:Real.exp window≤Z ^(4*eta))
+    (hterminal:cutoff≤ell+V)(hsmall:eta≤ cutoff/16)
+    (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z ^(ell+eta)):
     let S:=source p pool Q k l j negative J lists Z M r ell V eta tau window b;
     ∀d∈keys p S,
-      0≤max 0 (secondCellColumnExponent Z (columnScale Z r k l negative) d) ∧
+      0≤ max 0 (secondCellColumnExponent Z (columnScale Z r k l negative) d) ∧
       0≤actualCellLabelExponent Z (exponent Z (k 2)) (exponent Z j) eta d ∧
-      actualCellTotalExponent Z (columnScale Z r k l negative) (exponent Z (k 2)) (exponent Z j) eta d≤r+3*ell+V+15*eta ∧
+      actualCellTotalExponent Z (columnScale Z r k l negative) (exponent Z (k 2)) (exponent Z j) eta d≤ r+3*ell+V+15*eta ∧
       0≤actualCellRowExponent Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta d ∧
       actualCellRowExponent Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta d+3*cutoff/2≤M :=by
   intro S d hd

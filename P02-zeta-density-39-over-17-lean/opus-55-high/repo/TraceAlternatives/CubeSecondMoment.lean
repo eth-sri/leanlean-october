@@ -1,6 +1,7 @@
 module
 public import TraceAlternatives.DifferenceCubeSampling
 public import TraceAlternatives.WeightedCube
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -45,8 +46,8 @@ theorem actual_second_moment_cube_native (ε : ℝ) (hε : 0 < ε) :
   let S := differenceFloorSupport W
   let r : ℤ → ℝ := fun j => differenceFloorCount W j
   let v : ℤ → ℝ := fun j => ‖dirichletPoly M a ((p j).1 - (p j).2)‖
-  have hr : ∀ j ∈ S, 0 ≤ r j := fun _ _ => Nat.cast_nonneg _
-  have hv : ∀ j ∈ S, 0 ≤ v j := fun _ _ => norm_nonneg _
+  pm_5309 hr j S r Nat.cast_nonneg
+  pm_5309 hv j S v norm_nonneg
   have hWeights : (∑ j ∈ S, r j) = (W.card : ℝ) ^ 2 := by
     dsimp only [S, r]
     exact_mod_cast sum_differenceFloorCount W
@@ -93,7 +94,7 @@ theorem actual_second_moment_cube_native (ε : ℝ) (hε : 0 < ε) :
         apply sum_le_sum
         intro q hq
         have hj : differenceFloor q ∈ differenceFloorSupport W := mem_image.mpr ⟨q, hq, rfl⟩
-        exact pow_le_pow_left₀ (norm_nonneg _) ((hrep _ hj).2.2 q hq rfl) 2
+        pm_6242
       _ = _ := sum_differenceFloor_values W (fun j => v j ^ 2)
   exact hOriginal.trans (hBound.trans_eq (by ring))
 

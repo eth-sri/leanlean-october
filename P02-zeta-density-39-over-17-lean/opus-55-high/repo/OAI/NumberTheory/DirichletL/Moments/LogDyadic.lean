@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 public import OAI.NumberTheory.DirichletL.Moments.SecondWholeKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -35,8 +36,7 @@ theorem logAnnulus_compact : HasCompactSupport logAnnulus :=
     exact hx (logAnnulus_support hn))
 
 theorem logAnnulus_norm (x : ℝ) : ‖logAnnulus x‖≤1 := by
-  rw [logAnnulus,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (annulus_bounds _).1]
-  exact (annulus_bounds _).2
+  pm_7623 logAnnulus annulus_bounds
 
 theorem logAnnulus_log (q H : ℝ) (hq : 0<q) (hH : 0<H) :
     logAnnulus (Real.log (q/H))=(annulus (q/H):ℂ) := by

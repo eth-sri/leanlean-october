@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralRamifiedQuotient
 public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,19 +24,15 @@ theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : P
         (star (idealCoeff η P.val)*(P.val.absNorm:ℂ)^x) ((P.val.absNorm:ℂ)^(-w)) /
         ramifiedCorrection η u P hs x w z‖≤
       800*(P.val.absNorm:ℝ)^(-(1/2:ℝ))+
-        (if 2≤multiplicity (primaryGenerator P.val) u.val then 12*(P.val.absNorm:ℝ)^(-w.re) else 0) := by
-  let p := primaryGenerator P.val
-  have hp : Prime p := supported_primeGenerator_prime P hs
-  have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
-  have hg := supported_prime_data p hp hsp
+        (if 2≤ multiplicity (primaryGenerator P.val) u.val then 12*(P.val.absNorm:ℝ)^(-w.re) else 0) := by
+  pm_3885
+  pm_3889 HeckeFamily.O
+  pm_3886
   have ha : ‖actualACube η p‖≤1 := by
-    have h := actualAPhase_norm_le_one η p
-    rw [←actualACube_sq,norm_pow] at h
+    pm_3467
     nlinarith [norm_nonneg (actualACube η p)]
   have hρ := actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)
-  have hnorm : Ideal.absNorm (Ideal.span {p})=P.val.absNorm := congrArg Ideal.absNorm hspan
+  pm_6718
   constructor
   · have hb := ramifiedClosed_central_lower p hp hg.1 hg.2 _ _ _ x w z alpha eps
       (hspan.symm ▸ hQ) (by simpa only [hnorm] using hsmall) (targetMonoid_norm_le_one η p) ha hρ

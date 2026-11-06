@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.SquareLevelAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -49,12 +50,9 @@ theorem square_level_shape_bound {q x U D T K : ℝ}
   have h4 : 0 ≤ U ^ (-4 : ℝ) := Real.rpow_nonneg hU.le _
   have h8 : 0 ≤ U ^ (-8 : ℝ) := Real.rpow_nonneg hU.le _
   have h1 := mul_le_mul hq2 hD2 (sq_nonneg D) (by positivity : 0 ≤ 16 * x ^ 4)
-  have h2 := mul_le_mul hq18 hD4 (pow_nonneg hD.le 4)
-    (mul_nonneg (by norm_num) (Real.rpow_nonneg hx _))
-  have h3 := mul_le_mul hq12 hD4 (pow_nonneg hD.le 4)
-    (mul_nonneg (by norm_num) (Real.rpow_nonneg hx _))
-  have h1' := mul_le_mul_of_nonneg_right h1 h4
-  have h2' := mul_le_mul_of_nonneg_right h2 h8
+  pm_6841 h2 hq18
+  pm_6841 h3 hq12
+  pm_268 h1' mul_le_mul_of_nonneg_right h1 h4 h2' h2 h8
   have h3' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right h3 h8) hT
   nlinarith
 

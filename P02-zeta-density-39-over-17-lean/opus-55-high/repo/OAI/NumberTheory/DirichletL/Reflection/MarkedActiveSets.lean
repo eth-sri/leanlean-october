@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.MarkedInactive
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -25,8 +26,8 @@ lemma inactive_product_disjSum (z : β⊕σ→ℂ) (B : Finset β) (T : Finset �
   have hs : (Finset.univ:Finset (β⊕σ))\B.disjSum T=
       ((Finset.univ:Finset β)\B).disjSum ((Finset.univ:Finset σ)\T) := by
     ext x
-    cases x <;> simp
-  rw [hs,Finset.prod_disjSum]
+    aesop
+  simp_all
 
 theorem inactive_weight_three_blocks (e : α⊕β≃γ) (z : γ⊕σ→ℂ)
     (hz : ∀ a, z (Sum.inl (e (Sum.inl a)))=0) (F : Finset (γ⊕σ)→ℂ) :
@@ -39,7 +40,7 @@ theorem inactive_weight_three_blocks (e : α⊕β≃γ) (z : γ⊕σ→ℂ)
   · apply Finset.sum_congr (by ext A; simp only [Finset.mem_univ])
     intro A hA
     congr 1
-    apply Finset.prod_congr (by ext x; simp only [Finset.mem_sdiff,Finset.mem_univ])
+    pm_3320 x
     intro x hx
     rfl
   · rw [← Fintype.sum_prod_type']
@@ -49,12 +50,12 @@ theorem inactive_weight_three_blocks (e : α⊕β≃γ) (z : γ⊕σ→ℂ)
     conv_lhs => rw [hB]
     congr 1
     · refine Eq.trans ?_ (inactive_product_disjSum (fun x => z (joinedFiberEquiv e (Sum.inr x))) B.toLeft B.toRight)
-      apply Finset.prod_congr (by ext x; simp only [Finset.mem_sdiff,Finset.mem_univ])
+      pm_3320 x
       intro x hx
       rfl
     · apply congrArg F
       ext x
-      simp only [markedActiveSet,Finset.sumEquiv,Equiv.coe_fn_mk,Finset.mem_union,Finset.mem_image]
+      pm_94 markedActiveSet Finset.sumEquiv Equiv.coe_fn_mk Finset.mem_union Finset.mem_image
 end
 end SevenEighths.InverseReflectedPhase
 

@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.IntegerFixedDisplacementCount
 public import LaterPairs.Native.RobertSargosSignedDisplacementSums
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -15,8 +16,10 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 noncomputable section
 namespace TaoTrudgianYang2025
 
-theorem sum_affine_frequency_weight_le
-    (S : Finset (ℤ × ℤ × ℤ)) (f : ℕ → ℝ) {N : ℕ} {Q B : ℝ}
+section
+variable (S : Finset (ℤ × ℤ × ℤ))
+include S
+theorem sum_affine_frequency_weight_le (f : ℕ → ℝ) {N : ℕ} {Q B : ℝ}
     (hQ : 0 ≤ Q) (hB : 0 ≤ B)
     (hf : ∀ n ∈ Finset.Icc 1 N, 0 ≤ f n)
     (hd : ∀ p ∈ S, p.1.natAbs ∈ Finset.Icc 1 N)
@@ -28,8 +31,7 @@ theorem sum_affine_frequency_weight_le
   let D := S.image Prod.fst
   have hmaps : ∀ p ∈ S, p.1 ∈ D := fun p hp => Finset.mem_image.mpr ⟨p,hp,rfl⟩
   have hD : ∀ d ∈ D, d.natAbs ∈ Finset.Icc 1 N := by
-    intro d hd'
-    obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hd'
+    pm_2532 d hd' p hp
     exact hd p hp
   have hcard : ∀ d : ℤ,
       ((S.filter (fun p => p.1 = d)).card:ℝ) ≤ (4*Q+1)*(2*B+1) := by
@@ -53,8 +55,7 @@ theorem sum_affine_frequency_weight_le
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (sum_integer_natAbs_le_twice D f hf hD) (by positivity)
 
-theorem sum_affine_frequency_rpow_weight_le
-    (S : Finset (ℤ × ℤ × ℤ)) {N : ℕ} {Q B ε A : ℝ}
+theorem sum_affine_frequency_rpow_weight_le {N : ℕ} {Q B ε A : ℝ}
     (hQ : 0 ≤ Q) (hB : 0 ≤ B) (hε : 0 < ε) (hA : 0 ≤ A) (hN : 1 ≤ N)
     (hd : ∀ p ∈ S, p.1.natAbs ∈ Finset.Icc 1 N)
     (hq : ∀ p ∈ S, |(p.2.1:ℝ)| ≤ 2*Q)
@@ -71,6 +72,7 @@ theorem sum_affine_frequency_rpow_weight_le
         (mul_le_mul_of_nonneg_left (sum_positive_displacement_weight_le hε hA hN)
           (by norm_num)) (by positivity)
     _ = _ := by ring
+end
 
 end TaoTrudgianYang2025
 

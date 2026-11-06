@@ -2,6 +2,7 @@ module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.PoissonShift
 public import WeylPort.AFE.PowerWeights
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,8 +27,7 @@ theorem afe_partIRegularity {sigma c a b : ℝ} (hsigma : 0 ≤ sigma) (hc : 0 <
     (afeWeight_hasDerivAt sigma (hx x hxi)).deriv
   have hsub : Set.Icc a b ⊆ Set.Ioi 0 := fun x hxi => hx x hxi
   refine ⟨hab, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · intro x hxi
-    exact (afePhase_hasDerivAt c (hx x hxi)).differentiableAt
+  pm_8853 afePhase_hasDerivAt c
   · have hd : ContinuousOn (fun x => c / x) (Set.Icc a b) :=
       continuousOn_const.div continuousOn_id (fun x hxi => (hx x hxi).ne')
     exact hd.congr hdf
@@ -37,8 +37,7 @@ theorem afe_partIRegularity {sigma c a b : ℝ} (hsigma : 0 ≤ sigma) (hc : 0 <
   · intro x hxi y hyi hxy
     rw [hdf x hxi, hdf y hyi]
     exact div_le_div_of_nonneg_left hc.le (hx x hxi) hxy
-  · intro x hxi
-    exact (afeWeight_hasDerivAt sigma (hx x hxi)).differentiableAt
+  pm_8853 afeWeight_hasDerivAt sigma
   · have hd : ContinuousOn (fun x => -sigma * x ^ (-sigma - 1)) (Set.Icc a b) :=
       continuousOn_const.mul (continuousOn_id.rpow_const (fun x hxi => Or.inl (hx x hxi).ne'))
     exact hd.congr hdg

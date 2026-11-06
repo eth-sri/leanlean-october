@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Smooth
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,9 +27,7 @@ theorem fullModulusCorrelation_norm_le (u v : O) (_hu : u ≠ 0) (_hv : v ≠ 0)
     _ ≤ ∑ _x : Residue u, ∑ _y : Residue v, (1 : ℝ) := by
       apply Finset.sum_le_sum
       intro x hx
-      apply (norm_sum_le _ _).trans
-      apply Finset.sum_le_sum
-      intro y hy
+      pm_3719 y hy
       split_ifs
       · rw [norm_mul, norm_star]
         exact (mul_le_of_le_one_left (norm_nonneg _)
@@ -45,8 +44,7 @@ theorem actualCorrelation_norm_le (u v : O)
       (Ideal.absNorm (Ideal.span {u}) : ℝ) * (Ideal.absNorm (Ideal.span {v}) : ℝ) := by
   let := finite_quotient_span (supported_element_ne_zero u hu)
   let := finite_quotient_span (supported_element_ne_zero v hv)
-  let : Fintype (Residue u) := Fintype.ofFinite _
-  let : Fintype (Residue v) := Fintype.ofFinite _
+  pm_2900
   unfold actualCorrelation
   exact fullModulusCorrelation_norm_le u v (supported_element_ne_zero u hu)
     (supported_element_ne_zero v hv) _ _ j
@@ -59,8 +57,7 @@ theorem weighted_set_lattice_tail (A : ℕ) :
       ‖∑' h : D, δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
         B * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) /
           ((min 1 K) ^ 2 * (1 + T) ^ A) := by
-  obtain ⟨s, C, hC, ht⟩ := paperRadialFourier_lattice_tail A
-  refine ⟨s, C, hC, ?_⟩
+  pm_3629 ht paperRadialFourier_lattice_tail A
   intro W D K T B hK hT hB hD c δ hc hδ
   let L := {h : O | T ≤ K * ‖eisEmbedding h‖ ^ 2}
   let f : D → L := fun h => ⟨h.val, hD h.val h.property⟩
@@ -100,8 +97,7 @@ theorem uniform_sector_lattice_tail (A : ℕ) :
       ‖∑' h : D, δ h.val * c h.val * paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
         B * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) /
           ((min 1 K₀) ^ 2 * (1 + T) ^ A) := by
-  obtain ⟨s, C, hC, ht⟩ := weighted_set_lattice_tail A
-  refine ⟨s, C, hC, ?_⟩
+  pm_3629 ht weighted_set_lattice_tail A
   intro W D K₀ T B hK₀ hT hB hD K hK c δ hc hδ
   have hD' (h : O) (hh : h ∈ D) : T ≤ K * ‖eisEmbedding h‖ ^ 2 :=
     (hD h hh).trans (mul_le_mul_of_nonneg_right hK (sq_nonneg _))

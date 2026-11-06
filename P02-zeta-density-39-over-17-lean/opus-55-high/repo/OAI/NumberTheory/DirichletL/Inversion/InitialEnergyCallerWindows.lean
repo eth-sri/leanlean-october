@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerRanges
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
 open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
 local notation "Eis"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
+variable {ι:Type*}[DecidableEq ι](p:ι→ Eis)
 
 def sourceRelative (x:Source (ι:=ι) 0)(Z D B v θ H:ℝ) : Fin 6→ℝ :=
   relativeNorm (coordinates p (sourcePoint x ∅ ∅)) Z D B v θ H
@@ -40,7 +41,7 @@ theorem windowSource_four_nonzero
     {x:Point ι}(hx:x∈pointSource pool (windowSource p S ψ Z D B v θ H))(i:Fin 4) :
     ψ i (relativeNorm (coordinates p x) Z D B v θ H (InverseSecondChildWindows.outerIndex i))≠0 := by
   obtain ⟨s,hs,hx⟩ := Finset.mem_biUnion.mp hx
-  obtain ⟨⟨N,M⟩,hNM,rfl⟩ := Finset.mem_image.mp hx
+  pm_3195 N M hNM
   have ho := (Finset.mem_filter.mp hs).2
   change outerCutoff ψ (sourceRelative p s Z D B v θ H)≠0 at ho
   rw [sourceRelative_four]
@@ -62,10 +63,10 @@ theorem physicalBlock_windowSource
     (Z D B v θ H m:ℝ)(w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ)) :
     physicalBlock p hp hcop hg (pointSource pool S)
-      ((fun x=>w x*outerCutoff ψ (sourceRelative p x Z D B v θ H))∘erasePoint)
+      ((fun x=>w x*outerCutoff ψ (sourceRelative p x Z D B v θ H))∘ erasePoint)
       Ψ j marks W₁ W₂ Φ Z D m =
     physicalBlock p hp hcop hg (pointSource pool (windowSource p S ψ Z D B v θ H))
-      ((fun x=>w x*outerCutoff ψ (sourceRelative p x Z D B v θ H))∘erasePoint)
+      ((fun x=>w x*outerCutoff ψ (sourceRelative p x Z D B v θ H))∘ erasePoint)
       Ψ j marks W₁ W₂ Φ Z D m := by
   unfold physicalBlock
   rw [pointSource_sum,pointSource_sum,windowSource,Finset.sum_filter]

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CubeSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,7 +32,10 @@ def markedSecondOriginal {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : Secon
     x.cube.leftExponent x.cube.rightExponent x.cube.leftBit x.cube.rightBit
     x.quotient x.second.frequency x.oldAssigned x.newAssigned
 
-theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
+section
+variable (hp : ∀ i, p i ≠ 0)
+include hp
+theorem markedSecondOriginal_injOn
     (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} :
     Set.InjOn (markedSecondOriginal (Jo:=Jo) (Jn:=Jn) p) {x | x.cube.Admissible} := by
   intro x hx y hy hxy
@@ -41,12 +45,9 @@ theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
         congrArg (fun z : SecondOriginalSource ι Jo Jn => z.b1*z.b2) hxy
     · funext i
       fin_cases i
-      · simpa [markedSecondOriginal,cubeSecondSource,cubeDivisorKey] using
-          congrArg SecondOriginalSource.b1 hxy
-      · simpa [markedSecondOriginal,cubeSecondSource,cubeDivisorKey] using
-          congrArg SecondOriginalSource.A1 hxy
-      · simpa [markedSecondOriginal,cubeSecondSource,cubeDivisorKey] using
-          congrArg SecondOriginalSource.A2 hxy
+      pm_5774 SecondOriginalSource.b1
+      pm_5774 SecondOriginalSource.A1
+      pm_5774 SecondOriginalSource.A2
   apply MarkedSecondSource.ext hc
   · exact sourceIdeal_injective p hinj (congrArg SecondOriginalSource.C hxy)
   · exact sourceIdeal_injective p hinj (congrArg SecondOriginalSource.dK hxy)
@@ -59,7 +60,7 @@ theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
   · exact congrArg SecondOriginalSource.oldAssigned hxy
   · exact congrArg SecondOriginalSource.newAssigned hxy
 
-theorem markedSecondTuple_injOn (hp : ∀ i, p i ≠ 0)
+theorem markedSecondTuple_injOn
     (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : Eisˣ) :
     Set.InjOn (fun x : MarkedSecondSource ι Jo Jn => originalSecondTuple p u v (markedSecondOriginal p x))
       {x | x.cube.Admissible} := by
@@ -67,7 +68,7 @@ theorem markedSecondTuple_injOn (hp : ∀ i, p i ≠ 0)
   exact markedSecondOriginal_injOn p hp hinj hx hy
     (originalSecondTuple_injective p hinj u v he)
 
-theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
+theorem markedSecondOriginal_valid
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
@@ -83,7 +84,7 @@ theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
     x.cube.leftExponent x.cube.rightExponent x.cube.leftBit x.cube.rightBit x.cube.support_pos
     x.quotient x.second.frequency x.oldAssigned x.newAssigned hold hnew
 
-theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
+theorem actual_marked_second_source_fiber
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
@@ -112,8 +113,7 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
     exact originalSecondTuple_valid p hp hpr u v (markedSecondOriginal p x)
       (markedSecondOriginal_valid p hp hpr hcop x (hCB x hx) (hD x hx) (hE x hx) (hold x hx) (hnew x hx))
   have hv : ∀ y ∈ S.image encode, Valid y γ f k := by
-    intro y hy
-    obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hy
+    pm_67 y hy x hx Finset.mem_image.mp
     obtain ⟨hxs,he⟩ := Finset.mem_filter.mp hx
     simpa only [he] using hvalid x hxs
   have hi : Set.InjOn encode (S : Set (MarkedSecondSource ι Jo Jn)) := by
@@ -123,6 +123,7 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
   have hb := valid_tuple_card_le_slot_cap (S.image encode) γ f k hf hq ht hr hv K ho hn
   rw [Finset.card_image_iff.mpr hi] at hb
   exact hb
+end
 
 end
 end SevenEighths.InverseMoment

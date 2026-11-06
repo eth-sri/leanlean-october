@@ -5,13 +5,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.DiskControl
 public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedBin
 public import OAI.NumberTheory.DirichletL.PrimeRows.PrincipalMask
 public import OAI.NumberTheory.DirichletL.PrimeRows.Valuation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators Topology ComplexConjugate
+open scoped Classical Topology ComplexConjugate
 open Set Complex
 namespace SevenEighths.ProbeRowReflectedAllocation
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
@@ -68,15 +68,16 @@ theorem allocation_of_deficit {k : ℕ} (q : Fin k → ℝ)
 lemma prime_norm_ge_one (P : Ideal O) (hP : Prime P) : (1 : ℝ) ≤ P.absNorm := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hP.ne_zero)
 
-lemma original_row_conductor_le (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (u : FreeRow)
+include S hS u
+lemma original_row_conductor_le :
     ((rowCharacter S hS u).modulus.absNorm : ℝ) ≤
       (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm := by
   exact_mod_cast (by simpa only [fixedConductorConstant, mul_assoc, mul_comm, mul_left_comm]
     using rowCharacter_conductor S hS u)
 
-lemma original_row_deletion_radical_le (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
+lemma original_row_deletion_radical_le :
     ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ≤
       (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm :=
   by
@@ -86,12 +87,10 @@ lemma original_row_deletion_radical_le (S : Finset (Ideal O))
       rw [SmoothMobiusCorrection.prod_primeSet χ.modulus (fun J : Ideal O => J)]
       exact IdealMobiusDivisorSum.support_product_dvd χ.modulus_ne_bot (Finset.Subset.refl _)
     have hn : ((radical χ.modulus).absNorm : ℝ) ≤ χ.modulus.absNorm := by
-      exact_mod_cast Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr
-        (Ideal.absNorm_eq_zero_iff.not.mpr χ.modulus_ne_bot)) (map_dvd Ideal.absNorm hd)
+      pm_7234
     exact hn.trans (original_row_conductor_le S hS u)
 
-theorem row_same_primitive_allocation (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
+theorem row_same_primitive_allocation :
     ∃ ψ : Character, (rowCharacter S hS u).modulus ≤ ψ.modulus ∧
       FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       (∀ I : Ideal O, idealCoeff (rowCharacter S hS u) I =
@@ -105,11 +104,12 @@ theorem row_same_primitive_allocation (S : Finset (Ideal O))
             ((fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm) ^
               (a-1/2+6*e) * ∏ i, ((P i).absNorm : ℝ) ^ (-(1/2 : ℝ)) := by
   obtain ⟨ψ, hle, hp, hm, hdef⟩ := rowCharacter_primitive_selected_deficit S hS u
-  refine ⟨ψ, hle, hp, hm, ?_⟩
+  pm_505 ψ hle hp hm
   intro k P hP hdis j hj hdiv a e ha he
   apply allocation_of_deficit _ (fun i => prime_norm_ge_one _ (hP i)) j hj
     _ _ a e (by positivity) ha he
   exact_mod_cast hdef k P hP hdis j hj hdiv
+end
 
 lemma actual_multiplicity_divisor (u : FreeRow) (p : O) (hp : Prime p) :
     (Ideal.span {p} : Ideal O) ^ multiplicity p u.val ∣ Ideal.span {u.val} ∧
@@ -158,7 +158,7 @@ theorem central_deletion_bound (ε : ℝ) (hε : 0 < ε) :
       ∀ w : ℂ, w.re = 1-a-6*e →
       ‖factors χ.modulus ψ w‖ * ‖(factors χ.modulus ψ (1-conj w))⁻¹‖ ≤
         C * ((radical χ.modulus).absNorm : ℝ) ^ (6*e+2*ε) := by
-  obtain ⟨Cl, hCl, hl⟩ := factors_any_re_subpower_bound ε hε
+  pm_98 Cl hCl hl factors_any_re_subpower_bound ε hε
   obtain ⟨Cr, hCr, hr⟩ := factors_radical_subpower_bound (1/2) ε (by norm_num) hε
   refine ⟨Cl*Cr, mul_pos hCl hCr, ?_⟩
   intro χ ψ a e he ha ha1 w hw
@@ -184,8 +184,10 @@ theorem central_deletion_bound (ε : ℝ) (hε : 0 < ε) :
       congr 2
       ring
 
-theorem buffered_same_primitive_reflected (e ε : ℝ)
-    (he : 0 < e) (he' : e < 1/1000) (hε : 0 < ε) :
+section
+variable (e ε : ℝ) (he : 0 < e) (he' : e < 1/1000) (hε : 0 < ε)
+include e ε he he' hε
+theorem buffered_same_primitive_reflected :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι → Character)
       (B a : ℝ) (i : ℕ), 2 < B → 51/100 ≤ a → a ≤ 1 →
       detectorMaximum χ (3*(i+1 : ℕ)*B) < a+2*e →
@@ -200,7 +202,7 @@ theorem buffered_same_primitive_reflected (e ε : ℝ)
         (presentationComplexity (χ j) ((3*i+2 : ℕ)*B)) ^ ε := by
   obtain ⟨Cg, hCg, hg⟩ := HeckeDyadicReflection.original_reflected_bound
   obtain ⟨Cb, hCb, hb⟩ := buffered_reflected_right_bound e ε he he' hε
-  obtain ⟨Cd, hCd, hd⟩ := central_deletion_bound ε hε
+  pm_98 Cd hCd hd central_deletion_bound ε hε
   refine ⟨Cg*Cb*Cd, by positivity, ?_⟩
   intro ι _ χ B a i hB ha ha1 hmax j ψ hp hχ hm w hw hwi
   have hr := hg (χ j) ψ hp hχ hm w (by rw [hw]; linarith) (by rw [hw]; linarith)
@@ -221,8 +223,7 @@ theorem buffered_same_primitive_reflected (e ε : ℝ)
       gcongr
     _ = _ := by ring
 
-theorem source_calibrated_reflected_allocation (e ε : ℝ)
-    (he : 0 < e) (he' : e < 1/1000) (hε : 0 < ε) :
+theorem source_calibrated_reflected_allocation :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
       (hmaxS : ∀ P ∈ S, P.IsMaximal)
       (_hbad : CanonicalQuadraticSieve.fixedBadPrimes ⊆ S)
@@ -299,9 +300,9 @@ theorem source_calibrated_reflected_allocation (e ε : ℝ)
             (a-1/2+6*e)) * ∏ j, ((P j).absNorm : ℝ) ^ (-(1/2 : ℝ))) :=
         mul_le_mul_of_nonneg_left hal (by positivity)
       _ = _ := by ring
+end
 
 end SevenEighths.ProbeRowReflectedAllocation
 
-end
 
 end OAI

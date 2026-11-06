@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.LowGramIntegrated
 public import OAI.NumberTheory.DirichletL.Detector.LowInverseEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,7 +20,7 @@ def lowGramFactor (C : CalibrationData) (X Y δ : ℝ) : ℝ :=
     (Y^2/lowPhysicalScale C X Y)^2/Y)*Y^δ)
 
 def lowInverseMass (C : CalibrationData) (a b : ℝ) (ha : 0<a) (hb : 0<b)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : RayRing→O→ℂ) : ℝ :=
+    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : RayRing→ O→ℂ) : ℝ :=
   ∑σ : RayRing,Real.sqrt (∑m∈lowNumeratorRows a b ha hb (lowPhysicalScale C X Y)
     (lowPhysicalScale_pos C X Y hX hY),‖B σ m‖^2)
 
@@ -36,15 +37,15 @@ theorem compensation_tuple_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hW0s : ContDiff ℝ ∞ W0) (hW1s : ContDiff ℝ ∞ W1) (hWM : ∀x,‖W1 x‖≤M) :
     ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal),fixedBadPrimes⊆S→
-    ∃C : ℝ,0<C ∧ ∀(K : ℕ)(η : HeckeFamily.Character)(slots : Fin K→Finset O)
-      (hslots : ∀i x,x∈slots i→x≠0)(J : Finset (Fin K))(W : Fin K→ℝ→ℂ)(P : Fin K→ℝ)
+    ∃C : ℝ,0<C ∧ ∀(K : ℕ)(η : HeckeFamily.Character)(slots : Fin K→ Finset O)
+      (hslots : ∀i x,x∈slots i→ x≠0)(J : Finset (Fin K))(W : Fin K→ℝ→ℂ)(P : Fin K→ℝ)
       (X Y T t : ℝ)(hX : 0<X)(hY : 0<Y)(_hT : 0<T),
       (∀a : LowUnselectedTuple slots J,1≤Y/elementNorm (∏i : J,(a i).val))→
       (∀a : LowUnselectedTuple slots J,
         1≤(Y/elementNorm (∏i : J,(a i).val))^2/
           lowPhysicalScale (calibrationForSet S hS) (X/elementNorm (∏i : J,(a i).val))
             (Y/elementNorm (∏i : J,(a i).val)))→
-      ‖∑p : (∀i,↥(slots i)),compensationSubsetWeight η W P (fun i=>(p i).val) J*
+      ‖∑p : (∀i,↥(slots i)),compensationSubsetWeight η W P (fun i=>(p i).val) J *
         compensationRowTest η (calibrationForSet S hS) W0 W1 (fun i=>(p i).val) J X Y T t*
           selectedSlotFactor W P (fun i=>(p i).val) J t‖≤
       C*∑a : LowUnselectedTuple slots J,
@@ -67,11 +68,8 @@ theorem compensation_tuple_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) W0 a0 b0 ha0 hW0 hW0s S hS hbad
   refine ⟨C,hC,?_⟩
   intro K η slots hslots J W P X Y T t hX hY hT hYs hPs
-  rw [compensation_tuple_low_polynomial η S hS hbad W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hW0s
-    slots hslots J W P X Y T t hX hY hT]
-  apply (norm_sum_le _ _).trans
-  rw [Finset.mul_sum]
-  apply Finset.sum_le_sum
+  pm_6789 compensation_tuple_low_polynomial hW0s W P
+  pm_492
   intro a ha
   have hL := lowUnselectedProduct_norm_pos slots hslots J a
   have hh := hgram (X/elementNorm (∏i : J,(a i).val)) (Y/elementNorm (∏i : J,(a i).val))

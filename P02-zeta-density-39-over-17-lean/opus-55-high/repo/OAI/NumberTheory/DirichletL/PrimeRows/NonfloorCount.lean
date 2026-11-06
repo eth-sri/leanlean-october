@@ -2,27 +2,26 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorFixedAmplitudeCount
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorHighBatchCount
 public import OAI.NumberTheory.DirichletL.Detector.CentralMixedMargins
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
 open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
 
-theorem balanced_adaptive_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
-    (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀y,0≤φ y) (hφne : φ≠0)
+section
+variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O)) (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ) (hφp : tsupport φ⊆Ioi 0)
+include M H hH S φ hφ hφc hφp
+theorem balanced_adaptive_count_from_raw_moments (hφ0 : ∀y,0≤φ y) (hφne : φ≠0)
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀y,φ y≤B₀)
     (εm : ℝ) (hεm : 0<εm) :
-    ∃c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠU : ℝ in atTop,
+    ∃c κ K₀ : ℝ,0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠU : ℝ in atTop,
       ∀(a ε T allowance Δ ν C height q : ℝ) (i : ℕ),
       1<U → 51/100<a → 2*a-1≤5/6 → 0≤ε → ε≤1/1000 →
       0≤Δ → Δ≤1/8 → 0<ν → 0≤C → 0≤height →
@@ -37,10 +36,8 @@ theorem balanced_adaptive_count_from_raw_moments
         (Fintype.card B.Bin:ℝ)*
         U^(Endpoint.balancedRowCount (2*a-1) (1/2-q/(2*a-1))+
           Δ/4+159*ε+εm+B.mesh+7*ν) := by
-  obtain ⟨c,κ,K₀,hc,hc1,hκ,hK,hcount⟩ :=
-    HeckeDetectorFixedAmplitudeCount.fixed_amplitude_count_from_raw_moments
-      M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
-  refine ⟨c,κ,K₀,hc,hc1,hκ,hK,?_⟩
+  pm_3488 HeckeDetectorFixedAmplitudeCount.fixed_amplitude_count_from_raw_moments
+  pm_3149
   filter_upwards [hcount] with U hcount
   intro a ε T allowance Δ ν C height q i hU ha hd hε hε' hΔ hΔ' hν hC hh hf Label Slot _ B hne hq hmom
   have hδ : 0<2*a-1 := by linarith
@@ -58,15 +55,11 @@ theorem balanced_adaptive_count_from_raw_moments
   rw [he] at hc'
   exact hc'
 
-theorem high_adaptive_count_from_raw_moments
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (hH : RayOrthogonality.globalUnits M≤H) (S : Finset (Ideal O))
-    (φ : ℝ→ℝ) (hφ : ContDiff ℝ ∞ φ) (hφc : HasCompactSupport φ)
-    (hφp : tsupport φ⊆Ioi 0) (hφ0 : ∀ y,0≤φ y) (hφne : φ≠0)
+theorem high_adaptive_count_from_raw_moments (hφ0 : ∀ y,0≤φ y) (hφne : φ≠0)
     (a₀ b₀ B₀ : ℝ) (ha₀ : 0<a₀) (hab₀ : a₀≤b₀) (hB₀ : 0<B₀)
     (hφs : Function.support φ⊆Ioo a₀ b₀) (hφB : ∀ y,φ y≤B₀)
     (εm : ℝ) (hεm : 0<εm) :
-    ∃ c κ K₀ : ℝ,0<c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
+    ∃ c κ K₀ : ℝ,0< c ∧ c≤1 ∧ 0<κ ∧ 0≤K₀ ∧ ∀ᶠ U : ℝ in atTop,
       ∀ (a ε T allowance Δ C height q : ℝ) (i : ℕ),
       1<U → 5/6<2*a-1 → a≤1 → 0≤ε → ε≤1/1000 → 0≤C → 0≤height →
       2*Real.pi*allowance+(3*i : ℕ)*T≤height →
@@ -75,17 +68,15 @@ theorem high_adaptive_count_from_raw_moments
         Moments (B.fiber bin j J K hne) Δ c κ C height εm) →
       (B.rows.card : ℝ)≤(Fintype.card Label:ℝ)*(HeckeDetectorWitnessRows.dyadicLength U:ℝ)^2*
         fiberConstant C height K₀*(Fintype.card B.Bin:ℝ)*U^(1-(2*a-1)+78*ε+εm) := by
-  obtain ⟨c,κ,K₀,hc,hc1,hκ,hK,hcount⟩ :=
-    HeckeDetectorHighBatchCount.high_batch_count_from_raw_moments
-      M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
-  refine ⟨c,κ,K₀,hc,hc1,hκ,hK,?_⟩
+  pm_3488 HeckeDetectorHighBatchCount.high_batch_count_from_raw_moments
+  pm_3149
   filter_upwards [hcount] with U hcount
   intro a ε T allowance Δ C height q i hU ha ha' hε hε' hC hh hf
   rw [cutoff_eq_high (2*a-1) q ha]
   exact hcount a ε T allowance Δ C height i hU ha.le ha' hε hε' hC hh hf
+end
 
 end SevenEighths.ProbeHighRowFamily
 
-end
 
 end OAI

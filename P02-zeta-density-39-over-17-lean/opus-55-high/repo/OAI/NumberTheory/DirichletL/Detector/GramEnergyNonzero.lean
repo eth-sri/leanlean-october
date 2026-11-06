@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Detector.GramFrequencyConvergence
 public import OAI.NumberTheory.DirichletL.Detector.GramNonzeroFrequency
 public import OAI.NumberTheory.DirichletL.Detector.LowGramDiagonal
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -49,10 +50,7 @@ theorem original_energy_nonzero (C : CalibrationData) (W : ℝ→ℂ) (hW : HasC
   simp only [mul_add]
   congr 1
   congr 1
-  apply Finset.sum_congr rfl
-  intro I hI
-  apply Finset.sum_congr rfl
-  intro J hJ
+  pm_3397 I hI J hJ
   ring
 
 end SevenEighths.ProbeGramCommon

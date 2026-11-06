@@ -1,6 +1,7 @@
 module
 public import MathCollab.Density.ProductGrouping
 public import MathCollab.Density.Packing
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,8 +13,11 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 
+section
+variable (M : ℕ) (U : Finset ℝ)
+include M U
 /-- The Gram identity is over all ordered pairs, with no time-pair restriction. -/
-theorem completePairEnergy_gram (M : ℕ) (U : Finset ℝ) :
+theorem completePairEnergy_gram :
     completePairEnergy M U =
       ∑ q ∈ Finset.Ico M (2*M), ∑ r ∈ Finset.Ico M (2*M),
         ‖∑ t ∈ U, dirichletPhase ((q : ℝ)/M) t *
@@ -24,12 +28,12 @@ theorem completePairEnergy_gram (M : ℕ) (U : Finset ℝ) :
   simpa only [one_mul, map_one, mul_one, ← dirichletPhase_sub,
     completePairEnergy, dyadicPolynomial, Complex.ofReal_sum] using hh
 
-theorem completePairEnergy_diagonal_lower (M : ℕ) (U : Finset ℝ) :
+theorem completePairEnergy_diagonal_lower :
     (M : ℝ)*(U.card : ℝ)^2 ≤ completePairEnergy M U := by
   rw [completePairEnergy_gram]
   calc
     _ = ∑ _q ∈ Finset.Ico M (2*M), (U.card : ℝ)^2 := by
-      have hc : (Finset.Ico M (2*M)).card = M := by simp; omega
+      pm_5161 Finset.Ico M
       simp only [Finset.sum_const, nsmul_eq_mul, hc]
     _ ≤ _ := by
       apply Finset.sum_le_sum
@@ -42,14 +46,13 @@ theorem completePairEnergy_diagonal_lower (M : ℕ) (U : Finset ℝ) :
       exact Finset.single_le_sum
         (f := fun r : ℕ => ‖∑ t ∈ U, dirichletPhase ((q : ℝ)/M) t *
           conj (dirichletPhase ((r : ℝ)/M) t)‖^2) (fun _ _ => sq_nonneg _) hq
+end
 
 theorem norm_sum_mul_sq_le {ι : Type*} (S : Finset ι) (a f : ι → ℂ)
     (ha : ∀ n ∈ S, ‖a n‖ ≤ 1) :
     ‖∑ n ∈ S, a n*f n‖^2 ≤ (S.card : ℝ)*∑ n ∈ S, ‖f n‖^2 := by
   have hnorm : ‖∑ n ∈ S, a n*f n‖ ≤ ∑ n ∈ S, ‖f n‖ := by
-    apply (norm_sum_le _ _).trans
-    apply Finset.sum_le_sum
-    intro n hn
+    pm_244 Finset.sum_le_sum n hn
     rw [norm_mul]
     simpa only [one_mul] using mul_le_mul_of_nonneg_right (ha n hn) (norm_nonneg (f n))
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq S (fun _ => (1 : ℝ)) (fun n => ‖f n‖)
@@ -65,22 +68,19 @@ theorem detecting_insertion_bound {N : ℕ} {a : ℕ → ℂ} (U : Finset ℝ)
         ‖∑ t ∈ U, dirichletPhase ((n : ℝ)/N) t * g t / detectingPolynomial N a t‖^2 := by
   have he : (∑ t ∈ U, g t) = ∑ n ∈ Finset.Ioc N (2*N),
       a n * ∑ t ∈ U, dirichletPhase ((n : ℝ)/N) t * g t / detectingPolynomial N a t := by
-    simp only [Finset.mul_sum]
-    rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
+    pm_566 Finset.mul_sum Finset.sum_comm
     intro t ht
     calc
       g t = detectingPolynomial N a t * g t / detectingPolynomial N a t := by
         field_simp [hD t ht]
       _ = _ := by
-        simp only [detectingPolynomial, Finset.sum_mul, Finset.sum_div]
-        apply Finset.sum_congr rfl
+        pm_424 detectingPolynomial Finset.sum_mul Finset.sum_div Finset.sum_congr
         intro n hn
         ring
   rw [he]
   have hh := norm_sum_mul_sq_le (Finset.Ioc N (2*N)) a
     (fun n => ∑ t ∈ U, dirichletPhase ((n : ℝ)/N) t * g t / detectingPolynomial N a t) ha
-  have hc : (Finset.Ioc N (2*N)).card = N := by simp; omega
+  pm_5161 Finset.Ioc N
   simpa only [hc] using hh
 
 theorem normalized_product_phase {N M n q : ℕ} (hN : 0 < N) (hM : 0 < M)

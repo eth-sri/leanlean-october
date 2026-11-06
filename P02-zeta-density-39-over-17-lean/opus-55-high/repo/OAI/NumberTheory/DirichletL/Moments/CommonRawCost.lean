@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,8 +22,7 @@ theorem frozen_normalized_cost (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal 
     (a b : ℝ) (ha : 0<a) (hW : ∀ i,Function.support (Wslot i)⊆Set.Icc a b) :
     ‖frozenCoefficient B C R ν Wslot P‖^2/rawReduction B P≤
       ((∏ i,M i)^2*(max 1 b)^Fintype.card ι)/(Ideal.absNorm C:ℝ) := by
-  have hN : (0:ℝ)<Ideal.absNorm C := by
-    exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hC)
+  pm_105 hN C hC
   have hR := rawReduction_pos B hB P hP
   by_cases hz : frozenCoefficient B C R ν Wslot P=0
   · rw [hz,norm_zero,zero_pow (by decide : 2≠0),zero_div]

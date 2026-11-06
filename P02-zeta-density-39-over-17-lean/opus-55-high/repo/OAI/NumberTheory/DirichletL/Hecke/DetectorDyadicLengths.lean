@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorSaturation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,14 +30,14 @@ lemma dyadic_scale_bounds (U : ℝ) (hU : 8≤U) (j k : ℕ)
       0≤Real.logb U ((2 : ℝ)^k) ∧ Real.logb U ((2 : ℝ)^k)≤22 ∧
       U^(Real.logb U ((2 : ℝ)^j))=(2 : ℝ)^j ∧
       U^(Real.logb U ((2 : ℝ)^k))=(2 : ℝ)^k := by
-  obtain ⟨hj,hk⟩ := HeckeDetectorDyadicBridge.scales_le_eight_terminal (U^21) j k hprod
-  obtain ⟨hr,hr',he⟩ := log_scale_bounds U ((2 : ℝ)^j) hU (one_le_pow₀ (by norm_num)) hj
-  obtain ⟨hm,hm',he'⟩ := log_scale_bounds U ((2 : ℝ)^k) hU (one_le_pow₀ (by norm_num)) hk
-  exact ⟨hr,hr',hm,hm',he,he'⟩
+  pm_7694 HeckeDetectorDyadicBridge.scales_le_eight_terminal
+  pm_8418 hr hr' he j hj
+  pm_8418 hm hm' he' k hk
+  grind
 
 lemma support_exponents (U t r m ε : ℝ) (hU : 1<U) (hcost : 8≤U^ε)
     (hleft : U^r<4*U^t) (hright : U^t/8<U^r*U^m) :
-    r≤t+ε ∧ t-ε≤r+m := by
+    r≤t+ε ∧ t-ε≤ r+m := by
   have hUp : 0<U := by linarith
   constructor
   · apply (Real.rpow_le_rpow_left_iff hU).mp

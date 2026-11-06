@@ -8,12 +8,10 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ZetaBandSecondDerivatives
 
-@[expose] public section
+public section
 
-open Complex Set Filter Topology
+open Complex Filter Topology
 open scoped ContDiff
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exp_gap_lower {r h : ℝ} (hr : -1 ≤ r) (hh : 0 < h) :
@@ -24,8 +22,10 @@ theorem exp_gap_lower {r h : ℝ} (hr : -1 ≤ r) (hh : 0 < h) :
   convert hm using 1
   ring
 
-theorem zetaDivisorBandEdge_normalized_gap_lower {G L : ℝ}
-    (hG : 0 < G) (hL : 0 < L) (v : ℝ) (hv : -1 ≤ v / G) :
+section
+variable {G L : ℝ} (hG : 0 < G) (hL : 0 < L)
+include G L hG hL
+theorem zetaDivisorBandEdge_normalized_gap_lower (v : ℝ) (hv : -1 ≤ v / G) :
     Real.exp (-1) * (L / G) / (2 * Real.pi) ≤
       zetaDivisorBandEdge 1 G (v + L) - zetaDivisorBandEdge 1 G v := by
   have h := div_le_div_of_nonneg_right
@@ -35,8 +35,7 @@ theorem zetaDivisorBandEdge_normalized_gap_lower {G L : ℝ}
   convert h using 1
   ring
 
-theorem zetaDivisorBandCutoff_inverse_widths {G L : ℝ}
-    (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) :
+theorem zetaDivisorBandCutoff_inverse_widths (hwidth : 8 * L ≤ G) :
     1 / (zetaDivisorBandEdge 1 G (-L) - zetaDivisorBandEdge 1 G (-2 * L)) ≤
         2 * Real.pi * Real.exp 1 * G / L ∧
     1 / (zetaDivisorBandEdge 1 G (2 * L) - zetaDivisorBandEdge 1 G L) ≤
@@ -57,26 +56,30 @@ theorem zetaDivisorBandCutoff_inverse_widths {G L : ℝ}
   · apply hinv
     have h := zetaDivisorBandEdge_normalized_gap_lower hG hL (-2 * L)
       ((le_div_iff₀ hG).2 (by linarith))
-    simpa only [show -2 * L + L = -L by ring] using h
+    grind
   · apply hinv
     have h := zetaDivisorBandEdge_normalized_gap_lower hG hL L
       ((le_div_iff₀ hG).2 (by linarith))
-    simpa only [show L + L = 2 * L by ring] using h
+    grind
+end
 
-theorem zetaBandCutoff_mul_height {T : ℝ} (hT : T ≠ 0) (a b c d x : ℝ) :
+section
+variable {T : ℝ} (hT : T ≠ 0)
+include T hT
+theorem zetaBandCutoff_mul_height (a b c d x : ℝ) :
     zetaBandCutoff (T * a) (T * b) (T * c) (T * d) (T * x) =
       zetaBandCutoff a b c d x := by
   unfold zetaBandCutoff
-  rw [← mul_sub, ← mul_sub, mul_div_mul_left _ _ hT,
-    ← mul_sub, ← mul_sub, mul_div_mul_left _ _ hT]
+  grind
 
-theorem zetaDivisorBandCutoff_root_rescale {T : ℝ} (hT : T ≠ 0) (G L u : ℝ) :
+theorem zetaDivisorBandCutoff_root_rescale (G L u : ℝ) :
     zetaDivisorBandCutoff T G L (T * u ^ 2) = zetaDivisorBandCutoff 1 G L (u ^ 2) := by
   have he (v : ℝ) : zetaDivisorBandEdge T G v = T * zetaDivisorBandEdge 1 G v := by
     unfold zetaDivisorBandEdge
     ring
   simp only [zetaDivisorBandCutoff, he]
   exact zetaBandCutoff_mul_height hT _ _ _ _ _
+end
 
 theorem exists_intervalC2Bound_zetaDivisorBandCutoff_root :
     ∃ C : ℝ, 0 < C ∧ ∀ T G L : ℝ, 0 < T → 0 < G → 1 ≤ L → 8 * L ≤ G →

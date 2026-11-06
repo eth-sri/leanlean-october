@@ -12,7 +12,6 @@ the monomial at `α`.  This is the weight used in the second Abel summation.
 -/
 
 open Complex Finset
-open scoped BigOperators
 
 namespace GafniTao
 

@@ -1,6 +1,7 @@
 module
 public import GuthMaynard.Improvement.MixedPoissonBridge
 public import GuthMaynard.Improvement.UnequalHeightReduction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -8,7 +9,7 @@ noncomputable section
 open MeasureTheory
 open scoped SchwartzMap FourierTransform
 namespace GuthMaynard.Improvement
-open RiemannZeta.GuthMaynard
+open GuthMaynard.NativeMoment
 
 set_option maxHeartbeats 800000 in
 /-- Uniform tail closure for a fixed height-mass Fourier family. No tail
@@ -38,13 +39,12 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   let b := Cdiv*gmAffineRegionIICoreConstant
   let c := gmAffineRegionIITailMassConstant n Cdiv d+
     2*(16*(2:ℝ)^n*d*gmAffineRegionIIIKernelConstant n)^2
-  have ha : 0 ≤ a := by dsimp only [a]; positivity
+  pm_82 ha a
   have hb : 0 ≤ b := mul_nonneg hCdiv.le gmAffineRegionIICoreConstant_nonneg
   have hc : 0 ≤ c := add_nonneg (gmAffineRegionIITailMassConstant_nonneg n hCdiv.le) (by positivity)
   refine ⟨a+b+c+1,by positivity,?_⟩
   intro T hT f R K M₁ M₂ M₃ hf hs hp hK hKR hRT h₁ h₂ h₃ h₁R h₂K h₃R
-  have hTp : 0 < T := by linarith
-  have hTone : 1 ≤ T := by linarith
+  pm_34 hTp T hTone
   have hR : 0 < R := hK.trans_le hKR
   have hQ : 1 ≤ T ^ gmAffineIterationEta δ := one_le_rpow_gmAffineIterationEta hδ hTone
   have hY : 0 < T ^ (6:ℕ) := by positivity
@@ -67,16 +67,16 @@ theorem mixed_height_reduction (D : ℝ → ℕ → ℝ) (hD : ∀ β n, 0 ≤ D
   let X := (R:ℝ)^2*(K:ℝ)^4*(∫ x, f x)^2
   let Z := (R:ℝ)*(K:ℝ)*(Real.sqrt (∫ x, f x^2)*Real.sqrt
     (gmAffineJ (unequalAdaptive T δ M₂ M₃ f hTp) M₂))
-  have hX : 0 ≤ X := by dsimp only [X]; positivity
-  have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
+  pm_82 hX X
+  pm_4029
   have hmassX : (∫ x, f x)^2 ≤ X := by
-    have hr1 : (1:ℝ) ≤ R := by exact_mod_cast hR
-    have hk1 : (1:ℝ) ≤ K := by exact_mod_cast hK
+    pm_278 hr1 R hR
+    pm_278 hk1 K hK
     have hr2 : (1:ℝ) ≤ (R:ℝ)^2 := one_le_pow₀ hr1
     have hk4 : (1:ℝ) ≤ (K:ℝ)^4 := one_le_pow₀ hk1
     have hprod1 : (1:ℝ) ≤ (R:ℝ)^2*(K:ℝ)^4 := one_le_mul_of_one_le_of_one_le hr2 hk4
     exact (le_mul_of_one_le_left (sq_nonneg _) hprod1)
-  have hTδ : 1 ≤ T^δ := Real.one_le_rpow hTone hδ.le
+  pm_153 hTδ T δ hTone hδ.le
   have hbound : gmAffineTransformIntegral f M₁ M₂ M₃ ≤
       a*T^δ*X+b*T^δ*Z+c*(∫ x, f x)^2 := by
     apply hr.trans

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralRamified
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,18 +20,15 @@ lemma ramifiedStrictSelected_from_entry (eta a rho x w z : ℂ) (j : ℕ) (b : �
       2*(Ideal.absNorm (Ideal.span {p}):ℝ)^b) :
     ‖ramifiedStrictSelected p hp hg eta a rho x w z j‖≤
       6*(Ideal.absNorm (Ideal.span {p}):ℝ)^(x.re+b) := by
-  let Q : ℝ := Ideal.absNorm (Ideal.span {p})
-  have hQ0 : 0<Q := by dsimp [Q];linarith
-  rw [sourceRowTerm_pos p hp hg eta a rho x w z j 1 0 1 0 (by omega)] at ht
-  have hr := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_R_half _ hQ a x z ha hx hz)
+  pm_3834
+  pm_3925
+  pm_1302
+  pm_6731
   simp only [Complex.ofReal_natCast] at hr
   have hv := first_region_V_half _ hQ z hz
-  have hs := norm_sub_le (1:ℂ) (coordV Q z)
-  rw [norm_one] at hs
+  pm_6852 hs
   have h1V : ‖1-coordV Q z‖≤3/2 := by change ‖coordV Q z‖≤1/2 at hv;linarith
-  have hphase : ‖star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x‖≤Q^x.re := by
-    rw [norm_mul,norm_star,←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
+  pm_3884
   unfold ramifiedStrictSelected
   rw [div_eq_mul_inv]
   simp only [norm_mul] at hphase ⊢

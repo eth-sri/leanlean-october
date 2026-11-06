@@ -5,9 +5,9 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosNonzeroPartialSummation
 public import LaterPairs.Native.RobertSargosTaylorCount
 public import LaterPairs.Native.SargosDoubleLargeSieve
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
-set_option autoImplicit false
 set_option maxHeartbeats 0
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
@@ -16,7 +16,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 open GafniTao Set
-open scoped BigOperators ContDiff
+open scoped ContDiff
 namespace TaoTrudgianYang2025
 
 def robertSargosPrefixBox (H Q : ℕ) (r : ℤ) (positive : Bool) (X Y N : ℕ) :
@@ -33,11 +33,11 @@ theorem robertSargos_signed_prefix_eq_box (f : ℝ → ℝ) (H Q : ℕ) (r m : �
   unfold robertSargosPrefixBox robertSargosSignedPolynomialPrefix
   simp only [Finset.sum_product]
   simp_rw [sargos_sum_Icc_eq_range]
-  have hX (a : ℤ) : (a+X-1+1-a).toNat = X := by omega
-  have hY (b : ℤ) : (b+Y-1+1-b).toNat = Y := by omega
-  have hN : ((N:ℤ)+1-1).toNat = N := by omega
+  pm_8166 hX a X
+  pm_8166 hY b Y
+  pm_6613 hN
   simp only [hX,hY,hN]
-  cases positive <;> simp
+  simp_all
 
 theorem robertSargos_prefix_box_support (H Q : ℕ) (r : ℤ)
     (positive : Bool) (X Y N : ℕ)
@@ -61,11 +61,11 @@ theorem robertSargos_box_frequency_bounds {A : ℝ} {r q h n : ℝ} {Q : ℕ}
     (hh : |h| ≤ 2*A) (hn : |n| ≤ Q) :
     |h*q-r*n| ≤ 3*A*Q ∧
       |robertSargosTaylorQuadratic r q h n| ≤ 13*A*(Q:ℝ)^2 := by
-  have hQ : (0:ℝ) ≤ Q := Nat.cast_nonneg _
+  pm_491 hQ Q
   have hlin : |h*q-r*n| ≤ |h| *|q| +|r| *|n| := by
     simpa only [abs_mul] using abs_sub (h*q) (r*n)
-  have hq2 : |q|^2 ≤ (Q:ℝ)^2 := pow_le_pow_left₀ (abs_nonneg _) hq 2
-  have hn2 : |n|^2 ≤ (Q:ℝ)^2 := pow_le_pow_left₀ (abs_nonneg _) hn 2
+  pm_7603 hq2 q hq
+  pm_7603 hn2 n hn
   have hr2 : |r|^2 ≤ A^2 := pow_le_pow_left₀ (abs_nonneg _) hr 2
   have hh2 : |h|^2 ≤ (2*A)^2 := pow_le_pow_left₀ (abs_nonneg _) hh 2
   have hAQ2 : A^2 ≤ (Q:ℝ)^2 := pow_le_pow_left₀ hA hAQ 2
@@ -133,8 +133,10 @@ def robertSargosDyadicPrefixBox (H Q : ℕ) (r : ℤ) (positive : Bool) (X Y N j
   (robertSargosPrefixBox H Q r positive X Y N).filter
     (fun p => Nat.log 2 p.1.natAbs = j)
 
-theorem robertSargos_prefix_box_log_lt (H Q : ℕ) (r : ℤ)
-    (positive : Bool) (X Y N : ℕ)
+section
+variable (H Q : ℕ) (r : ℤ) (positive : Bool)
+include H Q r positive
+theorem robertSargos_prefix_box_log_lt (X Y N : ℕ)
     (hX : X ≤ Q-1) (hY : Y ≤ (robertSargosHOverlap H r).card)
     (p : ℤ × ℤ × ℤ) (hp : p ∈ robertSargosPrefixBox H Q r positive X Y N) :
     Nat.log 2 p.1.natAbs < Nat.clog 2 Q := by
@@ -148,8 +150,7 @@ theorem robertSargos_prefix_box_log_lt (H Q : ℕ) (r : ℤ)
   exact Nat.log_lt_of_lt_pow ((Int.natAbs_pos.mpr hq.1).ne')
     (hn.trans_le (Nat.le_pow_clog (by norm_num : 1 < (2:ℕ)) Q))
 
-theorem robertSargos_dyadic_prefix_q_range (H Q : ℕ) (r : ℤ)
-    (positive : Bool) (X Y N j : ℕ)
+theorem robertSargos_dyadic_prefix_q_range (X Y N j : ℕ)
     (hX : X ≤ Q-1) (hY : Y ≤ (robertSargosHOverlap H r).card)
     (p : ℤ × ℤ × ℤ) (hp : p ∈ robertSargosDyadicPrefixBox H Q r positive X Y N j) :
     |(p.1:ℝ)| ∈ Icc ((2:ℝ)^j) (2*(2:ℝ)^j) := by
@@ -169,6 +170,7 @@ theorem robertSargos_dyadic_prefix_q_range (H Q : ℕ) (r : ℤ)
   · have h : (p.1.natAbs:ℝ) ≤ (2:ℝ)^j*2 := by exact_mod_cast hhi.le
     rw [he] at h
     linarith
+end
 
 
 theorem robertSargos_prefix_box_frequency_bounds {A : ℝ}
@@ -193,7 +195,7 @@ theorem robertSargos_prefix_box_frequency_bounds {A : ℝ}
   have hn' : |(p.2.2:ℝ)| ≤ Q := by
     have hlo' : (1:ℝ) ≤ (p.2.2:ℝ) := by exact_mod_cast hni.1
     have hhi' : (p.2.2:ℝ) ≤ N := by exact_mod_cast hni.2
-    have hN' : (N:ℝ) ≤ Q := by exact_mod_cast hN
+    pm_404 hN' N Q hN
     rw [abs_of_nonneg (by linarith)]
     exact hhi'.trans hN'
   simpa only [Int.cast_sub,Int.cast_mul] using
@@ -217,8 +219,10 @@ def robertSargosSieveCollisions (R H Q : ℕ) (positive : ℤ → Bool)
       (fun p => robertSargosTaylorQuadratic r p.1 p.2.1 p.2.2) E)).image
         robertSargosSievePoint
 
-theorem robertSargos_sieve_collisions_card (R H Q : ℕ) (positive : ℤ → Bool)
-    (X Y N : ℤ → ℕ) (j : ℕ) (E : ℝ) :
+section
+variable (R H Q : ℕ) (positive : ℤ → Bool) (X Y N : ℤ → ℕ) (j : ℕ) (E : ℝ)
+include R H Q positive X Y N j E
+theorem robertSargos_sieve_collisions_card :
     (robertSargosSieveCollisions R H Q positive X Y N j E).card =
       ∑ r ∈ (Finset.Ioo (-(R:ℤ)) R).erase 0,
         (sargosIntegerNearPairs
@@ -229,8 +233,7 @@ theorem robertSargos_sieve_collisions_card (R H Q : ℕ) (positive : ℤ → Boo
   rw [robertSargosSieveCollisions,Finset.card_image_of_injective _ robertSargos_sieve_point_injective,
     Finset.card_sigma]
 
-theorem robertSargos_sieve_collisions_system (R H Q : ℕ) (positive : ℤ → Bool)
-    (X Y N : ℤ → ℕ) (j : ℕ) (E : ℝ)
+theorem robertSargos_sieve_collisions_system
     (hX : ∀ r, X r ≤ Q-1) (hY : ∀ r, Y r ≤ (robertSargosHOverlap H r).card)
     (hN : ∀ r, N r ≤ Q)
     (p : RobertSargosSevenPoint)
@@ -243,10 +246,8 @@ theorem robertSargos_sieve_collisions_system (R H Q : ℕ) (positive : ℤ → B
   have hri' := Finset.mem_Ioo.mp hri
   obtain ⟨hab,hlinear,hnear⟩ := Finset.mem_filter.mp hab
   obtain ⟨ha,hb⟩ := Finset.mem_product.mp hab
-  obtain ⟨_,hha,hna,hsa⟩ := robertSargos_prefix_box_support H Q r (positive r)
-    (X r) (Y r) (N r) (hX r) (hY r) a (Finset.mem_filter.mp ha).1
-  obtain ⟨_,hhb,hnb,hsb⟩ := robertSargos_prefix_box_support H Q r (positive r)
-    (X r) (Y r) (N r) (hX r) (hY r) b (Finset.mem_filter.mp hb).1
+  pm_5229 hha hna hsa a ha
+  pm_5229 hhb hnb hsb b hb
   have hhs (c : ℤ × ℤ × ℤ) (hc : c.2.1 ∈ robertSargosHOverlap H r) :
       (c.2.1:ℝ) ∈ Icc (H:ℝ) (2*H) := by
     have hi := Finset.mem_Ico.mp ((mem_robertSargosHOverlap H c.2.1 r).mp hc).1
@@ -272,6 +273,7 @@ theorem robertSargos_sieve_collisions_system (R H Q : ℕ) (positive : ℤ → B
     cases hsign : positive r <;> simp only [hsign,Bool.false_eq_true,ite_false,ite_true] at hsa hsb
     · exact mul_pos_of_neg_of_neg hsa hsb
     · exact mul_pos hsa hsb
+end
 
 theorem robertSargos_taylor_count_scale_mono {a b s t ε : ℝ}
     (ha : 0 < a) (hb : 0 ≤ b) (hs : 0 < s) (hst : s ≤ t) (hε : 0 ≤ ε) :
@@ -298,8 +300,7 @@ theorem exists_robertSargos_sieve_collisions_count (ε : ℝ) (hε : 0 < ε) :
       ((robertSargosSieveCollisions R H Q positive X Y N j E).card:ℝ) ≤
         C*((R:ℝ)*Q*H*((2:ℝ)^j))^(1+ε)*
           (1+(E+12*R*(H:ℝ)^2)/((H:ℝ)*((2:ℝ)^j))) := by
-  obtain ⟨C,hC,hcount⟩ := exists_robertSargos_taylor_count ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hcount exists_robertSargos_taylor_count ε hε
   intro R H Q positive X Y N j E hR hH hQ hE hRH hX hY hN
   apply hcount _ R H ((2:ℝ)^j) Q E
   · exact_mod_cast hR
@@ -318,12 +319,11 @@ theorem exists_robertSargos_sieve_collisions_uniform (ε : ℝ) (hε : 0 < ε) :
       (∀ r, N r ≤ Q) → j < Nat.clog 2 Q →
       ((robertSargosSieveCollisions R H Q positive X Y N j E).card:ℝ) ≤
         C*((R:ℝ)*Q*H*Q)^(1+ε)*(1+(E+12*R*(H:ℝ)^2)/((H:ℝ)*Q)) := by
-  obtain ⟨C,hC,hcount⟩ := exists_robertSargos_sieve_collisions_count ε hε
-  refine ⟨C,hC,?_⟩
+  pm_1657 C hC hcount exists_robertSargos_sieve_collisions_count ε hε
   intro R H Q positive X Y N j E hR hH hQ hE hRH hX hY hN hj
-  have hRp : (0:ℝ) < R := by exact_mod_cast (show 0 < R by omega)
-  have hHp : (0:ℝ) < H := by exact_mod_cast (show 0 < H by omega)
-  have hQp : (0:ℝ) < Q := by exact_mod_cast (show 0 < Q by omega)
+  pm_1671 hRp R
+  pm_1671 hHp H
+  pm_1670
   have hpow : (2:ℝ)^j ≤ Q := by exact_mod_cast (Nat.pow_lt_of_lt_clog hj).le
   have hmono := robertSargos_taylor_count_scale_mono
     (a := (R:ℝ)*Q*H) (b := (E+12*R*(H:ℝ)^2)/H)
@@ -362,8 +362,8 @@ theorem robertSargos_polynomial_sieve (f : ℝ → ℝ) (M R H Q : ℕ)
         ∑ j ∈ Finset.range (Nat.clog 2 Q),
           ((robertSargosSieveCollisions R H Q positive X Y N j (1/(C*lam*M))).card:ℝ) := by
   classical
-  have hMp : (0:ℝ) < M := by exact_mod_cast (show 0 < M by omega)
-  have hQp : (0:ℝ) < Q := by exact_mod_cast (show 0 < Q by omega)
+  pm_1671 hMp M
+  pm_1670
   let T := fun r => robertSargosPrefixBox H Q r (positive r) (X r) (Y r) (N r)
   let u := fun r (p : ℤ × ℤ × ℤ) => p.2.1*p.1-r*p.2.2
   let v := fun (r : ℤ) (p : ℤ × ℤ × ℤ) =>
@@ -397,7 +397,7 @@ theorem robertSargos_polynomial_sieve (f : ℝ → ℝ) (M R H Q : ℕ)
           (u r) (v r) (1/(C*lam*M))).card:ℝ)) =
       ((robertSargosSieveCollisions R H Q positive X Y N j (1/(C*lam*M))).card:ℝ) := by
     rw [robertSargos_sieve_collisions_card]
-    simp only [Nat.cast_sum,T,u,v,robertSargosDyadicPrefixBox]
+    pm_94 Nat.cast_sum T u v robertSargosDyadicPrefixBox
   simp only [one_mul] at hb
   simp_rw [hcounts] at hb
   simpa only [robertSargos_signed_prefix_eq_box,robertSargos_polynomial_character_coordinates,
@@ -424,11 +424,11 @@ theorem exists_robertSargos_counted_polynomial_sieve (ε : ℝ) (hε : 0 < ε) :
           (1/(3*A*Q)) (1/(13*A*(Q:ℝ)^2))).card:ℝ)*
         ((R:ℝ)*Q*H*Q)^(1+ε)*(1+(1/(C*lam*M)+12*R*(H:ℝ)^2)/((H:ℝ)*Q)) := by
   classical
-  obtain ⟨K,hK,hcount⟩ := exists_robertSargos_sieve_collisions_uniform ε hε
+  pm_69 K hK hcount exists_robertSargos_sieve_collisions_uniform ε hε
   refine ⟨16384*K,by positivity,?_⟩
   intro f M R H Q positive X Y N A C lam hM hR hH hQ hA hC hlam hAQ hHA hRA hRH
     hX hY hN hf hlo hhi
-  have hMp : (0:ℝ) < M := by exact_mod_cast (show 0 < M by omega)
+  pm_1671 hMp M
   have hE : 0 ≤ 1/(C*lam*M) := by positivity
   have hc :
       (∑ j ∈ Finset.range (Nat.clog 2 Q),
@@ -492,10 +492,10 @@ theorem robertSargos_spacing_source_interval (S : Finset ℤ) (L : ℕ)
     (fun x hx => (hder x hx).continuousAt.continuousWithinAt)
     (fun x hx => (hder x ⟨hx.1.le,hx.2.le⟩).differentiableAt.differentiableWithinAt)
     (fun x hx => by
-      rw [(hder x ⟨hx.1.le,hx.2.le⟩).deriv]
+      pm_7454
       exact hlo (x+1) (hin x ⟨hx.1.le,hx.2.le⟩))
     (fun x hx => by
-      rw [(hder x ⟨hx.1.le,hx.2.le⟩).deriv]
+      pm_7454
       exact hhi (x+1) (hin x ⟨hx.1.le,hx.2.le⟩))
   let T := heathBrownSpacingSet (L-1) (fun t => g (t+1)) theta
   have hsub : S ⊆ insert 1 (T.image (fun n : ℕ => (n:ℤ)+1)) := by
@@ -565,9 +565,9 @@ theorem robertSargos_sample_shift_spacing (f : ℝ → ℝ) (M k : ℕ)
     ((robertSargosSampleShift f M k theta).card:ℝ) ≤
       1+(theta/((k:ℝ)*lam)+1)*(2*C*k*lam*M+2*theta+3) := by
   classical
-  have hkp : (0:ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+  pm_1671 hkp k
   have hL : 1 ≤ M-k := by omega
-  have hcast : ((M-k:ℕ):ℝ) = (M:ℝ)-k := Nat.cast_sub hkM.le
+  pm_7883 M k hkM.le
   have hder (x : ℝ) (hx : x ∈ Icc (1:ℝ) (M-k:ℕ)) :=
     robertSargos_shifted_second_derivative f M (Nat.cast_nonneg k) hx.1
       (show x+(k:ℝ) ≤ M by rw [hcast] at hx; linarith [hx.2]) hf hlo hhi
@@ -599,11 +599,10 @@ private theorem sargos_periodic_pair_swap {ι : Type*} (S : Finset ι) (x y : ι
     rwa [he,abs_neg]
   · simpa only [Prod.swap,abs_sub_comm] using hy
 
-theorem robertSargos_sample_positive_pair (f : ℝ → ℝ) (M : ℕ)
-    {C lam theta delta : ℝ} (hlam : 0 < lam)
-    (hf : ∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t)
-    (hlo : ∀ t ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f t)
-    (hhi : ∀ t ∈ Icc (1:ℝ) M, iteratedDeriv 4 f t ≤ C*lam)
+section
+variable (f : ℝ → ℝ) (M : ℕ) {C lam theta delta : ℝ} (hlam : 0 < lam) (hf : ∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t) (hlo : ∀ t ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f t) (hhi : ∀ t ∈ Icc (1:ℝ) M, iteratedDeriv 4 f t ≤ C*lam)
+include f M C lam theta delta hlam hf hlo hhi
+theorem robertSargos_sample_positive_pair
     (a b : ℤ) (hab : a < b)
     (hp : (a,b) ∈ sargosPeriodicNearPairs (Finset.Icc (1:ℤ) M)
       (fun m => 2*iteratedDeriv 2 f m) (fun m => iteratedDeriv 3 f m) theta delta) :
@@ -615,7 +614,7 @@ theorem robertSargos_sample_positive_pair (f : ℝ → ℝ) (M : ℕ)
   have hai := Finset.mem_Icc.mp ha
   have hbi := Finset.mem_Icc.mp hb
   let k := (b-a).toNat
-  have hk : 1 ≤ k := by dsimp [k]; omega
+  pm_6557 hk k
   have he : (k:ℤ) = b-a := by dsimp [k]; omega
   have hkM : k < M := by omega
   have he' : (k:ℝ) = (b:ℝ)-(a:ℝ) := by exact_mod_cast he
@@ -643,11 +642,7 @@ theorem robertSargos_sample_positive_pair (f : ℝ → ℝ) (M : ℕ)
       -(2*iteratedDeriv 2 f a-2*iteratedDeriv 2 f b-z) := by push_cast; ring
   rwa [heq,abs_neg]
 
-theorem robertSargos_sample_pairs_shift_count (f : ℝ → ℝ) (M : ℕ)
-    {C lam theta delta : ℝ} (hlam : 0 < lam)
-    (hf : ∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t)
-    (hlo : ∀ t ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f t)
-    (hhi : ∀ t ∈ Icc (1:ℝ) M, iteratedDeriv 4 f t ≤ C*lam) :
+theorem robertSargos_sample_pairs_shift_count :
     ((sargosPeriodicNearPairs (Finset.Icc (1:ℤ) M)
       (fun m => 2*iteratedDeriv 2 f m) (fun m => iteratedDeriv 3 f m) theta delta).card:ℝ) ≤
       (M:ℝ)+2*∑ k ∈ Finset.Icc 1 ⌊delta/lam⌋₊,
@@ -688,6 +683,7 @@ theorem robertSargos_sample_pairs_shift_count (f : ℝ → ℝ) (M : ℕ)
     have h₄ : (P.image Prod.swap).card ≤ P.card := Finset.card_image_le
     omega
   exact_mod_cast hcard
+end
 
                                                                            
                                                                           
@@ -714,7 +710,7 @@ theorem robertSargos_sample_pairs_spacing_bound (f : ℝ → ℝ) (M : ℕ)
       ((robertSargosSampleShift f M k theta).card:ℝ) ≤
         2*C*theta*M+2*C*lam*M*k+(5*theta/lam)*(k:ℝ)⁻¹+6 := by
     have hki := Finset.mem_Icc.mp hk
-    have hkp : (0:ℝ) < k := by exact_mod_cast (show 0 < k by omega)
+    pm_1671 hkp k
     by_cases hkM : k < M
     · have hb := robertSargos_sample_shift_spacing f M k hki.1 hkM hC0 hlam htheta hf hlo hhi
       have hm := mul_le_mul_of_nonneg_left
@@ -750,12 +746,12 @@ theorem robertSargos_sample_pairs_spacing_bound (f : ℝ → ℝ) (M : ℕ)
   rw [heq] at hsum
   have hkterm := mul_le_mul_of_nonneg_left hsumk (show 0 ≤ 2*C*lam*M by positivity)
   have hhterm := mul_le_mul_of_nonneg_left hharm (show 0 ≤ 5*theta/lam by positivity)
-  have h₁ := mul_le_mul_of_nonneg_left hthetaK (show 0 ≤ 2*C*M by positivity)
-  have h₂ := mul_le_mul_of_nonneg_left hlamK (show 0 ≤ 2*C*M by positivity)
+  pm_8470 h₁ hthetaK
+  pm_8470 h₂ hlamK
   have hdiv : theta/lam ≤ M := (div_le_iff₀ hlam).mpr (by nlinarith only [hthetaM])
   have h₃ := mul_le_mul_of_nonneg_left hdiv
     (show 0 ≤ 5*(1+Real.log (M:ℝ)) by linarith)
-  have h₄ : (K:ℝ) ≤ M := by exact_mod_cast hKM
+  pm_404 h₄ K M hKM
   have hCM : C*(M:ℝ) ≤ C*M*(1+Real.log M) :=
     le_mul_of_one_le_right (by positivity) hL
   have hML : (M:ℝ)*(1+Real.log M) ≤ C*M*(1+Real.log M) := by
@@ -770,7 +766,7 @@ theorem robertSargos_sample_pairs_spacing_bound (f : ℝ → ℝ) (M : ℕ)
     ((robertSargosSampleShift f M k theta).card:ℝ) at hb
   dsimp only [K] at hsum hkterm hb h₄
   simp only [div_eq_mul_inv] at hb hsum hkterm hhterm h₁ h₂ h₃ h₄
-  have hMp : (0:ℝ) ≤ M := Nat.cast_nonneg M
+  pm_5327 hMp M
   nlinarith only [hb,hsum,hkterm,hhterm,h₁,h₂,h₃,h₄,hCM,hML,hMC,hMp]
 
 
@@ -783,8 +779,7 @@ private theorem robertSargos_spacing_scale_budgets (M Q : ℕ) {T lam : ℝ}
       theta*(⌊delta/lam⌋₊:ℝ) ≤ 1 ∧
       lam*(⌊delta/lam⌋₊:ℝ)^2 ≤ 1 ∧ theta ≤ lam*M := by
   dsimp only
-  have hTp : 0 < T := by linarith
-  have hT1 : 1 ≤ T := by linarith
+  pm_34 hTp T hT1
   have hQp : (0:ℝ) < Q := (by positivity : 0 < T^3/2).trans_le hQ
   have hT5 : 0 < T^5 := by positivity
   have hT5one : 1 ≤ T^5 := one_le_pow₀ hT1
@@ -795,7 +790,7 @@ private theorem robertSargos_spacing_scale_budgets (M Q : ℕ) {T lam : ℝ}
     nlinarith only [h]
   have htheta : 1/(3*T^2*Q) ≤ 1/T^5 := by
     apply one_div_le_one_div_of_le hT5
-    have h := mul_le_mul_of_nonneg_left hQ (show 0 ≤ 3*T^2 by positivity)
+    pm_6108 h hQ T
     nlinarith only [h,show 0 ≤ T^5 by positivity]
   have hcut : (1/(13*T^2*(Q:ℝ)^2))/lam ≤ T^5 := by
     rw [div_div]
@@ -838,20 +833,14 @@ theorem robertSargos_physical_sample_spacing (f : ℝ → ℝ) (M : ℕ)
       (fun m => 2*iteratedDeriv 2 f m) (fun m => iteratedDeriv 3 f m)
       (1/(3*A*Q)) (1/(13*A*(Q:ℝ)^2))).card:ℝ) ≤ 32*C*M*(1+Real.log M) := by
   dsimp only
-  let T := lam^(-(1:ℝ)/13)
-  have hT : 2 ≤ T := (thirteenth_root_physical_scale hlam hsmall).1
-  have hn : T^13*lam = 1 := (thirteenth_root_physical_scale hlam hsmall).2
-  have h2 : T^2 = lam^(-(2:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 2
-  have h3 : T^3 = lam^(-(3:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 3
-  have h8 : T^8 = lam^(-(8:ℝ)/13) := by
-    simpa only [Nat.cast_ofNat] using thirteenth_root_nat_pow hlam 8
+  pm_2290
+  pm_6428
+  pm_1668
+  pm_1669
   have hT1 : 1 ≤ T := by linarith
-  have hfloor := (positive_floor_half_bounds
-    (show 1 ≤ lam^(-(3:ℝ)/13) by rw [← h3]; exact one_le_pow₀ hT1)).2.1
+  pm_2288
   rw [← h3] at hfloor
-  have hM' : T^8 ≤ M := by rwa [h8]
+  pm_7163
   have hM1 : 1 ≤ M := by
     have h := (one_le_pow₀ hT1 : 1 ≤ T^8).trans hM'
     exact_mod_cast h

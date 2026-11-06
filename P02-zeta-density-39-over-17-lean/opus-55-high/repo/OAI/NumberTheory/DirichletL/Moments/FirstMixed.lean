@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.CalibrationCRT
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ local notation "O" => ActualEisensteinCubic.O
 theorem frequencyReduction_comp (d n M : O) (hd : d∣n) (hn : n∣M) (x : Residue M) :
     frequencyReduction d n hd (frequencyReduction n M hn x)=frequencyReduction d M (hd.trans hn) x := by
   obtain ⟨x,rfl⟩ := Ideal.Quotient.mk_surjective x
-  simp only [frequencyReduction_mk]
+  simp_all
 
 theorem three_factor_mixed_fourier (a b c : O) (ha : a ≠ 0) (hb : b ≠ 0) (hc : c ≠ 0)
     (habc : IsCoprime a (b*c)) (hbc : IsCoprime b c)
@@ -61,8 +62,7 @@ theorem three_factor_mixed_fourier (a b c : O) (ha : a ≠ 0) (hb : b ≠ 0) (hc
     (fun y => G (Ideal.Quotient.mk _ a*y)) h'
   simp only [mul_assoc] at hh
   rw [hh]
-  simp only [h',frequencyReduction_comp,map_mul,mul_assoc]
-  ring
+  pm_3543 h' frequencyReduction_comp map_mul mul_assoc
 
 end SevenEighths.CenteredMomentFirstMixed
 

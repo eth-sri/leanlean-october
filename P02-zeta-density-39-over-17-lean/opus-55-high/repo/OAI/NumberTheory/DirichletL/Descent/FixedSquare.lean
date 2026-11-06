@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Descent.DyadicBlock
 public import OAI.NumberTheory.DirichletL.Descent.MaskedGrid
 public import OAI.NumberTheory.DirichletL.Descent.DivisorSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,8 +32,8 @@ theorem hybrid_fixed_square_grid_energy (ε : ℝ) (hε : 0 < ε) :
       (∑ k ∈ rows, ‖maskedGridHybridRow (hybridGridSupport D) Pset a beta t k‖ ^ 2) ≤
       C₀ * K ^ ε * (K * (N * B) * N) ^ ε * (K + N * B) * B / T ^ 2 *
         CubicSieve.sieveNorm N (2 * L) * (columnDyadicLength K + 1 : ℝ) ^ 2 := by
-  obtain ⟨C₁, hC₁, hblock⟩ := hybrid_extracted_dyadic_block ε hε
-  obtain ⟨C₂, hC₂, hmask⟩ := maskedGridHybridRow_divisor_energy ε hε
+  pm_98 C₁ hC₁ hblock hybrid_extracted_dyadic_block ε hε
+  pm_98 C₂ hC₂ hmask maskedGridHybridRow_divisor_energy ε hε
   refine ⟨C₁ * C₂ * 256 ^ 2, by positivity, ?_⟩
   intro K N B L C T hK hN hB hC hT t ht rows nset Pset D a beta
     hrows hn hP ha hD hbeta
@@ -40,11 +41,10 @@ theorem hybrid_fixed_square_grid_energy (ε : ℝ) (hε : 0 < ε) :
     fun k hk => ⟨(hrows k hk).1.1, (hrows k hk).2⟩
   let E := C₁ * (K * (N * B) * N) ^ ε * (K + N * B) * B / T ^ 2 *
     CubicSieve.sieveNorm N (2 * L)
-  have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
-  have hE : 0 ≤ E := by dsimp only [E]; positivity
+  pm_3762
+  pm_82 hE E
   have hTprim : ∀ u ∈ hybridGridSupport D, primaryGenerator (u.2 * u.1.1) ≠ 0 := by
-    intro u hu
-    obtain ⟨d, hd, rfl⟩ := Finset.mem_image.mp hu
+    pm_136 u hu d hd Finset.mem_image.mp
     exact (hn _ (hD d hd).2.2.2.1).1.2
   have hterm (v : Ideal Eis × Ideal Eis) (hv : v ∈ hybridDivisorPairPool rows) :
       (∑ k ∈ rows, if v ∈ (idealDivisors k) ×ˢ (idealDivisors k) then

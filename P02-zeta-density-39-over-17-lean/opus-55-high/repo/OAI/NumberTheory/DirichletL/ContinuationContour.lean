@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.ContinuationInversion
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,20 +29,19 @@ theorem vertical_integral_eq_of_horizontal_vanish (F : ℂ → ℂ) {a b : ℝ}
       I * (∫ y : ℝ in -T..T, F ((a : ℂ) + y * I)) = 0 := by
     have h := integral_boundary_rect_eq_zero_of_differentiableOn F
       ((a : ℂ) + (-T) * I) ((b : ℂ) + T * I) (hhol.mono ?_)
-    · simpa [smul_eq_mul] using h
+    simp_all
     · intro z hz
       have hzre := hz.1
-      simpa [uIcc_of_le hab] using hzre
+      simp_all
   have hlim := ((hbot.sub htop).add
     ((intervalIntegral_tendsto_integral hb tendsto_neg_atTop_atBot tendsto_id).const_mul I)).sub
     ((intervalIntegral_tendsto_integral ha tendsto_neg_atTop_atBot tendsto_id).const_mul I)
   have hzero : (0 : ℂ) - 0 + I * (∫ y : ℝ, F ((b : ℂ) + y * I)) -
       I * (∫ y : ℝ, F ((a : ℂ) + y * I)) = 0 :=
-    tendsto_nhds_unique hlim (by simpa only [id_eq, hrect] using
-      (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0 : ℂ)) atTop (𝓝 0)))
+    tendsto_nhds_unique hlim (by simp_all)
   have heq : I * (∫ y : ℝ, F ((b : ℂ) + y * I)) =
-      I * (∫ y : ℝ, F ((a : ℂ) + y * I)) := by simpa using sub_eq_zero.mp hzero
-  exact (mul_left_cancel₀ I_ne_zero heq).symm
+      I * (∫ y : ℝ, F ((a : ℂ) + y * I)) := by grind
+  simp_all
 
 theorem horizontal_integral_tendsto_zero (F : ℂ → ℂ) (a b C : ℝ)
     (hbound : ∀ x ∈ Set.uIcc a b, ∀ y : ℝ,
@@ -53,9 +53,7 @@ theorem horizontal_integral_tendsto_zero (F : ℂ → ℂ) (a b C : ℝ)
       (fun x hx => hbound x (uIoc_subset_uIcc hx) T)
   have hexp : Tendsto (fun T : ℝ => Real.exp (-(T ^ 2))) atTop (𝓝 0) :=
     Real.tendsto_exp_atBot.comp (tendsto_neg_atTop_atBot.comp (tendsto_pow_atTop (by decide)))
-  apply tendsto_zero_iff_norm_tendsto_zero.mpr
-  exact squeeze_zero (fun _ => norm_nonneg _) hnorm
-    (by simpa using (hexp.const_mul C).mul_const |b-a|)
+  pm_5424 hexp.const_mul
 
 theorem integrable_of_gaussian_bound (f : ℝ → ℂ) (C : ℝ)
     (hmeas : AEStronglyMeasurable f) (hbound : ∀ y, ‖f y‖ ≤ C * Real.exp (-(y ^ 2))) :
@@ -96,8 +94,7 @@ theorem norm_gaussianContourIntegrand (G : ℂ → ℂ) (c x y : ℝ) {Z : ℝ}
   have hre : ((((x : ℂ) + y * I) - 5 / 6) ^ 2).re = (x - 5 / 6) ^ 2 - y ^ 2 := by
     simp [pow_two]
   rw [hre, Real.exp_sub]
-  simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, zero_mul, sub_self,
-    add_zero, Real.exp_neg]
+  pm_8813 zero_mul sub_self add_zero Real.exp_neg
   ring
 
 theorem gaussianContourIntegrand_differentiableOn {G : ℂ → ℂ} {U : Set ℂ}

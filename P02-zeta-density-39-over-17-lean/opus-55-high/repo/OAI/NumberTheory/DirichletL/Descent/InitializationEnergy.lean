@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialFibers
 public import OAI.NumberTheory.DirichletL.Descent.Fibers
 public import OAI.NumberTheory.DirichletL.Descent.Sharp
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,10 @@ structure InitialSourceValid {J : ℕ} (x : InitialTuple J) : Prop where
   divisor_dvd : x.divisor ∣ x.common
   assigned_dvd : ∀ i, (x.assigned i).val ∣ x.common * x.residual
 
-theorem initialChild_valid {J : ℕ} (x : InitialTuple J) (hx : InitialSourceValid x) :
+section
+variable {J : ℕ} (x : InitialTuple J) (hx : InitialSourceValid x)
+include J x hx
+theorem initialChild_valid :
     Valid x (initialChild x).1 (initialChild x).2.1 (initialChild x).2.2 := by
   have ht : idealQuotient x.divisor x.common * x.divisor = x.common := by
     rw [mul_comm, idealQuotient_mul hx.divisor_dvd]
@@ -37,7 +41,7 @@ theorem initialChild_valid {J : ℕ} (x : InitialTuple J) (hx : InitialSourceVal
   rw [← mul_assoc, ht]
   exact hx.assigned_dvd i
 
-theorem initialChild_nonzero {J : ℕ} (x : InitialTuple J) (hx : InitialSourceValid x) :
+theorem initialChild_nonzero :
     (initialChild x).1 ≠ 0 ∧ (initialChild x).2.1 ≠ 0 := by
   have hD : x.divisor ≠ 0 := by intro he; exact hx.divisor_good (by simp [he])
   constructor
@@ -46,6 +50,7 @@ theorem initialChild_nonzero {J : ℕ} (x : InitialTuple J) (hx : InitialSourceV
     rw [ht, zero_mul] at he
     exact hx.common_ne_zero he.symm
   · exact mul_ne_zero hD hx.residual_ne_zero
+end
 
 def initialQuotientSet {J : ℕ} (source : Finset (InitialTuple J)) : Finset (Ideal Eis) :=
   source.image (fun x => (initialChild x).1)
@@ -53,14 +58,15 @@ def initialQuotientSet {J : ℕ} (source : Finset (InitialTuple J)) : Finset (Id
 def initialDivisorWeight (J : ℕ) (c : InitialChild) : ℝ :=
   ((idealDivisors c.2.1).card : ℝ) ^ (J + 1) * ((idealDivisors c.1).card : ℝ) ^ J
 
-theorem initialChild_fiber_weight {J : ℕ} (source : Finset (InitialTuple J))
-    (hsource : ∀ x ∈ source, InitialSourceValid x) (c : InitialChild)
+section
+variable {J : ℕ} (source : Finset (InitialTuple J)) (hsource : ∀ x ∈ source, InitialSourceValid x)
+include J source hsource
+theorem initialChild_fiber_weight (c : InitialChild)
     (ht : c.1 ≠ 0) (hf : c.2.1 ≠ 0) (w : InitialTuple J → ℝ)
     (hw : ∀ x ∈ source, w x ≤ 1) :
     (∑ x ∈ source with initialChild x = c, w x) ≤ initialDivisorWeight J c := by
   have hvalid : ∀ x ∈ source.filter (fun x => initialChild x = c), Valid x c.1 c.2.1 c.2.2 := by
-    intro x hx
-    obtain ⟨hxs, he⟩ := Finset.mem_filter.mp hx
+    pm_381 x hx hxs he Finset.mem_filter.mp
     simpa only [he] using initialChild_valid x (hsource x hxs)
   calc
     _ ≤ ∑ _x ∈ source.filter (fun x => initialChild x = c), (1 : ℝ) :=
@@ -71,8 +77,7 @@ theorem initialChild_fiber_weight {J : ℕ} (source : Finset (InitialTuple J))
       dsimp only [initialDivisorWeight]
       exact_mod_cast hh
 
-theorem initial_energy_projection {J : ℕ} (source : Finset (InitialTuple J))
-    (hsource : ∀ x ∈ source, InitialSourceValid x)
+theorem initial_energy_projection
     (labels : Finset (Ideal Eis)) (rows : Finset Eis)
     (hlabels : ∀ f ∈ labels, f ≠ 0)
     (hchild : ∀ x ∈ source, (initialChild x).2.1 ∈ labels ∧ (initialChild x).2.2 ∈ rows)
@@ -87,8 +92,7 @@ theorem initial_energy_projection {J : ℕ} (source : Finset (InitialTuple J))
       Finset.mem_product.mpr (hchild x hx)⟩
   have hfiber : ∀ c ∈ initialQuotientSet source ×ˢ (labels ×ˢ rows),
       (∑ x ∈ source with initialChild x = c, w x) ≤ initialDivisorWeight J c := by
-    intro c hc
-    obtain ⟨ht, hfk⟩ := Finset.mem_product.mp hc
+    pm_381 c hc ht hfk Finset.mem_product.mp
     obtain ⟨x, hx, he⟩ := Finset.mem_image.mp ht
     have ht0 : c.1 ≠ 0 := he ▸ (initialChild_nonzero x (hsource x hx)).1
     exact initialChild_fiber_weight source hsource c ht0
@@ -98,13 +102,11 @@ theorem initial_energy_projection {J : ℕ} (source : Finset (InitialTuple J))
     (fun _ _ => sq_nonneg _) hfiber
   apply he.trans_eq
   simp only [Finset.sum_product, initialDivisorWeight, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro t ht
-  apply Finset.sum_congr rfl
-  intro f hf
+  pm_3397 t ht f hf
   apply Finset.sum_congr rfl
   intro k hk
   ring
+end
 
 end
 end SevenEighths.InverseMoment

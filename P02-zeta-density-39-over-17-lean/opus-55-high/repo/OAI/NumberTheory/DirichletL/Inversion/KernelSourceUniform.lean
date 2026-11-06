@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Foundation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseKernelSourceUniform
 
-open scoped BigOperators Classical ContDiff SchwartzMap FourierTransform
+open scoped Classical ContDiff SchwartzMap FourierTransform
 open MeasureTheory LocalLogFourier
 noncomputable section
 
@@ -41,36 +42,36 @@ theorem paperKernel_window_source_bound (a b : ℝ) (ha : 0 < a) (K : ℕ) (L : 
       (fun q (_ : q ∈ (Finset.univ : Finset (Fin (K+1)))) => (hc q).le) (Finset.mem_univ j)
     dsimp only [D]
     linarith
-  refine ⟨S, D*(1+E), by positivity, ?_⟩
+  refine ⟨S, D *(1+E), by positivity, ?_⟩
   intro V hV R hR j hj s hs
-  let Q := S.sup (schwartzSeminormFamily ℝ ℝ ℂ) V
-  have hQ : 0 ≤ Q := by dsimp only [Q]; positivity
+  pm_5149 Q S.sup V
+  pm_82 hQ Q
   let q : Fin (K+1) := ⟨j, Nat.lt_succ_iff.mpr hj⟩
-  have hsource : c q * (orders q).sup (schwartzSeminormFamily ℝ ℝ ℂ) V ≤ D*Q := by
+  have hsource : c q * (orders q).sup (schwartzSeminormFamily ℝ ℝ ℂ) V ≤ D *Q := by
     have hsub : orders q ⊆ S := Finset.subset_biUnion_of_mem orders (Finset.mem_univ q)
     exact mul_le_mul (hcD q) (Seminorm.le_def.mp (Finset.sup_mono hsub) V)
       (by positivity) hD.le
   have hsmall := (hb q V hV (R*Real.exp s) (mul_pos hR (Real.exp_pos _))).1
   have hlarge := (hb q V hV (R*Real.exp s) (mul_pos hR (Real.exp_pos _))).2
   have hsmall' : ‖eulerDeriv (CubicReflectionKernel.paperKernel V) j (R*Real.exp s)‖ ≤
-      D*(1+E)*Q * R^(1/4 : ℝ) := by
+      D *(1+E)*Q * R^(1/4 : ℝ) := by
     have he : (Real.exp s)^(1/4 : ℝ) ≤ E :=
       Real.rpow_le_rpow (by positivity) (Real.exp_le_exp.mpr ((le_abs_self s).trans hs)) (by norm_num)
     rw [Real.mul_rpow hR.le (Real.exp_pos _).le] at hsmall
     calc
       _ ≤ (c q * (orders q).sup (schwartzSeminormFamily ℝ ℝ ℂ) V) *
           (R^(1/4 : ℝ) * (Real.exp s)^(1/4 : ℝ)) := hsmall
-      _ ≤ (D*Q) * (R^(1/4 : ℝ) * E) := mul_le_mul hsource
+      _ ≤ (D *Q) * (R^(1/4 : ℝ) * E) := mul_le_mul hsource
           (mul_le_mul_of_nonneg_left he (Real.rpow_nonneg hR.le _)) (by positivity) (by positivity)
       _ ≤ _ := by nlinarith [mul_nonneg hQ (Real.rpow_nonneg hR.le (1/4 : ℝ))]
-  have hlarge' : ‖eulerDeriv (CubicReflectionKernel.paperKernel V) j (R*Real.exp s)‖ ≤ D*(1+E)*Q := by
-    have hh : ‖eulerDeriv (CubicReflectionKernel.paperKernel V) j (R*Real.exp s)‖ ≤ D*Q := by
+  have hlarge' : ‖eulerDeriv (CubicReflectionKernel.paperKernel V) j (R*Real.exp s)‖ ≤ D *(1+E)*Q := by
+    have hh : ‖eulerDeriv (CubicReflectionKernel.paperKernel V) j (R*Real.exp s)‖ ≤ D *Q := by
       apply (le_trans ?_ hsource)
-      simpa only [Nat.cast_zero, neg_zero, Real.rpow_zero, mul_one] using hlarge
+      pm_99 Nat.cast_zero neg_zero Real.rpow_zero mul_one hlarge
     exact hh.trans (by nlinarith [mul_nonneg (mul_nonneg hD.le hE.le) hQ])
-  change _ ≤ D*(1+E)*Q * min 1 (R^(1/4 : ℝ))
-  rw [mul_min_of_nonneg _ _ (by positivity : 0 ≤ D*(1+E)*Q), mul_one]
-  exact le_min hlarge' hsmall'
+  change _ ≤ D *(1+E)*Q * min 1 (R^(1/4 : ℝ))
+  rw [mul_min_of_nonneg _ _ (by positivity : 0 ≤ D *(1+E)*Q), mul_one]
+  grind
 
 private theorem localized_source_seminorm
     (V F : ℝ → ℂ) (R L CW CF : ℝ) (n k : ℕ)
@@ -83,19 +84,18 @@ private theorem localized_source_seminorm
     (SchwartzMap.seminorm ℝ k n) (positiveLogProfile V F R hVc hVs hF hR) ≤
       L ^ k * derivativeConstant n CW CF := by
   let g := positiveLogProfile V F R hVc hVs hF hR
-  let G : ℝ → ℂ := fun z => F (R * Real.exp z)
+  pm_3440
   have hG : ContDiff ℝ ∞ G := by
     apply hF.comp_contDiff (by fun_prop)
     intro z
     exact mul_pos hR (Real.exp_pos _)
   have hgeq : (g : ℝ → ℂ) = fun z => V z * G z := by
-    funext z
-    exact positiveLogProfile_apply V F R z hVc hVs hF hR
+    pm_8735 hF
   have hD : 0 ≤ derivativeConstant n CW CF := derivativeConstant_nonneg _ _ _ hCW hCF
   apply SchwartzMap.seminorm_le_bound' ℝ k n g (mul_nonneg (pow_nonneg hL _) hD)
   intro s
-  have hprod := norm_iteratedFDeriv_mul_le hVs hG s (n := n) (by simp)
-  by_cases hs : ∃ i ≤ n, ‖iteratedFDeriv ℝ i V s‖ ≠ 0
+  pm_3441
+  pm_7415 hs
   · have hwindow' := hwindow s hs
     have hraw : ‖iteratedDeriv n g s‖ ≤ derivativeConstant n CW CF := by
       rw [hgeq, ← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
@@ -113,14 +113,10 @@ private theorem localized_source_seminorm
     have hsk : ‖s‖ ^ k ≤ L ^ k := by simpa only [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg s) hwindow' k
     exact mul_le_mul hsk hraw (norm_nonneg _) (pow_nonneg hL _)
   · have hz (i : ℕ) (hi : i ≤ n) : ‖iteratedFDeriv ℝ i V s‖ = 0 := by
-      by_contra hne
-      exact hs ⟨i, hi, hne⟩
+      pm_8930 hs
     have hsum : (∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i V s‖ *
         ‖iteratedFDeriv ℝ (n - i) G s‖) = 0 := by
-      apply Finset.sum_eq_zero
-      intro i hi
-      rw [hz i (Nat.lt_succ_iff.mp (Finset.mem_range.mp hi))]
-      ring
+      pm_7126 hz
     have hgzero : ‖iteratedDeriv n g s‖ = 0 := by
       rw [hgeq, ← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
       exact le_antisymm (hprod.trans_eq hsum) (norm_nonneg _)
@@ -149,7 +145,7 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
         C * S.sup (schwartzSeminormFamily ℝ ℝ ℂ) V) := by
   let T := ∑ i, |slope i| * M i
   have hT : 0 ≤ T := Finset.sum_nonneg (fun i _ => mul_nonneg (abs_nonneg _) (hM i))
-  let K := J + (volume : Measure ℝ).integrablePower
+  pm_1369
   let L := T+1
   have hL : 0 ≤ L := by dsimp only [L]; linarith
   obtain ⟨U, CW, hUc, hUs, hUone, hCW, hUderiv, hwindow⟩ :=
@@ -159,15 +155,15 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
   let B0 := (2 : ℝ)^J * (FourierBridge.coefficientMomentBound 0 P0 +
     FourierBridge.coefficientMomentBound J P0)
   let B1 := FourierBridge.fourierPointBound J P0
-  have hP0 : 0 ≤ P0 := momentConstant_nonneg K L CW CF hL hCW hCF.le
+  pm_5893 hP0 P0 L hCF.le
   have hB0 : 0 ≤ B0 := mul_nonneg (by positivity) (add_nonneg
     (FourierBridge.coefficientMomentBound_nonneg 0 P0 hP0)
     (FourierBridge.coefficientMomentBound_nonneg J P0 hP0))
   have hB1 : 0 ≤ B1 := FourierBridge.fourierPointBound_nonneg J P0 hP0
   refine ⟨U, S, B0+B1, add_nonneg hB0 hB1, hUc, hUs, ?_⟩
   intro V hV R hR
-  let Q := S.sup (schwartzSeminormFamily ℝ ℝ ℂ) V
-  have hQ : 0 ≤ Q := by dsimp only [Q]; positivity
+  pm_5149 Q S.sup V
+  pm_82 hQ Q
   let m := smallScalar R
   have hm : 0 < m := smallScalar_pos hR
   have hF := CubicReflectionKernel.paperKernel_compact_source_smooth V a b ha hV (V.smooth ⊤)
@@ -178,7 +174,7 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
   have hnorm (t : ℝ) : ‖B t‖ = m⁻¹ * ‖(𝓕 g) t‖ := by
     simp only [B, smul_apply, smul_eq_mul, norm_mul, norm_inv,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos hm]
-  have hP : 0 ≤ P0*Q := mul_nonneg hP0 hQ
+  pm_6529 hP P0 Q hP0 hQ
   have hsource (n : ℕ) (hn : n ≤ K) : m⁻¹ *
       ((SchwartzMap.seminorm ℝ 0 n) g +
         (SchwartzMap.seminorm ℝ (volume : Measure ℝ).integrablePower n) g) ≤ P0*Q := by
@@ -218,7 +214,7 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
     dsimp only [B1]
     unfold FourierBridge.fourierPointBound FourierBridge.fourierSeminormBound
     ring
-  refine ⟨?_, ?_, ?_, ?_⟩
+  pm_8300
   · intro y
     have hactive : (∏ i, windows i (y i)) ≠ 0 → U (∑ i, slope i*y i) = 1 :=
       FourierBridge.coupled_cutoff_active windows U slope y M hwindows (by simpa [T] using hUone)
@@ -230,7 +226,7 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
     rw [← hcan]
     dsimp only [B]
     simp only [smul_apply, smul_eq_mul]
-    have hmC : (m : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hm.ne'
+    pm_115 hmC m Complex.ofReal_ne_zero.mpr hm.ne'
     change _ = (m : ℂ)*_
     field_simp
     rfl
@@ -282,23 +278,10 @@ theorem normTwistedSource_uniform_separation {ι : Type*} [Fintype ι]
       (∀ t : ℝ, (1 + ‖t‖)^J * ‖twistedDensity U W θ R t‖ ≤ C * (1 + ‖θ‖)^n) := by
   obtain ⟨U, orders, C, hC, hUc, hUs, hsep⟩ :=
     source_uniform_separation a b ha windows slope M hM hwindows J
-  let V := CompletedGauss.vstarSchwartz W a b ha hsupp hW
-  have hV : Function.support (V : ℝ → ℂ) ⊆ Set.Icc a b :=
-    CompletedGauss.Vstar_support W a b hsupp
+  pm_3216
   obtain ⟨G, hG, hbound⟩ := CompletedHeight.normTwistedSource_schwartz V a b ha hV
-  have hlink (θ : ℝ) : (G θ : ℝ → ℂ) =
-      CompletedGauss.Vstar (CompletedHeight.normTwistedSource W θ) := by
-    funext x
-    rw [hG θ x]
-    change FourierBridge.logPhase θ (Real.log x)*((Real.sqrt x:ℂ)*W x) =
-      (Real.sqrt x:ℂ)*(FourierBridge.logPhase θ (Real.log x)*W x)
-    ring
-  have hGs (θ : ℝ) : Function.support (G θ : ℝ → ℂ) ⊆ Set.Icc a b := by
-    intro x hx
-    change G θ x ≠ 0 at hx
-    rw [hG θ x] at hx
-    exact hV (CompletedHeight.normTwistedSource_support V θ hx)
-  obtain ⟨n, D, hD, hpoly⟩ := hbound orders
+  pm_3215
+  pm_269 n D hD hpoly hbound orders
   refine ⟨U, n, C*D, mul_nonneg hC hD.le, hUc, hUs, ?_⟩
   intro θ R hR
   have hcan : canonicalDensity U (G θ) R = twistedDensity U W θ R := by
@@ -312,7 +295,10 @@ theorem normTwistedSource_uniform_separation {ι : Type*} [Fintype ι]
     (mul_le_mul_of_nonneg_left (hpoly θ) hC).trans_eq (by ring)
   exact ⟨heq, hi, hm.trans hb, fun t => (hp t).trans hb⟩
 
-theorem fourier_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
+section
+variable {α : Type*} [MeasurableSpace α]
+include α
+theorem fourier_joint_stronglyMeasurable
     (f : α → ℝ → ℂ) (hf : StronglyMeasurable (Function.uncurry f)) :
     StronglyMeasurable (fun p : α × ℝ => (𝓕 (f p.1)) p.2) := by
   simp_rw [Real.fourier_eq']
@@ -324,13 +310,13 @@ theorem fourier_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
     (measurable_snd.prodMk (measurable_snd.comp measurable_fst))).smul
     (hf.comp_measurable ((measurable_fst.comp measurable_fst).prodMk measurable_snd))
 
-theorem paperKernel_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
+theorem paperKernel_joint_stronglyMeasurable
     (a b : ℝ) (ha : 0 < a) (V : α → 𝓢(ℝ, ℂ))
     (hV : ∀ θ, Function.support (V θ : ℝ → ℂ) ⊆ Set.Icc a b)
     (hf : StronglyMeasurable (fun p : α × ℝ => V p.1 (Real.exp p.2))) :
     StronglyMeasurable (fun p : α × Set.Ioi (0 : ℝ) =>
       CubicReflectionKernel.paperKernel (V p.1) p.2) := by
-  let f : α → ℝ → ℂ := fun θ s => V θ (Real.exp s)
+  let f : α → ℝ → ℂ := fun θ s=> V θ (Real.exp s)
   let g : α → ℝ → ℂ := fun θ u => CubicReflectionKernel.axisMultiplier u * (𝓕 (f θ)) u
   have hfF := fourier_joint_stronglyMeasurable f hf
   have hg : StronglyMeasurable (Function.uncurry g) :=
@@ -346,6 +332,7 @@ theorem paperKernel_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
   let L := CubicReflectionKernel.logSchwartz (V p.1) a b ha (hV p.1) ((V p.1).smooth ⊤)
   exact CubicReflectionKernel.paperKernel_eq_logFourier (V p.1) L
     (fun _ => rfl) p.2 p.2.property
+end
 
 private theorem twistedDensity_measurable_of_profile
     (U W : ℝ → ℂ) (R : ℝ)
@@ -355,7 +342,7 @@ private theorem twistedDensity_measurable_of_profile
     StronglyMeasurable (fun p : ℝ × ℝ => twistedDensity U W p.1 R p.2) := by
   unfold twistedDensity
   exact stronglyMeasurable_const.mul (fourier_joint_stronglyMeasurable
-    (fun θ s => U s * CubicReflectionKernel.paperKernel
+    (fun θ s=> U s * CubicReflectionKernel.paperKernel
       (CompletedGauss.Vstar (CompletedHeight.normTwistedSource W θ)) (R * Real.exp s)) hprofile)
 
 private theorem exists_measurable_twisted_source
@@ -365,22 +352,9 @@ private theorem exists_measurable_twisted_source
       (∀ θ, (G θ : ℝ → ℂ) = CompletedGauss.Vstar (CompletedHeight.normTwistedSource W θ)) ∧
       (∀ θ, Function.support (G θ : ℝ → ℂ) ⊆ Set.Icc a b) ∧
       StronglyMeasurable (fun p : ℝ × ℝ => G p.1 (Real.exp p.2)) := by
-  let V := CompletedGauss.vstarSchwartz W a b ha hsupp hW
-  have hV : Function.support (V : ℝ → ℂ) ⊆ Set.Icc a b :=
-    CompletedGauss.Vstar_support W a b hsupp
+  pm_3216
   obtain ⟨G, hG, _⟩ := CompletedHeight.normTwistedSource_schwartz V a b ha hV
-  have hlink (θ : ℝ) : (G θ : ℝ → ℂ) =
-      CompletedGauss.Vstar (CompletedHeight.normTwistedSource W θ) := by
-    funext x
-    rw [hG θ x]
-    change FourierBridge.logPhase θ (Real.log x)*((Real.sqrt x:ℂ)*W x) =
-      (Real.sqrt x:ℂ)*(FourierBridge.logPhase θ (Real.log x)*W x)
-    ring
-  have hGs (θ : ℝ) : Function.support (G θ : ℝ → ℂ) ⊆ Set.Icc a b := by
-    intro x hx
-    change G θ x ≠ 0 at hx
-    rw [hG θ x] at hx
-    exact hV (CompletedHeight.normTwistedSource_support V θ hx)
+  pm_3215
   have hf : StronglyMeasurable (fun p : ℝ × ℝ => G p.1 (Real.exp p.2)) := by
     simp_rw [hG, CompletedHeight.normTwistedSource, Real.log_exp]
     apply Continuous.stronglyMeasurable

@@ -27,18 +27,14 @@ theorem exponentialSumAt_eq_int_sum (F : ℝ → ℝ) (T N : ℝ) (a b : ℕ) :
   classical
   unfold exponentialSumAt oscillatory
   apply Finset.sum_bij (fun (n : ℕ) _ => (n : ℤ))
-  · intro n hn
-    have h := Finset.mem_Icc.mp hn
-    exact Finset.mem_Icc.mpr ⟨by exact_mod_cast h.1,by exact_mod_cast h.2⟩
-  · intro n _ m _ h
-    exact_mod_cast h
+  grind
+  grind
   · intro n hn
     have h := Finset.mem_Icc.mp hn
     have hn₀ : 0 ≤ n := (Int.natCast_nonneg a).trans h.1
     refine ⟨n.toNat,?_,Int.toNat_of_nonneg hn₀⟩
     apply Finset.mem_Icc.mpr
-    constructor <;> omega
-  · intro n _
-    simp only [Int.cast_natCast]
+    grind
+  simp_all
 
 end TaoTrudgianYang2025

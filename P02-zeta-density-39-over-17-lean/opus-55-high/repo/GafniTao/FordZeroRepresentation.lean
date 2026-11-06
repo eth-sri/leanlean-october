@@ -18,7 +18,6 @@ fiber-count function; no Fourier integral or unproved moment estimate enters.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 

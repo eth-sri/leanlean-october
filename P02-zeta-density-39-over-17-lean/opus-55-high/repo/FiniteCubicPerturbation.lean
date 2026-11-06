@@ -1,11 +1,10 @@
 module
 public import FiniteCubicBasics
 public import GuthMaynard.Improvement.RetainedRadialAssembly
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open MeasureTheory Set Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
@@ -15,13 +14,10 @@ including repeated indices and closed endpoints. -/
 theorem finite_cubic_congr_window (W : Finset ℝ) {T : ℝ} {K J : ℝ → ℂ}
     (hW : ∀ t ∈ W, ∀ u ∈ W, |t-u| ≤ T) (he : ∀ s, |s| ≤ T → K s=J s) :
     finiteCubic W K=finiteCubic W J := by
-  apply sum_congr rfl
-  intro t ht
-  apply sum_congr rfl
-  intro u hu
+  pm_90 sum_congr t ht u hu
   apply sum_congr rfl
   intro v hv
-  rw [he _ (hW t ht u hu),he _ (hW u hu v hv),he _ (hW v hv t ht)]
+  grind
 
 /-- Local Poisson perturbation with the literal atomic mass cubed.
 No L2 approximation density enters the error term. -/
@@ -33,14 +29,8 @@ theorem finite_cubic_local_perturbation (W : Finset ℝ) {T B e : ℝ}
     ‖finiteCubic W K-finiteCubic W J‖ ≤ 3*e*B^2*(W.card:ℝ)^3 := by
   let A := {s : ℝ | |s| ≤ T}
   have hA : MeasurableSet A := measurableSet_le measurable_id.abs measurable_const
-  have hk (s : ℝ) : ‖A.indicator K s‖ ≤ B := by
-    by_cases hs : s ∈ A
-    · simpa only [indicator_of_mem hs] using hbK s hs
-    · simp only [indicator_of_notMem hs,norm_zero]; exact hB
-  have hj (s : ℝ) : ‖A.indicator J s‖ ≤ B := by
-    by_cases hs : s ∈ A
-    · simpa only [indicator_of_mem hs] using hbJ s hs
-    · simp only [indicator_of_notMem hs,norm_zero]; exact hB
+  pm_6369 hk K
+  pm_6369 hj J
   have hd (s : ℝ) : ‖A.indicator K s-A.indicator J s‖ ≤ e := by
     by_cases hs : s ∈ A
     · simpa only [indicator_of_mem hs] using herr s hs
@@ -59,10 +49,9 @@ theorem retained_poisson_kernel_bounded (w : MathCollab.Density.ReflectionCutoff
     ∃ B : ℝ, 0 ≤ B ∧ ∀ s, ‖retainedPoissonKernel (volume.restrict (Icc (1/2:ℝ) 5))
       (fun x => (w x:ℂ)) L S s‖ ≤ B := by
   have hs : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ)=0 := by
-    intro x hx
-    have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+    pm_4496
     simp [hz]
-  obtain ⟨B,hB,hb⟩ := assembly_cutoff_bound w.complex_smooth.continuous hs
+  pm_69 B hB hb assembly_cutoff_bound w.complex_smooth.continuous hs
   refine ⟨(volume.restrict (Icc (1/2:ℝ) 5)).real univ*(|L| *S.card*B),by positivity,?_⟩
   intro s
   change ‖∫ x, retainedAmplitude (fun x => (w x:ℂ)) L S x*GuthMaynard.Improvement.phase (s*mellinFrequency x)
@@ -84,21 +73,18 @@ theorem centered_atomic_cubic_approximation (w : MathCollab.Density.ReflectionCu
           (fun x => (w x:ℂ)) L (poissonModes (T^(1+η)/L)))‖ ≤
       C*T^(-190:ℝ)*(W.card:ℝ)^3 := by
   have hs : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ)=0 := by
-    intro x hx
-    have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+    pm_4496
     simp [hz]
   obtain ⟨E,hE,herr⟩ := centeredKernel_truncation_negligible w.complex_smooth
     (by norm_num : (0:ℝ)<1/2) (by norm_num : (1/2:ℝ)≤5) hs hη (show (0:ℝ)≤1 by norm_num)
-  obtain ⟨D,hD,hbound⟩ := centeredKernel_uniform_bound w.complex_smooth
-    (by norm_num : (0:ℝ)<1/2) (by norm_num : (1/2:ℝ)≤5) hs
-  obtain ⟨B,hB,hb⟩ := assembly_cutoff_bound w.complex_smooth.continuous hs
-  refine ⟨3*E*(D+E)^2,by positivity,?_⟩
+  pm_4237 hbound
+  pm_69 B hB hb assembly_cutoff_bound w.complex_smooth.continuous hs
+  pm_6084
   intro T L t₀ hT hL hLT W hW
   let J := retainedPoissonKernel (volume.restrict (Icc (1/2:ℝ) 5))
     (fun x => (w x:ℂ)) L (poissonModes (T^(1+η)/L))
   let K := centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := by linarith
+  pm_4599
   have he (s : ℝ) (hst : |s| ≤ T) : ‖K s-J s‖ ≤ E*T^(-200:ℝ) := by
     dsimp only [J,K]
     rw [retainedPoissonKernel_fourier w.complex_smooth.continuous.measurable hb hs]
@@ -106,7 +92,7 @@ theorem centered_atomic_cubic_approximation (w : MathCollab.Density.ReflectionCu
   have hd (s : ℝ) (_hst : |s| ≤ T) : ‖K s‖ ≤ (D+E)*L :=
     (hbound L s hL).trans (by nlinarith)
   have hj (s : ℝ) (hst : |s| ≤ T) : ‖J s‖ ≤ (D+E)*L := by
-    have hp : T^(-200:ℝ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hT (by norm_num)
+    pm_6646 hp
     calc
       _ = ‖K s-(K s-J s)‖ := by congr 1; ring
       _ ≤ ‖K s‖+‖K s-J s‖ := norm_sub_le _ _

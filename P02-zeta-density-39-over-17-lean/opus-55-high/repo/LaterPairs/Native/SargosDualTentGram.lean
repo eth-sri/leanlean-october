@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.SargosDualTentKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -18,21 +19,20 @@ open scoped BigOperators
 
 namespace TaoTrudgianYang2025
 
-theorem integrable_sargosTentPlanarIntegrand_complex {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
+section
+variable {ι : Type*} (S : Finset ι) (u v : ι → ℝ)
+include ι S u v
+theorem integrable_sargosTentPlanarIntegrand_complex {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
     Integrable (fun p : ℝ × ℝ => (sargosTentPlanarIntegrand S u v a b p : ℂ))
       (volume.prod volume) := by
-  simp_rw [sargosTentPlanarIntegrand_eq_gram]
-  exact integrable_finsetSum _ (fun q hq => integrable_sargosTentKernelTerm ha hb _ _)
+  pm_7112 integrable_finsetSum
 
-theorem integrable_sargosTentPlanarIntegrand {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
+theorem integrable_sargosTentPlanarIntegrand {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
     Integrable (sargosTentPlanarIntegrand S u v a b) (volume.prod volume) := by
   exact (Integrable.iff_ofReal (𝕜 := ℂ)).mpr
     (integrable_sargosTentPlanarIntegrand_complex S u v ha hb)
 
-theorem integral_sargosTentPlanarIntegrand_eq_gram {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
+theorem integral_sargosTentPlanarIntegrand_eq_gram {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
     (∫ p : ℝ × ℝ, sargosTentPlanarIntegrand S u v a b p ∂(volume.prod volume)) =
       ∑ q ∈ S ×ˢ S,
         sargosSincKernel a (u q.1-u q.2)*sargosSincKernel b (v q.1-v q.2) := by
@@ -43,15 +43,13 @@ theorem integral_sargosTentPlanarIntegrand_eq_gram {ι : Type*}
     _ = ∑ q ∈ S ×ˢ S, ∫ p : ℝ × ℝ,
         sargosTentKernelTerm a b (u q.1-u q.2) (v q.1-v q.2) p
           ∂(volume.prod volume) := by
-      simp_rw [sargosTentPlanarIntegrand_eq_gram]
-      exact integral_finsetSum _ (fun q hq => integrable_sargosTentKernelTerm ha hb _ _)
+      pm_7112 integral_finsetSum
     _ = ∑ q ∈ S ×ˢ S,
         (sargosSincKernel a (u q.1-u q.2) : ℂ)*(sargosSincKernel b (v q.1-v q.2) : ℂ) := by
       simp_rw [integral_sargosTentKernelTerm ha hb]
-    _ = _ := by push_cast; rfl
+    _ = _ := by simp_all
 
-theorem sargosNearPairs_weighted_card_le_gram {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b A B : ℝ} (ha : 0 < a) (hb : 0 < b)
+theorem sargosNearPairs_weighted_card_le_gram {a b A B : ℝ} (ha : 0 < a) (hb : 0 < b)
     (hA : a*A ≤ 1/2) (hB : b*B ≤ 1/2) :
     (a*b/16)*((sargosNearPairs S u v A B).card : ℝ) ≤
       ∑ q ∈ S ×ˢ S,
@@ -74,12 +72,12 @@ theorem sargosNearPairs_weighted_card_le_gram {ι : Type*}
       · intro q hq hnq
         exact mul_nonneg (sargosSincKernel_nonneg ha.le _) (sargosSincKernel_nonneg hb.le _)
 
-theorem sargosNearPairs_weighted_card_le_tentIntegral {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b A B : ℝ} (ha : 0 < a) (hb : 0 < b)
+theorem sargosNearPairs_weighted_card_le_tentIntegral {a b A B : ℝ} (ha : 0 < a) (hb : 0 < b)
     (hA : a*A ≤ 1/2) (hB : b*B ≤ 1/2) :
     (a*b/16)*((sargosNearPairs S u v A B).card : ℝ) ≤
       ∫ p : ℝ × ℝ, sargosTentPlanarIntegrand S u v a b p ∂(volume.prod volume) := by
   rw [integral_sargosTentPlanarIntegrand_eq_gram S u v ha hb]
   exact sargosNearPairs_weighted_card_le_gram S u v ha hb hA hB
+end
 
 end TaoTrudgianYang2025

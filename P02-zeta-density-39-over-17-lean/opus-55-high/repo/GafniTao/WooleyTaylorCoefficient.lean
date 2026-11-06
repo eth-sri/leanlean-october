@@ -1,6 +1,7 @@
 module
 public import GafniTao.WooleyBinomialMatrix
 public import Mathlib.Algebra.Polynomial.Taylor
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,7 +15,6 @@ after translation by `h` factors as `h^(j-i) Ω`, and `Ω` is congruent to
 -/
 
 open Finset Polynomial
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -34,53 +34,10 @@ theorem wooley_X_pow_sub_dvd_hasseDeriv_X_pow_mul
   rw [hasseDeriv_coeff]
   have hlt : d + i < k + 1 := by omega
   rw [coeff_X_pow_mul']
-  simp only [ite_eq_right (not_le.mpr hlt), mul_zero]
+  grind
 
-/-- Literal coefficient factorization defining the source integer `Ω`. -/
-theorem wooley_taylorCoefficient_exists_omega
-    {p c i j k : ℕ} (h : ℤ) (hi : i ≤ j) (hj : j ≤ k)
-    (psi : Polynomial ℤ) :
-    ∃ Omega : ℤ,
-      (taylor h
-        (X ^ j + C ((p : ℤ) ^ c) * X ^ (k + 1) * psi)).coeff i =
-          h ^ (j - i) * Omega ∧
-      Int.ModEq ((p : ℤ) ^ c) Omega (Nat.choose j i : ℤ) := by
-  obtain ⟨q, hq⟩ :=
-    wooley_X_pow_sub_dvd_hasseDeriv_X_pow_mul hi hj psi
-  refine ⟨(Nat.choose j i : ℤ) + (p : ℤ) ^ c * q.eval h, ?_, ?_⟩
-  · rw [taylor_coeff]
-    have hmono :
-        hasseDeriv i (X ^ j : Polynomial ℤ) =
-          monomial (j - i) (Nat.choose j i : ℤ) := by
-      rw [X_pow_eq_monomial, hasseDeriv_monomial]
-      simp only [mul_one]
-    have hscalar :
-        C ((p : ℤ) ^ c) * X ^ (k + 1) * psi =
-          ((p : ℤ) ^ c) • (X ^ (k + 1) * psi) := by
-      rw [mul_assoc, Polynomial.C_mul']
-    have hderivScalar :
-        hasseDeriv i (((p : ℤ) ^ c) • (X ^ (k + 1) * psi)) =
-          ((p : ℤ) ^ c) • hasseDeriv i (X ^ (k + 1) * psi) :=
-      (hasseDeriv i).map_smul ((p : ℤ) ^ c) (X ^ (k + 1) * psi)
-    rw [map_add, hmono, hscalar, hderivScalar, hq]
-    simp [Polynomial.eval_mul, Polynomial.eval_pow]
-    ring
-  · rw [Int.modEq_iff_dvd]
-    use -(q.eval h)
-    ring
-
-/-- Without assuming `i≤j`, the translated coefficient is still its
-monomial Taylor coefficient plus a literal multiple of `p^c`.  This is the
-raw congruence used before the source redistributes powers of the translation
-parameter. -/
-theorem wooley_taylorCoefficient_eq_monomial_add_spacing
-    {p c i j k : ℕ} (h : ℤ) (psi : Polynomial ℤ) :
-    ∃ z : ℤ,
-      (taylor h
-        (X ^ j + C ((p : ℤ) ^ c) * X ^ (k + 1) * psi)).coeff i =
-        (Nat.choose j i : ℤ) * h ^ (j - i) + (p : ℤ) ^ c * z := by
-  refine ⟨(hasseDeriv i (X ^ (k + 1) * psi)).eval h, ?_⟩
-  rw [taylor_coeff]
+set_option hygiene false in
+macro "pb_338" : tactic => `(tactic| (
   have hmono :
       hasseDeriv i (X ^ j : Polynomial ℤ) =
         monomial (j - i) (Nat.choose j i : ℤ) := by
@@ -93,7 +50,40 @@ theorem wooley_taylorCoefficient_eq_monomial_add_spacing
   have hderivScalar :
       hasseDeriv i (((p : ℤ) ^ c) • (X ^ (k + 1) * psi)) =
         ((p : ℤ) ^ c) • hasseDeriv i (X ^ (k + 1) * psi) :=
-    (hasseDeriv i).map_smul ((p : ℤ) ^ c) (X ^ (k + 1) * psi)
+    (hasseDeriv i).map_smul ((p : ℤ) ^ c) (X ^ (k + 1) * psi)))
+section
+variable {p c i j k : ℕ} (h : ℤ)
+include p c i j k h
+/-- Literal coefficient factorization defining the source integer `Ω`. -/
+theorem wooley_taylorCoefficient_exists_omega (hi : i ≤ j) (hj : j ≤ k)
+    (psi : Polynomial ℤ) :
+    ∃ Omega : ℤ,
+      (taylor h
+        (X ^ j + C ((p : ℤ) ^ c) * X ^ (k + 1) * psi)).coeff i =
+          h ^ (j - i) * Omega ∧
+      Int.ModEq ((p : ℤ) ^ c) Omega (Nat.choose j i : ℤ) := by
+  obtain ⟨q, hq⟩ :=
+    wooley_X_pow_sub_dvd_hasseDeriv_X_pow_mul hi hj psi
+  refine ⟨(Nat.choose j i : ℤ) + (p : ℤ) ^ c * q.eval h, ?_, ?_⟩
+  · rw [taylor_coeff]
+    pb_338
+    pm_265 map_add hmono hscalar hderivScalar hq
+    simp [Polynomial.eval_mul, Polynomial.eval_pow]
+    ring
+  simp_all
+
+/-- Without assuming `i≤j`, the translated coefficient is still its
+monomial Taylor coefficient plus a literal multiple of `p^c`.  This is the
+raw congruence used before the source redistributes powers of the translation
+parameter. -/
+theorem wooley_taylorCoefficient_eq_monomial_add_spacing (psi : Polynomial ℤ) :
+    ∃ z : ℤ,
+      (taylor h
+        (X ^ j + C ((p : ℤ) ^ c) * X ^ (k + 1) * psi)).coeff i =
+        (Nat.choose j i : ℤ) * h ^ (j - i) + (p : ℤ) ^ c * z := by
+  refine ⟨(hasseDeriv i (X ^ (k + 1) * psi)).eval h, ?_⟩
+  rw [taylor_coeff]
+  pb_338
   rw [map_add, hmono, hscalar, hderivScalar]
   simp [Polynomial.eval_mul, Polynomial.eval_pow]
 
@@ -102,8 +92,7 @@ When `i > j`, the displayed power `h^(j-i)` has negative exponent; the
 integral coefficient `Omega` then contains the compensating positive power of
 `h`.  Stating the equality in `ℚ` records that convention without pretending
 that a negative exponent is a natural power. -/
-theorem wooley_taylorCoefficient_exists_laurent_omega
-    {p c i j k : ℕ} (h : ℤ) (hh : h ≠ 0) (hj : j ≤ k)
+theorem wooley_taylorCoefficient_exists_laurent_omega (hh : h ≠ 0) (hj : j ≤ k)
     (psi : Polynomial ℤ) :
     ∃ Omega : ℤ,
       ((taylor h
@@ -115,7 +104,7 @@ theorem wooley_taylorCoefficient_exists_laurent_omega
       wooley_taylorCoefficient_exists_omega h hij hj psi
     refine ⟨Omega, ?_, hmod⟩
     rw [hcoeff, Int.cast_mul, Int.cast_pow]
-    have hexp : ((j - i : ℕ) : ℤ) = (j : ℤ) - (i : ℤ) := by omega
+    pm_5940 j i
     rw [← zpow_natCast, hexp]
   · have hji : j < i := Nat.lt_of_not_ge hij
     obtain ⟨z, hcoeff⟩ :=
@@ -126,7 +115,7 @@ theorem wooley_taylorCoefficient_exists_laurent_omega
         (X ^ j + C ((p : ℤ) ^ c) * X ^ (k + 1) * psi)).coeff i
     refine ⟨a * h ^ (i - j), ?_, ?_⟩
     · have hhq : (h : ℚ) ≠ 0 := by exact_mod_cast hh
-      have hexp : ((i - j : ℕ) : ℤ) = (i : ℤ) - (j : ℤ) := by omega
+      pm_5940 i j
       change (a : ℚ) =
         (h : ℚ) ^ ((j : ℤ) - (i : ℤ)) *
           ((a * h ^ (i - j) : ℤ) : ℚ)
@@ -149,6 +138,7 @@ theorem wooley_taylorCoefficient_exists_laurent_omega
         ring
       rw [ha]
       exact ⟨-(z * h ^ (i - j)), by ring⟩
+end
 
 /-- The `Ω` coefficient is nonzero modulo `p` exactly when the corresponding
 binomial coefficient is, provided the spacing exponent is positive. -/

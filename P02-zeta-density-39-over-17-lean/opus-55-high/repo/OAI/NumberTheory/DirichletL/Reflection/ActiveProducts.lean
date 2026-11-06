@@ -20,7 +20,7 @@ lemma slotProductCoefficient_norm (tuples : Finset (σ→Ideal Eis))
     ‖slotProductCoefficient tuples aw P‖≤1 := by
   obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hP
   rw [slotProductCoefficient_at_product tuples hinj aw p hp]
-  exact haw p hp
+  grind
 
 theorem literalWholeRow_eq_active_tuples
     (F : PrimeFamily φ) (rows : Finset (Ideal Eis))

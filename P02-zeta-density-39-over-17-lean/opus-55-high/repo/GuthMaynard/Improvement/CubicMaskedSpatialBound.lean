@@ -1,9 +1,8 @@
 module
 public import GuthMaynard.Improvement.CubicMaskedTailBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
 open MeasureTheory Set
 open scoped ContDiff
 namespace GuthMaynard.Improvement
@@ -38,10 +37,8 @@ theorem masked_spatial_near_tail_bound {a : ℝ → ℂ}
     (l/u) (u/l) (l/u) (u/l) hq hq hη
   obtain ⟨_,_,hd⟩ := masked_radial_discard_integral_bound ha hlu hs
     (l/u) (u/l) (l/u) (u/l) hq hq 0
-  refine ⟨Cnear,Ctail,hCn,hCt,?_⟩
-  intro T L t₀ t₁ S μ A B C hT hL hLT ht hlen hS hA hB hC hm h0 hi h2 hsup
-  have hTp : 0 < T := by linarith
-  have hH : 0 < T^η := Real.rpow_pos_of_pos hTp _
+  pm_119 Cnear Ctail hCn hCt
+  pm_4558
   have hni := fun m => hn L (T^η) m μ A B C hA hB hC hm h0 hi
   have hdi := fun m => hd L (T^η) m μ A B C hH hA hB hC hm h0 hi
   refine ⟨fun m => maskedSpatialCubicMode_integrable ha.continuous hs hm h0 hi L m hA hB hC,
@@ -73,6 +70,6 @@ theorem masked_spatial_near_tail_bound {a : ℝ → ℂ}
   simp only [← pow_two] at hfar
   simp_rw [hmode]
   rw [Finset.sum_add_distrib,mul_add]
-  exact (norm_add_le _ _).trans (add_le_add hnear hfar)
+  pm_243 norm_add_le hnear hfar
 
 end GuthMaynard.Improvement

@@ -1,27 +1,31 @@
 module
 public import SeparatedFrequencyMeanValue
 public import RationalFrequencySeparation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
 def positiveRatPair (r : ℚ) : ℕ × ℕ := (r.num.natAbs, r.den)
 
-theorem positiveRatPair_ratio {r : ℚ} (hr : 0 < r) : pairRatio (positiveRatPair r) = r := by
+section
+variable {r : ℚ} (hr : 0 < r)
+include r hr
+theorem positiveRatPair_ratio : pairRatio (positiveRatPair r) = r := by
   have hn : (r.num.natAbs : ℤ) = r.num := by
     rw [Int.natCast_natAbs, abs_of_nonneg (Rat.num_nonneg.mpr hr.le)]
   have hn' : (r.num.natAbs : ℚ) = (r.num : ℚ) := by
-    simpa only [Int.cast_natCast] using congrArg (fun z : ℤ => (z : ℚ)) hn
+    simp_all
   simp only [pairRatio, positiveRatPair, hn', Rat.num_div_den]
 
-theorem positiveRatPair_properties {r : ℚ} (hr : 0 < r) :
+theorem positiveRatPair_properties :
     0 < (positiveRatPair r).1 ∧ 0 < (positiveRatPair r).2 ∧
       Nat.Coprime (positiveRatPair r).1 (positiveRatPair r).2 := by
   exact ⟨Int.natAbs_pos.mpr (Rat.num_pos.mpr hr).ne', r.pos, r.reduced⟩
+end
 
 theorem positive_rational_log_gap {r s : ℚ} (hr : 0 < r) (hs : 0 < s) (hne : r ≠ s)
     {H L : ℝ} (hrH : (r.den : ℝ) ≤ H) (hsH : (s.den : ℝ) ≤ H)
@@ -42,7 +46,7 @@ theorem positive_rational_log_gap {r s : ℚ} (hr : 0 < r) (hs : 0 < s) (hne : r
   have hh := rational_log_separation (U := Real.exp L) hpr hps hpq hrH hsH
     (by rw [hrepr r hr]; exact hu r hr hrL)
     (by rw [hrepr s hs]; exact hu s hs hsL)
-  simpa only [hrepr r hr, hrepr s hs] using hh
+  grind
 
 theorem exponentialPhase_log (r t : ℝ) : exponentialPhase (Real.log r) t = phase r t := by
   unfold exponentialPhase phase
@@ -115,12 +119,8 @@ theorem rational_power_expansion (A : Finset ℚ) (c : ℚ → ℂ) (k : ℕ)
       fun x hx => mem_image.mpr ⟨x, hx, rfl⟩)
     (fun x : Fin k → ℚ => (∏ j, c (x j)) * phase (∏ j, x j : ℚ) t)
   change (∑ x ∈ rationalTuples A k, ∏ j, c (x j) * phase (x j) t) = _
-  rw [sum_congr rfl he, ← hgroup]
-  apply sum_congr rfl
-  intro q _
-  rw [rationalPowerCoefficient, sum_mul]
-  apply sum_congr rfl
-  intro x hx
+  pm_6939
+  pm_266 rationalPowerCoefficient sum_mul sum_congr x hx
   rw [(mem_filter.mp hx).2]
 
 theorem rational_product_denominator {κ : Type*} (S : Finset κ) (r : κ → ℚ) :
@@ -165,7 +165,7 @@ theorem rational_finite_height_moment (A : Finset ℚ) (c : ℚ → ℂ) (k H : 
       (2+Lk^2) * (T+1+4*δ⁻¹*(1+Real.log ⌊2*Lk/δ⌋₊)) *
         rationalCoefficientEnergy A k c := by
   dsimp only
-  have hHr : (0 : ℝ) < H := by exact_mod_cast (show 0 < H by omega)
+  pm_91 hHr H
   have hproducts : ∀ q ∈ rationalProducts A k,
       0 < q ∧ (q.den : ℝ) ≤ (H : ℝ) ^ k ∧ |Real.log (q : ℝ)| ≤ (k : ℝ) * L := by
     intro q hq

@@ -1,11 +1,11 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramScaleLoss
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
@@ -25,7 +25,7 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
       K*(1+|v|)^J*(Q/Y)*(1+(Y^2/Q)^(1/6:ℝ)+(Y^2/Q)^2/Y)*Y^δ := by
   obtain ⟨J,H₁,H₂,K₁,K₂,hK₁,hK₂,hbound⟩ := original_energy_nonzero_bound δ (1/12) hδ hδ1
     (by norm_num) (by norm_num) a b M₀ ha hab hM₀ W hcompact hs hW hWM
-  obtain ⟨K₀,hK₀,hzero⟩ := lowGramZeroMode_source_bound a b M₀ ha hM₀
+  pm_3547 K₀ hK₀ hzero lowGramZeroMode_source_bound a b M₀ ha hM₀
   refine ⟨J,?_⟩
   intro S hS hbad U
   let M : ℝ := Ideal.absNorm (jointFixedModulus S hS)
@@ -33,9 +33,9 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   let A₀ := K₀*‖paperRadialFourier U 0‖
   let A₁ := K₁*H₁.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*M
   let A₂ := K₂*H₂.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*M^(1/12:ℝ)
-  have hA₀ : 0≤A₀ := by dsimp [A₀];positivity
-  have hA₁ : 0≤A₁ := by dsimp [A₁];positivity
-  have hA₂ : 0≤A₂ := by dsimp [A₂];positivity
+  pm_3395 hA₀ A₀
+  pm_3395 hA₁ A₁
+  pm_3395 hA₂ A₂
   refine ⟨1+A₀+A₁+A₂,by positivity,?_⟩
   intro σ v Y Q hY hQ hP
   have hy : 0<Y := lt_of_lt_of_le zero_lt_one hY
@@ -64,11 +64,11 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
       _≤‖E-Z‖+‖Z‖ := norm_add_le _ _
       _≤_ := by linarith
   let B := (1+|v|)^J*(Q/Y)*(1+P^(1/6:ℝ)+P^2/Y)*Y^δ
-  have hb : 0≤B := by dsimp [B];positivity
+  pm_3395 hb B
   have hh : 1≤(1+|v|)^J := one_le_pow₀ (by linarith [abs_nonneg v])
-  have hyd : 1≤Y^δ := Real.one_le_rpow hY hδ.le
+  pm_242 hyd Y δ hY hδ.le
   have hshape : 1≤1+P^(1/6:ℝ)+P^2/Y := by
-    have hpow : 0≤P^(1/6:ℝ) := by positivity
+    pm_6500
     have hratio : 0≤P^2/Y := by positivity
     linarith
   have hb₀ : Q/Y≤B := by
@@ -78,7 +78,7 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   have hb₁ : (1+|v|)^J*(Q/Y)*(P^2/Y)*Y^δ≤B := by
     dsimp [B]
     gcongr
-    have hpow : 0≤P^(1/6:ℝ) := by positivity
+    pm_6500
     linarith
   have hb₂ : (Q/Y)*P^(1/6:ℝ)≤B := by
     calc
@@ -97,6 +97,5 @@ theorem actual_additive_gram_bound (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     _=_ := by dsimp [B,P];ring
 
 end SevenEighths.ProbeGramCommon
-end
 
 end OAI

@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceSecondZeroEnergy
 public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPair
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,21 +30,19 @@ theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
         (coefficient s R seed) s.η s.t‖/volume s.toData≤
       C*‖κ‖*(2*SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*SchwartzMap.seminorm ℝ 0 0 (p.profile 1)*
         (∏i,s.M i))^2*(1+(∏i,max 0 (s.hi i))*b*b)^(1+ε)*(volume s.toData)^ε/(seed.absNorm:ℝ):=by
-  obtain ⟨C,hC,hbound⟩:=profile_second_zero_energy N ε hε
+  pm_3529 C hC hbound profile_second_zero_energy N ε hε
   refine ⟨C,hC,?_⟩
   intro ι _ _ hcard a b ha hb s p hw1 hw2 R seed hseed κ
-  have hM (i:ι):0≤s.M i:=zero_le_one.trans (s.M_ge_one i)
-  have hhi (i:ι):0≤max 0 (s.hi i):=le_max_left _ _
+  have hM (i:ι):0≤ s.M i:=zero_le_one.trans (s.M_ge_one i)
+  have hhi (i:ι):0≤ max 0 (s.hi i):=le_max_left _ _
   have hz (i:Fin 2):p.profile i 0=0:=by
     by_contra hn
     exact (not_le_of_gt ha) (p.support i hn).1
-  have hslotzero (i:ι):s.W i 0=0:=by
-    by_contra hn
-    exact (not_le_of_gt (s.lo_pos i)) (s.support i hn).1
+  pm_5479 hslotzero hn
   have hW1:∀x,‖s.W₁ x‖≤SchwartzMap.seminorm ℝ 0 0 (p.profile 0):=by
-    intro x;rw [hw1];exact SchwartzMap.norm_le_seminorm ℝ _ _
+    pm_8556 hw1
   have hW2:∀x,‖s.W₂ x‖≤SchwartzMap.seminorm ℝ 0 0 (p.profile 1):=by
-    intro x;rw [hw2];exact SchwartzMap.norm_le_seminorm ℝ _ _
+    pm_8556 hw2
   have hh:=(hbound hcard s.η s.t R s.ν s.ν_bound s.W s.P s.M (fun i=>max 0 (s.hi i)) s.W₁ s.W₂
     (SchwartzMap.seminorm ℝ 0 0 (p.profile 0)) (SchwartzMap.seminorm ℝ 0 0 (p.profile 1)) b b
     hM (apply_nonneg _ _) (apply_nonneg _ _) hhi hb hb s.W_bound hW1 hW2

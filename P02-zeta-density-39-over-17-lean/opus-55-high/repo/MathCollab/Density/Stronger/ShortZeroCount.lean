@@ -2,13 +2,13 @@ module
 public import MathCollab.Density.Stronger.ShortExponentAccounting
 public import MathCollab.Density.IndexedZeroLargeValues
 public import MathCollab.Density.LocalZeroCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Complex Set Filter
-open scoped BigOperators Topology
+open Real Complex Filter
+open scoped Topology
 
-set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density.Stronger
@@ -31,7 +31,7 @@ theorem zetaSubset_large_values_cover_indexed {ι : Type*} {κ ε : ℝ} (hκ : 
       (∑ ρ ∈ S, (zetaMultiplicity ρ : ℝ)) ≤ C*B*H^ε*
         ∑ j ∈ J, ((N j : ℝ)^2/(V j)^2+(N j : ℝ)^3*Real.sqrt H/(V j)^4) := by
   classical
-  obtain ⟨C, hC, hLV⟩ := large_values hκ hε
+  pm_98 C hC hLV large_values hκ hε
   refine ⟨2*C, by positivity, ?_⟩
   intro σ lo hi H B J N V coeff S hS hH hB hhi hlocal hadm hcover
   have hbin (k : ℤ) : (∑ ρ ∈ S.filter (fun ρ => ordinateBin ρ = k),
@@ -43,40 +43,15 @@ theorem zetaSubset_large_values_cover_indexed {ι : Type*} {κ ε : ℝ} (hκ : 
     exact (Finset.sum_le_sum_of_subset_of_nonneg hs (fun _ _ _ => by positivity)).trans (hlocal k)
   obtain ⟨R, hR, hcard, hsep, hcount⟩ := weighted_separated_extraction S
     (fun ρ => (zetaMultiplicity ρ : ℝ)) hB hbin
-  let W := R.image Complex.im
-  let Wj := fun j => W.filter (fun t => V j ≤ ‖detectingPolynomial (N j) (coeff j) t‖)
-  let F := fun j => (N j : ℝ)^2/(V j)^2+(N j : ℝ)^3*Real.sqrt H/(V j)^4
+  pm_4292
   have hWj : ∀ j ∈ J, ((Wj j).card : ℝ) ≤ C*H^ε*F j := by
-    intro j hj
-    obtain ⟨hN, hV, hlow, hhigh, hheight, hc⟩ := hadm j hj
-    apply hLV H (V j) (N j) (coeff j) (Wj j) hH hN hV hlow hhigh hheight hc
+    pm_4293
     · refine ⟨lo, ?_⟩
-      intro t ht
-      obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp (Finset.mem_filter.mp ht).1
+      pm_6294
       have hz := mem_zetaZeroFinset.mp (hS (hR hρ))
       exact ⟨hz.2.2.1, hz.2.2.2.trans hhi⟩
-    · intro t ht u hu htu
-      exact hsep t (Finset.mem_filter.mp ht).1 u (Finset.mem_filter.mp hu).1 htu
-    · intro t ht
-      exact (Finset.mem_filter.mp ht).2
-  have hsub : W ⊆ J.biUnion Wj := by
-    intro t ht
-    obtain ⟨ρ, hρ, rfl⟩ := Finset.mem_image.mp ht
-    obtain ⟨j, hj, hdetect⟩ := hcover ρ (hR hρ)
-    exact Finset.mem_biUnion.mpr ⟨j, hj, Finset.mem_filter.mpr
-      ⟨Finset.mem_image.mpr ⟨ρ, hρ, rfl⟩, hdetect⟩⟩
-  have hc : (W.card : ℝ) ≤ ∑ j ∈ J, ((Wj j).card : ℝ) := by
-    exact_mod_cast (Finset.card_le_card hsub).trans (Finset.card_biUnion_le)
-  have hsum : (W.card : ℝ) ≤ C*H^ε*∑ j ∈ J, F j := by
-    calc
-      _ ≤ ∑ j ∈ J, ((Wj j).card : ℝ) := hc
-      _ ≤ ∑ j ∈ J, C*H^ε*F j := Finset.sum_le_sum hWj
-      _ = _ := by rw [Finset.mul_sum]
-  rw [← hcard] at hcount
-  calc
-    _ ≤ 2*B*(W.card : ℝ) := hcount
-    _ ≤ 2*B*(C*H^ε*∑ j ∈ J, F j) := mul_le_mul_of_nonneg_left hsum (by positivity)
-    _ = _ := by dsimp [F]; ring
+    pm_4294
+  pm_4291
 
 /-- Actual slab zeros detected by the fixed normalized short family. -/
 def smoothShortZeroFinset (η σ δ T : ℝ) : Finset ℂ := by
@@ -103,12 +78,12 @@ theorem smoothShortZeroCount_bound {σ η : ℝ}
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop,
       (smoothShortZeroCount η σ δ T : ℝ) ≤ C*T^(densityExponent σ+12*η) := by
   classical
-  let κ := (σ-3/4)/2
+  pm_7846
   let K := smoothPowerBound σ δ
   let A : ℝ := 288*(K : ℝ)^2*((2 : ℝ)^K+32)
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hκ : 0 < κ := by dsimp [κ]; linarith
-  have hm : 3/4+κ ≤ σ-4*η := by dsimp [κ]; linarith
+  pm_61 hA A
+  pm_358 hκ κ
+  pm_1583
   obtain ⟨Cv, hCv, hbound⟩ := zetaSubset_large_values_cover_indexed
     (ι := (ℤ × ℕ × ℕ) × ℕ × ℕ) hκ hη
   obtain ⟨Cb, hCb, hlocal⟩ := zeta_local_multiplicity_bound
@@ -116,7 +91,7 @@ theorem smoothShortZeroCount_bound {σ η : ℝ}
   filter_upwards [eventually_ge_atTop (2 : ℝ),
     smoothPoweredFamily_largeValues_admissible hσ hσ'.le hη hm δ,
     smooth_family_sum_eventually hη hσ hσ'.le δ] with T hT hadm hsum
-  have hlog : 0 ≤ Real.log (2*T) := Real.log_nonneg (by linarith)
+  pm_233 hlog T
   have hcount := hbound σ T (2*T) (densityAmbient T) (Cb*Real.log (2*T))
     (smoothPoweredIndices σ δ T) smoothPoweredFamilyScale
     (fun q => (smoothPoweredFamilyScale q : ℝ)^σ*T^(-2*η))

@@ -1,5 +1,6 @@
 module
 public import TaoTrudgianYang2025.HeathBrownExponentAlgebra
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,8 +29,7 @@ theorem heathBrown_monomial_window {T N α δ η p r : ℝ}
   have hTpos := zero_lt_one.trans_le hT
   have hpow := Real.rpow_le_rpow hN.le hwindow (add_nonneg hp hη)
   have hcost : (α+δ)*(p+η) ≤ α*p+(α+1)*η+2*δ := by
-    have h₁ := mul_le_mul_of_nonneg_left hp₁ hδ
-    have h₂ := mul_le_mul_of_nonneg_left hη₁ hδ
+    pm_194 h₁ mul_le_mul_of_nonneg_left hp₁ hδ h₂ hη₁
     nlinarith
   calc
     T^r*N^(p+η) ≤ T^r*(T^(α+δ))^(p+η) :=
@@ -46,23 +46,23 @@ theorem heathBrownPowerMajorant_window {k : ℕ} (hk : 3 ≤ k)
   have hd := heathBrownDerivativeExponent_bounds hk
   have hkd : 0 ≤ (k : ℝ)*heathBrownDerivativeExponent k :=
     mul_nonneg (Nat.cast_nonneg k) hd.1.le
-  have hp₁ : 0 ≤ 1-(k : ℝ)*heathBrownDerivativeExponent k := by linarith [hd.2.1]
-  have hp₂ : 0 ≤ 1-heathBrownDerivativeExponent k := by linarith [hd.2.2]
+  have hp₁ : 0 ≤ 1-(k : ℝ)*heathBrownDerivativeExponent k := by grind
+  have hp₂ : 0 ≤ 1-heathBrownDerivativeExponent k := by grind
   have hb₁ : heathBrownDerivativeExponent k+
       α*(1-(k : ℝ)*heathBrownDerivativeExponent k) ≤ heathBrownBetaBound k α := by
     rw [heathBrownBetaBound_eq_max hk]
-    exact le_max_left _ _
+    grind
   have hb₂ : α*(1-heathBrownDerivativeExponent k) ≤ heathBrownBetaBound k α := by
     rw [heathBrownBetaBound_eq_max hk]
-    exact (le_max_left _ _).trans (le_max_right _ _)
+    grind
   have hb₃ : α-heathBrownInverseExponent k ≤ heathBrownBetaBound k α := by
     rw [heathBrownBetaBound_eq_max hk]
-    exact (le_max_right _ _).trans (le_max_right _ _)
+    grind
   have h₁ := heathBrown_monomial_window
     (r := heathBrownDerivativeExponent k) hT hN hδ hη hη₁ hp₁
     (by linarith) hwindow
   have h₂ := heathBrown_monomial_window (r := 0)
-    hT hN hδ hη hη₁ hp₂ (by linarith [hd.1]) hwindow
+    hT hN hδ hη hη₁ hp₂ (by grind) hwindow
   have h₃ := heathBrown_monomial_window (p := 1) (r := -heathBrownInverseExponent k)
     hT hN hδ hη hη₁ (by norm_num) le_rfl hwindow
   have hbound₁ := h₁.trans (Real.rpow_le_rpow_of_exponent_le hT
@@ -88,7 +88,7 @@ theorem heathBrownPowerMajorant_window {k : ℕ} (hk : 3 ≤ k)
 theorem heathBrown_epsilon_budget {α ε : ℝ} (hα : 0 ≤ α) (hε : 0 < ε) :
     ∃ η δ : ℝ, 0 < η ∧ η ≤ 1 ∧ 0 < δ ∧ δ ≤ 1 ∧
       (α+1)*η+2*δ ≤ ε := by
-  let η := min 1 (ε/(4*(α+1)))
+  pm_8198 η α
   let δ := min 1 (ε/8)
   have ha : 0 < α+1 := by linarith
   have hη : 0 < η := lt_min (by norm_num) (div_pos hε (by positivity))

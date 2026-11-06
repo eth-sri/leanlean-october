@@ -1,36 +1,36 @@
 module
 public import MathCollab.Density.DetectorPoweredPieces
 public import MathCollab.Density.Stronger.BoundedConvolution
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Set Filter
-open scoped BigOperators Topology ComplexConjugate
-set_option autoImplicit false
-noncomputable section
+open scoped Topology ComplexConjugate
 namespace MathCollab.Density.Stronger
 
+section
+variable {f : ArithmeticFunction ℂ} {N : ℕ}
+include f N
 /-- Literal product support for every finite block, including smooth weights. -/
-theorem finiteBlock_pow_support {f : ArithmeticFunction ℂ} {N : ℕ}
+theorem finiteBlock_pow_support
     (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (k n : ℕ)
     (hn : (f^k) n ≠ 0) : 0 < n ∧ n ≤ (2*N)^k := by
   induction k generalizing n with
   | zero =>
     simp only [pow_zero, ArithmeticFunction.one_apply] at hn
     split_ifs at hn with he
-    · subst n; simp
-    · exact False.elim (hn rfl)
+    grind
+    grind
   | succ k ih =>
     rw [pow_succ, ArithmeticFunction.mul_apply] at hn
     obtain ⟨p, hp, hmul⟩ := Finset.exists_ne_zero_of_sum_ne_zero hn
     have hi := ih p.1 (left_ne_zero_of_mul hmul)
     have hb := hs p.2 (right_ne_zero_of_mul hmul)
-    have he := (Nat.mem_divisorsAntidiagonal.mp hp).1
-    refine ⟨Nat.pos_of_ne_zero (Nat.mem_divisorsAntidiagonal.mp hp).2, ?_⟩
-    rw [← he, pow_succ]
+    pm_4285
     exact Nat.mul_le_mul hi.2 (Finset.mem_Ioc.mp hb).2
 
-theorem finiteBlock_pow_lower {f : ArithmeticFunction ℂ} {N : ℕ} (hN : 0 < N)
+theorem finiteBlock_pow_lower (hN : 0 < N)
     (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N))
     (k n : ℕ) (hn : (f^(k+1)) n ≠ 0) : N^(k+1) < n := by
   induction k generalizing n with
@@ -46,7 +46,7 @@ theorem finiteBlock_pow_lower {f : ArithmeticFunction ℂ} {N : ℕ} (hN : 0 < N
     exact Nat.mul_lt_mul_of_pos_right ha hN |>.trans_le
       (Nat.mul_le_mul_left _ (Finset.mem_Ioc.mp hb).1.le)
 
-theorem finiteBlock_pow_LSeriesSummable {f : ArithmeticFunction ℂ} {N : ℕ}
+theorem finiteBlock_pow_LSeriesSummable
     (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (k : ℕ) (s : ℂ) :
     LSeriesSummable (fun n => (f^k) n) s := by
   unfold LSeriesSummable
@@ -65,7 +65,7 @@ theorem finiteBlock_pow_LSeriesSummable {f : ArithmeticFunction ℂ} {N : ℕ}
   exact hn ht
 
 /-- The finite Dirichlet convolution has exactly the original power as its L-series. -/
-theorem finiteBlock_LSeries_pow {f : ArithmeticFunction ℂ} {N : ℕ}
+theorem finiteBlock_LSeries_pow
     (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (k : ℕ) (s : ℂ) :
     LSeries (fun n => (f^k) n) s = (LSeries f s)^k := by
   induction k with
@@ -79,10 +79,12 @@ theorem finiteBlock_LSeries_pow {f : ArithmeticFunction ℂ} {N : ℕ}
     rw [pow_succ, ArithmeticFunction.LSeries_mul'
       (finiteBlock_pow_LSeriesSummable hs k s)
       (by simpa using finiteBlock_pow_LSeriesSummable hs 1 s), ih, pow_succ]
+end
 
-theorem finiteBlock_pow_LSeries_sum {f : ArithmeticFunction ℂ} {N k : ℕ}
-    (hN : 0 < N) (hk : 0 < k)
-    (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (s : ℂ) :
+section
+variable {f : ArithmeticFunction ℂ} {N k : ℕ} (hN : 0 < N) (hk : 0 < k) (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N))
+include f N k hN hk hs
+theorem finiteBlock_pow_LSeries_sum (s : ℂ) :
     LSeries (fun n => (f^k) n) s =
       ∑ n ∈ Finset.Ioc (N^k) ((2*N)^k), (f^k) n*(n : ℂ)^(-s) := by
   rw [LSeries, tsum_eq_sum (s := Finset.Ioc (N^k) ((2*N)^k))]
@@ -102,9 +104,7 @@ theorem finiteBlock_pow_LSeries_sum {f : ArithmeticFunction ℂ} {N k : ℕ}
 
 /-- One of k fixed pieces detects the powered block at the same ordinate,
 with exactly the factor k. Coefficients are conjugated for the positive phase. -/
-theorem exists_finiteBlock_powered_piece {f : ArithmeticFunction ℂ} {N k : ℕ}
-    (hN : 0 < N) (hk : 0 < k)
-    (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (t : ℝ) :
+theorem exists_finiteBlock_powered_piece (t : ℝ) :
     ∃ ℓ ∈ Finset.range k, ‖LSeries f (Complex.I*(t : ℂ))‖^k/(k : ℝ) ≤
       ‖detectingPolynomial (2^ℓ*N^k) (fun n => conj ((f^k) n)) t‖ := by
   let g := fun n : ℕ => (f^k) n*(n : ℂ)^(-(Complex.I*(t : ℂ)))
@@ -133,5 +133,6 @@ theorem exists_finiteBlock_powered_piece {f : ArithmeticFunction ℂ} {N k : ℕ
     (fun ℓ => ∑ n ∈ Finset.Ioc (2^ℓ*N^k) (2*(2^ℓ*N^k)), g n)
   rw [← he] at hb
   linarith
+end
 
 end MathCollab.Density.Stronger

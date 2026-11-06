@@ -5,6 +5,7 @@ public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Positivity
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -33,17 +34,21 @@ def balancedExponent (δ y : ℝ) : ℝ :=
   -(1 / 48) + (2 / 3) * δ + δ * (1 / 2 - y) / 6 -
     (13 / 16) * (1 - balancedRowCount δ y)
 
-theorem denominator_bounds {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
+section
+variable {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2)
+include y hy0 hy1
+theorem denominator_bounds :
     7 / 9 ≤ denominator y ∧ denominator y ≤ 3 := by
   dsimp [denominator]
-  constructor <;> linarith
+  grind
 
-theorem primeWeight_bounds {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
+theorem primeWeight_bounds :
     7 / 9 ≤ primeWeight y ∧ primeWeight y ≤ 2 := by
   have hs := sq_nonneg y
   have ht := mul_nonneg hy0 (sub_nonneg.mpr hy1)
   dsimp [primeWeight]
-  constructor <;> nlinarith
+  grind
+end
 
 theorem balanceDenominator_bounds {δ y : ℝ}
     (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 5 / 6) (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
@@ -51,12 +56,11 @@ theorem balanceDenominator_bounds {δ y : ℝ}
   obtain ⟨hd0, hd1⟩ := denominator_bounds hy0 hy1
   obtain ⟨hp0, hp1⟩ := primeWeight_bounds hy0 hy1
   have ha : 0 ≤ 5 / 6 - δ := sub_nonneg.mpr hδ1
-  have hl1 := mul_le_mul_of_nonneg_left hd0 ha
-  have hl2 := mul_le_mul_of_nonneg_left hp0 hδ0
+  pm_268 hl1 mul_le_mul_of_nonneg_left hd0 ha hl2 hp0 hδ0
   have hu1 := mul_le_mul_of_nonneg_left hd1 ha
   have hu2 := mul_le_mul_of_nonneg_left (le_trans hp1 (by norm_num : (2 : ℝ) ≤ 3)) hδ0
   dsimp [balanceDenominator]
-  constructor <;> nlinarith
+  grind
 
 theorem endpoint_identity (δ y : ℝ) (hJ : balanceDenominator δ y ≠ 0) :
     10368 * certificateWeight y * balanceDenominator δ y * (-balancedExponent δ y) =
@@ -85,22 +89,22 @@ theorem balanced_endpoint_margin {δ y : ℝ}
   have hid := endpoint_identity δ y (ne_of_gt hJpos)
   have hcert : 49 * (3 + 5 * y) ≤
       10368 * certificateWeight y * balanceDenominator δ y * (-balancedExponent δ y) := by
-    nlinarith only [hid, hrest, hsq]
+    grind
   have hvhi : certificateWeight y ≤ 17 * (3 + 5 * y) := by
     dsimp [certificateWeight]
     linarith
   have hscaled : 49 * certificateWeight y ≤
       176256 * certificateWeight y * balanceDenominator δ y * (-balancedExponent δ y) := by
-    nlinarith only [hcert, hvhi]
+    grind
   have hcancel : 49 ≤ 176256 * balanceDenominator δ y * (-balancedExponent δ y) := by
     nlinarith only [hscaled, hvpos]
   have hEpos : 0 < -balancedExponent δ y := by
     by_contra hn
     have hn' : -balancedExponent δ y ≤ 0 := le_of_not_gt hn
     have hp := mul_nonpos_of_nonneg_of_nonpos (le_of_lt hJpos) hn'
-    nlinarith only [hcancel, hp]
+    grind
   have hup := mul_le_mul_of_nonneg_right hJhi (le_of_lt hEpos)
-  nlinarith only [hcancel, hup]
+  grind
 
 end
 

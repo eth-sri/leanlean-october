@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicControl
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicEstimates
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,7 +17,7 @@ def binCost (B : ℝ) (χ : Character) (H : ℝ) : ℝ :=
   B*Real.log (complexity χ H) + localBound (1/2)*Real.log ((radical χ.modulus).absNorm : ℝ)
 
 theorem binCost_nonneg {B : ℝ} (hB : 0≤B) (χ : Character) (H : ℝ) : 0≤binCost B χ H := by
-  have hc : 1≤complexity χ H :=
+  have hc : 1≤ complexity χ H :=
     (Real.one_le_exp (by norm_num : (0 : ℝ)≤1)).trans (complexity_ge_exp χ H)
   have hr : (1 : ℝ)≤(radical χ.modulus).absNorm := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
@@ -25,7 +26,7 @@ theorem binCost_nonneg {B : ℝ} (hB : 0≤B) (χ : Character) (H : ℝ) : 0≤b
     (mul_nonneg (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le (Real.log_nonneg hr))
 
 theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
-    ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι→Character)
+    ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι→ Character)
       (hχ : ∀ j, (χ j).residue≠1) (T a : ℝ) (i : ℕ),
       2<T → 51/100≤a → a≤1 →
       HeckeDetectorZeros.zeroMaximum χ hχ (3*(i+1 : ℕ)*T)<a+2*e →
@@ -36,10 +37,10 @@ theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
       (∀ x∈Icc (a+8*e-σ) (2-σ), ∀ t : ℝ,
         (1+|t|)^(n+2)*‖mellin W ((x : ℂ)+t*I)‖≤Cn) →
       ‖polynomial (χ j) W D σ freq‖ ≤ (1/(2*Real.pi))*
-        (C₂*D^(a+8*e-1/2)*binCost B (χ j) ((3*i+2 : ℕ)*T)*Real.pi +
-          2*(Cn*D^(3/2 : ℝ)*binCost B (χ j) ((3*i+2 : ℕ)*T)/(1+L)^n)*|2-a-8*e| +
-          (Cn*D^(3/2 : ℝ)*eulerBound 2)/(1+L)^n*Real.pi) := by
-  obtain ⟨B,hB,hbound⟩ := HeckePrimeDyadicControl.buffered_rectangle_control e he he'
+        (C₂*D ^(a+8*e-1/2)*binCost B (χ j) ((3*i+2 : ℕ)*T)*Real.pi +
+          2*(Cn*D ^(3/2 : ℝ)*binCost B (χ j) ((3*i+2 : ℕ)*T)/(1+L)^n)*|2-a-8*e| +
+          (Cn*D ^(3/2 : ℝ)*eulerBound 2)/(1+L)^n*Real.pi) := by
+  pm_114 B hB hbound HeckePrimeDyadicControl.buffered_rectangle_control e he he'
   refine ⟨B,hB,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j W α β hα hWs hW D σ freq L C₂ Cn n
     hD hL hC₂ hCn hfreq hm₂ hmn

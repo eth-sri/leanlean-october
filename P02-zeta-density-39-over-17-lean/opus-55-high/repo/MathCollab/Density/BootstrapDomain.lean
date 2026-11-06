@@ -1,6 +1,7 @@
 module
 public import MathCollab.Density.ReflectionApplication
 public import MathCollab.Density.ProductGrouping
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,9 +13,12 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density
 
-theorem LargeValueData.scalar_lower {κ : ℝ} (d : LargeValueData κ) (hW : d.W.Nonempty) :
+section
+variable {κ : ℝ} (d : LargeValueData κ) (hW : d.W.Nonempty)
+include κ d hW
+theorem LargeValueData.scalar_lower :
     1/(d.N : ℝ) ≤ bootstrapScalar d.T d.N d.V := by
-  have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
+  pm_4269
   have hV := d.V_pos
   have hvn := d.height_le_length hW
   have hdelta : (1 : ℝ) ≤ divisorMaximum d.T := by
@@ -25,9 +29,10 @@ theorem LargeValueData.scalar_lower {κ : ℝ} (d : LargeValueData κ) (hW : d.W
       apply div_le_div_of_nonneg_right _ (sq_nonneg _)
       nlinarith
 
-theorem LargeValueData.scalar_pos {κ : ℝ} (d : LargeValueData κ) (hW : d.W.Nonempty) :
+theorem LargeValueData.scalar_pos :
     0 < bootstrapScalar d.T d.N d.V :=
   (one_div_pos.mpr (by exact_mod_cast d.N_pos)).trans_le (d.scalar_lower hW)
+end
 
 /-- All nonempty subsets form a finite localization family closed under the reflection windows. -/
 def bootstrapFamily (W : Finset ℝ) : Finset (Finset ℝ) := W.powerset.filter Finset.Nonempty
@@ -45,10 +50,10 @@ theorem LargeValueData.normalization_lower {κ : ℝ} (d : LargeValueData κ)
     (d.N : ℝ) ≤ bootstrapScalar d.T d.N d.V * U.card * (L^2+(d.N : ℝ)*localDiameter U) := by
   obtain ⟨hUW, hUn⟩ := mem_bootstrapFamily.mp hU
   have hW := hUn.mono hUW
-  have hN : (0 : ℝ) < d.N := by exact_mod_cast d.N_pos
+  pm_4269
   have hb := d.scalar_lower hW
   have hbp := d.scalar_pos hW
-  have hr : (1 : ℝ) ≤ U.card := by exact_mod_cast Finset.card_pos.mpr hUn
+  have hr : (1 : ℝ) ≤ U.card := by simp_all
   have hd := localDiameter_ge_one U
   have hbr : bootstrapScalar d.T d.N d.V ≤ bootstrapScalar d.T d.N d.V*U.card := by nlinarith
   have hL : 0 ≤ L := hN.le.trans hNL

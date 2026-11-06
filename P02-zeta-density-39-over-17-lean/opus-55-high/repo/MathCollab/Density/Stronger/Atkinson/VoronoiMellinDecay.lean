@@ -8,41 +8,39 @@ No upstream project or Architect module is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.VoronoiMellinInversion
 public import Mathlib.Analysis.Complex.PhragmenLindelof
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 open Complex Finset Set Filter Topology MeasureTheory Asymptotics
-open scoped BigOperators Topology
+open scoped Topology
 open Classical
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
 /-- On each fixed vertical line, the Mellin transform of a DFI test
 function decays faster than every prescribed power. -/
-theorem DFIVoronoiTestFunction.mellin_polynomial_decay
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) (n : ℕ) :
+theorem DFIVoronoiTestFunction.mellin_polynomial_decay (σ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ℝ,
       |u| ^ n * ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C := by
   let F : SchwartzMap ℝ ℂ :=
     SchwartzMap.fourierTransformCLM ℂ (dfiVoronoiMellinKernelSchwartz hg σ)
-  let C : ℝ := (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    positivity
+  pm_524
+  pm_165 hC C
   refine ⟨C, hC, ?_⟩
   intro u
   have hSem := SchwartzMap.le_seminorm' (𝕜 := ℝ) n 0 F
     (u / (2 * Real.pi))
   rw [iteratedDeriv_zero] at hSem
-  have hSem' : ‖u / (2 * Real.pi)‖ ^ n *
-      ‖F (u / (2 * Real.pi))‖ ≤ SchwartzMap.seminorm ℝ n 0 F := hSem
+  pm_1228 u
   rw [hg.mellin_eq_fourier_mellinKernel σ u]
   change |u| ^ n * ‖F (u / (2 * Real.pi))‖ ≤ C
-  have hpi : 0 < 2 * Real.pi := by positivity
+  pm_4895 hpi Real.pi
   have hAbs : |u| = (2 * Real.pi) * ‖u / (2 * Real.pi)‖ := by
     rw [Real.norm_eq_abs, abs_div, abs_of_pos hpi]
-    field_simp [hpi.ne']
+    grind
   rw [hAbs, mul_pow]
   dsimp only [C]
   calc
@@ -57,7 +55,6 @@ theorem DFIVoronoiTestFunction.mellin_polynomial_decay
 vertical strip.  This general form is needed when a Voronoi dual contour is
 moved farther left to obtain arbitrary decay in its discrete frequency. -/
 theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
     (c d : ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (σ : ℝ), c ≤ σ → σ ≤ d → ∀ u : ℝ,
       ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C := by
@@ -68,12 +65,8 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
   let C : ℝ := (∫ v : ℝ, ‖Fleft v‖) + ∫ v : ℝ, ‖Fright v‖
   have hLeftInt : Integrable (fun v : ℝ ↦ ‖Fleft v‖) := Fleft.integrable.norm
   have hRightInt : Integrable (fun v : ℝ ↦ ‖Fright v‖) := Fright.integrable.norm
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    exact add_nonneg (integral_nonneg fun _ ↦ norm_nonneg _)
-      (integral_nonneg fun _ ↦ norm_nonneg _)
-  refine ⟨C, hC, ?_⟩
-  intro σ hσLower hσUpper u
+  pm_165 hC C
+  pm_486 C hC σ hσLower hσUpper u
   let Fσ : SchwartzMap ℝ ℂ := dfiVoronoiMellinKernelSchwartz hg σ
   have hPoint : ∀ v : ℝ, ‖Fσ v‖ ≤ ‖Fleft v‖ + ‖Fright v‖ := by
     intro v
@@ -81,12 +74,10 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
         Real.exp (-c * v) + Real.exp (-d * v) := by
       by_cases hv : 0 ≤ v
       · have hlin : -σ * v ≤ -c * v := by nlinarith
-        exact (Real.exp_le_exp.mpr hlin).trans
-          (le_add_of_nonneg_right (Real.exp_pos _).le)
+        pm_8292 le_add_of_nonneg_right
       · have hv' : v < 0 := lt_of_not_ge hv
         have hlin : -σ * v ≤ -d * v := by nlinarith
-        exact (Real.exp_le_exp.mpr hlin).trans
-          (le_add_of_nonneg_left (Real.exp_pos _).le)
+        pm_8292 le_add_of_nonneg_left
     change ‖(Real.exp (-σ * v) : ℂ) * g (Real.exp (-v))‖ ≤
       ‖(Real.exp (-c * v) : ℂ) * g (Real.exp (-v))‖ +
       ‖(Real.exp (-d * v) : ℂ) * g (Real.exp (-v))‖
@@ -108,15 +99,13 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
 
 /-- The compact support gives a bound for the Mellin transform uniform on
 the complete DFI contour-shift strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_strip_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.exists_mellin_strip_bound :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (σ : ℝ),
       -(1 / 2 : ℝ) ≤ σ → σ ≤ 3 / 2 → ∀ u : ℝ,
       ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C :=
   hg.exists_mellin_interval_bound (-(1 / 2 : ℝ)) (3 / 2 : ℝ)
 
-theorem DFIVoronoiTestFunction.differentiable_mellin
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.differentiable_mellin :
     Differentiable ℂ (mellin g) := by
   intro s
   exact mellin_differentiableAt_of_isBigO_rpow
@@ -126,20 +115,17 @@ theorem DFIVoronoiTestFunction.differentiable_mellin
 
 /-- Arbitrary-order polynomial Mellin bound on either boundary of the
 standard DFI strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_pow_boundary_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (j : ℕ) (σ : ℝ)
+theorem DFIVoronoiTestFunction.exists_mellin_pow_boundary_bound (j : ℕ) (σ : ℝ)
     (hσLower : -(1 / 2 : ℝ) ≤ σ) (hσUpper : σ ≤ 3 / 2) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ℝ,
       ‖(((σ : ℂ) + (u : ℂ) * I) - 3) ^ j *
         mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C := by
   obtain ⟨M, hM, hMellin⟩ := hg.exists_mellin_strip_bound
-  obtain ⟨D, hD, hDecay⟩ := hg.mellin_polynomial_decay σ j
+  pm_98 D hD hDecay hg.mellin_polynomial_decay σ j
   refine ⟨4 ^ j * 2 ^ (j - 1) * (M + D), by positivity, ?_⟩
   intro u
-  let s : ℂ := (σ : ℂ) + (u : ℂ) * I
-  have hSigma : |σ - 3| ≤ 4 := by
-    rw [abs_of_nonpos (by linarith)]
-    linarith
+  pm_256 s σ u I
+  pm_7366 hSigma σ
   have hsNorm : ‖s - 3‖ ≤ 4 * (1 + |u|) := by
     calc
       ‖s - 3‖ ≤ |(s - 3).re| + |(s - 3).im| :=
@@ -170,8 +156,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_boundary_bound
 
 /-- Phragmén--Lindelöf makes the arbitrary-order boundary estimate uniform
 throughout the standard DFI strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (j : ℕ) :
+theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound (j : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (σ : ℝ),
       -(1 / 2 : ℝ) ≤ σ → σ ≤ 3 / 2 → ∀ u : ℝ,
       ‖(((σ : ℂ) + (u : ℂ) * I) - 3) ^ j *
@@ -195,9 +180,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
     filter_upwards [hStripEventually] with z hz
     have hzLower : -(1 / 2 : ℝ) ≤ z.re := hz.1.le
     have hzUpper : z.re ≤ 3 / 2 := hz.2.le
-    have hRe : |z.re - 3| ≤ 4 := by
-      rw [abs_of_nonpos (by linarith)]
-      linarith
+    pm_7366 hRe z.re
     have hzNorm : ‖z - 3‖ ≤ 4 + |z.im| := by
       calc
         ‖z - 3‖ ≤ |(z - 3).re| + |(z - 3).im| :=
@@ -257,7 +240,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
     · simpa using hFPoly.trans hPolyComplex
   refine ⟨Ca + Cb, add_nonneg hCa hCb, ?_⟩
   intro σ hσLower hσUpper u
-  let z : ℂ := (σ : ℂ) + (u : ℂ) * I
+  pm_256 z σ u I
   have hPL := PhragmenLindelof.vertical_strip
     (f := f) (a := -(1 / 2 : ℝ)) (b := (3 / 2 : ℝ))
     (C := Ca + Cb) hDiff.diffContOnCl (by simpa [l, strip] using hGrowth)
@@ -267,9 +250,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
         · norm_num
           exact hw.symm
         · simp
-      have h := (hBoundA w.im).trans (le_add_of_nonneg_right hCb)
-      push_cast at h
-      rw [hwEq] at h
+      pm_8445 hBoundA le_add_of_nonneg_right hCb
       exact h)
     (fun w hw ↦ by
       have hwEq : ((3 / 2 : ℂ) + (w.im : ℂ) * I) = w := by
@@ -277,16 +258,13 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
         · norm_num
           exact hw.symm
         · simp
-      have h := (hBoundB w.im).trans (le_add_of_nonneg_left hCa)
-      push_cast at h
-      rw [hwEq] at h
+      pm_8445 hBoundB le_add_of_nonneg_left hCa
       exact h)
     (z := z) (by simpa [z] using hσLower) (by simpa [z] using hσUpper)
   simpa [f, z] using hPL
 
 /-- Arbitrary Mellin decay uniformly throughout the actual q=1 contour strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_weighted_strip_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (j : ℕ) :
+theorem DFIVoronoiTestFunction.exists_mellin_weighted_strip_bound (j : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ : ℝ, -(1/2 : ℝ) ≤ σ → σ ≤ 3/2 → ∀ u : ℝ,
       (1 + |u|)^j * ‖mellin g ((σ : ℂ) + (u : ℂ)*I)‖ ≤ C := by
   obtain ⟨D,hD,hbound⟩ := hg.exists_mellin_pow_strip_bound j
@@ -309,5 +287,6 @@ theorem DFIVoronoiTestFunction.exists_mellin_weighted_strip_bound
       mul_le_mul_of_nonneg_right hpow (norm_nonneg _)
     _ = 2^j * (‖z-3‖^j * ‖mellin g z‖) := by ring
     _ ≤ 2^j * D := mul_le_mul_of_nonneg_left hb (by positivity)
+end
 
 end MathCollab.Density.Stronger.Atkinson

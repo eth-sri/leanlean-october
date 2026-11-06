@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailWeights
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKernel
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,23 +16,24 @@ open InverseInitialPhysicalMeasure
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
-def sourceKey (x : Point ι) : Fin 5→Finset ι :=
+def sourceKey (x : Point ι) : Fin 5→ Finset ι :=
   ![x.common,x.divisor,x.overlap,x.left,x.right]
 
-def sourcePoint (k : Fin 5→Finset ι) (h : O) : Point ι :=
+def sourcePoint (k : Fin 5→ Finset ι) (h : O) : Point ι :=
   ⟨k 0,k 1,k 2,k 3,k 4,h⟩
 
 omit [DecidableEq ι] in
-theorem sourcePoint_key (x : Point ι) : sourcePoint (sourceKey x) x.frequency=x := by
-  cases x
-  rfl
+theorem sourcePoint_key (x : Point ι) : sourcePoint (sourceKey x) x.frequency=x := by aesop
 
-def sourceKeys (S : Finset (Point ι)) : Finset (Fin 5→Finset ι) := S.image sourceKey
+def sourceKeys (S : Finset (Point ι)) : Finset (Fin 5→ Finset ι) := S.image sourceKey
 
-def sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→Finset ι) : Finset O :=
+def sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→ Finset ι) : Finset O :=
   (S.filter (fun x=>sourceKey x=k)).image Point.frequency
 
-theorem mem_sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→Finset ι) (h : O) :
+section
+variable (S : Finset (Point ι))
+include S
+theorem mem_sourceFrequencies (k : Fin 5→ Finset ι) (h : O) :
     h∈sourceFrequencies S k ↔ sourcePoint k h∈S := by
   constructor
   · intro hh
@@ -45,7 +47,7 @@ theorem mem_sourceFrequencies (S : Finset (Point ι)) (k : Fin 5→Finset ι) (h
     funext i
     fin_cases i <;> rfl
 
-theorem source_sum_fibers (S : Finset (Point ι)) (f : Point ι→ℂ) :
+theorem source_sum_fibers (f : Point ι→ℂ) :
     ∑x∈S,f x = ∑k∈sourceKeys S,∑h∈sourceFrequencies S k,f (sourcePoint k h) := by
   rw [←Finset.sum_fiberwise_of_maps_to (s:=S) (t:=sourceKeys S) (g:=sourceKey)
     (fun x hx=>Finset.mem_image.mpr ⟨x,hx,rfl⟩) f]
@@ -54,13 +56,14 @@ theorem source_sum_fibers (S : Finset (Point ι)) (f : Point ι→ℂ) :
   rw [sourceFrequencies,Finset.sum_image]
   · apply Finset.sum_congr rfl
     intro x hx
-    rw [←(Finset.mem_filter.mp hx).2,sourcePoint_key]
+    aesop
   · intro x hx y hy hxy
-    have hk := (Finset.mem_filter.mp hx).2.trans (Finset.mem_filter.mp hy).2.symm
+    pm_8158 hk hx hy
     rw [←sourcePoint_key x,←sourcePoint_key y,hk,hxy]
+end
 
 theorem sourceKeys_card
-    (p : ι→O) (_hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ O) (_hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (S : Finset (Point ι)) (L : ℝ) (hL : 1≤L)
     (hpool : ∀x∈S,∀i,sourceKey x i⊆pool)
@@ -68,8 +71,7 @@ theorem sourceKeys_card
     ((sourceKeys S).card:ℝ)≤(128*L)^5 := by
   let T := boundedPrimeSupports p pool L
   have hsub : sourceKeys S⊆Fintype.piFinset (fun _ : Fin 5=>T) := by
-    intro k hk
-    obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hk
+    pm_67 k hk x hx Finset.mem_image.mp
     rw [Fintype.mem_piFinset]
     intro i
     exact Finset.mem_filter.mpr ⟨Finset.mem_powerset.mpr (hpool x hx i),hnorm x hx i⟩

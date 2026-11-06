@@ -1,12 +1,11 @@
 module
 public import GuthMaynard.Improvement.ShortDetectorPoweredHeight
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Real Set Filter MathCollab.Density
-open scoped BigOperators Topology
-set_option autoImplicit false
-noncomputable section
+open Real Filter
+open scoped Topology
 namespace GuthMaynard.Improvement
 
 /-- Least-successful powering, allowing all short bases rather than just four powers. -/
@@ -34,7 +33,7 @@ theorem short_detector_power_exists {T a : ℝ} {N : ℕ}
     have hz : k = 0 := by omega
     rw [hz, pow_zero] at hk
     exact (not_le_of_gt (Real.one_lt_rpow hT ha)) hk
-  refine ⟨k,hkpos,hk100,hk,?_⟩
+  pm_119 k hkpos hk100 hk
   by_cases hksmall : k ≤ 2
   · have hp : (N : ℝ)^k ≤ (N : ℝ)^2 := pow_le_pow_right₀ hNreal.le hksmall
     have hsq := pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ N) hN' 2
@@ -43,7 +42,7 @@ theorem short_detector_power_exists {T a : ℝ} {N : ℕ}
       norm_num only [Nat.cast_ofNat, show (1/2:ℝ)*2=1 by norm_num, Real.rpow_one]
       ring
     rw [he] at hsq
-    exact hp.trans (hsq.trans hbuffer)
+    grind
   · have hprev : (N : ℝ)^(k-1) < T^a :=
       lt_of_not_ge (Nat.find_min hex (show k-1 < k by omega))
     have hlog := Real.log_lt_log (by positivity : (0:ℝ) < (N:ℝ)^(k-1)) hprev
@@ -53,16 +52,13 @@ theorem short_detector_power_exists {T a : ℝ} {N : ℕ}
     have hkn : (3:ℝ) ≤ k := by exact_mod_cast (show 3 ≤ k by omega)
     have hln : 0 ≤ Real.log (N:ℝ) := Real.log_nonneg hNreal.le
     have hmul : (k:ℝ)*Real.log (N:ℝ) ≤ 3/2*((k:ℝ)-1)*Real.log (N:ℝ) := by nlinarith
-    apply (Real.log_le_log_iff (by positivity) (by positivity)).mp
+    pm_1094
     rw [Real.log_pow, Real.log_rpow hTpos]
     nlinarith
 
-/-- Uniform logarithmic buffer for the entire compact target exponent range. -/
-theorem short_detector_power_buffer_eventually :
-    ∀ᶠ T : ℝ in atTop, ∀ a : ℝ, 3/4 ≤ a → a ≤ 4/5 →
-      T*(Real.log T)^4 ≤ T^(3*a/2) ∧
-      (2:ℝ)^100*T^(3*a/2) ≤ T^2 := by
-  have hl := (isLittleO_log_rpow_rpow_atTop (4:ℝ) (show (0:ℝ)<1/8 by norm_num)).tendsto_div_nhds_zero
+set_option hygiene false in
+macro "pf_76" x1:term:max x2:term:max : tactic => `(tactic| (
+  have hl := (isLittleO_log_rpow_rpow_atTop (4:ℝ) (show (0:ℝ)<1/$x1:term by norm_num)).tendsto_div_nhds_zero
   norm_num at hl
   filter_upwards [eventually_ge_atTop (1:ℝ),
     hl.eventually (gt_mem_nhds (show (0:ℝ)<1 by norm_num)),
@@ -71,11 +67,11 @@ theorem short_detector_power_buffer_eventually :
   intro a ha ha'
   have ht : 0 < T := by linarith
   constructor
-  · have hb : (Real.log T)^4 ≤ T^(1/8:ℝ) :=
+  · have hb : (Real.log T)^4 ≤ T^(1/$x1:term :ℝ) :=
       ((div_lt_one (by positivity)).mp hlog).le
     calc
-      _ ≤ T*T^(1/8:ℝ) := mul_le_mul_of_nonneg_left hb ht.le
-      _ = T^(9/8:ℝ) := by
+      _ ≤ T*T^(1/$x1:term :ℝ) := mul_le_mul_of_nonneg_left hb ht.le
+      _ = T^($x2:term/$x1:term :ℝ) := by
         nth_rw 1 [← Real.rpow_one T]
         rw [← Real.rpow_add ht]
         norm_num
@@ -84,7 +80,12 @@ theorem short_detector_power_buffer_eventually :
       _ ≤ T^(4/5:ℝ)*T^(3*a/2) := mul_le_mul_of_nonneg_right hconst (by positivity)
       _ = T^((4/5:ℝ)+3*a/2) := by rw [← Real.rpow_add ht]
       _ ≤ T^(2:ℝ) := Real.rpow_le_rpow_of_exponent_le hT (by linarith)
-      _ = T^2 := Real.rpow_two T
+      _ = T^2 := Real.rpow_two T))
+/-- Uniform logarithmic buffer for the entire compact target exponent range. -/
+theorem short_detector_power_buffer_eventually :
+    ∀ᶠ T : ℝ in atTop, ∀ a : ℝ, 3/4 ≤ a → a ≤ 4/5 →
+      T*(Real.log T)^4 ≤ T^(3*a/2) ∧
+      (2:ℝ)^100*T^(3*a/2) ≤ T^2 := by pf_76 8 9
 
 /-- Every actual dyadic piece lies in the target window with its explicit fixed margin. -/
 theorem short_detector_power_piece_bounds {T a : ℝ} {N k ℓ : ℕ}
@@ -94,7 +95,7 @@ theorem short_detector_power_piece_bounds {T a : ℝ} {N k ℓ : ℕ}
     T^a ≤ ((2^ℓ*N^k:ℕ):ℝ) ∧
       ((2^ℓ*N^k:ℕ):ℝ) ≤ (2:ℝ)^99*T^(3*a/2) ∧
       2*((2^ℓ*N^k:ℕ):ℝ) ≤ T^2 := by
-  have htwo : (1:ℝ) ≤ 2^ℓ := one_le_pow₀ (by norm_num)
+  pm_8210 htwo ℓ
   have htwo99 : (2:ℝ)^ℓ ≤ 2^99 := pow_le_pow_right₀ (by norm_num) (by omega)
   have htwo100 : (2:ℝ)^(ℓ+1) ≤ 2^100 := pow_le_pow_right₀ (by norm_num) (by omega)
   push_cast

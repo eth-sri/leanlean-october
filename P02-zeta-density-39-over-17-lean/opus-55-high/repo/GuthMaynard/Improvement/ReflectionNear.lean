@@ -1,10 +1,9 @@
 module
 public import GuthMaynard.Improvement.ReflectionKernelBridge
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
-open MeasureTheory Set
+public section
+open MeasureTheory
 namespace GuthMaynard.Improvement
 
 theorem centeredKernel_norm_neg (w : MathCollab.Density.ReflectionCutoff)
@@ -20,7 +19,7 @@ theorem reflectionBand_empty_near {L H : ℝ} (hL : 0 < L)
   intro m hm
   have hh := (MathCollab.Density.mem_reflectionBand L H m).mp hm
   have hmpos := hh.1
-  have hm1 : (1:ℝ) ≤ m := by exact_mod_cast (show (1:ℤ) ≤ m by omega)
+  pm_6571 hm1 m
   have hu := (le_div_iff₀ (mul_pos Real.pi_pos hL)).mp hh.2.2
   have hlo := mul_le_mul_of_nonneg_right hm1 (mul_pos Real.pi_pos hL).le
   nlinarith [mul_pos Real.pi_pos hL]
@@ -31,9 +30,8 @@ theorem centeredKernel_near (w : MathCollab.Density.ReflectionCutoff)
     {A : ℕ} (hA : 1 < A) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ L v : ℝ, 0 < L → |v| ≤ Real.pi*L/8 →
       ‖centeredKernel (fun x => (w x:ℂ)) (1/2) 5 L v‖ ≤ K*L/L^A := by
-  obtain ⟨K,hK,h⟩ := MathCollab.Density.uniform_fixedBand_and_diagonal_error w hA
-  refine ⟨K,hK,?_⟩
-  intro L v hL hv
+  pm_69 K hK h MathCollab.Density.uniform_fixedBand_and_diagonal_error w hA
+  pm_484 K hK L v hL hv
   rw [centeredKernel_eq_density_hKernel w hL]
   have hp (s : ℝ) (hs : 0 < s) (hsL : s ≤ Real.pi*L/8) :
       ‖MathCollab.Density.hKernel w L s‖ ≤ K*L/L^A := by

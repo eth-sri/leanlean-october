@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaMorseInverseJetBounds
 public import TaoTrudgianYang2025.BetaMorseGlobalIntegral
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,7 +30,6 @@ theorem iteratedDeriv_modelPhaseMorseWeight_eq
     iteratedDeriv n (modelPhaseMorseWeight χ F v) z =
       iteratedDeriv n (modelPhaseMorseAmplitude χ F v) z := by
   apply Filter.EventuallyEq.iteratedDeriv_eq
-  filter_upwards [(modelPhaseMorseRange_isOpen hσ hδ hF hv).mem_nhds hz] with x hx
-  exact modelPhaseMorseWeight_eq hx
+  pm_5907 x hx modelPhaseMorseWeight_eq
 
 end TaoTrudgianYang2025

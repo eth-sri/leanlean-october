@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.GaussSum.AbelPhaseLimit
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,23 +8,18 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 
 namespace ActualEisensteinCubic
 
@@ -66,17 +62,13 @@ theorem actual_fixed_kernel_eq_dualFixedTerm
         (eisEmbedding (-(ActualEisensteinCoordinates.eval a b *
           (ActualEisensteinCoordinates.eval (k+l) k)^2)) /
           eisLam / (4 : ℂ)) = _
-      simpa using h
+      simp_all
     rw [harg]
-    congr 1
-    dsimp [OscSpecial.phaseAngle, OscSpecial.dualTrace]
-    push_cast
-    ring
+    pm_6552 OscSpecial.phaseAngle OscSpecial.dualTrace
   dsimp only
   rw [hreal, hphase]
   rfl
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
 open scoped Topology
 open Filter
 
@@ -103,16 +95,17 @@ private theorem dualScale_cast (η a b : ℝ) :
   push_cast
   ring
 
-theorem actual_variable_kernel_eq_dualVarTerm
-    (a b : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
+section
+variable (a b : ℤ)
+include a b
+theorem actual_variable_kernel_eq_dualVarTerm (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
     (η : ℝ) (hη : 0 < η) (z : ℤ × ℤ) :
     actualVariableDualKernel a b η (dualFrequencyEquiv z) =
       OscSpecial.dualVarTerm η (a : ℝ) (b : ℝ) z := by
   have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
-    change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
-    exact_mod_cast (show 0 < a^2-a*b+b^2 by
-      simpa only [pow_two] using hqZ)
+    pm_3427
+    pm_6061
   have h := (dual_gaussian_is_actual_trace_phase
     a b z.1 z.2 hc η hη).symm.trans
       (OscSpecial.dualGaussian_eq_dualVarTerm hη hq z)
@@ -120,15 +113,13 @@ theorem actual_variable_kernel_eq_dualVarTerm
   rw [dualScale_cast]
   exact h
 
-theorem actual_fixed_kernel_eq_dualFixedTerm_point
-    (a b : ℤ) (η : ℝ) (z : ℤ × ℤ) :
+theorem actual_fixed_kernel_eq_dualFixedTerm_point (η : ℝ) (z : ℤ × ℤ) :
     actualFixedDualKernel a b η (dualFrequencyEquiv z) =
       OscSpecial.dualFixedTerm η (a : ℝ) (b : ℝ) z := by
   rcases z with ⟨k,l⟩
   exact actual_fixed_kernel_eq_dualFixedTerm a b k l η
 
-theorem actual_dual_phase_error_tendsto_zero
-    (a b : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
+theorem actual_dual_phase_error_tendsto_zero (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
     Tendsto
       (fun η : ℝ => η * ‖
         (∑' y : O, actualVariableDualKernel a b η y) -
@@ -136,13 +127,11 @@ theorem actual_dual_phase_error_tendsto_zero
       (𝓝[>] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
   have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
-    change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
-    exact_mod_cast (show 0 < a^2-a*b+b^2 by
-      simpa only [pow_two] using hqZ)
+    pm_3427
+    pm_6061
   have hbase := OscSpecial.normalized_dual_phase_sum_error_tendsto_zero hq
   apply hbase.congr'
-  filter_upwards [self_mem_nhdsWithin] with η hη
-  change 0 < η at hη
+  pm_1111
   have hvar :
       (∑' y : O, actualVariableDualKernel a b η y) =
         ∑' z : ℤ × ℤ, OscSpecial.dualVarTerm η (a : ℝ) (b : ℝ) z := by
@@ -167,7 +156,8 @@ theorem actual_dual_phase_error_tendsto_zero
         apply tsum_congr
         intro z
         exact actual_fixed_kernel_eq_dualFixedTerm_point a b η z
-  rw [hvar, hfixed]
+  grind
+end
 
 end
 
@@ -226,8 +216,10 @@ section
 open scoped Topology
 open Filter EisensteinEmbedding ConcreteTraceCRT Complex
 
-theorem actualVariableAbelLimit (a b : ℤ)
-    (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
+section
+variable (a b : ℤ) (hc : ActualEisensteinCoordinates.eval a b ≠ 0)
+include a b hc
+theorem actualVariableAbelLimit :
     letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
       finite_quotient_span (by norm_num : (2 : O) ≠ 0)
     letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
@@ -246,7 +238,7 @@ theorem actualVariableAbelLimit (a b : ℤ)
           fixedDualPhase c (GaussianShiftedPartition.representative 2 r))))) := by
   have hqZ := coordinate_norm_pos_of_nonzero a b hc
   have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
-    change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
+    pm_3427
     exact_mod_cast (show 0 < a^2-a*b+b^2 by
       simpa only [pow_two] using hqZ)
   exact abel_transfer
@@ -257,8 +249,7 @@ theorem actualVariableAbelLimit (a b : ℤ)
     (actualFixedAbelLimit a b hc)
     (actual_dual_phase_error_tendsto_zero a b hc)
 
-theorem actualOriginalAbelDualLimit (a b : ℤ)
-    (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
+theorem actualOriginalAbelDualLimit :
     letI : Finite (O ⧸ Ideal.span {(2 : O)}) :=
       finite_quotient_span (by norm_num : (2 : O) ≠ 0)
     letI : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
@@ -280,9 +271,9 @@ theorem actualOriginalAbelDualLimit (a b : ℤ)
         (K * ∑ r : O ⧸ Ideal.span {(2 : O)},
           fixedDualPhase c (GaussianShiftedPartition.representative 2 r))))) := by
   apply (actualVariableAbelLimit a b hc).congr'
-  filter_upwards [self_mem_nhdsWithin] with η hη
-  change 0 < η at hη
+  pm_1111
   rw [actual_oscillatory_poisson_kernel a b hc η hη]
+end
 
 end
 
@@ -301,7 +292,7 @@ theorem dual_abel_coefficient (a b : ℤ)
   have hqC : (OscSpecial.q (a : ℝ) (b : ℝ) : ℂ) ≠ 0 := by
     exact_mod_cast hq.ne'
   have hsC : (Real.sqrt 3 : ℂ) ≠ 0 := by
-    exact_mod_cast (ne_of_gt (Real.sqrt_pos.2 (by norm_num : (0:ℝ) < 3)))
+    pm_3252
   push_cast
   field_simp [hqC, hsC]
 
@@ -317,23 +308,20 @@ theorem full_dual_abel_coefficient (a b : ℤ)
           (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ))) =
       (((2 / (Real.sqrt 3 * ‖ConcreteTraceCRT.eisEmbedding c‖) : ℝ) : ℂ) / 2) := by
   dsimp only
-  have hqZ := coordinate_norm_pos_of_nonzero a b hc
-  have hq : 0 < OscSpecial.q (a : ℝ) (b : ℝ) := by
-    change 0 < (a : ℝ)^2 - (a : ℝ)*(b : ℝ)+(b : ℝ)^2
-    exact_mod_cast (show 0 < a^2-a*b+b^2 by simpa only [pow_two] using hqZ)
+  pm_3253
   rw [dual_abel_coefficient a b hq]
   have hqnorm := osc_q_eq_eis_norm_sq a b
   have hsqrt : Real.sqrt (OscSpecial.q (a : ℝ) (b : ℝ)) =
       ‖ConcreteTraceCRT.eisEmbedding
         (ActualEisensteinCoordinates.eval a b)‖ := by
-    rw [hqnorm, Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)]
+    pm_1448 hqnorm Real.sqrt_sq_eq_abs abs_of_nonneg norm_nonneg
   rw [hsqrt, hqnorm]
   have hn : (‖ConcreteTraceCRT.eisEmbedding
       (ActualEisensteinCoordinates.eval a b)‖ : ℂ) ≠ 0 := by
     exact_mod_cast (ne_of_gt (norm_pos_iff.mpr
       (ConcreteTraceCRT.eisEmbedding_ne_zero hc)))
   have hs : (Real.sqrt 3 : ℂ) ≠ 0 := by
-    exact_mod_cast (ne_of_gt (Real.sqrt_pos.2 (by norm_num : (0:ℝ) < 3)))
+    pm_3252
   push_cast
   field_simp [hn, hs]
 
@@ -347,13 +335,8 @@ theorem quadraticGammaO_eq_fourTerms (a b : ℤ)
   let c : O := ActualEisensteinCoordinates.eval a b
   let n : ℝ := ‖eisEmbedding c‖
   let q : ℝ := OscSpecial.q (a : ℝ) (b : ℝ)
-  let a2 := (ActualEisensteinCoordinates.coords (2 : O)).1
-  let b2 := (ActualEisensteinCoordinates.coords (2 : O)).2
-  let L2 : ℂ := ((2 / (Real.sqrt 3 *
-    (((a2*a2-a2*b2+b2*b2 : ℤ) : ℝ))) : ℝ) : ℂ)
-  let : Finite (O ⧸ Ideal.span {(2 : O)}) :=
-    finite_quotient_span (by norm_num : (2 : O) ≠ 0)
-  let : Fintype (O ⧸ Ideal.span {(2 : O)}) := Fintype.ofFinite _
+  pm_3421
+  pm_3420
   let S : ℂ := ∑ r : O ⧸ Ideal.span {(2 : O)},
     fixedDualPhase c (GaussianShiftedPartition.representative 2 r)
   have hEq0 := tendsto_nhds_unique
@@ -399,7 +382,6 @@ theorem theta_counter_lambda_eq : ActualEisensteinCubic.lambda =
 
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 

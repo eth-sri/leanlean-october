@@ -1,5 +1,6 @@
 module
 public import GafniTao.WooleySection9Selection
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,7 +14,6 @@ Section-7 loss base and the deliberately loose power `A^(r+1)` is retained.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
@@ -43,16 +43,15 @@ theorem wooleyMonogradeProduct_step
       (X r) ^ (wooleyRho k r / (r : ℝ)) *
         (wooleyMonogradeProduct k (r - 1) X) ^
           (1 - 1 / (r : ℝ)) := by
-  have hrOne : 1 ≤ r := by omega
-  have hrPred : 1 ≤ r - 1 := by omega
-  have hrR : (0 : ℝ) < r := by positivity
+  pm_5825
+  pm_117 hrR r
   have hrPredR : (0 : ℝ) < (r - 1 : ℕ) := by
-    exact_mod_cast (show 0 < r - 1 by omega)
+    aesop
   have hRange :
       wooleyGradeRange r = insert r (wooleyGradeRange (r - 1)) := by
     unfold wooleyGradeRange
     symm
-    exact Finset.insert_Icc_sub_one_right_eq_Icc hrOne
+    grind
   have hrNotMem : r ∉ wooleyGradeRange (r - 1) := by
     simp [wooleyGradeRange]
     omega
@@ -76,14 +75,12 @@ theorem wooleyMonogradeProduct_step
   have hXj := hprodNonneg j hj
   rw [← Real.rpow_mul hXj]
   congr 1
-  have hrCast : ((r - 1 : ℕ) : ℝ) = (r : ℝ) - 1 := by
-    rw [Nat.cast_sub (by omega : 1 ≤ r)]
-    norm_num
+  pm_2852
   have hrMinus : (0 : ℝ) < (r : ℝ) - 1 := by
-    have hrTwo : (2 : ℝ) ≤ r := by exact_mod_cast hr
+    pm_279 hrTwo r hr
     linarith
   rw [hrCast]
-  field_simp [ne_of_gt hrMinus]
+  grind
 
 /-- The exact one-step envelope calculation behind the induction in Lemma
 9.1.  The right side leaves one harmless extra factor of `A`, matching the
@@ -100,27 +97,25 @@ theorem wooley_monograde_envelope_step
           P ^ (1 - 1 / (r : ℝ))) := by
   have hA0 : 0 ≤ A := hA.trans' (by norm_num)
   have hq0 : 0 ≤ q := hq.le
-  have hrR : (0 : ℝ) < r := by positivity
+  pm_117 hrR r
   have hrPredR : (0 : ℝ) < ((r - 1 : ℕ) : ℝ) := by
     exact_mod_cast (show 0 < r - 1 by omega)
-  let v : ℝ := 1 - 1 / (r : ℝ)
+  pm_5500 r
   have hv : 0 ≤ v := by
     dsimp [v]
-    have hrTwo : (2 : ℝ) ≤ r := by exact_mod_cast hr
+    pm_279 hrTwo r hr
     have : 1 / (r : ℝ) ≤ 1 := by
       rw [div_le_one hrR]
       linarith
     linarith
   have hvId : v = ((r - 1 : ℕ) : ℝ) / (r : ℝ) := by
     dsimp [v]
-    rw [Nat.cast_sub (by omega : 1 ≤ r)]
+    pm_567 Nat.cast_sub r
     norm_num
     field_simp
   have hAexp :
       1 + (r : ℝ) * v ≤ ((r + 1 : ℕ) : ℝ) := by
-    have hrCast : ((r - 1 : ℕ) : ℝ) = (r : ℝ) - 1 := by
-      rw [Nat.cast_sub (by omega : 1 ≤ r)]
-      norm_num
+    pm_2852
     rw [hvId, hrCast, Nat.cast_add, Nat.cast_one]
     field_simp
     linarith
@@ -201,8 +196,8 @@ theorem wooley_multigrade_to_monograde
             (hvalidPred hrTwo hrk hvalid)
         have hv : 0 ≤ v := by
           dsimp [v]
-          have hrR : (2 : ℝ) ≤ r := by exact_mod_cast hrTwo
-          have hrPos : (0 : ℝ) < r := by positivity
+          pm_279 hrR r hrTwo
+          pm_117 hrPos r
           rw [sub_nonneg, div_le_one hrPos]
           linarith
         have hpow :
@@ -250,8 +245,7 @@ theorem wooley_multigrade_to_monograde
           ((X r) ^ (wooleyRho k r / (r : ℝ)) * P ^ v) at henv
         have hprod := wooleyMonogradeProduct_step (k := k) hrTwo X
           (fun j hj => by
-            have hjBounds : 1 ≤ j ∧ j ≤ r := by
-              simpa only [wooleyGradeRange, mem_Icc] using hj
+            pm_2853 hjBounds j mem_Icc hj
             exact hX j hjBounds.1 (by omega))
         exact hbound.trans (by simpa only [P, v, hprod] using henv)
 

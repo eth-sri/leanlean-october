@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedNormalization
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,9 +17,10 @@ def globalNormalization (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   (LFunction (fixedSourcePrincipal S hS) (6*z))⁻¹*
     (LFunction (rowCharacter S hS u) w)⁻¹*LFunction ((targetRow η u).excludePrimes S hS) x
 
-theorem globalNormalization_finite_split (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow) (x w z : ℂ)
+section
+variable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow) (x w z : ℂ)
+include S hS hbad T hT η u x w z
+theorem globalNormalization_finite_split
     (hx : 1<x.re) (hw : 1<w.re) (hz : 1<(6*z).re) :
     globalNormalization S hS η u x w z=
       globalNormalization (markExclusions S T) (markExclusions_prime S hS T) η u x w z*
@@ -28,9 +30,7 @@ theorem globalNormalization_finite_split (S : Finset (Ideal O)) (hS : ∀P∈S,P
     (hbad.trans Finset.subset_union_left) η u x w z hx hw hz
   let R := fun P : PrimeIdeal=>if P∈T then localNormalization η u P x w z else 1
   have hR : HasProd R (∏P∈T,localNormalization η u P x w z) := by
-    have hh := hasProd_prod_of_ne_finset_one (s:=T) (f:=R)
-      (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
-    simpa only [R,Finset.prod_ite_mem,Finset.inter_self] using hh
+    pm_5581 T R
   apply hleft.unique
   convert hbase.mul hR using 1
   · funext P
@@ -39,20 +39,19 @@ theorem globalNormalization_finite_split (S : Finset (Ideal O)) (hS : ∀P∈S,P
     · simp only [mem_markExclusions,hP,or_false,R,ite_eq_right hP,mul_one]
   · rfl
 
-theorem finite_replacement_normalized (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
-    (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
-    (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow) (x w z : ℂ)
+theorem finite_replacement_normalized
     (g : PrimeIdeal→ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     (markedIdealHighSeries (markExclusions S T) 1 η u.val x w z*∏P∈T,g P)*
       globalNormalization S hS η u x w z=
       globalCorrection (markExclusions S T) η u x w z*
         ∏P∈T,g P*localNormalization η u P x w z := by
-  have hz1 : 1<(6*z).re := by norm_num [Complex.mul_re];linarith
+  pm_6062
   rw [globalNormalization_finite_split S hS hbad T hT η u x w z (by linarith) (by linarith) hz1,
     globalCorrection,(localCorrection_hasProd (markExclusions S T) (markExclusions_prime S hS T)
       (hbad.trans Finset.subset_union_left) η u x w z hx hw hz).tprod_eq,
     Finset.prod_mul_distrib,globalNormalization]
   ring
+end
 
 end SevenEighths.ProbeHighRowFamily
 

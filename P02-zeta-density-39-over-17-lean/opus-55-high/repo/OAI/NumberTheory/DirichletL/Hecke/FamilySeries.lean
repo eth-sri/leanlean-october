@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.Hecke.Family
 public import OAI.NumberTheory.DirichletL.Hecke.ThetaSeries
 public import OAI.NumberTheory.DirichletL.Continuation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,30 +24,21 @@ theorem latticeL_eq_of_coefficients {N M : ℕ} [NeZero N] [NeZero M]
     (w : Fin N × Fin N → ℂ) (v : Fin M × Fin M → ℂ)
     (hcoeff : ∀ n, periodicCoeff w n = periodicCoeff v n)
     {s : ℂ} (hs : 0 < s.re) (hs₁ : s ≠ 1) : latticeL w s = latticeL v s := by
-  have hwa : AnalyticOnNhd ℂ (regularizedLatticeL w) {z : ℂ | 0 < z.re} := by
-    apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
-    intro z hz
-    exact (regularizedLatticeL_differentiableAt w
-      (by intro h; simp [h] at hz)).differentiableWithinAt
-  have hva : AnalyticOnNhd ℂ (regularizedLatticeL v) {z : ℂ | 0 < z.re} := by
-    apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
-    intro z hz
-    exact (regularizedLatticeL_differentiableAt v
-      (by intro h; simp [h] at hz)).differentiableWithinAt
+  pm_1335 hwa w
+  pm_1335 hva v
   have hident := Continuation.product_identity_on_halfPlane 0 1
     (regularizedLatticeL w) (fun _ => 1) (regularizedLatticeL v)
     hwa analyticOnNhd_const hva (by
-      intro z hz
-      have hz' : 1 < z.re := by simpa using hz
-      have hz₀ : z ≠ 0 := by intro h; norm_num [h] at hz'
-      have hz₁ : z ≠ 1 := by intro h; norm_num [h] at hz'
+      pm_7799
+      pm_3116 hz₀ z hz'
+      pm_3117 hz₁ z hz'
       simp only [mul_one, regularizedLatticeL_eq w hz₀ hz₁,
         regularizedLatticeL_eq v hz₀ hz₁,
         latticeL_eq_of_coefficients_right w v hcoeff hz']) hs
   have hs₀ : s ≠ 0 := by intro h; simp [h] at hs
   simp only [mul_one, regularizedLatticeL_eq w hs₀ hs₁,
     regularizedLatticeL_eq v hs₀ hs₁] at hident
-  exact mul_left_cancel₀ (sub_ne_zero.mpr hs₁) hident
+  grind
 end SevenEighths.HeckeTheta
 
 namespace SevenEighths.HeckeFamily

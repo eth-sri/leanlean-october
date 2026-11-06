@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleyPadicConcentration
 public import Mathlib.Algebra.Order.Archimedean.Basic
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The modulus choice in Wooley Section 12
@@ -16,17 +17,20 @@ source `p^(B*delta)` loss into `Q^epsilon`.
 
 namespace GafniTao
 
-noncomputable section
 
-theorem fordVinogradovKappa_pos {k : ℕ} (hk : 1 ≤ k) :
+section
+variable {k : ℕ} (hk : 1 ≤ k)
+include k hk
+theorem fordVinogradovKappa_pos :
     0 < fordVinogradovKappa k := by
   unfold fordVinogradovKappa
-  have hdiv : 2 ≤ k * (k + 1) := by nlinarith
-  exact Nat.div_pos hdiv (by omega)
+  pm_6121 hdiv k
+  grind
 
-theorem fordVinogradovKappa_one_le {k : ℕ} (hk : 1 ≤ k) :
+theorem fordVinogradovKappa_one_le :
     1 ≤ fordVinogradovKappa k :=
   fordVinogradovKappa_pos hk
+end
 
 /-- Exact scale package needed to pass from the modular concentration
 estimate to the integral Vinogradov system. -/
@@ -83,6 +87,5 @@ theorem exists_wooleyPadicScale
     _ ≤ k * h := Nat.mul_le_mul_right h hk
 
 
-end
 
 end GafniTao

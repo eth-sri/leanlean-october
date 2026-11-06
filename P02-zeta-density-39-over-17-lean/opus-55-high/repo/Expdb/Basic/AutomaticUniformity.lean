@@ -11,7 +11,7 @@ choicewise boundedness or infinitesimality along every variable sequence can be 
 after passing to a subsequence.
 -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -49,11 +49,9 @@ theorem VariableFunction.isChoicewiseInfinitesimal_iff_forall_pos_uniform
         (fun i ↦ f i (x i))).1 (hf x) ε hε
     by_contra h
     have hfrequent :
-        ∃ᶠ i in atTop, ε ≤ ‖f i (x i)‖ := (not_eventually.mp h).mono fun i hi ↦ by
-      apply hx i
-      simpa only [not_forall, not_lt] using hi
+        ∃ᶠ i in atTop, ε ≤ ‖f i (x i)‖ := (not_eventually.mp h).mono fun i hi ↦ by grind
     obtain ⟨i, hilarge, hismall⟩ := (hfrequent.and_eventually hsmall).exists
-    exact (not_lt_of_ge hilarge) hismall
+    grind
   · intro h x
     apply (VariableObject.isInfinitesimal_iff_forall_pos
       (fun i ↦ f i (x i))).2

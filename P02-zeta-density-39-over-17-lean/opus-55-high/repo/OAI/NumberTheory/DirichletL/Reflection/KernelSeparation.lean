@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.KernelGeometry
 public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -64,9 +65,9 @@ theorem reflected_kernel_uniform_separation (a b : ℝ) (ha : 0<a)
       (∀ t : ℝ, (1+‖t‖)^J*‖twistedDensity U W θ R t‖ ≤ C₀*(1+‖θ‖)^degree) := by
   obtain ⟨U,degree,C₀,hC₀,hUc,hUs,hsep⟩ := normTwistedSource_uniform_separation
     a b ha windows kernelSlope M hM hwindows W hWsupport hW J
-  refine ⟨U,degree,C₀,hC₀,hUc,hUs,?_⟩
+  pm_3271
   intro θ C QK QP Qn Qb hC hQK hQP hQn hQb
-  have hR : 0<kernelCenter C QK QP Qn Qb := by unfold kernelCenter; positivity
+  pm_6474
   obtain ⟨he,hi,hm,hp⟩ := hsep θ _ hR
   refine ⟨?_,hi,hm,hp⟩
   intro k p n q hk hp hn hq

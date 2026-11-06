@@ -2,6 +2,7 @@ module
 public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWGrowth
 public import OAI.NumberTheory.DirichletL.PrimeRows.Conductor
 public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -28,22 +29,22 @@ lemma selectedFirstBound_polynomial {Q : ℝ} (hQ : 1≤Q) : selectedFirstBound 
     _ ≤ _ := by nlinarith
 
 theorem nonprincipal_first_uniform_growth :
-    ∃C : ℝ,0<C ∧ ∀χ : Character,χ.residue≠1 → ∀s : ℂ,-(1/100:ℝ)≤s.re →
+    ∃C : ℝ,0<C ∧ ∀χ : Character,χ.residue≠1 → ∀s : ℂ,-(1/100:ℝ)≤ s.re →
       ‖HeckeOrigin.continued χ s‖≤C*(χ.modulus.absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨Cd,hCd,hd⟩ := HeckeDeletionBounds.factors_any_re_subpower_bound 1 (by norm_num)
   let U := HeckeLogarithmicInput.uniformConstant
   have hU : 0≤U := HeckeLogarithmicInput.uniformConstant_nonneg
   refine ⟨1+U*Cd,by positivity,?_⟩
   intro χ hχ s hs
-  obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue≠1 := fun h=>hχ ((HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mpr h)
+  pm_3134
+  pm_450
   have hN : (1:ℝ)≤χ.modulus.absNorm := HeckeLogarithmicInput.modulus_norm_ge_one χ
   have hψN : (1:ℝ)≤ψ.modulus.absNorm := HeckeLogarithmicInput.modulus_norm_ge_one ψ
-  have hQ' : (ψ.modulus.absNorm:ℝ)≤χ.modulus.absNorm := by exact_mod_cast hQ
+  pm_840 hQ' ψ.modulus.absNorm χ.modulus.absNorm hQ
   have hpow : (ψ.modulus.absNorm:ℝ)^(3/5:ℝ)≤χ.modulus.absNorm := by
     apply le_trans _ hQ'
     simpa using Real.rpow_le_rpow_of_exponent_le hψN (by norm_num : (3/5:ℝ)≤1)
-  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤s.re)
+  have hg := HeckeLogarithmicInput.regular_right_growth ψ hp (by linarith : -(1/10:ℝ)≤ s.re)
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
   have hl : ‖LFunction ψ s‖≤U*(χ.modulus.absNorm:ℝ)*(3+|s.im|)^2 := by
     exact hg.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hpow hU) (sq_nonneg _))
@@ -64,28 +65,22 @@ theorem nonprincipal_first_uniform_growth :
 
 theorem calibrated_numerator_first_uniform_growth
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal) :
-    ∃C : ℝ,0<C ∧ ∀u : FreeRow,u.val≠1 → ∀s : ℂ,-(1/100:ℝ)≤s.re →
+    ∃C : ℝ,0<C ∧ ∀u : FreeRow,u.val≠1 → ∀s : ℂ,-(1/100:ℝ)≤ s.re →
       ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
         HeckeOrigin.continued (rowCharacter S hS.prime u) s‖≤
         C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^3*(3+|s.im|)^2 := by
   obtain ⟨C,hC,hmain⟩ := nonprincipal_first_uniform_growth
-  let A : ℝ := (conductorConstant:ℝ)*((∏P∈S,P).absNorm:ℝ)
-  have hA : 0≤A := by dsimp [A];positivity
+  pm_3470
   refine ⟨C*(1+A^3),by positivity,?_⟩
   intro u hu s hs
-  by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0
+  pm_410
   · simp only [hc,star_zero,zero_mul,norm_zero]
     positivity
   · have hnp := calibrated_row_nonprincipal S hS.prime hmax hS.bad u hu hc
-    have hg := hmain (rowCharacter S hS.prime u) hnp s hs
-    have hcal : ‖star ((calibrationForSet S hmax).residueMonoid u.val)‖≤1 := by
-      rw [norm_star]
-      exact (calibrationForSet S hmax).residueMonoid_norm_le_one _
+    pm_422
     have hQ : ((rowCharacter S hS.prime u).modulus.absNorm:ℝ)≤
         A*((Ideal.span {u.val}:Ideal O).absNorm:ℝ) := by
-      have h := rowCharacter_conductor S hS.prime u
-      dsimp [A]
-      exact_mod_cast (by simpa only [mul_right_comm] using h)
+      pm_1561
     rw [norm_mul]
     calc
       _ ≤ ‖HeckeOrigin.continued (rowCharacter S hS.prime u) s‖ :=

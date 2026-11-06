@@ -1,8 +1,9 @@
 module
 public import GafniTao.WooleyMixedMean
 public import GafniTao.WooleyResidueRefinement
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # Wooley Lemma 6.3: refinement of the initial mixed mean
@@ -14,16 +15,16 @@ separation condition modulo `p^nu` is preserved.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
+section
+variable {p nu theta : ℕ} [NeZero p] (hnu : nu ≤ theta)
+include p nu theta hnu
 /-- A refinement of a residue class modulo `p^theta` has the original least
 residue modulo `p^nu`. -/
 theorem wooley_refinement_val_mod
-    {p nu theta : ℕ} [NeZero p] (hnu : nu ≤ theta)
     (xi : ZMod (p ^ nu))
     {z : ZMod (p ^ theta)}
     (hz : z ∈ wooleyResidueRefinementFiber p nu theta hnu xi) :
@@ -35,14 +36,13 @@ theorem wooley_refinement_val_mod
   have hxiVal : xi.val < p ^ nu := ZMod.val_lt xi
   have hzval :
       (z.val : ZMod (p ^ nu)) = xi := by
-    simpa only [ZMod.castHom_apply, ZMod.cast_eq_val] using hcast
+    simp_all
   have hval := congrArg ZMod.val hzval
   simpa only [ZMod.val_natCast] using hval
 
 /-- Separation modulo `p^nu` survives simultaneous refinement to depth
 `theta`. -/
 theorem wooley_refinements_separated
-    {p nu theta : ℕ} [NeZero p] (hnu : nu ≤ theta)
     {xi eta : ZMod (p ^ nu)}
     (hsep : wooleyResiduesSeparated nu xi eta)
     {xi' eta' : ZMod (p ^ theta)}
@@ -52,13 +52,11 @@ theorem wooley_refinements_separated
   unfold wooleyResiduesSeparated at hsep ⊢
   rw [wooley_refinement_val_mod hnu xi hxi,
     wooley_refinement_val_mod hnu eta heta]
-  simpa [Nat.mod_eq_of_lt (ZMod.val_lt xi),
-    Nat.mod_eq_of_lt (ZMod.val_lt eta)] using hsep
+  grind
 
 /-- Summing over a separated coarse pair and then over both refinement
 fibres is exactly summation over separated refined pairs. -/
 theorem wooley_sum_refinement_pairs
-    {p nu theta : ℕ} [NeZero p] (hnu : nu ≤ theta)
     (F : ZMod (p ^ theta) → ZMod (p ^ theta) → ℝ) :
     ∑ xi : ZMod (p ^ nu),
         ∑ eta : ZMod (p ^ nu) with wooleyResiduesSeparated nu xi eta,
@@ -68,9 +66,7 @@ theorem wooley_sum_refinement_pairs
       ∑ xi' : ZMod (p ^ theta),
         ∑ eta' : ZMod (p ^ theta) with
           wooleyResiduesSeparated nu xi' eta', F xi' eta' := by
-  classical
-  let red : ZMod (p ^ theta) → ZMod (p ^ nu) :=
-    ZMod.castHom (pow_dvd_pow p hnu) (ZMod (p ^ nu))
+  pm_5919 theta nu hnu
   let coarsePairs : Finset (ZMod (p ^ nu) × ZMod (p ^ nu)) :=
     (Finset.univ.product Finset.univ).filter fun xy =>
       wooleyResiduesSeparated nu xy.1 xy.2
@@ -84,7 +80,7 @@ theorem wooley_sum_refinement_pairs
       (wooleyResidueRefinementFiber p nu theta hnu xy.2)
   have href (z : ZMod (p ^ theta)) (xi : ZMod (p ^ nu)) :
       z ∈ wooleyResidueRefinementFiber p nu theta hnu xi ↔ red z = xi := by
-    simp only [wooleyResidueRefinementFiber, Finset.mem_filter, Finset.mem_univ, true_and, red]
+    pm_93 wooleyResidueRefinementFiber Finset.mem_filter Finset.mem_univ true_and red
   have hsep (z w : ZMod (p ^ theta)) :
       wooleyResiduesSeparated nu (red z) (red w) ↔
         wooleyResiduesSeparated nu z w := by
@@ -94,10 +90,8 @@ theorem wooley_sum_refinement_pairs
         ((href z (red z)).2 rfl) ((href w (red w)).2 rfl)
     · intro h
       unfold wooleyResiduesSeparated at h ⊢
-      have hz := wooley_refinement_val_mod hnu (red z)
-        ((href z (red z)).2 rfl)
-      have hw := wooley_refinement_val_mod hnu (red w)
-        ((href w (red w)).2 rfl)
+      pm_7912 hz z
+      pm_7912 hw w
       rw [hz, hw] at h
       simpa [Nat.mod_eq_of_lt (ZMod.val_lt (red z)),
         Nat.mod_eq_of_lt (ZMod.val_lt (red w))] using h
@@ -111,8 +105,7 @@ theorem wooley_sum_refinement_pairs
       true_and]
     constructor
     · rintro ⟨hfine, hred⟩
-      have hz : red zw.1 = xy.1 := congrArg Prod.fst hred
-      have hw : red zw.2 = xy.2 := congrArg Prod.snd hred
+      pm_1544
       exact ⟨(href zw.1 xy.1).2 hz, (href zw.2 xy.2).2 hw⟩
     · rintro ⟨hz, hw⟩
       have hzred := (href zw.1 xy.1).1 hz
@@ -132,8 +125,7 @@ theorem wooley_sum_refinement_pairs
     rw [hempty]
     constructor
     · rintro ⟨hfine, hred⟩
-      have hz : red zw.1 = xy.1 := congrArg Prod.fst hred
-      have hw : red zw.2 = xy.2 := congrArg Prod.snd hred
+      pm_1544
       apply hxy
       have : wooleyResiduesSeparated nu (red zw.1) (red zw.2) :=
         (hsep zw.1 zw.2).2 hfine
@@ -186,7 +178,7 @@ theorem wooley_sum_refinement_pairs
         (Finset.univ : Finset (ZMod (p ^ theta)))
         (fun zw => if wooleyResiduesSeparated nu zw.1 zw.2 then
           F zw.1 zw.2 else 0)
-
 end
+
 
 end GafniTao

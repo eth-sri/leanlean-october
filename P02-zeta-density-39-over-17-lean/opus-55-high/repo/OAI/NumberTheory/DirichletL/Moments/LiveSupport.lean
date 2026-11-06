@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SourceLiveColumn
 public import OAI.NumberTheory.DirichletL.Moments.SourceCommonMask
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -17,17 +18,24 @@ local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem restore_frozen (B : Tuple ι) (v : Tuple (liveIndices B)) :
+section
+variable (B : Tuple ι) (v : Tuple (liveIndices B))
+include B v
+theorem restore_frozen :
     ∀ i,B (Sum.inl i)≠1 → restoreTuple B v (Sum.inl i)=1 := by
   intro i hi
   simp only [restoreTuple,Sum.elim_inl]
   rw [dite_eq_right (by simpa [liveIndices] using hi)]
 
-theorem restore_product (B : Tuple ι) (v : Tuple (liveIndices B)) :
+theorem restore_product :
     finiteTupleProduct (restoreTuple B v)=finiteTupleProduct v := by
   rw [remaining_product B _ (restore_frozen B v),remaining_restore]
+end
 
-theorem restored_original_mem (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+section
+variable (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+include S
+theorem restored_original_mem
     (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I) (C : Ideal O)
     (B : Tuple ι) (hB : ∀ i,B i≠0) (hlabel : B∈allocationLabels S C)
     (v : Tuple (liveIndices B)) (hv : v∈liveBox S B hB) :
@@ -43,7 +51,7 @@ theorem restored_original_mem (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   simp only [Fintype.mem_piFinset] at hu
   exact (mem_residualPool _ _ _ _).mp (hu i)
 
-theorem live_column_original_support (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem live_column_original_support
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
     (B : Tuple ι) (hB : ∀ i,B i≠0) (C R a : Ideal O)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
@@ -58,7 +66,7 @@ theorem live_column_original_support (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     (fun i => Wslot i.val) (fun i => P i.val) W₁ W₂ X₁ X₂ Y₁ Y₂
     (B₁*B (Sum.inr 0)) (B₂*B (Sum.inr 1)) 1 v hvn
   rw [ha,IsCoprime.mul_right_iff] at hm
-  have hsrc := restored_original_mem S hp C B hB hlabel v hv
+  pm_528 hsrc restored_original_mem S hp C B hB hlabel v hv
   have he : finiteTupleProduct (fun i => B i*restoreTuple B v i)=C*a := by
     rw [finiteTupleProduct,Finset.prod_mul_distrib]
     change finiteTupleProduct B*finiteTupleProduct (restoreTuple B v)=_
@@ -67,6 +75,7 @@ theorem live_column_original_support (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     rw [← he,finiteTupleProduct]
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => hS i _ (Fintype.mem_piFinset.mp hsrc i))
   exact ⟨Finset.mem_image.mpr ⟨_,hsrc,he⟩,right_ne_zero_of_mul hn,hm.1.2.symm⟩
+end
 
 end SevenEighths.CenteredMomentLiveSupport
 

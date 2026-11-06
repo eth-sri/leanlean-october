@@ -3,6 +3,7 @@ module
 public import WeylPort.AFE.WeightedIntegralPhase
 public import WeylPort.AFE.MonotoneAmplitude
 public import Mathlib.NumberTheory.Harmonic.Bounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -32,38 +33,35 @@ theorem upper_phase_derivative_lower {t m a u : ℝ} (hm : 0 < m) (ha : 0 < a)
   have hdiv := (div_lt_iff₀ hu).mpr hmul
   linarith
 
+section
+variable {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
+include t m a b hm ha
 /-- The reciprocal of the positive derivative is monotone, in one direction for each sign. -/
-theorem upper_phase_reciprocal_monotone {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
+theorem upper_phase_reciprocal_monotone
     (hcut : t < Real.pi * m * a) :
     MonotoneOn (fun u => |1 / (2 * Real.pi * m - t / u)|) (Set.Icc a b) ∨
       AntitoneOn (fun u => |1 / (2 * Real.pi * m - t / u)|) (Set.Icc a b) := by
-  have hd (u : ℝ) (hu : u ∈ Set.Icc a b) : 0 < 2 * Real.pi * m - t / u :=
-    lt_trans (by positivity) (upper_phase_derivative_lower hm ha hu.1 hcut)
+  pm_27
   rcases le_total 0 t with ht | ht
   · right
-    intro x hx y hy hxy
-    dsimp only
-    rw [abs_of_pos (one_div_pos.mpr (hd x hx)), abs_of_pos (one_div_pos.mpr (hd y hy))]
+    pm_28
     apply one_div_le_one_div_of_le (hd x hx)
     have h := div_le_div_of_nonneg_left ht (ha.trans_le hx.1) hxy
     linarith
   · left
-    intro x hx y hy hxy
-    dsimp only
-    rw [abs_of_pos (one_div_pos.mpr (hd x hx)), abs_of_pos (one_div_pos.mpr (hd y hy))]
+    pm_28
     apply one_div_le_one_div_of_le (hd y hy)
     have h := div_le_div_of_nonneg_left (neg_nonneg.mpr ht) (ha.trans_le hx.1) hxy
     simp only [neg_div] at h
     linarith
 
 /-- The actual unweighted oscillatory primitive is uniformly bounded above the signed cutoff. -/
-theorem norm_integral_upper_phase_le {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
+theorem norm_integral_upper_phase_le
     (hab : a ≤ b) (hcut : t < Real.pi * m * a) :
     ‖∫ u in a..b, Complex.exp (Complex.I * (weightedIntegralPhase t m u : ℂ))‖ ≤
       2 / (Real.pi * m) := by
-  have hp (u : ℝ) (hu : u ∈ Set.Icc a b) : 0 < u := ha.trans_le hu.1
-  have hd (u : ℝ) (hu : u ∈ Set.Icc a b) : 0 < 2 * Real.pi * m - t / u :=
-    lt_trans (by positivity) (upper_phase_derivative_lower hm ha hu.1 hcut)
+  pm_25
+  pm_27
   have h := first_derivative_test hab
     (fun u hu => weightedIntegralPhase_hasDerivAt t m (hp u hu))
     (continuousOn_const.sub (continuousOn_const.div continuousOn_id (fun u hu => (hp u hu).ne')))
@@ -79,6 +77,7 @@ theorem norm_integral_upper_phase_le {t m a b : ℝ} (hm : 0 < m) (ha : 0 < a)
     simpa only [mul_one_div] using mul_le_mul_of_nonneg_left
       (max_le (he a (Set.left_mem_Icc.mpr hab)) (he b (Set.right_mem_Icc.mpr hab)))
         (by norm_num : (0 : ℝ) ≤ 2))
+end
 
 /-- The oscillatory phase factor is continuous on its actual positive domain. -/
 theorem continuousOn_upper_phase (t m : ℝ) :
@@ -109,7 +108,7 @@ theorem norm_weightedIntegral_upper_le {σ t m a b : ℝ} (hσ : 0 ≤ σ)
     (hm : 0 < m) (ha : 0 < a) (hab : a ≤ b) (hcut : t < Real.pi * m * a) :
     ‖weightedIntegral ((σ : ℂ) + (t : ℂ) * Complex.I) a b m‖ ≤
       2 * a ^ (-σ) / (Real.pi * m) := by
-  have hp (u : ℝ) (hu : u ∈ Set.Icc a b) : 0 < u := ha.trans_le hu.1
+  pm_25
   have hgc : ContinuousOn (fun u => -σ * u ^ (-σ - 1)) (Set.Icc a b) := by
     intro u hu
     exact (continuousAt_const.mul
@@ -129,11 +128,8 @@ theorem norm_weightedIntegral_upper_le {σ t m a b : ℝ} (hσ : 0 ≤ σ)
   have he : weightedIntegral ((σ : ℂ) + (t : ℂ) * Complex.I) a b m =
       ∫ u in a..b, ((u ^ (-σ) : ℝ) : ℂ) *
         Complex.exp (Complex.I * (weightedIntegralPhase t m u : ℂ)) := by
-    apply intervalIntegral.integral_congr
-    intro u hu
-    have hup : 0 < u := hp u (Set.uIcc_of_le hab ▸ hu)
-    rw [show -((σ : ℂ) + (t : ℂ) * Complex.I) =
-      (((-σ : ℝ) : ℂ) - (t : ℂ) * Complex.I) by push_cast; ring]
+    pm_5802
+    pm_29 Complex.I
     exact cpow_linear_wave_eq_power_log_phase (-σ) t m hup
   rw [he]
   convert h using 1

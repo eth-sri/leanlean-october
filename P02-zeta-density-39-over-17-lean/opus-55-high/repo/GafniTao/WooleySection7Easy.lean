@@ -1,7 +1,8 @@
 module
 public import GafniTao.WooleyPadicSeparation
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # The easy branch of Wooley Lemma 7.1
@@ -12,11 +13,9 @@ and triangular-number exponent estimates.
 -/
 
 open Finset
-open scoped BigOperators
 
 namespace GafniTao
 
-noncomputable section
 
 theorem wooley_refinement_val_mod_of_le
     {p nu a a' : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
@@ -28,10 +27,12 @@ theorem wooley_refinement_val_mod_of_le
   calc
     z.val % (p ^ nu) = (z.val % (p ^ a)) % (p ^ nu) :=
       (Nat.mod_mod_of_dvd z.val hdiv).symm
-    _ = xi.val % (p ^ nu) := by rw [ha]
+    _ = xi.val % (p ^ nu) := by grind
 
+section
+variable {p nu a a' b : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
+include p nu a a' b hnua haa'
 theorem wooley_refinement_left_separated_iff
-    {p nu a a' b : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
     (xi : ZMod (p ^ a)) (eta : ZMod (p ^ b))
     {z : ZMod (p ^ a')}
     (hz : z ∈ wooleyResidueRefinementFiber p a a' haa' xi) :
@@ -44,7 +45,6 @@ theorem wooley_refinement_left_separated_iff
 The second residue remains at depth `b`, exactly as in the easy branch of
 Wooley Lemma 7.1. -/
 theorem wooley_sum_left_refinement
-    {p nu a a' b : ℕ} [NeZero p] (hnua : nu ≤ a) (haa' : a ≤ a')
     (F : ZMod (p ^ a') → ZMod (p ^ b) → ℝ) :
     ∑ xi : ZMod (p ^ a),
         ∑ eta : ZMod (p ^ b) with wooleyResiduesSeparated nu xi eta,
@@ -52,12 +52,10 @@ theorem wooley_sum_left_refinement
       ∑ z : ZMod (p ^ a'),
         ∑ eta : ZMod (p ^ b) with wooleyResiduesSeparated nu z eta,
           F z eta := by
-  classical
-  let red : ZMod (p ^ a') → ZMod (p ^ a) :=
-    ZMod.castHom (pow_dvd_pow p haa') (ZMod (p ^ a))
+  pm_5919 a' a haa'
   have href (z : ZMod (p ^ a')) (xi : ZMod (p ^ a)) :
       z ∈ wooleyResidueRefinementFiber p a a' haa' xi ↔ red z = xi := by
-    simp only [wooleyResidueRefinementFiber, Finset.mem_filter, Finset.mem_univ, true_and, red]
+    pm_93 wooleyResidueRefinementFiber Finset.mem_filter Finset.mem_univ true_and red
   have hsep (z : ZMod (p ^ a')) (eta : ZMod (p ^ b)) :
       wooleyResiduesSeparated nu (red z) eta ↔
         wooleyResiduesSeparated nu z eta := by
@@ -126,6 +124,7 @@ theorem wooley_sum_left_refinement
         ∑ eta : ZMod (p ^ b),
           if wooleyResiduesSeparated nu z eta then F z eta else 0 :=
       Finset.sum_comm
+end
 
 theorem wooleyPolynomial_mixed_left_point_refinement
     {Q p a a' b B k s r : ℕ} [NeZero p] [NeZero (p ^ B)]
@@ -143,7 +142,7 @@ theorem wooleyPolynomial_mixed_left_point_refinement
             wooleyWeightedResidueMassSq gamma eta *
               wooleyPolynomialMixedResidueGridMoment
                 phi s r p B a' b gamma z eta := by
-  let scale : ℝ := (((p ^ B) ^ k : ℕ) : ℝ)⁻¹
+  pm_2840 scale
   unfold wooleyPolynomialMixedResidueGridMoment
   have hper (alpha : Fin k → ZMod (p ^ B)) :
       wooleyWeightedResidueMassSq gamma xi *
@@ -174,7 +173,7 @@ theorem wooleyPolynomial_mixed_left_point_refinement
             (2 * (s - wooleyTriangular r)) := by
       exact mul_nonneg (wooleyWeightedResidueMassSq_nonneg gamma eta)
         (by positivity)
-    have hs : 0 ≤ scale := by dsimp [scale]; positivity
+    pm_61 hs scale
     have hm := mul_le_mul_of_nonneg_right hpoint hv
     have hsm := mul_le_mul_of_nonneg_left hm hs
     dsimp [scale] at hsm
@@ -217,10 +216,7 @@ theorem wooleyPolynomial_mixed_left_point_refinement
                     phi (p ^ B) gamma alpha eta‖ ^
                         (2 * (s - wooleyTriangular r)))) := by
         simp_rw [Finset.mul_sum, Finset.sum_mul]
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro z hz
-        ring
+        pm_4886 z hz
   simp_rw [Finset.mul_sum]
   calc
     ∑ alpha : Fin k → ZMod (p ^ B),
@@ -311,7 +307,7 @@ theorem wooleyPolynomial_section7_easy_refinement
                   wooleyPolynomialMixedResidueGridMoment
                     phi s r p B a' b gamma z eta)]
           simp_rw [Finset.mul_sum]
-    have hinv : 0 ≤ (wooleyWeightedMassSq gamma)⁻¹ ^ 2 := sq_nonneg _
+    pm_1474 wooleyWeightedMassSq
     calc
       (wooleyWeightedMassSq gamma)⁻¹ ^ 2 * _ ≤
           (wooleyWeightedMassSq gamma)⁻¹ ^ 2 *
@@ -338,15 +334,14 @@ theorem wooley_section7_easy_exponent_nat
     exact_mod_cast (show (n : ℤ) ≤
       (r * a + (k - r) * gamma + nu : ℕ) by omega)
   have htail : (k - r) * gamma + nu ≤ k * nu := by
-    have hkr1 : k - r + 1 ≤ k := by omega
+    pm_5243 hkr1 r
     calc
       (k - r) * gamma + nu ≤ (k - r) * nu + nu := by
         exact Nat.add_le_add_right
           (Nat.mul_le_mul_left (k - r) hgamma.le) nu
       _ = (k - r + 1) * nu := by rw [Nat.add_mul, one_mul]
       _ ≤ k * nu := Nat.mul_le_mul_right nu hkr1
-  have hceil := wooley_section7_nextB_mul_upper
-    (k := k) (r := r) (b := b) hr
+  pm_734 hceil wooley_section7_nextB_mul_upper k r b hr
   have hrd : r * d ≤ k * nu + r := by
     have htotal :
         r * wooleySection7NextB k r b ≤ r * a + k * nu + r := by
@@ -377,8 +372,7 @@ theorem wooley_section7_easy_exponent_nat
     have := Nat.mul_le_mul_right k hrd
     simpa [Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm] using this
   have hkk : k * k ≤ k * nu * k := by
-    have hknu : k ≤ k * nu := by
-      simpa only [Nat.mul_one] using Nat.mul_le_mul_left k hnu
+    pm_6774 hknu k nu hnu
     exact Nat.mul_le_mul_right k hknu
   have hlast : (k * nu + r) * k ≤ 2 * (k ^ 2 * nu) := by
     calc
@@ -424,10 +418,7 @@ theorem wooleyPolynomial_section7_easy
       (p : ℝ) ^ (k ^ 2 * nu) *
         wooleyPolynomialMixedGridMean
           phi s r p B (wooleySection7NextB k r b) b nu gamma := by
-  have hR : 1 ≤ wooleyTriangular r := by
-    simp only [wooleyTriangular]
-    have : 2 ≤ r * (r + 1) := by nlinarith
-    omega
+  pm_5941 hR r
   have hrefine := wooleyPolynomial_section7_easy_refinement
     (Q := Q) (p := p) (nu := nu) (a := a)
     (a' := wooleySection7NextB k r b) (b := b) (B := B)
@@ -448,6 +439,5 @@ theorem wooleyPolynomial_section7_easy
   exact hrefine.trans (mul_le_mul_of_nonneg_right hpow hmean)
 
 
-end
 
 end GafniTao

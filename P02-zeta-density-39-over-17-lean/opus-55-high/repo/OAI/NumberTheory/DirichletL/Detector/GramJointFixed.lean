@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.GramNumerator
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,13 +27,16 @@ lemma primaryCoefficient_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : 
 def jointFixedModulus (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) : Id :=
   gramFixedModulus S hS*Ideal.span {λ₀^2}*Ideal.span {(72:O)}
 
-lemma jointFixedModulus_nonzero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) : jointFixedModulus S hS≠0 := by
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+include S hS
+lemma jointFixedModulus_nonzero : jointFixedModulus S hS≠0 := by
   apply mul_ne_zero
   · apply mul_ne_zero (gramFixedModulus_nonzero S hS)
     exact Ideal.span_singleton_eq_bot.not.mpr (pow_ne_zero _ ConcretePrimeRowBridge.goodLambda_prime.ne_zero)
-  · exact Ideal.span_singleton_eq_bot.not.mpr (by norm_num)
+  simp_all
 
-lemma primaryCoefficient_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+lemma primaryCoefficient_periodic
     (σ : RayRing) (x y : O) (hxy : x-y∈jointFixedModulus S hS) :
     primaryCoefficient S hS σ x=primaryCoefficient S hS σ y := by
   have hg := gramCoefficientExtension_periodic S hS σ x y (Ideal.mul_le_left (Ideal.mul_le_left hxy))
@@ -44,6 +48,7 @@ lemma primaryCoefficient_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     · intro h
       convert dvd_add hp h using 1 ; ring
   simp only [primaryCoefficient,hi,hg]
+end
 
 def jointFixed (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
     (C : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) (n₁ n₂ : O) : ℂ :=
@@ -51,24 +56,23 @@ def jointFixed (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
     numeratorBadTwist u a b r hr n₁*star (numeratorBadTwist (-u) a b r hr n₂)*
       sexticReciprocityPhase n₁ n₂
 
-lemma jointFixed_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) (n₁ n₂ : O) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (C : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
+include S hS σ C u a b r hr
+lemma jointFixed_norm (n₁ n₂ : O) :
     ‖jointFixed S hS σ C u a b r hr n₁ n₂‖≤1 := by
   unfold jointFixed
   simp only [norm_mul,norm_star]
-  refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (sexticReciprocityPhase_norm _ _)
-  refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (numeratorBadTwist_norm _ _ _ _ _ _)
-  refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (numeratorBadTwist_norm _ _ _ _ _ _)
+  pm_5354 sexticReciprocityPhase_norm
+  pm_6078
+  pm_6078
   exact (mul_le_of_le_one_left (norm_nonneg _) (primaryCoefficient_norm _ _ _ _)).trans (primaryCoefficient_norm _ _ _ _)
 
-lemma jointFixed_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) (n₁ n₂ m₁ m₂ : O)
+lemma jointFixed_periodic (n₁ n₂ m₁ m₂ : O)
     (h₁ : n₁-m₁∈jointFixedModulus S hS) (h₂ : n₂-m₂∈jointFixedModulus S hS) :
     jointFixed S hS σ C u a b r hr n₁ n₂=jointFixed S hS σ C u a b r hr m₁ m₂ := by
-  have hc₁ := primaryCoefficient_periodic S hS σ (C*n₁) (C*m₁)
-    (by rw [←mul_sub];exact (jointFixedModulus S hS).mul_mem_left C h₁)
-  have hc₂ := primaryCoefficient_periodic S hS σ (C*n₂) (C*m₂)
-    (by rw [←mul_sub];exact (jointFixedModulus S hS).mul_mem_left C h₂)
+  pm_5909 hc₁ n₁ m₁ h₁
+  pm_5909 hc₂ n₂ m₂ h₂
   have hb₁ := numeratorBadTwist_periodic u a b r hr n₁ m₁ (Ideal.mul_le_right h₁)
   have hb₂ := numeratorBadTwist_periodic (-u) a b r hr n₂ m₂ (Ideal.mul_le_right h₂)
   have hfour (x y : O) (h : x-y∈jointFixedModulus S hS) : (4:O)∣x-y :=
@@ -77,7 +81,8 @@ lemma jointFixed_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayR
     unfold sexticReciprocityPhase
     rw [QuadraticGaussRay.residue_eq_of_four_dvd_sub n₁ m₁ (hfour _ _ h₁),
       QuadraticGaussRay.residue_eq_of_four_dvd_sub n₂ m₂ (hfour _ _ h₂)]
-  simp only [jointFixed,hc₁,hc₂,hb₁,hb₂,hp]
+  pm_382 jointFixed hc₁ hc₂ hb₁ hb₂ hp
+end
 
 end SevenEighths.ProbeGramCommon
 end

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.RawMellinTerm
 public import OAI.NumberTheory.DirichletL.Detector.NestedMellin
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -39,7 +40,7 @@ lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : Calibr
   have hgen := (primaryGenerator_spec K (supported_primaryGenerator_ne_zero K hK)).1
   have hn : elementNorm (primaryGenerator K)=(Ideal.absNorm K:ℝ) := by
     unfold elementNorm
-    rw [hgen]
+    grind
   unfold rawPhysicalMellinTerm physicalMellinCoefficientTerm radialMellinSpectralTerm
   split_ifs with hA
   · dsimp only
@@ -79,7 +80,7 @@ lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : Calibr
     apply tsum_congr
     intro H
     congr 1 ; congr 1 ; ring_nf
-  · simp only [zero_mul,tsum_zero,verticalIntegral,integral_zero,mul_zero]
+  pm_3816 zero_mul tsum_zero verticalIntegral integral_zero mul_zero
 
 end SevenEighths.ProbePhysical
 end

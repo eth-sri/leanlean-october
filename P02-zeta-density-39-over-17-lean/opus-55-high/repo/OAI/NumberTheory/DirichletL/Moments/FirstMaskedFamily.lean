@@ -2,6 +2,8 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.AmplificationRadicalChoice
 public import OAI.NumberTheory.DirichletL.Moments.FixedRowMask
 public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceBound
+public import OAI.NumberTheory.DirichletL.Moments.SecondHeightFamily
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,8 +28,7 @@ open ActualEisensteinCubic ConcreteTraceCRT CenteredMomentChildAssembly Centered
 local notation "O" => HeckeFamily.O
 local notation "fixedBadMask" => (goodLambda*(2:O))
 
-lemma fixed_mask_ne_zero : fixedBadMask≠0 :=
-  mul_ne_zero PrimaryIdealUnitReindex.lambda_prime_actual.ne_zero (by norm_num)
+alias fixed_mask_ne_zero := OAI.SevenEighths.CenteredMomentSecondHeightFamily.fixedBadMask_ne_zero
 
 def idealMask (u : O) (I : Ideal O) : ℂ := if IsCoprime I (Ideal.span {u}) then 1 else 0
 
@@ -68,36 +69,32 @@ theorem exists_canonical_masked_pair (η : Character) (C D : Ideal O)
     let M := η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*Ideal.span {e*r}
     ∃ τ₁ τ₂ : Character, τ₁.modulus=M ∧ τ₂.modulus=M ∧
       (∀ I : Ideal O, Supported I → ∀ t : ℝ,
-        heightCoeff τ₁ t I=rowWeight η fixedBadMask 1 1 t I*
+        heightCoeff τ₁ t I=rowWeight η fixedBadMask 1 1 t I *
           (leftCoefficient e r ρ (primaryGenerator I)*rayCharacter ξ₁ (primaryGenerator I))) ∧
       (∀ I : Ideal O, Supported I → ∀ t : ℝ,
-        heightCoeff τ₂ t I=rowWeight η fixedBadMask 1 1 t I*
+        heightCoeff τ₂ t I=rowWeight η fixedBadMask 1 1 t I *
           (rightCoefficient e r ρ (primaryGenerator I)*rayCharacter ξ₂ (primaryGenerator I))) ∧
       (∀ u : O, ∀ I : Ideal O, Supported I → ∀ t : ℝ,
-        rowWeight η (fixedBadMask*u) 1 1 t I*
+        rowWeight η (fixedBadMask*u) 1 1 t I *
           (leftCoefficient e r ρ (primaryGenerator I)*rayCharacter ξ₁ (primaryGenerator I)) =
           idealMask u I*heightCoeff τ₁ t I) ∧
       (∀ u : O, ∀ I : Ideal O, Supported I → ∀ t : ℝ,
-        rowWeight η (fixedBadMask*u) 1 1 t I*
+        rowWeight η (fixedBadMask*u) 1 1 t I *
           (rightCoefficient e r ρ (primaryGenerator I)*rayCharacter ξ₂ (primaryGenerator I)) =
           idealMask u I*heightCoeff τ₂ t I) := by
   obtain ⟨τ₁,τ₂,hM₁,hM₂,h₁,h₂⟩ := exists_first_ideal_pair η fixedBadMask fixed_mask_ne_zero
     (dvd_mul_right goodLambda (2:O)) (dvd_mul_left (2:O) goodLambda) C D hC E ξ₁ ξ₂
   refine ⟨τ₁,τ₂,hM₁,hM₂,h₁,h₂,?_,?_⟩
-  · intro u I hI t
-    rw [rowWeight_mask_factor η u I hI t,heightCoeff,h₁ I hI t]
-    ring
-  · intro u I hI t
-    rw [rowWeight_mask_factor η u I hI t,heightCoeff,h₂ I hI t]
-    ring
+  pm_5976 h₁
+  pm_5976 h₂
 
 lemma divisor_column_masked (η τ : Character) (F : O → ℂ) (ξ : RayCharacter)
     (hτ : ∀ I : Ideal O, Supported I → ∀ t : ℝ,
-      heightCoeff τ t I=rowWeight η fixedBadMask 1 1 t I*
+      heightCoeff τ t I=rowWeight η fixedBadMask 1 1 t I *
         (F (primaryGenerator I)*rayCharacter ξ (primaryGenerator I)))
     (u : O) (L I : Ideal O) (hI : Supported I) (β : Ideal O → ℂ) (t : ℝ) :
     divisorCoefficient L (fun J : Ideal O => primaryGenerator J)
-      (fun J => β J*rowWeight η (fixedBadMask*u) 1 1 t J*F (primaryGenerator J)) ξ I =
+      (fun J=> β J*rowWeight η (fixedBadMask*u) 1 1 t J*F (primaryGenerator J)) ξ I =
       (if L∣I then maskedSource u β I else 0)*heightCoeff τ t I := by
   rw [divisorCoefficient,primary_span_supported I hI,rowWeight_mask_factor η u I hI t,hτ I hI t]
   split_ifs

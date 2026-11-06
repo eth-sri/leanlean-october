@@ -4,6 +4,7 @@ public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosZeroRPrefix
 public import LaterPairs.Native.RobertSargosZeroRSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -28,8 +29,8 @@ theorem robertSargos_zero_r_source_positive_bound
     ‖robertSargosZeroRSource f M h q‖ ≤
       1+12*(C*M*Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)+
         2/Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)) := by
-  have hhr : (0:ℝ) < h := by exact_mod_cast hh
-  have hqr : (0:ℝ) < q := by exact_mod_cast hq
+  pm_4473 hhr h hh
+  pm_1658
   unfold robertSargosZeroRSource
   rw [robertSargos_zero_r_positive_interval M h q hq.le]
   by_cases hab : h+1 ≤ (M:ℤ)-h-q
@@ -57,7 +58,7 @@ theorem robertSargos_zero_r_source_positive_bound
             robertSargosSymmetricDifference f (↑(h+1+(n:ℤ))) h)‖ ≤
         12*(C*M*Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)+
           2/Real.sqrt (2*(h:ℝ)*(q:ℝ)*lam)) := by
-      simpa only [Int.cast_add,Int.cast_one,Int.cast_natCast] using hp.trans hmono
+      pm_475 Int.cast_add Int.cast_one Int.cast_natCast hp.trans hmono
     have he : ‖fordAdditiveCharacter
         (robertSargosSymmetricDifference f (↑((M:ℤ)-h-q)+q) h-
           robertSargosSymmetricDifference f (↑((M:ℤ)-h-q)) h)‖ = 1 := by

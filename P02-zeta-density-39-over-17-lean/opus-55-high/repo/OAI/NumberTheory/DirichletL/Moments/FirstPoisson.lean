@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.Poisson
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,23 +13,25 @@ namespace SevenEighths.CenteredMomentFirstPoisson
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
-lemma principalCRT_scaled_left (a b : O) (hcop : IsCoprime a b) (x : Residue a) :
+section
+variable (a b : O) (hcop : IsCoprime a b)
+include a b hcop
+lemma principalCRT_scaled_left (x : Residue a) :
     principalCRT a b hcop (scaledResidue a b (a * b) rfl x) =
       (Ideal.Quotient.mk _ b * x, 0) := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
   rw [scaledResidue_mk, principalCRT_mk]
-  have hb : Ideal.Quotient.mk (Ideal.span {b}) b = 0 :=
-    (residue_eq_zero_iff_dvd b b).mpr dvd_rfl
-  simp only [map_mul, hb, zero_mul]
+  pm_2970 hb b
+  grind
 
-lemma principalCRT_scaled_right (a b : O) (hcop : IsCoprime a b) (y : Residue b) :
+lemma principalCRT_scaled_right (y : Residue b) :
     principalCRT a b hcop (scaledResidue b a (a * b) (mul_comm a b) y) =
       (0, Ideal.Quotient.mk _ a * y) := by
   obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, principalCRT_mk]
-  have ha : Ideal.Quotient.mk (Ideal.span {a}) a = 0 :=
-    (residue_eq_zero_iff_dvd a a).mpr dvd_rfl
+  pm_2970 ha a
   simp only [map_mul, ha, zero_mul]
+end
 
 theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
@@ -51,45 +54,14 @@ theorem coprime_character_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     change (principalCRT a b hcop).toEquiv
       ((principalCRT a b hcop).toEquiv.symm ((ua : Residue a) * x.1, (ub : Residue b) * x.2)) = _
     exact (principalCRT a b hcop).toEquiv.apply_symm_apply _
-  have he (x : Residue a × Residue b) : e x =
-      scaledResidue a b (a * b) rfl x.1 + scaledResidue b a (a * b) (mul_comm a b) x.2 := by
-    apply (principalCRT a b hcop).injective
-    rw [heproj, map_add, principalCRT_scaled_left, principalCRT_scaled_right]
-    simp only [Prod.mk_add_mk, add_zero, zero_add, ua, ub, residueUnit_coe]
-  have hproj (x : Residue (a * b)) :
-      (frequencyReduction a (a * b) (dvd_mul_right a b) x,
-        frequencyReduction b (a * b) (dvd_mul_left b a) x) = principalCRT a b hcop x := by
-    obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
-    simp only [frequencyReduction_mk, principalCRT_mk]
-  have hprojA (x : Residue a × Residue b) :
-      frequencyReduction a (a * b) (dvd_mul_right a b) (e x) = Ideal.Quotient.mk _ b * x.1 := by
-    have ht := congrArg Prod.fst (hproj (e x))
-    rw [heproj] at ht
-    simpa only [ua, residueUnit_coe] using ht
-  have hprojB (x : Residue a × Residue b) :
-      frequencyReduction b (a * b) (dvd_mul_left b a) (e x) = Ideal.Quotient.mk _ a * x.2 := by
-    have ht := congrArg Prod.snd (hproj (e x))
-    rw [heproj] at ht
-    simpa only [ub, residueUnit_coe] using ht
-  rw [← e.sum_comp]
-  simp_rw [hprojA, hprojB]
-  simp only [map_mul, he, mul_add, AddChar.map_add_eq_mul,
-    quotientTrace_scaled a b (a * b) rfl ha hb (mul_ne_zero ha hb),
-    quotientTrace_scaled b a (a * b) (mul_comm a b) hb ha (mul_ne_zero ha hb)]
-  simp only [Fintype.sum_prod_type, residueGauss, tsum_fintype]
-  rw [Finset.sum_comm]
-  simp only [Finset.mul_sum, Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro y _
-  apply Finset.sum_congr rfl
-  intro x _
-  ring
+  pm_2989
+  pm_2990
 
 theorem residueGauss_inverse (d : O) (hd : d ≠ 0)
     (χ : MulChar (Residue d) ℂ) (h : Residue d) :
     residueGauss d hd χ⁻¹ h = star (residueGauss d hd χ (-h)) := by
   let := finite_quotient_span hd
-  let : Fintype (Residue d) := Fintype.ofFinite _
+  pm_4890 Residue d
   have htrace (x : Residue d) : star (quotientTrace d hd x) = quotientTrace d hd (-x) := by
     rw [Complex.star_def, ← Complex.inv_eq_conj ((quotientTrace d hd).norm_apply x),
       AddChar.map_neg_eq_inv]

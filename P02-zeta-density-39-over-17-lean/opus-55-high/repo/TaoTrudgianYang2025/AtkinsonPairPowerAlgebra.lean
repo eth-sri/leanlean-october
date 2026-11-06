@@ -2,6 +2,7 @@ module
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonPairGramRows
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalBudget
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,15 +10,14 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonPhysicalBudget
 
 noncomputable section
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson
 
 theorem atkinson_pair_epsilon_loss {H M L k l ε : ℝ}
     (hH : 1 ≤ H) (hM : 1 ≤ M) (hMH : M ≤ H)
     (hL : 0 < L) (hLH : L ≤ H) (hε : 0 ≤ ε) :
     (L/Real.sqrt (H*M))^(k+ε)*M^(l+ε) ≤
       H^(2*ε)*((L/Real.sqrt (H*M))^k*M^l) := by
-  have hH0 : 0 < H := by linarith
-  have hM0 : 0 < M := by linarith
+  pm_72 hH0 H hM0 M
   have hs : 1 ≤ Real.sqrt (H*M) := by
     apply (Real.le_sqrt (by norm_num) (by positivity)).2
     nlinarith
@@ -28,7 +28,7 @@ theorem atkinson_pair_epsilon_loss {H M L k l ε : ℝ}
     (Real.rpow_le_rpow hx.le hxH hε)
     (Real.rpow_le_rpow hM0.le hMH hε) (by positivity) (by positivity)
   have hpow : H^ε*H^ε = H^(2*ε) := by
-    rw [← Real.rpow_add hH0]; congr 1; ring
+    pm_4975 Real.rpow_add hH0
   rw [hpow] at he
   rw [Real.rpow_add hx,Real.rpow_add hM0]
   calc
@@ -44,16 +44,13 @@ theorem atkinson_weighted_pair_power {H M : ℝ}
     Real.mul_rpow hH.le hM.le,Real.mul_rpow (by positivity) (by positivity),
     ← Real.rpow_mul hH.le,← Real.rpow_mul hM.le]
   have hh : (H^((1/2:ℝ)*k))⁻¹ = H^(-k/2) := by
-    rw [← Real.rpow_neg hH.le]; congr 1; ring
+    pm_4975 Real.rpow_neg hH.le
   have hm : M^(1/2:ℝ)*M^l/M^((1/2:ℝ)*k) =
       M^(l+1/2-k/2) := by
     rw [← Real.rpow_add hM,← Real.rpow_sub hM]
     congr 1
     ring
-  calc
-    _ = L^k*(H^((1/2:ℝ)*k))⁻¹*
-        (M^(1/2:ℝ)*M^l/M^((1/2:ℝ)*k)) := by ring
-    _ = _ := by rw [hh,hm]
+  grind
 
 def atkinsonPairPowerTerm (C k l H G L : ℝ) (N R : ℕ) : ℝ :=
   (R : ℝ)*(N : ℝ)^(3/2:ℝ)+
@@ -73,7 +70,7 @@ theorem atkinson_pair_power_term_eq {H : ℝ} {M : ℕ}
         (2*C*Real.sqrt (H*(M : ℝ))/G)*(R : ℝ)*
           (harmonic (Nat.ceil (L/G)) : ℝ)) =
       atkinsonPairPowerTerm C k l H G L M R := by
-  have hM0 : (0 : ℝ) < M := by exact_mod_cast hM
+  pm_74 hM0 M hM
   have hd := atkinson_weighted_diagonal_power hM0 0
   have hn := atkinson_weighted_near_power hH hM0 0
   simp only [add_zero,Real.rpow_one] at hd hn
@@ -91,9 +88,7 @@ theorem atkinsonPairPowerTerm_nonneg {C H G L : ℝ}
     (k l : ℝ) (N R : ℕ) :
     0 ≤ atkinsonPairPowerTerm C k l H G L N R := by
   unfold atkinsonPairPowerTerm
-  have hh : (0 : ℝ) ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
-    simpa only [harmonic_zero,Rat.cast_zero] using
-      atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
+  pm_1605
   positivity
 
 theorem atkinsonPairPowerTerm_mono_index {C H G L k l : ℝ} {M N : ℕ}
@@ -101,10 +96,8 @@ theorem atkinsonPairPowerTerm_mono_index {C H G L k l : ℝ} {M N : ℕ}
     (hp : 0 ≤ l+1/2-k/2) (hMN : M ≤ N) :
     atkinsonPairPowerTerm C k l H G L M R ≤
       atkinsonPairPowerTerm C k l H G L N R := by
-  have hMN0 : (M : ℝ) ≤ N := by exact_mod_cast hMN
-  have hh : (0 : ℝ) ≤ (harmonic (Nat.ceil (L/G)) : ℝ) := by
-    simpa only [harmonic_zero,Rat.cast_zero] using
-      atkinson_harmonic_mono (Nat.zero_le (Nat.ceil (L/G)))
+  pm_106 hMN0 M N hMN
+  pm_1605
   unfold atkinsonPairPowerTerm
   apply add_le_add
   · apply add_le_add

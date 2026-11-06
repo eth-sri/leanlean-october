@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaBufferedFourierTail
 public import TaoTrudgianYang2025.BetaBufferedNonstationarySums
 public import TaoTrudgianYang2025.IntegerFourierWindows
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -16,11 +17,9 @@ are derived from the original model and controlled cutoff.
 
 noncomputable section
 
-open Set Expdb
-open scoped BigOperators
+open Expdb
 
 namespace TaoTrudgianYang2025
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
 def modelPhaseCoreLower (σ δ T N : ℝ) : ℤ :=
   ⌊(T/N)*((2 : ℝ)^(-σ)-δ)⌋
@@ -31,16 +30,17 @@ def modelPhaseCoreUpper (δ T N : ℝ) : ℤ :=
 theorem modelPhaseCoreLower_le_upper
     {σ δ T N : ℝ} (hσ : 0 ≤ σ) (hδ : 0 ≤ δ) (hT : 0 ≤ T) (hN : 0 < N) :
     modelPhaseCoreLower σ δ T N ≤ modelPhaseCoreUpper δ T N := by
-  have hp : (2 : ℝ)^(-σ) ≤ 1 :=
-    Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by linarith)
+  pm_1628 hp
   have he : (T/N)*((2 : ℝ)^(-σ)-δ) ≤ (T/N)*(1+δ) :=
     mul_le_mul_of_nonneg_left (by linarith) (div_nonneg hT hN.le)
   have hh := (Int.floor_le ((T/N)*((2 : ℝ)^(-σ)-δ))).trans
     (he.trans (Int.le_ceil ((T/N)*(1+δ))))
   exact_mod_cast hh
 
-theorem modelPhase_buffered_poisson_core
-    {σ : ℝ} (hσ : 0 < σ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+theorem modelPhase_buffered_poisson_core :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (N η : ℝ) (a b : ℕ),
       0 < N → 0 < η → η ≤ 1 → N ≤ (a : ℝ) → (b : ℝ) ≤ 2*N →
       ∀ (F : ℝ → ℝ) (δ T : ℝ),
@@ -57,12 +57,10 @@ theorem modelPhase_buffered_poisson_core
               (4/Real.pi)*(2+
                 Real.log (((modelPhaseCoreLower σ δ T N+(R : ℤ)).toNat : ℕ) : ℝ)+
                 Real.log ((((R : ℤ)-modelPhaseCoreUpper δ T N).toNat : ℕ) : ℝ)) := by
-  obtain ⟨C,hC,htrunc⟩ := modelPhase_buffered_poisson_truncated hσ.le
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC htrunc modelPhase_buffered_poisson_truncated hσ.le
   intro N η a b hN hη hη₁ ha hb F δ T hδ hF hT R hR hRA hBR
-  let χ := modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η
-  let A := modelPhaseCoreLower σ δ T N
-  let B := modelPhaseCoreUpper δ T N
+  pm_1644
+  pm_6909
   let f : ℤ → ℂ := fun q => modelPhaseFourierMode χ F T N q
   have hAB : A ≤ B :=
     modelPhaseCoreLower_le_upper hσ.le (approximateModelPhase_tolerance_nonneg hF) hT.le hN
@@ -90,10 +88,9 @@ theorem modelPhase_buffered_poisson_core
     abel
   change ‖exponentialSumAt F T N a b-(∑ q ∈ Finset.Icc A B, f q)‖ ≤ _
   rw [heq]
-  exact (norm_add_le _ _).trans (add_le_add hsource hext')
+  pm_243 norm_add_le hsource hext'
 
-theorem modelPhase_buffered_poisson_core_precision
-    {σ : ℝ} (hσ : 0 < σ) :
+theorem modelPhase_buffered_poisson_core_precision :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (N η : ℝ) (a b : ℕ),
       0 < N → 0 < η → η ≤ 1 → N ≤ (a : ℝ) → (b : ℝ) ≤ 2*N →
       ∀ (F : ℝ → ℝ) (δ T ε : ℝ),
@@ -109,14 +106,13 @@ theorem modelPhase_buffered_poisson_core_precision
                 (modelPhaseBufferedCutoff ((a : ℝ)/N) ((b : ℝ)/N) η) F T N q‖ ≤
             4*N*η+2+ε+(4/Real.pi)*(2+
               Real.log ((A+(R : ℤ)).toNat : ℝ)+Real.log (((R : ℤ)-B).toNat : ℝ)) := by
-  obtain ⟨C,hC,hcore⟩ := modelPhase_buffered_poisson_core hσ
-  refine ⟨C,hC,?_⟩
+  pm_102 C hC hcore modelPhase_buffered_poisson_core hσ
   intro N η a b hN hη hη₁ ha hb F δ T ε hδ hF hT hε A B R
   have hR : 0 < R := Nat.succ_pos _
   have hRA : -(R : ℤ) ≤ A := by dsimp [R]; omega
   have hBR : B ≤ (R : ℤ) := by dsimp [R]; omega
   refine ⟨hR,hRA,hBR,?_⟩
-  have hR₀ : 0 < (R : ℝ) := by exact_mod_cast hR
+  pm_456 hR₀ R hR
   have hceil : C*(η⁻¹)^2*(1+|T|)^2/(N*ε) ≤ (R : ℝ) := by
     exact (Nat.le_ceil _).trans (by
       dsimp [R]
@@ -128,5 +124,6 @@ theorem modelPhase_buffered_poisson_core_precision
     nlinarith
   exact (hcore N η a b hN hη hη₁ ha hb F δ T hδ hF hT R hR hRA hBR).trans
     (add_le_add (add_le_add le_rfl hbudget) le_rfl)
+end
 
 end TaoTrudgianYang2025

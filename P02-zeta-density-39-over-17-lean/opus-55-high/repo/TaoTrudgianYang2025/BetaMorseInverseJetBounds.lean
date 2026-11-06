@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaMorseInverseJets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -40,17 +41,21 @@ def morseInverseDerivativeBound (σ : ℝ) (n : ℕ) : ℝ :=
   inversePhaseMagnitude (inversePhaseDerivativeExpression n)
     (morseInverseJetBudget σ (inversePhaseOrder (inversePhaseDerivativeExpression n)))
 
-theorem morseInverseJetMagnitude_nonneg {σ : ℝ} (hσ : 0 < σ) (j : ℕ) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+theorem morseInverseJetMagnitude_nonneg (j : ℕ) :
     0 ≤ morseInverseJetMagnitude σ j := by
   match j with
   | 0 => norm_num [morseInverseJetMagnitude]
   | 1 => exact div_nonneg (Real.sqrt_nonneg _) (modelPhaseCurvatureLower_pos hσ).le
   | n+2 => exact morseCoordinateDerivativeBound_nonneg σ (n+1)
 
-theorem morseInverseJetMagnitude_le_budget {σ : ℝ} (hσ : 0 < σ) {K j : ℕ} (hj : j ≤ K) :
+theorem morseInverseJetMagnitude_le_budget {K j : ℕ} (hj : j ≤ K) :
     morseInverseJetMagnitude σ j ≤ morseInverseJetBudget σ K :=
   Finset.single_le_sum (fun k _ => morseInverseJetMagnitude_nonneg hσ k)
     (Finset.mem_range.mpr (Nat.lt_succ_iff.mpr hj))
+end
 
 theorem morseInverseDerivativeOrder_pos (n : ℕ) : 1 ≤ morseInverseDerivativeOrder n := by
   unfold morseInverseDerivativeOrder
@@ -70,9 +75,10 @@ theorem morseInverseDerivativeBound_nonneg {σ : ℝ} (hσ : 0 < σ) (n : ℕ) :
     0 ≤ morseInverseDerivativeBound σ n :=
   inversePhaseMagnitude_nonneg _ (Finset.sum_nonneg fun j _ => morseInverseJetMagnitude_nonneg hσ j)
 
+section
+variable {F : ℝ → ℝ} {σ δ v z : ℝ} {P : ℕ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
+include F σ δ v z P hσ hδ
 theorem modelPhaseMorseInverseJet_abs_le
-    {F : ℝ → ℝ} {σ δ v z : ℝ} {P : ℕ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hP : 1 ≤ P) (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v)
     (j : ℕ) (hj : morseInverseJetOrder j ≤ P) :
@@ -93,20 +99,16 @@ theorem modelPhaseMorseInverseJet_abs_le
       exact modelPhaseMorseCoordinate_iteratedDeriv_bound hσ hδ hF hv hu (n+1) hj
 
 theorem modelPhaseMorseInverse_iteratedDeriv_bound
-    {F : ℝ → ℝ} {σ δ v z : ℝ} {P : ℕ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hv : v ∈ modelPhaseSlopeRange F) (hz : z ∈ modelPhaseMorseRange F v)
     (n : ℕ) (hP : morseInverseDerivativeOrder n ≤ P) :
     |iteratedDeriv n (modelPhaseMorseInverse F v) z| ≤
       morseInverseDerivativeBound σ n := by
   have hP₁ := (morseInverseDerivativeOrder_pos n).trans hP
-  rw [iteratedDeriv_modelPhaseMorseInverse_formula hσ hδ
-    (approximateModelPhase_mono hF hP₁ le_rfl) hv hz n]
-  apply inversePhaseEval_abs_le
-  intro j hj
+  pm_7631 iteratedDeriv_modelPhaseMorseInverse_formula hz
   exact (modelPhaseMorseInverseJet_abs_le hσ hδ hP₁ hF hv hz j
     ((morseInverseJetOrder_le_derivativeOrder hj).trans hP)).trans
       (morseInverseJetMagnitude_le_budget hσ hj)
+end
 
 end TaoTrudgianYang2025

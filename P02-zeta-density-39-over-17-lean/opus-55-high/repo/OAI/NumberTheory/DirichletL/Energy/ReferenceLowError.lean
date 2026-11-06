@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneousError
 public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorCoefficients
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -21,14 +22,14 @@ theorem relative_slot_error {α:Type*}(F:Finset α)
     (hs:Function.support Wslot⊆Set.Icc aslot bslot)(hc:Continuous Wslot):
     ∃C:ℝ,0<C ∧ ∀T:Finset α,T⊆F → ∀W:𝓢(ℝ,ℂ),
       Function.support (W:ℝ→ℂ)⊆Set.Iic bshort →
-      ∀(χ:O→Character)(ν:α→Character)(pool:α→Finset (Ideal O))
-        (P σ freq:α→ℝ)(t X K:ℝ)(Φ:𝓢(ℝ,ℂ))(keep:O→Prop),
+      ∀(χ:O→ Character)(ν:α→ Character)(pool:α→ Finset (Ideal O))
+        (P σ freq:α→ℝ)(t X K:ℝ)(Φ:𝓢(ℝ,ℂ))(keep:O→ Prop),
       0<X → 0<K → (∀i∈T,0<P i) → (∀i∈T,lo≤σ i) → (∀i∈T,σ i≤hi) →
       (∀i∈T,∀I∈pool i,Prime I) → (∀z:O,0≤(Φ (‖eisEmbedding z‖^2/K)).re) →
       radialEnergy (fun z=>polynomial (χ z) false W X 0 t *
         ∏i∈T,naturalSlot (χ z) (pool i)
-          (heightCoefficient (fun I=>idealCoeff (ν i) I*
-            HeckePrimeAnnular.annularWeight Wslot (P i) (σ i) (freq i) I) t) (P i)) keep Φ K≤
+          (heightCoefficient (fun I=>idealCoeff (ν i) I *
+            HeckePrimeAnnular.annularWeight Wslot (P i) (σ i) (freq i) I) t) (P i)) keep Φ K ≤
         C*((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W)^2*
           diagonalControl Φ*max 1 K*X*∏i∈T,P i:=by
   obtain ⟨B,hB,hslot⟩:=CenteredMomentRayMaskedFloor.slot_coefficient_bounds
@@ -43,12 +44,12 @@ theorem relative_slot_error {α:Type*}(F:Finset α)
   · intro i hi I hI
     have hb:=(hslot (ν i) (P i) (σ i) (freq i) 0 (hP i hi) (hlo i hi) (hhi i hi)
       I (hp i hi I hI).ne_zero).1
-    simpa only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one] using hb
+    pm_124 heightCoefficient Complex.ofReal_zero mul_zero Complex.cpow_zero mul_one hb
   · intro i hi I hI hn
     have hb:=(hslot (ν i) (P i) (σ i) (freq i) 0 (hP i hi) (hlo i hi) (hhi i hi)
       I (hp i hi I hI).ne_zero).2
     apply hb
-    simpa only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one] using hn
+    pm_124 heightCoefficient Complex.ofReal_zero mul_zero Complex.cpow_zero mul_one hn
   · exact hΦ
 
 end SevenEighths.CenteredMomentEnergyReferenceLowError

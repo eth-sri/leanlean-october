@@ -4,31 +4,33 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawInitialEnergy
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawInput
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawRealRadial
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawCompact
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
 
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical SchwartzMap Topology
 open Filter
 namespace SevenEighths.DetectorDictionaryInverseRawReference
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve
+open CanonicalRowCompletion CanonicalQuadraticSieve
 open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod
-open InverseInitialRayAttachment InverseInitialProfileBounds
+open InverseInitialRayAttachment
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy
 open DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound
 open DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial
 open DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
 local notation "O"=>HeckeFamily.O
 
-theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
-    (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
+section
+variable (W:𝓢(ℝ,ℂ)) (a b c κ:ℝ) (ha:0<a) (hb:0<b) (hs:Function.support W⊆Set.Icc a b) (hc:0< c) (hκ:0<κ)
+include W a b c κ ha hb hs hc hκ
+theorem raw_reference_large:
     ∃J:ℕ,∀data:RowData,∃C H₀:ℝ,0<C ∧ 1<H₀ ∧
-      ∀(t H D:ℝ),H₀≤H→1≤D→D^(1+c)≤H→∀rows:Finset NonzeroElement,
+      ∀(t H D:ℝ),H₀≤H→1≤D→ D ^(1+c)≤H→∀rows:Finset NonzeroElement,
       (∀u∈rows,((Ideal.span {u.val}).absNorm:ℝ)≤H)→
       (∑u∈rows,‖polynomial (data.character u) true (childLogTest W t) D 0 0‖^2)≤
         (C*(1+‖t‖)^(2*J))*H*(H*max 1 D)^κ := by
@@ -47,17 +49,17 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     gap eps π η τ (κ/4) hgap heps hπ hη hηone hηsmall hτ hτsmall (by positivity)
   refine ⟨J,?_⟩
   intro data
-  obtain ⟨hq,hqset,hn,hperiod⟩:=raw_conjugate_base_gates data
-  obtain ⟨C,Hq,hC,hHq,hinput⟩:=hinput (deletedPeriod (basePeriod data)) hq
+  pm_3698 hq hqset hn hperiod raw_conjugate_base_gates data
+  pm_8437 Hq hHq hinput
   obtain ⟨Hg,hg⟩:=eventually_atTop.mp (shifted_raw_geometry_eventually data c η hc hη)
-  let T:=idealDivisors (∏P∈excluded data,P)
+  pm_8576 T
   let Ctotal:=((T.card:ℝ)+1)^2*C
   refine ⟨Ctotal,max Hq Hg,by dsimp [Ctotal];positivity,lt_max_of_lt_left hHq,?_⟩
   intro t H D hH hD hcapacity rows hrows
-  have hHq':Hq≤H:=(le_max_left _ _).trans hH
-  obtain ⟨hHp,hgeom⟩:=hg H ((le_max_right _ _).trans hH)
+  pm_5224 hHq' Hq H hH
+  pm_8137 hHp hgeom hg H hH
   have hHpos:0<H:=zero_lt_one.trans hHp
-  have hWt:∀x,childLogTest W t x≠0→x≤b:=by
+  have hWt:∀x,childLogTest W t x≠0→ x≤b:=by
     intro x hx
     exact (hs ((mul_ne_zero_iff.mp hx).1)).2
   have hraw:=raw_rows_le_initial Φ hΦ hone data (childLogTest W t) H D c b Btree 2 0 0
@@ -66,7 +68,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       smoothedEnergy Φ H (initialFunction data (childLogTest W t) H b Btree 2 D 0 0 j)≤
         C*H^(1+15*η+π+eps+κ/4)*(1+‖t‖)^(2*J):=by
     obtain ⟨hrlo,hr₁,hr₂,hex,hrcap,hDH⟩:=hgeom D hD hcapacity j hj
-    let r:=Real.logb H (D/(j.absNorm:ℝ))
+    let r:=Real.logb H (D /(j.absNorm:ℝ))
     let Dpool:=completeCutoff H b Btree 2
     have hpool:Btree*H^3≤(Dpool:ℝ):=by
       convert completeCutoff_tree H b Btree 2 using 1 ; norm_num
@@ -132,8 +134,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       nlinarith [mul_le_mul_of_nonneg_left hh
         (show 0≤Ctotal*(1+‖t‖)^(2*J) by dsimp [Ctotal];positivity)]
 
-theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
-    (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
+theorem raw_reference_moment:
     ∃J:ℕ,∀data:RowData,∃C:ℝ,0<C ∧ ∀t:ℝ,
       RawMoment data (childLogTest W t) c κ (C*(1+‖t‖)^(2*J)) := by
   obtain ⟨J,hlarge⟩:=raw_reference_large W a b c κ ha hb hs hc hκ
@@ -144,9 +145,9 @@ theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     W a b ha hs H₀ hH₀.le
   refine ⟨C+C₀,add_pos hC hC₀,?_⟩
   exact hcomplete data c κ C J hc.le hκ.le hC.le hlarge
+end
 
 end SevenEighths.DetectorDictionaryInverseRawReference
 
-end
 
 end OAI

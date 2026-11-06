@@ -3,18 +3,19 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformSource
 public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerClipping
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerUniform
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
 open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
+open InverseInitialOverlapFourier
 open ActualEisensteinCubic CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
@@ -69,7 +70,7 @@ theorem referenceWindow_one (x : ℝ) (hx : x∈Set.Icc (1/9 : ℝ) (9/4)) :
   (Classical.choose_spec exists_reference_window).2.2 x hx
 
 theorem referenceWindow_agrees (scaled reverse : Bool) (n : ℕ) (U tstar r σ t c y : ℝ)
-    (hc : 1≤c) (hcb : c≤9/4) (hy : 0<y) :
+    (hc : 1≤ c) (hcb : c≤9/4) (hy : 0<y) :
     referenceWindow y * inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) =
       inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) := by
   by_cases hz : inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) = 0
@@ -83,19 +84,23 @@ def logSource (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) : 𝓢(�
   CubicReflectionKernel.logPullbackCLM (1/4) (9/4)
     (inverseSourceSchwartz scaled reverse n U tstar r σ t)
 
-theorem logSource_apply (scaled reverse : Bool) (n : ℕ) (U tstar r σ t x : ℝ) :
+section
+variable (scaled reverse : Bool) (n : ℕ)
+include scaled reverse n
+theorem logSource_apply (U tstar r σ t x : ℝ) :
     logSource scaled reverse n U tstar r σ t x =
       inverseSourceSchwartz scaled reverse n U tstar r σ t (Real.exp x) :=
   CubicReflectionKernel.logPullbackCLM_eq_actual _ _ (by norm_num) _
     (source_support scaled reverse n U tstar r σ t) x
 
-theorem logSource_eq_logSchwartz (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
+theorem logSource_eq_logSchwartz (U tstar r σ t : ℝ) :
     logSource scaled reverse n U tstar r σ t =
       CubicReflectionKernel.logSchwartz (inverseSourceSchwartz scaled reverse n U tstar r σ t)
         (1/4) (9/4) (by norm_num) (source_support scaled reverse n U tstar r σ t)
         ((inverseSourceSchwartz scaled reverse n U tstar r σ t).smooth ⊤) := by
   ext x
   rw [logSource_apply,CubicReflectionKernel.logSchwartz_apply]
+end
 
 def familyDensity (scaled reverse : Bool) (n : ℕ) (U tstar r σ t c v : ℝ) : ℂ :=
   density (logSource scaled reverse n U tstar r σ t) (Real.log c) v
@@ -109,11 +114,11 @@ theorem familyDensity_moment (J : ℕ) :
       ∀U : ℝ, 0<U → ∀tstar r : ℝ, ∀σ∈Set.Icc (0 : ℝ) 1, ∀t c : ℝ,
       (∫v : ℝ, (1+‖v‖)^J * ‖familyDensity scaled reverse n U tstar r σ t c v‖) ≤
         C*(1+‖t‖)^K := by
-  let p := (volume : Measure ℝ).integrablePower
+  pm_5382 volume Measure
   let S : Finset (ℕ×ℕ) := Finset.Iic (p,J+p)
   obtain ⟨T,A,hA,hop⟩ := EisensteinSchwartzPoisson.schwartzCLM_finite_seminorm_control
     (CubicReflectionKernel.logPullbackCLM (1/4) (9/4)) S
-  obtain ⟨K,B,hB,hsource⟩ := inverseSourceSchwartz_uniform T
+  pm_3008 K B hB hsource inverseSourceSchwartz_uniform T
   let C := 1+(2 : ℝ)^J*(coefficientMomentBound 0 (2*A*B)+coefficientMomentBound J (2*A*B))
   have hC : 0<C := by
     have h₀ := coefficientMomentBound_nonneg 0 (2*A*B) (by positivity)
@@ -142,8 +147,7 @@ theorem familyDensity_moment (J : ℕ) :
   have hmoment := uniform_fourier_one_plus_moment g J 1
     (2*A*B*(1+‖t‖)^K) (by norm_num) (by positivity)
     (by intro i hi; simpa only [one_mul] using hs i hi)
-  simp only [one_mul] at hmoment
-  simp only [familyDensity_norm]
+  pm_415 one_mul hmoment familyDensity_norm
   apply hmoment.trans
   have he : (2 : ℝ)^J*(coefficientMomentBound 0 (2*A*B*(1+‖t‖)^K)+
       coefficientMomentBound J (2*A*B*(1+‖t‖)^K)) =
@@ -156,7 +160,7 @@ theorem familyDensity_moment (J : ℕ) :
 
 section Rows
 variable {ι ρ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 

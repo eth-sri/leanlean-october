@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Eisenstein.FredholmAlternative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -9,91 +10,38 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped Topology
+open scoped Classical SchwartzMap
 
 lemma kernelSpectralFormOperator_analyticAt (z : ℂ) :
     AnalyticAt ℂ kernelSpectralFormOperator z := by
   let S : KernelEnergyGraph→L[ℂ]KernelEnergyGraph := kernelEnergyMass.adjoint.comp kernelEnergyMass
-  have hc : AnalyticAt ℂ (fun w : ℂ => w • S) (z+1) := by
-    simpa only [ContinuousLinearMap.smulRight_apply,ContinuousLinearMap.id_apply] using!
-      (ContinuousLinearMap.analyticAt (𝕜 := ℂ) (E := ℂ)
-        (F := KernelEnergyGraph→L[ℂ]KernelEnergyGraph)
-        (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℂ ℂ) S) (z+1))
-  have hz : AnalyticAt ℂ (fun w : ℂ => w+1) z := analyticAt_id.add analyticAt_const
-  exact analyticAt_const.sub (hc.comp_of_eq hz rfl)
+  pm_3614 S KernelEnergyGraph
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical Topology InnerProductSpace
 
 def kernelMassGram : KernelEnergyGraph→L[ℂ]KernelEnergyGraph :=
   kernelEnergyMass.adjoint.comp kernelEnergyMass
@@ -158,7 +106,7 @@ lemma kernelRegularPencil_apply (z : ℂ) (u : kernelThetaRegular) :
     (kernelRegularPencil z u:KernelEnergyGraph)=kernelSpectralFormOperator z u := rfl
 
 lemma kernelRegularPencil_center_isUnit : IsUnit (kernelRegularPencil (8/9:ℂ)) := by
-  apply (ContinuousLinearMap.isUnit_iff_bijective (𝕜 := ℂ) (E := kernelThetaRegular)).mpr
+  pm_8005 kernelThetaRegular
   constructor
   · intro u v huv
     apply ker_orthogonal_restriction_injective (kernelSpectralFormOperator (8/9:ℂ))
@@ -190,13 +138,7 @@ local instance : NormedSpace ℂ (kernelThetaRegular →L[ℂ] kernelThetaRegula
 
 lemma kernelRegularPencil_analyticAt (z : ℂ) :
     AnalyticAt ℂ kernelRegularPencil z := by
-  have hc : AnalyticAt ℂ (fun w : ℂ => w • kernelRegularGram) (z+1) := by
-    simpa only [ContinuousLinearMap.smulRight_apply,ContinuousLinearMap.id_apply] using!
-      (ContinuousLinearMap.analyticAt (𝕜 := ℂ) (E := ℂ)
-        (F := kernelThetaRegular→L[ℂ]kernelThetaRegular)
-        (ContinuousLinearMap.smulRight (ContinuousLinearMap.id ℂ ℂ) kernelRegularGram) (z+1))
-  have hz : AnalyticAt ℂ (fun w : ℂ => w+1) z := analyticAt_id.add analyticAt_const
-  exact analyticAt_const.sub (hc.comp_of_eq hz rfl)
+  pm_3614 kernelRegularGram kernelThetaRegular
 
 lemma kernelRegularPencil_eventually_isUnit :
     ∀ᶠ z : ℂ in 𝓝 (8/9:ℂ), IsUnit (kernelRegularPencil z) :=
@@ -276,14 +218,17 @@ lemma selfAdjoint_one_sub_smul_normal {H : Type*} [NormedAddCommGroup H]
   let : IsStarNormal S := hS.isStarNormal
   infer_instance
 
-lemma kernelSpectralFormOperator_normal (z : ℂ) : IsStarNormal (kernelSpectralFormOperator z) := by
+section
+variable (z : ℂ)
+include z
+lemma kernelSpectralFormOperator_normal : IsStarNormal (kernelSpectralFormOperator z) := by
   exact selfAdjoint_one_sub_smul_normal kernelMassGram kernelMassGram_selfAdjoint (z+1)
 
-lemma kernelSpectralFormOperator_isUnit_near (z : ℂ) (hne : z≠8/9)
+lemma kernelSpectralFormOperator_isUnit_near (hne : z≠8/9)
     (hz : IsUnit (kernelRegularPencil z)) : IsUnit (kernelSpectralFormOperator z) := by
   have hsur : Function.Surjective (kernelSpectralFormOperator z) := fun u =>
     ⟨kernelLocalEnergyResolvent z u,kernelLocalEnergyResolvent_right_inverse z hne hz u⟩
-  apply (ContinuousLinearMap.isUnit_iff_bijective (𝕜 := ℂ) (E := KernelEnergyGraph)).mpr
+  pm_8005 KernelEnergyGraph
   refine ⟨?_,hsur⟩
   change Function.Injective (kernelSpectralFormOperator z).toLinearMap
   apply LinearMap.ker_eq_bot.mp
@@ -291,7 +236,7 @@ lemma kernelSpectralFormOperator_isUnit_near (z : ℂ) (hne : z≠8/9)
   have hr : (kernelSpectralFormOperator z).range=⊤ := LinearMap.range_eq_top.mpr hsur
   rw [hr,Submodule.top_orthogonal_eq_bot]
 
-lemma kernelLocalEnergyResolvent_eq_inverse (z : ℂ) (hne : z≠8/9)
+lemma kernelLocalEnergyResolvent_eq_inverse (hne : z≠8/9)
     (hz : IsUnit (kernelRegularPencil z)) :
     kernelLocalEnergyResolvent z = Ring.inverse (kernelSpectralFormOperator z) := by
   apply ContinuousLinearMap.ext
@@ -302,10 +247,9 @@ lemma kernelLocalEnergyResolvent_eq_inverse (z : ℂ) (hne : z≠8/9)
   have hi := congrArg (fun A : KernelEnergyGraph→L[ℂ]KernelEnergyGraph => A u)
     (Ring.mul_inverse_cancel (kernelSpectralFormOperator z) (kernelSpectralFormOperator_isUnit_near z hne hz))
   exact hi.symm
-
 end
 
-open scoped Topology
+end
 
 lemma selfAdjoint_pencil_isUnit_nonreal {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (S : H→L[ℂ]H)
@@ -320,24 +264,28 @@ lemma selfAdjoint_pencil_isUnit_nonreal {H : Type*} [NormedAddCommGroup H]
   simpa only [Units.smul_def,Units.val_mk0,Algebra.algebraMap_eq_smul_one,
     smul_sub,smul_smul,mul_inv_cancel₀ hne,one_smul] using hv
 
-lemma kernelSpectralFormOperator_isUnit_nonreal (z : ℂ) (hz : z.im≠0) :
+section
+variable (z : ℂ)
+include z
+lemma kernelSpectralFormOperator_isUnit_nonreal (hz : z.im≠0) :
     IsUnit (kernelSpectralFormOperator z) := by
   exact selfAdjoint_pencil_isUnit_nonreal kernelMassGram kernelMassGram_selfAdjoint (z+1)
     (by simpa using hz)
 
-lemma kernelSpectralFormInverse_analyticAt_of_isUnit (z : ℂ)
+lemma kernelSpectralFormInverse_analyticAt_of_isUnit
     (hz : IsUnit (kernelSpectralFormOperator z)) :
     AnalyticAt ℂ (fun w => Ring.inverse (kernelSpectralFormOperator w)) z := by
   have hi := (analyticOnNhd_inverse (𝕜 := ℂ)
     (A := KernelEnergyGraph→L[ℂ]KernelEnergyGraph)) (kernelSpectralFormOperator z) hz
   exact hi.comp_of_eq (kernelSpectralFormOperator_analyticAt z) rfl
 
-lemma kernelSpectralFormInverse_analyticAt_nonreal (z : ℂ) (hz : z.im≠0) :
+lemma kernelSpectralFormInverse_analyticAt_nonreal (hz : z.im≠0) :
     AnalyticAt ℂ (fun w => Ring.inverse (kernelSpectralFormOperator w)) z :=
   kernelSpectralFormInverse_analyticAt_of_isUnit z (kernelSpectralFormOperator_isUnit_nonreal z hz)
+end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical Topology InnerProductSpace
 
 def kernelL2SandwichCLM : (KernelEnergyGraph→L[ℂ]KernelEnergyGraph)→L[ℂ]
     (KernelQuotientL2→L[ℂ]KernelQuotientL2) :=
@@ -350,15 +298,14 @@ lemma kernelSpectralResolvent_apply (z : ℂ) (F : KernelQuotientL2) :
     kernelSpectralResolvent z F=
       kernelEnergyMass (Ring.inverse (kernelSpectralFormOperator z) (kernelVariationalSolution F)) := rfl
 
-lemma kernelSpectralResolvent_analyticAt_nonreal (z : ℂ) (hz : z.im≠0) :
+section
+variable (z : ℂ)
+include z
+lemma kernelSpectralResolvent_analyticAt_nonreal (hz : z.im≠0) :
     AnalyticAt ℂ kernelSpectralResolvent z := by
-  exact (ContinuousLinearMap.analyticAt (𝕜 := ℂ)
-    (E := KernelEnergyGraph→L[ℂ]KernelEnergyGraph)
-    (F := KernelQuotientL2→L[ℂ]KernelQuotientL2) kernelL2SandwichCLM
-      (Ring.inverse (kernelSpectralFormOperator z))).comp_of_eq
-    (kernelSpectralFormInverse_analyticAt_nonreal z hz) rfl
+  pm_3615 kernelSpectralFormInverse_analyticAt_nonreal
 
-lemma kernelSpectralResolvent_left_inverse (z : ℂ) (hz : IsUnit (kernelSpectralFormOperator z))
+lemma kernelSpectralResolvent_left_inverse (hz : IsUnit (kernelSpectralFormOperator z))
     (u : kernelEnergyLaplacian.domain) :
     kernelSpectralResolvent z (kernelEnergyLaplacian u-z•(u:KernelQuotientL2))=u := by
   rw [kernelSpectralResolvent_apply,←kernelSpectralFormOperator_of_domain z u]
@@ -371,15 +318,15 @@ lemma kernelSpectralResolvent_left_inverse (z : ℂ) (hz : IsUnit (kernelSpectra
   rw [hi]
   exact kernelEnergyLaplacian_resolvent_relation u
 
-lemma kernelSpectralResolvent_unique (z : ℂ) (hz : IsUnit (kernelSpectralFormOperator z))
+lemma kernelSpectralResolvent_unique (hz : IsUnit (kernelSpectralFormOperator z))
     (u F : KernelQuotientL2) (hu : (u,F+z•u)∈kernelEnergyLaplacian.graph) :
     kernelSpectralResolvent z F=u := by
   let v : kernelEnergyLaplacian.domain := ⟨u,LinearPMap.mem_domain_of_mem_graph hu⟩
   have hv : kernelEnergyLaplacian v=F+z•u :=
     kernelEnergyLaplacian.mem_graph_snd_inj (kernelEnergyLaplacian.mem_graph v) hu rfl
   have hh := kernelSpectralResolvent_left_inverse z hz v
-  rw [hv] at hh
-  simpa only [v,add_sub_cancel_right] using hh
+  pm_455 hv hh v add_sub_cancel_right
+end
 
 def kernelEisensteinSpectralParameter (s : ℂ) : ℂ := s*(2-s)
 
@@ -390,7 +337,10 @@ lemma kernelEisensteinSpectralParameter_center :
     kernelEisensteinSpectralParameter (4/3)=8/9 := by
   norm_num [kernelEisensteinSpectralParameter]
 
-lemma kernelEisensteinSpectralParameter_nonreal (s : ℂ) (hs : s.re≠1) (hi : s.im≠0) :
+section
+variable (s : ℂ) (hs : s.re≠1) (hi : s.im≠0)
+include s hs hi
+lemma kernelEisensteinSpectralParameter_nonreal :
     (kernelEisensteinSpectralParameter s).im≠0 := by
   have he : (kernelEisensteinSpectralParameter s).im=2*(1-s.re)*s.im := by
     simp only [kernelEisensteinSpectralParameter,Complex.mul_im,Complex.sub_re,Complex.sub_im]
@@ -399,24 +349,16 @@ lemma kernelEisensteinSpectralParameter_nonreal (s : ℂ) (hs : s.re≠1) (hi : 
   rw [he]
   exact mul_ne_zero (mul_ne_zero (by norm_num) (sub_ne_zero.mpr hs.symm)) hi
 
-lemma kernelEisensteinResolvent_analyticAt_nonreal (s : ℂ) (hs : s.re≠1) (hi : s.im≠0) :
+lemma kernelEisensteinResolvent_analyticAt_nonreal :
     AnalyticAt ℂ kernelEisensteinResolvent s := by
   exact (kernelSpectralResolvent_analyticAt_nonreal _
     (kernelEisensteinSpectralParameter_nonreal s hs hi)).comp_of_eq
       (by unfold kernelEisensteinSpectralParameter; fun_prop) rfl
+end
 
 lemma kernelEisensteinPencil_eventually_isUnit :
     ∀ᶠ s : ℂ in 𝓝[≠] (4/3:ℂ), IsUnit (kernelSpectralFormOperator (kernelEisensteinSpectralParameter s)) := by
-  have hc : ContinuousAt kernelEisensteinSpectralParameter (4/3:ℂ) := by
-    unfold kernelEisensteinSpectralParameter
-    fun_prop
-  have hp : ∀ᶠ s : ℂ in 𝓝 (4/3:ℂ), IsUnit (kernelRegularPencil (kernelEisensteinSpectralParameter s)) := by
-    have hh : ∀ᶠ z : ℂ in 𝓝 (kernelEisensteinSpectralParameter (4/3)), IsUnit (kernelRegularPencil z) := by
-      rw [kernelEisensteinSpectralParameter_center]
-      exact kernelRegularPencil_eventually_isUnit
-    exact hc.eventually hh
-  filter_upwards [hp.filter_mono nhdsWithin_le_nhds,
-    eventually_ne_nhdsWithin (show (4/3:ℂ)≠2/3 by norm_num),self_mem_nhdsWithin] with s hs htwo hfour
+  pm_3616
   apply kernelSpectralFormOperator_isUnit_near _ _ hs
   intro he
   have hzero : (s-4/3)*(s-2/3)=0 := by
@@ -432,23 +374,22 @@ def kernelEisensteinL2Correction (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
     KernelQuotientL2 :=
   kernelEisensteinResolvent s (kernelL2Defect a b ha hab s)
 
-lemma kernelEisensteinL2Correction_analyticAt_nonreal
-    (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) (hs : s.re≠1) (hi : s.im≠0) :
+section
+variable (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ)
+include a b ha hab s
+lemma kernelEisensteinL2Correction_analyticAt_nonreal (hs : s.re≠1) (hi : s.im≠0) :
     AnalyticAt ℂ (kernelEisensteinL2Correction a b ha hab) s := by
   exact ((ContinuousLinearMap.apply ℂ KernelQuotientL2).analyticAt_bilinear
     (kernelL2Defect a b ha hab s,kernelEisensteinResolvent s)).comp₂
       ((kernelL2Defect_entire a b ha hab).analyticAt s)
       (kernelEisensteinResolvent_analyticAt_nonreal s hs hi)
 
-lemma kernelEisensteinL2Correction_unique (a b : ℝ) (ha : 0<a) (hab : a<b)
-    (s : ℂ) (hs : IsUnit (kernelSpectralFormOperator (kernelEisensteinSpectralParameter s)))
+lemma kernelEisensteinL2Correction_unique (hs : IsUnit (kernelSpectralFormOperator (kernelEisensteinSpectralParameter s)))
     (u : KernelQuotientL2)
     (hu : (u,kernelL2Defect a b ha hab s+kernelEisensteinSpectralParameter s•u)∈kernelEnergyLaplacian.graph) :
     kernelEisensteinL2Correction a b ha hab s=u :=
   kernelSpectralResolvent_unique _ hs _ _ hu
-
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+end
 
 def kernelThetaMassProjection : KernelQuotientL2→L[ℂ]KernelQuotientL2 :=
   kernelL2SandwichCLM kernelThetaNull.starProjection
@@ -469,8 +410,7 @@ lemma kernelSpectralResolvent_decomposition (z : ℂ) (hne : z≠8/9)
       kernelRegularL2Resolvent z F := by
   unfold kernelSpectralResolvent
   rw [←kernelLocalEnergyResolvent_eq_inverse z hne hz]
-  simp only [kernelLocalEnergyResolvent,map_add,map_smul,_root_.add_apply,
-    _root_.smul_apply,kernelThetaMassProjection,kernelRegularL2Resolvent]
+  pm_437 kernelLocalEnergyResolvent map_add map_smul _root_.add_apply _root_.smul_apply kernelThetaMassProjection kernelRegularL2Resolvent
 
 def kernelEisensteinCorrectionNumerator (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
     KernelQuotientL2 :=
@@ -481,18 +421,21 @@ def kernelEisensteinCorrectionNumerator (a b : ℝ) (ha : 0<a) (hab : a<b) (s : 
 def kernelEisensteinResidueVector (a b : ℝ) (ha : 0<a) (hab : a<b) : KernelQuotientL2 :=
   (17/6:ℂ)•kernelThetaMassProjection (kernelL2Defect a b ha hab (4/3))
 
-lemma kernelEisensteinCorrectionNumerator_center (a b : ℝ) (ha : 0<a) (hab : a<b) :
+section
+variable (a b : ℝ) (ha : 0<a) (hab : a<b)
+include a b ha hab
+lemma kernelEisensteinCorrectionNumerator_center :
     kernelEisensteinCorrectionNumerator a b ha hab (4/3)=kernelEisensteinResidueVector a b ha hab := by
-  simp only [kernelEisensteinCorrectionNumerator,kernelEisensteinResidueVector,sub_self,zero_smul,add_zero]
+  pm_94 kernelEisensteinCorrectionNumerator kernelEisensteinResidueVector sub_self zero_smul add_zero
   congr 1
   norm_num
 
-lemma kernelEisensteinCorrectionNumerator_analyticAt (a b : ℝ) (ha : 0<a) (hab : a<b) :
+lemma kernelEisensteinCorrectionNumerator_analyticAt :
     AnalyticAt ℂ (kernelEisensteinCorrectionNumerator a b ha hab) (4/3:ℂ) := by
   have hf := (kernelL2Defect_entire a b ha hab).analyticAt (4/3:ℂ)
   have hp := (ContinuousLinearMap.analyticAt (𝕜 := ℂ) (E := KernelQuotientL2)
     (F := KernelQuotientL2) kernelThetaMassProjection (kernelL2Defect a b ha hab (4/3))).comp_of_eq hf rfl
-  have hr : AnalyticAt ℂ (fun s => kernelRegularL2Resolvent (kernelEisensteinSpectralParameter s)) (4/3:ℂ) := by
+  have hr : AnalyticAt ℂ (fun s=> kernelRegularL2Resolvent (kernelEisensteinSpectralParameter s)) (4/3:ℂ) := by
     have hreg : AnalyticAt ℂ kernelRegularL2Resolvent (kernelEisensteinSpectralParameter (4/3)) := by
       rw [kernelEisensteinSpectralParameter_center]
       exact kernelRegularL2Resolvent_analyticAt
@@ -504,20 +447,11 @@ lemma kernelEisensteinCorrectionNumerator_analyticAt (a b : ℝ) (ha : 0<a) (hab
     norm_num
   exact (hscalar.smul hp).add ((analyticAt_id.sub analyticAt_const).smul happ)
 
-lemma kernelEisensteinCorrectionNumerator_eventually (a b : ℝ) (ha : 0<a) (hab : a<b) :
+lemma kernelEisensteinCorrectionNumerator_eventually :
     ∀ᶠ s : ℂ in 𝓝[≠] (4/3:ℂ),
-      (s-4/3)•kernelEisensteinL2Correction a b ha hab s=
+      (s-4/3)•kernelEisensteinL2Correction a b ha hab s =
         kernelEisensteinCorrectionNumerator a b ha hab s := by
-  have hc : ContinuousAt kernelEisensteinSpectralParameter (4/3:ℂ) := by
-    unfold kernelEisensteinSpectralParameter
-    fun_prop
-  have hp : ∀ᶠ s : ℂ in 𝓝 (4/3:ℂ), IsUnit (kernelRegularPencil (kernelEisensteinSpectralParameter s)) := by
-    have hh : ∀ᶠ z : ℂ in 𝓝 (kernelEisensteinSpectralParameter (4/3)), IsUnit (kernelRegularPencil z) := by
-      rw [kernelEisensteinSpectralParameter_center]
-      exact kernelRegularPencil_eventually_isUnit
-    exact hc.eventually hh
-  filter_upwards [hp.filter_mono nhdsWithin_le_nhds,
-    eventually_ne_nhdsWithin (show (4/3:ℂ)≠2/3 by norm_num),self_mem_nhdsWithin] with s hs htwo hfour
+  pm_3616
   have hfactor : (8/9:ℂ)-kernelEisensteinSpectralParameter s=(s-4/3)*(s-2/3) := by
     unfold kernelEisensteinSpectralParameter
     ring
@@ -540,7 +474,7 @@ lemma kernelEisensteinCorrectionNumerator_eventually (a b : ℝ) (ha : 0<a) (hab
   rw [hscalar]
   rfl
 
-lemma kernelEisensteinResidueVector_limit (a b : ℝ) (ha : 0<a) (hab : a<b) :
+lemma kernelEisensteinResidueVector_limit :
     Tendsto (fun s : ℂ => (s-4/3)•kernelEisensteinL2Correction a b ha hab s)
       (𝓝[≠] (4/3:ℂ)) (𝓝 (kernelEisensteinResidueVector a b ha hab)) := by
   apply (tendsto_congr' (kernelEisensteinCorrectionNumerator_eventually a b ha hab)).mpr
@@ -548,15 +482,7 @@ lemma kernelEisensteinResidueVector_limit (a b : ℝ) (ha : 0<a) (hab : a<b) :
   exact (kernelEisensteinCorrectionNumerator_analyticAt a b ha hab).continuousAt.tendsto.mono_left
     nhdsWithin_le_nhds
 
-instance kernelThetaMassProjection_range_finiteDimensional :
-    FiniteDimensional ℂ kernelThetaMassProjection.range := by
-  let B : kernelThetaNull→L[ℂ]KernelQuotientL2 := kernelEnergyMass.comp kernelThetaNull.subtypeL
-  have : FiniteDimensional ℂ B.range := LinearMap.finiteDimensional_range B.toLinearMap
-  apply Submodule.finiteDimensional_of_le (S₂ := B.range)
-  rintro y ⟨x,rfl⟩
-  exact ⟨kernelThetaNull.orthogonalProjectionOnto (kernelEnergyMass.adjoint x),rfl⟩
-
-lemma kernelEisensteinResidueVector_graph (a b : ℝ) (ha : 0<a) (hab : a<b) :
+lemma kernelEisensteinResidueVector_graph :
     (kernelEisensteinResidueVector a b ha hab,(8/9:ℂ)•kernelEisensteinResidueVector a b ha hab)
       ∈kernelEnergyLaplacian.graph := by
   let v : KernelEnergyGraph := (17/6:ℂ)•kernelThetaNull.starProjection
@@ -572,6 +498,7 @@ lemma kernelEisensteinResidueVector_graph (a b : ℝ) (ha : 0<a) (hab : a<b) :
   simpa only [v,map_smul,zero_add,kernelEisensteinResidueVector,kernelThetaMassProjection,
     kernelL2SandwichCLM,ContinuousLinearMap.comp_apply,ContinuousLinearMap.compL_apply,
     ContinuousLinearMap.flip_apply,kernelVariationalSolution] using! hh
+end
 
 end CubicEisenstein
 

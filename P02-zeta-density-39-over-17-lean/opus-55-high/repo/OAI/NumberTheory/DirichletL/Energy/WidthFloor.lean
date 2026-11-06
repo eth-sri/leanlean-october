@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.WidthSchedule
 public import OAI.NumberTheory.DirichletL.Energy.Bands
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -19,10 +20,7 @@ local notation "O"=>HeckeFamily.O
 
 private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S⊆T):
     p.control S≤p.control T:=by
-  unfold Profiles.control
-  exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 0))
-    (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 1))
-    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+  pm_112 h
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -58,28 +56,22 @@ theorem actual_joint_floor (Mcap B κ ε:ℝ)(hMcap:0≤Mcap)(hB:0≤B)
   constructor
   · intro s hQ hwidth p t X₁ X₂ hX₁ hX₂ _ _
     have hh:=hzero (internalQ Q η₀) Z hZ.1.le s hQ hwidth p t X₁ X₂ hX₁ hX₂
-    have hp:=control_mono p (Finset.subset_union_left (s₁:=Szero) (s₂:=Spositive))
+    pm_7128 Finset.subset_union_left
     have hpn:=p.control_nonneg Szero
-    have hpU:=p.control_nonneg (Szero∪Spositive)
-    have hd:=diagonalControl_nonneg s.radial.profile
+    pm_7223
     have ht:(1+‖t‖)^Jzero≤(1+‖t‖)^(Jzero+Jpositive):=
       pow_le_pow_right₀ (by linarith [norm_nonneg t]) (Nat.le_add_right _ _)
-    apply hh.trans
-    gcongr
-    exact Real.rpow_nonneg (zero_le_one.trans hZ.1.le) _
+    pm_8363
   · intro T θ w σ v t height hw hwL hσlo hσhi hheight hv s hQ hwidth
       p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap
     have hh:=hZ.2 Q hQM T θ w σ v t height hw hwL hσlo hσhi hheight hv
       s hQ hwidth p X₁ X₂ hX₁ hX₂ hc₁ hc₂ hcap
-    have hp:=control_mono p (Finset.subset_union_right (s₁:=Szero) (s₂:=Spositive))
+    pm_7128 Finset.subset_union_right
     have hpn:=p.control_nonneg Spositive
-    have hpU:=p.control_nonneg (Szero∪Spositive)
-    have hd:=diagonalControl_nonneg s.radial.profile
+    pm_7223
     have ht:(1+|t|+height)^Jpositive≤(1+|t|+height)^(Jzero+Jpositive):=
       pow_le_pow_right₀ (by linarith [abs_nonneg t]) (Nat.le_add_left _ _)
-    apply hh.trans
-    gcongr
-    exact Real.rpow_nonneg (zero_le_one.trans hZ.1.le) _
+    pm_8363
 
 end SevenEighths.CenteredMomentEnergyWidthFloor
 

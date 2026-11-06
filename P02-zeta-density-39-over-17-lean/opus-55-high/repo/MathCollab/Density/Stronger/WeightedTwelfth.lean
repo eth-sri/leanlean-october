@@ -2,6 +2,7 @@ module
 public import MathCollab.Density.Stronger.SeparatedMoment
 public import MathCollab.Density.Stronger.WeightedCriticalMean
 public import MathCollab.Density.Stronger.CriticalMoment
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,9 +37,9 @@ theorem integrable_weightedCriticalTwelfth (A : ℕ) (hA : 14 ≤ A) (γ : ℝ) 
   have hz : zetaMomentCriticalNorm (γ+t) ≤ 4*(1+|γ|)*(1+|t|) := by
     have h := zetaMomentCriticalNorm_le_linear (γ+t)
     have hab := abs_add_le γ t
-    nlinarith [mul_nonneg (abs_nonneg γ) (abs_nonneg t)]
+    pm_385 mul_nonneg abs_nonneg γ t
   have hp : (1+|t|)^14 ≤ (1+|t|)^A :=
-    pow_le_pow_right₀ (by linarith [abs_nonneg t]) hA
+    pow_le_pow_right₀ (by grind) hA
   calc
     _ = zetaMomentCriticalNorm (γ+t)^12/(1+|t|)^A := by unfold momentDecay; ring
     _ ≤ (4*(1+|γ|)*(1+|t|))^12/(1+|t|)^14 :=
@@ -48,9 +49,7 @@ theorem integrable_weightedCriticalTwelfth (A : ℕ) (hA : 14 ≤ A) (γ : ℝ) 
       rw [mul_pow]
       field_simp
     _ ≤ (4*(1+|γ|))^12*(1+t^2)⁻¹ := by
-      rw [← div_eq_mul_inv]
-      apply div_le_div_of_nonneg_left (by positivity) (by positivity)
-      nlinarith [sq_abs t, abs_nonneg t]
+      pm_1436
 
 /-- Holder is applied to the actual critical-line mean, with every
 integrability premise discharged. It does not assume a moment bound. -/

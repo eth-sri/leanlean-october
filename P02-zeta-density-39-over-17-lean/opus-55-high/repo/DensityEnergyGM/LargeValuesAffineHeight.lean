@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.LargeValuesAffineIteration
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -81,17 +82,18 @@ theorem GMAffineWideDepthSupported.iterationSupported
     dsimp only [GMAffineWideDepthSupported] at hf ⊢
     linarith
 
+section
+variable {epsilon T D : ℝ} {n : ℕ} {f : SchwartzMap ℝ ℝ}
+include epsilon T D n f
 /-- Pointwise decay obtained from the weighted Fourier seminorm while
 retaining the complete physical-height factor. -/
 theorem GMAffineHeightFourierMassBound.pointwise
-    {epsilon T D : ℝ} {n : ℕ} {f : SchwartzMap ℝ ℝ}
     (hbound : GMAffineHeightFourierMassBound epsilon T n D f)
     {xi : ℝ} (hxi : xi ≠ 0) :
     ‖fourier (gmAffineComplexify f) xi‖ ≤
       (D * T ^ epsilon * T ^ (n + 2) * ∫ x : ℝ, f x) /
         |xi| ^ n := by
-  have hseminorm :=
-    SchwartzMap.le_seminorm' ℝ n 0 (fourier (gmAffineComplexify f)) xi
+  pm_6993
   rw [iteratedDeriv_zero] at hseminorm
   rw [le_div_iff₀ (pow_pos (abs_pos.mpr hxi) n)]
   simpa only [mul_comm] using hseminorm.trans hbound
@@ -102,7 +104,6 @@ chosen constant may depend on the current positive source, but its product
 with the source supremum is the uniform quantity `D * T^2 * ∫ f`; this is
 the quantity retained by the corrected tail recurrence. -/
 theorem exists_gmAffineHeightDecayConstant
-    {epsilon T D : ℝ} {n : ℕ} {f : SchwartzMap ℝ ℝ}
     (hT : 0 < T) (hD : 0 ≤ D) (hf : ∀ x, 0 ≤ f x)
     (hbound : GMAffineHeightFourierMassBound epsilon T n D f) :
     ∃ C : ℝ, 0 ≤ C ∧
@@ -112,7 +113,7 @@ theorem exists_gmAffineHeightDecayConstant
         ‖fourier (gmAffineComplexify f) xi‖ ≤
           C * T ^ epsilon * (T / |xi|) ^ n *
             SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f) := by
-  let S0 : ℝ := SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f)
+  pm_5775 S0
   let mass : ℝ := ∫ x : ℝ, f x
   by_cases hS0 : S0 = 0
   · have hfC : gmAffineComplexify f = 0 := by
@@ -137,9 +138,7 @@ theorem exists_gmAffineHeightDecayConstant
       dsimp only [mass]
       exact integral_nonneg hf
     let C : ℝ := D * T ^ 2 * mass / S0
-    have hC : 0 ≤ C := by
-      dsimp only [C]
-      positivity
+    pm_4855
     refine ⟨C, hC, ?_, ?_⟩
     · dsimp only [C, S0, mass]
       rw [div_mul_cancel₀ _ hS0]
@@ -152,6 +151,7 @@ theorem exists_gmAffineHeightDecayConstant
       field_simp [hS0, hxiabs]
       simpa only [S0, mass] using
         (mul_div_cancel_right₀ (D * mass) hS0).symm
+end
 
 /-- One Section 9 smoothing preserves a height-aware profile with only the
 fixed factor two.  This is the uniformity needed by the finite descent. -/
@@ -228,8 +228,7 @@ theorem gmAffineIterationRegionIISecondTail_height_ratio_le_one
     T ^ (4 : ℕ) *
         (T ^ (26 + 11 * gmAffineIterationEta delta) /
           ((T ^ gmAffineIterationEta delta) ^ n) ^ 2) ≤ 1 := by
-  have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := by linarith
+  pm_4035
   have hetaUpper := gmAffineIterationEta_le_one delta
   have hexponent :
       30 + 11 * gmAffineIterationEta delta ≤
@@ -289,7 +288,7 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
     apply integral_congr_ae
     filter_upwards with u
     exact abs_of_nonneg (hf u)
-  have hmass : 0 ≤ ∫ x : ℝ, f x := integral_nonneg hf
+  pm_4003
   have hmiddle : 0 ≤ gmAffineMiddleFarSourceConstant n :=
     gmAffineMiddleFarSourceConstant_nonneg n
   have hA :
@@ -320,8 +319,7 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
         (Ctail ^ 2 * SchwartzMap.seminorm ℝ 0 0
           (gmAffineComplexify f) ^ 2) by ring,
     hproductSq]
-  have hfirstTerm := mul_le_mul_of_nonneg_left hfirstRatio hA
-  have hsecondTerm := mul_le_mul_of_nonneg_left hsecondRatio hB
+  pm_268 hfirstTerm mul_le_mul_of_nonneg_left hfirstRatio hA hsecondTerm hsecondRatio hB
   have hhighTerm := mul_le_mul_of_nonneg_left hhighRatio hC
   have hfirstExact :
       (512 * Cdiv *
@@ -392,8 +390,7 @@ theorem gmAffineIterationRegionIII_height_scale_le_one
     (T ^ gmAffineIterationEta delta * T ^ (n + 2)) ^ 2 *
         ((T ^ gmAffineIterationEta delta * (M : ℝ) ^ (n + 3)) ^ 2 *
           (T ^ (6 : ℕ)) ^ (1 - 2 * (n : ℝ))) ≤ 1 := by
-  have hTone : 1 ≤ T := by linarith
-  have hTpos : 0 < T := by linarith
+  pm_4035
   have hMpow := gmAffineIteration_M_pow_add_three_le (n := n) hMT
   have htailNonneg : 0 ≤ (T ^ (6 : ℕ)) ^ (1 - 2 * (n : ℝ)) := by
     positivity
@@ -457,7 +454,7 @@ theorem gmAffineRegionIIISourceBound_le_heightMass
       2 * (16 * (2 : ℝ) ^ n * D *
         gmAffineRegionIIIKernelConstant n) ^ 2 *
           (∫ x : ℝ, f x) ^ 2 := by
-  have hmass : 0 ≤ ∫ x : ℝ, f x := integral_nonneg hf
+  pm_4003
   have hkernel := gmAffineRegionIIIKernelConstant_nonneg n
   have henv :
       gmAffineRegionIIIEnvelopeConstant n f ≤
@@ -551,11 +548,9 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
             (T ^ gmAffineIterationEta delta) M₂ M₃ /
             (T ^ gmAffineIterationEta delta))
           (by
-            apply div_pos
-            · exact gmAffineSecondPoissonCutoff_pos (by linarith)
-                (Real.rpow_pos_of_pos (by linarith) _)
+            pm_4086
             · exact Real.rpow_pos_of_pos (by linarith) _) f) M₂))
-  have hZ : 0 ≤ Z := by dsimp only [Z]; positivity
+  pm_4029
   have hcore :
       Cdiv * gmAffineRegionIICoreConstant *
           ((T ^ (6 : ℕ) + gmAffineFirstPoissonRadius M₁ M₃
@@ -572,7 +567,7 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
     (Ctail := Ctail) hdelta hT hCdiv f hf hproduct hMT hn
   have hnReal : (20 : ℝ) ≤ n := by
     have hetaUpper := gmAffineIterationEta_le_one delta
-    have hnNonneg : (0 : ℝ) ≤ n := by positivity
+    pm_96 hnNonneg n
     nlinarith
   have hnNat : 20 ≤ n := by exact_mod_cast hnReal
   have hhigh := gmAffineRegionIIISourceBound_le_heightMass
@@ -592,9 +587,7 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
                   (T ^ gmAffineIterationEta delta) M₂ M₃ /
                   (T ^ gmAffineIterationEta delta))
                 (by
-                  apply div_pos
-                  · exact gmAffineSecondPoissonCutoff_pos (by linarith)
-                      (Real.rpow_pos_of_pos (by linarith) _)
+                  pm_4086
                   · exact Real.rpow_pos_of_pos (by linarith) _) f) M₂)) ≤
         Cdiv * gmAffineRegionIICoreConstant * T ^ delta *
           (M : ℝ) ^ 2 *
@@ -605,9 +598,7 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
                   (T ^ gmAffineIterationEta delta) M₂ M₃ /
                   (T ^ gmAffineIterationEta delta))
                 (by
-                  apply div_pos
-                  · exact gmAffineSecondPoissonCutoff_pos (by linarith)
-                      (Real.rpow_pos_of_pos (by linarith) _)
+                  pm_4086
                   · exact Real.rpow_pos_of_pos (by linarith) _) f) M₂)) := by
     convert hcore using 1 <;> dsimp only [Z] <;> ring
   exact add_le_add (add_le_add hregionI (add_le_add hcore' htail)) hhigh
@@ -632,13 +623,13 @@ theorem exists_n_Cdiv_forall_gmAffineLemma92HeightMassRecurrence
     (eta := gmAffineIterationEta delta) (A := 31) hetaPos
   have hnUpper : gmAffineIterationEta delta * n ≤ (n : ℝ) := by
     have hetaUpper := gmAffineIterationEta_le_one delta
-    have hnNonneg : (0 : ℝ) ≤ n := by positivity
+    pm_96 hnNonneg n
     nlinarith
   have hnReal : (31 : ℝ) ≤ n := hn.trans hnUpper
   have hnNat : 1 ≤ n := by exact_mod_cast (show (1 : ℝ) ≤ n by linarith)
   obtain ⟨Cdiv, hCdiv, hcard⟩ :=
     exists_global_card_gmAffineFirstPoissonPairs_middle_real_le hetaPos
-  refine ⟨n, Cdiv, hn, hCdiv, ?_⟩
+  pm_505 n Cdiv hn hCdiv
   intro T hT D hD f hf hsupp hheight M hM hMT
   obtain ⟨Ctail, hCtail, hproduct, hdecay⟩ :=
     exists_gmAffineHeightDecayConstant (by linarith) hD hf hheight
@@ -664,12 +655,14 @@ theorem exists_n_Cdiv_forall_gmAffineLemma92HeightMassRecurrence
   exact gmAffineLemma92ComponentsAt_to_heightMassRecurrence
     hdelta hT hCdiv.le hD f hf hMT hn hproduct hheight hcomponents
 
+section
+variable (D₀ : ℝ → ℕ → ℝ) (hD₀ : ∀ epsilon n, 0 ≤ D₀ epsilon n)
+include D₀ hD₀
 /-- Height-uniform finite natural-number descent for Proposition 9.1.
 Unlike `exists_uniform_gmAffineJ_le_finite_descent`, this theorem permits
 the source to vary with `T` and consumes the complete `(epsilon,n)`
 Fourier family needed by the successive recursive budgets. -/
 theorem exists_uniform_gmAffineJ_le_height_finite_descent
-    (D₀ : ℝ → ℕ → ℝ) (hD₀ : ∀ epsilon n, 0 ≤ D₀ epsilon n)
     (r depth : ℕ) {delta : ℝ} (hdelta : 0 < delta)
     (hhigh : (100 : ℝ) ≤ (3 / 2 : ℝ) ^ r * delta) :
     ∃ C : ℝ, 0 < C ∧
@@ -718,11 +711,10 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
         dsimp only [Rcoef]
         exact add_nonneg
           (gmAffineRegionIITailMassConstant_nonneg n hCdiv.le) (by positivity)
-      have hC : 0 < C := by dsimp only [C]; positivity
+      pm_4123
       refine ⟨C, hC, ?_⟩
       intro T hT hbudget f hf hsupp hprofile M hM hMT
-      have hTpos : 0 < T := by linarith
-      have hTone : 1 ≤ T := by linarith
+      pm_4628
       have hdepthBudget : 8 * (depth : ℝ) ≤ T := by
         have hle : (depth : ℝ) ≤ ((depth + Nat.succ r : ℕ) : ℝ) := by
           exact_mod_cast Nat.le_add_right depth (Nat.succ r)
@@ -813,7 +805,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
         dsimp only [X, W]
         exact le_add_of_nonneg_right (by positivity)
       have hmassX : massSq ≤ X := by
-        have hMreal : (1 : ℝ) ≤ M := by exact_mod_cast hM
+        pm_77 hMreal M hM
         have hMpow : (1 : ℝ) ≤ (M : ℝ) ^ 6 := by
           simpa using pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 1) hMreal 6
         dsimp only [massSq, X]
@@ -822,7 +814,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
       have hbase :
           Acoef * T ^ (delta / 8) * X + Rcoef * massSq ≤
             (Acoef + Rcoef) * T ^ delta * W := by
-        have hTpow : 1 ≤ T ^ delta := Real.one_le_rpow hTone hdelta.le
+        pm_4168 hTpow delta hTone hdelta.le
         have hXscaled : X ≤ T ^ delta * W := by
           calc
             X ≤ W := hXW
@@ -908,7 +900,6 @@ The constant works simultaneously for every physical height and every source
 in the family, provided Lemma 8.4 supplies a uniform coefficient profile.
 This is the quantifier order used by Proposition 10.1. -/
 theorem gmAffine_proposition9_1_height_family_native
-    (D₀ : ℝ → ℕ → ℝ) (hD₀ : ∀ epsilon n, 0 ≤ D₀ epsilon n)
     {epsilon : ℝ} (hepsilon : 0 < epsilon) :
     ∃ C T₀ : ℝ, 0 < C ∧ 2 ≤ T₀ ∧
       ∀ {T : ℝ}, T₀ ≤ T → ∀ (f : SchwartzMap ℝ ℝ),
@@ -924,13 +915,14 @@ theorem gmAffine_proposition9_1_height_family_native
     exists_uniform_gmAffineJ_le_height_finite_descent
       D₀ hD₀ j 0 hepsilon hj
   let T₀ : ℝ := max 2 (8 * (j : ℝ))
-  have hT₀ : 2 ≤ T₀ := le_max_left _ _
-  refine ⟨C, T₀, hC, hT₀, ?_⟩
+  pm_6551 hT₀ T₀
+  pm_4084
   intro T hT f hf hsupp hprofile M hM hMT
   have hTtwo : 2 ≤ T := hT₀.trans hT
   have hjT : 8 * (j : ℝ) ≤ T := (le_max_right _ _).trans hT
   have hsupp₀ : GMAffineWideDepthSupported T 0 f :=
     hsupp.wideDepthSupported_zero
   exact hdescent hTtwo (by simpa using hjT) f hf hsupp₀ hprofile hM hMT
+end
 
 end GuthMaynard.NativeMoment

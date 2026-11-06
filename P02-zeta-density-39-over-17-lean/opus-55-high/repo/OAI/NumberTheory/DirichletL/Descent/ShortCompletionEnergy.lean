@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedBins
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,7 +28,7 @@ theorem markedShortCompletedSum_eq (Ψ : O →* ℂ) (W : ℝ → ℂ) (X H₀ :
 
 theorem marked_short_completed_energy {κ : Type*} [Fintype κ]
     (Ψ : κ → O →* ℂ) (hΨ : ∀k z,‖Ψ k z‖≤1)
-    (mark : κ→Ideal O→ℂ) (W : ℝ → ℂ) (X H₀ A : ℝ) (hA : 0≤A)
+    (mark : κ→ Ideal O→ℂ) (W : ℝ → ℂ) (X H₀ A : ℝ) (hA : 0≤A)
     (hcompleted : ∀H∈shortCubeRange H₀,
       (∑k,‖markedCompletedT (Ψ k) W (X/(Ideal.absNorm H:ℝ)^3) (fun I=>mark k (H^3*I))‖^2)≤A) :
     (∑k,‖markedShortCompletedSum (Ψ k) W X H₀ (mark k)‖^2)≤
@@ -36,7 +37,7 @@ theorem marked_short_completed_energy {κ : Type*} [Fintype κ]
   let lengthScale : ℝ := ∑H∈S,1/(Ideal.absNorm H:ℝ)
   have hS (H : Ideal O) (hH : H∈S) : H≠0 := ((mem_shortCubeRange H₀ H).mp hH).1
   have hn (H : Ideal O) (hH : H∈S) : 0<(Ideal.absNorm H:ℝ) := by
-    exact_mod_cast Nat.pos_of_ne_zero (fun hz => hS H hH (Ideal.absNorm_eq_zero_iff.mp hz))
+    pm_5453 Nat.pos_of_ne_zero H hH
   have hL : 0≤lengthScale := Finset.sum_nonneg (fun H hH => by positivity)
   have hb (k : κ) : ‖markedShortCompletedSum (Ψ k) W X H₀ (mark k)‖^2≤
       lengthScale*∑H∈S,(1/(Ideal.absNorm H:ℝ))*‖markedCompletedT (Ψ k) W (X/(Ideal.absNorm H:ℝ)^3) (fun I=>mark k (H^3*I))‖^2 := by

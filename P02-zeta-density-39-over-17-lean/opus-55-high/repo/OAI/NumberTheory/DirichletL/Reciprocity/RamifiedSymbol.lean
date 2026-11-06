@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reciprocity.CubicJacobi
 public import OAI.NumberTheory.DirichletL.GaussSum.ReflectionBrackets
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -8,72 +9,29 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
-open scoped BigOperators Classical
 
 namespace CubicRamified
 open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
@@ -87,8 +45,7 @@ lemma cubicExp_eq_of_dvd_sub {a b : ℤ} (h : 3 ∣ a - b) : cubicExp a = cubicE
 
 lemma cubicExp_add (a b : ℤ) : cubicExp (a + b) = cubicExp a * cubicExp b := by
   simp only [cubicExp, ← pow_add]
-  apply ((omega_primitive.isOfFinOrder (by decide)).pow_inj_mod).mpr
-  rw [← omega_primitive.eq_orderOf]
+  pm_6462
   omega
 
 @[simp] lemma cubicExp_zero : cubicExp 0 = 1 := by simp [cubicExp]
@@ -131,8 +88,7 @@ lemma linearRay_one (u v : ℤ) : linearRay u v 1 = 1 := by
 lemma linearRay_mul (u v : ℤ) (x y : O)
     (hx : lambda ^ 2 ∣ x - 1) (hy : lambda ^ 2 ∣ y - 1) :
     linearRay u v (x*y) = linearRay u v x * linearRay u v y := by
-  obtain ⟨A,B,rfl⟩ := exists_primaryCoord x hx
-  obtain ⟨C,D,rfl⟩ := exists_primaryCoord y hy
+  pm_1282
   rw [primaryCoord_mul]
   simp only [linearRay_primaryCoord]
   rw [← cubicExp_add]
@@ -143,9 +99,9 @@ lemma linearRay_mul (u v : ℤ) (x y : O)
 theorem symbol_eq_linearRay_of_prime (x : O) (u v : ℤ)
     (hprime : ∀ p : O, Prime p → lambda ^ 2 ∣ p-1 → symbol x p = linearRay u v p)
     (y : O) (hy : lambda ^ 2 ∣ y-1) : symbol x y = linearRay u v y := by
-  obtain ⟨A,B,hyAB⟩ := exists_primaryCoord y hy
+  pm_69 A B hyAB exists_primaryCoord y hy
   have hy0 : y ≠ 0 := by rw [hyAB]; exact primaryCoord_ne_zero A B
-  obtain ⟨s,hsprod,hs⟩ := exists_primary_prime_factorization y hy0 hy
+  pm_114 s hsprod hs exists_primary_prime_factorization y hy0 hy
   rw [← hsprod]
   clear hsprod hyAB hy hy0 A B y
   induction s using Multiset.induction_on with
@@ -158,33 +114,27 @@ theorem symbol_eq_linearRay_of_prime (x : O) (u v : ℤ)
       hprime p hp.1 hp.2, ih hss,
       linearRay_mul u v p s.prod hp.2 (primary_multiset_prod s (fun r hr => (hss r hr).2))]
 
-theorem symbol_lambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
+section
+variable (y : O) (hy : lambda ^ 2 ∣ y-1)
+include y hy
+theorem symbol_lambda_eq_linearRay :
     symbol lambda y = linearRay 1 0 y := by
   apply symbol_eq_linearRay_of_prime lambda 1 0 _ y hy
   intro p hp hprimary
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
-    PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-    primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
-  obtain ⟨A,B,hpAB⟩ := exists_primaryCoord p hprimary
-  rw [symbol, idealSymbol_prime _ hg]
-  have hc := cubicValue_lambda_primary (Ideal.span {p}) hg A B (by rw [hpAB])
-  rw [hc, hpAB, linearRay_primaryCoord]
+  pm_3177
+  pm_3175
+  pm_3176 cubicValue_lambda_primary
   simp [cubicExp]
 
-theorem symbol_omega_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
+theorem symbol_omega_eq_linearRay :
     symbol omega y = linearRay 2 (-1) y := by
   apply symbol_eq_linearRay_of_prime omega 2 (-1) _ y hy
   intro p hp hprimary
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
-    PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-    primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
-  obtain ⟨A,B,hpAB⟩ := exists_primaryCoord p hprimary
-  rw [symbol, idealSymbol_prime _ hg]
-  have hc := cubicValue_omega_primary (Ideal.span {p}) hg A B (by rw [hpAB])
-  rw [hc, hpAB, linearRay_primaryCoord]
+  pm_3177
+  pm_3175
+  pm_3176 cubicValue_omega_primary
   simp [cubicExp, sub_eq_add_neg]
+end
 
 theorem cubicValue_traceLambda_primary (P : Ideal O) [P.IsMaximal]
     (hg : lambda ∉ P) (A B : ℤ) (hP : P = Ideal.span {primaryCoord A B}) :
@@ -202,21 +152,15 @@ theorem symbol_traceLambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
     symbol traceLambda y = linearRay 0 (-1) y := by
   apply symbol_eq_linearRay_of_prime traceLambda 0 (-1) _ y hy
   intro p hp hprimary
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
-    PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-    primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
-  obtain ⟨A,B,hpAB⟩ := exists_primaryCoord p hprimary
-  rw [symbol, idealSymbol_prime _ hg]
-  have hc := cubicValue_traceLambda_primary (Ideal.span {p}) hg A B (by rw [hpAB])
-  rw [hc, hpAB, linearRay_primaryCoord]
+  pm_3177
+  pm_3175
+  pm_3176 cubicValue_traceLambda_primary
   simp
 
 theorem linearRay_congr_mod_nine (u v : ℤ) (x y : O)
     (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y) :
     linearRay u v x = linearRay u v y := by
-  obtain ⟨A,B,rfl⟩ := exists_primaryCoord x hx
-  obtain ⟨C,D,rfl⟩ := exists_primaryCoord y hy
+  pm_1282
   obtain ⟨z,hz⟩ := hxy
   obtain ⟨E,F,hEF⟩ := ActualEisensteinCoordinates.exists_coordinates z
   change z = (E : O) + (F : O) * omega at hEF
@@ -236,37 +180,41 @@ theorem linearRay_congr_mod_nine (u v : ℤ) (x y : O)
   refine ⟨u*E+v*F, ?_⟩
   linear_combination u*ha + v*hb
 
-theorem symbol_lambda_congr_mod_nine (x y : O)
-    (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y) :
+section
+variable (x y : O) (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y)
+include x y hx hy hxy
+theorem symbol_lambda_congr_mod_nine :
     symbol lambda x = symbol lambda y := by
   rw [symbol_lambda_eq_linearRay x hx, symbol_lambda_eq_linearRay y hy]
   exact linearRay_congr_mod_nine 1 0 x y hx hy hxy
 
-theorem symbol_traceLambda_congr_mod_nine (x y : O)
-    (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y) :
+theorem symbol_traceLambda_congr_mod_nine :
     symbol traceLambda x = symbol traceLambda y := by
   rw [symbol_traceLambda_eq_linearRay x hx, symbol_traceLambda_eq_linearRay y hy]
   exact linearRay_congr_mod_nine 0 (-1) x y hx hy hxy
+end
 
 end CubicRamified
 
 namespace CubicJacobiGlobal
 open ActualEisensteinCubic CompletedGauss CubicRamified
 
-theorem primary_ne_zero (a : O) (ha : lambda ^ 2 ∣ a-1) : a ≠ 0 := by
-  obtain ⟨A,B,rfl⟩ := exists_primaryCoord a ha
+section
+variable (a : O) (ha : lambda ^ 2 ∣ a-1)
+include a ha
+theorem primary_ne_zero : a ≠ 0 := by
+  pm_5437
   exact primaryCoord_ne_zero A B
 
-theorem symbol_one_numerator (a : O) (ha : lambda ^ 2 ∣ a-1) : symbol 1 a = 1 := by
+theorem symbol_one_numerator : symbol 1 a = 1 := by
   apply idealSymbol_map_one
-  rw [primaryGenerator_span a (primary_ne_zero a ha) ha]
-  exact primary_ne_zero a ha
+  pm_6959
+end
 
 theorem symbol_mul_numerator (x y a : O) (ha : lambda ^ 2 ∣ a-1) :
     symbol (x*y) a = symbol x a * symbol y a := by
   apply idealSymbol_map_mul
-  rw [primaryGenerator_span a (primary_ne_zero a ha) ha]
-  exact primary_ne_zero a ha
+  pm_6959
 
 theorem symbol_pow_numerator (x a : O) (ha : lambda ^ 2 ∣ a-1) (n : ℕ) :
     symbol (x^n) a = symbol x a ^ n := by
@@ -276,10 +224,7 @@ theorem symbol_pow_numerator (x a : O) (ha : lambda ^ 2 ∣ a-1) (n : ℕ) :
 
 theorem symbol_neg_one (a : O) (ha : lambda ^ 2 ∣ a-1) : symbol (-1) a = 1 := by
   have h := symbol_eq_linearRay_of_prime (-1) 0 0 (fun p hp hprimary => by
-    let : (Ideal.span {p} : Ideal O).IsMaximal :=
-      PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-    have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-      primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
+    pm_3177
     rw [symbol, idealSymbol_prime _ hg, map_neg, map_one, A3_cubicChar_neg_one]
     simp [linearRay]) a ha
   simpa [linearRay] using h
@@ -338,14 +283,12 @@ private theorem associated_congr_denominator {x y a b : O} (hxy : Associated x y
       rw [symbol_unit_congr_mod_nine (u : O) b a u.isUnit hb ha (by simpa only [neg_sub] using dvd_neg.mpr hab)]
 
 private theorem ramified_prime : Prime lambda := by
-  let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
-  exact (IsCyclotomicExtension.zeta_spec 3 ℚ K).zeta_sub_one_prime'
+  pm_3517
 
 private theorem symbol_prime_denominator_congr (p a b : O) (hp : Prime p)
     (ha : lambda ^ 2 ∣ a-1) (hb : lambda ^ 2 ∣ b-1)
     (h9 : (9 : O) ∣ a-b) (hpab : p ∣ a-b) : symbol p a = symbol p b := by
-  let : (Ideal.span {p} : Ideal O).IsMaximal :=
-    PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  pm_7993 p
   by_cases hg : lambda ∉ (Ideal.span {p} : Ideal O)
   · obtain ⟨q,hq,hprimary,-⟩ := cubicJacobi_exists_primary_generator (Ideal.span {p}) hg
     have hpq : Associated p q := Ideal.span_singleton_eq_span_singleton.mp hq
@@ -384,8 +327,8 @@ theorem q_eq_one_iff_unitCoordinates (z : ℤ × ℤ) : q z = 1 ↔ z ∈ unitCo
   constructor
   · intro h
     have hs := coordinate_squares a b 1 (by norm_num) (le_of_eq h)
-    have ha : -1 ≤ a ∧ a ≤ 1 := by constructor <;> nlinarith [sq_nonneg (a - 1), sq_nonneg (a + 1)]
-    have hb : -1 ≤ b ∧ b ≤ 1 := by constructor <;> nlinarith [sq_nonneg (b - 1), sq_nonneg (b + 1)]
+    pm_5736 ha a
+    pm_5736 hb b
     rcases ha with ⟨ha1, ha2⟩
     rcases hb with ⟨hb1, hb2⟩
     interval_cases a <;> interval_cases b <;> norm_num [q, unitCoordinates] at *
@@ -430,21 +373,23 @@ theorem card_units_eq_six : Nat.card Oˣ = 6 := by
 
 end PrimaryIdealUnitReindex
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace QuadraticUnitInvariance
 open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
 open GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson
 open PrimaryIdealUnitReindex CompletedGauss
 
-theorem rowCoprimeMask_unit_mul {α : Type*} (R : α → Ideal O)
-    (S : Finset α) (u : Oˣ) (z : O) :
+section
+variable {α : Type*} (R : α → Ideal O) (S : Finset α)
+include α R S
+theorem rowCoprimeMask_unit_mul (u : Oˣ) (z : O) :
     rowCoprimeMask R S (u.val * z) = rowCoprimeMask R S z := by
   simp only [rowCoprimeMask, Ideal.unit_mul_mem_iff_mem _ u.isUnit]
 
-theorem rowCoprimeMask_norm_le_one {α : Type*} (R : α → Ideal O)
-    (S : Finset α) (z : O) : ‖rowCoprimeMask R S z‖ ≤ 1 := by
+theorem rowCoprimeMask_norm_le_one (z : O) : ‖rowCoprimeMask R S z‖ ≤ 1 := by
   unfold rowCoprimeMask
   split_ifs <;> simp
+end
 
 end QuadraticUnitInvariance
 
@@ -481,7 +426,7 @@ theorem canonical_masked_radial_poisson_product
       (‖eisEmbedding (primeSubsetGenerator R E)‖ ^ 2 : ℝ)
   let F : Finset α → ℝ → ℂ := fun E t => paperRadialFourier W
     (M * t / (‖eisEmbedding (primeSubsetGenerator R E)‖ ^ 2 * ‖eisEmbedding (∏ i, p i)‖ ^ 2))
-  have hu := gauss_weighted_finite_radial_sum_transport p hp hcop hg j S.powerset a F
+  pm_528 hu gauss_weighted_finite_radial_sum_transport p hp hcop hg j S.powerset a F
   change ((M : ℂ) * canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hg j /
       (‖eisEmbedding (∏ i, p i)‖ : ℂ)) *
         (∑ E ∈ S.powerset, a E * ∑' h : O, star (finiteSexticRow (fun i => Ideal.span {p i}) hg j h) *
@@ -545,7 +490,7 @@ theorem same_ray_quadratic_pair_poisson
   have hcAB : Pairwise (Function.onFun IsCoprime
       (fun i : (A ∪ B : Finset ι) => Ideal.span {p i.val})) := by
     intro i k hik
-    exact hcop (fun h => hik (Subtype.ext h))
+    pm_3042 hcop h hik Subtype.ext
   have ht := canonical_masked_radial_poisson_product R hinj S
     (fun i : (A ∪ B : Finset ι) => p i.val) (fun i => hp i.val) hcAB
     (fun i => hg i.val) (fun i => hchar i.val) (fun _ => 3)
@@ -564,7 +509,6 @@ theorem same_ray_quadratic_pair_poisson
 
 end QuadraticUnitInvariance
 
-open scoped BigOperators Classical SchwartzMap
 namespace EisensteinSchwartzPoisson
 open ActualEisensteinCubic ConcreteTraceCRT
 

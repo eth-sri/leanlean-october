@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.PrimeRow
 public import OAI.NumberTheory.DirichletL.ConductorBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,9 +13,9 @@ open scoped Topology
 namespace SevenEighths.HeckePrimeScale
 open HeckeFamily
 
-theorem log_scale_eventually (dmin rmin K : ℝ) (hd : 0<dmin) (hr : 0<rmin) :
-    ∀ᶠ Z : ℝ in atTop, ∀ d r : ℝ, dmin≤d → rmin≤r →
-      K≤Real.log ((Z^d)^r) := by
+theorem log_scale_eventually (dmin rmin K : ℝ) (hd : 0<dmin) (hr : 0< rmin) :
+    ∀ᶠ Z : ℝ in atTop, ∀ d r : ℝ, dmin≤d → rmin≤ r →
+      K≤Real.log ((Z ^d)^r) := by
   have hlog : ∀ᶠ Z : ℝ in atTop, max 0 (K/(dmin*rmin))≤Real.log Z :=
     Real.tendsto_log_atTop.eventually (eventually_ge_atTop _)
   filter_upwards [hlog,eventually_ge_atTop (1 : ℝ)] with Z hlog hZ
@@ -31,8 +32,8 @@ theorem log_scale_eventually (dmin rmin K : ℝ) (hd : 0<dmin) (hr : 0<rmin) :
 
 theorem product_modulus_bound (χ ψ : Character) :
     (χ.product ψ).modulus.absNorm≤χ.modulus.absNorm*ψ.modulus.absNorm := by
-  let : Finite (O ⧸ χ.modulus) := Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
-  let : Finite (O ⧸ ψ.modulus) := Ring.HasFiniteQuotients.finiteQuotient ψ.modulus_ne_bot
+  pm_4915 χ.modulus Ring.HasFiniteQuotients.finiteQuotient χ.modulus_ne_bot
+  pm_4915 ψ.modulus Ring.HasFiniteQuotients.finiteQuotient ψ.modulus_ne_bot
   exact FiniteConductor.absNorm_inf_le_mul χ.modulus ψ.modulus
 
 variable (M : Ideal O) [NeZero M]

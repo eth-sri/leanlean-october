@@ -9,32 +9,27 @@ bound follows directly from the proved local DigammaLog error.
 -/
 public import MathCollab.Density.Stronger.Fourth.GammaShiftLog
 public import Mathlib.Analysis.ODE.Gronwall
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-open Complex Set
+open Complex
 open MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
-set_option autoImplicit false
-noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
 
 theorem re_digamma_le_log_height_add_four {z : ℂ}
     (hz : 0 < z.re) (hz' : z.re ≤ 1) (hy : 1 ≤ |z.im|) :
     (Complex.digamma z).re ≤ Real.log (|z.im| + 2) + 4 := by
-  have hn : 1 ≤ ‖z‖ := hy.trans (Complex.abs_im_le_norm z)
+  pm_6771 hn z hy.trans Complex.abs_im_le_norm
   have hnorm : ‖z‖ ≤ |z.im| + 2 := by
-    have h := Complex.norm_le_abs_re_add_abs_im z
-    rw [abs_of_pos hz] at h
-    linarith
+    pm_8715 h
   have hlog := Real.log_le_log (by linarith : 0 < ‖z‖) hnorm
-  have hd := norm_digamma_sub_log_le hz hy
-  have he : 4 / |z.im| ≤ (4 : ℝ) :=
-    (div_le_iff₀ (zero_lt_one.trans_le hy)).2 (by linarith)
+  pm_560
   have hr := Complex.re_le_norm (Complex.digamma z - Complex.log z)
   simp only [Complex.sub_re, Complex.log_re] at hr
   linarith
 
-private theorem real_inner_self_mul (x y : ℂ) :
+theorem real_inner_self_mul (x y : ℂ) :
     inner ℝ x (x * y) = ‖x‖ ^ 2 * y.re := by
   rw [real_inner_eq_re_inner ℂ, RCLike.inner_apply']
   rw [show starRingEnd ℂ x * (x * y) =
@@ -43,32 +38,35 @@ private theorem real_inner_self_mul (x y : ℂ) :
   change (((↑‖x‖ : ℂ) ^ 2) * y).re = ‖x‖ ^ 2 * y.re
   rw [← Complex.ofReal_pow, Complex.re_ofReal_mul]
 
+section
+variable {a b : ℝ} (ha : 0 < a) (hb : b ≤ 1)
+include a b ha hb
 /-- Squared-norm form of the sharp horizontal Gamma estimate.  Unlike a
 bound obtained from `‖digamma‖`, the logarithmic height occurs with coefficient
 exactly `2*d` before taking the square root. -/
-theorem exists_norm_Gamma_sq_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb : b ≤ 1) :
+theorem exists_norm_Gamma_sq_right_displacement_le :
     ∃ D : ℝ, 0 < D ∧ ∀ (z : ℂ) (d : ℝ),
       a ≤ z.re → z.re + d ≤ b → 0 ≤ d → 1 ≤ |z.im| →
       ‖Complex.Gamma (z + (d : ℂ))‖ ^ 2 ≤
         ‖Complex.Gamma z‖ ^ 2 *
           Real.exp (2 * (Real.log (|z.im| + 2) + D) * d) := by
   let D : ℝ := 4
-  refine ⟨D, by norm_num [D], ?_⟩
+  refine ⟨D, by grind, ?_⟩
   intro z d hza hzdb hd hy
   let f : ℝ → ℂ := fun x => Complex.Gamma (z + (x : ℂ))
   let f' : ℝ → ℂ := fun x =>
     Complex.Gamma (z + (x : ℂ)) * Complex.digamma (z + (x : ℂ))
-  let g : ℝ → ℝ := fun x => ‖f x‖ ^ 2
+  pm_8710 g f
   let g' : ℝ → ℝ := fun x =>
     2 * ‖f x‖ ^ 2 * (Complex.digamma (z + (x : ℂ))).re
   let K : ℝ := 2 * (Real.log (|z.im| + 2) + D)
   have hlog : 0 ≤ Real.log (|z.im| + 2) :=
-    Real.log_nonneg (by linarith [abs_nonneg z.im])
-  have hK : 0 ≤ K := by dsimp only [K]; positivity
+    Real.log_nonneg (by grind)
+  pm_82 hK K
   have hzpos (x : ℝ) (hx : x ∈ Set.Icc 0 d) :
       0 < (z + (x : ℂ)).re := by
     simp only [add_re, ofReal_re]
-    linarith [hx.1]
+    grind
   have hfderiv (x : ℝ) (hx : x ∈ Set.Icc 0 d) :
       HasDerivAt f (f' x) x := by
     have houter :=
@@ -82,8 +80,7 @@ theorem exists_norm_Gamma_sq_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb 
       HasDerivAt g (g' x) x := by
     have h := (hfderiv x hx).norm_sq
     convert h using 1
-    simp only [g', f, f']
-    rw [real_inner_self_mul]
+    pm_210 g' f f' real_inner_self_mul
     ring
   have hgcont : ContinuousOn g (Set.Icc 0 d) := by
     intro x hx
@@ -117,11 +114,11 @@ theorem exists_norm_Gamma_sq_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb 
     ‖Complex.Gamma z‖ ^ 2 *
       Real.exp (2 * (Real.log (|z.im| + 2) + D) * d)
   convert hgronwall using 1
-  all_goals simp only [g, f, ofReal_zero, add_zero, K]
+  aesop
 
 
 /-- Norm form of the sharp horizontal Gamma estimate. -/
-theorem exists_norm_Gamma_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb : b ≤ 1) :
+theorem exists_norm_Gamma_right_displacement_le :
     ∃ D : ℝ, 0 < D ∧ ∀ (z : ℂ) (d : ℝ),
       a ≤ z.re → z.re + d ≤ b → 0 ≤ d → 1 ≤ |z.im| →
       ‖Complex.Gamma (z + (d : ℂ))‖ ≤
@@ -145,5 +142,6 @@ theorem exists_norm_Gamma_right_displacement_le {a b : ℝ} (ha : 0 < a) (hb : b
       rw [pow_two, ← Real.exp_add]
       congr 1
       ring
+end
 
 end MathCollab.Density.Stronger.PointMean

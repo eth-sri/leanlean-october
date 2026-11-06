@@ -3,12 +3,12 @@ public import MathCollab.Density.Stronger.SmoothPartition
 public import Mathlib.Analysis.Complex.Basic
 public import Mathlib.Analysis.Normed.Group.InfiniteSum
 public import Mathlib.Topology.Algebra.InfiniteSum.Real
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-open Real Complex Set Filter
-open scoped BigOperators Topology
-set_option autoImplicit false
+open Real Complex Filter
+open scoped Topology
 set_option maxHeartbeats 1000000
 noncomputable section
 
@@ -20,40 +20,44 @@ def smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) (j : ℤ) : ℂ :=
 
 def smoothDyadicBlock (a : ℕ → ℂ) (j : ℤ) : ℂ := ∑' n : ℕ, smoothDyadicTerm a n j
 
-theorem norm_smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) (j : ℤ) :
+section
+variable (a : ℕ → ℂ) (n : ℕ)
+include a n
+theorem norm_smoothDyadicTerm (j : ℤ) :
     ‖smoothDyadicTerm a n j‖ =
       ‖a (n+2)‖ * smoothDyadicWeight (((n+2 : ℕ) : ℝ)/(2 : ℝ)^j) := by
   rw [smoothDyadicTerm, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (smoothDyadicWeight_bounds _).1]
 
-theorem hasSum_norm_smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) :
+theorem hasSum_norm_smoothDyadicTerm :
     HasSum (fun j : ℤ => ‖smoothDyadicTerm a n j‖) ‖a (n+2)‖ := by
   simpa only [norm_smoothDyadicTerm, mul_one] using
     (hasSum_smoothDyadicWeight (show (0 : ℝ) < ((n+2 : ℕ) : ℝ) by positivity)).mul_left ‖a (n+2)‖
 
-theorem hasSum_smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) :
+theorem hasSum_smoothDyadicTerm :
     HasSum (fun j : ℤ => smoothDyadicTerm a n j) (a (n+2)) := by
   have hs := (hasSum_smoothDyadicWeight (show (0 : ℝ) < ((n+2 : ℕ) : ℝ) by positivity)).map
     Complex.ofRealCLM Complex.continuous_ofReal
   simpa only [Function.comp_def, Complex.ofRealCLM_apply, Complex.ofReal_one,
     mul_one, smoothDyadicTerm] using hs.mul_left (a (n+2))
+end
 
+section
+variable {a : ℕ → ℂ} (ha : Summable (fun n : ℕ => ‖a (n+2)‖))
+include a ha
 /-- Absolute double summability follows from the partition's exact mass one,
 with no extra factor counting the number of dyadic scales. -/
-theorem summable_norm_smoothDyadicTerm {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem summable_norm_smoothDyadicTerm :
     Summable (fun p : ℕ × ℤ => ‖smoothDyadicTerm a p.1 p.2‖) := by
   apply (summable_prod_of_nonneg (fun p : ℕ × ℤ => norm_nonneg (smoothDyadicTerm a p.1 p.2))).mpr
   refine ⟨fun n => (hasSum_norm_smoothDyadicTerm a n).summable, ?_⟩
   simpa only [(hasSum_norm_smoothDyadicTerm a _).tsum_eq] using ha
 
-theorem summable_smoothDyadicTerm {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem summable_smoothDyadicTerm :
     Summable (fun p : ℕ × ℤ => smoothDyadicTerm a p.1 p.2) :=
   (summable_norm_smoothDyadicTerm ha).of_norm
 
-theorem summable_norm_smoothDyadicBlock {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem summable_norm_smoothDyadicBlock :
     Summable (fun j : ℤ => ‖smoothDyadicBlock a j‖) := by
   have hs := summable_norm_smoothDyadicTerm ha
   apply hs.prod_symm.prod.of_nonneg_of_le (fun j => norm_nonneg _) (fun j => ?_)
@@ -61,21 +65,20 @@ theorem summable_norm_smoothDyadicBlock {a : ℕ → ℂ}
 
 /-- Exact dyadic reconstruction of the series after removing n=1. The norm
 summability theorem above justifies this use of Fubini for complex series. -/
-theorem tsum_smoothDyadicBlock {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem tsum_smoothDyadicBlock :
     (∑' j : ℤ, smoothDyadicBlock a j) = ∑' n : ℕ, a (n+2) := by
   unfold smoothDyadicBlock
   rw [(summable_smoothDyadicTerm ha).tsum_comm]
   exact tsum_congr (fun n => (hasSum_smoothDyadicTerm a n).tsum_eq)
+end
 
 /-- Nonpositive integer dyadic scales vanish after the n=1 term is removed. -/
 theorem smoothDyadicTerm_zero_of_nonpos (a : ℕ → ℂ) (n : ℕ) {j : ℤ} (hj : j ≤ 0) :
     smoothDyadicTerm a n j = 0 := by
-  have hp : 0 < (2 : ℝ)^j := zpow_pos (by norm_num) _
+  pm_6088
   have hpow : (2 : ℝ)^j ≤ 1 := zpow_le_one_of_nonpos₀ (by norm_num) hj
   have hn : (2 : ℝ) ≤ ((n+2 : ℕ) : ℝ) := by norm_cast; omega
-  have hratio : (3/2 : ℝ) ≤ ((n+2 : ℕ) : ℝ)/(2 : ℝ)^j :=
-    (le_div_iff₀ hp).mpr (by nlinarith)
+  pm_4492 hratio
   simp only [smoothDyadicTerm, smoothDyadicWeight_zero_of_ge hratio, Complex.ofReal_zero, mul_zero]
 
 theorem smoothDyadicBlock_zero_of_nonpos (a : ℕ → ℂ) {j : ℤ} (hj : j ≤ 0) :
@@ -90,9 +93,9 @@ theorem smoothDyadicBlock_scale_tail_le {a : ℕ → ℂ}
       ∑' n : ℕ, if R/2 < ((n+2 : ℕ) : ℝ) then ‖a (n+2)‖ else 0 := by
   let F : ℕ → ℤ → ℝ := fun n j =>
     if R < (2 : ℝ)^j then ‖smoothDyadicTerm a n j‖ else 0
-  have hFnonneg (n : ℕ) (j : ℤ) : 0 ≤ F n j := by dsimp [F]; split_ifs <;> positivity
+  have hFnonneg (n : ℕ) (j : ℤ) : 0 ≤ F n j := by dsimp [F]; grind
   have hFle (n : ℕ) (j : ℤ) : F n j ≤ ‖smoothDyadicTerm a n j‖ := by
-    dsimp [F]; split_ifs <;> simp
+    dsimp [F]; grind
   have hs := summable_norm_smoothDyadicTerm ha
   have hF : Summable (Function.uncurry F) :=
     hs.of_nonneg_of_le (fun p => hFnonneg p.1 p.2) (fun p => hFle p.1 p.2)

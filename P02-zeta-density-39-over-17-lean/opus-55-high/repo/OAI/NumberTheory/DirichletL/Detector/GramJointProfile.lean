@@ -3,6 +3,7 @@ public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Detector.GramLatticeDecay
 public import OAI.NumberTheory.DirichletL.Detector.GramAnnularLattice
 public import OAI.NumberTheory.DirichletL.Detector.GramJointConstruction
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -10,7 +11,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set FourierBridge
 namespace ProbeGramJointProfile
 open ProbeGramLatticeDecay EisensteinSchwartzPoisson
@@ -38,8 +39,7 @@ lemma mul_derivative_bound {f g : Joint → ℂ} (n : ℕ)
         (hfb i (Finset.mem_range_succ_iff.mp hi)) (by positivity))
         (hgb (n-i) (Nat.sub_le _ _)) (norm_nonneg _) (by positivity)
     _ = _ := by
-      rw [← Finset.sum_mul, ← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
-      norm_cast
+      pm_7230
 
 lemma compact_derivatives {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
     {K : Set Joint} (hK : IsCompact K) {f : Joint → F}
@@ -71,27 +71,27 @@ lemma compact_positive_margin {K : Set Joint} (hK : IsCompact K)
 lemma scaled_argument_derivative {h : Joint → ℝ} (hh : ContDiff ℝ ∞ h)
     {D R : ℝ} (hD : 1 ≤ D) (hR : 0 ≤ R) (i : ℕ) (hi : 1 ≤ i)
     (x : Joint) (hb : ‖iteratedFDeriv ℝ i h x‖ ≤ D) :
-    ‖iteratedFDeriv ℝ i (fun y => R*h y) x‖ ≤ (D^2*(1+R))^i := by
+    ‖iteratedFDeriv ℝ i (fun y => R*h y) x‖ ≤ (D ^2*(1+R))^i := by
   have he : iteratedFDeriv ℝ i (fun y => R*h y) x = R • iteratedFDeriv ℝ i h x :=
     by simpa only [smul_eq_mul] using
       (iteratedFDeriv_const_smul_apply' (a := R) (i := i) (x := x)
         ((hh.of_le (by exact_mod_cast le_top)).contDiffAt))
   rw [he, norm_smul, Real.norm_of_nonneg hR]
-  have hDi : D ≤ D^i := by
-    calc D = D^1 := by simp
-         _ ≤ D^i := pow_le_pow_right₀ hD hi
+  have hDi : D ≤ D ^i := by
+    calc D = D ^1 := by simp
+         _ ≤ D ^i := pow_le_pow_right₀ hD hi
   have hRi : R ≤ (1+R)^i := by
     calc R ≤ 1+R := by linarith
          _ = (1+R)^1 := by simp
          _ ≤ (1+R)^i := pow_le_pow_right₀ (by linarith) hi
   calc
     R * ‖iteratedFDeriv ℝ i h x‖ ≤ R*D := mul_le_mul_of_nonneg_left hb hR
-    _ ≤ (1+R)^i * D^i := mul_le_mul hRi hDi (by linarith) (by positivity)
-    _ ≤ (D^2*(1+R))^i := by
+    _ ≤ (1+R)^i * D ^i := mul_le_mul hRi hDi (by linarith) (by positivity)
+    _ ≤ (D ^2*(1+R))^i := by
       rw [mul_pow, pow_two, mul_pow]
-      have hhD : 1 ≤ D^i := one_le_pow₀ hD
+      have hhD : 1 ≤ D ^i := one_le_pow₀ hD
       nlinarith [mul_nonneg (show 0 ≤ (1+R)^i by positivity)
-        (show 0 ≤ (D^i)^2-D^i by nlinarith)]
+        (show 0 ≤ (D ^i)^2-D ^i by nlinarith)]
 
 lemma normalized_phase_derivative (v x : ℝ) (i : ℕ) :
     ‖iteratedFDeriv ℝ i (logPhase (v/(2*Real.pi))) x‖ = |v|^i := by
@@ -104,7 +104,7 @@ lemma phase_derivative_bound {φ : Joint → ℝ} (hφ : ContDiff ℝ ∞ φ)
     {D : ℝ} (hD : 1 ≤ D) (n j : ℕ) (hj : j ≤ n)
     (x : Joint) (hb : ∀ i ≤ n, ‖iteratedFDeriv ℝ i φ x‖ ≤ D) (v : ℝ) :
     ‖iteratedFDeriv ℝ j (fun y => logPhase (v/(2*Real.pi)) (φ y)) x‖ ≤
-      (n.factorial : ℝ)*D^n*(1+|v|)^n := by
+      (n.factorial : ℝ)*D ^n*(1+|v|)^n := by
   have hcomp := norm_iteratedFDeriv_comp_le (JointLogSeparation.logPhase_temperate (v/(2*Real.pi))).1
     hφ (n := j) (by simp) x (C := (1+|v|)^n) (D := D)
   have hc : ∀ i ≤ j, ‖iteratedFDeriv ℝ i (logPhase (v/(2*Real.pi))) (φ x)‖ ≤
@@ -113,14 +113,14 @@ lemma phase_derivative_bound {φ : Joint → ℝ} (hφ : ContDiff ℝ ∞ φ)
     rw [normalized_phase_derivative]
     exact (pow_le_pow_left₀ (abs_nonneg _) (by linarith : |v| ≤ 1+|v|) i).trans
       (pow_le_pow_right₀ (by linarith [abs_nonneg v]) (hi.trans hj))
-  have hd : ∀ i, 1 ≤ i → i ≤ j → ‖iteratedFDeriv ℝ i φ x‖ ≤ D^i := by
+  have hd : ∀ i, 1 ≤ i → i ≤ j → ‖iteratedFDeriv ℝ i φ x‖ ≤ D ^i := by
     intro i hi hij
     exact (hb i (hij.trans hj)).trans (by
-      calc D = D^1 := by simp
-           _ ≤ D^i := pow_le_pow_right₀ hD hi)
+      calc D = D ^1 := by simp
+           _ ≤ D ^i := pow_le_pow_right₀ hD hi)
   calc
-    _ ≤ (j.factorial : ℝ)*(1+|v|)^n*D^j := hcomp hc hd
-    _ ≤ (n.factorial : ℝ)*(1+|v|)^n*D^n := by
+    _ ≤ (j.factorial : ℝ)*(1+|v|)^n*D ^j := hcomp hc hd
+    _ ≤ (n.factorial : ℝ)*(1+|v|)^n*D ^n := by
       exact mul_le_mul
         (mul_le_mul_of_nonneg_right (by exact_mod_cast Nat.factorial_le hj) (by positivity))
         (pow_le_pow_right₀ hD hj) (by positivity) (by positivity)
@@ -132,14 +132,14 @@ lemma kernel_derivative_bound {h : Joint → ℝ} (hh : ContDiff ℝ ∞ h)
     (hb : ∀ i ≤ n, ‖iteratedFDeriv ℝ i h x‖ ≤ D) (hl : m ≤ h x)
     (g : 𝓢(ℝ, ℂ)) :
     ‖iteratedFDeriv ℝ j (fun y => g (R*h y)) x‖ ≤
-      (((n.factorial : ℝ)*2^(2*B+n)*(D^2)^n/m^(2*B+n))*rayControl B n g) /
+      (((n.factorial : ℝ)*2^(2*B+n)*(D ^2)^n/m^(2*B+n))*rayControl B n g) /
         (1+R)^(2*B) := by
   have hu : 0 ≤ R*h x := mul_nonneg hR (hm.le.trans hl)
   have hden : 0 < (1+R*h x)^(2*B+n) := by positivity
   have harg : ContDiff ℝ ∞ (fun y => R*h y) := contDiff_const.mul hh
   have hcomp : ‖iteratedFDeriv ℝ j (fun y => g (R*h y)) x‖ ≤
       (j.factorial : ℝ)*(2^(2*B+n)*rayControl B n g/(1+R*h x)^(2*B+n))*
-        (D^2*(1+R))^j := by
+        (D ^2*(1+R))^j := by
     apply norm_iteratedFDeriv_comp_le (g.smooth ⊤) harg (by simp) x
     · intro i hi
       apply (le_div_iff₀ hden).mpr
@@ -147,8 +147,7 @@ lemma kernel_derivative_bound {h : Joint → ℝ} (hh : ContDiff ℝ ∞ h)
         (m := (2*B+n,n)) (k := 2*B+n) (n := i) le_rfl (hi.trans hj) g (R*h x)
       change (1+‖R*h x‖)^(2*B+n) * ‖iteratedFDeriv ℝ i g (R*h x)‖ ≤
         2^(2*B+n)*rayControl B n g at hd
-      rw [Real.norm_of_nonneg hu] at hd
-      simpa only [mul_comm] using hd
+      pm_276 Real.norm_of_nonneg hu hd mul_comm
     · intro i hi hij
       exact scaled_argument_derivative hh hD hR i hi x (hb i (hij.trans hj))
   have hscale : m*(1+R) ≤ 1+R*h x := by
@@ -158,12 +157,12 @@ lemma kernel_derivative_bound {h : Joint → ℝ} (hh : ContDiff ℝ ∞ h)
     (mul_nonneg (by positivity) (rayControl_nonneg _ _ _)) hu hscale hj
   have hbound : m^(2*B+n)*(1+R)^(2*B)*
       ‖iteratedFDeriv ℝ j (fun y => g (R*h y)) x‖ ≤
-      (n.factorial : ℝ)*(2^(2*B+n)*rayControl B n g)*(D^2)^n := by
+      (n.factorial : ℝ)*(2^(2*B+n)*rayControl B n g)*(D ^2)^n := by
     calc
       _ ≤ m^(2*B+n)*(1+R)^(2*B)*
           ((j.factorial : ℝ)*(2^(2*B+n)*rayControl B n g/(1+R*h x)^(2*B+n))*
-            (D^2*(1+R))^j) := mul_le_mul_of_nonneg_left hcomp (by positivity)
-      _ ≤ (j.factorial : ℝ)*(2^(2*B+n)*rayControl B n g)*(D^2)^j := habs
+            (D ^2*(1+R))^j) := mul_le_mul_of_nonneg_left hcomp (by positivity)
+      _ ≤ (j.factorial : ℝ)*(2^(2*B+n)*rayControl B n g)*(D ^2)^j := habs
       _ ≤ _ := by
         exact mul_le_mul
           (mul_le_mul_of_nonneg_right (by exact_mod_cast Nat.factorial_le hj)
@@ -201,20 +200,19 @@ theorem compact_profile_seminorm
       (∀ x, F x = A x * logPhase (v/(2*Real.pi)) (φ x) * g (R*h x)) →
       SchwartzMap.seminorm ℝ k n F ≤
         C*amplitudeControl n A*rayControl B n g*(1+|v|)^n/(1+R)^(2*B) := by
-  obtain ⟨Dφ, hDφ, hbφ⟩ := compact_derivatives hK hφ n
-  obtain ⟨Dh, hDh, hbh⟩ := compact_derivatives hK hh n
+  pm_837 Dφ hDφ hbφ compact_derivatives hK hφ n
+  pm_837 Dh hDh hbh compact_derivatives hK hh n
   obtain ⟨m, hm, hm1, hml⟩ := compact_positive_margin hK hh.continuous hhpos
   obtain ⟨L0, hL0⟩ := hK.bddAbove_image (continuous_norm.continuousOn : ContinuousOn (fun x : Joint => ‖x‖) K)
   let D := max Dφ Dh
   let L := max 1 L0
-  have hD : 1 ≤ D := hDφ.trans (le_max_left _ _)
-  have hL : 1 ≤ L := le_max_left _ _
-  have hDp : 0 < D := lt_of_lt_of_le zero_lt_one hD
-  have hLp : 0 < L := lt_of_lt_of_le zero_lt_one hL
-  let Cg : ℝ := (n.factorial : ℝ)*2^(2*B+n)*(D^2)^n/m^(2*B+n)
-  have hCg : 0 < Cg := by dsimp [Cg]; positivity
-  let Cp : ℝ := (n.factorial : ℝ)*D^n
-  have hCp : 0 < Cp := by dsimp [Cp]; positivity
+  pm_5105 hD D hDφ.trans
+  pm_4884 hL L
+  pm_1190 hDp D hD hLp L hL
+  let Cg : ℝ := (n.factorial : ℝ)*2^(2*B+n)*(D ^2)^n/m^(2*B+n)
+  pm_64 hCg Cg
+  let Cp : ℝ := (n.factorial : ℝ)*D ^n
+  pm_64 hCp Cp
   refine ⟨L^k*2^n*2^n*Cp*Cg, by positivity, ?_⟩
   intro A hA g v R hR F hF
   have hp : ContDiff ℝ ∞ (fun y => logPhase (v/(2*Real.pi)) (φ y)) :=
@@ -346,23 +344,23 @@ theorem compact_fourier_profile_finite
   obtain ⟨D, hD, hbound⟩ := compact_profile_finite hK hφ hh hhpos B H
   obtain ⟨S, E, hE, hEbound⟩ := schwartzCLM_finite_seminorm_control
     paperFourierRayCLM (Finset.Iic (2*B+heightOrder H,heightOrder H))
-  refine ⟨S, D*E, by positivity, ?_⟩
+  refine ⟨S, D *E, by positivity, ?_⟩
   intro A hA U v T hT F hF
   have hAn := amplitudeControl_nonneg (heightOrder H) A
-  have hUn : 0 ≤ S.sup (schwartzSeminormFamily ℝ ℝ ℂ) U := apply_nonneg _ _
+  pm_7427 hUn
   have hg := hEbound U
   change rayControl B (heightOrder H) (paperFourierRayCLM U) ≤
     E*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) U at hg
   calc
-    _ ≤ D*amplitudeControl (heightOrder H) A*
+    _ ≤ D *amplitudeControl (heightOrder H) A*
         rayControl B (heightOrder H) (paperFourierRayCLM U)*
         (1+|v|)^(heightOrder H)/(1+Real.sqrt T)^(2*B) :=
       hbound A hA (paperFourierRayCLM U) v (Real.sqrt T) (Real.sqrt_nonneg _) F hF
-    _ ≤ D*amplitudeControl (heightOrder H) A*
+    _ ≤ D *amplitudeControl (heightOrder H) A*
         (E*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) U)*
         (1+|v|)^(heightOrder H)/(1+Real.sqrt T)^(2*B) := by
       gcongr
-    _ ≤ D*amplitudeControl (heightOrder H) A*
+    _ ≤ D *amplitudeControl (heightOrder H) A*
         (E*S.sup (schwartzSeminormFamily ℝ ℝ ℂ) U)*
         (1+|v|)^(heightOrder H)/(1+T)^B :=
       div_le_div_of_nonneg_left (by positivity) (by positivity) (sqrt_decay_absorption T hT B)
@@ -370,8 +368,10 @@ theorem compact_fourier_profile_finite
 
 open ProbeGramJointConstruction
 
-theorem jointProfile_homogeneous (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (B : ℕ) (H : Finset (ℕ × ℕ)) :
+section
+variable (a b : ℝ) (ha : 0 < a) (hab : a < b) (B : ℕ) (H : Finset (ℕ × ℕ))
+include a b ha hab B H
+theorem jointProfile_homogeneous :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (W : ℝ → ℂ) (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W)
         (U : 𝓢(ℝ, ℂ)) (v T : ℝ) (hT : 0 ≤ T),
@@ -389,8 +389,7 @@ theorem jointProfile_homogeneous (a b : ℝ) (ha : 0 < a) (hab : a < b)
     (jointProfile W U a b ha hab hs hW v T hT)
     (jointProfile_factorization W U a b ha hab hs hW v T hT)
 
-theorem jointProfile_uniform_degree (a b : ℝ) (ha : 0 < a) (hab : a < b)
-    (B : ℕ) (H : Finset (ℕ × ℕ)) :
+theorem jointProfile_uniform_degree :
     ∃ (J : ℕ) (S : Finset (ℕ × ℕ)),
       ∀ (W : ℝ → ℂ) (hs : Function.support W ⊆ Icc a b) (hW : ContDiff ℝ ∞ W),
       ∃ C : ℝ, 0 < C ∧ ∀ (U : 𝓢(ℝ, ℂ)) (v T : ℝ) (hT : 0 ≤ T),
@@ -400,16 +399,16 @@ theorem jointProfile_uniform_degree (a b : ℝ) (ha : 0 < a) (hab : a < b)
   refine ⟨heightOrder H, S, ?_⟩
   intro W hs hW
   let A := amplitudeControl (heightOrder H) (amplitudeSchwartz W a b ha hab hs hW)
-  have hA : 0 ≤ A := amplitudeControl_nonneg _ _
+  pm_4918 hA A amplitudeControl_nonneg
   refine ⟨C*(1+A), by positivity, ?_⟩
   intro U v T hT
-  have hU : 0 ≤ S.sup (schwartzSeminormFamily ℝ ℝ ℂ) U := apply_nonneg _ _
+  pm_7427 hU
   exact (hb W hs hW U v T hT).trans (by
-    apply div_le_div_of_nonneg_right _ (by positivity)
-    apply mul_le_mul_of_nonneg_right _ (by positivity)
+    pm_329 div_le_div_of_nonneg_right mul_le_mul_of_nonneg_right
     exact mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left (by dsimp [A]; linarith :
         amplitudeControl (heightOrder H) (amplitudeSchwartz W a b ha hab hs hW) ≤ 1+A) hC.le) hU)
+end
 
 end ProbeGramJointProfile
 

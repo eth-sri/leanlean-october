@@ -4,6 +4,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondRetainedRows
 public import OAI.NumberTheory.DirichletL.Moments.SecondActiveDyadic
 public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalBlock
 public import OAI.NumberTheory.DirichletL.Moments.ActiveSource
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -29,23 +30,26 @@ abbrev ActiveLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
   ↥(commonLabels (supportedColumns (activeSource S β)) (supportedColumns (activeSource S β)))
 
 abbrev SourceBlocks (C D : Ideal O) (U : Finset (CommonIndex C D)) (K R H : ℝ) :=
-  Blocks (sourceLower C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K)
-    (sourceUpper C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K R H)
+  Blocks (sourceLower C D (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U) K)
+    (sourceUpper C D (commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U) K R H)
 
 lemma retainedRows_ne_zero (R : ℝ) (A z : O) (hz : z∈retainedRows R A) : z≠0 := by
   have hp := (mem_rowNormDisk.mp hz).1
   intro h
-  simp [h] at hp
+  simp_all
 
-theorem active_kernel_windows (η : Character)
+section
+variable (η : Character)
+include η
+theorem active_kernel_windows
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
     (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (I : sectorPool C hC.1 (activeSource S β)) (J : sectorPool D hD.1 (activeSource S β))
     (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
-    physicalKernel C D W K R (A*h) I J=
+    physicalKernel C D W K R (A*h) I J =
       ∑ n : Blocks (sourceLower C D A K) (sourceUpper C D A K R H),
-        physicalKernel C D W K R (A*h) I J*
+        physicalKernel C D W K R (A*h) I J *
           ((dyadicWeight (n 0) (secondEffectiveScale C D A K)*dyadicWeight (n 1) (normValue h)*
             dyadicWeight (n 2) (Ideal.absNorm (I:Ideal O):ℝ)*
             dyadicWeight (n 3) (Ideal.absNorm (J:Ideal O):ℝ):ℝ):ℂ) := by
@@ -56,39 +60,31 @@ theorem active_kernel_windows (η : Character)
     (sectorPool_supported C hC.1 _ I) (sectorPool_supported D hD.1 _ J)
     A h hA hh W K R hK (fun i=>n i)).symm
 
-theorem sector_finite_blocks (η : Character) (t : ℝ)
+theorem sector_finite_blocks (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
     (C D : Ideal O) (hC : Supported C) (hD : Supported D)
     (U : Finset (CommonIndex C D)) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
-    let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
+    let A:=commonFrequencyGenerator C D *nonunitFrequencyGenerator C D U
     (∑h∈retainedRows R A,if canonicalPartition C D U (nonunitFrequencyGenerator C D U*h) then
       sectorFrequency η t (activeSource S β) β C D hC hD (physicalKernel C D W K R) (A*h) else 0)=
       ∑n : SourceBlocks C D U K R H,
         physicalBlock η t (activeSource S β) β C D hC hD U R (retainedRows R A) W K
           (fun i=>(n i:ℤ)) := by
   dsimp only
-  have hA : commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U≠0 :=
-    mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
-      (nonunitFrequencyGenerator_ne_zero C D hC U)
+  pm_797
   unfold physicalBlock
-  conv_rhs => rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro h hh
-  by_cases hp : canonicalPartition C D U (nonunitFrequencyGenerator C D U*h)
+  pm_172 Finset.sum_comm h hh
+  pm_7981 h
   · simp only [hp,ite_true]
     unfold sectorFrequency
-    conv_rhs => rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro I hI
-    conv_rhs => rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro J hJ
+    pm_172 Finset.sum_comm I hI
+    pm_172 Finset.sum_comm J hJ
     conv_lhs => rw [active_kernel_windows η S β H hH C D hC hD I J _ h hA
       (retainedRows_ne_zero R _ h hh) W K R hK,Finset.mul_sum]
   · simp only [hp,ite_false,Finset.sum_const_zero]
 
-theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
+theorem original_secondRetainedEnergy_blocks (t : ℝ)
     (S : Finset (Ideal O)) (β : Ideal O→ℂ) (W : 𝓢(ℝ,ℂ))
     (K Tsec Z ξ H : ℝ) (hK : 0<K)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H) :
@@ -107,19 +103,17 @@ theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
     original_retained_energy_GV η t (activeSource S β) β W K Tsec Z ξ hK]
   apply Finset.sum_congr rfl
   intro p hp
-  congr 1
-  apply Finset.sum_congr rfl
-  intro U hU
-  rw [actual_GV_finite_rows]
+  pm_739 U hU actual_GV_finite_rows
   exact sector_finite_blocks η t S β H hH _ _ _ _ U W K _ hK
 
-lemma common_height_norm_le_one (η : Character) (t : ℝ) (C D : Ideal O)
-    (hC : C≠0) (hD : D≠0) :
+lemma common_height_norm_le_one (t : ℝ) (C D : Ideal O)
+    (hC : C≠0) (hD : D ≠0) :
     ‖heightCoeff η t C*star (heightCoeff η t D)‖≤1 := by
   rw [norm_mul,norm_star]
   have hc := CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one η t C hC
   have hd := CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one η t D hD
   nlinarith [norm_nonneg (heightCoeff η t C),norm_nonneg (heightCoeff η t D)]
+end
 
 end SevenEighths.CenteredMomentSecondBlockAggregate
 

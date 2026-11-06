@@ -1,5 +1,6 @@
 module
 public import TaoTrudgianYang2025.BetaFiniteSum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -34,9 +35,8 @@ theorem norm_exponentialSumAt_le_secondDerivative
     (hscale : T ≤ N^2) :
     ‖exponentialSumAt F T N a b‖ ≤
       modelPhaseSumConstant σ*(Real.sqrt T+N/Real.sqrt T) := by
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hT
-  have hNpos : 0 < N := lt_of_lt_of_le zero_lt_one hN
-  have hsqrt : 1 ≤ Real.sqrt T := by simpa using Real.sqrt_le_sqrt hT
+  pm_1190 hTpos T hT hNpos N hN
+  have hsqrt : 1 ≤ Real.sqrt T := by simp_all
   have hsum : 1 ≤ Real.sqrt T+N/Real.sqrt T := by
     have : 0 ≤ N/Real.sqrt T := by positivity
     linarith
@@ -48,25 +48,11 @@ theorem norm_exponentialSumAt_le_secondDerivative
     (K+3)*(Real.sqrt T+N/Real.sqrt T)
   by_cases hlong : a+3 ≤ b
   · obtain ⟨L,hL⟩ := Nat.exists_eq_add_of_le hlong
-    have hbeq : b = a+L+3 := by omega
-    have hbreal : (b : ℝ) = (a : ℝ)+(L : ℝ)+3 := by exact_mod_cast hbeq
+    pm_472
     have hcore := norm_modelPhaseCore_le (A := (a : ℝ)+1) (L := L)
       hσ hTpos hNpos hδ hF (by linarith) (by linarith)
       (by linarith) hscale
-    have hboundary := norm_sum_Icc_le_interior_add_three
-      (fun n => oscillatory F T N n) (fun n => (norm_oscillatory F T N n).le) a L
-    rw [← hbeq] at hboundary
-    have hboundary' : ‖exponentialSumAt F T N a b‖ ≤
-        ‖∑ n ∈ Finset.range (L+1), oscillatory F T N ((a : ℝ)+1+n)‖+3 := by
-      simpa only [exponentialSumAt,Nat.cast_add,Nat.cast_one] using hboundary
-    calc
-      _ ≤ K*(Real.sqrt T+N/Real.sqrt T)+3 := by linarith
-      _ ≤ _ := by nlinarith
-  · have hcard : (Finset.Icc a b).card ≤ 3 := by
-      rw [Nat.card_Icc]
-      omega
-    have hsmall := (norm_exponentialSumAt_le_card F T N a b).trans
-      (show ((Finset.Icc a b).card : ℝ) ≤ 3 by exact_mod_cast hcard)
-    nlinarith
+    pm_173
+  pm_361
 
 end TaoTrudgianYang2025

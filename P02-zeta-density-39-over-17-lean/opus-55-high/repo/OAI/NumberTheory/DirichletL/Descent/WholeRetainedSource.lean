@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPhysical
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedModeEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -14,27 +15,29 @@ open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArit
 open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→ O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
-def deleted (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
+def deleted (extra : CubeCoordinates ι→ Finset ι) (negative : Bool)
     (x : MarkedSecondSource ι Jo 0) : Finset ι :=
   extra x.cube∪(((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon)∪
     quotientSupport p (secondParentOf x))
 
+section
+variable (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+include hinj
 theorem retained_deleted_support
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (extra : CubeCoordinates ι→Finset ι)
+    (extra : CubeCoordinates ι→ Finset ι)
     (source : Finset (Source ι Jo)) (hs : ∀ x∈source,SourceValid p x)
     (hextra : ∀ x∈source,extra x.cube⊆x.cube.support)
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
-    (R : SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→Finset ι→ℝ)
-    (label : SecondParentSource ι (Jo+(J.card+J.card))→Finset ι→SecondExpansionData ι→κ)
+    (negative : Bool) (J : Finset σ) (lists : σ→ Finset ι) (pool : Finset ι)
+    (R : SecondParentSource ι (Jo+(J.card+J.card))→ Finset ι→ Finset ι→ℝ)
+    (label : SecondParentSource ι (Jo+(J.card+J.card))→ Finset ι→ SecondExpansionData ι→κ)
     (residual : Finset ι) (j : κ) (x : MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
     (hx : x∈retainedPool p pool (wholeAssignedParents p (fun x=>extra x.cube) source negative J lists)
       R label residual j) :
     ∀ i∈deleted p extra negative x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient := by
   have hy := ((mem_retainedPool p pool _ R label residual j x).mp hx).1
-  obtain ⟨s,hs₀,q,hq,he⟩ := (mem_wholeAssignedParents p (fun x=>extra x.cube) source negative J lists _).mp hy
+  pm_6787 s hs₀ source hy
   have hc : x.cube=s.cube := (congrArg SecondParentSource.cube he).symm
   have hC : x.firstCommon=s.firstCommon := (congrArg SecondParentSource.firstCommon he).symm
   have ht : x.quotient=sourceIdeal p s.quotientSupport := (congrArg SecondParentSource.quotient he).symm
@@ -51,7 +54,7 @@ theorem retained_deleted_support
       rw [hc,hC]
       rcases Finset.mem_union.mp hi with hi|hi
       · apply Finset.mem_union_left
-        cases negative <;> simp only [Bool.false_eq_true,ite_false,ite_true] at hi
+        pm_7219
         · exact (hs s hs₀).admissible.1 hi
         · exact (hs s hs₀).admissible.2 hi
       · exact Finset.mem_union_right _ hi
@@ -60,18 +63,18 @@ theorem retained_deleted_support
       exact source_prime_dvd p _ i hi
 
 theorem whole_coefficient_norm
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo))
-    (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
+    (extra : Source ι Jo→ Finset ι) (source : Finset (Source ι Jo))
+    (negative : Bool) (J : Finset σ) (lists : σ→ Finset ι)
     (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (B : ℝ)
     (ha : ∀ i∈J,∀ k∈lists i,‖a i k‖≤1) (hw : ∀ x∈source,‖w x‖≤B)
     (y : SecondParentSource ι (Jo+(J.card+J.card)))
     (hy : y∈wholeAssignedParents p extra source negative J lists) :
     ‖coefficient p J a w y‖≤B := by
-  obtain ⟨x,hx,q,hq,rfl⟩ := (mem_wholeAssignedParents p extra source negative J lists y).mp hy
+  pm_3730
   rw [coefficient_attach p hinj,norm_mul]
   exact (mul_le_of_le_one_right (norm_nonneg _) (pairedSlotWeight_norm_le_one J J lists lists a a
     _ q hq ha ha)).trans (hw x hx)
+end
 
 end SevenEighths.InverseMomentWholeRetainedSource
 

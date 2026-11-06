@@ -3,6 +3,7 @@ public import GafniTao.FordZeroRepresentation
 public import Mathlib.Data.Fintype.BigOperators
 public import Mathlib.Analysis.Fourier.AddCircleMulti
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Periodic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,7 +21,7 @@ terms in (1.5) are then proved from the same exact finite count.
 -/
 
 open Finset
-open scoped BigOperators ComplexConjugate
+open scoped ComplexConjugate
 open MeasureTheory
 
 namespace GafniTao
@@ -53,7 +54,7 @@ theorem fordVinogradovPowerVector_bounds
     (s : ℤ) ≤ fordVinogradovPowerVector s k Q x j ∧
       fordVinogradovPowerVector s k Q x j ≤
         (s : ℤ) * (Q : ℤ) ^ ((j : ℕ) + 1) := by
-  let d : ℕ := (j : ℕ) + 1
+  pm_7781
   have htermLower (i : Fin s) :
       (1 : ℤ) ≤ ((x i : ℕ) + 1 : ℤ) ^ d := by
     apply one_le_pow₀
@@ -120,15 +121,16 @@ theorem ford_integral_mFourier_pi_haar_eq {k : ℕ} (h : Fin k → ℤ) :
     rw [ite_eq_right]
     simpa [funext_iff] using hh
 
-theorem fordVinogradovPowerVector_eq_sum_exponent
-    {s k Q : ℕ} (x : FordVinogradovTuple s Q) :
+section
+variable {s k Q : ℕ} (x : FordVinogradovTuple s Q)
+include s k Q x
+theorem fordVinogradovPowerVector_eq_sum_exponent :
     fordVinogradovPowerVector s k Q x =
       ∑ i : Fin s, fordVinogradovExponent (x i) := by
   ext j
   simp [fordVinogradovPowerVector, fordVinogradovExponent]
 
-theorem ford_prod_monomial_eq
-    {s k Q : ℕ} (x : FordVinogradovTuple s Q) (α : UnitAddTorus (Fin k)) :
+theorem ford_prod_monomial_eq (α : UnitAddTorus (Fin k)) :
     ∏ i : Fin s, fordVinogradovMonomial (x i) α =
       UnitAddTorus.mFourier (fordVinogradovPowerVector s k Q x) α := by
   classical
@@ -139,24 +141,25 @@ theorem ford_prod_monomial_eq
       rw [Finset.prod_insert ha, Finset.sum_insert ha]
       rw [UnitAddTorus.mFourier_add]
       exact congrArg (fun z => fordVinogradovMonomial (x a) α * z) ih
+end
 
-theorem ford_vinogradov_weyl_pow
-    (s k Q : ℕ) (α : UnitAddTorus (Fin k)) :
+section
+variable (s k Q : ℕ) (α : UnitAddTorus (Fin k))
+include s k Q α
+theorem ford_vinogradov_weyl_pow :
     fordVinogradovWeylSum k Q α ^ s =
       ∑ x : FordVinogradovTuple s Q,
         UnitAddTorus.mFourier (fordVinogradovPowerVector s k Q x) α := by
-  rw [fordVinogradovWeylSum, Fintype.sum_pow]
-  apply Finset.sum_congr rfl
-  intro x hx
+  pm_266 fordVinogradovWeylSum Fintype.sum_pow Finset.sum_congr x hx
   exact ford_prod_monomial_eq x α
 
-theorem ford_conj_vinogradov_weyl_pow
-    (s k Q : ℕ) (α : UnitAddTorus (Fin k)) :
+theorem ford_conj_vinogradov_weyl_pow :
     conj (fordVinogradovWeylSum k Q α) ^ s =
       ∑ y : FordVinogradovTuple s Q,
         UnitAddTorus.mFourier (-fordVinogradovPowerVector s k Q y) α := by
   have h := congrArg conj (ford_vinogradov_weyl_pow s k Q α)
   simpa only [map_pow, map_sum, UnitAddTorus.mFourier_neg] using h
+end
 
 theorem ford_pair_character
     {s k Q : ℕ} (x y : FordVinogradovTuple s Q)
@@ -177,8 +180,7 @@ theorem ford_vinogradov_torus_mean_eq (s k Q : ℕ) :
   simp_rw [ford_vinogradov_weyl_pow, ford_conj_vinogradov_weyl_pow,
     Finset.sum_mul_sum]
   simp_rw [ford_pair_character]
-  let μ : Measure (UnitAddTorus (Fin k)) :=
-    Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle)
+  pm_2805
   have hchar (x y : FordVinogradovTuple s Q) :
       Integrable
         (fun α : UnitAddTorus (Fin k) =>
@@ -218,10 +220,7 @@ theorem ford_vinogradov_torus_mean_eq (s k Q : ℕ) :
           ∑ y : FordVinogradovTuple s Q,
             if fordVinogradovPowerVector s k Q x - fordVinogradovPowerVector s k Q y = 0
             then 1 else 0 := by
-        apply Finset.sum_congr rfl
-        intro x hx
-        apply Finset.sum_congr rfl
-        intro y hy
+        pm_90 Finset.sum_congr x hx y hy
         exact ford_integral_mFourier_pi_haar_eq _
     _ = (fordVinogradovMomentNat s k Q : ℂ) := by
         simp only [fordVinogradovMomentNat, fordVinogradovShiftedCountNat,

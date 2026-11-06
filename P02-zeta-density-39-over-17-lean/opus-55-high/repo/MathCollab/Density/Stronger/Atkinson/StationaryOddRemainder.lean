@@ -6,6 +6,7 @@ Narrow stationary refinement; see third_party/twelfth/ATKINSON_SYMMETRIC_MANIFES
 Mathlib and previously ported PNT foundations retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalStationary
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -61,7 +62,7 @@ theorem IntervalC2Bound.norm_sub_linear_le {f : ℝ → ℂ} {a b M R r H y : �
   have h := (convex_Icc (r - H) (r + H)).norm_image_sub_le_of_norm_deriv_le
     (fun z hz => (hF z hz).differentiableAt) hbound hr hym
   have he : F y - F r = f y - f r - ((y - r : ℝ) : ℂ) * deriv f r := by
-    simp only [F, sub_self, Complex.ofReal_zero, zero_mul, sub_zero]
+    pm_93 F sub_self Complex.ofReal_zero zero_mul sub_zero
     ring
   rw [he, Real.norm_eq_abs] at h
   apply h.trans
@@ -102,15 +103,16 @@ def atkinsonRootCubicCorrection (T b y : ℝ) : ℝ :=
   (2 * T / 3) * ((y - atkinsonSaddleRoot (T / (2 * Real.pi)) b) /
     atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 3
 
-theorem abs_atkinsonRootPhase_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
-    (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤
-      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2) :
+section
+variable {T y : ℝ} (hT : 0 < T) (b : ℝ) (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2)
+include T y hT b hy
+theorem abs_atkinsonRootPhase_sub_cubic_le :
     |2 * Real.pi * (atkinsonRootPhase T b y - atkinsonRootQuadratic T b y) -
       atkinsonRootCubicCorrection T b y| ≤
       4 * T * |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ^ 4 /
         (atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 4 := by
-  let r := atkinsonSaddleRoot (T / (2 * Real.pi)) b
-  have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
+  pm_4412
+  pm_4370
   have hy0 : 0 < y := by change |y-r| ≤ r/2 at hy; linarith [(abs_le.mp hy).1]
   have hz : |(y-r)/r| ≤ 1/2 := by
     rw [abs_div, abs_of_pos hr]
@@ -131,19 +133,17 @@ theorem abs_atkinsonRootPhase_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
   rw [abs_div, abs_of_pos hr]
   ring
 
-theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
-    (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤
-      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2) :
+theorem norm_atkinsonRootKernel_sub_cubic_le :
     ‖atkinsonRootKernel T b y - atkinsonRootQuadraticKernel T b y *
       (1 + (atkinsonRootCubicCorrection T b y : ℂ) * I)‖ ≤
       4*T*|y-atkinsonSaddleRoot (T/(2*Real.pi)) b|^4 /
         (atkinsonSaddleRoot (T/(2*Real.pi)) b)^4 +
       4*T^2*|y-atkinsonSaddleRoot (T/(2*Real.pi)) b|^6 /
         (atkinsonSaddleRoot (T/(2*Real.pi)) b)^6 := by
-  let r := atkinsonSaddleRoot (T/(2*Real.pi)) b
+  pm_460
   let q := 2 * Real.pi * atkinsonRootQuadratic T b y
   let d := atkinsonRootCubicCorrection T b y
-  have hr : 0 < r := atkinsonSaddleRoot_pos (by positivity) b
+  pm_4370
   have he : atkinsonRootQuadraticKernel T b y * Complex.exp ((d : ℂ) * I) =
       Complex.exp (((q+d : ℝ) : ℂ) * I) := by
     rw [atkinsonRootQuadraticKernel, ← Complex.exp_add]
@@ -188,5 +188,6 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
       _ ≤ 4 * (T^2*|y-r|^6/r^6) := mul_le_mul_of_nonneg_right (by norm_num) hp
       _ = _ := by ring
   exact (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans (add_le_add hfirst hsecond)
+end
 
 end MathCollab.Density.Stronger.Atkinson

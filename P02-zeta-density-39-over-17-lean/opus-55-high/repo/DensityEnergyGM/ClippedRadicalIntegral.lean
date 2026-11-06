@@ -1,10 +1,10 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 public import Mathlib.Tactic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
-set_option autoImplicit false
 set_option maxHeartbeats 1600000
 noncomputable section
 open MeasureTheory Set
@@ -28,7 +28,7 @@ theorem clippedRadicalTail_integrable (R K A B Y : ℝ) :
     IntegrableOn (clippedRadicalTail R K A B) (Ioc 0 Y) := by
   have hfinite : volume (Ioc (0 : ℝ) Y) < ⊤ := by simp
   let : IsFiniteMeasure (volume.restrict (Ioc (0 : ℝ) Y)) :=
-    ⟨by simpa only [Measure.restrict_apply_univ] using hfinite⟩
+    ⟨by simp_all⟩
   have hmeas : Measurable (clippedRadicalTail R K A B) := by
     unfold clippedRadicalTail
     fun_prop
@@ -46,7 +46,7 @@ theorem radical_tail_le_rational {K A B s : ℝ}
   have hBs := Real.sq_sqrt hB
   have hK0 := Real.sqrt_nonneg K
   have hB0 := Real.sqrt_nonneg B
-  have hsInv : 0 ≤ s⁻¹ := inv_nonneg.mpr hs.le
+  pm_4935 hsInv s hs.le
   have hRight : 0 ≤ Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2) := by positivity
   have hInside : 0 ≤ K * (A ^ 2 / s ^ 2 + B / s ^ 4) := by positivity
   have hLeft := Real.sq_sqrt hInside
@@ -57,11 +57,7 @@ theorem radical_tail_le_rational {K A B s : ℝ}
         2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by
     rw [mul_pow]
     rw [hKs]
-    calc
-      K * (A * s⁻¹ + Real.sqrt B * s⁻¹ ^ 2) ^ 2 =
-          K * (A ^ 2 * s⁻¹ ^ 2 + Real.sqrt B ^ 2 * s⁻¹ ^ 4) +
-            2 * K * A * Real.sqrt B * s⁻¹ ^ 3 := by ring
-      _ = _ := by rw [hBs]; simp only [div_eq_mul_inv, inv_pow]
+    grind
   nlinarith
 
 theorem integral_inv_sq_of_pos {x Y : ℝ} (hx : 0 < x) (hY : 0 < Y) :
@@ -79,21 +75,15 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
       R ^ 2 * x + Real.sqrt K *
         (A * Real.log (Y / x) + Real.sqrt B / x) := by
   have hY : 0 < Y := hx.trans_le hxY
-  have hWhole : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
-    (intervalIntegrable_iff_integrableOn_Ioc_of_le hY.le).mpr
-      (clippedRadicalTail_integrable R K A B Y)
+  pm_5753 hWhole hY.le
   have hLow : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 x := by
-    apply hWhole.mono_set
-    rw [uIcc_of_le hx.le, uIcc_of_le hY.le]
-    exact Icc_subset_Icc le_rfl hxY
+    pm_8940 hx.le
   have hHigh : IntervalIntegrable (clippedRadicalTail R K A B) volume x Y := by
-    apply hWhole.mono_set
-    rw [uIcc_of_le hxY, uIcc_of_le hY.le]
-    exact Icc_subset_Icc hx.le le_rfl
+    pm_8940 hxY
   have hInvCont : ContinuousOn (fun s : ℝ => s⁻¹) (Icc x Y) := by
     apply continuousOn_inv₀.mono
     intro s hs
-    exact ne_of_gt (hx.trans_le hs.1)
+    grind
   have hInv : IntervalIntegrable (fun s : ℝ => s⁻¹) volume x Y :=
     hInvCont.intervalIntegrable_of_Icc hxY
   have hInvSq : IntervalIntegrable (fun s : ℝ => (s⁻¹) ^ 2) volume x Y :=
@@ -102,9 +92,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
       Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2)) volume x Y :=
     ((hInv.const_mul A).add (hInvSq.const_mul (Real.sqrt B))).const_mul (Real.sqrt K)
   have hLowBound : (∫ s in 0..x, clippedRadicalTail R K A B s) ≤ R ^ 2 * x := by
-    have h := intervalIntegral.integral_mono_on hx.le hLow intervalIntegrable_const
-      (fun s hs => min_le_left (R ^ 2) _)
-    simpa only [intervalIntegral.integral_const, sub_zero, smul_eq_mul, mul_comm x] using h
+    pm_5475 hx.le hLow x
   have hHighBound : (∫ s in x..Y, clippedRadicalTail R K A B s) ≤
       Real.sqrt K * (A * Real.log (Y / x) + Real.sqrt B * (x⁻¹ - Y⁻¹)) := by
     have h := intervalIntegral.integral_mono_on hxY hHigh hMajor (fun s hs =>
@@ -122,13 +110,9 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
 
 theorem clipped_radical_integral_cap {R K A B Y : ℝ} (hY : 0 ≤ Y) :
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤ R ^ 2 * Y := by
-  have hInt : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
-    (intervalIntegrable_iff_integrableOn_Ioc_of_le hY).mpr
-      (clippedRadicalTail_integrable R K A B Y)
+  pm_5753 hInt hY
   rw [← intervalIntegral.integral_of_le hY]
-  have h := intervalIntegral.integral_mono_on hY hInt intervalIntegrable_const
-    (fun s hs => min_le_left (R ^ 2) _)
-  simpa only [intervalIntegral.integral_const, sub_zero, smul_eq_mul, mul_comm Y] using h
+  pm_5475 hY hInt Y
 
 /-- Optimize the cutoff without hiding the logarithmic endpoint cost. -/
 theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
@@ -136,7 +120,7 @@ theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
     let Q := Real.sqrt (Real.sqrt K * Real.sqrt B)
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤
       2 * R * Q + Real.sqrt K * A * max 0 (Real.log (Y * R / Q)) := by
-  let Q := Real.sqrt (Real.sqrt K * Real.sqrt B)
+  pm_8111
   change (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤
     2 * R * Q + Real.sqrt K * A * max 0 (Real.log (Y * R / Q))
   have hQ : 0 < Q := Real.sqrt_pos.mpr
@@ -156,7 +140,7 @@ theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
             (Real.sqrt K * Real.sqrt B) * R / Q := by field_simp
         _ = R * Q := by rw [← hQsq]; field_simp
     have hArg : Y / x = Y * R / Q := by dsimp only [x]; field_simp
-    rw [mul_add, hScale, hTail, hArg] at h
+    pm_958 mul_add hScale hTail hArg h
     have hLogMono := mul_le_mul_of_nonneg_left
       (le_max_right 0 (Real.log (Y * R / Q)))
       (mul_nonneg (Real.sqrt_nonneg K) hA)
@@ -165,7 +149,7 @@ theorem clipped_radical_integral_optimized {R K A B Y : ℝ}
     have hLow : R ^ 2 * Y ≤ R * Q := by
       rw [← hScale]
       exact mul_le_mul_of_nonneg_left (le_of_not_ge hxY) (sq_nonneg R)
-    have hRQ : 0 ≤ R * Q := mul_nonneg hR.le hQ.le
+    pm_5094 hRQ R Q hR.le hQ.le
     linarith
 
 theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
@@ -174,9 +158,8 @@ theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤
       2 * R * Real.sqrt (Real.sqrt K * Real.sqrt B) +
         3 * Real.sqrt K * A * Real.log T := by
-  let Q := Real.sqrt (Real.sqrt K * Real.sqrt B)
-  have hKpos : 0 < K := by linarith
-  have hBpos : 0 < B := by linarith
+  pm_8111
+  pm_72 hKpos K hBpos B
   have hKroot : 1 ≤ Real.sqrt K := by
     simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hK
   have hBroot : 1 ≤ Real.sqrt B := by

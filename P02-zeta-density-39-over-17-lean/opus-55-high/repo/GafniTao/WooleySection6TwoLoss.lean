@@ -2,8 +2,9 @@ module
 public import GafniTao.WooleySection10Upper
 public import GafniTao.WooleyPolynomialLemma63
 public import GafniTao.WooleySection10Initial
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
 /-!
 # A quantifier-correct two-loss form of Wooley's initial conditioning
@@ -18,7 +19,6 @@ the paper.
 
 namespace GafniTao
 
-noncomputable section
 
 /-- The two-loss exponent comparison behind the initial contraction. -/
 theorem wooley_initial_conditioning_exponent_twoLoss
@@ -33,17 +33,16 @@ theorem wooley_initial_conditioning_exponent_twoLoss
   have hLambdaNu : 2 * (eta + epsilon) * (H : ℝ) ≤
       Lambda * (nu : ℝ) := by
     rw [div_le_iff₀ hLambda] at hnu
-    simpa only [mul_assoc, mul_comm, mul_left_comm] using hnu
-  have hnuNonneg : (0 : ℝ) ≤ nu := by positivity
+    grind
+  pm_96 hnuNonneg nu
   nlinarith
 
+section
+variable {Q k : ℕ} (phi : WooleyPolynomialSystem k) (p B nu H s : ℕ) [NeZero p] [NeZero (p ^ B)] [NeZero (p ^ nu)] (gamma : Fin Q → ℂ) {eta epsilon Lambda : ℝ} (hp : 2 ≤ p)
+include Q k phi p B nu H s gamma eta epsilon Lambda hp
 /-- Polynomial-system conditioned mean decay with distinct lower and upper
 losses. -/
-theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu H s : ℕ)
-    [NeZero p] [NeZero (p ^ B)] [NeZero (p ^ nu)]
-    (gamma : Fin Q → ℂ) {eta epsilon Lambda : ℝ}
-    (hp : 2 ≤ p) (hepsilon : 0 ≤ epsilon)
+theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss (hepsilon : 0 ≤ epsilon)
     (hLambda : 0 < Lambda) (hnuH : nu ≤ H)
     (hnu : 2 * (eta + epsilon) * (H : ℝ) / Lambda ≤ (nu : ℝ))
     (hlower :
@@ -66,7 +65,7 @@ theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss {Q k : ℕ}
   have hVH : 0 ≤ VH := by
     unfold VH wooleyPolynomialConditionedGridMean
     split_ifs with hmass
-    · exact le_rfl
+    grind
     · apply mul_nonneg
       · exact inv_nonneg.mpr (wooleyWeightedMassSq_nonneg gamma)
       · apply Finset.sum_nonneg
@@ -76,7 +75,7 @@ theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss {Q k : ℕ}
         · positivity
         · exact Finset.sum_nonneg fun alpha halpha =>
             pow_nonneg (norm_nonneg _) _
-  have hpReal : (1 : ℝ) ≤ p := by exact_mod_cast (by omega : 1 ≤ p)
+  pm_308 hpReal p
   have hexp := wooley_initial_conditioning_exponent_twoLoss
     hepsilon hLambda hnuH hnu
   have hpow :
@@ -104,11 +103,7 @@ theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss {Q k : ℕ}
 
 /-- Lemma 6.1 with the counterexample loss and the upper-bound loss kept
 separate. -/
-theorem wooleyPolynomial_lemma_6_1_twoLoss {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu H s : ℕ)
-    [NeZero p] [NeZero (p ^ B)] [NeZero (p ^ nu)]
-    (gamma : Fin Q → ℂ) {eta epsilon Lambda : ℝ}
-    (hp : 2 ≤ p) (hs : 2 ≤ s)
+theorem wooleyPolynomial_lemma_6_1_twoLoss (hs : 2 ≤ s)
     (hepsilon : 0 ≤ epsilon)
     (hLambda : 0 < Lambda) (hnuH : nu ≤ H)
     (hnu : 2 * (eta + epsilon) * (H : ℝ) / Lambda ≤ (nu : ℝ))
@@ -159,6 +154,7 @@ theorem wooleyPolynomial_lemma_6_1_twoLoss {Q k : ℕ}
       wooleyPolynomialMixedGridMean phi s 1 p B nu nu nu gamma)
     hU hmain hlarge
   simpa [mul_assoc] using habs
+end
 
 /-- Lemma 6.3 with distinct lower and upper losses. -/
 theorem wooleyPolynomial_lemma_6_3_twoLoss {Q k : ℕ}
@@ -220,8 +216,7 @@ theorem wooleySourcePolynomial_lemma_6_3_twoLoss
       (2 * 2 ^ (s - 1)) * (p ^ theta : ℝ) ^ s *
         wooleySourcePolynomialMixedMean
           phi s 1 p B theta theta nu gamma := by
-  let phiBox := wooleyBoxedPolynomialSystem phi gamma
-  let gammaBox := wooleySourceBoxCoefficients gamma
+  pm_5035
   have hfinite := wooleyPolynomial_lemma_6_3_twoLoss
     phiBox p B nu theta H s gammaBox hp hs hepsilon hLambda
       hnuH hnuTheta hnu
@@ -270,14 +265,14 @@ theorem wooleySourceNormalizedMixedMean_initial_twoLoss
   let H := B ⌈/⌉ k
   let s := wooleyTriangular k
   let U := wooleySourcePolynomialMean s (p ^ B) phi gamma
-  let Z := wooleySourcePolynomialConditionedMean s (p ^ B) (p ^ H) phi gamma
+  pm_2829
   let K := wooleySourcePolynomialMixedMean phi s 1 p B theta theta nu gamma
-  let C : ℝ := 2 * 2 ^ (s - 1)
+  pm_5501 C
   have hs : 2 ≤ s := by
     exact (show 2 ≤ wooleyTriangular 2 by norm_num [wooleyTriangular]).trans
       (wooleyTriangular_mono hk)
-  have hpPow : NeZero (p ^ B) := ⟨pow_ne_zero _ (NeZero.ne p)⟩
-  have hpNu : NeZero (p ^ nu) := ⟨pow_ne_zero _ (NeZero.ne p)⟩
+  pm_8212 hpPow B
+  pm_8212 hpNu nu
   have h310 := wooleySourcePolynomial_equation_3_10
     (k := k) (p := p) (B := B) phi gamma (by omega)
   have hleft0 : 0 ≤
@@ -289,7 +284,7 @@ theorem wooleySourceNormalizedMixedMean_initial_twoLoss
     exact lt_of_le_of_lt hleft0 (by simpa only [H, s, U, Z] using hcounter)
   have hZpos : 0 < Z := by
     have h310' : U ≤ ((p ^ H : ℕ) : ℝ) ^ s * Z := by
-      simpa only [H, s, U, Z] using h310
+      pm_99 H s U Z h310
     have hZ0 := wooleySourcePolynomialConditionedMean_nonneg
       phi s (p ^ B) (p ^ H) gamma
     exact lt_of_le_of_ne hZ0 (fun hz => by
@@ -314,6 +309,5 @@ theorem wooleySourceNormalizedMixedMean_initial_twoLoss
     mul_comm (Lambda : ℝ) (H : ℝ)] using halgebra
 
 
-end
 
 end GafniTao

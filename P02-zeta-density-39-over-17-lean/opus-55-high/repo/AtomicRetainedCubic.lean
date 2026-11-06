@@ -2,11 +2,10 @@ module
 public import AtomicBoxBand
 public import GuthMaynard.Improvement.CubicRetainedPartition
 public import GuthMaynard.Improvement.RadialScaleBudget
+import WeylPort.Analytic.RealLaplace
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
-noncomputable section
 open Finset MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace Montgomery.RationalMoment
@@ -31,39 +30,32 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
   obtain ⟨η,Cs,T₀,hη,hη1,hCs,hT₀,hstrip⟩ := cubic_masked_near_estimate
     (1/10) 10 (by norm_num) (by norm_num) (by norm_num) hε
   obtain ⟨n,hn⟩ := choose_radial_discard_order hη
-  obtain ⟨Cn,Ct,hCn,hCt,hprofile⟩ := radial_profile_sum_bound w n
+  pm_107 Cn Ct hCn hCt hprofile radial_profile_sum_bound w n
   let D : ℝ := 27*Ct*(99/10:ℝ)^2
   refine ⟨η,2048*Cn*Cs+D,T₀,hη,hη1,by dsimp [D]; positivity,hT₀,?_⟩
   intro T L hT hLl hLu W hsep
-  let R : ℝ := W.card
-  let E : ℝ := discreteAdditiveEnergy W
+  pm_2721
   let μ := boxTimeDensity W
   let M := ∫ t, μ t^2
   let EF := ∫ ξ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^4
-  let U := T^(1+η)/L
+  pm_5436
   let S := retainedCubicModes U
-  let X := T^2*R*Real.sqrt R+T*L*Real.sqrt R*Real.sqrt E
+  pm_5085 R E
   have hT2 : 2 ≤ T := hT₀.trans hT
-  have hT1 : 1 ≤ T := by linarith
-  have hTp : 0 < T := by linarith
-  have hLp : 0 < L := (Real.rpow_pos_of_pos hTp _).trans_le hLl
-  have hH : 0 < T^η := Real.rpow_pos_of_pos hTp _
-  have hR : 0 ≤ R := Nat.cast_nonneg _
-  have hE : 0 ≤ E := Nat.cast_nonneg _
-  have hM : 0 ≤ M := integral_nonneg (fun _ => sq_nonneg _)
-  have hEF : 0 ≤ EF := integral_nonneg (fun _ => by positivity)
-  have hX : 0 ≤ X := by dsimp [X]; positivity
+  pm_4572
+  pm_4573
+  pm_1364
+  pm_2722 hR hE
+  pm_4586 hM M
+  pm_8870 hEF EF
+  pm_4556
   have hMb : M ≤ 32*R := box_time_square_bound W hsep
   have hEb : EF ≤ 64*E := box_time_fourth_bound W
   have hrootM : Real.sqrt M ≤ 8*Real.sqrt R := by
-    apply (Real.sqrt_le_iff).mpr
-    refine ⟨by positivity,?_⟩
-    rw [mul_pow,Real.sq_sqrt hR]
+    pm_6866 hR
     nlinarith
   have hrootE : Real.sqrt EF ≤ 8*Real.sqrt E := by
-    apply (Real.sqrt_le_iff).mpr
-    refine ⟨by positivity,?_⟩
-    rw [mul_pow,Real.sq_sqrt hE]
+    pm_6866 hE
     nlinarith [hEb]
   have hS : ∀ m ∈ S, m.1 ∈ poissonModes U ∧ m.2.1 ∈ poissonModes U ∧ m.2.2 ∈ poissonModes U :=
     fun m hm => (retainedCubicModes_mem U m).mp hm
@@ -77,7 +69,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
         Cs*T^ε*Real.sqrt M*(T^2*M+T*L*Real.sqrt EF) := by
       have hPl : (∫ ξ, ‖𝓕 (fun t => (μ t:ℂ)) ξ‖^2) = M :=
         ordinary_real_fourier_integral_square (box_time_integrable W) (box_time_square_integrable W)
-      simpa only [setIntegral_univ,hPl,ratioBox,EF] using hs
+      pm_89 setIntegral_univ hPl ratioBox EF hs
     calc
       _ ≤ Cs*T^ε*Real.sqrt M*(T^2*M+T*L*Real.sqrt EF) := hs0
       _ ≤ Cs*T^ε*(8*Real.sqrt R)*(T^2*(32*R)+T*L*(8*Real.sqrt E)) := by gcongr
@@ -118,8 +110,7 @@ theorem retained_atomic_cubic_estimate (w : MathCollab.Density.ReflectionCutoff)
       _ ≤ D*(T^(6+3*η)/(T^η)^n)*R^3 := by gcongr
       _ ≤ _ := by gcongr; exact hn T hT1
   have hsupp : ∀ x, x ∉ Icc (1/2:ℝ) 5 → (w x:ℂ)=0 := by
-    intro x hx
-    have hz : w x=0 := image_eq_zero_of_notMem_tsupport (fun hh => hx (w.support hh))
+    pm_4496
     simp [hz]
   have heq := GuthMaynard.Improvement.AtomicCubic.retained_cubic_radial_assembly
     (finiteTimeMeasure W) w.complex_smooth (by norm_num : (0:ℝ)<1/2)

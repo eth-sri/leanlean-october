@@ -7,6 +7,7 @@ MIT-0, copyright 2026. Mathlib and existing calculus retain Apache-2.0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.ContinuousKernelPrimitive
 public import MathCollab.Density.AllFrequency
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -23,7 +24,7 @@ theorem IntervalC1Bound.reflection_source {f : ℝ → ℂ} {T M : ℝ}
   let a := T/16
   let K : ℝ → ℂ := fun x => ((max a x : ℝ):ℂ)⁻¹ *
     Complex.exp (((T*Real.log (max a x)-2*Real.pi*(max a x):ℝ):ℂ)*I)
-  have ha : 0<a := by dsimp [a]; positivity
+  pm_128 ha a
   have hpos (x : ℝ) : 0 < max a x := ha.trans_le (le_max_left _ _)
   have hmax : Continuous (fun x : ℝ => max a x) := by fun_prop
   have hlog : Continuous (fun x : ℝ => Real.log (max a x)) := hmax.log (fun x => (hpos x).ne')

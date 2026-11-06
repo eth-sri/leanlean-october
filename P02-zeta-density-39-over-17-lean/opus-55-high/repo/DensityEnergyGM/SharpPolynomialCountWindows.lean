@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.SharpPolynomialCount
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -18,50 +19,48 @@ structure SharpCountWindow (σ a : ℝ) : Prop where
   budgets : ∀ x : ℝ, a ≤ x → ∀ j : Fin 3, ∀ i : Fin 5,
     0 ≤ gmTraceEnergyMargin σ a x j i
 
-theorem sharpCountWindow_row6 {σ : ℝ} (hlo : 1959705/2298302 ≤ σ) (hhi : σ ≤ 6482825/7570038) :
+section
+variable {σ : ℝ}
+include σ
+theorem sharpCountWindow_row6 (hlo : 1959705/2298302 ≤ σ) (hhi : σ ≤ 6482825/7570038) :
     SharpCountWindow σ (597962/(2187648*σ-772245)) := by
-  have hd : 0 < 2187648*σ-772245 := by linarith
-  have hσ : 4/5 ≤ σ := by linarith
+  pm_1101
+  pm_4911
   have ha : 1/2 ≤ 597962/(2187648*σ-772245) := by
     apply (le_div_iff₀ hd).mpr
     linarith
-  refine ⟨hσ,by linarith,ha,?_,?_⟩
-  · apply (div_lt_iff₀ hd).mpr
-    linarith
+  pm_3978
   · intro x hxa j i
     have hh := gmTraceEnergyMargin_row6 hlo hhi (le_refl (597962/(2187648*σ-772245)))
       (show 597962/(2187648*σ-772245) ≤ 3*(597962/(2187648*σ-772245))/2 by linarith) j i
     exact hh.trans (gmTraceEnergyMargin_mono_length hσ hxa j i)
 
-theorem sharpCountWindow_row7 {σ : ℝ} (hlo : 6482825/7570038 ≤ σ) (hhi : σ ≤ 2905/3354) :
+theorem sharpCountWindow_row7 (hlo : 6482825/7570038 ≤ σ) (hhi : σ ≤ 2905/3354) :
     SharpCountWindow σ (16504356/(62198298*σ-22870785)) := by
-  have hd : 0 < 62198298*σ-22870785 := by linarith
-  have hσ : 4/5 ≤ σ := by linarith
+  pm_494
+  pm_4911
   have ha : 1/2 ≤ 16504356/(62198298*σ-22870785) := by
     apply (le_div_iff₀ hd).mpr
     linarith
-  refine ⟨hσ,by linarith,ha,?_,?_⟩
-  · apply (div_lt_iff₀ hd).mpr
-    linarith
+  pm_3978
   · intro x hxa j i
     have hh := gmTraceEnergyMargin_row7 hlo hhi (le_refl (16504356/(62198298*σ-22870785)))
       (show 16504356/(62198298*σ-22870785) ≤ 3*(16504356/(62198298*σ-22870785))/2 by linarith) j i
     exact hh.trans (gmTraceEnergyMargin_mono_length hσ hxa j i)
 
-theorem sharpCountWindow_row8 {σ : ℝ} (hlo : 2905/3354 ≤ σ) (hhi : σ ≤ 7/8) :
+theorem sharpCountWindow_row8 (hlo : 2905/3354 ≤ σ) (hhi : σ ≤ 7/8) :
     SharpCountWindow σ (2172/(8226*σ-3045)) := by
-  have hd : 0 < 8226*σ-3045 := by linarith
-  have hσ : 4/5 ≤ σ := by linarith
+  pm_1102
+  pm_4911
   have ha : 1/2 ≤ 2172/(8226*σ-3045) := by
     apply (le_div_iff₀ hd).mpr
     linarith
-  refine ⟨hσ,by linarith,ha,?_,?_⟩
-  · apply (div_lt_iff₀ hd).mpr
-    linarith
+  pm_3978
   · intro x hxa j i
     have hh := gmTraceEnergyMargin_row8 hlo hhi (le_refl (2172/(8226*σ-3045)))
       (show 2172/(8226*σ-3045) ≤ 3*(2172/(8226*σ-3045))/2 by linarith) j i
     exact hh.trans (gmTraceEnergyMargin_mono_length hσ hxa j i)
+end
 
 /-- The full perturbed short-polynomial window, with all analytic inputs
 supplied and only the numeric window remaining as a parameter. -/

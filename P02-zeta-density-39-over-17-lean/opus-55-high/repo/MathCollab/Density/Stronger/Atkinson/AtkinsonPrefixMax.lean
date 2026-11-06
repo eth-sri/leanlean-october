@@ -20,29 +20,32 @@ def atkinsonPrefixGramMax (m N : ℕ) (t u : ℝ) : ℝ :=
 theorem norm_atkinsonPrefixGram_le_max (m N j : ℕ) (hj : j ≤ N) (t u : ℝ) :
     ‖atkinsonPrefixGram m j t u‖ ≤ atkinsonPrefixGramMax m N t u := by
   unfold atkinsonPrefixGramMax
-  exact Finset.le_sup' (fun k => ‖atkinsonPrefixGram m k t u‖)
-    (Finset.mem_range.mpr (Nat.lt_succ_of_le hj))
+  aesop
 
-theorem atkinsonPrefixGramMax_nonneg (m N : ℕ) (t u : ℝ) :
+section
+variable (m N : ℕ)
+include m N
+theorem atkinsonPrefixGramMax_nonneg (t u : ℝ) :
     0 ≤ atkinsonPrefixGramMax m N t u := by
   have h := norm_atkinsonPrefixGram_le_max m N 0 (Nat.zero_le N) t u
   simpa [atkinsonPrefixGram] using h
 
-theorem atkinsonPrefixGramMax_self (m N : ℕ) (t : ℝ) :
+theorem atkinsonPrefixGramMax_self (t : ℝ) :
     atkinsonPrefixGramMax m N t t = (N:ℝ) := by
   apply le_antisymm
   · unfold atkinsonPrefixGramMax
     apply Finset.sup'_le
     intro j hj
     rw [norm_atkinsonPrefixGram_self]
-    exact_mod_cast Nat.le_of_lt_succ (Finset.mem_range.mp hj)
+    simp_all
   · simpa only [norm_atkinsonPrefixGram_self] using
       norm_atkinsonPrefixGram_le_max m N N le_rfl t t
 
-theorem atkinsonPrefixGramMax_swap (m N : ℕ) (t u : ℝ) :
+theorem atkinsonPrefixGramMax_swap (t u : ℝ) :
     atkinsonPrefixGramMax m N u t = atkinsonPrefixGramMax m N t u := by
   unfold atkinsonPrefixGramMax
   simp_rw [atkinsonPrefixGram_swap m _ u t,Complex.norm_conj]
+end
 
 
 end MathCollab.Density.Stronger.Atkinson

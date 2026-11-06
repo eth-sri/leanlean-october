@@ -20,9 +20,10 @@ theorem robertSargosReduced_neg (r q₁ q₂ h₁ h₂ d : ℝ) :
   unfold robertSargosReduced
   ring
 
-theorem robertSargos_displacement_positive {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
-    (hH : 0 < H) (hQ : 0 < Q)
-    (hh₁ : h₁ ∈ Set.Icc H (2*H)) (hh₂ : h₂ ∈ Set.Icc H (2*H))
+section
+variable {r q₁ q₂ h₁ h₂ d H Q δ : ℝ} (hH : 0 < H) (hQ : 0 < Q) (hh₁ : h₁ ∈ Set.Icc H (2*H)) (hh₂ : h₂ ∈ Set.Icc H (2*H))
+include r q₁ q₂ h₁ h₂ d H Q δ hH hQ hh₁ hh₂
+theorem robertSargos_displacement_positive
     (hq₁ : q₁ ∈ Set.Icc Q (2*Q)) (hq₂ : q₂ ∈ Set.Icc Q (2*Q))
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
     (hnear : |robertSargosReduced r q₁ q₂ h₁ h₂ d| ≤ δ*H*Q^2) :
@@ -67,9 +68,7 @@ theorem robertSargos_displacement_positive {r q₁ q₂ h₁ h₂ d H Q δ : ℝ
     _ ≤ (δ+8)*H*Q^2 := hprod
     _ = ((δ+8)*Q)*(H*Q) := by ring
 
-theorem robertSargos_displacement_same_sign {r q₁ q₂ h₁ h₂ d H Q δ : ℝ}
-    (hH : 0 < H) (hQ : 0 < Q)
-    (hh₁ : h₁ ∈ Set.Icc H (2*H)) (hh₂ : h₂ ∈ Set.Icc H (2*H))
+theorem robertSargos_displacement_same_sign
     (hq₁ : |q₁| ∈ Set.Icc Q (2*Q)) (hq₂ : |q₂| ∈ Set.Icc Q (2*Q))
     (hsign : 0 < q₁*q₂)
     (hlin : r*d+h₁*q₁-h₂*q₂ = 0)
@@ -86,5 +85,6 @@ theorem robertSargos_displacement_same_sign {r q₁ q₂ h₁ h₂ d H Q δ : �
       rwa [robertSargosReduced_neg]
     simpa only [abs_neg] using
       robertSargos_displacement_positive hH hQ hh₁ hh₂ hq₁ hq₂ hl he
+end
 
 end TaoTrudgianYang2025

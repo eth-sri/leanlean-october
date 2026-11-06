@@ -19,8 +19,10 @@ open scoped BigOperators ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem abs_finiteTaylorPolynomial_le
-    {f : ℝ → ℝ} {a x D M : ℝ} (Q : ℕ)
+section
+variable {f : ℝ → ℝ} {a x D M : ℝ}
+include f a x D M
+theorem abs_finiteTaylorPolynomial_le (Q : ℕ)
     (hD : 1 ≤ D) (hx : |x-a| ≤ D)
     (hb : ∀ j ≤ Q, |iteratedDeriv j f a| ≤ M) :
     |finiteTaylorPolynomial f Q a x| ≤ (Q+1 : ℕ)*D^Q*M := by
@@ -48,8 +50,7 @@ theorem abs_finiteTaylorPolynomial_le
       exact mul_le_mul hc (hb j hjQ) (abs_nonneg _) (pow_nonneg (zero_le_one.trans hD) Q)
     _ = _ := by rw [Finset.sum_const,Finset.card_range,nsmul_eq_mul]; ring
 
-theorem abs_iteratedDeriv_finiteTaylorPolynomial_le
-    {f : ℝ → ℝ} {a x D M : ℝ} {Q n : ℕ}
+theorem abs_iteratedDeriv_finiteTaylorPolynomial_le {Q n : ℕ}
     (hn : n ≤ Q) (hD : 1 ≤ D) (hx : |x-a| ≤ D)
     (hb : ∀ j ≤ Q, |iteratedDeriv j f a| ≤ M) :
     |iteratedDeriv n (finiteTaylorPolynomial f Q a) x| ≤ (Q+1 : ℕ)*D^Q*M := by
@@ -63,5 +64,6 @@ theorem abs_iteratedDeriv_finiteTaylorPolynomial_le
   · intro j hj
     rw [iteratedDeriv_real_comp_order]
     exact hb (j+n) (by omega)
+end
 
 end TaoTrudgianYang2025

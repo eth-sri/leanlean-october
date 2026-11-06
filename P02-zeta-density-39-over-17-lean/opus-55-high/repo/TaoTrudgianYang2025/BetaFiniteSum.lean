@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BetaBProcessMajorant
 public import GuthMaynard.SecondDerivative
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -36,7 +37,7 @@ theorem norm_modelPhaseCore_le
   let c := 2*Real.pi*modelPhaseCurvatureLower σ
   let C := 2*Real.pi*(σ+1)
   have hc : 0 < c := mul_pos (by positivity) (modelPhaseCurvatureLower_pos hσ)
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  pm_61 hC C
   have hb := vanDerCorput_B_process (fun n => betaModelSample F T N A n) L
     (c*T/N^2) (C*T/N^2) (by positivity)
     (fun n hn => by simpa only [Nat.cast_add,Nat.cast_ofNat,Nat.cast_one] using

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorCommonFrequency
 public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicCutoff
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -13,30 +14,29 @@ namespace SevenEighths.HeckeDetectorNormalized
 open HeckeFamily HeckeDyadic HeckeDetectorFourier HeckeDetectorProfiles
 open HeckeDetectorDyadicBridge HeckeDetectorDyadicProfiles HeckeDetectorFrequency
 
-lemma plainCoefficient_positive (χ : Character) (D : ℝ) (hD : 0<D) (s : ℂ) :
-    plainCoefficient χ positiveAnnular D s=
+section
+variable (χ : Character)
+include χ
+lemma plainCoefficient_positive (D : ℝ) (hD : 0<D) (s : ℂ) :
+    plainCoefficient χ positiveAnnular D s =
       plainCoefficient χ (DyadicTransfer.annularCutoff cutoff) D s := by
-  funext J
-  unfold plainCoefficient
-  rw [positiveAnnular_eq _ (div_nonneg (Nat.cast_nonneg _) hD.le)]
+  pm_7411 plainCoefficient
 
-lemma inverseCoefficient_positive (χ : Character) (Dstar D : ℝ) (hD : 0<D) (s : ℂ) :
-    inverseCoefficient χ cutoff positiveAnnular Dstar D s=
+lemma inverseCoefficient_positive (Dstar D : ℝ) (hD : 0<D) (s : ℂ) :
+    inverseCoefficient χ cutoff positiveAnnular Dstar D s =
       inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) Dstar D s := by
-  funext J
-  unfold inverseCoefficient
-  rw [positiveAnnular_eq _ (div_nonneg (Nat.cast_nonneg _) hD.le)]
+  pm_7411 inverseCoefficient
 
-theorem phaseProduct_norm (χ : Character) (Dstar U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ)
+theorem phaseProduct_norm (Dstar U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ)
     (hprod : (2 : ℝ)^j*(2 : ℝ)^k<8*U^21) :
     ‖phaseProduct χ Dstar U s j k t‖ =
       ((2 : ℝ)^j)^(1/2-s.re)*((2 : ℝ)^k)^(1/2-s.re)*
         (‖polynomial χ true (HeckeDetectorDyadicBridge.inverseProfile cutoff positiveAnnular Dstar ((2 : ℝ)^j))
             ((2 : ℝ)^j) s.re (2*Real.pi*t-s.im)‖ *
          ‖polynomial χ false positiveAnnular ((2 : ℝ)^k) s.re (2*Real.pi*t-s.im)‖) := by
-  obtain ⟨hj,hk⟩ := scales_le_eight_terminal (U^21) j k hprod
-  have hDj : 0<(2 : ℝ)^j := by positivity
-  have hNk : 0<(2 : ℝ)^k := by positivity
+  pm_7694 scales_le_eight_terminal
+  pm_8881 hDj j
+  pm_8881 hNk k
   unfold phaseProduct
   rw [norm_mul, ← inverseCoefficient_positive χ Dstar ((2 : ℝ)^j) hDj s,
     ← plainCoefficient_positive χ ((2 : ℝ)^k) hNk s]
@@ -45,6 +45,7 @@ theorem phaseProduct_norm (χ : Character) (Dstar U : ℝ) (s : ℂ) (j k : ℕ)
     (fourierSet_nonzero (U^21)) (fourierSet_nonzero (U^21))
     (inverse_annular_covered (U^21) ((2 : ℝ)^j) Dstar hDj hj cutoff positiveAnnular positiveAnnular_zero)
     (annular_covered (U^21) ((2 : ℝ)^k) hNk hk positiveAnnular positiveAnnular_zero)
+end
 
 theorem exists_normalized_product (R θ τ : ℝ) (hR : 0≤R)
     (hθ : 0≤θ) (hθ' : θ<3/4) (hτ : 0<τ) :

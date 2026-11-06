@@ -1,5 +1,6 @@
 module
 public import DensityEnergyGM.LargeValuesEnergy
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -12,7 +13,7 @@ enlargement below is the exact correction forced by replacing the real scale
 `N / d` by the natural scale `N / d`.
 -/
 
-open scoped BigOperators Real
+open scoped Real
 open MeasureTheory
 
 namespace GuthMaynard.NativeMoment
@@ -156,33 +157,34 @@ noncomputable def gmFourthMomentShape
     (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
       (W.card : ℝ) * T ^ (1 / 2 : ℝ) * M
 
-theorem gmSecondMomentShape_nonneg
-    {M : ℕ} {T : ℝ} {W : Finset ℝ} (hT : 0 ≤ T) :
+section
+variable {M : ℕ} {T : ℝ} {W : Finset ℝ} (hT : 0 ≤ T)
+include M T W hT
+theorem gmSecondMomentShape_nonneg :
     0 ≤ gmSecondMomentShape M T W := by
   unfold gmSecondMomentShape
   positivity
 
-theorem gmFourthMomentShape_nonneg
-    {M : ℕ} {T : ℝ} {W : Finset ℝ} (hT : 0 ≤ T) :
+theorem gmFourthMomentShape_nonneg :
     0 ≤ gmFourthMomentShape M T W := by
   unfold gmFourthMomentShape
   positivity
+end
 
-theorem gmDyadicPlusSecondMoment_native
-    (ε : ℝ) (hε : 0 < ε) :
+section
+variable (ε : ℝ) (hε : 0 < ε)
+include ε hε
+theorem gmDyadicPlusSecondMoment_native :
     ∃ C T₀ : ℝ, 0 < C ∧ 1 ≤ T₀ ∧
       ∀ (M : ℕ) (T : ℝ) (W : Finset ℝ),
         0 < M → T₀ ≤ T → IsSeparated 1 W → InBaseInterval T W →
         gmDyadicPlusRatioMoment 2 M W ≤
           C * T ^ ε * gmSecondMomentShape M T W := by
-  obtain ⟨C₀, T₀, hC₀, hT₀, hbase⟩ :=
-    gmDiscreteRatioSecondMoment_native ε hε
+  pm_3983 C₀ T₀ hC₀ hT₀ hbase gmDiscreteRatioSecondMoment_native ε hε
   let C := C₀ + 3
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  pm_4193
   intro M T W hM hT hSep hBase
-  have hTOne : 1 ≤ T := hT₀.trans hT
-  have hPowOne : 1 ≤ T ^ ε := Real.one_le_rpow hTOne hε.le
-  have hMOne : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  pm_4224
   have hEnd :
       (2 * (M : ℝ) + 1) * (W.card : ℝ) ^ 2 ≤
         3 * gmSecondMomentShape M T W := by
@@ -193,7 +195,7 @@ theorem gmDyadicPlusSecondMoment_native
       have h₃ : 0 ≤ (W.card : ℝ) ^ (5 / 4 : ℝ) *
           T ^ (1 / 2 : ℝ) * (M : ℝ) := by positivity
       nlinarith
-    have hcoef : 2 * (M : ℝ) + 1 ≤ 3 * M := by linarith
+    pm_6083
     calc
       (2 * (M : ℝ) + 1) * (W.card : ℝ) ^ 2 ≤
           (3 * (M : ℝ)) * (W.card : ℝ) ^ 2 := by gcongr
@@ -202,8 +204,7 @@ theorem gmDyadicPlusSecondMoment_native
   have hBaseAt : gmDiscreteRatioMoment 2 M W ≤
       C₀ * T ^ ε * gmSecondMomentShape M T W := by
     simpa only [gmSecondMomentShape] using hbase M T W hM hT hSep hBase
-  have hShape0 := gmSecondMomentShape_nonneg (M := M) (W := W)
-    (zero_le_one.trans hTOne)
+  pm_7140 gmSecondMomentShape_nonneg
   calc
     gmDyadicPlusRatioMoment 2 M W ≤
         gmDiscreteRatioMoment 2 M W +
@@ -211,26 +212,21 @@ theorem gmDyadicPlusSecondMoment_native
     _ ≤ C₀ * T ^ ε * gmSecondMomentShape M T W +
           3 * gmSecondMomentShape M T W := add_le_add hBaseAt hEnd
     _ ≤ (C₀ + 3) * T ^ ε * gmSecondMomentShape M T W := by
-      nlinarith [mul_nonneg hC₀.le
-        (mul_nonneg (Real.rpow_nonneg (zero_le_one.trans hTOne) ε) hShape0)]
+      pm_6509
     _ = C * T ^ ε * gmSecondMomentShape M T W := rfl
 
-theorem gmDyadicPlusFourthMoment_native
-    (ε : ℝ) (hε : 0 < ε) :
+theorem gmDyadicPlusFourthMoment_native :
     ∃ C T₀ : ℝ, 0 < C ∧ 1 ≤ T₀ ∧
       ∀ (M : ℕ) (T : ℝ) (W : Finset ℝ),
         0 < M → T₀ ≤ T → (M : ℝ) ≤ T →
         IsSeparated 1 W → InBaseInterval T W →
         gmDyadicPlusRatioMoment 4 M W ≤
           C * T ^ ε * gmFourthMomentShape M T W := by
-  obtain ⟨C₀, T₀, hC₀, hT₀, hbase⟩ :=
-    gmDiscreteFourthMoment_native ε hε
+  pm_3983 C₀ T₀ hC₀ hT₀ hbase gmDiscreteFourthMoment_native ε hε
   let C := C₀ + 3
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  pm_4193
   intro M T W hM hT hMT hSep hBase
-  have hTOne : 1 ≤ T := hT₀.trans hT
-  have hPowOne : 1 ≤ T ^ ε := Real.one_le_rpow hTOne hε.le
-  have hMOne : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  pm_4224
   have hEnd :
       (2 * (M : ℝ) + 1) * (W.card : ℝ) ^ 4 ≤
         3 * gmFourthMomentShape M T W := by
@@ -241,7 +237,7 @@ theorem gmDyadicPlusFourthMoment_native
       have h₃ : 0 ≤ (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
           (W.card : ℝ) * T ^ (1 / 2 : ℝ) * (M : ℝ) := by positivity
       nlinarith
-    have hcoef : 2 * (M : ℝ) + 1 ≤ 3 * M := by linarith
+    pm_6083
     calc
       (2 * (M : ℝ) + 1) * (W.card : ℝ) ^ 4 ≤
           (3 * (M : ℝ)) * (W.card : ℝ) ^ 4 := by gcongr
@@ -250,8 +246,7 @@ theorem gmDyadicPlusFourthMoment_native
   have hBaseAt : gmDiscreteRatioMoment 4 M W ≤
       C₀ * T ^ ε * gmFourthMomentShape M T W := by
     simpa only [gmFourthMomentShape] using hbase M T W hM hT hMT hSep hBase
-  have hShape0 := gmFourthMomentShape_nonneg (M := M) (W := W)
-    (zero_le_one.trans hTOne)
+  pm_7140 gmFourthMomentShape_nonneg
   calc
     gmDyadicPlusRatioMoment 4 M W ≤
         gmDiscreteRatioMoment 4 M W +
@@ -259,9 +254,9 @@ theorem gmDyadicPlusFourthMoment_native
     _ ≤ C₀ * T ^ ε * gmFourthMomentShape M T W +
           3 * gmFourthMomentShape M T W := add_le_add hBaseAt hEnd
     _ ≤ (C₀ + 3) * T ^ ε * gmFourthMomentShape M T W := by
-      nlinarith [mul_nonneg hC₀.le
-        (mul_nonneg (Real.rpow_nonneg (zero_le_one.trans hTOne) ε) hShape0)]
+      pm_6509
     _ = C * T ^ ε * gmFourthMomentShape M T W := rfl
+end
 
 /-! ### Reciprocal-scale summation for Lemma 11.9 -/
 
@@ -299,7 +294,7 @@ theorem sum_Icc_one_div_sq_tail_le
       have hdOne : (1 : ℝ) ≤ d := by
         exact_mod_cast Nat.one_le_iff_ne_zero.mpr
           (Nat.ne_of_gt (hD.trans_le (Finset.mem_Icc.mp hd).1))
-      have hdsPos : (0 : ℝ) < d + 1 := by positivity
+      pm_8896 hdsPos d
       push_cast
       field_simp [hdPos.ne', hdsPos.ne']
       nlinarith
@@ -322,9 +317,11 @@ theorem sum_Icc_one_div_sq_tail_le
   · rw [Finset.Icc_eq_empty hDU, Finset.sum_empty]
     positivity
 
+section
+variable {N D : ℕ} (hD : 0 < D)
+include N D hD
 /-- The natural quotient scale `N / d` has only a harmonic total mass. -/
-theorem sum_Icc_natDiv_le_harmonic
-    {N D : ℕ} (hD : 0 < D) :
+theorem sum_Icc_natDiv_le_harmonic :
     (∑ d ∈ Finset.Icc D N, ((N / d : ℕ) : ℝ)) ≤
       (N : ℝ) * (((harmonic N : ℚ) : ℝ)) := by
   have hsub : Finset.Icc D N ⊆ Finset.Icc 1 N := by
@@ -350,17 +347,13 @@ theorem sum_Icc_natDiv_le_harmonic
       exact Finset.sum_le_sum fun d hd => Nat.cast_div_le
     _ = (N : ℝ) *
         (∑ d ∈ Finset.Icc D N, (1 : ℝ) / (d : ℝ)) := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro d hd
-      ring
+      pm_4886 d hd
     _ ≤ (N : ℝ) * (((harmonic N : ℚ) : ℝ)) := by
       exact mul_le_mul_of_nonneg_left hrecip (Nat.cast_nonneg N)
 
 /-- Squared natural quotient scales have the sharp reciprocal-tail mass
 needed after choosing `D` at size `N²/T`. -/
-theorem sum_Icc_natDiv_sq_le
-    {N D : ℕ} (hD : 0 < D) :
+theorem sum_Icc_natDiv_sq_le :
     (∑ d ∈ Finset.Icc D N, ((N / d : ℕ) : ℝ) ^ 2) ≤
       2 * (N : ℝ) ^ 2 / (D : ℝ) := by
   have htail := sum_Icc_one_div_sq_tail_le (D := D) (U := N) hD
@@ -372,13 +365,11 @@ theorem sum_Icc_natDiv_sq_le
         pow_le_pow_left₀ (Nat.cast_nonneg (N / d)) Nat.cast_div_le 2
     _ = (N : ℝ) ^ 2 *
         (∑ d ∈ Finset.Icc D N, (1 : ℝ) / (d : ℝ) ^ 2) := by
-      rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro d hd
-      ring
+      pm_4886 d hd
     _ ≤ (N : ℝ) ^ 2 * (2 / (D : ℝ)) := by
       exact mul_le_mul_of_nonneg_left htail (sq_nonneg (N : ℝ))
     _ = 2 * (N : ℝ) ^ 2 / (D : ℝ) := by ring
+end
 
 /-- The `gmLargeSecondAggregateShape` definition used by the source-facing construction in `LargeValuesEnergyFinal`. -/
 noncomputable def gmLargeSecondAggregateShape
@@ -397,18 +388,15 @@ noncomputable def gmLargeFourthAggregateShape
       (W.card : ℝ) * T ^ (1 / 2 : ℝ) *
       (N : ℝ) * (((harmonic N : ℚ) : ℝ))
 
-theorem sum_gmSecondMomentShape_le
-    {N D : ℕ} {T : ℝ} {W : Finset ℝ}
-    (hD : 0 < D) (hT : 0 ≤ T) :
+section
+variable {N D : ℕ} {T : ℝ} {W : Finset ℝ} (hD : 0 < D) (hT : 0 ≤ T)
+include N D T W hD hT
+theorem sum_gmSecondMomentShape_le :
     (∑ d ∈ Finset.Icc D N, gmSecondMomentShape (N / d) T W) ≤
       gmLargeSecondAggregateShape N D T W := by
   have hOne := sum_Icc_natDiv_le_harmonic (N := N) hD
   have hTwo := sum_Icc_natDiv_sq_le (N := N) hD
-  have hW0 : 0 ≤ (W.card : ℝ) := Nat.cast_nonneg W.card
-  have hH0 : 0 ≤ (((harmonic N : ℚ) : ℝ)) := by
-    rw [harmonic_eq_sum_Icc]
-    push_cast
-    positivity
+  pm_4225
   unfold gmLargeSecondAggregateShape
   simp_rw [gmSecondMomentShape]
   rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
@@ -428,8 +416,7 @@ theorem sum_gmSecondMomentShape_le
         (W.card : ℝ) ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * (N / x : ℕ)) ≤
         ((W.card : ℝ) ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ)) *
           ((N : ℝ) * (((harmonic N : ℚ) : ℝ))) := by
-    rw [← Finset.mul_sum]
-    exact mul_le_mul_of_nonneg_left hOne (by positivity)
+    pm_1379
   calc
     (∑ x ∈ Finset.Icc D N, (W.card : ℝ) ^ 2 * (N / x : ℕ)) +
           (∑ x ∈ Finset.Icc D N, (W.card : ℝ) * (N / x : ℕ) ^ 2) +
@@ -446,19 +433,13 @@ theorem sum_gmSecondMomentShape_le
           (W.card : ℝ) ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) *
             (N : ℝ) * (((harmonic N : ℚ) : ℝ)) := by ring
 
-theorem sum_gmFourthMomentShape_le
-    {N D : ℕ} {T : ℝ} {W : Finset ℝ}
-    (hD : 0 < D) (hT : 0 ≤ T) :
+theorem sum_gmFourthMomentShape_le :
     (∑ d ∈ Finset.Icc D N, gmFourthMomentShape (N / d) T W) ≤
       gmLargeFourthAggregateShape N D T W := by
   have hOne := sum_Icc_natDiv_le_harmonic (N := N) hD
   have hTwo := sum_Icc_natDiv_sq_le (N := N) hD
   have hE0 : 0 ≤ (ApproxAddEnergy 1 W : ℝ) := Nat.cast_nonneg _
-  have hW0 : 0 ≤ (W.card : ℝ) := Nat.cast_nonneg W.card
-  have hH0 : 0 ≤ (((harmonic N : ℚ) : ℝ)) := by
-    rw [harmonic_eq_sum_Icc]
-    push_cast
-    positivity
+  pm_4225
   unfold gmLargeFourthAggregateShape
   simp_rw [gmFourthMomentShape]
   rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
@@ -466,8 +447,7 @@ theorem sum_gmFourthMomentShape_le
       (∑ x ∈ Finset.Icc D N, (W.card : ℝ) ^ 4 * (N / x : ℕ)) ≤
         (W.card : ℝ) ^ 4 *
           ((N : ℝ) * (((harmonic N : ℚ) : ℝ))) := by
-    rw [← Finset.mul_sum]
-    exact mul_le_mul_of_nonneg_left hOne (by positivity)
+    pm_1379
   have hB :
       (∑ x ∈ Finset.Icc D N,
         (ApproxAddEnergy 1 W : ℝ) * (N / x : ℕ) ^ 2) ≤
@@ -482,8 +462,7 @@ theorem sum_gmFourthMomentShape_le
         ((ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
           (W.card : ℝ) * T ^ (1 / 2 : ℝ)) *
           ((N : ℝ) * (((harmonic N : ℚ) : ℝ))) := by
-    rw [← Finset.mul_sum]
-    exact mul_le_mul_of_nonneg_left hOne (by positivity)
+    pm_1379
   calc
     (∑ x ∈ Finset.Icc D N, (W.card : ℝ) ^ 4 * (N / x : ℕ)) +
           (∑ x ∈ Finset.Icc D N,
@@ -504,6 +483,7 @@ theorem sum_gmFourthMomentShape_le
           (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
             (W.card : ℝ) * T ^ (1 / 2 : ℝ) *
             (N : ℝ) * (((harmonic N : ℚ) : ℝ)) := by ring
+end
 
 /-! ### The summed large-gcd Cauchy--Schwarz estimate -/
 
@@ -542,18 +522,15 @@ theorem gmMiddleGcdThirdMoment_raw
         gmMiddleGcdThirdMoment N D W ≤
           Real.sqrt (C₂ * T ^ μ * gmLargeSecondAggregateShape N D T W) *
             Real.sqrt (C₄ * T ^ μ * gmLargeFourthAggregateShape N D T W) := by
-  obtain ⟨C₂, T₂, hC₂, hT₂, hTwo⟩ :=
-    gmDyadicPlusSecondMoment_native μ hμ
-  obtain ⟨C₄, T₄, hC₄, hT₄, hFour⟩ :=
-    gmDyadicPlusFourthMoment_native μ hμ
+  pm_3983 C₂ T₂ hC₂ hT₂ hTwo gmDyadicPlusSecondMoment_native μ hμ
+  pm_3983 C₄ T₄ hC₄ hT₄ hFour gmDyadicPlusFourthMoment_native μ hμ
   let T₀ := max T₂ T₄
   refine ⟨C₂, C₄, T₀, hC₂, hC₄, ?_, ?_⟩
   · exact le_max_of_le_left hT₂
   intro N D T W hD hT hNT hSep hBase
-  have hT₂' : T₂ ≤ T := (le_max_left _ _).trans hT
-  have hT₄' : T₄ ≤ T := (le_max_right _ _).trans hT
-  have hTOne : 1 ≤ T := hT₂.trans hT₂'
-  have hT0 : 0 ≤ T := zero_le_one.trans hTOne
+  pm_4630 hT₂' T₂ le_max_left hT
+  pm_4630 hT₄' T₄ le_max_right hT
+  pm_8224 hT₂.trans hT₂'
   have hTwoSum :
       (∑ d ∈ Finset.Icc D N,
           gmDyadicPlusRatioMoment 2 (N / d) W) ≤
@@ -563,17 +540,13 @@ theorem gmMiddleGcdThirdMoment_raw
           gmDyadicPlusRatioMoment 2 (N / d) W) ≤
           ∑ d ∈ Finset.Icc D N,
             C₂ * T ^ μ * gmSecondMomentShape (N / d) T W := by
-        apply Finset.sum_le_sum
-        intro d hd
-        have hdPos : 0 < d := hD.trans_le (Finset.mem_Icc.mp hd).1
-        have hM : 0 < N / d := Nat.div_pos (Finset.mem_Icc.mp hd).2 hdPos
+        pm_4226
         exact hTwo (N / d) T W hM hT₂' hSep hBase
       _ = C₂ * T ^ μ *
           (∑ d ∈ Finset.Icc D N, gmSecondMomentShape (N / d) T W) := by
         rw [Finset.mul_sum]
       _ ≤ C₂ * T ^ μ * gmLargeSecondAggregateShape N D T W := by
-        exact mul_le_mul_of_nonneg_left (sum_gmSecondMomentShape_le hD hT0)
-          (mul_nonneg hC₂.le (Real.rpow_nonneg hT0 μ))
+        pm_8707 sum_gmSecondMomentShape_le hC₂.le
   have hFourSum :
       (∑ d ∈ Finset.Icc D N,
           gmDyadicPlusRatioMoment 4 (N / d) W) ≤
@@ -583,10 +556,7 @@ theorem gmMiddleGcdThirdMoment_raw
           gmDyadicPlusRatioMoment 4 (N / d) W) ≤
           ∑ d ∈ Finset.Icc D N,
             C₄ * T ^ μ * gmFourthMomentShape (N / d) T W := by
-        apply Finset.sum_le_sum
-        intro d hd
-        have hdPos : 0 < d := hD.trans_le (Finset.mem_Icc.mp hd).1
-        have hM : 0 < N / d := Nat.div_pos (Finset.mem_Icc.mp hd).2 hdPos
+        pm_4226
         have hMN : (N / d : ℕ) ≤ N := Nat.div_le_self N d
         have hMT : ((N / d : ℕ) : ℝ) ≤ T := by
           exact (Nat.cast_le.mpr hMN).trans hNT
@@ -595,8 +565,7 @@ theorem gmMiddleGcdThirdMoment_raw
           (∑ d ∈ Finset.Icc D N, gmFourthMomentShape (N / d) T W) := by
         rw [Finset.mul_sum]
       _ ≤ C₄ * T ^ μ * gmLargeFourthAggregateShape N D T W := by
-        exact mul_le_mul_of_nonneg_left (sum_gmFourthMomentShape_le hD hT0)
-          (mul_nonneg hC₄.le (Real.rpow_nonneg hT0 μ))
+        pm_8707 sum_gmFourthMomentShape_le hC₄.le
   have hCauchy :
       gmMiddleGcdThirdMoment N D W ≤
         Real.sqrt (∑ d ∈ Finset.Icc D N,
@@ -619,32 +588,26 @@ theorem gmMiddleGcdThirdMoment_raw
   exact hCauchy.trans (mul_le_mul (Real.sqrt_le_sqrt hTwoSum)
     (Real.sqrt_le_sqrt hFourSum) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
 
-theorem gmLargeSecondAggregateShape_nonneg
-    {N D : ℕ} {T : ℝ} {W : Finset ℝ}
-    (hD : 0 < D) (hT : 0 ≤ T) :
+section
+variable {N D : ℕ} {T : ℝ} {W : Finset ℝ} (hD : 0 < D) (hT : 0 ≤ T)
+include N D T W hD hT
+theorem gmLargeSecondAggregateShape_nonneg :
     0 ≤ gmLargeSecondAggregateShape N D T W := by
-  have hH : 0 ≤ (((harmonic N : ℚ) : ℝ)) := by
-    rw [harmonic_eq_sum_Icc]
-    push_cast
-    positivity
+  pm_4797
   unfold gmLargeSecondAggregateShape
   positivity
 
-theorem gmLargeFourthAggregateShape_nonneg
-    {N D : ℕ} {T : ℝ} {W : Finset ℝ}
-    (hD : 0 < D) (hT : 0 ≤ T) :
+theorem gmLargeFourthAggregateShape_nonneg :
     0 ≤ gmLargeFourthAggregateShape N D T W := by
-  have hH : 0 ≤ (((harmonic N : ℚ) : ℝ)) := by
-    rw [harmonic_eq_sum_Icc]
-    push_cast
-    positivity
+  pm_4797
   unfold gmLargeFourthAggregateShape
   positivity
+end
 
 theorem sqrt_const_mul_rpow_le
     {C T μ : ℝ} (hC : 0 < C) (hT : 1 ≤ T) (hμ : 0 < μ) :
     Real.sqrt (C * T ^ μ) ≤ (C + 1) * T ^ μ := by
-  have hpow : 1 ≤ T ^ μ := Real.one_le_rpow hT hμ.le
+  pm_4168 hpow μ hT hμ.le
   have hsC : Real.sqrt C ≤ C + 1 := by
     rw [Real.sqrt_le_iff]
     constructor
@@ -672,31 +635,20 @@ theorem gmMiddleGcdThirdMoment_native
             Real.sqrt (gmLargeSecondAggregateShape N D T W) *
             Real.sqrt (gmLargeFourthAggregateShape N D T W) := by
   let μ := ε / 2
-  have hμ : 0 < μ := by dsimp only [μ]; linarith
+  pm_4638 hμ μ
   obtain ⟨C₂, C₄, T₀, hC₂, hC₄, hT₀, hraw⟩ :=
     gmMiddleGcdThirdMoment_raw μ hμ
   let C := (C₂ + 1) * (C₄ + 1)
-  refine ⟨C, T₀, by dsimp only [C]; positivity, hT₀, ?_⟩
+  pm_4193
   intro N D T W hD hT hNT hSep hBase
-  have hTOne : 1 ≤ T := hT₀.trans hT
-  have hT0 : 0 ≤ T := zero_le_one.trans hTOne
+  pm_8224 hT₀.trans hT
   have hA0 := gmLargeSecondAggregateShape_nonneg (N := N) (W := W) hD hT0
   have hB0 := gmLargeFourthAggregateShape_nonneg (N := N) (W := W) hD hT0
   have hbase := hraw W hD hT hNT hSep hBase
   have hs₂ := sqrt_const_mul_rpow_le hC₂ hTOne hμ
   have hs₄ := sqrt_const_mul_rpow_le hC₄ hTOne hμ
-  have hfac₂ :
-      Real.sqrt (C₂ * T ^ μ * gmLargeSecondAggregateShape N D T W) =
-        Real.sqrt (C₂ * T ^ μ) *
-          Real.sqrt (gmLargeSecondAggregateShape N D T W) := by
-    rw [Real.sqrt_mul]
-    exact mul_nonneg hC₂.le (Real.rpow_nonneg hT0 μ)
-  have hfac₄ :
-      Real.sqrt (C₄ * T ^ μ * gmLargeFourthAggregateShape N D T W) =
-        Real.sqrt (C₄ * T ^ μ) *
-          Real.sqrt (gmLargeFourthAggregateShape N D T W) := by
-    rw [Real.sqrt_mul]
-    exact mul_nonneg hC₄.le (Real.rpow_nonneg hT0 μ)
+  pm_5028 hfac₂ C₂ gmLargeSecondAggregateShape hC₂.le
+  pm_5028 hfac₄ C₄ gmLargeFourthAggregateShape hC₄.le
   rw [hfac₂, hfac₄] at hbase
   calc
     gmMiddleGcdThirdMoment N D W ≤
@@ -725,10 +677,7 @@ theorem gmMiddleGcdThirdMoment_native
         _ = (C₂ + 1) * (C₄ + 1) * T ^ ε *
               Real.sqrt (gmLargeSecondAggregateShape N D T W) *
               Real.sqrt (gmLargeFourthAggregateShape N D T W) := by
-          have hp : T ^ (ε / 2) * T ^ (ε / 2) = T ^ ε := by
-            rw [← Real.rpow_add (lt_of_lt_of_le zero_lt_one hTOne)]
-            congr 1
-            ring
+          pm_685 hTOne
           rw [hp]
 
 /-- The `gmDiagonalGcdThirdMoment` definition used by the source-facing construction in `LargeValuesEnergyFinal`. -/
@@ -774,8 +723,10 @@ theorem gmDiagonalGcdThirdMoment_le
 noncomputable def gmGcdCutoff (N : ℕ) (T : ℝ) : ℕ :=
   ⌊(N : ℝ) ^ 2 / T⌋₊
 
-theorem gmGcdCutoff_bounds
-    {N : ℕ} {T : ℝ} (hTwo : 2 ≤ (N : ℝ) ^ 2 / T) :
+section
+variable {N : ℕ} {T : ℝ}
+include N T
+theorem gmGcdCutoff_bounds (hTwo : 2 ≤ (N : ℝ) ^ 2 / T) :
     0 < gmGcdCutoff N T ∧
       ((N : ℝ) ^ 2 / T) / 2 ≤ (gmGcdCutoff N T : ℝ) ∧
       (gmGcdCutoff N T : ℝ) ≤ (N : ℝ) ^ 2 / T := by
@@ -795,23 +746,21 @@ theorem gmGcdCutoff_bounds
   change 0 < ⌊x⌋₊ ∧ x / 2 ≤ (⌊x⌋₊ : ℝ) ∧ (⌊x⌋₊ : ℝ) ≤ x
   exact ⟨by exact_mod_cast hPosCast, hLower, hUpper⟩
 
-theorem gmGcdCutoff_le_N
-    {N : ℕ} {T : ℝ} (hT : 0 < T) (hN : 0 < N)
+theorem gmGcdCutoff_le_N (hT : 0 < T) (hN : 0 < N)
     (hNT : (N : ℝ) ≤ T) :
     gmGcdCutoff N T ≤ N := by
   have hUpper : (gmGcdCutoff N T : ℝ) ≤ (N : ℝ) ^ 2 / T := by
     exact Nat.floor_le (div_nonneg (sq_nonneg _) hT.le)
-  have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
+  pm_74 hN0 N hN
   have hxN : (N : ℝ) ^ 2 / T ≤ N := by
     rw [div_le_iff₀ hT]
     nlinarith
   exact_mod_cast hUpper.trans hxN
 
-theorem two_le_sq_div_of_three_quarters_le
-    {N : ℕ} {T : ℝ} (hT : 4 ≤ T)
+theorem two_le_sq_div_of_three_quarters_le (hT : 4 ≤ T)
     (hN : T ^ (3 / 4 : ℝ) ≤ (N : ℝ)) :
     2 ≤ (N : ℝ) ^ 2 / T := by
-  have hTpos : 0 < T := lt_of_lt_of_le (by norm_num) hT
+  pm_4843 hTpos T lt_of_lt_of_le hT
   have hbase0 : 0 ≤ T ^ (3 / 4 : ℝ) := Real.rpow_nonneg hTpos.le _
   have hsq : (T ^ (3 / 4 : ℝ)) ^ 2 ≤ (N : ℝ) ^ 2 := by
     nlinarith [mul_self_le_mul_self hbase0 hN]
@@ -835,6 +784,7 @@ theorem two_le_sq_div_of_three_quarters_le
       _ = (T ^ (3 / 4 : ℝ)) ^ 2 := by rw [hpow]; ring
       _ ≤ (N : ℝ) ^ 2 := hsq
   exact (le_div_iff₀ hTpos).2 (by nlinarith)
+end
 
 /-- The `gmLargeSecondPaperShape` definition used by the source-facing construction in `LargeValuesEnergyFinal`. -/
 noncomputable def gmLargeSecondPaperShape
@@ -855,10 +805,10 @@ theorem harmonic_le_scale_rpow
     {η T : ℝ} {N : ℕ} (hη : 0 < η) (hT : 1 ≤ T)
     (hNT : (N : ℝ) ≤ T) :
     (((harmonic N : ℚ) : ℝ)) ≤ (1 + η⁻¹) * T ^ η := by
-  have hN0 : (0 : ℝ) ≤ N := Nat.cast_nonneg N
+  pm_322 hN0 N
   have hpowNT : (N : ℝ) ^ η ≤ T ^ η :=
     Real.rpow_le_rpow hN0 hNT hη.le
-  have hpowOne : 1 ≤ T ^ η := Real.one_le_rpow hT hη.le
+  pm_4168 hpowOne η hT hη.le
   have hmax : max 1 ((N : ℝ) ^ η) ≤ T ^ η :=
     max_le hpowOne hpowNT
   exact (harmonic_le_epsilon_rpow hη N).trans
@@ -877,20 +827,13 @@ theorem gmCutoff_reciprocal_term_le
   rw [div_le_iff₀ hDcast]
   nlinarith
 
-theorem gmLargeSecondAggregateShape_le_paper
-    {η T : ℝ} {N : ℕ} {W : Finset ℝ}
-    (hη : 0 < η) (hT : 1 ≤ T) (hNT : (N : ℝ) ≤ T)
-    (hTwo : 2 ≤ (N : ℝ) ^ 2 / T) :
+section
+variable {η T : ℝ} {N : ℕ} {W : Finset ℝ} (hη : 0 < η) (hT : 1 ≤ T) (hNT : (N : ℝ) ≤ T) (hTwo : 2 ≤ (N : ℝ) ^ 2 / T)
+include η T N W hη hT hNT hTwo
+theorem gmLargeSecondAggregateShape_le_paper :
     gmLargeSecondAggregateShape N (gmGcdCutoff N T) T W ≤
       4 * (1 + η⁻¹) * T ^ η * gmLargeSecondPaperShape N T W := by
-  have hH := harmonic_le_scale_rpow hη hT hNT
-  have hRecip := gmCutoff_reciprocal_term_le (lt_of_lt_of_le zero_lt_one hT) hTwo
-  have hPowOne : 1 ≤ T ^ η := Real.one_le_rpow hT hη.le
-  have hL : 1 ≤ 1 + η⁻¹ := by
-    have : 0 ≤ η⁻¹ := inv_nonneg.mpr hη.le
-    linarith
-  have hLP : 1 ≤ (1 + η⁻¹) * T ^ η := by nlinarith
-  have hLP0 : 0 ≤ (1 + η⁻¹) * T ^ η := by linarith
+  pm_4227
   unfold gmLargeSecondAggregateShape gmLargeSecondPaperShape
   have h₁ : (W.card : ℝ) ^ 2 * (N : ℝ) * (((harmonic N : ℚ) : ℝ)) ≤
       (1 + η⁻¹) * T ^ η * ((W.card : ℝ) ^ 2 * N) := by
@@ -934,20 +877,10 @@ theorem gmLargeSecondAggregateShape_le_paper
           (W.card : ℝ) ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * N) := by
       nlinarith
 
-theorem gmLargeFourthAggregateShape_le_paper
-    {η T : ℝ} {N : ℕ} {W : Finset ℝ}
-    (hη : 0 < η) (hT : 1 ≤ T) (hNT : (N : ℝ) ≤ T)
-    (hTwo : 2 ≤ (N : ℝ) ^ 2 / T) :
+theorem gmLargeFourthAggregateShape_le_paper :
     gmLargeFourthAggregateShape N (gmGcdCutoff N T) T W ≤
       4 * (1 + η⁻¹) * T ^ η * gmLargeFourthPaperShape N T W := by
-  have hH := harmonic_le_scale_rpow hη hT hNT
-  have hRecip := gmCutoff_reciprocal_term_le (lt_of_lt_of_le zero_lt_one hT) hTwo
-  have hPowOne : 1 ≤ T ^ η := Real.one_le_rpow hT hη.le
-  have hL : 1 ≤ 1 + η⁻¹ := by
-    have : 0 ≤ η⁻¹ := inv_nonneg.mpr hη.le
-    linarith
-  have hLP : 1 ≤ (1 + η⁻¹) * T ^ η := by nlinarith
-  have hLP0 : 0 ≤ (1 + η⁻¹) * T ^ η := by linarith
+  pm_4227
   unfold gmLargeFourthAggregateShape gmLargeFourthPaperShape
   have h₁ : (W.card : ℝ) ^ 4 * (N : ℝ) * (((harmonic N : ℚ) : ℝ)) ≤
       (1 + η⁻¹) * T ^ η * ((W.card : ℝ) ^ 4 * N) := by
@@ -998,6 +931,7 @@ theorem gmLargeFourthAggregateShape_le_paper
           (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
             (W.card : ℝ) * T ^ (1 / 2 : ℝ) * N) := by
       nlinarith
+end
 
 theorem approxAddEnergy_le_three_card_cubed
     (W : Finset ℝ) (hSep : IsSeparated 1 W) :
@@ -1007,7 +941,7 @@ theorem approxAddEnergy_le_three_card_cubed
   have h' : (ApproxAddEnergy 1 W : ℝ) ≤ 3 * (W.card : ℝ) ^ 3 := by
     have h'' : (ApproxAddEnergy 1 W : ℝ) ≤
         3 * ((W.card : ℝ) * ((W.card : ℝ) * (W.card : ℝ))) := by
-      simpa only [ApproxAddEnergy, Finset.sum_const, nsmul_eq_mul, mul_one] using h
+      pm_99 ApproxAddEnergy Finset.sum_const nsmul_eq_mul mul_one h
     nlinarith
   exact_mod_cast h'
 
@@ -1026,17 +960,12 @@ theorem gmLargePaperShapes_large_card
     Real.sqrt (gmLargeSecondPaperShape N T W) *
         Real.sqrt (gmLargeFourthPaperShape N T W) ≤
       5 * (N : ℝ) * (W.card : ℝ) ^ 3 := by
-  let w : ℝ := W.card
-  let n : ℝ := N
-  let E : ℝ := ApproxAddEnergy 1 W
-  have hTOne : 1 ≤ T := by linarith
-  have hT0 : 0 ≤ T := by linarith
-  have hw0 : 0 ≤ w := by dsimp only [w]; positivity
-  have hn0 : 0 ≤ n := by dsimp only [n]; positivity
-  have hE0 : 0 ≤ E := by dsimp only [E]; positivity
-  have hE : E ≤ 3 * w ^ 3 := by
-    dsimp only [E, w]
-    exact_mod_cast approxAddEnergy_le_three_card_cubed W hSep
+  pm_4228
+  pm_5259 hTOne hT0
+  pm_82 hw0 w
+  pm_82 hn0 n
+  pm_4175
+  pm_5984 hE
   have hsqrtW : T ^ (1 / 2 : ℝ) ≤ w ^ (3 / 4 : ℝ) := by
     have hm := Real.rpow_le_rpow (Real.rpow_nonneg hT0 _) hW
       (by norm_num : (0 : ℝ) ≤ 3 / 4)
@@ -1118,12 +1047,7 @@ theorem gmLargePaperShapes_large_card
             _ = 3 * w ^ 4 * n := by rw [hpow]
             _ = 3 * (w ^ 4 * n) := by ring
     nlinarith [mul_nonneg (by positivity : 0 ≤ w ^ 4) hn0]
-  have hA0 : 0 ≤ gmLargeSecondPaperShape N T W := by
-    unfold gmLargeSecondPaperShape
-    positivity
-  have hB0 : 0 ≤ gmLargeFourthPaperShape N T W := by
-    unfold gmLargeFourthPaperShape
-    positivity
+  pm_826
   have hR0 : 0 ≤ 5 * n * w ^ 3 := by positivity
   apply sqrt_mul_sqrt_le_of_mul_le_sq hA0 hR0
   calc
@@ -1148,17 +1072,14 @@ theorem gmLargePaperShapes_small_card
   by_cases hEmpty : W = ∅
   · subst W
     simp [gmLargeSecondPaperShape, gmLargeFourthPaperShape, ApproxAddEnergy]
-  let w : ℝ := W.card
-  let n : ℝ := N
-  let E : ℝ := ApproxAddEnergy 1 W
-  have hTOne : 1 ≤ T := by linarith
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTOne
+  pm_4228
+  pm_4230
   have hwone : 1 ≤ w := by
     dsimp only [w]
     exact_mod_cast Finset.one_le_card.mpr (Finset.nonempty_iff_ne_empty.mpr hEmpty)
   have hwpos : 0 < w := lt_of_lt_of_le zero_lt_one hwone
-  have hn0 : 0 ≤ n := by dsimp only [n]; positivity
-  have hE0 : 0 ≤ E := by dsimp only [E]; positivity
+  pm_82 hn0 n
+  pm_4175
   have hElower : w ^ 2 ≤ E := by
     dsimp only [w, E]
     exact_mod_cast card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
@@ -1189,11 +1110,11 @@ theorem gmLargePaperShapes_small_card
   let c := E ^ (3 / 4 : ℝ) * w * T ^ (1 / 2 : ℝ) * n
   let p := n * T ^ (1 / 4 : ℝ) * w ^ (21 / 8 : ℝ)
   let q := Real.sqrt E * Real.sqrt w * n ^ 2
-  have ha0 : 0 ≤ a := by dsimp only [a]; positivity
-  have hb0 : 0 ≤ b := by dsimp only [b]; positivity
-  have hc0 : 0 ≤ c := by dsimp only [c]; positivity
-  have hp0 : 0 ≤ p := by dsimp only [p]; positivity
-  have hq0 : 0 ≤ q := by dsimp only [q]; positivity
+  pm_82 ha0 a
+  pm_82 hb0 b
+  pm_82 hc0 c
+  pm_82 hp0 p
+  pm_82 hq0 q
   have hwPow : w ^ 2 = w ^ (5 / 4 : ℝ) * w ^ (3 / 4 : ℝ) := by
     calc
       w ^ 2 = w ^ ((5 / 4 : ℝ) + 3 / 4) := by norm_num
@@ -1218,9 +1139,7 @@ theorem gmLargePaperShapes_small_card
         _ = _ := by ring
     nlinarith
   have hEquarter : E ^ (1 / 4 : ℝ) ≤ 3 * w := by
-    have hEupper : E ≤ 3 * w ^ 3 := by
-      dsimp only [E, w]
-      exact_mod_cast approxAddEnergy_le_three_card_cubed W hSep
+    pm_5984 hEupper
     have hm := Real.rpow_le_rpow hE0 hEupper (by norm_num : (0 : ℝ) ≤ 1 / 4)
     have hthree : (3 : ℝ) ^ (1 / 4 : ℝ) ≤ 3 :=
       Real.rpow_le_self_of_one_le (by norm_num) (by norm_num)
@@ -1239,9 +1158,7 @@ theorem gmLargePaperShapes_small_card
             Real.rpow_le_rpow_of_exponent_le hwone (by norm_num)
           _ = w := by rw [Real.rpow_one]
   have hET : E * T ≤ 3 * c := by
-    have hEsplit : E = E ^ (3 / 4 : ℝ) * E ^ (1 / 4 : ℝ) := by
-      simpa only [show (3 / 4 : ℝ) + 1 / 4 = 1 by norm_num, Real.rpow_one] using
-        Real.rpow_add hEpos (3 / 4 : ℝ) (1 / 4 : ℝ)
+    pm_4229
     rw [hEsplit]
     dsimp only [c]
     calc
@@ -1325,9 +1242,7 @@ theorem gmLargePaperShapes_small_card
         _ ≤ E ^ (1 / 4 : ℝ) * (w ^ (3 / 4 : ℝ) * T) := by
           exact mul_le_mul_of_nonneg_right hEroot (by positivity)
         _ ≤ E ^ (1 / 4 : ℝ) * n ^ 2 := by gcongr
-    have hEsplit : E = E ^ (3 / 4 : ℝ) * E ^ (1 / 4 : ℝ) := by
-      simpa only [show (3 / 4 : ℝ) + 1 / 4 = 1 by norm_num, Real.rpow_one] using
-        Real.rpow_add hEpos (3 / 4 : ℝ) (1 / 4 : ℝ)
+    pm_4229
     have hqSq : q ^ 2 = E * w * n ^ 4 := by
       dsimp only [q]
       calc
@@ -1358,12 +1273,7 @@ theorem gmLargePaperShapes_small_card
         ring
       _ = E * w * n ^ 4 := by rw [← hEsplit]
       _ = q ^ 2 := hqSq.symm
-  have hA0 : 0 ≤ gmLargeSecondPaperShape N T W := by
-    unfold gmLargeSecondPaperShape
-    positivity
-  have hB0 : 0 ≤ gmLargeFourthPaperShape N T W := by
-    unfold gmLargeFourthPaperShape
-    positivity
+  pm_826
   have hR0 : 0 ≤ 8 * (p + q) := by positivity
   change Real.sqrt (gmLargeSecondPaperShape N T W) *
       Real.sqrt (gmLargeFourthPaperShape N T W) ≤ 8 * (p + q)
@@ -1404,17 +1314,16 @@ theorem gmLargePaperShapes_native
           Real.sqrt (ApproxAddEnergy 1 W : ℝ) * Real.sqrt (W.card : ℝ) *
             (N : ℝ) ^ 2) := h
       _ ≤ _ := by
-        have hx : 0 ≤ (N : ℝ) * (W.card : ℝ) ^ 3 := by positivity
+        pm_4231 hx
         linarith
   · have h := gmLargePaperShapes_large_card hT hN hSep hlarge
     calc
       _ ≤ 5 * (N : ℝ) * (W.card : ℝ) ^ 3 := h
       _ ≤ _ := by
-        have hx : 0 ≤ (N : ℝ) * (W.card : ℝ) ^ 3 := by positivity
+        pm_4231 hx
         have hy : 0 ≤ (N : ℝ) * T ^ (1 / 4 : ℝ) *
             (W.card : ℝ) ^ (21 / 8 : ℝ) := by positivity
-        have hz : 0 ≤ Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
-            Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2 := by positivity
+        pm_1354 hz
         nlinarith
 
 theorem sqrt_product_le_common_mul
@@ -1451,12 +1360,11 @@ theorem gmMiddleGcdThirdMoment_physical_native
                 (W.card : ℝ) ^ (21 / 8 : ℝ) +
               Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
                 Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2) := by
-  let η := ε / 2
-  have hη : 0 < η := by dsimp only [η]; linarith
-  obtain ⟨C₁, T₁, hC₁, hT₁, hmid⟩ := gmMiddleGcdThirdMoment_native η hη
+  pm_4232
+  pm_4083 C₁ T₁ hC₁ hT₁ hmid gmMiddleGcdThirdMoment_native η hη
   let T₀ := max 4 T₁
   let K := 32 * C₁ * (1 + η⁻¹)
-  refine ⟨K, T₀, by dsimp only [K]; positivity, le_max_left _ _, ?_⟩
+  pm_6610 K
   intro N T W hT hNT hN hSep hBase
   have hFour : 4 ≤ T := (le_max_left 4 T₁).trans hT
   have hOne : 1 ≤ T := by linarith
@@ -1466,7 +1374,7 @@ theorem gmMiddleGcdThirdMoment_physical_native
   have hA := gmLargeSecondAggregateShape_le_paper (W := W) hη hOne hNT hTwo
   have hB := gmLargeFourthAggregateShape_le_paper (W := W) hη hOne hNT hTwo
   let F := 4 * (1 + η⁻¹) * T ^ η
-  have hF0 : 0 ≤ F := by dsimp only [F]; positivity
+  pm_82 hF0 F
   have hPaper := gmLargePaperShapes_native hFour hN hSep
   have hAgg :
       Real.sqrt (gmLargeSecondAggregateShape N (gmGcdCutoff N T) T W) *
@@ -1481,8 +1389,7 @@ theorem gmMiddleGcdThirdMoment_physical_native
       _ ≤ F * (Real.sqrt (gmLargeSecondPaperShape N T W) *
           Real.sqrt (gmLargeFourthPaperShape N T W)) := by
         apply sqrt_product_le_common_mul hF0
-        · simpa only [F] using hA
-        · simpa only [F] using hB
+        pm_1067 F hA hB
       _ ≤ F * (8 *
           ((N : ℝ) * (W.card : ℝ) ^ 3 +
             (N : ℝ) * T ^ (1 / 4 : ℝ) *
@@ -1510,10 +1417,7 @@ theorem gmMiddleGcdThirdMoment_physical_native
             Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
               Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2) := by
       dsimp only [K, F, η]
-      have hp : T ^ (ε / 2) * T ^ (ε / 2) = T ^ ε := by
-        rw [← Real.rpow_add (lt_of_lt_of_le zero_lt_one hOne)]
-        congr 1
-        ring
+      pm_685 hOne
       rw [show C₁ * T ^ (ε / 2) *
           (4 * (1 + (ε / 2)⁻¹) * T ^ (ε / 2) * 8 *
             ((N : ℝ) * (W.card : ℝ) ^ 3 +
@@ -1564,33 +1468,24 @@ theorem gmLargeGcdThirdMoment_native
                 (W.card : ℝ) ^ (21 / 8 : ℝ) +
               Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
                 Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2) := by
-  obtain ⟨C₁, T₀, hC₁, hT₀, hmid⟩ :=
-    gmMiddleGcdThirdMoment_physical_native ε hε
+  pm_3983 C₁ T₀ hC₁ hT₀ hmid gmMiddleGcdThirdMoment_physical_native ε hε
   let C := C₁ + 1
   refine ⟨C, T₀, by dsimp only [C]; linarith, hT₀, ?_⟩
   intro N T W hT hNT hN hSep hBase
   have hFour : 4 ≤ T := hT₀.trans hT
-  have hTOne : 1 ≤ T := by linarith
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTOne
-  have hNposCast : (0 : ℝ) < N :=
-    lt_of_lt_of_le (Real.rpow_pos_of_pos hTpos _) hN
-  have hNpos : 0 < N := by exact_mod_cast hNposCast
+  pm_4230
+  pm_827
   have hDN := gmGcdCutoff_le_N hTpos hNpos hNT
   have hm := hmid W hT hNT hN hSep hBase
   have hd := gmDiagonalGcdThirdMoment_le (N := N) W
-  let S := (N : ℝ) * (W.card : ℝ) ^ 3 +
-    (N : ℝ) * T ^ (1 / 4 : ℝ) * (W.card : ℝ) ^ (21 / 8 : ℝ) +
-    Real.sqrt (ApproxAddEnergy 1 W : ℝ) * Real.sqrt (W.card : ℝ) *
-      (N : ℝ) ^ 2
-  have hS0 : 0 ≤ S := by dsimp only [S]; positivity
+  pm_4233
+  pm_82 hS0 S
   have hfirst : (N : ℝ) * (W.card : ℝ) ^ 3 ≤ S := by
     dsimp only [S]
-    have h₂ : 0 ≤ (N : ℝ) * T ^ (1 / 4 : ℝ) *
-        (W.card : ℝ) ^ (21 / 8 : ℝ) := by positivity
-    have h₃ : 0 ≤ Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
-        Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2 := by positivity
+    pm_4234
+    pm_1354 h₃
     linarith
-  have hpow : 1 ≤ T ^ ε := Real.one_le_rpow hTOne hε.le
+  pm_4168 hpow ε hTOne hε.le
   rw [gmLargeGcdThirdMoment_eq_middle_add_diagonal hDN]
   calc
     gmMiddleGcdThirdMoment N (gmGcdCutoff N T) W +
@@ -1646,38 +1541,31 @@ theorem gmDiscreteRatioThirdMoment_physical_native
                 (W.card : ℝ) ^ (21 / 8 : ℝ) +
               Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
                 Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2) := by
-  obtain ⟨Cₛ, Tₛ, hCₛ, hTₛ, hsmall⟩ := gmSmallGcdThirdMoment_native ε hε
-  obtain ⟨Cₗ, Tₗ, hCₗ, hTₗ, hlarge⟩ := gmLargeGcdThirdMoment_native ε hε
+  pm_4083 Cₛ Tₛ hCₛ hTₛ hsmall gmSmallGcdThirdMoment_native ε hε
+  pm_4083 Cₗ Tₗ hCₗ hTₗ hlarge gmLargeGcdThirdMoment_native ε hε
   let T₀ := max Tₛ Tₗ
   let C := 2 * Cₛ + Cₗ
   refine ⟨C, T₀, by dsimp only [C]; positivity,
     le_max_of_le_right hTₗ, ?_⟩
   intro N T W hT hNT hN hSep hBase
-  have hTs : Tₛ ≤ T := (le_max_left Tₛ Tₗ).trans hT
-  have hTl : Tₗ ≤ T := (le_max_right Tₛ Tₗ).trans hT
+  pm_4208 hTs Tₛ Tₗ hTl
   have hFour : 4 ≤ T := hTₗ.trans hTl
   have hTpos : 0 < T := by linarith
-  have hNposCast : (0 : ℝ) < N :=
-    lt_of_lt_of_le (Real.rpow_pos_of_pos hTpos _) hN
-  have hNpos : 0 < N := by exact_mod_cast hNposCast
+  pm_827
   have hTwo := two_le_sq_div_of_three_quarters_le hFour hN
   obtain ⟨hD, hDlower, hDupper⟩ := gmGcdCutoff_bounds hTwo
   have hDN := gmGcdCutoff_le_N hTpos hNpos hNT
   have hDtop : gmGcdCutoff N T ≤ 2 * N := hDN.trans (by omega)
   have hs := hsmall (D := gmGcdCutoff N T) W hNpos hTs hNT hSep hBase
   have hl := hlarge W hTl hNT hN hSep hBase
-  let S := (N : ℝ) * (W.card : ℝ) ^ 3 +
-    (N : ℝ) * T ^ (1 / 4 : ℝ) * (W.card : ℝ) ^ (21 / 8 : ℝ) +
-    Real.sqrt (ApproxAddEnergy 1 W : ℝ) * Real.sqrt (W.card : ℝ) *
-      (N : ℝ) ^ 2
+  pm_4233
   let q := Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
     Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2
-  have hq0 : 0 ≤ q := by dsimp only [q]; positivity
+  pm_82 hq0 q
   have hqS : q ≤ S := by
     dsimp only [q, S]
-    have h₁ : 0 ≤ (N : ℝ) * (W.card : ℝ) ^ 3 := by positivity
-    have h₂ : 0 ≤ (N : ℝ) * T ^ (1 / 4 : ℝ) *
-        (W.card : ℝ) ^ (21 / 8 : ℝ) := by positivity
+    pm_4231 h₁
+    pm_4234
     linarith
   have hDT : (gmGcdCutoff N T : ℝ) * T ≤ (N : ℝ) ^ 2 := by
     have := mul_le_mul_of_nonneg_right hDupper hTpos.le
@@ -1728,7 +1616,7 @@ theorem energy_sqrt_term_rearrangement
   have hyoung : 2 * (L * B / V ^ 2) * Real.sqrt E ≤
       (L * B / V ^ 2) ^ 2 + E := by
     nlinarith [sq_nonneg (Real.sqrt E - L * B / V ^ 2)]
-  have htwo := mul_le_mul_of_nonneg_left hdiv (by norm_num : (0 : ℝ) ≤ 2)
+  pm_4290 htwo mul_le_mul_of_nonneg_left hdiv
   calc
     E ≤ 2 * (L * A / V ^ 2) + (L * B / V ^ 2) ^ 2 := by
       linarith
@@ -1753,34 +1641,30 @@ theorem gmEnergy_prop11_1_native
                 (N : ℝ) ^ (1 - 2 * σ) +
               (W.card : ℝ) ^ 3 * (N : ℝ) ^ (1 - 2 * σ)) := by
   let μ := ε / 4
-  have hμ : 0 < μ := by dsimp only [μ]; linarith
-  obtain ⟨Cₑ, Tₑ, hCₑ, hTₑ, henergy⟩ := gmApproxAddEnergy_largeValues_native μ hμ
-  obtain ⟨Cₘ, Tₘ, hCₘ, hTₘ, hmoment⟩ :=
-    gmDiscreteRatioThirdMoment_physical_native μ hμ
+  pm_4638 hμ μ
+  pm_4083 Cₑ Tₑ hCₑ hTₑ henergy gmApproxAddEnergy_largeValues_native μ hμ
+  pm_3983 Cₘ Tₘ hCₘ hTₘ hmoment gmDiscreteRatioThirdMoment_physical_native μ hμ
   let T₀ := max Tₑ Tₘ
   let K := Cₑ * Cₘ
   let C := 2 * K + K ^ 2
   refine ⟨C, T₀, by dsimp only [C, K]; positivity,
     le_max_of_le_right hTₘ, ?_⟩
   intro N T σ W b hN hT hNT hNscale hSep hBase hb hLarge
-  have hTe : Tₑ ≤ T := (le_max_left Tₑ Tₘ).trans hT
-  have hTm : Tₘ ≤ T := (le_max_right Tₑ Tₘ).trans hT
+  pm_4208 hTe Tₑ Tₘ hTm
   have hFour : 4 ≤ T := hTₘ.trans hTm
-  have hTOne : 1 ≤ T := by linarith
-  have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTOne
-  have hnpos : (0 : ℝ) < N := by exact_mod_cast hN
-  let n : ℝ := N
-  let w : ℝ := W.card
+  pm_4230
+  pm_74 hnpos N hN
+  pm_8138 w W.card
   let E : ℝ := ApproxAddEnergy 1 W
   let V := n ^ σ
   let A := n * w ^ 3 + n * T ^ (1 / 4 : ℝ) * w ^ (21 / 8 : ℝ)
   let B := Real.sqrt w * n ^ 2
   let L := K * T ^ (2 * μ)
-  have hE0 : 0 ≤ E := by dsimp only [E]; positivity
+  pm_4175
   have hVpos : 0 < V := by dsimp only [V, n]; exact Real.rpow_pos_of_pos hnpos σ
-  have hA0 : 0 ≤ A := by dsimp only [A, n, w]; positivity
-  have hB0 : 0 ≤ B := by dsimp only [B, n, w]; positivity
-  have hL0 : 0 ≤ L := by dsimp only [L, K]; positivity
+  pm_3987 hA0 A n w
+  pm_3987 hB0 B n w
+  pm_3988 hL0 L K
   have he := henergy N T V W b hN hTe hNT hVpos.le hSep hb (by
     intro t ht
     simpa only [V, n] using hLarge t ht)
@@ -1842,11 +1726,11 @@ theorem gmEnergy_prop11_1_native
     ring
   let X := w ^ 3 * n ^ (1 - 2 * σ) +
     w ^ (21 / 8 : ℝ) * T ^ (1 / 4 : ℝ) * n ^ (1 - 2 * σ)
-  let Y := w * n ^ (4 - 4 * σ)
+  pm_8288 Y
   let S := Y + X
-  have hX0 : 0 ≤ X := by dsimp only [X, n, w]; positivity
-  have hY0 : 0 ≤ Y := by dsimp only [Y, n, w]; positivity
-  have hS0 : 0 ≤ S := by dsimp only [S]; positivity
+  pm_3987 hX0 X n w
+  pm_3987 hY0 Y n w
+  pm_82 hS0 S
   have hrearr' : E ≤
       2 * K * T ^ (2 * μ) * X + K ^ 2 * (T ^ (2 * μ)) ^ 2 * Y := by
     calc
@@ -1869,7 +1753,7 @@ theorem gmEnergy_prop11_1_native
       gcongr
     _ ≤ (2 * K + K ^ 2) * T ^ ε * S := by
       dsimp only [S]
-      have hK0 : 0 ≤ K := by dsimp only [K]; positivity
+      pm_82 hK0 K
       nlinarith [mul_nonneg (mul_nonneg hK0 (Real.rpow_nonneg hTpos.le ε)) hY0,
         mul_nonneg (mul_nonneg (sq_nonneg K) (Real.rpow_nonneg hTpos.le ε)) hX0]
     _ = C * T ^ ε *
@@ -1887,19 +1771,21 @@ theorem sqrt_add_le_add_sqrt {A B : ℝ} (hA : 0 ≤ A) (hB : 0 ≤ B) :
   constructor
   · positivity
   · rw [add_sq, Real.sq_sqrt hA, Real.sq_sqrt hB]
-    nlinarith [mul_nonneg (Real.sqrt_nonneg A) (Real.sqrt_nonneg B)]
+    pm_385 mul_nonneg Real.sqrt_nonneg A B
 
-theorem sqrt_pow_six_mul_sq
-    {Q X : ℝ} (hQ : 0 ≤ Q) (hX : 0 ≤ X) :
+section
+variable {Q X : ℝ} (hQ : 0 ≤ Q)
+include Q X hQ
+theorem sqrt_pow_six_mul_sq (hX : 0 ≤ X) :
     Real.sqrt (Q ^ 6 * X ^ 2) = Q ^ 3 * X := by
   rw [Real.sqrt_mul (pow_nonneg hQ 6), Real.sqrt_sq hX]
   rw [show Q ^ 6 = (Q ^ 3) ^ 2 by ring, Real.sqrt_sq (pow_nonneg hQ 3)]
 
-theorem sqrt_pow_four_mul
-    {Q X : ℝ} (hQ : 0 ≤ Q) :
+theorem sqrt_pow_four_mul :
     Real.sqrt (Q ^ 4 * X) = Q ^ 2 * Real.sqrt X := by
   rw [Real.sqrt_mul (pow_nonneg hQ 4)]
   rw [show Q ^ 4 = (Q ^ 2) ^ 2 by ring, Real.sqrt_sq (pow_nonneg hQ 2)]
+end
 
 theorem sqrt_rpow_eq_rpow_half
     {x a : ℝ} (hx : 0 ≤ x) :
@@ -1922,19 +1808,14 @@ theorem sqrt_rpow_mul_rpow_mul_rpow
     Real.sqrt_mul (mul_nonneg (Real.rpow_nonneg hx a) (Real.rpow_nonneg hy b)),
     sqrt_rpow_mul_rpow hx hy, sqrt_rpow_eq_rpow_half hz]
 
-theorem gmCubicSelectedScale_first_le
-    {η T : ℝ} {N : ℕ} {p : ℕ × ℕ}
-    (hT : 1 ≤ T) (hη : 0 ≤ η) (hN : 0 < N) (hNT : (N : ℝ) ≤ T)
-    (hp : p ∈ gmCubicDyadicIndexPairs (gmCubicFrequencyRadius η T N)) :
+section
+variable {η T : ℝ} {N : ℕ} {p : ℕ × ℕ} (hT : 1 ≤ T) (hη : 0 ≤ η) (hN : 0 < N) (hNT : (N : ℝ) ≤ T) (hp : p ∈ gmCubicDyadicIndexPairs (gmCubicFrequencyRadius η T N))
+include η T N p hT hη hN hNT hp
+theorem gmCubicSelectedScale_first_le :
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
         (gmCubicAffineTerminalScale p.2 : ℝ) ^ 3 ≤
       4 * 128 ^ 3 * T ^ (2 * (1 + η)) := by
-  have hM := twoPow_second_dyadicIndex_le_two_ratio hT hη hN hNT hp
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
-  have hMpos : (0 : ℝ) < ((2 ^ p.2 : ℕ) : ℝ) := by positivity
-  have hNM : (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ) ≤ 2 * T ^ (1 + η) := by
-    rw [le_div_iff₀ hNpos] at hM
-    nlinarith
+  pm_4235
   have hsq := mul_self_le_mul_self (by positivity : (0 : ℝ) ≤ (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ)) hNM
   calc
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
@@ -1953,19 +1834,11 @@ theorem gmCubicSelectedScale_first_le
       rw [hpow]
       ring
 
-theorem gmCubicSelectedScale_second_le
-    {η T : ℝ} {N : ℕ} {p : ℕ × ℕ}
-    (hT : 1 ≤ T) (hη : 0 ≤ η) (hN : 0 < N) (hNT : (N : ℝ) ≤ T)
-    (hp : p ∈ gmCubicDyadicIndexPairs (gmCubicFrequencyRadius η T N)) :
+theorem gmCubicSelectedScale_second_le :
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
         (gmCubicAffineTerminalScale p.2 : ℝ) ^ 2 ≤
       2 * 128 ^ 2 * T ^ (1 + η) * (N : ℝ) := by
-  have hM := twoPow_second_dyadicIndex_le_two_ratio hT hη hN hNT hp
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
-  have hMpos : (0 : ℝ) < ((2 ^ p.2 : ℕ) : ℝ) := by positivity
-  have hNM : (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ) ≤ 2 * T ^ (1 + η) := by
-    rw [le_div_iff₀ hNpos] at hM
-    nlinarith
+  pm_4235
   calc
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
           (gmCubicAffineTerminalScale p.2 : ℝ) ^ 2 =
@@ -1975,7 +1848,9 @@ theorem gmCubicSelectedScale_second_le
       field_simp [hMpos.ne']
     _ ≤ 128 ^ 2 * (2 * T ^ (1 + η)) * (N : ℝ) := by gcongr
     _ = 2 * 128 ^ 2 * T ^ (1 + η) * (N : ℝ) := by ring
+end
 
+set_option maxHeartbeats 1000000 in
 set_option maxHeartbeats 1000000 in
 /-- Proposition 10.1 with the selected dyadic and affine scales eliminated.
 The two displayed summands are exactly the two terms of the source estimate;
@@ -2008,26 +1883,25 @@ theorem gmCubicS3_prop10_1_physical_explicit
   have hC₂ : 0 < C₂ := by exact gmCubicL2Constant_pos hμ
   have hCw : 0 < Cw := by exact gmCubicWideL2Constant_pos hμ
   have hC₄ : 0 < C₄ := by exact gmCubicWideFourthConstant_pos hμ
-  have hA : 0 < A := by dsimp only [A]; positivity
-  have hB : 0 < B := by dsimp only [B]; positivity
-  have hC : 0 < C := by dsimp only [C]; positivity
+  pm_4161
+  pm_116 hB B
+  pm_4123
   refine ⟨C, K, T₀, hC, hK, hT₀, ?_⟩
   intro T N W hT hN hNT hNlower hSep hBase
   obtain ⟨p, hp, hraw⟩ := hselected hT hN hNT hNlower hSep hBase
-  have hTone : (1 : ℝ) ≤ T := (by norm_num : (1 : ℝ) ≤ 4096).trans (hT₀.trans hT)
-  have hTpos : 0 < T := zero_lt_one.trans_le hTone
+  pm_5091 hT₀.trans hT
   have hη0 : 0 ≤ η := hηpos.le
-  have hn0 : 0 ≤ (N : ℝ) := by positivity
-  have hw0 : 0 ≤ (W.card : ℝ) := by positivity
+  pm_4802 hn0 N
+  pm_4802 hw0 W.card
   have hE0 : 0 ≤ (ApproxAddEnergy 1 W : ℝ) := by positivity
   let m : ℝ := ((2 ^ p.2 : ℕ) : ℝ)
   let q : ℝ := gmCubicAffineTerminalScale p.2
   let x : ℝ := 2 * Cw * T ^ μ * (W.card : ℝ)
   let y : ℝ := 6 * C₄ * T ^ μ * (ApproxAddEnergy 1 W : ℝ)
-  have hmpos : 0 < m := by dsimp only [m]; positivity
-  have hq0 : 0 ≤ q := by dsimp only [q]; positivity
-  have hx0 : 0 ≤ x := by dsimp only [x]; positivity
-  have hy0 : 0 ≤ y := by dsimp only [y]; positivity
+  pm_116 hmpos m
+  pm_82 hq0 q
+  pm_82 hx0 x
+  pm_82 hy0 y
   have hs₂ := sqrt_const_mul_rpow_le hC₂ hTone hμ
   have hs₉ := sqrt_const_mul_rpow_le hC₉ hTone hμ
   have hs₄ := sqrt_const_mul_rpow_le (by dsimp only [C₄]; positivity : 0 < 6 * C₄) hTone hμ
@@ -2035,7 +1909,7 @@ theorem gmCubicS3_prop10_1_physical_explicit
       Real.sqrt (C₂ * T ^ μ * (W.card : ℝ)) ≤
         (C₂ + 1) * T ^ μ * Real.sqrt (W.card : ℝ) := by
     rw [show C₂ * T ^ μ * (W.card : ℝ) = (C₂ * T ^ μ) * (W.card : ℝ) by ring]
-    rw [Real.sqrt_mul (by positivity : 0 ≤ C₂ * T ^ μ)]
+    pm_1483 C₂
     gcongr
   have hsy : Real.sqrt y ≤
       (6 * C₄ + 1) * T ^ μ * Real.sqrt (ApproxAddEnergy 1 W : ℝ) := by
@@ -2061,9 +1935,8 @@ theorem gmCubicS3_prop10_1_physical_explicit
           (q ^ 3 * x + q ^ 2 *
             ((6 * C₄ + 1) * T ^ μ *
               Real.sqrt (ApproxAddEnergy 1 W : ℝ))) := by
-    rw [Real.sqrt_mul (by positivity : 0 ≤ C₉ * T ^ μ)]
-    exact mul_le_mul hs₉ hsInner (Real.sqrt_nonneg _)
-      (mul_nonneg (by positivity) (by positivity))
+    pm_1483 C₉
+    pm_7946 hs₉ hsInner
   have hscale₁ := gmCubicSelectedScale_first_le hTone hη0 hN hNT hp
   have hscale₂ := gmCubicSelectedScale_second_le hTone hη0 hN hNT hp
   have hTprod : T ^ η * T ^ μ * T ^ μ * T ^ μ = T ^ (η + 3 * μ) := by
@@ -2168,9 +2041,8 @@ theorem gmCubicS3_prop10_1_physical_explicit
       let Q := T ^ (1 + 2 * η + 3 * μ) * (N : ℝ) *
         Real.sqrt (W.card : ℝ) * Real.sqrt (ApproxAddEnergy 1 W : ℝ)
       let R := T ^ 5 / T ^ 200
-      have hP0 : 0 ≤ P := by dsimp only [P]; positivity
-      have hQ0 : 0 ≤ Q := by dsimp only [Q]; positivity
-      have hR0 : 0 ≤ R := by dsimp only [R]; positivity
+      pm_4236
+      pm_82 hR0 R
       have hinside :
           6 * (A * P + B * Q + 125 * C₇ * R) ≤ C * (P + Q + R) := by
         dsimp only [C]
@@ -2221,7 +2093,7 @@ theorem gmCubicS3_prop10_1_native
     have := min_le_left (ε / 24) (1 / 12)
     dsimp only [η]
     linarith
-  have hμ : 0 < μ := by dsimp only [μ]; positivity
+  pm_116 hμ μ
   obtain ⟨C₀, K, T₁, hC₀, hK, hT₁, hraw⟩ :=
     gmCubicS3_prop10_1_physical_explicit cutoff μ η hμ hηpos hη
   have hLogMainEventually := gmEventuallyLogNatPower_le_rpow 2 (ε / 2) (by positivity)
@@ -2231,8 +2103,8 @@ theorem gmCubicS3_prop10_1_native
   obtain ⟨Ttail, hTtail⟩ := hLogTailEventually
   let T₀ := max T₁ (max (Real.exp 1) (max Tmain Ttail))
   let C := 36 * C₀ + 36 * C₀ + K
-  have hC : 0 < C := by dsimp only [C]; positivity
-  refine ⟨C, T₀, hC, hT₁.trans (le_max_left _ _), ?_⟩
+  pm_4123
+  pm_7303 C T₀ hC hT₁.trans
   intro T N W hT hN hNT hNlower hSep hBase
   have hT₁' : T₁ ≤ T := (le_max_left T₁ _).trans hT
   have hExp : Real.exp 1 ≤ T := (le_max_left (Real.exp 1) _).trans
@@ -2284,8 +2156,7 @@ theorem gmCubicS3_prop10_1_native
   let P := Real.sqrt (W.card : ℝ) * (W.card : ℝ)
   let Q := (N : ℝ) * Real.sqrt (W.card : ℝ) *
     Real.sqrt (ApproxAddEnergy 1 W : ℝ)
-  have hP0 : 0 ≤ P := by dsimp only [P]; positivity
-  have hQ0 : 0 ≤ Q := by dsimp only [Q]; positivity
+  pm_4236
   have hmain₁ :
       C₀ * (((Nat.log 2 (gmCubicFrequencyRadius η T N) + 1 : ℕ) : ℝ)) ^ 2 *
           (T ^ (2 + 3 * η + 3 * μ) * P) ≤
@@ -2377,40 +2248,35 @@ theorem gmCubicS3_prop11_2_native
             T ^ (9 / 8 : ℝ) * (W.card : ℝ) ^ (29 / 16 : ℝ) *
               (N : ℝ) ^ (3 / 2 - σ)) + C / T ^ 90 := by
   let μ := ε / 8
-  have hμ : 0 < μ := by dsimp only [μ]; positivity
+  pm_116 hμ μ
   obtain ⟨C₁, T₁, hC₁, hT₁, hprop10⟩ := gmCubicS3_prop10_1_native cutoff μ hμ
-  obtain ⟨C₂, T₂, hC₂, hT₂, henergy⟩ := gmEnergy_prop11_1_native μ hμ
+  pm_4083 C₂ T₂ hC₂ hT₂ henergy gmEnergy_prop11_1_native μ hμ
   let D := C₂ + 1
   let C := C₁ * (D + 1) + C₁
   let T₀ := max T₁ T₂
-  have hD : 0 < D := by dsimp only [D]; linarith
-  have hC : 0 < C := by dsimp only [C]; positivity
-  refine ⟨C, T₀, hC, ?_, ?_⟩
-  · exact hT₁.trans (le_max_left _ _)
+  pm_4638 hD D
+  pm_4123
+  pm_7658 hT₁.trans le_max_left
   intro N T σ W b hN hT hNT hNscale hSep hBase hb hLarge
-  have hT₁' : T₁ ≤ T := (le_max_left T₁ T₂).trans hT
-  have hT₂' : T₂ ≤ T := (le_max_right T₁ T₂).trans hT
-  have hTone : (1 : ℝ) ≤ T := (by norm_num : (1 : ℝ) ≤ 4096).trans (hT₁.trans hT₁')
-  have hTpos : 0 < T := zero_lt_one.trans_le hTone
-  have hnpos : (0 : ℝ) < N := by exact_mod_cast hN
+  pm_4208 hT₁' T₁ T₂ hT₂'
+  pm_5091 hT₁.trans hT₁'
+  pm_74 hnpos N hN
   have hn0 : (0 : ℝ) ≤ N := hnpos.le
   by_cases hWempty : W = ∅
   · subst W
     simp [gmCubicS3]
     positivity
   have hWcard : 0 < W.card := Finset.card_pos.mpr (Finset.nonempty_iff_ne_empty.mpr hWempty)
-  have hwpos : (0 : ℝ) < W.card := by exact_mod_cast hWcard
+  pm_74 hwpos W.card hWcard
   have hw0 : (0 : ℝ) ≤ W.card := hwpos.le
-  let w : ℝ := W.card
-  let n : ℝ := N
-  let E : ℝ := ApproxAddEnergy 1 W
-  let X₁ := w * n ^ (4 - 4 * σ)
+  pm_4228
+  pm_8288 X₁
   let X₂ := w ^ (21 / 8 : ℝ) * T ^ (1 / 4 : ℝ) * n ^ (1 - 2 * σ)
   let X₃ := w ^ 3 * n ^ (1 - 2 * σ)
-  have hE0 : 0 ≤ E := by dsimp only [E]; positivity
-  have hX₁0 : 0 ≤ X₁ := by dsimp only [X₁, w, n]; positivity
-  have hX₂0 : 0 ≤ X₂ := by dsimp only [X₂, w, n]; positivity
-  have hX₃0 : 0 ≤ X₃ := by dsimp only [X₃, w, n]; positivity
+  pm_4175
+  pm_3987 hX₁0 X₁ w n
+  pm_3987 hX₂0 X₂ w n
+  pm_3987 hX₃0 X₃ w n
   have he := henergy N T σ W b hN hT₂' hNT hNscale hSep hBase hb hLarge
   have hsC₂ := sqrt_const_mul_rpow_le hC₂ hTone hμ
   have hsSum : Real.sqrt (X₁ + X₂ + X₃) ≤
@@ -2428,13 +2294,12 @@ theorem gmCubicS3_prop11_2_native
     have hs := Real.sqrt_le_sqrt he
     calc
       Real.sqrt E ≤ Real.sqrt (C₂ * T ^ μ * (X₁ + X₂ + X₃)) := by
-        simpa only [E, X₁, X₂, X₃, w, n] using hs
+        pm_546 E X₁ X₂ X₃ w n hs
       _ = Real.sqrt (C₂ * T ^ μ) * Real.sqrt (X₁ + X₂ + X₃) := by
-        rw [Real.sqrt_mul (by positivity : 0 ≤ C₂ * T ^ μ)]
+        pm_1483 C₂
       _ ≤ D * T ^ μ * (Real.sqrt X₁ + Real.sqrt X₂ + Real.sqrt X₃) := by
         dsimp only [D]
-        exact mul_le_mul hsC₂ hsSum (Real.sqrt_nonneg _)
-          (mul_nonneg (by positivity) (by positivity))
+        pm_7946 hsC₂ hsSum
   have hroot₁ : n * Real.sqrt w * Real.sqrt X₁ =
       w * n ^ (3 - 2 * σ) := by
     have hr : Real.sqrt X₁ = w ^ (1 / 2 : ℝ) * n ^ (2 - 2 * σ) := by
@@ -2570,7 +2435,7 @@ theorem gmCubicS3_prop11_2_native
     ‖gmCubicS3 cutoff N W‖ ≤
         C₁ * (T ^ (2 + μ) * Real.sqrt w * w +
           T ^ (1 + μ) * n * Real.sqrt w * Real.sqrt E) + C₁ / T ^ 90 := by
-      simpa only [w, n, E, mul_assoc] using hs
+      pm_99 w n E mul_assoc hs
     _ ≤ C₁ * (T ^ μ * T ^ 2 * w ^ (3 / 2 : ℝ)) +
         C₁ * D * T ^ ε *
           (T * w * n ^ (3 - 2 * σ) +

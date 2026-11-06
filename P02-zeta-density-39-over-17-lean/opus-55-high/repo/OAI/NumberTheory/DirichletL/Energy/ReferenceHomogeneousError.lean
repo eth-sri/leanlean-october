@@ -2,19 +2,18 @@ module
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceAllocatedErrorMass
 
-@[expose] public section
+public section
 
 namespace OAI
 
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneousError
 open HeckeFamily HeckeDyadic ConcreteTraceCRT
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentOriginalReflectionErrorMass CenteredMomentNaturalFixedRaySource
-open CenteredMomentOriginalRadialComparison CenteredMomentUniformReflectionProfile
-open CenteredMomentCounting CenteredMomentAbsoluteEnergy QuadraticInitialBound
+open CenteredMomentOriginalRadialComparison
+open CenteredMomentAbsoluteEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 theorem natural_remaining_homogeneous_bound {α : Type*} (F T : Finset α) (hT : T⊆F)
@@ -112,6 +111,5 @@ theorem natural_reference_error_homogeneous {α:Type*}(F:Finset α)(bshort:ℝ)(
 
 end SevenEighths.CenteredMomentEnergyReferenceHomogeneousError
 
-end
 
 end OAI

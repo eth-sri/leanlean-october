@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralStrictSelected
 public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralLower
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -31,8 +32,8 @@ theorem ramifiedSelected_central_quotient (eta a rho x w z : ℂ) (alpha eps : �
       ramifiedClosed p hp hg eta a rho x w z j‖≤
       800*Q^(-(1/2:ℝ))+(if 2≤j then 12*Q^(-w.re) else 0) := by
   dsimp only
-  let Q : ℝ := Ideal.absNorm (Ideal.span {p})
-  have hQ0 : 0<Q := by dsimp [Q];linarith
+  pm_3834
+  pm_3925
   have hQ1 : 1≤Q := by linarith
   have hH := ramifiedClosed_central_lower p hp hg hc eta a rho x w z alpha eps hQ hsmall heta ha hρ
     halpha halpha1 heps heps1 hx hw hz j hj

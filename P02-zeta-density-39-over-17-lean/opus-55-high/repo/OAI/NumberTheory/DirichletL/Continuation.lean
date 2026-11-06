@@ -5,6 +5,7 @@ public import Mathlib.Analysis.Complex.Convex
 public import Mathlib.Analysis.Complex.CauchyIntegral
 public import Mathlib.Analysis.Analytic.Uniqueness
 public import OAI.NumberTheory.DirichletL.Supremum
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -24,7 +25,7 @@ def RapidDecayAtZero (f : ℝ → ℂ) : Prop :=
 theorem rpow_isBigO_atTop_of_le {a b : ℝ} (h : a ≤ b) :
     (fun x : ℝ => x ^ a) =O[atTop] (fun x : ℝ => x ^ b) := by
   apply Asymptotics.IsBigO.of_bound 1
-  filter_upwards [eventually_ge_atTop (1 : ℝ)] with x hx
+  pm_359 x hx
   simpa only [one_mul, Real.norm_eq_abs,
     abs_of_nonneg (Real.rpow_nonneg (by linarith : 0 ≤ x) _)] using
     Real.rpow_le_rpow_of_exponent_le hx h
@@ -46,36 +47,30 @@ theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
   simpa only [Supremum.max_signal_exponents] using
     common_signal_bound J f (7 / 8 + c + ω) (β + c - σ) hJ herror
 
-theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
-    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
-    (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) {s : ℂ} (hs : a < s.re) :
+section
+variable (f : ℝ → ℂ) (a c : ℝ) (hlocal : LocallyIntegrableOn f (Set.Ioi 0)) (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c))) (hzero : RapidDecayAtZero f)
+include f a c hlocal htop hzero
+theorem signalMellin_convergent {s : ℂ} (hs : a < s.re) :
     MellinConvergent f (-(s + (c : ℂ))) := by
-  apply mellinConvergent_of_isBigO_rpow (a := -(a+c))
-    (b := (-(s + (c : ℂ))).re - 1) hlocal
-  · simpa only [neg_neg] using htop
+  pm_1091 mellinConvergent_of_isBigO_rpow
   · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
     linarith
-  · exact hzero _
+  aesop
   · linarith
 
-theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
-    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
-    (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) :
+theorem signalMellin_analytic :
     AnalyticOnNhd ℂ (signalMellin f c) {s : ℂ | a < s.re} := by
   apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt a)).2
   intro s hs
   have hd : DifferentiableAt ℂ (mellin f) (-(s + (c : ℂ))) := by
-    apply mellin_differentiableAt_of_isBigO_rpow (a := -(a+c))
-      (b := (-(s + (c : ℂ))).re - 1) hlocal
-    · simpa only [neg_neg] using htop
+    pm_1091 mellin_differentiableAt_of_isBigO_rpow
     · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
       change a < s.re at hs
       linarith
-    · exact hzero _
+    aesop
     · linarith
   exact (hd.comp s ((differentiableAt_id.add_const (c : ℂ)).neg)).differentiableWithinAt
+end
 
 theorem product_identity_on_halfPlane (a b : ℝ) (L M W : ℂ → ℂ)
     (hL : AnalyticOnNhd ℂ L {s : ℂ | a < s.re})
@@ -84,11 +79,11 @@ theorem product_identity_on_halfPlane (a b : ℝ) (L M W : ℂ → ℂ)
     (heq : ∀ s : ℂ, max a b < s.re → L s * M s = W s) :
     Set.EqOn (fun s => L s * M s) W {s : ℂ | a < s.re} := by
   let z : ℂ := (max a b + 1 : ℝ)
-  have hz : a < z.re := by dsimp [z]; linarith [le_max_left a b]
+  have hz : a < z.re := by dsimp [z]; grind
   have hz' : max a b < z.re := by dsimp [z]; simp
   have hev : (fun s => L s * M s) =ᶠ[𝓝 z] W := by
     filter_upwards [(Complex.isOpen_re_gt (max a b)).mem_nhds hz'] with s hs
-    exact heq s hs
+    grind
   exact (hL.mul hM).eqOn_of_preconnected_of_eventuallyEq hW
     (convex_halfSpace_re_gt a).isPreconnected hz hev
 
@@ -110,7 +105,7 @@ theorem nonzero_of_regularized_signal (a b c : ℝ)
     (hR.mul hW) heq hρ
   intro hz
   change Lregular ρ * signalMellin f c ρ = R ρ * W ρ at hid
-  rw [hregular, hz, mul_zero, zero_mul] at hid
+  pm_958 hregular hz mul_zero zero_mul hid
   exact (mul_ne_zero hRρ hWρ) hid.symm
 
 theorem multiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}

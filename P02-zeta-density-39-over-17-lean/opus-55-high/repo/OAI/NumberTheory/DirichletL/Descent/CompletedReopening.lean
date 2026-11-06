@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.CompleteMarkedPool
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,8 +16,8 @@ local notation "O" => ActualEisensteinCubic.O
 def outsideCanonicalMarkedRow {σ : Type*} [DecidableEq σ]
     (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S)
     (Ψ : O →* ℂ) (m f z : O) (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
+    (lists : σ→ Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
+    (a : σ→ primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
     (W : ℝ→ℂ) (X : ℝ) : ℂ :=
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
@@ -25,13 +26,10 @@ def outsideCanonicalMarkedRow {σ : Type*} [DecidableEq σ]
   finiteCanonicalMarkedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m f z slots lists a W X
 
-theorem outsideCanonicalMarkedRow_cube_split {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
-    (Ψ : O →* ℂ) (m f z : O) (W : ℝ→ℂ) (hWc : HasCompactSupport W)
-    (b X H₀ : ℝ) (hX : 0<X) (hW : ∀ t,W t≠0→t≤b) (hD : b*X≤D)
-    (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
+section
+variable {σ : Type*} [DecidableEq σ] (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P) (Ψ : O →* ℂ) (m f z : O) (W : ℝ→ℂ) (hWc : HasCompactSupport W) (b X H₀ : ℝ) (hX : 0<X) (hW : ∀ t,W t≠0→ t≤b) (hD : b*X≤D) (slots : Finset σ) (lists : σ→ Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D))) (a : σ→ primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
+include σ S D hbad hSp Ψ m f z W hWc b X H₀ hX hW hD slots lists a
+theorem outsideCanonicalMarkedRow_cube_split :
     let Ψrow := rowTwist Ψ (m*excludedGenerator S) f z
     let mark := indexedIdealMark (fun i:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)=>i.val) slots lists a
     (Real.sqrt X:ℂ)⁻¹*outsideCanonicalMarkedRow S D hbad Ψ m f z slots lists a W X =
@@ -47,13 +45,7 @@ theorem outsideCanonicalMarkedRow_cube_split {σ : Type*} [DecidableEq σ]
   rw [marked_large_cube_sum_finite S D hSp Ψ (m*excludedGenerator S) f z
     (fun P hP=>P.mul_mem_left m (excludedGenerator_mem S hP)) W hWc b X H₀ hX hW hD]
 
-theorem outsideCanonicalMarkedRow_reopened {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
-    (Ψ : O →* ℂ) (m f z : O) (W : ℝ→ℂ) (hWc : HasCompactSupport W)
-    (b X H₀ : ℝ) (hX : 0<X) (hW : ∀ t,W t≠0→t≤b) (hD : b*X≤D)
-    (slots : Finset σ)
-    (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
-    (a : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
+theorem outsideCanonicalMarkedRow_reopened :
     let Ψrow := rowTwist Ψ (m*excludedGenerator S) f z
     let mark := indexedIdealMark (fun i:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)=>i.val) slots lists a
     (Real.sqrt X:ℂ)⁻¹*outsideCanonicalMarkedRow S D hbad Ψ m f z slots lists a W X =
@@ -64,13 +56,13 @@ theorem outsideCanonicalMarkedRow_reopened {σ : Type*} [DecidableEq σ]
         (largeCubeCoefficient H₀ B*cubeWeight Ψrow B*
           (Real.sqrt (X/(Ideal.absNorm B:ℝ)^3):ℂ)⁻¹)*
         ∑' I:Ideal O,columnWeight Ψrow I*W ((Ideal.absNorm I:ℝ)/(X/(Ideal.absNorm B:ℝ)^3))*mark (I*B^3) := by
-  rw [outsideCanonicalMarkedRow_cube_split S D hbad hSp Ψ m f z W hWc b X H₀ hX hW hD]
-  dsimp only
+  pm_6199 outsideCanonicalMarkedRow_cube_split
   congr 1
   apply Finset.sum_congr rfl
   intro B hB
   rw [marked_inner_completed_sum _ W X hX B (outsideIdealsUpTo_ne_bot S D B hB)]
   ring
+end
 
 end
 end SevenEighths.InverseMoment

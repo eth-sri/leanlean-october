@@ -3,6 +3,7 @@ public import TaoTrudgianYang2025.HeathBrownExponentPairs
 public import Mathlib
 public import TaoTrudgianYang2025.BProcessBaseline
 public import LaterPairs.Native.RobertSargosPlaneAveraging
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 set_option autoImplicit false
@@ -29,7 +30,7 @@ theorem robertSargos_plane_gram_term (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
         robertSargosPaddedPlane a M H (x.1+t.1) (x.2+t.2)⟫_ℝ) =
       robertSargosPlaneCorrelation a M H ((s.1:ℤ)-t.1) ((t.2:ℤ)-s.2) := by
   classical
-  let B := Finset.Ico (-(Q:ℤ)) (M:ℤ) ×ˢ Finset.Ico (-(R:ℤ)) (H:ℤ)
+  pm_1085 B
   let P : ℤ × ℤ → Prop := fun x =>
     x.1+t.1 ∈ Finset.Ico (0:ℤ) M ∧ x.2+s.2 ∈ Finset.Ico (0:ℤ) H
   let F : ℤ × ℤ → ℝ := fun x =>
@@ -39,21 +40,17 @@ theorem robertSargos_plane_gram_term (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
     apply Finset.sum_filter_of_ne
     intro x _ hn
     constructor
-    · by_contra hm
-      simp only [F,robertSargosPaddedPlane,ite_eq_right hm,inner_zero_right] at hn
-      exact hn rfl
+    pm_7921 hm robertSargosPaddedPlane
     · by_contra hh
       simp only [F,robertSargosPaddedPlane,ite_eq_right hh,ite_self,inner_zero_left] at hn
       exact hn rfl
-  change (∑ x ∈ B, F x) = _
-  rw [← hfilt]
+  pm_7666 x
   unfold robertSargosPlaneCorrelation
   apply Finset.sum_bij (fun x _ => (x.1+(t.1:ℤ),x.2+(s.2:ℤ)))
   · intro x hx
     exact Finset.mem_product.mpr (Finset.mem_filter.mp hx).2
   · intro x hx y hy he
-    have he₁ := congrArg Prod.fst he
-    have he₂ := congrArg Prod.snd he
+    pm_194 he₁ congrArg Prod.fst he he₂ Prod.snd
     apply Prod.ext <;> dsimp only at * <;> omega
   · intro y hy
     have hy' := Finset.mem_product.mp hy
@@ -69,8 +66,6 @@ theorem robertSargos_plane_gram_term (a : ℤ → ℤ → ℂ) (M H Q R : ℕ)
       · dsimp [P]
         simpa only [sub_add_cancel] using hy'
     · ext <;> simp only [sub_add_cancel]
-  · intro x hx
-    dsimp only [F]
-    congr 2 <;> omega
+  grind
 
 end TaoTrudgianYang2025

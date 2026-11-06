@@ -2,13 +2,14 @@ module
 public import OAI.NumberTheory.DirichletL.Moments.RelativeCapacityRemoval
 public import OAI.NumberTheory.DirichletL.Energy.State
 public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFiber
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCapacityRemoval
@@ -22,7 +23,7 @@ open CenteredExceptionalProfile CenteredMomentFixedRowMask
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ))
+theorem compact_radial_summable (f : O→ℂ) (keep : O→ Prop) (Φ : 𝓢(ℝ,ℂ))
     (K b : ℝ) (hK : 0<K) (hs : Function.support (Φ:ℝ→ℂ)⊆Set.Iic b) :
     Summable (fun z : O=>if keep z then ‖f z‖^2*(Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   obtain ⟨N,hN⟩:=exists_nat_ge (b*K)
@@ -35,12 +36,12 @@ theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,�
     apply ShortDraftLatticeCount.mem_rowNormBall_of_absNorm_le
     exact_mod_cast (show ((Ideal.span {z}).absNorm:ℝ)≤N by
       rwa [←ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span])
-  simp [hΦ]
+  simp_all
 
 omit [Fintype ι] in
 
 theorem selected_eq_positive (J : Finset ι) (η : Character) (m A z : O)
-    (W₁ W₂ : ℝ→ℂ) (S : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ)
+    (W₁ W₂ : ℝ→ℂ) (S : ι→ Finset (Ideal O)) (β : ι→ Ideal O→ℂ)
     (P : ι→ℝ) (t X₁ X₂ : ℝ) (hX : 0≤X₁*X₂) (hP : ∀i,0≤P i) :
     selectedProduct J η m A z W₁ W₂ S β P t X₁ X₂=
       positiveSlotRow η m A z W₁ W₂ (fun i:J=>S i) (fun i:J=>β i)
@@ -55,9 +56,9 @@ theorem selected_eq_positive (J : Finset ι) (η : Character) (m A z : O)
   exact hh
 
 theorem unit_puncture_energy (η : Character) (t : ℝ) (W₁ W₂ : ℝ→ℂ)
-    (S : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ) (P : ι→ℝ) (X₁ X₂ : ℝ)
-    (keep : O→Prop) (hz : ∀z,keep z→z≠0) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
-    energy η (fixedBadMask*ConcretePrimeRowBridge.idealGenerator 1) 1 t W₁ W₂ S β P X₁ X₂ keep Φ K=
+    (S : ι→ Finset (Ideal O)) (β : ι→ Ideal O→ℂ) (P : ι→ℝ) (X₁ X₂ : ℝ)
+    (keep : O→ Prop) (hz : ∀z,keep z→ z≠0) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
+    energy η (fixedBadMask*ConcretePrimeRowBridge.idealGenerator 1) 1 t W₁ W₂ S β P X₁ X₂ keep Φ K =
       energy η fixedBadMask 1 t W₁ W₂ S β P X₁ X₂ keep Φ K := by
   unfold energy
   apply tsum_congr
@@ -69,24 +70,24 @@ theorem unit_puncture_energy (η : Character) (t : ℝ) (W₁ W₂ : ℝ→ℂ)
 
 theorem eventual_row_conductor (bΦ Mrow : ℝ) (hb : 0≤bΦ) :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
-      s.rowWidth≤Mrow → ∀q:ℝ,(s.character.modulus.absNorm:ℝ)≤Z^q →
+      s.rowWidth≤Mrow → ∀q:ℝ,(s.character.modulus.absNorm:ℝ)≤Z ^q →
       ∀z:O,∀hz:z≠0,s.radial.profile (‖eisEmbedding z‖^2/s.radial.scale)≠0 →
-      ((naturalRow s.character z hz).character.modulus.absNorm:ℝ)≤Z^(Mrow+q+1) := by
+      ((naturalRow s.character z hz).character.modulus.absNorm:ℝ)≤Z ^(Mrow+q+1) := by
   filter_upwards [eventually_gt_atTop (1:ℝ),eventually_ge_atTop ((fixedConductorFactor:ℝ)*bΦ)] with Z hZ hF
   refine ⟨hZ,?_⟩
   intro Bmask s hrow q hq z hz hΦ
-  have hn : ((Ideal.span {z}).absNorm:ℝ)≤bΦ*Z^s.rowWidth := by
+  have hn : ((Ideal.span {z}).absNorm:ℝ)≤bΦ*Z ^s.rowWidth := by
     rw [←ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span,←s.scale_eq]
     exact (div_le_iff₀ s.radial.scale_pos).mp (s.radial_support hΦ)
   have he:=(naturalRow s.character z hz).modulus_power_bound Z q s.rowWidth bΦ
     (zero_lt_one.trans hZ) hb hq hn
-  have hm:Z^(q+s.rowWidth)≤Z^(Mrow+q):=
+  have hm:Z ^(q+s.rowWidth)≤Z ^(Mrow+q):=
     Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   apply he.trans
   calc
-    _≤Z*Z^(Mrow+q):=mul_le_mul hF hm (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
+    _≤Z*Z ^(Mrow+q):=mul_le_mul hF hm (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
       (zero_lt_one.trans hZ).le
-    _=Z^(Mrow+q+1):=by
+    _=Z ^(Mrow+q+1):=by
       conv_rhs => rw [Real.rpow_add (zero_lt_one.trans hZ),Real.rpow_one]
       ring
 
@@ -106,52 +107,46 @@ local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZer
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 
-theorem actual_state_capacity_removal
-    (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i)
-    (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i))
-    (hW : ∀i,ContDiff ℝ ∞ (W i))
-    (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ)
-    (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε)
-    (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ) :
-    ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀ν:ι→Character,∃Z₀:ℝ,1<Z₀ ∧
-    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤mesh →
-      (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+section
+variable (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i) (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i)) (hW : ∀i,ContDiff ℝ ∞ (W i)) (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε) (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ)
+include W a b ha hWs hW Mrow bΦ Lmod Lslot ε lo hi κ hbΦ hLm hLs hε hbeta hκ
+theorem actual_state_capacity_removal :
+    ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀ν:ι→ Character,∃Z₀:ℝ,1<Z₀ ∧
+    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤ mesh →
+      (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     ∃R:Finset ι,R⊆J ∧ (R=J ∨ n₁+n₂+6*κ*(∑i∈J\R,w i)≤width) ∧
       κ*(∑i∈R,w i)≤CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh ∧
     ∀Z:ℝ,Z₀≤Z → ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
       s.puncture=1 → s.rowWidth≤Mrow → ∀q:ℝ,
-      (s.character.modulus.absNorm:ℝ)≤Z^q → Mrow+q+1≤Lmod →
+      (s.character.modulus.absNorm:ℝ)≤Z ^q → Mrow+q+1≤Lmod →
     ∀Q:Ideal O,s.fixedModulus=Q → Q≤M → (∀i,Q≤(ν i).modulus) →
     ∀(σ freq:ι→ℝ)(t V:ℝ),(∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤V → (∀i,|freq i|≤V) →
     ∀(W₁ W₂:ℝ→ℂ)(X₁ X₂:ℝ),0<X₁ → 0<X₂ →
-      let P:=fun i=>Z^(w i)
+      let P:=fun i=>Z ^(w i)
       let S:=fun i=>primePool M H (b i) (P i)
       let coeff:=fun i I=>idealCoeff (ν i) I*HeckePrimeAnnular.annularWeight (W i) (P i) (σ i) (freq i) I
       energy s.character s.mask 1 t W₁ W₂ (fun i:J=>S i) (fun i:J=>coeff i)
         (fun i:J=>P i) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale≤
-        C*(1+|t|+V)^degree*Z^(ε+CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh)*
+        C*(1+|t|+V)^degree*Z ^(ε+CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh)*
           energy s.character s.mask 1 t W₁ W₂ (fun i:↥(J\R)=>S i) (fun i:↥(J\R)=>coeff i)
             (fun i:↥(J\R)=>P i) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale := by
-  obtain ⟨degree,C,hC,hbound⟩:=actual_relative_capacity_removal M H hH W a b ha hWs hW
-    Lmod Lslot ε lo hi κ hLm hLs hε hbeta hκ
+  pm_2942 actual_relative_capacity_removal ε hε
   obtain ⟨Zsupport,hsupport⟩:=eventually_atTop.mp (eventual_row_conductor bΦ Mrow hbΦ)
-  refine ⟨degree,C,hC,?_⟩
-  intro ν
+  pm_1445 degree C hC ν
   obtain ⟨Zbase,hZbase,hbound⟩:=hbound ν
-  refine ⟨max Zbase Zsupport,lt_of_lt_of_le hZbase (le_max_left _ _),?_⟩
-  intro J w n₁ n₂ width mesh hmesh hw hwm hwcap
-  obtain ⟨R,hR,hcapacity,hcost,hpoint⟩:=hbound J w n₁ n₂ width mesh hmesh hw hwm hwcap
-  refine ⟨R,hR,hcapacity,hcost,?_⟩
+  pm_6548 Zbase Zsupport hZbase
+  pm_873 hpoint
+  pm_119 R hR hcapacity hcost
   intro Z hZ Bmask s hpuncture hrow q hmod hLmod Q hQ hQM hQν σ freq t V hσ hσhi hV hfreq W₁ W₂ X₁ X₂ hX₁ hX₂
   dsimp only
   have hZbase' : Zbase≤Z:=(le_max_left _ _).trans hZ
   have hs:=(hsupport Z ((le_max_right _ _).trans hZ))
   have hZpos:0<Z:=zero_lt_one.trans hs.1
-  have hscale (i:ι) : 0≤Z^(w i):=Real.rpow_nonneg hZpos.le _
-  let P:=fun i=>Z^(w i)
+  have hscale (i:ι) : 0≤Z ^(w i):=Real.rpow_nonneg hZpos.le _
+  let P:=fun i=>Z ^(w i)
   let S:=fun i=>primePool M H (b i) (P i)
   let coeff:=fun i I=>idealCoeff (ν i) I*HeckePrimeAnnular.annularWeight (W i) (P i) (σ i) (freq i) I
-  let cost:=C*(1+|t|+V)^degree*Z^(ε+CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh)
+  let cost:=C*(1+|t|+V)^degree*Z ^(ε+CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh)
   have hmask:s.mask=fixedBadMask*ConcretePrimeRowBridge.idealGenerator 1:=by rw [NaturalState.mask,hpuncture]
   rw [hmask,unit_puncture_energy _ _ _ _ _ _ _ _ _ _ s.row_ne_zero,
     unit_puncture_energy _ _ _ _ _ _ _ _ _ _ s.row_ne_zero]
@@ -172,7 +167,7 @@ theorem actual_state_capacity_removal
     by_cases hp:s.radial.profile (‖eisEmbedding z‖^2/s.radial.scale)=0
     · simp [hp]
     · have hz:=s.row_ne_zero z hk
-      have hc:((naturalRow s.character z hz).character.modulus.absNorm:ℝ)≤Z^Lmod:=
+      have hc:((naturalRow s.character z hz).character.modulus.absNorm:ℝ)≤Z ^Lmod:=
         (hs.2 Bmask s hrow q hmod z hz hp).trans
           (Real.rpow_le_rpow_of_exponent_le hs.1.le hLmod)
       have hh:=hpoint Z hZbase' s.character z hz (naturalRow s.character z hz) hc
@@ -184,49 +179,42 @@ theorem actual_state_capacity_removal
       exact (mul_le_mul_of_nonneg_right hh (s.radial.nonneg z)).trans_eq (by dsimp only [cost];ring)
   · simp only [ite_eq_right hk,mul_zero,le_refl]
 
-theorem actual_relative_state_capacity_removal
-    (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i)
-    (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i))
-    (hW : ∀i,ContDiff ℝ ∞ (W i))
-    (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ)
-    (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε)
-    (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ) :
-    ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀η₀:Character,∀θ:ι→RayQuotient.Characters M H,
+theorem actual_relative_state_capacity_removal :
+    ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀η₀:Character,∀θ:ι→ RayQuotient.Characters M H,
     let ν:=fun i=>relativeCharacter M H hH η₀ (θ i);
     ∃Z₀:ℝ,1<Z₀ ∧
-    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤mesh →
-      (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
+    ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤ mesh →
+      (∀i,0≤w i) → (∀i,w i≤ mesh) → (∀i,w i≤Lslot) →
     ∃R:Finset ι,R⊆J ∧ (R=J ∨ n₁+n₂+6*κ*(∑i∈J\R,w i)≤width) ∧
       κ*(∑i∈R,w i)≤CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh ∧
     ∀Z:ℝ,Z₀≤Z → ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
       s.puncture=1 → s.rowWidth≤Mrow → ∀q:ℝ,
-      (s.character.modulus.absNorm:ℝ)≤Z^q → Mrow+q+1≤Lmod →
+      (s.character.modulus.absNorm:ℝ)≤Z ^q → Mrow+q+1≤Lmod →
     ∀Q:Ideal O,s.fixedModulus=internalQ Q η₀ → Q≤M →
     ∀(σ freq:ι→ℝ)(t V:ℝ),(∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤V → (∀i,|freq i|≤V) →
     ∀(W₁ W₂:ℝ→ℂ)(X₁ X₂:ℝ),0<X₁ → 0<X₂ →
-      let P:=fun i=>Z^(w i)
+      let P:=fun i=>Z ^(w i)
       let S:=fun i=>primePool M H (b i) (P i)
       let coeff:=fun i I=>idealCoeff (ν i) I*HeckePrimeAnnular.annularWeight (W i) (P i) (σ i) (freq i) I
       energy s.character s.mask 1 t W₁ W₂ (fun i:J=>S i) (fun i:J=>coeff i)
         (fun i:J=>P i) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale≤
-        C*(1+|t|+V)^degree*Z^(ε+CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh)*
+        C*(1+|t|+V)^degree*Z ^(ε+CenteredMomentLiveCapacity.excess J w n₁ n₂ width κ/6+κ*mesh)*
           energy s.character s.mask 1 t W₁ W₂ (fun i:↥(J\R)=>S i) (fun i:↥(J\R)=>coeff i)
             (fun i:↥(J\R)=>P i) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale := by
   obtain ⟨degree,C,hC,hbound⟩:=actual_state_capacity_removal M H hH W a b ha hWs hW
     Mrow bΦ Lmod Lslot ε lo hi κ hbΦ hLm hLs hε hbeta hκ
-  refine ⟨degree,C,hC,?_⟩
-  intro η₀ θ
+  pm_253 degree C hC η₀ θ
   dsimp only
   obtain ⟨Z₀,hZ₀,hbound⟩:=hbound (fun i=>relativeCharacter M H hH η₀ (θ i))
   refine ⟨Z₀,hZ₀,?_⟩
-  intro J w n₁ n₂ width mesh hmesh hw hwm hwcap
-  obtain ⟨R,hR,hcapacity,hcost,henergy⟩:=hbound J w n₁ n₂ width mesh hmesh hw hwm hwcap
-  refine ⟨R,hR,hcapacity,hcost,?_⟩
+  pm_873 henergy
+  pm_119 R hR hcapacity hcost
   intro Z hZ Bmask s hpuncture hrow q hmod hLmod Q hQ hQM
   exact henergy Z hZ Bmask s hpuncture hrow q hmod hLmod (internalQ Q η₀) hQ
     (inf_le_left.trans hQM)
     (fun i=>relativeCharacter_fixedQ M H hH η₀ (θ i) (internalQ Q η₀)
       (inf_le_left.trans hQM) inf_le_right)
+end
 
 end SevenEighths.CenteredMomentEnergyCapacityRemoval
 

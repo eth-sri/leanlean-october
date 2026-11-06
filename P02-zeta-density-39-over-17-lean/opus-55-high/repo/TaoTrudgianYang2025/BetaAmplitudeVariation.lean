@@ -2,6 +2,7 @@ module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaAmplitudeMonotonicity
 public import TaoTrudgianYang2025.FiniteWeightVariation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,8 +27,10 @@ def modelPhasePhysicalAmplitude (F : ℝ → ℝ) (T N r : ℝ) : ℝ :=
   (Real.sqrt (-deriv (deriv (modelPhaseFrequencyPhase F T N r))
     (modelPhaseStationaryPoint F T N r)))⁻¹
 
-theorem modelPhasePhysicalAmplitude_eq
-    {σ δ T N r : ℝ} {P : ℕ} {F : ℝ → ℝ}
+section
+variable {σ δ T N r : ℝ}
+include σ δ T N r
+theorem modelPhasePhysicalAmplitude_eq {P : ℕ} {F : ℝ → ℝ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
     (hT : 0 < T) (hN : 0 < N)
     (hv : r*N/T ∈ modelPhaseSlopeRange F) :
@@ -35,8 +38,7 @@ theorem modelPhasePhysicalAmplitude_eq
       (N/Real.sqrt T)*modelPhaseStationaryAmplitude F (r*N/T) :=
   modelPhaseStationaryPoint_amplitude_scale hF hT hN hv
 
-theorem modelPhasePhysicalAmplitude_pos
-    {σ δ T N r : ℝ} {F : ℝ → ℝ}
+theorem modelPhasePhysicalAmplitude_pos {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N)
@@ -46,8 +48,7 @@ theorem modelPhasePhysicalAmplitude_pos
   exact mul_pos (div_pos hN (Real.sqrt_pos.mpr hT))
     (modelPhaseStationaryAmplitude_pos hσ hδ hF hv)
 
-theorem modelPhasePhysicalAmplitude_le
-    {σ δ T N r : ℝ} {F : ℝ → ℝ}
+theorem modelPhasePhysicalAmplitude_le {F : ℝ → ℝ}
     (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hT : 0 < T) (hN : 0 < N)
@@ -57,12 +58,12 @@ theorem modelPhasePhysicalAmplitude_le
   rw [modelPhasePhysicalAmplitude_eq hF hT hN hv]
   exact mul_le_mul_of_nonneg_left (modelPhaseStationaryAmplitude_bounds hσ hδ hF hv).2
     (by positivity)
+end
 
-theorem modelPhasePhysicalAmplitude_antitoneOn
-    {σ δ T N : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ modelPhaseAmplitudeTolerance σ)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ)
-    (hT : 0 < T) (hN : 0 < N) :
+section
+variable {σ δ T N : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ modelPhaseAmplitudeTolerance σ) (hF : IsApproximateModelPhaseFunction F σ 2 δ) (hT : 0 < T) (hN : 0 < N)
+include σ δ T N F hσ hδ hF hT hN
+theorem modelPhasePhysicalAmplitude_antitoneOn :
     AntitoneOn (modelPhasePhysicalAmplitude F T N)
       {r : ℝ | r*N/T ∈ modelPhaseSlopeRange F} := by
   intro r hr s hs hrs
@@ -72,16 +73,12 @@ theorem modelPhasePhysicalAmplitude_antitoneOn
   apply modelPhaseStationaryAmplitude_antitoneOn hσ hδ hF hr hs
   exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hrs hN.le) hT.le
 
-theorem finiteVariationBound_modelPhasePhysicalAmplitude
-    {σ δ T N : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ modelPhaseAmplitudeTolerance σ)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ)
-    (hT : 0 < T) (hN : 0 < N) (a : ℝ) (L : ℕ)
+theorem finiteVariationBound_modelPhasePhysicalAmplitude (a : ℝ) (L : ℕ)
     (hv : ∀ i : ℕ, i ≤ L → (a+i)*N/T ∈ modelPhaseSlopeRange F) :
     FiniteVariationBound (fun i => (modelPhasePhysicalAmplitude F T N (a+i) : ℂ)) L
       ((N/Real.sqrt T)*(Real.sqrt (modelPhaseCurvatureLower σ))⁻¹) := by
-  have hd : δ ≤ min (modelPhaseCurvatureLower σ) 1 := hδ.trans (min_le_left _ _)
-  have hF₁ := approximateModelPhase_mono hF (by norm_num : 1 ≤ 2) le_rfl
+  pm_5720 hd modelPhaseCurvatureLower min_le_left
+  pm_7161
   apply finiteVariationBound_of_antitone (by positivity)
   · intro i hi j hj hij
     apply modelPhasePhysicalAmplitude_antitoneOn hσ hδ hF hT hN (hv i hi) (hv j hj)
@@ -89,6 +86,7 @@ theorem finiteVariationBound_modelPhasePhysicalAmplitude
   · intro i hi
     exact ⟨(modelPhasePhysicalAmplitude_pos hσ hd hF₁ hT hN (hv i hi)).le,
       modelPhasePhysicalAmplitude_le hσ hd hF₁ hT hN (hv i hi)⟩
+end
 
 theorem norm_sum_range_succ_mul_le_of_finiteVariation
     {w z : ℕ → ℂ} {L : ℕ} {M B : ℝ}
@@ -105,10 +103,7 @@ theorem norm_sum_range_succ_mul_le_of_finiteVariation
     calc
       _ ≤ ∑ i ∈ Finset.range L, ‖w (i+1)-w i‖*B := by
         apply Finset.sum_le_sum
-        intro i hi
-        exact mul_le_mul_of_nonneg_left (hz (i+1) (by
-          have := Finset.mem_range.mp hi
-          omega)) (norm_nonneg _)
+        pm_7882 i hi hz
       _ = (∑ i ∈ Finset.range L, ‖w (i+1)-w i‖)*B := (Finset.sum_mul _ _ _).symm
       _ ≤ M*B := mul_le_mul_of_nonneg_right hw.variation_le hB
   nlinarith

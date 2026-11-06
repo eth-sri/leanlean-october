@@ -1,6 +1,7 @@
 module
 public import GafniTao.HeathBrownKthDerivativeSetup
 public import GafniTao.FordMomentInterpolation
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -15,7 +16,6 @@ as an unexamined interface.
 -/
 
 open Complex Finset
-open scoped BigOperators
 open MeasureTheory
 
 namespace GafniTao
@@ -49,18 +49,13 @@ theorem fordVinogradovMomentNat_le_trivial_power_mul
     (fordVinogradovMomentNat s k Q : ℝ) ≤
       (Q : ℝ) ^ (2 * (s - s₀)) *
         fordVinogradovMomentNat s₀ k Q := by
-  let μ : Measure (UnitAddTorus (Fin k)) :=
-    Measure.pi (fun _ : Fin k => AddCircle.haarAddCircle)
+  pm_2805
   let W : UnitAddTorus (Fin k) → ℝ :=
     fun α => ‖fordVinogradovWeylSum k Q α‖
   have hW : Continuous W :=
     (continuous_fordVinogradovWeylSum k Q).norm
-  have hIntLeft : Integrable (fun α => W α ^ (2 * s)) μ := by
-    rw [← integrableOn_univ]
-    exact (hW.pow _).continuousOn.integrableOn_compact isCompact_univ
-  have hIntBase : Integrable (fun α => W α ^ (2 * s₀)) μ := by
-    rw [← integrableOn_univ]
-    exact (hW.pow _).continuousOn.integrableOn_compact isCompact_univ
+  pm_5343 hIntLeft s
+  pm_5343 hIntBase s₀
   have hIntRight : Integrable
       (fun α => (Q : ℝ) ^ (2 * (s - s₀)) * W α ^ (2 * s₀)) μ :=
     hIntBase.const_mul _
@@ -89,10 +84,7 @@ theorem fordVinogradovKappa_cast (l : ℕ) :
     (fordVinogradovKappa l : ℝ) =
       (l : ℝ) * ((l : ℝ) + 1) / 2 := by
   unfold fordVinogradovKappa
-  rw [Nat.cast_div
-    (even_iff_two_dvd.mp (Nat.even_mul_succ_self l))
-    (by norm_num : (2 : ℝ) ≠ 0)]
-  push_cast
+  pm_2813 Nat.even_mul_succ_self l
   rfl
 
 /-- A critical endpoint estimate gives every larger moment with the exact

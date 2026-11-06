@@ -1,5 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Poisson.QuadraticProfiles
+public import OAI.NumberTheory.DirichletL.Poisson.EisensteinLattice
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -7,82 +9,38 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
 open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid
 
 namespace FirstPassCubeLabels
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 open ActualEisensteinCubic
 open RayFourExpansion (RayCharacter crossCoeff)
 
-open ActualEisensteinCubic
-open RayFourExpansion (RayCharacter crossCoeff)
 open ConcreteTraceCRT (eisEmbedding)
 
 end
@@ -100,17 +58,16 @@ end FirstPassCubeLabels
 namespace SecondPassArithmetic
 
 section
-abbrev O := ActualEisensteinCubic.O
+export OAI.EisensteinSchwartzPoisson (O)
 open ActualEisensteinCubic
 open MixedCrossSeparation (columnCoefficient columnG convertedColumnBlock quadraticCrossPhase
   columnPrimeCoprime columnCoefficient_cancel_false columnCoefficient_cancel_true)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 
-theorem columnCoefficient_norm_one {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
+section
+variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hg : ∀ i, lambda ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+include ι p hp hcop hg hc
+theorem columnCoefficient_norm_one (S : Finset ι) :
     ‖columnCoefficient p hp hcop hg S‖ = 1 := by
   rw [FirstPassCubeLabels.columnCoefficient_eq_gaussBlock, norm_mul, norm_star,
     FiniteGaussPhase.norm_angularFactor _
@@ -118,20 +75,12 @@ theorem columnCoefficient_norm_one {ι : Type*} [DecidableEq ι]
     FirstPassCubeLabels.gaussBlock_norm_one p hp hcop hg hc S (fun _ => 2)
       (fun _ _ => by decide) (fun _ _ => by decide), one_mul]
 
-theorem columnCoefficient_mul_star {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
+theorem columnCoefficient_mul_star (S : Finset ι) :
     columnCoefficient p hp hcop hg S * star (columnCoefficient p hp hcop hg S) = 1 := by
   rw [← starRingEnd_apply, Complex.mul_conj', columnCoefficient_norm_one p hp hcop hg hc S]
   norm_num
 
-theorem convertedColumnBlock_restore {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+theorem convertedColumnBlock_restore
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) :
     convertedColumnBlock p hp hg S false =
       star (columnCoefficient p hp hcop hg S) * columnG p hp hcop hg S ∧
@@ -152,6 +101,7 @@ theorem convertedColumnBlock_restore {ι : Type*} [DecidableEq ι]
       _ = (columnCoefficient p hp hcop hg S * star (columnCoefficient p hp hcop hg S)) *
           convertedColumnBlock p hp hg S true := by rw [ha, one_mul]
       _ = _ := by convert h using 1 <;> ring
+end
 
 def secondColumnMinus {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -183,8 +133,7 @@ theorem mobius_second_gauss_restore {ι : Type*} [DecidableEq ι]
       activeGaussRowFactor p hp hinj hg T S e k =
     quadraticCrossPhase p hg T S * star (secondColumnMinus p hp hcop hg C₁ e k S) *
       secondColumnPlus p hp hcop hg C₂ e k T := by
-  have hprime (i : ι) : Prime (Ideal.span {p i}) :=
-    Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
+  pm_3509
   have hmS := FirstCauchyArithmetic.supportMobius_sq _ hprime hinj S
   have hmT := FirstCauchyArithmetic.supportMobius_sq _ hprime hinj T
   have hr (u : O) :
@@ -201,8 +150,7 @@ theorem mobius_second_gauss_restore {ι : Type*} [DecidableEq ι]
     Finset.sdiff_eq_self_of_disjoint hd.symm, Finset.sdiff_eq_self_of_disjoint hd,
     (convertedColumnBlock_restore p hp hcop hg hc hpr S).1,
     (convertedColumnBlock_restore p hp hcop hg hc hpr T).2, hr e, hr k]
-  simp only [secondColumnMinus, secondColumnPlus, star_mul, star_star,
-    FirstCauchyArithmetic.star_supportMobius]
+  pm_188 secondColumnMinus secondColumnPlus star_mul star_star FirstCauchyArithmetic.star_supportMobius
   calc
     _ = (supportMobius (fun i => Ideal.span {p i}) S * supportMobius (fun i => Ideal.span {p i}) S) *
       (supportMobius (fun i => Ideal.span {p i}) T * supportMobius (fun i => Ideal.span {p i}) T) *
@@ -229,7 +177,7 @@ variable {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
 theorem mask_star_row (e : O) :
     rowCoprimeMask P S e * star (finiteSquarefreeRow P hg S e) =
       star (finiteSquarefreeRow P hg S e) := by
-  by_cases h : ∃ i ∈ S, e ∈ P i
+  pm_1327 h e
   · have hm : rowCoprimeMask P S e = 0 := by simp [rowCoprimeMask, h]
     rw [FirstPassCubeLabels.row_zero_of_mask_zero P hg S e hm]
     simp

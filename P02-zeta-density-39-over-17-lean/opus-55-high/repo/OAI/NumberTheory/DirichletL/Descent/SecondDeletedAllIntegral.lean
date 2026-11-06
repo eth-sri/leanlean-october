@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedAllModes
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -26,7 +27,7 @@ theorem actual_second_deleted_all_modes_integral
     (sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ a,‖Ψ a‖ ≤ 1) (m : Eis) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
-    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
+    (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→ Finset ι)
     (hd₁ : ∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨
       (Ideal.span {p i}:Ideal Eis)∣x.quotient)
     (hd₂ : ∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨
@@ -63,13 +64,11 @@ theorem actual_second_deleted_all_modes_integral
       slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂ hd₁ hd₂ ha₁ ha₂ ω₁ ω₂ G E V B X R t labels hlabels hrows
       K ho hslots₁ hslots₂ w hw (A*(tripleHeight J t.1*coordinateHeight J t.2))
       (by unfold tripleHeight coordinateHeight; positivity) (hleft t) (hright t)
-    exact hh.trans_eq (by dsimp only [C]; ring)
+    pm_446 hh.trans_eq C
   calc
     _ ≤ ∫ t : Frequency × (Fin 6 → ℝ),C*(tripleHeight J t.1*coordinateHeight J t.2*‖density t‖) := by
       apply norm_integral_le_of_norm_le (hDensity.const_mul C)
-      filter_upwards with t
-      rw [norm_mul]
-      exact (mul_le_mul_of_nonneg_left (hb t) (norm_nonneg _)).trans_eq (by ring)
+      pm_520 t
     _ = _ := integral_const_mul _ _
 
 end

@@ -8,6 +8,7 @@ Mathlib dependencies retain Apache-2.0 attribution.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonSeparatedReciprocal
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonGapArithmetic
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -27,9 +28,10 @@ def atkinsonNearRowBound (H G : ℝ) (M : ℕ) : ℝ :=
   (M:ℝ)+120*Real.sqrt (H*(M:ℝ))/G*
     (harmonic (Nat.ceil (Real.sqrt (H*(M:ℝ))/G)):ℝ)
 
-theorem atkinson_near_gap_row_le {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hM : 0 < M) (hSep : IsSeparated G W)
-    (ht : t ∈ W) (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H) :
+section
+variable {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ} (hH : 0 < H) (hG : 0 < G) (hM : 0 < M) (hSep : IsSeparated G W) (ht : t ∈ W) (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H)
+include H G M W t hH hG hM hSep ht hrange
+theorem atkinson_near_gap_row_le :
     (∑ u ∈ W with u ≠ t ∧ |u-t| ≤ Real.sqrt (H*(M:ℝ)),
       atkinsonPrefixGapMajorant M M t u) ≤
       120*Real.sqrt (H*(M:ℝ))/G*
@@ -47,15 +49,13 @@ theorem atkinson_near_gap_row_le {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ
     have hd := Finset.mem_filter.mp hu
     have hg := atkinsonPrefixGapMajorant_le_near hH
       (hrange t ht).1 (hrange t ht).2 (hrange u hd.1).1 (hrange u hd.1).2
-      hd.2.1.symm hM (by simpa only [abs_sub_comm] using hd.2.2)
-    simpa only [abs_sub_comm, div_eq_mul_inv, one_mul] using hg
+      hd.2.1.symm hM (by grind)
+    grind
   have hm := mul_le_mul_of_nonneg_left hi
     (by positivity : 0 ≤ 60*Real.sqrt (H*(M:ℝ)))
-  exact (hb.trans hm).trans_eq (by ring)
+  grind
 
-theorem atkinson_gap_row_le_near_add_far {H G : ℝ} {M : ℕ} {W : Finset ℝ} {t : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hM : 0 < M) (hSep : IsSeparated G W)
-    (ht : t ∈ W) (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H) :
+theorem atkinson_gap_row_le_near_add_far :
     (∑ u ∈ W, atkinsonPrefixGapMajorant M M t u) ≤
       atkinsonNearRowBound H G M+atkinsonFarGapRow H M W t := by
   classical
@@ -83,6 +83,7 @@ theorem atkinson_gap_row_le_near_add_far {H G : ℝ} {M : ℕ} {W : Finset ℝ} 
   have hn := atkinson_near_gap_row_le hH hG hM hSep ht hrange
   unfold atkinsonNearRowBound
   linarith
+end
 
 theorem atkinson_gap_double_sum_le_near_add_far {H G : ℝ} {M : ℕ} {W : Finset ℝ}
     (hH : 0 < H) (hG : 0 < G) (hM : 0 < M) (hSep : IsSeparated G W)
@@ -104,10 +105,7 @@ theorem atkinsonArithmeticGapBudget_le_separated {H G η : ℝ} {N : ℕ} {W : F
     (hH : 0 < H) (hG : 0 < G) (hSep : IsSeparated G W)
     (hrange : ∀ u ∈ W, H ≤ u ∧ u ≤ 2*H) :
     atkinsonArithmeticGapBudget η N W ≤ atkinsonSeparatedGapBudget η H G N W := by
-  unfold atkinsonArithmeticGapBudget atkinsonSeparatedGapBudget
-  apply mul_le_mul_of_nonneg_left _ (by positivity)
-  apply Finset.sum_le_sum
-  intro j hj
+  pm_8898 atkinsonArithmeticGapBudget atkinsonSeparatedGapBudget
   exact mul_le_mul_of_nonneg_left
     (atkinson_gap_double_sum_le_near_add_far hH hG (pow_pos (by norm_num) _) hSep hrange)
     (by positivity)

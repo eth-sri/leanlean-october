@@ -1,6 +1,7 @@
 module
 public import TaoTrudgianYang2025.BProcessBaseline
 public import TaoTrudgianYang2025.BetaExpandedJetBounds
+import WeylPort.Analytic.RealLaplace
 
 @[expose] public section
 
@@ -20,8 +21,10 @@ open scoped BigOperators ContDiff
 namespace TaoTrudgianYang2025
 open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 
-theorem inversePhaseEval_modelPhaseInverseJet_expanded_error
-    {σ : ℝ} (hσ : 0 < σ) (e : InversePhaseExpression) :
+section
+variable {σ : ℝ} (hσ : 0 < σ)
+include σ hσ
+theorem inversePhaseEval_modelPhaseInverseJet_expanded_error (e : InversePhaseExpression) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (F : ℝ → ℝ) (δ : ℝ) (P : ℕ),
       δ ≤ min (modelPhaseCurvatureLower σ) 1 →
       δ ≤ min ((2 : ℝ)^(-σ)/2) 1 →
@@ -32,7 +35,7 @@ theorem inversePhaseEval_modelPhaseInverseJet_expanded_error
   obtain ⟨R,hR,hreference⟩ := expandedReferenceInverseJet_uniform_bound hσ (inversePhaseOrder e)
   choose E hE herror using fun j => modelPhaseInverseJet_expanded_reference_error hσ j
   let S := ∑ j ∈ Finset.range (inversePhaseOrder e+1), E j
-  have hS : 0 ≤ S := Finset.sum_nonneg fun j _ => zero_le_one.trans (hE j)
+  pm_8659 j hE
   let B := R+inverseJetMagnitudeBudget σ (inversePhaseOrder e)
   have hM := inverseJetMagnitudeBudget_nonneg hσ (inversePhaseOrder e)
   have hB : 0 ≤ B := add_nonneg (zero_le_one.trans hR) hM
@@ -44,7 +47,7 @@ theorem inversePhaseEval_modelPhaseInverseJet_expanded_error
     intro j hj
     have h := (modelPhaseInverseJet_abs_le hσ hδ hP hF hv j (hj.trans heP)).trans
       (inverseJetMagnitude_le_budget hσ hj)
-    exact h.trans (by dsimp [B]; linarith)
+    grind
   have hy : ∀ j ≤ inversePhaseOrder e, |expandedReferenceInverseJet σ v j| ≤ B := by
     intro j hj
     exact (hreference v (modelPhaseSlopeRange_positive_window hσ hpos hF hv) j hj).trans
@@ -60,8 +63,7 @@ theorem inversePhaseEval_modelPhaseInverseJet_expanded_error
   apply h.trans
   nlinarith
 
-theorem modelPhaseLegendreDual_expanded_allOrder_uniformity
-    {σ : ℝ} (hσ : 0 < σ) (n : ℕ) :
+theorem modelPhaseLegendreDual_expanded_allOrder_uniformity (n : ℕ) :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ (F : ℝ → ℝ) (δ : ℝ),
       δ ≤ min (modelPhaseCurvatureLower σ) 1 →
       δ ≤ min ((2 : ℝ)^(-σ)/2) 1 →
@@ -74,12 +76,12 @@ theorem modelPhaseLegendreDual_expanded_allOrder_uniformity
     (inversePhaseDerivativeExpression n)
   refine ⟨C,hC,?_⟩
   intro F δ hδ hpos hF v hv
-  have hw := modelPhaseSlopeRange_positive_window hσ hpos hF hv
-  have hvpos : 0 < v := (show 0 < (2 : ℝ)^(-σ)/2 by positivity).trans_le hw.1
+  pm_1653
   have hP : 1 ≤ inversePhaseOrder (inversePhaseDerivativeExpression n)+1 := by omega
   rw [iteratedDeriv_modelPhaseLegendreDual_formula hσ hδ
     (approximateModelPhase_mono hF hP le_rfl) hv n,
     iteratedDeriv_modelPhase_expanded_inverseJet_formula hσ hvpos n]
   exact hbound F δ _ hδ hpos hP hF (by omega) v hv
+end
 
 end TaoTrudgianYang2025
