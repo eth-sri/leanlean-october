@@ -27,15 +27,11 @@ def lk1 : ℝ := 100 / 1149
 def lk2 : ℝ := 100 / 618
 
 /-- Li's parameters satisfy Wu's hypotheses. -/
-theorem li_admissible : Admissible lk1 lk2 := by
-  refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [lk1, lk2] <;> norm_num
+theorem li_admissible : Admissible lk1 lk2 := by norm_num [Admissible, lk1, lk2]
 
 /-- **Li 2024, Lemma 3.1, with S₁₅'s range repaired**, for A = {N − p}, explicit error. -/
 theorem lemma31_repaired (N : ℕ) (hN : 1 < N) (hNk : 1 < (N : ℝ) ^ lk1) :
-    (3 * Y1 (wuA N) N lk1 + Y2 (wuA N) N lk2 + Y5 (wuA N) N lk1 lk2 + Y6 (wuA N) N lk1 lk2 : ℝ)
-      - Y3 (wuA N) N lk1 - Y4 (wuA N) N lk1 - 2 * Y7 (wuA N) N lk1 - Y8 (wuA N) N lk1
-      - Y9 (wuA N) N lk1 lk2 - Y10 (wuA N) N lk1 lk2 - Y11 (wuA N) N lk1 lk2
-      ≤ 4 * D12 (wuA N) + 4 * (N / ((N : ℝ) ^ lk1 - 1)) :=
+    (WL (wuA N) N lk1 lk2) ≤ 4 * D12 (wuA N) + 4 * (N / ((N : ℝ) ^ lk1 - 1)) :=
   lemma22_wuA N lk1 lk2 li_admissible hN hNk
 
 end GoldbachLean.Li2024.Lemma31

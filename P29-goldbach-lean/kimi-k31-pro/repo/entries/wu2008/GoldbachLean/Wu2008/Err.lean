@@ -23,55 +23,38 @@ open GoldbachLean.Wu2008.WuReal (Admissible)
 open scoped Classical
 
 /-- `Σ_{M ≤ m ≤ K} 1/m² ≤ 1/(M − 1)` for `M ≥ 2`. -/
-lemma sum_inv_sq_le (M : ℕ) (hM : 2 ≤ M) (K : ℕ) :
-    ∑ m ∈ Icc M K, (1 : ℝ) / (m : ℝ) ^ 2 ≤ 1 / ((M : ℝ) - 1) - 1 / (max K (M - 1) : ℕ) := by
-  have hM1 : (1 : ℝ) < M := by exact_mod_cast hM
-  induction K with
-  | zero =>
-    have : Icc M 0 = ∅ := by ext x; simp; omega
-    rw [this, sum_empty]
-    have : max 0 (M - 1) = M - 1 := by omega
-    rw [this]; push_cast [show 1 ≤ M by omega]; simp
-  | succ K ih =>
-    by_cases hK : K + 1 < M
-    · have : Icc M (K + 1) = ∅ := by ext x; simp; omega
-      rw [this, sum_empty]
-      have : max (K + 1) (M - 1) = M - 1 := by omega
-      rw [this]; push_cast [show 1 ≤ M by omega]; simp
-    · have hI : Icc M (K + 1) = insert (K + 1) (Icc M K) := by
-        ext x; simp only [mem_Icc, mem_insert]; omega
-      rw [hI, sum_insert (by simp)]
-      have hmax : max (K + 1) (M - 1) = K + 1 := by omega
-      have hmax' : max K (M - 1) = K := by omega
-      rw [hmax]; rw [hmax'] at ih
-      have hK1 : (1 : ℝ) ≤ K := by
-        have : 1 ≤ K := by omega
-        exact_mod_cast this
-      have key : (1 : ℝ) / ((K + 1 : ℕ) : ℝ) ^ 2 ≤ 1 / (K : ℝ) - 1 / ((K + 1 : ℕ) : ℝ) := by
-        push_cast
-        rw [div_sub_div _ _ (by positivity) (by positivity), div_le_div_iff₀ (by positivity)
-          (by positivity)]
-        nlinarith
-      linarith
-
 lemma sum_inv_sq_le' (M : ℕ) (hM : 2 ≤ M) (K : ℕ) :
     ∑ m ∈ Icc M K, (1 : ℝ) / (m : ℝ) ^ 2 ≤ 1 / ((M : ℝ) - 1) := by
-  have := sum_inv_sq_le M hM K
-  have : (0 : ℝ) ≤ 1 / (max K (M - 1) : ℕ) := by positivity
-  linarith
+  have hM1 : (1 : ℝ) < M := by exact_mod_cast hM
+  by_cases h : M ≤ K
+  · have h' := sum_Ioc_inv_sq_le_sub (α := ℝ) (k := M - 1) (n := K) (by omega) (by omega)
+    rw [show Ioc (M - 1) K = Icc M K by ext; simp; omega] at h'
+    rw [Nat.cast_sub (by omega : 1 ≤ M)] at h'
+    norm_num at h'
+    calc
+      ∑ m ∈ Icc M K, (1 : ℝ) / (m : ℝ) ^ 2 ≤ 1 / ((M : ℝ) - 1) - (K : ℝ)⁻¹ := by
+        simpa only [one_div] using h'
+      _ ≤ _ := sub_le_self _ (by positivity)
+  · rw [Icc_eq_empty (by omega), sum_empty]
+    positivity
 
 variable (A : Finset ℕ) (N : ℕ) (k1 k2 : ℝ)
+local notation "Ny" => (N : ℝ) ^ k1
+macro "WL" A:term:max N:term:max k1:term:max k2:term:max : term =>
+  `((3 * Y1 $A $N $k1 + Y2 $A $N $k2 + Y5 $A $N $k1 $k2 + Y6 $A $N $k1 $k2 : ℝ)
+    - Y3 $A $N $k1 - Y4 $A $N $k1 - 2 * Y7 $A $N $k1 - Y8 $A $N $k1
+    - Y9 $A $N $k1 $k2 - Y10 $A $N $k1 $k2 - Y11 $A $N $k1 $k2)
 
 /-- **The non-squarefree error, explicit.** -/
-theorem Esq_le (hN : 1 < (N : ℝ) ^ k1) (hAN : ∀ a ∈ A, 0 < a ∧ a < N ∧ a.Coprime N) :
-    (Esq A N k1 : ℝ) ≤ N / ((N : ℝ) ^ k1 - 1) := by
-  set M := ⌈(N : ℝ) ^ k1⌉₊ with hMdef
+theorem Esq_le (hN : 1 < Ny) (hAN : ∀ a ∈ A, 0 < a ∧ a < N ∧ a.Coprime N) :
+    (Esq A N k1 : ℝ) ≤ N / (Ny - 1) := by
+  set M := ⌈Ny⌉₊
   have hM2 : 2 ≤ M := by
     have : (1 : ℝ) < M := lt_of_lt_of_le hN (Nat.le_ceil _)
     exact_mod_cast this
-  set Q := (Icc M N).filter Nat.Prime with hQ
+  set Q := (Icc M N).filter Nat.Prime
   -- every bad a has q² | a for some q ∈ Q
-  have hsub : {a ∈ A | Sifted N ((N : ℝ) ^ k1) a ∧ ¬ Squarefree a} ⊆
+  have hsub : {a ∈ A | Sifted N Ny a ∧ ¬ Squarefree a} ⊆
       Q.biUnion (fun q => (Ioc 0 N).filter (fun a => q * q ∣ a)) := by
     intro a ha
     obtain ⟨haA, hs, hsq⟩ := mem_filter.1 ha
@@ -80,54 +63,45 @@ theorem Esq_le (hN : 1 < (N : ℝ) ^ k1) (hAN : ∀ a ∈ A, 0 < a ∧ a < N ∧
     push_neg at hsq
     obtain ⟨q, hq, hqq⟩ := hsq
     have hqa : q ∣ a := dvd_trans (dvd_mul_right q q) hqq
-    have hk := (sifted_iff h0 hlt hcop _).1 hs q ((mem_pf h0 hlt hcop).2 ⟨hq, hqa⟩)
+    have hk := (sifted_iff h0 hcop _).1 hs q ((mem_pf h0).2 ⟨hq, hqa⟩)
     have hqN : q ≤ N := (Nat.le_of_dvd h0 hqa).trans hlt.le
     rw [mem_biUnion]
     refine ⟨q, mem_filter.2 ⟨mem_Icc.2 ⟨Nat.ceil_le.2 hk, hqN⟩, hq⟩, mem_filter.2
       ⟨mem_Ioc.2 ⟨h0, hlt.le⟩, hqq⟩⟩
-  have h1 : (Esq A N k1 : ℝ) ≤ ∑ q ∈ Q, ((N / (q * q) : ℕ) : ℝ) := by
-    unfold Esq
-    have := (card_le_card hsub).trans card_biUnion_le
-    calc (#{a ∈ A | Sifted N ((N : ℝ) ^ k1) a ∧ ¬ Squarefree a} : ℝ)
-        ≤ ((∑ q ∈ Q, #((Ioc 0 N).filter (fun a => q * q ∣ a)) : ℕ) : ℝ) := by exact_mod_cast this
-      _ = ∑ q ∈ Q, ((N / (q * q) : ℕ) : ℝ) := by
-        push_cast
-        refine sum_congr rfl fun q _ => ?_
-        rw [Nat.Ioc_filter_dvd_card_eq_div]
-  have h2 : ∑ q ∈ Q, ((N / (q * q) : ℕ) : ℝ) ≤ ∑ m ∈ Icc M N, (N : ℝ) * (1 / (m : ℝ) ^ 2) := by
-    calc ∑ q ∈ Q, ((N / (q * q) : ℕ) : ℝ) ≤ ∑ q ∈ Q, (N : ℝ) * (1 / (q : ℝ) ^ 2) := by
-          refine sum_le_sum fun q hq => ?_
-          have hq0 : (0 : ℝ) < q := by
-            have := (mem_filter.1 hq).2.pos; exact_mod_cast this
-          rw [mul_one_div, le_div_iff₀ (by positivity)]
-          have := Nat.cast_div_le (α := ℝ) (m := N) (n := q * q)
-          push_cast at this
-          calc ((N / (q * q) : ℕ) : ℝ) * (q : ℝ) ^ 2 ≤ (N : ℝ) / ((q : ℝ) * q) * (q : ℝ) ^ 2 :=
-                mul_le_mul_of_nonneg_right this (by positivity)
-            _ = N := by field_simp
-      _ ≤ ∑ m ∈ Icc M N, (N : ℝ) * (1 / (m : ℝ) ^ 2) :=
-          sum_le_sum_of_subset_of_nonneg (filter_subset _ _) (fun _ _ _ => by positivity)
-  have h3 : ∑ m ∈ Icc M N, (N : ℝ) * (1 / (m : ℝ) ^ 2) ≤ N * (1 / ((M : ℝ) - 1)) := by
-    rw [← mul_sum]
-    exact mul_le_mul_of_nonneg_left (sum_inv_sq_le' M hM2 N) (Nat.cast_nonneg _)
-  have h4 : (N : ℝ) * (1 / ((M : ℝ) - 1)) ≤ N / ((N : ℝ) ^ k1 - 1) := by
-    rw [mul_one_div]
-    exact div_le_div_of_nonneg_left (Nat.cast_nonneg _) (by linarith) (by linarith [Nat.le_ceil ((N : ℝ) ^ k1)])
-  linarith
+  calc
+    (Esq A N k1 : ℝ) ≤ ∑ q ∈ Q, ((N / (q * q) : ℕ) : ℝ) := by
+      unfold Esq
+      have h := (card_le_card hsub).trans card_biUnion_le
+      calc (#{a ∈ A | Sifted N Ny a ∧ ¬ Squarefree a} : ℝ)
+          ≤ ((∑ q ∈ Q, #((Ioc 0 N).filter (fun a => q * q ∣ a)) : ℕ) : ℝ) := by exact_mod_cast h
+        _ = _ := by
+          push_cast
+          refine sum_congr rfl fun q _ => ?_
+          rw [Nat.Ioc_filter_dvd_card_eq_div]
+    _ ≤ ∑ q ∈ Q, (N : ℝ) * (1 / (q : ℝ) ^ 2) := by
+      apply sum_le_sum
+      intro q hq
+      calc
+        ((N / (q * q) : ℕ) : ℝ) ≤ (N : ℝ) / ((q : ℝ) * q) := by
+          exact_mod_cast Nat.cast_div_le (α := ℝ) (m := N) (n := q * q)
+        _ = _ := by ring
+    _ ≤ ∑ m ∈ Icc M N, (N : ℝ) * (1 / (m : ℝ) ^ 2) :=
+      sum_le_sum_of_subset_of_nonneg (filter_subset _ _) (fun _ _ _ => by positivity)
+    _ ≤ N * (1 / ((M : ℝ) - 1)) := by
+      rw [← mul_sum]
+      exact mul_le_mul_of_nonneg_left (sum_inv_sq_le' M hM2 N) (Nat.cast_nonneg _)
+    _ ≤ _ := by
+      rw [mul_one_div]
+      exact div_le_div_of_nonneg_left (Nat.cast_nonneg _) (by linarith) (by linarith [Nat.le_ceil Ny])
 
 /-- **Wu 2008 (2.2), Υ₁₁ repaired, with the error explicit.** -/
-theorem lemma22_explicit (hA : Admissible k1 k2) (hN : 1 < N) (hNk : 1 < (N : ℝ) ^ k1)
+theorem lemma22_explicit (hA : Admissible k1 k2) (hN : 1 < N) (hNk : 1 < Ny)
     (hAN : ∀ a ∈ A, 0 < a ∧ a < N ∧ a.Coprime N) :
-    (3 * Y1 A N k1 + Y2 A N k2 + Y5 A N k1 k2 + Y6 A N k1 k2 : ℝ) - Y3 A N k1 - Y4 A N k1
-      - 2 * Y7 A N k1 - Y8 A N k1 - Y9 A N k1 k2 - Y10 A N k1 k2 - Y11 A N k1 k2
-      ≤ 4 * D12 A + 4 * (N / ((N : ℝ) ^ k1 - 1)) := by
-  have h := lemma22_sum A N k1 k2 hA hN hAN
-  have hR : ((3 * Y1 A N k1 + Y2 A N k2 + Y5 A N k1 k2 + Y6 A N k1 k2 : ℤ) - Y3 A N k1 - Y4 A N k1
-      - 2 * Y7 A N k1 - Y8 A N k1 - Y9 A N k1 k2 - Y10 A N k1 k2 - Y11 A N k1 k2 : ℝ)
-      ≤ ((4 * D12 A + 4 * Esq A N k1 : ℤ) : ℝ) := by exact_mod_cast h
-  push_cast at hR
-  have := Esq_le A N k1 hNk hAN
-  linarith
+    (WL A N k1 k2) ≤ 4 * D12 A + 4 * (N / (Ny - 1)) := by
+  calc
+    _ ≤ (4 * D12 A + 4 * Esq A N k1 : ℝ) := by
+      exact_mod_cast lemma22_sum A N k1 k2 hA hN hAN
+    _ ≤ _ := by linarith [Esq_le A N k1 hNk hAN]
 
 /-- Wu's set `A = {N − p : p < N prime, p ∤ N}`. -/
 def wuA : Finset ℕ := ((range N).filter (fun p => p.Prime ∧ ¬ p ∣ N)).image (fun p => N - p)
@@ -142,11 +116,8 @@ lemma wuA_ok : ∀ a ∈ wuA N, 0 < a ∧ a < N ∧ a.Coprime N := by
   exact (Nat.coprime_self_sub_left (by omega)).2 hc
 
 /-- **(2.2) for Wu's own `A = {N − p}`, explicit error.** -/
-theorem lemma22_wuA (hA : Admissible k1 k2) (hN : 1 < N) (hNk : 1 < (N : ℝ) ^ k1) :
-    (3 * Y1 (wuA N) N k1 + Y2 (wuA N) N k2 + Y5 (wuA N) N k1 k2 + Y6 (wuA N) N k1 k2 : ℝ)
-      - Y3 (wuA N) N k1 - Y4 (wuA N) N k1 - 2 * Y7 (wuA N) N k1 - Y8 (wuA N) N k1
-      - Y9 (wuA N) N k1 k2 - Y10 (wuA N) N k1 k2 - Y11 (wuA N) N k1 k2
-      ≤ 4 * D12 (wuA N) + 4 * (N / ((N : ℝ) ^ k1 - 1)) :=
+theorem lemma22_wuA (hA : Admissible k1 k2) (hN : 1 < N) (hNk : 1 < Ny) :
+    (WL (wuA N) N k1 k2) ≤ 4 * D12 (wuA N) + 4 * (N / (Ny - 1)) :=
   lemma22_explicit (wuA N) N k1 k2 hA hN hNk (wuA_ok N)
 
 end
